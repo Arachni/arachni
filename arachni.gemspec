@@ -118,26 +118,32 @@ or report a bug (via GitHub Issues) if you come across any problem.
 MSG
 
       s.description = <<DESCRIPTION
-Arachni is a feature-full, modular, high-performance Ruby framework aimed towards
-helping penetration testers and administrators evaluate the security of web applications.
+Arachni is an Open Source, feature-full, modular, high-performance Ruby framework
+aimed towards helping penetration testers and administrators evaluate the security
+of web applications.
 
-Arachni is smart, it trains itself by learning from the HTTP responses it receives during the audit process
-and is able to perform meta-analysis using a number of factors in order to correctly assess the trustworthiness
-of results and intelligently identify false-positives.
+It is smart, it trains itself by learning from the HTTP responses it receives
+during the audit process and is able to perform meta-analysis using a number of
+factors in order to correctly assess the trustworthiness of results and intelligently
+identify false-positives.
 
-Unlike other scanners, it takes into account the dynamic nature of web applications, can detect changes caused while travelling
-through the paths of a web application's cyclomatic complexity and is able to adjust itself accordingly.
-This way attack/input vectors that would otherwise be undetectable by non-humans are seamlessly handled by Arachni.
+Unlike other scanners, it takes into account the dynamic nature of web applications,
+can detect changes caused while travelling through the paths of a web application’s
+cyclomatic complexity and is able to adjust itself accordingly. This way attack/input
+vectors that would otherwise be undetectable by non-humans are seamlessly handled by Arachni.
 
-Moreover, Arachni yields great performance due to its asynchronous HTTP model -- especially
-when combined with a High Performance Grid setup which allows you to combine the resources of multiple nodes for lightning fast scans.
-Thus, you'll only be limited by the responsiveness of the server under audit.
+Moreover, Arachni yields great performance due to its asynchronous HTTP model
+(courtesy of Typhoeus) — especially when combined with a High Performance Grid
+setup which allows you to combine the resources of multiple nodes for lightning
+fast scans. Thus, you’ll only be limited by the responsiveness of the server under audit.
 
-Finally, it is versatile enough to cover a great deal of use cases, ranging from a simple
-command line scanner utility, to a global high performance grid of scanners, to a Ruby library allowing for scripted audits.
+Finally, it is versatile enough to cover a great deal of use cases, ranging from
+a simple command line scanner utility, to a global high performance grid of
+scanners, to a Ruby library allowing for scripted audits.
 
-Note: Despite the fact that Arachni is mostly targeted towards web application security,
-it can easily be used for general purpose scraping, data-mining, etc with the addition of custom modules.
+**Note**: Despite the fact that Arachni is mostly targeted towards web application
+security, it can easily be used for  general purpose scraping, data-mining, etc
+with the addition of custom modules.
 DESCRIPTION
 
 end
