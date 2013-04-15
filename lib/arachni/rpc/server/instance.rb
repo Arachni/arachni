@@ -504,6 +504,7 @@ class Instance
     #   Cookies to use for the HTTP requests.
     #
     #       [
+    #           'secret=blah',
     #           {
     #               'userid' => '1',
     #           },
