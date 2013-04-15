@@ -500,7 +500,7 @@ class Instance
     #   The crawl phase gets skipped and these paths are used instead.
     # @option opts [Array<String>] :extend_paths ([])
     #   Extend the scope of the crawl and audit with the provided paths.
-    # @option opts [Hash<String, String>] :cookies ({})
+    # @option opts [Hash] :cookies ({})
     #   Cookies to use for the HTTP requests.
     #
     #       [
