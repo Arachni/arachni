@@ -503,10 +503,16 @@ class Instance
     # @option opts [Hash<String, String>] :cookies ({})
     #   Cookies to use for the HTTP requests.
     #
-    #       {
-    #           'userid' => '1',
-    #           'sessionid' => 'fdfdfDDfsdfszdf'
-    #       }
+    #       [
+    #           {
+    #               'userid' => '1',
+    #           },
+    #           {
+    #               name:      'sessionid',
+    #               value:     'fdfdfDDfsdfszdf',
+    #               http_only: true
+    #           }
+    #       ]
     #
     # @option opts [Integer] :http_req_limit (20)
     #   HTTP request concurrency limit.
