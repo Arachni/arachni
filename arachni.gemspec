@@ -18,6 +18,7 @@ Gem::Specification.new do |s|
       require File.expand_path( File.dirname( __FILE__ ) ) + '/lib/arachni/version'
 
       s.required_ruby_version = '>= 1.9.2'
+      s.required_ruby_version = '< 2.0.0'
 
       s.name              = 'arachni'
       s.version           = Arachni::VERSION
@@ -84,7 +85,7 @@ Gem::Specification.new do |s|
       s.add_dependency 'terminal-table',  '>= 1.4.2'
 
       # RPC client/server implementation.
-      s.add_dependency 'arachni-rpc-em',  '0.1.3.pre2'
+      s.add_dependency 'arachni-rpc-em',  '~> 0.1.3'
 
       # For CLI interfaces.
       s.add_dependency 'highline'
