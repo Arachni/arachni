@@ -67,6 +67,14 @@ class ActiveOptions
         true
     end
 
+    def proxy=( proxy_url )
+        @opts.proxy_host, @opts.proxy_port = proxy_url.to_s.split( /:/ )
+        @opts.proxy_port = @opts.proxy_port.to_i
+
+        HTTP.reset false
+        @opts.proxy = proxy_url
+    end
+
     def cookie_jar=( cookie_jar )
         HTTP.update_cookies( cookie_jar )
         @cookie_jar = cookie_jar

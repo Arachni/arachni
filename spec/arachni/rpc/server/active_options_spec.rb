@@ -316,4 +316,13 @@ describe Arachni::RPC::Server::ActiveOptions do
             cookies.first.value.should == 'value'
         end
     end
+
+    describe '#proxy=' do
+        it 'updates the proxy settings' do
+            @instance.opts.proxy = 'test.com:8080'
+
+            @instance.opts.proxy_host.should == 'test.com'
+            @instance.opts.proxy_port.should == 8080
+        end
+    end
 end

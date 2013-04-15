@@ -332,6 +332,9 @@ class Options
     #
     attr_accessor :proxy_type
 
+    # @return    [String]     Proxy URL (`host:port`)
+    attr_accessor :proxy
+
     #
     # To be populated by the framework
     #
@@ -1057,6 +1060,8 @@ class Options
                     when '--proxy'
                         @proxy_host, @proxy_port =
                             arg.to_s.split( /:/ )
+
+                        @proxy_port = @proxy_port.to_i
 
                     when '--proxy-auth'
                         @proxy_username, @proxy_password =
