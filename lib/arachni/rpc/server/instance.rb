@@ -515,6 +515,8 @@ class Instance
     #           }
     #       ]
     #
+    #   _Cookie values will be encoded automatically._
+    #
     # @option opts [Integer] :http_req_limit (20)
     #   HTTP request concurrency limit.
     # @option opts [String] :user_agent ('Arachni/v<version>')
