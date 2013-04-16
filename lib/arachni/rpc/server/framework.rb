@@ -651,7 +651,7 @@ class Framework < ::Arachni::Framework
             slave_data.each do |slave|
                 data['messages'] |= slave['messages'] if include_messages
                 data['issues']   |= slave['issues'] if include_issues
-                data['errors']   |= slave['errors'] if include_errors
+                data['errors']   |= slave['errors'] if slave['errors'] && include_errors
 
                 if include_slaves
                     url = slave['url']
