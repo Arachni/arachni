@@ -329,9 +329,9 @@ module Distributor
             opts.delete k
         end
 
-        # don't let the slaves run plug-ins that are not meant
-        # to be distributed
-        (opts['plugins'] || {}).keys.reject! { |k| !@plugins[k].distributable? }
+        # Don't let the slaves run plug-ins that are not meant
+        # to be distributed.
+        opts['plugins'].reject! { |k, _| !@plugins[k].distributable? } if opts['plugins']
 
         opts['datastore'].delete( :dispatcher_url )
         opts['datastore'].delete( :token )
