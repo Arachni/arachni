@@ -330,6 +330,7 @@ describe Arachni::RPC::Server::Instance do
 
                     end
                 end
+
                 context 'when it does not have a Dispatcher' do
                     it 'spawns a number of slaves' do
                         instance = @get_instance.call
@@ -357,6 +358,45 @@ describe Arachni::RPC::Server::Instance do
 
                         i_report.should == f_report
                         i_report['issues'].should be_any
+                    end
+                end
+
+                context 'when link_count_limit has been set' do
+                    it 'should be divided by the amount of spawns' do
+                        instance = @get_instance.call
+
+                        link_count_limit = 100
+                        spawns           = 4
+
+                        instance.service.scan(
+                            url:         server_url_for( :framework_simple ),
+                            audit_links: true,
+                            audit_forms: true,
+                            modules:     :test,
+                            spawns:      spawns,
+                            link_count_limit: link_count_limit
+                        )
+
+                        instance.opts.link_count_limit.should == link_count_limit / (spawns + 1)
+                    end
+                end
+                context 'when http_req_limit has been set' do
+                    it 'should be divided by the amount of spawns' do
+                        instance = @get_instance.call
+
+                        http_req_limit = 100
+                        spawns         = 4
+
+                        instance.service.scan(
+                            url:         server_url_for( :framework_simple ),
+                            audit_links: true,
+                            audit_forms: true,
+                            modules:     :test,
+                            spawns:      spawns,
+                            http_req_limit: http_req_limit
+                        )
+
+                        instance.opts.http_req_limit.should == http_req_limit / (spawns + 1)
                     end
                 end
             end

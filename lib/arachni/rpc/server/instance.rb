@@ -421,6 +421,9 @@ class Instance
     # @note Options marked with an asterisk are required.
     # @note Options which expect patterns will interpret their arguments as
     #   regular expressions regardless of their type.
+    # @note When using more than one Instance, the `http_req_limit` and
+    #   `link_count_limit` options will be divided by the number of Instance to
+    #   be used.
     #
     # @param  [Hash]  opts
     #   Scan options to be passed to {Options#set} (along with some extra ones
@@ -583,6 +586,13 @@ class Instance
 
         if @framework.opts.url.to_s.empty?
             fail ArgumentError, 'Option \'url\' is mandatory.'
+        end
+
+        if spawn_count.to_i > 0
+            %w(link_count_limit http_req_limit).each do |name|
+                next if !(v = @active_options.send( name ))
+                @active_options.send( "#{name}=", v / (spawn_count + 1) )
+            end
         end
 
         @framework.update_page_queue( opts[:pages] || [] )
