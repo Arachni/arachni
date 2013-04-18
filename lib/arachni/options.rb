@@ -463,12 +463,6 @@ class Options
     # @return   [Integer]   amount of Instances to keep in the pool
     attr_accessor :pool_size
 
-    # @return   [String]    username for the WebUI
-    attr_accessor :webui_username
-
-    # @return   [String]    password for the WebUI
-    attr_accessor :webui_password
-
     # @return   [Hash<String, String>]    custom HTTP headers to be included
     #                                           for every HTTP Request
     attr_accessor :custom_headers
@@ -1146,12 +1140,6 @@ class Options
 
                     when '--host'
                         @server = arg.to_s
-
-                    when '--username'
-                        @webui_username = arg.to_s
-
-                    when '--password'
-                        @webui_password = arg.to_s
 
                     when '--fuzz-methods'
                         @fuzz_methods = true
