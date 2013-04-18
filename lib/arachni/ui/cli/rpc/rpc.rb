@@ -402,7 +402,7 @@ class RPC
     --server=<address:port>     Dispatcher server to use.
                                   (Used to provide scanner Instances.)
 
-    --slaves=<integer>          How many slaves to spawn for a high-performance distributed scan.
+    --spawns=<integer>          How many slaves to spawn for a high-performance distributed scan.
                                   (Slaves will all be from the same Dispatcher machine.)
                                   (*WARNING*: This feature is experimental.)
 
