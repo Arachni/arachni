@@ -108,9 +108,12 @@ class String
         dup.recode!
     end
 
+
     def binary?
-        s = split( // )
-        ((s.size - s.grep( ' '..'~' ).size) / s.size.to_f) > 0.30
+        # Stolen from YAML.
+        encoding == Encoding::ASCII_8BIT ||
+            index("\x00") ||
+            count("\x00-\x7F", "^ -~\t\r\n").fdiv(length) > 0.3
     end
 
 end
