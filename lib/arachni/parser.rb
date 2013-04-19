@@ -120,6 +120,8 @@ class Parser
 
     def url=( str )
         @url = normalize_url( uri_decode( str ) )
+        @url = normalize_url( str ) if !@url
+        @url
     end
 
     #
