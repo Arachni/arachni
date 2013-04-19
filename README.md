@@ -269,8 +269,7 @@ Can extract and analyze:
  - Modular design.
  - Currently available reports:
     - Standard output
-    - HTML (Cheers to [Christos Chiotis](mailto:chris@survivetheinternet.com)
-        for designing the new HTML report template.)
+    - HTML
     - XML
     - TXT
     - AFR -- The default Arachni Framework Report format.
