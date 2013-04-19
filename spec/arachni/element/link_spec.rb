@@ -208,12 +208,35 @@ describe Arachni::Element::Link do
     end
 
     describe '.from_response' do
-        it 'should return all available links from an HTTP response' do
+        it 'returns all available links from an HTTP response' do
             res = Typhoeus::Response.new(
                 effective_url: @url + '/?param=val',
                 body: '<a href="test?param_one=value_one&param_two=value_two"></a>'
             )
             Arachni::Element::Link.from_response( res ).size.should == 2
+        end
+    end
+
+    describe '.parse_query_vars' do
+        it 'returns the query parameters as a Hash' do
+            url = "http://test/?param_one=value_one&param_two=value_two"
+            described_class.parse_query_vars( url ).should == {
+                'param_one' => 'value_one',
+                'param_two' => 'value_two'
+            }
+        end
+        context 'when passed' do
+            describe 'nil' do
+                it 'returns an empty Hash' do
+                    described_class.parse_query_vars( nil ).should == {}
+                end
+            end
+            describe 'an unparsable URL' do
+                it 'returns an empty Hash' do
+                    url = '$#%^$6#5436#$%^'
+                    described_class.parse_query_vars( url ).should == {}
+                end
+            end
         end
     end
 

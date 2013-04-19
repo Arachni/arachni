@@ -185,7 +185,10 @@ class Link < Arachni::Element::Base
     def self.parse_query_vars( url )
         return {} if !url
 
-        query = uri_parse( url ).query
+        parsed = uri_parse( url )
+        return {} if !parsed
+
+        query = parsed.query
         return {} if !query || query.empty?
 
         query.to_s.split( '&' ).inject( {} ) do |h, pair|
