@@ -1,9 +1,9 @@
 # Experimental/unstable branch -- used for development/integration
 
 This branch is where all development takes place, once its code has been tested and
-is considered stable, it is then merged into the ```master``` branch and released.
+is considered stable, it is then merged into the `master` branch and released.
 
-Do not be confused by the version of this branch, ```1.0dev``` is a placeholder
+Do not be confused by the version of this branch, `1.0dev` is a placeholder
 which simply means _next release_.
 
 ## Nightlies
@@ -25,9 +25,9 @@ To run from source:
     gem install bundler # Use sudo if you get a permission error
     bundle install # to resolve dev dependencies
 
-Then you can run Arachni using the the executables under ```bin/```.<br/>
-If you get an error when trying to run Arachni, use ```bundle exec``` like so:
-```bundle exec <executable>```.
+Then you can run Arachni using the the executables under `bin/`.<br/>
+If you get an error when trying to run Arachni, use `bundle exec` like so:
+`bundle exec <executable>`.
 
 # Arachni - Web Application Security Scanner Framework
 
@@ -197,7 +197,7 @@ you with its findings.
     - Cookies
     - Headers
  - Can ignore binary/non-text pages.
- - Can optionally audit forms and links using both ```GET``` and ```POST``` HTTP methods.
+ - Can optionally audit forms and links using both `GET` and `POST` HTTP methods.
  - Can optionally submit all links and forms of the page along with the cookie
     permutations to provide extensive cookie-audit coverage.
  - Can exclude specific input vectors by name.
@@ -351,14 +351,13 @@ Should you want to use these extra components simply move them from the
 
 ## Running the specs
 
-You can run ```rake spec``` to run **all** specs or you can run them selectively using the following:
-```
-rake spec:core            # for the core libraries
-rake spec:modules         # for the modules
-rake spec:plugins         # for the plugins
-rake spec:reports         # for the reports
-rake spec:path_extractors # for the path extractors
-```
+You can run `rake spec` to run **all** specs or you can run them selectively using the following:
+
+    rake spec:core            # for the core libraries
+    rake spec:modules         # for the modules
+    rake spec:plugins         # for the plugins
+    rake spec:reports         # for the reports
+    rake spec:path_extractors # for the path extractors
 
 **Note**: _The module specs will take about 90 minutes due to the ones which perform timing attacks._
 
@@ -380,7 +379,7 @@ need to follow in order to contribute code:
 * Commit and push your changes.
 * Issue a pull request and wait for your code to be reviewed.
 
-_PS. You may want to setup a [development environment](https://github.com/Arachni/arachni/wiki/Development-environment) first._
+_PS: You may want to setup a [development environment](https://github.com/Arachni/arachni/wiki/Development-environment) first._
 
 ## License
 
