@@ -361,8 +361,8 @@ You can run `rake spec` to run **all** specs or you can run them selectively usi
 
 ## Bug reports/Feature requests
 
-Submit bugs using [GitHub Issues](http://github.com/Arachni/arachni/issues).<br/>
-Get support via the [Support Portal](http://support.arachni-scanner.com).
+Submit bugs using [GitHub Issues](http://github.com/Arachni/arachni/issues) and
+get support via the [Support Portal](http://support.arachni-scanner.com).
 
 ## Contributing
 
