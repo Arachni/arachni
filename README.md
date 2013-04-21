@@ -387,5 +387,5 @@ See the [LICENSE](file.LICENSE.html) file for more information.
 ## Disclaimer
 
 This is free software and you are allowed to use it as you see fit.
-However, neither the development team nor any of our contributors can responsible
-for your actions or for any damage caused by the use of this software.
+However, neither the development team nor any of our contributors can held
+responsible for your actions or for any damage caused by the use of this software.
