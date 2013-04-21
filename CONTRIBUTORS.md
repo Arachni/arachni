@@ -1,6 +1,7 @@
 # Contributors
 
-These are the people that helped improve Arachni either by submitting code, suggestions or testing it.
+These are the people who helped improve Arachni either by submitting code,
+suggestions or testing it.
 
 - [Matías Aereal Aeón](http://mfsec.com.ar/), for general suggestions and beta testing.
 - [Christos Chiotis](mailto:chris@survivetheinternet.com) for designing the HTML report template.
