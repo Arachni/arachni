@@ -49,7 +49,7 @@ If you get an error when trying to run Arachni, use ```bundle exec``` like so:
      <tr/>
     <tr>
         <th>Documentation</th>
-        <td><a href="http://arachni-scanner.com/wiki">http://arachni-scanner.com/wiki</a></td>
+        <td><a href="https://github.com/Arachni/arachni/wiki">https://github.com/Arachni/arachni/wiki</a></td>
     </tr>
     <tr>
         <th>Code Documentation</th>
