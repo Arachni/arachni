@@ -139,7 +139,7 @@ Arachni is designed to automatically detect security issues in web applications.
 All it expects is the URL of the target website and after a while it will present
 you with its findings.
 
-## Feature List
+## Features
 
 ### General
 
@@ -386,6 +386,6 @@ See the [LICENSE](file.LICENSE.html) file for more information.
 
 ## Disclaimer
 
-Arachni is free software and you are allowed to use it as you see fit.<br/>
-However, I can't be held responsible for your actions or for any damage
-caused by the use of this software.
+This is free software and you are allowed to use it as you see fit.
+However, neither the development team nor any of our contributors can responsible
+for your actions or for any damage caused by the use of this software.
