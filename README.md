@@ -362,39 +362,33 @@ rake spec:path_extractors # for the path extractors
 
 **Note**: _The module specs will take about 90 minutes due to the ones which perform timing attacks._
 
+## Bug reports/Feature requests
+
+Submit bugs using [GitHub Issues](http://github.com/Arachni/arachni/issues).<br/>
+Get support via the [Support Portal](http://support.arachni-scanner.com).
+
 ## Contributing
 
 We're happy to accept help from fellow code-monkeys and these are the steps you
 need to follow in order to contribute code:
 
 * [Fork the project](https://github.com/Arachni/arachni/fork_select).
-* Start a feature branch based on the `experimental` branch (```git checkout -b <feature-name> experimental```).
+* Start a feature branch based on the `experimental` branch (`git checkout -b <feature-name> experimental`).
 * Add specs for your code.
-* Run the spec suite to make sure you didn't break anything (```rake spec:core```
-    for the core libs or ```rake spec``` for everything).
+* Run the spec suite to make sure you didn't break anything (`rake spec:core`
+    for the core libs or `rake spec` for everything).
 * Commit and push your changes.
 * Issue a pull request and wait for your code to be reviewed.
 
-That's all. :)
-
 _PS. You may want to setup a [development environment](https://github.com/Arachni/arachni/wiki/Development-environment) first._
-
-## Bug reports/Feature requests
-
-Submit bugs using [GitHub Issues](http://github.com/Arachni/arachni/issues).<br/>
-Get support via the [Support Portal](http://support.arachni-scanner.com).
-
 
 ## License
 
 Arachni is licensed under the Apache License Version 2.0.<br/>
 See the [LICENSE](file.LICENSE.html) file for more information.
 
-
 ## Disclaimer
 
 Arachni is free software and you are allowed to use it as you see fit.<br/>
 However, I can't be held responsible for your actions or for any damage
 caused by the use of this software.
-
-![Arachni banner](http://arachni.github.com/arachni/banner.png)
