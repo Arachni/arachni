@@ -13,16 +13,14 @@ http://downloads.arachni-scanner.com/nightlies/
 
 ## Source
 
-To work with the source code you'll need the following system packages:
+To run from source you first need to setup a
+[development environment](https://github.com/Arachni/arachni/wiki/Development-environment).
 
-    sudo apt-get install git build-essential libxml2-dev libxslt1-dev libcurl4-openssl-dev libsqlite3-dev libyaml-dev zlib1g-dev ruby1.9.1-dev ruby1.9.1
-
-To run from source:
+Then:
 
     git clone git://github.com/Arachni/arachni.git
     cd arachni
     git checkout experimental
-    gem install bundler # Use sudo if you get a permission error
     bundle install # to resolve dev dependencies
 
 Then you can run Arachni using the the executables under `bin/`.<br/>
