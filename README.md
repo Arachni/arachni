@@ -73,7 +73,7 @@ If you get an error when trying to run Arachni, use `bundle exec` like so:
     </tr>
 </table>
 
-![Arachni logo](http://arachni.github.com/arachni/banner.png)
+![Arachni logo](http://arachni.github.com/arachni/logo.png)
 
 ## Synopsis
 
