@@ -158,18 +158,20 @@ you with its findings.
  - Pause/resume functionality.
  - High performance asynchronous HTTP requests.
     - With adjustable concurrency.
- - Open [distributed architecture](https://github.com/Arachni/arachni/wiki/Distributed-components).
-    - High-performance/low-bandwidth [communication protocol](https://github.com/Arachni/arachni-rpc).
-    - Multiple clients.
-    - Parallel scans -- Each scan is compartmentalized to its own OS process to
-        take advantage of:
-        - Multi-core/SMP architectures.
-        - OS-level scheduling/restrictions.
-        - Sandboxed failure propagation.
-    - SSL encryption (with optional peer authentication).
-    - Remote monitoring and management.
-    - Experimental support for High Performance Grid configuration, combining
-        the resources of multiple nodes to perform faster scans.
+
+### [Distributed architecture](https://github.com/Arachni/arachni/wiki/Distributed-components)
+
+- High-performance/low-bandwidth [communication protocol](https://github.com/Arachni/arachni-rpc).
+- Multiple clients.
+- Parallel scans -- Each scan is compartmentalized to its own OS process to take
+    advantage of:
+    - Multi-core/SMP architectures.
+    - OS-level scheduling/restrictions.
+    - Sandboxed failure propagation.
+- SSL encryption (with optional peer authentication).
+- Remote monitoring and management.
+- Experimental support for High Performance Grid configuration, combining the
+    resources of multiple nodes to perform faster scans.
 
 ### Crawler
 
