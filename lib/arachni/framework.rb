@@ -304,18 +304,21 @@ class Framework
         # so the sitemap and auditmap will never match and the progress will
         # never get to 100% which may confuse users.
         #
-        redir_sz = spider.redirects.size
+        sitemap_sz =- spider.redirects.size
+        sitemap_sz = 0 if sitemap_sz < 0
 
         # Progress of audit is calculated as:
         #     amount of audited pages / amount of all discovered pages
-        progress = (Float( auditmap_sz ) / ( sitemap_sz - redir_sz ) ) * 100
+        progress = (Float( auditmap_sz ) / sitemap_sz) * 100
 
+        progress = Float( sprintf( '%.2f', progress ) ) rescue 0.0
 
-        progress = Float( sprintf( "%.2f", progress ) ) rescue 0.0
-
-        # sometimes progress may slightly exceed 100%
-        # which can cause a few strange stuff to happen
+        # Sometimes progress may slightly exceed 100% which can cause a few
+        # strange stuff to happen.
         progress = 100.0 if progress > 100.0
+
+        # Make sure to keep weirdness at bay.
+        progress = 0.0 if progress < 0.0
 
         pb = Mixins::ProgressBar.eta( progress, @opts.start_datetime )
 
