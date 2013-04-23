@@ -221,7 +221,7 @@ Can extract and analyze:
 
 #### Available modules (security checks)
 
-Modules are the system components which perform the security checks and log issues.
+Modules are system components which perform security checks and log issues.
 
 ##### Audit (Active)
 
