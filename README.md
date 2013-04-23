@@ -153,9 +153,8 @@ you with its findings.
  - Custom 404 page detection.
  - Highlighted command line output.
  - UI abstraction:
-    - Command line UI
-    - [Web UI](https://github.com/Arachni/arachni-ui-web) (Utilizing the Client -
-        Dispatcher RPC infrastructure)
+    - [Command-line Interface](https://github.com/Arachni/arachni/wiki/Executables).
+    - [Web User Interface](https://github.com/Arachni/arachni-ui-web).
  - Pause/resume functionality.
  - High performance asynchronous HTTP requests.
     - With adjustable concurrency.
