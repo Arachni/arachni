@@ -215,108 +215,124 @@ Can extract and analyze:
  - Helper audit methods:
     - For form, link, cookie and header auditing.
     - A wide range of injection strings/input combinations.
-    - For taint analysis, timing attacks, differential analysis, server-side file/directory detection and more.
+    - For taint analysis, timing attacks, differential analysis, server-side
+        file/directory detection and more.
     - Writing RFI, SQL injection, XSS etc modules is a matter of minutes, if not seconds.
- - Currently available modules:
-    - Audit:
-        - SQL injection (Oracle, ColdFusion, InterBase, PostgreSQL, MySQL, MSSQL, EMC, SQLite, DB2, Informix)
-        - Blind SQL injection using rDiff analysis
-        - Blind SQL injection using timing attacks (MySQL, PostgreSQL, MSSQL
-        - CSRF detection
-        - Code injection (PHP, Ruby, Python, JSP, ASP.NET)
-        - Blind code injection using timing attacks (PHP, Ruby, Python, JSP, ASP.NET)
-        - LDAP injection
-        - Path traversal (*nix, Windows)
-        - Response splitting
-        - OS command injection (*nix, Windows)
-        - Blind OS command injection using timing attacks (*nix, Windows)
-        - Remote file inclusion
-        - Unvalidated redirects
-        - XPath injection (Generic, PHP, Java, dotNET, libXML2)
-        - Path XSS
-        - XSS
-        - XSS in event attributes of HTML elements
-        - XSS in HTML tags
-        - XSS in HTML 'script' tags
-    - Recon:
-        - Allowed HTTP methods
-        - Back-up files
-        - Common directories
-        - Common files
-        - HTTP PUT
-        - Insufficient Transport Layer Protection for password forms
-        - WebDAV detection
-        - HTTP TRACE detection
-        - Credit Card number disclosure
-        - CVS/SVN user disclosure
-        - Private IP address disclosure
-        - Common backdoors
-        - .htaccess LIMIT misconfiguration
-        - Interesting responses
-        - HTML object grepper
-        - E-mail address disclosure
-        - US Social Security Number disclosure
-        - Forceful directory listing
-        - Mixed Resource/Scripting
-        - Insecure cookies
-        - HttpOnly cookies
-        - Auto-complete for password form fields
+
+#### Available modules (security checks)
+
+Modules are the system components which perform the security checks and log issues.
+
+##### Audit (Active)
+
+Audit modules actively engage the web application via its inputs.
+
+- SQL injection (Oracle, ColdFusion, InterBase, PostgreSQL, MySQL, MSSQL, EMC, SQLite, DB2, Informix)
+- Blind SQL injection using rDiff analysis
+- Blind SQL injection using timing attacks (MySQL, PostgreSQL, MSSQL
+- CSRF detection
+- Code injection (PHP, Ruby, Python, JSP, ASP.NET)
+- Blind code injection using timing attacks (PHP, Ruby, Python, JSP, ASP.NET)
+- LDAP injection
+- Path traversal (*nix, Windows)
+- Response splitting
+- OS command injection (*nix, Windows)
+- Blind OS command injection using timing attacks (*nix, Windows)
+- Remote file inclusion
+- Unvalidated redirects
+- XPath injection (Generic, PHP, Java, dotNET, libXML2)
+- Path XSS
+- XSS
+- XSS in event attributes of HTML elements
+- XSS in HTML tags
+- XSS in HTML 'script' tags
+
+##### Recon (Passive)
+
+Recon modules look for the existence of files, folders and signatures.
+
+- Allowed HTTP methods
+- Back-up files
+- Common directories
+- Common files
+- HTTP PUT
+- Insufficient Transport Layer Protection for password forms
+- WebDAV detection
+- HTTP TRACE detection
+- Credit Card number disclosure
+- CVS/SVN user disclosure
+- Private IP address disclosure
+- Common backdoors
+- .htaccess LIMIT misconfiguration
+- Interesting responses
+- HTML object grepper
+- E-mail address disclosure
+- US Social Security Number disclosure
+- Forceful directory listing
+- Mixed Resource/Scripting
+- Insecure cookies
+- HttpOnly cookies
+- Auto-complete for password form fields
 
 ### Report Management
 
  - Modular design.
- - Currently available reports:
-    - Standard output
-    - HTML
-    - XML
-    - TXT
-    - AFR -- The default Arachni Framework Report format.
-    - JSON
-    - Marshal
-    - YAML
-    - Metareport -- Providing Metasploit integration to allow for [automated and
-        assisted exploitation](http://arachni.github.com/arachni/file.EXPLOITATION.html).
+
+#### Available reports
+
+- Standard output
+- HTML
+- XML
+- TXT
+- AFR -- The default Arachni Framework Report format.
+- JSON
+- Marshal
+- YAML
+- Metareport -- Providing Metasploit integration to allow for [automated and
+    assisted exploitation](http://arachni.github.com/arachni/file.EXPLOITATION.html).
 
 ### Plug-in Management
 
- - Modular design
+ - Modular design.
  - Plug-ins are framework demi-gods, they have direct access to the framework instance.
- - Can be used to add any functionality to Arachni.
- - Currently available plugins:
-    - ReScan -- It uses the AFR report of a previous scan to extract the sitemap
-        in order to avoid a redundant crawl.
-    - Passive Proxy -- Analyzes requests and responses between the web app and
-        the browser assisting in AJAX audits, logging-in and/or restricting the scope of the audit
-    - Form based AutoLogin
-    - Dictionary attacker for HTTP Auth
-    - Dictionary attacker for form based authentication
-    - Profiler -- Performs taint analysis (with benign inputs) and response time analysis
-    - Cookie collector -- Keeps track of cookies while establishing a timeline of changes
-    - Healthmap -- Generates sitemap showing the health of each crawled/audited URL
-    - Content-types -- Logs content-types of server responses aiding in the
-        identification of interesting (possibly leaked) files
-    - WAF (Web Application Firewall) Detector -- Establishes a baseline of
-        normal behavior and uses rDiff analysis to determine if malicious inputs cause any behavioral changes
-    - AutoThrottle -- Dynamically adjusts HTTP throughput during the scan for
-        maximum bandwidth utilization
-    - TimingAttacks -- Provides a notice for issues uncovered by timing attacks
-        when the affected audited pages returned unusually high response times to begin with.</br>
-         It also points out the danger of DoS attacks against pages that perform heavy-duty processing.
-    - Uniformity -- Reports inputs that are uniformly vulnerable across a number
-        of pages hinting to the lack of a central point of input sanitization.
-    - Discovery -- Performs anomaly detection on issues logged by discovery
-        modules and warns of the possibility of false positives where applicable.
-    - BeepNotify -- Beeps when the scan finishes.
-    - LibNotify -- Uses the libnotify library to send notifications for each
-        discovered issue and a summary at the end of the scan.
-    - EmailNotify -- Sends a notification (and optionally a report) over SMTP at
-        the end of the scan.
-    - Resolver -- Resolves vulnerable hostnames to IP addresses.
-    - VectorFeed -- Reads in vector data from which it creates elements to be
-        audited. Can be used to perform extremely specialized/narrow audits on a per vector/element basis.
-        Useful for unit-testing or a gazillion other things.
-    - Script -- Loads and runs an external Ruby script under the scope of a plugin,
-        used for debugging and general hackery.
+ - Can be used to add abstract functionality to Arachni.
+
+#### Available plugins
+
+- ReScan -- It uses the AFR report of a previous scan to extract the sitemap
+    in order to avoid a redundant crawl.
+- Passive Proxy -- Analyzes requests and responses between the web app and
+    the browser assisting in AJAX audits, logging-in and/or restricting the scope of the audit
+- Form based AutoLogin
+- Dictionary attacker for HTTP Auth
+- Dictionary attacker for form based authentication
+- Profiler -- Performs taint analysis (with benign inputs) and response time analysis
+- Cookie collector -- Keeps track of cookies while establishing a timeline of changes
+- Healthmap -- Generates sitemap showing the health of each crawled/audited URL
+- Content-types -- Logs content-types of server responses aiding in the
+    identification of interesting (possibly leaked) files
+- WAF (Web Application Firewall) Detector -- Establishes a baseline of
+    normal behavior and uses rDiff analysis to determine if malicious inputs cause any behavioral changes
+- AutoThrottle -- Dynamically adjusts HTTP throughput during the scan for
+    maximum bandwidth utilization
+- TimingAttacks -- Provides a notice for issues uncovered by timing attacks
+    when the affected audited pages returned unusually high response times to begin with.</br>
+     It also points out the danger of DoS attacks against pages that perform heavy-duty processing.
+- Uniformity -- Reports inputs that are uniformly vulnerable across a number
+    of pages hinting to the lack of a central point of input sanitization.
+- Discovery -- Performs anomaly detection on issues logged by discovery
+    modules and warns of the possibility of false positives where applicable.
+- BeepNotify -- Beeps when the scan finishes.
+- LibNotify -- Uses the libnotify library to send notifications for each
+    discovered issue and a summary at the end of the scan.
+- EmailNotify -- Sends a notification (and optionally a report) over SMTP at
+    the end of the scan.
+- Resolver -- Resolves vulnerable hostnames to IP addresses.
+- VectorFeed -- Reads in vector data from which it creates elements to be
+    audited. Can be used to perform extremely specialized/narrow audits on a per vector/element basis.
+    Useful for unit-testing or a gazillion other things.
+- Script -- Loads and runs an external Ruby script under the scope of a plugin,
+    used for debugging and general hackery.
 
 ### Trainer subsystem
 
