@@ -159,7 +159,7 @@ you with its findings.
  - High performance asynchronous HTTP requests.
     - With adjustable concurrency.
 
-### [Distributed architecture](https://github.com/Arachni/arachni/wiki/Distributed-components)
+### Open [distributed architecture](https://github.com/Arachni/arachni/wiki/Distributed-components)
 
 - High-performance/low-bandwidth [communication protocol](https://github.com/Arachni/arachni-rpc).
 - Multiple clients.
