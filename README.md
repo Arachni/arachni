@@ -151,7 +151,6 @@ you with its findings.
  - Automatic log-out detection and re-login during the audit (when the initial
     login was performed via the AutoLogin plugin).
  - Custom 404 page detection.
- - Highlighted command line output.
  - UI abstraction:
     - [Command-line Interface](https://github.com/Arachni/arachni/wiki/Executables).
     - [Web User Interface](https://github.com/Arachni/arachni-ui-web).
