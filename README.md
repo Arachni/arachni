@@ -227,52 +227,89 @@ Modules are system components which perform security checks and log issues.
 
 Audit modules actively engage the web application via its inputs.
 
-- SQL injection (Oracle, ColdFusion, InterBase, PostgreSQL, MySQL, MSSQL, EMC, SQLite, DB2, Informix)
-- Blind SQL injection using rDiff analysis
-- Blind SQL injection using timing attacks (MySQL, PostgreSQL, MSSQL
-- CSRF detection
-- Code injection (PHP, Ruby, Python, JSP, ASP.NET)
-- Blind code injection using timing attacks (PHP, Ruby, Python, JSP, ASP.NET)
-- LDAP injection
-- Path traversal (*nix, Windows)
-- Response splitting
-- OS command injection (*nix, Windows)
-- Blind OS command injection using timing attacks (*nix, Windows)
-- Remote file inclusion
-- Unvalidated redirects
-- XPath injection (Generic, PHP, Java, dotNET, libXML2)
-- Path XSS
-- XSS
-- XSS in event attributes of HTML elements
-- XSS in HTML tags
-- XSS in HTML 'script' tags
+- SQL injection (`sqli`) -- Error based vulnerability detection.
+    - Oracle
+    - ColdFusion
+    - InterBase
+    - PostgreSQL
+    - MySQL
+    - MSSQL
+    - EMC
+    - SQLite
+    - DB2
+    - Informix
+- Blind SQL injection using rDiff analysis (`sqli_blind_rdiff`).
+- Blind SQL injection using timing attacks (`sqli_blind_timing`).
+    - MySQL
+    - PostgreSQL
+    - MSSQL
+- CSRF detection (`csrf`).
+- Code injection (`code_injection`).
+    - PHP
+    - Ruby
+    - Python
+    - JSP
+    - ASP.NET
+- Blind code injection using timing attacks (`code_injection_timing`).
+    - PHP
+    - Ruby
+    - Python
+    - JSP
+    - ASP.NET
+- LDAP injection (`ldapi`).
+- Path traversal (`path_traversal`).
+    - *nix
+    - Windows
+    - Tomcat
+- Response splitting (`response_splitting`).
+- OS command injection (`os_cmd_injection`).
+    - *nix
+    - Windows
+- Blind OS command injection using timing attacks (`os_cmd_injection_timing`).
+    - Linux
+    - *BSD
+    - Solaris
+    - Windows
+- Remote file inclusion (`rfi`).
+- Unvalidated redirects (`unvalidated_redirect`).
+- XPath injection (`xpath`).
+    - Generic
+    - PHP
+    - Java
+    - dotNET
+    - libXML2
+- XSS (`xss`).
+- Path XSS (`xss_path`).
+- XSS in event attributes of HTML elements (`xss_event`).
+- XSS in HTML tags (`xss_tag`).
+- XSS in HTML 'script' tags  (`xss_script_tag`).
 
 ##### Recon (Passive)
 
 Recon modules look for the existence of files, folders and signatures.
 
-- Allowed HTTP methods
-- Back-up files
-- Common directories
-- Common files
-- HTTP PUT
-- Insufficient Transport Layer Protection for password forms
-- WebDAV detection
-- HTTP TRACE detection
-- Credit Card number disclosure
-- CVS/SVN user disclosure
-- Private IP address disclosure
-- Common backdoors
-- .htaccess LIMIT misconfiguration
-- Interesting responses
-- HTML object grepper
-- E-mail address disclosure
-- US Social Security Number disclosure
-- Forceful directory listing
-- Mixed Resource/Scripting
-- Insecure cookies
-- HttpOnly cookies
-- Auto-complete for password form fields
+- Allowed HTTP methods (`allowed_methods`).
+- Back-up files (`backup_files`).
+- Common directories (`common_directories`).
+- Common files (`common_files`).
+- HTTP PUT (`http_put`).
+- Insufficient Transport Layer Protection for password forms (`unencrypted_password_form`).
+- WebDAV detection (`webdav`).
+- HTTP TRACE detection (`xst`).
+- Credit Card number disclosure (`credit_card`).
+- CVS/SVN user disclosure (`cvs_svn_users`).
+- Private IP address disclosure (`private_ip`).
+- Common backdoors (`backdoors`).
+- .htaccess LIMIT misconfiguration (`htaccess_limit`).
+- Interesting responses (`interesting_responses`).
+- HTML object grepper (`html_objects`).
+- E-mail address disclosure (`emails`).
+- US Social Security Number disclosure (`ssn`).
+- Forceful directory listing (`directory_listing`).
+- Mixed Resource/Scripting (`mixed_resource`).
+- Insecure cookies (`insecure_cookies`).
+- HttpOnly cookies (`http_only_cookies`).
+- Auto-complete for password form fields (`password_autocomplete`).
 
 ### Report Management
 
@@ -281,15 +318,15 @@ Recon modules look for the existence of files, folders and signatures.
 #### Available reports
 
 - Standard output
-- HTML
-- XML
-- TXT
-- AFR -- The default Arachni Framework Report format.
-- JSON
-- Marshal
-- YAML
-- Metareport -- Providing Metasploit integration to allow for [automated and
-    assisted exploitation](http://arachni.github.com/arachni/file.EXPLOITATION.html).
+- HTML (`html`).
+- XML (`xml`).
+- TXT (`text`).
+- AFR (`afr`) -- The default Arachni Framework Report format.
+- JSON (`json`)
+- Marshal (`marshal`)
+- YAML (`yaml`)
+- Metareport  (`metareport`) -- Providing Metasploit integration to allow for
+    [automated and assisted exploitation](http://arachni.github.com/arachni/file.EXPLOITATION.html).
 
 ### Plug-in Management
 
@@ -299,40 +336,54 @@ Recon modules look for the existence of files, folders and signatures.
 
 #### Available plugins
 
-- ReScan -- It uses the AFR report of a previous scan to extract the sitemap
+Plugins add extra functionality to the system in a modular fashion, this way the
+core remains lean and makes it easy for anyone to arbitrary functionality.
+
+- ReScan  (`rescan`)-- It uses the AFR report of a previous scan to extract the sitemap
     in order to avoid a redundant crawl.
-- Passive Proxy -- Analyzes requests and responses between the web app and
-    the browser assisting in AJAX audits, logging-in and/or restricting the scope of the audit
-- Form based AutoLogin
-- Dictionary attacker for HTTP Auth
-- Dictionary attacker for form based authentication
-- Profiler -- Performs taint analysis (with benign inputs) and response time analysis
-- Cookie collector -- Keeps track of cookies while establishing a timeline of changes
-- Healthmap -- Generates sitemap showing the health of each crawled/audited URL
-- Content-types -- Logs content-types of server responses aiding in the
-    identification of interesting (possibly leaked) files
-- WAF (Web Application Firewall) Detector -- Establishes a baseline of
-    normal behavior and uses rDiff analysis to determine if malicious inputs cause any behavioral changes
-- AutoThrottle -- Dynamically adjusts HTTP throughput during the scan for
-    maximum bandwidth utilization
-- TimingAttacks -- Provides a notice for issues uncovered by timing attacks
-    when the affected audited pages returned unusually high response times to begin with.</br>
-     It also points out the danger of DoS attacks against pages that perform heavy-duty processing.
-- Uniformity -- Reports inputs that are uniformly vulnerable across a number
-    of pages hinting to the lack of a central point of input sanitization.
-- Discovery -- Performs anomaly detection on issues logged by discovery
-    modules and warns of the possibility of false positives where applicable.
-- BeepNotify -- Beeps when the scan finishes.
-- LibNotify -- Uses the libnotify library to send notifications for each
+- Passive Proxy  (`proxy`) -- Analyzes requests and responses between the web app and
+    the browser assisting in AJAX audits, logging-in and/or restricting the scope of the audit.
+- Form based AutoLogin (`autologin`).
+- Dictionary attacker for HTTP Auth (`http_dicattack`).
+- Dictionary attacker for form based authentication (`form_dicattack`).
+- Profiler (`profiler`) -- Performs taint analysis (with benign inputs) and response time analysis.
+- Cookie collector (`cookie_collector`) -- Keeps track of cookies while establishing a timeline of changes.
+- WAF (Web Application Firewall) Detector (`waf_detector`) -- Establishes a baseline of
+    normal behavior and uses rDiff analysis to determine if malicious inputs cause any behavioral changes.
+- BeepNotify (`beep_notify`) -- Beeps when the scan finishes.
+- LibNotify (`libnotify`) -- Uses the libnotify library to send notifications for each
     discovered issue and a summary at the end of the scan.
-- EmailNotify -- Sends a notification (and optionally a report) over SMTP at
+- EmailNotify (`email_notify`) -- Sends a notification (and optionally a report) over SMTP at
     the end of the scan.
-- Resolver -- Resolves vulnerable hostnames to IP addresses.
-- VectorFeed -- Reads in vector data from which it creates elements to be
+- VectorFeed (`vector_feed`) -- Reads in vector data from which it creates elements to be
     audited. Can be used to perform extremely specialized/narrow audits on a per vector/element basis.
     Useful for unit-testing or a gazillion other things.
-- Script -- Loads and runs an external Ruby script under the scope of a plugin,
+- Script (`script`) -- Loads and runs an external Ruby script under the scope of a plugin,
     used for debugging and general hackery.
+
+#### Defaults
+
+Default plugins will run for every scan and are placed under `/plugins/defaults/`.
+
+- AutoThrottle (`autothrottle`) -- Dynamically adjusts HTTP throughput during the scan for
+    maximum bandwidth utilization.
+- Content-types (`content_types`) -- Logs content-types of server responses aiding in the
+    identification of interesting (possibly leaked) files.
+- Healthmap (`healthmap`) -- Generates sitemap showing the health of each crawled/audited URL
+- Resolver (`resolver`) -- Resolves vulnerable hostnames to IP addresses.
+
+##### Meta
+
+Plugins under `/plugins/defaults/meta/` perform analysis on the scan results
+to determine trustworthiness or just add context information or general insights.
+
+- TimingAttacks (`timing_attacks`) -- Provides a notice for issues uncovered by timing attacks
+    when the affected audited pages returned unusually high response times to begin with.
+    It also points out the danger of DoS attacks against pages that perform heavy-duty processing.
+- Discovery (`discovery`) -- Performs anomaly detection on issues logged by discovery
+    modules and warns of the possibility of false positives where applicable.
+- Uniformity (`uniformity`) -- Reports inputs that are uniformly vulnerable across a number
+    of pages hinting to the lack of a central point of input sanitization.
 
 ### Trainer subsystem
 
