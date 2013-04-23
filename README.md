@@ -154,7 +154,8 @@ you with its findings.
  - Highlighted command line output.
  - UI abstraction:
     - Command line UI
-    - [Web UI](https://github.com/Arachni/arachni-ui-web) (Utilizing the Client - Dispatcher RPC infrastructure)
+    - [Web UI](https://github.com/Arachni/arachni-ui-web) (Utilizing the Client -
+        Dispatcher RPC infrastructure)
  - Pause/resume functionality.
  - High performance asynchronous HTTP requests.
     - With adjustable concurrency.
