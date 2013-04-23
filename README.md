@@ -158,14 +158,15 @@ you with its findings.
  - Pause/resume functionality.
  - High performance asynchronous HTTP requests.
     - With adjustable concurrency.
- - Open [RPC](https://github.com/Arachni/arachni/wiki/RPC-API) Client/Dispatcher Infrastructure
-    - [Distributed deployment](https://github.com/Arachni/arachni/wiki/Distributed-components)
-    - Multiple clients
-    - Parallel scans
-    - SSL encryption (with peer authentication)
-    - Remote monitoring
-    - Support for High Performance Grid configuration, combining the resources
-        of multiple nodes to perform faster scans.
+ - Open [RPC](https://github.com/Arachni/arachni/wiki/RPC-API) Client/Dispatcher Infrastructure.
+    - [Distributed deployment](https://github.com/Arachni/arachni/wiki/Distributed-components).
+    - High-performance/low-bandwidth communication protocol.
+    - Multiple clients.
+    - Parallel scans.
+    - SSL encryption (with peer authentication).
+    - Remote monitoring.
+    - Experimental support for High Performance Grid configuration, combining
+        the resources of multiple nodes to perform faster scans.
 
 ### Crawler
 
