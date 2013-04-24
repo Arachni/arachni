@@ -135,9 +135,9 @@ class URI
         CACHE[__method__][url] ||= begin
             new( url )
         rescue => e
-            print_error "Failed to parse '#{url}'."
-            #print_error "Error: #{e}"
-            #print_error_backtrace( e )
+            print_debug "Failed to parse '#{url}'."
+            print_debug "Error: #{e}"
+            print_debug_backtrace( e )
             nil
         end
     end
@@ -161,9 +161,9 @@ class URI
             begin
                 parser.parse( normalize( url ).dup )
             rescue => e
-                print_error "Failed to parse '#{url}'."
-                #print_error "Error: #{e}"
-                #print_error_backtrace( e )
+                print_debug "Failed to parse '#{url}'."
+                print_debug "Error: #{e}"
+                print_debug_backtrace( e )
                 nil
             end
         end
@@ -309,15 +309,15 @@ class URI
             cache[c_url] = components.freeze
         rescue => e
             begin
-                print_error "Failed to fast-parse '#{c_url}', falling back to slow-parse."
-                #print_error "Error: #{e}"
-                #print_error_backtrace( e )
+                print_debug "Failed to fast-parse '#{c_url}', falling back to slow-parse."
+                print_debug "Error: #{e}"
+                print_debug_backtrace( e )
 
                 cache[c_url] = addressable_parse( c_url ).freeze
             rescue => ex
-                print_error "Failed to parse '#{c_url}'."
-                #print_error "Error: #{ex}"
-                #print_error_backtrace( ex )
+                print_debug "Failed to parse '#{c_url}'."
+                print_debug "Error: #{ex}"
+                print_debug_backtrace( ex )
 
                 cache[c_url] = :err
                 nil
@@ -394,10 +394,7 @@ class URI
             relative = "#{parsed_ref.scheme}:#{relative}" if relative.start_with?( '//' )
 
             cache[key] = parse( relative ).to_absolute( parsed_ref ).to_s.freeze
-        rescue# => e
-              #ap relative
-              #ap e
-              #ap e.backtrace
+        rescue
             cache[key] = :err
             nil
         end
@@ -432,7 +429,6 @@ class URI
 
             components = cheap_parse( url )
 
-            #ap components
             normalized = ''
             normalized << components[:scheme] + '://' if components[:scheme]
 
@@ -451,9 +447,9 @@ class URI
 
             cache[c_url] = normalized.freeze
         rescue => e
-            print_error "Failed to normalize '#{c_url}'."
-            #print_error "Error: #{e}"
-            #print_error_backtrace( e )
+            print_debug "Failed to normalize '#{c_url}'."
+            print_debug "Error: #{e}"
+            print_debug_backtrace( e )
 
             cache[c_url] = :err
             nil
