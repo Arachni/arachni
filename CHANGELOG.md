@@ -1,6 +1,7 @@
 # ChangeLog
 
-## _Under development_
+## Version 0.4.2 _(April 26, 2013)_
+
 - Options
   - Added ```--https-only``` to disallow downgrades to HTTP when the seed URL uses HTTPS.
   - Added ```--exclude-page``` to exclude pages whose bodies match the given patterns.
