@@ -304,7 +304,7 @@ class Framework
         # so the sitemap and auditmap will never match and the progress will
         # never get to 100% which may confuse users.
         #
-        sitemap_sz =- spider.redirects.size
+        sitemap_sz -= spider.redirects.size
         sitemap_sz = 0 if sitemap_sz < 0
 
         # Progress of audit is calculated as:
