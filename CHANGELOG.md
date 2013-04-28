@@ -43,7 +43,7 @@
   - ```Dispatcher```
       - Added ```#workload_score``` returning the workload score of a Dispatcher as a ```Float```.
       - Workload score calculation no longer uses CPU/RAM resource usage (since
-        that data is not available cross-platform) but instead the amount of running
+        that data is not available on all platforms) but instead the amount of running
         instances and node weight.
 - Trainer -- Added a hard-limit for trainings per page to avoid time-consuming loops.
 - Spider
