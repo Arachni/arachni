@@ -1,5 +1,7 @@
 # ChangeLog
 
+## _Under development_
+
 ## Version 0.4.2 _(April 26, 2013)_
 
 - Options
