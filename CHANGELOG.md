@@ -31,8 +31,7 @@
           - ```#report_as``` --  Returns the scan report in one of the available formats (as a ```String```).
           - ```#shutdown``` -- Shuts down the Instance/stops the scan.
       - ```framework``` -- Clients no longer need to call ```framework.clean_up``` unless you're cancelling a running scan.
-  - Protocol -- Now supports both ```Marshal``` and ```YAML``` automatically
-        (thanks to the updated [v0.1.3dev Arachni-RPC EM implementation](https://github.com/Arachni/arachni-rpc-em)).
+  - Protocol -- Now supports both ```Marshal``` and ```YAML``` automatically.
       - ```Marshal``` by default since it's many times faster than ```YAML```.
       - ```YAML``` as an automatic fallback in order to maintain backwards compatibility and ease of integration with 3rd parties.
           - Updated to use the Ruby-default ```Psych``` engine.
