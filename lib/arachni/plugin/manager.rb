@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,12 +17,17 @@
 module Arachni
 
 #
-# The namespace under which all plugins exist
+# The namespace under which all plugins exist.
 #
 module Plugins
 end
 
 module Plugin
+
+class Error < Arachni::Error
+    class UnsatisfiedDependency < Error
+    end
+end
 
 #
 # Holds and manages the plugins.
@@ -90,7 +95,8 @@ class Manager < Arachni::Component::Manager
                     print_bad( "\tgem install #{deps}" )
                 end
 
-                fail "Plug-in dependencies not met: #{name} -- #{deps}"
+                fail Error::UnsatisfiedDependency,
+                     "Plug-in dependencies not met: #{name} -- #{deps}"
             end
 
             opts = @framework.opts.plugins[name]

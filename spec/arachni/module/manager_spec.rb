@@ -17,7 +17,7 @@ describe Arachni::Module::Manager do
     end
 
     describe '#load' do
-        it 'should load all modules' do
+        it 'loads all modules' do
             all = @modules.load_all
             all.size.should equal 3
             all.sort.should == @modules.keys.sort
@@ -25,7 +25,7 @@ describe Arachni::Module::Manager do
     end
 
     describe '#schedule' do
-        it 'should use each module\'s #preferred return value to sort the modules in proper running order' do
+        it 'uses each module\'s #preferred return value to sort the modules in proper running order' do
             # load them in the wrong order
             @modules.load :test2
             @modules.load :test3
@@ -50,7 +50,7 @@ describe Arachni::Module::Manager do
     end
 
     describe '#run' do
-        it 'should run all modules' do
+        it 'runs all modules' do
             @modules.load_all
             @modules.run( @page )
             results = @modules.results
@@ -60,7 +60,7 @@ describe Arachni::Module::Manager do
     end
 
     describe '#run_one' do
-        it 'should run a single module' do
+        it 'runs a single module' do
             @modules.load :test
             @modules.run_one( @modules.values.first, @page )
             results = @modules.results
@@ -70,13 +70,13 @@ describe Arachni::Module::Manager do
     end
 
     describe '#register_results' do
-        it 'should register an array of issues' do
+        it 'registers an array of issues' do
             @modules.register_results( [ @issue ] )
             @modules.results.any?.should be true
         end
 
         context 'when an issue was discovered by manipulating an input' do
-            it 'should not register redundant issues' do
+            it 'does not register redundant issues' do
                 i = @issue.deep_clone
                 i.var = 'some input'
                 2.times { @modules.register_results( [ i ] ) }
@@ -85,7 +85,7 @@ describe Arachni::Module::Manager do
         end
 
         context 'when an issue was not discovered by manipulating an input' do
-            it 'should register it multiple times' do
+            it 'registers it multiple times' do
                 2.times { @modules.register_results( [ @issue ] ) }
                 @modules.results.size.should be 2
             end
@@ -93,18 +93,16 @@ describe Arachni::Module::Manager do
     end
 
     describe '#on_register_results' do
-        it 'should register callbacks to be executed on new results' do
+        it 'registers callbacks to be executed on new results' do
             callback_called = false
-            @modules.on_register_results {
-                callback_called = true
-            }
+            @modules.on_register_results { callback_called = true }
             @modules.register_results( [ @issue ] )
             callback_called.should be true
         end
     end
 
     describe '#do_not_store' do
-        it 'should not store results' do
+        it 'does not store results' do
             @modules.do_not_store
             @modules.register_results( [ @issue ] )
             @modules.results.empty?.should be true
@@ -113,12 +111,12 @@ describe Arachni::Module::Manager do
     end
 
     describe '#results' do
-        it 'should return the registered results' do
+        it 'returns the registered results' do
             @modules.register_results( [ @issue ] )
             @modules.results.empty?.should be false
         end
 
-        it 'should be aliased to #issues' do
+        it 'aliased to #issues' do
             @modules.register_results( [ @issue ] )
             @modules.results.empty?.should be false
             @modules.results.should == @modules.issues
@@ -126,12 +124,12 @@ describe Arachni::Module::Manager do
     end
 
     describe '.results' do
-        it 'should return the registered results' do
+        it 'returns the registered results' do
             @modules.register_results( [ @issue ] )
             @modules.class.results.empty?.should be false
         end
 
-        it 'should be aliased to #issues' do
+        it 'aliased to #issues' do
             @modules.register_results( [ @issue ] )
             @modules.class.results.empty?.should be false
             @modules.class.results.should == @modules.class.issues
@@ -139,14 +137,14 @@ describe Arachni::Module::Manager do
     end
 
     describe '#register_results' do
-        it 'should register the given issues' do
+        it 'registers the given issues' do
             @modules.register_results( [ @issue ] )
             @modules.results.empty?.should be false
         end
     end
 
     describe '.register_results' do
-        it 'should register the given issues' do
+        it 'registers the given issues' do
             @modules.register_results( [ @issue ] )
             @modules.class.results.empty?.should be false
         end

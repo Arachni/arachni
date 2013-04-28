@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -157,12 +157,14 @@ class Cookie < Arachni::Element::Base
     #    #=> 1970-01-01 02:00:01 +0200
     #
     #
-    # @return   [Time, NilClass]    expiration +Time+ of the cookie or +nil+ if it
-    #                               doesn't have one (i.e. is a session cookie)
+    # @return   [Time, NilClass]
+    #   Expiration `Time` of the cookie or `nil` if it doesn't have one
+    #   (i.e. is a session cookie).
     #
     def expires_at
         expires
     end
+
     #
     # Indicates whether or not the cookie has expired.
     #
@@ -196,7 +198,7 @@ class Cookie < Arachni::Element::Base
     #    p Cookie.from_set_cookie( 'http://owner-url.com', 'session=stuffstuffstuff; Expires=Thu, 01 Jan 1970 00:00:01 GMT' ).first.expired?( future_time )
     #    #=> true
     #
-    # @param    [Time]    time    to compare against
+    # @param    [Time]    time    To compare against.
     #
     # @return [Boolean]
     #
@@ -210,25 +212,23 @@ class Cookie < Arachni::Element::Base
     #    #=> {"session"=>"stuffstuffstuff"}
     #
     #
-    # @return   [Hash]    simple representation of the cookie as a hash with the
-    #                     cookie name as key and the cookie value as value.
+    # @return   [Hash]
+    #   Simple representation of the cookie as a hash -- with the cookie name as
+    #   `key` and the cookie value as `value`.
     def simple
         self.auditable.dup
     end
 
-    # @return   [String]    name of the current element, 'cookie' in this case.
+    # @return   [String]    Name of the current element, 'cookie' in this case.
+    # @see Arachni::Element::COOKIE
     def type
         Arachni::Element::COOKIE
     end
 
     def dup
-        d = super
-        d.action = self.action
-        d
+        super.tap { |d| d.action = self.action }
     end
 
-    #
-    # Sets auditable inputs as a key=>value pair.
     #
     # @example
     #    p c = Cookie.from_set_cookie( 'http://owner-url.com', 'session=stuffstuffstuff' ).first
@@ -244,7 +244,7 @@ class Cookie < Arachni::Element::Base
     #    #=> new-name=new-value
     #
     #
-    # @param    [Hash]  inputs   name => value pair
+    # @param    [Hash]  inputs   Sets auditable inputs.
     #
     def auditable=( inputs )
         k = inputs.keys.first.to_s
@@ -264,8 +264,8 @@ class Cookie < Arachni::Element::Base
     end
 
     #
-    # Overrides {Capabilities::Mutable#mutations} to handle cookie-specific limitations
-    # and the {Arachni::Options#audit_cookies_extensively} option.
+    # Overrides {Capabilities::Mutable#mutations} to handle cookie-specific
+    # limitations and the {Arachni::Options#audit_cookies_extensively} option.
     #
     #     c = Cookie.from_set_cookie( 'http://owner-url.com', 'session=stuffstuffstuff' ).first
     #
@@ -462,7 +462,7 @@ class Cookie < Arachni::Element::Base
     # @return   [Bool]
     #
     def respond_to?( sym )
-        @raw.include?( sym.to_s ) || super( sym )
+        (@raw && @raw.include?( sym.to_s )) || super( sym )
     end
 
     #
@@ -474,14 +474,14 @@ class Cookie < Arachni::Element::Base
     #    #=> "%25+%3B+freaky+name=freaky+value%3B%25"
     #
     #
-    # @return   [String]    to be used in a 'Cookie' request header. (name=value)
+    # @return   [String]    To be used in a `Cookie` HTTP request header.
     #
     def to_s
         "#{encode( name )}=#{encode( value )}"
     end
 
     #
-    # Returns an array of cookies from an Netscape HTTP cookiejar file.
+    # Parses a Netscape Cookie-jar into an Array of {Cookie}.
     #
     # @example Parsing a Netscape HTTP cookiejar file
     #
@@ -593,6 +593,8 @@ class Cookie < Arachni::Element::Base
     #
     # @return   [Array<Cookie>]
     #
+    # @see http://curl.haxx.se/rfc/cookie_spec.html
+    #
     def self.from_file( url, filepath )
         File.open( filepath, 'r' ).map do |line|
             # skip empty lines
@@ -616,7 +618,7 @@ class Cookie < Arachni::Element::Base
     end
 
     #
-    # Converts a cookie's expiration date to a Ruby +Time+ object.
+    # Converts a cookie's expiration date to a Ruby `Time` object.
     #
     # @example String time format
     #    p Cookie.expires_to_time "Tue, 02 Oct 2012 19:25:57 GMT"
@@ -639,8 +641,7 @@ class Cookie < Arachni::Element::Base
     end
 
     #
-    # Returns an array of cookies from an HTTP response.
-    #
+    # Extracts cookies from an HTTP {Typhoeus::Response response}.
     #
     # @example
     #    body = <<-HTML
@@ -755,8 +756,8 @@ class Cookie < Arachni::Element::Base
     #
     # @return   [Array<Cookie>]
     #
-    # @see from_document
-    # @see from_headers
+    # @see .from_document
+    # @see .from_headers
     #
     def self.from_response( response )
         ( from_document( response.effective_url, response.body ) |
@@ -764,7 +765,7 @@ class Cookie < Arachni::Element::Base
     end
 
     #
-    # Returns an array of cookies from a document based on +Set-Cookie+ http-equiv meta tags.
+    # Extracts cookies from a document based on `Set-Cookie` `http-equiv` meta tags.
     #
     # @example
     #
@@ -843,12 +844,12 @@ class Cookie < Arachni::Element::Base
     #    #     >
     #    # ]
     #
-    # @param    [String]    url     owner URL
+    # @param    [String]    url     Owner URL.
     # @param    [String, Nokogiri::HTML::Document]    document
     #
     # @return   [Array<Cookie>]
     #
-    # @see parse_set_cookie
+    # @see .parse_set_cookie
     #
     def self.from_document( url, document )
         # optimizations in case there are no cookies in the doc,
@@ -872,7 +873,7 @@ class Cookie < Arachni::Element::Base
     end
 
     #
-    # Returns an array of cookies from the +Set-Cookie+ header field.
+    # Extracts cookies from the `Set-Cookie` HTTP response header field.
     #
     # @example
     #    p Cookie.from_headers 'http://owner-url.com', { 'Set-Cookie' => "coo%40ki+e2=blah+val2%40" }
@@ -915,7 +916,7 @@ class Cookie < Arachni::Element::Base
     #
     # @return   [Array<Cookie>]
     #
-    # @see forms_set_cookie
+    # @see .forms_set_cookie
     #
     def self.from_headers( url, headers )
         set_strings = []
@@ -928,7 +929,7 @@ class Cookie < Arachni::Element::Base
     end
 
     #
-    # Parses the +Set-Cookie+ header value into cookie elements.
+    # Parses the `Set-Cookie` header value into cookie elements.
     #
     # @example
     #    p Cookie.from_set_cookie 'http://owner-url.com', "coo%40ki+e2=blah+val2%40"
@@ -967,8 +968,8 @@ class Cookie < Arachni::Element::Base
     #    # ]
     #
     #
-    # @param    [String]    url     request URL
-    # @param    [Hash]      str     +Set-Cookie+ string
+    # @param    [String]    url     Request URL.
+    # @param    [Hash]      str     `Set-Cookie` string
     #
     # @return   [Array<Cookie>]
     #
@@ -991,16 +992,127 @@ class Cookie < Arachni::Element::Base
     end
 
     #
-    # Encodes a {String}'s reserved characters in order to prepare it for
-    # the 'Cookie' header field.
+    # Parses a string formatted for the `Cookie` HTTP request header field
+    # into cookie elements.
     #
-    # #example
+    # @example
+    #    p Cookie.from_string 'http://owner-url.com', "coo%40ki+e2=blah+val2%40;name=value;name2=value2"
+    #    #=> [coo@ki+e2=blah+val2@, name=value, name2=value2]
+    #
+    #     # Fancy dump:
+    #     #     [
+    #     #         [0] #<Arachni::Element::Cookie:0x01c31558
+    #     #             attr_accessor :action = "http://owner-url.com/",
+    #     #             attr_accessor :auditable = {
+    #     #                 "coo@ki e2" => "blah val2@"
+    #     #             },
+    #     #             attr_accessor :method = "get",
+    #     #             attr_accessor :url = "http://owner-url.com/",
+    #     #             attr_reader :hash = 3934200888666098208,
+    #     #             attr_reader :opts = {},
+    #     #             attr_reader :orig = {
+    #     #                 "coo@ki e2" => "blah val2@"
+    #     #             },
+    #     #             attr_reader :raw = {
+    #     #                 "coo@ki e2" => "blah val2@",
+    #     #                     "name" => "coo@ki e2",
+    #     #                     "value" => "blah val2@",
+    #     #                     "version" => 0,
+    #     #                     "port" => nil,
+    #     #                     "discard" => nil,
+    #     #                 "comment_url" => nil,
+    #     #                     "expires" => nil,
+    #     #                     "max_age" => nil,
+    #     #                     "comment" => nil,
+    #     #                     "secure" => nil,
+    #     #                     "path" => "/",
+    #     #                     "domain" => "owner-url.com",
+    #     #                 "httponly" => false
+    #     #             }
+    #     #         >,
+    #     #         [1] #<Arachni::Element::Cookie:0x01b17fc8
+    #     #             attr_accessor :action = "http://owner-url.com/",
+    #     #             attr_accessor :auditable = {
+    #     #                 "name" => "value"
+    #     #             },
+    #     #             attr_accessor :method = "get",
+    #     #             attr_accessor :url = "http://owner-url.com/",
+    #     #             attr_reader :hash = -2610555034726366868,
+    #     #             attr_reader :opts = {},
+    #     #             attr_reader :orig = {
+    #     #                 "name" => "value"
+    #     #             },
+    #     #             attr_reader :raw = {
+    #     #                     "name" => "name",
+    #     #                     "value" => "value",
+    #     #                     "version" => 0,
+    #     #                     "port" => nil,
+    #     #                     "discard" => nil,
+    #     #                 "comment_url" => nil,
+    #     #                     "expires" => nil,
+    #     #                     "max_age" => nil,
+    #     #                     "comment" => nil,
+    #     #                     "secure" => nil,
+    #     #                     "path" => "/",
+    #     #                     "domain" => "owner-url.com",
+    #     #                 "httponly" => false
+    #     #             }
+    #     #         >,
+    #     #         [2] #<Arachni::Element::Cookie:0x01767b08
+    #     #             attr_accessor :action = "http://owner-url.com/",
+    #     #             attr_accessor :auditable = {
+    #     #                 "name2" => "value2"
+    #     #             },
+    #     #             attr_accessor :method = "get",
+    #     #             attr_accessor :url = "http://owner-url.com/",
+    #     #             attr_reader :hash = 3819162339364446155,
+    #     #             attr_reader :opts = {},
+    #     #             attr_reader :orig = {
+    #     #                 "name2" => "value2"
+    #     #             },
+    #     #             attr_reader :raw = {
+    #     #                     "name2" => "value2",
+    #     #                     "name" => "name2",
+    #     #                     "value" => "value2",
+    #     #                     "version" => 0,
+    #     #                     "port" => nil,
+    #     #                     "discard" => nil,
+    #     #                 "comment_url" => nil,
+    #     #                     "expires" => nil,
+    #     #                     "max_age" => nil,
+    #     #                     "comment" => nil,
+    #     #                     "secure" => nil,
+    #     #                     "path" => "/",
+    #     #                     "domain" => "owner-url.com",
+    #     #                 "httponly" => false
+    #     #             }
+    #     #         >
+    #     #     ]
+    #
+    #
+    # @param    [String]    url     Request URL.
+    # @param    [Hash]      string  `Set-Cookie` string.
+    #
+    # @return   [Array<Cookie>]
+    #
+    def self.from_string( url, string )
+        string.split( ';' ).map do |cookie_pair|
+            k, v = *cookie_pair.split( '=', 2 )
+            new( url, decode( k.strip ) => decode( v.strip ) )
+        end.flatten.compact
+    end
+
+    #
+    # Encodes a {String}'s reserved characters in order to prepare it for
+    # the `Cookie` header field.
+    #
+    # @example
     #    p Cookie.encode "+;%=\0 "
     #    #=> "%2B%3B%25%3D%00+"
     #
     # @param    [String]    str
     #
-    # @return   [String]    the encoded string
+    # @return   [String]
     #
     def self.encode( str )
         URI.encode( str, "+;%=\0" ).gsub( ' ', '+' )
@@ -1011,7 +1123,7 @@ class Cookie < Arachni::Element::Base
     end
 
     #
-    # Decodes a {String} encoded for the +Cookie+ header field.
+    # Decodes a {String} encoded for the `Cookie` header field.
     #
     # @example
     #    p Cookie.decode "%2B%3B%25%3D%00+"
@@ -1019,7 +1131,7 @@ class Cookie < Arachni::Element::Base
     #
     # @param    [String]    str
     #
-    # @return   [String]    the decoded string
+    # @return   [String]
     #
     def self.decode( str )
         URI.decode( str.gsub( '+', ' ' ) )

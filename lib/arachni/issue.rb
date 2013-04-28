@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -19,16 +19,13 @@ require 'digest/sha2'
 module Arachni
 
 #
-# Represents a detected issues.
+# Represents a detected issue.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Issue
 
-    #
-    # Holds constants to describe the {Issue#severity} of a
-    # vulnerability.
-    #
+    # Holds constants to describe the {Issue#severity} of an Issue.
     module Severity
         HIGH          = 'High'
         MEDIUM        = 'Medium'
@@ -36,187 +33,109 @@ class Issue
         INFORMATIONAL = 'Informational'
     end
 
-    #
-    # The name of the issue
-    #
-    # @return    [String]
-    #
+    # @return    [String]   The name of the issue.
     attr_accessor :name
 
-    #
-    # The module that detected the issue
-    #
-    # @return    [String]    the name of the module
-    #
+    # @return    [String]   The module that detected the issue.
     attr_accessor :mod_name
 
-    #
-    # The vulnerable HTTP variable
-    #
-    # @return    [String]    the name of the http variable
-    #
+    # @return    [String]   The name of the vulnerable input.
     attr_accessor :var
 
-    #
-    # The vulnerable URL
-    #
-    # @return    [String]
-    #
+    # @return    [String]   URL of the vulnerable resource.
     attr_accessor :url
 
-    #
-    # The headers exchanged during the attack
-    #
-    # @return [Hash<Symbol, Hash>]  :request and :reply headers
-    #
+    # @return [Hash<Symbol, Hash>]  `:request` and `:response` HTTP headers.
     attr_accessor :headers
 
-    #
-    # The HTML response of the attack
-    #
-    # @return [String]  the html response of the attack
-    #
+    # @return [String]  The html response of the attack.
     attr_accessor :response
 
-    #
-    # The injected data that revealed the issue
-    #
-    # @return    [String]
-    #
+    # @return    [String]   The injected seed that revealed the issue.
     attr_accessor :injected
 
-    #
-    # The string that identified the issue
-    #
-    # @return    [String]
-    #
+    # @return    [String]   The string that verified the issue.
     attr_accessor :id
 
-    #
-    # The regexp that identified the issue
-    #
-    # @return    [String]
-    #
+    # @return    [String]   The regexp that identified the issue.
     attr_reader   :regexp
 
-    #
-    # The data that was matched by the regexp
-    #
-    # @return    [String]
-    #
+    # @return    [String]   The data that was matched by the regexp.
     attr_accessor :regexp_match
 
-    #
-    # The vulnerable element, link, form or cookie
-    #
-    # @return    [String]
-    #
+    # @return    [String]   Type of the vulnerable type.
+    # @see Module::Auditor::OPTIONS
     attr_accessor :elem
 
-    #
-    # HTTP method
-    #
-    # @return    [String]
-    #
+    # @return    [String]   HTTP method used.
     attr_accessor :method
 
-    #
-    # The description of the issue
-    #
-    # @return    [String]
-    #
+    # @return    [String]   Brief description of the issue.
     attr_accessor :description
 
-    #
-    # References related to the issue
-    #
-    # @return    [Hash]
-    #
+    # @return    [Hash]     References related to the issue.
     attr_accessor :references
 
-    #
-    # The CWE ID number of the issue
-    #
-    # @return    [String]
-    #
+    # @return    [String]   The CWE ID number of the issue.
+    # @see http://cwe.mitre.org/
     attr_accessor :cwe
 
-    #
-    # The CWE URL of the issue
-    #
-    # @return    [String]
-    #
+    # @return    [String]   CWE URL of the issue
+    # @see #cwe
+    # @see http://cwe.mitre.org/
     attr_accessor :cwe_url
 
-    #
-    # To be assigned a constant form {Severity}
-    #
+    # @return    [String]   Severity of the issue.
     # @see Severity
-    #
-    # @return    [String]
-    #
     attr_accessor :severity
 
-    #
-    # The CVSS v2 score
-    #
-    # @return    [String]
-    #
+    # @return    [String]   The CVSS v2 score.
+    # @see http://nvd.nist.gov/cvss.cfm
     attr_accessor :cvssv2
 
-    #
-    # A brief text informing the user how to remedy the situation
-    #
     # @return    [String]
-    #
+    #   A brief text informing the user how to remedy the Issue.
     attr_accessor :remedy_guidance
 
-    #
-    # A code snippet showing the user how to remedy the situation
-    #
     # @return    [String]
-    #
+    #   A code snippet showing the user how to remedy the Issue.
     attr_accessor :remedy_code
 
     #
     # Placeholder variable to be populated by {AuditStore#prepare_variations}
     #
+    # @return   [Array<Issue>]  Variations of this issue.
+    #
     # @see AuditStore#prepare_variations
     #
     attr_accessor :variations
 
-    #
-    # Is manual verification required?
-    #
-    # @return  [Bool]
-    #
+    # @return  [Bool]   Is manual verification required?
     attr_accessor :verification
 
-    #
-    # The Metasploit module that can exploit the vulnerability.
-    #
-    # ex. exploit/unix/webapp/php_include
-    #
     # @return  [String]
-    #
+    #   The Metasploit module that can exploit the vulnerability.
     attr_accessor :metasploitable
 
-    # @return [Hash]    audit options associated with the issue
+    # @return [Hash]    Audit options associated with the issue.
     attr_reader   :opts
 
     attr_accessor :internal_modname
 
-    # @return [Array<String>]
+    # @return [Array<String>]   Tags categorizing the issue.
     attr_accessor :tags
 
+    # @return [Hash]
+    #   Remarks about the issue. Key is the name of the entity which
+    #   made the remark, value is an `Array` of remarks.
+    attr_accessor :remarks
+
     #
-    # Sets up the instance attributes
+    # Sets up the instance attributes.
     #
-    # @param    [Hash]    opts  configuration hash
-    #                     Usually the returned data of a module's
-    #                     info() method for the references
-    #                     merged with a name=>value pair hash holding
-    #                     class attributes
+    # @param    [Hash]    opts
+    #   Configuration hash. The returned data of a module's {Module::Base.info}
+    #   method merged with a `Hash` holding {Issue} attributes.
     #
     def initialize( opts = {} )
         @verification = false
@@ -224,18 +143,12 @@ class Issue
         @opts         = { regexp: '' }
 
         opts.each do |k, v|
-            begin
-                send( "#{k.to_s.downcase}=", encode( v ) )
-            rescue
-            end
+            send( "#{k.to_s.downcase}=", encode( v ) ) rescue nil
         end
 
         opts[:regexp] = opts[:regexp].to_s if opts[:regexp]
         opts[:issue].each do |k, v|
-            begin
-                send( "#{k.to_s.downcase}=", encode( v ) )
-            rescue
-            end
+            send( "#{k.to_s.downcase}=", encode( v ) ) rescue nil
         end if opts[:issue]
 
         @headers ||= {}
@@ -254,19 +167,57 @@ class Issue
         @method   = @method.to_s.upcase
         @mod_name = opts[:name]
 
+        @remarks ||= {}
+
         # remove this block because it won't be able to be serialized
         @opts.delete( :each_mutation )
         @tags ||= []
     end
 
+    #
+    # Adds a remark as a heads-up to the end user.
+    #
+    # @param    [String, Symbol]    author  Component which made the remark.
+    # @param    [String]    string  Remark.
+    #
+    def add_remark( author, string )
+        fail ArgumentError, 'Author cannot be blank.' if author.to_s.empty?
+        fail ArgumentError, 'String cannot be blank.' if string.to_s.empty?
+
+        (@remarks[author] ||= []) << string
+    end
+
+    # @see #regexp_match
     def match
         self.regexp_match
+    end
+
+    # @return   [Bool]
+    #   `true` if the issue requires manual verification, `false` otherwise.
+    #
+    # @see #verification
+    def requires_verification?
+        !!@verification
+    end
+
+    # @return   [Bool]
+    #   `true` if the issue can be trusted (doesn't require manual verification),
+    #   `false` otherwise.
+    #
+    # @see #requires_verification?
+    def trusted?
+        !requires_verification?
+    end
+
+    # @see #trusted?
+    def untrusted?
+        !trusted?
     end
 
     def url=( v )
         @url = Utilities.normalize_url( v )
 
-        # last resort sanitization
+        # Last resort sanitization.
         @url = v.split( '?' ).first if @url.to_s.empty?
         @url
     end
@@ -274,7 +225,7 @@ class Issue
     def cwe=( v )
         return if !v || v.to_s.empty?
         @cwe = v.to_s
-        @cwe_url = "http://cwe.mitre.org/data/definitions/" + @cwe + ".html"
+        @cwe_url = "http://cwe.mitre.org/data/definitions/#{@cwe}.html"
         @cwe
     end
 
@@ -318,6 +269,7 @@ class Issue
         to_h.each_pair( &block )
     end
 
+    # @return   [Hash]
     def to_h
         h = {}
         self.instance_variables.each do |var|
@@ -330,9 +282,19 @@ class Issue
     end
     alias :to_hash :to_h
 
+    # @return   [String]    A string uniquely identifying this issue.
     def unique_id
         "#{@mod_name}::#{@elem}::#{@var}::#{@url.split( '?' ).first}"
     end
+
+    # @return   [String]
+    #   A SHA2 hash (of {#unique_id}) uniquely identifying this issue.
+    #
+    # @see #unique_id
+    def digest
+        Digest::SHA2.hexdigest( unique_id )
+    end
+    alias :_hash :digest
 
     def ==( other )
         hash == other.hash
@@ -341,11 +303,6 @@ class Issue
     def hash
         unique_id.hash
     end
-
-    def digest
-        Digest::SHA2.hexdigest( unique_id )
-    end
-    alias :_hash :digest
 
     def eql?( other )
         hash == other.hash

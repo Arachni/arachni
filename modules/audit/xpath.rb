@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ class Arachni::Modules::XPathInjection < Arachni::Module::Base
 
     def self.info
         {
-            name:        'XPathInjection',
+            name:        'XPath Injection',
             description: %q{XPath injection module},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -97,7 +97,7 @@ class Arachni::Modules::CreditCards < Arachni::Module::Base
             },
             targets:     %w(Generic),
             issue:       {
-                name:            %q{Credit card number disclosure.},
+                name:            %q{Credit card number disclosure},
                 description:     %q{A credit card number is disclosed in the body of the page.},
                 cwe:             '200',
                 severity:        Severity::MEDIUM,

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -19,25 +19,28 @@ module Arachni::Cache
 #
 # Base cache implementation -- stores, retrieves and removes entries.
 #
-# The cache will be pruned (call {#prune}) upon storage operations, removing old entries
-# to make room for new ones.
+# The cache will be pruned (call {#prune}) upon storage operations, removing
+# old entries to make room for new ones.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 # @abstract
 #
 class Base
 
-    # @return    [Integer]   maximum cache size
+    # @return    [Integer]   Maximum cache size.
     attr_reader :max_size
 
-    #
-    # @param    [Integer, nil]  max_size    Maximum size of the cache
-    #   (must be > 0, +nil+ means unlimited).
-    #   Once the size of the cache is about to exceed +max_size+, the pruning phase will be initiated.
-    #
+    # @param  [Integer, nil]  max_size
+    #   Maximum size of the cache (must be > 0, `nil` means unlimited).
+    #   Once the size of the cache is about to exceed `max_size`, the pruning
+    #   phase will be initiated.
     def initialize( max_size = nil )
         self.max_size = max_size
         @cache = {}
+    end
+
+    def keys
+        @cache.keys
     end
 
     def max_size=( max )
@@ -49,12 +52,12 @@ class Base
         end
     end
 
-    # @return   [Bool]  +true+ is there is no size limit, +false+ otherwise
+    # @return   [Bool]  `true` is there is no size limit, `false` otherwise
     def uncapped?
         !capped?
     end
 
-    # @return   [Bool]  +true+ is there is a size limit, +false+ otherwise
+    # @return   [Bool]  `true` is there is a size limit, `false`` otherwise
     def capped?
         !!max_size
     end
@@ -75,7 +78,7 @@ class Base
     # @param    [Object]    k   entry key
     # @param    [Object]    v   object to store
     #
-    # @return   [Object]    +v+
+    # @return   [Object]    `v`
     #
     def store( k, v )
         prune while capped? && (size > max_size - 1)
@@ -89,51 +92,55 @@ class Base
     end
 
     #
-    # Retrieving method
+    # Retrieving method.
     #
-    # @param    [Object]    k   entry key
+    # @param    [Object]    k   Entry key.
     #
-    # @return   [Object, nil]   value for key +k+, +nil+ if there is no key +k+
+    # @return   [Object, nil]
+    #   Value for key `k`, `nil` if there is no key `k`.
     #
     def []( k )
         cache[k]
     end
 
     #
-    # If key +k+ exists, its corresponding value will be returned.
+    # If key `k` exists, its corresponding value will be returned.
     #
-    # If not, the return value of +block+ will be assigned to key +k+ and that
+    # If not, the return value of `block` will be assigned to key `k` and that
     # value will be returned.
     #
-    # @param    [Object]    k   entry key
+    # @param    [Object]    k   Entry key.
     #
-    # @return   [Object]    value of key +k+ or +block.call+ if key +k+ does not exist.
+    # @return   [Object]
+    #   Value of key `k` or `block.call` if key `k` does not exist.
     #
     def fetch_or_store( k, &block )
         include?( k ) ? self[k] : store( k, block.call )
     end
 
-    # @return   [Bool]  +true+ if cache includes an entry for key +k+, false otherwise
+    # @return   [Bool]
+    #   `true` if cache includes an entry for key `k`, false otherwise.
     def include?( k )
         cache.include?( k )
     end
 
-    # @return   [Bool]  +true+ if cache is empty, false otherwise
+    # @return   [Bool]  `true` if cache is empty, false otherwise.
     def empty?
         cache.empty?
     end
 
-    # @return   [Bool]  +true+ if cache is not empty, false otherwise
+    # @return   [Bool]  `true` if cache is not empty, `false` otherwise.
     def any?
         !empty?
     end
 
     #
-    # Removes entry with key +k+ from the cache.
+    # Removes entry with key `k` from the cache.
     #
     # @param    [Object]    k   key
     #
-    # @return   [Object, nil]  value for key +k+, nil if there is no key +k+
+    # @return   [Object, nil]
+    #   Value for key `k`, `nil` if there is no key `k`.
     #
     def delete( k )
         cache.delete( k )

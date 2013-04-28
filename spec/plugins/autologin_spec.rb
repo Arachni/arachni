@@ -8,7 +8,7 @@ describe name_from_filename do
     end
 
     context "when given the right params" do
-        it 'should locate the form and login successfully' do
+        it 'locates the form and login successfully' do
             name = name_from_filename
 
             options.plugins[name] = {
@@ -39,7 +39,7 @@ describe name_from_filename do
     end
 
     context "when given invalid params" do
-        it 'should complain about not being able to find the form' do
+        it 'complains about not being able to find the form' do
             name = name_from_filename
 
             options.plugins[name] = {
@@ -57,7 +57,7 @@ describe name_from_filename do
     end
 
     context "when the verifier does not match" do
-        it 'should complain about not being able to verify the login' do
+        it 'complains about not being able to verify the login' do
             name = name_from_filename
 
             options.plugins[name] = {

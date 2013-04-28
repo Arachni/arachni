@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -46,15 +46,13 @@ class Arachni::Modules::XSSHTMLTag < Arachni::Module::Base
         # context there's no point in parsing the HTML to verify the vulnerability
         return if !res.body || !res.body.include?( TAG_NAME )
 
-        begin
-            # see if we managed to inject a working HTML attribute to any
-            # elements
-            Nokogiri::HTML( res.body ).xpath( "//*[@#{TAG_NAME}]" ).each do |element|
-                next if element[TAG_NAME] != seed
+        # see if we managed to inject a working HTML attribute to any
+        # elements
+        Nokogiri::HTML( res.body ).xpath( "//*[@#{TAG_NAME}]" ).each do |element|
+            next if element[TAG_NAME] != seed
 
-                opts[:match] = element.to_s
-                log( opts, res )
-            end
+            opts[:match] = element.to_s
+            log( opts, res )
         end
     end
 
@@ -71,7 +69,7 @@ class Arachni::Modules::XSSHTMLTag < Arachni::Module::Base
             },
             targets:     %w(Generic),
             issue:       {
-                name:            %q{Cross-Site Scripting in HTML tag.},
+                name:            %q{Cross-Site Scripting (XSS) in HTML tag},
                 description:     %q{Unvalidated user input is being embedded in a HTML element.
     This can lead to a Cross-Site Scripting vulnerability or a form of HTML manipulation.},
                 tags:            %w(xss script tag regexp dom attribute injection),

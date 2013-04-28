@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
         framework.pause
         print_info 'System paused.'
 
-        @params   = parse_url_vars( '?' + options['params'] )
+        @params   = form_parse_request_body( options['params'] )
         @verifier = Regexp.new( options['check'] )
     end
 

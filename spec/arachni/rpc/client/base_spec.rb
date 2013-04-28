@@ -41,7 +41,7 @@ describe Arachni::RPC::Client::Base do
 
     describe '.new' do
         context 'without SSL options' do
-            it 'should connect successfully to a server' do
+            it 'connects to a server' do
                 opts = @opts.dup
                 opts.rpc_port = random_port
                 Server.new( opts ) do |server|
@@ -51,75 +51,77 @@ describe Arachni::RPC::Client::Base do
             end
         end
 
-        context 'with valid SSL options' do
-            it 'should connect successfully to an SSL server' do
-                opts = @opts.dup
-                opts.rpc_port = random_port
+        context 'when trying to connect to an SSL-enabled server' do
+            context 'with valid SSL options' do
+                it 'connects successfully' do
+                    opts = @opts.dup
+                    opts.rpc_port = random_port
 
-                opts.ca = spec_path + 'pems/cacert.pem'
-                opts.node_ssl_pkey = spec_path + 'pems/client/key.pem'
-                opts.node_ssl_cert = spec_path + 'pems/client/cert.pem'
-                opts.ssl_pkey = spec_path + 'pems/server/key.pem'
-                opts.ssl_cert = spec_path + 'pems/server/cert.pem'
+                    opts.ca = spec_path + 'pems/cacert.pem'
+                    opts.node_ssl_pkey = spec_path + 'pems/client/key.pem'
+                    opts.node_ssl_cert = spec_path + 'pems/client/cert.pem'
+                    opts.ssl_pkey = spec_path + 'pems/server/key.pem'
+                    opts.ssl_cert = spec_path + 'pems/server/cert.pem'
 
-                Server.new( opts ) do |server|
-                    client = @client_class.new( opts, server.url )
-                    client.call( "foo.bar" ).should be_true
-                end
-            end
-        end
-
-        context 'with invalid SSL options' do
-            it 'should be unable to connect to an SSL server' do
-                opts = @opts.dup
-                opts.rpc_port = random_port
-
-                opts.ssl_ca = spec_path + 'pems/cacert.pem'
-                opts.node_ssl_pkey = spec_path + 'pems/client/foo-key.pem'
-                opts.node_ssl_cert = spec_path + 'pems/client/foo-cert.pem'
-                opts.ssl_pkey = spec_path + 'pems/server/key.pem'
-                opts.ssl_cert = spec_path + 'pems/server/cert.pem'
-
-                Server.new( opts ) do |server|
-                    raised = false
-                    begin
+                    Server.new( opts ) do |server|
                         client = @client_class.new( opts, server.url )
-                        client.call( "foo.bar" )
-                    rescue Arachni::RPC::Exceptions::ConnectionError
-                        raised = true
+                        client.call( "foo.bar" ).should be_true
                     end
-
-                    raised.should be_true
                 end
             end
-        end
 
-        context 'with no SSL options' do
-            it 'should be unable to connect to an SSL server' do
-                opts = @opts.dup
-                opts.rpc_port = random_port
+            context 'with invalid SSL options' do
+                it 'throws an exception' do
+                    opts = @opts.dup
+                    opts.rpc_port = random_port
 
-                opts.ssl_ca = spec_path + 'pems/cacert.pem'
-                opts.ssl_pkey = spec_path + 'pems/server/key.pem'
-                opts.ssl_cert = spec_path + 'pems/server/cert.pem'
+                    opts.ssl_ca = spec_path + 'pems/cacert.pem'
+                    opts.node_ssl_pkey = spec_path + 'pems/client/foo-key.pem'
+                    opts.node_ssl_cert = spec_path + 'pems/client/foo-cert.pem'
+                    opts.ssl_pkey = spec_path + 'pems/server/key.pem'
+                    opts.ssl_cert = spec_path + 'pems/server/cert.pem'
 
-                Server.new( opts ) do |server|
-                    raised = false
-                    begin
-                        client = @client_class.new( OpenStruct.new, server.url )
-                        client.call( "foo.bar" )
-                    rescue Arachni::RPC::Exceptions::SSLPeerVerificationFailed
-                        raised = true
+                    Server.new( opts ) do |server|
+                        raised = false
+                        begin
+                            client = @client_class.new( opts, server.url )
+                            client.call( "foo.bar" )
+                        rescue Arachni::RPC::Exceptions::ConnectionError
+                            raised = true
+                        end
+
+                        raised.should be_true
                     end
+                end
+            end
 
-                    raised.should be_true
+            context 'with no SSL options' do
+                it 'throws an exception' do
+                    opts = @opts.dup
+                    opts.rpc_port = random_port
+
+                    opts.ssl_ca = spec_path + 'pems/cacert.pem'
+                    opts.ssl_pkey = spec_path + 'pems/server/key.pem'
+                    opts.ssl_cert = spec_path + 'pems/server/cert.pem'
+
+                    Server.new( opts ) do |server|
+                        raised = false
+                        begin
+                            client = @client_class.new( OpenStruct.new, server.url )
+                            client.call( "foo.bar" )
+                        rescue Arachni::RPC::Exceptions::SSLPeerVerificationFailed
+                            raised = true
+                        end
+
+                        raised.should be_true
+                    end
                 end
             end
         end
 
         context 'when a server requires a token' do
             context 'with a valid token' do
-                it 'should be able to connect' do
+                it 'connects successfully' do
                     opts = @opts.dup
                     opts.rpc_port = random_port
                     token = 'secret!'
@@ -131,7 +133,7 @@ describe Arachni::RPC::Client::Base do
                 end
             end
             context 'with invalid token' do
-                it 'should not be able to connect' do
+                it 'throws an exception' do
                     opts = @opts.dup
                     opts.rpc_port = random_port
                     token = 'secret!'
@@ -150,7 +152,6 @@ describe Arachni::RPC::Client::Base do
                 end
             end
         end
-
 
     end
 

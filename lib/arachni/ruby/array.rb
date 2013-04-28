@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -19,8 +19,9 @@ class Array
     #
     # @param    [#to_s, Array<#to_s>]  tags
     #
-    # @return [Bool]    +true+ if +self+ contains any of the +tags+ when
-    #                       objects of both +self+ and +tags+ are converted to +String+.
+    # @return [Bool]
+    #   `true` if `self` contains any of the `tags` when objects of both `self`
+    #   and `tags` are converted to `String`.
     #
     def includes_tags?( tags )
         return false if !tags

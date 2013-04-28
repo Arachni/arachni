@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -19,11 +19,11 @@ module Arachni::RPC
 #
 # Base class and namespace for all RPCD/Dispatcher handlers.
 #
-# == RPC accessibility
+# # RPC accessibility
 #
 # Only PUBLIC methods YOU have defined will be accessible over RPC.
 #
-# == Blocking operations
+# # Blocking operations
 #
 # Please try to avoid blocking operations as they will block the main Reactor loop.
 #
@@ -36,7 +36,7 @@ module Arachni::RPC
 # In addition, you can use the {#defer} and {#run_asap} methods is you need more
 # control over what gets deferred and general scheduling.
 #
-# == Asynchronous operations
+# # Asynchronous operations
 #
 # Methods which perform async operations should expect a block and pass their
 # results to that block instead of returning a value.
@@ -53,7 +53,7 @@ class Server::Dispatcher::Handler
         @dispatcher = dispatcher
     end
 
-    # @return   [Server::Dispatcher::Node]  local node
+    # @return   [Server::Dispatcher::Node]  Local node.
     def node
         dispatcher.instance_eval { @node }
     end
@@ -61,8 +61,8 @@ class Server::Dispatcher::Handler
     #
     # Performs an asynchronous map operation over all running instances.
     #
-    # @param [Proc]  each    block to be passed {Client::Instance} and {::EM::Iterator}
-    # @param [Proc]  after   block to be passed the Array of results
+    # @param [Proc]  each    Block to be passed {Client::Instance} and {::EM::Iterator}.
+    # @param [Proc]  after   Block to be passed the Array of results.
     #
     def map_instances( each, after )
         wrap_each = proc do |instance, iterator|
@@ -74,7 +74,7 @@ class Server::Dispatcher::Handler
     #
     # Performs an asynchronous iteration over all running instances.
     #
-    # @param [Proc]  block    block to be passed {Client::Instance} and {::EM::Iterator}
+    # @param [Proc]  block    Block to be passed {Client::Instance} and {::EM::Iterator}.
     #
     def each_instance( &block )
         wrap = proc do |instance, iterator|
@@ -88,13 +88,13 @@ class Server::Dispatcher::Handler
     #
     # The operation will be run in its own Thread - DO NOT block forever.
     #
-    # Accepts either 2 parameters (an +operation+ and a +callback+) or an operation
+    # Accepts either 2 parameters (an `operation` and a `callback` or an operation
     # as a block.
     #
-    # @param    [Proc]  operation   operation to defer
-    # @param    [Proc]  callback    block to call with the results of the operation
+    # @param    [Proc]  operation   Operation to defer.
+    # @param    [Proc]  callback    Block to call with the results of the operation.
     #
-    # @param    [Block]  block      operation to defer
+    # @param    [Block]  block      Operation to defer.
     #
     def defer( operation = nil, callback = nil, &block )
         ::EM.defer( *[operation, callback].compact, &block )
@@ -112,19 +112,19 @@ class Server::Dispatcher::Handler
     #
     # @param    [Array]    arr
     #
-    # @return   [::EM::Iterator]  iterator for the provided array
+    # @return   [::EM::Iterator]  Iterator for the provided array.
     #
     def iterator_for( arr, max_concurrency = 10 )
         ::EM::Iterator.new( arr, max_concurrency )
     end
 
-    # @return   [Array<Hash>]   all running instances
+    # @return   [Array<Hash>]   All running instances.
     def instances
         dispatcher.jobs.select { |j| !j['proc'].empty? }
     end
 
     #
-    # Connects to a Dispatcher by +url+.
+    # Connects to a Dispatcher by `url`
     #
     # @param    [String]    url
     #
@@ -135,7 +135,7 @@ class Server::Dispatcher::Handler
     end
 
     #
-    # Connects to an Instance by +url+.
+    # Connects to an Instance by `url`.
     #
     # @example
     #   connect_to_instance( url, token )

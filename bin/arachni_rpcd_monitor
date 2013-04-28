@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -20,6 +20,6 @@ require_relative '../lib/arachni'
 Arachni::Options.no_protocol_for_url
 Arachni::Options.parse
 
-require Arachni::Options.dir['lib'] + 'ui/rpc/dispatcher_monitor'
+require Arachni::Options.dir['lib'] + 'ui/cli/rpc/dispatcher_monitor'
 
-Arachni::UI::DispatcherMonitor.new( Arachni::Options.instance ).run
+Arachni::UI::CLI::DispatcherMonitor.new( Arachni::Options.instance ).run

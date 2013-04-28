@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -51,12 +51,13 @@ class Arachni::Modules::CvsSvnUsers < Arachni::Module::Base
                 'CWE' => 'http://cwe.mitre.org/data/definitions/200.html'
             },
             issue:       {
-                name:            %q{CVS/SVN user disclosure.},
+                name:            %q{CVS/SVN user disclosure},
                 description:     %q{A CVS or SVN user is disclosed in the body of the HTML page.},
                 cwe:             '200',
                 severity:        Severity::LOW,
                 remedy_guidance: %q{Remove all CVS and SVN users from the body of the HTML page.},
-            }
+            },
+            max_issues: 25
         }
     end
 

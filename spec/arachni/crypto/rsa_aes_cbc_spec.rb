@@ -24,7 +24,7 @@ describe RSA_AES_CBC do
         @crypto = RSA_AES_CBC.new( @public_key_file_path, @private_key_file_path )
     end
 
-    it 'should generate matching encrypted and decrypted data' do
+    it 'generates matching encrypted and decrypted data' do
         @crypto.decrypt( @crypto.encrypt( SEED ) ).should == SEED
     end
 

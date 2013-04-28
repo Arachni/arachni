@@ -2,8 +2,18 @@ require_relative '../../spec_helper'
 
 describe Typhoeus::Response do
 
+    describe '#url' do
+        it 'aliased to #effective_url' do
+            url = 'http://stuff'
+            res = Typhoeus::Response.new( effective_url: url )
+
+            res.url.should == url
+            res.url.should == res.effective_url
+        end
+    end
+
     describe '#location' do
-        it 'should return the content-type' do
+        it 'returns the content-type' do
             Typhoeus::Response.new.location.should be_nil
 
             ct = 'http://test.com'
@@ -16,7 +26,7 @@ describe Typhoeus::Response do
     end
 
     describe '#content_type' do
-        it 'should return the content-type' do
+        it 'returns the content-type' do
             Typhoeus::Response.new.content_type.should be_nil
 
             ct = 'text/html'
@@ -28,9 +38,75 @@ describe Typhoeus::Response do
         end
     end
 
+    describe '#text?' do
+        context 'when the content-type is' do
+            context 'text/*' do
+                it 'returns true' do
+                    h = {
+                        headers_hash: { 'Content-Type' => 'text/stuff' },
+                        body:         "stuff"
+                    }
+                    Typhoeus::Response.new( h ).text?.should be_true
+                end
+            end
+
+            context 'application/*' do
+                context 'and the response body is' do
+                    context 'binary' do
+                        it 'returns false' do
+                            h = {
+                                headers_hash: { 'Content-Type' => 'application/stuff' },
+                                body:         "\00\00\00"
+                            }
+                            Typhoeus::Response.new( h ).text?.should be_false
+                        end
+                    end
+
+                    context 'text' do
+                        it 'returns true' do
+                            h = {
+                                headers_hash: { 'Content-Type' => 'application/stuff' },
+                                body:         "stuff"
+                            }
+                            Typhoeus::Response.new( h ).text?.should be_true
+                        end
+                    end
+                end
+            end
+
+            context 'other' do
+                it 'returns false' do
+                    h = {
+                        headers_hash: { 'Content-Type' => 'blah/stuff' },
+                        body:         "stuff"
+                    }
+                    Typhoeus::Response.new( h ).text?.should be_false
+                end
+            end
+
+            context nil do
+                context 'and the response body is' do
+                    context 'binary' do
+                        it 'returns false' do
+                            h = { body: "\00\00\00" }
+                            Typhoeus::Response.new( h ).text?.should be_false
+                        end
+                    end
+
+                    context 'text' do
+                        it 'returns true' do
+                            h = { body: "stuff" }
+                            Typhoeus::Response.new( h ).text?.should be_true
+                        end
+                    end
+                end
+            end
+        end
+    end
+
     describe '#redirection?' do
         context 'when the response is a redirection' do
-            it 'should return true' do
+            it 'returns true' do
                 300.upto( 399 ) do |c|
                     Typhoeus::Response.new( code: c ).redirection?.should be_true
                 end
@@ -38,14 +114,14 @@ describe Typhoeus::Response do
         end
 
         context 'when the response is not a redirection' do
-            it 'should return true' do
+            it 'returns true' do
                 Typhoeus::Response.new( code: 200 ).redirection?.should be_false
             end
         end
     end
 
     describe '#to_hash' do
-        it 'should return a hash representation of self' do
+        it 'returns a hash representation of self' do
             h = {
                 "code" => 200,
                 "curl_return_code" => nil,

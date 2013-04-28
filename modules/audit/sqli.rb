@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -58,10 +58,10 @@ class Arachni::Modules::SQLInjection < Arachni::Module::Base
 
     def self.info
         {
-            name:        'SQLInjection',
-            description: %q{SQL injection recon module},
+            name:        'SQL Injection',
+            description: %q{SQL injection module, uses known SQL DB errors to identify vulnerabilities.},
             elements:    [Element::LINK, Element::FORM, Element::COOKIE, Element::HEADER],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.6',
             references:  {
                 'UnixWiz'    => 'http://unixwiz.net/techtips/sql-injection.html',
@@ -79,8 +79,7 @@ class Arachni::Modules::SQLInjection < Arachni::Module::Base
                 cvssv2:          '9.0',
                 remedy_guidance: 'User inputs must be validated and filtered
     before being included in database queries.',
-                remedy_code:     '',
-                metasploitable:  'unix/webapp/arachni_sqlmap'
+                metasploitable:  'auxiliary/arachni_sqlmap'
             }
         }
     end

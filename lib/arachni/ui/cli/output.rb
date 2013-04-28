@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -49,9 +49,19 @@ module Output
         @@reroute_to_file = false
 
         @@opened = false
+
+        @@error_logfile = 'error.log'
     end
 
     reset_output_options
+
+    def set_error_logfile( logfile )
+        @@error_logfile = logfile
+    end
+
+    def error_logfile
+        @@error_logfile
+    end
 
     # Prints an error message
     #
@@ -62,7 +72,11 @@ module Output
     #
     def print_error( str = '' )
         print_color( '[-]', 31, str, $stderr, true )
-        File.open( 'error.log', 'a' ) do |f|
+        log_error( str )
+    end
+
+    def log_error( str = '' )
+        File.open( @@error_logfile, 'a' ) do |f|
             if !@@opened
                 f.puts
                 f.puts "#{Time.now} " + ( "-" * 80 )
@@ -311,6 +325,10 @@ module Output
 
     private
 
+    def intercept_print_message( message )
+        message
+    end
+
     # Prints a message prefixed with a colored sign.
     #
     # Disregards all flags.
@@ -326,12 +344,13 @@ module Output
     def print_color( sign, color, string, out = $stdout, unmute = false )
         return if muted? && !unmute
 
+        str = intercept_print_message( string )
         # we may get IO errors...freaky stuff...
         begin
             if out.tty?
-                out.print "\033[1;#{color.to_s}m #{sign}\033[1;00m #{string}\n"
+                out.print "\033[1;#{color.to_s}m #{sign}\033[1;00m #{str}\n"
             else
-                out.print "#{sign} #{string}\n"
+                out.print "#{sign} #{str}\n"
             end
         rescue
         end

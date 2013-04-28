@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -36,8 +36,8 @@ class Arachni::Reports::YAML < Arachni::Report::Base
 
     def self.info
         {
-            name:        'YAML Report',
-            description: %q{Exports the audit results as a YAML file.},
+            name:        'YAML',
+            description: %q{Exports the audit results as a YAML (.yaml) file.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.1',
             options:     [ Options.outfile( '.yaml' ) ]

@@ -11,7 +11,7 @@ describe name_from_filename do
         [ Element::SERVER ]
     end
 
-    it 'should intercept all HTTP responses and log ones with status codes other than 200 or 404' do
+    it 'intercepts all HTTP responses and log ones with status codes other than 200 or 404' do
         run
         current_module.acceptable.each do |code|
             http.get( url + code.to_s )
@@ -20,8 +20,11 @@ describe name_from_filename do
             http.get( url + 'blah/' + code.to_s )
         end
         http.run
-        issues.size.should == current_module::MAX_ENTRIES
+
+        max_issues = current_module.max_issues
+        issues.size.should == max_issues
         issues.map{ |i| i.id.gsub( /\D/, '').to_i }.uniq.sort.should ==
-            (current_module.acceptable - current_module::IGNORE_CODES.to_a).sort
+            (current_module.acceptable - current_module::IGNORE_CODES.to_a).
+                sort[0...max_issues]
     end
 end

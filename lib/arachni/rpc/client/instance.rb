@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ class Client
 class Instance
 
     attr_reader :opts
+    attr_reader :spider
     attr_reader :framework
     attr_reader :modules
     attr_reader :plugins
@@ -59,6 +60,7 @@ class Instance
 
         @opts      = OptsMapper.new( @client, 'opts' )
         @framework = RemoteObjectMapper.new( @client, 'framework' )
+        @spider    = RemoteObjectMapper.new( @client, 'spider' )
         @modules   = RemoteObjectMapper.new( @client, 'modules' )
         @plugins   = RemoteObjectMapper.new( @client, 'plugins' )
         @service   = RemoteObjectMapper.new( @client, 'service' )

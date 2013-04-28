@@ -8,10 +8,10 @@ describe name_from_filename do
         framework.opts.audit :links, :forms, :cookies, :headers
     end
 
-    it 'should log taints' do
+    it 'logs taints' do
         run
         results = actual_results
-        results.size.should == 6
+        results.size.should == 5
 
         eoks = 0
         results.each do |result|
@@ -76,7 +76,7 @@ describe name_from_filename do
             oks.should == 5
         end
 
-        eoks.should == 6
+        eoks.should == 5
 
     end
 end

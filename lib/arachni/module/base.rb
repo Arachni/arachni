@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ module Arachni
 lib = Arachni::Options.dir['lib']
 require lib + 'module/output'
 require lib + 'module/utilities'
-require lib + 'module/trainer'
 require lib + 'module/auditor'
 
 module Module
@@ -42,13 +41,15 @@ class Base
     include Auditor
 
     #
-    # Initializes the module attributes, {Arachni::HTTP} client and {Trainer}.
+    # Initializes the module attributes and {Arachni::HTTP}.
     #
     # @param  [Page]  page
     # @param  [Arachni::Framework]  framework
     #
     def initialize( page, framework = nil )
-        @page       = http.page = page
+        http.update_cookies( page.cookiejar )
+
+        @page       = page
         @framework  = framework
     end
 

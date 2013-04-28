@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ class Arachni::Modules::Backdoors < Arachni::Module::Base
                 'Blackhat' => 'https://www.blackhat.com/presentations/bh-usa-07/Wysopal_and_Eng/Presentation/bh-usa-07-wysopal_and_eng.pdf'
             },
             issue:       {
-                name:            %q{A backdoor file exists on the server.},
+                name:            %q{A backdoor file exists on the server},
                 description:     %q{ The server response indicates that a file matching
     the name of a common backdoor is publicly accessible.
     This indicates that the server has been compromised and can

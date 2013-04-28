@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -25,10 +25,13 @@ module Mixins
 # using simple dynamic programming with the help of "method_missing()".
 #
 # The observable classes (those which include this module) use:
+#
 #    * call_<hookname>( *args )
+#
 # to call specific hooks.
 #
 # The observers set hooks using:
+#
 #    * observer_instance.add_<hookname>( &block )
 #    * observer_instance.on_<hookname>( &block )
 #
@@ -37,6 +40,10 @@ module Mixins
 #
 module Observable
     include Arachni::Utilities
+
+    def clear_observers
+        @__hooks.clear if @__hooks
+    end
 
     def method_missing( sym, *args, &block )
         # grab the action (add/call) and the hook name

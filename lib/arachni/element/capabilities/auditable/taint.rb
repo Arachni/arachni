@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -52,6 +52,9 @@ module Auditable::Taint
         ignore:    nil
     }
 
+    REMARK = "This issue was identified by a pattern but the pattern matched " +
+            "the page's response body even before auditing the logged element."
+
     #
     # Performs taint analysis and logs an issue should there be one.
     #
@@ -85,17 +88,15 @@ module Auditable::Taint
     end
 
     def match_substring_and_log( substring, res, opts )
-        opts[:verification] = false
+        return if substring.to_s.empty?
 
-        # an annoying encoding exception may be thrown by scan()
-        # the sob started occurring again....
-        begin
-            opts[:verification] = true if @auditor.page.body.substring?( substring )
-        rescue
-        end
+        opts[:verification] = @auditor.page && @auditor.page.body &&
+            @auditor.page.body.include?( substring )
 
-        if res.body.substring?( substring ) && !ignore?( res, opts )
-            opts[:regexp] = opts[:id] = opts[:match]  = substring.clone
+        opts[:remarks] = { auditor: [REMARK] } if opts[:verification]
+
+        if res.body.include?( substring ) && !ignore?( res, opts )
+            opts[:regexp] = opts[:id] = opts[:match] = substring.dup
             @auditor.log( opts, res )
         end
     end
@@ -104,17 +105,12 @@ module Auditable::Taint
         regexp = regexp.is_a?( Regexp ) ? regexp :
             Regexp.new( regexp.to_s, Regexp::IGNORECASE )
 
-        match_data = res.body.scan( regexp )[0]
-        match_data = match_data.to_s
+        match_data = res.body.scan( regexp ).flatten.first.to_s
 
-        opts[:verification] = false
+        # An annoying encoding exception may be thrown when matching the regexp.
+        opts[:verification] = (@auditor.page && @auditor.page.body.to_s =~ regexp) rescue false
 
-        # an annoying encoding exception may be thrown by scan()
-        # the sob started occuring again....
-        begin
-            opts[:verification] = true if @auditor.page.body.scan( regexp )[0]
-        rescue
-        end
+        opts[:remarks] = { auditor: [REMARK] } if opts[:verification]
 
         # fairly obscure condition...pardon me...
         if ( opts[:match] && match_data == opts[:match] ) ||
@@ -127,6 +123,10 @@ module Auditable::Taint
 
             @auditor.log( opts, res )
         end
+
+    rescue => e
+        ap e
+        ap e.backtrace
     end
 
     def ignore?( res, opts )

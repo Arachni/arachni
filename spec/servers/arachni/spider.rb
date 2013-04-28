@@ -1,11 +1,31 @@
 require 'sinatra'
 require 'sinatra/contrib'
-set :logging, false
 
 get '/' do
     <<EOHTML
     <a href='/this_does_not_exist'> 404 </a>
 EOHTML
+end
+
+get '/fail_4_times' do
+    @@tries ||= 0
+    @@tries += 1
+
+    if @@tries <= 5
+        # Return a 0 error code.
+        0
+    else
+        'Stuff'
+    end
+end
+
+get '/fail' do
+    # Return a 0 error code.
+    0
+end
+
+get '/skip' do
+    'Skip me!'
 end
 
 get '/sleep' do
@@ -150,4 +170,41 @@ get '/auto-redundant' do
     end
 
     str
+end
+
+get '/lots_of_paths' do
+    html = ''
+
+    50.times do |i|
+        html << <<-EOHTML
+        <a href='/lots_of_paths/#{i}'>Stuff</a>
+        EOHTML
+    end
+    html
+end
+
+get '/lots_of_paths/:id' do |id|
+    html = ''
+
+    100.times do |i|
+        html << <<-EOHTML
+        <a href='/lots_of_paths/#{id}/#{i}'>Stuff</a>
+        EOHTML
+    end
+    html
+end
+
+get '/lots_of_paths/:id/:id2' do |id, id2|
+    html = ''
+
+    500.times do |i|
+        html << <<-EOHTML
+        <a href='/lots_of_paths/#{id}/#{id2}/#{id}'>Stuff</a>
+        EOHTML
+    end
+    html
+end
+
+get '/lots_of_paths/:id/:id2/:id3' do
+    'End of the line...'
 end

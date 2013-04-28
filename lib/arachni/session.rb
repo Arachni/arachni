@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 module Arachni
 
 #
-# Session management class
+# Session management class.
 #
 # Handles logins, provided log-out detection, stores and executes login sequences
 # and provided general webapp session related helpers.
@@ -28,14 +28,33 @@ class Session
     include UI::Output
     include Utilities
 
+    #
+    # {Session} error namespace.
+    #
+    # All {Session} errors inherit from and live under it.
+    #
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    #
+    class Error < Arachni::Error
+
+        #
+        # Raised when a login check is required to perform an action but none
+        # has been configured.
+        #
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        #
+        class NoLoginCheck < Error
+        end
+    end
+
     # @return   [Options]  options
     attr_reader :opts
 
     #
     # A block used to login to the webapp.
     #
-    # The block should log the framework into the webapp and return +true+ on
-    # success, +false+ on failure.
+    # The block should log the framework into the webapp and return `true` on
+    # success, `false` on failure.
     #
     # @return   [Block]
     #
@@ -44,15 +63,16 @@ class Session
     #
     # A block used to check whether or not we're logged in to the webapp.
     #
-    # The block should return +true+ on success, +false+ on failure.
+    # It should:
     #
-    # The proc should expect 2 parameters, the first one being a hash of HTTP
-    # options and the second one an optional block.
+    #   * return `true` on success, `false` on failure.
+    #   * expect 2 parameters, the first one being a hash of HTTP options and
+    #       the second one an optional block.
     #
     # If a block has been set, the check should work async and pass the result
     # to the block, otherwise it should simply return the result.
     #
-    # The result of the check should be +true+ or +false+.
+    # The result of the check should be `true` or `false`.
     #
     # A good example of this can be found in {#set_login_check}.
     #
@@ -89,9 +109,11 @@ class Session
     #
     # @param    [Block] block   block to be passed the cookie
     #
+    # @raise    [Error::NoLoginCheck]   If no login-check has been configured.
+    #
     def cookie( &block )
         return block.call( @session_cookie ) if @session_cookie
-        fail 'No login-check has been configured.' if !has_login_check?
+        fail Error::NoLoginCheck, 'No login-check has been configured.' if !has_login_check?
 
         cookies.each do |cookie|
             logged_in?( cookies: { cookie.name => '' } ) do |bool|
@@ -105,7 +127,7 @@ class Session
     # Finds a login forms based on supplied location, collection and criteria.
     #
     # @param    [Hash] opts
-    # @option opts [Bool] :requires_password Does the login form include a password field? (Defaults to +true+)
+    # @option opts [Bool] :requires_password Does the login form include a password field? (Defaults to `true`)
     # @option opts [Array, Regexp] :action Regexp to match or String to compare against the form action.
     # @option opts [String, Array, Hash, Symbol] :inputs Inputs that the form must contain.
     # @option opts [Array<Element::Form>] :forms Collection of forms to look through.
@@ -154,13 +176,14 @@ class Session
         find.call( forms || [] ) if !async
     end
 
-    # @return   [Bool]  +true+ if there is log-in capability, +false+ otherwise
+    # @return   [Bool]  `true` if there is log-in capability, `false` otherwise.
     def can_login?
         @login_sequence && @login_check
     end
 
-    # @return   [Bool, nil] +true+ if logged-in, +false+ otherwise, +nil+ if
-    #                           there's no log-in capability
+    # @return   [Bool, nil]
+    #   `true` if logged-in, `false` otherwise, `nil` if there's no log-in
+    #   capability.
     def ensure_logged_in
         return if !can_login?
         return true if logged_in?
@@ -182,14 +205,15 @@ class Session
     #
     # Uses the block in {#login_sequence} to login to the webapp.
     #
-    # @return   [Bool, nil]     +true+ if login was successful, +false+ if not,
-    #                               +nil+ if no {#login_sequence} has been set.
+    # @return   [Bool, nil]
+    #   `true` if login was successful, `false` if not, `nil` if no
+    #   {#login_sequence} has been set.
     #
     def login
         login_sequence.call if has_login_sequence?
     end
 
-    # @return   [Bool]  +true+ if a login sequence exists, +false+ otherwise
+    # @return   [Bool]  `true` if a login sequence exists, `false` otherwise.
     def has_login_sequence?
         !!login_sequence
     end
@@ -197,21 +221,21 @@ class Session
     #
     # Uses the block in {#login_check} to check in we're logged in to the webapp.
     #
-    # @param    [Hash]   http_opts   extra HTTP options to use for the check
-    # @param    [Block]  block       if a block has been provided the check
-    #                                   will be async and the result will be passed
-    #                                   to it, otherwise the method will return
-    #                                   the result.
+    # @param    [Hash]   http_opts   Extra HTTP options to use for the check.
+    # @param    [Block]  block
+    #   If a block has been provided the check will be async and the result will
+    #   be passed to it, otherwise the method will return the result.
     #
     #
-    # @return   [Bool, nil]     +true+ if we're logged-in, +false+ if not,
-    #                               +nil+ if no {#login_sequence} has been set.
+    # @return   [Bool, nil]
+    #   `true` if we're logged-in, `false` if not, `nil` if no
+    #   {#login_sequence} has been set.
     #
     def logged_in?( http_opts = {}, &block )
         login_check.call( http_opts, block ) if has_login_check?
     end
 
-    # @return   [Bool]  +true+ if a login check exists, +false+ otherwise
+    # @return   [Bool]  `true` if a login check exists, `false` otherwise.
     def has_login_check?
         !!login_check
     end
@@ -229,11 +253,11 @@ class Session
     #
     # A block used to login to the webapp.
     #
-    # The block should log the framework into the webapp and return +true+ on
-    # success, +false+ on failure.
+    # The block should log the framework into the webapp and return `true` on
+    # success, `false` on failure.
     #
-    # @param    [Block] block  if a block has been given it will be set as
-    #                               the login sequence
+    # @param    [Block] block
+    #   if a block has been given it will be set as the login sequence.
     #
     # @return   [Block]
     #
@@ -253,10 +277,11 @@ class Session
     end
 
     #
-    # Sets a login check using the provided +url+ and +regexp+.
+    # Sets a login check using the provided `url` and `regexp`.
     #
-    # @param    [String, #to_s]  url        URL to request
-    # @param    [String, Regexp] pattern   pattern to match against the body of the response
+    # @param    [String, #to_s]  url        URL to request.
+    # @param    [String, Regexp] pattern
+    #   Pattern to match against the body of the response.
     #
     def set_login_check( url, pattern )
         login_check do |opts, block|

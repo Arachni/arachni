@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -33,7 +33,9 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
         @inputs = {}
         {
             'etc/passwd'      => /root:x:0:0:.+:[0-9a-zA-Z\/]+/im,
-            'boot.ini'        => /\[boot loader\](.*)\[operating systems\]/im
+            'boot.ini'        => /\[boot loader\](.*)\[operating systems\]/im,
+            'windows/win.ini' => /\[fonts\](.*)\[extensions\]/im,
+            'winnt/win.ini'   => /\[fonts\](.*)\[extensions\]/im
         }.each do |file, regexp|
             [
                 '/',
@@ -83,7 +85,7 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
 
     def self.info
         {
-            name:        'PathTraversal',
+            name:        'Path Traversal',
             description: %q{It injects paths of common files (/etc/passwd and boot.ini)
                 and evaluates the existence of a path traversal vulnerability
                 based on the presence of relevant content in the HTML responses.},

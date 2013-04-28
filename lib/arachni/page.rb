@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -33,11 +33,6 @@ class Page
     # @return    [Fixnum]    the HTTP response code
     #
     attr_reader :code
-
-    #
-    # @return    [String]    the request method that returned the page
-    #
-    attr_reader :method
 
     #
     # @return    [Hash]    url variables
@@ -139,12 +134,33 @@ class Page
         @body ||= ''
     end
 
+    #
+    # @return    [String]    the request method that returned the page
+    #
+    def method( *args )
+        return super( *args ) if args.any?
+
+        @method
+    end
+
     def html
         @body
     end
 
     def document
         @document ||= Nokogiri::HTML( @body )
+    end
+
+    def marshal_dump
+        @document = nil
+        instance_variables.inject( {} ) do |h, iv|
+            h[iv] = instance_variable_get( iv )
+            h
+        end
+    end
+
+    def marshal_load( h )
+        h.each { |k, v| instance_variable_set( k, v ) }
     end
 
     def text?

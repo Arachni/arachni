@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -21,36 +21,24 @@ require Options.dir['lib'] + 'module/key_filler'
 module Element::Capabilities
 module Mutable
 
-    #
-    # @return   [String]    name of the altered/mutated parameter
-    #
+    # @return   [String]    Name of the altered/mutated parameter.
     attr_accessor :altered
 
-    #
     # Holds constant bitfields that describe the preferred formatting
     # of injection strings.
-    #
     module Format
 
-      #
       # Leaves the injection string as is.
-      #
       STRAIGHT = 1 << 0
 
-      #
       # Appends the injection string to the default value of the input vector.<br/>
       # (If no default value exists Arachni will choose one.)
-      #
       APPEND   = 1 << 1
 
-      #
       # Terminates the injection string with a null character.
-      #
       NULL     = 1 << 2
 
-      #
       # Prefix the string with a ';', useful for command injection modules
-      #
       SEMICOLON = 1 << 3
 
     end
@@ -60,65 +48,62 @@ module Mutable
         #
         # Formatting of the injection strings.
         #
-        # A new set of audit inputs will be generated
-        # for each value in the array.
+        # A new set of audit inputs will be generated for each value in the array.
         #
-        # Values can be OR'ed bitfields of all available constants
-        # of {Format}.
+        # Values can be OR'ed bitfields of all available constants of {Format}.
         #
         format:     [ Format::STRAIGHT, Format::APPEND,
                      Format::NULL, Format::APPEND | Format::NULL ],
 
 
-        # skip mutation with default/original values (for {Arachni::Element::Form} elements)
+        # Skip mutation with default/original values
+        # (for {Arachni::Element::Form} elements).
         skip_orig:  false,
 
-        # flip injection value and input name
+        # Flip injection value and input name.
         param_flip: false,
 
-        # array of parameter names remain untouched
+        # Array of parameter names remain untouched.
         skip:       [],
 
-        #
-        # nil:   use system settings (!Options.fuzz_methods)
-        # true:  don't create mutations with other methods (GET/POST)
-        # false: create mutations with other methods (GET/POST)
-        #
+        # `nil`:   Use system settings (!Options.fuzz_methods).
+        # `true`:  Don't create mutations with other methods (GET/POST).
+        # `false`: Create mutations with other methods (GET/POST).
         respect_method: nil
     }
 
-    # @return   [String]    value of the altered input
+    # @return   [String]    Value of the altered input.
     def altered_value
         self[altered].to_s
     end
 
-    # @param    [String]    value   sets the value for the altered input
+    # @param    [String]    value   Sets the value for the altered input.
     def altered_value=( value )
         self[altered] = value
     end
 
-    # @return   [Bool]  +true+ if the element has not been mutated, +false+ otherwise.
+    # @return   [Bool]  `true` if the element has not been mutated, `false` otherwise.
     def original?
         self.altered.nil?
     end
 
-    # @return   [Bool]  +true+ if the element has been mutated, +false+ otherwise.
+    # @return   [Bool]  `true` if the element has been mutated, `false` otherwise.
     def mutated?
         !original?
     end
 
-    # @return   [Set]   names of input vectors to be excluded from {#mutations}.
+    # @return   [Set]   Names of input vectors to be excluded from {#mutations}.
     def immutables
         @immutables ||= Set.new
     end
 
     #
-    # Injects the +injection_str+ in self's values according to formatting options
+    # Injects the `injection_str` in self's values according to formatting options
     # and returns an array of permutations of self.
     #
     # Vector names in {#immutables} will be excluded.
     #
-    # @param    [String]  injection_str  the string to inject
+    # @param    [String]  injection_str  The string to inject.
     # @param    [Hash]    opts           {MUTATION_OPTIONS}
     #
     # @return    [Array]
@@ -177,15 +162,15 @@ module Mutable
         var_combo.uniq
     end
 
-    # alias for #mutations
+    # Alias for {#mutations}.
     def mutations_for( *args )
         mutations( *args )
     end
-    # alias for #mutations
+    # Alias for {#mutations}.
     def permutations( *args )
         mutations( *args )
     end
-    # alias for #mutations
+    # Alias for {#mutations}.
     def permutations_for( *args )
         permutations( *args )
     end

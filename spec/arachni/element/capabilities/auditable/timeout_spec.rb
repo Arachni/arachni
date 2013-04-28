@@ -10,6 +10,7 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
 
         @positive = Arachni::Element::Link.new( @url + '/true', inputs )
         @positive.auditor = @auditor
+        @positive.disable_deduplication
 
         @positive_high_res = Arachni::Element::Link.new(
             @url + '/high_response_time',
@@ -19,20 +20,24 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
 
         @negative = Arachni::Element::Link.new( @url + '/false', inputs )
         @negative.auditor = @auditor
+        @negative.disable_deduplication
 
-        @run = proc{ Arachni::Element::Capabilities::Auditable.timeout_audit_run }
+        @run = proc do
+            Arachni::HTTP.run
+            Arachni::Element::Capabilities::Auditable.timeout_audit_run
+        end
     end
 
     before { Arachni::Framework.reset }
 
     describe '#responsive?' do
         context 'when the server is responsive' do
-            it 'should return true' do
+            it 'returns true' do
                 Arachni::Element::Link.new( @url + '/true' ).responsive?.should be_true
             end
         end
         context 'when the server is not responsive' do
-            it 'should return false' do
+            it 'returns false' do
                 Arachni::Element::Link.new( @url + '/sleep' ).responsive?( 1 ).should be_false
             end
         end
@@ -49,7 +54,7 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
 
         describe :timeout_divider do
             context 'when set' do
-                it 'should modify the final timeout value' do
+                it 'modifies the final timeout value' do
                     @positive.timeout_analysis( '__TIME__',
                         @timeout_opts.merge(
                             timeout_divider: 1000,
@@ -59,25 +64,26 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
                     @run.call
 
                     issues.should be_any
-                    issues.first.injected.should == 4.to_s
+                    issues.first.injected.should == '8'
+                    #issues.first.verification.should be_true
                 end
             end
 
             context 'when not set' do
-                it 'should not modify the final timeout value' do
+                it 'does not modify the final timeout value' do
                     c = @positive.dup
                     c[:multi] = true
                     c.timeout_analysis( '__TIME__', @timeout_opts.merge( timeout: 2000 ))
                     @run.call
 
                     issues.should be_any
-                    issues.first.injected.should == 4000.to_s
+                    issues.first.injected.should == 8000.to_s
+                    #issues.first.verification.should be_true
                 end
             end
         end
 
         context 'when a page has a high response time' do
-
             before do
                 @delay_opts = {
                     timeout_divider: 1000,
@@ -86,7 +92,7 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
             end
 
             context 'but isn\'t vulnerable' do
-                it 'should not log issue' do
+                it 'does not log an issue' do
                     @negative.timeout_analysis( '__TIME__', @delay_opts )
                     @run.call
                     issues.should be_empty
@@ -94,7 +100,7 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
             end
 
             context 'and is vulnerable' do
-                it 'should log issue' do
+                it 'logs an issue' do
                     @positive_high_res.timeout_analysis( '__TIME__', @delay_opts )
                     @run.call
                     issues.should be_any

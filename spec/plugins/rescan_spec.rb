@@ -10,7 +10,7 @@ describe name_from_filename do
         framework.modules.load :xss
     end
 
-    it 'should log safe and vuln URLs accordingly' do
+    it 'logs safe and vuln URLs accordingly' do
         afr = spec_path + '/fixtures/rescan.afr.tpl'
         updated = spec_path + '/fixtures/rescan.afr'
 

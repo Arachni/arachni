@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -117,7 +117,7 @@ class Arachni::Modules::RFI < Arachni::Module::Base # *always* extend Arachni::M
             targets:     %w(Generic),
 
             issue:       {
-                name:        %q{Remote file inclusion},
+                name:        %q{Remote File Inclusion},
                 description: %q{The web application can be forced to include
     3rd party remote content which can often lead to arbitrary code
     execution, amongst other attacks.},

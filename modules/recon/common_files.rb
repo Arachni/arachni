@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ class Arachni::Modules::CommonFiles < Arachni::Module::Base
 
     def self.info
         {
-            name:        'CommonFiles',
+            name:        'Common files',
             description: %q{Tries to find common sensitive files on the server.},
             elements:    [ Element::PATH ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
@@ -47,7 +47,7 @@ class Arachni::Modules::CommonFiles < Arachni::Module::Base
                 'Apache.org' => 'http://httpd.apache.org/docs/2.0/mod/mod_access.html'
             },
             issue:       {
-                name:            %q{A common sensitive file exists on the server.},
+                name:            %q{Common sensitive file},
                 tags:            %w(common path file discovery),
                 severity:        Severity::LOW,
                 remedy_guidance: %q{Do not expose file and directory information to the user.}

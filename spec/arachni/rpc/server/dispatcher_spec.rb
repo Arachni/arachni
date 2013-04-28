@@ -42,19 +42,19 @@ describe Arachni::RPC::Server::Dispatcher do
     end
 
     describe '#alive?' do
-        it 'should return true' do
+        it 'returns true' do
             @dispatcher.alive?.should == true
         end
     end
 
     describe '#handlers' do
-        it 'should return an array of loaded handlers' do
+        it 'returns an array of loaded handlers' do
             @dispatcher.handlers.include?( 'echo' ).should be_true
         end
     end
 
     describe '#dispatch' do
-        it 'should return valid Instance info' do
+        it 'returns valid Instance info' do
             info = @dispatcher.dispatch
 
             %w(token pid port url owner birthdate starttime helpers).each do |k|
@@ -64,12 +64,12 @@ describe Arachni::RPC::Server::Dispatcher do
             instance = Arachni::RPC::Client::Instance.new( @opts, info['url'], info['token'] )
             instance.service.alive?.should be_true
         end
-        it 'should assign an optional owner' do
+        it 'assigns an optional owner' do
             owner = 'blah'
             info = @dispatcher.dispatch( owner )
             info['owner'].should == owner
         end
-        it 'should replenish the pool' do
+        it 'replenishes the pool' do
             10.times {
                 info = @dispatcher.dispatch
                 info['pid'].should be_true
@@ -78,7 +78,7 @@ describe Arachni::RPC::Server::Dispatcher do
     end
 
     describe '#job' do
-        it 'should return proc info by PID' do
+        it 'returns proc info by PID' do
             job = @dispatcher.dispatch
             info = @dispatcher.job( job['pid'] )
             @job_info_keys.each do |k|
@@ -88,7 +88,7 @@ describe Arachni::RPC::Server::Dispatcher do
     end
 
     describe '#jobs' do
-        it 'should return proc info by PID for all jobs' do
+        it 'returns proc info by PID for all jobs' do
             @dispatcher.jobs.each do |job|
                 @job_info_keys.each do |k|
                     job[k].should be_true
@@ -97,8 +97,29 @@ describe Arachni::RPC::Server::Dispatcher do
         end
     end
 
+    describe '#running_jobs' do
+        it 'returns proc info for running jobs' do
+            @dispatcher.running_jobs.size.should ==
+                @dispatcher.jobs.reject { |job| job['proc'].empty? }.size
+        end
+    end
+
+    describe '#finished_jobs' do
+        it 'returns proc info for finished jobs' do
+            @dispatcher.finished_jobs.size.should ==
+                @dispatcher.jobs.select { |job| job['proc'].empty? }.size
+        end
+    end
+
+    describe '#workload_score' do
+        it 'returns a float signifying the amount of workload' do
+            @dispatcher.workload_score.should ==
+                ((@dispatcher.running_jobs.size + 1) * @opts.weight).to_f
+        end
+    end
+
     describe '#stats' do
-        it 'should return general statistics' do
+        it 'returns general statistics' do
             jobs = @dispatcher.jobs
             Process.kill( 'KILL', jobs.first['pid'] )
 
@@ -113,19 +134,19 @@ describe Arachni::RPC::Server::Dispatcher do
 
             stats['neighbours'].is_a?( Array ).should be_true
 
-            stats['node'].delete( 'score' ).is_a?( Float ).should be_true
+            stats['node'].delete( 'score' ).should == @dispatcher.workload_score
             stats['node'].should == @node_info
         end
     end
 
     describe '#log' do
-        it 'should return the contents of the log file' do
+        it 'returns the contents of the log file' do
             @dispatcher.log.should be_true
         end
     end
 
     describe '#proc_info' do
-        it 'should return the proc info of the dispatcher' do
+        it 'returns the proc info of the dispatcher' do
             info = @dispatcher.proc_info
             info.should be_true
 

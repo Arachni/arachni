@@ -1,8 +1,0 @@
-script: "bundle exec rake spec:core"
-rvm:
-  - 1.9.2
-  - 1.9.3
-branches:
-  only:
-    - master
-    - experimental

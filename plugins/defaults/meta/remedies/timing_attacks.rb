@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -32,6 +32,10 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
     # response times of a page must be greater or equal to this
     # in order to be considered
     TIME_THRESHOLD = 0.6
+
+    REMARK = 'This issue was discovered using a timing-attack but the audited ' +
+        'page was exhibiting unusually high response times to begin with. ' +
+        'This could be an indication that the logged issue is a false positive.'
 
     def prepare
         @times   = {}
@@ -68,9 +72,14 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
         # calculate average request time for each path
         @times.each_pair { |url, time| avg[url] = time / @counter[url] }
 
-        inconclusive = framework.audit_store.issues.map.with_index do |issue, idx|
+        inconclusive = framework.modules.issues.map.with_index do |issue, idx|
             next if !issue.tags || !issue.tags.includes_tags?( TAG ) ||
                 avg[ uri_parse( issue.url ).up_to_path ] < TIME_THRESHOLD
+
+            issue.add_remark :meta_analysis, REMARK
+
+            # Requires manual verification.
+            issue.verification = true
 
             {
                 'hash'   => issue.digest,
@@ -94,8 +103,8 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
         {
             name:        'Timing attack anomalies',
             description: %q{Analyzes the scan results and logs issues that used timing attacks
-                while the affected web pages demonstrated an unusually high response time.
-                A situation which renders the logged issues inconclusive or (possibly) false positives.
+                while the affected web pages demonstrated an unusually high response time;
+                a situation which renders the logged issues inconclusive or (possibly) false positives.
 
                 Pages with high response times usually include heavy-duty processing
                 which makes them prime targets for Denial-of-Service attacks.},

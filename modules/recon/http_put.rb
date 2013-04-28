@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ class Arachni::Modules::HTTP_PUT < Arachni::Module::Base
                 'W3' => 'http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html'
             },
             issue:       {
-                name:            %q{HTTP PUT is enabled.},
+                name:            %q{Publicly writable directory},
                 description:     %q{3rd parties can upload files to the web-server.},
                 tags:            %w(http methods put server),
                 cwe:             '650',

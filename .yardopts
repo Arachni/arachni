@@ -1,3 +1,6 @@
+--no-private
+--markup=markdown
+--verbose
 --title "Arachni - Web Application Security Scanner Framework"
 path_extractors/**/*.rb
 plugins/**/*.rb

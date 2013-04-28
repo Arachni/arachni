@@ -2,16 +2,16 @@ require 'sinatra'
 require 'sinatra/contrib'
 
 #REGEXP = {
-#    linux: 'ping -n (\d+) localhost',
-#    bsd: 'ping \-n (\d+) localhost',
-#    windows: 'ping \-c (\d+) localhost',
+#    linux: 'ping -c (\d+) localhost',
+#    bsd: 'ping \-c (\d+) localhost',
+#    windows: 'ping \-n (\d+) localhost',
 #    solaris: '\/usr\/sbin\/ping \-s localhost 1000 (\d+)',
 #}
 
 REGEXP = {
     linux:   'sleep (\d+)',
     bsd:     'sleep (\d+)',
-    windows: 'sleep (\d+)',
+    windows: 'ping \-n (\d+) localhost',
     solaris: 'sleep (\d+)'
 }
 
@@ -31,7 +31,7 @@ def exec( platform, str, prefix = nil, postfix = nil )
 end
 
 def variations
-    @@v ||= [ '', '&&', '|', ';' ]
+    @@v ||= [ '', '&', '&&', '|', ';' ]
 end
 
 def get_variations( platform, str )

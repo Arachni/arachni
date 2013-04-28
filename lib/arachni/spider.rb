@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -32,11 +32,19 @@ class Spider
     include UI::Output
     include Utilities
 
+    # How many times to retry failed requests.
+    MAX_TRIES = 5
+
     # @return [Arachni::Options]
     attr_reader :opts
 
     # @return [Array<String>]   URLs that caused redirects
     attr_reader :redirects
+
+    # @return [Array<String>]
+    #   URLs that elicited no response from the server.
+    #   Not determined by HTTP status codes, we're talking network failures here.
+    attr_reader :failures
 
     #
     # Instantiates Spider class with user options.
@@ -58,6 +66,9 @@ class Spider
         @pass_pages       = true
         @pending_requests = 0
 
+        @retries  = {}
+        @failures = []
+
         seed_paths
     end
 
@@ -65,10 +76,10 @@ class Spider
         @opts.url
     end
 
-    # @return   [Array<String>]  Working paths, paths that haven't yet been followed.
-    #                                You'll actually get a copy of the working paths
-    #                                and not the actual object itself;
-    #                                if you want to add more paths use {#push}.
+    # @return   [Array<String>]
+    #   Working paths, paths that haven't yet been followed.
+    #   You'll actually get a copy of the working paths and not the actual
+    #   object itself; if you want to add more paths use {#push}.
     def paths
         @paths.clone
     end
@@ -86,14 +97,17 @@ class Spider
     #
     # Runs the Spider and passes the requested object to the block.
     #
-    # @param [Bool] pass_pages_to_block  decides weather the block should be passed [Arachni::Page]s
-    #                           or [Typhoeus::Response]s
-    # @param [Block] block  to be passed each page as visited
+    # @param [Bool] pass_pages_to_block
+    #   Decides weather the block should be passed {Arachni::Page}s or
+    #   {Typhoeus::Response}s.
+    # @param [Block] block  To be passed each page as visited.
     #
     # @return [Array<String>]   sitemap
     #
     def run( pass_pages_to_block = true, &block )
         return if !@opts.crawl?
+
+        @running = true
 
         # options could have changed so reseed
         seed_paths
@@ -122,7 +136,7 @@ class Spider
                         call_on_each_page_blocks( pass_pages_to_block ? obj : Page.from_response( res, @opts ) )
                     end
 
-                    push( obj.paths )
+                    distribute( obj.paths )
                 end
             end
 
@@ -130,41 +144,37 @@ class Spider
         end
 
         http.run
+        @running = false
 
         call_on_complete_blocks
 
         sitemap
     end
 
-    #
-    # Sets blocks to be called every time a page is visited.
-    #
-    # @param    [Block]     block
-    #
+    def running?
+        !!@running
+    end
+
+    # @param    [Block] block
+    #   Sets blocks to be called every time a page is visited.
     def on_each_page( &block )
-        fail 'Block is mandatory!' if !block_given?
+        fail ArgumentError, 'Block is mandatory!' if !block_given?
         @on_each_page_blocks << block
         self
     end
 
-    #
-    # Sets blocks to be called every time a response is received.
-    #
     # @param    [Block]     block
-    #
+    #   Sets blocks to be called every time a response is received.
     def on_each_response( &block )
-        fail 'Block is mandatory!' if !block_given?
+        fail ArgumentError, 'Block is mandatory!' if !block_given?
         @on_each_response_blocks << block
         self
     end
 
-    #
-    # Sets blocks to be called once the crawler is done.
-    #
     # @param    [Block]    block
-    #
+    #   Sets blocks to be called once the crawler is done.
     def on_complete( &block )
-        fail 'Block is mandatory!' if !block_given?
+        fail ArgumentError, 'Block is mandatory!' if !block_given?
         @on_complete_blocks << block
         self
     end
@@ -173,57 +183,63 @@ class Spider
     # Pushes new paths for the crawler to follow; if the crawler has finished
     # it will be awaken when new paths are pushed.
     #
-    # The paths will be sanitized and normalized (cleaned up and converted to absolute ones).
+    # The paths will be sanitized and normalized (cleaned up and converted to
+    # absolute ones).
     #
     # @param    [String, Array<String>] paths
     #
-    # @return   [Bool]  true if push was successful,
-    #                       false otherwise (provided empty or paths that must be skipped)
+    # @return   [Bool]
+    #   `true` if push was successful, `false` otherwise (provided empty or
+    #   paths that must be skipped).
     #
-    def push( paths )
+    def push( paths, wakeup = true )
         paths = dedup( paths )
         return false if paths.empty?
 
         @paths |= paths
         @paths.uniq!
 
-        # REVIEW: This may cause segfaults, Typhoeus::Hydra doesn't like threads.
-        #Thread.new { run } if idle? # wake up the crawler
+         # REVIEW: This may cause segfaults, Typhoeus::Hydra doesn't like threads.
+        Thread.new { run } if wakeup && !running? # wake up the crawler
         true
     end
 
-    # @return [TrueClass, FalseClass] true if crawl is done, false otherwise
+    # @return [TrueClass, FalseClass] `true` if crawl is done, `false` otherwise.
     def done?
         idle? || limit_reached?
     end
 
-    # @return [TrueClass, FalseClass] true if the queue is empty and no
-    #                                           requests are pending, false otherwise
+    # @return [TrueClass, FalseClass]
+    #   `true` if the queue is empty and no requests are pending, `false` otherwise.
     def idle?
         @paths.empty? && @pending_requests == 0
     end
 
-    # @return [TrueClass] pauses the system on a best effort basis
+    # @return [TrueClass] Pauses the system on a best effort basis.
     def pause
         @pause = true
     end
 
-    # @return [TrueClass] resumes the system on a best effort basis
+    # @return [TrueClass] Resumes the system.
     def resume
         @pause = false
         true
     end
 
-    # @return [Bool] true if the system it paused, false otherwise
+    # @return [Bool] `true` if the system it paused, `false` otherwise.
     def paused?
         @pause ||= false
     end
 
     private
 
+    def distribute( urls )
+        push( urls, false )
+    end
+
     def seed_paths
-        push url
-        push @opts.extend_paths
+        @paths |= dedup( url )
+        @paths |= dedup( @opts.extend_paths )
     end
 
     def call_on_each_page_blocks( obj )
@@ -245,6 +261,7 @@ class Spider
 
     #
     # Decides if a URL should be skipped based on weather it:
+    #
     # * has previously been {#visited?}
     # * matches a {#redundant?} filter
     # * matches universal {#skip_path?} options like inclusion and exclusion filters
@@ -254,15 +271,17 @@ class Spider
     # @return   [Bool]  true if any of the 3 filters returns true, false otherwise
     #
     def skip?( url )
-        visited?( url ) || skip_path?( url )
-    end
+        if visited?( url )
+            print_debug "Skipping already visited URL: #{url}"
+            return true
+        end
 
-    def remove_path_params( url )
-        uri = ::Arachni::URI( url ).dup
-        uri.path = uri.path.split( ';' ).first.to_s
-        uri.to_s
-    rescue
-        nil
+         if skip_path?( url )
+             print_verbose "Skipping out of scope URL: #{url}"
+             return true
+         end
+
+        false
     end
 
     #
@@ -271,16 +290,16 @@ class Spider
     # @return   [Bool]  true if the url has already been visited, false otherwise
     #
     def visited?( url )
-        @visited.include?( remove_path_params( url ) )
+        @visited.include?( url )
     end
 
     # @return   [Bool]  true if the link-count-limit has been exceeded, false otherwise
     def limit_reached?
-        @opts.link_count_limit > 0 && @visited.size >= @opts.link_count_limit
+        @opts.link_count_limit_reached? @visited.size
     end
 
     #
-    # Checks is the provided URL matches a redundant filter
+    # Checks if the provided URL matches a redundant filter
     # and decreases its counter if so.
     #
     # If a filter's counter has reached 0 the method returns true.
@@ -290,7 +309,7 @@ class Spider
     # @return   [Bool]  true if the url is redundant, false otherwise
     #
     def redundant?( url )
-        redundant = @opts.redundant?( url ) do |count, regexp, path|
+        redundant = super( url ) do |count, regexp, path|
             print_info "Matched redundancy rule: #{regexp} for #{path}"
             print_info "Count-down: #{count}"
         end
@@ -345,7 +364,7 @@ class Spider
         wrap = proc do |res|
             effective_url = normalize_url( res.effective_url )
 
-            if res.redirection?
+            if res.redirection? && res.location
                 @redirects << res.request.url
                 location = to_absolute( res.location )
                 if hit_redirect_limit? || skip?( location )
@@ -356,9 +375,36 @@ class Spider
                 push location
             end
 
-            print_status( "[HTTP: #{res.code}] " + effective_url )
-            @sitemap[effective_url] = res.code
-            block.call( res )
+            if res.code == 0
+                @retries[url.hash] ||= 0
+
+                if @retries[url.hash] >= MAX_TRIES
+                    @failures << url
+
+                    print_error "Giving up on: #{effective_url}"
+                    print_error "Couldn't get a response after #{MAX_TRIES} tries."
+                    print_error "Because: #{res.curl_error_message}"
+                else
+                    @retries[url.hash] += 1
+                    repush( url )
+
+                    print_info "Retrying for: #{effective_url}"
+                    print_bad "Because: #{res.curl_error_message}"
+                    print_line
+                end
+
+                decrease_pending
+                next
+            end
+
+            print_status "[HTTP: #{res.code}] #{effective_url}"
+
+            if skip_response?( res )
+                print_info 'Ignoring due to exclusion criteria.'
+            else
+                @sitemap[effective_url] = res.code
+                block.call( res )
+            end
 
             decrease_pending
         end
@@ -374,7 +420,16 @@ class Spider
     end
 
     def visited( url )
-        @visited << remove_path_params( url )
+        @visited << url
+    end
+
+    def repush( url )
+        @visited.delete url
+        push url
+    end
+
+    def intercept_print_message( msg )
+        "Spider: #{msg}"
     end
 
 end

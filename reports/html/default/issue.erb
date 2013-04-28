@@ -77,6 +77,15 @@
                     </p>
                     <%end%>
 
+                    <% if (remarks = issue.variations.first.remarks).any? %>
+                        <h3>Remarks</h3>
+                        <% remarks.each do |commenter, remarks| %>
+                            <h4>By <%= commenter %>:</h4>
+                            <% remarks.each do |remark| %>
+                                <blockquote><p><%=escapeHTML( remark )%></p></blockquote>
+                            <% end %>
+                        <% end %>
+                    <% end %>
 
                 </div>
 

@@ -23,7 +23,7 @@ describe name_from_filename do
 YAML
     end
 
-    it 'should log safe and vuln URLs accordingly' do
+    it 'logs safe and vuln URLs accordingly' do
         run
 
         results     = actual_results

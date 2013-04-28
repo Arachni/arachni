@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -16,27 +16,24 @@
 
 module Arachni
 
-require Options.dir['lib'] + 'ui/cli/output'
-require Options.dir['mixins'] + 'terminal'
-require Options.dir['mixins'] + 'progress_bar'
 require Options.dir['arachni']
+require Options.dir['lib'] + 'ui/cli/utilities'
 
 module UI
 
 #
 # Provides a command line interface for the Arachni Framework.
+#
 # Most of the logic is in the Framework class however profiles can only
 # be loaded and saved at this level.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.9.1
+# @version 0.2
 # @see Arachni::Framework
 #
 class CLI
     include ::Arachni
-    include Mixins::Terminal
-    include Mixins::ProgressBar
 
     # the output interface for CLI
     include UI::Output
@@ -77,7 +74,7 @@ class CLI
         @arachni = Framework.new( @opts )
 
         # echo the banner
-        banner
+        print_banner
 
         # work on the user supplied arguments
         parse_opts
@@ -113,18 +110,11 @@ class CLI
             # if the user requested to exit the scan wait for the
             # Thread that takes care of the clean-up to finish
             @exit_handler.join if @exit_handler
-        rescue Component::Manager::InvalidOptions => e
+        rescue Component::Options::Error::Invalid => e
             print_error e
-            print_error_backtrace e
             print_line
             exit 1
-        rescue Exceptions::NoMods => e
-            print_error e
-            print_info "Run arachni with the '-h' parameter for help or "
-            print_info "with the '--lsmod' parameter to see all available modules."
-            print_line
-            exit 1
-        rescue Exceptions => e
+        rescue Arachni::Error => e
             print_error e
             print_info "Run arachni with the '-h' parameter for help."
             print_line
@@ -139,7 +129,7 @@ class CLI
     private
 
     def print_stats( refresh_time = false, unmute = false )
-        stats   = @arachni.stats( refresh_time )
+        stats = @arachni.stats( refresh_time )
         mapped  = stats[:sitemap_size]
 
         print_line( restr, unmute )
@@ -155,15 +145,10 @@ class CLI
             print_info( restr( "Crawling, discovered #{mapped} pages and counting." ), unmute )
         end
 
-        if @arachni.opts.link_count_limit > 0
-
-            feedback = ''
-            if @arachni.page_queue_total_size
-                feedback = " -- excluding #{@arachni.page_queue_total_size} pages of Trainer feedback"
-            end
-
-            print_info( restr( "Audit limited to a max of #{@arachni.opts.link_count_limit} " +
-                "pages#{feedback}." ),
+        if @arachni.opts.link_count_limit
+            print_info(
+                restr( "Audit limited to a max of #{@arachni.opts.link_count_limit} " +
+                                      "pages." ),
                 unmute
             )
         end
@@ -180,7 +165,7 @@ class CLI
         print_line( restr, unmute )
         if stats[:current_page] && !stats[:current_page].empty?
             print_info( restr( "Currently auditing" +
-                "           #{stats[:current_page]}" ), unmute )
+                                              "           #{stats[:current_page]}" ), unmute )
         end
 
         print_info( restr( "Burst response time total    #{stats[:curr_res_time]}" ), unmute )
@@ -192,6 +177,10 @@ class CLI
         print_info( restr( "Throttled max concurrency    #{stats[:max_concurrency]}" ), unmute )
 
         print_line( restr, unmute )
+    end
+
+    def print_issues( audit_store, unmute = false )
+        super( audit_store.issues, unmute, &method( :restr ) )
     end
 
     def kill_interrupt_handler
@@ -282,32 +271,10 @@ class CLI
         @audit.exit
 
         @exit_handler = Thread.new {
-            @arachni.clean_up( true )
+            @arachni.clean_up
             @arachni.reports.run( @arachni.audit_store )
             print_stats
         }
-    end
-
-    def print_issues( audit_store, unmute = false )
-        print_line( restr, unmute )
-        print_info( restr( "#{audit_store.issues.size} issues have been detected." ), unmute )
-
-        print_line( restr, unmute )
-
-        issues    = audit_store.issues
-        issue_cnt = audit_store.issues.count
-        issues.each.with_index do |issue, i|
-            input = issue.var ? " input `#{issue.var}`" : ''
-            meth  = issue.method ? " using #{issue.method}" : ''
-            cnt   = "#{i + 1} |".rjust( issue_cnt.to_s.size + 2 )
-
-            print_ok( restr(  "#{cnt} #{issue.name} at #{issue.url} in" +
-                " #{issue.elem}#{input}#{meth}." ),
-                unmute
-            )
-        end
-
-        print_line( restr, unmute )
     end
 
     #
@@ -317,7 +284,7 @@ class CLI
     # It basically prepares the framework before calling {Arachni::Framework#run}.
     #
     def parse_opts
-        if !@opts.repload && !@opts.help
+        if !@opts.repload && !@opts.help && !@opts.show_version?
 
             if !@opts.mods || @opts.mods.empty?
                 print_info 'No modules were specified.'
@@ -346,6 +313,10 @@ class CLI
 
                 when 'help'
                     usage
+                    exit 0
+
+                when 'version'
+                    print_version
                     exit 0
 
                 when 'arachni_verbose'
@@ -383,7 +354,7 @@ class CLI
                 when 'mods'
                     begin
                         @opts.mods = @arachni.modules.load( arg )
-                    rescue Exceptions::ComponentNotFound => e
+                    rescue Component::Error::NotFound => e
                         print_error e
                         print_info 'Available modules are:'
                         print_info @arachni.modules.available.join( ', ' )
@@ -395,7 +366,7 @@ class CLI
                 when 'reports'
                     begin
                         @arachni.reports.load( arg.keys )
-                    rescue Exceptions::ComponentNotFound => e
+                    rescue Component::Error::NotFound => e
                         print_error e
                         print_info 'Available reports are:'
                         print_info @arachni.reports.available.join( ', ' )
@@ -407,7 +378,7 @@ class CLI
                 when 'plugins'
                     begin
                         @arachni.plugins.load( arg.keys )
-                    rescue Exceptions::ComponentNotFound => e
+                    rescue Component::Error::NotFound => e
                         print_error e
                         print_info 'Available plugins are:'
                         print_info @arachni.plugins.available.join( ', ' )
@@ -428,6 +399,7 @@ class CLI
                     end
                     exit
             end
+
         end
 
         # Check for missing url
@@ -438,414 +410,24 @@ class CLI
 
     end
 
-    #
+    def print_version
+        print_line "Arachni #{Arachni::VERSION} (#{RUBY_ENGINE} #{RUBY_VERSION}" +
+            "p#{RUBY_PATCHLEVEL}) [#{RUBY_PLATFORM}]"
+    end
+
     # Outputs all available modules and their info.
-    #
     def lsmod
-        print_line
-        print_line
-        print_info 'Available modules:'
-        print_line
-
-        mods = @arachni.lsmod
-
-        i = 0
-        mods.each do |info|
-            print_status "#{info[:mod_name]}:"
-            print_line '--------------------'
-
-            print_line "Name:\t\t#{info[:name]}"
-            print_line "Description:\t#{info[:description]}"
-
-            if info[:elements] && info[:elements].size > 0
-                print_line "Elements:\t#{info[:elements].join( ', ' ).downcase}"
-            end
-
-            print_line "Author:\t\t#{info[:author].join( ", " )}"
-            print_line "Version:\t#{info[:version]}"
-
-            if info[:references]
-                print_line 'References:'
-                info[:references].keys.each do |key|
-                    print_info "#{key}\t\t#{info[:references][key]}"
-                end
-            end
-
-            if info[:targets]
-                print_line 'Targets:'
-
-                if info[:targets].is_a?( Hash )
-                    info[:targets].keys.each do |key|
-                        print_info "#{key}\t\t#{info[:targets][key]}"
-                    end
-                else
-                    info[:targets].each { |target| print_info( target ) }
-                end
-            end
-
-            if info[:issue] && sploit = info[:issue][:metasploitable]
-                print_line "Metasploitable:\t#{sploit}"
-            end
-
-            print_line "Path:\t#{info[:path]}"
-
-            i += 1
-
-            # pause every 3 modules to give the user time to read
-            # (cheers to aungkhant@yehg.net for suggesting it)
-            if i % 3 == 0 && i != mods.size
-                print_line
-                print_line 'Hit <space> <enter> to continue, any other key to exit. '
-
-                if gets[0] != ' '
-                    print_line
-                    return
-                end
-
-            end
-
-            print_line
-        end
-
+        super @arachni.lsmod
     end
 
-    #
     # Outputs all available reports and their info.
-    #
     def lsrep
-        print_line
-        print_line
-        print_info 'Available reports:'
-        print_line
-
-        @arachni.lsrep.each do |info|
-            print_status "#{info[:rep_name]}:"
-            print_line '--------------------'
-
-            print_line "Name:\t\t#{info[:name]}"
-            print_line "Description:\t#{info[:description]}"
-
-            if info[:options] && !info[:options].empty?
-                print_line( "Options:\t" )
-
-                info[:options].each do |option|
-                    print_info "\t#{option.name} - #{option.desc}"
-                    print_info "\tType:        #{option.type}"
-                    print_info "\tDefault:     #{option.default}"
-                    print_info "\tRequired?:   #{option.required?}"
-
-                    print_line
-                end
-            end
-
-            print_line "Author:\t\t#{info[:author].join( ", " )}"
-            print_line "Version:\t#{info[:version] }"
-            print_line "Path:\t#{info[:path]}"
-
-            print_line
-        end
+        super @arachni.lsrep
     end
 
-    #
     # Outputs all available reports and their info.
-    #
     def lsplug
-        print_line
-        print_line
-        print_info 'Available plugins:'
-        print_line
-
-        @arachni.lsplug.each do |info|
-            print_status "#{info[:plug_name]}:"
-            print_line '--------------------'
-
-            print_line "Name:\t\t#{info[:name]}"
-            print_line "Description:\t#{info[:description]}"
-
-            if info[:options] && !info[:options].empty?
-                print_line "Options:\t"
-
-                info[:options].each do |option|
-                    print_info "\t#{option.name} - #{option.desc}"
-                    print_info "\tType:        #{option.type}"
-                    print_info "\tDefault:     #{option.default}"
-                    print_info "\tRequired?:   #{option.required?}"
-
-                    print_line
-                end
-            end
-
-            print_line "Author:\t\t#{info[:author].join( ', ' )}"
-            print_line "Version:\t#{info[:version]}"
-            print_line "Path:\t#{info[:path]}"
-
-            print_line
-        end
-    end
-
-
-    #
-    # Loads an Arachni Framework Profile file and merges it with the
-    # user supplied options.
-    #
-    # @param    [Array<String>]    profiles    the files to load
-    #
-    def load_profile( profiles )
-        exception_jail{
-            @opts.load_profile = nil
-            profiles.each { |filename| @opts.merge!( @opts.load( filename ) ) }
-        }
-    end
-
-    #
-    # Saves options to an Arachni Framework Profile file.
-    # The file will be appended with the {PROFILE_EXT} extension.
-    #
-    # @param    [String]    filename
-    #
-    def save_profile( filename )
-        if filename = @opts.save( filename )
-            print_status "Saved profile in '#{filename}'."
-            print_line
-        else
-            banner
-            print_error 'Could not save profile.'
-            exit 0
-        end
-    end
-
-    def print_profile
-        print_info 'Running profile:'
-        print_info @opts.to_args
-    end
-
-    #
-    # Outputs Arachni banner.
-    # Displays version number, revision number, author details etc.
-    #
-    # @see VERSION
-    # @see REVISION
-    #
-    # @return [void]
-    #
-    def banner
-        print_line BANNER
-        print_line
-        print_line
-    end
-
-    #
-    # Outputs help/usage information.
-    # Displays supported options and parameters.
-    #
-    # @return [void]
-    #
-    def usage
-        print_line <<USAGE
-  Usage:  arachni \[options\] url
-
-  Supported options:
-
-
-    General ----------------------
-
-    -h
-    --help                      Output this.
-
-    -v                          Be verbose.
-
-    --debug                     Show what is happening internally.
-                                  (You should give it a shot sometime ;) )
-
-    --only-positives            Echo positive results *only*.
-
-    --http-req-limit=<integer>  Concurrent HTTP requests limit.
-                                  (Default: #{@opts.http_req_limit})
-                                  (Be careful not to kill your server.)
-                                  (*NOTE*: If your scan seems unresponsive try lowering the limit.)
-
-    --http-timeout=<integer>    HTTP request timeout in milliseconds.
-
-    --cookie-jar=<filepath>     Netscape HTTP cookie file, use curl to create it.
-
-    --cookie-string='<name>=<value>; <name2>=<value2>'
-
-                                Cookies, as a string, to be sent to the web application.
-
-    --user-agent=<string>       Specify user agent.
-
-    --custom-header='<name>=<value>'
-
-                                Specify custom headers to be included in the HTTP requests.
-                                (Can be used multiple times.)
-
-    --authed-by=<string>        Who authorized the scan, include name and e-mail address.
-                                  (It'll make it easier on the sys-admins during log reviews.)
-                                  (Will be appended to the user-agent string.)
-
-    --login-check-url=<url>     A URL used to verify that the scanner is still logged in to the web application.
-                                  (Requires 'login-check-pattern'.)
-
-    --login-check-pattern=<regexp>
-
-                                A pattern used against the body of the 'login-check-url' to verify that the scanner is still logged in to the web application.
-                                  (Requires 'login-check-url'.)
-
-    Profiles -----------------------
-
-    --save-profile=<filepath>   Save the current run profile/options to <filepath>.
-
-    --load-profile=<filepath>   Load a run profile from <filepath>.
-                                  (Can be used multiple times.)
-                                  (You can complement it with more options, except for:
-                                      * --modules
-                                      * --redundant)
-
-    --show-profile              Will output the running profile as CLI arguments.
-
-
-    Crawler -----------------------
-
-    -e <regexp>
-    --exclude=<regexp>          Exclude urls matching <regexp>.
-                                  (Can be used multiple times.)
-
-    -i <regexp>
-    --include=<regexp>          Include *only* urls matching <regex>.
-                                  (Can be used multiple times.)
-
-    --redundant=<regexp>:<limit>
-
-                                Limit crawl on redundant pages like galleries or catalogs.
-                                  (URLs matching <regexp> will be crawled <limit> amount of times.)
-                                  (Can be used multiple times.)
-
-    --auto-redundant=<limit>    Only follow <limit> amount of URLs with identical query parameter names.
-                                  (Default: inf)
-                                  (Will default to 10 if no value has been specified.)
-
-    -f
-    --follow-subdomains         Follow links to subdomains.
-                                  (Default: off)
-
-    --depth=<integer>           Directory depth limit.
-                                  (Default: inf)
-                                  (How deep Arachni should go into the site structure.)
-
-    --link-count=<integer>      How many links to follow.
-                                  (Default: inf)
-
-    --redirect-limit=<integer>  How many redirects to follow.
-                                  (Default: #{@opts.redirect_limit})
-
-    --extend-paths=<filepath>   Add the paths in <file> to the ones discovered by the crawler.
-                                  (Can be used multiple times.)
-
-    --restrict-paths=<filepath> Use the paths in <file> instead of crawling.
-                                  (Can be used multiple times.)
-
-
-    Auditor ------------------------
-
-    -g
-    --audit-links               Audit links.
-
-    -p
-    --audit-forms               Audit forms.
-
-    -c
-    --audit-cookies             Audit cookies.
-
-    --exclude-cookie=<name>     Cookie to exclude from the audit by name.
-                                  (Can be used multiple times.)
-
-    --exclude-vector=<name>     Input vector (parameter) not to audit by name.
-                                  (Can be used multiple times.)
-
-    --audit-headers             Audit HTTP headers.
-                                  (*NOTE*: Header audits use brute force.
-                                   Almost all valid HTTP request headers will be audited
-                                   even if there's no indication that the web app uses them.)
-                                  (*WARNING*: Enabling this option will result in increased requests,
-                                   maybe by an order of magnitude.)
-
-    Coverage -----------------------
-
-    --audit-cookies-extensively Submit all links and forms of the page along with the cookie permutations.
-                                  (*WARNING*: This will severely increase the scan-time.)
-
-    --fuzz-methods              Audit links, forms and cookies using both GET and POST requests.
-                                  (*WARNING*: This will severely increase the scan-time.)
-
-    --exclude-binaries          Exclude non text-based pages from the audit.
-                                  (Binary content can confuse recon modules that perform pattern matching.)
-
-    Modules ------------------------
-
-    --lsmod=<regexp>            List available modules based on the provided regular expression.
-                                  (If no regexp is provided all modules will be listed.)
-                                  (Can be used multiple times.)
-
-
-    -m <modname,modname..>
-    --modules=<modname,modname..>
-
-                                Comma separated list of modules to load.
-                                  (Modules are referenced by their filename without the '.rb' extension, use '--lsmod' to list all.
-                                   Use '*' as a module name to deploy all modules or as a wildcard, like so:
-                                      xss*   to load all xss modules
-                                      sqli*  to load all sql injection modules
-                                      etc.
-
-                                   You can exclude modules by prefixing their name with a minus sign:
-                                      --modules=*,-backup_files,-xss
-                                   The above will load all modules except for the 'backup_files' and 'xss' modules.
-
-                                   Or mix and match:
-                                      -xss*   to unload all xss modules.)
-
-
-    Reports ------------------------
-
-    --lsrep=<regexp>            List available reports based on the provided regular expression.
-                                  (If no regexp is provided all reports will be listed.)
-                                  (Can be used multiple times.)
-
-    --repload=<filepath>        Load audit results from an '.afr' report file.
-                                    (Allows you to create new reports from finished scans.)
-
-    --report='<report>:<optname>=<val>,<optname2>=<val2>,...'
-
-                                <report>: the name of the report as displayed by '--lsrep'
-                                  (Reports are referenced by their filename without the '.rb' extension, use '--lsrep' to list all.)
-                                  (Default: stdout)
-                                  (Can be used multiple times.)
-
-
-    Plugins ------------------------
-
-    --lsplug=<regexp>           List available plugins based on the provided regular expression.
-                                  (If no regexp is provided all plugins will be listed.)
-                                  (Can be used multiple times.)
-
-    --plugin='<plugin>:<optname>=<val>,<optname2>=<val2>,...'
-
-                                <plugin>: the name of the plugin as displayed by '--lsplug'
-                                  (Plugins are referenced by their filename without the '.rb' extension, use '--lsplug' to list all.)
-                                  (Can be used multiple times.)
-
-
-    Proxy --------------------------
-
-    --proxy=<server:port>       Proxy address to use.
-
-    --proxy-auth=<user:passwd>  Proxy authentication credentials.
-
-    --proxy-type=<type>         Proxy type; can be http, http_1_0, socks4, socks5, socks4a
-                                  (Default: http)
-
-
-USAGE
+        super @arachni.lsplug
     end
 
 end

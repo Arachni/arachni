@@ -17,6 +17,23 @@ get '/' do
     end
 end
 
+get '/fail_4_times' do
+    @@tries ||= 0
+    @@tries += 1
+
+    if @@tries <= 5
+        # Return a 0 error code.
+        0
+    else
+        'Stuff'
+    end
+end
+
+get '/fail' do
+    # Return a 0 error code.
+    0
+end
+
 get '/login' do
     <<-HTML
         <form method='post' name='login_form' action="/login">

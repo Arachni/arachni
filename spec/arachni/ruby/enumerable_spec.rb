@@ -16,7 +16,7 @@ describe Enumerable do
     end
 
     describe '#realsize' do
-        it 'should return the sum of the real size of its elements' do
+        it 'returns the sum of the real size of its elements' do
             c = @v.dup
             v = @v.dup
 
@@ -25,7 +25,7 @@ describe Enumerable do
         end
 
         context 'when the instance has variables' do
-            it 'should add their size to the sum' do
+            it 'adds their size to the sum' do
                 ma = MyArr.new( @v )
                 ma.stuff = 'my stuff'
 

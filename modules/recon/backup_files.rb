@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ class Arachni::Modules::BackupFiles < Arachni::Module::Base
 
     def self.info
         {
-            name:        'BackupFiles',
+            name:        'Backup files',
             description: %q{Tries to find sensitive backup files.},
             elements:    [ Element::PATH ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
@@ -65,7 +65,7 @@ class Arachni::Modules::BackupFiles < Arachni::Module::Base
                 'WebAppSec' => 'http://www.webappsec.org/projects/threat/classes/information_leakage.shtml'
             },
             issue:       {
-                name:            %q{A backup file exists on the server.},
+                name:            %q{Backup file},
                 description:     %q{The server response indicates that a file matching
     the name of a common naming scheme for file backups can be publicly accessible.
     A developer has probably forgotten to remove this file after testing.

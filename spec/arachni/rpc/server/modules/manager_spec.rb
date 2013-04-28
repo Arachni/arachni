@@ -40,19 +40,19 @@ describe Arachni::RPC::Server::Module::Manager do
     end
 
     describe '#available' do
-        it 'should return an array of available modules' do
+        it 'returns an array of available modules' do
             @modules.available.should be_any
         end
     end
 
     describe '#loaded' do
         context 'when there are loaded modules' do
-            it 'should return an empty array' do
+            it 'returns an empty array' do
                 @modules.loaded.should be_empty
             end
         end
         context 'when there are loaded modules' do
-            it 'should return an array of loaded modules' do
+            it 'returns an array of loaded modules' do
                 @modules.loaded.should be_empty
                 @modules.load '*'
                 @modules.loaded.should be_any
@@ -61,7 +61,7 @@ describe Arachni::RPC::Server::Module::Manager do
     end
 
     describe '#load' do
-        it 'should load modules by name' do
+        it 'loads modules by name' do
             @modules_clean.loaded.should be_empty
             @modules_clean.load 'test'
             @modules_clean.loaded.should == ['test']
@@ -69,7 +69,7 @@ describe Arachni::RPC::Server::Module::Manager do
     end
 
     describe '#load_all' do
-        it 'should load all modules' do
+        it 'loads all modules' do
             @modules_clean2.loaded.should be_empty
             @modules_clean2.load_all
             @modules_clean2.loaded.should == @modules_clean2.available

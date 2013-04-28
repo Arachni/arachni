@@ -8,7 +8,7 @@ describe Arachni::Module::Utilities do
     end
 
     describe '#read_file' do
-        it 'should read a file from a directory with the same name as the caller and return an array of stripped lines' do
+        it 'reads a file from a directory with the same name as the caller and return an array of stripped lines' do
             filename = 'read_file.txt'
             filepath = File.expand_path( File.dirname( __FILE__ ) ) + '/utilities_spec/' + filename
 
@@ -16,7 +16,7 @@ describe Arachni::Module::Utilities do
         end
 
         context 'if a block is given' do
-            it 'should read a file from a directory with the same name as the caller one stripped line at a time' do
+            it 'reads a file from a directory with the same name as the caller one stripped line at a time' do
                 filename = 'read_file.txt'
                 filepath = File.expand_path( File.dirname( __FILE__ ) ) + '/utilities_spec/' + filename
 

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -24,9 +24,7 @@ require lib + 'typhoeus/hydra'
 require lib + 'typhoeus/request'
 require lib + 'typhoeus/response'
 require lib + 'utilities'
-require lib + 'module/trainer'
 require lib + 'mixins/observable'
-require lib + 'http/cookie_jar'
 
 #
 # Provides a system-wide, simple and high-performance HTTP interface.
@@ -39,18 +37,31 @@ class HTTP
     include Utilities
     include Mixins::Observable
 
+    #
+    # {HTTP} error namespace.
+    #
+    # All {HTTP} errors inherit from and live under it.
+    #
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    #
+    class Error < Arachni::Error
+    end
+
+    require Options.dir['lib'] + 'http/cookie_jar'
+
     # Default maximum concurrency for HTTP requests.
     MAX_CONCURRENCY = 20
 
     # Default maximum redirect limit.
     REDIRECT_LIMIT  = 20
 
-    # Default user agent (will be appended the current Arachni version).
-    USER_AGENT      = 'Arachni/v'
-
     # Don't let the request queue grow more than this amount, if it does then
     # run the queued requests to unload it
     MAX_QUEUE_SIZE  = 5000
+
+    HTTP_TIMEOUT    = 50000
+
+    CUSTOM_404_CACHE_SIZE = 250
 
     # @return   [String]    framework seed/target URL
     attr_reader :url
@@ -76,9 +87,6 @@ class HTTP
     # @return   [Integer]   amount of responses received for the running requests (of the current burst)
     attr_reader :curr_res_cnt
 
-    # @return   [Arachni::Module::Trainer]
-    attr_reader :trainer
-
     def initialize
         reset
     end
@@ -88,10 +96,12 @@ class HTTP
     #
     # @return   [Arachni::HTTP] self
     #
-    def reset
+    def reset( hooks_too = true )
+        clear_observers if hooks_too
+
         opts = Options
 
-        req_limit = opts.http_req_limit || 20
+        req_limit = opts.http_req_limit || MAX_CONCURRENCY
 
         hydra_opts = {
             max_concurrency: req_limit,
@@ -115,12 +125,9 @@ class HTTP
         @hydra.disable_memoization
         @hydra_sync.disable_memoization
 
-        @trainer = Module::Trainer.new( opts )
-
-        opts.user_agent ||= USER_AGENT + VERSION.to_s
         @headers = {
-            'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'User-Agent'    => opts.user_agent
+            'Accept'     => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'User-Agent' => opts.user_agent
         }
         @headers['From'] = opts.authed_by if opts.authed_by
 
@@ -128,14 +135,7 @@ class HTTP
 
         @cookie_jar = CookieJar.new( opts.cookie_jar )
         update_cookies( opts.cookies ) if opts.cookies
-
-        if opts.cookie_string
-            cookies = opts.cookie_string.split( ';' ).map do |cookie_pair|
-                k, v = *cookie_pair.split( '=', 2 )
-                Cookie.new( opts.url.to_s, k.strip => Cookie.decode( v.strip ) )
-            end.flatten.compact
-            update_cookies( cookies )
-        end
+        update_cookies( opts.cookie_string ) if opts.cookie_string
 
         proxy_opts = {}
         proxy_opts = {
@@ -150,7 +150,7 @@ class HTTP
             follow_location:               false,
             max_redirects:                 opts.redirect_limit,
             disable_ssl_peer_verification: true,
-            timeout:                       opts.http_timeout || 50000
+            timeout:                       opts.http_timeout || HTTP_TIMEOUT
         }.merge( proxy_opts )
 
         @request_count  = 0
@@ -164,20 +164,9 @@ class HTTP
         @queue_size = 0
 
         @after_run = []
-        self
-    end
 
-    #
-    # Sets the current working page, passes it to the {#trainer} and updates the
-    # {#cookie_jar} using the page's cookiejar.
-    #
-    # @param    [Arachni::Page]    page
-    #
-    def page=( page )
-        trainer.page = page
-        # update the cookies
-        update_cookies( page.cookiejar ) if !page.cookiejar.empty?
-        page
+        @_404 = Hash.new
+        self
     end
 
     # Runs all queued requests
@@ -190,6 +179,9 @@ class HTTP
             @after_run.clear
 
             call_after_run_persistent
+
+            # Prune the custom 404 cache after callbacks have been called.
+            prune_custom_404_cache
 
             @curr_res_time = 0
             @curr_res_cnt  = 0
@@ -206,19 +198,22 @@ class HTTP
         exception_jail { @hydra.abort }
     end
 
-    # @return   [Integer]   amount of time (in seconds) that the current burst has been running
+    # @return   [Integer]
+    #   Amount of time (in seconds) that the current burst has been running.
     def burst_runtime
         @burst_runtime.to_i > 0 ?
             @burst_runtime : Time.now - (@burst_runtime_start || Time.now)
     end
 
-    # @return   [Integer]   average response time for the running requests (i.e. the current burst)
+    # @return   [Integer]
+    #   Average response time for the running requests (i.e. the current burst).
     def average_res_time
         return 0 if @curr_res_cnt == 0
         @curr_res_time / @curr_res_cnt
     end
 
-    # @return   [Integer]   responses/second for the running requests (i.e. the current burst)
+    # @return   [Integer]
+    #   Responses/second for the running requests (i.e. the current burst).
     def curr_res_per_second
         if @curr_res_cnt > 0 && burst_runtime > 0
             return (@curr_res_cnt / burst_runtime).to_i
@@ -235,12 +230,12 @@ class HTTP
         @hydra.max_concurrency = concurrency
     end
 
-    # @return   [Integer]   current maximum concurrency of HTTP requests
+    # @return   [Integer]   Current maximum concurrency of HTTP requests.
     def max_concurrency
         @hydra.max_concurrency
     end
 
-    # @return   [Array<Arachni::Element::Cookie>]   all cookies in the jar
+    # @return   [Array<Arachni::Element::Cookie>]   All cookies in the jar.
     def cookies
         @cookie_jar.cookies
     end
@@ -266,16 +261,21 @@ class HTTP
     end
 
     #
-    # Makes a generic request
+    # Makes a generic request.
     #
-    # @param  [URI]  url
-    # @param  [Hash] opts
-    # @param  [Block] block     callback
+    # @param  [URI]   url
+    # @param  [Hash]  opts    Request options.
+    # @option opts [Hash]  :params ({}) Request parameters.
+    # @option opts [Hash]  :train   (false)
+    #   Force Arachni to analyze the HTML code looking for new elements.
+    # @option opts [Hash]  :async   (true) Make the request async?
+    # @option opts [Hash]  :headers ({}) Extra HTTP request headers.
+    # @param  [Block] block  Callback to be passed the response.
     #
     # @return [Typhoeus::Request]
     #
     def request( url = @url, opts = {}, &block )
-        fail 'URL cannot be empty.' if !url
+        fail ArgumentError, 'URL cannot be empty.' if !url
 
         params    = opts[:params] || {}
         train     = opts[:train]
@@ -289,10 +289,10 @@ class HTTP
         follow_location = opts[:follow_location] || false
 
         #
-        # the exception jail function wraps the block passed to it
-        # in exception handling and runs it
+        # The exception jail function wraps the block passed to it
+        # in exception handling and runs it.
         #
-        # how cool is Ruby? Seriously....
+        # How cool is Ruby? Seriously....
         #
         exception_jail( false ) {
 
@@ -358,57 +358,38 @@ class HTTP
     end
 
     #
-    # Gets a URL passing the provided query parameters
+    # Gets a URL passing the provided query parameters.
     #
-    # @param  [URI]  url     URL to GET
-    # @param  [Hash] opts    request options
-    #                         * :params  => request parameters || {}
-    #                         * :train   => force Arachni to analyze the HTML code || false
-    #                         * :async   => make the request async? || true
-    #                         * :headers => HTTP request headers  || {}
-    #                         * :follow_location => follow redirects || false
+    # @param  (see #request)
+    # @return (see #request)
     #
-    # @param    [Block] block   callback to be passed the response
+    # @see #request
     #
-    # @return [Typhoeus::Request]
-    #
-    def get( url = @url, opts = { }, &block )
+    def get( url = @url, opts = {}, &block )
         request( url, opts, &block )
     end
 
     #
-    # Posts a form to a URL with the provided query parameters
+    # Posts a form to a URL with the provided query parameters.
     #
-    # @param  [URI]   url     URL to POST
-    # @param  [Hash]  opts    request options
-    #                          * :params  => request parameters || {}
-    #                          * :train   => force Arachni to analyze the HTML code || false
-    #                          * :async   => make the request async? || true
-    #                          * :headers => HTTP request headers  || {}
+    # @param  (see #request)
+    # @return (see #request)
     #
-    # @param    [Block] block   callback to be passed the response
+    # @see #request
     #
-    # @return [Typhoeus::Request]
-    #
-    def post( url = @url, opts = { }, &block )
+    def post( url = @url, opts = {}, &block )
         request( url, opts.merge( method: :post ), &block )
     end
 
     #
     # Sends an HTTP TRACE request to "url".
     #
-    # @param  [URI]   url     URL to POST
-    # @param  [Hash]  opts    request options
-    #                          * :params  => request parameters || {}
-    #                          * :train   => force Arachni to analyze the HTML code || false
-    #                          * :async   => make the request async? || true
-    #                          * :headers => HTTP request headers  || {}
+    # @param  (see #request)
+    # @return (see #request)
     #
-    # @param    [Block] block   callback to be passed the response
+    # @see #request
     #
-    # @return [Typhoeus::Request]
-    #
-    def trace( url = @url, opts = { }, &block )
+    def trace( url = @url, opts = {}, &block )
         request( url, opts.merge( method: :trace ), &block )
     end
 
@@ -416,18 +397,12 @@ class HTTP
     #
     # Gets a url with cookies and url variables
     #
-    # @param  [URI]   url      URL to GET
-    # @param  [Hash]  opts    request options
-    #                          * :params  => cookies || {}
-    #                          * :train   => force Arachni to analyze the HTML code || false
-    #                          * :async   => make the request async? || true
-    #                          * :headers => HTTP request headers  || {}
+    # @param  (see #request)
+    # @return (see #request)
     #
-    # @param    [Block] block   callback to be passed the response
+    # @see #request
     #
-    # @return [Typhoeus::Request]
-    #
-    def cookie( url = @url, opts = { }, &block )
+    def cookie( url = @url, opts = {}, &block )
         opts[:cookies] = (opts[:params] || {}).dup
         opts[:params]  = nil
         request( url, opts, &block )
@@ -436,31 +411,28 @@ class HTTP
     #
     # Gets a url with optional url variables and modified headers
     #
-    # @param  [URI]   url      URL to GET
-    # @param  [Hash]  opts    request options
-    #                          * :params  => headers || {}
-    #                          * :train   => force Arachni to analyze the HTML code || false
-    #                          * :async   => make the request async? || true
+    # @param  (see #request)
+    # @return (see #request)
     #
-    # @param    [Block] block   callback to be passed the response
+    # @see #request
     #
-    # @return [Typhoeus::Request]
-    #
-    def header( url = @url, opts = { }, &block )
-        opts[:headers] = (opts[:params] || {}).dup
+    def header( url = @url, opts = {}, &block )
+        opts[:headers] ||= {}
+        opts[:headers].merge! ((opts[:params] || {}).dup )
+
         opts[:params]  = nil
         request( url, opts, &block )
     end
 
     #
-    # Executes a +block+ under a sandbox.
+    # Executes a `block` under a sandbox.
     #
     # Cookies or new callbacks set as a result of the block won't affect the
     # HTTP singleton.
     #
     # @param    [Block] block
     #
-    # @return   [Object]    return value of the block
+    # @return   [Object]    Return value of the block.
     #
     def sandbox( &block )
         h = {}
@@ -481,19 +453,22 @@ class HTTP
     end
 
     #
-    # Updates the cookie-jar with the passed cookies
+    # Updates the cookie-jar with the passed cookies.
     #
-    # @param    [Array<Arachni::Element::Cookie>]   cookies
+    # @param    [Array<String, Hash, Arachni::Element::Cookie>]   cookies
     #
     def update_cookies( cookies )
         @cookie_jar.update( cookies )
+
+        # Update framework cookies.
+        Arachni::Options.cookies = @cookie_jar.cookies
     end
     alias :set_cookies :update_cookies
 
     #
-    # Extracts cookies from an HTTP response and updates the cookie-jar
+    # Extracts cookies from an HTTP response and updates the cookie-jar.
     #
-    # It also executes callbacks added with "add_on_new_cookies( &block )".
+    # It also executes callbacks added with `add_on_new_cookies( &block )`.
     #
     # @param    [Typhoeus::Response]    res
     #
@@ -501,15 +476,11 @@ class HTTP
         cookies = Cookie.from_response( res )
         update_cookies( cookies )
 
-        # update framework cookies
-        Options.cookies = cookies
-
         call_on_new_cookies( cookies, res )
     end
 
-    #
-    # @param    [Block] block   to be passed the new cookies and the response that set them
-    #
+    # @param    [Block] block
+    #   To be passed the new cookies and the response that set them
     def on_new_cookies( &block )
         add_on_new_cookies( &block )
     end
@@ -517,15 +488,14 @@ class HTTP
     #
     # Checks whether or not the provided response is a custom 404 page
     #
-    # @param  [Typhoeus::Response]  res  the response to check
-    # @param  [Block]   block   to be passed true or false depending on the result
+    # @param  [Typhoeus::Response]  res  The response to check.
+    # @param  [Block]   block
+    #   To be passed true or false depending on the result.
     #
     def custom_404?( res, &block )
         precision = 2
 
-        @_404 ||= {}
         path  = get_path( res.effective_url )
-        @_404[path] ||= []
 
         uri = uri_parse( res.effective_url )
         trv_back = File.dirname( uri.path )
@@ -550,30 +520,33 @@ class HTTP
             proc{ path + random_string + '/' }
         ]
 
-        @_404_gathered ||= BloomFilter.new
-
         gathered = 0
         body = res.body
 
-        if !@_404_gathered.include?( path )
+        if !path_analyzed_for_custom_404?( path )
             generators.each.with_index do |generator, i|
-                @_404[path][i] ||= {}
+                _404_signatures_for_path( path )[i] ||= {}
 
                 precision.times {
                     get( generator.call, follow_location: true ) do |c_res|
                         gathered += 1
 
                         if gathered == generators.size * precision
-                            @_404_gathered << path
+                            path_analyzed_for_custom_404( path )
 
                             # save the hash of the refined responses, no sense
                             # in wasting space
-                            @_404[path].each { |c404| c404['rdiff'] = c404['rdiff'].hash }
+                            _404_signatures_for_path( path ).each { |c404| c404[:rdiff] = c404[:rdiff].hash }
 
                             block.call is_404?( path, body )
                         else
-                            @_404[path][i]['body'] ||= c_res.body
-                            @_404[path][i]['rdiff'] = @_404[path][i]['body'].rdiff( c_res.body )
+                            _404_signatures_for_path( path )[i][:body] ||= c_res.body
+
+                            _404_signatures_for_path( path )[i][:rdiff] =
+                                _404_signatures_for_path( path )[i][:body].rdiff( c_res.body )
+
+                            _404_signatures_for_path( path )[i][:rdiff_words] =
+                                _404_signatures_for_path( path )[i][:rdiff].words.map( &:hash )
                         end
                     end
                 }
@@ -589,6 +562,41 @@ class HTTP
     end
 
     private
+
+    def prune_custom_404_cache
+        return if @_404.size <= CUSTOM_404_CACHE_SIZE
+
+        @_404.keys.each do |path|
+            # If the path hasn't been analyzed yet don't even consider
+            # removing it. Technically, at this point (after #hydra_run) there
+            # should not be any non analyzed paths but better be sure.
+            next if !@_404[path][:analyzed]
+
+            # We've done enough...
+            return if @_404.size < CUSTOM_404_CACHE_SIZE
+
+            @_404.delete( path )
+        end
+    end
+
+    def _404_data_for_path( path )
+        @_404[path] ||= {
+            analyzed:   false,
+            signatures: []
+        }
+    end
+
+    def _404_signatures_for_path( path )
+        _404_data_for_path( path )[:signatures]
+    end
+
+    def path_analyzed_for_custom_404?( path )
+        _404_data_for_path( path )[:analyzed]
+    end
+
+    def path_analyzed_for_custom_404( path )
+        _404_data_for_path( path )[:analyzed] = true
+    end
 
     def hydra_run
         @running = true
@@ -668,17 +676,6 @@ class HTTP
                 print_bad 'Request timed-out! -- ID# ' + res.request.id.to_s
                 @time_out_count += 1
             end
-
-            if req.train?
-                # handle redirections
-                if res.redirection? && res.location.is_a?( String )
-                    get( to_absolute( res.location, trainer.page.url ) ) do |res2|
-                        @trainer.push( res2 )
-                    end
-                else
-                    @trainer.push( res )
-                end
-            end
         end
 
         req.on_complete( &block ) if block_given?
@@ -696,9 +693,22 @@ class HTTP
     end
 
     def is_404?( path, body )
-        @_404[path].each do |_404|
-            return true if _404['body'].rdiff( body ).hash == _404['rdiff']
+        # give the rDiff algo a shot first hoping that a comparison of
+        # refined responses will be enough to give us a clear-cut positive
+        @_404[path][:signatures].each do |_404|
+            return true if _404[:body].rdiff( body ).hash == _404[:rdiff]
         end
+
+        # if the comparison of the refinements fails, compare them based on how
+        # many words are different between them
+        @_404[path][:signatures].each do |_404|
+            rdiff_body_words = _404[:body].rdiff( body ).words.map( &:hash )
+            return true if (
+                (_404[:rdiff_words] - rdiff_body_words) -
+                (rdiff_body_words - _404[:rdiff_words])
+            ).size < 25
+        end
+
         false
     end
 

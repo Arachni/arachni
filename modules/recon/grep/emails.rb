@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -39,13 +39,14 @@ class Arachni::Modules::EMails < Arachni::Module::Base
             version:     '0.1.1',
             targets:     %w(Generic),
             issue:       {
-                name:            %q{Disclosed e-mail address.},
+                name:            %q{E-mail address disclosure},
                 description:     %q{An e-mail address is being disclosed.},
                 cwe:             '200',
                 severity:        Severity::INFORMATIONAL,
                 remedy_guidance: %q{E-mail addresses should be presented in such
                     a way that it is hard to process them automatically.}
-            }
+            },
+            max_issues: 25
         }
     end
 

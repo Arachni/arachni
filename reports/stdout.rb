@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2.2
+# @version 0.2.3
 #
 class Arachni::Reports::Stdout < Arachni::Report::Base
 
@@ -101,7 +101,9 @@ class Arachni::Reports::Stdout < Arachni::Report::Base
 
         auditstore.issues.each_with_index do |issue, i|
 
-            print_ok "[#{i+1}] #{issue.name}"
+            trusted = issue.verification ? 'Untrusted' : 'Trusted'
+
+            print_ok "[#{i+1}] #{trusted} -- #{issue.name}"
             print_info '~~~~~~~~~~~~~~~~~~~~'
 
             print_info "ID Hash:  #{issue.digest}"
@@ -157,7 +159,7 @@ class Arachni::Reports::Stdout < Arachni::Report::Base
             name:        'Stdout',
             description: %q{Prints the results to standard output.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.2.2'
+            version:     '0.2.3'
         }
     end
 
@@ -174,8 +176,28 @@ class Arachni::Reports::Stdout < Arachni::Report::Base
             print_info "Regular expression: #{var['regexp']}"       if var['regexp']
             print_info "Matched string:     #{var['regexp_match']}" if var['regexp_match']
 
+            next if var.remarks.empty?
+
+            print_line
+            print_info 'Remarks'
+            print_info '-------'
+            var.remarks.each do |logger, remarks|
+                print_info "  By #{logger}:"
+                remarks.each do |remark|
+                    print_info "    *  #{word_wrap remark}"
+                end
+            end
+
             print_line
         end
     end
 
+    # Stolen from Rails.
+    def word_wrap( text, line_width = 80 )
+        return '' if text.to_s.empty?
+        text.split("\n").collect do |line|
+            line.length > line_width ?
+                line.gsub(/(.{1,#{line_width}})(\s+|$)/, "\\1\n").strip : line
+        end * "\n"
+    end
 end

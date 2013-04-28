@@ -16,23 +16,26 @@ describe Arachni::RPC::Client::Instance do
         @instance = Arachni::RPC::Client::Instance.new( @opts, "#{@opts.rpc_address}:#{@opts.rpc_port}", @token )
     end
 
-    context 'when connecting to an instance which requires a token' do
-        context 'with a valid token' do
-            it 'should be able to connect successfully' do
-                @instance.service.alive?.should be_true
-            end
-        end
-        context 'with an invalid token' do
-            it 'should fail to connect' do
-                inst = Arachni::RPC::Client::Instance.new( @opts, "#{@opts.rpc_address}:#{@opts.rpc_port}", 'blah' )
-
-                raised = false
-                begin
-                    inst.service.alive?.should be_true
-                rescue Arachni::RPC::Exceptions::InvalidToken
-                    raised = true
+    context 'when connecting to an instance' do
+        context 'which requires a token' do
+            context 'with a valid token' do
+                it 'connects successfully' do
+                    @instance.service.alive?.should be_true
                 end
-                raised.should be_true
+            end
+
+            context 'with an invalid token' do
+                it 'should fail to connect' do
+                    inst = Arachni::RPC::Client::Instance.new( @opts, "#{@opts.rpc_address}:#{@opts.rpc_port}", 'blah' )
+
+                    raised = false
+                    begin
+                        inst.service.alive?.should be_true
+                    rescue Arachni::RPC::Exceptions::InvalidToken
+                        raised = true
+                    end
+                    raised.should be_true
+                end
             end
         end
     end
@@ -43,17 +46,17 @@ describe Arachni::RPC::Client::Instance do
             @foo_url = Arachni::Module::Utilities.normalize_url( "http://test.com" )
         }
         context 'when assigning values' do
-            it 'should be able to use setters' do
+            it 'uses setters' do
                 val = @foo_url + '1'
                 (@rpc_opts.url = val).should == val
             end
-            it 'should be able to pass the value as a method param' do
+            it 'passes the value as a method parameter' do
                 val = @foo_url + '2'
                 @rpc_opts.url( val ).should == val
             end
 
             describe '#set' do
-                it 'should allow batch assigning using a hash' do
+                it 'allows batch assigning using a hash' do
                     val = @foo_url + '3'
                     @rpc_opts.set( url: val ).should be_true
                     @rpc_opts.url.to_s.should == val
@@ -61,7 +64,7 @@ describe Arachni::RPC::Client::Instance do
             end
         end
 
-        it 'should be able to retrieve values' do
+        it 'retrieves values' do
             val = Arachni::Module::Utilities.normalize_url( "http://test.com4" )
             @rpc_opts.url = val
             @rpc_opts.url.to_s.should == val
@@ -70,21 +73,21 @@ describe Arachni::RPC::Client::Instance do
 
     describe '#framework' do
         before { @framework = @instance.framework }
-        it 'should provide access to framework methods' do
+        it 'provides access to framework methods' do
             @framework.status.should be_true
         end
     end
 
     describe '#modules' do
         before { @modules = @instance.modules }
-        it 'should provide access to module manager methods' do
+        it 'provides access to module manager methods' do
             @modules.available.should be_true
         end
     end
 
     describe '#plugins' do
         before { @plugins = @instance.plugins }
-        it 'should provide  access to plugin manager methods' do
+        it 'provides access to plugin manager methods' do
             @plugins.available.should be_true
         end
     end

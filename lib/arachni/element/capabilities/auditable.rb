@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -75,24 +75,13 @@ module Auditable
     attr_reader   :opts
 
     #
-    # Holds constants that describe the HTML elements to be audited.
-    #
-    #module Element
-    #    include Arachni::Issue::Element
-    #end
-
-    #
     # Default audit options.
     #
     OPTIONS = {
-        #
         # Enable skipping of already audited inputs
-        #
         redundant: false,
 
-        #
         # Make requests asynchronously
-        #
         async:     true,
 
         #
@@ -104,10 +93,52 @@ module Auditable
     }
 
     #
-    # Frozen Key=>value pairs of inputs.
+    # Assigns an anonymous auditor as an {#auditor}.
+    #
+    # Alleviates the need to assign a custom auditor for simple stuff when
+    # scripting.
+    #
+    def use_anonymous_auditor
+        self.auditor = Class.new do
+            include Arachni::Module::Auditor
+
+            #
+            # @return   [Array<Issue>]  Unfiltered logged issues.
+            #
+            # @see Arachni::Module::Manager.results
+            #
+            def raw_issues
+                Arachni::Module::Manager.results
+            end
+
+            #
+            # @return   [Array<Issue>]  Deduplicated issues.
+            #
+            # @see AuditStore#issues
+            #
+            def issues
+                auditstore.issues
+            end
+
+            # @return   [AuditStore]
+            def auditstore
+                AuditStore.new( options: Options.instance.to_h,
+                                issues:  raw_issues )
+            end
+            alias :audit_store :auditstore
+
+            def self.info
+                { name: 'Anonymous auditor' }
+            end
+        end.new
+    end
+
+    #
+    # Frozen inputs.
     #
     # If you want to change it you'll either have to use {#update}
-    # or the {#auditable=} attr_writer and pass a new hash -- the new hash will also be frozen.
+    # or the {#auditable=} attr_writer and pass a new hash -- the new hash
+    # will also be frozen.
     #
     # @return   [Hash]
     #
@@ -116,8 +147,9 @@ module Auditable
     end
 
     #
-    # @param    [Hash]  hash    key=>value pair of inputs/params.
-    #                               Will convert keys and values to string.
+    # @param  [Hash]  hash Inputs/params.
+    #
+    # @note Will convert keys and values to strings.
     #
     # @see auditable
     #
@@ -130,7 +162,8 @@ module Auditable
     #
     # Checks whether or not the given inputs match the auditable ones.
     #
-    # @param    [Hash, Array, String, Symbol]   args names to check (also accepts var-args)
+    # @param    [Hash, Array, String, Symbol]   args
+    #   Names of inputs to check (also accepts var-args).
     #
     # @return   [Bool]
     #
@@ -144,8 +177,8 @@ module Auditable
     end
 
     #
-    # @param    [Hash]  hash  key=>value pair of inputs/params with which to
-    #                               update the #auditable inputs
+    # @param    [Hash]  hash
+    #   Inputs with which to update the {#auditable} inputs.
     #
     # @return   [Auditable]   self
     #
@@ -157,11 +190,7 @@ module Auditable
         self
     end
 
-    #
-    # Returns changes make to the auditable's inputs.
-    #
-    # @param    [Hash]  hash  key=>value pair of updated inputs/params
-    #
+    # @return   [Hash]  Returns changes make to the {#auditable}'s inputs.
     def changes
         (self.orig.keys | self.auditable.keys).inject( {} ) do |h, k|
             if self.orig[k] != self.auditable[k]
@@ -172,7 +201,7 @@ module Auditable
     end
 
     #
-    # Shorthand {#auditable} reader
+    # Shorthand {#auditable} reader.
     #
     # @param    [#to_s] k   key
     #
@@ -183,7 +212,7 @@ module Auditable
     end
 
     #
-    # Shorthand {#auditable} writer
+    # Shorthand {#auditable} writer.
     #
     # @param    [#to_s] k   key
     # @param    [#to_s] v   value
@@ -210,7 +239,8 @@ module Auditable
     #
     # Elements which do not fit the scope are ignored.
     #
-    # When called, the element will override the scope and be audited no-matter what.
+    # When called, the element will override the scope and be audited
+    # no-matter what.
     #
     # This is mainly used on elements discovered during audit-time by the trainer.
     #
@@ -258,7 +288,8 @@ module Auditable
     #
     # *Caution*: Each call overwrites the last.
     #
-    # @param    [Array<String>]    elements     array of element/audit IDs by {#scope_audit_id}
+    # @param    [Array<String>]    elements
+    #   Element audit IDs as returned by {#scope_audit_id}.
     #
     # @see scope_audit_id
     #
@@ -274,7 +305,7 @@ module Auditable
     # Invoked by {#submit} to submit the object.
     #
     # @param    [Hash]      opts
-    # @param    [Block]     block    callback to be passed the HTTP response
+    # @param    [Block]     block    Callback to be passed the HTTP response.
     #
     # @return   [Typhoeus::Request]
     #
@@ -284,25 +315,17 @@ module Auditable
     def http_request( opts, &block )
     end
 
-    #
-    # Returns the {#auditor}'s HTTP interface or reverts to Arachni::HTTP.instance
-    #
     # @return   [Arachni::HTTP]
-    #
     def http
         HTTP
     end
 
-    #
-    # @return   [Bool]  true if it has no auditor
-    #
+    # @return   [Bool]  `true` if it has no auditor, `false` otherwise.
     def orphan?
         !@auditor
     end
 
-    #
     # Resets the auditable inputs to their original format/values.
-    #
     def reset
         self.auditable = @orig.dup
     end
@@ -315,7 +338,7 @@ module Auditable
     # Submits self using {#http_request}.
     #
     # @param  [Hash]  opts
-    # @param  [Block]  block    callback to be passed the HTTP response
+    # @param  [Block]  block    Callback to be passed the HTTP response.
     #
     # @see #http_request
     #
@@ -330,6 +353,7 @@ module Auditable
         @opts = opts
 
         @auditor ||= opts[:auditor] if opts[:auditor]
+        use_anonymous_auditor if !@auditor
 
         opts.delete( :auditor )
 
@@ -343,16 +367,19 @@ module Auditable
     #
     # Submits mutations of self and calls the block to handle the responses.
     #
-    # Requires an {#auditor}.
+    # @note Requires an {#auditor}, if none has been provided it will fallback
+    #   to an {#use_anonymous_auditor anonymous} one.
     #
-    # @param  [String]  injection_str  the string to be injected
-    # @param  [Hash]    opts           options as described in {OPTIONS}
-    # @param  [Block]   block         block to be used for analysis of responses; will be passed the following:
-    #                                  * HTTP response
-    #                                  * options
-    #                                  * element
-    #                                  The block will be called as soon as the
-    #                                  HTTP response is received.
+    # @param  [String]  injection_str  The string to be injected.
+    # @param  [Hash]    opts             Options as described in {OPTIONS}.
+    # @param  [Block]   block
+    #   Block to be used for analysis of responses; will be passed the following:
+    #
+    #     * HTTP response
+    #     * options
+    #     * element
+    #
+    #     The block will be called as soon as the HTTP response is received.
     #
     # @see #submit
     #
@@ -368,12 +395,13 @@ module Auditable
 
         # if we don't have any auditable elements just return
         if auditable.empty?
-            print_debug "The element has no auditable inputs, returning."
+            print_debug 'The element has no auditable inputs, returning.'
             return false
         end
 
         @auditor ||= opts[:auditor]
         opts[:auditor] ||= @auditor
+        use_anonymous_auditor if !@auditor
 
         audit_id = audit_id( injection_str, opts )
         return false if !opts[:redundant] && audited?( audit_id )
@@ -423,20 +451,19 @@ module Auditable
         false
     end
 
-    #
-    # Returns a status string explaining what's being audited.
-    #
-    # The string contains the name of the input that is being audited,
-    # the url and the type of the input (form, link, cookie...).
-    #
     # @return  [String]
+    #   Status string explaining what's being audited.
+    #
+    #   The string contains the name of the input that is being audited,
+    #   the url and the type of the input (form, link, cookie...).
     #
     def status_string
         "Auditing #{self.type} variable '#{self.altered}' with action '#{self.action}'."
     end
 
     #
-    # Returns an audit ID string used to avoid redundant audits or identify the element.
+    # Returns an audit ID string used to avoid redundant audits or identify
+    # the element.
     #
     # @param  [String]  injection_str
     # @param  [Hash]    opts
@@ -457,13 +484,12 @@ module Auditable
     end
 
     #
-    # Predicts what the {Issue#unique_id} of an issue would look like,
-    # should self be vulnerable.
-    #
-    # Mainly used by {Arachni::Module::Auditor#skip?} to prevent redundant audits for elements/issues
-    # which have already been logged as vulnerable.
+    # @note Mainly used by {Arachni::Module::Auditor#skip?} to prevent redundant
+    #   audits for elements/issues which have already been logged as vulnerable.
     #
     # @return   [String]
+    #   Predicts what the {Issue#unique_id} of an issue would look like,
+    #   should self be vulnerable.
     #
     def provisioned_issue_id( auditor_fanxy_name = @auditor.fancy_name )
         "#{auditor_fanxy_name}::#{type}::#{altered}::#{self.action.split( '?' ).first}"
@@ -528,12 +554,14 @@ module Auditable
     #
     # @param  [Typhoeus::Request]  req    request
     # @param  [Auditable]    elem    element
-    # @param  [Block]   block         block to be passed the:
-    #                                   * HTTP response
-    #                                   * name of the input vector
-    #                                   * updated opts
-    #                                    The block will be called as soon as the
-    #                                    HTTP response is received.
+    # @param  [Block]   block
+    #   Block to be used for analysis of responses; will be passed the following:
+    #
+    #     * HTTP response
+    #     * options
+    #     * element
+    #
+    #     The block will be called as soon as the HTTP response is received.
     #
     def on_complete( req, elem, &block )
         return if !req

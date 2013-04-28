@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -19,3 +19,4 @@ require lib + 'base'
 require lib + 'least_recently_used'
 require lib + 'random_replacement'
 require lib + 'least_cost_replacement'
+require lib + 'preference'

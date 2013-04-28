@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -119,7 +119,9 @@ class Parser
     end
 
     def url=( str )
-        @url = normalize_url( str )
+        @url = normalize_url( uri_decode( str ) )
+        @url = normalize_url( str ) if !@url
+        @url
     end
 
     #
@@ -167,7 +169,7 @@ class Parser
                 method:           req_method,
                 query_vars:       self_link.auditable,
                 body:             @html,
-                request_headers:  @response.request.headers,
+                request_headers:  @response.request ? @response.request.headers : {},
                 response_headers: @response_headers,
                 text:             false
             )
@@ -183,7 +185,7 @@ class Parser
 
         # if there's a Netscape cookiejar file load cookies from it but only new ones,
         # i.e. only if they weren't in the response
-        if @opts.cookie_jar
+        if @opts.cookie_jar.is_a?( String ) && File.exists?( @opts.cookie_jar )
             from_jar |= cookies_from_file( @url, @opts.cookie_jar )
                 .reject { |c| cookie_names.include?( c.name ) }
         end
@@ -216,7 +218,7 @@ class Parser
             method:           req_method,
             body:             @html,
 
-            request_headers:  @response.request.headers,
+            request_headers:  @response.request ? @response.request.headers : {},
             response_headers: @response_headers,
 
             document:         doc,
@@ -242,9 +244,7 @@ class Parser
     alias :run :page
 
     def text?
-        type = @response.content_type
-        return false if !type
-        type.to_s.substring?( 'text' )
+        @response.text?
     end
 
     def doc
@@ -266,7 +266,6 @@ class Parser
             'Accept'          => 'text/html,application/xhtml+xml,application' +
                 '/xml;q=0.9,*/*;q=0.8',
             'Accept-Charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
-            'Accept-Language' => 'en-gb,en;q=0.5',
             'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
             'From'       => @opts.authed_by  || '',
             'User-Agent' => @opts.user_agent || '',

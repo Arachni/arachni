@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -20,10 +20,11 @@ require 'bundler/setup'
 require 'base64'
 
 require 'yaml'
-YAML::ENGINE.yamler = 'syck'
 
 require 'singleton'
 require 'getoptlong'
+
+require_relative 'error'
 
 module Arachni
 
@@ -38,11 +39,31 @@ class Options
     include Singleton
 
     #
+    # {Options} error namespace.
+    #
+    # All {Options} errors inherit from and live under it.
+    #
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    #
+    class Error < Arachni::Error
+
+        #
+        # Raised when a provided {Options#url= URL} is invalid.
+        #
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        #
+        class InvalidURL < Error
+        end
+    end
+
+    #
     # The extension of the profile files.
     #
     # @return    [String]
     #
     PROFILE_EXT = '.afp'
+
+    USER_AGENT = 'Arachni/v' + Arachni::VERSION.to_s
 
     #
     # General purpose datastore.
@@ -60,9 +81,10 @@ class Options
 
     #
     # Supported values:
+    #
     # * high_performance
     #
-    # If +nil+, it won't make use of the Grid.
+    # If `nil`, it won't make use of the Grid.
     #
     # @return   [String]    current grid mode
     attr_accessor :grid_mode
@@ -107,7 +129,7 @@ class Options
     #
     # The URL to audit
     #
-    # @return    [String,URI]
+    # @return    [String]
     #
     attr_reader   :url
 
@@ -310,6 +332,9 @@ class Options
     #
     attr_accessor :proxy_type
 
+    # @return    [String]     Proxy URL (`host:port`)
+    attr_accessor :proxy
+
     #
     # To be populated by the framework
     #
@@ -346,6 +371,13 @@ class Options
     # @return    [Array]
     #
     attr_accessor :exclude
+
+    #
+    # Page bodies matching any of these patterns will be are ignored.
+    #
+    # @return    [Array]
+    #
+    attr_accessor :exclude_pages
 
     #
     # Cookies to exclude from the audit
@@ -403,7 +435,7 @@ class Options
     #   first element should be the lowest port number, last the max port number.
     attr_accessor :rpc_instance_port_range
 
-    # @return   [Bool]  +true+ if SSL should be enabled, +false+ otherwise.
+    # @return   [Bool]  `true` if SSL should be enabled, `false` otherwise.
     attr_accessor :ssl
 
     # @return   [String]  path to a PEM private key
@@ -424,18 +456,12 @@ class Options
     # @return   [String]  URL of an RPC dispatcher (used by the CLI RPC client interface)
     attr_accessor :server
 
-    # @return   [Bool]  +true+ if the output of the RPC instances should be
-    #                       redirected to a file, +false+ otherwise
+    # @return   [Bool]  `true` if the output of the RPC instances should be
+    #                       redirected to a file, `false` otherwise
     attr_accessor :reroute_to_logfile
 
     # @return   [Integer]   amount of Instances to keep in the pool
     attr_accessor :pool_size
-
-    # @return   [String]    username for the WebUI
-    attr_accessor :webui_username
-
-    # @return   [String]    password for the WebUI
-    attr_accessor :webui_password
 
     # @return   [Hash<String, String>]    custom HTTP headers to be included
     #                                           for every HTTP Request
@@ -459,6 +485,9 @@ class Options
     # @return   [Integer]   maximum amount of slave Instances to use
     attr_accessor :max_slaves
 
+    # @return   [Integer]   amount of child Instances to spawn
+    attr_accessor :spawns
+
     attr_accessor :fuzz_methods
 
     attr_accessor :exclude_binaries
@@ -471,6 +500,13 @@ class Options
 
     # @return   [Integer]   HTTP request timeout in milliseconds
     attr_accessor :http_timeout
+
+    # @return   [Bool]   Only follow HTTPS links.
+    attr_accessor :https_only
+
+    attr_accessor :grid
+
+    attr_accessor :version
 
     def initialize
         reset
@@ -500,17 +536,23 @@ class Options
         # both as a default configuration and as an inexpensive way to declare
         # their data types for later verification
 
+        @user_agent   = USER_AGENT
+        @http_timeout = 50000
+
         @datastore  = {}
         @redundant  = {}
 
+        @grid = false
+
+        @https_only        = false
         @obey_robots_txt   = false
         @fuzz_methods      = false
         @audit_cookies_extensively = false
         @exclude_binaries  = false
-        @auto_redundant    = false
+        @auto_redundant    = nil
 
-        @depth_limit      = -1
-        @link_count_limit = -1
+        @depth_limit      = nil
+        @link_count_limit = nil
         @redirect_limit   = 20
 
         @lsmod      = []
@@ -523,8 +565,9 @@ class Options
         @reports    = {}
 
         @exclude    = []
-        @exclude_cookies    = []
-        @exclude_vectors    = []
+        @exclude_pages   = []
+        @exclude_cookies = []
+        @exclude_vectors = []
 
         @include    = []
 
@@ -540,7 +583,17 @@ class Options
 
         @min_pages_per_instance = 30
         @max_slaves = 10
+
+        @spawns = 0
         self
+    end
+
+    def show_version?
+        !!@version
+    end
+
+    def https_only?
+        !!@https_only
     end
 
     #
@@ -555,6 +608,8 @@ class Options
     #
     # @return   [Bool]  true if the url is redundant, false otherwise
     #
+    # @see #redundant
+    #
     def redundant?( url, &block )
         redundant.each do |regexp, count|
             next if !(url =~ regexp)
@@ -564,6 +619,21 @@ class Options
 
             redundant[regexp] -= 1
         end
+        false
+    end
+
+    #
+    # Checks if the given string matches one of the configured {#exclude_pages} patterns.
+    #
+    # @param    [String]    body
+    #
+    # @return   [Bool]
+    #   `true` if `body` matches an {#exclude_pages} pattern, `false` otherwise.
+    #
+    # @see #exclude_pages
+    #
+    def exclude_page?( body )
+        Options.exclude_pages.each { |i| return true if body.to_s =~ i }
         false
     end
 
@@ -584,33 +654,48 @@ class Options
     end
 
     def crawl
-        self.link_count_limit = -1
+        self.link_count_limit = nil
     end
 
     def crawl?
-        self.link_count_limit != 0
+        !link_count_limit || link_count_limit != 0
+    end
+
+    def link_count_limit_reached?( count )
+        link_count_limit && link_count_limit.to_i > 0 && count >= link_count_limit
     end
 
     #
-    # Normalizes and sets +url+ as the target URL.
+    # Normalizes and sets `url` as the target URL.
     #
     # @param    [String]    url     absolute URL of the targeted web app
     #
-    # @return   [String]    normalized +url+
+    # @return   [String]    normalized `url`
+    #
+    # @raise    [Error::InvalidURL]     If the given `url` is not valid.
     #
     def url=( url )
         return if !url
 
-        require @dir['lib'] + 'exceptions'
         require @dir['lib'] + 'ruby'
         require @dir['lib'] + 'cache'
         require @dir['lib'] + 'utilities'
 
         parsed = Utilities.uri_parse( url.to_s )
-        if !parsed || !parsed.absolute? ||
-            (!no_protocol_for_url? && !%w(http https).include?( parsed.scheme ))
-            fail Exceptions::InvalidURL,
+        if !parsed || !parsed.absolute?
+            fail Error::InvalidURL,
                  "Invalid URL argument, please provide a full absolute URL and try again."
+        else
+            if !no_protocol_for_url?
+                if https_only? && parsed.scheme != 'https'
+                    fail Error::InvalidURL,
+                         "Invalid URL argument, the 'https-only' option requires"+
+                             " an HTTPS URL."
+                elsif !%w(http https).include?( parsed.scheme )
+                    fail Error::InvalidURL,
+                         "Invalid URL scheme, please provide an HTTP or HTTPS URL and try again."
+                end
+            end
         end
 
         @url = parsed.to_s
@@ -634,6 +719,7 @@ class Options
         end
         true
     end
+    alias :audit= :audit
 
     #
     # Disables auditing of element types.
@@ -683,7 +769,7 @@ class Options
     # @return   [TrueClass]
     #
     def set( options )
-        options.each_pair do |k, v|
+        options.each do |k, v|
             begin
                 send( "#{k.to_s}=", v )
             rescue => e
@@ -742,7 +828,7 @@ class Options
     alias :modules= :mods=
 
     # these options need to contain Array<Regexp>
-    [ :include, :exclude, :lsmod, :lsrep, :lsplug ].each do |m|
+    [ :exclude_pages, :include, :exclude, :lsmod, :lsrep, :lsplug ].each do |m|
         define_method( "#{m}=".to_sym ) do |arg|
             arg = [arg].flatten.map { |s| s.is_a?( Regexp ) ? s : Regexp.new( s.to_s ) }
             instance_variable_set( "@#{m}".to_sym, arg )
@@ -783,9 +869,10 @@ class Options
             [ '--cookie-string'          , GetoptLong::REQUIRED_ARGUMENT ],
             [ '--user-agent',        '-b', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--exclude',           '-e', GetoptLong::REQUIRED_ARGUMENT ],
-            [ '--include',           '-i', GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--exclude-page',            GetoptLong::REQUIRED_ARGUMENT ],
             [ '--exclude-cookie',          GetoptLong::REQUIRED_ARGUMENT ],
             [ '--exclude-vector',          GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--include',           '-i', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--http-req-limit',          GetoptLong::REQUIRED_ARGUMENT ],
             [ '--http-timeout',            GetoptLong::REQUIRED_ARGUMENT ],
             [ '--follow-subdomains', '-f', GetoptLong::NO_ARGUMENT ],
@@ -822,7 +909,11 @@ class Options
             [ '--exclude-binaries',       GetoptLong::NO_ARGUMENT ],
             [ '--auto-redundant',         GetoptLong::OPTIONAL_ARGUMENT ],
             [ '--login-check-url',        GetoptLong::REQUIRED_ARGUMENT ],
-            [ '--login-check-pattern',    GetoptLong::REQUIRED_ARGUMENT ]
+            [ '--login-check-pattern',    GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--spawns',                 GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--grid',                   GetoptLong::NO_ARGUMENT ],
+            [ '--https-only',             GetoptLong::NO_ARGUMENT ],
+            [ '--version',                GetoptLong::NO_ARGUMENT ]
         )
 
         opts.quiet = true
@@ -834,6 +925,9 @@ class Options
 
                     when '--help'
                         @help = true
+
+                    when '--version'
+                        @version = true
 
                     when '--serialized-opts'
                         merge!( unserialize( arg ) )
@@ -961,6 +1055,8 @@ class Options
                         @proxy_host, @proxy_port =
                             arg.to_s.split( /:/ )
 
+                        @proxy_port = @proxy_port.to_i
+
                     when '--proxy-auth'
                         @proxy_username, @proxy_password =
                             arg.to_s.split( /:/ )
@@ -980,14 +1076,17 @@ class Options
                     when '--exclude'
                         @exclude << Regexp.new( arg )
 
-                    when '--include'
-                        @include << Regexp.new( arg )
+                    when '--exclude-page'
+                        @exclude_pages << Regexp.new( arg )
 
                     when '--exclude-cookie'
                         @exclude_cookies << arg
 
                     when '--exclude-vector'
                         @exclude_vectors << arg
+
+                    when '--include'
+                        @include << Regexp.new( arg )
 
                     when '--follow-subdomains'
                         @follow_subdomains = true
@@ -1042,12 +1141,6 @@ class Options
                     when '--host'
                         @server = arg.to_s
 
-                    when '--username'
-                        @webui_username = arg.to_s
-
-                    when '--password'
-                        @webui_password = arg.to_s
-
                     when '--fuzz-methods'
                         @fuzz_methods = true
 
@@ -1065,12 +1158,22 @@ class Options
 
                     when '--login-check-pattern'
                         @login_check_pattern = arg
+
+                    when '--spawns'
+                        @spawns = arg.to_i
+
+                    when '--grid'
+                        @grid = true
+
+                    when '--https-only'
+                        @https_only = true
                 end
             end
 
             if (!@login_check_url && @login_check_pattern) ||
                 (@login_check_url && !@login_check_pattern)
-                fail "Both '--login-check-url' and '--login-check-pattern' options are required."
+                fail Error, "Both '--login-check-url' and " +
+                    "'--login-check-pattern' options are required."
             end
 
         rescue => e
@@ -1119,7 +1222,7 @@ class Options
     end
 
     #
-    # Saves 'self' to +file+.
+    # Saves 'self' to `file`
     #
     # @param    [String]    file
     #
@@ -1206,18 +1309,19 @@ class Options
     #
     # @param    [Arachni::Options]  other
     #
-    # @return   [Bool]  +true+ if +self == other+, +false+ otherwise
+    # @return   [Bool]  `true` if `self == other` `false` otherwise
     #
     def ==( other )
         to_hash == other.to_hash
     end
 
     #
-    # Merges +self+ with the object in +options+, skipping +nils+ and empty +Array+s or +Hash+es.
+    # Merges `self` with the object in `options` skipping `nils` and empty
+    # `Array`s or `Hash`es.
     #
     # @param    [Arachni::Options, #to_hash]   options
     #
-    # @return   [Arachni::Options]   updated +self+
+    # @return   [Arachni::Options]   Updated `self`.
     #
     def merge!( options )
         options.to_hash.each_pair do |k, v|
@@ -1316,7 +1420,21 @@ class Options
     end
 
     def self.method_missing( sym, *args, &block )
-        instance.send( sym, *args, &block )
+        if instance.respond_to?( sym )
+            instance.send( sym, *args, &block )
+        elsif
+            super( sym, *args, &block )
+        end
+    end
+
+    def self.respond_to?( m )
+        super( m ) || instance.respond_to?( m )
+    end
+
+
+    # Ruby 2.0 or YAML doesn't like my class-level method_missing for some reason
+    class <<self
+        public :allocate
     end
 
     private

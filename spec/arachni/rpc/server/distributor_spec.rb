@@ -1,21 +1,29 @@
 require_relative '../../../spec_helper'
 
 require 'timeout'
-require Arachni::Options.instance.dir['lib'] + 'rpc/client/instance'
-require Arachni::Options.instance.dir['lib'] + 'rpc/server/instance'
+require Arachni::Options.dir['lib'] + 'rpc/client/instance'
+require Arachni::Options.dir['lib'] + 'rpc/server/instance'
 
-require Arachni::Options.instance.dir['lib'] + 'rpc/server/distributor'
+require Arachni::Options.dir['lib'] + 'rpc/server/distributor'
 
 class Distributor
     include Arachni::RPC::Server::Framework::Distributor
 
-    attr_reader :instances
+    attr_reader   :instances
     attr_accessor :master_url
+
+    [ :map_slaves, :each_slave, :slave_iterator, :iterator_for,
+        :split_urls, :build_elem_list, :distribute_elements, :preferred_dispatchers,
+        :pick_dispatchers, :distribute_and_run ].each do |sym|
+        private sym
+        public sym
+    end
 
     def initialize( token )
         @opts = Arachni::Options.instance
         @local_token = token
         @instances = []
+        @running_slaves = Set.new
     end
 
     def self_url
@@ -34,6 +42,7 @@ end
 class FakeMaster
 
     attr_reader :issues
+    attr_reader :issue_summaries
 
     def initialize( opts, token )
         @opts  = opts
@@ -42,10 +51,32 @@ class FakeMaster
 
         @pages  = []
         @issues = []
-        @element_ids = []
+        @issue_summaries = []
+        @element_ids     = []
 
         @server.add_handler( "framework", self )
         @server.start
+    end
+
+    def enslave( instance_hash )
+        instance = Arachni::RPC::Client::Instance.new( @opts,
+                                                       instance_hash['url'],
+                                                       instance_hash['token'])
+
+        instance.framework.set_master( "#{@server.opts[:host]}:#{@server.opts[:port]}",
+                                       @token )
+    end
+
+    def update_element_ids_per_page( *args )
+    end
+
+    def register_issue_summaries( issues, token = nil )
+        return false if !valid_token?( token )
+        @issue_summaries |= issues
+        true
+    end
+
+    def slave_done( *args )
     end
 
     def register_issues( issues, token = nil )
@@ -114,7 +145,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
     end
 
     describe '#map_slaves' do
-        it 'should asynchronously iterate over all slaves' do
+        it 'asynchronously maps all slaves' do
             q = Queue.new
 
             foreach = proc { |instance, iter| instance.service.alive? { |res| iter.return( res ) } }
@@ -133,7 +164,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
     end
 
     describe '#each_slave' do
-        it 'should asynchronously iterate over all slaves' do
+        it 'asynchronously iterates over all slaves' do
             q = Queue.new
 
             foreach = proc do |instance, iter|
@@ -152,10 +183,35 @@ describe Arachni::RPC::Server::Framework::Distributor do
             end
             raised.should be_false
         end
+
+        context 'when passed an "after" block' do
+            it 'calls it after the iteration has completed' do
+                q = Queue.new
+
+                foreach = proc do |instance, iter|
+                    instance.service.alive? do |res|
+                        q << res
+                        iter.next
+                    end
+                end
+                after = proc { q << :after }
+
+                @distributor.each_slave( foreach, after )
+
+                raised = false
+                begin
+                    Timeout::timeout( 5 ) { [q.pop, q.pop, q.pop].should == [true, true, :after] }
+                rescue Timeout::Error
+                    raised = true
+                end
+                raised.should be_false
+            end
+
+        end
     end
 
     describe '#slave_iterator' do
-        it 'should return an async iterator for the slave instances' do
+        it 'returns an async iterator for the slave instances' do
             q = Queue.new
 
             foreach = proc do |instance, iter|
@@ -177,7 +233,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
     end
 
     describe '#iterator_for' do
-        it 'should return an async iterator for the provided array' do
+        it 'returns an async iterator for the provided array' do
             q = Queue.new
 
             foreach = proc do |instance, iter|
@@ -199,7 +255,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
     end
 
     describe '#split_urls' do
-        it 'should evenly split urls into chunks for each instance' do
+        it 'evenly splits urls into chunks for each instance' do
             @opts.min_pages_per_instance = 10
             splits = @distributor.split_urls( @urls, 4 )
 
@@ -223,7 +279,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
     end
 
     describe '#build_elem_list' do
-        it 'should evenly distribute elements across instances' do
+        it 'evenly distributes elements across instances' do
             @opts.url = server_url_for( :parser )
             @opts.audit_links = true
             @opts.audit_forms = true
@@ -242,7 +298,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
     end
 
     describe '#distribute_elements' do
-        it 'should evenly distribute elements across instances' do
+        it 'evenly distributes elements across instances' do
             chunks = [[@url], [@url2]]
             elem_ids_per_page = {
                 @url => %w(
@@ -372,8 +428,8 @@ describe Arachni::RPC::Server::Framework::Distributor do
         end
     end
 
-    describe '#prefered_dispatchers' do
-        it 'should return a sorted list of dispatchers for HPG use taking into account their pipe IDs and load balancing metrics' do
+    describe '#preferred_dispatchers' do
+        it 'returns a sorted list of dispatchers for HPG use taking into account their pipe IDs and load balancing metrics' do
             @opts.pool_size = 1
             opts = @opts
             port = random_port
@@ -423,7 +479,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
             @distributor.dispatcher_url = "#{opts.rpc_address}:#{port}"
 
             q = Queue.new
-            @distributor.prefered_dispatchers { |d| q << d }
+            @distributor.preferred_dispatchers { |d| q << d }
 
             pref_dispatchers = []
 
@@ -442,7 +498,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
     end
 
     describe '#pick_dispatchers' do
-        it 'should return a sorted list of dispatchers based on their load balancing metrics' do
+        it 'returns a sorted list of dispatchers based on their load balancing metrics' do
             dispatchers = []
             dispatchers << { 'node' => { 'score' => 0 } }
             dispatchers << { 'node' => { 'score' => 3 } }
@@ -459,7 +515,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
         end
     end
 
-    describe '#spawn' do
+    describe '#distribute_and_run' do
         before( :all ) do
             @opts.rpc_port = random_port
             @opts.dir['modules'] = spec_path + 'fixtures/taint_module/'
@@ -478,14 +534,25 @@ describe Arachni::RPC::Server::Framework::Distributor do
             @opts.mods = %w(taint)
 
             @dispatcher_url = "#{@opts.rpc_address}:#{port}"
+
+            @get_instance_info = proc do
+                instance = @get_instance.call
+                info = { 'url' => instance.url, 'token' => @token }
+                @master.enslave( info )
+                info
+            end
         end
 
-        after { @master.issues.clear }
+        after do
+            @master.issues.clear
+            @master.issue_summaries.clear
+        end
 
         context 'when called without auditable restrictions' do
-            it 'should let the slave run loose, like a simple instance' do
+            it 'lets the slave run loose, like a simple instance' do
                 q = Queue.new
-                @distributor.spawn( @dispatcher_url ){ |i| q << i }
+
+                @distributor.distribute_and_run( @get_instance_info.call ){ |i| q << i }
                 slave_info = q.pop
                 slave_info.should be_true
 
@@ -493,17 +560,18 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 sleep 0.1 while slave.framework.busy?
                 sleep 1
 
-                @master.issues.size.should == 51
+                @master.issues.size.should == 500
+                @master.issue_summaries.size.should == 500
             end
         end
         context 'when called with auditable URL restrictions' do
-            it 'should restrict the audit to these URLs' do
+            it 'restricts the audit to these URLs' do
                 urls = %w(/vulnerable?vulnerable_5=stuff5 /vulnerable?vulnerable_10=stuff10)
 
                 absolute_urls = urls.map { |u| Arachni::Module::Utilities.normalize_url( @url + u ) }
 
                 q = Queue.new
-                @distributor.spawn( @dispatcher_url, urls: urls ){ |i| q << i }
+                @distributor.distribute_and_run( @get_instance_info.call, urls: urls ){ |i| q << i }
                 slave_info = q.pop
                 slave_info.should be_true
                 slave = @distributor.connect_to_instance( slave_info )
@@ -513,24 +581,25 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 sleep 1
 
                 @master.issues.size.should == 2
+                @master.issue_summaries.size.should == 2
 
                 vuln_urls = @master.issues.map { |i| i.url }.sort.uniq
                 vuln_urls.should == absolute_urls.sort.uniq
             end
         end
         context 'when called with auditable element restrictions' do
-            it 'should restrict the audit to these elements' do
+            it 'restricts the audit to these elements' do
 
                 ids = []
                 ids << Arachni::Element::Link.new( @url + '/vulnerable',
-                    inputs: { 'vulnerable_20' => 'stuff20' }
+                    inputs: { '0_vulnerable_20' => 'stuff20' }
                 ).scope_audit_id
                 ids << Arachni::Element::Link.new( @url + '/vulnerable',
-                    inputs: { 'vulnerable_30' => 'stuff30' }
+                    inputs: { '9_vulnerable_30' => 'stuff30' }
                 ).scope_audit_id
 
                 q = Queue.new
-                @distributor.spawn( @dispatcher_url, elements: ids ){ |i| q << i }
+                @distributor.distribute_and_run( @get_instance_info.call, elements: ids ){ |i| q << i }
                 slave_info = q.pop
                 slave_info.should be_true
 
@@ -539,14 +608,15 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 sleep 1
 
                 @master.issues.size.should == 2
+                @master.issue_summaries.size.should == 2
 
                 vuln_urls = @master.issues.map { |i| i.url }.sort.uniq
-                exp_urls = %w(/vulnerable?vulnerable_20=stuff20 /vulnerable?vulnerable_30=stuff30)
+                exp_urls = %w(/vulnerable?0_vulnerable_20=stuff20 /vulnerable?9_vulnerable_30=stuff30)
                 vuln_urls.should == exp_urls.map { |u| Arachni::Module::Utilities.normalize_url( @url + u ) }.
                     sort.uniq
             end
             context 'and new elements appear via the trainer' do
-                it 'should override the restrictions' do
+                it 'soverride the restrictions' do
                     @opts.audit_forms = true
                     @opts.url = server_url_for( :auditor ) + '/train/default'
                     url = @opts.url.to_s
@@ -556,7 +626,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                     ).scope_audit_id
 
                     q = Queue.new
-                    @distributor.spawn( @dispatcher_url, elements: [id] ){ |i| q << i }
+                    @distributor.distribute_and_run( @get_instance_info.call, elements: [id] ){ |i| q << i }
                     slave_info = q.pop
                     slave_info.should be_true
 
@@ -565,6 +635,8 @@ describe Arachni::RPC::Server::Framework::Distributor do
                     sleep 1
 
                     @master.issues.size.should == 8
+                    @master.issue_summaries.size.should == 8
+
                     #@master.issues.size.should == 1
                     #@master.issues.first.url.should ==
                     #    url + "?you_made_it=to+the+end+of+the+training"
@@ -572,16 +644,16 @@ describe Arachni::RPC::Server::Framework::Distributor do
             end
         end
 
-        context 'when called with extra page' do
-            it 'should include them in the audit' do
+        context 'when called with extra pages' do
+            it 'includes them in the audit' do
 
                 exp_urls = []
                 links = []
-                links << Arachni::Element::Link.new( @url + '/vulnerable?vulnerable_20=stuff20',
-                    inputs: { 'vulnerable_20' => 'stuff20' }
+                links << Arachni::Element::Link.new( @url + '/vulnerable?2_vulnerable_20=stuff20',
+                    inputs: { '2_vulnerable_20' => 'stuff20' }
                 )
-                links << Arachni::Element::Link.new( @url + '/vulnerable?vulnerable_30=stuff30',
-                    inputs: { 'vulnerable_30' => 'stuff30' }
+                links << Arachni::Element::Link.new( @url + '/vulnerable?5_vulnerable_30=stuff30',
+                    inputs: { '5_vulnerable_30' => 'stuff30' }
                 )
                 exp_urls |= links.map { |l| l.url }
 
@@ -592,11 +664,11 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 )
 
                 links = []
-                links << Arachni::Element::Link.new( @url + '/vulnerable?vulnerable_12=stuff12',
-                    inputs: { 'vulnerable_12' => 'stuff12' }
+                links << Arachni::Element::Link.new( @url + '/vulnerable?6_vulnerable_12=stuff12',
+                    inputs: { '6_vulnerable_12' => 'stuff12' }
                 )
-                links << Arachni::Element::Link.new( @url + '/vulnerable?vulnerable_23=stuff23',
-                    inputs: { 'vulnerable_23' => 'stuff23' }
+                links << Arachni::Element::Link.new( @url + '/vulnerable?0_vulnerable_23=stuff23',
+                    inputs: { '0_vulnerable_23' => 'stuff23' }
                 )
 
                 exp_urls |= links.map { |l| l.url }
@@ -609,7 +681,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 # send it somewhere that doesn't exist
                 @opts.url = @url + '/foo'
                 q = Queue.new
-                @distributor.spawn( @dispatcher_url, pages: pages ){ |i| q << i }
+                @distributor.distribute_and_run( @get_instance_info.call, pages: pages ){ |i| q << i }
                 slave_info = q.pop
                 slave_info.should be_true
 
@@ -618,6 +690,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 sleep 1
 
                 @master.issues.size.should == 4
+                @master.issue_summaries.size.should == 4
 
                 vuln_urls = @master.issues.map { |i| i.url }.sort.uniq
                 vuln_urls.should == exp_urls.sort

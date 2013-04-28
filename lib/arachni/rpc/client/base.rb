@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ require 'arachni/rpc/em'
 
 module Arachni
 module RPC
-
 class Client
 
 #
@@ -28,17 +27,20 @@ class Base < ::Arachni::RPC::EM::Client
     attr_reader :url
 
     #
-    # @param    [Arachni::Options]   opts   relevant options:
-    #                                          * ssl_ca -- CA file (.pem)
-    #                                          * node_ssl_pkey OR ssl_pkey -- private key file (.pem)
-    #                                          * node_ssl_cert OR ssl_cert -- cert file file (.pem)
-    # @param    [String]    url       server URL in <host>:<port> format
-    # @param    [String]    token     optional authentication token
+    # @param    [Arachni::Options]   opts
+    #   Relevant options:
+    #
+    #     * `ssl_ca` -- CA file (.pem).
+    #     * `node_ssl_pkey` OR `ssl_pkey` -- Private key file (.pem).
+    #     * `node_ssl_cert` OR `ssl_cert` -- Cert file file (.pem).
+    # @param    [String]    url       Server URL in `address:port` format.
+    # @param    [String]    token     Optional authentication token.
     #
     def initialize( opts, url, token = nil )
         @url = url
         host, port = url.split( ':' )
         super(
+            serializer:  Marshal,
             host:        host,
             port:        port,
             token:       token,

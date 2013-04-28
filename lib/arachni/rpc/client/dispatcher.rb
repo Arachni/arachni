@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -43,7 +43,12 @@ class Dispatcher
         end
     end
 
+    def url
+        @client.url
+    end
+
     private
+
     #
     # Used to provide the illusion of locality for remote methods
     #
@@ -51,9 +56,6 @@ class Dispatcher
         @client.call( "dispatcher.#{sym.to_s}", *args, &block )
     end
 
-    def url
-        @client.url
-    end
 end
 
 end

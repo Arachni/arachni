@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -21,10 +21,11 @@ require 'base64'
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2.3
+# @version 0.2.4
 #
 class Arachni::Reports::XML < Arachni::Report::Base
-    require Arachni::Options.dir['reports'] + '/xml/buffer.rb'
+    load Arachni::Options.dir['reports'] + '/xml/buffer.rb'
+
     include Buffer
 
     def run
@@ -132,10 +133,10 @@ class Arachni::Reports::XML < Arachni::Report::Base
 
     def self.info
         {
-            name:        'XML report',
-            description: %q{Exports a report as an XML file.},
+            name:        'XML',
+            description: %q{Exports the audit results as an XML (.xml) file.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.2.3',
+            version:     '0.2.4',
             options:     [ Options.outfile( '.xml' ), Options.skip_responses ]
         }
     end
@@ -151,6 +152,14 @@ class Arachni::Reports::XML < Arachni::Report::Base
             simple_tag( 'injected', URI.encode( var['injected'] ) ) if var['injected']
             simple_tag( 'regexp', var['regexp'].to_s ) if var['regexp']
             simple_tag( 'regexp_match', var['regexp_match'] ) if var['regexp_match']
+
+            start_tag 'remarks'
+            var.remarks.each do |commenter, remarks|
+                remarks.each do |remark|
+                    add_remark( commenter, remark )
+                end
+            end
+            end_tag 'remarks'
 
             start_tag 'headers'
             add_headers( 'request', var['headers']['request']  )

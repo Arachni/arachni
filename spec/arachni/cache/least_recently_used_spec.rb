@@ -4,7 +4,7 @@ describe Arachni::Cache::LeastRecentlyUsed do
 
     before { @cache = Arachni::Cache::LeastRecentlyUsed.new }
 
-    it 'should prune itself by removing Least Recently Used entries' do
+    it 'prunes itself by removing Least Recently Used entries' do
         @cache.max_size = 3
 
         @cache[:k]  = '1'
@@ -32,12 +32,12 @@ describe Arachni::Cache::LeastRecentlyUsed do
     end
 
     describe '#[]=' do
-        it 'should store an object' do
+        it 'stores an object' do
             v = 'val'
             (@cache[:key] = v).should == v
             @cache[:key].should == v
         end
-        it 'should be an alias of #store' do
+        it 'alias of #store' do
             v = 'val2'
             @cache.store( :key2, v ).should == v
             @cache[:key2].should == v
@@ -45,7 +45,7 @@ describe Arachni::Cache::LeastRecentlyUsed do
     end
 
     describe '#[]' do
-        it 'should retrieve an object by key' do
+        it 'retrieves an object by key' do
             v = 'val2'
             @cache[:key] = v
             @cache[:key].should == v
@@ -53,7 +53,7 @@ describe Arachni::Cache::LeastRecentlyUsed do
         end
 
         context 'when the key does not exist' do
-            it 'should return nil' do
+            it 'returns nil' do
                 @cache[:some_key].should be_nil
             end
         end
@@ -61,7 +61,7 @@ describe Arachni::Cache::LeastRecentlyUsed do
 
     describe '#delete' do
         context 'when the key exists' do
-            it 'should delete a key and return its value' do
+            it 'deletes a key and return its value' do
                 v = 'my_val'
                 @cache[:my_key] = v
                 @cache.delete( :my_key ).should == v
@@ -70,14 +70,14 @@ describe Arachni::Cache::LeastRecentlyUsed do
             end
         end
         context 'when the key does not exist' do
-            it 'should return nil' do
+            it 'returns nil' do
                 @cache.delete( :my_key2 ).should be_nil
             end
         end
     end
 
     describe '#clear' do
-        it 'should empty the cache' do
+        it 'empties the cache' do
             @cache[:my_key2] = 'v'
             @cache.size.should > 0
             @cache.empty?.should be_false

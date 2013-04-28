@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ class Arachni::Modules::PrivateIP < Arachni::Module::Base
                 'WebAppSec' => 'http://projects.webappsec.org/w/page/13246936/Information%20Leakage'
             },
             issue:       {
-                name:            %q{Private IP address disclosure.},
+                name:            %q{Private IP address disclosure},
                 description:     %q{A private IP address is disclosed in the body of the HTML page},
                 cwe:             '200',
                 severity:        Severity::LOW,

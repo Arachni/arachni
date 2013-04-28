@@ -12,7 +12,7 @@
                     <h2>Trusted issues</h2>
                     <blockquote>
                         At the time these issues were logged there were no abnormal interferences or anomalous server behavior.<br/>
-                        Some of these issues may require manual verification but they are considered trusted and fairly accurate.
+                        These issues are considered trusted and fairly accurate.
                     </blockquote>
 
                     <% if !filtered_hashes.empty? %>
@@ -29,10 +29,12 @@
                 <div id="untrusted">
                     <h2>Untrusted</h2>
                     <blockquote>
-                        These issues are considered untrusted (and may in fact be false positives) because at the time they were identified the server was exhibiting
-                        some kind of anomalous behavior or there was 3rd part interference (like network latency for example).
+                        These issues are considered untrusted (and may in fact be false positives)
+                        because at the time they were identified the server was exhibiting
+                        some kind of anomalous behavior or there was third part
+                        interference (like network latency for example).
                         <br/>
-                        Despite that fact, this is more of a warning and does not mean that you should let them unexamined.
+                        The listed issues need verification by a human.
                     </blockquote>
 
                     <% if !anomalous_hashes.empty? %>

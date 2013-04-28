@@ -13,19 +13,19 @@ describe Arachni::Element::Link do
         @link = Arachni::Element::Link.new( @url, @inputs )
     end
 
-    it 'should be assigned to Arachni::Link for easy access' do
+    it 'is assigned to Arachni::Link for easy access' do
         Arachni::Link.should == Arachni::Element::Link
     end
 
     describe 'Arachni::Element::LINK' do
-        it 'should return "link"' do
+        it 'returns "link"' do
             Arachni::Element::LINK.should == 'link'
         end
     end
 
     describe '#new' do
         context 'when only a url is provided' do
-            it 'should be used for both the owner #url and #action and be parsed in order to extract #auditable inputs' do
+            it 'is used for both the owner #url and #action and be parsed in order to extract #auditable inputs' do
                 url = 'http://test.com/?one=2&three=4'
                 e = Arachni::Element::Link.new( url )
                 e.url.should == url
@@ -35,7 +35,7 @@ describe Arachni::Element::Link do
             end
         end
         context 'when the raw option is a string' do
-            it 'should be treated as an #action URL and parsed in order to extract #auditable inputs' do
+            it 'is treated as an #action URL and parsed in order to extract #auditable inputs' do
                 url    = 'http://test.com/test'
                 action = '?one=2&three=4'
                 e = Arachni::Element::Link.new( url, action )
@@ -46,7 +46,7 @@ describe Arachni::Element::Link do
             end
         end
         context "when the raw hash option contains a url in 'href', :href, 'action' or :action" do
-            it 'should be treated as an #action URL and parsed in order to extract #auditable inputs' do
+            it 'is treated as an #action URL and parsed in order to extract #auditable inputs' do
                 ['href', :href, 'action', :action].each do |k|
                     action = '?one=2&three=4'
                     raw    = { k => action }
@@ -61,7 +61,7 @@ describe Arachni::Element::Link do
             end
         end
         context "when the raw hash option contains a auditable inputs in 'vars', :vars, 'inputs' or :inputs" do
-            it 'should be used as auditable inputs' do
+            it 'is used as auditable inputs' do
                 ['vars', :vars, 'inputs', :inputs].each do |k|
                     raw    = { k => { 'one' => '2', 'three' => '4' } }
                     url    = 'http://test.com/test'
@@ -75,7 +75,7 @@ describe Arachni::Element::Link do
             end
         end
         context "when the raw hash option contains a auditable inputs in :action and :inputs" do
-            it 'should be treated as an #action URL and #auditable inputs respectively' do
+            it 'is treated as an #action URL and #auditable inputs respectively' do
                 url    = 'http://test.com/test/'
                 action = 'some/path'
                 raw = {
@@ -91,7 +91,7 @@ describe Arachni::Element::Link do
             end
         end
         context "when the raw hash option contains a auditable inputs in :action and :inputs" do
-            it 'should be treated as an #action URL and #auditable inputs respectively' do
+            it 'is treated as an #action URL and #auditable inputs respectively' do
                 url = 'http://test.com/test/'
                 raw = { 'one' => '2', 'three' => '4' }
 
@@ -106,7 +106,7 @@ describe Arachni::Element::Link do
 
     describe '#id' do
         context 'when the action it contains path parameters' do
-            it 'should ignore them' do
+            it 'ignores them' do
                 e = Arachni::Element::Link.new( 'http://test.com/path;p=v?p1=v1&p2=v2', @inputs[:inputs] )
                 c = Arachni::Element::Link.new( 'http://test.com/path?p1=v1&p2=v2', @inputs[:inputs] )
                 e.id.should == c.id
@@ -208,12 +208,35 @@ describe Arachni::Element::Link do
     end
 
     describe '.from_response' do
-        it 'should return all available links from an HTTP response' do
+        it 'returns all available links from an HTTP response' do
             res = Typhoeus::Response.new(
                 effective_url: @url + '/?param=val',
                 body: '<a href="test?param_one=value_one&param_two=value_two"></a>'
             )
             Arachni::Element::Link.from_response( res ).size.should == 2
+        end
+    end
+
+    describe '.parse_query_vars' do
+        it 'returns the query parameters as a Hash' do
+            url = "http://test/?param_one=value_one&param_two=value_two"
+            described_class.parse_query_vars( url ).should == {
+                'param_one' => 'value_one',
+                'param_two' => 'value_two'
+            }
+        end
+        context 'when passed' do
+            describe 'nil' do
+                it 'returns an empty Hash' do
+                    described_class.parse_query_vars( nil ).should == {}
+                end
+            end
+            describe 'an unparsable URL' do
+                it 'returns an empty Hash' do
+                    url = '$#%^$6#5436#$%^'
+                    described_class.parse_query_vars( url ).should == {}
+                end
+            end
         end
     end
 

@@ -9,20 +9,20 @@ describe Array do
     describe '#includes_tag?' do
         context 'when passed' do
             context 'nil' do
-                it 'should return false' do
+                it 'returns false' do
                     @arr.includes_tags?( nil ).should == false
                 end
             end
 
             context '[]' do
-                it 'should return false' do
+                it 'returns false' do
                     @arr.includes_tags?( [] ).should == false
                 end
             end
 
             context String do
                 context 'when includes the given tag (as either a String or a Symbol)' do
-                    it 'should return true' do
+                    it 'returns true' do
                         [ 1 ].includes_tags?( 1 ).should == true
                         [ :tag ].includes_tags?( :tag ).should == true
                         [ :tag ].includes_tags?( 'tag' ).should == true
@@ -33,7 +33,7 @@ describe Array do
                     end
                 end
                 context 'when it does not includes the given tag (as either a String or a Symbol)' do
-                    it 'should return false' do
+                    it 'returns false' do
                         [ 1 ].includes_tags?( 2 ).should == false
                         [ :tag ].includes_tags?( :tag1 ).should == false
                         [ :tag ].includes_tags?( 'tag2' ).should == false
@@ -48,7 +48,7 @@ describe Array do
 
             context Array do
                 context 'when includes any of the given tags (as either a String or a Symbol)' do
-                    it 'should return true' do
+                    it 'returns true' do
                         [ 1, 2, 3 ].includes_tags?( [1] ).should == true
                         [ :tag ].includes_tags?( [:tag] ).should == true
                         [ :tag ].includes_tags?( ['tag', 12] ).should == true
@@ -59,7 +59,7 @@ describe Array do
                     end
                 end
                 context 'when it does not include any of the given tags (as either a String or a Symbol)' do
-                    it 'should return true' do
+                    it 'returns true' do
                         [ 1, 2, 3 ].includes_tags?( [4, 5] ).should == false
                         [ :tag ].includes_tags?( [:ta3g] ).should == false
                         [ :tag ].includes_tags?( ['ta3g', 12] ).should == false
@@ -74,7 +74,7 @@ describe Array do
     end
 
     describe '#chunk' do
-        it 'should split the array into chunks' do
+        it 'splits the array into chunks' do
             chunks = @arr.chunk( 5 )
             chunks.size.should == 5
             chunks.each { |c| c.size.should == 10 }
@@ -88,7 +88,7 @@ describe Array do
         end
 
         context 'when called without params' do
-            it 'should split the array into 2 chunks' do
+            it 'splits the array into 2 chunks' do
                 chunks = @arr.chunk
                 chunks.size.should == 2
 

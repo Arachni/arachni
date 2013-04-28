@@ -7,12 +7,12 @@ describe Arachni::Component::Options::URL do
 
     describe '#valid?' do
         context 'when the value is valid' do
-            it 'should return true' do
+            it 'returns true' do
                 @opt.valid?( 'http://localhost' ).should be_true
             end
         end
         context 'when the value is not valid' do
-            it 'should return false' do
+            it 'returns false' do
                 @opt.valid?( 'http://localhost22' ).should be_false
                 @opt.valid?( 'localhost' ).should be_false
                 @opt.valid?( 11 ).should be_false
@@ -21,14 +21,14 @@ describe Arachni::Component::Options::URL do
             end
         end
         context 'when required but empty' do
-            it 'should return false' do
+            it 'returns false' do
                 @opt.class.new( '', [true] ).valid?( nil ).should be_false
             end
         end
     end
 
     describe '#type' do
-        it 'should return the option type as a string' do
+        it 'returns the option type as a string' do
             @opt.type.should == 'url'
         end
     end

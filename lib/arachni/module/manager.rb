@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 module Arachni
 
 #
-# The namespace under which all modules exist
+# The namespace under which all modules exist.
 #
 module Modules
 end
@@ -115,6 +115,8 @@ class Manager < Arachni::Component::Manager
     # @return   [Bool]
     #
     def run_module?( mod, page )
+        return false if mod.issue_limit_reached?
+
         elements = mod.info[:elements]
         return true if !elements || elements.empty?
 

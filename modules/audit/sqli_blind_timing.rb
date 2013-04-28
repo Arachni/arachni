@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ class Arachni::Modules::BlindTimingSQLInjection < Arachni::Module::Base
 
     def self.info
         {
-            name:        'Blind (timing) SQL injection',
+            name:        'Blind SQL injection (timing attack)',
             description: %q{Blind SQL Injection module using timing attacks
                 (if the remote server suddenly becomes unresponsive or your network
                 connection suddenly chokes up this module will probably produce false positives).},

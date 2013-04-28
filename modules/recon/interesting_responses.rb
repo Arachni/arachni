@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ require 'digest/md5'
 class Arachni::Modules::InterestingResponses < Arachni::Module::Base
 
     IGNORE_CODES = [ 200, 404 ].to_set
-    MAX_ENTRIES  = 100
 
     def self.ran?
         @ran ||= false
@@ -32,22 +31,6 @@ class Arachni::Modules::InterestingResponses < Arachni::Module::Base
 
     def self.ran
         @ran = true
-    end
-
-    def self.counter
-        @counter ||= 0
-    end
-
-    def self.counter=( int )
-        @counter = int
-    end
-
-    def increment
-        self.class.counter += 1
-    end
-
-    def limit_reached?
-        self.class.counter >= MAX_ENTRIES
     end
 
     def run
@@ -63,7 +46,7 @@ class Arachni::Modules::InterestingResponses < Arachni::Module::Base
 
     def check_and_log( res )
         return if IGNORE_CODES.include?( res.code ) || res.body.to_s.empty? ||
-            limit_reached?
+            issue_limit_reached?
 
         digest = Digest::MD5.hexdigest( res.body )
         path   = uri_parse( res.effective_url ).path
@@ -72,7 +55,6 @@ class Arachni::Modules::InterestingResponses < Arachni::Module::Base
 
         audited( path )
         audited( digest )
-        increment
 
         log( { id: "Code: #{res.code}", element: Element::SERVER }, res )
         print_ok "Found an interesting response -- Code: #{res.code}."
@@ -90,11 +72,12 @@ class Arachni::Modules::InterestingResponses < Arachni::Module::Base
                 'w3.org' => 'http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html'
             },
             issue:       {
-                name:        %q{Interesting server response.},
+                name:        %q{Interesting response},
                 description: %q{The server responded with a non 200 (OK) code. },
                 tags:        %w(interesting response server),
                 severity:    Severity::INFORMATIONAL
-            }
+            },
+            max_issues: 25
         }
     end
 

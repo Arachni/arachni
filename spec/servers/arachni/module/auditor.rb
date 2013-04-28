@@ -9,6 +9,7 @@ end
 
 get '/binary' do
     content_type 'application/stuff'
+    "\00\00\00"
 end
 
 get '/sleep' do

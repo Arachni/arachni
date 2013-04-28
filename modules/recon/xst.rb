@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -67,9 +67,9 @@ class Arachni::Modules::XST < Arachni::Module::Base
             },
             targets:     %w(Generic),
             issue:       {
-                name:            %q{The TRACE HTTP method is enabled.},
-                description:     %q{This type of attack can occur when the there
-    is an XSS vulnerability and the server supports HTTP TRACE.},
+                name:            %q{HTTP TRACE},
+                description:     %q{The HTTP TRACE method is enabled.
+    This misconfiguration can become a pivoting point for a Cross-Site Scripting (XSS) attack.},
                 tags:            %w(xst methods trace server),
                 cwe:             '693',
                 severity:        Severity::MEDIUM,

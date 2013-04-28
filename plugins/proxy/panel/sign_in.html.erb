@@ -1,0 +1,10 @@
+<% content_for :title, 'Please sign-in' %>
+
+<div class="hero-unit">
+    <h1>Please sign-in</h1>
+
+    <form action="<%= sign_in_url %>" method="post">
+        <label>Session token:</label>
+        <input name="session_token" />
+    </form>
+</div>

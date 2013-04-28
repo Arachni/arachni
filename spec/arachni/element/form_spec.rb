@@ -27,29 +27,29 @@ describe Arachni::Element::Form do
         @http = Arachni::HTTP.instance
     end
 
-    it 'should be assigned to Arachni::Form for easy access' do
+    it 'assigned to Arachni::Form for easy access' do
         Arachni::Form.should == Arachni::Element::Form
     end
 
     describe 'Arachni::Element::FORM' do
-        it 'should return "form"' do
+        it 'returns "form"' do
             Arachni::Element::FORM.should == 'form'
         end
     end
 
     describe '#new' do
         context 'when passed opts without a method' do
-            it 'should default to "get"' do
+            it 'defaults to "get"' do
                 Arachni::Element::Form.new( @url, @inputs ).method.should == 'get'
             end
         end
         context 'when passed opts without an action URL' do
-            it 'should default to the owner URL' do
+            it 'defaults to the owner URL' do
                 Arachni::Element::Form.new( @url ).action.should == @url
             end
         end
         context 'when passed opts without auditable inputs or any other expected option' do
-            it 'should use the contents of the opts hash as auditable inputs' do
+            it 'uses the contents of the opts hash as auditable inputs' do
                 e = Arachni::Element::Form.new( @url, @inputs[:inputs] )
                 e.auditable.should == @inputs[:inputs]
             end
@@ -58,7 +58,7 @@ describe Arachni::Element::Form do
 
     describe '#id' do
         context 'when the action it contains path parameters' do
-            it 'should ignore them' do
+            it 'ignores them' do
                 e = Arachni::Element::Form.new( 'http://test.com/path;p=v?p1=v1&p2=v2', @inputs[:inputs] )
                 c = Arachni::Element::Form.new( 'http://test.com/path?p1=v1&p2=v2', @inputs[:inputs] )
                 e.id.should == c.id
@@ -67,7 +67,7 @@ describe Arachni::Element::Form do
     end
 
     describe '#field_type_for' do
-        it 'should return a field\'s type' do
+        it 'returns a field\'s type' do
             e = Arachni::Element::Form.new( 'http://test.com',
                 'auditable' => [
                     {
@@ -86,9 +86,55 @@ describe Arachni::Element::Form do
         end
     end
 
+    describe '#node' do
+        it 'returns the original Nokogiri node' do
+            html = '
+                    <html>
+                        <body>
+                            <form method="get" action="form_action" name="my_form">
+                                <input type=password name="my_first_input" value="my_first_value"" />
+                                <input type=radio name="my_second_input" value="my_second_value"" />
+                            </form>
+
+                        </body>
+                    </html>'
+
+            node = Arachni::Element::Form.from_document( @url, html ).first.node
+            node.is_a?( Nokogiri::XML::Element ).should be_true
+            node.css( 'input' ).first['name'].should == 'my_first_input'
+        end
+    end
+
+    describe '#to_html' do
+        context 'when there is a node' do
+            it 'returns the original form as HTML' do
+                html = '
+                    <html>
+                        <body>
+                            <form method="get" action="form_action" name="my_form">
+                                <input type=password name="my_first_input" value="my_first_value"" />
+                                <input type=radio name="my_second_input" value="my_second_value"" />
+                            </form>
+
+                        </body>
+                    </html>'
+
+                f1 = Arachni::Element::Form.from_document( @url, html ).first
+                f2 = Arachni::Element::Form.from_document( @url, f1.to_html ).first
+                f2.should == f1
+            end
+        end
+
+        context 'when there is no node' do
+            it 'returns nil' do
+                Arachni::Element::Form.new( @url, @inputs[:inputs] ).to_html.should be_nil
+            end
+        end
+    end
+
     describe '#requires_password?' do
         context 'when the form has a password field' do
-            it 'should return true' do
+            it 'returns true' do
                 html = '
                     <html>
                         <body>
@@ -105,7 +151,7 @@ describe Arachni::Element::Form do
             end
         end
         context 'when the form does not have a password field' do
-            it 'should return false' do
+            it 'returns false' do
                 html = '
                     <html>
                         <body>
@@ -122,42 +168,101 @@ describe Arachni::Element::Form do
         end
     end
 
+    describe '#original?' do
+        context 'when the mutation' do
+            context 'is same as the original element' do
+                it 'returns true' do
+                    inputs = { inputs: { 'param_name' => 'param_value', 'stuff' => nil } }
+                    e = Arachni::Element::Form.new( 'http://test.com', inputs )
+
+                    has_original ||= false
+                    has_sample   ||= false
+
+                    e.mutations( 'seed' ).each do |m|
+                        m.url.should == e.url
+                        m.action.should == e.action
+
+                        if m.original?
+                            m.altered.should == Arachni::Element::Form::ORIGINAL_VALUES
+                            m.auditable.should == e.auditable
+                            has_original ||= true
+                        end
+                    end
+
+                    has_original.should be_true
+                end
+            end
+        end
+    end
+
+    describe '#sample?' do
+        context 'when the mutation' do
+            context 'has been filled-in with sample values' do
+                it 'returns true' do
+                    inputs = { inputs: { 'param_name' => 'param_value', 'stuff' => nil } }
+                    e = Arachni::Element::Form.new( 'http://test.com', inputs )
+
+                    has_original ||= false
+                    has_sample   ||= false
+
+                    e.mutations( 'seed' ).each do |m|
+                        m.url.should == e.url
+                        m.action.should == e.action
+
+                        if m.sample?
+                            m.altered.should == Arachni::Element::Form::SAMPLE_VALUES
+                            m.auditable.should == Arachni::Module::KeyFiller.fill( e.auditable )
+                            has_sample ||= true
+                        end
+                    end
+
+                    has_sample.should be_true
+                end
+            end
+        end
+    end
+
     describe '#mutations' do
-        it 'should only affect #auditable and #altered (unless #original? or #sample?)' do
+        it 'fuzzes #auditable inputs' do
             inputs = { inputs: { 'param_name' => 'param_value', 'stuff' => nil } }
             e = Arachni::Element::Form.new( 'http://test.com', inputs )
 
-            has_original ||= false
-            has_sample   ||= false
-
+            checked = false
             e.mutations( 'seed' ).each do |m|
+                next if m.original? || m.sample?
+
                 m.url.should == e.url
                 m.action.should == e.action
 
-                if m.original?
-                    m.altered.should == Arachni::Element::Form::ORIGINAL_VALUES
-                    m.auditable.should == e.auditable
-                    has_original ||= true
-                end
-
-                if m.sample?
-                    m.altered.should == Arachni::Element::Form::SAMPLE_VALUES
-                    m.auditable.should == Arachni::Module::KeyFiller.fill( e.auditable )
-                    has_sample ||= true
-                end
-
-                if !m.original? && !m.sample?
-                    m.altered.should_not == e.altered
-                    m.auditable.should_not == e.auditable
-                end
+                m.auditable.should_not == e.auditable
+                checked = true
             end
 
-            has_original.should be_true
-            has_sample.should be_true
+            checked.should be_true
+        end
+
+        it 'sets #altered to the name of the fuzzed input' do
+            inputs = { inputs: { 'param_name' => 'param_value', 'stuff' => nil } }
+            e = Arachni::Element::Form.new( 'http://test.com', inputs )
+
+            checked = false
+            e.mutations( 'seed' ).each do |m|
+                next if m.original? || m.sample?
+
+                m.url.should == e.url
+                m.action.should == e.action
+
+                m.altered.should_not == e.altered
+                m.auditable[m.altered].should include 'seed'
+
+                checked = true
+            end
+
+            checked.should be_true
         end
 
         context 'when it contains more than 1 password field' do
-            it 'should include mutations which have the same values for all of them' do
+            it 'includes mutations which have the same values for all of them' do
                 e = Arachni::Element::Form.new( 'http://test.com',
                     'auditable' => [
                         {
@@ -178,7 +283,7 @@ describe Arachni::Element::Form do
         end
 
         describe :skip_orig do
-            it 'should not add mutations with original nor default values' do
+            it 'does not add mutations with original nor default values' do
                 e = Arachni::Element::Form.new( 'http://test.com', @inputs )
                 mutations = e.mutations( @seed, skip_orig: true )
                 mutations.size.should == 4
@@ -188,18 +293,39 @@ describe Arachni::Element::Form do
     end
 
     describe '#nonce_name=' do
-        it 'should set the name of the input holding the nonce' do
+        it 'sets the name of the input holding the nonce' do
             f = Arachni::Element::Form.new( @url, nonce: 'value' )
             f.nonce_name = 'nonce'
             f.nonce_name.should == 'nonce'
         end
 
         context 'when there is no input called nonce_name' do
-            it 'should raise an exception' do
+            it 'raises an exception' do
+                trigger = proc do
+                    Arachni::Element::Form.new( @url, name: 'value' ).
+                        nonce_name = 'stuff'
+                end
+
                 raised = false
                 begin
-                    Arachni::Element::Form.new( @url, name: 'value' ).nonce_name = 'stuff'
-                rescue
+                    trigger.call
+                rescue Arachni::Error
+                    raised = true
+                end
+                raised.should be_true
+
+                raised = false
+                begin
+                    trigger.call
+                rescue Arachni::Element::Form::Error
+                    raised = true
+                end
+                raised.should be_true
+
+                raised = false
+                begin
+                    trigger.call
+                rescue Arachni::Element::Form::Error::FieldNotFound
                     raised = true
                 end
                 raised.should be_true
@@ -209,14 +335,14 @@ describe Arachni::Element::Form do
 
     describe '#has_nonce?' do
         context 'when the form has a nonce' do
-            it 'should return true' do
+            it 'returns true' do
                 f = Arachni::Element::Form.new( @url, nonce: 'value' )
                 f.nonce_name = 'nonce'
                 f.has_nonce?.should be_true
             end
         end
         context 'when the form does not have a nonce' do
-            it 'should return false' do
+            it 'returns false' do
                 f = Arachni::Element::Form.new( @url, nonce: 'value' )
                 f.has_nonce?.should be_false
             end
@@ -225,7 +351,7 @@ describe Arachni::Element::Form do
 
     describe '#submit' do
         context 'when method is post' do
-            it 'should perform a POST HTTP request' do
+            it 'performs a POST HTTP request' do
                 body_should = @form.method + @form.auditable.to_s
                 body = nil
 
@@ -235,7 +361,7 @@ describe Arachni::Element::Form do
             end
         end
         context 'when method is get' do
-            it 'should perform a GET HTTP request' do
+            it 'performs a GET HTTP request' do
                 f = Arachni::Element::Form.new( @url, @inputs.merge( method: 'get' ) )
                 body_should = f.method + f.auditable.to_s
                 body = nil
@@ -246,7 +372,7 @@ describe Arachni::Element::Form do
             end
         end
         context 'when the form has a nonce' do
-            it 'should refresh its value before submitting it' do
+            it 'refreshes its value before submitting it' do
                 f = Arachni::Element::Form.new( @url + 'with_nonce',
                     @inputs.merge( method: 'get', action: @url + 'get_nonce') )
 
@@ -268,7 +394,7 @@ describe Arachni::Element::Form do
     context 'when initialized' do
         context 'with attributes' do
             describe '#simple' do
-                it 'should return a simplified version of form attributes and auditables' do
+                it 'returns a simplified version of form attributes and auditables' do
                     f = Arachni::Element::Form.new( @url, @raw )
                     f.simple.should == { 'attrs' => @raw['attrs'], 'auditable' => f.auditable }
                 end
@@ -276,7 +402,7 @@ describe Arachni::Element::Form do
         end
         context 'with hash key/pair' do
             describe '#simple' do
-                it 'should return a simplified version of form attributes and auditables' do
+                it 'returns a simplified version of form attributes and auditables' do
                     f = Arachni::Element::Form.new( @url, @inputs )
                     f.simple.should == {
                         'attrs' => {
@@ -291,20 +417,20 @@ describe Arachni::Element::Form do
     end
 
     describe '#type' do
-        it 'should be "form"' do
+        it 'is "form"' do
             @form.type.should == 'form'
         end
     end
 
     describe '.from_document' do
         context 'when the response does not contain any forms' do
-            it 'should return an empty array' do
+            it 'returns an empty array' do
                 Arachni::Element::Form.from_document( '', '' ).should be_empty
             end
         end
         context 'when the response contains forms' do
             context 'with text inputs' do
-                it 'should return an array of forms' do
+                it 'returns an array of forms' do
                     html = '
                     <html>
                         <body>
@@ -329,7 +455,7 @@ describe Arachni::Element::Form do
             end
 
             context 'when the action match a skip rule' do
-                it 'should be ignored' do
+                it 'is ignored' do
                     Arachni::Options.url     = @url
                     Arachni::Options.exclude = 'skip-this'
 
@@ -359,8 +485,33 @@ describe Arachni::Element::Form do
                 end
             end
 
+            context 'with checkbox inputs' do
+                it 'returns an array of forms' do
+                    html = '
+                    <html>
+                        <body>
+                            <form method="get" action="form_action" name="my_form">
+                                <input type="checkbox" name="vehicle" value="Bike">
+                                <input type="checkbox" name="stuff" value="Car">
+                            </form>
+
+                        </body>
+                    </html>'
+
+                    form = Arachni::Element::Form.from_document( @url, html ).first
+                    form.action.should == @utils.normalize_url( @url + '/form_action' )
+                    form.name.should == 'my_form'
+                    form.url.should == @url
+                    form.method.should == 'get'
+                    form.auditable.should == {
+                        'vehicle'  => 'Bike',
+                        'stuff' => 'Car'
+                    }
+                end
+            end
+
             context 'with radio inputs' do
-                it 'should return an array of forms' do
+                it 'returns an array of forms' do
                     html = '
                     <html>
                         <body>
@@ -386,7 +537,7 @@ describe Arachni::Element::Form do
 
             context 'with selects' do
                 context 'with values' do
-                    it 'should return an array of forms' do
+                    it 'returns an array of forms' do
                         html = '
                         <html>
                             <body>
@@ -419,7 +570,7 @@ describe Arachni::Element::Form do
                 end
 
                 context 'without values' do
-                    it 'should use the element texts' do
+                    it 'uses the element texts' do
                         html = '
                         <html>
                             <body>
@@ -450,7 +601,7 @@ describe Arachni::Element::Form do
                 end
 
                 context 'with selected options' do
-                    it 'should use their values' do
+                    it 'uses their values' do
                         html = '
                         <html>
                             <body>
@@ -483,7 +634,7 @@ describe Arachni::Element::Form do
                 end
 
                 context 'without any options' do
-                    it 'should use a nil value' do
+                    it 'uses a nil value' do
                         html = '
                         <html>
                             <body>
@@ -508,7 +659,7 @@ describe Arachni::Element::Form do
             end
 
             context 'with a base attribute' do
-                it 'should respect it and adjust the action accordingly' do
+                it 'respects it and adjust the action accordingly' do
                     base_url = "#{@url}/this_is_the_base/"
                     html = '
                     <html>
@@ -546,7 +697,7 @@ describe Arachni::Element::Form do
             end
 
             context 'which are not properly closed' do
-                it 'should sanitize and return an array of forms' do
+                it 'sanitizes and return an array of forms' do
 
                     base_url = "#{@url}/this_is_the_base/"
                     html = '
@@ -611,29 +762,29 @@ describe Arachni::Element::Form do
     end
 
     describe '.encode' do
-        it 'should form encode the passed string' do
+        it 'form-encodes the passed string' do
             Arachni::Element::Form.encode( '% value\ +=&;' ).should == '%25+value%5C+%2B%3D%26%3B'
         end
     end
     describe '#encode' do
-        it 'should form encode the passed string' do
+        it 'form-encodes the passed string' do
             Arachni::Element::Form.encode( '% value\ +=&;' ).should == '%25+value%5C+%2B%3D%26%3B'
         end
     end
 
     describe '.decode' do
-        it 'should form decode the passed string' do
+        it 'form-decodes the passed string' do
             Arachni::Element::Form.decode( '%25+value%5C+%2B%3D%26%3B' ).should == '% value\ +=&;'
         end
     end
     describe '#decode' do
-        it 'should form decode the passed string' do
+        it 'form-decodes the passed string' do
             Arachni::Element::Form.decode( '%25+value%5C+%2B%3D%26%3B' ).should == '% value\ +=&;'
         end
     end
 
     describe '.parse_request_body' do
-        it 'should form decode the passed string' do
+        it 'form-decodes the passed string' do
             Arachni::Element::Form.parse_request_body( 'value%5C+%2B%3D%26%3B=value%5C+%2B%3D%26%3B&testID=53738&deliveryID=53618&testIDs=&deliveryIDs=&selectedRows=2&event=&section=&event%3Dmanage%26amp%3Bsection%3Dexam=Manage+selected+exam' ).should ==
                 {
                     "value\\ +=&;" => "value\\ +=&;",
@@ -649,7 +800,7 @@ describe Arachni::Element::Form do
         end
     end
     describe '#parse_request_body' do
-        it 'should form decode the passed string' do
+        it 'form-decodes the passed string' do
             Arachni::Element::Form.parse_request_body( 'value%5C+%2B%3D%26%3B=value%5C+%2B%3D%26%3B&testID=53738&deliveryID=53618&testIDs=&deliveryIDs=&selectedRows=2&event=&section=&event%3Dmanage%26amp%3Bsection%3Dexam=Manage+selected+exam' ).should ==
                 {
                     "value\\ +=&;" => "value\\ +=&;",

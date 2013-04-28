@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -24,6 +24,24 @@ class HTTP
 #
 class CookieJar
     include Utilities
+
+    #
+    # {CookieJar} error namespace.
+    #
+    # All {CookieJar} errors inherit from and live under it.
+    #
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    #
+    class Error < Arachni::HTTP::Error
+
+        #
+        # Raised when a CookieJar file could not be found at the specified location.
+        #
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        #
+        class CookieJarFileNotFound < Error
+        end
+    end
 
     #
     # Same as {#initialize}.
@@ -51,7 +69,7 @@ class CookieJar
     def load( cookie_jar_file, url = '' )
         # make sure that the provided cookie-jar file exists
         if !File.exist?( cookie_jar_file )
-            fail( Exceptions::NoCookieJar, "Cookie-jar '#{cookie_jar_file}' doesn't exist." )
+            fail Error::CookieJarFileNotFound, "Cookie-jar '#{cookie_jar_file}' doesn't exist."
         end
         update( cookies_from_file( url, cookie_jar_file ) )
         self
@@ -60,24 +78,35 @@ class CookieJar
     #
     # Updates the jar with +cookie+.
     #
-    # @param    [Cookie]  cookie
+    # @param    [Cookie, Array<Cookie>]  cookies
     #
     # @return   [CookieJar]  self
     #
-    def <<( cookie )
-        ((@domains[cookie.domain] ||= {})[cookie.path] ||= {})[cookie.name] = cookie.dup
+    def <<( cookies )
+        [cookies].flatten.compact.each do |cookie|
+            ((@domains[cookie.domain] ||= {})[cookie.path] ||= {})[cookie.name] = cookie.dup
+        end
         self
     end
 
     #
     # Updates the jar with +cookies+.
     #
-    # @param    [Array<Cookie>]  cookies
+    # @param    [Array<String, Hash, Cookie>]  cookies
     #
     # @return   [CookieJar]  self
     #
     def update( cookies )
-        [cookies].flatten.compact.each { |c| self << c }
+        [cookies].flatten.compact.each do |c|
+            self << case c
+                        when String
+                            Cookie.from_string( ::Arachni::Options.url.to_s, c )
+                        when Hash
+                            Cookie.new( ::Arachni::Options.url.to_s, c ) if c.any?
+                        when Cookie
+                            c
+                    end
+        end
         self
     end
 
@@ -153,7 +182,7 @@ class CookieJar
 
     def to_uri( url )
         u = url.is_a?( ::URI ) || url.is_a?( ::Arachni::URI ) ? url : uri_parse( url.to_s )
-        fail 'Complete absolute URL required.' if u.relative?
+        fail ArgumentError, 'Complete absolute URL required.' if u.relative?
         u
     end
 

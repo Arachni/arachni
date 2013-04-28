@@ -31,6 +31,16 @@ shared_examples_for 'auditable' do |options = {}|
         @default_input_value = @auditable.auditable['param']
     end
 
+    describe '#use_anonymous_auditor' do
+        it 'uses an anonymous auditor' do
+            elem = auditable.new( @url, 'param' => 'val' )
+            elem.auditor.should be_nil
+            elem.use_anonymous_auditor
+            elem.auditor.should be_true
+            elem.auditor.fancy_name.should be_true
+        end
+    end
+
     describe '#has_inputs?' do
         before do
             @has_inputs = auditable.new( @url, { 'param' => 'val', 'param2' => 'val2' } )
@@ -43,7 +53,7 @@ shared_examples_for 'auditable' do |options = {}|
         context 'when the given inputs are' do
             context 'Variable arguments' do
                 context 'when it has the given inputs' do
-                    it 'should return true' do
+                    it 'returns true' do
                         @keys.each do |k|
                             @has_inputs.has_inputs?( k.to_s.to_sym ).should be_true
                             @has_inputs.has_inputs?( k.to_s ).should be_true
@@ -54,7 +64,7 @@ shared_examples_for 'auditable' do |options = {}|
                     end
                 end
                 context 'when it does not have the given inputs' do
-                    it 'should return false' do
+                    it 'returns false' do
                         @has_inputs.has_inputs?( *@non_existent_sym_keys ).should be_false
                         @has_inputs.has_inputs?( *@non_existent_keys ).should be_false
 
@@ -65,13 +75,13 @@ shared_examples_for 'auditable' do |options = {}|
 
             context Array do
                 context 'when it has the given inputs' do
-                    it 'should return true' do
+                    it 'returns true' do
                         @has_inputs.has_inputs?( @sym_keys ).should be_true
                         @has_inputs.has_inputs?( @keys ).should be_true
                     end
                 end
                 context 'when it does not have the given inputs' do
-                    it 'should return false' do
+                    it 'returns false' do
                         @has_inputs.has_inputs?( @non_existent_sym_keys ).should be_false
                         @has_inputs.has_inputs?( @non_existent_keys ).should be_false
                     end
@@ -80,7 +90,7 @@ shared_examples_for 'auditable' do |options = {}|
 
             context Hash do
                 context 'when it has the given inputs (names and values)' do
-                    it 'should return true' do
+                    it 'returns true' do
                         hash     = @has_inputs.auditable.
                             inject( {} ) { |h, (k, v)| h[k] = v; h}
 
@@ -92,7 +102,7 @@ shared_examples_for 'auditable' do |options = {}|
                     end
                 end
                 context 'when it does not have the given inputs' do
-                    it 'should return false' do
+                    it 'returns false' do
                         hash     = @has_inputs.auditable.
                             inject( {} ) { |h, (k, v)| h[k] = "#{v}1"; h}
 
@@ -108,7 +118,7 @@ shared_examples_for 'auditable' do |options = {}|
     end
 
     describe '#auditable' do
-        it 'should return a frozen hash of auditable inputs' do
+        it 'returns a frozen hash of auditable inputs' do
             @auditable.auditable.should == { 'param' => 'val' }
 
             raised = false
@@ -125,7 +135,7 @@ shared_examples_for 'auditable' do |options = {}|
     end
 
     describe '#auditable=' do
-        it 'should assign a hash of auditable inputs' do
+        it 'assigns a hash of auditable inputs' do
             @auditable.auditable.should == { 'param' => 'val' }
 
             a = @auditable.dup
@@ -134,14 +144,14 @@ shared_examples_for 'auditable' do |options = {}|
             a.should_not == @auditable
         end
 
-        it 'should convert all inputs to strings' do
+        it 'converts all inputs to strings' do
             e = auditable.new( @url, { 'key' => nil } )
             e.auditable.should == { 'key' => '' }
         end
     end
 
     describe '#update' do
-        it 'should update the auditable inputs using the given hash and return self' do
+        it 'updates the auditable inputs using the given hash and return self' do
             a = @auditable.dup
 
             updates =   if opts[:single_input]
@@ -168,7 +178,7 @@ shared_examples_for 'auditable' do |options = {}|
             end
         end
 
-        it 'should convert all inputs to strings' do
+        it 'converts all inputs to strings' do
             e = auditable.new( @url, 'key' => 'stuff' )
             e.update( { 'key' => nil } )
             e.auditable.should == { 'key' => '' }
@@ -176,7 +186,7 @@ shared_examples_for 'auditable' do |options = {}|
     end
 
     describe '#changes' do
-        it 'should return the changes the inputs have sustained' do
+        it 'returns the changes the inputs have sustained' do
             if !opts[:single_input]
                 [
                     { 'param' => 'val1', 'another_param' => 'val3' },
@@ -204,14 +214,14 @@ shared_examples_for 'auditable' do |options = {}|
     end
 
     describe '#[]' do
-        it 'should serve as a reader to the #auditable hash' do
+        it ' serves as a reader to the #auditable hash' do
             e = auditable.new( @url, { 'key' => 'stuff', 'key2' => 'val' } )
             e['key'].should == 'stuff'
         end
     end
 
     describe '#[]=' do
-        it 'should serve as a writer to the #auditable hash' do
+        it 'serves as a writer to the #auditable hash' do
             e = auditable.new( @url, { 'key' => 'stuff', 'key2' => 'val' } )
             h = e.hash
 
@@ -225,9 +235,6 @@ shared_examples_for 'auditable' do |options = {}|
     end
 
     describe '#orig' do
-        it 'should be the same as auditable' do
-            @orig.orig.should == @orig.auditable
-        end
         it 'should be frozen' do
             orig_auditable = @orig.auditable.dup
             is_frozen = false
@@ -239,21 +246,28 @@ shared_examples_for 'auditable' do |options = {}|
             is_frozen.should be_true
             @orig.orig.should == orig_auditable
         end
-        context 'when auditable has been modified' do
-            it 'should return original input name/vals' do
-                orig_auditable = @orig.auditable.dup
-                @orig.auditable = {}
-                @orig.orig.should == orig_auditable
-                @orig.auditable = orig_auditable.dup
+        context 'when auditable' do
+            context 'has been modified' do
+                it 'returns original input name/vals' do
+                    orig_auditable = @orig.auditable.dup
+                    @orig.auditable = {}
+                    @orig.orig.should == orig_auditable
+                    @orig.auditable = orig_auditable.dup
+                end
+            end
+            context 'has not been modified' do
+                it 'returns #auditable' do
+                    @orig.orig.should == @orig.auditable
+                end
             end
         end
-        it 'should be aliased to #original' do
+        it 'aliased to #original' do
             @orig.orig.should == @orig.original
         end
     end
 
     describe '#reset' do
-        it 'should return the auditable inputs to their original state' do
+        it 'returns the auditable inputs to their original state' do
             orig = @orig.auditable.dup
             @orig.update( orig.keys.first => 'value' )
             (@orig.auditable != orig).should be_true
@@ -263,7 +277,7 @@ shared_examples_for 'auditable' do |options = {}|
     end
 
     describe '#remove_auditor' do
-        it 'should remove the auditor' do
+        it 'removes the auditor' do
             @orig.auditor = :some_auditor
             @orig.auditor.should == :some_auditor
             @orig.remove_auditor
@@ -273,19 +287,19 @@ shared_examples_for 'auditable' do |options = {}|
 
     describe '#orphan?' do
         context 'when it has no auditor' do
-            it 'should return true' do
+            it 'returns true' do
                 @orphan.orphan?.should be_true
             end
         end
         context 'when it has an auditor' do
-            it 'should return true' do
+            it 'returns true' do
                 @auditable.orphan?.should be_false
             end
         end
     end
 
     describe '#submit' do
-        it 'should submit the element along with its auditable inputs' do
+        it 'submits the element using its auditable inputs as params' do
             submitted = nil
 
             @auditable.submit do |res|
@@ -297,15 +311,20 @@ shared_examples_for 'auditable' do |options = {}|
         end
 
         context 'when it has no auditor' do
-            it 'should revert to the HTTP interface singleton' do
-                submitted    = nil
+            it 'falls back to using the anonymous auditor' do
+                submitted = nil
 
-                @orphan.submit do |res|
+                elem = auditable.new( @url + '/submit', 'param' => 'val' )
+                elem.auditor.should be_nil
+
+                elem.submit do |res|
                     submitted = load( res.body )
                 end
+                elem.auditor.should be_true
 
-                @orphan.http.run
-                @orphan.auditable.should == submitted
+                elem.http.run
+
+                elem.auditable.should == submitted
             end
         end
     end
@@ -315,7 +334,7 @@ shared_examples_for 'auditable' do |options = {}|
         before( :each ) { Arachni::Element::Capabilities::Auditable.reset }
 
         context 'when the exclude_vectors option is set' do
-            it 'should skip those vectors by name' do
+            it 'skips those vectors by name' do
                 e = auditable.new( @url + '/submit', 'include_this' => 'param', 'exclude_this' => 'param' )
 
                 Arachni::Options.exclude_vectors << 'exclude_this'
@@ -329,7 +348,7 @@ shared_examples_for 'auditable' do |options = {}|
             end
         end
         context 'when called with no opts' do
-            it 'should use the defaults' do
+            it 'uses the defaults' do
                 cnt = 0
                 @auditable.audit( @seed ) { cnt += 1 }
                 @auditor.http.run
@@ -338,16 +357,33 @@ shared_examples_for 'auditable' do |options = {}|
         end
 
         context 'when it has no auditor' do
-            it 'should revert to the HTTP interface singleton' do
-                cnt = 0
-                @orphan.audit( @seed ) { cnt += 1 }
-                @orphan.http.run
-                cnt.should == 4
+            it 'falls back to using the anonymous auditor' do
+                elem = auditable.new( @url, 'param' => 'val' )
+                elem.auditor.should be_nil
+
+                elem.taint_analysis( 'test' )
+                elem.auditor.should be_true
+                elem.http.run
+
+                elem.auditor.issues.size.should == 1
+                elem.auditor.raw_issues.size.should == 1
+                issue = elem.auditor.raw_issues.first
+                issue.elem.should == elem.type
+                issue.id.should == 'test'
+                issue.method.to_s.downcase.should == 'get'
+                issue.name.should == 'Anonymous auditor'
+                issue.var.should == 'param'
+
+                elem.auditor.raw_issues.should == Arachni::Module::Manager.results
+                elem.auditor.issues.should == elem.auditor.auditstore.issues
+                elem.auditor.auditstore.should == Arachni::AuditStore.new(
+                    options: Arachni::Options.instance.to_h,
+                    issues: issues )
             end
         end
 
         context 'when the action matches a #skip_path? rule' do
-            it 'should return immediately' do
+            it 'returns immediately' do
                 ran = false
                 @auditable.audit( @seed ) { ran = true }
                 @auditor.http.run
@@ -375,7 +411,7 @@ shared_examples_for 'auditable' do |options = {}|
         end
 
         context 'when the element has no auditable inputs' do
-            it 'should return immediately' do
+            it 'returns immediately' do
                 e = auditable.new( @url + '/submit' )
 
                 ran = false
@@ -387,7 +423,7 @@ shared_examples_for 'auditable' do |options = {}|
         end
 
         context 'when the auditor\'s #skip? method returns true for a mutation' do
-            it 'should be skipped' do
+            it 'is skipped' do
 
                 ran = false
                 @auditable.audit( @seed ) { ran = true }.should be_true
@@ -419,7 +455,7 @@ shared_examples_for 'auditable' do |options = {}|
         end
 
         context 'when the element\'s #skip? method returns true for a mutation' do
-            it 'should be skipped' do
+            it 'is skipped' do
 
                 ran = false
                 @auditable.audit( @seed ) { ran = true }.should be_true
@@ -454,7 +490,7 @@ shared_examples_for 'auditable' do |options = {}|
             after { Arachni::Element::Capabilities::Auditable.reset_instance_scope }
 
             context 'when set' do
-                it 'should restrict the audit to the provided elements' do
+                it 'restricts the audit to the provided elements' do
                     scope_id_arr = [ @auditable.scope_audit_id ]
                     Arachni::Element::Capabilities::Auditable.restrict_to_elements( scope_id_arr )
                     performed = false
@@ -473,7 +509,7 @@ shared_examples_for 'auditable' do |options = {}|
                     after { @sleep.reset_scope_override }
 
                     context 'when called' do
-                        it 'should override scope restrictions' do
+                        it 'overrides scope restrictions' do
                             scope_id_arr = [ @auditable.scope_audit_id ]
                             Arachni::Element::Capabilities::Auditable.restrict_to_elements( scope_id_arr )
                             performed = false
@@ -489,7 +525,7 @@ shared_examples_for 'auditable' do |options = {}|
                         end
 
                         describe '#override_instance_scope?' do
-                            it 'should return true' do
+                            it 'returns true' do
                                 @sleep.override_instance_scope
                                 @sleep.override_instance_scope?.should be_true
                             end
@@ -498,7 +534,7 @@ shared_examples_for 'auditable' do |options = {}|
 
                     context 'when not called' do
                         describe '#override_instance_scope?' do
-                            it 'should return false' do
+                            it 'returns false' do
                                 @sleep.override_instance_scope?.should be_false
                             end
                         end
@@ -507,7 +543,7 @@ shared_examples_for 'auditable' do |options = {}|
             end
 
             context 'when not set' do
-                it 'should not impose audit restrictions' do
+                it 'does not impose audit restrictions' do
                     performed = false
                     @sleep.audit( '' ){ performed = true }
                     @sleep.http.run
@@ -524,26 +560,41 @@ shared_examples_for 'auditable' do |options = {}|
         context 'when called with option' do
 
             describe :each_mutation do
-                it 'should be able to modify the element on the fly' do
+                it 'is passed each generated mutation' do
                     submitted = nil
                     cnt = 0
 
-                    each_mutation = proc do |mutation|
-                        mutation.altered_value = 'houa!'
-                    end
+                    each_mutation = proc { |_| cnt += 1 }
 
                     @auditable.audit( @seed, each_mutation: each_mutation,
                                       format: [ Arachni::Module::Auditor::Format::STRAIGHT ] ) do |res, opts|
                         submitted = load( res.body )
-                        cnt += 1
                     end
 
                     @auditor.http.run
                     cnt.should == 1
                     @auditable.auditable == submitted
                 end
+
+                it 'is able to modify mutations on the fly' do
+                    submitted = nil
+
+                    modified_seed = 'houa!'
+                    each_mutation = proc do |mutation|
+                        mutation.altered_value = modified_seed
+                    end
+
+                    @auditable.audit( @seed, each_mutation: each_mutation,
+                                      format: [ Arachni::Module::Auditor::Format::STRAIGHT ] ) do |res, opts|
+                        submitted = load( res.body )
+                    end
+
+                    @auditor.http.run
+                    submitted.values.first.should == modified_seed
+                end
+
                 context 'when it returns one or more elements of the same type' do
-                    it 'should audit those elements too' do
+                    it 'audits those elements too' do
                         injected = []
                         cnt = 0
 
@@ -574,15 +625,16 @@ shared_examples_for 'auditable' do |options = {}|
             describe :format do
 
                 describe 'Arachni::Module::Auditor::Format::STRAIGHT' do
-                    it 'should inject the seed as is' do
+                    it 'injects the seed as is' do
                         injected = nil
                         cnt = 0
+
                         @auditable.audit( @seed,
-                                          format: [ Arachni::Module::Auditor::Format::STRAIGHT ] ){
-                            |res, opts|
+                                          format: [ Arachni::Module::Auditor::Format::STRAIGHT ] ) do |res, opts|
                             injected = load( res.body )[opts[:altered]]
                             cnt += 1
-                        }
+                        end
+
                         @auditor.http.run
                         cnt.should == 1
                         injected.should == @seed
@@ -590,15 +642,16 @@ shared_examples_for 'auditable' do |options = {}|
                 end
 
                 describe 'Arachni::Module::Auditor::Format::APPEND' do
-                    it 'should append the seed to the existing value of the input' do
+                    it 'appends the seed to the existing value of the input' do
                         injected = nil
                         cnt = 0
+
                         @auditable.audit( @seed,
-                                          format: [ Arachni::Module::Auditor::Format::APPEND ] ){
-                            |res, opts|
+                                          format: [ Arachni::Module::Auditor::Format::APPEND ] ) do |res, opts|
                             injected = load( res.body )[opts[:altered]]
                             cnt += 1
-                        }
+                        end
+
                         @auditor.http.run
                         cnt.should == 1
                         injected.should == @default_input_value + @seed
@@ -606,17 +659,17 @@ shared_examples_for 'auditable' do |options = {}|
                 end
 
                 describe 'Arachni::Module::Auditor::Format::NULL' do
-                    it 'should terminate the seed with a null character',
+                    it 'terminates the seed with a null character',
                        if: described_class != Arachni::Element::Header  do
 
                         injected = nil
                         cnt = 0
                         @auditable.audit( @seed,
-                                          format: [ Arachni::Module::Auditor::Format::NULL ] ){
-                            |res, opts|
+                                          format: [ Arachni::Module::Auditor::Format::NULL ] ) do |res, opts|
                             injected = load( res.body )[opts[:altered]]
                             cnt += 1
-                        }
+                        end
+
                         @auditor.http.run
                         cnt.should == 1
                         auditable.decode( injected ).should == @seed + "\0"
@@ -624,7 +677,7 @@ shared_examples_for 'auditable' do |options = {}|
                 end
 
                 describe 'Arachni::Module::Auditor::Format::SEMICOLON' do
-                    it 'should prepend the seed with a semicolon' do
+                    it 'prepends the seed with a semicolon' do
                         injected = nil
                         cnt = 0
 
@@ -649,12 +702,10 @@ shared_examples_for 'auditable' do |options = {}|
                 end
 
                 context true do
-                    it 'should allow redundant audits' do
+                    it 'allows redundant audits' do
                         cnt = 0
                         5.times do |i|
-                            @auditable.audit( @seed, @audit_opts.merge( redundant: true )){
-                                cnt += 1
-                            }
+                            @auditable.audit( @seed, @audit_opts.merge( redundant: true )){ cnt += 1 }
                         end
                         @auditor.http.run
                         cnt.should == 5
@@ -662,12 +713,10 @@ shared_examples_for 'auditable' do |options = {}|
                 end
 
                 context false do
-                    it 'should not allow redundant requests/audits' do
+                    it 'does not allow redundant requests/audits' do
                         cnt = 0
                         5.times do |i|
-                            @auditable.audit( @seed, @audit_opts.merge( redundant: false )){
-                                cnt += 1
-                            }
+                            @auditable.audit( @seed, @audit_opts.merge( redundant: false )){ cnt += 1 }
                         end
                         @auditor.http.run
                         cnt.should == 1
@@ -675,7 +724,7 @@ shared_examples_for 'auditable' do |options = {}|
                 end
 
                 context 'default' do
-                    it 'should not allow redundant requests/audits' do
+                    it 'does not allow redundant requests/audits' do
                         cnt = 0
                         5.times do |i|
                             @auditable.audit( @seed, @audit_opts ){ cnt += 1 }
@@ -689,7 +738,7 @@ shared_examples_for 'auditable' do |options = {}|
             describe :async do
 
                 context true do
-                    it 'should perform all HTTP requests asynchronously' do
+                    it 'performs all HTTP requests asynchronously' do
                         before = Time.now
                         @sleep.audit( @seed, async: true ){}
                         @auditor.http.run
@@ -704,7 +753,7 @@ shared_examples_for 'auditable' do |options = {}|
                 end
 
                 context false do
-                    it 'should perform all HTTP requests synchronously' do
+                    it 'performs all HTTP requests synchronously' do
                         before = Time.now
                         @sleep.audit( @seed, async: false ){}
                         @auditor.http.run
@@ -714,7 +763,7 @@ shared_examples_for 'auditable' do |options = {}|
                 end
 
                 context 'default' do
-                    it 'should perform all HTTP requests asynchronously' do
+                    it 'performs all HTTP requests asynchronously' do
                         before = Time.now
                         @sleep.audit( @seed ){}
                         @auditor.http.run

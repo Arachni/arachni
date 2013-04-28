@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -27,37 +27,40 @@ class Link < Arachni::Element::Base
     #
     # Creates a new Link element from a URL or more complex data.
     #
-    # @param    [String]    url     owner URL -- URL of the page which contained the
+    # @param    [String]    url
+    #   {#url Owner URL} -- URL of the page which contains the link.
     # @param    [String, Hash]    raw
-    #   If empty, the owner URL will be treated as the actionable URL and
-    #   auditable inputs will be extracted from its query component.
+    #   If empty, the owner URL will be treated as the {#action actionable} URL
+    #   and {#auditable} inputs will be extracted from its query component.
     #
-    #   If a +String+ is passed, it will be treated as the actionable
+    #   If a {String} is passed, it will be treated as the actionable
     #   URL and auditable inputs will be extracted from its query component.
     #
-    #   If a +Hash+ is passed, it will look for an actionable URL
-    #   +String+ in the following keys:
-    #   * 'href'
-    #   * :href
-    #   * 'action'
-    #   * :action
+    #   If a `Hash` is passed, it will look for an {#action actionable} URL
+    #   `String` in the following keys:
     #
-    #   and for an auditable inputs +Hash+ in:
-    #   * 'vars'
-    #   * :vars
-    #   * 'inputs'
-    #   * :inputs
+    #   * `'href'`
+    #   * `:href`
+    #   * `'action'`
+    #   * `:action`
     #
-    #   these should contain inputs in name=>value pairs.
+    #   and for an {#auditable} inputs `Hash` in:
     #
-    #   If the +Hash+ doesn't contain any of the following keys,
-    #   its contents will be used as auditable inputs instead and +url+ will be
-    #   used as the actionable URL.
+    #   * `'vars'`
+    #   * `:vars`
+    #   * `'inputs'`
+    #   * `:inputs`
+    #
+    #   these should contain inputs in `name => value` pairs.
+    #
+    #   If the `Hash` doesn't contain any of the following keys, its contents
+    #   will be used as {#auditable} inputs instead and `url` will be used as
+    #   the actionable URL.
     #
     #   If no inputs have been provided it will try to extract some from the
-    #   actionable URL, if empty inputs (empty +Hash+) )have been provided the URL will not be
-    #   parsed and the Link will instead be configured without any auditable inputs/vectors.
-    #
+    #   actionable URL, if empty inputs (empty `Hash`) have been provided the
+    #   URL will not be parsed and the Link will instead be configured without
+    #   any auditable inputs/vectors.
     #
     def initialize( url, raw = {} )
         super( url, raw )
@@ -94,16 +97,14 @@ class Link < Arachni::Element::Base
         @orig.freeze
     end
 
-    # @return   [Hash]  Simple representation of self in the form of { {#action} => {#auditable} }
+    # @return   [Hash]
+    #   Simple representation of self in the form of `{ {#action} => {#auditable} }`.
     def simple
         { self.action => self.auditable }
     end
 
-    #
-    # @return   [String]    unique link ID
-    #
+    # @return   [String]    Unique link ID.
     def id
-        #self.action + auditable.keys.reject { |name| name.include?( seed ) }.sort.to_s
         query_vars = self.class.parse_query_vars( self.action )
         "#{@audit_id_url}::#{self.method}::#{query_vars.merge( self.auditable ).keys.compact.sort.to_s}"
     end
@@ -113,10 +114,8 @@ class Link < Arachni::Element::Base
         "#{@audit_id_url}::#{self.method}::#{query_vars.merge( self.send( type ) ).keys.compact.sort.to_s}"
     end
 
-    #
     # @return   [String]
     #   Absolute URL with a merged version of {#action} and {#auditable} as a query.
-    #
     def to_s
         query_vars = self.class.parse_query_vars( self.action )
         uri = uri_parse( self.action )
@@ -138,7 +137,7 @@ class Link < Arachni::Element::Base
     end
 
     #
-    # Returns an array of links based on HTTP response.
+    # Extracts links from an HTTP response.
     #
     # @param   [Typhoeus::Response]    response
     #
@@ -150,9 +149,10 @@ class Link < Arachni::Element::Base
     end
 
     #
-    # Returns an array of links from a document.
+    # Extracts links from a document.
     #
-    # @param    [String]    url     request URL
+    # @param    [String]    url
+    #   URL of the document -- used for path normalization purposes.
     # @param    [String, Nokogiri::HTML::Document]    document
     #
     # @return   [Array<Link>]
@@ -176,16 +176,19 @@ class Link < Arachni::Element::Base
     end
 
     #
-    # Extracts variables and their values from a URL query.
+    # Extracts inputs from a URL query.
     #
     # @param    [String]    url
     #
-    # @return   [Hash]    name=>value pairs
+    # @return   [Hash]
     #
     def self.parse_query_vars( url )
         return {} if !url
 
-        query = uri_parse( url ).query
+        parsed = uri_parse( url )
+        return {} if !parsed
+
+        query = parsed.query
         return {} if !query || query.empty?
 
         query.to_s.split( '&' ).inject( {} ) do |h, pair|

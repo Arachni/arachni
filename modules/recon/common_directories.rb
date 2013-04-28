@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ class Arachni::Modules::CommonDirectories < Arachni::Module::Base
 
     def self.info
         {
-            name:        'CommonDirectories',
+            name:        'Common directories',
             description: %q{Tries to find common directories on the server.},
             elements:    [ Element::PATH ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
@@ -55,7 +55,7 @@ class Arachni::Modules::CommonDirectories < Arachni::Module::Base
                 'OWASP' => 'https://www.owasp.org/index.php/Forced_browsing'
             },
             issue:       {
-                name:            %q{A common directory exists on the server.},
+                name:            %q{Common directory},
                 tags:            %w(path directory common discovery),
                 cwe:             '538',
                 severity:        Severity::MEDIUM,

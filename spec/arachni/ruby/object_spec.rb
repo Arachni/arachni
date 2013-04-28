@@ -10,7 +10,7 @@ end
 describe Object do
 
     describe '#deep_clone' do
-        it 'should return a deep copy of the object' do
+        it 'returns a deep copy of the object' do
             a = [ [1,2] ]
             b = a.deep_clone
             a[0] << 3
@@ -21,14 +21,14 @@ describe Object do
 
     describe '#realsize' do
         context 'when the class has instance variables' do
-            it 'should return an integer > 0' do
+            it 'returns an integer > 0' do
                 s = MyClass.new
                 s.stuff = 'my stuff'
                 s.realsize.should > 0
             end
         end
         context 'when the class has instance variables' do
-            it 'should return nil' do
+            it 'returns nil' do
                 s = Empty.new
                 s.realsize.should == 0
             end

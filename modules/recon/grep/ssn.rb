@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ class Arachni::Modules::SSN < Arachni::Module::Base
                 'ssa.gov' => 'http://www.ssa.gov/pubs/10064.html'
             },
             issue:       {
-                name:            %q{Disclosed US Social Security Number.},
+                name:            %q{Disclosed US Social Security Number (SSN)},
                 description:     %q{A US Social Security Number is being disclosed.},
                 cwe:             '200',
                 severity:        Severity::HIGH,

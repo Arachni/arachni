@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -215,7 +215,6 @@ class AuditStore
         new_options = {}
 
         options = options.to_hash
-        options['url'] = options['url'].to_s
         options.each_pair do |key, val|
             case key
                 when 'redundant'
@@ -230,7 +229,8 @@ class AuditStore
 
                 when 'cookies'
                     next if !val
-                    new_options[key.to_s] = val.inject( {} ){ |h, c| h.merge!( c.simple ) }
+                    new_options[key.to_s] =
+                        val.inject( {} ){ |h, c| h.merge!( c.simple ) }
 
                 else
                     new_options[key.to_s] = val
@@ -252,7 +252,7 @@ class AuditStore
     #                                        with populated {Issue#variations}
     #
     def prepare_variations( issues )
-        variation_keys = %w(injected id regexp regexp_match headers response opts)
+        variation_keys = %w(injected id regexp regexp_match headers response opts remarks)
 
         new_issues = {}
         issues.each do |issue|

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.5
+# @version 0.1.6
 #
 # @see http://www.owasp.org/index.php/Top_10_2010-A9-Insufficient_Transport_Layer_Protection
 #
@@ -50,7 +50,7 @@ class Arachni::Modules::UnencryptedPasswordForms < Arachni::Module::Base
             name = determine_name( input )
             next if !password?( input ) || audited?( input ) || !name
 
-            log( var: name, match: name, element: Element::FORM )
+            log( var: name, match: form.to_html, element: Element::FORM )
 
             print_ok( "Found unprotected password field '#{name}' at #{page.url}" )
             audited( input )
@@ -59,18 +59,18 @@ class Arachni::Modules::UnencryptedPasswordForms < Arachni::Module::Base
 
     def self.info
         {
-            name:        'UnencryptedPasswordForms',
+            name:        'Unencrypted password forms',
             description: %q{Looks for password inputs that don't submit data
                 over an encrypted channel (HTTPS).},
             elements:    [ Element::FORM ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.1.5',
+            version:     '0.1.6',
             references:  {
                 'OWASP Top 10 2010' => 'http://www.owasp.org/index.php/Top_10_2010-A9-Insufficient_Transport_Layer_Protection'
             },
             targets:     %w(Generic),
             issue:       {
-                name:            %q{Unencrypted password form.},
+                name:            %q{Unencrypted password form},
                 description:     %q{Transmission of password does not use an encrypted channel.},
                 tags:            %w(unencrypted password form),
                 cwe:             '319',

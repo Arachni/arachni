@@ -1,2 +1,3 @@
 /bin/cat /etc/passwd
 type %SystemDrive%\\boot.ini
+type %SystemRoot%\\win.ini

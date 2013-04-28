@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -28,6 +28,10 @@
 #
 class Arachni::Modules::XSSScriptTag < Arachni::Module::Base
 
+    REMARK = 'Arachni cannot inspect the JavaScript runtime in order to' +
+        'determine the real effects of the injected seed, a human needs to inspect' +
+        'this issue to determine its validity.'
+
     def self.strings
         @strings ||= [
             "arachni_xss_in_script_tag_#{seed}",
@@ -51,22 +55,22 @@ class Arachni::Modules::XSSScriptTag < Arachni::Module::Base
         # context there's no point in parsing the HTML to verify the vulnerability
         return if !res.body || !res.body.include?( injected )
 
-        begin
-            # see if we managed to inject a working HTML attribute to any
-            # elements
-            if (html_elem = Nokogiri::HTML( res.body ).css( "script" )).empty? ||
-                !html_elem.to_s.include?( injected )
-                return
-            end
-
-            opts[:match] = html_elem.to_s
-            log( opts, res )
+        # see if we managed to inject a working HTML attribute to any
+        # elements
+        if (html_elem = Nokogiri::HTML( res.body ).css( "script" )).empty? ||
+            !html_elem.to_s.include?( injected )
+            return
         end
+
+        opts[:match]        = html_elem.to_s
+        opts[:verification] = true
+        opts[:remarks]      =  { module: [ REMARK ] }
+        log( opts, res )
     end
 
     def self.info
         {
-            name:        'XSS in HTML "script" tag',
+            name:        'XSS in HTML \'script\' tag',
             description: %q{Injects strings and checks if they appear inside HTML 'script' tags.},
             elements:    [Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
@@ -77,7 +81,7 @@ class Arachni::Modules::XSSScriptTag < Arachni::Module::Base
             },
             targets:     %w(Generic),
             issue:       {
-                name:            %q{Cross-Site Scripting in HTML "script" tag.},
+                name:            %q{Cross-Site Scripting in HTML \'script\' tag},
                 description:     %q{Unvalidated user input is being embedded inside a <script> element.
     This makes Cross-Site Scripting attacks much easier to mount since user input lands inside
     a trusted script.},

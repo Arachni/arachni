@@ -1,21 +1,151 @@
 # ChangeLog
 
-## Version 0.4.1.3 _(December 15, 2012)_
-- WebUI
-  - Updated Settings page to reflect the selected proxy type.
-  - Fixed bug when deleting reports which caused the last report to be removed.
-- HTTP
-  - Response bodies only get repacked if the content-type is text-based to avoid corrupting binary bodies.
+## Version 0.4.2 _(April 26, 2013)_
+
+- Options
+  - Added ```--https-only``` to disallow downgrades to HTTP when the seed URL uses HTTPS.
+  - Added ```--exclude-page``` to exclude pages whose bodies match the given patterns.
+  - Added ```--version``` to show version info.
+- Updated exceptions thrown by the framework, removed ```Arachni::Exceptions```
+    namespace and replaced it with the ```Arachni::Error``` base exception from
+    which all component specific exceptions inherit.
+- RPC
+  - Handlers
+      - ```opts``` -- Now presents the ```RPC::Server::ActiveOptions```
+           interface which actively configures certain options across multiple system
+           components.
+      - ```service``` -- Updated with the following convenience methods in order
+            to provide a simpler interface for users who don't wish to bother with
+            the more specialised handlers (```opts```,```modules```, ```framework```, etc.):
+          - ```#errors``` -- Returns the contents of the error log.
+          - ```#scan``` -- Configures and runs the scan.
+          - ```#progress``` -- Aggregates progress information.
+          - ```#busy?``` -- Checks whether the scan is still in progress.
+          - ```#pause``` -- Pauses the scan (delegated to ```RPC::Server::Framework#pause```).
+          - ```#resume``` -- Resumes the scan (delegated to ```RPC::Server::Framework#resume```).
+          - ```#abort_and_report``` -- Cleans up the framework and returns the report.
+          - ```#abort_and_report_as``` -- Cleans up the framework and returns the
+            result of the specified report component.
+          - ```#status``` -- Returns the status of the Instance.
+          - ```#report``` -- Returns the scan report as a ```Hash```.
+          - ```#report_as``` --  Returns the scan report in one of the available formats (as a ```String```).
+          - ```#shutdown``` -- Shuts down the Instance/stops the scan.
+      - ```framework``` -- Clients no longer need to call ```framework.clean_up``` unless cancelling a running scan.
+  - Protocol -- Now supports both ```Marshal``` and ```YAML``` automatically.
+      - ```Marshal``` by default since it's many times faster than ```YAML```.
+      - ```YAML``` as an automatic fallback in order to maintain backwards compatibility and ease of integration with 3rd parties.
+          - Updated to use the Ruby-default ```Psych``` engine.
+  - ```Framework```
+      - Updated gathering of slave status -- once a slave is done it reports back to the master.
+      - Clean-up happens automatically, clients no longer need to call ```#clean_up``` (like previously mentioned).
+      - Slave instances now buffer their logged issues and report them to the Master in batches.
+      - ```#issues``` now returns the first variation of each issue to provide more info/context.
+  - ```Dispatcher```
+      - Added ```#workload_score``` returning the workload score of a Dispatcher as a ```Float```.
+      - Workload score calculation no longer uses CPU/RAM resource usage (since
+        that data is not available on all platforms) but instead the amount of running
+        instances and node weight.
+- Trainer -- Added a hard-limit for trainings per page to avoid time-consuming loops.
 - Spider
-  - Updated to handle relative Location URLs in redirections
-  - Fixed erroneous conditional causing redirects not to be followed under certain circumstances.
+  - Updated to retry a few times when the server fails to respond.
+      - Failed requests returned by ```#failures```.
+- Framework
+  - Updated to retry a few times when the server fails to respond when trying to
+        request a page for an audit.
+      - Failed requests returned by ```#failures```.
+  - The following methods have been updated to enforce scope criteria:
+      - ```#audit_page```
+      - ```#push_to_page_queue```
+      - ```#push_to_url_queue```
+- HTTP
+  - Fixed corruption of binary response bodies due to aggressive sanitization.
+  - Custom-404 page detection updated to:
+      - Fallback to a word-difference ratio of the refined responses if straight comparison fails.
+      - Keep a limited cache of signatures to lower memory consumption.
+- ```Arachni::Element::Capabilities::Auditable```
+  - Added ```#use_anonymous_auditor``` to alleviate the need of assigning
+    a custom auditor when scripting.
+  - Updated ```#submit``` and ```#audit``` to default to ```#use_anonymous_auditor```
+    when no auditor has been provided.
+- Plugins
+  - AutoLogin -- No longer URI escapes the given arguments. [Issue #314]
+  - Profiler -- No longer a member of the default plugins.
+  - Meta-analysis
+      - Timing-attacks: Updated to add a remark to affected issues about the
+            suboptimal state of the server while the issue was identified.
+      - Discovery: Updated to add a remark to affected issues about the
+            extreme similarities between issues of similar type.
+  - Removed
+      - Manual-verification meta-analysis -- That plugin is now redundant, functionality
+        now handled by other components/layers.
+- Analysis techniques
+  - Taint -- Updated to add remarks for issues that require verification.
+  - Timeout -- Updated to dramatically decrease memory consumption and improve reliability/accuracy.
+      - No longer schedules element audits for the end of the scan but looks
+        for candidates along with the other audit requests.
+      - Candidates are verified at the end of each page audit.
+      - Makes sure that candidates are deduplicated upon discovery.
+      - Added a 3rd phase: Initial candidates which pass verification are verified again.
+- Modules
+  - General
+      - Updated module names along with some descriptions and issue names.
+      - Limited the maximum number of issues to 25 for the following recon modules:
+          - Captcha
+          - CVS/SVN users
+          - E-mails
+          - HTML-objects
+          - Interesting Responses
+      - XSS in script tag
+          - Requires manual verification -- Arachni can't inspect the JS runtime.
+          - Added remark to inform users about the above.
+      - Path traversal
+            - Added more payloads for Windows.
+      - OS command injection
+            - Added more payloads for Windows.
+  - Added
+      - Auto-complete for password form fields.
+  - Removed
+      - ```xss_uri``` compatibility module.
+- Plugin
+    - Proxy
+        - Added the ```session_token``` option allowing users to restrict access
+            to their proxy session using a configurable token.
+        - Updated panel and control URLs.
 - Reports
-  - Metareport - Fixed nil error on no request params.
-  - HTML - Updated to show a notice in the Summary tab when there are no issues.
+    - If a directory has been passed as an ```outfile``` option the
+        report will be written under that directory using the default ```outfile```
+        value as a filename.
+    - Updated report descriptions.
+    - Updated to include Issue remarks.
+- Issues
+    - Added attribute ```remarks``` holding a ```Hash``` of remarks about
+        that issue with the entity which made the remark as _key_ and an ```Array```
+        of remarks as _value_.
+    - Added method ```#add_remark```, allowing new remarks to be added to the ```Issue```.
+- Executables
+    - ```arachni_script``` -- Updated to expect a single script and pass ARGV along.
+    - ```arachni_rpc```
+        - Massive code clean-up.
+        - Updated to use the new simplified RPC API.
+        - Updated to support the new high-performance distribution options.
+        - Removed status messages, shows only the issue list.
+- Added
+  - Cache
+      - ```Arachni::Cache::Preference``` -- Performs soft pruning based on a
+        preference determined by a given block.
+  - Buffer classes
+      - ```Arachni::Buffer::Base``` -- Buffer base class.
+      - ```Arachni::Buffer::AutoFlush``` -- A buffer implementation which flushes
+        itself when it gets full or a number of fill-up attempts is reached between flushes.
+- Removed
+      - Web User Interface -- The new interface is a
+        [project of its own](https://github.com/Arachni/arachni-ui-web) and not
+        part of the framework -- will appear in the packages only, not the Gems.
 
 ## Version 0.4.1.2 _(November 3, 2012)_
 - HTTP
-  - Updated custom 404 detection algorithm to use less memory.
+  - Updated the custom 404 detection algorithm to use less memory by storing only
+    the hashes of the signatures instead of the signatures themselves.
   - ```cookie_string``` option is now decoded before being parsed into a ```Cookie``` object.
 - ```Cookie#expires_to_time``` bugfixed to return ```nil``` if expiry time is "0".
 - ```Arachni::URI.cheap_parse``` -- Updated to sanitize the encoding of each parameter name and value individually. [Issue #303]

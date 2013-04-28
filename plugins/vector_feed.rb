@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
                 return
             end
 
-            feed = YAML.load_stream( StringIO.new( feed ) ).documents.flatten
+            feed = YAML.load_stream( StringIO.new( feed ) ).flatten
 
             yaml_err = 'Invalid YAML syntax, bailing out..'
             begin

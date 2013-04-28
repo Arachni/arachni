@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ class Arachni::Modules::Htaccess < Arachni::Module::Base
                 'Apache.org' => 'http://httpd.apache.org/docs/2.2/mod/core.html#limit'
             },
             issue:       {
-                name:        %q{Misconfiguration in LIMIT directive of .htaccess file.},
+                name:        %q{Misconfiguration in LIMIT directive of .htaccess file},
                 description: %q{The .htaccess file blocks GET requests but allows POST.},
                 tags:        %w(htaccess server limit),
                 severity:    Severity::HIGH,

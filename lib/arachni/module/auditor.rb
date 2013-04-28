@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,23 +18,30 @@ module Arachni
 module Module
 
 #
-# Auditor module
-#
 # Included by {Module::Base} and provides helper audit methods to all modules.
 #
 # There are 3 main types of audit and analysis techniques available:
-# * Taint analysis -- {#audit}
-# * Timeout analysis -- {#audit_timeout}
-# * Differential analysis -- {#audit_rdiff}
+#
+# * {Arachni::Element::Capabilities::Auditable::Taint Taint analysis} -- {#audit}
+# * {Arachni::Element::Capabilities::Auditable::Timeout Timeout analysis} -- {#audit_timeout}
+# * {Arachni::Element::Capabilities::Auditable::RDiff Differential analysis} -- {#audit_rdiff}
 #
 # It should be noted that actual analysis takes place at the element level,
 # and to be more specific, the {Arachni::Element::Capabilities::Auditable} element level.
 #
-# The module also provides:
-# * discovery helpers for checking and logging the existence of remote files
-# * pattern matching helpers for checking and logging the existence of strings
-#   in responses or in the body of the page that's being audited
-# * general {Arachni::Issue} logging helpers
+# It also provides:
+#
+# * Discovery helpers for checking and logging the existence of remote files.
+#   * {#log_remote_file}
+#   * {#remote_file_exist?}
+#   * {#log_remote_file_if_exists}
+# * Pattern matching helpers for checking and logging the existence of strings
+#   in responses or in the body of the page that's being audited.
+#   * {#match_and_log}
+# * General {Arachni::Issue} logging helpers.
+#   * {#log}
+#   * {#log_issue}
+#   * {#register_results}
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
@@ -43,10 +50,14 @@ module Auditor
 
     def self.reset
         audited.clear
+        Element::Capabilities::Auditable::Timeout.reset
     end
 
     def self.timeout_audit_blocks
         Element::Capabilities::Auditable.timeout_audit_blocks
+    end
+    def self.timeout_candidates
+        Element::Capabilities::Auditable.timeout_candidates
     end
     def self.timeout_loaded_modules
         Element::Capabilities::Auditable.timeout_loaded_modules
@@ -68,7 +79,7 @@ module Auditor
     end
 
     #
-    # @param    [#to_s] id  identifier of the object to be marked as audited
+    # @param    [#to_s]  id  Identifier of the object to be marked as audited.
     #
     # @see #audited?
     #
@@ -77,14 +88,46 @@ module Auditor
     end
 
     #
-    # @param    [#to_s] id  identifier of the object to be checked
+    # @param    [#to_s] id  Identifier of the object to be checked.
     #
-    # @return   [Bool]  +true+ if audited, +false+ otherwise
+    # @return   [Bool]  `true` if audited, `false` otherwise.
     #
     # @see #audited
     #
     def audited?( id )
         Auditor.audited.include?( "#{self.class}-#{id}" )
+    end
+
+    def self.included( m )
+        m.class_eval do
+            def self.issue_counter
+                @issue_counter ||= 0
+            end
+
+            def self.issue_counter=( int )
+                @issue_counter = int
+            end
+
+            def increment_issue_counter
+                self.class.issue_counter += 1
+            end
+
+            def issue_limit_reached?( count = max_issues )
+                self.class.issue_limit_reached?( count )
+            end
+
+            def self.issue_limit_reached?( count = max_issues )
+                issue_counter >= count if !count.nil?
+            end
+
+            def self.max_issues
+                info[:max_issues]
+            end
+        end
+    end
+
+    def max_issues
+        self.class.max_issues
     end
 
     #
@@ -93,18 +136,7 @@ module Auditor
     #
     Format = Element::Capabilities::Mutable::Format
 
-    #
-    # Holds constants that describe the HTML elements to be audited.
-    #
-    #module Element
-    #    include Issue::Element
-    #end
-
-    #
-    # Holds constants that describe Issue severities.
-    #
-    #Severity = Issue::Severity
-
+    # Default audit options.
     OPTIONS = {
         #
         # Elements to audit.
@@ -117,32 +149,27 @@ module Auditor
                    Element::BODY],
 
         #
-        # If set to +true+ the HTTP response will be
-        # analyzed for new elements.
+        # If set to `true` the HTTP response will be analyzed for new elements.
         # Be careful when enabling it, there'll be a performance penalty.
         #
-        # If set to +false+, no training is going to occur.
+        # If set to `false`, no training is going to occur.
         #
-        # If set to +nil+, when the Auditor submits a form with original or sample values
-        # this option will be overridden to +true+.
+        # If set to `nil`, when the Auditor submits a form with original or
+        # sample values this option will be overridden to `true`
         #
         train:    nil
     }
 
     #
-    # REQUIRED
+    # *REQUIRED*
     #
-    # Must return the Page object you wish to be audited.
-    #
-    # @return   [Arachni::Page]
+    # @return   [Arachni::Page]  Page object you want to audit.
     # @abstract
     #
     attr_reader :page
 
     #
-    # REQUIRED
-    #
-    # Must return the Framework
+    # *REQUIRED*
     #
     # @return   [Arachni::Framework]
     #
@@ -151,11 +178,10 @@ module Auditor
     attr_reader :framework
 
     #
-    # OPTIONAL
+    # *OPTIONAL*
     #
-    # Allows modules to ignore HPG scope restrictions
-    #
-    # This way they can audit elements that are not on the Grid sanctioned whitelist.
+    # Allows modules to ignore HPG scope restrictions in order to audit elements
+    # that are not on the Grid sanctioned whitelist.
     #
     # @return   [Bool]
     #
@@ -171,13 +197,16 @@ module Auditor
     end
 
     #
-    # Just a delegator logs an array of issues.
+    # Just a delegator, logs an array of issues.
     #
     # @param    [Array<Arachni::Issue>]     issues
     #
     # @see Arachni::Module::Manager.register_results
     #
     def register_results( issues )
+        return if issue_limit_reached?
+        self.class.issue_counter += issues.size
+
         Module::Manager.register_results( issues )
     end
 
@@ -208,7 +237,7 @@ module Auditor
 
                 # if the file exists let the trainer parse it since it may
                 # contain brand new data to audit
-                http.trainer.push( res )
+                framework.trainer.push( res ) if framework
             end
         end
          true
@@ -234,6 +263,7 @@ module Auditor
         end
         true
     end
+    alias :remote_file_exists? :remote_file_exist?
 
     #
     # Logs the existence of a remote file as an issue.
@@ -380,6 +410,7 @@ module Auditor
             regexp_match: opts[:match],
             elem:         element,
             verification: !!opts[:verification],
+            remarks:      opts[:remarks],
             method:       method,
             response:     response,
             opts:         opts,
@@ -417,17 +448,17 @@ module Auditor
     end
 
     #
-    # Returns a list of prepared elements to be audited.
+    # If no element types have been specified in `opts`, it will use the elements
+    # from the module's {Base.info} hash.
     #
-    # If no element types have been specified in 'opts' it will
-    # use the elements from the module's "self.info()" hash.
+    # If no elements have been specified in `opts` or {Base.info}, it will use the
+    # elements in {OPTIONS}.
     #
-    # If no elements have been specified in 'opts' or "self.info()" it will
-    # use the elements in {OPTIONS}.
+    # @param  [Hash]    opts
+    # @option opts  [Array]  :elements
+    #   Element types to audit (see {OPTIONS}`[:elements]`).
     #
-    # @param  [Hash]    opts  options as described in {OPTIONS} -- only interested in opts[:elements]
-    #
-    # @return   [Array<Arachni::Element::Capabilities::Auditable]   array of auditable elements
+    # @return   [Array<Arachni::Element>]   Prepared elements.
     #
     def candidate_elements( opts = {} )
         if !opts.include?( :elements) || !opts[:elements] || opts[:elements].empty?
@@ -457,7 +488,7 @@ module Auditor
 
                 when Element::BODY
                 else
-                    failt "Unknown element to audit: #{elem}"
+                    fail ArgumentError, "Unknown element: #{elem}"
             end
         end
 
@@ -489,7 +520,7 @@ module Auditor
     # Uses {#candidate_elements} to decide which elements to audit.
     #
     # @see OPTIONS
-    # @see Arachni::Element::Analysis::Taint
+    # @see Arachni::Element::Capabilities::Auditable::Taint
     #
     def audit_taint( taint, opts = {} )
         opts = OPTIONS.merge( opts )
@@ -502,7 +533,7 @@ module Auditor
     # Uses {#candidate_elements} to decide which elements to audit.
     #
     # @see OPTIONS
-    # @see Arachni::Element::Analysis::RDiff
+    # @see Arachni::Element::Capabilities::Auditable::RDiff
     #
     def audit_rdiff( opts = {}, &block )
         opts = OPTIONS.merge( opts )
@@ -515,7 +546,7 @@ module Auditor
     # Uses {#candidate_elements} to decide which elements to audit.
     #
     # @see OPTIONS
-    # @see Arachni::Element::Analysis::Timeout
+    # @see Arachni::Element::Capabilities::Auditable::Timeout
     #
     def audit_timeout( strings, opts = {} )
         opts = OPTIONS.merge( opts )
@@ -526,14 +557,13 @@ module Auditor
     private
 
     #
-    # Helper +Set+ for modules which want to keep track of what they've audited
+    # Helper `Set` for modules which want to keep track of what they've audited
     # by themselves.
     #
     # @return   [Set]
     #
     # @see #audited?
     # @see #audited
-    #
     #
     def self.audited
         @audited ||= BloomFilter.new

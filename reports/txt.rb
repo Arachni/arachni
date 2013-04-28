@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@
 class Arachni::Reports::Text < Arachni::Report::Base
 
     def run
-        require Arachni::Options.dir['reports'] + 'stdout'
+        load Arachni::Options.dir['reports'] + 'stdout.rb'
 
         print_line
         print_status "Dumping audit results in #{outfile}."
@@ -47,8 +47,8 @@ class Arachni::Reports::Text < Arachni::Report::Base
 
     def self.info
         {
-            name:        'Text report',
-            description: %q{Exports a report as a plain text file.},
+            name:        'Text',
+            description: %q{Exports the audit results as a text (.txt) file.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.2.1',
             options:     [ Options.outfile( '.txt' ) ]

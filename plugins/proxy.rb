@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -23,16 +23,14 @@ require 'ostruct'
 # Will gather data based on user actions and exchanged HTTP traffic and push that
 # data to {Framework#push_to_page_queue} to be audited.
 #
-# Supports SSL interception.
-#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2
+# @version 0.2.1
 #
 class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
     BASEDIR  = "#{File.dirname( __FILE__ )}/proxy/"
-    BASE_URL = 'http://arachni.proxy.'
+    BASE_URL = 'http://arachni.proxy/'
 
     class TemplateScope
         include Arachni::Utilities
@@ -146,8 +144,8 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
     MSG_SHUTDOWN = 'Shutting down the Arachni proxy plug-in...'
 
-    MSG_DISALLOWED = "You can't access this resource via the Arachni " +
-                    "proxy plug-in for the following reasons:"
+    MSG_DISALLOWED = 'You can\'t access this resource via the Arachni ' +
+                    'proxy plug-in for the following reasons:'
 
     MSG_NOT_IN_DOMAIN = 'This resource is on a domain or subdomain' +
         ' outside the scope of the audit.'
@@ -155,6 +153,8 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     MSG_EXCLUDED = 'This resource is matched by an exclude rule.'
 
     MSG_NOT_INCLUDED = 'This resource is disallowed based on an include rule.'
+
+    SESSION_TOKEN_COOKIE = 'arachni.proxy.session_token'
 
     def prepare
         # don't let the framework run just yet
@@ -213,21 +213,33 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     end
 
     def request_handler( req, res )
-        url    = req.request_uri.to_s
-        params = parse_request_body( req.body.to_s ).merge( parse_query( url ) ) || {}
-
+        # Clear the template scope to prepare it for this request.
         TemplateScope.get.clear
+
         TemplateScope.get.set :page_count, prepare_pages_for_inspection.size
         TemplateScope.get.set :recording, recording?
 
-        print_status "Requesting #{url}"
+        #
+        # Bare with me 'cause this is gonna get weird.
+        #
+        # We need the session cookie to be set for both the domain of the scan
+        # target (so that we'll be able to authorize every request) *and*
+        # for the domain used for controlling the proxy via the panel
+        # (so that we can check those requests too prevent another user
+        # from shutting down the proxy).
+        #
+        p = URI( framework.opts.url )
 
-        if shutdown?( url )
-            print_status 'Shutting down...'
-            set_response_body( res, erb( :shutdown_message ) )
-            @server.shutdown
-            return
-        end
+        # This is the URL we'll use to sign in and set the cookie for the
+        # domain of the scan target.
+        sign_in_url = "#{p.scheme}://#{p.host}/arachni.proxy.sign_in"
+
+        TemplateScope.get.set :sign_in_url, sign_in_url
+
+        url    = req.request_uri.to_s
+        params = parse_request_body( req.body.to_s ).merge( parse_query( url ) ) || {}
+
+        print_status "Requesting #{url}"
 
         reasons = []
         if !system_url?( url )
@@ -240,16 +252,58 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
             print_info MSG_DISALLOWED
             reasons.each { |reason| print_info "  * #{reason}" }
 
-            # forbidden
+            # Forbidden.
             res.status = 403
             set_response_body( res, erb( '403_forbidden'.to_sym, { reasons: reasons } ) )
             return false
         end
 
+        # This is a sign-in request.
+        if params['session_token'] == options['session_token']
+            # Set us up for the redirection that's coming.
+            res.status = 302
+
+            # Set the session cookie.
+            res.header['Set-Cookie'] = "#{SESSION_TOKEN_COOKIE}=#{options['session_token']}; path=/"
+
+            # This is the cookie-set request for the domain of the scan target domain...
+            if url == sign_in_url && req.request_method == 'POST'
+                # ...now we need to set the cookie for the proxy control domain
+                # so redirect us to its handler.
+                res.header['Location'] = "#{url_for( :sign_in )}?session_token=#{params['session_token']}"
+
+            # This is the cookie-set request for the domain of the proxy control domain...
+            elsif url.start_with?( url_for( :sign_in ) )
+                # ...time to send the user to the webapp.
+                res.header['Location'] = framework.opts.url
+            end
+
+            return
+        elsif requires_token?( url ) && !valid_session_token?( req )
+            print_info MSG_DISALLOWED
+            print_info '  * Request does not have a valid session token'
+
+            # Unauthorized.
+            res.status = 401
+            set_response_body( res, erb( 'sign_in'.to_sym ) )
+
+            return
+        end
+
+        if shutdown?( url )
+            print_status 'Shutting down...'
+            set_response_body( res, erb( :shutdown_message ) )
+            @server.shutdown
+            return
+        end
+
         @login_sequence << req if recording?
 
+        # Avoid propagating the proxy's session cookie to the webapp.
+        req.cookies.reject! { |c| c.name == SESSION_TOKEN_COOKIE }
+
         if url.start_with? url_for( :panel )
-            body =  case res.request_uri.path
+            body =  case '/' + res.request_uri.path.split( '/' )[2..-1].join( '/' )
                         when '/'
                             erb :panel
 
@@ -303,7 +357,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
                         else
                             begin
-                                IO.read TemplateScope::PANEL_BASEDIR + res.request_uri.path
+                                IO.read TemplateScope::PANEL_BASEDIR + '/../' + res.request_uri.path
                             rescue Errno::ENOENT
                                 # forbidden
                                 res.status = 404
@@ -315,6 +369,17 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         end
 
         true
+    end
+
+    def requires_token?( url )
+        !(asset?( url ) || url.start_with?( url_for( :sign_in ) ))
+    end
+
+    def valid_session_token?( req )
+        session_token = options['session_token']
+        return true if options['session_token'].to_s.empty?
+
+        cookies_to_hash( req.cookies )[SESSION_TOKEN_COOKIE] == session_token
     end
 
     def recording?
@@ -412,6 +477,10 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         res
     end
 
+    def cookies_to_hash( cookies )
+        cookies.inject({}) { |h, c| h[c.name] = c.value; h }
+    end
+
     def panel_iframe
         <<-HTML
             <style type='text/css'>
@@ -460,11 +529,18 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         res
     end
 
+    def asset?( url )
+        url.start_with?( "#{url_for( :panel )}/css/" ) ||
+            url.start_with?( "#{url_for( :panel )}/js/" ) ||
+            url.start_with?( "#{url_for( :panel )}/img/" )
+    end
+
     def self.url_for( type )
         {
             shutdown: "#{BASE_URL}shutdown",
             panel:    "#{BASE_URL}panel",
             inspect:  "#{BASE_URL}panel/inspect",
+            sign_in:  "#{BASE_URL}sign_in",
         }[type]
     end
     def url_for( *args )
@@ -480,15 +556,35 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                 * Updates the framework cookies with the cookies of the HTTP requests and
                     responses, thus it can also be used to login to a web application.
                 * Supports SSL interception.
+                * Authorization via a configurable session token.
 
                 To skip crawling and only audit elements discovered by using the proxy
-                set '--link-count=0'.},
+                set the link-count limit option to 0.
+
+                NOTICE:
+                    The 'session_token' will be looked for in a cookie named
+                    'arachni.proxy.session_token', so if you choose to use a token to
+                    restrict access to the proxy and need to pass traffic through the
+                    proxy programmatically please configure your HTTP client with
+                    a cookie named 'arachni.proxy.session_token' with the value of
+                    the 'session_token' option.
+
+                WARNING:
+                    The 'session_token' option is not a way to secure usage of
+                    this proxy but rather a way to restrict usage enough to avoid
+                    users unwittingly interfering with each others' sessions.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.2',
+            version:     '0.2.1',
             options:     [
                  Options::Port.new( 'port', [false, 'Port to bind to.', 8282] ),
-                 Options::Address.new( 'bind_address', [false, 'IP address to bind to.', '0.0.0.0'] ),
-                 Options::Int.new( 'timeout', [false, 'How long to wait for a request to complete, in milliseconds.', 20000] )
+                 Options::Address.new( 'bind_address',
+                                       [false, 'IP address to bind to.', '0.0.0.0'] ),
+                 Options::String.new( 'session_token',
+                                      [false, 'A session token to demand from ' +
+                                          'users before allowing them to use the proxy.', ''] ),
+                 Options::Int.new( 'timeout',
+                                   [false, 'How long to wait for a request to ' +
+                                       'complete, in milliseconds.', 20000] )
              ]
         }
     end

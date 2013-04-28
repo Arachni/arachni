@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -25,19 +25,19 @@ class String
     # Gets the reverse diff between self and str on a word level.
     #
     #
-    #   str = <<END
-    #   This is the first test.
-    #   Not really sure what else to put here...
-    #   END
+    #     str = <<END
+    #     This is the first test.
+    #     Not really sure what else to put here...
+    #     END
     #
-    #   str2 = <<END
-    #   This is the second test.
-    #   Not really sure what else to put here...
-    #   Boo-Yah!
-    #   END
+    #     str2 = <<END
+    #     This is the second test.
+    #     Not really sure what else to put here...
+    #     Boo-Yah!
+    #     END
     #
-    #   str.rdiff( str2 )
-    #   # => "This is the test.\nNot really sure what else to put here...\n"
+    #     str.rdiff( str2 )
+    #     # => "This is the test.\nNot really sure what else to put here...\n"
     #
     #
     # @param [String] other
@@ -55,11 +55,11 @@ class String
     end
 
     #
-    # Calculates the difference ratio (at a word level) between +self+ and +other+.
+    # Calculates the difference ratio (at a word level) between `self` and `other`
     #
     # @param    [String]    other
     #
-    # @return   [Float]     +0.0+ (identical strings) to +1.0+ (completely different)
+    # @return   [Float]     `0.0` (identical strings) to `1.0` (completely different)
     #
     def diff_ratio( other )
         return 0.0 if self == other
@@ -74,7 +74,7 @@ class String
     end
 
     #
-    # Returns the words in +self+.
+    # Returns the words in `self`.
     #
     # @param    [Bool]  strict  include *only* words, no boundary characters (like spaces, etc.)
     #
@@ -100,11 +100,20 @@ class String
     end
 
     def recode!
+        force_encoding( 'UTF-8' )
         encode!( 'utf-16be', invalid: :replace, undef: :replace ).encode("utf-8")
     end
 
     def recode
         dup.recode!
+    end
+
+
+    def binary?
+        # Stolen from YAML.
+        encoding == Encoding::ASCII_8BIT ||
+            index("\x00") ||
+            count("\x00-\x7F", "^ -~\t\r\n").fdiv(length) > 0.3
     end
 
 end

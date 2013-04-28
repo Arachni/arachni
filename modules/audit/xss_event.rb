@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -46,8 +46,7 @@ class Arachni::Modules::XSSEvent < Arachni::Module::Base
         'onmousemove',
         'onmouseout',
         'onmouseover',
-        'onmouseup',
-        'src' # not an event but it'll work
+        'onmouseup'
     ]
 
     def self.strings
@@ -92,7 +91,7 @@ class Arachni::Modules::XSSEvent < Arachni::Module::Base
             },
             targets:     %w(Generic),
             issue:       {
-                name:            %q{Cross-Site Scripting in event tag of HTML element.},
+                name:            %q{Cross-Site Scripting in event tag of HTML element},
                 description:     %q{Unvalidated user input is being embedded inside an HMTL event element such as "onmouseover".
     This makes Cross-Site Scripting attacks much easier to mount since the user input
     lands in code waiting to be executed.},

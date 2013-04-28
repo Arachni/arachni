@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -31,17 +31,19 @@
 class Arachni::Modules::ResponseSplitting < Arachni::Module::Base
 
     def run
+        header_name = "X-CRLF-Safe-#{seed}"
+
         # the header to inject...
         # what we will check for in the response header
         # is the existence of the "x-crlf-safe" field.
-        # if we find it it means that the attack was succesfull
+        # if we find it it means that the attack was successful
         # thus site is vulnerable.
-        header = "\r\nX-CRLF-Safe: no"
+        header = "\r\n#{header_name}: no"
 
         # try to inject the headers into all vectors
         # and pass a block that will check for a positive result
         audit( header, param_flip: true, follow_location: false ) do |res, opts|
-            next if !res.headers_hash['X-CRLF-Safe'] || res.headers_hash['X-CRLF-Safe'].empty?
+            next if res.headers_hash[header_name].to_s.downcase != 'no'
             opts[:injected] = uri_encode( opts[:injected] )
             log( opts, res )
         end
@@ -49,7 +51,7 @@ class Arachni::Modules::ResponseSplitting < Arachni::Module::Base
 
     def self.info
         {
-            name:        'ResponseSplitting',
+            name:        'Response Splitting',
             description: %q{Tries to inject some data into the webapp and figure out
                 if any of them end up in the response header.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
@@ -62,7 +64,7 @@ class Arachni::Modules::ResponseSplitting < Arachni::Module::Base
             targets:     %w(Generic),
 
             issue:       {
-                name:            %q{Response splitting},
+                name:            %q{Response Splitting},
                 description:     %q{The web application includes user input
      in the response HTTP header.},
                 tags:            %w(response splitting injection header),

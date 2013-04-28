@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.6
+# @version 0.1.8
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
 # @see http://www.owasp.org/index.php/OS_Command_Injection
@@ -30,7 +30,8 @@ class Arachni::Modules::OSCmdInjection < Arachni::Module::Base
         @opts ||= {
             regexp: [
                 /root:x:0:0:.+:[0-9a-zA-Z\/]+/,
-                /\[boot loader\](.*)\[operating systems\]/
+                /\[boot loader\](.*)\[operating systems\]/,
+                /\[fonts\](.*)\[extensions\]/
             ],
             format: [ Format::STRAIGHT, Format::APPEND ]
         }
@@ -57,7 +58,7 @@ class Arachni::Modules::OSCmdInjection < Arachni::Module::Base
             description: %q{Tries to find operating system command injections.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.1.6',
+            version:     '0.1.8',
             references:  {
                 'OWASP' => 'http://www.owasp.org/index.php/OS_Command_Injection'
             },
