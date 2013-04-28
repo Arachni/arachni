@@ -1,6 +1,7 @@
 # ChangeLog
 
-## _Under development_
+## Version 0.4.2 _(April 26, 2013)_
+
 - Options
   - Added ```--https-only``` to disallow downgrades to HTTP when the seed URL uses HTTPS.
   - Added ```--exclude-page``` to exclude pages whose bodies match the given patterns.
@@ -29,9 +30,8 @@
           - ```#report``` -- Returns the scan report as a ```Hash```.
           - ```#report_as``` --  Returns the scan report in one of the available formats (as a ```String```).
           - ```#shutdown``` -- Shuts down the Instance/stops the scan.
-      - ```framework``` -- Clients no longer need to call ```framework.clean_up``` unless you're cancelling a running scan.
-  - Protocol -- Now supports both ```Marshal``` and ```YAML``` automatically
-        (thanks to the updated [v0.1.3dev Arachni-RPC EM implementation](https://github.com/Arachni/arachni-rpc-em)).
+      - ```framework``` -- Clients no longer need to call ```framework.clean_up``` unless cancelling a running scan.
+  - Protocol -- Now supports both ```Marshal``` and ```YAML``` automatically.
       - ```Marshal``` by default since it's many times faster than ```YAML```.
       - ```YAML``` as an automatic fallback in order to maintain backwards compatibility and ease of integration with 3rd parties.
           - Updated to use the Ruby-default ```Psych``` engine.
@@ -43,7 +43,7 @@
   - ```Dispatcher```
       - Added ```#workload_score``` returning the workload score of a Dispatcher as a ```Float```.
       - Workload score calculation no longer uses CPU/RAM resource usage (since
-        that data is not available cross-platform) but instead the amount of running
+        that data is not available on all platforms) but instead the amount of running
         instances and node weight.
 - Trainer -- Added a hard-limit for trainings per page to avoid time-consuming loops.
 - Spider

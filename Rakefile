@@ -92,7 +92,6 @@ rescue LoadError
 end
 
 desc "Generate docs"
-
 task :docs do
 
     outdir = "../arachni-docs"
