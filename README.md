@@ -440,6 +440,9 @@ get support via the [Support Portal](http://support.arachni-scanner.com).
 
 ## Contributing
 
+(Before starting any work, please read the [instructions](https://github.com/Arachni/arachni/tree/experimental#source)
+for working with the source code.)
+
 We're happy to accept help from fellow code-monkeys and these are the steps you
 need to follow in order to contribute code:
 
@@ -451,8 +454,6 @@ need to follow in order to contribute code:
     for the core libs or `rake spec` for everything).
 * Commit and push your changes.
 * Issue a pull request and wait for your code to be reviewed.
-
-_PS: You may want to setup a [development environment](https://github.com/Arachni/arachni/wiki/Development-environment) first._
 
 ## License
 
