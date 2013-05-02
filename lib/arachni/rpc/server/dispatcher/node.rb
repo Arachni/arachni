@@ -85,6 +85,11 @@ class Server::Dispatcher::Node
         end
     end
 
+    # @return   [Boolean]   `true` if grid member, `false` otherwise.
+    def grid_member?
+        @neighbours.any?
+    end
+
     #
     # Adds a neighbour to the peer list.
     #

@@ -56,6 +56,27 @@ describe Arachni::RPC::Server::Dispatcher::Node do
         @node = @get_node.call
     end
 
+    describe '#grid_member?' do
+        context 'when the dispatcher is a grid member' do
+            it 'should return true' do
+                n = @get_node.call
+
+                @opts.neighbour = n.url
+                c = @get_node.call
+                @opts.neighbour = nil
+                sleep 4
+
+                c.grid_member?.should be_true
+            end
+        end
+
+        context 'when the dispatcher is not a grid member' do
+            it 'should return false' do
+                @node.grid_member?.should be_false
+            end
+        end
+    end
+
     context 'when a previously unreachable neighbour comes back to life' do
         before( :all ) do
             @opts.node_ping_interval = 0.5
