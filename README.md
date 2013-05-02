@@ -16,6 +16,10 @@ http://downloads.arachni-scanner.com/nightlies/
 To run from source you first need to setup a
 [development environment](https://github.com/Arachni/arachni/wiki/Development-environment).
 
+**After** you've setup a [development environment](https://github.com/Arachni/arachni/wiki/Development-environment),
+run the following to checkout the source code of the `experimental` branch and
+resolve its dependencies:
+
     git clone git://github.com/Arachni/arachni.git
     cd arachni
     git checkout experimental
