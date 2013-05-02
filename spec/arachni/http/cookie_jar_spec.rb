@@ -4,7 +4,7 @@ describe Arachni::HTTP::CookieJar do
 
     before do
         @jar = Arachni::HTTP::CookieJar.new
-        @file = spec_path + '/fixtures/cookies.txt'
+        @file = fixtures_path + 'cookies.txt'
     end
 
     describe '.from_file' do

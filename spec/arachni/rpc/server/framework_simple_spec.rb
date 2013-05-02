@@ -237,7 +237,7 @@ describe Arachni::RPC::Server::Framework do
         context 'during audit' do
             it 'returns "audit"' do
                 mod_lib = @opts.dir['modules'].dup
-                @opts.dir['modules'] = spec_path + '/fixtures/wait_module/'
+                @opts.dir['modules'] = fixtures_path + '/wait_module/'
 
                 inst = @get_instance.call
                 inst.opts.url = server_url_for( :framework_simple )
@@ -471,7 +471,7 @@ describe Arachni::RPC::Server::Framework do
     describe '#restrict_to_elements' do
         it 'restricts the audit to the provided element signatures' do
             mod_lib = @opts.dir['modules'].dup
-            @opts.dir['modules'] = spec_path + '/fixtures/taint_module/'
+            @opts.dir['modules'] = fixtures_path + '/taint_module/'
 
             inst = @get_instance.call( @opts)
             inst.opts.url = server_url_for( :framework_simple ) + '/restrict_to_elements'

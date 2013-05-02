@@ -9,14 +9,14 @@ require 'eventmachine'
 
 @@root = File.dirname( File.absolute_path( __FILE__ ) ) + '/'
 
-Dir.glob( @@root + 'shared/**/*.rb' ).each { |f| require f }
+Dir.glob( @@root + 'support/shared/**/*.rb' ).each { |f| require f }
 
-require @@root + 'helpers/misc'
-Dir.glob( @@root + 'helpers/**/*.rb' ).each { |f| require f }
+require @@root + 'support/helpers/misc'
+Dir.glob( @@root + 'support/helpers/**/*.rb' ).each { |f| require f }
 
 @@server_pids ||= []
 @@servers     ||= {}
-Dir.glob( File.join( @@root + 'servers/**', "*.rb" ) ) do |path|
+Dir.glob( File.join( @@root + 'support/servers/**', "*.rb" ) ) do |path|
     name = File.basename( path, '.rb' ).to_sym
     next if name == :base
 

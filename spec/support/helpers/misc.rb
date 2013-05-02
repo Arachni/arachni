@@ -10,8 +10,12 @@ def spec_path
     @@root
 end
 
+def support_path
+    "#{spec_path}/support/"
+end
+
 def fixtures_path
-    "#{spec_path}/fixtures/"
+    "#{support_path}fixtures/"
 end
 
 def run_http
@@ -35,7 +39,7 @@ def reset_options
     opts = Arachni::Options.instance
     opts.reset
     opts.rpc_address = 'localhost'
-    opts.dir['plugins'] = spec_path + 'fixtures/plugins/'
-    opts.dir['modules'] = spec_path + 'fixtures/modules/'
-    opts.dir['logs']    = spec_path + 'logs/'
+    opts.dir['plugins'] = spec_path + 'support/fixtures/plugins/'
+    opts.dir['modules'] = spec_path + 'support/fixtures/modules/'
+    opts.dir['logs']    = spec_path + 'support/logs/'
 end

@@ -14,8 +14,8 @@ describe name_from_filename do
             options.plugins[name] = {
                 'username_field' => 'username',
                 'password_field' => 'password',
-                'username_list'  => spec_path + 'fixtures/usernames.txt',
-                'password_list'  => spec_path + 'fixtures/passwords.txt',
+                'username_list'  => fixtures_path + 'usernames.txt',
+                'password_list'  => fixtures_path + 'passwords.txt',
                 'login_verifier' => 'logged in user!'
             }
 
@@ -31,8 +31,8 @@ describe name_from_filename do
             options.plugins[name] = {
                 'username_field' => 'username',
                 'password_field' => 'password',
-                'username_list'  => spec_path + 'fixtures/usernames.txt',
-                'password_list'  => spec_path + 'fixtures/passwords.txt',
+                'username_list'  => fixtures_path + 'usernames.txt',
+                'password_list'  => fixtures_path + 'passwords.txt',
                 'login_verifier' => '34342#R#@$#2'
             }
 
@@ -48,8 +48,8 @@ describe name_from_filename do
             options.plugins[name] = {
                 'username_field' => 'username2',
                 'password_field' => 'password',
-                'username_list'  => spec_path + 'fixtures/usernames.txt',
-                'password_list'  => spec_path + 'fixtures/passwords.txt',
+                'username_list'  => fixtures_path + 'usernames.txt',
+                'password_list'  => fixtures_path + 'passwords.txt',
                 'login_verifier' => 'logged in user!'
             }
 

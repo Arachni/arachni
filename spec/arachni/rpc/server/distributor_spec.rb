@@ -518,7 +518,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
     describe '#distribute_and_run' do
         before( :all ) do
             @opts.rpc_port = random_port
-            @opts.dir['modules'] = spec_path + 'fixtures/taint_module/'
+            @opts.dir['modules'] = fixtures_path + 'taint_module/'
             @master = FakeMaster.new( @opts, @token )
             @distributor.master_url = "#{@opts.rpc_address}:#{@opts.rpc_port}"
 

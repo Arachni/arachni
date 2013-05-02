@@ -57,11 +57,11 @@ describe Arachni::RPC::Client::Base do
                     opts = @opts.dup
                     opts.rpc_port = random_port
 
-                    opts.ca = spec_path + 'pems/cacert.pem'
-                    opts.node_ssl_pkey = spec_path + 'pems/client/key.pem'
-                    opts.node_ssl_cert = spec_path + 'pems/client/cert.pem'
-                    opts.ssl_pkey = spec_path + 'pems/server/key.pem'
-                    opts.ssl_cert = spec_path + 'pems/server/cert.pem'
+                    opts.ca = support_path + 'pems/cacert.pem'
+                    opts.node_ssl_pkey = support_path + 'pems/client/key.pem'
+                    opts.node_ssl_cert = support_path + 'pems/client/cert.pem'
+                    opts.ssl_pkey = support_path + 'pems/server/key.pem'
+                    opts.ssl_cert = support_path + 'pems/server/cert.pem'
 
                     Server.new( opts ) do |server|
                         client = @client_class.new( opts, server.url )
@@ -75,11 +75,11 @@ describe Arachni::RPC::Client::Base do
                     opts = @opts.dup
                     opts.rpc_port = random_port
 
-                    opts.ssl_ca = spec_path + 'pems/cacert.pem'
-                    opts.node_ssl_pkey = spec_path + 'pems/client/foo-key.pem'
-                    opts.node_ssl_cert = spec_path + 'pems/client/foo-cert.pem'
-                    opts.ssl_pkey = spec_path + 'pems/server/key.pem'
-                    opts.ssl_cert = spec_path + 'pems/server/cert.pem'
+                    opts.ssl_ca = support_path + 'pems/cacert.pem'
+                    opts.node_ssl_pkey = support_path + 'pems/client/foo-key.pem'
+                    opts.node_ssl_cert = support_path + 'pems/client/foo-cert.pem'
+                    opts.ssl_pkey = support_path + 'pems/server/key.pem'
+                    opts.ssl_cert = support_path + 'pems/server/cert.pem'
 
                     Server.new( opts ) do |server|
                         raised = false
@@ -100,9 +100,9 @@ describe Arachni::RPC::Client::Base do
                     opts = @opts.dup
                     opts.rpc_port = random_port
 
-                    opts.ssl_ca = spec_path + 'pems/cacert.pem'
-                    opts.ssl_pkey = spec_path + 'pems/server/key.pem'
-                    opts.ssl_cert = spec_path + 'pems/server/cert.pem'
+                    opts.ssl_ca = support_path + 'pems/cacert.pem'
+                    opts.ssl_pkey = support_path + 'pems/server/key.pem'
+                    opts.ssl_cert = support_path + 'pems/server/cert.pem'
 
                     Server.new( opts ) do |server|
                         raised = false

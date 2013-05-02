@@ -2,9 +2,6 @@ require_relative '../../spec_helper'
 
 describe Arachni::Plugin::Manager do
     before( :all ) do
-        opts = Arachni::Options.instance
-        opts.dir['plugins'] = spec_path + 'fixtures/plugins/'
-
         @plugins = Arachni::Framework.new( Arachni::Options.instance ).plugins
     end
 

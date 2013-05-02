@@ -29,7 +29,7 @@ shared_examples_for "report" do
     end
 
     def full_report
-        Arachni::AuditStore.load( spec_path + 'fixtures/auditstore.afr' )
+        Arachni::AuditStore.load( fixtures_path + '/auditstore.afr' )
     end
 
     def empty_report

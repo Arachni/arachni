@@ -5,8 +5,8 @@ describe name_from_filename do
 
     before( :all ) do
         options.plugins[name] = {
-            'username_list'  => spec_path + 'fixtures/usernames.txt',
-            'password_list'  => spec_path + 'fixtures/passwords.txt',
+            'username_list'  => fixtures_path + 'usernames.txt',
+            'password_list'  => fixtures_path + 'passwords.txt',
         }
     end
 

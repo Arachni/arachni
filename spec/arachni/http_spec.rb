@@ -256,7 +256,7 @@ describe Arachni::HTTP do
 
         context 'when the cookie_jar option is set' do
             it 'adds the contained cookies to the CookieJar' do
-                @opts.cookie_jar = spec_path + '/fixtures/cookies.txt'
+                @opts.cookie_jar = fixtures_path + 'cookies.txt'
                 @http.cookie_jar.cookies.should be_empty
                 @http.reset
                 cookies = @http.cookie_jar.cookies
@@ -265,7 +265,7 @@ describe Arachni::HTTP do
             end
             context 'but the path is invalid' do
                 it 'raises an exception' do
-                    @opts.cookie_jar = spec_path + '/fixtures/cookies.does_not_exist.txt'
+                    @opts.cookie_jar = fixtures_path + 'cookies.does_not_exist.txt'
                     raised = false
                     begin
                         @http.reset
@@ -279,7 +279,7 @@ describe Arachni::HTTP do
 
         context 'when the cookies option is set' do
             it 'adds those cookies to the CookieJar' do
-                cookie_jar_file = spec_path + '/fixtures/cookies.txt'
+                cookie_jar_file = fixtures_path + 'cookies.txt'
                 @opts.cookies = Arachni::Module::Utilities.cookies_from_file( '', cookie_jar_file )
                 @http.cookie_jar.cookies.should be_empty
                 @http.reset
