@@ -79,9 +79,11 @@ class Dispatcher
             method.parameters.flatten.include? :block
         end
 
+        @url = "#{@opts.rpc_address}:#{@opts.rpc_port.to_s}"
+
         # let the instances in the pool know who to ask for routing instructions
         # when we're in grid mode.
-        @opts.datastore[:dispatcher_url] = "#{@opts.rpc_address}:#{@opts.rpc_port.to_s}"
+        @opts.datastore[:dispatcher_url] = @url.dup
 
         prep_logging
 
@@ -122,15 +124,49 @@ class Dispatcher
         @server.alive?
     end
 
+    # @return   [String]
+    #   URL of the least burdened Dispatcher. If not a grid member it will
+    #   return this Dispatcher's URL.
+    def preferred( &block )
+        if !@node.grid_member?
+            block.call @url
+            return
+        end
+
+        each = proc do |neighbour, iter|
+            connect_to_peer( neighbour ).workload_score do |score|
+                iter.return score.rpc_exception? ? nil : [neighbour, score]
+            end
+        end
+
+        after = proc do |nodes|
+            nodes.compact!
+            nodes << [@url, workload_score]
+            block.call nodes.sort_by { |_, score| score }[0][0]
+        end
+
+        ::EM::Iterator.new( @node.neighbours ).map( each, after )
+    end
+
     #
-    # Dispatches an RPC server instance from the pool
+    # Dispatches an Instance from the pool.
     #
-    # @param    [String]  owner     an owner assign to the dispatched RPC server
-    # @param    [Hash]    helpers   hash of helper data to be added to the job
+    # @param    [String]  owner     An owner to assign to the Instance.
+    # @param    [Hash]    helpers   Hash of helper data to be added to the job.
+    # @param    [Boolean]    load_balance
+    #   Return an Instance from the least burdened Dispatcher (when in Grid mode)
+    #   or from this one directly?
     #
-    # @return   [Hash]      includes port number, owner, clock info and proc info
+    # @return   [Hash]      Includes port number, owner, clock info and proc info.
     #
-    def dispatch( owner = 'unknown', helpers = {}, &block )
+    def dispatch( owner = 'unknown', helpers = {}, load_balance = true, &block )
+        if load_balance && @node.grid_member?
+            preferred do |url|
+                connect_to_peer( url ).dispatch( owner, helpers, false, &block )
+            end
+            return
+        end
+
         if @opts.pool_size <= 0
             block.call false
             return
@@ -148,7 +184,6 @@ class Dispatcher
                 "Port: #{cjob['port']} - Owner: #{cjob['owner']}"
 
             @jobs << cjob
-
             block.call cjob
         end
     end
@@ -168,7 +203,7 @@ class Dispatcher
             cjob['currtime'] = Time.now
             cjob['age']      = cjob['currtime'] - cjob['birthdate']
             cjob['runtime']  = cjob['currtime'] - cjob['starttime']
-            cjob['proc']     = proc( cjob['pid'] )
+            cjob['proc']     = proc_hash( cjob['pid'] )
 
             return cjob
         end
@@ -233,7 +268,7 @@ class Dispatcher
 
     # @return   [Hash]   the server's proc info
     def proc_info
-        proc( Process.pid ).merge( 'node' => @node.info )
+        proc_hash( Process.pid ).merge( 'node' => @node.info )
     end
 
     private
@@ -395,8 +430,12 @@ USAGE
             "/Dispatcher - #{Process.pid}-#{@opts.rpc_port}.log" )
     end
 
-    def proc( pid )
+    def proc_hash( pid )
         struct_to_h( ProcTable.ps( pid ) )
+    end
+
+    def connect_to_peer( url )
+        Client::Dispatcher.new( @opts, url )
     end
 
     def struct_to_h( struct )

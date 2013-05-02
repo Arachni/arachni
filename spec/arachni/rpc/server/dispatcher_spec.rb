@@ -36,6 +36,8 @@ describe Arachni::RPC::Server::Dispatcher do
         }
     end
 
+    after( :each ) { reset_options }
+
     after( :all ) do
         FileUtils.rm( "#{Arachni::Options.dir['rpcd_handlers']}echo.rb" )
         @dispatcher.stats['consumed_pids'].each { |p| pids << p }
@@ -47,6 +49,36 @@ describe Arachni::RPC::Server::Dispatcher do
         end
     end
 
+    describe '#preferred' do
+        context 'when the dispatcher is a grid member' do
+            it 'returns the URL of least burdened Dispatcher' do
+                opts ||= @opts
+                opts.rpc_port = random_port
+                opts.weight = 1
+                preferred = "#{opts.rpc_address}:#{opts.rpc_port}"
+                exec_dispatcher( opts )
+
+                opts.neighbour = "#{opts.rpc_address}:#{opts.rpc_port}"
+                opts.rpc_port = random_port
+                opts.weight = 2
+                exec_dispatcher( opts )
+
+                opts.rpc_port = random_port
+                opts.weight = 3
+                exec_dispatcher( opts )
+
+                dispatcher = Arachni::RPC::Client::Dispatcher.new( opts, "#{opts.rpc_address}:#{opts.rpc_port}" )
+                dispatcher.preferred.should == preferred
+            end
+        end
+
+        context 'when the dispatcher is not a grid member' do
+            it 'returns the URL of the Dispatcher' do
+                @dispatcher.preferred.should == @url
+            end
+        end
+    end
+
     describe '#handlers' do
         it 'returns an array of loaded handlers' do
             @dispatcher.handlers.include?( 'echo' ).should be_true
@@ -54,26 +86,95 @@ describe Arachni::RPC::Server::Dispatcher do
     end
 
     describe '#dispatch' do
-        it 'returns valid Instance info' do
-            info = @dispatcher.dispatch
+        context 'when not a Grid member' do
+            it 'returns valid Instance info' do
+                info = @dispatcher.dispatch
 
-            %w(token pid port url owner birthdate starttime helpers).each do |k|
-                info[k].should be_true
+                %w(token pid port url owner birthdate starttime helpers).each do |k|
+                    info[k].should be_true
+                end
+
+                instance = Arachni::RPC::Client::Instance.new( @opts, info['url'], info['token'] )
+                instance.service.alive?.should be_true
+            end
+            it 'assigns an optional owner' do
+                owner = 'blah'
+                info = @dispatcher.dispatch( owner )
+                info['owner'].should == owner
+            end
+            it 'replenishes the pool' do
+                10.times {
+                    info = @dispatcher.dispatch
+                    info['pid'].should be_true
+                }
+            end
+        end
+        context 'when a Grid member' do
+            it 'returns Instance info from the least burdened Dispatcher' do
+                opts ||= @opts
+                port1 = opts.rpc_port = random_port
+                opts.rpc_address = '127.0.0.1'
+                opts.weight = 3
+                exec_dispatcher( opts )
+
+                opts.neighbour = "#{opts.rpc_address}:#{opts.rpc_port}"
+                opts.rpc_address = '127.0.0.2'
+                port2 = opts.rpc_port = random_port
+                opts.weight = 2
+                exec_dispatcher( opts )
+
+                opts.rpc_address = '127.0.0.3'
+                port3 = opts.rpc_port = random_port
+                opts.weight = 1
+                preferred = "#{opts.rpc_address}"
+                exec_dispatcher( opts )
+
+                dispatcher = Arachni::RPC::Client::Dispatcher.new( opts, "127.0.0.3:#{port3}" )
+                dispatcher.dispatch['url'].split( ':' ).first.should == preferred
+
+                dispatcher = Arachni::RPC::Client::Dispatcher.new( opts, "127.0.0.1:#{port1}" )
+                %W{127.0.0.1 127.0.0.2}.should include dispatcher.dispatch['url'].split( ':' ).first
+
+                dispatcher = Arachni::RPC::Client::Dispatcher.new( opts, "127.0.0.2:#{port2}" )
+                dispatcher.dispatch['url'].split( ':' ).first.should == preferred
+
+                dispatcher = Arachni::RPC::Client::Dispatcher.new( opts, "127.0.0.3:#{port3}" )
+                %W{127.0.0.1 127.0.0.3}.should include dispatcher.dispatch['url'].split( ':' ).first
+
+                dispatcher = Arachni::RPC::Client::Dispatcher.new( opts, "127.0.0.3:#{port3}" )
+                %W{127.0.0.2 127.0.0.3}.should include dispatcher.dispatch['url'].split( ':' ).first
+
+                dispatcher = Arachni::RPC::Client::Dispatcher.new( opts, "127.0.0.1:#{port1}" )
+                %W{127.0.0.2 127.0.0.3}.should include dispatcher.dispatch['url'].split( ':' ).first
+
+                dispatcher = Arachni::RPC::Client::Dispatcher.new( opts, "127.0.0.1:#{port1}" )
+                dispatcher.dispatch['url'].split( ':' ).first.should == '127.0.0.3'
             end
 
-            instance = Arachni::RPC::Client::Instance.new( @opts, info['url'], info['token'] )
-            instance.service.alive?.should be_true
-        end
-        it 'assigns an optional owner' do
-            owner = 'blah'
-            info = @dispatcher.dispatch( owner )
-            info['owner'].should == owner
-        end
-        it 'replenishes the pool' do
-            10.times {
-                info = @dispatcher.dispatch
-                info['pid'].should be_true
-            }
+            context 'when the load-balance option is set to true' do
+                it 'returns an Instance from the requested Dispatcher' do
+                    opts ||= @opts
+                    opts.rpc_port = random_port
+                    opts.rpc_address = '127.0.0.1'
+                    opts.weight = 1
+                    exec_dispatcher( opts )
+
+                    opts.neighbour = "#{opts.rpc_address}:#{opts.rpc_port}"
+                    opts.rpc_address = '127.0.0.2'
+                    opts.rpc_port = random_port
+                    opts.weight = 1
+                    exec_dispatcher( opts )
+
+                    opts.rpc_address = '127.0.0.3'
+                    opts.rpc_port = random_port
+                    opts.weight = 9
+                    exec_dispatcher( opts )
+
+                    dispatcher = Arachni::RPC::Client::Dispatcher.new( opts, "#{opts.rpc_address}:#{opts.rpc_port}" )
+                    dispatcher.dispatch( nil, {}, false )['url'].split( ':' ).first.should == '127.0.0.3'
+                end
+            end
+
         end
     end
 
@@ -114,7 +215,7 @@ describe Arachni::RPC::Server::Dispatcher do
     describe '#workload_score' do
         it 'returns a float signifying the amount of workload' do
             @dispatcher.workload_score.should ==
-                ((@dispatcher.running_jobs.size + 1) * @opts.weight).to_f
+                ((@dispatcher.running_jobs.size + 1) * 4).to_f
         end
     end
 

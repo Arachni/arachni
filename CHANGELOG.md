@@ -2,6 +2,10 @@
 
 ## _Under development_
 
+- Grid
+  - Dispatchers automatically load-balance scans. `#dispatch` call returns
+    an Instance from the least burdened Grid member by default.
+
 ## Version 0.4.2 _(April 26, 2013)_
 
 - Options
