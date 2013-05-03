@@ -1,10 +1,10 @@
-require_relative '../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Parser do
     before( :all ) do
         @utils = Arachni::Utilities
         @opts = Arachni::Options.instance
-        @opts.url = @utils.normalize_url( server_url_for( :parser ) )
+        @opts.url = @utils.normalize_url( web_server_url_for( :parser ) )
         @opts.audit_links = true
         @opts.audit_forms = true
         @opts.audit_cookies = true
@@ -386,8 +386,30 @@ describe Arachni::Parser do
     end
 
     describe '#extract_domain' do
-        it 'returns the domain name from a URI object' do
-            @parser.extract_domain( URI( @url ) ).should == 'localhost'
+        context 'when passed a URL with' do
+            context 'a domain name' do
+                it 'returns the domain name' do
+                    @parser.extract_domain( 'http://test.com/stuff/blah' ).should == 'test.com'
+                end
+            end
+
+            context 'a subdomain' do
+                it 'returns the domain name without the subdomain' do
+                    @parser.extract_domain( 'http://stuff.test.com/stuff/blah' ).should == 'test.com'
+                end
+            end
+
+            context 'a hostname' do
+                it 'returns the hostname' do
+                    @parser.extract_domain( 'http://stuff/stuff/blah' ).should == 'stuff'
+                end
+            end
+
+            context 'an IP address' do
+                it 'returns the IP address' do
+                    @parser.extract_domain( 'http://127.0.0.1/stuff/blah' ).should == '127.0.0.1'
+                end
+            end
         end
     end
 
