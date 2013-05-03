@@ -94,13 +94,13 @@ class Dispatcher
         # trap interrupts and exit cleanly when required
         trap_interrupts { shutdown }
 
-        @jobs = []
+        @jobs          = []
         @consumed_pids = []
-        @pool = ::EM::Queue.new
+        @pool          = ::EM::Queue.new
 
         if @opts.pool_size > 0
             print_status 'Warming up the pool...'
-            @opts.pool_size.times{ add_instance_to_pool }
+            @opts.pool_size.times { add_instance_to_pool }
         end
 
         print_status 'Initialization complete.'
@@ -174,7 +174,6 @@ class Dispatcher
 
         # just to make sure...
         owner = owner.to_s
-        ::EM.next_tick { add_instance_to_pool }
         @pool.pop do |cjob|
             cjob['owner']     = owner
             cjob['starttime'] = Time.now
@@ -186,6 +185,8 @@ class Dispatcher
             @jobs << cjob
             block.call cjob
         end
+
+        ::EM.next_tick { add_instance_to_pool }
     end
 
     #
@@ -400,13 +401,13 @@ USAGE
             port  = available_port
             token = generate_token
 
-            pid = ::EM.fork_reactor {
+            pid = ::EM.fork_reactor do
                 @opts.rpc_port = port
                 Server::Instance.new( @opts, token )
-            }
+            end
 
             print_status "Instance added to pool -- PID: #{pid} - " +
-                "Port: #{@opts.rpc_port} - Owner: #{owner}"
+                "Port: #{port} - Owner: #{owner}"
 
             @pool << {
                 'token'     => token,
