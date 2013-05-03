@@ -1,9 +1,9 @@
-require_relative '../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Spider do
     before( :all ) do
         @opts = Arachni::Options.instance
-        @opts.url = server_url_for :spider
+        @opts.url = web_server_url_for :spider
         @url = @opts.url.to_s
     end
 
@@ -14,7 +14,7 @@ describe Arachni::Spider do
     end
 
     it 'supports HTTPS' do
-        @opts.url = (server_url_for :spider_https).gsub( 'http', 'https' )
+        @opts.url = (web_server_url_for :spider_https).gsub( 'http', 'https' )
         spider = Arachni::Spider.new
 
         spider.run.size.should == 3
@@ -445,7 +445,7 @@ describe Arachni::Spider do
         end
         context 'when running' do
             it 'returns false' do
-                @opts.url = server_url_for( :auditor ) + '/sleep'
+                @opts.url = web_server_url_for( :auditor ) + '/sleep'
                 s = Arachni::Spider.new
                 Thread.new{ s.run }
                 sleep 1

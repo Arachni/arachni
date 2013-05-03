@@ -1,10 +1,10 @@
-require_relative '../spec_helper'
+require 'spec_helper'
 
 describe name_from_filename do
     include_examples 'plugin'
 
     def url
-        server_url_for( name_from_filename ) + '/'
+        web_server_url_for( name_from_filename ) + '/'
     end
 
     context 'when malicious requests are' do

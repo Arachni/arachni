@@ -1,4 +1,4 @@
-require_relative '../../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Element::SERVER do
     describe 'Arachni::Element::SERVER' do

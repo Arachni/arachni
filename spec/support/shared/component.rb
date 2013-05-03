@@ -15,7 +15,7 @@ shared_examples_for "component" do
     end
 
     def url
-        @url ||= server_url_for( name ) + '/'
+        @url ||= web_server_url_for( name ) + '/'
     rescue
         raise "Could not find server for '#{name}' component."
     end

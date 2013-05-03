@@ -1,4 +1,4 @@
-require_relative '../../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Report::Manager do
     before( :all ) do

@@ -1,4 +1,4 @@
-require_relative '../../spec_helper'
+require 'spec_helper'
 
 class AuditorTest
     include Arachni::Module::Auditor
@@ -47,7 +47,7 @@ describe Arachni::Module::Auditor do
         @opts = Arachni::Options.instance
         @opts.audit :links, :forms, :cookies, :headers
 
-        @opts.url = server_url_for( :auditor )
+        @opts.url = web_server_url_for( :auditor )
         @url      = @opts.url.dup
 
         @framework = Arachni::Framework.new( @opts )

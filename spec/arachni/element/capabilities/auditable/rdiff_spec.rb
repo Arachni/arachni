@@ -1,9 +1,9 @@
-require_relative '../../../../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Element::Capabilities::Auditable::RDiff do
 
     before :all do
-        @url     = server_url_for( :rdiff )
+        @url     = web_server_url_for( :rdiff )
         @auditor = Auditor.new
     end
 

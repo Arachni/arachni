@@ -1,14 +1,9 @@
-require_relative '../../../spec_helper'
-
-require Arachni::Options.instance.dir['lib'] + 'rpc/client/base'
-require Arachni::Options.instance.dir['lib'] + 'rpc/server/base'
-
-require 'ostruct'
+require 'spec_helper'
 
 describe Arachni::RPC::Server::Base do
     before( :all ) do
         opts = Arachni::Options.instance
-        opts.rpc_port = random_port
+        opts.rpc_port = available_port
         @server = Arachni::RPC::Server::Base.new( opts )
     end
 

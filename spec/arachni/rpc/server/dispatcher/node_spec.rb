@@ -1,7 +1,4 @@
-require_relative '../../../../spec_helper'
-
-require Arachni::Options.instance.dir['lib'] + 'rpc/client/dispatcher'
-require Arachni::Options.instance.dir['lib'] + 'rpc/server/dispatcher'
+require 'spec_helper'
 
 class Node < Arachni::RPC::Server::Dispatcher::Node
 
@@ -28,7 +25,7 @@ class Node < Arachni::RPC::Server::Dispatcher::Node
     end
 
     def shutdown
-        kill( Process.pid )
+        process_kill Process.pid
     end
 
     def connect_to_peer( url )
@@ -44,11 +41,12 @@ end
 describe Arachni::RPC::Server::Dispatcher::Node do
     before( :all ) do
         @opts = Arachni::Options.instance
+
         @get_node = proc do |c_port|
             opts = @opts
-            port = c_port || random_port
+            port = c_port || available_port
             opts.rpc_port = port
-            fork_em { Node.new( opts ) }
+            process_fork_em { Node.new( opts ) }
             sleep 1
             Node.connect_to_peer( "#{opts.rpc_address}:#{port}", opts )
         end
@@ -89,7 +87,7 @@ describe Arachni::RPC::Server::Dispatcher::Node do
         it 'gets re-added to the neighbours list' do
             n = @get_node.call
 
-            port = random_port
+            port = available_port
             n.add_neighbour( 'localhost:' + port.to_s )
 
             sleep 4

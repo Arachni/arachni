@@ -1,0 +1,39 @@
+=begin
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+=end
+
+def instance_spawn( *args )
+    Arachni::Processes::Instances.spawn( *args )
+end
+
+def instance_grid_spawn( *args )
+    Arachni::Processes::Instances.grid_spawn( *args )
+end
+
+def instance_dispatcher_spawn( *args )
+    Arachni::Processes::Instances.dispatcher_spawn( *args )
+end
+
+def instance_killall
+    Arachni::Processes::Instances.killall
+end
+
+def instance_connect( *args )
+    Arachni::Processes::Instances.connect( *args )
+end
+
+def instance_token_for( *args )
+    Arachni::Processes::Instances.token_for( *args )
+end

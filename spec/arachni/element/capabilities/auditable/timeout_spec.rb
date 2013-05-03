@@ -1,9 +1,9 @@
-require_relative '../../../../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Element::Capabilities::Auditable::Timeout do
 
     before :all do
-        @url     = server_url_for( :timeout )
+        @url     = web_server_url_for( :timeout )
         @auditor = Auditor.new
 
         inputs = { 'sleep' => '' }

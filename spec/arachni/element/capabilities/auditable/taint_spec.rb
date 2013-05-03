@@ -1,9 +1,9 @@
-require_relative '../../../../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Element::Capabilities::Auditable::Taint do
 
     before :all do
-        @url = server_url_for( :taint )
+        @url = web_server_url_for( :taint )
         @auditor = Auditor.new
 
         @positive = Arachni::Element::Link.new( @url, 'input' => '' )

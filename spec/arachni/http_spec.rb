@@ -1,11 +1,11 @@
-require_relative '../spec_helper'
+require 'spec_helper'
 
 describe Arachni::HTTP do
 
     before( :all ) do
         @opts = Arachni::Options.instance
         @http = Arachni::HTTP
-        @url = server_url_for( :http )
+        @url  = web_server_url_for( :http )
     end
     before( :each ){
         @opts.reset
@@ -79,7 +79,7 @@ describe Arachni::HTTP do
     describe 'Arachni::Options#url' do
         context 'when the target URL includes auth credentials' do
             it 'uses them globally' do
-                url = Arachni::Module::Utilities.uri_parse( server_url_for( :http_auth ) )
+                url = Arachni::Module::Utilities.uri_parse( web_server_url_for( :http_auth ) )
                 @opts.url = url.to_s
 
                 # first fail to make sure that our test server is actually working properly

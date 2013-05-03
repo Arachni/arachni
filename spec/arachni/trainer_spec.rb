@@ -1,4 +1,4 @@
-require_relative '../spec_helper'
+require 'spec_helper'
 
 class TrainerMockFramework
     attr_reader :pages
@@ -46,7 +46,7 @@ end
 describe Arachni::Trainer do
 
     before( :all ) do
-        @url = server_url_for( :trainer )
+        @url = web_server_url_for( :trainer )
         Arachni::Options.audit :links, :forms, :cookies, :headers
     end
 

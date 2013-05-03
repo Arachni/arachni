@@ -1,7 +1,4 @@
-require_relative '../../../spec_helper'
-
-require Arachni::Options.instance.dir['lib'] + 'rpc/client/dispatcher'
-require Arachni::Options.instance.dir['lib'] + 'rpc/server/dispatcher'
+require 'spec_helper'
 
 describe Arachni::RPC::Server::Framework do
     before( :all ) do
@@ -9,59 +6,19 @@ describe Arachni::RPC::Server::Framework do
         @opts.dir['modules'] = fixtures_path + '/taint_module/'
         @opts.audit_links = true
 
-        @dispatchers = []
-
-        @opts.pool_size = 1
-        @get_instance = proc do |opts|
-            opts ||= @opts
-            port = random_port
-            opts.rpc_port = port
-            exec_dispatcher( opts )
-
-            port2 =  random_port
-            opts.rpc_port = port2
-            opts.neighbour = "#{opts.rpc_address}:#{port}"
-            opts.pipe_id = 'blah'
-            exec_dispatcher( opts )
-
-            dispatcher = Arachni::RPC::Client::Dispatcher.new( opts,
-                "#{opts.rpc_address}:#{port}" )
-
-            inst_info = dispatcher.dispatch
-            inst = Arachni::RPC::Client::Instance.new( opts,
-                inst_info['url'], inst_info['token']
-            )
-            inst.opts.grid_mode = 'high_performance'
-            inst
-        end
-
-        @token = 'secret'
-        @get_simple_instance = proc do |opts|
-            opts ||= @opts
-            port = random_port
-            opts.rpc_port = port
-            fork_em { Arachni::RPC::Server::Instance.new( opts, @token ) }
-            sleep 1
-            Arachni::RPC::Client::Instance.new( opts,
-                "#{opts.rpc_address}:#{port}", @token
-            )
-        end
-
-        @instance = @get_instance.call
+        @instance  = instance_grid_spawn
         @framework = @instance.framework
-        @modules = @instance.modules
-        @plugins = @instance.plugins
+        @modules   = @instance.modules
+        @plugins   = @instance.plugins
 
-        @instance_clean = @get_instance.call
+        @instance_clean  = instance_grid_spawn
         @framework_clean = @instance_clean.framework
 
         @stat_keys = [
-            :requests, :responses, :time_out_count,
-            :time, :avg, :sitemap_size, :auditmap_size, :progress, :curr_res_time,
-            :curr_res_cnt, :curr_avg, :average_res_time, :max_concurrency,
-            :current_page, :eta,
+            :requests, :responses, :time_out_count, :time, :avg, :sitemap_size,
+            :auditmap_size, :progress, :curr_res_time, :curr_res_cnt, :curr_avg,
+            :average_res_time, :max_concurrency, :current_page, :eta
         ]
-
     end
 
     describe '#errors' do
@@ -90,7 +47,7 @@ describe Arachni::RPC::Server::Framework do
         end
         context 'when the scan is running' do
             it 'returns true' do
-                @instance.opts.url = server_url_for( :auditor )
+                @instance.opts.url = web_server_url_for( :auditor )
                 @modules.load( 'taint' )
                 @framework.run.should be_true
                 @framework.busy?.should be_true
@@ -129,7 +86,7 @@ describe Arachni::RPC::Server::Framework do
     end
     describe '#set_as_master' do
         it 'sets the instance as the master' do
-            instance = @get_simple_instance.call
+            instance = instance_spawn
             instance.framework.master?.should be_false
             instance.framework.set_as_master
             instance.framework.master?.should be_true
@@ -137,11 +94,14 @@ describe Arachni::RPC::Server::Framework do
     end
     describe '#enslave' do
         it 'enslaves another instance and set itself as its master' do
-            master = @get_simple_instance.call
-            slave  = @get_simple_instance.call
+            master = instance_spawn
+            slave  = instance_spawn
 
             master.framework.master?.should be_false
-            master.framework.enslave( 'url' => slave.url, 'token' => @token )
+            master.framework.enslave(
+                'url'   => slave.url,
+                'token' => instance_token_for( slave )
+            )
             master.framework.master?.should be_true
         end
     end
@@ -155,8 +115,8 @@ describe Arachni::RPC::Server::Framework do
     describe '#run' do
         context 'when Options#restrict_to_paths is set' do
             it 'fails with exception' do
-                instance = @get_instance.call
-                instance.opts.url = server_url_for( :framework_hpg )
+                instance = instance_grid_spawn
+                instance.opts.url = web_server_url_for( :framework_hpg )
                 instance.opts.restrict_paths = [instance.opts.url]
                 instance.modules.load( 'taint' )
 
@@ -172,7 +132,7 @@ describe Arachni::RPC::Server::Framework do
 
         it 'performs a scan' do
             instance = @instance_clean
-            instance.opts.url = server_url_for( :framework_hpg )
+            instance.opts.url = web_server_url_for( :framework_hpg )
             instance.modules.load( 'taint' )
             instance.framework.run.should be_true
             sleep( 1 ) while instance.framework.busy?
@@ -223,8 +183,8 @@ describe Arachni::RPC::Server::Framework do
     end
     describe '#clean_up' do
         it 'sets the framework state to finished, wait for plugins to finish and merge their results' do
-            instance = @get_instance.call
-            instance.opts.url = server_url_for( :framework_hpg )
+            instance = instance_grid_spawn
+            instance.opts.url = web_server_url_for( :framework_hpg )
             instance.modules.load( 'taint' )
             instance.plugins.load( { 'wait' => {}, 'distributable' => {} } )
             instance.framework.run.should be_true

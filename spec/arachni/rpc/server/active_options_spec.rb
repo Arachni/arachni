@@ -1,4 +1,4 @@
-require_relative '../../../spec_helper'
+require 'spec_helper'
 
 require Arachni::Options.dir['lib'] + 'rpc/client/instance'
 require Arachni::Options.dir['lib'] + 'rpc/server/instance'
@@ -16,23 +16,8 @@ end
 
 describe Arachni::RPC::Server::ActiveOptions do
     before( :all ) do
-        @opts = Arachni::Options.instance
-        @token = 'secret!'
-
-        @get_instance = proc do |opts|
-            opts ||= @opts
-            port = random_port
-            opts.rpc_port = port
-            fork_em { Arachni::RPC::Server::Instance.new( opts, @token ) }
-            sleep 1
-            Arachni::RPC::Client::Instance.new( opts,
-                "#{opts.rpc_address}:#{port}", @token
-            )
-        end
-
         @utils = Arachni::Module::Utilities
-
-        @instance = @get_instance.call
+        @instance = instance_spawn
     end
 
     before( :each ) { @instance.service.clear_cookies }

@@ -1,5 +1,5 @@
-require_relative '../../spec_helper'
-require Arachni::Options.dir['lib'] + 'buffer'
+require 'spec_helper'
+require_lib 'buffer'
 
 describe Arachni::Buffer::AutoFlush do
     before( :all ) do

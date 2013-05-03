@@ -1,12 +1,12 @@
-require_relative '../../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Element::Form do
     it_should_behave_like 'refreshable'
-    it_should_behave_like 'auditable', url: server_url_for( :form )
+    it_should_behave_like 'auditable', url: web_server_url_for( :form )
 
     before( :all ) do
         @utils = Arachni::Module::Utilities
-        @url = @utils.normalize_url( server_url_for( :form ) )
+        @url = @utils.normalize_url( web_server_url_for( :form ) )
 
         @raw = {
             'attrs' => {

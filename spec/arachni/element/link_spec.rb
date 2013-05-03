@@ -1,11 +1,11 @@
-require_relative '../../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Element::Link do
     it_should_behave_like 'refreshable'
-    it_should_behave_like 'auditable', url: server_url_for( :link )
+    it_should_behave_like 'auditable', url: web_server_url_for( :link )
 
     before( :all ) do
-        @url = server_url_for( :link )
+        @url = web_server_url_for( :link )
         Arachni::Options.instance.url = @url
         @url = Arachni::Options.instance.url
 

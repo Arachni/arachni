@@ -1,10 +1,10 @@
-require_relative '../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Framework do
 
     before( :all ) do
-        @url   = server_url_for( :auditor )
-        @f_url = server_url_for( :framework )
+        @url   = web_server_url_for( :auditor )
+        @f_url = web_server_url_for( :framework )
 
         @opts  = Arachni::Options.instance
     end
@@ -240,7 +240,7 @@ describe Arachni::Framework do
             @opts.dir['modules']  = fixtures_path + '/taint_module/'
             f = Arachni::Framework.new
 
-            f.opts.url = server_url_for :framework_hpg
+            f.opts.url = web_server_url_for :framework_hpg
             f.opts.audit :links
 
             f.modules.load :taint
@@ -718,7 +718,7 @@ describe Arachni::Framework do
         context 'when it has log-in capabilities and gets logged out' do
             it 'logs-in again before continuing with the audit' do
                 f = Arachni::Framework.new
-                url = server_url_for( :framework ) + '/'
+                url = web_server_url_for( :framework ) + '/'
                 f.opts.url = "#{url}/congrats"
 
                 f.opts.audit :links, :forms

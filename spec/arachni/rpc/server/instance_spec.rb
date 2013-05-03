@@ -1,63 +1,10 @@
-require_relative '../../../spec_helper'
-
-require Arachni::Options.instance.dir['lib'] + 'rpc/server/dispatcher'
-require Arachni::Options.instance.dir['lib'] + 'rpc/client/instance'
-require Arachni::Options.instance.dir['lib'] + 'rpc/server/instance'
+require 'spec_helper'
 
 describe Arachni::RPC::Server::Instance do
     before( :all ) do
-        @opts = Arachni::Options.instance
-        @token = 'secret!'
-
-        @instances = []
-
-        @get_instance = proc do |opts|
-            opts ||= @opts
-
-            port = random_port
-            opts.rpc_port = port
-
-            fork_em { Arachni::RPC::Server::Instance.new( opts, @token ) }
-            sleep 1
-
-            @instances << Arachni::RPC::Client::Instance.new( opts,
-                "#{opts.rpc_address}:#{port}", @token
-            )
-
-            @instances.last
-        end
-
-        @utils = Arachni::Module::Utilities
-        @instance = @get_instance.call
-
-        @dispatchers = []
-
-        @opts.pool_size = 1
-        @get_grid_instance = proc do |opts|
-            opts ||= @opts
-            port = random_port
-            opts.rpc_port = port
-            exec_dispatcher( opts )
-
-            port2 =  random_port
-            opts.rpc_port = port2
-            opts.neighbour = "#{opts.rpc_address}:#{port}"
-            opts.pipe_id = 'blah'
-            exec_dispatcher( opts )
-
-            dispatcher = Arachni::RPC::Client::Dispatcher.new( opts,
-                                                               "#{opts.rpc_address}:#{port}" )
-            @dispatchers << dispatcher
-
-            inst_info = dispatcher.dispatch
-            @instances << Arachni::RPC::Client::Instance.new( opts,inst_info['url'], inst_info['token'] )
-            @instances.last
-        end
-    end
-
-    after( :all ) do
-        @instances.each { |i| i.service.shutdown rescue nil }
-        @dispatchers.each { |d| d.stats['consumed_pids'].each { |p| pids << p } }
+        @opts     = Arachni::Options.instance
+        @utils    = Arachni::Module::Utilities
+        @instance = instance_spawn
     end
 
     describe '#service' do
@@ -161,19 +108,22 @@ describe Arachni::RPC::Server::Instance do
 
         describe '#scan' do
             it 'configures and starts a scan' do
-                instance = @get_instance.call
+                instance = instance_spawn
 
-                slave = @get_instance.call
+                slave = instance_spawn
 
                 instance.service.busy?.should  == instance.framework.busy?
                 instance.service.status.should == instance.framework.status
 
                 instance.service.scan(
-                    url:         server_url_for( :framework_simple ),
+                    url:         web_server_url_for( :framework_simple ),
                     audit_links: true,
                     audit_forms: true,
                     modules:     :test,
-                    slaves:      [ { url: slave.url, token: @token } ]
+                    slaves:      [{
+                        url: slave.url,
+                        token: instance_token_for( slave )
+                    }]
                 )
 
                 # if a scan in already running it should just bail out early
@@ -195,18 +145,21 @@ describe Arachni::RPC::Server::Instance do
 
             context 'when the options Hash uses Strings instead of Symbols' do
                 it 'makes no difference' do
-                    instance = @get_instance.call
-                    slave    = @get_instance.call
+                    instance = instance_spawn
+                    slave    = instance_spawn
 
                     instance.service.busy?.should  == instance.framework.busy?
                     instance.service.status.should == instance.framework.status
 
                     instance.service.scan(
-                        'url'         => server_url_for( :framework_simple ),
+                        'url'         => web_server_url_for( :framework_simple ),
                         'audit_links '=> true,
                         'audit_forms' => true,
                         'modules'     => 'test',
-                        'slaves'      => [ { 'url' => slave.url, 'token' => @token } ]
+                        slaves:      [{
+                            url: slave.url,
+                            token: instance_token_for( slave )
+                        }]
                     )
 
                     # if a scan in already running it should just bail out early
@@ -231,10 +184,10 @@ describe Arachni::RPC::Server::Instance do
             describe :spawns do
                 context 'when it has a Dispatcher' do
                     it 'requests its slaves from it' do
-                        instance = @get_grid_instance.call
+                        instance = instance_dispatcher_spawn
 
                         instance.service.scan(
-                            url:         server_url_for( :framework_simple ),
+                            url:         web_server_url_for( :framework_simple ),
                             audit_links: true,
                             audit_forms: true,
                             modules:     :test,
@@ -260,10 +213,10 @@ describe Arachni::RPC::Server::Instance do
 
                     context 'which is a Grid member' do
                         it 'requests its slaves from it' do
-                            instance = @get_grid_instance.call
+                            instance = instance_grid_spawn
 
                             instance.service.scan(
-                                url:         server_url_for( :framework_simple ),
+                                url:         web_server_url_for( :framework_simple ),
                                 audit_links: true,
                                 audit_forms: true,
                                 modules:     :test,
@@ -291,12 +244,12 @@ describe Arachni::RPC::Server::Instance do
 
                         context 'when it is less than 1' do
                             it 'raises an exception' do
-                                instance = @get_grid_instance.call
+                                instance = instance_grid_spawn
 
                                 raised = false
                                 begin
                                     instance.service.scan(
-                                        url:  server_url_for( :framework_simple ),
+                                        url:  web_server_url_for( :framework_simple ),
                                         grid: true
                                     )
                                 rescue => e
@@ -309,8 +262,8 @@ describe Arachni::RPC::Server::Instance do
 
                         context 'when Options#restrict_to_paths is set' do
                             it 'raises an exception' do
-                                instance = @get_grid_instance.call
-                                url      = server_url_for( :framework_simple )
+                                instance = instance_grid_spawn
+                                url      = web_server_url_for( :framework_simple )
 
                                 raised = false
                                 begin
@@ -333,10 +286,10 @@ describe Arachni::RPC::Server::Instance do
 
                 context 'when it does not have a Dispatcher' do
                     it 'spawns a number of slaves' do
-                        instance = @get_instance.call
+                        instance = instance_spawn
 
                         instance.service.scan(
-                            url:         server_url_for( :framework_simple ),
+                            url:         web_server_url_for( :framework_simple ),
                             audit_links: true,
                             audit_forms: true,
                             modules:     :test,
@@ -363,13 +316,13 @@ describe Arachni::RPC::Server::Instance do
 
                 context 'when link_count_limit has been set' do
                     it 'should be divided by the amount of spawns' do
-                        instance = @get_instance.call
+                        instance = instance_spawn
 
                         link_count_limit = 100
                         spawns           = 4
 
                         instance.service.scan(
-                            url:         server_url_for( :framework_simple ),
+                            url:         web_server_url_for( :framework_simple ),
                             audit_links: true,
                             audit_forms: true,
                             modules:     :test,
@@ -382,13 +335,13 @@ describe Arachni::RPC::Server::Instance do
                 end
                 context 'when http_req_limit has been set' do
                     it 'should be divided by the amount of spawns' do
-                        instance = @get_instance.call
+                        instance = instance_spawn
 
                         http_req_limit = 100
                         spawns         = 4
 
                         instance.service.scan(
-                            url:         server_url_for( :framework_simple ),
+                            url:         web_server_url_for( :framework_simple ),
                             audit_links: true,
                             audit_forms: true,
                             modules:     :test,
@@ -404,9 +357,9 @@ describe Arachni::RPC::Server::Instance do
 
         describe '#progress' do
             before( :all ) do
-                @progress_instance = @get_instance.call
+                @progress_instance = instance_spawn
                 @progress_instance.service.scan(
-                    url:         server_url_for( :framework_simple ),
+                    url:         web_server_url_for( :framework_simple ),
                     audit_links: true,
                     audit_forms: true,
                     modules:     :test,
@@ -523,7 +476,7 @@ describe Arachni::RPC::Server::Instance do
 
         describe '#shutdown' do
             it 'shuts-down the instance' do
-                instance = @get_instance.call
+                instance = instance_spawn
                 instance.service.shutdown.should be_true
                 sleep 4
                 raised = false

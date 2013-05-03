@@ -1,44 +1,14 @@
-require_relative '../../../spec_helper'
-
-require Arachni::Options.dir['lib'] + 'rpc/client/instance'
-require Arachni::Options.dir['lib'] + 'rpc/server/instance'
+require 'spec_helper'
 
 describe Arachni::RPC::Server::Spider do
-    before( :all ) do
-        @opts = Arachni::Options.instance
-        @token = 'secret!'
-
-        @instances = []
-
-        @get_instance = proc do |opts|
-            opts ||= @opts
-
-            port = random_port
-            opts.rpc_port = port
-
-            fork_em { Arachni::RPC::Server::Instance.new( opts, @token ) }
-            sleep 1
-
-            @instances << Arachni::RPC::Client::Instance.new( opts,
-                "#{opts.rpc_address}:#{port}", @token
-            )
-
-            @instances.last
-        end
-
-        @utils = Arachni::Module::Utilities
-        @instance = @get_instance.call
-    end
-
-    after( :all ){ @instances.each { |i| i.service.shutdown rescue nil } }
 
     context 'when using' do
         context 'multiple nodes' do
             it 'performs a crawl using multiple nodes' do
-                instance = @get_instance.call
+                instance = instance_spawn
 
                 instance.service.scan(
-                    url:            server_url_for( :spider ) + '/lots_of_paths',
+                    url:            web_server_url_for( :spider ) + '/lots_of_paths',
                     spawns:         4,
                     http_req_limit: 5,
                     plugins:        %w(spider_hook)
@@ -62,10 +32,10 @@ describe Arachni::RPC::Server::Spider do
         end
         context 'a single node' do
             it 'performs a crawl' do
-                instance = @get_instance.call
+                instance = instance_spawn
 
                 instance.service.scan(
-                    url:     server_url_for( :spider ) + '/lots_of_paths',
+                    url:     web_server_url_for( :spider ) + '/lots_of_paths',
                     plugins: %w(spider_hook)
                 )
 

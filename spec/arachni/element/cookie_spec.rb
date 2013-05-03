@@ -1,10 +1,10 @@
-require_relative '../../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Element::Cookie do
-    it_should_behave_like 'auditable', url: server_url_for( :cookie ), single_input: true
+    it_should_behave_like 'auditable', url: web_server_url_for( :cookie ), single_input: true
 
     before( :all ) do
-        @url = server_url_for( :cookie ) + '/'
+        @url = web_server_url_for( :cookie ) + '/'
         @raw = { 'mycookie' => 'myvalue' }
         @c = Arachni::Element::Cookie.new( @url, @raw )
         @http = Arachni::HTTP.instance

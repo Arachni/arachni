@@ -156,7 +156,7 @@ shared_examples_for "module" do
     end
 
     def url
-        @url ||= (server_url_for( "#{name}_module" ) rescue server_url_for( name ))  + '/'
+        @url ||= (web_server_url_for( "#{name}_module" ) rescue web_server_url_for( name ))  + '/'
     end
 
 end

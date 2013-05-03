@@ -3,8 +3,15 @@
 ## _Under development_
 
 - Grid
-  - Dispatchers automatically load-balance scans. `#dispatch` call returns
-    an Instance from the least burdened Grid member by default.
+    - Dispatchers automatically load-balance scans. `#dispatch` call returns
+        an Instance from the least burdened Grid member by default.
+- Added process helpers for RPC Instance and Dispatcher servers.
+    - `Arachni::Processes::Dispatchers` -- Spawns and kills Dispatchers.
+    - `Arachni::Processes::Instances` -- Spawns and kills Instances.
+    - `Arachni::Processes::Manager` -- Forks and kills processes.
+- RSpec tests
+    - Major cleanup, using the aforementioned process helpers to remove duplicate code.
+    - Moved supporting components under `spec/support/`.
 
 ## Version 0.4.2 _(April 26, 2013)_
 

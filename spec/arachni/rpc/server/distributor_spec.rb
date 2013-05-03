@@ -1,10 +1,4 @@
-require_relative '../../../spec_helper'
-
-require 'timeout'
-require Arachni::Options.dir['lib'] + 'rpc/client/instance'
-require Arachni::Options.dir['lib'] + 'rpc/server/instance'
-
-require Arachni::Options.dir['lib'] + 'rpc/server/distributor'
+require 'spec_helper'
 
 class Distributor
     include Arachni::RPC::Server::Framework::Distributor
@@ -54,7 +48,7 @@ class FakeMaster
         @issue_summaries = []
         @element_ids     = []
 
-        @server.add_handler( "framework", self )
+        @server.add_handler( 'framework', self )
         @server.start
     end
 
@@ -94,53 +88,47 @@ end
 
 describe Arachni::RPC::Server::Framework::Distributor do
     before( :all ) do
-        @opts = Arachni::Options.instance
+        @opts             = Arachni::Options.instance
         @opts.audit_links = true
-        @token = 'secret'
-
-        @get_instance = proc do |opts|
-            opts ||= @opts
-            opts.rpc_port = random_port
-            fork_em { Arachni::RPC::Server::Instance.new( opts, @token ) }
-            sleep 1
-            Arachni::RPC::Client::Instance.new( opts,
-                "#{opts.rpc_address}:#{opts.rpc_port}", @token
-            )
-        end
+        @token            = 'secret'
 
         @distributor = Distributor.new( @token )
         2.times {
-            @distributor <<  { 'url' => @get_instance.call.url, 'token' => @token }
+            instance = instance_spawn
+            @distributor <<  {
+                'url' => instance.url,
+                'token' => instance_token_for( instance.url )
+            }
         }
 
-        @url = url  = 'http://test.com/'
-        @url2 = url2 = 'http://test.com/test/'
+        @url  = 'http://test.com/'
+        @url2 = 'http://test.com/test/'
         @urls = []
 
         url_gen = proc { |u, i| "#{u}?input_#{i}=val_#{i}" }
 
         10.times do |i|
-            @urls << url_gen.call( url, i )
+            @urls << url_gen.call( @url, i )
         end
 
         4.times do |i|
-            @urls << url_gen.call( url2, i )
+            @urls << url_gen.call( @url2, i )
         end
 
         5.times do |i|
-            @urls << url_gen.call( url, i )
+            @urls << url_gen.call( @url, i )
         end
 
         14.times do |i|
-            @urls << url_gen.call( url2, i )
+            @urls << url_gen.call( @url2, i )
         end
 
         20.times do |i|
-            @urls << url_gen.call( url, i )
+            @urls << url_gen.call( @url, i )
         end
 
         5.times do |i|
-            @urls << url_gen.call( url2, i )
+            @urls << url_gen.call( @url2, i )
         end
     end
 
@@ -280,9 +268,9 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
     describe '#build_elem_list' do
         it 'evenly distributes elements across instances' do
-            @opts.url = server_url_for( :parser )
-            @opts.audit_links = true
-            @opts.audit_forms = true
+            @opts.url = web_server_url_for( :parser )
+            @opts.audit_links   = true
+            @opts.audit_forms   = true
             @opts.audit_cookies = true
             @opts.audit_headers = true
 
@@ -292,8 +280,9 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 async: false,
                 remove_id: true
             ).response
-            page = Arachni::Parser.new( @response, @opts ).run
-            @distributor.build_elem_list( page ).size.should == 7
+
+            @distributor.build_elem_list( Arachni::Parser.new( @response, @opts ).page ).
+                size.should == 7
         end
     end
 
@@ -430,53 +419,46 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
     describe '#preferred_dispatchers' do
         it 'returns a sorted list of dispatchers for HPG use taking into account their pipe IDs and load balancing metrics' do
-            @opts.pool_size = 1
-            opts = @opts
-            port = random_port
-
             dispatchers = []
 
-            opts.rpc_port = port
-            exec_dispatcher( opts )
 
-            opts.rpc_port = random_port
-            dispatchers[0] = "#{opts.rpc_address}:#{opts.rpc_port}"
-            exec_dispatcher( opts ) do |conf|
-                conf.neighbour = "#{opts.rpc_address}:#{port}"
-                conf.pipe_id = '1'
-            end
+            d1 = dispatcher_light_spawn
 
-            opts.rpc_port = random_port
-            dispatchers[2] = "#{opts.rpc_address}:#{opts.rpc_port}"
-            exec_dispatcher( opts ) do |conf|
-                conf.neighbour = "#{opts.rpc_address}:#{port}"
-                conf.pipe_id = '2'
-                conf.weight = 3
-            end
+            dispatchers << dispatcher_light_spawn(
+                pipe_id: '1',
+                neighbour: d1.url
+            ).url
 
-            opts.rpc_port = random_port
-            exec_dispatcher( opts ) do |conf|
-                conf.neighbour = "#{opts.rpc_address}:#{port}"
-                conf.pipe_id = '3'
-                conf.weight = 2
-            end
+            dispatchers << dispatcher_light_spawn(
+                pipe_id:   '3',
+                neighbour: d1.url
+            ).url
 
-            opts.rpc_port = random_port
-            dispatchers[3] = "#{opts.rpc_address}:#{opts.rpc_port}"
-            exec_dispatcher( opts ) do |conf|
-                conf.neighbour = "#{opts.rpc_address}:#{port}"
-                conf.pipe_id = '4'
-                conf.weight = 4
-            end
+            dispatcher_light_spawn(
+                weight:  3,
+                pipe_id: '1',
+                neighbour: d1.url
+            )
 
-            opts.rpc_port = random_port
-            dispatchers[1] = "#{opts.rpc_address}:#{opts.rpc_port}"
-            exec_dispatcher( opts ) do |conf|
-                conf.neighbour = "#{opts.rpc_address}:#{port}"
-                conf.pipe_id = '3'
-            end
+            dispatchers << dispatcher_light_spawn(
+                weight:    3,
+                pipe_id:   '2',
+                neighbour: d1.url
+            ).url
 
-            @distributor.dispatcher_url = "#{opts.rpc_address}:#{port}"
+            dispatcher_light_spawn(
+                weight:    2,
+                pipe_id:   '3',
+                neighbour: d1.url
+            )
+
+            dispatchers << dispatcher_light_spawn(
+                weight:    4,
+                pipe_id:   '4',
+                neighbour: d1.url
+            ).url
+
+            @distributor.dispatcher_url = d1.url
 
             q = Queue.new
             @distributor.preferred_dispatchers { |d| q << d }
@@ -517,27 +499,26 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
     describe '#distribute_and_run' do
         before( :all ) do
-            @opts.rpc_port = random_port
             @opts.dir['modules'] = fixtures_path + 'taint_module/'
-            @master = FakeMaster.new( @opts, @token )
-            @distributor.master_url = "#{@opts.rpc_address}:#{@opts.rpc_port}"
 
-            port = random_port
-            @opts.pool_size = 1
-            @opts.rpc_port = port
-            exec_dispatcher( @opts )
+            @dispatcher_url = dispatcher_light_spawn.url
+
+            @opts.rpc_port          = available_port
+            @master                 = FakeMaster.new( @opts, @token )
+            @distributor.master_url = "#{@opts.rpc_address}:#{@opts.rpc_port}"
 
             # master's token
             @opts.datastore[:token] = @token
-            @opts.url = server_url_for( :framework_hpg )
-            @url = @opts.url.to_s
-            @opts.mods = %w(taint)
-
-            @dispatcher_url = "#{@opts.rpc_address}:#{port}"
+            @opts.url               = web_server_url_for( :framework_hpg )
+            @url                    = @opts.url
+            @opts.modules           = %w(taint)
 
             @get_instance_info = proc do
-                instance = @get_instance.call
-                info = { 'url' => instance.url, 'token' => @token }
+                instance = instance_spawn( token: @token, port: nil )
+                info = {
+                    'url'   => instance.url,
+                    'token' => instance_token_for( instance )
+                }
                 @master.enslave( info )
                 info
             end
@@ -616,9 +597,9 @@ describe Arachni::RPC::Server::Framework::Distributor do
                     sort.uniq
             end
             context 'and new elements appear via the trainer' do
-                it 'soverride the restrictions' do
+                it 'overrides the restrictions' do
                     @opts.audit_forms = true
-                    @opts.url = server_url_for( :auditor ) + '/train/default'
+                    @opts.url = web_server_url_for( :auditor ) + '/train/default'
                     url = @opts.url.to_s
 
                     id = Arachni::Element::Form.new( url + '?',
@@ -636,10 +617,6 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
                     @master.issues.size.should == 8
                     @master.issue_summaries.size.should == 8
-
-                    #@master.issues.size.should == 1
-                    #@master.issues.first.url.should ==
-                    #    url + "?you_made_it=to+the+end+of+the+training"
                 end
             end
         end
