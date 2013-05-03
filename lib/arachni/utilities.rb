@@ -384,7 +384,7 @@ module Utilities
 
     def generate_token
         secret = ''
-        1000.times { secret << rand( 1000 ).to_s }
+        1000.times { secret << rand( 9999 ).to_s }
         Digest::MD5.hexdigest( secret )
     end
 
