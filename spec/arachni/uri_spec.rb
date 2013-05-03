@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-require_relative '../spec_helper'
+require 'spec_helper'
 
 describe Arachni::URI do
 
@@ -349,6 +349,22 @@ describe Arachni::URI do
 
             url = 'http://deep.subdomain.test.com/'
             @uri.parse( url ).domain.should == 'subdomain.test.com'
+        end
+    end
+
+    describe '#ip_address?' do
+        context 'when passed a URL with' do
+            context 'a domain name' do
+                it 'returns false' do
+                    @uri.parse( 'http://stuff.com/blah' ).ip_address?.should be_false
+                end
+            end
+
+            context 'an IP address' do
+                it 'returns the IP address' do
+                    @uri.parse( 'http://127.0.0.1/blah/' ).ip_address?.should be_true
+                end
+            end
         end
     end
 

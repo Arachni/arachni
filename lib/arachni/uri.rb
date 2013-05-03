@@ -15,6 +15,7 @@
 =end
 
 require 'uri'
+require 'ipaddr'
 require 'addressable/uri'
 
 module Arachni
@@ -531,11 +532,19 @@ class URI
 
     # @return [String]  domain_name.tld
     def domain
+        return host if ip_address?
+
         s = host.split( '.' )
         return s.first if s.size == 1
         return host if s.size == 2
 
         s[1..-1].join( '.' )
+    end
+
+    # @return   [Boolean]
+    #   `true` if the URI contains an IP address, `false` otherwise.
+    def ip_address?
+        !(IPAddr.new( host ) rescue nil).nil?
     end
 
     #
