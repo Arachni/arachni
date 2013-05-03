@@ -171,6 +171,8 @@ class Instance
             trap( signal ){ shutdown } if Signal.list.has_key?( signal )
         end
 
+        @consumed_pids = []
+
         run
     end
 
@@ -670,6 +672,10 @@ class Instance
         print_error str.to_s
     end
 
+    def consumed_pids
+        @consumed_pids | [Process.pid]
+    end
+
     private
 
     def parse_progress_opts( options, key )
@@ -727,13 +733,16 @@ class Instance
                 port  = available_port
                 token = generate_token
 
-                Process.detach ::EM.fork_reactor {
+                pid = ::EM.fork_reactor {
                     # make sure we start with a clean env (namepsace, opts, etc)
                     Framework.reset
 
                     Options.rpc_port = port
                     Server::Instance.new( Options.instance, token )
                 }
+
+                Process.detach pid
+                @consumed_pids << pid
 
                 instance_info = { 'url' => "#{Options.rpc_address}:#{port}",
                                   'token' => token }
