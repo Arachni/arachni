@@ -185,8 +185,13 @@ class Instance
     #   `true` if the scan is initializing or running, `false` otherwise.
     #   If a scan is started by {#scan} then this method should be used
     #   instead of {Framework#busy?}.
-    def busy?
-        @scan_initializing ? true : @framework.busy?
+    def busy?( &block )
+        if @scan_initializing
+            block.call( true )
+            return
+        end
+
+        @framework.busy?( &block )
     end
 
     # @param (see Arachni::RPC::Server::Framework#errors)

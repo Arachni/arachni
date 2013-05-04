@@ -152,7 +152,14 @@ class Framework < ::Arachni::Framework
     # @return   [Bool]
     #   `true` If the system is scanning, `false` if {#run} hasn't been called
     #   yet or if the scan has finished.
-    def busy?
+    def busy?( &block )
+        # If we have a block it means that it was called via RPC, so use the
+        # status variable to determine if the scan is done.
+        if block_given?
+            block.call @extended_running && @status != :done
+            return
+        end
+
         !!@extended_running
     end
 
@@ -327,7 +334,6 @@ class Framework < ::Arachni::Framework
 
                         @override_sitemap |= spider.sitemap
 
-
                         # Guess what we're doing now...
                         @status = :distributing
 
@@ -381,7 +387,9 @@ class Framework < ::Arachni::Framework
 
                             @finished_auditing = true
 
-                            cleanup_if_all_done
+                            # Don't ring our own bell unless there are no other
+                            # instances set to scan.
+                            cleanup_if_all_done if chunk_cnt == 1 || @running_slaves.any?
                         }
                     end
 
@@ -396,25 +404,26 @@ class Framework < ::Arachni::Framework
                 end
 
             }
-        else
-            # Start the local instance (we can't block the RPC that's why we're
-            # using a Thread).
-            Thread.new {
-                audit
 
-                if slave?
-                    # Make sure we've reported all issues back to the master.
-                    flush_issue_buffer do
-                        @master.framework.slave_done( self_url, master_priv_token ) do
-                            @extended_running = false
-                        end
+            return true
+        end
+
+        # Start the local instance (we can't block the RPC that's why we're
+        # using a Thread).
+        Thread.new do
+            audit
+
+            if slave?
+                # Make sure we've reported all issues back to the master.
+                flush_issue_buffer do
+                    @master.framework.slave_done( self_url, master_priv_token ) do
+                        @extended_running = false
+                        @status = :done
                     end
-                else
-                    @extended_running = false
-                    clean_up
-                    @status = :done
                 end
-            }
+            else
+                clean_up
+            end
         end
 
         true
@@ -435,9 +444,11 @@ class Framework < ::Arachni::Framework
             block.call false
             return false
         end
-        @cleaned_up = true
 
+        @cleaned_up       = true
+        @extended_running = false
         r = super
+        @status = :done
 
         return r if !block_given?
 
@@ -447,11 +458,11 @@ class Framework < ::Arachni::Framework
         end
 
         foreach = proc do |instance, iter|
-            instance.framework.clean_up {
+            instance.framework.clean_up do
                 instance.plugins.results do |res|
                     iter.return( !res.rpc_exception? ? res : nil )
                 end
-            }
+            end
         end
         after = proc { |results| @plugins.merge_results( results.compact ); block.call( true ) }
         map_slaves( foreach, after )
