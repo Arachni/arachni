@@ -313,11 +313,10 @@ module Distributor
         opts['pages']    = auditables[:pages] || []
         opts['elements'] = auditables[:elements] || []
 
-        connect_to_instance( instance_hash ).
-            service.scan( opts ) do |r|
-                @running_slaves << instance_hash[:url]
-                block.call( instance_hash ) if block_given?
-            end
+        connect_to_instance( instance_hash ).service.scan( opts ) do
+            @running_slaves << instance_hash[:url]
+            block.call( instance_hash ) if block_given?
+        end
     end
 
     def cleaned_up_opts
