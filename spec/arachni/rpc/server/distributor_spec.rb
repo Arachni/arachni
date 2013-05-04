@@ -539,7 +539,6 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
                 slave = @distributor.connect_to_instance( slave_info )
                 sleep 0.1 while slave.framework.busy?
-                sleep 1
 
                 @master.issues.size.should == 500
                 @master.issue_summaries.size.should == 500
@@ -559,7 +558,6 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
                 slave.opts.restrict_paths.should == absolute_urls
                 sleep 0.1 while slave.framework.busy?
-                sleep 1
 
                 @master.issues.size.should == 2
                 @master.issue_summaries.size.should == 2
@@ -586,7 +584,6 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
                 slave = @distributor.connect_to_instance( slave_info )
                 sleep 0.1 while slave.framework.busy?
-                sleep 1
 
                 @master.issues.size.should == 2
                 @master.issue_summaries.size.should == 2
@@ -613,7 +610,6 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
                     slave = @distributor.connect_to_instance( slave_info )
                     sleep 0.1 while slave.framework.busy?
-                    sleep 1
 
                     @master.issues.size.should == 8
                     @master.issue_summaries.size.should == 8
@@ -664,7 +660,6 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
                 slave = @distributor.connect_to_instance( slave_info )
                 sleep 0.1 while slave.framework.busy?
-                sleep 1
 
                 @master.issues.size.should == 4
                 @master.issue_summaries.size.should == 4
