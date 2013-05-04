@@ -13,19 +13,19 @@ shared_examples_for 'auditable' do |options = {}|
     end
 
     before :all do
-        @url     = opts[:url]
+        @url     = options[:url]
         @auditor = Auditor.new
 
-        @auditable = auditable.new( @url + '/submit', 'param' => 'val' )
+        @auditable = described_class.new( @url + '/submit', 'param' => 'val' )
         @auditable.auditor = @auditor
 
-        @orphan = auditable.new( @url + '/submit', 'param' => 'val' )
+        @orphan = described_class.new( @url + '/submit', 'param' => 'val' )
 
         # will sleep 2 secs before each response
-        @sleep = auditable.new( @url + '/sleep', 'param' => 'val' )
+        @sleep = described_class.new( @url + '/sleep', 'param' => 'val' )
         @sleep.auditor = @auditor
 
-        @orig = auditable.new( @url, 'param' => 'val' )
+        @orig = described_class.new( @url, 'param' => 'val' )
 
         @seed = 'my_seed'
         @default_input_value = @auditable.auditable['param']
