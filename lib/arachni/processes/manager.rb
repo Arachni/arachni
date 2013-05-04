@@ -71,8 +71,8 @@ class Manager
 
     def discard_output( &block )
         proc do
-            #$stdout.reopen( '/dev/null', 'w' )
-            #$stderr.reopen( '/dev/null', 'w' )
+            $stdout.reopen( '/dev/null', 'w' )
+            $stderr.reopen( '/dev/null', 'w' )
             block.call
         end
     end
