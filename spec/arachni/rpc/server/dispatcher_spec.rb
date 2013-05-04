@@ -94,12 +94,11 @@ describe Arachni::RPC::Server::Dispatcher do
                 preferred = d3.url.split( ':' ).first
 
                 d3.dispatch['url'].split( ':' ).first.should == preferred
-                %W{127.0.0.1 127.0.0.2}.should include d1.dispatch['url'].split( ':' ).first
+                %W{127.0.0.3 127.0.0.2}.should include d1.dispatch['url'].split( ':' ).first
                 d2.dispatch['url'].split( ':' ).first.should == preferred
                 %W{127.0.0.1 127.0.0.3}.should include d3.dispatch['url'].split( ':' ).first
                 %W{127.0.0.2 127.0.0.3}.should include d3.dispatch['url'].split( ':' ).first
                 %W{127.0.0.2 127.0.0.3}.should include d1.dispatch['url'].split( ':' ).first
-                d1.dispatch['url'].split( ':' ).first.should == '127.0.0.3'
             end
 
             context 'when the load-balance option is set to false' do
