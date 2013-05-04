@@ -194,8 +194,7 @@ describe Arachni::RPC::Server::Framework do
 
             instance_count = instance.framework.progress['instances'].size
             auditstore     = instance.framework.auditstore
-
-            #auditstore.issues.size.should == 500
+            instance.service.shutdown
 
             results = auditstore.plugins
             results.should be_any
