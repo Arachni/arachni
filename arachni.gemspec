@@ -85,7 +85,7 @@ Gem::Specification.new do |s|
     s.add_dependency 'terminal-table',  '>= 1.4.2'
 
     # RPC client/server implementation.
-    s.add_dependency 'arachni-rpc-em',  '~> 0.1.4dev'
+    s.add_dependency 'arachni-rpc-em',  '~> 0.1.3'
 
     # For CLI interfaces.
     s.add_dependency 'highline'
