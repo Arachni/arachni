@@ -49,11 +49,14 @@ class Spider < Arachni::Spider
         @on_first_run_blocks   = []
     end
 
-    # @param    [Block] block   Block to be called after each URL batch has been exhausted.
+    # @param    [Block] block
+    #   Block to be called after each URL batch has been consumed.
     def after_each_run( &block )
         @after_each_run_blocks << block
     end
 
+    # @param    [Block] block
+    #   Block to be called just before the crawl starts.
     def on_first_run( &block )
         @on_first_run_blocks << block
     end
@@ -83,6 +86,15 @@ class Spider < Arachni::Spider
         sitemap
     end
 
+    #
+    # Updates the list of Instances to assist in the crawl.
+    #
+    # @param    [Array<Hash>]  peers
+    #   Array containing Instance info hashes -- with `:url` and `:token` at least.
+    #
+    # @param    [Block] block
+    #   Block to be called once the update operation has completed.
+    #
     def update_peers( peers, &block )
         @peers_array = peers
         sorted_peers = @peers_array.inject( {} ) do |h, p|
@@ -112,9 +124,34 @@ class Spider < Arachni::Spider
         true
     end
 
+    # @return   [Array<String>] Crawled URLs.
     def sitemap
         @distributed_sitemap || super
     end
+
+    #
+    # Sets a peer crawler's state to finished. Exposed so that peers can signal
+    # the master once they're done.
+    #
+    # @paran    [String]    url URL of the finished peer.
+    #
+    def peer_done( url )
+        @done_signals[url] = true
+        master_done_handler
+        true
+    end
+
+    #
+    # Signals the `master` Instance that this crawler has finished.
+    #
+    # @param    [Arachni::RPC::Client::Instance]    master
+    #
+    def signal_if_done( master )
+        return if !done?
+        master.spider.peer_done( framework.self_url ){}
+    end
+
+    private
 
     def collect_sitemaps( &block )
         local_sitemap = sitemap
@@ -131,18 +168,6 @@ class Spider < Arachni::Spider
 
         map_peers( foreach, after )
     end
-
-    def peer_done( url )
-        @done_signals[url] = true
-        master_done_handler
-        true
-    end
-
-    def signal_if_done( master )
-        master.spider.peer_done( framework.self_url ){} if done?
-    end
-
-    private
 
     def call_on_first_run
         @on_first_run_blocks.each( &:call )
@@ -223,14 +248,14 @@ class Spider < Arachni::Spider
 
         return if @buffer_size == 0
 
-        # remove and push our URLs right way
+        # Remove and push our URLs right way.
         push( @routed.delete( framework ) )
 
         @fillup_attempts += 1
 
         return if @buffer_size < BUFFER_SIZE && @fillup_attempts < FILLUP_ATTEMPTS
 
-        # distribute the buffered outgoing URLs
+        # Distribute the buffered outgoing URLs.
         flush_url_distribution_buffer
 
         true
