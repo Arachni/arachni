@@ -173,7 +173,7 @@ class Instance
 
         @consumed_pids = []
 
-        run
+        ::EM.run { run }
     end
 
     # @return   [true]

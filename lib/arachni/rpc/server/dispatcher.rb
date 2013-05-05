@@ -55,7 +55,7 @@ class Dispatcher
 
     HANDLER_NAMESPACE = Handler
 
-    def initialize( opts )
+    def initialize( opts = Options.instance )
         banner
 
         @opts = opts
@@ -184,7 +184,7 @@ class Dispatcher
             block.call cjob
         end
 
-        ::EM.next_tick { add_instance_to_pool }
+        ::EM.schedule { add_instance_to_pool }
     end
 
     #
@@ -399,7 +399,7 @@ USAGE
             port  = available_port
             token = generate_token
 
-            pid = ::EM.fork_reactor do
+            pid = fork do
                 @opts.rpc_port = port
                 Server::Instance.new( @opts, token )
             end
