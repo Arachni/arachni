@@ -18,7 +18,7 @@ module Arachni
 module Processes
 
 #
-# Helper for Dispatcher processes, to makes starting and killing Dispatchers easier.
+# Helper for managing {RPC::Server::Dispatcher} processes.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
@@ -34,7 +34,7 @@ class Dispatchers
     end
 
     #
-    # Connect to a Dispatcher by URL.
+    # Connects to a Dispatcher by URL.
     #
     # @param    [String]    url URL of the Dispatcher.
     # @param    [Hash]    options Options for the RPC client.
@@ -53,6 +53,18 @@ class Dispatchers
         end
     end
 
+    #
+    # Spawns a {RPC::Server::Dispatcher} process.
+    #
+    # @param    [Hash]  options
+    #   To be passed to {Arachni::Options#set}. Allows `address` instead of
+    #   `rpc_address` and `port` instead of `rpc_port`.
+    #
+    # @param    [Block] block
+    #   Passed {Arachni::Options} to configure the Dispatcher options.
+    #
+    # @return   [RPC::Client::Dispatcher]
+    #
     def spawn( options = {}, &block )
         options = Options.to_hash.symbolize_keys( false ).merge( options )
 
@@ -63,13 +75,12 @@ class Dispatchers
 
         url = "#{options[:rpc_address]}:#{options[:rpc_port]}"
 
-        Manager.quite_fork {
+        Manager.fork_em do
             Options.set( options )
-            opts = Options.instance
+            block.call( Options.instance ) if block_given?
 
-            block.call( opts ) if block_given?
-            ::Kernel.spawn( "#{opts.dir['root']}/bin/arachni_rpcd --serialized-opts='#{opts.serialize}'" )
-        }
+            RPC::Server::Dispatcher.new
+        end
 
         begin
             Timeout.timeout( 10 ) do
@@ -89,10 +100,14 @@ class Dispatchers
         connect( url )
     end
 
+    # Same as {#spawn} but sets the pool size to `1`.
     def light_spawn( options = {}, &block )
         spawn( options.merge( pool_size: 1 ), &block )
     end
 
+    # @note Will also kill all Instances started by the Dispatcher.
+    #
+    # @param    [String]    url URL of the Dispatcher to kill.
     def kill( url )
         dispatcher = connect( url )
         Manager.kill_many dispatcher.stats['consumed_pids']
@@ -102,6 +117,7 @@ class Dispatchers
         nil
     end
 
+    # Kills all {Dispatchers #list}.
     def killall
         @list.each do |url|
             kill url
