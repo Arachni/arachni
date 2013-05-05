@@ -17,34 +17,67 @@
 module Arachni
 module Processes
 
+#
+# Helper for managing {RPC::Server::Instance} processes.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
 class Instances
     include Singleton
     include Utilities
 
-    attr_reader :instances
+    # @return   [Array<String>] URLs of all running Instances.
+    attr_reader :list
 
     def initialize
-        @instances = {}
+        @list = {}
     end
 
+    #
+    # Connects to a Instance by URL.
+    #
+    # @param    [String]    url URL of the Dispatcher.
+    # @param    [String]    token
+    #   Authentication token -- only need be provided once.
+    #
+    # @return   [RPC::Client::Instance]
+    #
     def connect( url, token = nil )
-        token ||= @instances[url]
-        @instances[url] ||= token
+        token ||= @list[url]
+        @list[url] ||= token
 
         RPC::Client::Instance.new( Options.instance, url, token )
     end
 
+    # @param    [Block] block   Block to pass an RPC client for each Instance.
     def each( &block )
-        @instances.keys.each do |url|
+        @list.keys.each do |url|
             block.call connect( url )
         end
     end
 
+    #
+    # @param    [String, RPC::Client::Instance] client_or_url
+    #
+    # @return   [String]    Cached authentication token for the given Instance.
+    #
     def token_for( client_or_url )
-        @instances[client_or_url.is_a?( String ) ? client_or_url : client_or_url.url ]
+        @list[client_or_url.is_a?( String ) ? client_or_url : client_or_url.url ]
     end
 
-    def spawn( options = {} )
+    #
+    # Spawns an {RPC::Server::Instance} process.
+    #
+    # @param    [Hash]  options
+    #   To be passed to {Arachni::Options#set}. Allows `address` instead of
+    #   `rpc_address` and `port` instead of `rpc_port`.
+    #
+    # @param    [Block] block
+    #   Passed {Arachni::Options} to configure the Dispatcher options.
+    #
+    # @return   [RPC::Client::Instance]
+    #
+    def spawn( options = {}, &block )
         options[:token] ||= generate_token
 
         options = Options.to_hash.symbolize_keys( false ).merge( options )
@@ -56,12 +89,12 @@ class Instances
 
         url = "#{options[:rpc_address]}:#{options[:rpc_port]}"
 
-        Manager.fork_em {
+        Manager.quite_fork do
             Options.set( options )
-            opts = Options.instance
+            block.call( Options.instance ) if block_given?
 
-            RPC::Server::Instance.new( opts, options[:token] )
-        }
+            RPC::Server::Instance.new( Options.instance, options[:token] )
+        end
 
         begin
             Timeout.timeout( 10 ) do
@@ -77,10 +110,18 @@ class Instances
             abort "Instance '#{url}' never started!"
         end
 
-        @instances[url] = options[:token]
+        @list[url] = options[:token]
         connect( url )
     end
 
+    #
+    # Starts {RPC::Server::Dispatcher} grid and returns a high-performance Instance.
+    #
+    # @param    [Hash]  options
+    # @option options [Integer] :grid_size (2)  Amount of Dispatchers to spawn.
+    #
+    # @return   [RPC::Client::Instance]
+    #
     def grid_spawn( options = {} )
         options[:grid_size] ||= 2
 
@@ -99,11 +140,17 @@ class Instances
         instance
     end
 
+    #
+    # Starts {RPC::Server::Dispatcher} and returns an Instance.
+    #
+    # @return   [RPC::Client::Instance]
+    #
     def dispatcher_spawn
         info = Dispatchers.light_spawn.dispatch
         connect( info['url'], info['token'] )
     end
 
+    # Kills all {Instances #list}.
     def killall
         pids = []
         each do |instance|
@@ -115,7 +162,7 @@ class Instances
             end
         end
 
-        @instances.clear
+        @list.clear
         Manager.kill_many pids
     end
 
