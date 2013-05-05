@@ -44,7 +44,7 @@ class Server
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Framework < ::Arachni::Framework
-    require Options.dir['lib'] + 'rpc/server/distributor'
+    require Options.dir['lib'] + 'rpc/server/framework/distributor'
 
     include Utilities
     include Distributor
