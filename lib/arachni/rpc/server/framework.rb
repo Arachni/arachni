@@ -157,14 +157,10 @@ class Framework < ::Arachni::Framework
         # If we have a block it means that it was called via RPC, so use the
         # status variable to determine if the scan is done.
         if block_given?
-            #ap @extended_running && @status != :done
-            #ap @extended_running
-            #ap @status != :done
             block.call @scan_started && @status != :done
             return
         end
 
-        #ap 9
         !!@extended_running
     end
 
@@ -401,7 +397,7 @@ class Framework < ::Arachni::Framework
                     end
 
                     # Let crawlers know of each other and start the scan.
-                    spider.update_peers( @instances ){ spider.run }
+                    spider.update_peers( @instances ){ Thread.new { spider.run } }
                 end
 
                 # Get the Dispatchers with unique Pipe IDs
@@ -429,9 +425,7 @@ class Framework < ::Arachni::Framework
                     end
                 end
             else
-                #ap 1
                 clean_up
-                #ap 2
             end
         end
 
