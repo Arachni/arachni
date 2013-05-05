@@ -2,9 +2,13 @@
 
 ## _Under development_
 
+- Spider
+    - Paths list synchronized using a `Mutex` to prevent issues when running as
+        part of a multi-process operation.
 - Grid
     - Dispatchers automatically load-balance scans. `#dispatch` call returns
         an Instance from the least burdened Grid member by default.
+    - Crawl runs in its own thread to avoid blocking during the initial seeding process.
 - Added process helpers for RPC Instance and Dispatcher servers.
     - `Arachni::Processes::Dispatchers` -- Spawns and kills Dispatchers.
     - `Arachni::Processes::Instances` -- Spawns and kills Instances.

@@ -118,7 +118,7 @@ class Spider
 
         while !done?
             wait_if_paused
-            while !done? && url = @paths.shift
+            while !done? && url = next_url
                 wait_if_paused
 
                 visit( url ) do |res|
@@ -196,8 +196,10 @@ class Spider
         paths = dedup( paths )
         return false if paths.empty?
 
-        @paths |= paths
-        @paths.uniq!
+        synchronize do
+            @paths |= paths
+            @paths.uniq!
+        end
 
          # REVIEW: This may cause segfaults, Typhoeus::Hydra doesn't like threads.
         Thread.new { run } if wakeup && !running? # wake up the crawler
@@ -212,7 +214,9 @@ class Spider
     # @return [TrueClass, FalseClass]
     #   `true` if the queue is empty and no requests are pending, `false` otherwise.
     def idle?
-        @paths.empty? && @pending_requests == 0
+        synchronize do
+            @paths.empty? && @pending_requests == 0
+        end
     end
 
     # @return [TrueClass] Pauses the system on a best effort basis.
@@ -233,13 +237,23 @@ class Spider
 
     private
 
+    def next_url
+        synchronize { @paths.shift }
+    end
+
+    def synchronize( &block )
+        (@mutex ||= Mutex.new).synchronize( &block )
+    end
+
     def distribute( urls )
         push( urls, false )
     end
 
     def seed_paths
-        @paths |= dedup( url )
-        @paths |= dedup( @opts.extend_paths )
+        synchronize do
+            @paths |= dedup( url )
+            @paths |= dedup( @opts.extend_paths )
+        end
     end
 
     def call_on_each_page_blocks( obj )
