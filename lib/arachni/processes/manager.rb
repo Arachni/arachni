@@ -55,6 +55,7 @@ class Manager
                 Process.kill( 'KILL', pid )
             rescue Errno::ESRCH
                 @pids.delete pid
+                return
             end
         end
     end
