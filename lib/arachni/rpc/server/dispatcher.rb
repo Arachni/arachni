@@ -53,8 +53,6 @@ class Dispatcher
     include UI::Output
     include ::Sys
 
-
-    HANDLER_LIB       = Options.dir['rpcd_handlers']
     HANDLER_NAMESPACE = Handler
 
     def initialize( opts )
@@ -278,7 +276,7 @@ class Dispatcher
         @handlers ||= nil
         return @handlers if @handlers
 
-        @handlers = Component::Manager.new( HANDLER_LIB, HANDLER_NAMESPACE )
+        @handlers = Component::Manager.new( Options.dir['rpcd_handlers'], HANDLER_NAMESPACE )
         @handlers.load_all
         @handlers
     end
