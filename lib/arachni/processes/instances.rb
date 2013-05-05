@@ -26,7 +26,7 @@ class Instances
     include Singleton
     include Utilities
 
-    # @return   [Array<String>] URLs of all running Instances.
+    # @return   [Array<String>] URLs and tokens of all running Instances.
     attr_reader :list
 
     def initialize
