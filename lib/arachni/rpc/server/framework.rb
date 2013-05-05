@@ -125,6 +125,7 @@ class Framework < ::Arachni::Framework
         @done_slaves = Set.new
 
         @issue_summaries = []
+        @scan_started    = false
     end
 
     # @return (see Arachni::Framework#list_plugins)
@@ -156,10 +157,14 @@ class Framework < ::Arachni::Framework
         # If we have a block it means that it was called via RPC, so use the
         # status variable to determine if the scan is done.
         if block_given?
-            block.call @extended_running && @status != :done
+            #ap @extended_running && @status != :done
+            #ap @extended_running
+            #ap @status != :done
+            block.call @scan_started && @status != :done
             return
         end
 
+        #ap 9
         !!@extended_running
     end
 
@@ -236,6 +241,8 @@ class Framework < ::Arachni::Framework
     # @return   [Bool]  `false` if already running, `true` otherwise.
     #
     def run
+        @scan_started = true
+
         # Return if we're already running.
         return false if busy?
 
@@ -422,7 +429,9 @@ class Framework < ::Arachni::Framework
                     end
                 end
             else
+                #ap 1
                 clean_up
+                #ap 2
             end
         end
 

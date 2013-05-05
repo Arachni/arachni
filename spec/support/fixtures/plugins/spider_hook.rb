@@ -30,6 +30,7 @@ class Arachni::Plugins::SpiderHook < Arachni::Plugin::Base
     def clean_up
         framework.resume
         wait_while_framework_running
+        sleep 1 # emulate some latency to catch race conditions
         register_results( framework.self_url => @urls )
     end
 
