@@ -3,9 +3,6 @@ require 'fileutils'
 
 describe Arachni::RPC::Server::Dispatcher do
     before( :all ) do
-        FileUtils.cp( "#{fixtures_path}rpcd_handlers/echo.rb",
-                      Arachni::Options.dir['rpcd_handlers'] )
-
         @job_info_keys  = %w(token pid port url owner birthdate starttime helpers currtime age runtime proc)
         @node_info_keys = %w(url pipe_id weight nickname cost)
     end
@@ -13,10 +10,6 @@ describe Arachni::RPC::Server::Dispatcher do
     after( :each )  do
         dispatcher_killall
         reset_options
-    end
-
-    after( :all ) do
-        FileUtils.rm( "#{Arachni::Options.dir['rpcd_handlers']}echo.rb" )
     end
 
     describe '#alive?' do
@@ -46,6 +39,7 @@ describe Arachni::RPC::Server::Dispatcher do
 
     describe '#handlers' do
         it 'returns an array of loaded handlers' do
+            Arachni::Options.dir['rpcd_handlers'] = "#{fixtures_path}rpcd_handlers/"
             dispatcher_light_spawn.handlers.include?( 'echo' ).should be_true
         end
     end

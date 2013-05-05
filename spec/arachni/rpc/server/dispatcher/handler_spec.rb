@@ -2,18 +2,13 @@ require 'spec_helper'
 
 describe Arachni::RPC::Server::Dispatcher::Handler do
     before( :all ) do
-        FileUtils.cp( "#{fixtures_path}rpcd_handlers/echo.rb",
-                      Arachni::Options.dir['rpcd_handlers'] )
+        Arachni::Options.dir['rpcd_handlers'] = "#{fixtures_path}rpcd_handlers/"
 
         @dispatcher = dispatcher_light_spawn
 
         @instance_count = 5
         @instance_count.times { @dispatcher.dispatch }
         sleep 1
-    end
-
-    after( :all ) do
-        FileUtils.rm( "#{Arachni::Options.dir['rpcd_handlers']}echo.rb" )
     end
 
     describe '#dispatcher' do
