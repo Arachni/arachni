@@ -24,6 +24,9 @@ Dir.glob( "#{support_path}/lib/**/*.rb" ).each { |f| require f }
 Dir.glob( "#{support_path}/helpers/**/*.rb" ).each { |f| require f }
 Dir.glob( "#{support_path}/shared/**/*.rb" ).each { |f| require f }
 
+# Uncomment to show output from spawned processes.
+#Arachni::Processes::Manager.preserve_output
+
 RSpec.configure do |config|
     config.treat_symbols_as_metadata_keys_with_true_values = true
     config.run_all_when_everything_filtered = true
