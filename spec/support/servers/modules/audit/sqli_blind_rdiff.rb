@@ -5,7 +5,7 @@ def default
     'default'
 end
 
-@@ignore ||= IO.read( File.dirname( __FILE__ ) + '/../../../../modules/audit/sqli_blind_rdiff/payloads.txt' ).split( "\n" )
+@@ignore ||= IO.read( File.dirname( __FILE__ ) + '/../../../../../modules/audit/sqli_blind_rdiff/payloads.txt' ).split( "\n" )
 @@faults ||= [ default + '\'"`' ]
 
 def booleans
