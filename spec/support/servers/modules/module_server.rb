@@ -1,4 +1,4 @@
-require_relative '../../../lib/arachni'
+require_relative '../../../../lib/arachni'
 
 def framework
     @@framework ||= Arachni::Framework.new
