@@ -48,7 +48,7 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
                 return
             end
 
-            feed = YAML.load_stream( StringIO.new( feed ) ).flatten
+            feed = YAML.load_stream( StringIO.new( feed ) ).documents.flatten
 
             yaml_err = 'Invalid YAML syntax, bailing out..'
             begin
@@ -214,7 +214,7 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
 
             },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.2',
+            version:     '0.1.2.1',
             options:     [
                 Options::Base.new( 'vectors', [false, ' Vector array (for configuration over RPC).'] ),
                 Options::String.new( 'yaml_string', [false, 'A string of YAML serialized vectors (for configuration over RPC).'] ),
