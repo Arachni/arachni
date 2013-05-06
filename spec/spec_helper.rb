@@ -23,9 +23,7 @@ require_relative '../lib/arachni/processes'
 require_relative 'support/helpers/paths'
 require_relative 'support/helpers/requires'
 
-Dir.glob( "#{support_path}/lib/**/*.rb" ).each { |f| require f }
-Dir.glob( "#{support_path}/helpers/**/*.rb" ).each { |f| require f }
-Dir.glob( "#{support_path}/shared/**/*.rb" ).each { |f| require f }
+Dir.glob( "#{support_path}/{lib,helpers,shared}/**/*.rb" ).each { |f| require f }
 
 # Uncomment to show output from spawned processes.
 #Arachni::Processes::Manager.preserve_output
