@@ -22,6 +22,9 @@
 #
 # This leads to decreased memory consumption and faster comparisons during look-ups.
 #
+# @note If an `Integer` is passed as an argument it will be assumed that it is
+#   already a hash and it will be stored as is.
+#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Arachni::BloomFilter
@@ -75,6 +78,6 @@ class Arachni::BloomFilter
     private
     
     def calculate_hash( object )
-        object.persistent_hash
+        object.is_a?( Integer ) ? object : object.persistent_hash
     end
 end
