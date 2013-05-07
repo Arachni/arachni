@@ -2,17 +2,29 @@
 
 ## _Under development_
 
+- `Framework`
+    - Removed the followed deprecated aliases:
+        - `:resume!` -- Only use `resume` from now on.
+        - `:pause!` -- Only use `pause` from now on.
+        - `:clean_up!` -- Only use `clean_up` from now on.
 - Multi-Instance scans
-    - Framework
+    - `RPC::Server::Framework`
         - General code cleanup.
+            - Multi-Instance code moved under the `RPC::Server::Framework::MultiInstance`
+                module which concentrates multi-Instance code and pulls in the
+                following modules:
+                - `RPC::Server::Framework::Slave` -- Holds API and utilities for
+                    slave instances.
+                - `RPC::Server::Framework::Master` -- Holds API and utilities for
+                    master instances.
         - Master seed crawl runs in its own thread to avoid blocking during the
             initial seeding process.
-- Spider
-    - Paths list synchronized using a `Mutex` to prevent issues when running as
+- `Spider`
+    - Paths-list synchronized using a `Mutex` to prevent issues when running as
         part of a multi-Instance operation.
 - Grid
-    - Dispatchers automatically load-balance scans. `#dispatch` call returns
-        an Instance from the least burdened Grid member by default.
+    - Dispatchers automatically load-balance scans. `#dispatch` call returns an
+        Instance from the least burdened Grid member by default.
 - Added process helpers for RPC Instance and Dispatcher servers.
     - `Arachni::Processes::Dispatchers` -- Spawns and kills Dispatchers.
     - `Arachni::Processes::Instances` -- Spawns and kills Instances.

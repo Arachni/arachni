@@ -14,7 +14,6 @@
     limitations under the License.
 =end
 
-require 'em-synchrony'
 require 'tempfile'
 
 module Arachni
@@ -44,7 +43,6 @@ class Server
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Framework < ::Arachni::Framework
-    require Options.dir['lib'] + 'rpc/server/framework/distributor'
     require Options.dir['lib'] + 'rpc/server/framework/multi_instance'
 
     include Utilities
@@ -53,7 +51,7 @@ class Framework < ::Arachni::Framework
     # Make inherited methods visible over RPC.
     MultiInstance.public_instance_methods( false ).each do |m|
         private m
-        public m
+        public  m
     end
 
     #
@@ -80,55 +78,20 @@ class Framework < ::Arachni::Framework
     # Make these inherited methods public again (i.e. accessible over RPC).
     [ :audit_store, :stats, :paused?, :lsmod, :list_modules, :lsplug,
       :list_plugins, :lsrep, :list_reports, :version, :revision, :status,
-      :clean_up!, :report_as ].each do |m|
+      :report_as ].each do |m|
         private m
-        public m
+        public  m
     end
 
     alias :auditstore :audit_store
 
-    # Buffer issues and only report them to the master instance when the buffer
-    # reaches (or exceeds) this size.
-    ISSUE_BUFFER_SIZE = 100
+    def initialize( * )
+        super
 
-    # How many times to try and fill the issue buffer before flushing it.
-    ISSUE_BUFFER_FILLUP_ATTEMPTS = 10
-
-    def initialize( opts )
-        super( opts )
-
-        # Override standard framework components with their RPC-server
-        # counterparts.
+        # Override standard framework components with their RPC-server counterparts.
         @modules = Module::Manager.new( self )
         @plugins = Plugin::Manager.new( self )
         @spider  = Spider.new( self )
-
-        # Holds info for our slave Instances -- if we have any.
-        @instances = []
-
-        # If we're a slave, this will hold the URL of our master.
-        @master_url = ''
-
-        # Some methods need to be accessible over RPC for instance management,
-        # restricting elements, adding more pages etc.
-        #
-        # However, when in multi-Instance mode, the master should not be tampered
-        # with, so we generate a local token (which is not known to regular API clients)
-        # to be used server side by self to facilitate access control and only
-        # allow slaves to update our runtime data.
-        @local_token = gen_token
-
-        @override_sitemap = Set.new
-        @local_sitemap    = Set.new
-
-        # Instances which have been distributed some scan workload.
-        @running_slaves   = Set.new
-
-        # Instances which have completed their scan.
-        @done_slaves      = Set.new
-
-        @issue_summaries  = []
-        @scan_started     = false
     end
 
     # @return (see Arachni::Framework#list_plugins)
@@ -160,7 +123,7 @@ class Framework < ::Arachni::Framework
         # If we have a block it means that it was called via RPC, so use the
         # status variable to determine if the scan is done.
         if block_given?
-            block.call @scan_started && @status != :done
+            block.call @prepared && @status != :done
             return
         end
 
@@ -173,14 +136,12 @@ class Framework < ::Arachni::Framework
     # @return   [Bool]  `false` if already running, `true` otherwise.
     #
     def run
-        @scan_started = true
-
         # Return if we're already running.
         return false if busy?
 
         if master? && @opts.restrict_paths.any?
             fail Error::UnsupportedOption,
-                 'Option \'restrict_paths\' is not supported when in High-Performance mode.'
+                 'Option \'restrict_paths\' is not supported when in multi-Instance mode.'
         end
 
         @extended_running = true
@@ -188,8 +149,7 @@ class Framework < ::Arachni::Framework
         # Prepare the local instance (runs plugins and starts the timer).
         prepare
 
-        # Start the local instance (we can't block the RPC that's why we're
-        # using a Thread).
+        # Start the scan  -- we can't block the RPC server so we're using a Thread.
         Thread.new do
             # If we're in HPG mode (and we're the master) do fancy stuff like
             # distributing and balancing workload as well as starting slave
@@ -209,8 +169,8 @@ class Framework < ::Arachni::Framework
     end
 
     #
-    # If the scan needs to be aborted abruptly this method takes care of
-    # any unfinished business (like signaling running plug-ins to finish).
+    # If the scan needs to be aborted abruptly this method takes care of any
+    # unfinished business (like signaling running plug-ins to finish).
     #
     # Should be called before grabbing the {#auditstore}, especially when
     # running in HPG mode as it will take care of merging the plug-in results
@@ -227,13 +187,16 @@ class Framework < ::Arachni::Framework
         @cleaned_up       = true
         @extended_running = false
         r = super
-        @status = :done
 
-        return r if !block_given?
-
-        if @instances.empty?
-            block.call r if block_given?
+        if !block_given?
+            @status = :done
             return r
+        end
+
+        if !has_slaves?
+            @status = :done
+            block.call r
+            return
         end
 
         foreach = proc do |instance, iter|
@@ -243,7 +206,11 @@ class Framework < ::Arachni::Framework
                 end
             end
         end
-        after = proc { |results| @plugins.merge_results( results.compact ); block.call( true ) }
+        after = proc do |results|
+            @plugins.merge_results( results.compact )
+            @status = :done
+            block.call true
+        end
         map_slaves( foreach, after )
     end
 
@@ -252,20 +219,28 @@ class Framework < ::Arachni::Framework
         r = super
         return r if !block_given?
 
+        if !has_slaves?
+            block.call true
+            return
+        end
+
         each = proc { |instance, iter| instance.framework.pause { iter.next } }
         each_slave( each, proc { block.call true } )
     end
-    alias :pause! :pause
 
     # Resumes a paused scan right away.
     def resume( &block )
         r = super
         return r if !block_given?
 
+        if !has_slaves?
+            block.call true
+            return
+        end
+
         each = proc { |instance, iter| instance.framework.resume { iter.next } }
         each_slave( each, proc { block.call true } )
     end
-    alias :resume! :resume
 
     #
     # Merged output of all running instances.
@@ -303,7 +278,7 @@ class Framework < ::Arachni::Framework
     def output( &block )
         buffer = flush_buffer
 
-        if @instances.empty?
+        if !has_slaves?
             block.call( buffer )
             return
         end
@@ -339,7 +314,7 @@ class Framework < ::Arachni::Framework
 
         return error_strings if !block_given?
 
-        if @instances.empty?
+        if !has_slaves?
             block.call( error_strings )
             return
         end
@@ -350,7 +325,6 @@ class Framework < ::Arachni::Framework
         after = proc { |out| block.call( (error_strings | errs).flatten ) }
         map_slaves( foreach, after )
     end
-
 
     #
     # Returns aggregated progress data and helps to limit the amount of calls
@@ -414,7 +388,7 @@ class Framework < ::Arachni::Framework
 
         stats << stat_hash
 
-        if @instances.empty? || !include_slaves
+        if !has_slaves? || !include_slaves
             if include_stats
                 data['stats'] = merge_stats( stats )
             else
@@ -503,7 +477,7 @@ class Framework < ::Arachni::Framework
     def issues
         (auditstore.issues.map do |issue|
             issue.variations.first || issue
-        end) | @issue_summaries
+        end) | (@issue_summaries || [])
     end
 
     # @return   [Array<Hash>]   {#issues} as an array of Hashes.
@@ -518,11 +492,6 @@ class Framework < ::Arachni::Framework
         @self_url ||= "#{@opts.rpc_address}:#{@opts.rpc_port}"
     end
 
-    # @private
-    def ignore_grid
-        @ignore_grid = true
-    end
-
     # @return   [String]  This instance's RPC token.
     def token
         @opts.datastore[:token]
@@ -535,22 +504,10 @@ class Framework < ::Arachni::Framework
 
     private
 
-    def ignore_grid?
-        !!@ignore_grid
-    end
-
     def prepare
         return if @prepared
         super
         @prepared = true
-    end
-
-    def auditstore_sitemap
-        @override_sitemap | @sitemap
-    end
-
-    def gen_token
-        Digest::SHA2.hexdigest( 10.times.map{ rand( 9999 ) }.join )
     end
 
 end

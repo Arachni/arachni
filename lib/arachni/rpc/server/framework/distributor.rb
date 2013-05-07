@@ -305,15 +305,14 @@ module Distributor
     # @return   [Hash]
     #   Options suitable to be passed as a configuration to other Instances.
     #
-    #   Removes options that shouldn't be set for slaves like `spawns`, `grid_mode`
-    #   etc.
+    #   Removes options that shouldn't be set for slaves like `spawns`, etc.
     #
     #   Finally, it sets the master's privilege token so that the slave can
     #   report back to us.
     def cleaned_up_opts
         opts = @opts.to_h.deep_clone
 
-        (%w(spawns grid grid_mode dir rpc_port rpc_address pipe_id neighbour pool_size) |
+        (%w(spawns grid dir rpc_port rpc_address pipe_id neighbour pool_size) |
             %w(lsmod lsrep rpc_instance_port_range load_profile delta_time) |
             %w(start_datetime finish_datetime)).each do |k|
             opts.delete k

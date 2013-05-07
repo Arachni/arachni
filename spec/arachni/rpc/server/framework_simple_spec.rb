@@ -57,14 +57,9 @@ describe Arachni::RPC::Server::Framework do
             @framework_clean.revision.should == Arachni::Framework::REVISION
         end
     end
-    describe '#high_performance?' do
-        it 'returns false' do
-            @framework_clean.high_performance?.should be_false
-        end
-    end
     describe '#master?' do
         it 'returns false' do
-            @framework_clean.high_performance?.should be_false
+            @framework_clean.master?.should be_false
         end
     end
     describe '#slave?' do

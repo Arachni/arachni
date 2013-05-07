@@ -557,7 +557,6 @@ class Framework
         @paused << caller
         true
     end
-    alias :pause! :pause
 
     # @return   [TrueClass]  Resumes the scan/audit.
     def resume
@@ -565,7 +564,6 @@ class Framework
         spider.resume
         true
     end
-    alias :resume! :resume
 
     # @return    [String]   Returns the version of the framework.
     def version
@@ -601,7 +599,6 @@ class Framework
 
         true
     end
-    alias :clean_up! :clean_up
 
     def reset_spider
         @spider = Spider.new( @opts )

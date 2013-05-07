@@ -136,7 +136,7 @@ class Instances
         info = last_member.dispatch
 
         instance = connect( info['url'], info['token'] )
-        instance.opts.grid_mode = 'high_performance'
+        instance.framework.set_as_master
         instance
     end
 

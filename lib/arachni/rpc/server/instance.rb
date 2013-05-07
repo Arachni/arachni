@@ -577,7 +577,7 @@ class Instance
 
         if (opts[:grid] || spawn_count > 0) && [opts[:restrict_paths]].flatten.compact.any?
             fail ArgumentError,
-                 'Option \'restrict_paths\' is not supported when in High-Performance mode.'
+                 'Option \'restrict_paths\' is not supported when in multi-Instance mode.'
         end
 
         # There may be follow-up/retry calls by the client in cases of network
@@ -653,6 +653,7 @@ class Instance
 
         t = []
         @framework.instance_eval do
+            next if !has_slaves?
             @instances.each do |instance|
                 # Don't know why but this works better than EM's stuff
                 t << Thread.new { connect_to_instance( instance ).service.shutdown! }

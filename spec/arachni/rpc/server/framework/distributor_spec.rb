@@ -14,14 +14,10 @@ class Distributor
     end
 
     def initialize( token )
-        @opts = Arachni::Options.instance
-        @local_token = token
-        @instances = []
+        @opts           = Arachni::Options.instance
+        @local_token    = token
+        @instances      = []
         @running_slaves = Set.new
-    end
-
-    def self_url
-        @master_url
     end
 
     def dispatcher_url=( url )

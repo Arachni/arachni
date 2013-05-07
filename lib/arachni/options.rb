@@ -80,16 +80,6 @@ class Options
     attr_accessor :max_retries
 
     #
-    # Supported values:
-    #
-    # * high_performance
-    #
-    # If `nil`, it won't make use of the Grid.
-    #
-    # @return   [String]    current grid mode
-    attr_accessor :grid_mode
-
-    #
     # @return   [String]    the URL of a neighbouring Dispatcher
     #
     attr_accessor :neighbour
