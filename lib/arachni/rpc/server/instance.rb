@@ -396,7 +396,8 @@ class Instance
         without = parse_progress_opts( options, :without )
 
         @framework.progress( as_hash:   !with.include?( :native_issues ),
-                             issues:    with.include?( :native_issues ) || with.include?( :issues ),
+                             issues:    with.include?( :native_issues ) ||
+                                            with.include?( :issues ),
                              stats:     !without.include?( :stats ),
                              slaves:    with.include?( :instances ),
                              messages:  false,
@@ -563,8 +564,8 @@ class Instance
             return false
         end
 
-        # Normalize this sucker to have symbols as keys.
-        opts = hash_keys_to_sym( opts, false )
+        # Normalize this sucker to have symbols as keys -- but not recursively.
+        opts = opts.symbolize_keys( false )
 
         slaves      = opts[:slaves] || []
         spawn_count = opts[:spawns].to_i
@@ -693,7 +694,7 @@ class Instance
                             when String, Symbol
                                 parsed[q.to_sym] = nil
                             when Hash
-                                parsed.merge!( hash_keys_to_sym( q ) )
+                                parsed.merge!( q.symbolize_keys )
                         end
                     end
 
@@ -701,7 +702,7 @@ class Instance
                     parsed[w.to_sym] = nil
 
                 when Hash
-                    parsed.merge!( hash_keys_to_sym( w ) )
+                    parsed.merge!( w.symbolize_keys )
             end
         end
 
@@ -823,7 +824,7 @@ class Instance
 
         @server.add_handler( 'service',   self )
         @server.add_handler( 'framework', @framework )
-        @server.add_handler( "opts",      @active_options )
+        @server.add_handler( 'opts',      @active_options )
         @server.add_handler( 'spider',    @framework.spider )
         @server.add_handler( 'modules',   @framework.modules )
         @server.add_handler( 'plugins',   @framework.plugins )

@@ -47,6 +47,20 @@ describe Arachni::Options do
         end
     end
 
+    describe '#min_pages_per_instance=' do
+        it 'forces its argument to an Integer' do
+            Arachni::Options.min_pages_per_instance = '55'
+            Arachni::Options.min_pages_per_instance.should == 55
+        end
+    end
+
+    describe '#max_slaves=' do
+        it 'forces its argument to an Integer' do
+            Arachni::Options.max_slaves = '56'
+            Arachni::Options.max_slaves.should == 56
+        end
+    end
+
     describe '#user_agent' do
         it "defaults to Arachni/v#{Arachni::VERSION}" do
             Arachni::Options.user_agent.should == 'Arachni/v' + Arachni::VERSION.to_s

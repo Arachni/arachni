@@ -596,6 +596,14 @@ class Options
         !!@https_only
     end
 
+    def min_pages_per_instance=( page_count )
+        @min_pages_per_instance = page_count.to_i
+    end
+
+    def max_slaves=( slave_count )
+        @max_slaves = slave_count.to_i
+    end
+
     #
     # Checks is the provided URL matches a redundant filter
     # and decreases its counter if so.

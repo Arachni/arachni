@@ -407,40 +407,6 @@ module Utilities
     end
 
     #
-    # Recursively converts a Hash's keys to strings.
-    #
-    # @param    [Hash]  hash
-    # @param    [Bool]  recursive
-    #
-    # @return   [Hash]
-    #
-    def hash_keys_to_str( hash, recursive = true )
-        nh = {}
-        hash.each do |k, v|
-            nh[k.to_s] = v
-            nh[k.to_s] = hash_keys_to_str( v ) if recursive && v.is_a?( Hash )
-        end
-        nh
-    end
-
-    #
-    # Recursively converts a Hash's keys to symbols.
-    #
-    # @param    [Hash]  hash
-    # @param    [Bool]  recursive
-    #
-    # @return   [Hash]
-    #
-    def hash_keys_to_sym( hash, recursive = true )
-        nh = {}
-        hash.each do |k, v|
-            nh[k.to_sym] = v
-            nh[k.to_sym] = hash_keys_to_sym( v ) if recursive && v.is_a?( Hash )
-        end
-        nh
-    end
-
-    #
     # Wraps the "block" in exception handling code and runs it.
     #
     # @param    [Bool]  raise_exception  re-raise exception
