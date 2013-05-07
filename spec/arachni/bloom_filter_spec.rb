@@ -53,11 +53,11 @@ describe Arachni::BloomFilter do
         it 'returns the size' do
             bf = Arachni::BloomFilter.new
             bf.size.should == 0
-            bf << 1
+            bf << '1'
             bf.size.should == 1
-            bf << 1
+            bf << '1'
             bf.size.should == 1
-            bf << 2
+            bf << '2'
             bf.size.should == 2
         end
     end
@@ -65,8 +65,8 @@ describe Arachni::BloomFilter do
     describe '#clear' do
         it 'empties the list' do
             bf = Arachni::BloomFilter.new
-            bf << 1
-            bf << 2
+            bf << '1'
+            bf << '2'
             bf.size.should == 2
             bf.clear
             bf.size.should == 0

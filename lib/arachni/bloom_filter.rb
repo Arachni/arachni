@@ -17,8 +17,8 @@
 #
 # Lightweight Bloom-filter implementation.
 #
-# It uses the return value of the #hash method of the given objects instead of
-# the objects themselves.
+# It uses the return value of the objects' `#persistent_hash` instead of the
+# objects themselves.
 #
 # This leads to decreased memory consumption and faster comparisons during look-ups.
 #
@@ -27,48 +27,54 @@
 class Arachni::BloomFilter
 
     def initialize
-        @hash = Hash.new( false )
+        @collection = Set.new
     end
 
     #
-    # @param    [#hash] obj object to insert
+    # @param    [#persistent_hash] object object to insert
     #
     # @return   [Arachni::BloomFilter]  self
     #
-    def <<( obj )
-        @hash[obj.hash] = true
+    def <<( object )
+        @collection << calculate_hash( object )
         self
     end
     alias :add :<<
 
     #
-    # @param    [#hash] obj object to delete
+    # @param    [#persistent_hash] object object to delete
     #
     # @return   [Arachni::BloomFilter]  self
     #
-    def delete( obj )
-        @hash.delete( obj.hash )
+    def delete( object )
+        @collection.delete( calculate_hash( object ) )
         self
     end
 
     #
-    # @param    [#hash] obj object to check
+    # @param    [#persistent_hash] object object to check
     #
     # @return   [Bool]
     #
-    def include?( obj )
-        @hash[obj.hash]
+    def include?( object )
+        @collection.include? calculate_hash( object )
     end
 
     def empty?
-        @hash.empty?
+        @collection.empty?
     end
 
     def size
-        @hash.size
+        @collection.size
     end
 
     def clear
-        @hash.clear
+        @collection.clear
+    end
+    
+    private
+    
+    def calculate_hash( object )
+        object.persistent_hash
     end
 end
