@@ -15,7 +15,7 @@
 =end
 
 require 'addressable/uri'
-require 'digest/sha1'
+require 'digest/sha2'
 require 'cgi'
 
 module Arachni
@@ -385,7 +385,7 @@ module Utilities
     def generate_token
         secret = ''
         1000.times { secret << rand( 9999 ).to_s }
-        Digest::MD5.hexdigest( secret )
+        Digest::SHA2.hexdigest( secret )
     end
 
     #
