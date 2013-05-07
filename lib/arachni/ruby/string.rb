@@ -14,6 +14,8 @@
     limitations under the License.
 =end
 
+require 'zlib'
+
 #
 # Overloads the {String} class.
 #
@@ -84,6 +86,19 @@ class String
         splits = split( /\b/ )
         splits.reject! { |w| !(w =~ /\w/) } if strict
         splits
+    end
+
+    # @return   [Integer]
+    #   In integer with the property of:
+    #
+    #   If `str1 == str2` then `str1.persistent_hash == str2.persistent_hash`.
+    #
+    #   It basically has the same function as Ruby's `#hash` method, but does
+    #   not use a random seed per Ruby process -- making it suitable for use
+    #   in distributed systems.
+    #
+    def persistent_hash
+        Zlib.crc32 self
     end
 
     def substring?( string )

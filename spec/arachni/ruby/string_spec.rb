@@ -74,6 +74,23 @@ describe String do
         end
     end
 
+    describe '#persistent_hash' do
+        it 'returns an Integer' do
+            'test'.persistent_hash.should be_kind_of Integer
+        end
+
+        context 'when two strings are equal' do
+            it 'returns equal values' do
+                'test'.persistent_hash.should == 'test'.persistent_hash
+            end
+        end
+        context 'when two strings are not equal' do
+            it 'returns different values' do
+                'test'.persistent_hash.should_not == 'testa'.persistent_hash
+            end
+        end
+    end
+
     describe '#binary?' do
         context 'when the content is' do
             context 'binary' do
