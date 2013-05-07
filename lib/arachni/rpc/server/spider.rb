@@ -315,7 +315,7 @@ class Spider < Arachni::Spider
         return framework if @peers.empty?
         return @peers.values.first if @peers.size == 1
 
-        @peers.values[url.bytes.inject( :+ ).modulo( @peers.size )]
+        @peers.values[url.persistent_hash.modulo( @peers.size )]
     end
 
     def framework
