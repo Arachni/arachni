@@ -58,7 +58,7 @@ module Master
         # with, so we generate a local token (which is not known to regular API clients)
         # to be used server side by self to facilitate access control and only
         # allow slaves to update our runtime data.
-        @local_token = gen_token
+        @local_token = Utilities.generate_token
 
         true
     end
@@ -361,10 +361,6 @@ module Master
 
     def auditstore_sitemap
         (@override_sitemap || []) | @sitemap
-    end
-
-    def gen_token
-        Digest::SHA2.hexdigest( 10.times.map{ rand( 9999 ) }.join )
     end
 
 end
