@@ -55,7 +55,8 @@ Gem::Specification.new do |s|
 
     s.rdoc_options      = [ '--charset=UTF-8' ]
 
-    s.add_dependency 'bundler',         '>= 1.0.0'
+    # RPC client/server implementation.
+    s.add_dependency 'arachni-rpc-em',  '0.1.4dev'
 
     # HTTP interface.
     s.add_dependency 'typhoeus',        '~> 0.3.3'
@@ -84,12 +85,10 @@ Gem::Specification.new do |s|
     # Outputting data in table format (arachni_rpcd_monitor).
     s.add_dependency 'terminal-table',  '>= 1.4.2'
 
-    # RPC client/server implementation.
-    s.add_dependency 'arachni-rpc-em',  '~> 0.1.3'
-
     # For CLI interfaces.
     s.add_dependency 'highline'
 
+    s.add_development_dependency 'bundler'
     s.add_development_dependency 'rake'
     s.add_development_dependency 'rspec'
 
