@@ -187,8 +187,8 @@ class Instance
     #   instead of {Framework#busy?}.
     def busy?( &block )
         if @scan_initializing
-            block.call( true )
-            return
+            block.call( true ) if block_given?
+            return true
         end
 
         @framework.busy?( &block )
