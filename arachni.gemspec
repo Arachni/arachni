@@ -57,7 +57,7 @@ Gem::Specification.new do |s|
     s.rdoc_options      = [ '--charset=UTF-8' ]
 
     # RPC client/server implementation.
-    s.add_dependency 'arachni-rpc-em',  '0.1.4dev'
+    s.add_dependency 'arachni-rpc-em',  '0.2dev'
 
     # HTTP interface.
     s.add_dependency 'typhoeus',        '~> 0.3.3'
