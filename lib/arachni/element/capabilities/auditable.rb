@@ -266,13 +266,15 @@ module Auditable
     end
 
     #
-    # Provides a more generalized audit ID which does not contain the
-    # auditor's name, timeout value of injection string.
+    # Provides a more generalized audit ID which does not take into account
+    # the auditor's name nor timeout value of injection string.
     #
-    # Right now only used when in HPG mode to generate a white-list of
-    # element IDs that are allowed to be audited.
+    # Right now only used when in multi-Instance mode to generate a white-list
+    # of element IDs that are allowed to be audited.
     #
     # @param    [Hash]  opts    {#audit}    opts
+    #
+    # @return   [Integer]   Hash ID.
     #
     def scope_audit_id( opts = {} )
         opts = {} if !opts
@@ -280,7 +282,7 @@ module Auditable
             no_auditor:       true,
             no_timeout:       true,
             no_injection_str: true
-        ))
+        )).persistent_hash
     end
 
     #
@@ -288,7 +290,7 @@ module Auditable
     #
     # *Caution*: Each call overwrites the last.
     #
-    # @param    [Array<String>]    elements
+    # @param    [Array<String,Integer>]    elements
     #   Element audit IDs as returned by {#scope_audit_id}.
     #
     # @see scope_audit_id
