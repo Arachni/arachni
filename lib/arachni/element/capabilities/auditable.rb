@@ -363,7 +363,7 @@ module Auditable
     end
 
     def skip_path?( url )
-        super || Options.redundant?( url )
+        super || redundant_path?( url )
     end
 
     #

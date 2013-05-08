@@ -67,17 +67,17 @@ describe Arachni::Utilities do
         end
     end
 
-    describe '#redundant?' do
+    describe '#redundant_path?' do
         context "when a URL's counter reaches 0" do
             it 'returns true' do
                 Arachni::Options.redundant = { /match_this/ => 10 }
 
                 url = 'http://stuff.com/match_this'
                 10.times do
-                    @utils.redundant?( url ).should be_false
+                    @utils.redundant_path?( url ).should be_false
                 end
 
-                @utils.redundant?( url ).should be_true
+                @utils.redundant_path?( url ).should be_true
             end
         end
         context "when a URL's counter has not reached 0" do
@@ -86,10 +86,10 @@ describe Arachni::Utilities do
 
                 url = 'http://stuff.com/match_this'
                 10.times do
-                    @utils.redundant?( url ).should be_false
+                    @utils.redundant_path?( url ).should be_false
                 end
 
-                @utils.redundant?( url ).should be_false
+                @utils.redundant_path?( url ).should be_false
             end
         end
     end

@@ -323,7 +323,7 @@ class Spider
     # @return   [Bool]  true if the url is redundant, false otherwise
     #
     def redundant?( url )
-        redundant = super( url ) do |count, regexp, path|
+        redundant = redundant_path?( url ) do |count, regexp, path|
             print_info "Matched redundancy rule: #{regexp} for #{path}"
             print_info "Count-down: #{count}"
         end

@@ -248,7 +248,7 @@ module Utilities
     #
     # @see Options#redundant?
     #
-    def redundant?( url, &block )
+    def redundant_path?( url, &block )
         Options.redundant?( url, &block )
     end
 
