@@ -36,7 +36,7 @@ class WebServerManager
     def spawn( name, port = nil )
         server_info        = data_for( name )
         server_info[:port] = port if port
-        server_info[:pid] = process_quite_fork {
+        server_info[:pid] = process_quiet_fork {
             exec 'ruby', server_info[:path], "-p #{server_info[:port]}"
         }
 

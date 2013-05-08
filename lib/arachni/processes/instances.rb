@@ -89,7 +89,7 @@ class Instances
 
         url = "#{options[:rpc_address]}:#{options[:rpc_port]}"
 
-        Manager.quite_fork do
+        Manager.quiet_fork do
             Options.set( options )
             block.call( Options.instance ) if block_given?
 

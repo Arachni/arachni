@@ -38,8 +38,8 @@ def process_kill_many( *args )
     Arachni::Processes::Manager.kill_many( *args )
 end
 
-def process_quite_fork( *args, &block )
-    Arachni::Processes::Manager.quite_fork( *args, &block )
+def process_quiet_fork( *args, &block )
+    Arachni::Processes::Manager.quiet_fork( *args, &block )
 end
 
 def process_fork_em( *args, &block )

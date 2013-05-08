@@ -79,7 +79,7 @@ class Manager
     end
 
     # @param    [Block] block   Block to fork and discard its output.
-    def quite_fork( &block )
+    def quiet_fork( &block )
         self << fork( &discard_output( &block ) )
     end
 
