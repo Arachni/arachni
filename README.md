@@ -38,14 +38,14 @@ If you get an error when trying to run Arachni, use `bundle exec` like so:
     </tr>
     <tr>
         <th>Homepage</th>
-        <td><a href="http://arachni-scanner.com">http://arachni-scanner.com</a></td>
+        <td><a href="http://www.arachni-scanner.com">http://arachni-scanner.com</a></td>
     </tr>
     <tr>
         <th>Blog</th>
-        <td><a href="http://arachni-scanner.com/blog">http://arachni-scanner.com/blog</a></td>
+        <td><a href="http://www.arachni-scanner.com/blog">http://arachni-scanner.com/blog</a></td>
     <tr>
         <th>Github</th>
-        <td><a href="http://github.com/Arachni/arachni">http://github.com/Arachni/arachni</a></td>
+        <td><a href="https://github.com/Arachni/arachni">http://github.com/Arachni/arachni</a></td>
      <tr/>
     <tr>
         <th>Documentation</th>
