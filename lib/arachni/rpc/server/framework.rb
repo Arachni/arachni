@@ -30,8 +30,7 @@ class Server
 
 #
 # Wraps the framework of the local instance and the frameworks of all its slaves
-# (when it is as Master in High Performance Grid mode) into a neat, easy to
-# handle package.
+# (when it is a Master in multi-Instance mode) into a neat, easy to handle package.
 #
 # @note Ignore:
 #
