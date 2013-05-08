@@ -284,7 +284,7 @@ module Utilities
     # * {#path_too_deep?}
     # * {#path_in_domain?}
     #
-    # @note Does **not** call {#redundant?}.
+    # @note Does **not** call {#redundant_path?}.
     #
     # @param    [Arachni::URI, ::URI, Hash, String] path
     #

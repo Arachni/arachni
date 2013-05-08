@@ -133,7 +133,7 @@ class Spider < Arachni::Spider
     # Sets a peer crawler's state to finished. Exposed so that peers can signal
     # the master once they're done.
     #
-    # @paran    [String]    url URL of the finished peer.
+    # @param    [String]    url URL of the finished peer.
     #
     def peer_done( url )
         @done_signals[url] = true

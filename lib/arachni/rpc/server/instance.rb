@@ -538,7 +538,7 @@ class Instance
     #       John Doe <john.doe@bigscanners.com>
     #
     # @option opts [Array<Hash>]  :slaves   **(Experimental)**
-    #   Info of Instances to {Framework#enslave enslave}.
+    #   Info of Instances to {Framework::Master#enslave enslave}.
     #
     #       [
     #           { url: 'address:port', token: 's3cr3t' },

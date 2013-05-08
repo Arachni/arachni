@@ -38,7 +38,7 @@ class Manager
 
     #
     # @param    [Integer]   pid
-    #   Adds a PID to the {#list} and detaches the process.
+    #   Adds a PID to the {#pids} and detaches the process.
     #
     # @return   [Integer]   `pid`
     #
@@ -65,7 +65,7 @@ class Manager
         pids.each { |pid| kill pid }
     end
 
-    # Kills all {#processes}.
+    # Kills all {#pids processes}.
     def killall
         kill_many @pids.dup
         @pids.clear
