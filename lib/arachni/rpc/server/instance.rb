@@ -552,7 +552,7 @@ class Instance
     #   The amount of slaves to spawn.
     # @option opts [Array<Page>]  :pages    ([])    **(Experimental)**
     #   Extra pages to audit.
-    # @option opts [Array<String>]  :elements   ([])    **(Experimental)**
+    # @option opts [Array<Integer>]  :elements   ([])    **(Experimental)**
     #   Elements to which to restrict the audit.
     #
     #   <em>Using elements IDs as returned by {Element::Capabilities::Auditable#scope_audit_id}.</em>
