@@ -27,7 +27,7 @@ Gem::Specification.new do |s|
         ' Ruby framework aimed towards helping penetration testers and' +
         ' administrators evaluate the security of web applications.'
 
-    s.homepage          = 'https://github.com/Arachni/arachni'
+    s.homepage          = 'https://www.arachni-scanner.com'
     s.email             = 'tasos.laskos@gmail.com'
     s.authors           = [ 'Tasos Laskos' ]
 
@@ -45,9 +45,10 @@ Gem::Specification.new do |s|
     s.files            += Dir.glob( 'rpcd_handlers/**/**' )
     s.files            += Dir.glob( 'spec/**/**' )
     s.files            += %w(Gemfile Rakefile arachni.gemspec)
+    s.test_files        = Dir.glob( 'spec/**/**' )
 
     s.executables       = [ 'arachni', 'arachni_rpcd_monitor', 'arachni_rpcd',
-                          'arachni_rpc', 'arachni_console', 'arachni_script' ]
+                            'arachni_rpc', 'arachni_console', 'arachni_script' ]
 
     s.extra_rdoc_files  = %w(README.md ACKNOWLEDGMENTS.md LICENSE.md
                             AUTHORS.md CHANGELOG.md CONTRIBUTORS.md
