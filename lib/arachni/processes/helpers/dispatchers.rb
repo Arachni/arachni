@@ -14,22 +14,32 @@
     limitations under the License.
 =end
 
+# @param (see Arachni::Processes::Dispatchers#spawn)
+# @return (see Arachni::Processes::Dispatchers#spawn)
 def dispatcher_spawn( *args )
     Arachni::Processes::Dispatchers.spawn( *args )
 end
 
+# @param (see Arachni::Processes::Dispatchers#light_spawn)
+# @return (see Arachni::Processes::Dispatchers#light_spawn)
 def dispatcher_light_spawn( *args )
     Arachni::Processes::Dispatchers.light_spawn( *args )
 end
 
+# @param (see Arachni::Processes::Dispatchers#kill)
+# @return (see Arachni::Processes::Dispatchers#kill)
 def dispatcher_kill( *args )
     Arachni::Processes::Dispatchers.kill( *args )
 end
 
+# @param (see Arachni::Processes::Dispatchers#killall)
+# @return (see Arachni::Processes::Dispatchers#killall)
 def dispatcher_killall
     Arachni::Processes::Dispatchers.killall
 end
 
+# @param (see Arachni::Processes::Dispatchers#connect)
+# @return (see Arachni::Processes::Dispatchers#connect)
 def dispatcher_connect( *args )
     Arachni::Processes::Dispatchers.connect( *args )
 end

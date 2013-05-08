@@ -29,3 +29,11 @@ def reset_all
     reset_options
     Arachni::HTTP.reset
 end
+
+def killall
+    instance_killall
+    dispatcher_killall
+    web_server_killall
+    process_killall
+    process_kill_em
+end

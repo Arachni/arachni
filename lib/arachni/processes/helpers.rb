@@ -14,26 +14,6 @@
     limitations under the License.
 =end
 
-def instance_spawn( *args )
-    Arachni::Processes::Instances.spawn( *args )
-end
-
-def instance_grid_spawn( *args )
-    Arachni::Processes::Instances.grid_spawn( *args )
-end
-
-def instance_dispatcher_spawn( *args )
-    Arachni::Processes::Instances.dispatcher_spawn( *args )
-end
-
-def instance_killall
-    Arachni::Processes::Instances.killall
-end
-
-def instance_connect( *args )
-    Arachni::Processes::Instances.connect( *args )
-end
-
-def instance_token_for( *args )
-    Arachni::Processes::Instances.token_for( *args )
-end
+require_relative 'helpers/processes'
+require_relative 'helpers/dispatchers'
+require_relative 'helpers/instances'
