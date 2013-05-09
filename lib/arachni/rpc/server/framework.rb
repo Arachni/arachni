@@ -474,9 +474,7 @@ class Framework < ::Arachni::Framework
     # @return  [Array<Arachni::Issue>]
     #   First variations of all discovered issues.
     def issues
-        (auditstore.issues.map do |issue|
-            issue.variations.first || issue
-        end) | (@issue_summaries || [])
+        auditstore.issues.map { |issue| issue.variations.first || issue }
     end
 
     # @return   [Array<Hash>]   {#issues} as an array of Hashes.

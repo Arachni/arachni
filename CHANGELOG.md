@@ -19,6 +19,9 @@
                     master instances.
         - Master seed crawl runs in its own thread to avoid blocking during the
             initial seeding process.
+        - Removed the concept of issue summaries -- were used for lightweight
+            transmission of issue data for real-time feedback. Instead, full issues
+            are being buffered and flushed to the master after each page is audited.
 - `Spider`
     - Paths-list synchronized using a `Mutex` to prevent issues when running as
         part of a multi-Instance operation.

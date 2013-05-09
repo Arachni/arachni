@@ -32,7 +32,6 @@ end
 class FakeMaster
 
     attr_reader :issues
-    attr_reader :issue_summaries
 
     def initialize( opts, token )
         @opts  = opts
@@ -41,7 +40,6 @@ class FakeMaster
 
         @pages  = []
         @issues = []
-        @issue_summaries = []
         @element_ids     = []
 
         @server.add_handler( 'framework', self )
@@ -58,12 +56,6 @@ class FakeMaster
     end
 
     def update_element_ids_per_page( *args )
-    end
-
-    def register_issue_summaries( issues, token = nil )
-        return false if !valid_token?( token )
-        @issue_summaries |= issues
-        true
     end
 
     def slave_done( *args )
@@ -522,7 +514,6 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
         after do
             @master.issues.clear
-            @master.issue_summaries.clear
         end
 
         context 'when called without auditable restrictions' do
@@ -537,7 +528,6 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 sleep 0.1 while slave.framework.busy?
 
                 @master.issues.size.should == 500
-                @master.issue_summaries.size.should == 500
             end
         end
         context 'when called with auditable URL restrictions' do
@@ -556,7 +546,6 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 sleep 0.1 while slave.framework.busy?
 
                 @master.issues.size.should == 2
-                @master.issue_summaries.size.should == 2
 
                 vuln_urls = @master.issues.map { |i| i.url }.sort.uniq
                 vuln_urls.should == absolute_urls.sort.uniq
@@ -582,7 +571,6 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 sleep 0.1 while slave.framework.busy?
 
                 @master.issues.size.should == 2
-                @master.issue_summaries.size.should == 2
 
                 vuln_urls = @master.issues.map { |i| i.url }.sort.uniq
                 exp_urls = %w(/vulnerable?0_vulnerable_20=stuff20 /vulnerable?9_vulnerable_30=stuff30)
@@ -608,7 +596,6 @@ describe Arachni::RPC::Server::Framework::Distributor do
                     sleep 0.1 while slave.framework.busy?
 
                     @master.issues.size.should == 8
-                    @master.issue_summaries.size.should == 8
                 end
             end
         end
@@ -658,7 +645,6 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 sleep 0.1 while slave.framework.busy?
 
                 @master.issues.size.should == 4
-                @master.issue_summaries.size.should == 4
 
                 vuln_urls = @master.issues.map { |i| i.url }.sort.uniq
                 vuln_urls.should == exp_urls.sort

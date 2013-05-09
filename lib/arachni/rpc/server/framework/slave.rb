@@ -33,14 +33,14 @@ module Slave
 
     #
     # Sets the URL and authentication token required to connect to this
-    # Instance's master.
+    # Instance's master and makes this Instance a slave.
     #
     # @param    [String]    url     Master's URL in `hostname:port` form.
     # @param    [String]    token   Master's authentication token.
     #
     # @return   [Bool]
-    #   `true` on success, `false` if the current instance is already part of
-    #   the grid.
+    #   `true` on success, `false` if the instance is already part of a
+    #   multi-Instance operation.
     #
     # @private
     #
@@ -110,21 +110,19 @@ module Slave
         @issue_buffer = Buffer::AutoFlush.new( ISSUE_BUFFER_SIZE,
                                                ISSUE_BUFFER_FILLUP_ATTEMPTS )
 
-        # Once the buffer fills up and is about to flush itself, send its
-        # contents to the master.
+        # When the buffer gets flushed, send its contents to the master.
         @issue_buffer.on_flush { |buffer| send_issues_to_master( buffer ) }
 
         # Don't store issues locally -- will still filter duplicate issues though.
         @modules.do_not_store
 
+        # Buffer discovered issues...
         @modules.on_register_results do |issues|
-            # Send summaries of issues to the master right away so that the the
-            # master will have live data to show the user...
-            send_issue_summaries_to_master issues
-
-            # ...but buffer the complete issues to be sent in batches for better
-            # bandwidth utilization.
-            @issue_buffer.batch_push issues
+            report_issues_to_master issues
+        end
+        # ... and flush it on each page audit.
+        on_audit_page do
+            @issue_buffer.flush
         end
 
         true
@@ -167,6 +165,7 @@ module Slave
     # @see #report_issues_to_master
     #
     def report_issues_to_master( issues )
+        return if issues.empty?
         @issue_buffer.batch_push issues
         true
     end
@@ -181,6 +180,11 @@ module Slave
     # @see #report_issues_to_master
     #
     def flush_issue_buffer( &block )
+        if @issue_buffer.empty?
+            block.call if block_given?
+            return
+        end
+
         send_issues_to_master( @issue_buffer.flush, &block )
     end
 
@@ -190,34 +194,12 @@ module Slave
     #   Block to call once the issues have been registered with the master.
     #
     def send_issues_to_master( issues, &block )
+        if issues.empty?
+            block.call if block_given?
+            return
+        end
+
         @master.framework.register_issues( issues, master_priv_token, &block )
-    end
-
-    #
-    # Sends a summary of issues to the master. Helps provide real-time time data
-    # to the master (and subsequently, the user) but without maxing out our
-    # bandwidth.
-    #
-    # Full issues will be transmitted according to the issue buffer policy.
-    #
-    # @param    [Array<Arachni::Issue>] issues
-    # @param    [Block] block
-    #   Block to call once the issues have been registered with the master.
-    #
-    def send_issue_summaries_to_master( issues, &block )
-        @unique_issue_summaries ||= Set.new
-
-        # Multiple variations for grep modules are not being filtered when
-        # an issue is registered, and for good reason; however, we do need to
-        # filter them in this case since we're summarizing.
-        summaries = AuditStore.new( issues: issues ).issues.map do |i|
-            next if @unique_issue_summaries.include?( i.unique_id )
-            di = i.deep_clone
-            di.variations.first || di
-        end.compact
-
-        @unique_issue_summaries |= summaries.each { |issue| issue.unique_id }
-        @master.framework.register_issue_summaries( summaries, master_priv_token, &block )
     end
 
     # @return   [String]

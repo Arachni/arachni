@@ -42,9 +42,6 @@ module Master
         # Instances which have completed their scan.
         @done_slaves      = Set.new
 
-        # Holds first variations (the summaries) of issues discovered by slaves.
-        @issue_summaries  = []
-
         # Holds the sitemap of this Instance's crawl.
         @local_sitemap    = Set.new
 
@@ -148,33 +145,6 @@ module Master
     def register_issues( issues, token = nil )
         return false if master? && !valid_token?( token )
         @modules.class.register_results( issues )
-        true
-    end
-
-    #
-    # Registers an array holding stripped-out {Arachni::Issue} objects
-    # with the local instance.
-    #
-    # Used by slaves to register their issues (without response bodies and other
-    # largish data sets) with the master right away while buffering the complete
-    # issues to be transmitted in batches later for better bandwidth utilization.
-    #
-    # These summary issues are to be included in {#issues} in order for the master
-    # to have accurate live data to present to the client.
-    #
-    # @param    [Array<Arachni::Issue>]    issues
-    # @param    [String]    token
-    #   Privileged token, prevents this method from being called by 3rd parties
-    #   when this instance is a master. If this instance is not a master one
-    #   the token needn't be provided.
-    #
-    # @return   [Bool]  `true` on success, `false` on invalid `token`.
-    #
-    # @private
-    #
-    def register_issue_summaries( issues, token = nil )
-        return false if master? && !valid_token?( token )
-        @issue_summaries |= issues
         true
     end
 
