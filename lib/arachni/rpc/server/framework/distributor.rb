@@ -155,13 +155,18 @@ module Distributor
         unique_chunks.reverse
     end
 
-    # @return   [Array<String>]
+    # @return   [Array]
     #   {Arachni::Element::Capabilities::Auditable#scope_audit_id Scope IDs}
-    #   of all page elements.
+    #   of all page elements with auditable inputs.
     def build_elem_list( page )
         list = []
 
-        scoppe_list = proc { |elems| elems.map { |e| e.scope_audit_id }.uniq }
+        scoppe_list = proc do |elems|
+            elems.map do |e|
+                next if e.auditable.empty?
+                e.scope_audit_id
+            end.compact.uniq
+        end
 
         list |= scoppe_list.call( page.links )   if @opts.audit_links
         list |= scoppe_list.call( page.forms )   if @opts.audit_forms
