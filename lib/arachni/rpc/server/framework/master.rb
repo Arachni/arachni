@@ -48,6 +48,10 @@ module Master
         # Holds the sitemap of the multi-Instance crawl.
         @override_sitemap = Set.new
 
+        # Holds element IDs for each page to be used as a representation of the
+        # the audit workload that will need to be distributed.
+        @element_ids_per_page = {}
+
         # Some methods need to be accessible over RPC for instance management,
         # restricting elements, adding more pages etc.
         #
@@ -169,7 +173,6 @@ module Master
         signal_done_peer_url = nil )
         return false if master? && !valid_token?( token )
 
-        @element_ids_per_page ||= {}
         element_ids_per_page.each do |url, ids|
             @element_ids_per_page[url] ||= []
             @element_ids_per_page[url] |= ids
@@ -277,18 +280,18 @@ module Master
                                                     @element_ids_per_page )
 
                     # Restrict the local instance to its assigned elements.
-                    restrict_to_elements( elements.pop, @local_token )
+                    restrict_to_elements( elements.shift, @local_token )
 
                     # Set the URLs to be audited by the local instance.
-                    @opts.restrict_paths = chunks.pop
+                    @opts.restrict_paths = chunks.shift
 
                     chunks.each_with_index do |chunk, i|
                         # Distribute the audit workload and tell the slaves to
                         # have at it.
                         distribute_and_run( @instances[i],
                                             urls:     chunk,
-                                            elements: elements.pop,
-                                            pages:    page_chunks.pop
+                                            elements: elements.shift,
+                                            pages:    page_chunks.shift
                         )
                     end
                 end
