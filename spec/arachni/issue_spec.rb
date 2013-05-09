@@ -90,6 +90,32 @@ describe Arachni::Issue do
         end
     end
 
+    describe '#audit?' do
+        context 'when the issue was discovered by manipulating an input' do
+            it 'returns true' do
+                Arachni::Issue.new( issue: { var: '1' } ).audit?.should be_true
+            end
+        end
+        context 'when the issue was logged passively' do
+            it 'returns false' do
+                Arachni::Issue.new.audit?.should be_false
+            end
+        end
+    end
+
+    describe '#recon?' do
+        context 'when the issue was discovered by manipulating an input' do
+            it 'returns false' do
+                Arachni::Issue.new( issue: { var: '1' } ).recon?.should be_false
+            end
+        end
+        context 'when the issue was logged passively' do
+            it 'returns true' do
+                Arachni::Issue.new.recon?.should be_true
+            end
+        end
+    end
+
     context 'when there\'s an :issue key' do
         it 'assigns its hash contents to instance vars' do
             issue = Arachni::Issue.new( issue: @issue_data )

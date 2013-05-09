@@ -187,6 +187,25 @@ class Issue
         (@remarks[author] ||= []) << string
     end
 
+    # @return   [Boolean]
+    #   `true` if the issue was discovered by manipulating an input,
+    #   `false` otherwise.
+    #
+    # @see recon?
+    #
+    def audit?
+        !!@var
+    end
+
+    # @return   [Boolean]
+    #   `true` if the issue was discovered passively, `false` otherwise.
+    #
+    # @see audit?
+    #
+    def recon?
+        !audit?
+    end
+
     # @see #regexp_match
     def match
         self.regexp_match
