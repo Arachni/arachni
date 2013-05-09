@@ -388,8 +388,10 @@ module Auditable
     def audit( injection_str, opts = { }, &block )
         fail 'Block required.' if !block_given?
 
+        print_debug "About to audit: #{audit_id}"
+
         if skip_path?( self.action )
-            print_debug "Element's action matches skip rule, bailing out (#{self.action})."
+            print_debug "Element's action matches skip rule, bailing out."
             return false
         end
 
@@ -397,7 +399,7 @@ module Auditable
 
         # if we don't have any auditable elements just return
         if auditable.empty?
-            print_debug 'The element has no auditable inputs, returning.'
+            print_debug 'The element has no auditable inputs.'
             return false
         end
 
@@ -613,21 +615,15 @@ module Auditable
     # @param  [String]  elem_audit_id  a string returned by {#audit_id}
     #
     def audited?( elem_audit_id )
-        ret = false
         if @@audited.include?( elem_audit_id )
-            msg = "Skipping, already audited: #{elem_audit_id}"
-            ret = true
+            print_debug 'Skipping, already audited.'
+            true
         elsif !within_scope?
-            msg = 'Skipping, out of instance scope.'
-            ret = true
+            print_debug "Skipping, out of scope (#{scope_audit_id})."
+            true
         else
-            msg = 'Current audit ID: ' + elem_audit_id
-            ret = false
+            false
         end
-
-        print_debug( msg )
-
-        ret
     end
 
     #
