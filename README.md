@@ -431,7 +431,10 @@ You can run `rake spec` to run **all** specs or you can run them selectively usi
     rake spec:reports         # for the reports
     rake spec:path_extractors # for the path extractors
 
-**Note**: _The module specs will take about 90 minutes due to the ones which perform timing attacks._
+**Please be warned**, the core specs will require a beast of a machine due to the
+necessity to test the Grid/multi-Instance features of the system.
+
+**Note**: _The module specs will take about 90 minutes due to the timing-attack tests._
 
 ## Bug reports/Feature requests
 
