@@ -2,6 +2,7 @@ require 'spec_helper'
 
 describe Arachni::Options do
     before( :each ) do
+        ENV['ARACHNI_FRAMEWORK_LOGDIR'] = nil
         @opts = Arachni::Options.instance.reset
         @utils = Arachni::Module::Utilities
     end
@@ -11,6 +12,23 @@ describe Arachni::Options do
         Arachni::Options.url.should_not == url
         Arachni::Options.url = url
         Arachni::Options.url.should == url
+    end
+
+    describe "#dir['logs']" do
+        context 'when the ARACHNI_FRAMEWORK_LOGDIR environment variable' do
+            context 'has been set' do
+                it 'returns its value' do
+                    ENV['ARACHNI_FRAMEWORK_LOGDIR'] = 'test'
+                    described_class.reset
+                    described_class.dir['logs'].should == 'test'
+                end
+            end
+            context 'has not been set' do
+                it 'returns the default location' do
+                    described_class.dir['logs'].should == "#{described_class.dir['root']}logs/"
+                end
+            end
+        end
     end
 
     describe '#no_protocol_for_url' do

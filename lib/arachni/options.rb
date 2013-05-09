@@ -510,7 +510,10 @@ class Options
         @dir['root']    = root_path
         @dir['gfx']     = @dir['root'] + 'gfx/'
         @dir['conf']    = @dir['root'] + 'conf/'
-        @dir['logs']    = @dir['root'] + 'logs/'
+
+        @dir['logs']    = ENV['ARACHNI_FRAMEWORK_LOGDIR'] ?
+            ENV['ARACHNI_FRAMEWORK_LOGDIR'] : @dir['root'] + 'logs/'
+
         @dir['data']    = @dir['root'] + 'data/'
         @dir['modules'] = @dir['root'] + 'modules/'
         @dir['reports'] = @dir['root'] + 'reports/'
