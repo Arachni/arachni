@@ -123,7 +123,7 @@ class Instances
     # @return   [RPC::Client::Instance]
     #
     def grid_spawn( options = {} )
-        options[:grid_size] ||= 2
+        options[:grid_size] ||= 3
 
         last_member = nil
         options[:grid_size].times do |i|

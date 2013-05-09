@@ -223,7 +223,7 @@ describe Arachni::RPC::Server::Framework do
                 data['busy'].nil?.should be_false
                 data['messages'].is_a?( Array ).should be_true
                 data['issues'].should be_any
-                data['instances'].size.should == 2
+                data['instances'].size.should == 3
                 data.should_not include 'errors'
 
                 keys = (keys | %w(current_page)).flatten.sort
@@ -256,7 +256,7 @@ describe Arachni::RPC::Server::Framework do
                             progress( errors: 10 )['errors']
 
                         # errors are per instance
-                        initial_errors.size.should == errors.size + 9
+                        initial_errors.size.should == 800
                     end
                 end
             end

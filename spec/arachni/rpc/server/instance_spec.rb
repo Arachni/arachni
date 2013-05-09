@@ -230,7 +230,7 @@ describe Arachni::RPC::Server::Instance do
                             sleep 1 while instance.service.busy?
 
                             # Since we've only got 2 Dispatchers in the Grid.
-                            instance.framework.progress_data['instances'].size.should == 2
+                            instance.framework.progress_data['instances'].size.should == 3
 
                             instance.service.busy?.should  == instance.framework.busy?
                             instance.service.status.should == instance.framework.status
