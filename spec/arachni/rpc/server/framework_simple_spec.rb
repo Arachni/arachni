@@ -116,13 +116,6 @@ describe Arachni::RPC::Server::Framework do
             @framework_clean.list_modules.should == @framework_clean.lsmod
         end
     end
-    describe '#output' do
-        it 'returns the instance\'s output messages' do
-            output = @framework_clean.output.first
-            output.keys.first.is_a?( Symbol ).should be_true
-            output.values.first.is_a?( String ).should be_true
-        end
-    end
     describe '#run' do
         it 'performs a scan' do
             instance = @instance_clean

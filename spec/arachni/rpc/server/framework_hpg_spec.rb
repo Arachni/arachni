@@ -100,13 +100,6 @@ describe Arachni::RPC::Server::Framework do
             master.framework.master?.should be_true
         end
     end
-    describe '#output' do
-        it 'returns the instance\'s output messages' do
-            output = @framework_clean.output.first
-            output.keys.first.is_a?( Symbol ).should be_true
-            output.values.first.is_a?( String ).should be_true
-        end
-    end
     describe '#run' do
         context 'when Options#restrict_to_paths is set' do
             it 'fails with exception' do
