@@ -20,7 +20,7 @@ describe Arachni::Options do
                 it 'returns its value' do
                     ENV['ARACHNI_FRAMEWORK_LOGDIR'] = 'test'
                     described_class.reset
-                    described_class.dir['logs'].should == 'test'
+                    described_class.dir['logs'].should == 'test/'
                 end
             end
             context 'has not been set' do
