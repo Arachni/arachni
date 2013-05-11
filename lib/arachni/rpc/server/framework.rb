@@ -292,7 +292,7 @@ class Framework < ::Arachni::Framework
     # @see Arachni::Framework#stats
     def stats( *args )
         ss = super( *args )
-        ss.tap { |s| s[:sitemap_size] = @local_sitemap.size } if !solo?
+        ss.tap { |s| s[:sitemap_size] = spider.local_sitemap.size } if !solo?
         ss
     end
 

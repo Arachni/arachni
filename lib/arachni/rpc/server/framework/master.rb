@@ -42,9 +42,6 @@ module Master
         # Instances which have completed their scan.
         @done_slaves      = Set.new
 
-        # Holds the sitemap of this Instance's crawl.
-        @local_sitemap    = Set.new
-
         # Holds the sitemap of the multi-Instance crawl.
         @override_sitemap = Set.new
 
@@ -239,8 +236,6 @@ module Master
                     { page.url => build_elem_list( page ) },
                     @local_token
                 )
-
-                @local_sitemap << page.url
             end
 
             spider.on_complete do

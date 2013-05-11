@@ -124,6 +124,12 @@ class Spider < Arachni::Spider
         true
     end
 
+    # @return   [Hash<String, Integer>]
+    #   URLs crawled by this Instance, along with their HTTP status codes.
+    def local_sitemap
+        @sitemap
+    end
+
     # @return   [Array<String>] Crawled URLs.
     def sitemap
         @distributed_sitemap || super

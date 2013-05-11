@@ -20,6 +20,9 @@ describe Arachni::RPC::Server::Spider do
                 instances.size.should == 5
                 instances.each { |i| i['sitemap_size'].should > 1 }
 
+                instance.framework.stats[:sitemap_size].should ==
+                    instance.spider.local_sitemap.size
+
                 sitemap = instance.spider.sitemap
                 sitemap.size.should == 10051
 
@@ -46,6 +49,8 @@ describe Arachni::RPC::Server::Spider do
                 progress['stats']['sitemap_size'].should == 10051
 
                 instance.spider.sitemap.size.should == progress['stats']['sitemap_size']
+                instance.framework.stats[:sitemap_size].should ==
+                    instance.spider.local_sitemap.size
 
                 sitemap = instance.spider.sitemap
                 sitemap.size.should == progress['stats']['sitemap_size']

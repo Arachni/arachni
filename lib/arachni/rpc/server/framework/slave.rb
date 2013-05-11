@@ -70,14 +70,10 @@ module Slave
         # over duplicate element IDs.
         @elem_ids_filter = LookUp::HashSet.new
 
-        # Holds the sitemap of the local crawl.
-        @local_sitemap   = Set.new
-
         # Process each page as it is crawled.
         # (The crawl will start the first time any Instance pushes paths to us.)
         spider.on_each_page do |page|
             @status = :crawling
-            @local_sitemap << page.url
 
             # Build a list of deduplicated element scope IDs for this page.
             @slave_element_ids_per_page[page.url] ||= []
