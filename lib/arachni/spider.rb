@@ -57,7 +57,7 @@ class Spider
         @sitemap   = {}
         @redirects = []
         @paths     = []
-        @visited   = Set.new
+        @visited   = BloomFilter.new
 
         @on_each_page_blocks     = []
         @on_each_response_blocks = []
