@@ -34,8 +34,7 @@ class Arachni::Cache::Preference < Arachni::Cache::Base
     #
     def store( k, v )
         prune if capped? && (size > max_size - 1)
-
-        cache[k] = v
+        cache[k.hash] = v
     end
 
     def prefer( &block )

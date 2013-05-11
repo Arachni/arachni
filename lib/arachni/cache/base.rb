@@ -39,10 +39,6 @@ class Base
         @cache = {}
     end
 
-    def keys
-        @cache.keys
-    end
-
     def max_size=( max )
         @max_size = if !max
             nil
@@ -83,7 +79,7 @@ class Base
     def store( k, v )
         prune while capped? && (size > max_size - 1)
 
-        cache[k] = v
+        cache[k.hash] = v
     end
 
     # @see {#store}
@@ -100,7 +96,7 @@ class Base
     #   Value for key `k`, `nil` if there is no key `k`.
     #
     def []( k )
-        cache[k]
+        cache[k.hash]
     end
 
     #
@@ -121,7 +117,7 @@ class Base
     # @return   [Bool]
     #   `true` if cache includes an entry for key `k`, false otherwise.
     def include?( k )
-        cache.include?( k )
+        cache.include?( k.hash )
     end
 
     # @return   [Bool]  `true` if cache is empty, false otherwise.
@@ -143,7 +139,7 @@ class Base
     #   Value for key `k`, `nil` if there is no key `k`.
     #
     def delete( k )
-        cache.delete( k )
+        cache.delete( k.hash )
     end
 
     # clears/empties the cache
