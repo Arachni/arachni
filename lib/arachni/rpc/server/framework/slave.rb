@@ -68,7 +68,7 @@ module Slave
 
         # Helps us do some preliminary deduplication on our part to avoid sending
         # over duplicate element IDs.
-        @elem_ids_filter = Arachni::BloomFilter.new
+        @elem_ids_filter = LookUp::HashSet.new
 
         # Holds the sitemap of the local crawl.
         @local_sitemap   = Set.new

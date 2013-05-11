@@ -14,8 +14,13 @@
     limitations under the License.
 =end
 
+require 'set'
+
+module Arachni
+module LookUp
+
 #
-# Lightweight Bloom-filter implementation.
+# Lightweight Set implementation.
 #
 # It uses the return value of the objects' `#persistent_hash` instead of the
 # objects themselves.
@@ -27,7 +32,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-class Arachni::BloomFilter
+class HashSet
 
     def initialize
         @collection = Set.new
@@ -36,7 +41,7 @@ class Arachni::BloomFilter
     #
     # @param    [#persistent_hash] object object to insert
     #
-    # @return   [Arachni::BloomFilter]  self
+    # @return   [HashSet]  self
     #
     def <<( object )
         @collection << calculate_hash( object )
@@ -47,7 +52,7 @@ class Arachni::BloomFilter
     #
     # @param    [#persistent_hash] object object to delete
     #
-    # @return   [Arachni::BloomFilter]  self
+    # @return   [HashSet]  self
     #
     def delete( object )
         @collection.delete( calculate_hash( object ) )
@@ -80,4 +85,7 @@ class Arachni::BloomFilter
     def calculate_hash( object )
         object.is_a?( Integer ) ? object : object.persistent_hash
     end
+end
+
+end
 end

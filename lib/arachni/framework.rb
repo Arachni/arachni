@@ -30,6 +30,7 @@ lib = Options.dir['lib']
 require lib + 'version'
 require lib + 'ruby'
 require lib + 'error'
+require lib + 'lookup'
 require lib + 'cache'
 require lib + 'utilities'
 require lib + 'uri'

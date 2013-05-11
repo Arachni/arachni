@@ -29,6 +29,9 @@
     - Dispatchers automatically load-balance scans. `#dispatch` call returns an
         Instance from the least burdened Grid member by default.
 - `Arachni::Cache` classes now store `#hash` values of keys to preserve space.
+- Added `Arachni::LookUp` namespace to hold look-up optimized data structures.
+    - Renamed `BloomFilter` to 'LookUp::HashSet` since it wasn't a real
+        BloomFilter implementation.
 - Added process helpers for RPC Instance and Dispatcher servers.
     - `Arachni::Processes::Dispatchers` -- Spawns and kills Dispatchers.
     - `Arachni::Processes::Instances` -- Spawns and kills Instances.

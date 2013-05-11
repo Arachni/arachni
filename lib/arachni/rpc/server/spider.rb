@@ -43,7 +43,7 @@ class Spider < Arachni::Spider
         @peers        = {}
         @done_signals = Hash.new( true )
 
-        @distribution_filter   = BloomFilter.new
+        @distribution_filter   = LookUp::HashSet.new
 
         @after_each_run_blocks = []
         @on_first_run_blocks   = []
@@ -233,7 +233,7 @@ class Spider < Arachni::Spider
         urls = dedup( urls )
         return false if urls.empty?
 
-        @first_run ||= Arachni::BloomFilter.new
+        @first_run ||= LookUp::HashSet.new
 
         @routed          ||= {}
         @buffer_size     ||= 0

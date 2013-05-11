@@ -17,7 +17,6 @@
 module Arachni
 
 lib = Options.dir['lib']
-require lib + 'bloom_filter'
 require lib + 'module/utilities'
 require lib + 'issue'
 require lib + 'element/capabilities/mutable'
@@ -48,7 +47,7 @@ module Auditable
     # when calling audit methods to bypass it.
     #
     def self.reset
-        @@audited = BloomFilter.new
+        @@audited = LookUp::HashSet.new
     end
     reset
 
@@ -262,7 +261,7 @@ module Auditable
     end
 
     def self.reset_instance_scope
-        @@restrict_to_elements = BloomFilter.new
+        @@restrict_to_elements = LookUp::HashSet.new
     end
 
     #
@@ -597,7 +596,7 @@ module Auditable
     end
 
     def within_scope?
-        @@restrict_to_elements ||= BloomFilter.new
+        @@restrict_to_elements ||= LookUp::HashSet.new
 
         auditor_override_instance_scope = false
         begin

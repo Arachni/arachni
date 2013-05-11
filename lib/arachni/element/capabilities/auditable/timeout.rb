@@ -14,8 +14,6 @@
     limitations under the License.
 =end
 
-require 'set'
-
 module Arachni::Element::Capabilities
 
 #
@@ -253,10 +251,10 @@ module Auditable::Timeout
         # populated by timing attack phase 1 with
         # candidate elements to be verified by phase 2
         @@timeout_candidates     ||= []
-        @@timeout_candidate_ids  ||= ::Arachni::BloomFilter.new
+        @@timeout_candidate_ids  ||= ::Arachni::LookUp::HashSet.new
 
         @@timeout_candidates_phase3    ||= []
-        @@timeout_candidate_phase3_ids ||= ::Arachni::BloomFilter.new
+        @@timeout_candidate_phase3_ids ||= ::Arachni::LookUp::HashSet.new
 
         # modules which have called the timing attack audit method (audit_timeout)
         # we're interested in the amount, not the names, and is used to

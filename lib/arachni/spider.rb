@@ -18,7 +18,6 @@ module Arachni
 
 lib = Options.dir['lib']
 
-require lib + 'bloom_filter'
 require lib + 'module/utilities'
 require 'nokogiri'
 require lib + 'nokogiri/xml/node'
@@ -57,7 +56,7 @@ class Spider
         @sitemap   = {}
         @redirects = []
         @paths     = []
-        @visited   = BloomFilter.new
+        @visited   = LookUp::HashSet.new
 
         @on_each_page_blocks     = []
         @on_each_response_blocks = []

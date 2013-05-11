@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe Arachni::BloomFilter do
+describe Arachni::LookUp::HashSet do
     before( :all ) do
-        @bf = Arachni::BloomFilter.new
+        @bf = described_class.new
     end
 
     describe '#<<' do
@@ -39,7 +39,7 @@ describe Arachni::BloomFilter do
     describe '#empty?' do
         context 'when empty' do
             it 'returns true' do
-                Arachni::BloomFilter.new.empty?.should be_true
+                described_class.new.empty?.should be_true
             end
         end
         context 'when not empty' do
@@ -51,7 +51,7 @@ describe Arachni::BloomFilter do
 
     describe '#size' do
         it 'returns the size' do
-            bf = Arachni::BloomFilter.new
+            bf = described_class.new
             bf.size.should == 0
             bf << '1'
             bf.size.should == 1
@@ -64,7 +64,7 @@ describe Arachni::BloomFilter do
 
     describe '#clear' do
         it 'empties the list' do
-            bf = Arachni::BloomFilter.new
+            bf = described_class.new
             bf << '1'
             bf << '2'
             bf.size.should == 2

@@ -566,7 +566,7 @@ module Auditor
     # @see #audited
     #
     def self.audited
-        @audited ||= BloomFilter.new
+        @audited ||= LookUp::HashSet.new
     end
 
 end

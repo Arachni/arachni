@@ -16,8 +16,6 @@
 
 module Arachni
 
-require Options.dir['lib'] + 'bloom_filter'
-
 module Element::Capabilities
 
 #
@@ -34,7 +32,7 @@ module Auditable::RDiff
     def self.included( mod )
         # the rdiff attack performs it own redundancy checks so we need this to
         # keep track of audited elements
-        @@rdiff_audited ||= BloomFilter.new
+        @@rdiff_audited ||= LookUp::HashSet.new
     end
 
     RDIFF_OPTIONS =  {
