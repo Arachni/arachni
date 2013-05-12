@@ -20,27 +20,12 @@ module Support::Cache
 #
 # Least Recently Used cache implementation.
 #
-# Generally the most desired mode under normal circumstances, although it does
-# not satisfy low-latency requirements due to the overhead of maintaining entry ages.
-#
-# Discards the least recently used entries in order to make room for new ones.
+# Generally, the most desired mode under most circumstances.
+# Discards the least recently used entries in order to make room for newer ones.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class LeastRecentlyUsed < Base
-
-    # @see Arachni::Cache::Base#initialize
-    def initialize( * )
-        super
-        @lru = []
-    end
-
-    # @see Arachni::Cache::Base#store
-    def store( k, v )
-        super( k, v )
-    ensure
-        renew( k )
-    end
 
     # @see Arachni::Cache::Base#[]
     def []( k )
@@ -49,28 +34,14 @@ class LeastRecentlyUsed < Base
         renew( k )
     end
 
-    # @see Arachni::Cache::Base#delete
-    def delete( k )
-        super( k )
-    ensure
-        @lru.delete( k )
-    end
-
-    # @see Arachni::Cache::Base#clear
-    def clear
-        super
-    ensure
-        @lru.clear
-    end
-
     private
 
     def renew( k )
-        @lru.unshift( @lru.delete( k ) || k )
+        @cache[k] = @cache.delete( k )
     end
 
     def prune
-        delete( @lru.pop )
+        @cache.delete( @cache.first.first )
     end
 
 end
