@@ -4,7 +4,7 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
 
     before :all do
         @url     = web_server_url_for( :rdiff )
-        @auditor = Auditor.new
+        @auditor = Auditor.new( nil, Arachni::Framework.new )
     end
 
     describe '#rdiff_analysis' do

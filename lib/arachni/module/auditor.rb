@@ -207,7 +207,7 @@ module Auditor
         return if issue_limit_reached?
         self.class.issue_counter += issues.size
 
-        Module::Manager.register_results( issues )
+        framework.modules.register_results( issues )
     end
 
     #
@@ -230,15 +230,14 @@ module Auditor
         print_status( "Checking for #{url}" ) if !silent
         remote_file_exist?( url ) do |bool, res|
             print_status( 'Analyzing response for: ' + url ) if !silent
+            next if !bool
 
-            if bool
-                block.call( res ) if block_given?
-                log_remote_file( res )
+            block.call( res ) if block_given?
+            log_remote_file( res )
 
-                # if the file exists let the trainer parse it since it may
-                # contain brand new data to audit
-                framework.trainer.push( res ) if framework
-            end
+            # if the file exists let the trainer parse it since it may
+            # contain brand new data to audit
+            framework.trainer.push( res )
         end
          true
     end
@@ -421,7 +420,8 @@ module Auditor
         )
     end
 
-    # @see Arachni::Module::Base.preferred
+    # @see Arachni::Module::Base#preferred
+    # @see Arachni::Module::Base.prefer
     def preferred
         []
     end
@@ -435,13 +435,11 @@ module Auditor
     # @param    [Arachni::Element]  elem
     #
     def skip?( elem )
-        if framework
-            @modname ||= framework.modules.map { |k, v| k if v == self.class }.compact.first
-            (preferred | [@modname]).each do |mod|
-                next if !framework.modules.include?( mod )
-                issue_id = elem.provisioned_issue_id( framework.modules[mod].info[:name] )
-                return true if framework.modules.issue_set.include?( issue_id )
-            end
+        @modname ||= framework.modules.map { |k, v| k if v == self.class }.compact.first
+        (preferred | [@modname]).each do |mod|
+            next if !framework.modules.include?( mod )
+            issue_id = elem.provisioned_issue_id( framework.modules[mod].info[:name] )
+            return true if framework.modules.issue_set.include?( issue_id )
         end
 
         false

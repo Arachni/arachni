@@ -4,7 +4,7 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
 
     before :all do
         @url = web_server_url_for( :taint )
-        @auditor = Auditor.new
+        @auditor = Auditor.new( nil, Arachni::Framework.new )
 
         @positive = Arachni::Element::Link.new( @url, 'input' => '' )
         @positive.auditor = @auditor

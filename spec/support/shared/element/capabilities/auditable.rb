@@ -14,7 +14,7 @@ shared_examples_for 'auditable' do |options = {}|
 
     before :all do
         @url     = options[:url]
-        @auditor = Auditor.new
+        @auditor = Auditor.new( nil, Arachni::Framework.new )
 
         @auditable = described_class.new( @url + '/submit', 'param' => 'val' )
         @auditable.auditor = @auditor

@@ -32,9 +32,8 @@ module Auditable
     include Utilities
     include Mutable
 
-    # load and include all available analysis/audit techniques
-    lib = File.dirname( __FILE__ ) + '/auditable/*.rb'
-    Dir.glob( lib ).each { |f| require f }
+    # Load and include all available analysis/audit techniques.
+    Dir.glob( File.dirname( __FILE__ ) + '/auditable/*.rb' ).each { |f| require f }
 
     include Taint
     include Timeout
@@ -61,7 +60,7 @@ module Auditable
     attr_accessor :auditor
 
     #
-    # Frozen version of {#auditable}, has all the original name/values
+    # Frozen version of {#auditable}, has all the original name/values.
     #
     # @return   [Hash]
     #
@@ -69,7 +68,7 @@ module Auditable
     alias :original :orig
 
     #
-    # @return [Hash]    audit and general options for convenience's sake
+    # @return [Hash]    Audit and general options for convenience's sake.
     #
     attr_reader   :opts
 
@@ -77,10 +76,10 @@ module Auditable
     # Default audit options.
     #
     OPTIONS = {
-        # Enable skipping of already audited inputs
+        # Enable skipping of already audited inputs.
         redundant: false,
 
-        # Make requests asynchronously
+        # Make requests asynchronously.
         async:     true,
 
         #
@@ -101,6 +100,9 @@ module Auditable
         self.auditor = Class.new do
             include Arachni::Module::Auditor
 
+            def initialize
+                @framework = Arachni::Framework.new
+            end
             #
             # @return   [Array<Issue>]  Unfiltered logged issues.
             #
@@ -150,7 +152,7 @@ module Auditable
     #
     # @note Will convert keys and values to strings.
     #
-    # @see auditable
+    # @see #auditable
     #
     def auditable=( hash )
         @auditable = (hash || {}).inject({}) { |h, (k, v)| h[k.to_s] = v.to_s.freeze; h}
@@ -613,6 +615,8 @@ module Auditable
     #
     # @param  [String]  elem_audit_id  a string returned by {#audit_id}
     #
+    # @see #audited
+    #
     def audited?( elem_audit_id )
         if @@audited.include?( elem_audit_id )
             print_debug 'Skipping, already audited.'
@@ -626,14 +630,15 @@ module Auditable
     end
 
     #
-    # Registers an audit
+    # Registers an audited element to avoid duplicate audits.
     #
-    # @param  [String]  audit_id  a string returned by {#audit_id}
+    # @param  [String]  audit_id  {#audit_id Audit ID}.
+    #
+    # @see #audited?
     #
     def audited( audit_id )
         @@audited << audit_id
     end
-
     def self.audited
         @@audited
     end

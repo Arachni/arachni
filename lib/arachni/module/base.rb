@@ -46,7 +46,7 @@ class Base
     # @param  [Page]  page
     # @param  [Arachni::Framework]  framework
     #
-    def initialize( page, framework = nil )
+    def initialize( page, framework )
         http.update_cookies( page.cookiejar )
 
         @page       = page

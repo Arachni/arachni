@@ -4,7 +4,7 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
 
     before :all do
         @url     = web_server_url_for( :timeout )
-        @auditor = Auditor.new
+        @auditor = Auditor.new( nil, Arachni::Framework.new )
 
         inputs = { 'sleep' => '' }
 

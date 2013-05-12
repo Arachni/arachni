@@ -22,6 +22,16 @@
         - Removed the concept of issue summaries -- were used for lightweight
             transmission of issue data for real-time feedback. Instead, full issues
             are being buffered and flushed to the master after each page is audited.
+- `Module::Auditor`
+    - Having access to the `Framework` is now required and guaranteed.
+- `Element::Capabilities::Auditable`
+    - `#anonymous_auditor` now instantiates a `Framework`.
+- `Module::Manager`
+    - Code cleanup.
+    - Removed `@@` vars.
+- `Plugin::Manager`
+    - Code cleanup.
+    - Removed `@@` vars.
 - `Spider`
     - Paths-list synchronized using a `Mutex` to prevent issues when running as
         part of a multi-Instance operation.

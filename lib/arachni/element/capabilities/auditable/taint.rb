@@ -52,8 +52,8 @@ module Auditable::Taint
         ignore:    nil
     }
 
-    REMARK = "This issue was identified by a pattern but the pattern matched " +
-            "the page's response body even before auditing the logged element."
+    REMARK = 'This issue was identified by a pattern but the pattern matched ' <<
+            'the page\'s response body even before auditing the logged element.'
 
     #
     # Performs taint analysis and logs an issue should there be one.

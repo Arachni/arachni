@@ -468,7 +468,7 @@ describe Arachni::Module::Auditor do
 
                         # audit until no more new elements appear
                         while page = pages.pop
-                            auditor = Arachni::Module::Base.new( page )
+                            auditor = Arachni::Module::Base.new( page, @framework )
                             auditor.audit( @seed )
                             # run audit requests
                             @framework.http.run
@@ -494,7 +494,7 @@ describe Arachni::Module::Auditor do
 
                         # audit until no more new elements appear
                         while page = pages.pop
-                            auditor = Arachni::Module::Base.new( page )
+                            auditor = Arachni::Module::Base.new( page, @framework )
                             auditor.audit( @seed, train: true )
                             # run audit requests
                             @framework.http.run
@@ -519,7 +519,7 @@ describe Arachni::Module::Auditor do
                         # feed the new pages/elements back to the queue
                         @framework.trainer.on_new_page { |p| updated_pages << p }
 
-                        auditor = Arachni::Module::Base.new( page )
+                        auditor = Arachni::Module::Base.new( page, @framework )
                         auditor.audit( @seed, train: false )
                         @framework.http.run
                         updated_pages.should be_empty
