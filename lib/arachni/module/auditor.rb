@@ -566,7 +566,7 @@ module Auditor
     # @see #audited
     #
     def self.audited
-        @audited ||= LookUp::HashSet.new
+        @audited ||= Support::LookUp::HashSet.new
     end
 
 end

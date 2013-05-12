@@ -56,7 +56,7 @@ class Spider
         @sitemap   = {}
         @redirects = []
         @paths     = []
-        @visited   = LookUp::HashSet.new
+        @visited   = Support::LookUp::HashSet.new
 
         @on_each_page_blocks     = []
         @on_each_response_blocks = []

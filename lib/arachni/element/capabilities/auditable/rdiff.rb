@@ -32,7 +32,7 @@ module Auditable::RDiff
     def self.included( mod )
         # the rdiff attack performs it own redundancy checks so we need this to
         # keep track of audited elements
-        @@rdiff_audited ||= LookUp::HashSet.new
+        @@rdiff_audited ||= Support::LookUp::HashSet.new
     end
 
     RDIFF_OPTIONS =  {

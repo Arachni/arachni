@@ -5,8 +5,10 @@ describe Arachni::RPC::Server::Spider do
     context 'when using' do
         context 'multiple nodes' do
             it 'performs a crawl using multiple nodes' do
+                #Arachni::Processes::Manager.preserve_output
                 instance = instance_spawn
 
+                #Arachni::Processes::Manager.discard_output
                 instance.service.scan(
                     url:            web_server_url_for( :spider ) + '/lots_of_paths',
                     spawns:         4,

@@ -66,10 +66,6 @@ module Slave
         # This is our buffer for that list.
         @slave_element_ids_per_page = Hash.new
 
-        # Helps us do some preliminary deduplication on our part to avoid sending
-        # over duplicate element IDs.
-        @elem_ids_filter = LookUp::HashSet.new
-
         # Process each page as it is crawled.
         # (The crawl will start the first time any Instance pushes paths to us.)
         spider.on_each_page do |page|
@@ -78,8 +74,6 @@ module Slave
             # Build a list of deduplicated element scope IDs for this page.
             @slave_element_ids_per_page[page.url] ||= []
             build_elem_list( page ).each do |id|
-                next if @elem_ids_filter.include?( id )
-                @elem_ids_filter << id
                 @slave_element_ids_per_page[page.url] << id
             end
         end
@@ -103,8 +97,8 @@ module Slave
         end
 
         # Buffer for logged issues that are to be sent to the master.
-        @issue_buffer = Buffer::AutoFlush.new( ISSUE_BUFFER_SIZE,
-                                               ISSUE_BUFFER_FILLUP_ATTEMPTS )
+        @issue_buffer = Support::Buffer::AutoFlush.new( ISSUE_BUFFER_SIZE,
+                                                        ISSUE_BUFFER_FILLUP_ATTEMPTS )
 
         # When the buffer gets flushed, send its contents to the master.
         @issue_buffer.on_flush { |buffer| send_issues_to_master( buffer ) }

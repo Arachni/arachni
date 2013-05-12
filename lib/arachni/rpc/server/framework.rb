@@ -19,7 +19,6 @@ require 'tempfile'
 module Arachni
 
 lib = Options.dir['lib']
-require lib + 'buffer'
 require lib + 'framework'
 require lib + 'rpc/server/spider'
 require lib + 'rpc/server/module/manager'

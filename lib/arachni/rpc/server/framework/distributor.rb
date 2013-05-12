@@ -161,10 +161,19 @@ module Distributor
     def build_elem_list( page )
         list = []
 
+        # Helps us do some preliminary deduplication on our part to avoid sending
+        # over duplicate element IDs.
+        @elem_ids_filter ||= Support::LookUp::HashSet.new
+
         scoppe_list = proc do |elems|
             elems.map do |e|
                 next if e.auditable.empty?
-                e.scope_audit_id
+
+                id = e.scope_audit_id
+                next if @elem_ids_filter.include?( id )
+                @elem_ids_filter << id
+
+                id
             end.compact.uniq
         end
 

@@ -30,8 +30,6 @@ require lib + 'component/manager'
 #
 # Analyzes HTML code extracting forms, links and cookies depending on user opts.
 #
-# It grabs **all** element attributes not just URLs and parameters.
-# All URLs are converted to absolute and URLs outside the scope of the scan are
 # ignored.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>

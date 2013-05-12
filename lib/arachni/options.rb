@@ -522,6 +522,7 @@ class Options
         @dir['path_extractors'] = @dir['root'] + 'path_extractors/'
 
         @dir['lib']     = @dir['root'] + 'lib/arachni/'
+        @dir['support'] = @dir['lib'] + 'support/'
         @dir['mixins']  = @dir['lib'] + 'mixins/'
         @dir['arachni'] = @dir['lib'][0...-1]
 
@@ -679,7 +680,7 @@ class Options
         return if !url
 
         require @dir['lib'] + 'ruby'
-        require @dir['lib'] + 'cache'
+        require @dir['lib'] + 'support'
         require @dir['lib'] + 'utilities'
 
         parsed = Utilities.uri_parse( url.to_s )

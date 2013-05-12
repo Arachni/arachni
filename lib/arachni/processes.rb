@@ -16,10 +16,14 @@
 
 require 'singleton'
 require 'ostruct'
-require Arachni::Options.dir['lib'] + 'rpc/client/instance'
-require Arachni::Options.dir['lib'] + 'rpc/server/instance'
-require Arachni::Options.dir['lib'] + 'rpc/client/dispatcher'
-require Arachni::Options.dir['lib'] + 'rpc/server/dispatcher'
-require Arachni::Options.dir['lib'] + 'processes/manager'
-require Arachni::Options.dir['lib'] + 'processes/dispatchers'
-require Arachni::Options.dir['lib'] + 'processes/instances'
+
+lib = Arachni::Options.dir['lib']
+require lib + 'rpc/client/instance'
+require lib + 'rpc/server/instance'
+require lib + 'rpc/client/dispatcher'
+require lib + 'rpc/server/dispatcher'
+
+lib = Arachni::Options.dir['lib'] + 'processes/'
+require lib + 'manager'
+require lib + 'dispatchers'
+require lib + 'instances'

@@ -27,8 +27,8 @@ module Arachni
 module ElementFilter
     include Utilities
 
-    @@forms    ||= LookUp::HashSet.new
-    @@links    ||= LookUp::HashSet.new
+    @@forms    ||= Support::LookUp::HashSet.new
+    @@links    ||= Support::LookUp::HashSet.new
     @@cookies  ||= Set.new
 
     def self.reset

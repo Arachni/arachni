@@ -72,11 +72,11 @@ class URI
 
     CACHE = {
         parser:      ::URI::Parser.new,
-        ruby_parse:  Cache::RandomReplacement.new( CACHE_SIZES[:ruby_parse] ),
-        parse:       Cache::RandomReplacement.new( CACHE_SIZES[:parse] ),
-        cheap_parse: Cache::RandomReplacement.new( CACHE_SIZES[:cheap_parse] ),
-        normalize:   Cache::RandomReplacement.new( CACHE_SIZES[:normalize] ),
-        to_absolute: Cache::RandomReplacement.new( CACHE_SIZES[:to_absolute] )
+        ruby_parse:  Support::Cache::RandomReplacement.new( CACHE_SIZES[:ruby_parse] ),
+        parse:       Support::Cache::RandomReplacement.new( CACHE_SIZES[:parse] ),
+        cheap_parse: Support::Cache::RandomReplacement.new( CACHE_SIZES[:cheap_parse] ),
+        normalize:   Support::Cache::RandomReplacement.new( CACHE_SIZES[:normalize] ),
+        to_absolute: Support::Cache::RandomReplacement.new( CACHE_SIZES[:to_absolute] )
     }
 
     # @return [URI::Parser] cached URI parser
