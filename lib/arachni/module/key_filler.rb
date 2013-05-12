@@ -28,58 +28,45 @@ module Arachni::Module
 #
 class KeyFiller
 
-    # Hash of regexps for the parameter keys
-    # and the values to to fill in
-    #
-    # @return  [Hash]
-    #
-    @@regexps = {
-        'name'    => 'arachni_name',
-        'user'    => 'arachni_user',
-        'usr'     => 'arachni_user',
-        'pass'    => '5543!%arachni_secret',
-        'txt'     => 'arachni_text',
-        'num'     => '132',
-        'amount'  => '100',
-        'mail'    => 'arachni@email.gr',
-        'account' => '12',
-        'id'      => '1'
-    }
-
+    # @return [Hash<Regexp, String>]
+    #   Patterns for parameter names and the values to to fill in.
     def self.regexps
-        @@regexps
+        @regexps ||= {
+            /name/i    => 'arachni_name',
+            /user/i    => 'arachni_user',
+            /usr/i     => 'arachni_user',
+            /pass/i    => '5543!%arachni_secret',
+            /txt/i     => 'arachni_text',
+            /num/i     => '132',
+            /amount/i  => '100',
+            /mail/i    => 'arachni@email.gr',
+            /account/i => '12',
+            /id/i      => '1'
+        }
     end
 
     #
-    # Tries to fill a hash with values of appropriate type<br/>
-    # based on the key of the parameter.
+    # Tries to fill a hash with values of appropriate type based on the key of
+    # the parameter.
     #
-    # @param  [Hash]  hash   hash of name=>value pairs
+    # @param  [Hash]  parameters   Parameters hash.
     #
     # @return   [Hash]
     #
-    def self.fill( hash )
-        hash = hash.dup
-        hash.keys.each do |key|
-            next if hash[key] && !hash[key].empty?
-
-            if val = self.match?( key )
-                hash[key] = val
-            end
-
+    def self.fill( parameters )
+        parameters = parameters.dup
+        parameters.each do |k, v|
+            next if !v.to_s.empty?
             # moronic default value...
             # will figure  out something better in the future...
-            hash[key] = '1' if( !hash[key] || hash[key].empty? )
+            parameters[k] = name_to_value( k, '1' )
         end
-
-        hash
+        parameters
     end
 
-    private
-
-    def self.match?( str )
-      @@regexps.keys.each { |key| return @@regexps[key] if str =~ Regexp.new( key, 'i' ) }
-      false
+    def self.name_to_value( name, default = nil )
+        regexps.each { |k, v| return v if name =~ k }
+        default
     end
 
 end

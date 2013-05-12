@@ -28,6 +28,7 @@
     - `#anonymous_auditor` now instantiates a `Framework`.
 - Cleaned up and removed `@@` vars from:
     - `Module::Manager`
+    - `Module::KeyFiller`
     - `Plugin::Manager`
     - `Parser`
 - `Spider`
