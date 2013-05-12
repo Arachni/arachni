@@ -26,12 +26,10 @@
     - Having access to the `Framework` is now required and guaranteed.
 - `Element::Capabilities::Auditable`
     - `#anonymous_auditor` now instantiates a `Framework`.
-- `Module::Manager`
-    - Code cleanup.
-    - Removed `@@` vars.
-- `Plugin::Manager`
-    - Code cleanup.
-    - Removed `@@` vars.
+- Cleaned up and removed `@@` vars from:
+    - `Module::Manager`
+    - `Plugin::Manager`
+    - `Parser`
 - `Spider`
     - Paths-list synchronized using a `Mutex` to prevent issues when running as
         part of a multi-Instance operation.

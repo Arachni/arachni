@@ -317,16 +317,14 @@ class Parser
     private
 
     #
-    # Runs all Spider (path extraction) modules and returns an array of paths
+    # Runs all path extraction components and returns an array of paths.
     #
-    # @return   [Array]   paths
+    # @return   [Array<String>]   Paths.
     #
     def run_extractors
         begin
-            @@manager ||= Component::Manager.new( @opts.dir['path_extractors'], Extractors )
-
-            return @@manager.available.map do |name|
-                    exception_jail( false ){ @@manager[name].new.run( doc ) }
+            return self.class.extractors.available.map do |name|
+                    exception_jail( false ){ self.class.extractors[name].new.run( doc ) }
                 end.flatten.uniq.compact.
                 map { |path| to_absolute( path ) }.compact.uniq.
                 reject { |path| skip?( path ) }
@@ -334,6 +332,10 @@ class Parser
             print_error e.to_s
             print_error_backtrace e
         end
+    end
+
+    def self.extractors
+        @manager ||= Component::Manager.new( Options.dir['path_extractors'], Extractors )
     end
 
 end
