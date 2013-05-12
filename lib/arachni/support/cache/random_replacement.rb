@@ -20,8 +20,7 @@ module Support::Cache
 #
 # Random Replacement cache implementation.
 #
-# Better suited for low-latency operations, discards entries at random
-# in order to make room for new ones.
+# Discards entries at random in order to make room for new ones.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
