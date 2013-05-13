@@ -1,5 +1,4 @@
 require 'spec_helper'
-require_testee
 
 describe Arachni::Support::Database::Hash do
 
