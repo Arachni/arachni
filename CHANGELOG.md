@@ -26,6 +26,8 @@
     - Having access to the `Framework` is now required and guaranteed.
 - `Element::Capabilities::Auditable`
     - `#anonymous_auditor` now instantiates a `Framework`.
+    - Added `#skip_like` method to be passed blocks deciding what elements should
+        be audited.
 - Cleaned up and removed `@@` vars from:
     - `Module::Manager`
     - `Module::KeyFiller`

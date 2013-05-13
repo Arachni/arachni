@@ -31,6 +31,17 @@ shared_examples_for 'auditable' do |options = {}|
         @default_input_value = @auditable.auditable['param']
     end
 
+    describe '#skip_like' do
+        it 'skips elements based on the block\'s return value' do
+            (@auditable.audit( 'seed' ){}).should be_true
+            Arachni::Element::Capabilities::Auditable.reset
+            Arachni::Element::Capabilities::Auditable.skip_like do |element|
+                element.action.end_with? '/submit'
+            end
+            (@auditable.audit( 'seed' ){}).should be_false
+        end
+    end
+
     describe '#use_anonymous_auditor' do
         it 'uses an anonymous auditor' do
             elem = auditable.new( @url, 'param' => 'val' )

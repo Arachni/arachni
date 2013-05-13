@@ -46,7 +46,8 @@ module Auditable
     # when calling audit methods to bypass it.
     #
     def self.reset
-        @@audited = Support::LookUp::HashSet.new
+        @@audited          = Support::LookUp::HashSet.new
+        @@skip_like_blocks = []
     end
     reset
 
@@ -301,6 +302,16 @@ module Auditable
         elements.each { |elem| @@restrict_to_elements << elem }
     end
 
+    # @param    [Block] block
+    #   Block to decide whether an element should be skipped or not.
+    #
+    # @return   [Auditable] `self`
+    def self.skip_like( &block )
+        fail 'Missing block.' if !block_given?
+        skip_like_blocks << block
+        self
+    end
+
     #
     # Must be implemented by the including class and perform the appropriate
     # HTTP request (get/post/whatever) for the current element.
@@ -333,6 +344,7 @@ module Auditable
         self.auditable = @orig.dup
     end
 
+    # Removes the {#auditor} from this element.
     def remove_auditor
         @auditor = nil
     end
@@ -363,10 +375,6 @@ module Auditable
         http_request( opts, &block )
     end
 
-    def skip_path?( url )
-        super || redundant_path?( url )
-    end
-
     #
     # Submits mutations of self and calls the block to handle the responses.
     #
@@ -384,12 +392,29 @@ module Auditable
     #
     #     The block will be called as soon as the HTTP response is received.
     #
+    # @return   [Boolean]
+    #   `true` if the audit was successful, `false` if:
+    #
+    #    * There are no {#auditable} inputs.
+    #    * The {#action} matches a {@skip_path? skip} rule.
+    #    * The element has already been audited and the `:redundant` option
+    #       is `false` -- the default.
+    #    * The element matches a {#skip_like} block.
+    #
+    # @raise    ArgumentError   On missing `block`.
+    #
     # @see #submit
     #
     def audit( injection_str, opts = { }, &block )
-        fail 'Block required.' if !block_given?
+        fail ArgumentError, 'Missing block.' if !block_given?
 
         print_debug "About to audit: #{audit_id}"
+
+        # If we don't have any auditable elements just return.
+        if auditable.empty?
+            print_debug 'The element has no auditable inputs.'
+            return false
+        end
 
         if skip_path?( self.action )
             print_debug "Element's action matches skip rule, bailing out."
@@ -398,12 +423,6 @@ module Auditable
 
         opts[:injected_orig] = injection_str
 
-        # if we don't have any auditable elements just return
-        if auditable.empty?
-            print_debug 'The element has no auditable inputs.'
-            return false
-        end
-
         @auditor ||= opts[:auditor]
         opts[:auditor] ||= @auditor
         use_anonymous_auditor if !@auditor
@@ -411,7 +430,12 @@ module Auditable
         audit_id = audit_id( injection_str, opts )
         return false if !opts[:redundant] && audited?( audit_id )
 
-        # iterate through all variation and audit each one
+        if matches_skip_like_blocks?
+            print_debug 'Element matches one or more skip_like blocks, skipping.'
+            return false
+        end
+
+        # Iterate over all fuzz variations and audit each one.
         mutations( injection_str, opts ).each do |elem|
 
             if Options.exclude_vectors.include?( elem.altered )
@@ -424,6 +448,7 @@ module Auditable
                 print_debug "Auditor's #skip? method returned true for mutation, skipping: #{mid}"
                 next
             end
+
             if skip?( elem )
                 mid = elem.audit_id( injection_str, opts )
                 print_debug "Self's #skip? method returned true for mutation, skipping: #{mid}"
@@ -433,7 +458,7 @@ module Auditable
             opts[:altered] = elem.altered.dup
             opts[:element] = type
 
-            # inform the user about what we're auditing
+            # Inform the user about what we're auditing.
             print_status( elem.status_string ) if !opts[:silent]
 
             if opts[:each_mutation]
@@ -444,14 +469,21 @@ module Auditable
                 end
             end
 
-            # submit the element with the injection values
+            # Submit the element with the injection values.
             on_complete( elem.submit( opts ), elem, &block )
         end
 
-        audited( audit_id )
+        audited audit_id
         true
     end
 
+    # @note To be overridden by auditable element implementations for more
+    #   fine-grained audit control.
+    #
+    # @return   [Boolean]
+    #   `true` if `self` should be audited, `false` otherwise.
+    #
+    # @abstract
     def skip?( elem )
         false
     end
@@ -467,8 +499,11 @@ module Auditable
     end
 
     #
-    # Returns an audit ID string used to avoid redundant audits or identify
-    # the element.
+    # Returns an audit ID string used to identify the audit of `self` by its
+    # {#auditor}.
+    #
+    # @note Mostly used to keep track of what audits have been perform in order
+    #   to prevent redundancies.
     #
     # @param  [String]  injection_str
     # @param  [Hash]    opts
@@ -488,21 +523,23 @@ module Auditable
         str
     end
 
-    #
     # @note Mainly used by {Arachni::Module::Auditor#skip?} to prevent redundant
     #   audits for elements/issues which have already been logged as vulnerable.
     #
     # @return   [String]
     #   Predicts what the {Issue#unique_id} of an issue would look like,
-    #   should self be vulnerable.
-    #
+    #   should `self` be vulnerable.
     def provisioned_issue_id( auditor_fanxy_name = @auditor.fancy_name )
         "#{auditor_fanxy_name}::#{type}::#{altered}::#{self.action.split( '?' ).first}"
     end
 
-    # impersonate the auditor to the output methods
-    def info
-        !orphan? ? @auditor.class.info : { name: '' }
+    # @return [Boolean]
+    #   `true` if the element matches one or more {#skip_like_blocks},
+    #   `false` otherwise.
+    #
+    # @see #skip_like_blocks
+    def matches_skip_like_blocks?
+        Arachni::Element::Capabilities::Auditable.matches_skip_like_blocks?( self )
     end
 
     #
@@ -550,6 +587,15 @@ module Auditable
     end
 
     private
+
+    def skip_path?( url )
+        super || redundant_path?( url )
+    end
+
+    # impersonate the auditor to the output methods
+    def info
+        !orphan? ? @auditor.class.info : { name: '' }
+    end
 
     #
     # Registers a block to be executed as soon as the Typhoeus request (reg)
@@ -641,6 +687,15 @@ module Auditable
     end
     def self.audited
         @@audited
+    end
+
+    def self.skip_like_blocks
+        @@skip_like_blocks
+    end
+
+    def self.matches_skip_like_blocks?( element )
+        skip_like_blocks.each { |b| return true if b.call( element ) }
+        false
     end
 
     def rehash
