@@ -42,10 +42,12 @@
     - Added `Support::LookUp` namespace to hold look-up optimized data structures.
         - Renamed `BloomFilter` to 'Support::LookUp::HashSet` since it wasn't a real
             BloomFilter implementation.
-- Added process helpers for RPC Instance and Dispatcher servers.
-    - `Arachni::Processes::Dispatchers` -- Spawns and kills Dispatchers.
-    - `Arachni::Processes::Instances` -- Spawns and kills Instances.
-    - `Arachni::Processes::Manager` -- Forks and kills processes.
+- Added:
+    - `IO#tail` -- Returns a specified amount of lines from the bottom of a file.
+    - Process helpers for RPC Instance and Dispatcher servers.
+        - `Arachni::Processes::Dispatchers` -- Spawns and kills Dispatchers.
+        - `Arachni::Processes::Instances` -- Spawns and kills Instances.
+        - `Arachni::Processes::Manager` -- Forks and kills processes.
 - RSpec tests
     - Major cleanup, using the aforementioned process helpers to remove duplicate code.
     - Moved supporting components under `spec/support/`.
