@@ -148,18 +148,12 @@ class Framework < ::Arachni::Framework
         prepare
 
         # Start the scan  -- we can't block the RPC server so we're using a Thread.
+        Thread.abort_on_exception = true
         Thread.new do
-            # If we're in HPG mode (and we're the master) do fancy stuff like
-            # distributing and balancing workload as well as starting slave
-            # instances and deal with some lower level operations of the local
-            # instance like running plug-ins etc.
-            if master?
-                master_run
-            elsif slave?
-                slave_run
+            if !solo?
+                multi_run
             else
-                audit
-                clean_up
+                super
             end
         end
 

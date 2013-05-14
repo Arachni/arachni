@@ -250,6 +250,14 @@ module MultiInstance
 
     private
 
+    def multi_run
+        if master?
+            master_run
+        elsif slave?
+            slave_run
+        end
+    end
+
     def ignore_grid?
         !!@ignore_grid
     end
