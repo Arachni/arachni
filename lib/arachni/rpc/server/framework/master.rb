@@ -42,9 +42,6 @@ module Master
         # Instances which have completed their scan.
         @done_slaves      = Set.new
 
-        # Holds the sitemap of the multi-Instance crawl.
-        @override_sitemap = Set.new
-
         # Holds element IDs for each page to be used as a representation of the
         # the audit workload that will need to be distributed.
         @element_ids_per_page = {}
@@ -239,9 +236,6 @@ module Master
             end
 
             spider.on_complete do
-                # Get the sitemap of the distributed crawl.
-                @override_sitemap |= spider.sitemap
-
                 # Guess what we're doing now...
                 @status = :distributing
 
@@ -250,7 +244,6 @@ module Master
                 page_a = []
                 while !@page_queue.empty? && page = @page_queue.pop
                     page_a << page
-                    @override_sitemap << page.url
                     update_element_ids_per_page(
                         { page.url => build_elem_list( page ) },
                         @local_token
@@ -328,7 +321,7 @@ module Master
     end
 
     def auditstore_sitemap
-        (@override_sitemap || []) | @sitemap
+        spider.sitemap
     end
 
 end
