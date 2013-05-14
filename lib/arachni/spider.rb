@@ -55,7 +55,7 @@ class Spider
 
         @sitemap   = {}
         @redirects = []
-        @paths     = []
+        @paths     = Set.new
         @visited   = Support::LookUp::HashSet.new
 
         @on_each_page_blocks     = []
@@ -75,12 +75,11 @@ class Spider
         @opts.url
     end
 
-    # @return   [Array<String>]
+    # @return   [Set<String>]
     #   Working paths, paths that haven't yet been followed.
-    #   You'll actually get a copy of the working paths and not the actual
-    #   object itself; if you want to add more paths use {#push}.
+    #   If you want to add more paths use {#push}.
     def paths
-        @paths.clone
+        @paths
     end
 
     # @return   [Array<String>] list of crawled URLs
@@ -197,10 +196,10 @@ class Spider
 
         synchronize do
             @paths |= paths
-            @paths.uniq!
         end
 
          # REVIEW: This may cause segfaults, Typhoeus::Hydra doesn't like threads.
+        Thread.abort_on_exception = true
         Thread.new { run } if wakeup && !running? # wake up the crawler
         true
     end
@@ -236,6 +235,18 @@ class Spider
 
     private
 
+    def dedup( paths )
+        return [] if !paths || paths.empty?
+
+        [paths].flatten.map do |path|
+            next if !path
+            path = to_absolute( path, url )
+            next if !path || skip?( path )
+
+            path
+        end.compact
+    end
+
     def next_url
         synchronize { @paths.shift }
     end
@@ -249,10 +260,8 @@ class Spider
     end
 
     def seed_paths
-        synchronize do
-            @paths |= dedup( url )
-            @paths |= dedup( @opts.extend_paths )
-        end
+        push( url, false )
+        push( @opts.extend_paths, false )
     end
 
     def call_on_each_page_blocks( obj )
@@ -344,13 +353,6 @@ class Spider
 
         @auto_redundant[h] += 1
         false
-    end
-
-    def dedup( paths )
-        return [] if !paths || paths.empty?
-
-        [paths].flatten.uniq.compact.map { |p| to_absolute( p, url ) }.
-            reject { |p| skip?( p ) }.uniq.compact
     end
 
     def wait_if_paused

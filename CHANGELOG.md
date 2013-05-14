@@ -7,6 +7,8 @@
         - `:resume!` -- Only use `resume` from now on.
         - `:pause!` -- Only use `pause` from now on.
         - `:clean_up!` -- Only use `clean_up` from now on.
+- `Spider`
+    - Optimized path de-duplication.
 - Multi-Instance scans
     - `RPC::Server::Framework`
         - General code cleanup.
@@ -22,6 +24,8 @@
         - Removed the concept of issue summaries -- were used for lightweight
             transmission of issue data for real-time feedback. Instead, full issues
             are being buffered and flushed to the master after each page is audited.
+    - `RPC::Server::Spider`
+        - Updated buffering strategy to reduce RPC calls.
 - `Module::Auditor`
     - Having access to the `Framework` is now required and guaranteed.
 - `Element::Capabilities::Auditable`
