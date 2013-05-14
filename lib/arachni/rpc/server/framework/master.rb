@@ -285,6 +285,7 @@ module Master
                 end
 
                 # Start the master/local Instance's audit.
+                Thread.abort_on_exception = true
                 Thread.new {
                     audit
 
@@ -297,7 +298,10 @@ module Master
             end
 
             # Let crawlers know of each other and start the scan.
-            spider.update_peers( @instances ){ Thread.new { spider.run } }
+            spider.update_peers( @instances ) do
+                Thread.abort_on_exception = true
+                Thread.new { spider.run }
+            end
         end
 
         # Get the Dispatchers with unique Pipe IDs in order to take advantage of
