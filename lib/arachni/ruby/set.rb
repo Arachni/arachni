@@ -17,7 +17,7 @@
 require 'set'
 
 class Set
-    def pop
+    def shift
         return if @hash.empty?
 
         key = @hash.first.first
