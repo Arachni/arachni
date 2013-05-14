@@ -94,6 +94,7 @@ Gem::Specification.new do |s|
     s.add_development_dependency 'rspec'
 
     # For test mini-servers.
+    s.add_development_dependency 'thin'
     s.add_development_dependency 'sinatra',         '~> 1.3.2'
     s.add_development_dependency 'sinatra-contrib', '~> 1.3.1'
 
