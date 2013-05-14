@@ -1,5 +1,4 @@
 require 'sinatra'
-set :logging, false
 
 get '/vulnerable' do
     params.values.to_s
