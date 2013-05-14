@@ -43,7 +43,7 @@ class Spider < Arachni::Spider
         @peers        = {}
         @done_signals = Hash.new( true )
 
-        @distribution_filter   = Support::LookUp::HashSet.new
+        @distribution_filter   = Support::LookUp::Moolb.new
 
         @after_each_run_blocks = []
         @on_first_run_blocks   = []
