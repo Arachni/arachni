@@ -20,8 +20,8 @@ module RPC
 class Server
 
 #
-#
-# Extends the regular {Arachni::Spider} with high-performance distributed capabilities.
+# Extends the regular {Arachni::Spider} with high-performance distributed
+# capabilities.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
@@ -90,7 +90,8 @@ class Spider < Arachni::Spider
     # Updates the list of Instances to assist in the crawl.
     #
     # @param    [Array<Hash>]  peers
-    #   Array containing Instance info hashes -- with `:url` and `:token` at least.
+    #   Array containing Instance info hashes -- with `:url` and `:token`
+    #   at least.
     #
     # @param    [Block] block
     #   Block to be called once the update operation has completed.
@@ -107,6 +108,9 @@ class Spider < Arachni::Spider
         @peers[framework.self_url] = framework
 
         @peers = Hash[@peers.sort]
+
+        @peer_urls    = @peers.keys
+        @peer_clients = @peers.values
 
         if !master?
             block.call if block_given?
@@ -159,6 +163,32 @@ class Spider < Arachni::Spider
 
     private
 
+    # @return   [RPC::Client::Instance] Peer to handle the given item.
+    def route_item_to_client( item )
+        @peers[route_item_to_url( item )]
+    end
+
+    # @return   [RPC::Client::Instance]
+    #   URL of the peer to handle the given item.
+    def route_item_to_url( item )
+        return peer_urls.first if @peers.size == 1
+
+        peer_urls[item.to_s.persistent_hash.modulo( peer_urls.size )]
+    end
+
+    # @return   [Array<String>] Sorted peer URLs.
+    def peer_urls
+        @peer_urls
+    end
+
+    # @return   [Array<Arachni::RPC::Client::Instance>] Sorted peer clients.
+    def peer_clients
+        @peer_clients
+    end
+
+    # Collects sitemaps from all peers.
+    #
+    # @param    [Block] block Block to be passed the merged sitemap.
     def collect_sitemaps( &block )
         local_sitemap = sitemap
 
@@ -183,29 +213,48 @@ class Spider < Arachni::Spider
         @after_each_run_blocks.each( &:call )
     end
 
+    # @param    [String]    url    URL of the peer to set as not done.
     def peer_not_done( url )
         @done_signals[url] = false
         true
     end
 
+    #
+    # Checks whether or not the master and its slaves have finished.
+    # If so, it collects the sitemaps and calls `on_complete` callbacks.
+    #
+    # @return   [Boolean]
+    #   `true` if all peers were done and it proceeded to processing the
+    #   results, `false` if the crawl is still in progress.
+    #
     def master_done_handler
         return if !master? || !done? || !slaves_done?
 
-        # really make sure all slaves are done
+        # Really make sure all slaves are done.
         if_slaves_done do
             collect_sitemaps do |aggregate_sitemap|
                 @distributed_sitemap = aggregate_sitemap
                 call_on_complete_blocks
             end
         end
+
+        true
     end
 
+    # @param  [Block]   block
+    #   Block to call if all slaves have finished crawling.
     def if_slaves_done( &block )
         each  = proc { |peer, iter| peer.spider.running? { |b| iter.return !!b } }
         after = proc { |results| block.call if !results.include?( true )}
         map_peers( each, after )
     end
 
+    # @note When checking for slave status also use {#if_slaves_done} to
+    #   make sure that there weren't any new paths pushed to the in the interim.
+    #
+    # @return   [Boolean]
+    #   `true` if all slaves have signaled that they've finished, `false`
+    #   otherwise.
     def slaves_done?
         !@peers.reject{ |url, _| url == self_instance_info[:url] }.keys.
             map { |peer_url| @done_signals[peer_url] }.include?( false )
@@ -231,9 +280,12 @@ class Spider < Arachni::Spider
     end
 
     #
-    # Distributes the paths to the peers
+    # @note Paths are buffered in order to be pushed in batches for better
+    #   bandwidth utilization and to keep RPC calls to a minimum
     #
-    # @param    [Array<String>]  urls    to distribute
+    # Distributes the paths to the peers.
+    #
+    # @param    [Array<String>]  urls    URLs to distribute.
     #
     def distribute( urls )
         urls = dedup( urls )
@@ -267,6 +319,7 @@ class Spider < Arachni::Spider
         true
     end
 
+    # Sends the buffered paths to their assigned peer and empties the buffer.
     def flush_url_distribution_buffer
         @routed ||= {}
         @routed.dup.each do |peer, r_urls|
@@ -281,18 +334,34 @@ class Spider < Arachni::Spider
             end
         end
 
-        # clear the counters and the buffer
+        # Clear the counters and the buffer.
         @fillup_attempts = 0
         @buffer_size     = 0
         @routed.clear
     end
 
+    # @param    [String]    url
+    #
+    # @return   [Boolean]
+    #   `true` if the `url` has already been distributed, `false` otherwise.
+    #
+    # @see #distributed
     def distributed?( url )
         @distribution_filter.include? url
     end
 
+    # @param    [String]    url URL to set a having been distributed.
+    # @see #distributed?
     def distributed( url )
         @distribution_filter << url
+    end
+
+    # @param    [String]    url URL to route.
+    # @return   [RPC::Client::Instance] Peer to handle the `url`.
+    def route( url )
+        return if !url || url.empty?
+        return framework if @peers.empty?
+        route_item_to_client( url )
     end
 
     def map_peers( foreach, after )
@@ -314,14 +383,6 @@ class Spider < Arachni::Spider
             @peers.reject{ |url, _| url == self_instance_info[:url]}.values,
             Framework::Distributor::MAX_CONCURRENCY
         )
-    end
-
-    def route( url )
-        return if !url || url.empty?
-        return framework if @peers.empty?
-        return @peers.values.first if @peers.size == 1
-
-        @peers.values[url.persistent_hash.modulo( @peers.size )]
     end
 
     def framework
