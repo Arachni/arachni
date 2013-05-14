@@ -22,8 +22,8 @@ module Support::LookUp
 #
 # Lightweight Set implementation.
 #
-# It uses the return value of the objects' `#persistent_hash` instead of the
-# objects themselves.
+# It uses the return value of the items' `#persistent_hash` instead of the
+# items themselves.
 #
 # This leads to decreased memory consumption and faster comparisons during look-ups.
 #
@@ -32,59 +32,12 @@ module Support::LookUp
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-class HashSet
+class HashSet < Base
 
     def initialize
         @collection = Set.new
     end
 
-    #
-    # @param    [#persistent_hash] object object to insert
-    #
-    # @return   [HashSet]  self
-    #
-    def <<( object )
-        @collection << calculate_hash( object )
-        self
-    end
-    alias :add :<<
-
-    #
-    # @param    [#persistent_hash] object object to delete
-    #
-    # @return   [HashSet]  self
-    #
-    def delete( object )
-        @collection.delete( calculate_hash( object ) )
-        self
-    end
-
-    #
-    # @param    [#persistent_hash] object object to check
-    #
-    # @return   [Bool]
-    #
-    def include?( object )
-        @collection.include? calculate_hash( object )
-    end
-
-    def empty?
-        @collection.empty?
-    end
-
-    def size
-        @collection.size
-    end
-
-    def clear
-        @collection.clear
-    end
-    
-    private
-    
-    def calculate_hash( object )
-        object.is_a?( Integer ) ? object : object.persistent_hash
-    end
 end
 
 end

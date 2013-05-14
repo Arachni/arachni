@@ -15,4 +15,6 @@
 =end
 
 lib = Arachni::Options.dir['support'] + 'lookup/'
+require lib + 'base'
 require lib + 'hash_set'
+require lib + 'moolb'

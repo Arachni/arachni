@@ -42,9 +42,9 @@
 - Moved supporting classes under `Arachni::Support`.
     - `Support::Cache` classes now store `#hash` values of keys to preserve space.
     - Added:
-        - `Support::LookUp` namespace to hold look-up optimized data structures.
-            - Renamed `BloomFilter` to 'Support::LookUp::HashSet` since it wasn't a real
-                BloomFilter implementation.
+        - `Support::LookUp` namespace to hold look-up optimized data structures with:
+            - 'Support::LookUp::HashSet` -- Stores hashed items in a `Set`.
+            - 'Support::LookUp::Moolb` -- Reverse of a Bloom-filter.
         - `Support::Queue::Disk` -- Disk Queue with in-memory buffer.
 - Added:
     - `IO#tail` -- Returns a specified amount of lines from the bottom of a file.

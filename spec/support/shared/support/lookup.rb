@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::Support::LookUp::HashSet do
+shared_examples_for 'lookup' do
     before( :all ) do
         @bf = described_class.new
     end
