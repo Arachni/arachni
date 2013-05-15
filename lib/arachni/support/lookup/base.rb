@@ -25,6 +25,18 @@ module Support::LookUp
 # @abstract
 class Base
 
+    DEFAULT_OPTIONS = {
+        hasher: :hash
+    }
+
+    # @param    [Hash]  options
+    # @option   options [Symbol]    (:hasher)
+    #   Method to call on the item to obtain its hash.
+    def initialize( options = {} )
+        @options = DEFAULT_OPTIONS.merge( options )
+        @hasher  = @options[:hasher].to_sym
+    end
+
     #
     # @param    [#persistent_hash] item Item to insert.
     #
@@ -70,8 +82,9 @@ class Base
     private
 
     def calculate_hash( item )
-        item.is_a?( Integer ) ? item : item.persistent_hash
+        item.send @hasher
     end
+
 end
 
 end

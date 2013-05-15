@@ -43,7 +43,9 @@ class Moolb < Base
     # @see DEFAULT_OPTIONS
     #
     def initialize( options = {} )
-        @options    = DEFAULT_OPTIONS.merge( options )
+        super( options )
+
+        @options.merge!( DEFAULT_OPTIONS.merge( options ) )
         @collection = @options[:strategy].new( @options[:max_size] )
     end
 

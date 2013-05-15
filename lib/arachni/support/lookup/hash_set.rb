@@ -20,21 +20,19 @@ module Arachni
 module Support::LookUp
 
 #
-# Lightweight Set implementation.
+# Lightweight look-up Set implementation.
 #
-# It uses the return value of the items' `#persistent_hash` instead of the
-# items themselves.
+# It uses stores hashes of items instead of the items themselves.
 #
 # This leads to decreased memory consumption and faster comparisons during look-ups.
-#
-# @note If an `Integer` is passed as an argument it will be assumed that it is
-#   already a hash and it will be stored as is.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class HashSet < Base
 
-    def initialize
+    # @param    (see Base#initialize)
+    def initialize(*)
+        super
         @collection = Set.new
     end
 
