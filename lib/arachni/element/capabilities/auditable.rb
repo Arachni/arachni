@@ -93,7 +93,7 @@ module Auditable
 
     # Removes workload restrictions and allows all elements to be audited.
     def self.reset_instance_scope
-        @@restrict_to_elements = Support::LookUp::HashSet.new
+        @@restrict_to_elements = Support::LookUp::HashSet.new( hasher: :to_i )
     end
 
     #
