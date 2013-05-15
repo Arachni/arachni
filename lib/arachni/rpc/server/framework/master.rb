@@ -279,8 +279,7 @@ module Master
                         distribute_and_run( @instances[i],
                                             urls:     chunk,
                                             elements: elements.shift,
-                                            pages:    page_chunks.shift
-                        )
+                                            pages:    page_chunks.shift )
                     end
                 end
 
