@@ -184,7 +184,7 @@ class Dispatcher
             block.call cjob
         end
 
-        ::EM.schedule { add_instance_to_pool }
+        ::EM.next_tick { add_instance_to_pool }
     end
 
     #
