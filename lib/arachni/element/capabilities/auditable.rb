@@ -95,6 +95,7 @@ module Auditable
     def self.reset_instance_scope
         @@restrict_to_elements = Support::LookUp::HashSet.new( hasher: :to_i )
     end
+    reset_instance_scope
 
     #
     # Restricts the audit to a specific set of elements.
@@ -645,8 +646,6 @@ module Auditable
     end
 
     def within_scope?
-        @@restrict_to_elements ||= Support::LookUp::HashSet.new
-
         auditor_override_instance_scope = false
         begin
             auditor_override_instance_scope = @auditor.override_instance_scope?
