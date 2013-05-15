@@ -169,7 +169,6 @@ module MultiInstance
             slave_data.compact!
             slave_data.each do |slave|
                 data['messages'] |= slave['messages'] if include_messages
-                data['issues']   |= slave['issues'] if include_issues
 
                 if include_errors && slave['errors']
                     data['errors'] ||= []
