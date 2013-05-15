@@ -40,18 +40,6 @@ module Auditable
     include RDiff
 
     #
-    # Empties the de-duplication/uniqueness look-up table.
-    #
-    # Unless you're sure you need this, set the :redundant flag to true
-    # when calling audit methods to bypass it.
-    #
-    def self.reset
-        @@audited          = Support::LookUp::HashSet.new
-        @@skip_like_blocks = []
-    end
-    reset
-
-    #
     # Sets the auditor for this element.
     #
     # The auditor provides its output, HTTP and issue logging interfaces.
@@ -90,6 +78,48 @@ module Auditable
         #
         each_mutation:  nil
     }
+
+    #
+    # Empties the de-duplication/uniqueness look-up table.
+    #
+    # Unless you're sure you need this, set the :redundant flag to true
+    # when calling audit methods to bypass it.
+    #
+    def self.reset
+        @@audited          = Support::LookUp::HashSet.new
+        @@skip_like_blocks = []
+    end
+    reset
+
+    # Removes workload restrictions and allows all elements to be audited.
+    def self.reset_instance_scope
+        @@restrict_to_elements = Support::LookUp::HashSet.new
+    end
+
+    #
+    # Restricts the audit to a specific set of elements.
+    #
+    # *Caution*: Each call overwrites the last.
+    #
+    # @param    [Array<String,Integer>]    elements
+    #   Element audit IDs as returned by {#scope_audit_id}.
+    #
+    # @see scope_audit_id
+    #
+    def self.restrict_to_elements( elements )
+        self.reset_instance_scope
+        elements.each { |elem| @@restrict_to_elements << elem }
+    end
+
+    # @param    [Block] block
+    #   Block to decide whether an element should be skipped or not.
+    #
+    # @return   [Auditable] `self`
+    def self.skip_like( &block )
+        fail 'Missing block.' if !block_given?
+        skip_like_blocks << block
+        self
+    end
 
     #
     # Assigns an anonymous auditor as an {#auditor}.
@@ -263,10 +293,6 @@ module Auditable
         @override_instance_scope ||= false
     end
 
-    def self.reset_instance_scope
-        @@restrict_to_elements = Support::LookUp::HashSet.new
-    end
-
     #
     # Provides a more generalized audit ID which does not take into account
     # the auditor's name nor timeout value of injection string.
@@ -285,31 +311,6 @@ module Auditable
             no_timeout:       true,
             no_injection_str: true
         )).persistent_hash
-    end
-
-    #
-    # Restricts the audit to a specific set of elements.
-    #
-    # *Caution*: Each call overwrites the last.
-    #
-    # @param    [Array<String,Integer>]    elements
-    #   Element audit IDs as returned by {#scope_audit_id}.
-    #
-    # @see scope_audit_id
-    #
-    def self.restrict_to_elements( elements )
-        self.reset_instance_scope
-        elements.each { |elem| @@restrict_to_elements << elem }
-    end
-
-    # @param    [Block] block
-    #   Block to decide whether an element should be skipped or not.
-    #
-    # @return   [Auditable] `self`
-    def self.skip_like( &block )
-        fail 'Missing block.' if !block_given?
-        skip_like_blocks << block
-        self
     end
 
     #
