@@ -172,7 +172,7 @@ class Framework < ::Arachni::Framework
     #
     def clean_up( &block )
         if @cleaned_up
-            block.call false
+            block.call false if block_given?
             return false
         end
 
