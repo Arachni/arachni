@@ -131,7 +131,9 @@ class Spider
                     end
 
                     if @on_each_page_blocks.any?
-                        call_on_each_page_blocks( pass_pages_to_block ? obj : Page.from_response( res, @opts ) )
+                        call_on_each_page_blocks obj.is_a?( Page ) ?
+                                                     obj :
+                                                     Page.from_response( res, @opts )
                     end
 
                     distribute( obj.paths )
