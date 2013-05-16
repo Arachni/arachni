@@ -166,15 +166,22 @@ you with its findings.
 
 - High-performance/low-bandwidth [communication protocol](https://github.com/Arachni/arachni-rpc).
 - Multiple clients.
+- Remote monitoring and management.
 - Parallel scans -- Each scan is compartmentalized to its own OS process to take
     advantage of:
     - Multi-core/SMP architectures.
     - OS-level scheduling/restrictions.
     - Sandboxed failure propagation.
+- Multi-Instance scans for parallelization of individual scans using multiple
+    Instances to:
+    - Take advantage of multi-core/SMP architectures.
+    - Greatly diminish scan-times.
+- Dispatcher Grids supporting:
+    - _(Optional)_ High-Performance configuration -- Combines the resources of
+        multiple nodes to perform multi-Instance scans.
+    - _(Always-on)_ Load-balancing -- All Instances are automatically provided
+        by the least burdened Grid member.
 - SSL encryption (with optional peer authentication).
-- Remote monitoring and management.
-- Experimental support for High Performance Grid configuration, combining the
-    resources of multiple nodes to perform faster scans.
 
 ### Crawler
 
