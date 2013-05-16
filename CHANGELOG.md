@@ -12,6 +12,8 @@
         - `:shutdown!` -- Only use `shutdown` from now on.
 - `Spider`
     - Optimized path de-duplication.
+    - Paths-list synchronized using a `Mutex` to prevent issues when running as
+        part of a multi-Instance operation.
 - Multi-Instance scans
     - `RPC::Server::Framework`
         - General code cleanup.
@@ -40,9 +42,6 @@
     - `Module::KeyFiller`
     - `Plugin::Manager`
     - `Parser`
-- `Spider`
-    - Paths-list synchronized using a `Mutex` to prevent issues when running as
-        part of a multi-Instance operation.
 - Grid
     - Dispatchers automatically load-balance scans. `#dispatch` call returns an
         Instance from the least burdened Grid member by default.
