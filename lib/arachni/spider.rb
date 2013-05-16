@@ -103,11 +103,11 @@ class Spider
     # @return [Array<String>]   sitemap
     #
     def run( pass_pages_to_block = true, &block )
-        return if !@opts.crawl?
+        return if !@opts.crawl? || running?
 
         @running = true
 
-        # options could have changed so reseed
+        # Options could have changed so reseed.
         seed_paths
 
         if block_given?
@@ -198,9 +198,10 @@ class Spider
             @paths |= paths
         end
 
-         # REVIEW: This may cause segfaults, Typhoeus::Hydra doesn't like threads.
+        return true if !wakeup || running?
         Thread.abort_on_exception = true
-        Thread.new { run } if wakeup && !running? # wake up the crawler
+        Thread.new { run }
+
         true
     end
 
