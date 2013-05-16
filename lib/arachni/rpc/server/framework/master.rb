@@ -292,11 +292,22 @@ module Master
 
                     # Don't ring our own bell unless there are no other instances
                     # set to scan or we have slaves running.
+                    #
+                    # If the local audit finishes super-fast the slaves might
+                    # not have been added to the local list yet, which will result
+                    # in us prematurely cleaning up and setting the status to
+                    # 'done' even though the slaves won't have yet finished
+                    #
+                    # However, if the workload chunk is 1 then no slaves will
+                    # have been started in the first place since it's just us
+                    # we can go ahead and clean-up.
                     cleanup_if_all_done if chunk_cnt == 1 || @running_slaves.any?
                 }
             end
 
-            # Let crawlers know of each other and start the scan.
+            # Let crawlers know of each other and start the master crawler.
+            # The master will then push paths to its slaves thus waking them up
+            # to join the crawl.
             spider.update_peers( @instances ) do
                 Thread.abort_on_exception = true
                 Thread.new { spider.run }
