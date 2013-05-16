@@ -141,7 +141,6 @@ class Spider
             http.run
         end
 
-        http.run
         @running = false
 
         call_on_complete_blocks
