@@ -7,6 +7,9 @@
         - `:resume!` -- Only use `resume` from now on.
         - `:pause!` -- Only use `pause` from now on.
         - `:clean_up!` -- Only use `clean_up` from now on.
+- `RPC::Server::Instance`
+    - Removed the followed deprecated aliases:
+        - `:shutdown!` -- Only use `shutdown` from now on.
 - `Spider`
     - Optimized path de-duplication.
 - Multi-Instance scans

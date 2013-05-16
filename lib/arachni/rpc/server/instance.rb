@@ -658,7 +658,7 @@ class Instance
             next if !has_slaves?
             @instances.each do |instance|
                 # Don't know why but this works better than EM's stuff
-                t << Thread.new { connect_to_instance( instance ).service.shutdown! }
+                t << Thread.new { connect_to_instance( instance ).service.shutdown }
             end
         end
         t.join
@@ -666,7 +666,6 @@ class Instance
         @server.shutdown
         true
     end
-    alias :shutdown! :shutdown
 
     # @param (see Arachni::RPC::Server::Framework#auditstore)
     # @return (see Arachni::RPC::Server::Framework#auditstore)
