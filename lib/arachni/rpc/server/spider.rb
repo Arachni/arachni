@@ -62,7 +62,7 @@ class Spider < Arachni::Spider
     end
 
     # @see Arachgni::Spider#run
-    def run( *args, &block )
+    def run( *args )
         @first_run_blocks ||= call_on_first_run
 
         if !solo?
@@ -70,7 +70,7 @@ class Spider < Arachni::Spider
             @on_complete_blocks.clear
         end
 
-        super( *args, &block )
+        super( *args )
 
         flush_url_distribution_buffer
         master_done_handler
