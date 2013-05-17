@@ -31,6 +31,7 @@ class Instances
 
     def initialize
         @list = {}
+        @instance_connections = {}
     end
 
     #
@@ -43,7 +44,6 @@ class Instances
     # @return   [RPC::Client::Instance]
     #
     def connect( url, token = nil )
-        @instance_connections ||= {}
         token ||= @list[url]
         @list[url] ||= token
 
@@ -158,12 +158,13 @@ class Instances
             begin
                 pids |= instance.service.consumed_pids
             rescue => e
-                #ap e
-                #ap e.backtrace
+                ap e
+                ap e.backtrace
             end
         end
 
         @list.clear
+        @instance_connections.clear
         Manager.kill_many pids
     end
 

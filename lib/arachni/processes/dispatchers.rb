@@ -31,6 +31,7 @@ class Dispatchers
 
     def initialize
         @list = []
+        @dispatcher_connections = {}
     end
 
     #
@@ -42,7 +43,6 @@ class Dispatchers
     # @return   [RPC::Client::Dispatcher]
     #
     def connect( url, options = { } )
-        @dispatcher_connections ||= {}
         opts = OpenStruct.new( options )
         @dispatcher_connections[url] ||= RPC::Client::Dispatcher.new( opts, url )
     end
@@ -114,6 +114,7 @@ class Dispatchers
         Manager.kill_many dispatcher.stats['consumed_pids']
         Manager.kill dispatcher.proc_info['pid'].to_i
         @list.delete( url )
+        @dispatcher_connections.delete( url )
     rescue
         nil
     end
