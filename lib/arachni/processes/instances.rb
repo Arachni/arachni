@@ -158,8 +158,8 @@ class Instances
             begin
                 pids |= instance.service.consumed_pids
             rescue => e
-                ap e
-                ap e.backtrace
+                #ap e
+                #ap e.backtrace
             end
         end
 
