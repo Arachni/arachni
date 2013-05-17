@@ -42,8 +42,9 @@ class Dispatchers
     # @return   [RPC::Client::Dispatcher]
     #
     def connect( url, options = { } )
+        @dispatcher_connections ||= {}
         opts = OpenStruct.new( options )
-        RPC::Client::Dispatcher.new( opts, url )
+        @dispatcher_connections[url] ||= RPC::Client::Dispatcher.new( opts, url )
     end
 
     # @param    [Block] block   Block to pass an RPC client for each Dispatcher.

@@ -131,7 +131,8 @@ class Server::Dispatcher::Handler
     # @return   [Client::Dispatcher]
     #
     def connect_to_dispatcher( url )
-        Client::Dispatcher.new( opts, url )
+        @dispatcher_connections ||= {}
+        @dispatcher_connections[url] ||= Client::Dispatcher.new( opts, url )
     end
 
     #
@@ -157,7 +158,8 @@ class Server::Dispatcher::Handler
             token   = options['token'] || options[:token]
         end
 
-        Client::Instance.new( opts, url, token )
+        @instance_connections ||= {}
+        @instance_connections[url] ||= Client::Instance.new( opts, url, token )
     end
 
 end

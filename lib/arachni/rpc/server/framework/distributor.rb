@@ -51,10 +51,16 @@ module Distributor
     #
     def connect_to_instance( instance )
         instance = instance.symbolize_keys
+        @instance_connections ||= {}
+
+        if @instance_connections[instance[:url]]
+            return @instance_connections[instance[:url]]
+        end
 
         @tokens  ||= {}
         @tokens[instance[:url]] = instance[:token] if instance[:token]
-        RPC::Client::Instance.new( @opts, instance[:url], @tokens[instance[:url]] )
+        @instance_connections[instance[:url]] =
+            RPC::Client::Instance.new( @opts, instance[:url], @tokens[instance[:url]] )
     end
 
     private
@@ -421,7 +427,8 @@ module Distributor
     end
 
     def connect_to_dispatcher( url )
-        RPC::Client::Dispatcher.new( @opts, url )
+        @dispatcher_connections ||= {}
+        @dispatcher_connections[url] ||= RPC::Client::Dispatcher.new( @opts, url )
     end
 
     def dispatcher

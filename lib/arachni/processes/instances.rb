@@ -43,10 +43,11 @@ class Instances
     # @return   [RPC::Client::Instance]
     #
     def connect( url, token = nil )
+        @instance_connections ||= {}
         token ||= @list[url]
         @list[url] ||= token
 
-        RPC::Client::Instance.new( Options.instance, url, token )
+        @instance_connections[url] ||= RPC::Client::Instance.new( Options.instance, url, token )
     end
 
     # @param    [Block] block   Block to pass an RPC client for each Instance.
