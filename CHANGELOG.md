@@ -61,6 +61,12 @@
 - RSpec tests
     - Major cleanup, using the aforementioned process helpers to remove duplicate code.
     - Moved supporting components under `spec/support/`.
+- Plugins
+    - Proxy
+        - Ou-of-scope pages no longer return a _403 Forbidden_ error but are
+            instead loaded, though ignored.
+        - Fixed bug causing the `Content-Length` header to sometimes hold an
+            incorrect value.
 
 ## Version 0.4.2 _(April 26, 2013)_
 

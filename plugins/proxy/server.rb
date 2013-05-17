@@ -18,6 +18,7 @@ require 'webrick/httpproxy'
 require 'webrick/https'
 
 class Arachni::Plugins::Proxy
+
 #
 # We add our own type of WEBrick::HTTPProxyServer class that supports
 # notifications when the user tries to access a resource irrelevant
@@ -182,6 +183,8 @@ class Server < WEBrick::HTTPProxyServer
 
         #set_cookie( response, res )
         set_via( res )
+
+        res.header['content-length'] = response.body.size.to_s
         res.body = response.body
     end
 
