@@ -143,8 +143,6 @@ class Instance
     # @param    [String]    token   Authentication token.
     #
     def initialize( opts, token )
-        banner
-
         @opts   = opts
         @token  = token
 
