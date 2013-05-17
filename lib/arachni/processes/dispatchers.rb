@@ -113,15 +113,18 @@ class Dispatchers
         dispatcher = connect( url )
         Manager.kill_many dispatcher.stats['consumed_pids']
         Manager.kill dispatcher.proc_info['pid'].to_i
+    rescue => e
+        #ap e
+        #ap e.backtrace
+        nil
+    ensure
         @list.delete( url )
         @dispatcher_connections.delete( url )
-    rescue
-        nil
     end
 
     # Kills all {Dispatchers #list}.
     def killall
-        @list.each do |url|
+        @list.dup.each do |url|
             kill url
         end
     end
