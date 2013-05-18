@@ -87,7 +87,7 @@ module Slave
                     master_priv_token,
                     # ...and also let our master know whether or not we're done
                     # crawling.
-                    spider.done? ? self_url : false ){}
+                    spider.done? ? multi_self_url : false ){}
 
                 @slave_element_ids_per_page.clear
             else
@@ -137,7 +137,7 @@ module Slave
         # Make sure we've reported all issues back to the master before telling
         # it that we're done.
         flush_issue_buffer do
-            @master.framework.slave_done( self_url, master_priv_token ) do
+            @master.framework.slave_done( multi_self_url, master_priv_token ) do
                 @extended_running = false
                 @status = :done
             end

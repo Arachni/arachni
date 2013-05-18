@@ -10,7 +10,7 @@ describe Arachni::RPC::Server::Instance do
     it 'supports UNIX sockets' do
         socket = '/tmp/arachni-instance'
         instance = instance_spawn( socket: socket )
-        instance.framework.self_url.should == socket
+        instance.framework.multi_self_url.should == socket
         instance.service.alive?.should be_true
     end
 
@@ -190,34 +190,6 @@ describe Arachni::RPC::Server::Instance do
 
             describe :spawns do
                 context 'when it has a Dispatcher' do
-                    it 'requests its slaves from it' do
-                        instance = instance_dispatcher_spawn
-
-                        instance.service.scan(
-                            url:         web_server_url_for( :framework_simple ),
-                            audit_links: true,
-                            audit_forms: true,
-                            modules:     :test,
-                            spawns:      4
-                        )
-
-                        # if a scan in already running it should just bail out early
-                        instance.service.scan.should be_false
-
-                        sleep 1 while instance.service.busy?
-
-                        instance.framework.progress_data['instances'].size.should == 5
-
-                        instance.service.busy?.should  == instance.framework.busy?
-                        instance.service.status.should == instance.framework.status
-
-                        i_report = instance.service.report
-                        f_report = instance.framework.report
-
-                        i_report.should == f_report
-                        i_report['issues'].should be_any
-                    end
-
                     context 'which is a Grid member' do
                         it 'requests its slaves from it' do
                             instance = instance_grid_spawn
@@ -292,6 +264,26 @@ describe Arachni::RPC::Server::Instance do
                 end
 
                 context 'when it does not have a Dispatcher' do
+                    it 'uses UNIX sockets to communicate with the slaves' do
+                        instance = instance_spawn
+                        instance.service.scan(
+                            url:         web_server_url_for( :framework_simple ),
+                            audit_links: true,
+                            audit_forms: true,
+                            modules:     :test,
+                            spawns:      4
+                        )
+                        sleep 1 while instance.service.busy?
+
+                        self_url = instance.framework.self_url
+
+                        instance.service.progress( with: :instances )['instances'].each do |progress|
+                            url = progress['url']
+                            next if url == self_url
+                            File.socket?( url ).should be_true
+                        end
+                    end
+
                     it 'spawns a number of slaves' do
                         instance = instance_spawn
 
@@ -302,9 +294,6 @@ describe Arachni::RPC::Server::Instance do
                             modules:     :test,
                             spawns:      4
                         )
-
-                        # if a scan in already running it should just bail out early
-                        instance.service.scan.should be_false
 
                         sleep 1 while instance.service.busy?
 

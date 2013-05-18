@@ -247,6 +247,10 @@ module MultiInstance
         true
     end
 
+    def multi_self_url
+        @opts.rpc_socket || self_url
+    end
+
     private
 
     def multi_run

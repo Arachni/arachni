@@ -94,7 +94,7 @@ module Master
         # Take charge of the Instance we were given.
         instance = connect_to_instance( instance_info )
         instance.opts.set( cleaned_up_opts ) do
-            instance.framework.set_master( self_url, token ) do
+            instance.framework.set_master( multi_self_url, token ) do
                 @instances << instance_info
                 block.call true if block_given?
             end
@@ -214,10 +214,10 @@ module Master
             d_opts = {
                 'rank'   => 'slave',
                 'target' => @opts.url,
-                'master' => self_url
+                'master' => multi_self_url
             }
 
-            connect_to_dispatcher( d_url ).dispatch( self_url, d_opts ) do |instance_hash|
+            connect_to_dispatcher( d_url ).dispatch( multi_self_url, d_opts ) do |instance_hash|
                 enslave( instance_hash ){ |b| iterator.next }
             end
         end

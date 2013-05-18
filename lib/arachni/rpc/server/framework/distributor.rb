@@ -332,7 +332,7 @@ module Distributor
     def cleaned_up_opts
         opts = @opts.to_h.deep_clone
 
-        (%w(spawns grid dir rpc_port rpc_address pipe_id neighbour pool_size) |
+        (%w(spawns rpc_socket grid dir rpc_port rpc_address pipe_id neighbour pool_size) |
             %w(lsmod lsrep rpc_instance_port_range load_profile delta_time) |
             %w(start_datetime finish_datetime)).each do |k|
             opts.delete k
@@ -403,6 +403,7 @@ module Distributor
             # ap e.backtrace
         end
 
+        final_stats['url'] = self_url
         final_stats
     end
 

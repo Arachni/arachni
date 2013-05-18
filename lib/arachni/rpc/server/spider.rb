@@ -105,7 +105,7 @@ class Spider < Arachni::Spider
 
         @peers = Hash[sorted_peers]
 
-        @peers[framework.self_url] = framework
+        @peers[framework.multi_self_url] = framework
 
         @peers = Hash[@peers.sort]
 
@@ -158,7 +158,7 @@ class Spider < Arachni::Spider
     #
     def signal_if_done( master )
         return if !done?
-        master.spider.peer_done( framework.self_url ){}
+        master.spider.peer_done( framework.multi_self_url ){}
     end
 
     private
@@ -274,7 +274,7 @@ class Spider < Arachni::Spider
 
     def self_instance_info
         {
-            url:   framework.self_url,
+            url:   framework.multi_self_url,
             token: framework.token
         }
     end

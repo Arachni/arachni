@@ -146,8 +146,10 @@ class Instance
         @opts   = opts
         @token  = token
 
-        @server = Base.new( @opts, token )
+        @framework      = Server::Framework.new( Options.instance )
+        @active_options = Server::ActiveOptions.new( @framework )
 
+        @server = Base.new( @opts, token )
         @server.logger.level = @opts.datastore[:log_level] if @opts.datastore[:log_level]
 
         @opts.datastore[:token] = token
@@ -162,7 +164,7 @@ class Instance
 
         set_error_logfile "#{@opts.dir['logs']}/Instance - #{Process.pid}-#{@opts.rpc_port}.error.log"
 
-        set_handlers
+        set_handlers( @server )
 
         # trap interrupts and exit cleanly when required
         %w(QUIT INT).each do |signal|
@@ -559,7 +561,7 @@ class Instance
     #
     def scan( opts = {}, &block )
         # If the instance isn't clean bail out now.
-        if @scan_initializing || @framework.busy?
+        if busy? || @called
             block.call false
             return false
         end
@@ -583,7 +585,7 @@ class Instance
         # There may be follow-up/retry calls by the client in cases of network
         # errors (after the request has reached us) so we need to keep minimal
         # track of state in order to bail out on subsequent calls.
-        @scan_initializing = true
+        @called = @scan_initializing = true
 
         # Plugins option needs to be a hash...
         if opts[:plugins] && opts[:plugins].is_a?( Array )
@@ -631,8 +633,10 @@ class Instance
             # Rock n' roll!
             after.call
         else
-            # Handles each spawn, enslaving it for a high-performance distributed scan.
-            each  = proc { |slave, iter| @framework.enslave( slave ){ iter.next } }
+            # Handles each spawn, enslaving it for a multi-Instance scan.
+            each  = proc do |slave, iter|
+                @framework.enslave( slave ){ iter.next }
+            end
 
             spawn( spawn_count ) do |spawns|
                 # Add our spawns to the slaves list which was passed as an option.
@@ -648,20 +652,25 @@ class Instance
     end
 
     # Makes the server go bye-bye...Lights out!
-    def shutdown
+    def shutdown( &block )
         print_status 'Shutting down...'
 
-        t = []
-        @framework.instance_eval do
-            next if !has_slaves?
-            @instances.each do |instance|
-                # Don't know why but this works better than EM's stuff
-                t << Thread.new { connect_to_instance( instance ).service.shutdown }
+        ::EM.defer do
+            t = []
+            @framework.instance_eval do
+                next if !has_slaves?
+                @instances.each do |instance|
+                    # Don't know why but this works better than EM's stuff
+                    t << Thread.new { connect_to_instance( instance ).service.shutdown }
+                end
             end
-        end
-        t.join
+            t.join
 
-        @server.shutdown
+            @server.shutdown
+
+            block.call true
+        end
+
         true
     end
 
@@ -712,9 +721,9 @@ class Instance
     #
     # Provides `num` Instances.
     #
-    # If this Instance has a Dispatcher, all Instances will be requested
-    # from it. Otherwise, new Instance processes will be directly spawned
-    # and immediately detached.
+    # New Instance processes will be spawned and immediately detached.
+    # Spawns will listen on a UNIX socket and the master will expose itself
+    # over a UNIX socket as well so that IPC won't have to go over TCP/IP.
     #
     # @param    [Integer]   num Amount of Instances to return.
     #
@@ -728,32 +737,32 @@ class Instance
 
         q = ::EM::Queue.new
 
-        if has_dispatcher?
+        # Before spawning slaves, expose our API over a UNIX socket via
+        # which they should talk to us.
+        expose_over_unix_socket do
             num.times do
-                dispatcher.dispatch( @framework.self_url ) do |instance|
-                    q << instance
-                end
-            end
-        else
-            num.times do
-                port  = available_port
                 token = generate_token
 
-                pid = ::EM.fork_reactor {
-                    # make sure we start with a clean env (namepsace, opts, etc)
+                pid = fork {
+                    # Make sure we start with a clean env (namepsace, opts, etc).
                     Framework.reset
 
-                    Options.rpc_port = port
+                    # All Instances will be on the same host so use UNIX
+                    # domain sockets to avoid TCP/IP overhead.
+                    Options.rpc_address = nil
+                    Options.rpc_port    = nil
+                    Options.rpc_socket = "/tmp/arachni-instance-slave-#{Process.pid}"
+
                     Server::Instance.new( Options.instance, token )
                 }
 
                 Process.detach pid
                 @consumed_pids << pid
 
-                instance_info = { 'url' => "#{Options.rpc_address}:#{port}",
+                instance_info = { 'url' => "/tmp/arachni-instance-slave-#{pid}",
                                   'token' => token }
 
-                wait_till_alive( instance_info ) { q << instance_info }
+                wait_till_alive( instance_info['url'] ) { q << instance_info }
             end
         end
 
@@ -766,27 +775,16 @@ class Instance
         end
     end
 
-    def wait_till_alive( instance_info, &block )
-        opts = ::OpenStruct.new
-
-        # if after 100 retries we still haven't managed to get through give up
-        opts.max_retries = 100
-        opts.ssl_ca      = @opts.ssl_ca,
-        opts.ssl_pkey    = @opts.node_ssl_pkey || @opts.ssl_pkey,
-        opts.ssl_cert    = @opts.node_ssl_cert || @opts.ssl_cert
-
-        Client::Instance.new(
-            opts, instance_info['url'], instance_info['token']
-        ).service.alive? do |alive|
-            if alive.rpc_exception?
-                raise alive
-            else
-                block.call alive
-            end
+    def wait_till_alive( socket, &block )
+        ::EM.defer do
+            # We're using UNIX sockets as URLs so wait till the Instance
+            # has created its socket before proceeding.
+            sleep 0.1 while !File.exist?( socket )
+            block.call true
         end
     end
 
-    # Starts the HTTPS server and the RPC service.
+    # Starts  RPC service.
     def run
         print_status 'Starting the server...'
         @server.run
@@ -812,22 +810,40 @@ class Instance
         puts
     end
 
-    # Prepares all the RPC handlers.
-    def set_handlers
-        @server.add_async_check do |method|
+    # Exposes self over an UNIX socket.
+    #
+    # @param    [Block] block
+    #   Block to call once the operation has completed.
+    def expose_over_unix_socket( &block )
+        Options.rpc_socket = "/tmp/arachni-instance-master-#{Process.pid}"
+
+        ::EM.defer do
+            unix = Base.new( @opts, @token )
+            set_handlers( unix )
+
+            ::EM.defer do
+                unix.run
+            end
+
+            sleep 0.1 while !File.exist?( Options.rpc_socket )
+            block.call true
+        end
+    end
+
+    # @param    [Base]  server
+    #   Prepares all the RPC handlers for the given `server`.
+    def set_handlers( server )
+        server.add_async_check do |method|
             # methods that expect a block are async
-            method.parameters.flatten.include?( :block )
+            method.parameters.flatten.include? :block
         end
 
-        @framework      = Server::Framework.new( Options.instance )
-        @active_options = Server::ActiveOptions.new( @framework )
-
-        @server.add_handler( 'service',   self )
-        @server.add_handler( 'framework', @framework )
-        @server.add_handler( 'opts',      @active_options )
-        @server.add_handler( 'spider',    @framework.spider )
-        @server.add_handler( 'modules',   @framework.modules )
-        @server.add_handler( 'plugins',   @framework.plugins )
+        server.add_handler( 'service',   self )
+        server.add_handler( 'framework', @framework )
+        server.add_handler( 'opts',      @active_options )
+        server.add_handler( 'spider',    @framework.spider )
+        server.add_handler( 'modules',   @framework.modules )
+        server.add_handler( 'plugins',   @framework.plugins )
     end
 
 end

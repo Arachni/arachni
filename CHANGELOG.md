@@ -16,6 +16,8 @@
     - Paths-list synchronized using a `Mutex` to prevent issues when running as
         part of a multi-Instance operation.
 - Multi-Instance scans
+    - Instances now communicate via UNIX domain sockets when all of them are on
+        the same host, to avoid TCP/IP overhead for IPC.
     - `RPC::Server::Framework`
         - General code cleanup.
             - Multi-Instance code moved under the `RPC::Server::Framework::MultiInstance`
