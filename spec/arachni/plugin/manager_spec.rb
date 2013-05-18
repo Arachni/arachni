@@ -39,7 +39,7 @@ describe Arachni::Plugin::Manager do
             end
         end
         context 'when gem dependencies are not met' do
-            it 'raises an exception' do
+            it 'raises Arachni::Plugin::Error::UnsatisfiedDependency' do
                 trigger = proc do
                     begin
                         @plugins.load :bad
@@ -50,29 +50,9 @@ describe Arachni::Plugin::Manager do
                     end
                 end
 
-                raised = false
-                begin
-                    trigger.call
-                rescue Arachni::Error
-                    raised = true
-                end
-                raised.should be_true
-
-                raised = false
-                begin
-                    trigger.call
-                rescue Arachni::Plugin::Error
-                    raised = true
-                end
-                raised.should be_true
-
-                raised = false
-                begin
-                    trigger.call
-                rescue Arachni::Plugin::Error::UnsatisfiedDependency
-                    raised = true
-                end
-                raised.should be_true
+                expect { trigger.call }.to raise_error Arachni::Error
+                expect { trigger.call }.to raise_error Arachni::Plugin::Error
+                expect { trigger.call }.to raise_error Arachni::Plugin::Error::UnsatisfiedDependency
             end
         end
     end
@@ -84,7 +64,7 @@ describe Arachni::Plugin::Manager do
             end
         end
         context 'when gem dependencies are not met' do
-            it 'raises an exception' do
+            it 'returns a hash with errors' do
                 @plugins.sane_env?( @plugins['bad'] ).include?( :gem_errors ).should be_true
                 @plugins.delete( 'bad' )
             end

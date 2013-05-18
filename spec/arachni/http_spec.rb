@@ -264,15 +264,9 @@ describe Arachni::HTTP do
                 cookies.should == Arachni::Module::Utilities.cookies_from_file( '', @opts.cookie_jar )
             end
             context 'but the path is invalid' do
-                it 'raises an exception' do
+                it 'raises Arachni::HTTP::CookieJar::Error::CookieJarFileNotFound' do
                     @opts.cookie_jar = fixtures_path + 'cookies.does_not_exist.txt'
-                    raised = false
-                    begin
-                        @http.reset
-                    rescue Arachni::HTTP::CookieJar::Error::CookieJarFileNotFound
-                        raised = true
-                    end
-                    raised.should be_true
+                    expect{ @http.reset }.to raise_error Arachni::HTTP::CookieJar::Error::CookieJarFileNotFound
                 end
             end
         end
@@ -421,13 +415,7 @@ describe Arachni::HTTP do
         it 'raises exception when no URL is available' do
             @opts.reset
             @http.reset
-            raised = false
-            begin
-                @http.request
-            rescue
-                raised = true
-            end
-            raised.should be_true
+            expect { @http.request }.to raise_error
         end
 
         describe :no_cookiejar do

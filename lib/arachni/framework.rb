@@ -432,7 +432,7 @@ class Framework
             @reports.clear
 
             if !@reports[name].has_outfile?
-                fail Component::Error::InvalidOptions,
+                fail Component::Options::Error::Invalid,
                      "Report '#{name}' cannot format the audit results as a String."
             end
 
@@ -441,7 +441,7 @@ class Framework
 
             IO.read( outfile )
         ensure
-            File.delete( outfile )
+            File.delete( outfile ) if outfile
             @reports.clear
             @reports.load loaded
         end

@@ -762,29 +762,17 @@ describe Arachni::Framework do
                 json = @new_framework.report_as( :json )
                 JSON.load( json )['issues'].size.should == @new_framework.auditstore.issues.size
             end
-        end
 
-        context 'when passed an valid report name which does not support the \'outfile\' option' do
-            it 'raises an exception' do
-                raised = false
-                begin
-                    @new_framework.report_as( :stdout )
-                rescue Exception
-                    raised = true
+            context 'which does not support the \'outfile\' option' do
+                it 'raises Arachni::Component::Options::Error::Invalid' do
+                    expect { @new_framework.report_as( :stdout ) }.to raise_error Arachni::Component::Options::Error::Invalid
                 end
-                raised.should be_true
             end
         end
 
         context 'when passed an invalid report name' do
-            it 'raises an exception' do
-                raised = false
-                begin
-                    @new_framework.report_as( :blah )
-                rescue Exception
-                    raised = true
-                end
-                raised.should be_true
+            it 'raises Arachni::Component::Error::NotFound' do
+                expect { @new_framework.report_as( :blah ) }.to raise_error Arachni::Component::Error::NotFound
             end
         end
     end

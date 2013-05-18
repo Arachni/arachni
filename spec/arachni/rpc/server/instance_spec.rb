@@ -475,14 +475,8 @@ describe Arachni::RPC::Server::Instance do
                 instance = instance_spawn
                 instance.service.shutdown.should be_true
                 sleep 4
-                raised = false
-                begin
-                    instance.service.alive?
-                rescue Exception
-                    raised = true
-                end
 
-                raised.should be_true
+                expect { instance.service.alive? }.to raise_error
             end
         end
     end

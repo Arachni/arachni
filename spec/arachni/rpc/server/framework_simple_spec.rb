@@ -380,29 +380,17 @@ describe Arachni::RPC::Server::Framework do
                 json = @instance_clean.framework.report_as( :json )
                 JSON.load( json )['issues'].size.should == @instance_clean.framework.auditstore.issues.size
             end
-        end
 
-        context 'when passed an valid report name which does not support the \'outfile\' option' do
-            it 'raises an exception' do
-                raised = false
-                begin
-                    @instance_clean.framework.report_as( :stdout )
-                rescue Exception
-                    raised = true
+            context 'which does not support the \'outfile\' option' do
+                it 'raises an exception' do
+                    expect { @instance_clean.framework.report_as( :stdout ) }.to raise_error
                 end
-                raised.should be_true
             end
         end
 
         context 'when passed an invalid report name' do
             it 'raises an exception' do
-                raised = false
-                begin
-                    @instance_clean.framework.report_as( :blah )
-                rescue Exception
-                    raised = true
-                end
-                raised.should be_true
+                expect { @instance_clean.framework.report_as( :blah ) }.to raise_error
             end
         end
     end

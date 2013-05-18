@@ -189,21 +189,8 @@ describe Arachni::URI do
         it 'returns a frozen hash (with frozen values)' do
             h = @uri.cheap_parse( 'http://test.com/stuff/' )
 
-            raised = false
-            begin
-                h[:stuff] = 0
-            rescue RuntimeError
-                raised = true
-            end
-            raised.should be_true
-
-            raised = false
-            begin
-                h[:path] << '/'
-            rescue RuntimeError
-                raised = true
-            end
-            raised.should be_true
+            expect { h[:stuff] = 0 }.to raise_error
+            expect { h[:path] << '/' }.to raise_error
         end
     end
 
@@ -278,13 +265,7 @@ describe Arachni::URI do
 
         context 'else' do
             it 'raises a TypeError' do
-                raised = false
-                begin
-                    @uri.new( [] )
-                rescue TypeError
-                    raised = true
-                end
-                raised.should be_true
+                expect { @uri.new( [] ) }.to raise_error TypeError
             end
         end
     end
@@ -412,13 +393,7 @@ describe Arachni::URI do
 
         context 'when the provided rules are nil' do
             it 'raises a TypeError' do
-                raised = false
-                begin
-                    @exclude_url.exclude?( nil ).should be_true
-                rescue TypeError
-                    raised = true
-                end
-                raised.should be_true
+                expect { @exclude_url.exclude?( nil ) }.to raise_error TypeError
             end
         end
 
@@ -452,14 +427,8 @@ describe Arachni::URI do
         end
 
         context 'when the provided rules are nil' do
-            it 'raise a TypeError' do
-                raised = false
-                begin
-                    @include_url.include?( nil ).should be_true
-                rescue TypeError
-                    raised = true
-                end
-                raised.should be_true
+            it 'raises a TypeError' do
+                expect { @include_url.include?( nil ) }.to raise_error TypeError
             end
         end
     end
