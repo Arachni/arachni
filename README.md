@@ -164,15 +164,18 @@ you with its findings.
 
 ### Open [distributed architecture](https://github.com/Arachni/arachni/wiki/Distributed-components)
 
-- High-performance/low-bandwidth [communication protocol](https://github.com/Arachni/arachni-rpc).
-- Multiple clients.
-- Remote monitoring and management.
+- High-performance/low-bandwidth [communication protocol](https://github.com/Arachni/arachni-rpc-em).
+    - `Marshal` serialization for performance and efficiency.
+        - Falls back to `YAML` for ease of integration with 3rd party systems.
+    - TCP/IP for general network communications.
+    - UNIX domain sockets for multi-Instance IPC.
+- Remote monitoring and management of Dispatchers and Instances.
 - Parallel scans -- Each scan is compartmentalized to its own OS process to take
     advantage of:
     - Multi-core/SMP architectures.
     - OS-level scheduling/restrictions.
     - Sandboxed failure propagation.
-- Multi-Instance scans for parallelization of individual scans using multiple
+- Multi-Instance scans for parallelization of _individual scans_ using multiple
     Instances to:
     - Take advantage of multi-core/SMP architectures.
     - Greatly diminish scan-times.
