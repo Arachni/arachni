@@ -414,6 +414,9 @@ class Options
     # @return   [Array<String>] plugins to load, by name
     attr_accessor :plugins
 
+    # @return   [String]   Path to the UNIX socket to use.
+    attr_accessor :rpc_socket
+
     # @return   [Integer]   port for the RPC server to listen to
     attr_accessor :rpc_port
 

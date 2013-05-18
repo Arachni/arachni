@@ -7,6 +7,13 @@ describe Arachni::RPC::Server::Instance do
         @instance = instance_spawn
     end
 
+    it 'supports UNIX sockets' do
+        socket = '/tmp/arachni-instance'
+        instance = instance_spawn( socket: socket )
+        instance.framework.self_url.should == socket
+        instance.service.alive?.should be_true
+    end
+
     describe '#service' do
         describe '#errors' do
             context 'when no argument has been provided' do

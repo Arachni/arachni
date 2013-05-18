@@ -85,10 +85,18 @@ class Instances
 
         options[:rpc_port]    = options.delete( :port ) if options.include?( :port )
         options[:rpc_address] = options.delete( :address ) if options.include?( :address )
+        options[:rpc_socket]  = options.delete( :socket ) if options.include?( :socket )
 
         options[:rpc_port]    ||= available_port
 
-        url = "#{options[:rpc_address]}:#{options[:rpc_port]}"
+        url = nil
+        if options[:rpc_socket]
+            url = options[:rpc_socket]
+            options.delete :rpc_address
+            options.delete :rpc_port
+        else
+            url = "#{options[:rpc_address]}:#{options[:rpc_port]}"
+        end
 
         Manager.quiet_fork do
             Options.set( options )

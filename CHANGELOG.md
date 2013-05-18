@@ -10,6 +10,7 @@
 - `RPC::Server::Instance`
     - Removed the followed deprecated aliases:
         - `:shutdown!` -- Only use `shutdown` from now on.
+    - Added preliminary support for UNIX sockets.
 - `Spider`
     - Optimized path de-duplication.
     - Paths-list synchronized using a `Mutex` to prevent issues when running as
