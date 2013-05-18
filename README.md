@@ -166,7 +166,7 @@ you with its findings.
 
 - High-performance/low-bandwidth [communication protocol](https://github.com/Arachni/arachni-rpc-em).
     - `Marshal` serialization for performance and efficiency.
-        - Falls back to `YAML` for ease of integration with 3rd party systems.
+        - Automatically falls back to `YAML` for ease of integration with 3rd party systems.
     - TCP/IP for general network communications.
     - UNIX domain sockets for multi-Instance IPC.
 - Remote monitoring and management of Dispatchers and Instances.
