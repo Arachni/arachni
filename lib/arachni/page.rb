@@ -65,10 +65,10 @@ class Page
 
     # @param    [String]    url URL to fetch.
     # @param    [Hash]  opts
-    # @options  opts    [Integer]   :precision  (1)
+    # @option  opts    [Integer]   :precision  (1)
     #   How many times to request the page and examine changes between requests.
     #   Used tp identify nonce tokens etc.
-    # @options  opts    [Hash]  :http   HTTP {HTTP#get request} options.
+    # @option  opts    [Hash]  :http   HTTP {HTTP#get request} options.
     # @param    [Block] block
     #   Block to which to pass the page object. If given, the request will be
     #   performed asynchronously. If no block is given, the page will be fetched
