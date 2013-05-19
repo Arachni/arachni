@@ -126,7 +126,7 @@ class Parser
 
         # Non text files won't contain any auditable elements.
         if !text?
-            return Page.new(
+            page = Page.new(
                 code:             @code,
                 url:              @url,
                 method:           req_method,
@@ -136,6 +136,7 @@ class Parser
                 response_headers: @response_headers,
                 text:             false
             )
+            return Platforms.fingerprint page
         end
 
         # Extract cookies from the response.
@@ -174,7 +175,7 @@ class Parser
             dc
         end
 
-        Page.new(
+        page = Page.new(
             code:             @code,
             url:              @url,
             query_vars:       self_link.auditable,
@@ -204,6 +205,7 @@ class Parser
             # Contains text-based data -- i.e. not a binary response.
             text:             true
         )
+        Platforms.fingerprint page
     end
     alias :run :page
 

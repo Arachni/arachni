@@ -19,6 +19,9 @@ module Arachni
 #
 # Represents a collection of applicable platforms for a given remote resource.
 #
+# It also holds a DB of all fingerprints per URI as a class variable and
+# provides helper method for accessing and manipulating it.
+#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Platforms
@@ -26,6 +29,27 @@ class Platforms
 
     # Namespace under which all platform fingerprinter components reside.
     module Fingerprinters
+
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        # @abstract
+        class Base
+
+            attr_reader :page
+
+            def initialize( page )
+                @page = page
+            end
+
+            # @abstract
+            def run
+            end
+
+            def platforms
+                page.platforms
+            end
+
+        end
+
     end
 
     #
@@ -50,8 +74,7 @@ class Platforms
         :linux,
         :bsd, # *BSD flavors.
         :solaris,
-        :windows,
-        :osx
+        :windows
     ]
 
     # Databases.
@@ -69,7 +92,7 @@ class Platforms
     ]
 
     # Web servers.
-    WEB_SERVERS = [
+    SERVERS = [
         :apache,
         :nginx,
         :tomcat,
@@ -87,7 +110,81 @@ class Platforms
     ]
 
     # All platforms.
-    ALL = OS + DB + WEB_SERVERS + LANGUAGES
+    ALL = OS + DB + SERVERS + LANGUAGES
+
+    # Sets global platforms fingerprints
+    # @private
+    def self.set( platforms )
+        @platforms = platforms
+    end
+
+    # Empties the global platform fingerprints.
+    def self.reset
+        set Hash.new
+        self
+    end
+    reset
+
+    # Runs all fingerprinters against the given `page`.
+    #
+    # @param    [Page]  page    Page to fingerprint.
+    # @return   [Platforms]   Updated `self`.
+    def self.fingerprint( page )
+        fingerprinters.available.each do |name|
+            #exception_jail do
+            fingerprinters[name].new( page ).run
+            #end
+        end
+        page
+    end
+
+    #
+    # Sets `platforms` for the given `uri`.
+    #
+    # @param    [String, URI]   uri
+    # @param    [Enumerable] platforms
+    #
+    # @return   [Platforms] `platforms`
+    # @raise    [Error::Invalid]  On {#invalid?} platforms.
+    def self.[]=( uri, platforms )
+        @platforms[Arachni::URI( uri ).persistent_hash] =
+            platforms.is_a?( self ) ? platforms : new( platforms )
+    end
+
+    #
+    # Updates the `platforms` for the given `uri`.
+    #
+    # @param    [String, URI]   uri
+    # @param    [Platforms] platforms
+    #
+    # @return   [Platforms] Updated platforms.
+    def self.update( uri, platforms )
+        self[uri].merge! platforms
+    end
+
+    # @param    [String, URI]   uri
+    # @return   [Platforms] Platforms for the given `uri`
+    def self.[]( uri )
+        @platforms[Arachni::URI( uri ).persistent_hash] ||= Platforms.new
+    end
+
+    # @return   [Boolean]
+    #   `true` if there are no platforms fingerprints, `false` otherwise.
+    def self.empty?
+        @platforms.empty?
+    end
+
+    # @return   [Boolean]
+    #   `true` if there are platforms fingerprints, `false` otherwise.
+    def self.any?
+        !empty?
+    end
+
+    # @return   [Hash<Integer, Platforms>]
+    #   Platforms per {URI#persistent_hash hashed URL}.
+    def self.all
+        @platforms
+    end
 
     # @param    [Array<String, Symbol>]    platforms
     #   List of platforms with which to initialize the instance.
@@ -96,7 +193,7 @@ class Platforms
         @applicable = Set.new( normalize( platforms ) )
     end
 
-    # Selects appropriate data depending on the {#applicable} platforms
+    # Selects appropriate data depending on the applicable platforms
     # from `data_per_platform`.
     #
     # @param    [Hash{<Symbol, Object> => Object}]   data_per_platform
@@ -230,6 +327,11 @@ class Platforms
         end
 
         platforms
+    end
+
+    def self.fingerprinters
+        @manager ||=
+            Component::Manager.new( Options.dir['fingerprinters'], Fingerprinters )
     end
 
 end

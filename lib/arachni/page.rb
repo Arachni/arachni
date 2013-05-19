@@ -119,6 +119,11 @@ class Page
         @body ||= ''
     end
 
+    # @return   [Platforms] Applicable platforms for the page.
+    def platforms
+        Platforms[@url]
+    end
+
     # @return    [String]    the request method that returned the page
     def method( *args )
         return super( *args ) if args.any?

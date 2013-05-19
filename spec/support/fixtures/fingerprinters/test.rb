@@ -14,29 +14,23 @@
     limitations under the License.
 =end
 
-def reset_options
-    opts = Arachni::Options.instance
-    opts.reset
-    opts.rpc_address = 'localhost'
+module Arachni
+module Platforms::Fingerprinters
 
-    opts.dir['plugins']        = fixtures_path + 'plugins/'
-    opts.dir['modules']        = fixtures_path + 'modules/'
-    opts.dir['fingerprinters'] = fixtures_path + 'fingerprinters/'
-    opts.dir['logs']           = spec_path + 'support/logs/'
+#
+# Identifies Apache web servers.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+# @version 0.1
+#
+class Test < Base
 
-    opts
+    def run
+        platforms << :unix << :apache
+    end
+
 end
 
-def reset_all
-    Arachni::Framework.reset
-    reset_options
-    Arachni::HTTP.reset
 end
-
-def killall
-    instance_killall
-    dispatcher_killall
-    web_server_killall
-    process_killall
-    process_kill_em
 end

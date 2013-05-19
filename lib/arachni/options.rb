@@ -523,6 +523,7 @@ class Options
         @dir['plugins'] = @dir['root'] + 'plugins/'
         @dir['rpcd_handlers']   = @dir['root'] + 'rpcd_handlers/'
         @dir['path_extractors'] = @dir['root'] + 'path_extractors/'
+        @dir['fingerprinters']  = @dir['root'] + 'fingerprinters/'
 
         @dir['lib']     = @dir['root'] + 'lib/arachni/'
         @dir['support'] = @dir['lib'] + 'support/'

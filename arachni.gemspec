@@ -38,6 +38,7 @@ Gem::Specification.new do |s|
     s.files            += Dir.glob( 'lib/**/**' )
     s.files            += Dir.glob( 'logs/**/**' )
     s.files            += Dir.glob( 'modules/**/**' )
+    s.files            += Dir.glob( 'fingerprinters/**/**' )
     s.files            += Dir.glob( 'path_extractors/**/**' )
     s.files            += Dir.glob( 'plugins/**/**' )
     s.files            += Dir.glob( 'profiles/**/**' )

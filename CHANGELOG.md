@@ -2,6 +2,13 @@
 
 ## _Under development_
 
+- Added modular `Page` fingeprinting, via `fingerprinter` components, identifying:
+    - Operating systems
+    - Web servers
+    - Programming languages
+    - Databases
+- `Parser`
+    - Now fingerprints the pages it returns.
 - `Framework`
     - Removed the followed deprecated aliases:
         - `:resume!` -- Only use `resume` from now on.

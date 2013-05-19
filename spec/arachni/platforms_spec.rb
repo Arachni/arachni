@@ -2,10 +2,138 @@ require 'spec_helper'
 
 describe Arachni::Platforms do
 
+    after(:each) { described_class.reset }
+
     let(:platforms) { described_class.new }
 
     it 'is Enumerable' do
         platforms.is_a? Enumerable
+    end
+
+    describe '.set' do
+        it 'set the global platform fingerprints' do
+            described_class.set 'stuff'
+            described_class.all.should == 'stuff'
+        end
+    end
+
+    describe '.reset' do
+        it 'clears the global platform fingerprints' do
+            described_class.set 'stuff'
+            described_class.reset
+            described_class.all.should be_empty
+        end
+
+        it 'returns self' do
+            described_class.reset.should == described_class
+        end
+    end
+
+    describe '.fingerprint' do
+        it 'runs all fingerprinters against the given page' do
+            page = Arachni::Page.new( url: 'http://stuff.com/' )
+
+            page.platforms.should be_empty
+            described_class.fingerprint page
+            page.platforms.sort.should == [:unix, :apache].sort
+
+            described_class[page.url].should == page.platforms
+        end
+
+        it 'returns the given page' do
+            page = Arachni::Page.new( url: 'http://stuff.com/' )
+            described_class.fingerprint( page ).should == page
+        end
+    end
+
+    describe '.[]=' do
+        it 'set the platforms for the given URI' do
+            platforms = [:unix, :jsp]
+            described_class['http://stuff.com'] = platforms
+            described_class.all.values.first.sort.should == platforms.sort
+        end
+
+        it "converts the value to a #{described_class}" do
+            platforms = [:unix, :jsp]
+            described_class['http://stuff.com'] = platforms
+            described_class.all.values.first.should be_kind_of described_class
+        end
+
+        context 'when invalid platforms are given' do
+            it 'raises Arachni::Platforms::Error::Invalid' do
+                expect {
+                    described_class['http://stuff.com'] = [:stuff]
+                }.to raise_error Arachni::Platforms::Error::Invalid
+            end
+        end
+    end
+
+    describe '.update' do
+        it 'updates the platforms for the given URI' do
+            platforms = [:unix, :jsp]
+            described_class['http://stuff.com'] = platforms
+
+            described_class.update( 'http://stuff.com', [:pgsql] )
+            described_class.all.values.first.sort.should == (platforms | [:pgsql]).sort
+        end
+
+        context 'when invalid platforms are given' do
+            it 'raises Arachni::Platforms::Error::Invalid' do
+                expect {
+                    described_class.update( 'http://stuff.com', [:stuff] )
+                }.to raise_error Arachni::Platforms::Error::Invalid
+            end
+        end
+    end
+
+    describe '#empty?' do
+        context 'when there are no fingerprints' do
+            it 'returns true' do
+                described_class.empty?.should be_true
+            end
+        end
+        context 'when there are platforms' do
+            it 'returns false' do
+                described_class['http://stuff.com'] << :unix
+                described_class.empty?.should be_false
+            end
+        end
+    end
+
+    describe '#any?' do
+        context 'when there are no platforms' do
+            it 'returns false' do
+                described_class.any?.should be_false
+            end
+        end
+        context 'when there are platforms' do
+            it 'returns true' do
+                described_class['http://stuff.com'] << :unix
+                described_class.any?.should be_true
+            end
+        end
+    end
+
+    describe '.all' do
+        it 'returns all platforms per URL' do
+            described_class['http://stuff.com'] << :unix
+            described_class.all.should be_any
+            described_class.all.should be_kind_of Hash
+        end
+    end
+
+    describe '.[]' do
+        it 'retrieves the platforms for the given URI' do
+            described_class['http://stuff.com'] = platforms
+            described_class['http://stuff.com'].should == platforms
+        end
+
+        it "defaults to a #{described_class} instance" do
+            described_class['http://blahblah.com/'].should be_kind_of described_class
+            described_class['http://blahblah.com/'].should be_empty
+            described_class['http://blahblah.com/'] << :unix
+            described_class['http://blahblah.com/'].should be_any
+        end
     end
 
     describe '#initialize' do

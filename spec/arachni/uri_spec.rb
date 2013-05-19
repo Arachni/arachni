@@ -519,4 +519,34 @@ describe Arachni::URI do
             end
         end
     end
+
+    describe '#hash' do
+        it 'returns a hash uniquely identifying the URI' do
+            uri = described_class.new( 'http://stuff/' )
+            uri.hash.should be_kind_of Integer
+            uri.hash.should == uri.hash
+
+            uri2 = described_class.new( 'http://stuff2/' )
+            uri.hash.should_not == uri2.hash
+        end
+
+        it 'is an integer' do
+            described_class.new( 'http://stuff/' ).hash.should be_kind_of Integer
+        end
+    end
+
+    describe '#persistent_hash' do
+        it 'returns a hash uniquely identifying the URI' do
+            uri = described_class.new( 'http://stuff/' )
+            uri.persistent_hash.should be_kind_of Integer
+            uri.persistent_hash.should == uri.persistent_hash
+
+            uri2 = described_class.new( 'http://stuff2/' )
+            uri.persistent_hash.should_not == uri2.persistent_hash
+        end
+
+        it 'is an integer' do
+            described_class.new( 'http://stuff/' ).persistent_hash.should be_kind_of Integer
+        end
+    end
 end

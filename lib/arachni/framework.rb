@@ -640,6 +640,7 @@ class Framework
     # You should first update {Arachni::Options}.
     #
     def self.reset
+        Platforms.reset
         Module::Auditor.reset
         ElementFilter.reset
         Element::Capabilities::Auditable.reset

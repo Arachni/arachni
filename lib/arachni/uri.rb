@@ -617,6 +617,14 @@ class URI
         @parsed_url.to_s
     end
 
+    def hash
+        to_s.hash
+    end
+
+    def persistent_hash
+        to_s.persistent_hash
+    end
+
     protected
 
     def parsed_url
