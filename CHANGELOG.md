@@ -56,6 +56,7 @@
             - `Support::LookUp::Moolb` -- Reverse of a Bloom-filter.
         - `Support::Queue::Disk` -- Disk Queue with in-memory buffer.
 - Added:
+    - `Arachni::Platforms` -- To hold applicable platforms for a given WWW resource.
     - `IO#tail` -- Returns a specified amount of lines from the bottom of a file.
     - Process helpers for RPC Instance and Dispatcher servers.
         - `Arachni::Processes::Dispatchers` -- Spawns and kills Dispatchers.
