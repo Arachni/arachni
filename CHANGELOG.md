@@ -12,6 +12,8 @@
         - JSP
         - Python
     - Databases
+- `HTTP`
+    - 'Accept-Encoding' set to 'gzip, deflate' by default.
 - `Parser`
     - Now fingerprints the pages it returns.
 - `Framework`
