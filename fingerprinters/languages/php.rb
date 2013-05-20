@@ -26,12 +26,12 @@ module Platforms::Fingerprinters
 #
 class PHP < Base
 
-    EXTENSION = /php\d*/
+    EXTENSION = /php\d*/  # In case it's php5 or something.
     SESSIONID = 'phpsessid'
 
     def run
         extension = uri_parse( page.url ).resource_extension.to_s.downcase
-        return update_platforms if extension =~ /php\d*/ # In case it's php5 or something.
+        return update_platforms if extension =~ EXTENSION
 
         page.query_vars.keys.each do |param|
             return update_platforms if param.downcase == SESSIONID
