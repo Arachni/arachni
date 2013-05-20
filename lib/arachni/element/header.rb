@@ -57,6 +57,16 @@ class Header < Arachni::Element::Base
         muts
     end
 
+    # @return   [String]    Header name.
+    def name
+        @auditable.first.first
+    end
+
+    # @return   [String]    Header value.
+    def value
+        @auditable.first.last
+    end
+
     def type
         Arachni::Element::HEADER
     end

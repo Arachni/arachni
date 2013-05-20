@@ -40,6 +40,18 @@ describe Arachni::Element::Header do
         end
     end
 
+    describe '#name' do
+        it 'returns the header name' do
+            @header.name.should == 'My-header'
+        end
+    end
+
+    describe '#value' do
+        it 'returns the header value' do
+            @header.value.should == 'header_value'
+        end
+    end
+
     describe '#type' do
         it 'is "header"' do
             @header.type.should == 'header'
