@@ -74,13 +74,20 @@ class Platforms
     end
 
     # Operating systems.
-    OS = [
-        :unix, # Generic *nix, flavor couldn't be identified.
-        :linux,
-        :bsd, # *BSD flavors.
-        :solaris,
-        :windows
-    ]
+    OS = {
+        # Generic *nix, flavor couldn't be identified.
+        unix:    {
+            linux:   {},
+
+            # Generic BSD, flavor couldn't be identified.
+            bsd:     {
+                freebsd: {},
+                openbsd: {},
+            },
+            solaris: {}
+        },
+        windows: {}
+    }
 
     # Databases.
     DB = [
@@ -113,9 +120,6 @@ class Platforms
         :asp,
         :aspx
     ]
-
-    # All platforms.
-    ALL = OS + DB + SERVERS + LANGUAGES
 
     # Sets global platforms fingerprints
     # @private
@@ -210,6 +214,21 @@ class Platforms
         @applicable = Set.new( normalize( platforms ) )
     end
 
+    # @return   [Array<Symbol>] Supported platforms.
+    def all
+        @all ||= os_flat + DB + SERVERS + LANGUAGES
+    end
+
+    # @return   [Array<Symbol>] Flat list of supported {OS operating systems}.
+    def os_flat( hash = OS )
+        flat = []
+        hash.each do |k, v|
+            flat << k
+            flat |= os_flat( v ) if v.any?
+        end
+        flat.reject { |i| !i.is_a? Symbol }
+    end
+
     # Selects appropriate data depending on the applicable platforms
     # from `data_per_platform`.
     #
@@ -219,13 +238,23 @@ class Platforms
     # @return   [Hash]  `data_per_platform` with non-applicable entries removed.
     # @raise    [Error::Invalid]  On {#invalid?} platforms.
     def pick_applicable( data_per_platform )
-        data_per_platform.select { |k, v| include? k }
+        data_per_platform.select! { |k, v| include? k }
+
+        # Bail out if there are no operating systems included.
+        return data_per_platform if (os_flat & data_per_platform.keys).empty?
+
+        # Remove parent operating systems if we have more specific identifiers.
+        data_per_platform.keys.each do |platform|
+            data_per_platform.reject! { |k, _| find_parents( platform ).include? k }
+        end
+
+        data_per_platform
     end
 
     # @param    [Array<Symbol, String> Symbol, String]  platforms
     #   Platform(s) to check.
     # @return   [Boolean]
-    #   `true` if platforms are valid (i.e. in {ALL}), `false` otherwise.
+    #   `true` if platforms are valid (i.e. in {#all}), `false` otherwise.
     # @see #invalud?
     def valid?( platforms )
         normalize( platforms )
@@ -237,7 +266,7 @@ class Platforms
     # @param    [Array<Symbol, String> Symbol, String]  platforms
     #   Platform(s) to check.
     # @return   [Boolean]
-    #   `true` if platforms are invalid (i.e. not in {ALL}), `false` otherwise.
+    #   `true` if platforms are invalid (i.e. not in {#all}), `false` otherwise.
     # @see #valid?
     def invalid?( platforms )
         !valid?( platforms )
@@ -324,12 +353,26 @@ class Platforms
 
     private
 
+    def find_parents( platform, hash = OS )
+        return [] if hash.empty?
+
+        parents = []
+        hash.each do |k, v|
+            if v.include?( platform )
+                parents << k
+            elsif v.is_a? Hash
+                parents |= find_parents( platform, v )
+            end
+        end
+        parents
+    end
+
     def normalize( platforms )
         return platforms if platforms.is_a? self.class
 
         if platforms.is_a?( Symbol ) || platforms.is_a?( String )
             platform = platforms.to_sym
-            if !ALL.include?( platform )
+            if !all.include?( platform )
                 fail Error::Invalid, "Invalid platform: #{platform}"
             end
 
@@ -337,7 +380,7 @@ class Platforms
         end
 
         platforms = platforms.map( &:to_sym ).uniq.sort
-        invalid   = (ALL + platforms) - ALL
+        invalid   = (all + platforms) - all
 
         if invalid.any?
             fail Error::Invalid, "Invalid platforms: #{invalid.join( ', ' )}"

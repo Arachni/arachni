@@ -173,15 +173,53 @@ describe Arachni::Platforms do
         end
     end
 
+    describe '#os_flat' do
+        it 'returns a flat list of supported operating systems' do
+            platforms.os_flat.sort.should ==
+                [:unix, :linux, :bsd, :freebsd, :openbsd, :solaris, :windows].sort
+        end
+    end
+
+    describe '#all' do
+        it 'returns all supported platforms' do
+            platforms.all.sort.should ==
+                (platforms.os_flat + described_class::DB + described_class::SERVERS +
+                    described_class::LANGUAGES).sort
+        end
+    end
+
     describe '#pick_applicable' do
         it 'returns only data relevant to the applicable platforms' do
             applicable_data = {
-                unix:    [ '*NIX stuff' ],
-                linux:   [ 'Linux stuff' ],
+                bsd:   [ 'BSD stuff' ],
+                linux: [ 'Linux stuff' ],
+                php:   [ 'PHP stuff' ]
             }
-            data = applicable_data.merge( windows:[ 'Windows stuff' ] )
+            data = applicable_data.merge( windows: [ 'Windows stuff' ] )
 
-            platforms << :unix << :linux
+            platforms << :bsd << :linux << :php
+            platforms.pick_applicable( data ).should == applicable_data
+        end
+
+        it 'removes generic OS types if more specific flavors are specified' do
+            applicable_data = {
+                # This should not be in the picked data.
+                unix:    [ 'Generic *nix stuff' ],
+
+                # This should not be in the picked data.
+                bsd:     [ 'BSD stuff' ],
+
+                linux:   [ 'Linux stuff' ],
+                freebsd: [ 'FreeBSD stuff' ],
+                php:     [ 'PHP stuff' ]
+            }
+            data = applicable_data.merge( windows: [ 'Windows stuff' ] )
+
+            platforms << :bsd << :linux << :php << :unix << :freebsd << :openbsd
+
+            applicable_data.delete( :unix )
+            applicable_data.delete( :bsd )
+
             platforms.pick_applicable( data ).should == applicable_data
         end
 
