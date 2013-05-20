@@ -226,6 +226,10 @@ class Framework
         print_line
         print_status "Auditing: [HTTP: #{page.code}] #{page.url}"
 
+        if page.platforms.any?
+            print_info "Identified as: #{page.platforms.to_a.join( ', ' )}"
+        end
+
         call_on_audit_page( page )
 
         @current_url = page.url.to_s
@@ -690,6 +694,9 @@ class Framework
             spider.run do |page|
                 @sitemap |= spider.sitemap
                 push_to_url_queue page.url
+
+                next if page.platforms.empty?
+                print_info "Identified as: #{page.platforms.to_a.join( ', ' )}"
             end
         end
 
