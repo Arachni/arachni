@@ -33,6 +33,7 @@ require lib + 'error'
 require lib + 'support'
 require lib + 'utilities'
 require lib + 'uri'
+require lib + 'component/manager'
 require lib + 'platforms'
 require lib + 'spider'
 require lib + 'parser'
@@ -42,7 +43,6 @@ require lib + 'plugin'
 require lib + 'audit_store'
 require lib + 'http'
 require lib + 'report'
-require lib + 'component/manager'
 require lib + 'session'
 require lib + 'trainer'
 
@@ -687,9 +687,9 @@ class Framework
             @opts.restrict_paths.each { |url| push_to_url_queue( url ) }
         else
             # initiates the crawl
-            spider.run( false ) do |response|
+            spider.run do |page|
                 @sitemap |= spider.sitemap
-                push_to_url_queue( url_sanitize( response.effective_url ) )
+                push_to_url_queue page.url
             end
         end
 
