@@ -14,7 +14,7 @@ describe Arachni::Platforms::Fingerprinters::ASPX do
     context 'when there is a session ID in the path' do
         it 'identifies it as ASP' do
             page = Arachni::Page.new(
-                url:        'http://blah.com/(S(yn5cby55lgzstcen0ng2b4iq))/stuff.aspx'
+                url:        'http://blah.com/(S(yn5cby55lgzstcen0ng2b4iq))/stuff'
             )
             platforms_for( page ).should include :aspx
             platforms_for( page ).should include :windows

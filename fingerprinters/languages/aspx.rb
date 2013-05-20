@@ -40,7 +40,7 @@ class ASPX < Base
 
         # Session ID in URL, like:
         #   http://blah.com/(S(yn5cby55lgzstcen0ng2b4iq))/stuff.aspx
-        return update_platforms if parsed_uri.path =~ /\/\(w\([a-z0-9]\)\)\//i
+        return update_platforms if parsed_uri.path =~ /\/\(s\([a-z0-9]+\)\)\//i
 
         page.cookies.each do |cookie|
             return update_platforms if cookie.name.downcase == SESSION_COOKIE
