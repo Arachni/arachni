@@ -26,7 +26,32 @@ module Platforms::Fingerprinters
 #
 class JSP < Base
 
+    EXTENSION = 'jsp'
+    SESSIONID = 'jsessionid'
+
     def run
+        extension = uri_parse( page.url ).resource_extension.to_s.downcase
+        return update_platforms if extension == EXTENSION
+
+        page.query_vars.keys.each do |param|
+            return update_platforms if param.downcase == SESSIONID
+        end
+
+        page.cookies.each do |cookie|
+            return update_platforms if cookie.name.downcase == SESSIONID
+        end
+
+        page.headers.each do |header|
+            if header.name.downcase == 'x-powered-by' &&
+                (header.value.downcase.include?( 'servlet' ) ||
+                    header.value.downcase.include?( 'jsp' ))
+                return update_platforms
+            end
+        end
+    end
+
+    def update_platforms
+        platforms << :jsp
     end
 
 end

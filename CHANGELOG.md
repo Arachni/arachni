@@ -9,6 +9,7 @@
         - PHP
         - ASP
         - ASPX
+        - JSP
     - Databases
 - `Parser`
     - Now fingerprints the pages it returns.
