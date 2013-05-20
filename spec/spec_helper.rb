@@ -15,7 +15,7 @@
 =end
 
 # Uncomment to show output from the Framework.
-require_relative '../lib/arachni/ui/cli/output'
+#require_relative '../lib/arachni/ui/cli/output'
 require_relative '../lib/arachni'
 require_relative '../lib/arachni/processes'
 require_relative '../lib/arachni/processes/helpers'
