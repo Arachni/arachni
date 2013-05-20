@@ -26,7 +26,22 @@ module Platforms::Fingerprinters
 #
 class Python < Base
 
+    EXTENSION = 'py'
+
     def run
+        extension = uri_parse( page.url ).resource_extension.to_s.downcase
+        return update_platforms if extension == EXTENSION
+
+        page.headers.each do |header|
+            if header.name.downcase == 'x-powered-by' &&
+                header.value.downcase.include?( 'python' )
+                return update_platforms
+            end
+        end
+    end
+
+    def update_platforms
+        platforms << :python
     end
 
 end

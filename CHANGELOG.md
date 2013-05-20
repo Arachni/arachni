@@ -10,6 +10,7 @@
         - ASP
         - ASPX
         - JSP
+        - Python
     - Databases
 - `Parser`
     - Now fingerprints the pages it returns.
