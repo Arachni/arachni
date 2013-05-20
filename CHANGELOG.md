@@ -6,6 +6,7 @@
     - Operating systems
     - Web servers
     - Programming languages
+        - PHP
     - Databases
 - `Parser`
     - Now fingerprints the pages it returns.

@@ -27,7 +27,27 @@ module Platforms::Fingerprinters
 class PHP < Base
 
     def run
-        ap page
+        extension = uri_parse( page.url ).resource_extension.to_s.downcase
+        return update_platforms if extension =~ /php\d*/ # In case it's php5 or something.
+
+        page.query_vars.keys.each do |param|
+            return update_platforms if param.downcase == 'phpsessid'
+        end
+
+        page.cookies.each do |cookie|
+            return update_platforms if cookie.name.downcase == 'phpsessid'
+        end
+
+        page.headers.each do |header|
+            if header.name.downcase == 'x-powered-by' &&
+                header.value.downcase.start_with?( 'php/' )
+                return update_platforms
+            end
+        end
+    end
+
+    def update_platforms
+        platforms << :php
     end
 
 end
