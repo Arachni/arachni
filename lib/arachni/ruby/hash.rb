@@ -48,4 +48,10 @@ class Hash
         symbolize
     end
 
+    # @return   [Hash]
+    #   Self with the keys and values converted to lower-case strings.
+    def downcase
+        stringify_keys.inject({}) { |h, (k, v)| h[k.downcase] = v.downcase; h }
+    end
+
 end
