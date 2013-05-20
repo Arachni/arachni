@@ -517,6 +517,19 @@ class URI
     end
 
     # @return   [String]
+    #   The URL up to its resource component (query, fragment, etc).
+    def without_query
+        to_s.split( '?', 2 ).first.to_s
+    end
+
+    # @return   [String]    The extension of the URI resource.
+    def resource_extension
+        resource_name = path.split( '/' ).last.to_s
+        return if !resource_name.include?( '.' )
+        resource_name.split( '.' ).last
+    end
+
+    # @return   [String]
     #   The URL up to its path component (no resource name, query, fragment, etc).
     def up_to_path
         uri_path = path.dup

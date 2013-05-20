@@ -507,6 +507,25 @@ describe Arachni::URI do
         end
     end
 
+    describe '#without_query' do
+        it 'returns the URI up to its resource component without the query' do
+            expected = 'http://test.com/directory/resource.php'
+            described_class.new( "#{expected}?param=1&param2=2" ).without_query.should == expected
+        end
+    end
+
+    describe '#resource_extension' do
+        context 'when there is no extension' do
+            it 'returns nil' do
+                described_class.new( 'http://stuff.com/test' ).resource_extension.should be_nil
+            end
+        end
+        it 'returns the extension of the resource' do
+            uri = "http://test.com/direct.ory/resource.php?param=1&param2=2"
+            described_class.new( uri ).resource_extension.should == 'php'
+        end
+    end
+
     describe '#mailto?' do
         context 'when the URI has a mailto scheme' do
             it 'returns true' do
