@@ -201,26 +201,43 @@ describe Arachni::Platforms do
             platforms.pick_applicable( data ).should == applicable_data
         end
 
-        it 'removes generic OS types if more specific flavors are specified' do
-            applicable_data = {
-                # This should not be in the picked data.
-                unix:    [ 'Generic *nix stuff' ],
+        context 'when a parent OS has been specified' do
+            it 'includes all children OS flavors' do
+                applicable_data = {
+                    linux:   [ 'Linux stuff' ],
+                    freebsd: [ 'FreeBSD stuff' ],
+                    php:     [ 'PHP stuff' ]
+                }
+                data = applicable_data.merge( windows: [ 'Windows stuff' ] )
 
-                # This should not be in the picked data.
-                bsd:     [ 'BSD stuff' ],
+                platforms << :unix << :php
 
-                linux:   [ 'Linux stuff' ],
-                freebsd: [ 'FreeBSD stuff' ],
-                php:     [ 'PHP stuff' ]
-            }
-            data = applicable_data.merge( windows: [ 'Windows stuff' ] )
+                platforms.pick_applicable( data ).should == applicable_data
+            end
 
-            platforms << :bsd << :linux << :php << :unix << :freebsd << :openbsd
+            context 'and specific OS flavors are specified' do
+                it 'removes parent OS types' do
+                    applicable_data = {
+                        # This should not be in the picked data.
+                        unix:    [ 'Generic *nix stuff' ],
 
-            applicable_data.delete( :unix )
-            applicable_data.delete( :bsd )
+                        # This should not be in the picked data.
+                        bsd:     [ 'BSD stuff' ],
 
-            platforms.pick_applicable( data ).should == applicable_data
+                        linux:   [ 'Linux stuff' ],
+                        freebsd: [ 'FreeBSD stuff' ],
+                        php:     [ 'PHP stuff' ]
+                    }
+                    data = applicable_data.merge( windows: [ 'Windows stuff' ] )
+
+                    platforms << :bsd << :linux << :php << :unix << :freebsd << :openbsd
+
+                    applicable_data.delete( :unix )
+                    applicable_data.delete( :bsd )
+
+                    platforms.pick_applicable( data ).should == applicable_data
+                end
+            end
         end
 
         context 'when invalid platforms are given' do

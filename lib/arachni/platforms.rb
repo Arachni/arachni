@@ -238,17 +238,36 @@ class Platforms
     # @return   [Hash]  `data_per_platform` with non-applicable entries removed.
     # @raise    [Error::Invalid]  On {#invalid?} platforms.
     def pick_applicable( data_per_platform )
+        orig_data_per_platform = data_per_platform.dup
+        data_per_platform      = data_per_platform.dup
+
         data_per_platform.select! { |k, v| include? k }
 
         # Bail out if there are no operating systems included.
-        return data_per_platform if (os_flat & data_per_platform.keys).empty?
+        return data_per_platform if (os_flat & orig_data_per_platform.keys).empty?
 
-        # Remove parent operating systems if we have more specific identifiers.
+        # Keep track of parent OSs which were removed due to the existence
+        # of specific OS flavors for their type.
+        specified_parents = []
+
+        # Remove parent operating systems if we have specific slavors.
         data_per_platform.keys.each do |platform|
-            data_per_platform.reject! { |k, _| find_parents( platform ).include? k }
+            specified_parents |= parents = find_parents( platform )
+            data_per_platform.reject! { |k, _| parents.include? k }
         end
 
-        data_per_platform
+        # Include all of the parents' children if parents are specified but no
+        # specific children.
+
+        children = {}
+        children_for = os_flat & @applicable.to_a
+        children_for.each do |platform|
+            next if specified_parents.include? platform
+            c = find_children( platform )
+            children.merge! orig_data_per_platform.select { |k, _| c.include? k }
+        end
+
+        data_per_platform.merge children
     end
 
     # @param    [Array<Symbol, String> Symbol, String]  platforms
@@ -352,6 +371,25 @@ class Platforms
     end
 
     private
+
+    def parent?( platform )
+
+    end
+
+    def find_children( platform, hash = OS )
+        return [] if hash.empty?
+
+        children = []
+        hash.each do |k, v|
+            if k == platform
+                children |= os_flat( v )
+            elsif v.is_a? Hash
+                children |= find_children( platform, v )
+            end
+
+        end
+        children
+    end
 
     def find_parents( platform, hash = OS )
         return [] if hash.empty?
