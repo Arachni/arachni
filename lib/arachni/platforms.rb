@@ -26,6 +26,10 @@ module Arachni
 #
 class Platforms
     include Enumerable
+    include Utilities
+    extend  Utilities
+    include UI::Output
+    extend  UI::Output
 
     # Namespace under which all platform fingerprinter components reside.
     module Fingerprinters
@@ -33,6 +37,7 @@ class Platforms
         # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
         # @abstract
         class Base
+            include Utilities
 
             attr_reader :page
 
@@ -121,9 +126,17 @@ class Platforms
     # Empties the global platform fingerprints.
     def self.reset
         set Hash.new
+        @manager.clear if @manager
+        @manager = nil
         self
     end
     reset
+
+    def self.fingerprinters
+        @manager ||=
+            Component::Manager.new( Options.dir['fingerprinters'], Fingerprinters )
+    end
+    fingerprinters.load_all
 
     # Runs all fingerprinters against the given `page`.
     #
@@ -131,9 +144,9 @@ class Platforms
     # @return   [Platforms]   Updated `self`.
     def self.fingerprint( page )
         fingerprinters.available.each do |name|
-            #exception_jail do
-            fingerprinters[name].new( page ).run
-            #end
+            exception_jail( false ) do
+                fingerprinters[name].new( page ).run
+            end
         end
         page
     end
@@ -147,7 +160,7 @@ class Platforms
     # @return   [Platforms] `platforms`
     # @raise    [Error::Invalid]  On {#invalid?} platforms.
     def self.[]=( uri, platforms )
-        @platforms[Arachni::URI( uri ).persistent_hash] =
+        @platforms[make_key( uri )] =
             platforms.is_a?( self ) ? platforms : new( platforms )
     end
 
@@ -165,7 +178,7 @@ class Platforms
     # @param    [String, URI]   uri
     # @return   [Platforms] Platforms for the given `uri`
     def self.[]( uri )
-        @platforms[Arachni::URI( uri ).persistent_hash] ||= Platforms.new
+        @platforms[make_key( uri )] ||= Platforms.new
     end
 
     # @return   [Boolean]
@@ -184,6 +197,10 @@ class Platforms
     #   Platforms per {URI#persistent_hash hashed URL}.
     def self.all
         @platforms
+    end
+
+    def self.make_key( uri )
+        Arachni::URI( uri ).without_query.persistent_hash
     end
 
     # @param    [Array<String, Symbol>]    platforms
@@ -327,11 +344,6 @@ class Platforms
         end
 
         platforms
-    end
-
-    def self.fingerprinters
-        @manager ||=
-            Component::Manager.new( Options.dir['fingerprinters'], Fingerprinters )
     end
 
 end

@@ -31,7 +31,7 @@ describe Arachni::Platforms do
 
     describe '.fingerprint' do
         it 'runs all fingerprinters against the given page' do
-            page = Arachni::Page.new( url: 'http://stuff.com/' )
+            page = Arachni::Page.new( url: 'http://stuff.com/blah.php' )
 
             page.platforms.should be_empty
             described_class.fingerprint page
@@ -46,7 +46,41 @@ describe Arachni::Platforms do
         end
     end
 
+    describe '.[]' do
+        it 'ignores query parameters in the key URL' do
+            base = 'http://stuff.com/'
+            uri  = base + '?stuff=here'
+
+            platforms << :unix << :jsp
+            described_class[uri] = platforms
+            described_class[uri].should == platforms
+            described_class[base].should == described_class[uri]
+        end
+
+        it 'retrieves the platforms for the given URI' do
+            described_class['http://stuff.com'] = platforms
+            described_class['http://stuff.com'].should == platforms
+        end
+
+        it "defaults to a #{described_class} instance" do
+            described_class['http://blahblah.com/'].should be_kind_of described_class
+            described_class['http://blahblah.com/'].should be_empty
+            described_class['http://blahblah.com/'] << :unix
+            described_class['http://blahblah.com/'].should be_any
+        end
+    end
+
     describe '.[]=' do
+        it 'ignores query parameters in the key URL' do
+            base = 'http://stuff.com/'
+            uri  = base + '?stuff=here'
+
+            platforms << :unix << :jsp
+            described_class[uri] = platforms
+            described_class[uri].should == platforms
+            described_class[base].should == described_class[uri]
+        end
+
         it 'set the platforms for the given URI' do
             platforms = [:unix, :jsp]
             described_class['http://stuff.com'] = platforms
@@ -119,20 +153,6 @@ describe Arachni::Platforms do
             described_class['http://stuff.com'] << :unix
             described_class.all.should be_any
             described_class.all.should be_kind_of Hash
-        end
-    end
-
-    describe '.[]' do
-        it 'retrieves the platforms for the given URI' do
-            described_class['http://stuff.com'] = platforms
-            described_class['http://stuff.com'].should == platforms
-        end
-
-        it "defaults to a #{described_class} instance" do
-            described_class['http://blahblah.com/'].should be_kind_of described_class
-            described_class['http://blahblah.com/'].should be_empty
-            described_class['http://blahblah.com/'] << :unix
-            described_class['http://blahblah.com/'].should be_any
         end
     end
 
