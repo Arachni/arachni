@@ -26,7 +26,24 @@ module Platforms::Fingerprinters
 #
 class ASP < Base
 
+    EXTENSION = 'asp'
+    SESSIONID = 'aspsessionid'
+
     def run
+        extension = uri_parse( page.url ).resource_extension.to_s.downcase
+        return update_platforms if extension == EXTENSION
+
+        page.query_vars.keys.each do |param|
+            return update_platforms if param.downcase == SESSIONID
+        end
+
+        page.cookies.each do |cookie|
+            return update_platforms if cookie.name.downcase == SESSIONID
+        end
+    end
+
+    def update_platforms
+        platforms << :asp << :windows
     end
 
 end
