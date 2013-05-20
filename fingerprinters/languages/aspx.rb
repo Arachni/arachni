@@ -30,20 +30,15 @@ class ASPX < Base
     SESSION_COOKIE  = 'asp.net_sessionid'
     X_POWERED_BY    = 'asp.net'
     VIEWSTATE       = 'viewstate'
-    HEADER_FIELDS   = Set.new( %w(x-aspnet-version x-aspnetmvc-version) )
+    HEADER_FIELDS   = %w(x-aspnet-version x-aspnetmvc-version)
 
     def run
-        parsed_uri = uri_parse( page.url )
-
-        extension = parsed_uri.resource_extension.to_s.downcase
-        return update_platforms if extension == EXTENSION
-
-        # Session ID in URL, like:
-        #   http://blah.com/(S(yn5cby55lgzstcen0ng2b4iq))/stuff.aspx
-        return update_platforms if parsed_uri.path =~ /\/\(s\([a-z0-9]+\)\)\//i
-
-        page.cookies.each do |cookie|
-            return update_platforms if cookie.name.downcase == SESSION_COOKIE
+        if extension == EXTENSION ||
+            # Session ID in URL, like:
+            #   http://blah.com/(S(yn5cby55lgzstcen0ng2b4iq))/stuff.aspx
+            uri.path =~ /\/\(s\([a-z0-9]+\)\)\//i ||
+            cookies.include?( SESSION_COOKIE )
+            return update_platforms
         end
 
         page.forms.each do |form|
@@ -52,11 +47,9 @@ class ASPX < Base
             end
         end
 
-        page.response_headers.each do |k, v|
-            return update_platforms if HEADER_FIELDS.include? k.downcase
-            if k.downcase == 'x-powered-by' && v.downcase.start_with?( X_POWERED_BY )
-                return update_platforms
-            end
+        if powered_by.start_with?( X_POWERED_BY ) ||
+            (headers.keys & HEADER_FIELDS).any?
+            update_platforms
         end
     end
 

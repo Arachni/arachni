@@ -34,21 +34,66 @@ class Platforms
     # Namespace under which all platform fingerprinter components reside.
     module Fingerprinters
 
+        #
+        # Provides utility methods for fingerprinter components as well as
+        # the {Page} object to be fingerprinted
+        #
         # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
         # @abstract
         class Base
             include Utilities
 
+            # @return   [Page]  Page to fingerprint.
             attr_reader :page
 
             def initialize( page )
                 @page = page
             end
 
+            # Executes the payload of the fingerpreter.
             # @abstract
             def run
             end
 
+            # @return   [Arachni::URI]  Parsed URL of the {#page}.
+            def uri
+                uri_parse( page.url )
+            end
+
+            # @return   [Hash]  URI parameters with keys and values downcased.
+            def parameters
+                @parameters ||= page.query_vars.downcase
+            end
+
+            # @return   [Hash]  Cookies as headers with keys and values downcased.
+            def cookies
+                @cookies ||= page.cookies.
+                    inject({}) { |h, c| h.merge! c.simple }.downcase
+            end
+
+            # @return   [Hash]  Response headers with keys and values downcased.
+            def headers
+                @headers ||= page.response_headers.downcase
+            end
+
+            # @return   [String. nil] Value of the `X-Powered-By` header.
+            def powered_by
+                headers['x-powered-by'].to_s
+            end
+
+            # @return   [String. nil] Value of the `Server` header.
+            def server
+                headers['server'].to_s
+            end
+
+            # @return   [String] Downcased file extension of the page.
+            def extension
+                @extension ||= uri_parse( page.url ).resource_extension.to_s.downcase
+            end
+
+            # @return   [Platforms]
+            #   Platforms for the given page, should be updated by the
+            #   fingerprinter accordingly.
             def platforms
                 page.platforms
             end

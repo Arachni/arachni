@@ -30,27 +30,11 @@ class JSP < Base
     SESSIONID = 'jsessionid'
 
     def run
-        extension = uri_parse( page.url ).resource_extension.to_s.downcase
-        return update_platforms if extension == EXTENSION
-
-        page.query_vars.keys.each do |param|
-            return update_platforms if param.downcase == SESSIONID
+        if extension == EXTENSION || parameters.include?( SESSIONID ) ||
+            cookies.include?( SESSIONID ) || powered_by.include?( 'servlet' ) ||
+            powered_by.include?( 'jsp' )
+            platforms << :jsp
         end
-
-        page.cookies.each do |cookie|
-            return update_platforms if cookie.name.downcase == SESSIONID
-        end
-
-        page.response_headers.each do |k, v|
-            if k.downcase == 'x-powered-by' &&
-                (v.downcase.include?( 'servlet' ) || v.downcase.include?( 'jsp' ))
-                return update_platforms
-            end
-        end
-    end
-
-    def update_platforms
-        platforms << :jsp
     end
 
 end

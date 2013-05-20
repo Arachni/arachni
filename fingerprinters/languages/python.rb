@@ -29,18 +29,9 @@ class Python < Base
     EXTENSION = 'py'
 
     def run
-        extension = uri_parse( page.url ).resource_extension.to_s.downcase
-        return update_platforms if extension == EXTENSION
-
-        page.response_headers.each do |k, v|
-            if k.downcase == 'x-powered-by' && v.downcase.include?( 'python' )
-                return update_platforms
-            end
+        if extension == EXTENSION || powered_by.include?( 'python' )
+            platforms << :python
         end
-    end
-
-    def update_platforms
-        platforms << :python
     end
 
 end
