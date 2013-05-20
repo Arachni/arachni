@@ -41,10 +41,9 @@ class JSP < Base
             return update_platforms if cookie.name.downcase == SESSIONID
         end
 
-        page.headers.each do |header|
-            if header.name.downcase == 'x-powered-by' &&
-                (header.value.downcase.include?( 'servlet' ) ||
-                    header.value.downcase.include?( 'jsp' ))
+        page.response_headers.each do |k, v|
+            if k.downcase == 'x-powered-by' &&
+                (v.downcase.include?( 'servlet' ) || v.downcase.include?( 'jsp' ))
                 return update_platforms
             end
         end

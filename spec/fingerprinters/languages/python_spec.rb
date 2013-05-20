@@ -14,9 +14,7 @@ describe Arachni::Platforms::Fingerprinters::Python do
         it 'identifies it as PHP' do
             page = Arachni::Page.new(
                 url:     'http://stuff.com/blah',
-                headers: [Arachni::Header.new( 'http://stuff.com/blah',
-                                               'X-Powered-By' => 'Python/stuff' )]
-
+                response_headers: { 'X-Powered-By' => 'Python/stuff' }
             )
             platforms_for( page ).should include :python
         end

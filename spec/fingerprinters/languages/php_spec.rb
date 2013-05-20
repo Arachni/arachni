@@ -44,10 +44,8 @@ describe Arachni::Platforms::Fingerprinters::PHP do
     context 'when there is an X-Powered-By header' do
         it 'identifies it as PHP' do
             page = Arachni::Page.new(
-                url:     'http://stuff.com/blah',
-                headers: [Arachni::Header.new( 'http://stuff.com/blah',
-                                               'X-Powered-By' => 'PHP/5.1.2' )]
-
+                url: 'http://stuff.com/blah',
+                response_headers: { 'X-Powered-By' => 'PHP/5.1.2' }
             )
             platforms_for( page ).should include :php
         end

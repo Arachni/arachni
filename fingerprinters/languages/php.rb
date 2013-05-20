@@ -41,9 +41,8 @@ class PHP < Base
             return update_platforms if cookie.name.downcase == SESSIONID
         end
 
-        page.headers.each do |header|
-            if header.name.downcase == 'x-powered-by' &&
-                header.value.downcase.start_with?( 'php/' )
+        page.response_headers.each do |k, v|
+            if k.downcase == 'x-powered-by' && v.downcase.start_with?( 'php/' )
                 return update_platforms
             end
         end

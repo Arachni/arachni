@@ -38,8 +38,7 @@ describe Arachni::Platforms::Fingerprinters::JSP do
         it 'identifies it as JSP' do
             page = Arachni::Page.new(
                 url:     'http://stuff.com/blah',
-                headers: [Arachni::Header.new( 'http://stuff.com/blah',
-                                               'X-Powered-By' => 'Servlet/2.4' )]
+                response_headers:  { 'X-Powered-By' => 'Servlet/2.4' }
 
             )
             platforms_for( page ).should include :jsp
@@ -50,8 +49,7 @@ describe Arachni::Platforms::Fingerprinters::JSP do
         it 'identifies it as JSP' do
             page = Arachni::Page.new(
                 url:     'http://stuff.com/blah',
-                headers: [Arachni::Header.new( 'http://stuff.com/blah',
-                                               'X-Powered-By' => 'JSP/2.1' )]
+                response_headers:  { 'X-Powered-By' => 'JSP/2.1' }
 
             )
             platforms_for( page ).should include :jsp

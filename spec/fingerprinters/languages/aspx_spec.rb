@@ -38,9 +38,7 @@ describe Arachni::Platforms::Fingerprinters::ASPX do
         it 'identifies it as ASPX' do
             page = Arachni::Page.new(
                 url:     'http://stuff.com/blah',
-                headers: [Arachni::Header.new( 'http://stuff.com/blah',
-                                               'X-Powered-By' => 'ASP.NET' )]
-
+                response_headers: { 'X-Powered-By' => 'ASP.NET'  }
             )
             platforms_for( page ).should include :aspx
             platforms_for( page ).should include :windows
@@ -51,8 +49,7 @@ describe Arachni::Platforms::Fingerprinters::ASPX do
         it 'identifies it as ASPX' do
             page = Arachni::Page.new(
                 url:     'http://stuff.com/blah',
-                headers: [Arachni::Header.new( 'http://stuff.com/blah',
-                                               'X-AspNet-Version' => '4.0.30319' )]
+                response_headers: { 'X-AspNet-Version' => '4.0.30319' }
 
             )
             platforms_for( page ).should include :aspx
@@ -64,8 +61,7 @@ describe Arachni::Platforms::Fingerprinters::ASPX do
         it 'identifies it as ASPX' do
             page = Arachni::Page.new(
                 url:     'http://stuff.com/blah',
-                headers: [Arachni::Header.new( 'http://stuff.com/blah',
-                                               'X-AspNetMvc-Version' => '2.0' )]
+                response_headers: { 'X-AspNetMvc-Version' => '2.0' }
 
             )
             platforms_for( page ).should include :aspx

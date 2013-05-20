@@ -52,11 +52,9 @@ class ASPX < Base
             end
         end
 
-        page.headers.each do |header|
-            return update_platforms if HEADER_FIELDS.include? header.name.downcase
-
-            if header.name.downcase == 'x-powered-by' &&
-                header.value.downcase.start_with?( X_POWERED_BY )
+        page.response_headers.each do |k, v|
+            return update_platforms if HEADER_FIELDS.include? k.downcase
+            if k.downcase == 'x-powered-by' && v.downcase.start_with?( X_POWERED_BY )
                 return update_platforms
             end
         end
