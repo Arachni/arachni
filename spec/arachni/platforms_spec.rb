@@ -191,13 +191,12 @@ describe Arachni::Platforms do
     describe '#pick_applicable' do
         it 'returns only data relevant to the applicable platforms' do
             applicable_data = {
-                bsd:   [ 'BSD stuff' ],
-                linux: [ 'Linux stuff' ],
-                php:   [ 'PHP stuff' ]
+                unix: [ 'UNIX stuff' ],
+                php:  [ 'PHP stuff' ]
             }
             data = applicable_data.merge( windows: [ 'Windows stuff' ] )
 
-            platforms << :bsd << :linux << :php
+            platforms << :unix << :php
             platforms.pick_applicable( data ).should == applicable_data
         end
 
