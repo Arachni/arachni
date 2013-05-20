@@ -73,13 +73,6 @@ describe Arachni::Platforms::Fingerprinters::Base do
             page = Arachni::Page.new( url: 'http://stuff.com/blah.stuff/page.pHp' )
             described_class.new( page ).extension.should == 'php'
         end
-
-        context 'when there is no extension' do
-            it 'returns nil' do
-                page = Arachni::Page.new( url: 'http://stuff.com/' )
-                described_class.new( page ).extension.should be_nil
-            end
-        end
     end
 
     describe '#platforms' do

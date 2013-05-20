@@ -166,6 +166,11 @@ class Platforms
         :aspx
     ]
 
+    # WebApp frameworks.
+    FRAMEWORKS = [
+        :rack
+    ]
+
     # Sets global platforms fingerprints
     # @private
     def self.set( platforms )
@@ -261,7 +266,7 @@ class Platforms
 
     # @return   [Array<Symbol>] Supported platforms.
     def all
-        @all ||= os_flat + DB + SERVERS + LANGUAGES
+        @all ||= os_flat + DB + SERVERS + LANGUAGES + FRAMEWORKS
     end
 
     # @return   [Array<Symbol>] Flat list of supported {OS operating systems}.

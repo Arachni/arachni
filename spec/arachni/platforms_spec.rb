@@ -184,7 +184,7 @@ describe Arachni::Platforms do
         it 'returns all supported platforms' do
             platforms.all.sort.should ==
                 (platforms.os_flat + described_class::DB + described_class::SERVERS +
-                    described_class::LANGUAGES).sort
+                    described_class::LANGUAGES + described_class::FRAMEWORKS).sort
         end
     end
 

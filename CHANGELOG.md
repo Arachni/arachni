@@ -11,6 +11,8 @@
         - ASPX
         - JSP
         - Python
+    - Frameworks
+        - Rack
     - Databases
 - `HTTP`
     - 'Accept-Encoding' set to 'gzip, deflate' by default.
