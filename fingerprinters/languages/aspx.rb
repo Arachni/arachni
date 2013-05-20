@@ -26,7 +26,44 @@ module Platforms::Fingerprinters
 #
 class ASPX < Base
 
+    EXTENSION       = 'aspx'
+    SESSION_COOKIE  = 'asp.net_sessionid'
+    X_POWERED_BY    = 'asp.net'
+    VIEWSTATE       = 'viewstate'
+    HEADER_FIELDS   = Set.new( %w(x-aspnet-version x-aspnetmvc-version) )
+
     def run
+        parsed_uri = uri_parse( page.url )
+
+        extension = parsed_uri.resource_extension.to_s.downcase
+        return update_platforms if extension == EXTENSION
+
+        # Session ID in URL, like:
+        #   http://blah.com/(S(yn5cby55lgzstcen0ng2b4iq))/stuff.aspx
+        return update_platforms if parsed_uri.path =~ /\/\(w\([a-z0-9]\)\)\//i
+
+        page.cookies.each do |cookie|
+            return update_platforms if cookie.name.downcase == SESSION_COOKIE
+        end
+
+        page.forms.each do |form|
+            form.auditable.each do |k, v|
+                return update_platforms if k.downcase.include? VIEWSTATE
+            end
+        end
+
+        page.headers.each do |header|
+            return update_platforms if HEADER_FIELDS.include? header.name.downcase
+
+            if header.name.downcase == 'x-powered-by' &&
+                header.value.downcase.start_with?( X_POWERED_BY )
+                return update_platforms
+            end
+        end
+    end
+
+    def update_platforms
+        platforms << :aspx << :windows
     end
 
 end

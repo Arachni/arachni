@@ -8,6 +8,7 @@
     - Programming languages
         - PHP
         - ASP
+        - ASPX
     - Databases
 - `Parser`
     - Now fingerprints the pages it returns.
