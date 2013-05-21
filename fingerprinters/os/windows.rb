@@ -26,7 +26,13 @@ module Platforms::Fingerprinters
 #
 class Windows < Base
 
+    IDs = %w(windows win32)
+
     def run
+        IDs.each do |id|
+            next if !server_or_powered_by_include? id
+            return platforms << :windows
+        end
     end
 
 end

@@ -7,6 +7,7 @@
         - BSD
         - Linux
         - Unix
+        - Windows
     - Web servers
     - Programming languages
         - PHP
