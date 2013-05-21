@@ -171,7 +171,8 @@ class Platforms
         :python,
         :ruby,
         :asp,
-        :aspx
+        :aspx,
+        :perl
     ]
 
     # WebApp frameworks.
