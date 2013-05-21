@@ -26,7 +26,13 @@ module Platforms::Fingerprinters
 #
 class Linux < Base
 
+    IDs = %w(ubuntu linux)
+
     def run
+        IDs.each do |id|
+            next if !server_or_powered_by_include? id
+            return platforms << :linux
+        end
     end
 
 end

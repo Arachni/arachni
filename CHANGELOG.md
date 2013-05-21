@@ -5,6 +5,7 @@
 - Added modular `Page` fingeprinting, via `fingerprinter` components, identifying:
     - Operating systems
         - BSD
+        - Linux
     - Web servers
     - Programming languages
         - PHP
