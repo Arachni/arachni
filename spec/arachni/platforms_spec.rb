@@ -188,7 +188,7 @@ describe Arachni::Platforms do
         end
     end
 
-    describe '#pick_applicable' do
+    describe '#pick' do
         it 'returns only data relevant to the applicable platforms' do
             applicable_data = {
                 unix: [ 'UNIX stuff' ],
@@ -197,7 +197,7 @@ describe Arachni::Platforms do
             data = applicable_data.merge( windows: [ 'Windows stuff' ] )
 
             platforms << :unix << :php
-            platforms.pick_applicable( data ).should == applicable_data
+            platforms.pick( data ).should == applicable_data
         end
 
         context 'when a parent OS has been specified' do
@@ -211,7 +211,7 @@ describe Arachni::Platforms do
 
                 platforms << :unix << :php
 
-                platforms.pick_applicable( data ).should == applicable_data
+                platforms.pick( data ).should == applicable_data
             end
 
             context 'and specific OS flavors are specified' do
@@ -234,7 +234,7 @@ describe Arachni::Platforms do
                     applicable_data.delete( :unix )
                     applicable_data.delete( :bsd )
 
-                    platforms.pick_applicable( data ).should == applicable_data
+                    platforms.pick( data ).should == applicable_data
                 end
             end
         end
@@ -242,7 +242,7 @@ describe Arachni::Platforms do
         context 'when invalid platforms are given' do
             it 'raises Arachni::Platforms::Error::Invalid' do
                 expect {
-                    platforms.pick_applicable(  { blah: 1, unix: 'stuff' } )
+                    platforms.pick(  { blah: 1, unix: 'stuff' } )
                 }.to raise_error Arachni::Platforms::Error::Invalid
             end
         end

@@ -290,12 +290,12 @@ class Platforms
     # Selects appropriate data depending on the applicable platforms
     # from `data_per_platform`.
     #
-    # @param    [Hash{<Symbol, Object> => Object}]   data_per_platform
+    # @param    [Hash{<Symbol, String> => Object}]   data_per_platform
     #   Hash with platform names as keys and arbitrary data as values.
     #
     # @return   [Hash]  `data_per_platform` with non-applicable entries removed.
     # @raise    [Error::Invalid]  On {#invalid?} platforms.
-    def pick_applicable( data_per_platform )
+    def pick( data_per_platform )
         orig_data_per_platform = data_per_platform.dup
         data_per_platform      = data_per_platform.dup
 
