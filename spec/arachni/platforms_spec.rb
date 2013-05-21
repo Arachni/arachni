@@ -102,21 +102,12 @@ describe Arachni::Platforms do
         end
     end
 
-    describe '.update' do
-        it 'updates the platforms for the given URI' do
-            platforms = [:unix, :jsp]
-            described_class['http://stuff.com'] = platforms
-
-            described_class.update( 'http://stuff.com', [:pgsql] )
-            described_class.all.values.first.sort.should == (platforms | [:pgsql]).sort
-        end
-
-        context 'when invalid platforms are given' do
-            it 'raises Arachni::Platforms::Error::Invalid' do
-                expect {
-                    described_class.update( 'http://stuff.com', [:stuff] )
-                }.to raise_error Arachni::Platforms::Error::Invalid
-            end
+    describe '#clear' do
+        it 'clears the global platform DB' do
+            described_class['http://stuff.com'] << :unix
+            described_class.empty?.should be_false
+            described_class.clear
+            described_class.empty?.should be_true
         end
     end
 
@@ -361,6 +352,23 @@ describe Arachni::Platforms do
         end
     end
 
+    describe '#update' do
+        context 'with valid platforms' do
+            it 'updates self with the given platforms' do
+                platforms << :unix
+                platforms.update( [:php, :unix] )
+                platforms.to_a.sort.should == [:php, :unix].sort
+            end
+        end
+        context 'with invalid platforms' do
+            it 'raises Arachni::Platforms::Error::Invalid' do
+                expect {
+                    platforms.update( [:blah] )
+                }.to raise_error Arachni::Platforms::Error::Invalid
+            end
+        end
+    end
+
     describe '#|' do
         context 'with valid platforms' do
             it 'returns a union' do
@@ -464,6 +472,15 @@ describe Arachni::Platforms do
                 platforms << :asp
                 platforms.any?.should be_true
             end
+        end
+    end
+
+    describe '#clear' do
+        it 'clears the global platform DB' do
+            platforms << :unix
+            platforms.empty?.should be_false
+            platforms.clear
+            platforms.empty?.should be_true
         end
     end
 

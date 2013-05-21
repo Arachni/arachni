@@ -185,6 +185,11 @@ class Platforms
         @platforms = platforms
     end
 
+    # Clears global platforms DB.
+    def self.clear
+        @platforms.clear
+    end
+
     # Empties the global platform fingerprints.
     def self.reset
         set Hash.new
@@ -269,7 +274,7 @@ class Platforms
     #   List of platforms with which to initialize the instance.
     # @raise    [Error::Invalid]  On {#invalid?} platforms.
     def initialize( platforms = [] )
-        @applicable = Set.new( normalize( platforms ) )
+        @platforms = Set.new( normalize( platforms ) )
     end
 
     # @return   [Array<Symbol>] Supported platforms.
@@ -318,7 +323,7 @@ class Platforms
         # children for them.
 
         children = {}
-        children_for = os_flat & @applicable.to_a
+        children_for = os_flat & @platforms.to_a
         children_for.each do |platform|
             next if specified_parents.include? platform
             c = find_children( platform )
@@ -352,7 +357,7 @@ class Platforms
     # @return   [Boolean]
     #   `true` if there are no applicable platforms, `false` otherwise.
     def empty?
-        @applicable.empty?
+        @platforms.empty?
     end
 
     # @return   [Boolean]
@@ -365,7 +370,7 @@ class Platforms
     # @return   [Platforms] `self`
     # @raise    [Error::Invalid]  On {#invalid?} platforms.
     def <<( platform )
-        @applicable << normalize( platform )
+        @platforms << normalize( platform )
         self
     end
 
@@ -382,9 +387,10 @@ class Platforms
     # @return   [Platforms] Updated `self`.
     # @raise    [Error::Invalid]  On {#invalid?} platforms.
     def merge!( enum )
-        @applicable.merge normalize( enum )
+        @platforms.merge normalize( enum )
         self
     end
+    alias update merge!
 
     # @param    [Platforms, Enumerable] enum
     #   {Platforms} or enumerable object containing platforms.
@@ -402,7 +408,7 @@ class Platforms
     #   `Enumerator` if no block is given, `self` otherwise.
     def each( &block )
         return enum_for( __method__ ) if !block_given?
-        @applicable.each( &block )
+        @platforms.each( &block )
         self
     end
 
@@ -411,7 +417,7 @@ class Platforms
     #   `true` if `platform` applies to the given resource, `false` otherwise.
     # @raise    [Error::Invalid]  On {#invalid?} `platforms`.
     def include?( platform )
-        @applicable.include? normalize( platform )
+        @platforms.include? normalize( platform )
     end
 
     # @param    [Array<Symbol, String>]    platforms    Platforms to check.
@@ -420,19 +426,20 @@ class Platforms
     #   `false` otherwise.
     # @raise    [Error::Invalid]  On {#invalid?} `platforms`.
     def include_any?( platforms )
-        (@applicable & normalize( platforms )).any?
+        (@platforms & normalize( platforms )).any?
+    end
+
+    # Clears platforms.
+    def clear
+        @platforms.clear
     end
 
     # @return   [Platforms] Copy of `self`.
     def dup
-        self.class.new( @applicable )
+        self.class.new( @platforms )
     end
 
     private
-
-    def parent?( platform )
-
-    end
 
     def find_children( platform, hash = OS )
         return [] if hash.empty?
