@@ -27,6 +27,7 @@ module Platforms::Fingerprinters
 class IIS < Base
 
     def run
+        platforms << :windows << :iis if server_or_powered_by_include? 'iis'
     end
 
 end
