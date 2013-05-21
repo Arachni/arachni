@@ -398,10 +398,10 @@ module Auditable
     #   `true` if the audit was successful, `false` if:
     #
     #    * There are no {#auditable} inputs.
-    #    * The {#action} matches a {@skip_path? skip} rule.
+    #    * The {Element::Base#action} matches a {#skip_path? skip} rule.
     #    * The element has already been audited and the `:redundant` option
     #       is `false` -- the default.
-    #    * The element matches a {#skip_like} block.
+    #    * The element matches a {.skip_like} block.
     #
     # @raise    ArgumentError   On missing `block`.
     #
@@ -536,10 +536,10 @@ module Auditable
     end
 
     # @return [Boolean]
-    #   `true` if the element matches one or more {#skip_like_blocks},
+    #   `true` if the element matches one or more {.skip_like_blocks},
     #   `false` otherwise.
     #
-    # @see #skip_like_blocks
+    # @see .skip_like_blocks
     def matches_skip_like_blocks?
         Arachni::Element::Capabilities::Auditable.matches_skip_like_blocks?( self )
     end
