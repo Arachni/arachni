@@ -31,8 +31,9 @@ class JSP < Base
 
     def run
         if extension == EXTENSION || parameters.include?( SESSIONID ) ||
-            cookies.include?( SESSIONID ) || powered_by.include?( 'servlet' ) ||
-            powered_by.include?( 'jsp' )
+            cookies.include?( SESSIONID ) ||
+            server_or_powered_by_include?( 'servlet' ) ||
+            server_or_powered_by_include?( 'jsp' )
             platforms << :jsp
         end
     end

@@ -55,6 +55,14 @@ class Platforms
             def run
             end
 
+            # @param    [String]    string
+            # @return   [Boolean]
+            #   `true` if either {#server} or {#powered_by} include `string`,
+            #   `false` otherwise.
+            def server_or_powered_by_include?( string )
+                server.include?( string ) || powered_by.include?( string )
+            end
+
             # @return   [Arachni::URI]  Parsed URL of the {#page}.
             def uri
                 uri_parse( page.url )

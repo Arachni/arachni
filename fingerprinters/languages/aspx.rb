@@ -47,7 +47,7 @@ class ASPX < Base
             end
         end
 
-        if powered_by.start_with?( X_POWERED_BY ) ||
+        if server_or_powered_by_include?( X_POWERED_BY ) ||
             (headers.keys & HEADER_FIELDS).any?
             update_platforms
         end

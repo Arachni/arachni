@@ -84,4 +84,76 @@ describe Arachni::Platforms::Fingerprinters::Base do
             described_class.new( page ).platforms.should == page.platforms
         end
     end
+
+    describe '#server_or_powered_by_include?' do
+        context 'when the Server header contains the given string' do
+            it 'returns true' do
+                page = Arachni::Page.new(
+                    url: 'http://stuff.com?A=B',
+                    response_headers: {
+                        'SeRvEr' => 'UberServer/32'
+                    }
+                )
+                described_class.new( page ).server_or_powered_by_include?( 'uberserver' ).should be_true
+            end
+        end
+        context 'when the X-Powered-By header contains the given string' do
+            it 'returns true' do
+                page = Arachni::Page.new(
+                    url: 'http://stuff.com?A=B',
+                    response_headers: {
+                        'X-Powered-By' => 'UberServer/32'
+                    }
+                )
+                described_class.new( page ).server_or_powered_by_include?( 'uberserver' ).should be_true
+            end
+        end
+        context 'when both the Server or X-Powered-By header contain the given string' do
+            it 'returns true' do
+                page = Arachni::Page.new(
+                    url: 'http://stuff.com?A=B',
+                    response_headers: {
+                        'X-Powered-By' => 'UberServer/32',
+                        'Server' => 'UberServer/32',
+                    }
+                )
+                described_class.new( page ).server_or_powered_by_include?( 'uberserver' ).should be_true
+            end
+        end
+        context 'when the Server header does not contain the given string' do
+            it 'returns true' do
+                page = Arachni::Page.new(
+                    url: 'http://stuff.com?A=B',
+                    response_headers: {
+                        'SeRvEr' => 'Server/32'
+                    }
+                )
+                described_class.new( page ).server_or_powered_by_include?( 'uberserver' ).should be_false
+            end
+        end
+        context 'when the X-Powered-By header does not contain the given string' do
+            it 'returns true' do
+                page = Arachni::Page.new(
+                    url: 'http://stuff.com?A=B',
+                    response_headers: {
+                        'X-Powered-By' => 'Server/32'
+                    }
+                )
+                described_class.new( page ).server_or_powered_by_include?( 'uberserver' ).should be_false
+            end
+        end
+        context 'when the X-Powered-By header does not contain the given string' do
+            it 'returns true' do
+                page = Arachni::Page.new(
+                    url: 'http://stuff.com?A=B',
+                    response_headers: {
+                        'Server' => 'Server/32',
+                        'X-Powered-By' => 'Server/32'
+                    }
+                )
+                described_class.new( page ).server_or_powered_by_include?( 'uberserver' ).should be_false
+            end
+        end
+    end
+
 end

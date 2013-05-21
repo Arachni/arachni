@@ -31,7 +31,7 @@ class PHP < Base
 
     def run
         if extension =~ EXTENSION || parameters.include?( SESSIONID ) ||
-            cookies.include?( SESSIONID ) || powered_by.start_with?( 'php/' )
+            cookies.include?( SESSIONID ) || server_or_powered_by_include?( 'php' )
             platforms << :php
         end
     end

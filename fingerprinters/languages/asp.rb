@@ -31,7 +31,7 @@ class ASP < Base
 
     def run
         return if extension != EXTENSION && !parameters.include?( SESSIONID ) &&
-            !cookies.include?( SESSIONID )
+            !cookies.include?( SESSIONID ) && !server_or_powered_by_include?( 'asp' )
 
         platforms << :asp << :windows
     end
