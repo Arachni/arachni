@@ -383,100 +383,73 @@ module Auditable
     # @note Requires an {#auditor}, if none has been provided it will fallback
     #   to an {#use_anonymous_auditor anonymous} one.
     #
-    # @param  [String]  injection_str  The string to be injected.
+    # @param  [String, Array<String>, Hash{Symbol => <String, Array<String>>}]  payloads
+    #   Payloads to inject, if given:
+    #
+    #   * {String} -- Will inject the single payload.
+    #   * {Array} -- Will iterate over all payloads and inject them.
+    #   * {Hash} -- Expects {Platforms} (as `Symbol`s ) for keys and {Array} of
+    #       `payloads` for values. The applicable `payloads` will be
+    #       {Platforms#pick picked} from the hash based on
+    #       {Element::Base#platforms applicable platforms} for the
+    #       {Base#action resource} to be audited.
     # @param  [Hash]    opts             Options as described in {OPTIONS}.
     # @param  [Block]   block
     #   Block to be used for analysis of responses; will be passed the following:
     #
-    #     * HTTP response
-    #     * options
-    #     * element
+    #   * {Typhoeus::Response HTTP response}.
+    #   * Audit options, as a hash.
+    #   * Vulnerable element mutation.
     #
-    #     The block will be called as soon as the HTTP response is received.
+    #   The `block` will be called as soon as the HTTP response is received.
     #
-    # @return   [Boolean]
-    #   `true` if the audit was successful, `false` if:
+    # @return   [Boolean, nil]
     #
-    #    * There are no {#auditable} inputs.
-    #    * The {Element::Base#action} matches a {#skip_path? skip} rule.
-    #    * The element has already been audited and the `:redundant` option
-    #       is `false` -- the default.
-    #    * The element matches a {.skip_like} block.
+    #   * `true` when the audit was successful.
+    #   * `false` when:
+    #       * There are no {#auditable} inputs.
+    #       * The {Element::Base#action} matches a {#skip_path? skip} rule.
+    #       * The element has already been audited and the `:redundant` option
+    #          is `false` -- the default.
+    #       * The element matches a {.skip_like} block.
+    #   * `nil` when:
+    #       * An empty array/hash of `payloads` was given.
+    #       * There are no `payloads` applicable to the element's platforms.
     #
-    # @raise    ArgumentError   On missing `block`.
+    # @raise    ArgumentError
+    #   On missing `block` or unsupported `payloads` type.
     #
     # @see #submit
     #
-    def audit( injection_str, opts = { }, &block )
+    def audit( payloads, opts = { }, &block )
         fail ArgumentError, 'Missing block.' if !block_given?
 
-        print_debug "About to audit: #{audit_id}"
+        case payloads
+            when String
+                audit_single( payloads, opts, &block )
+            when Array
+                return if payloads.empty?
 
-        # If we don't have any auditable elements just return.
-        if auditable.empty?
-            print_debug 'The element has no auditable inputs.'
-            return false
-        end
+                payloads.each do |payload|
+                    audit_single( payload, opts, &block )
+                end
+            when Hash
+                platform_payloads = platforms.any? ?
+                    platforms.pick( payloads ) : payloads
 
-        if skip_path?( self.action )
-            print_debug "Element's action matches skip rule, bailing out."
-            return false
-        end
+                return if platform_payloads.empty?
 
-        opts[:injected_orig] = injection_str
-
-        @auditor ||= opts[:auditor]
-        opts[:auditor] ||= @auditor
-        use_anonymous_auditor if !@auditor
-
-        audit_id = audit_id( injection_str, opts )
-        return false if !opts[:redundant] && audited?( audit_id )
-
-        if matches_skip_like_blocks?
-            print_debug 'Element matches one or more skip_like blocks, skipping.'
-            return false
-        end
-
-        # Iterate over all fuzz variations and audit each one.
-        mutations( injection_str, opts ).each do |elem|
-
-            if Options.exclude_vectors.include?( elem.altered )
-                print_info "Skipping audit of '#{elem.altered}' #{type} vector."
-                next
-            end
-
-            if !orphan? && @auditor.skip?( elem )
-                mid = elem.audit_id( injection_str, opts )
-                print_debug "Auditor's #skip? method returned true for mutation, skipping: #{mid}"
-                next
-            end
-
-            if skip?( elem )
-                mid = elem.audit_id( injection_str, opts )
-                print_debug "Self's #skip? method returned true for mutation, skipping: #{mid}"
-                next
-            end
-
-            opts[:altered] = elem.altered.dup
-            opts[:element] = type
-
-            # Inform the user about what we're auditing.
-            print_status( elem.status_string ) if !opts[:silent]
-
-            if opts[:each_mutation]
-                if elements = opts[:each_mutation].call( elem )
-                    [elements].flatten.compact.each do |e|
-                        on_complete( e.submit( opts ), e, &block ) if e.is_a?( self.class )
+                platform_payloads.each do |platform, payloads_for_platform|
+                    options = opts.merge( platform: platform )
+                    [payloads_for_platform].flatten.compact.each do |payload|
+                        audit_single( payload, options, &block )
                     end
                 end
-            end
-
-            # Submit the element with the injection values.
-            on_complete( elem.submit( opts ), elem, &block )
+            else
+                raise ArgumentError,
+                      "Unsupported payload type '#{payloads.class}'. " <<
+                          'Expected one of: String, Array, Hash'
         end
-
-        audited audit_id
-        true
     end
 
     # @note To be overridden by auditable element implementations for more
@@ -589,6 +562,108 @@ module Auditable
     end
 
     private
+
+    #
+    # Submits mutations of self and calls the block to handle the responses.
+    #
+    # @note Requires an {#auditor}, if none has been provided it will fallback
+    #   to an {#use_anonymous_auditor anonymous} one.
+    #
+    # @param  [String]  injection_str  The string to be injected.
+    # @param  [Hash]    opts             Options as described in {OPTIONS}.
+    # @param  [Block]   block
+    #   Block to be used for analysis of responses; will be passed the following:
+    #
+    #     * HTTP response
+    #     * options
+    #     * element
+    #
+    #     The block will be called as soon as the HTTP response is received.
+    #
+    # @return   [Boolean]
+    #   `true` if the audit was successful, `false` if:
+    #
+    #    * There are no {#auditable} inputs.
+    #    * The {Element::Base#action} matches a {#skip_path? skip} rule.
+    #    * The element has already been audited and the `:redundant` option
+    #       is `false` -- the default.
+    #    * The element matches a {.skip_like} block.
+    #
+    # @raise    ArgumentError   On missing `block`.
+    #
+    # @see #submit
+    #
+    def audit_single( injection_str, opts = { }, &block )
+        fail ArgumentError, 'Missing block.' if !block_given?
+
+        print_debug "About to audit: #{audit_id}"
+
+        # If we don't have any auditable elements just return.
+        if auditable.empty?
+            print_debug 'The element has no auditable inputs.'
+            return false
+        end
+
+        if skip_path?( self.action )
+            print_debug "Element's action matches skip rule, bailing out."
+            return false
+        end
+
+        opts[:injected_orig] = injection_str
+
+        @auditor ||= opts[:auditor]
+        opts[:auditor] ||= @auditor
+        use_anonymous_auditor if !@auditor
+
+        audit_id = audit_id( injection_str, opts )
+        return false if !opts[:redundant] && audited?( audit_id )
+
+        if matches_skip_like_blocks?
+            print_debug 'Element matches one or more skip_like blocks, skipping.'
+            return false
+        end
+
+        # Iterate over all fuzz variations and audit each one.
+        mutations( injection_str, opts ).each do |elem|
+
+            if Options.exclude_vectors.include?( elem.altered )
+                print_info "Skipping audit of '#{elem.altered}' #{type} vector."
+                next
+            end
+
+            if !orphan? && @auditor.skip?( elem )
+                mid = elem.audit_id( injection_str, opts )
+                print_debug "Auditor's #skip? method returned true for mutation, skipping: #{mid}"
+                next
+            end
+
+            if skip?( elem )
+                mid = elem.audit_id( injection_str, opts )
+                print_debug "Self's #skip? method returned true for mutation, skipping: #{mid}"
+                next
+            end
+
+            opts[:altered] = elem.altered.dup
+            opts[:element] = type
+
+            # Inform the user about what we're auditing.
+            print_status( elem.status_string ) if !opts[:silent]
+
+            if opts[:each_mutation]
+                if elements = opts[:each_mutation].call( elem )
+                    [elements].flatten.compact.each do |e|
+                        on_complete( e.submit( opts ), e, &block ) if e.is_a?( self.class )
+                    end
+                end
+            end
+
+            # Submit the element with the injection values.
+            on_complete( elem.submit( opts ), elem, &block )
+        end
+
+        audited audit_id
+        true
+    end
 
     def skip_path?( url )
         super || redundant_path?( url )

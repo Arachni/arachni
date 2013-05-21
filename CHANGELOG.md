@@ -63,7 +63,11 @@
 - `Element::Capabilities::Auditable`
     - `#anonymous_auditor` now instantiates a `Framework`.
     - Added `#skip_like` method to be passed blocks deciding what elements should
-        be audited.
+        not be audited.
+    - `#audit`
+        - Updated to support the following payload types:
+            - `Array` -- Array of payloads to be injected.
+            - `Hash` -- Array of payloads to be injected per platform.
 - Cleaned up and removed `@@` vars from:
     - `Module::Manager`
     - `Module::KeyFiller`
