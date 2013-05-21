@@ -302,7 +302,7 @@ class Instance
     end
 
     #
-    # Simplified version of {Framework#progress}.
+    # Simplified version of {Framework::MultiInstance#progress}.
     #
     # # Recommended usage
     #
