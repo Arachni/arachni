@@ -141,7 +141,7 @@ module Auditor
         #
         # Elements to audit.
         #
-        # If no elements have been passed to audit candidates will be
+        # If no elements have been passed to audit methods, candidates will be
         # determined by {#candidate_elements}.
         #
         elements: [Element::LINK, Element::FORM,
@@ -180,8 +180,8 @@ module Auditor
     #
     # *OPTIONAL*
     #
-    # Allows modules to ignore HPG scope restrictions in order to audit elements
-    # that are not on the Grid sanctioned whitelist.
+    # Allows modules to ignore multi-Instance scope restrictions in order to
+    # audit elements that are not on the sanctioned whitelist.
     #
     # @return   [Bool]
     #
@@ -201,7 +201,7 @@ module Auditor
     #
     # @param    [Array<Arachni::Issue>]     issues
     #
-    # @see Arachni::Module::Manager.register_results
+    # @see Arachni::Module::Manager#register_results
     #
     def register_results( issues )
         return if issue_limit_reached?
@@ -211,16 +211,22 @@ module Auditor
     end
 
     #
+    # @note Ignores custom 404 responses.
+    #
     # Logs a remote file or directory if it exists.
     #
-    # @param    [String]    url
-    # @param    [Bool]      silent  if false, a message will be sent to stdout
-    #                               containing the status of the operation.
-    # @param    [Proc]      block  called if the file exists, just before logging
+    # @param    [String]    url Resource to check.
+    # @param    [Bool]      silent
+    #   If `false`, a message will be printed to stdout containing the status of
+    #   the operation.
+    # @param    [Proc]      block
+    #   Called if the file exists, just before logging the issue, and is passed
+    #   the HTTP response.
     #
-    # @return   [Object]    - nil if no URL was provided
-    #                       - false if the request couldn't be fired
-    #                       - true if everything went fine
+    # @return   [Object]
+    #   * `nil` if no URL was provided.
+    #   * `false` if the request couldn't be fired.
+    #   * `true` if everything went fine.
     #
     # @see #remote_file_exist?
     #
@@ -235,8 +241,8 @@ module Auditor
             block.call( res ) if block_given?
             log_remote_file( res )
 
-            # if the file exists let the trainer parse it since it may
-            # contain brand new data to audit
+            # If the file exists let the trainer parse it since it may contain
+            # brand new data to audit.
             framework.trainer.push( res )
         end
          true
@@ -244,10 +250,18 @@ module Auditor
     alias :log_remote_directory_if_exists :log_remote_file_if_exists
 
     #
-    # Checks that the response points to an existing file/page and not
-    # an error or custom 404 response.
+    # @note Ignores custom 404 responses.
     #
-    # @param    [String]    url
+    # Checks whether or not a remote resource exists.
+    #
+    # @param    [String]    url Resource to check.
+    # @param    [Block] block
+    #   Block to be passed  `true` if the resource exists, `false` otherwise.
+    #
+    # @return   [Object]
+    #   * `nil` if no URL was provided.
+    #   * `false` if the request couldn't be fired.
+    #   * `true` if everything went fine.
     #
     def remote_file_exist?( url, &block )
         req  = http.get( url )
@@ -268,6 +282,9 @@ module Auditor
     # Logs the existence of a remote file as an issue.
     #
     # @param    [Typhoeus::Response]    res
+    # @param    [Bool]      silent
+    #   If `false`, a message will be printed to stdout containing the status of
+    #   the operation.
     #
     # @see #log_issue
     #
@@ -294,7 +311,7 @@ module Auditor
     #
     # Helper method for issue logging.
     #
-    # @param    [Hash]  opts    issue options ({Issue})
+    # @param    [Hash]  opts    Issue options ({Issue}).
     #
     # @see Arachni::Module::Base#register_results
     #
@@ -304,15 +321,18 @@ module Auditor
     end
 
     #
-    # Matches the "string" (default string is the HTML code in page.body) to
-    # an array of regular expressions and logs the results.
+    # Matches an array of regular expressions against a string and logs the
+    # result as an issue.
     #
-    # For good measure, regexps will also be run against the page headers (page.response_headers).
-    #
-    # @param    [Array<Regexp>]     regexps     array of regular expressions to be tested
-    # @param    [String]            string      string to
-    # @param    [Block]             block       block to verify matches before logging,
-    #                                           must return true/false
+    # @param    [Array<Regexp>]     regexps
+    #   Array of regular expressions to be tested.
+    # @param    [String]            string
+    #   String against which the `regexps` will be matched.
+    #   (If no string has been provided the {#page} body will be used and, for
+    #   good measure, `regexps` will also be matched against
+    #   {Page#response_headers} as well.)
+    # @param    [Block] block
+    #   Block to verify matches before logging, must return `true`/`false`.
     #
     def match_and_log( regexps, string = page.body, &block )
         # make sure that we're working with an array
@@ -422,17 +442,21 @@ module Auditor
 
     # @see Arachni::Module::Base#preferred
     # @see Arachni::Module::Base.prefer
+    # @abstract
     def preferred
         []
     end
 
     #
-    # This is called right before an [Arachni::Element]
-    # is audited and is used to determine whether to skip it or not.
+    # This is called right before an {Arachni::Element} is audited and is used
+    # to determine whether to skip it or not.
     #
     # Running modules can override this as they wish *but* at their own peril.
     #
     # @param    [Arachni::Element]  elem
+    #
+    # @return   [Boolean]
+    #   `true` if the element should be skipped, `false` otherwise.
     #
     def skip?( elem )
         @modname ||= framework.modules.map { |k, v| k if v == self.class }.compact.first
