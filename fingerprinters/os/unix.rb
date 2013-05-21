@@ -27,6 +27,7 @@ module Platforms::Fingerprinters
 class Unix < Base
 
     def run
+        platforms << :unix if server_or_powered_by_include? 'unix'
     end
 
 end
