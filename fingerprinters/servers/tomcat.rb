@@ -27,6 +27,7 @@ module Platforms::Fingerprinters
 class Tomcat < Base
 
     def run
+        platforms << :tomcat << :jsp if server_or_powered_by_include? 'tomcat'
     end
 
 end
