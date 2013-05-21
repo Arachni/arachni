@@ -11,7 +11,7 @@ describe Arachni::Platforms::Fingerprinters::Python do
     end
 
     context 'when there is an X-Powered-By header' do
-        it 'identifies it as PHP' do
+        it 'identifies it as Python' do
             page = Arachni::Page.new(
                 url:     'http://stuff.com/blah',
                 response_headers: { 'X-Powered-By' => 'Python/stuff' }

@@ -4,7 +4,7 @@ describe Arachni::Platforms::Fingerprinters::ASPX do
     include_examples 'fingerprinter'
 
     context 'when the page has a .aspx extension' do
-        it 'identifies it as ASP' do
+        it 'identifies it as ASPX' do
             page = Arachni::Page.new( url: 'http://stuff.com/blah.aspx' )
             platforms_for( page ).should include :aspx
             platforms_for( page ).should include :windows
@@ -12,7 +12,7 @@ describe Arachni::Platforms::Fingerprinters::ASPX do
     end
 
     context 'when there is a session ID in the path' do
-        it 'identifies it as ASP' do
+        it 'identifies it as ASPX' do
             page = Arachni::Page.new(
                 url:        'http://blah.com/(S(yn5cby55lgzstcen0ng2b4iq))/stuff'
             )
@@ -22,7 +22,7 @@ describe Arachni::Platforms::Fingerprinters::ASPX do
     end
 
     context 'when there is a ASP.NET_SessionId cookie' do
-        it 'identifies it as ASP' do
+        it 'identifies it as ASPX' do
             page = Arachni::Page.new(
                 url:     'http://stuff.com/blah',
                 cookies: [Arachni::Cookie.new( 'http://stuff.com/blah',
