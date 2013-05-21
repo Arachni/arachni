@@ -27,6 +27,7 @@ module Platforms::Fingerprinters
 class BSD < Base
 
     def run
+        platforms << :bsd if server.include? 'bsd'
     end
 
 end
