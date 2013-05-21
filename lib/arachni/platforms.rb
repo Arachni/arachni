@@ -304,18 +304,18 @@ class Platforms
         # Bail out if there are no operating systems included.
         return data_per_platform if (os_flat & orig_data_per_platform.keys).empty?
 
-        # Keep track of parent OSs which were removed due to the existence
+        # Keep track of parent OSs which will be removed due to the existence
         # of specific OS flavors for their type.
         specified_parents = []
 
-        # Remove parent operating systems if we have specific slavors.
+        # Remove parent operating systems if we have specific flavors.
         data_per_platform.keys.each do |platform|
             specified_parents |= parents = find_parents( platform )
             data_per_platform.reject! { |k, _| parents.include? k }
         end
 
         # Include all of the parents' children if parents are specified but no
-        # specific children.
+        # children for them.
 
         children = {}
         children_for = os_flat & @applicable.to_a
