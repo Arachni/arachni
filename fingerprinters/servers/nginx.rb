@@ -27,6 +27,7 @@ module Platforms::Fingerprinters
 class Nginx < Base
 
     def run
+        platforms << :nginx if server_or_powered_by_include? 'nginx'
     end
 
 end
