@@ -93,6 +93,11 @@
 - RSpec tests
     - Major cleanup, using the aforementioned process helpers to remove duplicate code.
     - Moved supporting components under `spec/support/`.
+- Modules
+    - Audit
+        - `code_injection`
+            - Removed `Ruby` payload since it wasn't applicable.
+            - Updated to categorize payloads by platform.
 - Plugins
     - Proxy
         - Ou-of-scope pages no longer return a _403 Forbidden_ error but are
