@@ -54,7 +54,7 @@ class ASPX < Base
     end
 
     def update_platforms
-        platforms << :aspx << :windows
+        platforms << :asp << :aspx << :windows
     end
 
 end

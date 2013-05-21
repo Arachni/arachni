@@ -6,6 +6,7 @@ describe Arachni::Platforms::Fingerprinters::ASPX do
     context 'when the page has a .aspx extension' do
         it 'identifies it as ASPX' do
             page = Arachni::Page.new( url: 'http://stuff.com/blah.aspx' )
+            platforms_for( page ).should include :asp
             platforms_for( page ).should include :aspx
             platforms_for( page ).should include :windows
         end
@@ -16,6 +17,7 @@ describe Arachni::Platforms::Fingerprinters::ASPX do
             page = Arachni::Page.new(
                 url:        'http://blah.com/(S(yn5cby55lgzstcen0ng2b4iq))/stuff'
             )
+            platforms_for( page ).should include :asp
             platforms_for( page ).should include :aspx
             platforms_for( page ).should include :windows
         end
@@ -29,6 +31,7 @@ describe Arachni::Platforms::Fingerprinters::ASPX do
                                                'ASP.NET_SessionId' => 'stuff' )]
 
             )
+            platforms_for( page ).should include :asp
             platforms_for( page ).should include :aspx
             platforms_for( page ).should include :windows
         end
@@ -40,6 +43,7 @@ describe Arachni::Platforms::Fingerprinters::ASPX do
                 url:     'http://stuff.com/blah',
                 response_headers: { 'X-Powered-By' => 'ASP.NET'  }
             )
+            platforms_for( page ).should include :asp
             platforms_for( page ).should include :aspx
             platforms_for( page ).should include :windows
         end
@@ -52,6 +56,7 @@ describe Arachni::Platforms::Fingerprinters::ASPX do
                 response_headers: { 'X-AspNet-Version' => '4.0.30319' }
 
             )
+            platforms_for( page ).should include :asp
             platforms_for( page ).should include :aspx
             platforms_for( page ).should include :windows
         end
@@ -64,6 +69,7 @@ describe Arachni::Platforms::Fingerprinters::ASPX do
                 response_headers: { 'X-AspNetMvc-Version' => '2.0' }
 
             )
+            platforms_for( page ).should include :asp
             platforms_for( page ).should include :aspx
             platforms_for( page ).should include :windows
         end
