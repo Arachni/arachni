@@ -18,7 +18,7 @@ module Arachni
 module Platforms::Fingerprinters
 
 #
-# Identifies Apache web servers.
+# Identifies Apache operating systems.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
@@ -27,6 +27,7 @@ module Platforms::Fingerprinters
 class Apache < Base
 
     def run
+        platforms << :apache if server_or_powered_by_include? 'apache'
     end
 
 end
