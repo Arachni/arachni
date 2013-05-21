@@ -16,6 +16,12 @@ describe Arachni::Element::Base do
         @e.raw.should == @raw
     end
 
+    describe '#platforms' do
+        it 'returns platforms for the given element' do
+            @e.platforms.should be_kind_of Arachni::Platforms
+        end
+    end
+
     describe '#url=' do
         it 'normalizes the passed URL' do
             e = Arachni::Element::Base.new( @url, @raw )

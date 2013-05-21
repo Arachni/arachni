@@ -20,7 +20,8 @@
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 # @abstract
 #
-module Arachni::Element
+module Arachni
+module Element
 
 module Capabilities
 end
@@ -36,7 +37,7 @@ Dir.glob( lib ).each { |f| require f }
 # @abstract
 class Base
     include Capabilities::Auditable
-    extend  Arachni::Utilities
+    extend  Utilities
 
     # @return  [Hash]
     #   'raw' (frozen) hash holding the element's HTML attributes, values, etc.
@@ -133,5 +134,6 @@ class Base
         new
     end
 
+end
 end
 end
