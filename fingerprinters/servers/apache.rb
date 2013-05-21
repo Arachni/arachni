@@ -18,7 +18,7 @@ module Arachni
 module Platforms::Fingerprinters
 
 #
-# Identifies Apache operating systems.
+# Identifies Apache web servers.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
