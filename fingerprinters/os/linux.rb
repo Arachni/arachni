@@ -26,7 +26,7 @@ module Platforms::Fingerprinters
 #
 class Linux < Base
 
-    IDs = %w(ubuntu linux)
+    IDs = %w(ubuntu linux gentoo)
 
     def run
         IDs.each do |id|
