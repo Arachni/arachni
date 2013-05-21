@@ -27,6 +27,7 @@ module Platforms::Fingerprinters
 class Solaris < Base
 
     def run
+        platforms << :solaris if server_or_powered_by_include? 'solaris'
     end
 
 end
