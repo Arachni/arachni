@@ -126,7 +126,8 @@ class Manager
 
     def self.fingerprinters
         @manager ||=
-            Component::Manager.new( Options.dir['fingerprinters'], Platform::Fingerprinters )
+            Component::Manager.new( Options.dir['fingerprinters'],
+                                    Platform::Fingerprinters )
     end
     fingerprinters.load_all
 
@@ -344,8 +345,9 @@ class Manager
     private
 
     def normalize( platform )
+        platform = List.normalize( platform )
         fail Error::Invalid, "Invalid platform: #{platform}" if invalid?( platform )
-        List.normalize platform
+        platform
     end
 
     def self.make_key( uri )
