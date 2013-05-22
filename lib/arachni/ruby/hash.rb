@@ -51,7 +51,12 @@ class Hash
     # @return   [Hash]
     #   Self with the keys and values converted to lower-case strings.
     def downcase
-        stringify_keys.inject({}) { |h, (k, v)| h[k.downcase] = v.downcase; h }
+        stringify_keys.inject({}) do |h, (k, v)|
+            k = k.downcase if k.is_a?( String )
+            v = v.downcase if v.is_a?( String )
+            h[k] = v
+            h
+        end
     end
 
 end
