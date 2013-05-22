@@ -15,7 +15,7 @@
 =end
 
 module Arachni
-module Platforms::Fingerprinters
+module Platform::Fingerprinters
 
 #
 # Identifies Apache web servers.
@@ -24,7 +24,7 @@ module Platforms::Fingerprinters
 #
 # @version 0.1
 #
-class Apache < Base
+class Apache < Platform::Fingerprinter
 
     def run
         platforms << :apache if server_or_powered_by_include? 'apache'

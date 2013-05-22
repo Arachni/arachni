@@ -15,7 +15,7 @@
 =end
 
 module Arachni
-module Platforms::Fingerprinters
+module Platform::Fingerprinters
 
 #
 # Identifies *nix operating systems whose flavor couldn't be determines.
@@ -24,7 +24,7 @@ module Platforms::Fingerprinters
 #
 # @version 0.1
 #
-class Unix < Base
+class Unix < Platform::Fingerprinter
 
     def run
         platforms << :unix if server_or_powered_by_include? 'unix'

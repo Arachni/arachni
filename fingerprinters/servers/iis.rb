@@ -15,7 +15,7 @@
 =end
 
 module Arachni
-module Platforms::Fingerprinters
+module Platform::Fingerprinters
 
 #
 # Identifies IIS web servers.
@@ -24,7 +24,7 @@ module Platforms::Fingerprinters
 #
 # @version 0.1
 #
-class IIS < Base
+class IIS < Platform::Fingerprinter
 
     def run
         platforms << :windows << :iis if server_or_powered_by_include? 'iis'

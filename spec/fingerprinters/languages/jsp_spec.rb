@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::Platforms::Fingerprinters::JSP do
+describe Arachni::Platform::Fingerprinters::JSP do
     include_examples 'fingerprinter'
 
     context 'when the page has a .jsp extension' do

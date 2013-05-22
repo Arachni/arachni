@@ -15,7 +15,7 @@
 =end
 
 module Arachni
-module Platforms::Fingerprinters
+module Platform::Fingerprinters
 
 #
 # Identifies Rack applications.
@@ -24,7 +24,7 @@ module Platforms::Fingerprinters
 #
 # @version 0.1
 #
-class Rack < Base
+class Rack < Platform::Fingerprinter
 
     SESSIONID = 'rack.session'
 

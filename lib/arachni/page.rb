@@ -119,9 +119,9 @@ class Page
         @body ||= ''
     end
 
-    # @return   [Platforms] Applicable platforms for the page.
+    # @return   [Platform] Applicable platforms for the page.
     def platforms
-        Platforms[@url]
+        Platform::Manager[@url]
     end
 
     # @return    [String]    the request method that returned the page

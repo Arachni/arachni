@@ -24,7 +24,7 @@ module Arachni
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-class Platforms
+class Platform
     include Enumerable
     include Utilities
     extend  Utilities
@@ -99,8 +99,8 @@ class Platforms
                 @extension ||= uri_parse( page.url ).resource_extension.to_s.downcase
             end
 
-            # @return   [Platforms]
-            #   Platforms for the given page, should be updated by the
+            # @return   [Platform]
+            #   Platform for the given page, should be updated by the
             #   fingerprinter accordingly.
             def platforms
                 page.platforms
@@ -111,15 +111,15 @@ class Platforms
     end
 
     #
-    # {Platforms} error namespace.
+    # {Platform} error namespace.
     #
-    # All {Platforms} errors inherit from and live under it.
+    # All {Platform} errors inherit from and live under it.
     #
     # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
     #
     class Error < Arachni::Error
 
-        # Raised on {Platforms#invalid?} platform names.
+        # Raised on {Platform#invalid?} platform names.
         #
         # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
         class Invalid < Error
@@ -209,7 +209,7 @@ class Platforms
     # Runs all fingerprinters against the given `page`.
     #
     # @param    [Page]  page    Page to fingerprint.
-    # @return   [Platforms]   Updated `self`.
+    # @return   [Platform]   Updated `self`.
     def self.fingerprint( page )
         fingerprinters.available.each do |name|
             exception_jail( false ) do
@@ -225,7 +225,7 @@ class Platforms
     # @param    [String, URI]   uri
     # @param    [Enumerable] platforms
     #
-    # @return   [Platforms] `platforms`
+    # @return   [Platform] `platforms`
     # @raise    [Error::Invalid]  On {#invalid?} platforms.
     def self.[]=( uri, platforms )
         @platforms[make_key( uri )] =
@@ -236,17 +236,17 @@ class Platforms
     # Updates the `platforms` for the given `uri`.
     #
     # @param    [String, URI]   uri
-    # @param    [Platforms] platforms
+    # @param    [Platform] platforms
     #
-    # @return   [Platforms] Updated platforms.
+    # @return   [Platform] Updated platforms.
     def self.update( uri, platforms )
         self[uri].merge! platforms
     end
 
     # @param    [String, URI]   uri
-    # @return   [Platforms] Platforms for the given `uri`
+    # @return   [Platform] Platform for the given `uri`
     def self.[]( uri )
-        @platforms[make_key( uri )] ||= Platforms.new
+        @platforms[make_key( uri )] ||= Platform.new
     end
 
     # @return   [Boolean]
@@ -261,8 +261,8 @@ class Platforms
         !empty?
     end
 
-    # @return   [Hash<Integer, Platforms>]
-    #   Platforms per {URI#persistent_hash hashed URL}.
+    # @return   [Hash<Integer, Platform>]
+    #   Platform per {URI#persistent_hash hashed URL}.
     def self.all
         @platforms
     end
@@ -368,16 +368,16 @@ class Platforms
     end
 
     # @param    [Symbol, String]    platform    Platform to add to the list.
-    # @return   [Platforms] `self`
+    # @return   [Platform] `self`
     # @raise    [Error::Invalid]  On {#invalid?} platforms.
     def <<( platform )
         @platforms << normalize( platform )
         self
     end
 
-    # @param    [Platforms, Enumerable] enum
+    # @param    [Platform, Enumerable] enum
     #   Enumerable object containing platforms.
-    # @return   [Platforms] Updated copy of `self`.
+    # @return   [Platform] Updated copy of `self`.
     # @raise    [Error::Invalid]  On {#invalid?} platforms.
     def merge( enum )
         dup.merge!( enum )
@@ -385,7 +385,7 @@ class Platforms
 
     # @param    [Enumerable] enum
     #   Enumerable object containing platforms.
-    # @return   [Platforms] Updated `self`.
+    # @return   [Platform] Updated `self`.
     # @raise    [Error::Invalid]  On {#invalid?} platforms.
     def merge!( enum )
         @platforms.merge normalize( enum )
@@ -393,10 +393,10 @@ class Platforms
     end
     alias update merge!
 
-    # @param    [Platforms, Enumerable] enum
-    #   {Platforms} or enumerable object containing platforms.
-    # @return   [Platforms]
-    #   New {Platforms} built by merging `self` and the elements of the
+    # @param    [Platform, Enumerable] enum
+    #   {Platform} or enumerable object containing platforms.
+    # @return   [Platform]
+    #   New {Platform} built by merging `self` and the elements of the
     #   given enumerable object.
     # @raise    [Error::Invalid]  On {#invalid?} platforms.
     def |( enum )
@@ -405,7 +405,7 @@ class Platforms
     alias + |
 
     # @param    [Block] block   Block to be passed each platform.
-    # @return   [Enumerator, Platforms]
+    # @return   [Enumerator, Platform]
     #   `Enumerator` if no block is given, `self` otherwise.
     def each( &block )
         return enum_for( __method__ ) if !block_given?
@@ -421,7 +421,7 @@ class Platforms
         @platforms.include? normalize( platform )
     end
 
-    # @param    [Array<Symbol, String>]    platforms    Platforms to check.
+    # @param    [Array<Symbol, String>]    platforms    Platform to check.
     # @return   [Boolean]
     #   `true` if any platform in `platforms` applies to the given resource,
     #   `false` otherwise.
@@ -435,7 +435,7 @@ class Platforms
         @platforms.clear
     end
 
-    # @return   [Platforms] Copy of `self`.
+    # @return   [Platform] Copy of `self`.
     def dup
         self.class.new( @platforms )
     end

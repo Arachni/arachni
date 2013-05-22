@@ -34,7 +34,7 @@ require lib + 'support'
 require lib + 'utilities'
 require lib + 'uri'
 require lib + 'component/manager'
-require lib + 'platforms'
+require lib + 'platform'
 require lib + 'spider'
 require lib + 'parser'
 require lib + 'issue'
@@ -644,7 +644,7 @@ class Framework
     # You should first update {Arachni::Options}.
     #
     def self.reset
-        Platforms.reset
+        Platform::Manager.reset
         Module::Auditor.reset
         ElementFilter.reset
         Element::Capabilities::Auditable.reset

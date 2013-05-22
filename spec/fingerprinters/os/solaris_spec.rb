@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::Platforms::Fingerprinters::Solaris do
+describe Arachni::Platform::Fingerprinters::Solaris do
     include_examples 'fingerprinter'
 
     context 'when there is an Server header' do

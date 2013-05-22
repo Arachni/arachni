@@ -15,7 +15,7 @@
 =end
 
 module Arachni
-module Platforms::Fingerprinters
+module Platform::Fingerprinters
 
 #
 # Identifies BSD operating systems.
@@ -24,7 +24,7 @@ module Platforms::Fingerprinters
 #
 # @version 0.1
 #
-class BSD < Base
+class BSD < Platform::Fingerprinter
 
     def run
         platforms << :bsd if server_or_powered_by_include? 'bsd'

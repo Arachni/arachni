@@ -15,7 +15,7 @@
 =end
 
 module Arachni
-module Platforms::Fingerprinters
+module Platform::Fingerprinters
 
 #
 # Identifies JSP resources.
@@ -24,7 +24,7 @@ module Platforms::Fingerprinters
 #
 # @version 0.1
 #
-class JSP < Base
+class JSP < Platform::Fingerprinter
 
     EXTENSION = 'jsp'
     SESSIONID = 'jsessionid'

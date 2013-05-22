@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::Platforms::Fingerprinters::Unix do
+describe Arachni::Platform::Fingerprinters::Unix do
     include_examples 'fingerprinter'
 
     context 'when there is an Server header' do

@@ -15,7 +15,7 @@
 =end
 
 module Arachni
-module Platforms::Fingerprinters
+module Platform::Fingerprinters
 
 #
 # Identifies Tomcat web servers.
@@ -24,7 +24,7 @@ module Platforms::Fingerprinters
 #
 # @version 0.1
 #
-class Tomcat < Base
+class Tomcat < Platform::Fingerprinter
 
     def run
         platforms << :tomcat << :jsp if server_or_powered_by_include? 'tomcat'

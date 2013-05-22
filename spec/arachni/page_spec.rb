@@ -42,7 +42,7 @@ describe Arachni::Page do
 
     describe '#platforms' do
         it 'returns platforms for the given page' do
-            @page.platforms.should be_kind_of Arachni::Platforms
+            @page.platforms.should be_kind_of Arachni::Platform
         end
     end
 

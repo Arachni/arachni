@@ -15,7 +15,7 @@
 =end
 
 module Arachni
-module Platforms::Fingerprinters
+module Platform::Fingerprinters
 
 #
 # Identifies Nginx web servers.
@@ -24,7 +24,7 @@ module Platforms::Fingerprinters
 #
 # @version 0.1
 #
-class Nginx < Base
+class Nginx < Platform::Fingerprinter
 
     def run
         platforms << :nginx if server_or_powered_by_include? 'nginx'

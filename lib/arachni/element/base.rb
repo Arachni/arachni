@@ -53,10 +53,10 @@ class Base
         @opts = {}
     end
 
-    # @return   [Platforms]
+    # @return   [Platform]
     #   Applicable platforms for {#action} resource.
     def platforms
-        Platforms[@action]
+        Platform::Manager[@action]
     end
 
     # @return  [String] String uniquely identifying self.

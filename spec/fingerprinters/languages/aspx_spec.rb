@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::Platforms::Fingerprinters::ASPX do
+describe Arachni::Platform::Fingerprinters::ASPX do
     include_examples 'fingerprinter'
 
     context 'when the page has a .aspx extension' do

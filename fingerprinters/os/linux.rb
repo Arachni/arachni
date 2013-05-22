@@ -15,7 +15,7 @@
 =end
 
 module Arachni
-module Platforms::Fingerprinters
+module Platform::Fingerprinters
 
 #
 # Identifies Linux operating systems.
@@ -24,7 +24,7 @@ module Platforms::Fingerprinters
 #
 # @version 0.1
 #
-class Linux < Base
+class Linux < Platform::Fingerprinter
 
     IDs = %w(ubuntu linux gentoo)
 

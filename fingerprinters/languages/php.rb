@@ -15,7 +15,7 @@
 =end
 
 module Arachni
-module Platforms::Fingerprinters
+module Platform::Fingerprinters
 
 #
 # Identifies PHP resources.
@@ -24,7 +24,7 @@ module Platforms::Fingerprinters
 #
 # @version 0.1
 #
-class PHP < Base
+class PHP < Platform::Fingerprinter
 
     EXTENSION = /php\d*/  # In case it's php5 or something.
     SESSIONID = 'phpsessid'

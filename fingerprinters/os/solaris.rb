@@ -15,7 +15,7 @@
 =end
 
 module Arachni
-module Platforms::Fingerprinters
+module Platform::Fingerprinters
 
 #
 # Identifies Solaris operating systems.
@@ -24,7 +24,7 @@ module Platforms::Fingerprinters
 #
 # @version 0.1
 #
-class Solaris < Base
+class Solaris < Platform::Fingerprinter
 
     def run
         platforms << :solaris if server_or_powered_by_include? 'solaris'

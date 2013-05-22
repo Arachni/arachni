@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::Platforms::Fingerprinters::Rack do
+describe Arachni::Platform::Fingerprinters::Rack do
     include_examples 'fingerprinter'
 
     context 'when there is a rack.session cookie' do

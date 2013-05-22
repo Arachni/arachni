@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::Platforms::Fingerprinters::Python do
+describe Arachni::Platform::Fingerprinters::Python do
     include_examples 'fingerprinter'
 
     context 'when the page has a .py extension' do

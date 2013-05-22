@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::Platforms::Fingerprinters::PHP do
+describe Arachni::Platform::Fingerprinters::PHP do
     include_examples 'fingerprinter'
 
     context 'when the page has a .php extension' do

@@ -15,7 +15,7 @@
 =end
 
 module Arachni
-module Platforms::Fingerprinters
+module Platform::Fingerprinters
 
 #
 # Identifies ASPX resources.
@@ -24,7 +24,7 @@ module Platforms::Fingerprinters
 #
 # @version 0.1
 #
-class ASPX < Base
+class ASPX < Platform::Fingerprinter
 
     EXTENSION       = 'aspx'
     SESSION_COOKIE  = 'asp.net_sessionid'

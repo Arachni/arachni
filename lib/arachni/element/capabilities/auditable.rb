@@ -388,9 +388,9 @@ module Auditable
     #
     #   * {String} -- Will inject the single payload.
     #   * {Array} -- Will iterate over all payloads and inject them.
-    #   * {Hash} -- Expects {Platforms} (as `Symbol`s ) for keys and {Array} of
+    #   * {Hash} -- Expects {Platform} (as `Symbol`s ) for keys and {Array} of
     #       `payloads` for values. The applicable `payloads` will be
-    #       {Platforms#pick picked} from the hash based on
+    #       {Platform#pick picked} from the hash based on
     #       {Element::Base#platforms applicable platforms} for the
     #       {Base#action resource} to be audited.
     # @param  [Hash]    opts             Options as described in {OPTIONS}.

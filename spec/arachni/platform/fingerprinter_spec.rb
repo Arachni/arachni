@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::Platforms::Fingerprinters::Base do
+describe Arachni::Platform::Fingerprinter do
 
     describe '#page' do
         it 'returns the given page' do
