@@ -74,7 +74,19 @@ class List
             children.merge! orig_data_per_platform.select { |k, _| c.include? k }
         end
 
-        data_per_platform.merge children
+        data_per_platform.merge! children
+
+        # Include the nearest parent data there is a child platform but there
+        # are no data for it.
+
+        ignore = data_per_platform.keys | specified_parents
+        orig_data_per_platform.each do |platform, data|
+            next if ignore.include?( platform ) ||
+                !include_any?( find_children( platform ) )
+            data_per_platform[platform] = data
+        end
+
+        data_per_platform
     end
 
     # @param    [Array<Symbol, String> Symbol, String]  platforms

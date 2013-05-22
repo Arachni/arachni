@@ -38,6 +38,34 @@ describe Arachni::Platform::List do
             platforms.pick( data ).should == applicable_data
         end
 
+        context 'when a child has been specified' do
+            context 'and data for the parent are given' do
+                context 'and no data for children are given' do
+                    it 'includes data for the parent' do
+                        platforms = described_class.new(
+                            parent: {
+                                child: {},
+                                child2: {},
+                                child3: {},
+                            },
+                            stuff:      {},
+                            irrelevant: {}
+                        )
+
+                        applicable_data = {
+                            parent: [ 'Parent stuff' ],
+                            stuff:  [ 'Just stuff' ]
+                        }
+                        data = applicable_data.merge( irrelevant: [ 'Irrelevant stuff' ] )
+
+                        platforms << :child << :stuff
+
+                        platforms.pick( data ).should == applicable_data
+                    end
+                end
+            end
+        end
+
         context 'when a parent has been specified' do
             it 'includes all children' do
                 platforms = described_class.new(
