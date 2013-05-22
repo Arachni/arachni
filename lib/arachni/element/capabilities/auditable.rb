@@ -596,6 +596,7 @@ module Auditable
         fail ArgumentError, 'Missing block.' if !block_given?
 
         print_debug "About to audit: #{audit_id}"
+        print_debug "Payload platform: #{opts[:platform]}" if opts.include?( :platform )
 
         # If we don't have any auditable elements just return.
         if auditable.empty?
