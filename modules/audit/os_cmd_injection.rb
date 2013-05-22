@@ -19,14 +19,14 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.8
+# @version 0.2
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
 # @see http://www.owasp.org/index.php/OS_Command_Injection
 #
 class Arachni::Modules::OSCmdInjection < Arachni::Module::Base
 
-    def self.opts
+    def self.options
         @opts ||= {
             regexp: [
                 /root:x:0:0:.+:[0-9a-zA-Z\/]+/,
@@ -38,18 +38,22 @@ class Arachni::Modules::OSCmdInjection < Arachni::Module::Base
     end
 
     def self.payloads
-        @payloads ||= []
-        if @payloads.empty?
-            read_file( 'payloads.txt' ) do |str|
-                [ '', '&&', '|', ';' ].each { |sep| @payloads << sep + " " + str }
-                @payloads << "`" + " " + str + "`"
+        @payloads ||= {
+            unix:    [ '/bin/cat /etc/passwd' ],
+            windows: [ 'type %SystemDrive%\\\\boot.ini',
+                       'type %SystemRoot%\\\\win.ini' ]
+        }.inject({}) do |h, (platform, payloads)|
+            h[platform] ||= []
+            payloads.each do |payload|
+                h[platform] |= [ '', '&&', '|', ';' ].map { |sep| "#{sep} #{payload}" }
+                h[platform] << "` #{payload}`"
             end
+            h
         end
-        @payloads
     end
 
     def run
-        self.class.payloads.each { |str| audit( str, self.class.opts ) }
+        audit self.class.payloads, self.class.options
     end
 
     def self.info
@@ -58,7 +62,7 @@ class Arachni::Modules::OSCmdInjection < Arachni::Module::Base
             description: %q{Tries to find operating system command injections.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.1.8',
+            version:     '0.2',
             references:  {
                 'OWASP' => 'http://www.owasp.org/index.php/OS_Command_Injection'
             },

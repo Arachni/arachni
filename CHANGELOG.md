@@ -108,6 +108,10 @@
             - Code cleanup.
             - Removed `payloads.txt`, payloads are now in the module.
             - Updated to categorize payloads by platform.
+        - `os_cmd_injection`
+            - Code cleanup.
+            - Removed `payloads.txt`, payloads are now in the module.
+            - Updated to categorize payloads by platform.
 - Plugins
     - Proxy
         - Ou-of-scope pages no longer return a _403 Forbidden_ error but are
