@@ -343,7 +343,7 @@ shared_examples_for 'auditable' do |options = {}|
     describe '#audit' do
         before( :each ) do
             Arachni::Element::Capabilities::Auditable.reset
-            Arachni::Platform.reset
+            Arachni::Platform::Manager.reset
         end
 
         context 'when no block is given' do
