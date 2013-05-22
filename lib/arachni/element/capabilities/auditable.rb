@@ -440,10 +440,9 @@ module Auditable
                 return if platform_payloads.empty?
 
                 platform_payloads.each do |platform, payloads_for_platform|
-                    options = opts.merge( platform: platform )
-                    [payloads_for_platform].flatten.compact.each do |payload|
-                        audit_single( payload, options, &block )
-                    end
+                    audit( [payloads_for_platform].flatten.compact,
+                           opts.merge( platform: platform ),
+                           &block )
                 end
             else
                 raise ArgumentError,
