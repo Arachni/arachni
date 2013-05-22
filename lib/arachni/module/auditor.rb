@@ -459,7 +459,11 @@ module Auditor
     #   `true` if the element should be skipped, `false` otherwise.
     #
     def skip?( elem )
+        # Find out our own shortname.
         @modname ||= framework.modules.map { |k, v| k if v == self.class }.compact.first
+
+        # Don't audit elements which have been already logged as vulnerable
+        # either by us or preferred modules.
         (preferred | [@modname]).each do |mod|
             next if !framework.modules.include?( mod )
             issue_id = elem.provisioned_issue_id( framework.modules[mod].info[:name] )
