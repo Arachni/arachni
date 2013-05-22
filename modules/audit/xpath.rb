@@ -19,7 +19,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.2
+# @version 0.1.3
 #
 # @see http://cwe.mitre.org/data/definitions/91.html
 # @see http://www.owasp.org/index.php/XPATH_Injection
@@ -31,13 +31,17 @@ class Arachni::Modules::XPathInjection < Arachni::Module::Base
         @error_strings ||= read_file( 'errors.txt' )
     end
 
-    def self.opts
-        @opts ||= { format: [Format::APPEND], substring: error_strings }
+    # These will hopefully cause the webapp to output XPath error messages.
+    def self.payloads
+        @payloads ||= %w('" ]]]]]]]]] <!--)
+    end
+
+    def self.options
+        @options ||= { format: [Format::APPEND], substring: error_strings }
     end
 
     def run
-        # these will hopefully cause the webapp to output XPath error messages
-        %w('" ]]]]]]]]] <!--).each { |str| audit( str, self.class.opts ) }
+        audit self.class.payloads, self.class.options
     end
 
     def self.info
@@ -46,7 +50,7 @@ class Arachni::Modules::XPathInjection < Arachni::Module::Base
             description: %q{XPath injection module},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.2',
+            version:     '0.1.3',
             references:  {
                 'OWASP' => 'http://www.owasp.org/index.php/XPATH_Injection'
             },
