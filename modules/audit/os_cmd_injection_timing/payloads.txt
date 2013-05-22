@@ -1,2 +1,0 @@
-sleep __TIME__
-ping -n __TIME__ localhost
