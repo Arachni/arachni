@@ -23,7 +23,7 @@ describe Arachni::Element::Base do
     describe '#platforms' do
         it 'returns platforms for the given element' do
             @e.action = @url
-            @e.platforms.should be_kind_of Arachni::Platform
+            @e.platforms.should be_kind_of Arachni::Platform::Manager
         end
     end
 
