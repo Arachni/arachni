@@ -59,12 +59,24 @@ module Auditable::Taint
     # Performs taint analysis and logs an issue should there be one.
     #
     # It logs an issue when:
-    # * _:match_ == nil AND _:regexp_ matches the response body
-    # * _:match_ == not nil AND  _:regexp_ match == _:match_
-    # * _:substring_ exists in the response body
     #
-    # @param  [String]  seed      the string to be injected
-    # @param  [Hash]    opts      options as described in {Arachni::Module::Auditor::OPTIONS} and {TAINT_OPTIONS}
+    # * `:match` == nil AND `:regexp` matches the response body
+    # * `:match`` == not nil AND  `:regexp` match == `:match`
+    # * `:substring`exists in the response body
+    #
+    # @param  [String, Array<String>, Hash{Symbol => <String, Array<String>>}]  payloads
+    #   Payloads to inject, if given:
+    #
+    #   * {String} -- Will inject the single payload.
+    #   * {Array} -- Will iterate over all payloads and inject them.
+    #   * {Hash} -- Expects {Platform} (as `Symbol`s ) for keys and {Array} of
+    #       `payloads` for values. The applicable `payloads` will be
+    #       {Platform#pick picked} from the hash based on
+    #       {Element::Base#platforms applicable platforms} for the
+    #       {Base#action resource} to be audited.
+    # @param  [Hash]    opts
+    #   Options as described in {Arachni::Module::Auditor::OPTIONS} and
+    #   {TAINT_OPTIONS}.
     #
     def taint_analysis( seed, opts = { } )
         opts = self.class::OPTIONS.merge( TAINT_OPTIONS.merge( opts ) )

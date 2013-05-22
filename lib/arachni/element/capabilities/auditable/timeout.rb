@@ -298,11 +298,21 @@ module Auditable::Timeout
     #
     # Performs timeout/time-delay analysis and logs an issue should there be one.
     #
-    # @param   [String, Array<String>, Hash{Symbol => String, Array<String>}]     payloads
-    #   Injection strings (`__TIME__` will be substituted with `timeout / timeout_divider`).
+    # @param  [String, Array<String>, Hash{Symbol => <String, Array<String>>}]  payloads
+    #   Payloads to inject, if given:
+    #
+    #   * {String} -- Will inject the single payload.
+    #   * {Array} -- Will iterate over all payloads and inject them.
+    #   * {Hash} -- Expects {Platform} (as `Symbol`s ) for keys and {Array} of
+    #       `payloads` for values. The applicable `payloads` will be
+    #       {Platform#pick picked} from the hash based on
+    #       {Element::Base#platforms applicable platforms} for the
+    #       {Base#action resource} to be audited.
+    #
+    #   Delay placeholder `__TIME__` will be substituted with `timeout / timeout_divider`.
     # @param   [Hash]      opts
-    #   Options as described in {Arachni::Element::Mutable::OPTIONS} with the
-    #   specified extras.
+    #   Options as described in {Arachni::Element::Capabilities::Mutable::MUTATION_OPTIONS}
+    #   with the specified extras.
     # @option   opts    [Integer] :timeout
     #   Milliseconds to wait for the request to complete.
     # @option   opts    [Integer] :timeout_divider

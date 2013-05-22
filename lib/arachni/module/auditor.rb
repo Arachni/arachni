@@ -527,12 +527,12 @@ module Auditor
     # @see Arachni::Element::Capabilities::Auditable#audit
     # @see #audit_taint
     #
-    def audit( injection_str, opts = {}, &block )
+    def audit( payloads, opts = {}, &block )
         opts = OPTIONS.merge( opts )
         if !block_given?
-            audit_taint( injection_str, opts )
+            audit_taint( payloads, opts )
         else
-            candidate_elements( opts ).each { |e| e.audit( injection_str, opts, &block ) }
+            candidate_elements( opts ).each { |e| e.audit( payloads, opts, &block ) }
         end
     end
 
@@ -544,9 +544,9 @@ module Auditor
     # @see OPTIONS
     # @see Arachni::Element::Capabilities::Auditable::Taint
     #
-    def audit_taint( taint, opts = {} )
+    def audit_taint( payloads, opts = {} )
         opts = OPTIONS.merge( opts )
-        candidate_elements( opts ).each { |e| e.taint_analysis( taint, opts ) }
+        candidate_elements( opts ).each { |e| e.taint_analysis( payloads, opts ) }
     end
 
     #
@@ -570,9 +570,9 @@ module Auditor
     # @see OPTIONS
     # @see Arachni::Element::Capabilities::Auditable::Timeout
     #
-    def audit_timeout( strings, opts = {} )
+    def audit_timeout( payloads, opts = {} )
         opts = OPTIONS.merge( opts )
-        candidate_elements( opts ).each { |e| e.timeout_analysis( strings, opts ) }
+        candidate_elements( opts ).each { |e| e.timeout_analysis( payloads, opts ) }
     end
 
 
