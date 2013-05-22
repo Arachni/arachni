@@ -15,7 +15,7 @@
 =end
 
 #
-# Tries to inject code strings which, if executed, would cause an identifiable
+# Tries to inject code strings which, if executed, will cause an identifiable
 # delay in execution.
 #
 # If that delay can be verified then the vector via which it was introduced is
@@ -23,7 +23,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2.2
+# @version 0.3
 #
 # @see http://cwe.mitre.org/data/definitions/94.html
 # @see http://php.net/manual/en/function.eval.php
@@ -36,20 +36,22 @@ class Arachni::Modules::CodeInjectionTiming < Arachni::Module::Base
 
     prefer :code_injection
 
-    def self.code_strings
-        @code_strings ||= []
-
-        if @code_strings.empty?
-            read_file( 'payloads.txt' ) do |str|
-                [ ' ', ' && ', ';' ].each { |sep| @code_strings << "#{sep} #{str}"}
-            end
+    def self.payloads
+        @payloads ||= {
+            ruby:   'sleep(__TIME__/1000);',
+            php:    'sleep(__TIME__/1000);',
+            perl:   'sleep(__TIME__/1000);',
+            python: 'import time;time.sleep(__TIME__/1000);',
+            jsp:    'Thread.sleep(__TIME__);',
+            asp:    'Thread.Sleep(__TIME__);',
+        }.inject({}) do |h, (platform, payload)|
+            h[platform] = [ ' ', ' && ', ';' ].map { |sep| "#{sep} #{payload}" }
+            h
         end
-
-        @code_strings
     end
 
     def run
-        audit_timeout( self.class.code_strings, format: [Format::STRAIGHT], timeout: 4000 )
+        audit_timeout( self.class.payloads, format: [Format::STRAIGHT], timeout: 4000 )
     end
 
     def self.info
@@ -60,7 +62,7 @@ class Arachni::Modules::CodeInjectionTiming < Arachni::Module::Base
                 was successful using a time delay.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.2.2',
+            version:     '0.3',
             references:  {
                 'PHP'    => 'http://php.net/manual/en/function.eval.php',
                 'Perl'   => 'http://perldoc.perl.org/functions/eval.html',

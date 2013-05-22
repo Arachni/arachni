@@ -104,6 +104,10 @@
         - `code_injection`
             - Removed `Ruby` payload since it wasn't applicable.
             - Updated to categorize payloads by platform.
+        - `code_injection_timing`
+            - Code cleanup.
+            - Removed `payloads.txt`, payloads are now in the module.
+            - Updated to categorize payloads by platform.
 - Plugins
     - Proxy
         - Ou-of-scope pages no longer return a _403 Forbidden_ error but are
