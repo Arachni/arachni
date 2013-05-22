@@ -213,6 +213,10 @@ class Manager
     #   @return [List] Platform list for databases.
     #   @see DB
 
+    # @!method servers
+    #   @return [List] Platform list for web servers.
+    #   @see SERVERS
+
     # @!method languages
     #   @return [List] Platform list for languages.
     #   @see LANGUAGES
