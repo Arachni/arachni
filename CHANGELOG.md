@@ -119,6 +119,10 @@
         - `path_traversal`
             - Code cleanup.
             - Updated to categorize payloads by platform.
+        - `sqli_blind_timing`
+            - Code cleanup.
+            - Split `payloads.txt`, to individual files per platform.
+            - Updated to categorize payloads by platform.
 - Plugins
     - Proxy
         - Ou-of-scope pages no longer return a _403 Forbidden_ error but are
