@@ -376,10 +376,12 @@ module Auditor
     end
 
     #
-    # Populates and logs an {Arachni::Issue} based on data from "opts" and "res".
+    # Populates and logs an {Arachni::Issue} based on data from `opts` and `res`.
     #
-    # @param    [Hash]                  opts    as passed to blocks by audit methods
-    # @param    [Typhoeus::Response]    res     defaults to page data
+    # @param    [Hash]                  opts
+    #   As passed to blocks by audit methods.
+    # @param    [Typhoeus::Response]    res
+    #   Optional HTTP response, defaults to page data.
     #
     def log( opts, res = nil )
         response_headers = {}
@@ -541,7 +543,8 @@ module Auditor
     end
 
     #
-    # Provides easy access to element auditing using simple taint analysis.
+    # Provides easy access to element auditing using simple taint analysis
+    # and automatically logs results.
     #
     # Uses {#candidate_elements} to decide which elements to audit.
     #
@@ -554,7 +557,7 @@ module Auditor
     end
 
     #
-    # Audits elements using differential analysis attacks.
+    # Audits elements using differential analysis and automatically logs results.
     #
     # Uses {#candidate_elements} to decide which elements to audit.
     #
@@ -578,7 +581,6 @@ module Auditor
         opts = OPTIONS.merge( opts )
         candidate_elements( opts ).each { |e| e.timeout_analysis( payloads, opts ) }
     end
-
 
     private
 
