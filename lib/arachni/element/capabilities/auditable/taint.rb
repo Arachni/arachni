@@ -78,10 +78,14 @@ module Auditable::Taint
     #   Options as described in {Arachni::Module::Auditor::OPTIONS} and
     #   {TAINT_OPTIONS}.
     #
-    def taint_analysis( seed, opts = { } )
+    def taint_analysis( payloads, opts = { } )
         opts = self.class::OPTIONS.merge( TAINT_OPTIONS.merge( opts ) )
-        opts[:substring] = seed if !opts[:regexp] && !opts[:substring]
-        audit( seed, opts ) { |res, c_opts| get_matches( res, c_opts ) }
+
+        if !opts[:regexp] && !opts[:substring] && payloads.is_a?( String )
+            opts[:substring] = payloads
+        end
+
+        audit( payloads, opts ) { |res, c_opts| get_matches( res, c_opts ) }
     end
 
     private

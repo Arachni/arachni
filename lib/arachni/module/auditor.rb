@@ -422,22 +422,31 @@ module Auditor
         print_debug( 'Request ID: ' + res.request.id.to_s ) if res
         print_verbose( '---------' ) if only_positives?
 
+        # Platform identification by vulnerability.
+        platform_type = nil
+        if platform = opts[:platform]
+            Platform::Manager[url] << platform
+            platform_type = Platform::Manager[url].find_type( platform )
+        end
+
         log_issue(
-            var:          var,
-            url:          url,
-            injected:     opts[:injected],
-            id:           opts[:id],
-            regexp:       opts[:regexp],
-            regexp_match: opts[:match],
-            elem:         element,
-            verification: !!opts[:verification],
-            remarks:      opts[:remarks],
-            method:       method,
-            response:     response,
-            opts:         opts,
-            headers:      {
-                request:  request_headers,
-                response: response_headers,
+            var:           var,
+            url:           url,
+            platform:      platform,
+            platform_type: platform_type,
+            injected:      opts[:injected],
+            id:            opts[:id],
+            regexp:        opts[:regexp],
+            regexp_match:  opts[:match],
+            elem:          element,
+            verification:  !!opts[:verification],
+            remarks:       opts[:remarks],
+            method:        method,
+            response:      response,
+            opts:          opts,
+            headers:       {
+                request:   request_headers,
+                response:  response_headers,
             }
         )
     end

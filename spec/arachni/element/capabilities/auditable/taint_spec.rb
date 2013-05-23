@@ -30,6 +30,22 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
             end
         end
 
+        context 'when the payloads are per platform' do
+            it 'assigns the platform of the payload to the issue' do
+                payloads = {
+                    windows: 'blah',
+                    php:     @seed,
+                }
+
+                @positive.taint_analysis( payloads, substring: @seed )
+                @auditor.http.run
+                issues.size.should == 1
+                issue = issues.first
+                issue.platform.should == :php
+                issue.platform_type.should == :languages
+            end
+        end
+
         context 'when called against non-vulnerable input' do
             it 'does not log an issue' do
                 @negative.taint_analysis( @seed )

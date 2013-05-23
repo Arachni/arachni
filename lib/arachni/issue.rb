@@ -39,6 +39,14 @@ class Issue
     # @return    [String]   The module that detected the issue.
     attr_accessor :mod_name
 
+    # @return    [Symbol]   Name of the vulnerable platform.
+    # @see Platform::Manager
+    attr_accessor :platform
+
+    # @return    [Symbol]   Type of the vulnerable platform.
+    # @see Platform::Manager
+    attr_accessor :platform_type
+
     # @return    [String]   The name of the vulnerable input.
     attr_accessor :var
 

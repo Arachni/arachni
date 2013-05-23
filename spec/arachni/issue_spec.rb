@@ -5,6 +5,8 @@ describe Arachni::Issue do
         @issue_data = {
             name: 'Module name',
             elem: Arachni::Element::LINK,
+            platform: :unix,
+            platform_type: :os,
             method: 'GET',
             description: 'Issue description',
             references: {

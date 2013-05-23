@@ -52,6 +52,27 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
             issues.clear
         end
 
+        context 'when the payloads are per platform' do
+            it 'assigns the platform of the payload to the issue' do
+                payloads = {
+                    windows: '__TIME__',
+                    php:     'seed',
+                }
+
+                @positive.timeout_analysis( payloads,
+                    @timeout_opts.merge(
+                        timeout_divider: 1000,
+                        timeout: 2000
+                    )
+                )
+                @run.call
+
+                issue = issues.first
+                issue.platform.should == :windows
+                issue.platform_type.should == :os
+            end
+        end
+
         describe :timeout_divider do
             context 'when set' do
                 it 'modifies the final timeout value' do

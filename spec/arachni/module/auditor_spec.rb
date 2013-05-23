@@ -372,6 +372,18 @@ describe Arachni::Module::Auditor do
             end
         end
 
+        context 'when the payloads are per platform' do
+            it 'assigns the platform of the payload to the issue' do
+                @auditor.load_page_from( @url + '/link' )
+                @auditor.audit( { unix: @seed }, substring: @seed )
+                @framework.http.run
+                @framework.modules.results.size.should == 1
+                issue = @framework.modules.results.first
+                issue.platform.should == :unix
+                issue.platform_type.should == :os
+            end
+        end
+
         context 'when called with opts' do
             describe :elements do
 
