@@ -80,11 +80,6 @@ module Auditable::Taint
     #
     def taint_analysis( payloads, opts = { } )
         opts = self.class::OPTIONS.merge( TAINT_OPTIONS.merge( opts ) )
-
-        if !opts[:regexp] && !opts[:substring] && payloads.is_a?( String )
-            opts[:substring] = payloads
-        end
-
         audit( payloads, opts ) { |res, c_opts| get_matches( res, c_opts ) }
     end
 
@@ -99,6 +94,8 @@ module Auditable::Taint
     # @param  [Hash]  opts
     #
     def get_matches( res, opts )
+        opts[:substring] = opts[:injected_orig] if !opts[:regexp] && !opts[:substring]
+
         [opts[:regexp]].flatten.compact.each { |regexp| match_regexp_and_log( regexp, res, opts ) }
         [opts[:substring]].flatten.compact.each { |substring| match_substring_and_log( substring, res, opts ) }
     end
