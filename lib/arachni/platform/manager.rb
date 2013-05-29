@@ -193,6 +193,23 @@ class Manager
         @platforms
     end
 
+    # @return   [Hash<Integer, Array<Symbol>]
+    #   Light representation of the fingerprint DB with URL hashes as keys
+    #   and arrays of symbols for platforms as values.
+    def self.light
+        all.inject({}) { |h, (k, v)| h[k] = v.to_a; h }
+    end
+
+    # @param    [Hash<Integer, Array<Symbol>]   light_platforms
+    #   Return value of {.light}.
+    # @return   [Manager]
+    def self.load_light( light_platforms )
+        light_platforms.each do |url, platforms|
+            @platforms[url] ||= new( platforms )
+        end
+        self
+    end
+
     # @param    [Array<String, Symbol>] platforms
     #   Platforms with which to initialize the lists.
     def initialize( platforms = [] )

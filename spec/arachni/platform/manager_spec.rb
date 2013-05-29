@@ -120,6 +120,35 @@ describe Arachni::Platform::Manager do
         end
     end
 
+    describe '.all' do
+        it 'returns the raw internal DB of fingerprints' do
+            described_class.all.size.should == 0
+            described_class['http://test.com/'] << :unix
+            described_class.all.size.should == 1
+            described_class.all.first.last.should be_kind_of described_class
+        end
+    end
+
+    describe '.light' do
+        it 'returns a light representation of the internal DB of fingerprints' do
+            described_class['http://test.com/'] << :unix
+            described_class.light.first.last.should == [:unix]
+        end
+    end
+
+    describe '.load_light' do
+        it 'loads a DB from a light representation' do
+            described_class['http://test.com/'] << :unix
+            light = described_class.light
+            described_class.reset
+            described_class.all.should be_empty
+
+            described_class.load_light light
+            described_class.all.should be_any
+            described_class['http://test.com/'].should include :unix
+        end
+    end
+
     describe '#initialize' do
         it 'initializes the manager with the given platforms' do
             platforms = [:unix, :jsp, :mysql].sort
