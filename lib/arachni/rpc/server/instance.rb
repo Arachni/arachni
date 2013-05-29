@@ -535,9 +535,9 @@ class Instance
     # @option opts [String] :user_agent ('Arachni/v<version>')
     #   User agent to use.
     # @option opts [String] :authed_by (nil)
-    #   The person who authorized the scan.
+    #   The e-mail address of the person who authorized the scan.
     #
-    #       John Doe <john.doe@bigscanners.com>
+    #       john.doe@bigscanners.com
     #
     # @option opts [Array<Hash>]  :slaves   **(Experimental)**
     #   Info of Instances to {Framework::Master#enslave enslave}.
@@ -548,7 +548,7 @@ class Instance
     #       ]
     #
     # @option opts [Bool]  :grid    (false) **(Experimental)**
-    #   Utilise the Dispatcher Grid to obtain slave instances for a
+    #   Utilize the Dispatcher Grid to obtain slave instances for a
     #   high-performance distributed scan.
     # @option opts [Integer]  :spawns   (0) **(Experimental)**
     #   The amount of slaves to spawn.
@@ -815,6 +815,13 @@ class Instance
     # @param    [Block] block
     #   Block to call once the operation has completed.
     def expose_over_unix_socket( &block )
+        # If it's already exposed over a UNIX socket then there's nothing to
+        # be done.
+        if Options.rpc_socket
+            block.call true
+            return
+        end
+
         Options.rpc_socket = "/tmp/arachni-instance-master-#{Process.pid}"
 
         ::EM.defer do
@@ -828,6 +835,8 @@ class Instance
             sleep 0.1 while !File.exist?( Options.rpc_socket )
             block.call true
         end
+
+        true
     end
 
     # @param    [Base]  server
