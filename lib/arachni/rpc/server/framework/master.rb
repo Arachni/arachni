@@ -149,7 +149,7 @@ module Master
     #
     # Used by slave crawlers to update the master's list of element IDs per URL.
     #
-    # @param    [Hash]     element_ids_per_page
+    # @param    [Hash]     element_ids_per_url
     #   List of element IDs (as created by
     #   {Arachni::Element::Capabilities::Auditable#scope_audit_id}) for each
     #   page (by URL).
@@ -163,18 +163,50 @@ module Master
     #
     # @private
     #
-    def update_element_ids_per_page( element_ids_per_page = {}, token = nil,
-        signal_done_peer_url = nil )
+    def update_element_ids_per_url( element_ids_per_url = {}, token = nil )
         return false if master? && !valid_token?( token )
 
-        element_ids_per_page.each do |url, ids|
+        element_ids_per_url.each do |url, ids|
             @element_ids_per_page[url] ||= []
             @element_ids_per_page[url] |= ids
         end
 
-        if signal_done_peer_url
-            spider.peer_done signal_done_peer_url
-        end
+        true
+    end
+
+    #
+    # Used by slaves to impart the knowledge they've gained during the scan to
+    # the master as well as for signaling.
+    #
+    # @param    [Hash]     data
+    # @option data [String] :url
+    #   URL of the peer.
+    # @option data [Boolean] :crawl_done
+    #   `true` if the peer has finished crawling, `false` otherwise.
+    # @option data [Hash] :element_ids_per_url
+    #   List of element IDs (as created by
+    #   {Arachni::Element::Capabilities::Auditable#scope_audit_id}) for each
+    #   page (by URL).
+    # @option data [Hash] :platforms
+    #   List of platforms (as created by {Platform::Manager.light}).
+    #
+    # @param    [String]    token
+    #   Privileged token, prevents this method from being called by 3rd parties
+    #   when this instance is a master. If this instance is not a master one
+    #   the token needn't be provided.
+    #
+    # @return   [Bool]  `true` on success, `false` on invalid `token`.
+    #
+    # @private
+    #
+    def slave_sitrep( data, token = nil )
+        return false if master? && !valid_token?( token )
+
+        spider.peer_done( data[:url] ) if data[:crawl_done]
+
+        update_element_ids_per_url( data[:element_ids_per_url], token )
+
+        Platform::Manager.all.merge! (data[:platforms] || {})
 
         true
     end
@@ -229,7 +261,7 @@ module Master
             spider.on_each_page do |page|
                 # Update the list of element scope-IDs per page -- will be used
                 # as a whitelist for the distributed audit.
-                update_element_ids_per_page(
+                update_element_ids_per_url(
                     { page.url => build_elem_list( page ) },
                     @local_token
                 )
@@ -244,7 +276,7 @@ module Master
                 page_a = []
                 while !@page_queue.empty? && page = @page_queue.pop
                     page_a << page
-                    update_element_ids_per_page(
+                    update_element_ids_per_url(
                         { page.url => build_elem_list( page ) },
                         @local_token
                     )

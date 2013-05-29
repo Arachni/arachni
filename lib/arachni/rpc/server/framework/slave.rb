@@ -80,20 +80,20 @@ module Slave
 
         # Setup a hook to be called every time we run out of paths.
         spider.after_each_run do
-            # Flush our element IDs buffer, if it's not empty...
-            if @slave_element_ids_per_page.any?
-                @master.framework.update_element_ids_per_page(
-                    @slave_element_ids_per_page.dup,
-                    master_priv_token,
-                    # ...and also let our master know whether or not we're done
-                    # crawling.
-                    spider.done? ? multi_self_url : false ){}
+            data = {}
 
-                @slave_element_ids_per_page.clear
-            else
-                # Let the master know if we're done crawling.
-                spider.signal_if_done @master
+            if @slave_element_ids_per_page.any?
+                data[:element_ids_per_url] = @slave_element_ids_per_page.dup
             end
+
+            if spider.done?
+                data[:platforms]  = Platform::Manager.light
+                data[:crawl_done] = true
+                data[:url]        = multi_self_url
+            end
+
+            @master.framework.slave_sitrep( data, master_priv_token ){}
+            @slave_element_ids_per_page.clear
         end
 
         # Buffer for logged issues that are to be sent to the master.

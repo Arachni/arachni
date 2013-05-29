@@ -310,7 +310,11 @@ module Distributor
 
         opts['restrict_paths'] = auditables[:urls]     || []
         opts['pages']          = auditables[:pages]    || []
-        opts['elements']       = auditables[:elements] || []
+
+        opts['multi'] = {
+            elements:  auditables[:elements] || [],
+            platforms: Platform::Manager.light
+        }
 
         %w(exclude include).each do |k|
             opts[k].each.with_index { |v, i| opts[k][i] = v.source }

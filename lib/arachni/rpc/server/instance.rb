@@ -554,10 +554,6 @@ class Instance
     #   The amount of slaves to spawn.
     # @option opts [Array<Page>]  :pages    ([])    **(Experimental)**
     #   Extra pages to audit.
-    # @option opts [Array<Integer>]  :elements   ([])    **(Experimental)**
-    #   Elements to which to restrict the audit.
-    #
-    #   <em>Using elements IDs as returned by {Element::Capabilities::Auditable#scope_audit_id}.</em>
     #
     def scan( opts = {}, &block )
         # If the instance isn't clean bail out now.
@@ -606,7 +602,13 @@ class Instance
         end
 
         @framework.update_page_queue( opts[:pages] || [] )
-        @framework.restrict_to_elements( opts[:elements] || [] )
+
+        # Undocumented option used internally to distribute workload and knowledge
+        # for multi-Instance scans.
+        if opts[:multi]
+            @framework.restrict_to_elements( opts[:multi][:elements] || [] )
+            Platform::Manager.load_light( opts[:multi][:platforms] || {} )
+        end
 
         opts[:modules] ||= opts[:mods]
         @framework.modules.load opts[:modules] if opts[:modules]
