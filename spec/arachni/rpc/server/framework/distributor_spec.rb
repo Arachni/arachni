@@ -495,14 +495,12 @@ describe Arachni::RPC::Server::Framework::Distributor do
             @master                 = FakeMaster.new( @opts, @token )
             @distributor.master_url = "#{@opts.rpc_address}:#{@opts.rpc_port}"
 
-            Arachni::Processes::Manager.discard_output
             # master's token
             @opts.datastore[:token] = @token
             @opts.url               = web_server_url_for( :framework_hpg )
             @url                    = @opts.url
             @opts.modules           = %w(taint)
 
-            Arachni::Processes::Manager.preserve_output
             @get_instance_info = proc do
                 instance = instance_spawn( token: @token, port: nil )
                 info = {
