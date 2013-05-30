@@ -82,10 +82,9 @@ module Slave
             if spider.done?
                 data[:platforms]  = Platform::Manager.light
                 data[:crawl_done] = true
-                data[:url]        = multi_self_url
             end
 
-            @master.framework.slave_sitrep( data, master_priv_token ){}
+            sitrep( data )
             @element_ids_per_url.clear
         end
 
@@ -101,7 +100,8 @@ module Slave
         end
         # ... and flush it on each page audit.
         on_audit_page do
-            flush_issue_buffer
+            sitrep( issues: @issue_buffer.dup )
+            @issue_buffer.clear
         end
 
         true
@@ -121,30 +121,18 @@ module Slave
     def slave_run
         audit
 
-        # Make sure we've reported all issues back to the master before telling
-        # it that we're done.
-        flush_issue_buffer do
-            @master.framework.slave_done( multi_self_url, master_priv_token ) do
-                @extended_running = false
-                @status = :done
-            end
+        sitrep( issues: @issue_buffer.dup, audit_done: true ) do
+            @extended_running = false
+            @status = :done
         end
+
+        @issue_buffer.clear
     end
 
-    # Immediately flushes the issue buffer, sending those issues to the master
-    # Instance.
-    #
-    # @param    [Block] block
-    #   Block to call once the issues have been registered with the master.
-    def flush_issue_buffer( &block )
-        if @issue_buffer.empty?
-            block.call if block_given?
-            return
-        end
-
+    def sitrep( data, &block )
         block ||= proc{}
-        @master.framework.register_issues( @issue_buffer.dup, master_priv_token, &block )
-        @issue_buffer.clear
+        @master.framework.slave_sitrep( data, multi_self_url, master_priv_token, &block )
+        nil
     end
 
     # @return   [String]

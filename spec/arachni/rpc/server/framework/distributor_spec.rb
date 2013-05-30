@@ -51,23 +51,18 @@ class FakeMaster
                                                        instance_hash['url'],
                                                        instance_hash['token'])
 
-        instance.framework.set_master( "#{@server.opts[:host]}:#{@server.opts[:port]}",
-                                       @token )
+        instance.framework.
+            set_master( "#{@server.opts[:host]}:#{@server.opts[:port]}", @token )
     end
 
-    def slave_sitrep( *args )
-    end
-
-    def slave_done( *args )
-    end
-
-    def register_issues( issues, token = nil )
+    def slave_sitrep( data, url, token = nil )
         return false if !valid_token?( token )
-        @issues |= issues
+        @issues |= data[:issues] || []
         true
     end
 
     private
+
     def valid_token?( token )
         @token == token
     end

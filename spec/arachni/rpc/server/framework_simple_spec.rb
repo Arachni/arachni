@@ -473,14 +473,14 @@ describe Arachni::RPC::Server::Framework do
             inst.framework.issues.size.should == 2
         end
     end
-    describe '#register_issues' do
+    describe '#update_issues' do
         it 'registers an issue with the instance' do
             url = web_server_url_for( :framework_simple )
             inst = instance_spawn
             inst.opts.url = url
 
             issue = Arachni::Issue.new( name: 'stuff', url: url, elem: 'link' )
-            inst.framework.register_issues( [issue] ).should be_true
+            inst.framework.update_issues( [issue] ).should be_true
 
             issues = inst.framework.issues
             issues.size.should == 1

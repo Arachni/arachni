@@ -140,7 +140,7 @@ module Master
     #
     # @private
     #
-    def register_issues( issues, token = nil )
+    def update_issues( issues, token = nil )
         return false if master? && !valid_token?( token )
         @modules.class.register_results( issues )
         true
@@ -179,17 +179,20 @@ module Master
     # the master as well as for signaling.
     #
     # @param    [Hash]     data
-    # @option data [String] :url
-    #   URL of the peer.
     # @option data [Boolean] :crawl_done
     #   `true` if the peer has finished crawling, `false` otherwise.
+    # @option data [Boolean] :audit_done
+    #   `true` if the slave has finished auditing, `false` otherwise.
     # @option data [Hash] :element_ids_per_url
     #   List of element IDs (as created by
     #   {Arachni::Element::Capabilities::Auditable#scope_audit_id}) for each
     #   page (by URL).
     # @option data [Hash] :platforms
     #   List of platforms (as created by {Platform::Manager.light}).
+    # @option data [Array<Arachni::Issue>]    issues
     #
+    # @param    [String]    url
+    #   URL of the slave.
     # @param    [String]    token
     #   Privileged token, prevents this method from being called by 3rd parties
     #   when this instance is a master. If this instance is not a master one
@@ -199,14 +202,16 @@ module Master
     #
     # @private
     #
-    def slave_sitrep( data, token = nil )
+    def slave_sitrep( data, url, token = nil )
         return false if master? && !valid_token?( token )
 
-        spider.peer_done( data[:url] ) if data[:crawl_done]
+        update_element_ids_per_url( data[:element_ids_per_url] || {}, token )
+        update_issues( data[:issues] || [], token )
 
-        update_element_ids_per_url( data[:element_ids_per_url], token )
+        Platform::Manager.update_light( data[:platforms] || {} )
 
-        Platform::Manager.all.merge! (data[:platforms] || {})
+        spider.peer_done( url ) if data[:crawl_done]
+        slave_done( url, token ) if data[:audit_done]
 
         true
     end

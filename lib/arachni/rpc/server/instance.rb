@@ -607,7 +607,7 @@ class Instance
         # for multi-Instance scans.
         if opts[:multi]
             @framework.restrict_to_elements( opts[:multi][:elements] || [] )
-            Platform::Manager.load_light( opts[:multi][:platforms] || {} )
+            Platform::Manager.update_light( opts[:multi][:platforms] || {} )
         end
 
         opts[:modules] ||= opts[:mods]

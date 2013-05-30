@@ -372,9 +372,9 @@ describe Arachni::RPC::Server::Framework do
             @instance_clean.framework.update_page_queue( [] ).should be_false
         end
     end
-    describe '#register_issues' do
+    describe '#update_issues' do
         it 'returns false' do
-            @instance_clean.framework.register_issues( [] ).should be_false
+            @instance_clean.framework.update_issues( [] ).should be_false
         end
     end
 end
