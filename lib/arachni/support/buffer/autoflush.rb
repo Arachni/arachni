@@ -27,11 +27,13 @@ class AutoFlush < Base
 
     attr_reader :max_pushes
 
-    #
-    # @param    [Integer]  max_size  Maximum buffer size -- won't be enforced.
-    # @param    [Integer]  max_pushes  Maximum number of pushes between flushes.
-    # @param    [#<<, #|, #clear, #size, #empty?]   type      Internal storage class to use.
-    #
+    # @param    [Integer]  max_size
+    #   Maximum buffer size -- a flush will be triggered when that limit is
+    #   reached.
+    # @param    [Integer]  max_pushes
+    #   Maximum number of pushes between flushes.
+    # @param    [#<<, #|, #clear, #size, #empty?]   type
+    #   Internal storage class to use.
     def initialize( max_size = nil, max_pushes = nil, type = Array )
         super( max_size, type )
 
