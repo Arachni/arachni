@@ -18,4 +18,4 @@ All the people on:
 * The `CONTRIBUTORS.md` file.
 
 Finally, a big thanks to the [RubyMine](http://www.jetbrains.com/ruby/) people
-for providing their wonderful IDE for free to the Arachni project.
+for providing their wonderful IDE to the Arachni project for free.
