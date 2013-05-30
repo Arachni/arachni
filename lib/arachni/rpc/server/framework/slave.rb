@@ -138,7 +138,7 @@ module Slave
     # @return   [String]
     #   Privilege token for the master, we need this in order to report back to it.
     def master_priv_token
-        @opts.datastore['master_priv_token']
+        @opts.datastore[:master_priv_token]
     end
 
 end
