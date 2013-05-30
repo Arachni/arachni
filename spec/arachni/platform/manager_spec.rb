@@ -136,14 +136,14 @@ describe Arachni::Platform::Manager do
         end
     end
 
-    describe '.load_light' do
+    describe '.update_light' do
         it 'loads a DB from a light representation' do
             described_class['http://test.com/'] << :unix
             light = described_class.light
             described_class.reset
             described_class.all.should be_empty
 
-            described_class.load_light light
+            described_class.update_light light
             described_class.all.should be_any
             described_class['http://test.com/'].should include :unix
         end

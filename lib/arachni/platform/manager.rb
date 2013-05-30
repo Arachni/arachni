@@ -203,7 +203,7 @@ class Manager
     # @param    [Hash<Integer, Array<Symbol>]   light_platforms
     #   Return value of {.light}.
     # @return   [Manager]
-    def self.load_light( light_platforms )
+    def self.update_light( light_platforms )
         light_platforms.each do |url, platforms|
             @platforms[url] ||= new( platforms )
         end
