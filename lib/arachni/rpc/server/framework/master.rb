@@ -42,9 +42,9 @@ module Master
         # Instances which have completed their scan.
         @done_slaves      = Set.new
 
-        # Holds element IDs for each page to be used as a representation of the
+        # Holds element IDs for each page, to be used as a representation of the
         # the audit workload that will need to be distributed.
-        @element_ids_per_page = {}
+        @element_ids_per_url = {}
 
         # Some methods need to be accessible over RPC for instance management,
         # restricting elements, adding more pages etc.
@@ -167,8 +167,8 @@ module Master
         return false if master? && !valid_token?( token )
 
         element_ids_per_url.each do |url, ids|
-            @element_ids_per_page[url] ||= []
-            @element_ids_per_page[url] |= ids
+            @element_ids_per_url[url] ||= []
+            @element_ids_per_url[url] |= ids
         end
 
         true
@@ -283,7 +283,7 @@ module Master
                 end
 
                 # Split the URLs of the pages in equal chunks.
-                chunks    = split_urls( @element_ids_per_page.keys, @instances.size + 1 )
+                chunks    = split_urls( @element_ids_per_url.keys, @instances.size + 1 )
                 chunk_cnt = chunks.size
 
                 if chunk_cnt > 0
@@ -297,7 +297,7 @@ module Master
                     # Remove duplicate elements across the (per instance) chunks
                     # while spreading them out evenly.
                     elements = distribute_elements( chunks,
-                                                    @element_ids_per_page )
+                                                    @element_ids_per_url )
 
                     # Restrict the local instance to its assigned elements.
                     restrict_to_elements( elements.shift, @local_token )

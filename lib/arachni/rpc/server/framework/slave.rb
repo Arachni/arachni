@@ -57,7 +57,7 @@ module Slave
         # distribution when it comes time for the audit.
         #
         # This is our buffer for that list.
-        @slave_element_ids_per_page = Hash.new
+        @element_ids_per_url = {}
 
         # Process each page as it is crawled.
         # (The crawl will start the first time any Instance pushes paths to us.)
@@ -65,9 +65,9 @@ module Slave
             @status = :crawling
 
             # Build a list of deduplicated element scope IDs for this page.
-            @slave_element_ids_per_page[page.url] ||= []
+            @element_ids_per_url[page.url] ||= []
             build_elem_list( page ).each do |id|
-                @slave_element_ids_per_page[page.url] << id
+                @element_ids_per_url[page.url] << id
             end
         end
 
@@ -75,8 +75,8 @@ module Slave
         spider.after_each_run do
             data = {}
 
-            if @slave_element_ids_per_page.any?
-                data[:element_ids_per_url] = @slave_element_ids_per_page.dup
+            if @element_ids_per_url.any?
+                data[:element_ids_per_url] = @element_ids_per_url.dup
             end
 
             if spider.done?
@@ -86,7 +86,7 @@ module Slave
             end
 
             @master.framework.slave_sitrep( data, master_priv_token ){}
-            @slave_element_ids_per_page.clear
+            @element_ids_per_url.clear
         end
 
         # Buffer for logged issues that are to be sent to the master.
