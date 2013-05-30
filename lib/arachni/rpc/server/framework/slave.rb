@@ -24,13 +24,6 @@ class RPC::Server::Framework
 #
 module Slave
 
-    # Buffer issues and only report them to the master instance when the buffer
-    # reaches (or exceeds) this size.
-    ISSUE_BUFFER_SIZE = 100
-
-    # How many times to try and fill the issue buffer before flushing it.
-    ISSUE_BUFFER_FILLUP_ATTEMPTS = 10
-
     #
     # Sets the URL and authentication token required to connect to this
     # Instance's master and makes this Instance a slave.
@@ -54,7 +47,7 @@ module Slave
         # Start the clock and run the plugins.
         prepare
 
-        @master = connect_to_instance( 'url' => url, 'token' => token )
+        @master = connect_to_instance( url: url, token: token )
 
         # Multi-Instance scans need extra info when it comes to auditing,
         # like a whitelist of elements each slave is allowed to audit.
@@ -97,22 +90,18 @@ module Slave
         end
 
         # Buffer for logged issues that are to be sent to the master.
-        @issue_buffer = Support::Buffer::AutoFlush.new( ISSUE_BUFFER_SIZE,
-                                                        ISSUE_BUFFER_FILLUP_ATTEMPTS )
-
-        # When the buffer gets flushed, send its contents to the master.
-        @issue_buffer.on_flush { |buffer| send_issues_to_master( buffer ) }
+        @issue_buffer = []
 
         # Don't store issues locally -- will still filter duplicate issues though.
         @modules.do_not_store
 
         # Buffer discovered issues...
         @modules.on_register_results do |issues|
-            report_issues_to_master issues
+            @issue_buffer |= issues
         end
         # ... and flush it on each page audit.
         on_audit_page do
-            @issue_buffer.flush
+            flush_issue_buffer
         end
 
         true
@@ -126,11 +115,9 @@ module Slave
 
     private
 
-    #
-    # Runs {Framework#audit} and takes care of slave duties like the
-    # need to flush out the issue buffer after the audit and let the master
-    # know when we're done.
-    #
+    # Runs {Framework#audit} and takes care of slave duties like the need to
+    # flush out the issue buffer after the audit and let the master know when
+    # we're done.
     def slave_run
         audit
 
@@ -144,52 +131,20 @@ module Slave
         end
     end
 
-    #
-    # @note Won't report the issues immediately but instead buffer them and
-    #   transmit them at the appropriate time.
-    #
-    # Reports an array of issues back to the master Instance.
-    #
-    # @param    [Array<Arachni::Issue>]     issues
-    #
-    # @see #report_issues_to_master
-    #
-    def report_issues_to_master( issues )
-        return if issues.empty?
-        @issue_buffer.batch_push issues
-        true
-    end
-
-    #
     # Immediately flushes the issue buffer, sending those issues to the master
     # Instance.
     #
     # @param    [Block] block
     #   Block to call once the issues have been registered with the master.
-    #
-    # @see #report_issues_to_master
-    #
     def flush_issue_buffer( &block )
         if @issue_buffer.empty?
             block.call if block_given?
             return
         end
 
-        send_issues_to_master( @issue_buffer.flush, &block )
-    end
-
-    #
-    # @param    [Array<Arachni::Issue>] issues
-    # @param    [Block] block
-    #   Block to call once the issues have been registered with the master.
-    #
-    def send_issues_to_master( issues, &block )
-        if issues.empty?
-            block.call if block_given?
-            return
-        end
-
-        @master.framework.register_issues( issues, master_priv_token, &block )
+        block ||= proc{}
+        @master.framework.register_issues( @issue_buffer.dup, master_priv_token, &block )
+        @issue_buffer.clear
     end
 
     # @return   [String]
