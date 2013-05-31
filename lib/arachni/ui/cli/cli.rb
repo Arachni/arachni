@@ -355,6 +355,19 @@ class CLI
                     exception_jail{ save_profile( arg ) }
                     exit 0
 
+                when 'platforms'
+                    begin
+                        Platform::Manager.new( arg )
+                    rescue Platform::Error::Invalid => e
+                        @opts.platforms.clear
+                        print_error e
+                        print_info 'Available platforms are:'
+                        print_info Platform::Manager.new.valid.to_a.join( ', ' )
+                        print_line
+                        print_info 'Use the \'--lsplat\' parameter to see a detailed list of all available platforms.'
+                        exit 1
+                    end
+
                 when 'mods'
                     begin
                         @opts.mods = @arachni.modules.load( arg )

@@ -127,6 +127,20 @@ class RPC
             exit 1
         end
 
+        if @opts.platforms.any?
+            begin
+                Platform::Manager.new( @opts.platforms )
+            rescue Platform::Error::Invalid => e
+                @opts.platforms.clear
+                print_error e
+                print_info 'Available platforms are:'
+                print_info Platform::Manager.new.valid.to_a.join( ', ' )
+                print_line
+                print_info 'Use the \'--lsplat\' parameter to see a detailed list of all available platforms.'
+                exit 1
+            end
+        end
+
         if opts.lsplat
             platforms = @instance.framework.lsplat
             shutdown
