@@ -399,8 +399,6 @@ shared_examples_for 'auditable' do |options = {}|
                 it 'picks payloads applicable to the resource\'s platforms' do
                     payloads = {
                         linux:   [ 'linux-payload-1', 'linux-payload-2' ],
-                        freebsd: 'freebsd-payload',
-                        openbsd: [ 'openbsd-payload-1', 'openbsd-payload-2' ],
                         php:     [ 'php-payload-1', 'php-payload-2' ],
                         apache:  'apache-payload',
                         windows: 'windows-payload',

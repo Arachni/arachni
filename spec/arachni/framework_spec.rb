@@ -857,16 +857,16 @@ describe Arachni::Framework do
         end
     end
 
-    describe 'list_platforms' do
+    describe '#list_platforms' do
         it 'returns information about all valid platforms' do
             @f.list_platforms.should == YAML.load( '---
-Operating system:
+Operating systems:
   :unix: Generic Unix family
   :linux: Linux
   :bsd: Generic BSD family
   :solaris: Solaris
   :windows: MS Windows
-Database:
+Databases:
   :coldfusion: ColdFusion
   :db2: DB2
   :emc: EMC
@@ -877,12 +877,12 @@ Database:
   :oracle: Oracle
   :pgsql: Postgresql
   :sqlite: SQLite
-Web server:
+Web servers:
   :apache: Apache
   :iis: IIS
   :nginx: Nginx
   :tomcat: TomCat
-Programming language:
+Programming languages:
   :asp: ASP
   :aspx: ASP.NET
   :jsp: JSP
@@ -890,7 +890,7 @@ Programming language:
   :php: PHP
   :python: Python
   :ruby: Ruby
-Framework:
+Frameworks:
   :rack: Rack
 ')
         end
