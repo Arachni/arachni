@@ -527,6 +527,18 @@ class Framework
     end
     alias :lsplug :list_plugins
 
+    # @return    [Array<Hash>]  Information about all available platforms.
+    def list_platforms
+        platforms = Platform::Manager.new
+        platforms.valid.inject({}) do |h, platform|
+            type = Platform::Manager::TYPES[platforms.find_type( platform )]
+            h[type] ||= {}
+            h[type][platform] = platforms.fullname( platform )
+            h
+        end
+    end
+    alias :lsplat :list_platforms
+
     # @return   [String]
     #   Status of the instance, possible values are (in order):
     #

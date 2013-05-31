@@ -425,7 +425,7 @@ module Auditor
         # Platform identification by vulnerability.
         platform_type = nil
         if platform = opts[:platform]
-            Platform::Manager[url] << platform
+            Platform::Manager[url] << platform if Options.fingerprint?
             platform_type = Platform::Manager[url].find_type( platform )
         end
 

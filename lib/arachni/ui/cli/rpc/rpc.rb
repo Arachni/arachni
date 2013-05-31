@@ -81,12 +81,6 @@ class RPC
             exit 0
         end
 
-        # Check for missing url
-        if !@opts.url
-            print_error 'Missing url argument.'
-            exit 1
-        end
-
         # Check for missing Dispatcher
         if !@opts.server
             print_error 'Missing server argument.'
@@ -133,6 +127,14 @@ class RPC
             exit 1
         end
 
+        if opts.lsplat
+            platforms = @instance.framework.lsplat
+            shutdown
+
+            lsplat platforms
+            exit
+        end
+
         # If the user wants to see the available plugins grab them from the
         # server, output them, exit and shutdown the server.
         if !opts.lsplug.empty?
@@ -151,6 +153,12 @@ class RPC
 
             lsmod modules
             exit
+        end
+
+        # Check for missing url
+        if !@opts.url
+            print_error 'Missing url argument.'
+            exit 1
         end
 
         @issues ||= []

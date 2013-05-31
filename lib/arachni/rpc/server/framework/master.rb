@@ -208,7 +208,7 @@ module Master
         update_element_ids_per_url( data[:element_ids_per_url] || {}, token )
         update_issues( data[:issues] || [], token )
 
-        Platform::Manager.update_light( data[:platforms] || {} )
+        Platform::Manager.update_light( data[:platforms] || {} ) if Options.fingerprint?
 
         spider.peer_done( url ) if data[:crawl_done]
         slave_done( url, token ) if data[:audit_done]

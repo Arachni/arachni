@@ -499,6 +499,17 @@ class Options
 
     attr_accessor :grid
 
+    # @return   [Bool]   Disable platform fingeprinting.
+    attr_accessor :no_fingerprinting
+
+    # @return   [Array<Symbol>]
+    #   User supplied platforms to use instead of (or in addition to --
+    #   depending on the {#no_fingerprinting option}) fingerprinting.
+    attr_accessor :platforms
+
+    attr_accessor :lsplat
+
+    # @return   [Bool]   Display version info and quit?
     attr_accessor :version
 
     def initialize
@@ -553,8 +564,8 @@ class Options
         @link_count_limit = nil
         @redirect_limit   = 20
 
-        @lsmod      = []
-        @lsrep      = []
+        @lsmod  = []
+        @lsrep  = []
 
         @http_req_limit = 20
 
@@ -582,8 +593,23 @@ class Options
         @min_pages_per_instance = 30
         @max_slaves = 10
 
+        @no_fingerprinting = false
+        @platforms = []
+
         @spawns = 0
         self
+    end
+
+    def do_not_fingerprint
+        self.no_fingerprinting = true
+    end
+
+    def fingerprint
+        self.no_fingerprinting = false
+    end
+
+    def fingerprint?
+        !@no_fingerprinting
     end
 
     def show_version?
@@ -834,7 +860,7 @@ class Options
     alias :modules= :mods=
 
     # these options need to contain Array<Regexp>
-    [ :exclude_pages, :include, :exclude, :lsmod, :lsrep, :lsplug ].each do |m|
+    [ :exclude_pages, :include, :exclude, :lsmod, :lsplat, :lsrep, :lsplug ].each do |m|
         define_method( "#{m}=".to_sym ) do |arg|
             arg = [arg].flatten.map { |s| s.is_a?( Regexp ) ? s : Regexp.new( s.to_s ) }
             instance_variable_set( "@#{m}".to_sym, arg )
@@ -849,6 +875,7 @@ class Options
             [ '--only-positives',    '-k', GetoptLong::NO_ARGUMENT ],
             [ '--lsmod',                   GetoptLong::OPTIONAL_ARGUMENT ],
             [ '--lsrep',                   GetoptLong::OPTIONAL_ARGUMENT ],
+            [ '--lsplat',                  GetoptLong::NO_ARGUMENT ],
             [ '--audit-links',       '-g', GetoptLong::NO_ARGUMENT ],
             [ '--audit-forms',       '-p', GetoptLong::NO_ARGUMENT ],
             [ '--audit-cookies',     '-c', GetoptLong::NO_ARGUMENT ],
@@ -919,6 +946,8 @@ class Options
             [ '--spawns',                 GetoptLong::REQUIRED_ARGUMENT ],
             [ '--grid',                   GetoptLong::NO_ARGUMENT ],
             [ '--https-only',             GetoptLong::NO_ARGUMENT ],
+            [ '--no-fingerprinting',      GetoptLong::NO_ARGUMENT ],
+            [ '--platforms',              GetoptLong::REQUIRED_ARGUMENT ],
             [ '--version',                GetoptLong::NO_ARGUMENT ]
         )
 
@@ -934,6 +963,12 @@ class Options
 
                     when '--version'
                         @version = true
+
+                    when '--no-fingerprinting'
+                        @no_fingerprinting = true
+
+                    when '--platforms'
+                        @platforms = arg.to_s.split( ',' )
 
                     when '--serialized-opts'
                         merge!( unserialize( arg ) )
@@ -1003,6 +1038,9 @@ class Options
                     when '--lsrep'
                         @lsrep << Regexp.new( arg.to_s )
 
+                    when '--lsplat'
+                        @lsplat = true
+
                     when '--http-req-limit'
                         @http_req_limit = arg.to_i
 
@@ -1025,7 +1063,7 @@ class Options
                         @audit_headers = true
 
                     when '--mods', '--modules'
-                        @mods = arg.to_s.split( /,/ )
+                        @mods = arg.to_s.split( ',' )
 
                     when '--report'
                         report, opt_str = arg.split( ':' )

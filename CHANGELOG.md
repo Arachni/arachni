@@ -2,6 +2,11 @@
 
 ## _Under development_
 
+- CLI
+    - Added platform fingerprinting options:
+        - `--lsplat` -- Lists all available platforms.
+        - `--no-fingerprinting` -- Disables platform fingerprinting.
+        - `--platforms` -- Allows for user specified platforms.
 - Added modular `Page` fingeprinting, via `fingerprinter` components, identifying:
     - Operating systems
         - BSD
@@ -31,10 +36,12 @@
         - `:resume!` -- Only use `resume` from now on.
         - `:pause!` -- Only use `pause` from now on.
         - `:clean_up!` -- Only use `clean_up` from now on.
+    - Added `#list_platforms`.
 - `RPC::Server::Instance`
     - Removed the followed deprecated aliases:
         - `:shutdown!` -- Only use `shutdown` from now on.
     - Added preliminary support for UNIX sockets.
+    - Added `#list_platforms`.
 - `Spider`
     - Optimized path de-duplication.
     - Paths-list synchronized using a `Mutex` to prevent issues when running as

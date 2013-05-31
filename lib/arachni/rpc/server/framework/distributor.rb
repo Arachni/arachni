@@ -311,10 +311,11 @@ module Distributor
         opts[:restrict_paths] = auditables[:urls]     || []
         opts[:pages]          = auditables[:pages]    || []
 
-        opts[:multi] = {
-            elements:  auditables[:elements] || [],
-            platforms: Platform::Manager.light
-        }
+        opts[:multi] = { elements: auditables[:elements] || [] }
+
+        if Options.fingerprint?
+            opts[:multi][:platforms] = Platform::Manager.light
+        end
 
         [:exclude, :include].each do |k|
             opts[k].each.with_index { |v, i| opts[k][i] = v.source }

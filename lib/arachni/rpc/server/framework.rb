@@ -76,7 +76,7 @@ class Framework < ::Arachni::Framework
     # Make these inherited methods public again (i.e. accessible over RPC).
     [ :audit_store, :stats, :paused?, :lsmod, :list_modules, :lsplug,
       :list_plugins, :lsrep, :list_reports, :version, :revision, :status,
-      :report_as ].each do |m|
+      :report_as, :lsplat, :list_platforms ].each do |m|
         private m
         public  m
     end

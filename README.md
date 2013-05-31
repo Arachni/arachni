@@ -219,6 +219,41 @@ you with its findings.
     permutations to provide extensive cookie-audit coverage.
  - Can exclude specific input vectors by name.
 
+### Platform fingerprinter
+
+In order to make efficient use of the available bandwidth, Arachni performs some
+basic platform fingerprinting and tailors the audit process to the server-side
+deployed platforms by only injecting applicable payloads.
+
+Currently, the following platforms can be identified:
+
+- Operating systems
+    - BSD
+    - Linux
+    - Unix
+    - Windows
+    - Solaris
+- Web servers
+    - Apache
+    - IIS
+    - Nginx
+    - Tomcat
+- Programming languages
+    - PHP
+    - ASP
+    - ASPX
+    - JSP
+    - Python
+- Frameworks
+    - Rack
+
+The user also has the option of specifying extra platforms (like a DB server)
+in order to help the system be as efficient as possible. Alternatively, fingerprinting
+can be disabled altogether.
+
+Finally, Arachni will always err on the side of caution and send all available
+payloads when it fails to identify specific platforms.
+
 ### HTML Parser
 
 Can extract and analyze:

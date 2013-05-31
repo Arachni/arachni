@@ -110,12 +110,19 @@ describe Arachni::RPC::Server::Framework do
 
     describe '#list_modules' do
         it 'lists all available modules' do
-            @framework_clean.lsmod.should be_any
+            @framework_clean.list_modules.should be_any
         end
         it 'aliased to #lsmod' do
             @framework_clean.list_modules.should == @framework_clean.lsmod
         end
     end
+
+    describe '#list_platforms' do
+        it 'lists all available platforms' do
+            @framework_clean.list_platforms.should == Arachni::Framework.new.list_platforms
+        end
+    end
+
     describe '#run' do
         it 'performs a scan' do
             instance = @instance_clean

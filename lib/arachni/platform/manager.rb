@@ -52,7 +52,13 @@ class Manager
     include UI::Output
     extend  UI::Output
 
-    TYPES = [:os, :db, :servers, :languages, :frameworks]
+    TYPES = {
+        os:         'Operating systems',
+        db:         'Databases',
+        servers:    'Web servers',
+        languages:  'Programming languages',
+        frameworks: 'Frameworks'
+    }
 
     OS = {
         # Generic *nix, flavor couldn't be identified.
@@ -60,10 +66,7 @@ class Manager
             linux:   {},
 
             # Generic BSD, flavor couldn't be identified.
-            bsd:     {
-                freebsd: {},
-                openbsd: {},
-            },
+            bsd:     {},
             solaris: {}
         },
         windows: {}
@@ -103,6 +106,45 @@ class Manager
     FRAMEWORKS = [
         :rack
     ]
+
+    PLATFORM_NAMES = {
+        # Operating systems
+        unix:       'Generic Unix family',
+        linux:      'Linux',
+        bsd:        'Generic BSD family',
+        solaris:    'Solaris',
+        windows:    'MS Windows',
+
+        # Databases
+        mysql:      'MySQL',
+        pgsql:      'Postgresql',
+        mssql:      'MSSQL',
+        oracle:     'Oracle',
+        sqlite:     'SQLite',
+        emc:        'EMC',
+        db2:        'DB2',
+        coldfusion: 'ColdFusion',
+        interbase:  'InterBase',
+        informix:   'Informix',
+
+        # Web servers
+        apache:     'Apache',
+        nginx:      'Nginx',
+        tomcat:     'TomCat',
+        iis:        'IIS',
+
+        # Programming languages
+        php:    'PHP',
+        jsp:    'JSP',
+        python: 'Python',
+        ruby:   'Ruby',
+        asp:    'ASP',
+        aspx:   'ASP.NET',
+        perl:   'Perl',
+
+        # Web frameworks
+        rack:   'Rack'
+    }
 
     # Sets global platforms fingerprints
     # @private
@@ -193,14 +235,14 @@ class Manager
         @platforms
     end
 
-    # @return   [Hash<Integer, Array<Symbol>]
+    # @return   [Hash{Integer=>Array<Symbol>}]
     #   Light representation of the fingerprint DB with URL hashes as keys
     #   and arrays of symbols for platforms as values.
     def self.light
         all.inject({}) { |h, (k, v)| h[k] = v.to_a; h }
     end
 
-    # @param    [Hash<Integer, Array<Symbol>]   light_platforms
+    # @param    [Hash{Integer=>Array<Symbol>}]   light_platforms
     #   Return value of {.light}.
     # @return   [Manager]
     def self.update_light( light_platforms )
@@ -214,12 +256,12 @@ class Manager
     #   Platforms with which to initialize the lists.
     def initialize( platforms = [] )
         @platforms = {}
-        TYPES.each do |type|
+        TYPES.keys.each do |type|
             @platforms[type] =
                 List.new( self.class.const_get( type.to_s.upcase.to_sym ) )
         end
 
-        update [platforms].flatten.compact
+        update [platforms | Options.platforms].flatten.compact
     end
 
     # @!method os
@@ -246,6 +288,17 @@ class Manager
         define_method type do
             @platforms[type]
         end
+    end
+
+    # Converts a platform shortname to a full name.
+    #
+    # @param    [String, Symbol]   platform
+    #   Platform shortname.
+    #
+    # @return   [String]    Full name.
+    # @raise    [Error::Invalid]  On {#invalid?} platforms.
+    def fullname( platform )
+        PLATFORM_NAMES[normalize( platform )]
     end
 
     # Selects appropriate data, depending on the applicable platforms,

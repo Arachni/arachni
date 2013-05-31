@@ -328,6 +328,10 @@ class CLI
                 when 'only_positives'
                     only_positives
 
+                when 'lsplat'
+                    lsplat
+                    exit 0
+
                 when 'lsmod'
                     next if arg.empty?
                     lsmod
@@ -413,6 +417,11 @@ class CLI
     def print_version
         print_line "Arachni #{Arachni::VERSION} (#{RUBY_ENGINE} #{RUBY_VERSION}" +
             "p#{RUBY_PATCHLEVEL}) [#{RUBY_PLATFORM}]"
+    end
+
+    # Outputs all available platforms and their info.
+    def lsplat
+        super @arachni.lsplat
     end
 
     # Outputs all available modules and their info.

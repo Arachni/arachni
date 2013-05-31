@@ -2,6 +2,7 @@ require 'spec_helper'
 
 describe Arachni::Platform::Manager do
 
+    before(:each) { Arachni::Options.reset }
     after(:each) { described_class.reset }
 
     let(:platforms) { described_class.new }
@@ -35,7 +36,7 @@ describe Arachni::Platform::Manager do
 
             page.platforms.should be_empty
             described_class.fingerprint page
-            page.platforms.sort.should == [:unix, :apache].sort
+            page.platforms.sort.should == [:php].sort
 
             described_class[page.url].should == page.platforms
         end
@@ -154,6 +155,14 @@ describe Arachni::Platform::Manager do
             platforms = [:unix, :jsp, :mysql].sort
             described_class.new( platforms ).sort.should == platforms
         end
+
+        context 'when there are Options.platforms' do
+            it 'takes them into account' do
+                platforms = [:unix]
+                Arachni::Options.platforms = [:php, :mysql]
+                described_class.new( platforms ).sort.should == (Arachni::Options.platforms | platforms).sort
+            end
+        end
     end
 
     describe '#os' do
@@ -190,6 +199,14 @@ describe Arachni::Platform::Manager do
         end
     end
 
+    describe '#fullname' do
+        it 'returns the full name for the given platform' do
+            platforms.valid.each do |platform|
+                platforms.fullname( platform ).should be_kind_of String
+            end
+        end
+    end
+
     describe '#pick' do
         it 'returns only data relevant to the applicable platforms' do
             applicable_data = {
@@ -220,7 +237,7 @@ describe Arachni::Platform::Manager do
             it 'includes all children OS flavors' do
                 applicable_data = {
                     linux:   [ 'Linux stuff' ],
-                    freebsd: [ 'FreeBSD stuff' ],
+                    solaris: [ 'Solaris stuff' ],
                     php:     [ 'PHP stuff' ]
                 }
                 data = applicable_data.merge( windows: [ 'Windows stuff' ] )
@@ -236,17 +253,14 @@ describe Arachni::Platform::Manager do
                         # This should not be in the picked data.
                         unix:    [ 'Generic *nix stuff' ],
 
-                        # This should not be in the picked data.
-                        bsd:     [ 'BSD stuff' ],
 
                         linux:   [ 'Linux stuff' ],
-                        freebsd: [ 'FreeBSD stuff' ],
                         php:     [ 'PHP stuff' ]
                     }
                     data = applicable_data.merge( jsp: [ 'JSP stuff' ],
                                                   windows: [ 'Windows stuff' ] )
 
-                    platforms << :bsd << :linux << :php << :unix << :freebsd << :openbsd
+                    platforms << :linux << :php << :unix
 
                     applicable_data.delete( :unix )
                     applicable_data.delete( :bsd )
@@ -268,7 +282,7 @@ describe Arachni::Platform::Manager do
     describe '#valid' do
         it 'returns all valid platforms' do
             platforms.valid.sort.should ==
-                [:unix, :linux, :bsd, :freebsd, :openbsd, :solaris, :windows,
+                [:unix, :linux, :bsd, :solaris, :windows,
                  :coldfusion, :db2, :emc, :informix, :interbase, :mssql, :mysql,
                  :oracle, :pgsql, :sqlite, :apache, :iis, :nginx, :tomcat, :asp,
                  :aspx, :jsp, :perl, :php, :python, :ruby, :rack].sort

@@ -80,7 +80,7 @@ module Slave
             end
 
             if spider.done?
-                data[:platforms]  = Platform::Manager.light
+                data[:platforms]  = Platform::Manager.light if Options.fingerprint?
                 data[:crawl_done] = true
             end
 

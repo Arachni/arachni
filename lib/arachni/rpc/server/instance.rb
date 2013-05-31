@@ -202,6 +202,11 @@ class Instance
         @framework.errors( starting_line, &block )
     end
 
+    # @return (see Arachni::Framework#list_platforms)
+    def list_platforms
+        @framework.list_platforms
+    end
+
     # @return (see Arachni::Framework#list_modules)
     def list_modules
         @framework.list_modules
@@ -471,6 +476,15 @@ class Instance
     #               'check'  => 'MY ACCOUNT'
     #           },
     #       }
+    #
+    # @option opts [String, Symbol, Array<String, Symbol>] :platforms ([])
+    #   Initialize the fingerprinter with the given platforms. The fingerprinter
+    #   cannot identify database servers so specifying the remote DB backend will
+    #   greatly enhance performance and reduce bandwidth consumption.
+    # @option opts [Integer] :no_fingerprinting (false)
+    #   Disable platform fingerprinting and include all payloads in the audit.
+    #   Use this option in addition to the `:platforms` one to restrict the
+    #   audit payloads to explicitly specified platforms.
     # @option opts [Integer] :link_count_limit (nil)
     #   Limit the amount of pages to be crawled and audited.
     # @option opts [Integer] :depth_limit (nil)
@@ -568,6 +582,14 @@ class Instance
         slaves      = opts[:slaves] || []
         spawn_count = opts[:spawns].to_i
 
+        if opts[:platforms]
+            begin
+                Platform::Manager.new( [opts[:platforms]].flatten.compact )
+            rescue => e
+                fail ArgumentError, e.to_s
+            end
+        end
+
         if opts[:grid] && spawn_count <= 0
             fail ArgumentError,
                  'Option \'spawns\' must be greater than 1 for Grid scans.'
@@ -607,7 +629,10 @@ class Instance
         # for multi-Instance scans.
         if opts[:multi]
             @framework.restrict_to_elements( opts[:multi][:elements] || [] )
-            Platform::Manager.update_light( opts[:multi][:platforms] || {} )
+
+            if Options.fingerprint?
+                Platform::Manager.update_light( opts[:multi][:platforms] || {} )
+            end
         end
 
         opts[:modules] ||= opts[:mods]

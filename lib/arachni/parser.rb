@@ -136,7 +136,8 @@ class Parser
                 response_headers: @response_headers,
                 text:             false
             )
-            return Platform::Manager.fingerprint page
+            Platform::Manager.fingerprint( page ) if Options.fingerprint?
+            return page
         end
 
         # Extract cookies from the response.
@@ -205,7 +206,8 @@ class Parser
             # Contains text-based data -- i.e. not a binary response.
             text:             true
         )
-        Platform::Manager.fingerprint page
+        Platform::Manager.fingerprint( page ) if Options.fingerprint?
+        page
     end
     alias :run :page
 
