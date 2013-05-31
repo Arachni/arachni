@@ -383,6 +383,191 @@ module Auditable
     # @note Requires an {#auditor}, if none has been provided it will fallback
     #   to an {#use_anonymous_auditor anonymous} one.
     #
+    # @param  [String, Array<String>, Hash{Symbol => <String, Array<String>>}]  payloads
+    #   Payloads to inject, if given:
+    #
+    #   * {String} -- Will inject the single payload.
+    #   * {Array} -- Will iterate over all payloads and inject them.
+    #   * {Hash} -- Expects {Platform} (as `Symbol`s ) for keys and {Array} of
+    #       `payloads` for values. The applicable `payloads` will be
+    #       {Platform#pick picked} from the hash based on
+    #       {Element::Base#platforms applicable platforms} for the
+    #       {Base#action resource} to be audited.
+    # @param  [Hash]    opts             Options as described in {OPTIONS}.
+    # @param  [Block]   block
+    #   Block to be used for analysis of responses; will be passed the following:
+    #
+    #   * {Typhoeus::Response HTTP response}.
+    #   * Audit options, as a hash.
+    #   * Vulnerable element mutation.
+    #
+    #   The `block` will be called as soon as the HTTP response is received.
+    #
+    # @return   [Boolean, nil]
+    #
+    #   * `true` when the audit was successful.
+    #   * `false` when:
+    #       * There are no {#auditable} inputs.
+    #       * The {Element::Base#action} matches a {#skip_path? skip} rule.
+    #       * The element has already been audited and the `:redundant` option
+    #          is `false` -- the default.
+    #       * The element matches a {.skip_like} block.
+    #   * `nil` when:
+    #       * An empty array/hash of `payloads` was given.
+    #       * There are no `payloads` applicable to the element's platforms.
+    #
+    # @raise    ArgumentError
+    #   On missing `block` or unsupported `payloads` type.
+    #
+    # @see #submit
+    #
+    def audit( payloads, opts = { }, &block )
+        fail ArgumentError, 'Missing block.' if !block_given?
+
+        case payloads
+            when String
+                audit_single( payloads, opts, &block )
+            when Array
+                return if payloads.empty?
+
+                payloads.each do |payload|
+                    audit_single( payload, opts, &block )
+                end
+            when Hash
+                platform_payloads = platforms.any? ?
+                    platforms.pick( payloads ) : payloads
+
+                return if platform_payloads.empty?
+
+                platform_payloads.each do |platform, payloads_for_platform|
+                    audit( [payloads_for_platform].flatten.compact,
+                           opts.merge( platform: platform ),
+                           &block )
+                end
+            else
+                raise ArgumentError,
+                      "Unsupported payload type '#{payloads.class}'. " <<
+                          'Expected one of: String, Array, Hash'
+        end
+    end
+
+    # @note To be overridden by auditable element implementations for more
+    #   fine-grained audit control.
+    #
+    # @return   [Boolean]
+    #   `true` if `self` should be audited, `false` otherwise.
+    #
+    # @abstract
+    def skip?( elem )
+        false
+    end
+
+    # @return  [String]
+    #   Status string explaining what's being audited.
+    #
+    #   The string contains the name of the input that is being audited,
+    #   the url and the type of the input (form, link, cookie...).
+    #
+    def status_string
+        "Auditing #{self.type} variable '#{self.altered}' with action '#{self.action}'."
+    end
+
+    #
+    # Returns an audit ID string used to identify the audit of `self` by its
+    # {#auditor}.
+    #
+    # @note Mostly used to keep track of what audits have been perform in order
+    #   to prevent redundancies.
+    #
+    # @param  [String]  injection_str
+    # @param  [Hash]    opts
+    #
+    # @return  [String]
+    #
+    def audit_id( injection_str = '', opts = {} )
+        vars = auditable.keys.sort.to_s
+
+        str = ''
+        str << "#{@auditor.fancy_name}:" if !opts[:no_auditor] && !orphan?
+
+        str << "#{@action}:#{type}:#{vars}"
+        str << "=#{injection_str}" if !opts[:no_injection_str]
+        str << ":timeout=#{opts[:timeout]}" if !opts[:no_timeout]
+
+        str
+    end
+
+    # @note Mainly used by {Arachni::Module::Auditor#skip?} to prevent redundant
+    #   audits for elements/issues which have already been logged as vulnerable.
+    #
+    # @return   [String]
+    #   Predicts what the {Issue#unique_id} of an issue would look like,
+    #   should `self` be vulnerable.
+    def provisioned_issue_id( auditor_fanxy_name = @auditor.fancy_name )
+        "#{auditor_fanxy_name}::#{type}::#{altered}::#{self.action.split( '?' ).first}"
+    end
+
+    # @return [Boolean]
+    #   `true` if the element matches one or more {.skip_like_blocks},
+    #   `false` otherwise.
+    #
+    # @see .skip_like_blocks
+    def matches_skip_like_blocks?
+        Arachni::Element::Capabilities::Auditable.matches_skip_like_blocks?( self )
+    end
+
+    #
+    # Delegate output related methods to the auditor
+    #
+
+    def debug?
+        @auditor.debug? rescue false
+    end
+
+    def print_error( str = '' )
+        @auditor.print_error( str ) if !orphan?
+    end
+
+    def print_status( str = '' )
+        @auditor.print_status( str ) if !orphan?
+    end
+
+    def print_info( str = '' )
+        @auditor.print_info( str ) if !orphan?
+    end
+
+    def print_line( str = '' )
+        @auditor.print_line( str ) if !orphan?
+    end
+
+    def print_ok( str = '' )
+        @auditor.print_ok( str ) if !orphan?
+    end
+
+    def print_bad( str = '' )
+        @auditor.print_bad( str ) if !orphan?
+    end
+
+    def print_debug( str = '' )
+        @auditor.print_debug( str ) if !orphan?
+    end
+
+    def print_debug_backtrace( str = '' )
+        @auditor.print_debug_backtrace( str ) if !orphan?
+    end
+
+    def print_error_backtrace( str = '' )
+        @auditor.print_error_backtrace( str ) if !orphan?
+    end
+
+    private
+
+    #
+    # Submits mutations of self and calls the block to handle the responses.
+    #
+    # @note Requires an {#auditor}, if none has been provided it will fallback
+    #   to an {#use_anonymous_auditor anonymous} one.
+    #
     # @param  [String]  injection_str  The string to be injected.
     # @param  [Hash]    opts             Options as described in {OPTIONS}.
     # @param  [Block]   block
@@ -398,19 +583,20 @@ module Auditable
     #   `true` if the audit was successful, `false` if:
     #
     #    * There are no {#auditable} inputs.
-    #    * The {#action} matches a {@skip_path? skip} rule.
+    #    * The {Element::Base#action} matches a {#skip_path? skip} rule.
     #    * The element has already been audited and the `:redundant` option
     #       is `false` -- the default.
-    #    * The element matches a {#skip_like} block.
+    #    * The element matches a {.skip_like} block.
     #
     # @raise    ArgumentError   On missing `block`.
     #
     # @see #submit
     #
-    def audit( injection_str, opts = { }, &block )
+    def audit_single( injection_str, opts = { }, &block )
         fail ArgumentError, 'Missing block.' if !block_given?
 
         print_debug "About to audit: #{audit_id}"
+        print_debug "Payload platform: #{opts[:platform]}" if opts.include?( :platform )
 
         # If we don't have any auditable elements just return.
         if auditable.empty?
@@ -478,117 +664,6 @@ module Auditable
         audited audit_id
         true
     end
-
-    # @note To be overridden by auditable element implementations for more
-    #   fine-grained audit control.
-    #
-    # @return   [Boolean]
-    #   `true` if `self` should be audited, `false` otherwise.
-    #
-    # @abstract
-    def skip?( elem )
-        false
-    end
-
-    # @return  [String]
-    #   Status string explaining what's being audited.
-    #
-    #   The string contains the name of the input that is being audited,
-    #   the url and the type of the input (form, link, cookie...).
-    #
-    def status_string
-        "Auditing #{self.type} variable '#{self.altered}' with action '#{self.action}'."
-    end
-
-    #
-    # Returns an audit ID string used to identify the audit of `self` by its
-    # {#auditor}.
-    #
-    # @note Mostly used to keep track of what audits have been perform in order
-    #   to prevent redundancies.
-    #
-    # @param  [String]  injection_str
-    # @param  [Hash]    opts
-    #
-    # @return  [String]
-    #
-    def audit_id( injection_str = '', opts = {} )
-        vars = auditable.keys.sort.to_s
-
-        str = ''
-        str << "#{@auditor.fancy_name}:" if !opts[:no_auditor] && !orphan?
-
-        str << "#{@action}:#{type}:#{vars}"
-        str << "=#{injection_str}" if !opts[:no_injection_str]
-        str << ":timeout=#{opts[:timeout]}" if !opts[:no_timeout]
-
-        str
-    end
-
-    # @note Mainly used by {Arachni::Module::Auditor#skip?} to prevent redundant
-    #   audits for elements/issues which have already been logged as vulnerable.
-    #
-    # @return   [String]
-    #   Predicts what the {Issue#unique_id} of an issue would look like,
-    #   should `self` be vulnerable.
-    def provisioned_issue_id( auditor_fanxy_name = @auditor.fancy_name )
-        "#{auditor_fanxy_name}::#{type}::#{altered}::#{self.action.split( '?' ).first}"
-    end
-
-    # @return [Boolean]
-    #   `true` if the element matches one or more {#skip_like_blocks},
-    #   `false` otherwise.
-    #
-    # @see #skip_like_blocks
-    def matches_skip_like_blocks?
-        Arachni::Element::Capabilities::Auditable.matches_skip_like_blocks?( self )
-    end
-
-    #
-    # Delegate output related methods to the auditor
-    #
-
-    def debug?
-        @auditor.debug? rescue false
-    end
-
-    def print_error( str = '' )
-        @auditor.print_error( str ) if !orphan?
-    end
-
-    def print_status( str = '' )
-        @auditor.print_status( str ) if !orphan?
-    end
-
-    def print_info( str = '' )
-        @auditor.print_info( str ) if !orphan?
-    end
-
-    def print_line( str = '' )
-        @auditor.print_line( str ) if !orphan?
-    end
-
-    def print_ok( str = '' )
-        @auditor.print_ok( str ) if !orphan?
-    end
-
-    def print_bad( str = '' )
-        @auditor.print_bad( str ) if !orphan?
-    end
-
-    def print_debug( str = '' )
-        @auditor.print_debug( str ) if !orphan?
-    end
-
-    def print_debug_backtrace( str = '' )
-        @auditor.print_debug_backtrace( str ) if !orphan?
-    end
-
-    def print_error_backtrace( str = '' )
-        @auditor.print_error_backtrace( str ) if !orphan?
-    end
-
-    private
 
     def skip_path?( url )
         super || redundant_path?( url )

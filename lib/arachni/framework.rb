@@ -33,6 +33,8 @@ require lib + 'error'
 require lib + 'support'
 require lib + 'utilities'
 require lib + 'uri'
+require lib + 'component/manager'
+require lib + 'platform'
 require lib + 'spider'
 require lib + 'parser'
 require lib + 'issue'
@@ -41,7 +43,6 @@ require lib + 'plugin'
 require lib + 'audit_store'
 require lib + 'http'
 require lib + 'report'
-require lib + 'component/manager'
 require lib + 'session'
 require lib + 'trainer'
 
@@ -224,6 +225,10 @@ class Framework
 
         print_line
         print_status "Auditing: [HTTP: #{page.code}] #{page.url}"
+
+        if page.platforms.any?
+            print_info "Identified as: #{page.platforms.to_a.join( ', ' )}"
+        end
 
         call_on_audit_page( page )
 
@@ -522,6 +527,18 @@ class Framework
     end
     alias :lsplug :list_plugins
 
+    # @return    [Array<Hash>]  Information about all available platforms.
+    def list_platforms
+        platforms = Platform::Manager.new
+        platforms.valid.inject({}) do |h, platform|
+            type = Platform::Manager::TYPES[platforms.find_type( platform )]
+            h[type] ||= {}
+            h[type][platform] = platforms.fullname( platform )
+            h
+        end
+    end
+    alias :lsplat :list_platforms
+
     # @return   [String]
     #   Status of the instance, possible values are (in order):
     #
@@ -639,6 +656,7 @@ class Framework
     # You should first update {Arachni::Options}.
     #
     def self.reset
+        Platform::Manager.reset
         Module::Auditor.reset
         ElementFilter.reset
         Element::Capabilities::Auditable.reset
@@ -685,9 +703,12 @@ class Framework
             @opts.restrict_paths.each { |url| push_to_url_queue( url ) }
         else
             # initiates the crawl
-            spider.run( false ) do |response|
+            spider.run do |page|
                 @sitemap |= spider.sitemap
-                push_to_url_queue( url_sanitize( response.effective_url ) )
+                push_to_url_queue page.url
+
+                next if page.platforms.empty?
+                print_info "Identified as: #{page.platforms.to_a.join( ', ' )}"
             end
         end
 

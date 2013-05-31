@@ -40,8 +40,10 @@ describe Arachni::Page do
         @empty_page = Arachni::Page.new
     end
 
-    it 'should be assigned to Arachni::Page for easy access' do
-        Arachni::Page.should == Arachni::Page
+    describe '#platforms' do
+        it 'returns platforms for the given page' do
+            @page.platforms.should be_kind_of Arachni::Platform::Manager
+        end
     end
 
     describe '#text?' do

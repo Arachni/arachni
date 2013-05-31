@@ -60,4 +60,11 @@ describe Hash do
             end
         end
     end
+
+    describe '#downcase' do
+        it 'converts keys and values to lower-case strings' do
+            { Stuff: 'VaLue', 'BlAh' => 'VaLUe 2' }.downcase.should ==
+                { 'stuff' => 'value', 'blah' => 'value 2' }
+        end
+    end
 end

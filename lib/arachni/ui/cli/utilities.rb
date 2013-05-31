@@ -62,6 +62,28 @@ module Utilities
     #
     # Outputs all available modules and their info.
     #
+    def lsplat( platforms )
+        print_line
+        print_line
+        print_info 'Available platforms:'
+        print_line
+
+        i = 0
+        platforms.each do |type, platforms|
+            print_status "#{type}"
+
+            platforms.each do |shortname, fullname|
+                print_info "#{shortname}:\t\t#{fullname}"
+            end
+
+            print_line
+        end
+
+    end
+
+    #
+    # Outputs all available modules and their info.
+    #
     def lsmod( modules )
         print_line
         print_line
@@ -417,8 +439,8 @@ module Utilities
                                   (Can be used multiple times.)
 
 
-    -m <modname,modname..>
-    --modules=<modname,modname..>
+    -m <modname,modname,...>
+    --modules=<modname,modname,...>
 
                                 Comma separated list of modules to load.
                                   (Modules are referenced by their filename without the '.rb' extension, use '--lsmod' to list all.
@@ -464,6 +486,19 @@ module Utilities
                                   (Plugins are referenced by their filename without the '.rb' extension, use '--lsplug' to list all.)
                                   (Can be used multiple times.)
 
+    Platforms ----------------------
+
+    --lsplat                    List available platforms.
+
+    --no-fingerprinting         Disable platform fingerprinting.
+                                  (By default, the system will try to identify the deployed server-side platforms automatically
+                                   in order to avoid sending irrelevant payloads.)
+
+    --platforms=<platform,platform,...>
+
+                                Comma separated list of platforms (by shortname) to audit.
+                                  (The given platforms will be used *in addition* to fingerprinting. In order to restrict the audit to
+                                   these platforms enable the '--no-fingerprinting' option.)
 
     Proxy --------------------------
 

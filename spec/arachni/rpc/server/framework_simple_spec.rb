@@ -110,12 +110,19 @@ describe Arachni::RPC::Server::Framework do
 
     describe '#list_modules' do
         it 'lists all available modules' do
-            @framework_clean.lsmod.should be_any
+            @framework_clean.list_modules.should be_any
         end
         it 'aliased to #lsmod' do
             @framework_clean.list_modules.should == @framework_clean.lsmod
         end
     end
+
+    describe '#list_platforms' do
+        it 'lists all available platforms' do
+            @framework_clean.list_platforms.should == Arachni::Framework.new.list_platforms
+        end
+    end
+
     describe '#run' do
         it 'performs a scan' do
             instance = @instance_clean
@@ -473,14 +480,14 @@ describe Arachni::RPC::Server::Framework do
             inst.framework.issues.size.should == 2
         end
     end
-    describe '#register_issues' do
+    describe '#update_issues' do
         it 'registers an issue with the instance' do
             url = web_server_url_for( :framework_simple )
             inst = instance_spawn
             inst.opts.url = url
 
             issue = Arachni::Issue.new( name: 'stuff', url: url, elem: 'link' )
-            inst.framework.register_issues( [issue] ).should be_true
+            inst.framework.update_issues( [issue] ).should be_true
 
             issues = inst.framework.issues
             issues.size.should == 1

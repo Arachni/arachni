@@ -19,7 +19,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2.4
+# @version 0.3
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
 # @see http://www.owasp.org/index.php/OS_Command_Injection
@@ -29,21 +29,21 @@ class Arachni::Modules::OSCmdInjectionTiming < Arachni::Module::Base
     prefer :os_cmd_injection
 
     def self.payloads
-        @payloads ||= []
-        if @payloads.empty?
-            read_file( 'payloads.txt' ) do |str|
-                [ '', '&', '&&', '|', ';' ].each { |sep| @payloads << sep + " " + str }
-                @payloads << "`" + str + "`"
-            end
+        @payloads ||= {
+            unix:    'sleep __TIME__',
+            windows: 'ping -n __TIME__ localhost'
+        }.inject({}) do |h, (platform, payload)|
+            h[platform] = [ '', '&', '&&', '|', ';' ].map { |sep| "#{sep} #{payload}" }
+            h[platform] << "`#{payload}`"
+            h
         end
-        @payloads
     end
 
     def run
-        audit_timeout( self.class.payloads,
+        audit_timeout self.class.payloads,
                        format:          [Format::STRAIGHT],
                        timeout:         10000,
-                       timeout_divider: 1000 )
+                       timeout_divider: 1000
     end
 
     def self.info
@@ -52,11 +52,11 @@ class Arachni::Modules::OSCmdInjectionTiming < Arachni::Module::Base
             description: %q{Tries to find operating system command injections using timing attacks.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.2.4',
+            version:     '0.3',
             references:  {
                 'OWASP' => 'http://www.owasp.org/index.php/OS_Command_Injection'
             },
-            targets:     %w(Linux BSD Solaris Windows),
+            targets:     %w(Windows Unix),
             issue:       {
                 name:            %q{Operating system command injection (timing attack)},
                 description:     %q{The web application allows an attacker to

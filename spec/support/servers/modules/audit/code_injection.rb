@@ -2,11 +2,10 @@ require 'sinatra'
 require 'sinatra/contrib'
 
 REGEXP = {
-    php: 'echo\s([0-9]+)\s?\+\s?([0-9]+);',
-    perl: 'print\s([0-9]+)\s?\+\s?([0-9]+);',
+    php:    'echo\s([0-9]+)\s?\+\s?([0-9]+);',
+    perl:   'print\s([0-9]+)\s?\+\s?([0-9]+);',
     python: 'print\s([0-9]+)\s?\+\s?([0-9]+)$',
-    asp: 'Response.Write\(\s?([0-9]+)\s?\+\s?([0-9]+)\s?\)',
-    ruby: 'puts\s([0-9]+)\s?\+\s?([0-9]+)',
+    asp:    'Response.Write\(\s?([0-9]+)\s?\+\s?([0-9]+)\s?\)'
 }
 
 def exec( lang, str, prefix = nil, postfix = nil )

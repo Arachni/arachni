@@ -80,8 +80,9 @@ module Auditable::Timeout
             @@timeout_candidates
         end
 
-        # @return   [Integer]    amount of timeout-audit related operations
-        #                           (audit blocks + candidate elements)
+        # @return   [Integer]
+        #   Amount of timeout-audit related operations
+        #   (`audit blocks + candidate elements`).
         def @@parent.current_timeout_audit_operations_cnt
             @@timeout_candidates.size + @@timeout_candidates_phase3.size
         end
@@ -179,7 +180,7 @@ module Auditable::Timeout
                         @@timeout_candidate_phase3_ids << elem.audit_id
                     end
 
-                    elem.print_info "Phase 2: Candidate can progress to Phase 3 --" +
+                    elem.print_info 'Phase 2: Candidate can progress to Phase 3 --' <<
                                         " #{elem.type.capitalize} input " +
                                         "'#{elem.altered}' at #{elem.action}"
 
@@ -248,17 +249,17 @@ module Auditable::Timeout
 
         @@timeout_audit_operations_cnt ||= 0
 
-        # populated by timing attack phase 1 with
-        # candidate elements to be verified by phase 2
+        # Populated by timing attack phase 1 with candidate elements to be
+        # verified by phase 2.
         @@timeout_candidates     ||= []
         @@timeout_candidate_ids  ||= ::Arachni::Support::LookUp::HashSet.new
 
         @@timeout_candidates_phase3    ||= []
         @@timeout_candidate_phase3_ids ||= ::Arachni::Support::LookUp::HashSet.new
 
-        # modules which have called the timing attack audit method (audit_timeout)
-        # we're interested in the amount, not the names, and is used to
-        # determine scan progress
+        # Modules which have called the timing attack audit method
+        # ({Arachni::Module::Auditor#audit_timeout}) we're interested in the
+        # amount, not the names, and is used to determine scan progress.
         @@timeout_loaded_modules ||= Set.new
 
         @@on_timing_attacks      ||= []
@@ -297,23 +298,33 @@ module Auditable::Timeout
     #
     # Performs timeout/time-delay analysis and logs an issue should there be one.
     #
-    # @param   [Array]     strings
-    #   Injection strings (`__TIME__` will be substituted with `timeout / timeout_divider`).
+    # @param  [String, Array<String>, Hash{Symbol => <String, Array<String>>}]  payloads
+    #   Payloads to inject, if given:
+    #
+    #   * {String} -- Will inject the single payload.
+    #   * {Array} -- Will iterate over all payloads and inject them.
+    #   * {Hash} -- Expects {Platform} (as `Symbol`s ) for keys and {Array} of
+    #       `payloads` for values. The applicable `payloads` will be
+    #       {Platform#pick picked} from the hash based on
+    #       {Element::Base#platforms applicable platforms} for the
+    #       {Base#action resource} to be audited.
+    #
+    #   Delay placeholder `__TIME__` will be substituted with `timeout / timeout_divider`.
     # @param   [Hash]      opts
-    #   Options as described in {Arachni::Element::Mutable::OPTIONS} with the
-    #   specified extras.
+    #   Options as described in {Arachni::Element::Capabilities::Mutable::MUTATION_OPTIONS}
+    #   with the specified extras.
     # @option   opts    [Integer] :timeout
     #   Milliseconds to wait for the request to complete.
     # @option   opts    [Integer] :timeout_divider
     #   `__TIME__ = timeout / timeout_divider`
     #
-    def timeout_analysis( strings, opts )
+    def timeout_analysis( payloads, opts )
         @@timeout_loaded_modules << @auditor.fancy_name
 
         delay = opts[:timeout]
 
         audit_timeout_debug_msg( 1, delay )
-        timing_attack( strings, opts ) do |_, _, elem|
+        timing_attack( payloads, opts ) do |elem|
             elem.auditor = @auditor
 
             if deduplicate?
@@ -321,7 +332,7 @@ module Auditable::Timeout
                 @@timeout_candidate_ids << elem.audit_id
             end
 
-            print_info "Found a candidate for Phase 2 -- " +
+            print_info 'Found a candidate for Phase 2 -- ' <<
                     "#{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}"
 
             @@parent.add_timeout_candidate( elem ) if elem.responsive?
@@ -368,6 +379,7 @@ module Auditable::Timeout
     end
 
     private
+
     def audit_timeout_debug_msg( phase, delay )
         print_debug '---------------------------------------------'
         print_debug "Running phase #{phase.to_s} of timing attack."
@@ -381,7 +393,7 @@ module Auditable::Timeout
     # 'opts' needs to contain a :timeout value in milliseconds.</br>
     # Optionally, you can add a :timeout_divider.
     #
-    # @param   [Array]     strings
+    # @param   [String, Array, Hash{Symbol => String, Array<String>}]     payloads
     #   Injection strings (`__TIME__` will be substituted with
     #   `timeout / timeout_divider`).
     # @param    [Hash]      opts
@@ -390,19 +402,28 @@ module Auditable::Timeout
     #   Block to call if a timeout occurs, it will be passed the
     #   {Typhoeus::Response response} and `opts`.
     #
-    def timing_attack( strings, opts, &block )
+    def timing_attack( payloads, opts, &block )
+        opts = opts.dup
         opts[:timeout_divider] ||= 1
+        delay = opts[:timeout] / opts[:timeout_divider]
 
-        [strings].flatten.each do |str|
+        # Intercept each element mutation prior to it being submitted and replace
+        # the '__TIME__' placeholder with the actual delay value.
+        each_mutation = proc do |mutation|
+            injected = mutation.altered_value
 
-            opts[:timing_string] = str
-            str = str.gsub( '__TIME__', ( opts[:timeout] / opts[:timeout_divider] ).to_s )
-            opts[:skip_orig] = true
+            # Preserve the original because it's going to be needed for the
+            # verification phases.
+            mutation.opts[:timing_string] = injected
 
-            audit( str, opts ) do |res, c_opts, elem|
-                call_on_timing_blocks( res, elem )
-                block.call( res, c_opts, elem ) if block && res.timed_out?
-            end
+            mutation.altered_value = injected.gsub( '__TIME__', delay.to_s )
+        end
+
+        opts.merge!( each_mutation: each_mutation, skip_orig: true )
+
+        audit( payloads, opts ) do |res, _, elem|
+            call_on_timing_blocks( res, elem )
+            block.call( elem ) if block && res.timed_out?
         end
     end
 

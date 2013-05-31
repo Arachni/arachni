@@ -42,13 +42,13 @@ class Arachni::Modules::BlindrDiffSQLInjection < Arachni::Module::Base
         @booleans
     end
 
-    # options holding fault and boolean injection seeds
-    def self.opts
+    # Options holding fault and boolean injection seeds.
+    def self.options
         @opts ||= { faults: [ '\'"`' ], bools:  booleans }
     end
 
     def run
-        audit_rdiff( self.class.opts )
+        audit_rdiff self.class.options
     end
 
     def self.info

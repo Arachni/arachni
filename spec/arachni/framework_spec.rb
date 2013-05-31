@@ -857,6 +857,45 @@ describe Arachni::Framework do
         end
     end
 
+    describe '#list_platforms' do
+        it 'returns information about all valid platforms' do
+            @f.list_platforms.should == YAML.load( '---
+Operating systems:
+  :unix: Generic Unix family
+  :linux: Linux
+  :bsd: Generic BSD family
+  :solaris: Solaris
+  :windows: MS Windows
+Databases:
+  :coldfusion: ColdFusion
+  :db2: DB2
+  :emc: EMC
+  :informix: Informix
+  :interbase: InterBase
+  :mssql: MSSQL
+  :mysql: MySQL
+  :oracle: Oracle
+  :pgsql: Postgresql
+  :sqlite: SQLite
+Web servers:
+  :apache: Apache
+  :iis: IIS
+  :nginx: Nginx
+  :tomcat: TomCat
+Programming languages:
+  :asp: ASP
+  :aspx: ASP.NET
+  :jsp: JSP
+  :perl: Perl
+  :php: PHP
+  :python: Python
+  :ruby: Ruby
+Frameworks:
+  :rack: Rack
+')
+        end
+    end
+
     describe '#list_modules' do
         it 'aliased to #lsmod return info on all modules' do
             @f.modules.load :taint

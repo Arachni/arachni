@@ -21,7 +21,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.6
+# @version 0.2
 #
 # @see http://cwe.mitre.org/data/definitions/94.html
 # @see http://php.net/manual/en/function.eval.php
@@ -40,8 +40,8 @@ class Arachni::Modules::CodeInjection < Arachni::Module::Base
         @rand2 ||= '4196403186331128'
     end
 
-    def self.opts
-        @opts ||= {
+    def self.options
+        @options ||= {
             substring: (rand1.to_i + rand2.to_i).to_s,
             format:    [Format::APPEND, Format::STRAIGHT],
             param_flip: false
@@ -50,25 +50,27 @@ class Arachni::Modules::CodeInjection < Arachni::Module::Base
 
     def self.code_strings
         # code strings to be injected to the webapp
-        @code_strings ||= [
-            "echo " + rand1 + "+" + rand2 + ";", # PHP
-            "print " + rand1 + "+" + rand2 + ";", # Perl
-            "print " + rand1 + "+" + rand2, # Python
-
-            # the 2 following will most likely print to the console but give them a shot
-            "Response.Write\x28" +  rand1  + '+' + rand2 + "\x29", # ASP
-            "puts " + rand1 + "+" + rand2 # Ruby
-        ]
+        @code_strings ||= {
+            php:    "echo #{rand1}+#{rand2};",
+            perl:   "print #{rand1}+#{rand2};",
+            python: "print #{rand1}+#{rand2}",
+            asp:    "Response.Write\x28#{rand1}+#{rand2}\x29"
+        }
     end
 
-    def self.generate_variations
-        @variations ||= code_strings.map do |str|
-            [ ';%s', "\";%s#", "';%s#" ].map { |var| var % str } | [str]
-        end.flatten.compact
+    def self.payloads
+        return @payloads if @payloads
+
+        @payloads = {}
+        code_strings.each do |platform, payload|
+            @payloads[platform] = [ ';%s', "\";%s#", "';%s#" ].
+                map { |var| var % payload } | [payload]
+        end
+        @payloads
     end
 
     def run
-        self.class.generate_variations.each { |var| audit( var, self.class.opts ) }
+        audit( self.class.payloads, self.class.options )
     end
 
     def self.info
@@ -79,15 +81,14 @@ class Arachni::Modules::CodeInjection < Arachni::Module::Base
                 was successful.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.6',
+            version:     '0.2',
             references:  {
                 'PHP'    => 'http://php.net/manual/en/function.eval.php',
                 'Perl'   => 'http://perldoc.perl.org/functions/eval.html',
                 'Python' => 'http://docs.python.org/py3k/library/functions.html#eval',
                 'ASP'    => 'http://www.aspdev.org/asp/asp-eval-execute/',
-                'Ruby'   => 'http://en.wikipedia.org/wiki/Eval#Ruby'
             },
-            targets:     %w(PHP Perl Python ASP Ruby),
+            targets:     %w(PHP Perl Python ASP),
             issue:       {
                 name:            %q{Code injection},
                 description:     %q{Arbitrary code can be injected into the web application

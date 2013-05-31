@@ -59,17 +59,28 @@ module Auditable::Taint
     # Performs taint analysis and logs an issue should there be one.
     #
     # It logs an issue when:
-    # * _:match_ == nil AND _:regexp_ matches the response body
-    # * _:match_ == not nil AND  _:regexp_ match == _:match_
-    # * _:substring_ exists in the response body
     #
-    # @param  [String]  seed      the string to be injected
-    # @param  [Hash]    opts      options as described in {Arachni::Module::Auditor::OPTIONS} and {TAINT_OPTIONS}
+    # * `:match` == nil AND `:regexp` matches the response body
+    # * `:match`` == not nil AND  `:regexp` match == `:match`
+    # * `:substring`exists in the response body
     #
-    def taint_analysis( seed, opts = { } )
+    # @param  [String, Array<String>, Hash{Symbol => <String, Array<String>>}]  payloads
+    #   Payloads to inject, if given:
+    #
+    #   * {String} -- Will inject the single payload.
+    #   * {Array} -- Will iterate over all payloads and inject them.
+    #   * {Hash} -- Expects {Platform} (as `Symbol`s ) for keys and {Array} of
+    #       `payloads` for values. The applicable `payloads` will be
+    #       {Platform#pick picked} from the hash based on
+    #       {Element::Base#platforms applicable platforms} for the
+    #       {Base#action resource} to be audited.
+    # @param  [Hash]    opts
+    #   Options as described in {Arachni::Module::Auditor::OPTIONS} and
+    #   {TAINT_OPTIONS}.
+    #
+    def taint_analysis( payloads, opts = { } )
         opts = self.class::OPTIONS.merge( TAINT_OPTIONS.merge( opts ) )
-        opts[:substring] = seed if !opts[:regexp] && !opts[:substring]
-        audit( seed, opts ) { |res, c_opts| get_matches( res, c_opts ) }
+        audit( payloads, opts ) { |res, c_opts| get_matches( res, c_opts ) }
     end
 
     private
@@ -83,6 +94,8 @@ module Auditable::Taint
     # @param  [Hash]  opts
     #
     def get_matches( res, opts )
+        opts[:substring] = opts[:injected_orig] if !opts[:regexp] && !opts[:substring]
+
         [opts[:regexp]].flatten.compact.each { |regexp| match_regexp_and_log( regexp, res, opts ) }
         [opts[:substring]].flatten.compact.each { |substring| match_substring_and_log( substring, res, opts ) }
     end

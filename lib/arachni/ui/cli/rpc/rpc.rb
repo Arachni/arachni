@@ -81,12 +81,6 @@ class RPC
             exit 0
         end
 
-        # Check for missing url
-        if !@opts.url
-            print_error 'Missing url argument.'
-            exit 1
-        end
-
         # Check for missing Dispatcher
         if !@opts.server
             print_error 'Missing server argument.'
@@ -133,6 +127,28 @@ class RPC
             exit 1
         end
 
+        if @opts.platforms.any?
+            begin
+                Platform::Manager.new( @opts.platforms )
+            rescue Platform::Error::Invalid => e
+                @opts.platforms.clear
+                print_error e
+                print_info 'Available platforms are:'
+                print_info Platform::Manager.new.valid.to_a.join( ', ' )
+                print_line
+                print_info 'Use the \'--lsplat\' parameter to see a detailed list of all available platforms.'
+                exit 1
+            end
+        end
+
+        if opts.lsplat
+            platforms = @instance.framework.lsplat
+            shutdown
+
+            lsplat platforms
+            exit
+        end
+
         # If the user wants to see the available plugins grab them from the
         # server, output them, exit and shutdown the server.
         if !opts.lsplug.empty?
@@ -151,6 +167,12 @@ class RPC
 
             lsmod modules
             exit
+        end
+
+        # Check for missing url
+        if !@opts.url
+            print_error 'Missing url argument.'
+            exit 1
         end
 
         @issues ||= []

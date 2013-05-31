@@ -202,6 +202,11 @@ class Instance
         @framework.errors( starting_line, &block )
     end
 
+    # @return (see Arachni::Framework#list_platforms)
+    def list_platforms
+        @framework.list_platforms
+    end
+
     # @return (see Arachni::Framework#list_modules)
     def list_modules
         @framework.list_modules
@@ -302,7 +307,7 @@ class Instance
     end
 
     #
-    # Simplified version of {Framework#progress}.
+    # Simplified version of {Framework::MultiInstance#progress}.
     #
     # # Recommended usage
     #
@@ -471,6 +476,15 @@ class Instance
     #               'check'  => 'MY ACCOUNT'
     #           },
     #       }
+    #
+    # @option opts [String, Symbol, Array<String, Symbol>] :platforms ([])
+    #   Initialize the fingerprinter with the given platforms. The fingerprinter
+    #   cannot identify database servers so specifying the remote DB backend will
+    #   greatly enhance performance and reduce bandwidth consumption.
+    # @option opts [Integer] :no_fingerprinting (false)
+    #   Disable platform fingerprinting and include all payloads in the audit.
+    #   Use this option in addition to the `:platforms` one to restrict the
+    #   audit payloads to explicitly specified platforms.
     # @option opts [Integer] :link_count_limit (nil)
     #   Limit the amount of pages to be crawled and audited.
     # @option opts [Integer] :depth_limit (nil)
@@ -535,9 +549,9 @@ class Instance
     # @option opts [String] :user_agent ('Arachni/v<version>')
     #   User agent to use.
     # @option opts [String] :authed_by (nil)
-    #   The person who authorized the scan.
+    #   The e-mail address of the person who authorized the scan.
     #
-    #       John Doe <john.doe@bigscanners.com>
+    #       john.doe@bigscanners.com
     #
     # @option opts [Array<Hash>]  :slaves   **(Experimental)**
     #   Info of Instances to {Framework::Master#enslave enslave}.
@@ -548,16 +562,12 @@ class Instance
     #       ]
     #
     # @option opts [Bool]  :grid    (false) **(Experimental)**
-    #   Utilise the Dispatcher Grid to obtain slave instances for a
+    #   Utilize the Dispatcher Grid to obtain slave instances for a
     #   high-performance distributed scan.
     # @option opts [Integer]  :spawns   (0) **(Experimental)**
     #   The amount of slaves to spawn.
     # @option opts [Array<Page>]  :pages    ([])    **(Experimental)**
     #   Extra pages to audit.
-    # @option opts [Array<Integer>]  :elements   ([])    **(Experimental)**
-    #   Elements to which to restrict the audit.
-    #
-    #   <em>Using elements IDs as returned by {Element::Capabilities::Auditable#scope_audit_id}.</em>
     #
     def scan( opts = {}, &block )
         # If the instance isn't clean bail out now.
@@ -571,6 +581,14 @@ class Instance
 
         slaves      = opts[:slaves] || []
         spawn_count = opts[:spawns].to_i
+
+        if opts[:platforms]
+            begin
+                Platform::Manager.new( [opts[:platforms]].flatten.compact )
+            rescue => e
+                fail ArgumentError, e.to_s
+            end
+        end
 
         if opts[:grid] && spawn_count <= 0
             fail ArgumentError,
@@ -606,7 +624,16 @@ class Instance
         end
 
         @framework.update_page_queue( opts[:pages] || [] )
-        @framework.restrict_to_elements( opts[:elements] || [] )
+
+        # Undocumented option used internally to distribute workload and knowledge
+        # for multi-Instance scans.
+        if opts[:multi]
+            @framework.restrict_to_elements( opts[:multi][:elements] || [] )
+
+            if Options.fingerprint?
+                Platform::Manager.update_light( opts[:multi][:platforms] || {} )
+            end
+        end
 
         opts[:modules] ||= opts[:mods]
         @framework.modules.load opts[:modules] if opts[:modules]
@@ -815,6 +842,13 @@ class Instance
     # @param    [Block] block
     #   Block to call once the operation has completed.
     def expose_over_unix_socket( &block )
+        # If it's already exposed over a UNIX socket then there's nothing to
+        # be done.
+        if Options.rpc_socket
+            block.call true
+            return
+        end
+
         Options.rpc_socket = "/tmp/arachni-instance-master-#{Process.pid}"
 
         ::EM.defer do
@@ -828,6 +862,8 @@ class Instance
             sleep 0.1 while !File.exist?( Options.rpc_socket )
             block.call true
         end
+
+        true
     end
 
     # @param    [Base]  server

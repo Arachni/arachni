@@ -1,17 +1,17 @@
 =begin
-Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+        http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 =end
 
 module Arachni
@@ -42,9 +42,9 @@ module Master
         # Instances which have completed their scan.
         @done_slaves      = Set.new
 
-        # Holds element IDs for each page to be used as a representation of the
+        # Holds element IDs for each page, to be used as a representation of the
         # the audit workload that will need to be distributed.
-        @element_ids_per_page = {}
+        @element_ids_per_url = {}
 
         # Some methods need to be accessible over RPC for instance management,
         # restricting elements, adding more pages etc.
@@ -140,7 +140,7 @@ module Master
     #
     # @private
     #
-    def register_issues( issues, token = nil )
+    def update_issues( issues, token = nil )
         return false if master? && !valid_token?( token )
         @modules.class.register_results( issues )
         true
@@ -149,7 +149,7 @@ module Master
     #
     # Used by slave crawlers to update the master's list of element IDs per URL.
     #
-    # @param    [Hash]     element_ids_per_page
+    # @param    [Hash]     element_ids_per_url
     #   List of element IDs (as created by
     #   {Arachni::Element::Capabilities::Auditable#scope_audit_id}) for each
     #   page (by URL).
@@ -163,18 +163,55 @@ module Master
     #
     # @private
     #
-    def update_element_ids_per_page( element_ids_per_page = {}, token = nil,
-        signal_done_peer_url = nil )
+    def update_element_ids_per_url( element_ids_per_url = {}, token = nil )
         return false if master? && !valid_token?( token )
 
-        element_ids_per_page.each do |url, ids|
-            @element_ids_per_page[url] ||= []
-            @element_ids_per_page[url] |= ids
+        element_ids_per_url.each do |url, ids|
+            @element_ids_per_url[url] ||= []
+            @element_ids_per_url[url] |= ids
         end
 
-        if signal_done_peer_url
-            spider.peer_done signal_done_peer_url
-        end
+        true
+    end
+
+    #
+    # Used by slaves to impart the knowledge they've gained during the scan to
+    # the master as well as for signaling.
+    #
+    # @param    [Hash]     data
+    # @option data [Boolean] :crawl_done
+    #   `true` if the peer has finished crawling, `false` otherwise.
+    # @option data [Boolean] :audit_done
+    #   `true` if the slave has finished auditing, `false` otherwise.
+    # @option data [Hash] :element_ids_per_url
+    #   List of element IDs (as created by
+    #   {Arachni::Element::Capabilities::Auditable#scope_audit_id}) for each
+    #   page (by URL).
+    # @option data [Hash] :platforms
+    #   List of platforms (as created by {Platform::Manager.light}).
+    # @option data [Array<Arachni::Issue>]    issues
+    #
+    # @param    [String]    url
+    #   URL of the slave.
+    # @param    [String]    token
+    #   Privileged token, prevents this method from being called by 3rd parties
+    #   when this instance is a master. If this instance is not a master one
+    #   the token needn't be provided.
+    #
+    # @return   [Bool]  `true` on success, `false` on invalid `token`.
+    #
+    # @private
+    #
+    def slave_sitrep( data, url, token = nil )
+        return false if master? && !valid_token?( token )
+
+        update_element_ids_per_url( data[:element_ids_per_url] || {}, token )
+        update_issues( data[:issues] || [], token )
+
+        Platform::Manager.update_light( data[:platforms] || {} ) if Options.fingerprint?
+
+        spider.peer_done( url ) if data[:crawl_done]
+        slave_done( url, token ) if data[:audit_done]
 
         true
     end
@@ -229,7 +266,7 @@ module Master
             spider.on_each_page do |page|
                 # Update the list of element scope-IDs per page -- will be used
                 # as a whitelist for the distributed audit.
-                update_element_ids_per_page(
+                update_element_ids_per_url(
                     { page.url => build_elem_list( page ) },
                     @local_token
                 )
@@ -244,14 +281,14 @@ module Master
                 page_a = []
                 while !@page_queue.empty? && page = @page_queue.pop
                     page_a << page
-                    update_element_ids_per_page(
+                    update_element_ids_per_url(
                         { page.url => build_elem_list( page ) },
                         @local_token
                     )
                 end
 
                 # Split the URLs of the pages in equal chunks.
-                chunks    = split_urls( @element_ids_per_page.keys, @instances.size + 1 )
+                chunks    = split_urls( @element_ids_per_url.keys, @instances.size + 1 )
                 chunk_cnt = chunks.size
 
                 if chunk_cnt > 0
@@ -265,7 +302,7 @@ module Master
                     # Remove duplicate elements across the (per instance) chunks
                     # while spreading them out evenly.
                     elements = distribute_elements( chunks,
-                                                    @element_ids_per_page )
+                                                    @element_ids_per_url )
 
                     # Restrict the local instance to its assigned elements.
                     restrict_to_elements( elements.shift, @local_token )

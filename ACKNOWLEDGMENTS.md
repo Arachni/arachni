@@ -16,3 +16,6 @@ All the people on:
 * [GitHub](http://github.com/Arachni/arachni/issues) who have submitted bugs and
     given constructive feedback.
 * The `CONTRIBUTORS.md` file.
+
+Finally, a big thanks to the [RubyMine](http://www.jetbrains.com/ruby/) people
+for providing their wonderful IDE to the Arachni project for free.

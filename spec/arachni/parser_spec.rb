@@ -79,6 +79,31 @@ describe Arachni::Parser do
             cookies.map{ |c| c.action }.uniq.should == [url]
         end
 
+        context 'when Options.no_fingerprint is' do
+            context false do
+                it 'performs platform fingerprinting' do
+                    Arachni::Options.no_fingerprinting = false
+
+                    response = Typhoeus::Response.new(
+                        effective_url: 'http://stuff.com/index.php'
+                    )
+                    parser = Arachni::Parser.new( response, @opts )
+                    parser.page.platforms.should be_any
+                end
+            end
+
+            context true do
+                it 'does not perform platform fingerprinting' do
+                    Arachni::Options.no_fingerprinting = true
+
+                    response = Typhoeus::Response.new(
+                        effective_url: 'http://stuff.com/index2.php'
+                    )
+                    parser = Arachni::Parser.new( response, @opts )
+                    parser.page.platforms.should be_empty
+                end
+            end
+        end
     end
 
     describe '#text?' do

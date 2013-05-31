@@ -151,6 +151,53 @@ describe Arachni::Options do
         end
     end
 
+    describe '#do_not_fingerprint' do
+        it 'sets #no_fingerprinting to true' do
+            Arachni::Options.fingerprint?.should be_true
+            Arachni::Options.no_fingerprinting.should be_false
+
+            Arachni::Options.do_not_fingerprint
+            Arachni::Options.fingerprint?.should be_false
+            Arachni::Options.no_fingerprinting.should be_true
+        end
+    end
+
+    describe '#fingerprint' do
+        it 'sets #no_fingerprinting to false' do
+            Arachni::Options.do_not_fingerprint
+            Arachni::Options.fingerprint?.should be_false
+            Arachni::Options.no_fingerprinting.should be_true
+
+            Arachni::Options.fingerprint
+
+            Arachni::Options.fingerprint?.should be_true
+            Arachni::Options.no_fingerprinting.should be_false
+        end
+    end
+
+    describe '#fingerprint?' do
+        context 'by default' do
+            it 'returns true' do
+                Arachni::Options.fingerprint?.should be_true
+            end
+        end
+        context 'when crawling is enabled' do
+            it 'returns true' do
+                Arachni::Options.do_not_fingerprint
+                Arachni::Options.fingerprint?.should be_false
+                Arachni::Options.fingerprint
+                Arachni::Options.fingerprint?.should be_true
+            end
+        end
+        context 'when crawling is disabled' do
+            it 'returns false' do
+                Arachni::Options.fingerprint?.should be_true
+                Arachni::Options.do_not_fingerprint
+                Arachni::Options.fingerprint?.should be_false
+            end
+        end
+    end
+
     describe '#do_not_crawl' do
         it 'sets the link_count_limit to 0' do
             Arachni::Options.do_not_crawl

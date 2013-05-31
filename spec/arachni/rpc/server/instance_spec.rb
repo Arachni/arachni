@@ -67,7 +67,7 @@ describe Arachni::RPC::Server::Instance do
             end
         end
 
-        [:list_modules, :list_plugins, :list_reports, :busy?, :report].each do |m|
+        [:list_platforms, :list_modules, :list_plugins, :list_reports, :busy?, :report].each do |m|
             describe "##{m}" do
                 it "delegates to Framework##{m}" do
                     @instance.service.send(m).should == @instance.framework.send(m)
@@ -148,6 +148,17 @@ describe Arachni::RPC::Server::Instance do
 
                 i_report.should == f_report
                 i_report['issues'].should be_any
+            end
+
+            context 'with invalid :platforms' do
+                it 'raises ArgumentError' do
+                    expect {
+                        instance_spawn.service.scan(
+                            url:         web_server_url_for( :framework_simple ),
+                            platforms:   [ :stuff ]
+                        )
+                    }.to raise_error
+                end
             end
 
             context 'when the options Hash uses Strings instead of Symbols' do

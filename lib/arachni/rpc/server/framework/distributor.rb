@@ -308,11 +308,16 @@ module Distributor
     def distribute_and_run( instance_hash, auditables = {}, &block )
         opts = cleaned_up_opts
 
-        opts['restrict_paths'] = auditables[:urls]     || []
-        opts['pages']          = auditables[:pages]    || []
-        opts['elements']       = auditables[:elements] || []
+        opts[:restrict_paths] = auditables[:urls]     || []
+        opts[:pages]          = auditables[:pages]    || []
 
-        %w(exclude include).each do |k|
+        opts[:multi] = { elements: auditables[:elements] || [] }
+
+        if Options.fingerprint?
+            opts[:multi][:platforms] = Platform::Manager.light
+        end
+
+        [:exclude, :include].each do |k|
             opts[k].each.with_index { |v, i| opts[k][i] = v.source }
         end
 
@@ -330,21 +335,21 @@ module Distributor
     #   Finally, it sets the master's privilege token so that the slave can
     #   report back to us.
     def cleaned_up_opts
-        opts = @opts.to_h.deep_clone
+        opts = @opts.to_h.deep_clone.symbolize_keys
 
         (%w(spawns rpc_socket grid dir rpc_port rpc_address pipe_id neighbour pool_size) |
             %w(lsmod lsrep rpc_instance_port_range load_profile delta_time) |
             %w(start_datetime finish_datetime)).each do |k|
-            opts.delete k
+            opts.delete k.to_sym
         end
 
         # Don't let the slaves run plugins that are not meant to be distributed.
-        opts['plugins'].reject! { |k, _| !@plugins[k].distributable? } if opts['plugins']
+        opts[:plugins].reject! { |k, _| !@plugins[k].distributable? } if opts[:plugins]
 
-        opts['datastore'].delete( :dispatcher_url )
-        opts['datastore'].delete( :token )
+        opts[:datastore].delete( :dispatcher_url )
+        opts[:datastore].delete( :token )
 
-        opts['datastore']['master_priv_token'] = @local_token
+        opts[:datastore][:master_priv_token] = @local_token
 
         opts
     end

@@ -126,8 +126,9 @@ class HTTP
         @hydra_sync.disable_memoization
 
         @headers = {
-            'Accept'     => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'User-Agent' => opts.user_agent
+            'Accept'          => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Encoding' => 'gzip, deflate',
+            'User-Agent'      => opts.user_agent
         }
         @headers['From'] = opts.authed_by if opts.authed_by
 

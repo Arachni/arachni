@@ -19,7 +19,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2.3
+# @version 0.3
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://capec.mitre.org/data/definitions/7.html
@@ -27,21 +27,21 @@
 #
 class Arachni::Modules::BlindTimingSQLInjection < Arachni::Module::Base
 
-    # We add ourselves to the list too.
-    # We don't want more than one timing-attack variation per issue,
-    # it's too expensive.
-    prefer :sqli, :sqli_blind_rdiff
+    prefer :sqli
 
-    def self.sleep_codes
-        @sleep_codes ||= read_file( 'payloads.txt' )
+    def self.payloads
+        @payloads ||= {
+            mysql: read_file( 'mysql.txt' ),
+            pgsql: read_file( 'pgsql.txt' ),
+            mssql: read_file( 'mssql.txt' )
+        }
     end
 
     def run
-        audit_timeout( self.class.sleep_codes,
+        audit_timeout self.class.payloads,
             format:          [Format::STRAIGHT, Format::APPEND],
             timeout:         4000,
             timeout_divider: 1000
-        )
     end
 
     def self.info
@@ -52,7 +52,7 @@ class Arachni::Modules::BlindTimingSQLInjection < Arachni::Module::Base
                 connection suddenly chokes up this module will probably produce false positives).},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.2.3',
+            version:     '0.3',
             references:  {
                 'OWASP'         => 'http://www.owasp.org/index.php/Blind_SQL_Injection',
                 'MITRE - CAPEC' => 'http://capec.mitre.org/data/definitions/7.html'

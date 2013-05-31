@@ -507,6 +507,25 @@ describe Arachni::URI do
         end
     end
 
+    describe '#without_query' do
+        it 'returns the URI up to its resource component without the query' do
+            expected = 'http://test.com/directory/resource.php'
+            described_class.new( "#{expected}?param=1&param2=2" ).without_query.should == expected
+        end
+    end
+
+    describe '#resource_extension' do
+        context 'when there is no extension' do
+            it 'returns nil' do
+                described_class.new( 'http://stuff.com/test' ).resource_extension.should be_nil
+            end
+        end
+        it 'returns the extension of the resource' do
+            uri = "http://test.com/direct.ory/resource.php?param=1&param2=2"
+            described_class.new( uri ).resource_extension.should == 'php'
+        end
+    end
+
     describe '#mailto?' do
         context 'when the URI has a mailto scheme' do
             it 'returns true' do
@@ -517,6 +536,36 @@ describe Arachni::URI do
             it 'returns false' do
                 @uri.new( 'blah.com' ).mailto?.should be_false
             end
+        end
+    end
+
+    describe '#hash' do
+        it 'returns a hash uniquely identifying the URI' do
+            uri = described_class.new( 'http://stuff/' )
+            uri.hash.should be_kind_of Integer
+            uri.hash.should == uri.hash
+
+            uri2 = described_class.new( 'http://stuff2/' )
+            uri.hash.should_not == uri2.hash
+        end
+
+        it 'is an integer' do
+            described_class.new( 'http://stuff/' ).hash.should be_kind_of Integer
+        end
+    end
+
+    describe '#persistent_hash' do
+        it 'returns a hash uniquely identifying the URI' do
+            uri = described_class.new( 'http://stuff/' )
+            uri.persistent_hash.should be_kind_of Integer
+            uri.persistent_hash.should == uri.persistent_hash
+
+            uri2 = described_class.new( 'http://stuff2/' )
+            uri.persistent_hash.should_not == uri2.persistent_hash
+        end
+
+        it 'is an integer' do
+            described_class.new( 'http://stuff/' ).persistent_hash.should be_kind_of Integer
         end
     end
 end

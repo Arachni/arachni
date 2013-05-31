@@ -87,6 +87,7 @@ module Auditable::RDiff
     #   webapp behavior when interpreted).
     # @param    [Block]     block
     #   To be used for custom analysis of responses; will be passed the following:
+    #
     #     * injected string
     #     * audited element
     #     * default response body

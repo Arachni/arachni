@@ -2,15 +2,46 @@
 
 ## _Under development_
 
+- CLI
+    - Added platform fingerprinting options:
+        - `--lsplat` -- Lists all available platforms.
+        - `--no-fingerprinting` -- Disables platform fingerprinting.
+        - `--platforms` -- Allows for user specified platforms.
+- Added modular `Page` fingeprinting, via `fingerprinter` components, identifying:
+    - Operating systems
+        - BSD
+        - Linux
+        - Unix
+        - Windows
+        - Solaris
+    - Web servers
+        - Apache
+        - IIS
+        - Nginx
+        - Tomcat
+    - Programming languages
+        - PHP
+        - ASP
+        - ASPX
+        - JSP
+        - Python
+    - Frameworks
+        - Rack
+- `HTTP`
+    - 'Accept-Encoding' set to 'gzip, deflate' by default.
+- `Parser`
+    - Now fingerprints the pages it returns.
 - `Framework`
     - Removed the followed deprecated aliases:
         - `:resume!` -- Only use `resume` from now on.
         - `:pause!` -- Only use `pause` from now on.
         - `:clean_up!` -- Only use `clean_up` from now on.
+    - Added `#list_platforms`.
 - `RPC::Server::Instance`
     - Removed the followed deprecated aliases:
         - `:shutdown!` -- Only use `shutdown` from now on.
     - Added preliminary support for UNIX sockets.
+    - Added `#list_platforms`.
 - `Spider`
     - Optimized path de-duplication.
     - Paths-list synchronized using a `Mutex` to prevent issues when running as
@@ -39,7 +70,11 @@
 - `Element::Capabilities::Auditable`
     - `#anonymous_auditor` now instantiates a `Framework`.
     - Added `#skip_like` method to be passed blocks deciding what elements should
-        be audited.
+        not be audited.
+    - `#audit`
+        - Updated to support the following payload types:
+            - `Array` -- Array of payloads to be injected.
+            - `Hash` -- Array of payloads to be injected per platform.
 - Cleaned up and removed `@@` vars from:
     - `Module::Manager`
     - `Module::KeyFiller`
@@ -56,6 +91,13 @@
             - `Support::LookUp::Moolb` -- Reverse of a Bloom-filter.
         - `Support::Queue::Disk` -- Disk Queue with in-memory buffer.
 - Added:
+    - `Arachni::Platform` -- Holds resources relevant to platform identification,
+        storage, and filtering.
+        - `Fingerprinters` -- Namespace under all fingerprinter
+            components reside.
+        - `List` - List structure holding applicable platforms for a given WWW resource.
+        - `Manager` - Collection of `Lists`s for easy management of platforms of
+            different types.
     - `IO#tail` -- Returns a specified amount of lines from the bottom of a file.
     - Process helpers for RPC Instance and Dispatcher servers.
         - `Arachni::Processes::Dispatchers` -- Spawns and kills Dispatchers.
@@ -64,6 +106,30 @@
 - RSpec tests
     - Major cleanup, using the aforementioned process helpers to remove duplicate code.
     - Moved supporting components under `spec/support/`.
+- Modules
+    - Audit
+        - `code_injection`
+            - Removed `Ruby` payload since it wasn't applicable.
+            - Updated to categorize payloads by platform.
+        - `code_injection_timing`
+            - Code cleanup.
+            - Removed `payloads.txt`, payloads are now in the module.
+            - Updated to categorize payloads by platform.
+        - `os_cmd_injection`
+            - Code cleanup.
+            - Removed `payloads.txt`, payloads are now in the module.
+            - Updated to categorize payloads by platform.
+        - `os_cmd_injection_timing`
+            - Code cleanup.
+            - Removed `payloads.txt`, payloads are now in the module.
+            - Updated to categorize payloads by platform.
+        - `path_traversal`
+            - Code cleanup.
+            - Updated to categorize payloads by platform.
+        - `sqli_blind_timing`
+            - Code cleanup.
+            - Split `payloads.txt`, to individual files per platform.
+            - Updated to categorize payloads by platform.
 - Plugins
     - Proxy
         - Ou-of-scope pages no longer return a _403 Forbidden_ error but are

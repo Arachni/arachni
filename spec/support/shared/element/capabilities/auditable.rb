@@ -341,8 +341,384 @@ shared_examples_for 'auditable' do |options = {}|
     end
 
     describe '#audit' do
+        before( :each ) do
+            Arachni::Element::Capabilities::Auditable.reset
+            Arachni::Platform::Manager.reset
+        end
 
-        before( :each ) { Arachni::Element::Capabilities::Auditable.reset }
+        context 'when no block is given' do
+            it 'raises ArgumentError' do
+                expect { @auditable.audit( 'stuff' ) }.to raise_error ArgumentError
+            end
+        end
+
+        context 'when the payloads is' do
+            context String do
+                it 'injects the given payload' do
+                    payload = 'stuff-here'
+                    injected = nil
+
+                    @auditable.audit( payload,
+                                      format: [ Arachni::Module::Auditor::Format::STRAIGHT ] ) do |_, _, element|
+                        injected = element.opts[:injected_orig]
+                    end
+
+                    @auditor.http.run
+                    injected.should == payload
+                end
+            end
+            context Array do
+                it 'injects all supplied payload' do
+                    payloads = [ 'stuff-here', 'stuff-here-2' ]
+                    injected = []
+
+                    @auditable.audit( payloads,
+                                      format: [ Arachni::Module::Auditor::Format::STRAIGHT ] ) do |_, _, element|
+                        injected << element.opts[:injected_orig]
+                    end
+
+                    @auditor.http.run
+                    injected.uniq.sort.should == payloads.sort
+                end
+
+                context 'and is empty' do
+                    it 'returns nil' do
+                        injected = []
+                        @auditable.audit( [],
+                                          format: [ Arachni::Module::Auditor::Format::STRAIGHT ] ) do |_, _, element|
+                            injected << element.opts[:injected_orig]
+                        end.should be_nil
+
+                        @auditor.http.run
+                        injected.should be_empty
+                    end
+                end
+            end
+
+            context Hash do
+                it 'picks payloads applicable to the resource\'s platforms' do
+                    payloads = {
+                        linux:   [ 'linux-payload-1', 'linux-payload-2' ],
+                        php:     [ 'php-payload-1', 'php-payload-2' ],
+                        apache:  'apache-payload',
+                        windows: 'windows-payload',
+                        aspx:    [ 'aspx-payload-1', 'aspx-payload-2' ]
+                    }
+
+                    injected = []
+
+                    @auditable.platforms.update %w(unix php apache)
+                    @auditable.audit( payloads,
+                                      format: [ Arachni::Module::Auditor::Format::STRAIGHT ] ) do |_, _, element|
+                        injected << element.opts[:injected_orig]
+                    end.should be_true
+
+                    @auditor.http.run
+
+                    payloads.delete( :windows )
+                    payloads.delete( :aspx )
+
+                    injected.uniq.sort.should == payloads.values.flatten.sort
+                end
+
+                context 'and is empty' do
+                    it 'returns nil' do
+                        injected = []
+                        @auditable.audit( {},
+                                          format: [ Arachni::Module::Auditor::Format::STRAIGHT ] ) do |_, _, element|
+                            injected << element.opts[:injected_orig]
+                        end.should be_nil
+
+                        @auditor.http.run
+                        injected.should be_empty
+                    end
+                end
+
+                context 'and the element has no identified platforms' do
+                    it 'injects all given payloads' do
+                        payloads = {
+                            linux:   [ 'linux-payload-1', 'linux-payload-2' ],
+                            freebsd: 'freebsd-payload',
+                            openbsd: [ 'openbsd-payload-1', 'openbsd-payload-2' ],
+                            php:     [ 'php-payload-1', 'php-payload-2' ],
+                            apache:  'apache-payload',
+                            windows: 'windows-payload',
+                            aspx:    [ 'aspx-payload-1', 'aspx-payload-2' ]
+                        }
+
+                        injected = []
+
+                        @auditable.audit( payloads,
+                                          format: [ Arachni::Module::Auditor::Format::STRAIGHT ] ) do |_, _, element|
+                            injected << element.opts[:injected_orig]
+                        end.should be_true
+
+                        @auditor.http.run
+
+                        injected.uniq.sort.should == payloads.values.flatten.sort
+                    end
+                end
+
+                context 'and there are no payloads for the resource\'s platforms' do
+                    it 'returns nil' do
+                        payloads = {
+                            windows: 'windows-payload',
+                            aspx:    [ 'aspx-payload-1', 'aspx-payload-2' ]
+                        }
+
+                        injected = []
+
+                        @auditable.platforms.update %w(unix php apache)
+                        @auditable.audit( payloads,
+                                          format: [ Arachni::Module::Auditor::Format::STRAIGHT ] ) do |_, _, element|
+                            injected << element.opts[:injected_orig]
+                        end.should be_nil
+
+                        @auditor.http.run
+
+                        payloads.delete( :windows )
+                        payloads.delete( :aspx )
+
+                        injected.should be_empty
+                    end
+                end
+            end
+
+            describe 'other' do
+                it 'raises ArgumentError' do
+                    expect do
+                        @auditable.audit( :stuff,
+                                          format: [ Arachni::Module::Auditor::Format::STRAIGHT ] ) do |_, _, element|
+                            injected << element.opts[:injected_orig]
+                        end
+                    end.to raise_error ArgumentError
+                end
+            end
+        end
+
+        context 'when called with option' do
+            describe :each_mutation do
+                it 'is passed each generated mutation' do
+                    submitted = nil
+                    cnt = 0
+
+                    each_mutation = proc { |_| cnt += 1 }
+
+                    @auditable.audit( @seed, each_mutation: each_mutation,
+                                      skip_orig: true,
+                                      format: [ Arachni::Module::Auditor::Format::STRAIGHT ] ) do |res, opts|
+                        submitted = load( res.body )
+                    end
+
+                    @auditor.http.run
+                    cnt.should == 1
+                    @auditable.auditable == submitted
+                end
+
+                it 'is able to modify mutations on the fly' do
+                    submitted = nil
+
+                    modified_seed = 'houa!'
+                    each_mutation = proc do |mutation|
+                        mutation.altered_value = modified_seed
+                    end
+
+                    @auditable.audit( @seed, each_mutation: each_mutation,
+                                      skip_orig: true,
+                                      format: [ Arachni::Module::Auditor::Format::STRAIGHT ] ) do |res, opts|
+                        submitted = load( res.body )
+                    end
+
+                    @auditor.http.run
+                    submitted.values.first.should == modified_seed
+                end
+
+                context 'when it returns one or more elements of the same type' do
+                    it 'audits those elements too' do
+                        injected = []
+                        cnt = 0
+
+                        each_mutation = proc do |mutation|
+                            m = mutation.dup
+                            m.altered_value = 'houa!'
+
+                            c = mutation.dup
+                            c.altered_value = 'houa2!'
+
+                            [m, c]
+                        end
+
+                        @auditable.audit( @seed, each_mutation: each_mutation,
+                                          skip_orig: true,
+                                          format: [ Arachni::Module::Auditor::Format::STRAIGHT ] ) do |res, opts|
+                            injected << load( res.body ).values.first
+                            cnt += 1
+                        end
+
+                        @auditor.http.run
+                        cnt.should == 3
+                        injected.sort.should == [ @seed, 'houa!', 'houa2!'].sort
+                    end
+                end
+
+            end
+
+            describe :format do
+
+                describe 'Arachni::Module::Auditor::Format::STRAIGHT' do
+                    it 'injects the seed as is' do
+                        injected = nil
+                        cnt = 0
+
+                        @auditable.audit( @seed,
+                                          skip_orig: true,
+                                          format: [ Arachni::Module::Auditor::Format::STRAIGHT ] ) do |res, opts|
+                            injected = load( res.body )[opts[:altered]]
+                            cnt += 1
+                        end
+
+                        @auditor.http.run
+                        cnt.should == 1
+                        injected.should == @seed
+                    end
+                end
+
+                describe 'Arachni::Module::Auditor::Format::APPEND' do
+                    it 'appends the seed to the existing value of the input' do
+                        injected = nil
+                        cnt = 0
+
+                        @auditable.audit( @seed,
+                                          skip_orig: true,
+                                          format: [ Arachni::Module::Auditor::Format::APPEND ] ) do |res, opts|
+                            injected = load( res.body )[opts[:altered]]
+                            cnt += 1
+                        end
+
+                        @auditor.http.run
+                        cnt.should == 1
+                        injected.should == @default_input_value + @seed
+                    end
+                end
+
+                describe 'Arachni::Module::Auditor::Format::NULL' do
+                    it 'terminates the seed with a null character',
+                       if: described_class != Arachni::Element::Header  do
+
+                        injected = nil
+                        cnt = 0
+                        @auditable.audit( @seed,
+                                          skip_orig: true,
+                                          format: [ Arachni::Module::Auditor::Format::NULL ] ) do |res, opts|
+                            injected = load( res.body )[opts[:altered]]
+                            cnt += 1
+                        end
+
+                        @auditor.http.run
+                        cnt.should == 1
+                        auditable.decode( injected ).should == @seed + "\0"
+                    end
+                end
+
+                describe 'Arachni::Module::Auditor::Format::SEMICOLON' do
+                    it 'prepends the seed with a semicolon' do
+                        injected = nil
+                        cnt = 0
+
+                        format = [ Arachni::Module::Auditor::Format::SEMICOLON ]
+                        @auditable.audit( @seed, skip_orig: true, format: format ) do |res, opts|
+                            injected = load( res.body )[opts[:altered]]
+                            cnt += 1
+                        end
+                        @auditor.http.run
+                        cnt.should == 1
+
+                        auditable.decode( injected ).should == ";" + @seed
+                    end
+                end
+            end
+
+            describe :redundant do
+                before do
+                    @audit_opts = {
+                        format: [ Arachni::Module::Auditor::Format::STRAIGHT ],
+                        skip_orig: true
+                    }
+                end
+
+                context true do
+                    it 'allows redundant audits' do
+                        cnt = 0
+                        5.times do |i|
+                            @auditable.audit( @seed, @audit_opts.merge( redundant: true )){ cnt += 1 }
+                        end
+                        @auditor.http.run
+                        cnt.should == 5
+                    end
+                end
+
+                context false do
+                    it 'does not allow redundant requests/audits' do
+                        cnt = 0
+                        5.times do |i|
+                            @auditable.audit( @seed, @audit_opts.merge( redundant: false )){ cnt += 1 }
+                        end
+                        @auditor.http.run
+                        cnt.should == 1
+                    end
+                end
+
+                context 'default' do
+                    it 'does not allow redundant requests/audits' do
+                        cnt = 0
+                        5.times do |i|
+                            @auditable.audit( @seed, @audit_opts ){ cnt += 1 }
+                        end
+                        @auditor.http.run
+                        cnt.should == 1
+                    end
+                end
+            end
+
+            describe :async do
+
+                context true do
+                    it 'performs all HTTP requests asynchronously' do
+                        before = Time.now
+                        @sleep.audit( @seed, async: true ){}
+                        @auditor.http.run
+
+                        # should take as long as the longest request
+                        # and since we're doing this locally the longest
+                        # request must take less than a second.
+                        #
+                        # so it should be 2 when converted into an Int
+                        (Time.now - before).to_i.should == 2
+                    end
+                end
+
+                context false do
+                    it 'performs all HTTP requests synchronously' do
+                        before = Time.now
+                        @sleep.audit( @seed, async: false ){}
+                        @auditor.http.run
+
+                        (Time.now - before).should > 4.0
+                    end
+                end
+
+                context 'default' do
+                    it 'performs all HTTP requests asynchronously' do
+                        before = Time.now
+                        @sleep.audit( @seed ){}
+                        @auditor.http.run
+
+                        (Time.now - before).to_i.should == 2
+                    end
+                end
+
+            end
+        end
 
         context 'when the exclude_vectors option is set' do
             it 'skips those vectors by name' do
@@ -565,224 +941,6 @@ shared_examples_for 'auditable' do |options = {}|
                     @auditable.http.run
                     performed.should be_true
                 end
-            end
-        end
-
-        context 'when called with option' do
-
-            describe :each_mutation do
-                it 'is passed each generated mutation' do
-                    submitted = nil
-                    cnt = 0
-
-                    each_mutation = proc { |_| cnt += 1 }
-
-                    @auditable.audit( @seed, each_mutation: each_mutation,
-                                      format: [ Arachni::Module::Auditor::Format::STRAIGHT ] ) do |res, opts|
-                        submitted = load( res.body )
-                    end
-
-                    @auditor.http.run
-                    cnt.should == 1
-                    @auditable.auditable == submitted
-                end
-
-                it 'is able to modify mutations on the fly' do
-                    submitted = nil
-
-                    modified_seed = 'houa!'
-                    each_mutation = proc do |mutation|
-                        mutation.altered_value = modified_seed
-                    end
-
-                    @auditable.audit( @seed, each_mutation: each_mutation,
-                                      format: [ Arachni::Module::Auditor::Format::STRAIGHT ] ) do |res, opts|
-                        submitted = load( res.body )
-                    end
-
-                    @auditor.http.run
-                    submitted.values.first.should == modified_seed
-                end
-
-                context 'when it returns one or more elements of the same type' do
-                    it 'audits those elements too' do
-                        injected = []
-                        cnt = 0
-
-                        each_mutation = proc do |mutation|
-                            m = mutation.dup
-                            m.altered_value = 'houa!'
-
-                            c = mutation.dup
-                            c.altered_value = 'houa2!'
-
-                            [m, c]
-                        end
-
-                        @auditable.audit( @seed, each_mutation: each_mutation,
-                                          format: [ Arachni::Module::Auditor::Format::STRAIGHT ] ) do |res, opts|
-                            injected << load( res.body ).values.first
-                            cnt += 1
-                        end
-
-                        @auditor.http.run
-                        cnt.should == 3
-                        injected.sort.should == [ @seed, 'houa!', 'houa2!'].sort
-                    end
-                end
-
-            end
-
-            describe :format do
-
-                describe 'Arachni::Module::Auditor::Format::STRAIGHT' do
-                    it 'injects the seed as is' do
-                        injected = nil
-                        cnt = 0
-
-                        @auditable.audit( @seed,
-                                          format: [ Arachni::Module::Auditor::Format::STRAIGHT ] ) do |res, opts|
-                            injected = load( res.body )[opts[:altered]]
-                            cnt += 1
-                        end
-
-                        @auditor.http.run
-                        cnt.should == 1
-                        injected.should == @seed
-                    end
-                end
-
-                describe 'Arachni::Module::Auditor::Format::APPEND' do
-                    it 'appends the seed to the existing value of the input' do
-                        injected = nil
-                        cnt = 0
-
-                        @auditable.audit( @seed,
-                                          format: [ Arachni::Module::Auditor::Format::APPEND ] ) do |res, opts|
-                            injected = load( res.body )[opts[:altered]]
-                            cnt += 1
-                        end
-
-                        @auditor.http.run
-                        cnt.should == 1
-                        injected.should == @default_input_value + @seed
-                    end
-                end
-
-                describe 'Arachni::Module::Auditor::Format::NULL' do
-                    it 'terminates the seed with a null character',
-                       if: described_class != Arachni::Element::Header  do
-
-                        injected = nil
-                        cnt = 0
-                        @auditable.audit( @seed,
-                                          format: [ Arachni::Module::Auditor::Format::NULL ] ) do |res, opts|
-                            injected = load( res.body )[opts[:altered]]
-                            cnt += 1
-                        end
-
-                        @auditor.http.run
-                        cnt.should == 1
-                        auditable.decode( injected ).should == @seed + "\0"
-                    end
-                end
-
-                describe 'Arachni::Module::Auditor::Format::SEMICOLON' do
-                    it 'prepends the seed with a semicolon' do
-                        injected = nil
-                        cnt = 0
-
-                        format = [ Arachni::Module::Auditor::Format::SEMICOLON ]
-                        @auditable.audit( @seed, format: format ) do |res, opts|
-                            injected = load( res.body )[opts[:altered]]
-                            cnt += 1
-                        end
-                        @auditor.http.run
-                        cnt.should == 1
-
-                        auditable.decode( injected ).should == ";" + @seed
-                    end
-                end
-            end
-
-            describe :redundant do
-                before do
-                    @audit_opts = {
-                        format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
-                    }
-                end
-
-                context true do
-                    it 'allows redundant audits' do
-                        cnt = 0
-                        5.times do |i|
-                            @auditable.audit( @seed, @audit_opts.merge( redundant: true )){ cnt += 1 }
-                        end
-                        @auditor.http.run
-                        cnt.should == 5
-                    end
-                end
-
-                context false do
-                    it 'does not allow redundant requests/audits' do
-                        cnt = 0
-                        5.times do |i|
-                            @auditable.audit( @seed, @audit_opts.merge( redundant: false )){ cnt += 1 }
-                        end
-                        @auditor.http.run
-                        cnt.should == 1
-                    end
-                end
-
-                context 'default' do
-                    it 'does not allow redundant requests/audits' do
-                        cnt = 0
-                        5.times do |i|
-                            @auditable.audit( @seed, @audit_opts ){ cnt += 1 }
-                        end
-                        @auditor.http.run
-                        cnt.should == 1
-                    end
-                end
-            end
-
-            describe :async do
-
-                context true do
-                    it 'performs all HTTP requests asynchronously' do
-                        before = Time.now
-                        @sleep.audit( @seed, async: true ){}
-                        @auditor.http.run
-
-                        # should take as long as the longest request
-                        # and since we're doing this locally the longest
-                        # request must take less than a second.
-                        #
-                        # so it should be 2 when converted into an Int
-                        (Time.now - before).to_i.should == 2
-                    end
-                end
-
-                context false do
-                    it 'performs all HTTP requests synchronously' do
-                        before = Time.now
-                        @sleep.audit( @seed, async: false ){}
-                        @auditor.http.run
-
-                        (Time.now - before).should > 4.0
-                    end
-                end
-
-                context 'default' do
-                    it 'performs all HTTP requests asynchronously' do
-                        before = Time.now
-                        @sleep.audit( @seed ){}
-                        @auditor.http.run
-
-                        (Time.now - before).to_i.should == 2
-                    end
-                end
-
             end
         end
     end
