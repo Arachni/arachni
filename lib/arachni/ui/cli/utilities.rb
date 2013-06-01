@@ -326,9 +326,9 @@ module Utilities
                                 Specify custom headers to be included in the HTTP requests.
                                 (Can be used multiple times.)
 
-    --authed-by=<string>        Who authorized the scan, include name and e-mail address.
+    --authed-by=<string>        E-mail address of the person who authorized the scan.
                                   (It'll make it easier on the sys-admins during log reviews.)
-                                  (Will be appended to the user-agent string.)
+                                  (Will be used as a value for the 'From' HTTP header.)
 
     --login-check-url=<url>     A URL used to verify that the scanner is still logged in to the web application.
                                   (Requires 'login-check-pattern'.)
