@@ -130,6 +130,9 @@
             - Code cleanup.
             - Split `payloads.txt`, to individual files per platform.
             - Updated to categorize payloads by platform.
+    - Recon
+        - `html_objects`
+            - Updated description.
 - Plugins
     - Proxy
         - Ou-of-scope pages no longer return a _403 Forbidden_ error but are
