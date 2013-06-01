@@ -308,10 +308,12 @@ module Distributor
     def distribute_and_run( instance_hash, auditables = {}, &block )
         opts = cleaned_up_opts
 
-        opts[:restrict_paths] = auditables[:urls]     || []
-        opts[:pages]          = auditables[:pages]    || []
+        opts[:restrict_paths] = auditables[:urls] || []
 
-        opts[:multi] = { elements: auditables[:elements] || [] }
+        opts[:multi] = {
+            pages:    auditables[:pages]    || [],
+            elements: auditables[:elements] || []
+        }
 
         if Options.fingerprint?
             opts[:multi][:platforms] = Platform::Manager.light

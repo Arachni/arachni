@@ -590,8 +590,6 @@ class Instance
     #       Pipe-IDs and the value of this option will be treated as a possible
     #       maximum rather than a hard setting. Actual spawn count will be determined
     #       by Dispatcher availability and the size of the workload.
-    # @option opts [Array<Page>]  :pages    ([])
-    #   Extra pages to audit.
     #
     def scan( opts = {}, &block )
         # If the instance isn't clean bail out now.
@@ -651,11 +649,10 @@ class Instance
             end
         end
 
-        @framework.update_page_queue( opts[:pages] || [] )
-
-        # Undocumented option used internally to distribute workload and knowledge
+        # Undocumented option, used internally to distribute workload and knowledge
         # for multi-Instance scans.
         if opts[:multi]
+            @framework.update_page_queue( opts[:multi][:pages] || [] )
             @framework.restrict_to_elements( opts[:multi][:elements] || [] )
 
             if Options.fingerprint?
