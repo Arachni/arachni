@@ -553,7 +553,7 @@ class Instance
     #
     #       john.doe@bigscanners.com
     #
-    # @option opts [Array<Hash>]  :slaves   **(Experimental)**
+    # @option opts [Array<Hash>]  :slaves
     #   Info of Instances to {Framework::Master#enslave enslave}.
     #
     #       [
@@ -561,12 +561,36 @@ class Instance
     #           { url: 'anotheraddress:port', token: '3v3nm0r3s3cr3t' }
     #       ]
     #
-    # @option opts [Bool]  :grid    (false) **(Experimental)**
-    #   Utilize the Dispatcher Grid to obtain slave instances for a
-    #   high-performance distributed scan.
-    # @option opts [Integer]  :spawns   (0) **(Experimental)**
-    #   The amount of slaves to spawn.
-    # @option opts [Array<Page>]  :pages    ([])    **(Experimental)**
+    # @option opts [Bool]  :grid    (false)
+    #   Uses the Dispatcher Grid to obtain slave instances for a multi-Instance
+    #   scan.
+    #
+    #   If set to `true`, it serves as a shorthand for:
+    #
+    #       grid_mode: :balance
+    #
+    # @option opts [String, Symbol]  :grid_mode    (nil)
+    #   Grid mode to use, available modes are:
+    #
+    #   * `nil` -- No grid.
+    #   * `:balance` -- Slave Instances will be provided by the least burdened
+    #       grid members to keep the overall Grid workload even across all Dispatchers.
+    #   * `:aggregate` -- Same as `:balance` but with high-level line-aggregation.
+    #       Will only request Instances from Grid members with different Pipe-IDs.
+    # @option opts [Integer]  :spawns   (0)
+    #   The amount of slaves to spawn. The behavior of this option changes
+    #   depending on the `grid_mode` setting:
+    #
+    #   * `nil` -- All slave Instances will be spawned by this Instance directly,
+    #       and thus reside in the same machine. This has the added benefit of
+    #       using UNIX-domain sockets for inter-process communication and avoiding
+    #       the overhead of TCP/IP.
+    #   * `:balance` -- Slaves will be provided by the least burdened Grid Dispatchers.
+    #   * `:aggregate` -- Slaves will be provided by Grid Dispatchers with unique
+    #       Pipe-IDs and the value of this option will be treated as a possible
+    #       maximum rather than a hard setting. Actual spawn count will be determined
+    #       by Dispatcher availability and the size of the workload.
+    # @option opts [Array<Page>]  :pages    ([])
     #   Extra pages to audit.
     #
     def scan( opts = {}, &block )
@@ -590,12 +614,16 @@ class Instance
             end
         end
 
-        if opts[:grid] && spawn_count <= 0
+        if opts[:grid_mode]
+            @framework.opts.grid_mode = opts[:grid_mode]
+        end
+
+        if (opts[:grid] || opts[:grid_mode]) && spawn_count <= 0
             fail ArgumentError,
                  'Option \'spawns\' must be greater than 1 for Grid scans.'
         end
 
-        if (opts[:grid] || spawn_count > 0) && [opts[:restrict_paths]].flatten.compact.any?
+        if ((opts[:grid] || opts[:grid_mode]) || spawn_count > 0) && [opts[:restrict_paths]].flatten.compact.any?
             fail ArgumentError,
                  'Option \'restrict_paths\' is not supported when in multi-Instance mode.'
         end
@@ -639,21 +667,14 @@ class Instance
         @framework.modules.load opts[:modules] if opts[:modules]
         @framework.plugins.load opts[:plugins] if opts[:plugins]
 
-        # If the Dispatchers are in a Grid config but the user has not requested
-        # a Grid scan force the framework to ignore the Grid and work with
-        # the instances we give it.
-        @framework.ignore_grid if has_dispatcher? && !opts[:grid]
-
         # Starts the scan after all necessary options have been set.
         after = proc { block.call @framework.run; @scan_initializing = false }
 
-        if opts[:grid]
-            #
+        if @framework.opts.grid?
             # If a Grid scan has been selected then just set us as the master
             # and set the spawn count as max slaves.
             #
-            # The Framework and the Grid will sort out the rest...
-            #
+            # The Framework will sort out the rest...
             @framework.set_as_master
             @framework.opts.max_slaves = spawn_count
 

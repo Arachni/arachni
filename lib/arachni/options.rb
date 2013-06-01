@@ -497,7 +497,15 @@ class Options
     # @return   [Bool]   Only follow HTTPS links.
     attr_accessor :https_only
 
-    attr_accessor :grid
+    # @return   [nil, Symbol]
+    #   Grid mode to use, available modes are:
+    #
+    #   * `nil` -- No grid.
+    #   * `:balance` -- Default load balancing across available Dispatchers.
+    #   * `:aggregate` -- Default load balancing **with** line aggregation.
+    #       Will only request Instances from Grid members with different
+    #       {#pipe_id Pipe-IDs}.
+    attr_accessor :grid_mode
 
     # @return   [Bool]   Disable platform fingeprinting.
     attr_accessor :no_fingerprinting
@@ -551,7 +559,7 @@ class Options
         @datastore  = {}
         @redundant  = {}
 
-        @grid = false
+        @grid_mode = nil
 
         @https_only        = false
         @obey_robots_txt   = false
@@ -600,14 +608,65 @@ class Options
         self
     end
 
+    # @return   [Bool]  `true` if the Grid should be used, `false` otherwise.
+    def grid?
+        !!@grid_mode
+    end
+
+    # @param    [Bool]  bool
+    #   `true` to use the Grid, `false` otherwise. Serves as a shorthand to
+    #   setting {#grid_mode} to `:balance`.
+    def grid=( bool )
+        @grid_mode = bool ? :balance : nil
+    end
+
+    # @param    [String, Symbol]    mode
+    #   Grid mode to use, available modes are:
+    #
+    #   * `nil` -- No grid.
+    #   * `:balance` -- Default load balancing across available Dispatchers.
+    #   * `:aggregate` -- Default load balancing **with** line aggregation.
+    #       Will only request Instances from Grid members with different
+    #       {#pipe_id Pipe-IDs}.
+    #
+    # @raise    ArgumentError   On invalid mode.
+    def grid_mode=( mode )
+        if mode
+            mode = mode.to_sym
+            if ![:balance, :aggregate].include?( mode )
+                fail ArgumentError, "Unknown grid mode: #{mode}"
+            end
+
+            @grid_mode = mode
+        else
+            @grid_mode = nil
+        end
+    end
+
+    # @return   [Bool]
+    #   `true` if the grid mode is in line-aggregation mode, `false` otherwise.
+    def grid_aggregate?
+        @grid_mode == :aggregate
+    end
+
+    # @return   [Bool]
+    #   `true` if the grid mode is in load-balancing mode, `false` otherwise.
+    def grid_balance?
+        @grid_mode == :balance
+    end
+
+    # Disables platform fingerprinting.
     def do_not_fingerprint
         self.no_fingerprinting = true
     end
 
+    # Enables platform fingerprinting.
     def fingerprint
         self.no_fingerprinting = false
     end
 
+    # @return   [Bool]
+    #   `true` if platform fingerprinting is enabled, `false` otherwise.
     def fingerprint?
         !@no_fingerprinting
     end
@@ -945,6 +1004,7 @@ class Options
             [ '--login-check-pattern',    GetoptLong::REQUIRED_ARGUMENT ],
             [ '--spawns',                 GetoptLong::REQUIRED_ARGUMENT ],
             [ '--grid',                   GetoptLong::NO_ARGUMENT ],
+            [ '--grid-mode',              GetoptLong::REQUIRED_ARGUMENT ],
             [ '--https-only',             GetoptLong::NO_ARGUMENT ],
             [ '--no-fingerprinting',      GetoptLong::NO_ARGUMENT ],
             [ '--platforms',              GetoptLong::REQUIRED_ARGUMENT ],
@@ -1207,7 +1267,10 @@ class Options
                         @spawns = arg.to_i
 
                     when '--grid'
-                        @grid = true
+                        self.grid = true
+
+                    when '--grid-mode'
+                        self.grid_mode = arg
 
                     when '--https-only'
                         @https_only = true

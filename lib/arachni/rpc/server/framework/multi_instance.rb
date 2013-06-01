@@ -47,11 +47,6 @@ module MultiInstance
         !master? && !slave?
     end
 
-    # @private
-    def ignore_grid
-        @ignore_grid = true
-    end
-
     #
     # @param    [Integer]   starting_line
     #   Sets the starting line for the range of errors to return.
@@ -259,10 +254,6 @@ module MultiInstance
         elsif slave?
             slave_run
         end
-    end
-
-    def ignore_grid?
-        !!@ignore_grid
     end
 
     # @return   [Boolean]

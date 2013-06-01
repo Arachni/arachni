@@ -283,12 +283,12 @@ class RPC
 
     def prepare_rpc_options
 
-        if @opts.grid && @opts.spawns <= 0
+        if @opts.grid? && @opts.spawns <= 0
             print_error "The 'spawns' option needs to be more than 1 for Grid scans."
             exit 1
         end
 
-        if (@opts.grid || @opts.spawns > 0) && @opts.restrict_paths.any?
+        if (@opts.grid? || @opts.spawns > 0) && @opts.restrict_paths.any?
             print_error "Option 'restrict_paths' is not supported when in High-Performance mode."
             exit 1
         end
@@ -424,14 +424,18 @@ class RPC
     --server=<address:port>     Dispatcher server to use.
                                   (Used to provide scanner Instances.)
 
-    --spawns=<integer>          How many slaves to spawn for a high-performance distributed scan.
-                                  (Slaves will all be from the same Dispatcher machine.)
-                                  (*WARNING*: This feature is experimental.)
+    --spawns=<integer>          How many slaves to spawn for a high-performance mult-Instance scan.
+                                  (When no grid mode has been specified, all slaves will all be from the same Dispatcher machine.
+                                    When a grid-mode has been specified, this option will be treated as a possible maximum and
+                                    not a hard value.)
 
-    --grid                      Tell the scanner to use the Grid for a High-Performance scan.
-                                  (Slaves will all be from the Dispatchers running
-                                    on machines with unique bandwidth pipe.)
-                                  (*WARNING*: This feature is experimental.)
+    --grid-mode=<mode>          Sets the Grid mode of operation for this scan.
+                                  Valid modes are:
+                                    * balance -- Slaves will be provided by the least burdened Grid Dispatchers.
+                                    * aggregate -- In addition to balancing, slaves will all be from Dispatchers
+                                        with unique bandwidth Pipe-IDs to result in application-level line-aggregation.
+
+    --grid                      Shorthand for '--grid-mode=balance'.
 
 
     SSL --------------------------

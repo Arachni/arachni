@@ -7,6 +7,13 @@
         - `--lsplat` -- Lists all available platforms.
         - `--no-fingerprinting` -- Disables platform fingerprinting.
         - `--platforms` -- Allows for user specified platforms.
+    - RPC client
+        - Added the `--grid-mode` option to allow the user to choose between:
+            - Load-balancing -- Slaves will be provided by the least burdened
+                Grid Dispatchers.
+            - Load balancing **with** line-aggregation -- In addition to balancing,
+                slaves will all be from Dispatchers with unique bandwidth Pipe-IDs
+                to result in application-level line-aggregation.
 - Added modular `Page` fingeprinting, via `fingerprinter` components, identifying:
     - Operating systems
         - BSD
@@ -49,7 +56,16 @@
 - Multi-Instance scans
     - Instances now communicate via UNIX domain sockets when all of them are on
         the same host, to avoid TCP/IP overhead for IPC.
+    - `RPC::Server::Instance#scan`
+        - Added `grid_mode` option:
+            - `:balance` -- Slaves will be provided by the least burdened
+                Grid Dispatchers.
+            - `:aggregation` -- In addition to balancing, slaves will all be from
+                Dispatchers with unique bandwidth Pipe-IDs to result in
+                application-level line-aggregation.
     - `RPC::Server::Framework`
+        - No longer performs a multi-Instance scan when its Dispatcher if a Grid
+            member. The `grid` or `grid_mode` options need to be set explicitly.
         - General code cleanup.
             - Multi-Instance code moved under the `RPC::Server::Framework::MultiInstance`
                 module which concentrates multi-Instance code and pulls in the

@@ -243,19 +243,15 @@ module Master
         # Prepare a block to process each Dispatcher and request slave instances
         # from it. If we have any available Dispatchers that is...
         each = proc do |d_url, iterator|
-            if ignore_grid?
-                iterator.next
-                next
-            end
-
             d_opts = {
                 'rank'   => 'slave',
                 'target' => @opts.url,
                 'master' => multi_self_url
             }
 
-            connect_to_dispatcher( d_url ).dispatch( multi_self_url, d_opts ) do |instance_hash|
-                enslave( instance_hash ){ |b| iterator.next }
+            connect_to_dispatcher( d_url ).
+                dispatch( multi_self_url, d_opts, false ) do |instance_hash|
+                    enslave( instance_hash ){ |b| iterator.next }
             end
         end
 
@@ -351,10 +347,32 @@ module Master
             end
         end
 
-        # Get the Dispatchers with unique Pipe IDs in order to take advantage of
-        # line aggregation.
-        preferred_dispatchers do |pref_dispatchers|
-            iterator_for( pref_dispatchers ).each( each, after )
+        # If there is no grid go straight to the scan, don't bother with
+        # Grid-related operations.
+        if !@opts.grid?
+            after.call
+        else
+            # Get the Dispatchers with unique Pipe IDs in order to take advantage
+            # of line aggregation if we're in aggregation mode.
+            if @opts.grid_aggregate?
+
+                preferred_dispatchers do |pref_dispatchers|
+                    iterator_for( pref_dispatchers ).each( each, after )
+                end
+
+            # If were not in aggregation mode then we're in load balancing mode
+            # and that is handled better by our Dispatcher so ask it for slaves.
+            else
+                q = Queue.new
+                @opts.max_slaves.times do
+                    dispatcher.dispatch( multi_self_url ) do |instance_info|
+                        enslave( instance_info ){ |b| q << true }
+                    end
+                end
+
+                @opts.max_slaves.times { q.pop }
+                after.call
+            end
         end
     end
 
