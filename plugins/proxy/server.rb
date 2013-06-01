@@ -80,6 +80,28 @@ class Server < WEBrick::HTTPProxyServer
     end
 
     #
+    # Performs a PUT request.
+    #
+    # @see Webrick::HTTPProxyServer#proxy_service
+    #
+    def do_PUT( req, res )
+        perform_proxy_request( req, res ) do |url, header|
+            Arachni::HTTP.request( url , http_opts( method: :put, headers: header ) ).response
+        end
+    end
+
+    #
+    # Performs a DELETE request.
+    #
+    # @see Webrick::HTTPProxyServer#proxy_service
+    #
+    def do_DELETE( req, res )
+        perform_proxy_request( req, res ) do |url, header|
+            Arachni::HTTP.request( url , http_opts( method: :delete, headers: header ) ).response
+        end
+    end
+
+    #
     # Hijacks CONNECT requests and redirects them to our SSL interceptor proxy
     # which listens on {#interceptor_port}.
     #
