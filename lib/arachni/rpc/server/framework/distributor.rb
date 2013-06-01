@@ -40,7 +40,7 @@ module Distributor
     # the last slave could of course have less than that if the page count
     # isn't a multiple of MIN_PAGES_PER_INSTANCE.
     #
-    MIN_PAGES_PER_INSTANCE = 30
+    MIN_PAGES_PER_INSTANCE = 1
 
     #
     # Connects to a remote Instance.

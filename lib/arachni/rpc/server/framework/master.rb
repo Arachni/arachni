@@ -255,95 +255,11 @@ module Master
             end
         end
 
-        # Prepare a block to process the slave instances and start the scan.
         after = proc do
-            @status = :crawling
-
-            spider.on_each_page do |page|
-                # Update the list of element scope-IDs per page -- will be used
-                # as a whitelist for the distributed audit.
-                update_element_ids_per_url(
-                    { page.url => build_elem_list( page ) },
-                    @local_token
-                )
-            end
-
-            spider.on_complete do
-                # Guess what we're doing now...
-                @status = :distributing
-
-                # The plugins may have updated the page queue so we need to take
-                # these pages into account as well.
-                page_a = []
-                while !@page_queue.empty? && page = @page_queue.pop
-                    page_a << page
-                    update_element_ids_per_url(
-                        { page.url => build_elem_list( page ) },
-                        @local_token
-                    )
-                end
-
-                # Split the URLs of the pages in equal chunks.
-                chunks    = split_urls( @element_ids_per_url.keys, @instances.size + 1 )
-                chunk_cnt = chunks.size
-
-                if chunk_cnt > 0
-                    # Split the page array into chunks that will be distributed
-                    # across the instances.
-                    page_chunks = page_a.chunk( chunk_cnt )
-
-                    # Assign us our fair share of plug-in discovered pages.
-                    update_page_queue( page_chunks.pop, @local_token )
-
-                    # Remove duplicate elements across the (per instance) chunks
-                    # while spreading them out evenly.
-                    elements = distribute_elements( chunks,
-                                                    @element_ids_per_url )
-
-                    # Restrict the local instance to its assigned elements.
-                    restrict_to_elements( elements.shift, @local_token )
-
-                    # Set the URLs to be audited by the local instance.
-                    @opts.restrict_paths = chunks.shift
-
-                    chunks.each_with_index do |chunk, i|
-                        # Distribute the audit workload and tell the slaves to
-                        # have at it.
-                        distribute_and_run( @instances[i],
-                                            urls:     chunk,
-                                            elements: elements.shift,
-                                            pages:    page_chunks.shift )
-                    end
-                end
-
-                # Start the master/local Instance's audit.
-                Thread.abort_on_exception = true
-                Thread.new {
-                    audit
-
-                    @finished_auditing = true
-
-                    # Don't ring our own bell unless there are no other instances
-                    # set to scan or we have slaves running.
-                    #
-                    # If the local audit finishes super-fast the slaves might
-                    # not have been added to the local list yet, which will result
-                    # in us prematurely cleaning up and setting the status to
-                    # 'done' even though the slaves won't have yet finished
-                    #
-                    # However, if the workload chunk is 1 then no slaves will
-                    # have been started in the first place since it's just us
-                    # we can go ahead and clean-up.
-                    cleanup_if_all_done if chunk_cnt == 1 || @running_slaves.any?
-                }
-            end
-
-            # Let crawlers know of each other and start the master crawler.
-            # The master will then push paths to its slaves thus waking them up
-            # to join the crawl.
-            spider.update_peers( @instances ) do
-                Thread.abort_on_exception = true
-                Thread.new { spider.run }
+            # Some options need to be adjusted when performing multi-Instance
+            # scans for them to be enforced properly.
+            adjust_distributed_options do
+                master_scan_run
             end
         end
 
@@ -374,6 +290,118 @@ module Master
                 after.call
             end
         end
+    end
+
+    def master_scan_run
+        @status = :crawling
+
+        spider.on_each_page do |page|
+            # Update the list of element scope-IDs per page -- will be used
+            # as a whitelist for the distributed audit.
+            update_element_ids_per_url(
+                { page.url => build_elem_list( page ) },
+                @local_token
+            )
+        end
+
+        spider.on_complete do
+            # Guess what we're doing now...
+            @status = :distributing
+
+            # The plugins may have updated the page queue so we need to take
+            # these pages into account as well.
+            page_a = []
+            while !@page_queue.empty? && page = @page_queue.pop
+                page_a << page
+                update_element_ids_per_url(
+                    { page.url => build_elem_list( page ) },
+                    @local_token
+                )
+            end
+
+            # Split the URLs of the pages in equal chunks.
+            chunks    = split_urls( @element_ids_per_url.keys, @instances.size + 1 )
+            chunk_cnt = chunks.size
+
+            if chunk_cnt > 0
+                # Split the page array into chunks that will be distributed
+                # across the instances.
+                page_chunks = page_a.chunk( chunk_cnt )
+
+                # Assign us our fair share of plug-in discovered pages.
+                update_page_queue( page_chunks.pop, @local_token )
+
+                # Remove duplicate elements across the (per instance) chunks
+                # while spreading them out evenly.
+                elements = distribute_elements( chunks,
+                                                @element_ids_per_url )
+
+                # Restrict the local instance to its assigned elements.
+                restrict_to_elements( elements.shift, @local_token )
+
+                # Set the URLs to be audited by the local instance.
+                @opts.restrict_paths = chunks.shift
+
+                chunks.each_with_index do |chunk, i|
+                    # Distribute the audit workload and tell the slaves to
+                    # have at it.
+                    distribute_and_run( @instances[i],
+                                        urls:     chunk,
+                                        elements: elements.shift,
+                                        pages:    page_chunks.shift )
+                end
+            end
+
+            # Start the master/local Instance's audit.
+            Thread.abort_on_exception = true
+            Thread.new {
+                audit
+
+                @finished_auditing = true
+
+                # Don't ring our own bell unless there are no other instances
+                # set to scan or we have slaves running.
+                #
+                # If the local audit finishes super-fast the slaves might
+                # not have been added to the local list yet, which will result
+                # in us prematurely cleaning up and setting the status to
+                # 'done' even though the slaves won't have yet finished
+                #
+                # However, if the workload chunk is 1 then no slaves will
+                # have been started in the first place since it's just us
+                # we can go ahead and clean-up.
+                cleanup_if_all_done if chunk_cnt == 1 || @running_slaves.any?
+            }
+        end
+
+        # Let crawlers know of each other and start the master crawler.
+        # The master will then push paths to its slaves thus waking them up
+        # to join the crawl.
+        spider.update_peers( @instances ) do
+            Thread.abort_on_exception = true
+            Thread.new { spider.run }
+        end
+    end
+
+    def adjust_distributed_options( &block )
+        updated_opts = {}
+
+        options = RPC::Server::ActiveOptions.new( self )
+
+        # Adjust the values of options that require special care
+        # when distributing.
+        %w(link_count_limit http_req_limit).each do |name|
+            next if !(v = options.send( name ))
+            updated_opts[name] = v / (@instances.size + 1)
+        end
+
+        options.set updated_opts
+
+        each = proc do |instance, iterator|
+            instance.opts.set( updated_opts ) { iterator.next }
+        end
+
+        each_slave( each, block )
     end
 
     # Cleans up the system if all Instances have finished.

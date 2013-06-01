@@ -642,13 +642,6 @@ class Instance
             fail ArgumentError, 'Option \'url\' is mandatory.'
         end
 
-        if spawn_count.to_i > 0
-            %w(link_count_limit http_req_limit).each do |name|
-                next if !(v = @active_options.send( name ))
-                @active_options.send( "#{name}=", v / (spawn_count + 1) )
-            end
-        end
-
         # Undocumented option, used internally to distribute workload and knowledge
         # for multi-Instance scans.
         if opts[:multi]
