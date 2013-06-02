@@ -268,8 +268,8 @@ module Master
         if !@opts.grid?
             after.call
         else
-            # Get the Dispatchers with unique Pipe IDs in order to take advantage
-            # of line aggregation if we're in aggregation mode.
+            # Get slaves from Dispatchers with unique Pipe IDs in order to take
+            # advantage of line aggregation if we're in aggregation mode.
             if @opts.grid_aggregate?
 
                 preferred_dispatchers do |pref_dispatchers|
@@ -295,6 +295,8 @@ module Master
     def master_scan_run
         @status = :crawling
 
+        Thread.abort_on_exception = true
+
         spider.on_each_page do |page|
             # Update the list of element scope-IDs per page -- will be used
             # as a whitelist for the distributed audit.
@@ -319,41 +321,42 @@ module Master
                 )
             end
 
+            # Nothing to audit, bail out early...
+            if @element_ids_per_url.empty?
+                clean_up
+                next
+            end
+
             # Split the URLs of the pages in equal chunks.
             chunks    = split_urls( @element_ids_per_url.keys, @instances.size + 1 )
             chunk_cnt = chunks.size
 
-            if chunk_cnt > 0
-                # Split the page array into chunks that will be distributed
-                # across the instances.
-                page_chunks = page_a.chunk( chunk_cnt )
+            # Split the page array into chunks that will be distributed across
+            # the instances.
+            page_chunks = page_a.chunk( chunk_cnt )
 
-                # Assign us our fair share of plug-in discovered pages.
-                update_page_queue( page_chunks.pop, @local_token )
+            # Assign us our fair share of plug-in discovered pages.
+            update_page_queue( page_chunks.pop, @local_token )
 
-                # Remove duplicate elements across the (per instance) chunks
-                # while spreading them out evenly.
-                elements = distribute_elements( chunks,
-                                                @element_ids_per_url )
+            # Remove duplicate elements across the (per instance) chunks while
+            # spreading them out evenly.
+            elements = distribute_elements( chunks, @element_ids_per_url )
 
-                # Restrict the local instance to its assigned elements.
-                restrict_to_elements( elements.shift, @local_token )
+            # Restrict the local instance to its assigned elements.
+            restrict_to_elements( elements.shift, @local_token )
 
-                # Set the URLs to be audited by the local instance.
-                @opts.restrict_paths = chunks.shift
+            # Set the URLs to be audited by the local instance.
+            @opts.restrict_paths = chunks.shift
 
-                chunks.each_with_index do |chunk, i|
-                    # Distribute the audit workload and tell the slaves to
-                    # have at it.
-                    distribute_and_run( @instances[i],
-                                        urls:     chunk,
-                                        elements: elements.shift,
-                                        pages:    page_chunks.shift )
-                end
+            # Distribute the audit workload and tell the slaves to have at it.
+            chunks.each_with_index do |chunk, i|
+                distribute_and_run( @instances[i],
+                                    urls:     chunk,
+                                    elements: elements.shift,
+                                    pages:    page_chunks.shift )
             end
 
             # Start the master/local Instance's audit.
-            Thread.abort_on_exception = true
             Thread.new {
                 audit
 
@@ -368,7 +371,7 @@ module Master
                 # 'done' even though the slaves won't have yet finished
                 #
                 # However, if the workload chunk is 1 then no slaves will
-                # have been started in the first place since it's just us
+                # have been started in the first place and since it's just us
                 # we can go ahead and clean-up.
                 cleanup_if_all_done if chunk_cnt == 1 || @running_slaves.any?
             }
@@ -378,7 +381,6 @@ module Master
         # The master will then push paths to its slaves thus waking them up
         # to join the crawl.
         spider.update_peers( @instances ) do
-            Thread.abort_on_exception = true
             Thread.new { spider.run }
         end
     end
