@@ -374,6 +374,8 @@ module Distributor
             :responses,
             :time_out_count,
             :avg,
+            :curr_avg,
+            :curr_res_cnt,
             :sitemap_size,
             :auditmap_size,
             :max_concurrency
@@ -382,8 +384,6 @@ module Distributor
         avg = [
             :progress,
             :curr_res_time,
-            :curr_res_cnt,
-            :curr_avg,
             :average_res_time
         ]
 
