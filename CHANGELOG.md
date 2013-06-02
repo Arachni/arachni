@@ -2,6 +2,11 @@
 
 ## _Under development_
 
+- Executables:
+    - Added `arachni_multi`
+        - Spawns and controls an `RPC::Server::Instance` process in order to
+            provide access to RPC-only features such as multi-Instance scans
+            **without** requiring a Dispatcher.
 - CLI
     - Added platform fingerprinting options:
         - `--lsplat` -- Lists all available platforms.

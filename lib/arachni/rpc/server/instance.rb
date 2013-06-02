@@ -168,7 +168,7 @@ class Instance
 
         # trap interrupts and exit cleanly when required
         %w(QUIT INT).each do |signal|
-            trap( signal ){ shutdown } if Signal.list.has_key?( signal )
+            trap( signal ){ shutdown if !@opts.datastore[:do_not_trap] } if Signal.list.has_key?( signal )
         end
 
         @consumed_pids = []

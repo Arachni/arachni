@@ -18,6 +18,6 @@
 require_relative '../lib/arachni'
 
 Arachni::Options.parse
-require Arachni::Options.dir['lib'] + 'ui/cli/rpc/remote'
+require Arachni::Options.dir['lib'] + 'ui/cli/rpc/local'
 
-Arachni::UI::CLI::RPC::Remote.new
+Arachni::UI::CLI::RPC::Local.new

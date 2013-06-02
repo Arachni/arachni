@@ -21,7 +21,6 @@ module Arachni
 require Options.dir['mixins'] + 'terminal'
 require Options.dir['mixins'] + 'progress_bar'
 
-require Options.dir['lib'] + 'rpc/client/dispatcher'
 require Options.dir['lib'] + 'rpc/client/instance'
 
 require Options.dir['lib'] + 'utilities'
@@ -31,12 +30,13 @@ require Options.dir['lib'] + 'framework'
 module UI
 class CLI
 
+module RPC
+
 #
-# Provides a command-line RPC client and uses a Dispatcher to provide an Instance
-# in order to perform a scan.
+# Provides a command-line RPC client/interface for an {RPC::Server::Instance}.
 #
-# This interface should be your first stop when looking into using/creating your own
-# RPC client.
+# This interface should be your first stop when looking into using/creating your
+# own RPC client.
 #
 # Of course, you don't need to have access to the framework or any other Arachni
 # class for your own client, this is used here just to provide some other info
@@ -48,7 +48,7 @@ class CLI
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-class RPC
+class Instance
     include Arachni::UI::Output
     include CLI::Utilities
 
@@ -57,35 +57,24 @@ class RPC
 
     attr_reader :error_log_file
 
-    def initialize( opts )
-        @opts = opts
+    # @param    [Arachni::Options]  opts
+    # @param    [RPC::Client::Instance] instance    Instance to control.
+    def initialize( opts, instance )
+        @opts     = opts
+        @instance = instance
 
         clear_screen
         move_to_home
 
         print_banner
 
-        # If we have a profile option load it and merge it with the user
-        # supplied options.
+        # If we have a profile option load it and merge it with the user supplied
+        # options.
         load_profile( @opts.load_profile ) if @opts.load_profile
-
-        debug if @opts.debug
 
         # We don't need the framework for much, in this case only for report
         # generation, version number etc.
         @framework = Arachni::Framework.new( @opts )
-
-        # If the user needs help, output it and exit.
-        if opts.help
-            usage
-            exit 0
-        end
-
-        # Check for missing Dispatcher
-        if !@opts.server
-            print_error 'Missing server argument.'
-            exit 1
-        end
 
         # If the user wants to see the available reports, output them and exit.
         if !opts.lsrep.empty?
@@ -101,30 +90,6 @@ class RPC
         if opts.save_profile
             exception_jail{ save_profile( opts.save_profile ) }
             exit 0
-        end
-
-        begin
-            @dispatcher = Arachni::RPC::Client::Dispatcher.new( @opts, @opts.server )
-
-            # Get a new instance and assign the url we're going to audit as the 'owner'.
-            @instance_info = @dispatcher.dispatch( @opts.url )
-        rescue Arachni::RPC::Exceptions::ConnectionError => e
-            print_error "Could not connect to dispatcher at '#{@opts.server}'."
-            print_debug "Error: #{e.to_s}."
-            print_debug_backtrace e
-            exit 1
-        end
-
-        begin
-            # start the RPC client
-            @instance = Arachni::RPC::Client::Instance.new( @opts,
-                                                            @instance_info['url'],
-                                                            @instance_info['token'] )
-        rescue Arachni::RPC::Exceptions::ConnectionError => e
-            print_error 'Could not connect to instance.'
-            print_debug "Error: #{e.to_s}."
-            print_debug_backtrace e
-            exit 1
         end
 
         if @opts.platforms.any?
@@ -185,7 +150,7 @@ class RPC
 
             while busy?
                 print_progress
-                ::IO::select( nil, nil, nil, 5 )
+                sleep 5
                 refresh_progress
             end
         rescue Interrupt
@@ -252,12 +217,14 @@ class RPC
 
         @issues |= @progress['issues']
 
+        @issues = AuditStore.sort( @issues )
+
         # Keep issue digests and error messages in order to ask not to retrieve
         # them on subsequent progress calls in order to save bandwidth.
         @issue_digests  |= @progress['issues'].map( &:digest )
 
         if @progress['errors'].any?
-            error_log_file = @instance_info['url'].gsub( ':', '_' )
+            error_log_file = @instance.url.gsub( ':', '_' )
             @error_log_file = "#{error_log_file}.error.log"
 
             File.open( @error_log_file, 'a' ) { |f| f.write @progress['errors'].join( "\n" ) }
@@ -282,7 +249,6 @@ class RPC
     end
 
     def prepare_rpc_options
-
         if @opts.grid? && @opts.spawns <= 0
             print_error "The 'spawns' option needs to be more than 1 for Grid scans."
             exit 1
@@ -391,7 +357,23 @@ class RPC
 
         print_line
         if status == 'auditing'
-            print_info "Currently auditing           #{stats['current_page']}"
+            if stats['current_pages']
+                print_info 'Currently auditing:'
+
+                stats['current_pages'].each.with_index do |url, i|
+                    cnt = "[#{i + 1}]".rjust( stats['current_pages'].size.to_s.size + 4 )
+
+                    if !url.to_s.empty?
+                        print_info "#{cnt} #{url}"
+                    else
+                        print_info "#{cnt} Insufficient audit workload"
+                    end
+                end
+
+                print_line
+            else
+                print_info "Currently auditing           #{stats['current_page']}"
+            end
         end
 
         print_info "Burst response time total    #{stats['curr_res_time']}"
@@ -414,48 +396,9 @@ class RPC
         end
     end
 
-    # Outputs help/usage information.
-    def usage
-        super '--server host:port'
-
-        print_line <<USAGE
-    Distribution -----------------
-
-    --server=<address:port>     Dispatcher server to use.
-                                  (Used to provide scanner Instances.)
-
-    --spawns=<integer>          How many slaves to spawn for a high-performance mult-Instance scan.
-                                  (When no grid mode has been specified, all slaves will all be from the same Dispatcher machine.
-                                    When a grid-mode has been specified, this option will be treated as a possible maximum and
-                                    not a hard value.)
-
-    --grid-mode=<mode>          Sets the Grid mode of operation for this scan.
-                                  Valid modes are:
-                                    * balance -- Slaves will be provided by the least burdened Grid Dispatchers.
-                                    * aggregate -- In addition to balancing, slaves will all be from Dispatchers
-                                        with unique bandwidth Pipe-IDs to result in application-level line-aggregation.
-
-    --grid                      Shorthand for '--grid-mode=balance'.
-
-
-    SSL --------------------------
-    (Do *not* use encrypted keys!)
-
-    --ssl-pkey=<file>           Location of the SSL private key (.pem)
-                                  (Used to verify the the client to the servers.)
-
-    --ssl-cert=<file>           Location of the SSL certificate (.pem)
-                                  (Used to verify the the client to the servers.)
-
-    --ssl-ca=<file>             Location of the CA certificate (.pem)
-                                  (Used to verify the servers to the client.)
-
-
-USAGE
-    end
-
 end
 
+end
 end
 end
 end
