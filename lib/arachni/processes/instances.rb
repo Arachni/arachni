@@ -102,6 +102,8 @@ class Instances
             Options.set( options )
             block.call( Options.instance ) if block_given?
 
+            require "#{Arachni::Options.dir['lib']}/rpc/server/instance"
+
             RPC::Server::Instance.new( Options.instance, options[:token] )
         end
 

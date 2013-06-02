@@ -1,6 +1,8 @@
 require 'spec_helper'
 require 'fileutils'
 
+require "#{Arachni::Options.dir['lib']}/rpc/server/dispatcher"
+
 describe Arachni::RPC::Server::Dispatcher do
     before( :all ) do
         @job_info_keys  = %w(token pid port url owner birthdate starttime helpers currtime age runtime proc)

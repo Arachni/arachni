@@ -80,6 +80,8 @@ class Dispatchers
             Options.set( options )
             block.call( Options.instance ) if block_given?
 
+            require "#{Arachni::Options.dir['lib']}/rpc/server/dispatcher"
+
             RPC::Server::Dispatcher.new
         end
 

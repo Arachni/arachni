@@ -1,4 +1,5 @@
 require 'spec_helper'
+require "#{Arachni::Options.dir['lib']}/rpc/server/dispatcher"
 
 class Node < Arachni::RPC::Server::Dispatcher::Node
 
@@ -46,7 +47,9 @@ describe Arachni::RPC::Server::Dispatcher::Node do
             opts = @opts
             port = c_port || available_port
             opts.rpc_port = port
-            process_fork_em { Node.new( opts ) }
+            process_fork_em do
+                Node.new( opts )
+            end
             sleep 1
             Node.connect_to_peer( "#{opts.rpc_address}:#{port}", opts )
         end
