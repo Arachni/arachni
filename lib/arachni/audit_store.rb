@@ -173,8 +173,6 @@ class AuditStore
         to_hash.hash
     end
 
-    private
-
     def self.sort( issues )
         sorted = []
         issues.each do |issue|
@@ -184,6 +182,8 @@ class AuditStore
         end
         sorted.flatten.compact
     end
+
+    private
 
     #
     # Converts obj to hash
