@@ -712,10 +712,7 @@ class Framework
             end
         end
 
-        @status = :auditing
         audit_queues
-
-        exception_jail { audit_queues }
     end
 
     #
@@ -723,6 +720,8 @@ class Framework
     #
     def audit_queues
         return if modules.empty?
+
+        @status = :auditing
 
         # goes through the URLs discovered by the spider, repeats the request
         # and parses the responses into page objects
