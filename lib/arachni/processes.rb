@@ -19,9 +19,7 @@ require 'ostruct'
 
 lib = Arachni::Options.dir['lib']
 require lib + 'rpc/client/instance'
-require lib + 'rpc/server/instance'
 require lib + 'rpc/client/dispatcher'
-require lib + 'rpc/server/dispatcher'
 
 lib = Arachni::Options.dir['lib'] + 'processes/'
 require lib + 'manager'
