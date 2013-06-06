@@ -237,6 +237,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                             erb :verify_login_final, ok: logged_in
 
                         else
+                            res.header['Cache-Control'] = 'max-age=2592000'
                             begin
                                 IO.read TemplateScope::PANEL_BASEDIR + '/../' + res.request_uri.path
                             rescue Errno::ENOENT
@@ -355,8 +356,14 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     def inject_panel( res )
         return res if !res.header['content-type'].to_s.start_with?( 'text/html' )
 
-        body_tag = res.body.match( /<(\s*)body(.*)>/i )
-        res.body.gsub!( body_tag.to_s, "#{body_tag}#{panel_iframe}" )
+        case res.body
+            when /<(\s*)body(.*)>/i
+                body_tag = res.body.match( /<(\s*)body(.*)>/i )
+                res.body.gsub!( body_tag.to_s, "#{body_tag}#{panel_iframe}" )
+            else
+                res.body = "#{panel_iframe}#{res.body}"
+        end
+
         res.header['content-length'] = res.body.size.to_s
         res
     end

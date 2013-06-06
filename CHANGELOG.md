@@ -160,6 +160,7 @@
             instead loaded, though ignored.
         - Fixed bug causing the `Content-Length` header to sometimes hold an
             incorrect value.
+        - Fixed bug causing the control panel to be injected in a loop.
         - Added support for `PUT` and `DELETE` methods.
 
 ## Version 0.4.2 _(April 26, 2013)_
