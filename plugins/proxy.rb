@@ -107,7 +107,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     def request_handler( req, res )
         url = req.request_uri.to_s
 
-        if skip_path?( url )
+        if !url.start_with?( url_for( :panel ) ) && skip_path?( url )
             print_info "Ignoring, out of scope: #{url}"
             return true
         end
