@@ -354,16 +354,10 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     end
 
     def inject_panel( res )
-        return res if !res.header['content-type'].to_s.start_with?( 'text/html' )
+        return res if !res.header['content-type'].to_s.start_with?( 'text/html' ) ||
+                        !(body_tag = res.body.match( /<(\s*)body(.*)>/i ))
 
-        case res.body
-            when /<(\s*)body(.*)>/i
-                body_tag = res.body.match( /<(\s*)body(.*)>/i )
-                res.body.gsub!( body_tag.to_s, "#{body_tag}#{panel_iframe}" )
-            else
-                res.body = "#{panel_iframe}#{res.body}"
-        end
-
+        res.body.gsub!( body_tag.to_s, "#{body_tag}#{panel_iframe}" )
         res.header['content-length'] = res.body.size.to_s
         res
     end
