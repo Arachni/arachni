@@ -68,7 +68,7 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
         page_buffer = []
         print_status "Imported #{feed.size} vectors."
         feed.each do |obj|
-            vector = obj.respond_to?( :value ) ? obj.value : obj
+            vector = (obj.respond_to?( :value ) ? obj.value : obj).symbolize_keys( false )
 
             begin
                 exception_jail{
@@ -104,24 +104,24 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
     end
 
     def page?( vector )
-        vector['type'] == 'page'
+        vector[:type] == 'page'
     end
 
     def page_from_body_vector( vector )
         Page.new(
-            code:             Integer( vector['code'] || 200 ),
-            url:              vector['url'] || framework.opts.url.to_s,
-            body:             vector['body'] || '',
-            response_headers: vector['headers'] || {}
+            code:             Integer( vector[:code] || 200 ),
+            url:              vector[:url]      || framework.opts.url.to_s,
+            body:             vector[:body]     || '',
+            response_headers: vector[:headers]  || {}
         )
     end
 
     def hash_to_element( vector )
         owner  = framework.opts.url.to_s
-        action = vector['action']
-        inputs = vector['inputs']
-        method = vector['method'] || 'get'
-        type   = vector['type'] || 'link'
+        action = vector[:action]
+        inputs = vector[:inputs]
+        method = vector[:method] || 'get'
+        type   = vector[:type]   || 'link'
 
         return if !inputs || inputs.empty?
 
@@ -147,7 +147,7 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
                     inputs: inputs
                 )
         end
-        (vector['skip'] || []).each { |i| e.immutables << i }
+        (vector[:skip] || []).each { |i| e.immutables << i }
         e
     end
 
@@ -214,7 +214,7 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
 
             },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.2',
+            version:     '0.1.3',
             options:     [
                 Options::Base.new( 'vectors', [false, ' Vector array (for configuration over RPC).'] ),
                 Options::String.new( 'yaml_string', [false, 'A string of YAML serialized vectors (for configuration over RPC).'] ),

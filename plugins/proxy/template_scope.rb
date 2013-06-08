@@ -64,6 +64,10 @@ class TemplateScope
         url_for :shutdown
     end
 
+    def vectors_url
+        "#{root_url}vectors.yml"
+    end
+
     def url_for( *args )
         Arachni::Plugins::Proxy.url_for( *args )
     end
@@ -98,10 +102,11 @@ class TemplateScope
 
         with_layout = true
         with_layout = !!params.delete( :layout ) if params.include?( :layout )
+        format       = params.delete( :format ) || 'html'
 
         update( params )
 
-        tpl = tpl.to_s + '.html.erb' if tpl.is_a?( Symbol )
+        tpl = "#{tpl}.#{format}.erb" if tpl.is_a?( Symbol )
 
         path = File.exist?( tpl ) ? tpl : PANEL_BASEDIR + tpl
 

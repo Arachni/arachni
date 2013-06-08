@@ -104,6 +104,23 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         @pages.select { |p| (p.forms.any? || p.links.any? || p.cookies.any?) && p.text? }
     end
 
+    def vectors_yaml
+        vectors = []
+        prepare_pages_for_inspection.each do |page|
+            page.elements.each do |element|
+                next if element.auditable.empty?
+
+                vectors << {
+                    type:   element.type,
+                    method: element.method,
+                    action: element.action,
+                    inputs: element.auditable
+                }
+            end
+        end
+        vectors.to_yaml
+    end
+
     def request_handler( req, res )
         url = req.request_uri.to_s
 
@@ -187,6 +204,14 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
             body =  case '/' + res.request_uri.path.split( '/' )[2..-1].join( '/' )
                         when '/'
                             erb :panel
+
+                        when '/vectors.yml'
+                            res.header['Content-Type'] = 'application/x-yaml'
+
+                            erb :vectors,
+                                layout:  false,
+                                format:  :yml,
+                                vectors: vectors_yaml
 
                         when '/inspect'
                             erb :inspect,

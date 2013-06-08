@@ -156,12 +156,14 @@
             - Updated description.
 - Plugins
     - Proxy
-        - Ou-of-scope pages no longer return a _403 Forbidden_ error but are
+        - Out-of-scope pages no longer return a _403 Forbidden_ error but are
             instead loaded, though ignored.
         - Fixed bug causing the `Content-Length` header to sometimes hold an
             incorrect value.
         - Fixed bug causing the control panel to be injected in a loop.
         - Added support for `PUT` and `DELETE` methods.
+        - Supports exporting of discovered vectors in YAML format suitable for
+            use with the `vector_feed` plugin.
 
 ## Version 0.4.2 _(April 26, 2013)_
 
