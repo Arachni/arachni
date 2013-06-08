@@ -124,6 +124,11 @@ class Page
         Platform::Manager[@url]
     end
 
+    # @return   [Array] All page elements.
+    def elements
+        @links | @forms | @cookies | @headers
+    end
+
     # @return    [String]    the request method that returned the page
     def method( *args )
         return super( *args ) if args.any?

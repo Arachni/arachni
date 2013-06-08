@@ -286,6 +286,17 @@ describe Arachni::Page do
         end
     end
 
+    describe '#elements' do
+        it 'returns all page elemenrs' do
+            p = Arachni::Page.new( body: 'stuff here' )
+            p.links << Arachni::Element::Link.new( 'http://test.com', 'test' => 'stuff' )
+            p.forms << Arachni::Element::Form.new( 'http://test.com', 'test' => 'stuff' )
+            p.cookies << Arachni::Element::Cookie.new( 'http://test.com', 'test' => 'stuff' )
+            p.headers << Arachni::Element::Header.new( 'http://test.com', 'test' => 'stuff' )
+            p.elements.should == (p.links | p.forms | p.cookies | p.headers)
+        end
+    end
+
     describe '.from_http_response' do
         it 'returns a page from an HTTP response and opts' do
             res = Typhoeus::Response.new( effective_url: 'http://url.com',
