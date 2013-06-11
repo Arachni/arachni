@@ -321,15 +321,15 @@ module Master
                 )
             end
 
-            # Nothing to audit, bail out early...
-            if @element_ids_per_url.empty?
-                clean_up
-                next
-            end
-
             # Split the URLs of the pages in equal chunks.
             chunks    = split_urls( @element_ids_per_url.keys, @instances.size + 1 )
             chunk_cnt = chunks.size
+
+            # Nothing to audit, bail out early...
+            if chunks.empty?
+                clean_up
+                next
+            end
 
             # Split the page array into chunks that will be distributed across
             # the instances.
