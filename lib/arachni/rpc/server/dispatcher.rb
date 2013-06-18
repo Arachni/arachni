@@ -170,10 +170,8 @@ class Dispatcher
             return
         end
 
-        # just to make sure...
-        owner = owner.to_s
         @pool.pop do |cjob|
-            cjob['owner']     = owner
+            cjob['owner']     = owner.to_s
             cjob['starttime'] = Time.now
             cjob['helpers']   = helpers
 
