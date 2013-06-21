@@ -44,13 +44,13 @@
 - `Parser`
     - Now fingerprints the pages it returns.
 - `Framework`
-    - Removed the followed deprecated aliases:
+    - Removed the following deprecated aliases:
         - `:resume!` -- Only use `resume` from now on.
         - `:pause!` -- Only use `pause` from now on.
         - `:clean_up!` -- Only use `clean_up` from now on.
     - Added `#list_platforms`.
 - `RPC::Server::Instance`
-    - Removed the followed deprecated aliases:
+    - Removed the following deprecated aliases:
         - `:shutdown!` -- Only use `shutdown` from now on.
     - Added preliminary support for UNIX sockets.
     - Added `#list_platforms`.
