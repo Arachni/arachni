@@ -40,7 +40,7 @@
     - Frameworks
         - Rack
 - `HTTP`
-    - 'Accept-Encoding' set to 'gzip, deflate' by default.
+    - `Accept-Encoding` set to 'gzip, deflate' by default.
 - `Parser`
     - Now fingerprints the pages it returns.
 - `Framework`
