@@ -706,7 +706,7 @@ class Instance
 
             @server.shutdown
 
-            block.call true
+            block.call true if block_given?
         end
 
         true
