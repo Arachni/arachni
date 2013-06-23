@@ -2,6 +2,8 @@
 
 ## _Under development_
 
+- RPC
+    - YAML serialization switched from 'Syck` to `Psych` (the current Ruby default).
 - Executables:
     - Added `arachni_multi`
         - Spawns and controls an `RPC::Server::Instance` process in order to
