@@ -261,7 +261,8 @@ class Parser
 
             Form.from_document( @url, response.body ).each do |form2|
                 f.each do |form|
-                    next if form.auditable.keys.sort != form2.auditable.keys.sort
+                    next if "#{form.id}:#{form.name_or_id}" !=
+                        "#{form2.id}:#{form2.name_or_id}"
 
                     form.auditable.each do |k, v|
                         next if !(v != form2.auditable[k] &&
