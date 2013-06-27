@@ -21,6 +21,10 @@ class TrainerMockFramework
         @sitemap = []
     end
 
+    def link_count_limit_reached?
+        @opts.link_count_limit_reached? @sitemap.size
+    end
+
     def run
         @on_audit_page.each do |b|
             b.call @page

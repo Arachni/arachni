@@ -801,6 +801,55 @@ describe Arachni::Framework do
         end
     end
 
+    describe 'link_count_limit_reached?' do
+        context 'when the Options#link_count_limit has' do
+            context 'been reached' do
+                it 'returns true' do
+                    Arachni::Framework.new do |f|
+                        f.opts.url = web_server_url_for :framework_hpg
+                        f.opts.audit :links
+                        f.opts.link_count_limit = 10
+
+                        f.link_count_limit_reached?.should be_false
+                        f.run
+                        f.link_count_limit_reached?.should be_true
+                    end
+                end
+            end
+
+            context 'not been reached' do
+                it 'returns false' do
+                    Arachni::Framework.new do |f|
+                        f.opts.url = web_server_url_for :framework
+                        f.opts.audit :links
+                        f.opts.link_count_limit = 100
+
+                        f.modules.load :taint
+
+                        f.link_count_limit_reached?.should be_false
+                        f.run
+                        f.link_count_limit_reached?.should be_false
+                    end
+                end
+            end
+
+            context 'not been set' do
+                it 'returns false' do
+                    Arachni::Framework.new do |f|
+                        f.opts.url = web_server_url_for :framework
+                        f.opts.audit :links
+
+                        f.modules.load :taint
+
+                        f.link_count_limit_reached?.should be_false
+                        f.run
+                        f.link_count_limit_reached?.should be_false
+                    end
+                end
+            end
+        end
+    end
+
     describe '#push_to_page_queue' do
         context 'when the page does not match exclusion criteria' do
             it 'pushes it to the page audit queue and returns true' do

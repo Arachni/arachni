@@ -256,6 +256,13 @@ class Framework
     end
     alias :on_run_mods :on_audit_page
 
+    # @return   [Bool]
+    #   `true` if the {Options#link_count_limit} has been reached, `false`
+    #   otherwise.
+    def link_count_limit_reached?
+        @opts.link_count_limit_reached? @sitemap.size
+    end
+
     #
     # Returns the following framework stats:
     #
