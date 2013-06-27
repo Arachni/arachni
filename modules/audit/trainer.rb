@@ -15,9 +15,7 @@
 =end
 
 #
-#
-# Pokes and probes all inputs of a given page in order to uncover
-# new input vectors.
+# Pokes and probes all inputs of a given page in order to uncover new input vectors.
 #
 # It also forces Arachni to train itself by analyzing the server responses.
 #
@@ -28,7 +26,12 @@
 class Arachni::Modules::Trainer < Arachni::Module::Base
 
     def run
-        audit( '_arachni_trainer_' + seed, train: true, param_flip: true ){}
+        # The whole point of this module is to stir things up and find new
+        # stuff, if our page limit has already been reached then we'll just be
+        # wasting bandwidth.
+        return if framework.link_count_limit_reached?
+
+        audit( "_arachni_trainer_#{seed}", train: true, param_flip: true ){}
     end
 
     def self.info
