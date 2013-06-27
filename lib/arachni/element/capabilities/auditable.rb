@@ -604,7 +604,7 @@ module Auditable
             return false
         end
 
-        if skip_path?( self.action )
+        if skip_path? self.action
             print_debug "Element's action matches skip rule, bailing out."
             return false
         end

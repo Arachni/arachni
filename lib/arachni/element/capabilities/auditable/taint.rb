@@ -78,7 +78,16 @@ module Auditable::Taint
     #   Options as described in {Arachni::Module::Auditor::OPTIONS} and
     #   {TAINT_OPTIONS}.
     #
+    # @return   [Bool]
+    #   `true` if the audit was scheduled successfully, `false` otherwise (like
+    #   if the resource is out of scope).
+    #
     def taint_analysis( payloads, opts = { } )
+        if skip_path? self.action
+            print_debug "Element's action matches skip rule, bailing out."
+            return false
+        end
+
         opts = self.class::OPTIONS.merge( TAINT_OPTIONS.merge( opts ) )
         audit( payloads, opts ) { |res, c_opts| get_matches( res, c_opts ) }
     end

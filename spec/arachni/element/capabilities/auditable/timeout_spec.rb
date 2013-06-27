@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Arachni::Element::Capabilities::Auditable::Timeout do
 
     before :all do
-        @url     = web_server_url_for( :timeout )
+        Arachni::Options.url = @url = web_server_url_for( :timeout )
         @auditor = Auditor.new( nil, Arachni::Framework.new )
 
         inputs = { 'sleep' => '' }
@@ -50,6 +50,14 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
                 elements: [ Arachni::Element::LINK ]
             }
             issues.clear
+        end
+
+        context 'when the element action matches a skip rule' do
+            it 'returns false' do
+                auditable = Arachni::Element::Link.new( 'http://stuff.com/',
+                                                        { 'input' => '' } )
+                auditable.timeout_analysis( '__TIME__', @timeout_opts.merge( timeout: 2000 ) ).should be_false
+            end
         end
 
         context 'when the payloads are per platform' do

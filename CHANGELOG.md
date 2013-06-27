@@ -91,6 +91,9 @@
 - `Module::Auditor`
     - Having access to the `Framework` is now required and guaranteed.
 - `Element::Capabilities::Auditable`
+    - Out of scope elements are now visible in order to allow access to 3rd
+        party resources like Single Sign-On services.
+    - All audit methods return `false` when the element is out of the scan's scope.
     - `#anonymous_auditor` now instantiates a `Framework`.
     - Added `#skip_like` method to be passed blocks deciding what elements should
         not be audited.
@@ -166,6 +169,9 @@
         - Added support for `PUT` and `DELETE` methods.
         - Supports exporting of discovered vectors in YAML format suitable for
             use with the `vector_feed` plugin.
+    - AutoLogin
+        - Updated to allow access to out-of-scope resources like Single Sign-On
+            services.
 
 ## Version 0.4.2 _(April 26, 2013)_
 

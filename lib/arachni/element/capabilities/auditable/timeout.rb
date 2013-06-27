@@ -318,7 +318,16 @@ module Auditable::Timeout
     # @option   opts    [Integer] :timeout_divider
     #   `__TIME__ = timeout / timeout_divider`
     #
+    # @return   [Bool]
+    #   `true` if the audit was scheduled successfully, `false` otherwise (like
+    #   if the resource is out of scope).
+    #
     def timeout_analysis( payloads, opts )
+        if skip_path? self.action
+            print_debug "Element's action matches skip rule, bailing out."
+            return false
+        end
+
         @@timeout_loaded_modules << @auditor.fancy_name
 
         delay = opts[:timeout]
@@ -337,6 +346,8 @@ module Auditable::Timeout
 
             @@parent.add_timeout_candidate( elem ) if elem.responsive?
         end
+
+        true
     end
 
     #

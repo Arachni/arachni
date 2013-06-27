@@ -181,29 +181,6 @@ describe Arachni::Element::Link do
                     }
                 end
             end
-            context 'when the action match a skip rule' do
-                it 'should be ignored' do
-                    Arachni::Options.url     = @url
-                    Arachni::Options.exclude = 'skip-this'
-
-                    base_url = "http://test.com/this_is_the_base/"
-                    html = <<-HTML
-                    <html>
-                        <head>
-                            <base href="#{base_url}" />
-                        </head>
-                        <body>
-                            <a href="test?param_one=value_one&param_two=value_two"></a>
-                            <a href="#{@url}/test?param_one=value_one&param_two=value_two"></a>
-                            <a href="#{@url}/test?param_one=value_one&param_two=skip-this"></a>
-                        </body>
-                    </html>
-                    HTML
-
-                    Arachni::Element::Link.from_document( @url, html ).size.should == 1
-                    Arachni::Options.reset
-                end
-            end
         end
     end
 

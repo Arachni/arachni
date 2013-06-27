@@ -94,13 +94,22 @@ module Auditable::RDiff
     #     * boolean response
     #     * fault injection response body
     #
+    # @return   [Bool]
+    #   `true` if the audit was scheduled successfully, `false` otherwise (like
+    #   if the resource is out of scope or already audited).
+    #
     def rdiff_analysis( opts = {}, &block )
+        if skip_path? self.action
+            print_debug "Element's action matches skip rule, bailing out."
+            return false
+        end
+
         opts = self.class::MUTATION_OPTIONS.merge( RDIFF_OPTIONS.merge( opts ) )
 
         # don't continue if there's a missing value
         auditable.values.each { |val| return if !val || val.empty? }
 
-        return if rdiff_audited?
+        return false if rdiff_audited?
         rdiff_audited
 
         responses = {
@@ -219,6 +228,8 @@ module Auditable::RDiff
                 end
             end
         }
+
+        true
     end
 
     private

@@ -169,7 +169,6 @@ class Link < Arachni::Element::Base
             c_link = {}
             c_link['href'] = to_absolute( link['href'], base_url )
             next if !c_link['href']
-            next if skip_path?( c_link['href'] )
 
             new( url, c_link['href'] )
         end.compact

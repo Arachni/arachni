@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Arachni::Element::Capabilities::Auditable::Taint do
 
     before :all do
-        @url = web_server_url_for( :taint )
+        Arachni::Options.url = @url = web_server_url_for( :taint )
         @auditor = Auditor.new( nil, Arachni::Framework.new )
 
         @positive = Arachni::Element::Link.new( @url, 'input' => '' )
@@ -21,6 +21,14 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
             @seed = 'my_seed'
             Arachni::Framework.reset
          end
+
+        context 'when the element action matches a skip rule' do
+            it 'returns false' do
+                auditable = Arachni::Element::Link.new( 'http://stuff.com/',
+                                                        { 'input' => '' } )
+                auditable.taint_analysis( @seed ).should be_false
+            end
+        end
 
         context 'when called with no opts' do
             it 'uses the defaults' do
