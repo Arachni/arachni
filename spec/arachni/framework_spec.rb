@@ -931,6 +931,7 @@ Web servers:
   :iis: IIS
   :nginx: Nginx
   :tomcat: TomCat
+  :jetty: Jetty
 Programming languages:
   :asp: ASP
   :aspx: ASP.NET
