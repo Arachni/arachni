@@ -26,7 +26,7 @@ module Platform::Fingerprinters
 #
 class Linux < Platform::Fingerprinter
 
-    IDs = %w(linux ubuntu gentoo debian dotdeb centos)
+    IDs = %w(linux ubuntu gentoo debian dotdeb centos redhat) | ['red hat']
 
     def run
         IDs.each do |id|
