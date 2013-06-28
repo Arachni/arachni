@@ -44,8 +44,8 @@ class Server < WEBrick::HTTPProxyServer
             key = key.downcase
 
             if HopByHop.member?( key )          || # RFC2616: 13.5.1
-                connections.member?( key )       || # RFC2616: 14.10
-                 #ShouldNotTransfer.member?(key)    # pragmatics
+                connections.member?( key )      || # RFC2616: 14.10
+                 #ShouldNotTransfer.member?(key)   # pragmatics
                 key == 'content-encoding'
                 @logger.debug( "choose_header: `#{key}: #{value}'" )
                 next
@@ -63,7 +63,7 @@ class Server < WEBrick::HTTPProxyServer
     #
     def do_GET( req, res )
         perform_proxy_request( req, res ) do |url, header|
-            Arachni::HTTP.get( url , http_opts( headers: header ) ).response
+            Arachni::HTTP.get( url, http_opts( headers: header ) ).response
         end
     end
 
@@ -75,6 +75,12 @@ class Server < WEBrick::HTTPProxyServer
     def do_POST( req, res )
         perform_proxy_request( req, res ) do |url, header|
             params = Arachni::Utilities.form_parse_request_body( req.body )
+
+            # This is not necessary since we've parsed and put the POST body
+            # in the request parameters. Otherwise the server will not return
+            # a response.
+            header.delete 'Content-Length'
+
             Arachni::HTTP.post( url, http_opts( params: params, headers: header ) ).response
         end
     end
@@ -86,7 +92,7 @@ class Server < WEBrick::HTTPProxyServer
     #
     def do_PUT( req, res )
         perform_proxy_request( req, res ) do |url, header|
-            Arachni::HTTP.request( url , http_opts( method: :put, headers: header ) ).response
+            Arachni::HTTP.request( url, http_opts( method: :put, headers: header ) ).response
         end
     end
 
@@ -97,7 +103,7 @@ class Server < WEBrick::HTTPProxyServer
     #
     def do_DELETE( req, res )
         perform_proxy_request( req, res ) do |url, header|
-            Arachni::HTTP.request( url , http_opts( method: :delete, headers: header ) ).response
+            Arachni::HTTP.request( url, http_opts( method: :delete, headers: header ) ).response
         end
     end
 
@@ -121,7 +127,7 @@ class Server < WEBrick::HTTPProxyServer
     #
     def do_HEAD( req, res )
         perform_proxy_request( req, res ) do |url, header|
-            Arachni::HTTP.request( url , http_opts( method: :head, headers: header ) ).response
+            Arachni::HTTP.request( url, http_opts( method: :head, headers: header ) ).response
         end
     end
 
@@ -147,7 +153,7 @@ class Server < WEBrick::HTTPProxyServer
             BindAddress:    'localhost',
             Port:           interceptor_port,
             SSLEnable:      true,
-            SSLCertName:    [ [ "CN", WEBrick::Utils::getservername ] ],
+            SSLCertName:    [ [ 'CN', WEBrick::Utils::getservername ] ],
             SSLEnable:      true,
             SSLCertificate: cert,
             SSLPrivateKey:  pkey,
@@ -189,12 +195,12 @@ class Server < WEBrick::HTTPProxyServer
     def perform_proxy_request( req, res )
         response = yield( req.request_uri.to_s, setup_proxy_header( req, res ) )
 
-        # Persistent connection requirements are mysterious for me.
-        # So I will close the connection in every response.
-        res['proxy-connection'] = "close"
-        res['connection'] = "close"
+        # Disable persistent connections to simplify things.
+        res['proxy-connection'] = 'close'
+        res['connection']       = 'close'
 
-        # Convert Typhoeus::Response to WEBrick::HTTPResponse
+        # Convert Typhoeus::Response to WEBrick::HTTPResponse.
+
         res.status = response.code.to_i
         choose_header( response, res )
 

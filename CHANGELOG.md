@@ -169,6 +169,8 @@
         - Added support for `PUT` and `DELETE` methods.
         - Supports exporting of discovered vectors in YAML format suitable for
             use with the `vector_feed` plugin.
+        - Fixed bug with `POST` requests resulting in timed-out connections due
+            to forwarding a `Content-Length` request header to the origin server.
     - AutoLogin
         - Updated to allow access to out-of-scope resources like Single Sign-On
             services.
