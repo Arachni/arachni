@@ -27,9 +27,11 @@ module Platform::Fingerprinters
 class Rack < Platform::Fingerprinter
 
     SESSIONID = 'rack.session'
+    ID        = 'mod_rack'
 
     def run
-        return if !cookies.include?( SESSIONID )
+        return if !cookies.include?( SESSIONID ) &&
+            !server_or_powered_by_include?( ID )
         platforms << :ruby << :rack
     end
 
