@@ -1295,7 +1295,7 @@ class Form < Arachni::Element::Base
             action = url_sanitize( c_form['attrs']['action'] )
         end
 
-        action = to_absolute( action.dup, url ).to_s
+        action = to_absolute( action.to_s, url ).to_s
 
         c_form['attrs']['action'] = action
 
