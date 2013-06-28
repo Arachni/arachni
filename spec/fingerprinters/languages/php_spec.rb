@@ -10,6 +10,13 @@ describe Arachni::Platform::Fingerprinters::PHP do
         end
     end
 
+    context 'when the page has a .php/ rewrite' do
+        it 'identifies it as PHP' do
+            page = Arachni::Page.new( url: 'http://stuff.com/blah.php/Stuff/1' )
+            platforms_for( page ).should include :php
+        end
+    end
+
     context 'when the page has a .php5 (or similarly numbered) extension' do
         it 'identifies it as PHP' do
             page = Arachni::Page.new( url: 'http://stuff.com/blah.php5' )

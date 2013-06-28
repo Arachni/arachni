@@ -30,8 +30,9 @@ class PHP < Platform::Fingerprinter
     SESSIONID = 'phpsessid'
 
     def run
-        if extension =~ EXTENSION || parameters.include?( SESSIONID ) ||
-            cookies.include?( SESSIONID ) || server_or_powered_by_include?( 'php' )
+        if uri.path =~ /.php\d*\/*/ || extension =~ EXTENSION ||
+            parameters.include?( SESSIONID ) || cookies.include?( SESSIONID ) ||
+            server_or_powered_by_include?( 'php' )
             platforms << :php
         end
     end
