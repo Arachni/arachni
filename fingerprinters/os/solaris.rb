@@ -26,8 +26,13 @@ module Platform::Fingerprinters
 #
 class Solaris < Platform::Fingerprinter
 
+    IDs = %w(solaris sunos)
+
     def run
-        platforms << :solaris if server_or_powered_by_include? 'solaris'
+        IDs.each do |id|
+            next if !server_or_powered_by_include? id
+            return platforms << :solaris
+        end
     end
 
 end
