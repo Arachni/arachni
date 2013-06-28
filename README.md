@@ -245,6 +245,7 @@ Currently, the following platforms can be identified:
     - ASPX
     - JSP
     - Python
+    - Ruby
 - Frameworks
     - Rack
 

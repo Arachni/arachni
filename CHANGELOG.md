@@ -40,6 +40,7 @@
         - ASPX
         - JSP
         - Python
+        - Ruby
     - Frameworks
         - Rack
 - `HTTP`
