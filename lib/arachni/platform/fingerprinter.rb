@@ -48,7 +48,7 @@ class Fingerprinter
     #   `true` if either {#server} or {#powered_by} include `string`,
     #   `false` otherwise.
     def server_or_powered_by_include?( string )
-        server.include?( string ) || powered_by.include?( string )
+        server.include?( string.downcase ) || powered_by.include?( string.downcase )
     end
 
     # @return   [Arachni::URI]  Parsed URL of the {#page}.
