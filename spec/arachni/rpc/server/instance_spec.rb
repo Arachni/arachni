@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::RPC::Server::Instance do
+describe 'Arachni::RPC::Server::Instance' do
     before( :all ) do
         @opts     = Arachni::Options.instance
         @utils    = Arachni::Module::Utilities
@@ -546,9 +546,16 @@ describe Arachni::RPC::Server::Instance do
                 describe :instances do
                     it 'includes instances' do
                         instance = @progress_instance
-                        p = instance.service.progress( with: :instances )
-                        p['instances'].size.should == 2
-                        p['instances'].should == instance.framework.progress_data['instances']
+
+                        stats1 = instance.service.progress( with: :instances )['instances']
+                        stats2 = instance.framework.progress_data['instances']
+
+                        # Average req/s may differ.
+                        stats1.each { |h| h.delete 'avg' }
+                        stats2.each { |h| h.delete 'avg' }
+
+                        stats1.size.should == 2
+                        stats1.should == stats2
                     end
                 end
 
