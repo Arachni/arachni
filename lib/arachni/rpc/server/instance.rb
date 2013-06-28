@@ -721,8 +721,8 @@ class Instance
     end
 
     # @private
-    def error_test( str )
-        print_error str.to_s
+    def error_test( str, &block )
+        @framework.error_test( str, &block )
     end
 
     def consumed_pids

@@ -332,8 +332,12 @@ class Framework < ::Arachni::Framework
     end
 
     # @private
-    def error_test( str )
+    def error_test( str, &block )
         print_error str.to_s
+        return block.call if !has_slaves?
+
+        each = proc { |instance, iter| instance.framework.error_test( str ) { iter.next } }
+        each_slave( each, &block )
     end
 
     private

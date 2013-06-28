@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::RPC::Server::Framework do
+describe 'Arachni::RPC::Server::Framework' do
     before( :all ) do
         @opts = Arachni::Options.instance
         @opts.dir['modules'] = fixtures_path + '/taint_module/'
@@ -229,27 +229,23 @@ describe Arachni::RPC::Server::Framework do
             describe :errors do
                 context 'when set to true' do
                     it 'includes all error messages' do
-                        @instance_clean.framework.
-                            progress( errors: true )['errors'].should be_empty
+                        instance = instance_grid_spawn
+                        instance.framework.progress( errors: true )['errors'].should be_empty
 
                         test = 'Test'
-                        @instance_clean.framework.error_test test
+                        instance.framework.error_test test
 
-                        @instance_clean.framework.
-                            progress( errors: true )['errors'].last.
-                            should end_with test
+                        instance.framework.progress( errors: true )['errors'].last.should end_with test
                     end
                 end
                 context 'when set to an Integer' do
                     it 'returns all logged errors after that line per Instance' do
-                        initial_errors = @instance_clean.framework.
-                            progress( errors: true )['errors']
+                        instance = instance_grid_spawn
 
-                        errors = @instance_clean.framework.
-                            progress( errors: 10 )['errors']
+                        10.times { instance.framework.error_test 'test' }
 
-                        # errors are per instance
-                        initial_errors.size.should == 800
+                        instance.framework.progress( errors: true )['errors'].size.should == 296
+                        instance.framework.progress( errors: 10 )['errors'].size.should == 286
                     end
                 end
             end
