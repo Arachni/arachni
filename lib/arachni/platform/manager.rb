@@ -89,7 +89,8 @@ class Manager
         :apache,
         :nginx,
         :tomcat,
-        :iis
+        :iis,
+        :jetty
     ]
 
     LANGUAGES = [
@@ -132,6 +133,7 @@ class Manager
         nginx:      'Nginx',
         tomcat:     'TomCat',
         iis:        'IIS',
+        jetty:      'Jetty',
 
         # Programming languages
         php:    'PHP',

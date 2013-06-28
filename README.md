@@ -238,6 +238,7 @@ Currently, the following platforms can be identified:
     - IIS
     - Nginx
     - Tomcat
+    - Jetty
 - Programming languages
     - PHP
     - ASP

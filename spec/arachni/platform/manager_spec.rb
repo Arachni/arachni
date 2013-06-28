@@ -285,7 +285,7 @@ describe Arachni::Platform::Manager do
                 [:unix, :linux, :bsd, :solaris, :windows,
                  :coldfusion, :db2, :emc, :informix, :interbase, :mssql, :mysql,
                  :oracle, :pgsql, :sqlite, :apache, :iis, :nginx, :tomcat, :asp,
-                 :aspx, :jsp, :perl, :php, :python, :ruby, :rack].sort
+                 :aspx, :jsp, :perl, :php, :python, :ruby, :rack, :jetty].sort
         end
     end
 

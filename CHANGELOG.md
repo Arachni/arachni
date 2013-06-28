@@ -33,6 +33,7 @@
         - IIS
         - Nginx
         - Tomcat
+        - Jetty
     - Programming languages
         - PHP
         - ASP
