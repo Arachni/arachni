@@ -25,22 +25,25 @@ module UI
 #
 module Output
 
-    # verbosity flag
-    #
-    # if it's on verbose messages will be enabled
-    @@verbose = false
+    def self.reset_output_options
+        # verbosity flag
+        #
+        # if it's on verbose messages will be enabled
+        @@verbose = false
 
-    # debug flag
-    #
-    # if it's on debugging messages will be enabled
-    @@debug   = false
+        # debug flag
+        #
+        # if it's on debugging messages will be enabled
+        @@debug   = false
 
-    # only_positives flag
-    #
-    # if it's on status messages will be disabled
-    @@only_positives  = false
+        # only_positives flag
+        #
+        # if it's on status messages will be disabled
+        @@only_positives  = false
 
-    @@mute  = false
+        @@mute  = false
+    end
+    reset_output_options
 
     def print_error(*)
     end

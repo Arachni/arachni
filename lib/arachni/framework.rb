@@ -663,6 +663,7 @@ class Framework
     # You should first update {Arachni::Options}.
     #
     def self.reset
+        UI::Output.reset_output_options
         Platform::Manager.reset
         Module::Auditor.reset
         ElementFilter.reset
