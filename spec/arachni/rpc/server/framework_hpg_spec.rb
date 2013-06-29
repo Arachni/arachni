@@ -242,10 +242,10 @@ describe 'Arachni::RPC::Server::Framework' do
                     it 'returns all logged errors after that line per Instance' do
                         instance = instance_grid_spawn
 
-                        10.times { instance.framework.error_test 'test' }
+                        100.times { instance.framework.error_test 'test' }
 
-                        instance.framework.progress( errors: true )['errors'].size.should == 296
-                        instance.framework.progress( errors: 10 )['errors'].size.should == 286
+                        (instance.framework.progress( errors: true )['errors'].size -
+                            instance.framework.progress( errors: 10 )['errors'].size).should == 10
                     end
                 end
             end
