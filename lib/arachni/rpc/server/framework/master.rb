@@ -311,6 +311,8 @@ module Master
         end
 
         spider.on_complete do
+            print_status 'Crawl finished, progressing to distribution of audit workload.'
+
             # Guess what we're doing now...
             @status = :distributing
 
@@ -327,9 +329,15 @@ module Master
 
             # Nothing to audit, bail out early...
             if @element_ids_per_url.empty?
+                print_status 'No auditable elements found, cleaning up.'
                 clean_up
                 next
             end
+
+            page_cnt    = @element_ids_per_url.size
+            element_cnt = @element_ids_per_url.map(&:size).inject(&:+)
+            print_info "Found #{page_cnt} pages with a total of #{element_cnt} elements."
+            print_line
 
             # Split the URLs of the pages in equal chunks.
             chunks    = split_urls( @element_ids_per_url.keys, @instances.size + 1 )
@@ -342,26 +350,40 @@ module Master
             # Assign us our fair share of plug-in discovered pages.
             update_page_queue( page_chunks.pop, @local_token )
 
-            # Remove duplicate elements across the (per instance) chunks while
-            # spreading them out evenly.
-            elements = distribute_elements( chunks, @element_ids_per_url )
+            # What follows can be pretty resource intensive so don't block.
+            Thread.new do
+                # Remove duplicate elements across the (per instance) chunks while
+                # spreading them out evenly.
+                elements = distribute_elements( chunks, @element_ids_per_url )
 
-            # Restrict the local instance to its assigned elements.
-            restrict_to_elements( elements.shift, @local_token )
+                print_info "#{self_url} (Master)"
+                print_info "  * #{chunks.first.size} URLs"
 
-            # Set the URLs to be audited by the local instance.
-            @opts.restrict_paths = chunks.shift
+                # Set the URLs to be audited by the local instance.
+                @opts.restrict_paths = chunks.shift
 
-            # Distribute the audit workload and tell the slaves to have at it.
-            chunks.each_with_index do |chunk, i|
-                distribute_and_run( @instances[i],
-                                    urls:     chunk,
-                                    elements: elements.shift,
-                                    pages:    page_chunks.shift )
-            end
+                print_info "  * #{elements.first.size} elements"
+                print_line
 
-            # Start the master/local Instance's audit.
-            Thread.new {
+                # Restrict the local instance to its assigned elements.
+                restrict_to_elements( elements.shift, @local_token )
+
+                # Distribute the audit workload and tell the slaves to have at it.
+                chunks.each_with_index do |chunk, i|
+                    instance_info = @instances[i]
+
+                    print_info "#{instance_info[:url]} (Slave)"
+                    print_info "  * #{chunk.size} URLs"
+                    print_info "  * #{elements.first.size} elements"
+                    print_line
+
+                    distribute_and_run( instance_info,
+                                        urls:     chunk,
+                                        elements: elements.shift,
+                                        pages:    page_chunks.shift )
+                end
+
+                # Start the master/local Instance's audit.
                 audit
 
                 @finished_auditing = true
@@ -378,7 +400,7 @@ module Master
                 # have been started in the first place and since it's just us
                 # we can go ahead and clean-up.
                 cleanup_if_all_done if chunk_cnt == 1 || @running_slaves.any?
-            }
+            end
         end
 
         # Let crawlers know of each other and start the master crawler.
