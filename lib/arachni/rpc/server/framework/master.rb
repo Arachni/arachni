@@ -298,6 +298,10 @@ module Master
         Thread.abort_on_exception = true
 
         spider.on_each_page do |page|
+            if page.platforms.any?
+                print_info "Identified as: #{page.platforms.to_a.join( ', ' )}"
+            end
+
             # Update the list of element scope-IDs per page -- will be used
             # as a whitelist for the distributed audit.
             update_element_ids_per_url(

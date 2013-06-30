@@ -64,6 +64,10 @@ module Slave
         spider.on_each_page do |page|
             @status = :crawling
 
+            if page.platforms.any?
+                print_info "Identified as: #{page.platforms.to_a.join( ', ' )}"
+            end
+
             # Build a list of deduplicated element scope IDs for this page.
             @element_ids_per_url[page.url] ||= []
             build_elem_list( page ).each do |id|
