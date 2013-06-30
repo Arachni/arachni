@@ -47,7 +47,7 @@ module Utilities
         issue_cnt = issues.count
         issues.each.with_index do |issue, i|
             input = issue.var ? " input `#{issue.var}`" : ''
-            meth  = issue.method ? " using #{issue.method}" : ''
+            meth  = !issue.method.to_s.empty? ? " using #{issue.method}" : ''
             cnt   = "#{i + 1} |".rjust( issue_cnt.to_s.size + 2 )
 
             print_ok( interceptor.call(  "#{cnt} #{issue.name} at #{issue.url} in" +
