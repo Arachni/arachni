@@ -1,4 +1,6 @@
 require 'spec_helper'
+require Arachni::Options.dir['lib'] + 'rpc/server/base'
+require Arachni::Options.dir['lib'] + 'rpc/server/framework'
 
 class Distributor
     include Arachni::RPC::Server::Framework::Distributor
@@ -397,6 +399,20 @@ describe Arachni::RPC::Server::Framework::Distributor do
             }
             r = @distributor.distribute_elements( chunks, elem_ids_per_page )
             r.should == [ %w(elem elem_4), %w(elem_2), %w(elem_1 elem_3 elem_5)]
+        end
+
+        it 'handles large data sets' do
+            elements = {}
+
+            30.times do
+                list = (elements[rand( 9999 )] ||= [])
+
+                1_000_000.times do
+                    list << rand( 9999 )
+                end
+            end
+
+            @distributor.distribute_elements( elements.keys.map { |i| [i] }, elements )
         end
     end
 

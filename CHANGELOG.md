@@ -88,6 +88,8 @@
         - Removed the concept of issue summaries -- were used for lightweight
             transmission of issue data for real-time feedback. Instead, full issues
             are being buffered and flushed to the master after each page is audited.
+    - `RPC::Server::Framework::Distributor`
+        - `#distribute_elements`: Optimized to handle large data sets.
     - `RPC::Server::Spider`
         - Updated buffering strategy to reduce RPC calls.
 - `Module::Auditor`

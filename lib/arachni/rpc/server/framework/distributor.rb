@@ -114,16 +114,16 @@ module Distributor
     #   Unique and evenly distributed elements/chunk for each instance.
     #
     def distribute_elements( chunks, element_ids_per_page )
-        # Groups together all the elements of all chunks.
+        # Group together all the elements of all chunks.
         elements_per_chunk = []
         chunks.each_with_index do |chunk, i|
-            elements_per_chunk[i] ||= []
+            elements_per_chunk[i] ||= Set.new
             chunk.each do |url|
                 elements_per_chunk[i] |= element_ids_per_page[url]
             end
         end
 
-        # Removes elements from each chunk which are also included in other
+        # Remove elements from each chunk which are also included in other
         # chunks.
         #
         # This will leave us with the same grouping as before but without
@@ -131,7 +131,7 @@ module Distributor
         # distribution.
         unique_chunks = elements_per_chunk.map.with_index do |chunk, i|
             chunk.reject do |item|
-                elements_per_chunk[i..-1].flatten.count( item ) > 1
+                more_than_one_in_sets( elements_per_chunk[i..-1], item )
             end
         end
 
@@ -148,12 +148,11 @@ module Distributor
         # element.
         unique_chunks.each.with_index do |chunk, i|
             chunk.each do |item|
-                next_c = unique_chunks[i+1]
-                if next_c && (chunk.size > next_c.size ) &&
-                    elements_per_chunk[i+1].include?( item )
-                    unique_chunks[i].delete( item )
-                    next_c << item
-                end
+                next if !(next_c = unique_chunks[i+1]) ||
+                    next_c.size >= chunk.size ||
+                    !elements_per_chunk[i+1].include?( item )
+
+                next_c << unique_chunks[i].delete( item )
             end
         end
 
@@ -442,6 +441,15 @@ module Distributor
     def dispatcher
         return if !@opts.datastore[:dispatcher_url]
         connect_to_dispatcher( @opts.datastore[:dispatcher_url] )
+    end
+
+    def more_than_one_in_sets( sets, item )
+        occurrences = 0
+        sets.each do |set|
+            occurrences += 1 if set.include?( item )
+            return true if occurrences > 1
+        end
+        false
     end
 
 end
