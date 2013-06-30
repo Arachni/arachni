@@ -210,12 +210,15 @@ class Instance
         @error_messages_cnt ||= 0
         @issue_digests      ||= []
 
-        @progress = @instance.service.
-            progress( with:    [ :instances, :native_issues,
-                                 errors: @error_messages_cnt ],
-                      without: [ issues: @issue_digests ] )
+        progress = @instance.service.progress(
+            with:    [ :instances, :native_issues, errors: @error_messages_cnt ],
+            without: [ issues: @issue_digests ]
+        )
 
-        @issues |= @progress['issues']
+        return if !progress
+
+        @progress = progress
+        @issues  |= @progress['issues']
 
         @issues = AuditStore.sort( @issues )
 
