@@ -49,7 +49,8 @@ Gem::Specification.new do |s|
     s.test_files        = Dir.glob( 'spec/**/**' )
 
     s.executables       = [ 'arachni', 'arachni_rpcd_monitor', 'arachni_rpcd',
-                            'arachni_rpc', 'arachni_console', 'arachni_script' ]
+                            'arachni_rpc', 'arachni_console', 'arachni_script',
+                            'arachni_multi' ]
 
     s.extra_rdoc_files  = %w(README.md ACKNOWLEDGMENTS.md LICENSE.md
                             AUTHORS.md CHANGELOG.md CONTRIBUTORS.md
