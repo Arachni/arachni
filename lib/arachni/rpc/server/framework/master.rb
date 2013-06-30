@@ -317,7 +317,7 @@ module Master
             # The plugins may have updated the page queue so we need to take
             # these pages into account as well.
             page_a = []
-            while !@page_queue.empty? && page = @page_queue.pop
+            while !@page_queue.empty? && (page = @page_queue.pop)
                 page_a << page
                 update_element_ids_per_url(
                     { page.url => build_elem_list( page ) },
