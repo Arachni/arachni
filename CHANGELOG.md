@@ -73,7 +73,7 @@
                 Dispatchers with unique bandwidth Pipe-IDs to result in
                 application-level line-aggregation.
     - `RPC::Server::Framework`
-        - No longer performs a multi-Instance scan when its Dispatcher if a Grid
+        - No longer performs a multi-Instance scan when its Dispatcher is a Grid
             member. The `grid` or `grid_mode` options need to be set explicitly.
         - General code cleanup.
             - Multi-Instance code moved under the `RPC::Server::Framework::MultiInstance`
