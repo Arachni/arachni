@@ -2,7 +2,7 @@
 
 ## _Under development_
 
-- RPC
+- RPC protocol
     - YAML serialization switched from `Syck` to `Psych` (the current Ruby default).
 - Executables:
     - Added `arachni_multi`
@@ -53,15 +53,32 @@
         - `:pause!` -- Only use `pause` from now on.
         - `:clean_up!` -- Only use `clean_up` from now on.
     - Added `#list_platforms`.
+- `Spider`
+    - Optimized path de-duplication.
+    - Paths-list synchronized using a `Mutex` to prevent issues when running as
+        part of a multi-Instance operation.
 - `RPC::Server::Instance`
     - Removed the following deprecated aliases:
         - `:shutdown!` -- Only use `shutdown` from now on.
     - Added preliminary support for UNIX sockets.
     - Added `#list_platforms`.
-- `Spider`
-    - Optimized path de-duplication.
-    - Paths-list synchronized using a `Mutex` to prevent issues when running as
-        part of a multi-Instance operation.
+- `Module::Auditor`
+    - Having access to the `Framework` is now required and guaranteed.
+- `Element::Capabilities::Auditable`
+    - Out of scope elements are now visible in order to allow access to 3rd
+        party resources like Single Sign-On services.
+    - All audit methods return `false` when the element is out of the scan's scope.
+    - `#anonymous_auditor` now instantiates a `Framework`.
+    - Added `#skip_like` method to be passed blocks deciding what elements should
+        not be audited.
+    - `#audit`
+        - Updated to support the following payload types:
+            - `Array` -- Array of payloads to be injected.
+            - `Hash` -- Array of payloads to be injected per platform.
+- Grid
+    - `RPC::Server::Dispatcher#dispatch`
+        - When the Dispatcher is a Grid member, it returns an Instance from the least
+            burdened Grid member by default, thus allowing for easy load-balancing.
 - Multi-Instance scans
     - Instances now communicate via UNIX domain sockets when all of them are on
         the same host, to avoid TCP/IP overhead for IPC.
@@ -93,27 +110,11 @@
         - Optimized to handle large data sets.
     - `RPC::Server::Spider`
         - Updated buffering strategy to reduce RPC calls.
-- `Module::Auditor`
-    - Having access to the `Framework` is now required and guaranteed.
-- `Element::Capabilities::Auditable`
-    - Out of scope elements are now visible in order to allow access to 3rd
-        party resources like Single Sign-On services.
-    - All audit methods return `false` when the element is out of the scan's scope.
-    - `#anonymous_auditor` now instantiates a `Framework`.
-    - Added `#skip_like` method to be passed blocks deciding what elements should
-        not be audited.
-    - `#audit`
-        - Updated to support the following payload types:
-            - `Array` -- Array of payloads to be injected.
-            - `Hash` -- Array of payloads to be injected per platform.
 - Cleaned up and removed `@@` vars from:
     - `Module::Manager`
     - `Module::KeyFiller`
     - `Plugin::Manager`
     - `Parser`
-- Grid
-    - Dispatchers automatically load-balance scans. `#dispatch` call returns an
-        Instance from the least burdened Grid member by default.
 - Moved supporting classes under `Arachni::Support`.
     - `Support::Cache` classes now store `#hash` values of keys to preserve space.
     - Added:
