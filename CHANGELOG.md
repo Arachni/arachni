@@ -69,7 +69,7 @@
         - Added `grid_mode` option:
             - `:balance` -- Slaves will be provided by the least burdened
                 Grid Dispatchers.
-            - `:aggregation` -- In addition to balancing, slaves will all be from
+            - `:aggregate` -- In addition to balancing, slaves will all be from
                 Dispatchers with unique bandwidth Pipe-IDs to result in
                 application-level line-aggregation.
     - `RPC::Server::Framework`
@@ -88,8 +88,8 @@
         - Removed the concept of issue summaries -- were used for lightweight
             transmission of issue data for real-time feedback. Instead, full issues
             are being buffered and flushed to the master after each page is audited.
-    - `RPC::Server::Framework::Distributor`
-        - `#distribute_elements`: Optimized to handle large data sets.
+    - `RPC::Server::Framework::Distributor#distribute_elements`
+        - Optimized to handle large data sets.
     - `RPC::Server::Spider`
         - Updated buffering strategy to reduce RPC calls.
 - `Module::Auditor`
