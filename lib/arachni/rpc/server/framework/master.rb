@@ -32,6 +32,7 @@ module Master
     #
     def set_as_master
         return false if !solo?
+        return true if master?
 
         # Holds info for our slave Instances -- if we have any.
         @instances        = []
@@ -54,6 +55,8 @@ module Master
         # to be used server side by self to facilitate access control and only
         # allow slaves to update our runtime data.
         @local_token = Utilities.generate_token
+
+        print_status 'Became master.'
 
         true
     end
@@ -96,6 +99,9 @@ module Master
         instance.opts.set( cleaned_up_opts ) do
             instance.framework.set_master( multi_self_url, token ) do
                 @instances << instance_info
+
+                print_status "Enslaved: #{instance_info[:url]}"
+
                 block.call true if block_given?
             end
         end
@@ -120,6 +126,8 @@ module Master
     def slave_done( slave_url, token = nil )
         return false if master? && !valid_token?( token )
         @done_slaves << slave_url
+
+        print_status "Slave done: #{slave_url}"
 
         cleanup_if_all_done
         true
@@ -249,6 +257,7 @@ module Master
                 'master' => multi_self_url
             }
 
+            print_status "Requesting Instance from Dispatcher: #{d_url}"
             connect_to_dispatcher( d_url ).
                 dispatch( multi_self_url, d_opts, false ) do |instance_hash|
                     enslave( instance_hash ){ |b| iterator.next }
@@ -271,6 +280,8 @@ module Master
             # Get slaves from Dispatchers with unique Pipe IDs in order to take
             # advantage of line aggregation if we're in aggregation mode.
             if @opts.grid_aggregate?
+                print_info 'In Grid line-aggregation mode, will only request' <<
+                            ' Instances from Dispatcher with unique Pipe-IDs.'
 
                 preferred_dispatchers do |pref_dispatchers|
                     iterator_for( pref_dispatchers ).each( each, after )
@@ -279,6 +290,9 @@ module Master
             # If were not in aggregation mode then we're in load balancing mode
             # and that is handled better by our Dispatcher so ask it for slaves.
             else
+                print_info 'In Grid load-balancing mode, letting our Dispatcher' <<
+                            ' sort things out.'
+
                 q = Queue.new
                 @opts.max_slaves.times do
                     dispatcher.dispatch( multi_self_url ) do |instance_info|

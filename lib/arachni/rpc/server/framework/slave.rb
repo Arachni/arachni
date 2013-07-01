@@ -84,6 +84,8 @@ module Slave
             end
 
             if spider.done?
+                print_status 'Done crawling -- at least for now.'
+
                 data[:platforms]  = Platform::Manager.light if Options.fingerprint?
                 data[:crawl_done] = true
             end
@@ -108,6 +110,8 @@ module Slave
             @issue_buffer.clear
         end
 
+        print_status "Enslaved by: #{url}"
+
         true
     end
 
@@ -125,9 +129,13 @@ module Slave
     def slave_run
         audit
 
+        print_status 'Done auditing.'
+
         sitrep( issues: @issue_buffer.dup, audit_done: true ) do
             @extended_running = false
             @status = :done
+
+            print_info 'Master informed that we\'re done.'
         end
 
         @issue_buffer.clear
