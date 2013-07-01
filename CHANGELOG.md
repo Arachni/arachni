@@ -74,7 +74,8 @@
                 application-level line-aggregation.
     - `RPC::Server::Framework`
         - No longer performs a multi-Instance scan when its Dispatcher is a Grid
-            member. The `grid` or `grid_mode` options need to be set explicitly.
+            member. The `grid` or `grid_mode` options need to be set explicitly,
+            along with a `spawns` option value of 1 and higher.
         - General code cleanup.
             - Multi-Instance code moved under the `RPC::Server::Framework::MultiInstance`
                 module which concentrates multi-Instance code and pulls in the
