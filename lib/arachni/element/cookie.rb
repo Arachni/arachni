@@ -981,6 +981,7 @@ class Cookie < Arachni::Element::Base
             end
             cookie_hash['expires'] = cookie.expires
 
+            cookie_hash['path'] ||= '/'
             cookie_hash['name']  = decode( cookie.name )
             cookie_hash['value'] = decode( cookie.value )
 
