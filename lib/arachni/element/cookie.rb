@@ -1116,7 +1116,7 @@ class Cookie < Arachni::Element::Base
     # @return   [String]
     #
     def self.encode( str )
-        URI.encode( str, "+;%=\0" ).gsub( ' ', '+' )
+        URI.encode( str, "+;%=\0" ).recode.gsub( ' ', '+' )
     end
     # @see .encode
     def encode( str )
@@ -1135,7 +1135,7 @@ class Cookie < Arachni::Element::Base
     # @return   [String]
     #
     def self.decode( str )
-        URI.decode( str.gsub( '+', ' ' ) )
+        URI.decode( str.to_s.recode.gsub( '+', ' ' ) )
     end
     # @see .decode
     def decode( str )
