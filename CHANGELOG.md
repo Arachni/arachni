@@ -125,7 +125,7 @@
 - Added:
     - `Arachni::Platform` -- Holds resources relevant to platform identification,
         storage, and filtering.
-        - `Fingerprinters` -- Namespace under all fingerprinter
+        - `Fingerprinters` -- Namespace under which all fingerprinter
             components reside.
         - `List` - List structure holding applicable platforms for a given WWW resource.
         - `Manager` - Collection of `Lists`s for easy management of platforms of
