@@ -57,7 +57,7 @@ class Cookie < Arachni::Element::Base
 
         @raw ||= {}
         if @raw['name'] && @raw['value']
-            self.auditable = { @raw['name'] => @raw['value'] }
+            self.auditable = { @raw['name'].to_s.recode => @raw['value'].to_s.recode }
         else
             self.auditable = raw.dup
         end
