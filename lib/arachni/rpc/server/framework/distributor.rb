@@ -103,7 +103,7 @@ module Distributor
     end
 
     #
-    # @param    [Array<Array<String>>]     chunks
+    # @param    [Array<Array<String>>]     url_chunks
     #   Chunks of URLs, each chuck corresponds to each slave.
     # @param    [Hash<String,Array>]     element_ids_per_page
     #   Hash with page urls for keys and arrays of element
@@ -113,10 +113,10 @@ module Distributor
     # @return [Array<Array>]
     #   Unique and evenly distributed elements/chunk for each instance.
     #
-    def distribute_elements( chunks, element_ids_per_page )
-        # Group together all the elements of all chunks.
+    def distribute_elements( url_chunks, element_ids_per_page )
+        # Convert chunks of URLs to chunks of elements for these URLs.
         elements_per_chunk = []
-        chunks.each_with_index do |chunk, i|
+        url_chunks.each_with_index do |chunk, i|
             elements_per_chunk[i] ||= Set.new
             chunk.each do |url|
                 elements_per_chunk[i] |= element_ids_per_page[url]
@@ -129,15 +129,15 @@ module Distributor
         # This will leave us with the same grouping as before but without
         # duplicate elements across the chunks, albeit with an non-optimal
         # distribution.
-        unique_chunks = elements_per_chunk.map.with_index do |chunk, i|
-            chunk.reject do |item|
-                more_than_one_in_sets( elements_per_chunk[i..-1], item )
+        unique_elements_per_chunk = elements_per_chunk.map.with_index do |elements, i|
+            elements.reject do |element|
+                more_than_one_in_sets( elements_per_chunk[i..-1], element )
             end
         end
 
         # Get them into proper order to be ready for proping up.
         elements_per_chunk.reverse!
-        unique_chunks.reverse!
+        unique_elements_per_chunk.reverse!
 
         # Evenly distribute elements across chunks using the previously
         # duplicate elements as possible placements.
@@ -146,18 +146,18 @@ module Distributor
         # been available in the destination to begin with since we can't assign
         # an element to an instance which won't have a page containing that
         # element.
-        unique_chunks.each.with_index do |chunk, i|
-            chunk.each do |item|
-                next if !(next_c = unique_chunks[i+1]) ||
-                    next_c.size >= chunk.size ||
+        unique_elements_per_chunk.each.with_index do |elements, i|
+            elements.each do |item|
+                next if !(next_c = unique_elements_per_chunk[i+1]) ||
+                    next_c.size >= elements.size ||
                     !elements_per_chunk[i+1].include?( item )
 
-                next_c << unique_chunks[i].delete( item )
+                next_c << unique_elements_per_chunk[i].delete( item )
             end
         end
 
         # Set them in the same order as the original 'chunks' group.
-        unique_chunks.reverse
+        unique_elements_per_chunk.reverse
     end
 
     # @return   [Array]
