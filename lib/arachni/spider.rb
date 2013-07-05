@@ -103,7 +103,7 @@ class Spider
     # @return [Array<String>]   sitemap
     #
     def run( pass_pages_to_block = true, &block )
-        return if !@opts.crawl? || running?
+        return if limit_reached? || !@opts.crawl? || running?
 
         @running = true
 
@@ -192,6 +192,8 @@ class Spider
     #   paths that must be skipped).
     #
     def push( paths, wakeup = true )
+        return false if limit_reached?
+
         paths = dedup( paths )
         return false if paths.empty?
 
