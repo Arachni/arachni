@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::RPC::Server::Spider do
+describe 'Arachni::RPC::Server::Spider' do
 
     context 'when using' do
         context 'multiple nodes' do
