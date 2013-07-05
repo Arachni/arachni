@@ -349,7 +349,8 @@ module Master
             end
 
             page_cnt    = @element_ids_per_url.size
-            element_cnt = @element_ids_per_url.map(&:size).inject(&:+)
+            element_cnt = 0
+            @element_ids_per_url.each { |_, v| element_cnt += v.size }
             print_info "Found #{page_cnt} pages with a total of #{element_cnt} elements."
             print_line
 
