@@ -381,17 +381,6 @@ class Spider
         wrap = proc do |res|
             effective_url = normalize_url( res.effective_url )
 
-            if res.redirection? && res.location
-                @redirects << res.request.url
-                location = to_absolute( res.location )
-                if hit_redirect_limit? || skip?( location )
-                    decrease_pending
-                    next
-                end
-                @followed_redirects += 1
-                push location
-            end
-
             if res.code == 0
                 @retries[url.hash] ||= 0
 
@@ -415,6 +404,20 @@ class Spider
             end
 
             print_status "[HTTP: #{res.code}] #{effective_url}"
+
+            if res.redirection? && res.location
+                @redirects << res.request.url
+                location = to_absolute( res.location )
+                if hit_redirect_limit? || skip?( location )
+                    print_info "Redirect limit reached, skipping: #{location}"
+                    decrease_pending
+                    next
+                end
+                @followed_redirects += 1
+
+                print_info "Scheduled to follow: #{location}"
+                push location
+            end
 
             if skip_response?( res )
                 print_info 'Ignoring due to exclusion criteria.'
