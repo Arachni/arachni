@@ -228,10 +228,16 @@ class Spider < Arachni::Spider
     #   results, `false` if the crawl is still in progress.
     #
     def master_done_handler
-        return if !master? || !done? || !slaves_done?
+        # Once we realize that we're done for the first time then that's it.
+        # Ignore residual signals from slaves to avoid calling the #on_complete
+        # callbacks more than once.
+        @all_done ||= false
+        return if @all_done || !master? || !done? || !slaves_done?
 
         # Really make sure all slaves are done.
         if_slaves_done do
+            @all_done = true
+
             collect_sitemaps do |aggregate_sitemap|
                 @distributed_sitemap = aggregate_sitemap
                 call_on_complete_blocks
