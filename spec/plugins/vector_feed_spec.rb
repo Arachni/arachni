@@ -1,4 +1,4 @@
-require_relative '../spec_helper'
+require 'spec_helper'
 
 describe name_from_filename do
     include_examples 'plugin'
@@ -145,11 +145,23 @@ describe name_from_filename do
         describe :yaml_file do
             it 'unserializes the given string and forward the given vectors to the framework to be audited' do
                 File.open( 'yaml_file.yml', 'w' ){ |f| f.write( YAML.dump( vectors ) ) }
+
                 options.plugins[name_from_filename] = { 'yaml_file' => 'yaml_file.yml' }
                 run_test
 
                 File.delete( 'yaml_file.yml' )
             end
+
+            it 'supports multiple documents in the same file' do
+                File.open( 'yaml_file.yml', 'w' ){ |f| f.write( YAML.dump( vectors[1..-1] ) ) }
+                File.open( 'yaml_file.yml', 'a' ){ |f| f.write( YAML.dump( vectors.first ) ) }
+
+                options.plugins[name_from_filename] = { 'yaml_file' => 'yaml_file.yml' }
+                run_test
+
+                File.delete( 'yaml_file.yml' )
+            end
+
         end
     end
 end

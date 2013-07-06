@@ -1,4 +1,4 @@
-require_relative '../../spec_helper'
+require 'spec_helper'
 
 describe name_from_filename do
     include_examples 'module'
@@ -15,7 +15,7 @@ describe name_from_filename do
         {
             Element::FORM   => 4,
             Element::LINK   => 4,
-            Element::COOKIE => 4,
+            Element::COOKIE => 3,
             Element::HEADER => 9
         }
     end

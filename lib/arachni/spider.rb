@@ -18,7 +18,6 @@ module Arachni
 
 lib = Options.dir['lib']
 
-require lib + 'bloom_filter'
 require lib + 'module/utilities'
 require 'nokogiri'
 require lib + 'nokogiri/xml/node'
@@ -56,8 +55,8 @@ class Spider
 
         @sitemap   = {}
         @redirects = []
-        @paths     = []
-        @visited   = Set.new
+        @paths     = Set.new
+        @visited   = Support::LookUp::HashSet.new
 
         @on_each_page_blocks     = []
         @on_each_response_blocks = []
@@ -76,12 +75,11 @@ class Spider
         @opts.url
     end
 
-    # @return   [Array<String>]
+    # @return   [Set<String>]
     #   Working paths, paths that haven't yet been followed.
-    #   You'll actually get a copy of the working paths and not the actual
-    #   object itself; if you want to add more paths use {#push}.
+    #   If you want to add more paths use {#push}.
     def paths
-        @paths.clone
+        @paths
     end
 
     # @return   [Array<String>] list of crawled URLs
@@ -105,11 +103,11 @@ class Spider
     # @return [Array<String>]   sitemap
     #
     def run( pass_pages_to_block = true, &block )
-        return if !@opts.crawl?
+        return if limit_reached? || !@opts.crawl? || running?
 
         @running = true
 
-        # options could have changed so reseed
+        # Options could have changed so reseed.
         seed_paths
 
         if block_given?
@@ -118,7 +116,7 @@ class Spider
 
         while !done?
             wait_if_paused
-            while !done? && url = @paths.shift
+            while !done? && url = next_url
                 wait_if_paused
 
                 visit( url ) do |res|
@@ -133,7 +131,9 @@ class Spider
                     end
 
                     if @on_each_page_blocks.any?
-                        call_on_each_page_blocks( pass_pages_to_block ? obj : Page.from_response( res, @opts ) )
+                        call_on_each_page_blocks obj.is_a?( Page ) ?
+                                                     obj :
+                                                     Page.from_response( res, @opts )
                     end
 
                     distribute( obj.paths )
@@ -143,7 +143,6 @@ class Spider
             http.run
         end
 
-        http.run
         @running = false
 
         call_on_complete_blocks
@@ -193,14 +192,19 @@ class Spider
     #   paths that must be skipped).
     #
     def push( paths, wakeup = true )
+        return false if limit_reached?
+
         paths = dedup( paths )
         return false if paths.empty?
 
-        @paths |= paths
-        @paths.uniq!
+        synchronize do
+            @paths |= paths
+        end
 
-         # REVIEW: This may cause segfaults, Typhoeus::Hydra doesn't like threads.
-        Thread.new { run } if wakeup && !running? # wake up the crawler
+        return true if !wakeup || running?
+        Thread.abort_on_exception = true
+        Thread.new { run }
+
         true
     end
 
@@ -212,7 +216,9 @@ class Spider
     # @return [TrueClass, FalseClass]
     #   `true` if the queue is empty and no requests are pending, `false` otherwise.
     def idle?
-        @paths.empty? && @pending_requests == 0
+        synchronize do
+            @paths.empty? && @pending_requests == 0
+        end
     end
 
     # @return [TrueClass] Pauses the system on a best effort basis.
@@ -233,13 +239,33 @@ class Spider
 
     private
 
+    def dedup( paths )
+        return [] if !paths || paths.empty?
+
+        [paths].flatten.map do |path|
+            next if !path
+            path = to_absolute( path, url )
+            next if !path || skip?( path )
+
+            path
+        end.compact
+    end
+
+    def next_url
+        synchronize { @paths.shift }
+    end
+
+    def synchronize( &block )
+        (@mutex ||= Mutex.new).synchronize( &block )
+    end
+
     def distribute( urls )
         push( urls, false )
     end
 
     def seed_paths
-        @paths |= dedup( url )
-        @paths |= dedup( @opts.extend_paths )
+        push( url, false )
+        push( @opts.extend_paths, false )
     end
 
     def call_on_each_page_blocks( obj )
@@ -309,7 +335,7 @@ class Spider
     # @return   [Bool]  true if the url is redundant, false otherwise
     #
     def redundant?( url )
-        redundant = super( url ) do |count, regexp, path|
+        redundant = redundant_path?( url ) do |count, regexp, path|
             print_info "Matched redundancy rule: #{regexp} for #{path}"
             print_info "Count-down: #{count}"
         end
@@ -331,13 +357,6 @@ class Spider
 
         @auto_redundant[h] += 1
         false
-    end
-
-    def dedup( paths )
-        return [] if !paths || paths.empty?
-
-        [paths].flatten.uniq.compact.map { |p| to_absolute( p, url ) }.
-            reject { |p| skip?( p ) }.uniq.compact
     end
 
     def wait_if_paused
@@ -364,17 +383,6 @@ class Spider
         wrap = proc do |res|
             effective_url = normalize_url( res.effective_url )
 
-            if res.redirection? && res.location
-                @redirects << res.request.url
-                location = to_absolute( res.location )
-                if hit_redirect_limit? || skip?( location )
-                    decrease_pending
-                    next
-                end
-                @followed_redirects += 1
-                push location
-            end
-
             if res.code == 0
                 @retries[url.hash] ||= 0
 
@@ -398,6 +406,20 @@ class Spider
             end
 
             print_status "[HTTP: #{res.code}] #{effective_url}"
+
+            if res.redirection? && res.location
+                @redirects << res.request.url
+                location = to_absolute( res.location )
+                if hit_redirect_limit? || skip?( location )
+                    print_info "Redirect limit reached, skipping: #{location}"
+                    decrease_pending
+                    next
+                end
+                @followed_redirects += 1
+
+                print_info "Scheduled to follow: #{location}"
+                push location
+            end
 
             if skip_response?( res )
                 print_info 'Ignoring due to exclusion criteria.'

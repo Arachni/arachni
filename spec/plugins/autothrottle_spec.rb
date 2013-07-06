@@ -1,4 +1,4 @@
-require_relative '../spec_helper'
+require 'spec_helper'
 
 describe name_from_filename do
     include_examples 'plugin'
@@ -6,7 +6,7 @@ describe name_from_filename do
     before( :all ) { run }
 
     def url
-        @url ||= server_url_for( name_from_filename ) + '/'
+        @url ||= web_server_url_for( name_from_filename ) + '/'
     end
 
     context 'when the server response times are' do

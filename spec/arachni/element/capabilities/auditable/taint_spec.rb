@@ -1,10 +1,10 @@
-require_relative '../../../../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Element::Capabilities::Auditable::Taint do
 
     before :all do
-        @url = server_url_for( :taint )
-        @auditor = Auditor.new
+        Arachni::Options.url = @url = web_server_url_for( :taint )
+        @auditor = Auditor.new( nil, Arachni::Framework.new )
 
         @positive = Arachni::Element::Link.new( @url, 'input' => '' )
         @positive.auditor = @auditor
@@ -22,11 +22,35 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
             Arachni::Framework.reset
          end
 
+        context 'when the element action matches a skip rule' do
+            it 'returns false' do
+                auditable = Arachni::Element::Link.new( 'http://stuff.com/',
+                                                        { 'input' => '' } )
+                auditable.taint_analysis( @seed ).should be_false
+            end
+        end
+
         context 'when called with no opts' do
             it 'uses the defaults' do
                 @positive.taint_analysis( @seed )
                 @auditor.http.run
                 issues.size.should == 1
+            end
+        end
+
+        context 'when the payloads are per platform' do
+            it 'assigns the platform of the payload to the issue' do
+                payloads = {
+                    windows: 'blah',
+                    php:     @seed,
+                }
+
+                @positive.taint_analysis( payloads, substring: @seed )
+                @auditor.http.run
+                issues.size.should == 1
+                issue = issues.first
+                issue.platform.should == :php
+                issue.platform_type.should == :languages
             end
         end
 

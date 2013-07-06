@@ -1,4 +1,4 @@
-require_relative '../spec_helper'
+require 'spec_helper'
 
 describe name_from_filename do
     include_examples 'plugin'
@@ -11,8 +11,8 @@ describe name_from_filename do
     end
 
     it 'logs safe and vuln URLs accordingly' do
-        afr = spec_path + '/fixtures/rescan.afr.tpl'
-        updated = spec_path + '/fixtures/rescan.afr'
+        afr = fixtures_path + 'rescan.afr.tpl'
+        updated = fixtures_path + 'rescan.afr'
 
         yaml_load( IO.read( afr ) ).save( updated )
         options.plugins[name_from_filename] = { 'afr' => updated }

@@ -1,9 +1,9 @@
-require_relative '../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Session do
 
     before( :all ) do
-        @url = server_url_for( :session )
+        @url = web_server_url_for( :session )
         @opts = Arachni::Options.instance
     end
 
@@ -283,7 +283,7 @@ describe Arachni::Session do
     describe '#set_login_check' do
         it 'sets a login check using a URL and regular expression' do
             s = new_session
-            url = server_url_for( :session ) + '/'
+            url = web_server_url_for( :session ) + '/'
             s.opts.url = "#{url}/congrats"
 
             s.has_login_sequence?.should be_false

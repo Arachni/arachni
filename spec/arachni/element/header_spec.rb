@@ -1,11 +1,11 @@
-require_relative '../../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Element::Header do
-    it_should_behave_like 'auditable', url: server_url_for( :header ),
+    it_should_behave_like 'auditable', url: web_server_url_for( :header ),
                           single_input: true
 
     before( :all ) do
-        @url = server_url_for( :header )
+        @url = web_server_url_for( :header )
 
         @inputs = { 'My-header' => 'header_value' }
         @header = Arachni::Element::Header.new( @url, @inputs )
@@ -37,6 +37,18 @@ describe Arachni::Element::Header do
                 @header.mutations( 'seed', param_flip: true ).last.auditable.keys.should ==
                     %w(seed)
             end
+        end
+    end
+
+    describe '#name' do
+        it 'returns the header name' do
+            @header.name.should == 'My-header'
+        end
+    end
+
+    describe '#value' do
+        it 'returns the header value' do
+            @header.value.should == 'header_value'
         end
     end
 

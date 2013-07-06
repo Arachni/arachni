@@ -1,4 +1,4 @@
-require_relative '../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Page do
     before( :all ) do
@@ -40,8 +40,10 @@ describe Arachni::Page do
         @empty_page = Arachni::Page.new
     end
 
-    it 'should be assigned to Arachni::Page for easy access' do
-        Arachni::Page.should == Arachni::Page
+    describe '#platforms' do
+        it 'returns platforms for the given page' do
+            @page.platforms.should be_kind_of Arachni::Platform::Manager
+        end
     end
 
     describe '#text?' do
@@ -281,6 +283,17 @@ describe Arachni::Page do
             it 'returns a parsed tree' do
                 @empty_page.document.to_html.should == Nokogiri::HTML( @empty_page.body ).to_html
             end
+        end
+    end
+
+    describe '#elements' do
+        it 'returns all page elemenrs' do
+            p = Arachni::Page.new( body: 'stuff here' )
+            p.links << Arachni::Element::Link.new( 'http://test.com', 'test' => 'stuff' )
+            p.forms << Arachni::Element::Form.new( 'http://test.com', 'test' => 'stuff' )
+            p.cookies << Arachni::Element::Cookie.new( 'http://test.com', 'test' => 'stuff' )
+            p.headers << Arachni::Element::Header.new( 'http://test.com', 'test' => 'stuff' )
+            p.elements.should == (p.links | p.forms | p.cookies | p.headers)
         end
     end
 

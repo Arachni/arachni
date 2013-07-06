@@ -1,4 +1,4 @@
-require_relative '../../spec_helper'
+require 'spec_helper'
 
 class AuditorTest
     include Arachni::Module::Auditor
@@ -47,7 +47,7 @@ describe Arachni::Module::Auditor do
         @opts = Arachni::Options.instance
         @opts.audit :links, :forms, :cookies, :headers
 
-        @opts.url = server_url_for( :auditor )
+        @opts.url = web_server_url_for( :auditor )
         @url      = @opts.url.dup
 
         @framework = Arachni::Framework.new( @opts )
@@ -372,6 +372,18 @@ describe Arachni::Module::Auditor do
             end
         end
 
+        context 'when the payloads are per platform' do
+            it 'assigns the platform of the payload to the issue' do
+                @auditor.load_page_from( @url + '/link' )
+                @auditor.audit( { unix: @seed }, substring: @seed )
+                @framework.http.run
+                @framework.modules.results.size.should == 1
+                issue = @framework.modules.results.first
+                issue.platform.should == :unix
+                issue.platform_type.should == :os
+            end
+        end
+
         context 'when called with opts' do
             describe :elements do
 
@@ -468,7 +480,7 @@ describe Arachni::Module::Auditor do
 
                         # audit until no more new elements appear
                         while page = pages.pop
-                            auditor = Arachni::Module::Base.new( page )
+                            auditor = Arachni::Module::Base.new( page, @framework )
                             auditor.audit( @seed )
                             # run audit requests
                             @framework.http.run
@@ -494,7 +506,7 @@ describe Arachni::Module::Auditor do
 
                         # audit until no more new elements appear
                         while page = pages.pop
-                            auditor = Arachni::Module::Base.new( page )
+                            auditor = Arachni::Module::Base.new( page, @framework )
                             auditor.audit( @seed, train: true )
                             # run audit requests
                             @framework.http.run
@@ -519,7 +531,7 @@ describe Arachni::Module::Auditor do
                         # feed the new pages/elements back to the queue
                         @framework.trainer.on_new_page { |p| updated_pages << p }
 
-                        auditor = Arachni::Module::Base.new( page )
+                        auditor = Arachni::Module::Base.new( page, @framework )
                         auditor.audit( @seed, train: false )
                         @framework.http.run
                         updated_pages.should be_empty

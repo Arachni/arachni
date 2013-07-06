@@ -39,6 +39,14 @@ class Issue
     # @return    [String]   The module that detected the issue.
     attr_accessor :mod_name
 
+    # @return    [Symbol]   Name of the vulnerable platform.
+    # @see Platform::Manager
+    attr_accessor :platform
+
+    # @return    [Symbol]   Type of the vulnerable platform.
+    # @see Platform::Manager
+    attr_accessor :platform_type
+
     # @return    [String]   The name of the vulnerable input.
     attr_accessor :var
 
@@ -185,6 +193,25 @@ class Issue
         fail ArgumentError, 'String cannot be blank.' if string.to_s.empty?
 
         (@remarks[author] ||= []) << string
+    end
+
+    # @return   [Boolean]
+    #   `true` if the issue was discovered by manipulating an input,
+    #   `false` otherwise.
+    #
+    # @see recon?
+    #
+    def audit?
+        !!@var
+    end
+
+    # @return   [Boolean]
+    #   `true` if the issue was discovered passively, `false` otherwise.
+    #
+    # @see audit?
+    #
+    def recon?
+        !audit?
     end
 
     # @see #regexp_match

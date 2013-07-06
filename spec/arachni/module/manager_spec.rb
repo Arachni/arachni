@@ -1,10 +1,8 @@
-require_relative '../../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Module::Manager do
 
     before( :all ) do
-        opts = Arachni::Options.instance
-        opts.dir['modules'] = spec_path + 'fixtures/modules/'
         @modules = Arachni::Framework.new.modules
 
         @page  = Arachni::Page.new

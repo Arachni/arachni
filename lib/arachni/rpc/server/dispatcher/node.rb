@@ -62,7 +62,7 @@ class Server::Dispatcher::Node
         @neighbours = Set.new
         @nodes_info_cache = []
 
-        if neighbour = @opts.neighbour
+        if (neighbour = @opts.neighbour)
             # add neighbour and announce him to everyone
             add_neighbour( neighbour, true )
 
@@ -85,6 +85,11 @@ class Server::Dispatcher::Node
         end
     end
 
+    # @return   [Boolean]   `true` if grid member, `false` otherwise.
+    def grid_member?
+        @neighbours.any?
+    end
+
     #
     # Adds a neighbour to the peer list.
     #
@@ -97,7 +102,7 @@ class Server::Dispatcher::Node
         return false if node_url == @url
         return false if @neighbours.include?( node_url )
 
-        print_status 'Adding neighbour: ' + node_url
+        print_status "Adding neighbour: #{node_url}"
 
         @neighbours << node_url
         log_updated_neighbours
@@ -117,7 +122,7 @@ class Server::Dispatcher::Node
     end
 
     def neighbours_with_info( &block )
-        fail "This method requires a block!" if !block_given?
+        fail 'This method requires a block!' if !block_given?
 
         @neighbours_cmp = ''
 

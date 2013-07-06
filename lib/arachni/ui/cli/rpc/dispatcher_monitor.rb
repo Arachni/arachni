@@ -24,6 +24,7 @@ require Options.dir['lib'] + 'ui/cli/utilities'
 
 module UI
 class CLI
+module RPC
 
 #
 # Provides an simplistic Dispatcher monitoring user interface.
@@ -36,7 +37,7 @@ class DispatcherMonitor
     include Output
     include Utilities
 
-    def initialize( opts )
+    def initialize( opts = Arachni::Options.instance )
         @opts = opts
 
         debug if @opts.debug
@@ -74,7 +75,11 @@ class DispatcherMonitor
         # trap interupts and exit cleanly when required
         trap( 'HUP' ) { exit }
         trap( 'INT' ) { exit }
+
+        run
     end
+
+    private
 
     def run
         print_line
@@ -98,8 +103,6 @@ class DispatcherMonitor
         end
 
     end
-
-    private
 
     def print_job_table( jobs )
         headings = [ 'Parent PID', 'PID', 'Port', 'Owner', 'Birthdate (Server-side)',
@@ -179,6 +182,7 @@ USAGE
 
 end
 
+end
 end
 end
 end

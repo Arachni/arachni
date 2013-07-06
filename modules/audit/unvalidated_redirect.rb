@@ -17,27 +17,29 @@
 #
 # Unvalidated redirect audit module.
 #
-# It audits links, forms and cookies, injects URLs and checks
-# the Location header field to determine whether the attack was successful.
-#
+# It audits links, forms and cookies, injects URLs and checks the `Location`
+# header field to determine whether the attack was successful.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.4
+# @version 0.1.5
 #
 # @see http://www.owasp.org/index.php/Top_10_2010-A10-Unvalidated_Redirects_and_Forwards
 #
 class Arachni::Modules::UnvalidatedRedirect < Arachni::Module::Base
 
-    def self.urls
-        @urls ||= ['www.arachni-boogie-woogie.com',
-                   'https://www.arachni-boogie-woogie.com',
-                   'http://www.arachni-boogie-woogie.com']
+    def self.payloads
+        @payloads ||= [
+            'www.arachni-boogie-woogie.com',
+            'https://www.arachni-boogie-woogie.com',
+            'http://www.arachni-boogie-woogie.com'
+        ]
     end
 
     def run
-        self.class.urls.each do |url|
-            audit( url ) { |res, opts| log( opts, res ) if self.class.urls.include?( res.location ) }
+        audit( self.class.payloads ) do |res, opts|
+            next if !self.class.payloads.include?( res.location )
+            log( opts, res )
         end
     end
 
@@ -48,7 +50,7 @@ class Arachni::Modules::UnvalidatedRedirect < Arachni::Module::Base
                 to determnine whether the attack was successful.},
             elements:    [Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.4',
+            version:     '0.1.5',
             references:  {
                 'OWASP Top 10 2010' => 'http://www.owasp.org/index.php/Top_10_2010-A10-Unvalidated_Redirects_and_Forwards'
             },

@@ -30,9 +30,11 @@ lib = Options.dir['lib']
 require lib + 'version'
 require lib + 'ruby'
 require lib + 'error'
-require lib + 'cache'
+require lib + 'support'
 require lib + 'utilities'
 require lib + 'uri'
+require lib + 'component/manager'
+require lib + 'platform'
 require lib + 'spider'
 require lib + 'parser'
 require lib + 'issue'
@@ -41,8 +43,6 @@ require lib + 'plugin'
 require lib + 'audit_store'
 require lib + 'http'
 require lib + 'report'
-require lib + 'database'
-require lib + 'component/manager'
 require lib + 'session'
 require lib + 'trainer'
 
@@ -226,6 +226,10 @@ class Framework
         print_line
         print_status "Auditing: [HTTP: #{page.code}] #{page.url}"
 
+        if page.platforms.any?
+            print_info "Identified as: #{page.platforms.to_a.join( ', ' )}"
+        end
+
         call_on_audit_page( page )
 
         @current_url = page.url.to_s
@@ -251,6 +255,13 @@ class Framework
         add_on_audit_page( &block )
     end
     alias :on_run_mods :on_audit_page
+
+    # @return   [Bool]
+    #   `true` if the {Options#link_count_limit} has been reached, `false`
+    #   otherwise.
+    def link_count_limit_reached?
+        @opts.link_count_limit_reached? @sitemap.size
+    end
 
     #
     # Returns the following framework stats:
@@ -433,7 +444,7 @@ class Framework
             @reports.clear
 
             if !@reports[name].has_outfile?
-                fail Component::Error::InvalidOptions,
+                fail Component::Options::Error::Invalid,
                      "Report '#{name}' cannot format the audit results as a String."
             end
 
@@ -442,7 +453,7 @@ class Framework
 
             IO.read( outfile )
         ensure
-            File.delete( outfile )
+            File.delete( outfile ) if outfile
             @reports.clear
             @reports.load loaded
         end
@@ -523,6 +534,18 @@ class Framework
     end
     alias :lsplug :list_plugins
 
+    # @return    [Array<Hash>]  Information about all available platforms.
+    def list_platforms
+        platforms = Platform::Manager.new
+        platforms.valid.inject({}) do |h, platform|
+            type = Platform::Manager::TYPES[platforms.find_type( platform )]
+            h[type] ||= {}
+            h[type][platform] = platforms.fullname( platform )
+            h
+        end
+    end
+    alias :lsplat :list_platforms
+
     # @return   [String]
     #   Status of the instance, possible values are (in order):
     #
@@ -557,7 +580,6 @@ class Framework
         @paused << caller
         true
     end
-    alias :pause! :pause
 
     # @return   [TrueClass]  Resumes the scan/audit.
     def resume
@@ -565,7 +587,6 @@ class Framework
         spider.resume
         true
     end
-    alias :resume! :resume
 
     # @return    [String]   Returns the version of the framework.
     def version
@@ -601,7 +622,6 @@ class Framework
 
         true
     end
-    alias :clean_up! :clean_up
 
     def reset_spider
         @spider = Spider.new( @opts )
@@ -643,6 +663,8 @@ class Framework
     # You should first update {Arachni::Options}.
     #
     def self.reset
+        UI::Output.reset_output_options
+        Platform::Manager.reset
         Module::Auditor.reset
         ElementFilter.reset
         Element::Capabilities::Auditable.reset
@@ -689,16 +711,16 @@ class Framework
             @opts.restrict_paths.each { |url| push_to_url_queue( url ) }
         else
             # initiates the crawl
-            spider.run( false ) do |response|
+            spider.run do |page|
                 @sitemap |= spider.sitemap
-                push_to_url_queue( url_sanitize( response.effective_url ) )
+                push_to_url_queue page.url
+
+                next if page.platforms.empty?
+                print_info "Identified as: #{page.platforms.to_a.join( ', ' )}"
             end
         end
 
-        @status = :auditing
         audit_queues
-
-        exception_jail { audit_queues }
     end
 
     #
@@ -706,6 +728,8 @@ class Framework
     #
     def audit_queues
         return if modules.empty?
+
+        @status = :auditing
 
         # goes through the URLs discovered by the spider, repeats the request
         # and parses the responses into page objects

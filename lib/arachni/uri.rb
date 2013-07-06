@@ -15,6 +15,7 @@
 =end
 
 require 'uri'
+require 'ipaddr'
 require 'addressable/uri'
 
 module Arachni
@@ -71,11 +72,11 @@ class URI
 
     CACHE = {
         parser:      ::URI::Parser.new,
-        ruby_parse:  Cache::RandomReplacement.new( CACHE_SIZES[:ruby_parse] ),
-        parse:       Cache::RandomReplacement.new( CACHE_SIZES[:parse] ),
-        cheap_parse: Cache::RandomReplacement.new( CACHE_SIZES[:cheap_parse] ),
-        normalize:   Cache::RandomReplacement.new( CACHE_SIZES[:normalize] ),
-        to_absolute: Cache::RandomReplacement.new( CACHE_SIZES[:to_absolute] )
+        ruby_parse:  Support::Cache::RandomReplacement.new( CACHE_SIZES[:ruby_parse] ),
+        parse:       Support::Cache::RandomReplacement.new( CACHE_SIZES[:parse] ),
+        cheap_parse: Support::Cache::RandomReplacement.new( CACHE_SIZES[:cheap_parse] ),
+        normalize:   Support::Cache::RandomReplacement.new( CACHE_SIZES[:normalize] ),
+        to_absolute: Support::Cache::RandomReplacement.new( CACHE_SIZES[:to_absolute] )
     }
 
     # @return [URI::Parser] cached URI parser
@@ -516,6 +517,19 @@ class URI
     end
 
     # @return   [String]
+    #   The URL up to its resource component (query, fragment, etc).
+    def without_query
+        to_s.split( '?', 2 ).first.to_s
+    end
+
+    # @return   [String]    The extension of the URI resource.
+    def resource_extension
+        resource_name = path.split( '/' ).last.to_s
+        return if !resource_name.include?( '.' )
+        resource_name.split( '.' ).last
+    end
+
+    # @return   [String]
     #   The URL up to its path component (no resource name, query, fragment, etc).
     def up_to_path
         uri_path = path.dup
@@ -531,11 +545,19 @@ class URI
 
     # @return [String]  domain_name.tld
     def domain
+        return host if ip_address?
+
         s = host.split( '.' )
         return s.first if s.size == 1
         return host if s.size == 2
 
         s[1..-1].join( '.' )
+    end
+
+    # @return   [Boolean]
+    #   `true` if the URI contains an IP address, `false` otherwise.
+    def ip_address?
+        !(IPAddr.new( host ) rescue nil).nil?
     end
 
     #
@@ -606,6 +628,14 @@ class URI
     # @return   [String]    URL
     def to_s
         @parsed_url.to_s
+    end
+
+    def hash
+        to_s.hash
+    end
+
+    def persistent_hash
+        to_s.persistent_hash
     end
 
     protected

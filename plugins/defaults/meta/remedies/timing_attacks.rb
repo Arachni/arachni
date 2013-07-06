@@ -73,8 +73,10 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
         @times.each_pair { |url, time| avg[url] = time / @counter[url] }
 
         inconclusive = framework.modules.issues.map.with_index do |issue, idx|
+            response_time = avg[ uri_parse( issue.url ).up_to_path ]
+
             next if !issue.tags || !issue.tags.includes_tags?( TAG ) ||
-                avg[ uri_parse( issue.url ).up_to_path ] < TIME_THRESHOLD
+                !response_time || response_time < TIME_THRESHOLD
 
             issue.add_remark :meta_analysis, REMARK
 
@@ -109,7 +111,7 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
                 Pages with high response times usually include heavy-duty processing
                 which makes them prime targets for Denial-of-Service attacks.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.4',
+            version:     '0.1.5',
             tags:        %w(anomaly timing attacks meta)
         }
     end

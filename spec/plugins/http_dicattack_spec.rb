@@ -1,12 +1,12 @@
-require_relative '../spec_helper'
+require 'spec_helper'
 
 describe name_from_filename do
     include_examples 'plugin'
 
     before( :all ) do
         options.plugins[name] = {
-            'username_list'  => spec_path + 'fixtures/usernames.txt',
-            'password_list'  => spec_path + 'fixtures/passwords.txt',
+            'username_list'  => fixtures_path + 'usernames.txt',
+            'password_list'  => fixtures_path + 'passwords.txt',
         }
     end
 
@@ -16,7 +16,7 @@ describe name_from_filename do
 
     context "when given the right params" do
         it 'locates the form and login successfully' do
-            options.url = server_url_for( name_from_filename )
+            options.url = web_server_url_for( name_from_filename )
             run
             results.should == { username: 'admin', password: 'pass' }
         end
@@ -24,7 +24,7 @@ describe name_from_filename do
 
     context "when being unable to login" do
         it 'logs nothing' do
-            options.url = server_url_for( "#{name_from_filename}_secure" )
+            options.url = web_server_url_for( "#{name_from_filename}_secure" )
             run
             results.should be_nil
         end
@@ -32,7 +32,7 @@ describe name_from_filename do
 
     context "when the page isn't protected" do
         it 'logs nothing' do
-            options.url = server_url_for( "#{name_from_filename}_unprotected" )
+            options.url = web_server_url_for( "#{name_from_filename}_unprotected" )
             run
             results.should be_nil
         end

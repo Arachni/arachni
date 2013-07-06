@@ -22,4 +22,4 @@ Arachni::Options.parse
 
 require Arachni::Options.dir['lib'] + 'ui/cli/rpc/dispatcher_monitor'
 
-Arachni::UI::CLI::DispatcherMonitor.new( Arachni::Options.instance ).run
+Arachni::UI::CLI::RPC::DispatcherMonitor.new

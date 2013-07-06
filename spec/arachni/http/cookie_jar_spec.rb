@@ -1,10 +1,10 @@
-require_relative '../../spec_helper'
+require 'spec_helper'
 
 describe Arachni::HTTP::CookieJar do
 
     before do
         @jar = Arachni::HTTP::CookieJar.new
-        @file = spec_path + '/fixtures/cookies.txt'
+        @file = fixtures_path + 'cookies.txt'
     end
 
     describe '.from_file' do
@@ -16,40 +16,13 @@ describe Arachni::HTTP::CookieJar do
         end
 
         context 'when the provided file does not exist' do
-            it 'raises an exception' do
+            it 'raises Arachni::HTTP::CookieJar::Error::CookieJarFileNotFound' do
                 trigger = proc { @jar.class.from_file( 'file' ) }
 
-                raised = false
-                begin
-                    trigger.call
-                rescue Arachni::Error
-                    raised = true
-                end
-                raised.should be_true
-
-                raised = false
-                begin
-                    trigger.call
-                rescue Arachni::HTTP::Error
-                    raised = true
-                end
-                raised.should be_true
-
-                raised = false
-                begin
-                    trigger.call
-                rescue Arachni::HTTP::CookieJar::Error
-                    raised = true
-                end
-                raised.should be_true
-
-                raised = false
-                begin
-                    trigger.call
-                rescue Arachni::HTTP::CookieJar::Error::CookieJarFileNotFound
-                    raised = true
-                end
-                raised.should be_true
+                expect { trigger.call }.to raise_error Arachni::Error
+                expect { trigger.call }.to raise_error Arachni::HTTP::Error
+                expect { trigger.call }.to raise_error Arachni::HTTP::CookieJar::Error
+                expect { trigger.call }.to raise_error Arachni::HTTP::CookieJar::Error::CookieJarFileNotFound
             end
         end
     end
@@ -69,14 +42,8 @@ describe Arachni::HTTP::CookieJar do
         end
 
         context 'when the provided file does not exist' do
-            it 'raises an exception' do
-                raised = false
-                begin
-                    j = @jar.class.from_file( 'file' )
-                rescue Arachni::HTTP::CookieJar::Error::CookieJarFileNotFound
-                    raised = true
-                end
-                raised.should be_true
+            it 'raises Arachni::HTTP::CookieJar::Error::CookieJarFileNotFound' do
+                expect { @jar.class.from_file( 'file' ) }.to raise_error Arachni::HTTP::CookieJar::Error::CookieJarFileNotFound
             end
         end
     end

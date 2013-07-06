@@ -1,9 +1,9 @@
-require_relative '../../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Report::Base do
     before( :all ) do
         opts = Arachni::Options.instance
-        opts.dir['reports'] = spec_path + 'fixtures/reports/base_spec'
+        opts.dir['reports'] = fixtures_path + 'reports/base_spec'
 
         @framework = Arachni::Framework.new( Arachni::Options.instance )
         @reports   = @framework.reports

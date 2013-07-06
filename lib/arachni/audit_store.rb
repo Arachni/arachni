@@ -94,7 +94,7 @@ class AuditStore
         opts.each { |k, v| self.instance_variable_set( '@' + k.to_s, v ) }
 
         @options = prepare_options( @options )
-        @issues  = sort( prepare_variations( @issues.deep_clone ) )
+        @issues  = self.class.sort( prepare_variations( @issues.deep_clone ) )
 
         @start_datetime  =  if @options['start_datetime']
             @options['start_datetime'].asctime
@@ -173,9 +173,7 @@ class AuditStore
         to_hash.hash
     end
 
-    private
-
-    def sort( issues )
+    def self.sort( issues )
         sorted = []
         issues.each do |issue|
             order = ORDER.rindex( issue.severity ) || ORDER.size
@@ -185,6 +183,7 @@ class AuditStore
         sorted.flatten.compact
     end
 
+    private
 
     #
     # Converts obj to hash

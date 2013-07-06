@@ -20,7 +20,8 @@
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 # @abstract
 #
-module Arachni::Element
+module Arachni
+module Element
 
 module Capabilities
 end
@@ -29,23 +30,21 @@ end
 lib = File.dirname( __FILE__ ) + '/capabilities/*.rb'
 Dir.glob( lib ).each { |f| require f }
 
+#
+# Base class for all element types.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @abstract
 class Base
     include Capabilities::Auditable
-    extend  Arachni::Utilities
+    extend  Utilities
 
-    #
-    # Relatively 'raw' (frozen) hash holding the element's HTML attributes, values, etc.
-    #
     # @return  [Hash]
-    #
+    #   'raw' (frozen) hash holding the element's HTML attributes, values, etc.
     attr_reader :raw
 
-    #
-    # Initialize the element.
-    #
     # @param    [String]  url     {#url}
     # @param    [Hash]    raw     {#raw}
-    #
     def initialize( url, raw = {} )
         @raw = raw.dup
         @raw.freeze
@@ -54,33 +53,31 @@ class Base
         @opts = {}
     end
 
-    #
-    # Must provide a string uniquely identifying self.
-    #
-    # @return  [String]
-    #
+    # @return   [Platform]
+    #   Applicable platforms for {#action} resource.
+    def platforms
+        Platform::Manager[@action]
+    end
+
+    # @return  [String] String uniquely identifying self.
+    # @abstract
     def id
         @raw.to_s
     end
 
-    #
-    # Must provide a simple hash representation of self
-    #
+    # @return   [Hash] Simple representation of self.
+    # @abstract
     def simple
         {}
     end
 
-    #
-    # Method for the element.
-    #
     # Should represent a method in {Arachni::Module::HTTP}.
     #
     # Ex. get, post, cookie, header
     #
     # @see Arachni::Module::HTTP
     #
-    # @return [String]
-    #
+    # @return [Symbol]  HTTP request method for the element.
     def method( *args )
         return super( *args ) if args.any?
 
@@ -94,13 +91,10 @@ class Base
         self.method
     end
 
-    #
-    # The url to which the element points and should be audited against.
-    #
-    # Ex. 'href' for links, 'action' for forms, etc.
+    # @note Ex. 'href' for links, 'action' for forms, etc.
     #
     # @return  [String]
-    #
+    #   URI to which the element points and should be audited against.
     def action
         @action.freeze
     end
@@ -112,11 +106,8 @@ class Base
         self.action
     end
 
-    #
-    # The URL of the page that owns the element.
-    #
     # @return  [String]
-    #
+    #   URL of the page that owns the element.
     def url
         @url.freeze
     end
@@ -128,9 +119,7 @@ class Base
         self.url
     end
 
-    #
-    # Must provide the element type, one of {Arachni::Module::Auditor::Element}.
-    #
+    # @return [String]  Element type.
     def type
         self.class.name.split( ':' ).last.downcase
     end
@@ -145,5 +134,6 @@ class Base
         new
     end
 
+end
 end
 end

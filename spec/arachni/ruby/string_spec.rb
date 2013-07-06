@@ -1,4 +1,4 @@
-require_relative '../../spec_helper'
+require 'spec_helper'
 
 describe String do
 
@@ -71,6 +71,23 @@ describe String do
             str.substring?( 'my' ).should be_true
             str.substring?( 'myt' ).should be_false
             str.substring?( 'my ' ).should be_true
+        end
+    end
+
+    describe '#persistent_hash' do
+        it 'returns an Integer' do
+            'test'.persistent_hash.should be_kind_of Integer
+        end
+
+        context 'when two strings are equal' do
+            it 'returns equal values' do
+                'test'.persistent_hash.should == 'test'.persistent_hash
+            end
+        end
+        context 'when two strings are not equal' do
+            it 'returns different values' do
+                'test'.persistent_hash.should_not == 'testa'.persistent_hash
+            end
         end
     end
 

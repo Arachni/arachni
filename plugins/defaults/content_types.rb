@@ -19,7 +19,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.4
+# @version 0.1.5
 #
 class Arachni::Plugins::ContentTypes < Arachni::Plugin::Base
 
@@ -29,7 +29,7 @@ class Arachni::Plugins::ContentTypes < Arachni::Plugin::Base
         @results = {}
         @exclude = Regexp.new( options['exclude'] )
 
-        @logged = Arachni::BloomFilter.new
+        @logged = Arachni::Support::LookUp::HashSet.new
     end
 
     def run
@@ -95,7 +95,7 @@ class Arachni::Plugins::ContentTypes < Arachni::Plugin::Base
                 It can help you categorize and identify publicly available file-types
                 which in turn can help you identify accidentally leaked files.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.4',
+            version:     '0.1.5',
             options:     [
                 Options::String.new( 'exclude',
                     [false, 'Exclude content-types that match this regular expression.', 'text']

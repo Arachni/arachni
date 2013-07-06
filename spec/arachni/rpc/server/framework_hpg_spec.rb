@@ -1,67 +1,24 @@
-require_relative '../../../spec_helper'
+require 'spec_helper'
 
-require Arachni::Options.instance.dir['lib'] + 'rpc/client/dispatcher'
-require Arachni::Options.instance.dir['lib'] + 'rpc/server/dispatcher'
-
-describe Arachni::RPC::Server::Framework do
+describe 'Arachni::RPC::Server::Framework' do
     before( :all ) do
         @opts = Arachni::Options.instance
         @opts.dir['modules'] = fixtures_path + '/taint_module/'
         @opts.audit_links = true
 
-        @dispatchers = []
-
-        @opts.pool_size = 1
-        @get_instance = proc do |opts|
-            opts ||= @opts
-            port = random_port
-            opts.rpc_port = port
-            exec_dispatcher( opts )
-
-            port2 =  random_port
-            opts.rpc_port = port2
-            opts.neighbour = "#{opts.rpc_address}:#{port}"
-            opts.pipe_id = 'blah'
-            exec_dispatcher( opts )
-
-            dispatcher = Arachni::RPC::Client::Dispatcher.new( opts,
-                "#{opts.rpc_address}:#{port}" )
-
-            inst_info = dispatcher.dispatch
-            inst = Arachni::RPC::Client::Instance.new( opts,
-                inst_info['url'], inst_info['token']
-            )
-            inst.opts.grid_mode = 'high_performance'
-            inst
-        end
-
-        @token = 'secret'
-        @get_simple_instance = proc do |opts|
-            opts ||= @opts
-            port = random_port
-            opts.rpc_port = port
-            fork_em { Arachni::RPC::Server::Instance.new( opts, @token ) }
-            sleep 1
-            Arachni::RPC::Client::Instance.new( opts,
-                "#{opts.rpc_address}:#{port}", @token
-            )
-        end
-
-        @instance = @get_instance.call
+        @instance  = instance_grid_spawn
         @framework = @instance.framework
-        @modules = @instance.modules
-        @plugins = @instance.plugins
+        @modules   = @instance.modules
+        @plugins   = @instance.plugins
 
-        @instance_clean = @get_instance.call
+        @instance_clean  = instance_grid_spawn
         @framework_clean = @instance_clean.framework
 
         @stat_keys = [
-            :requests, :responses, :time_out_count,
-            :time, :avg, :sitemap_size, :auditmap_size, :progress, :curr_res_time,
-            :curr_res_cnt, :curr_avg, :average_res_time, :max_concurrency,
-            :current_page, :eta,
+            :requests, :responses, :time_out_count, :time, :avg, :sitemap_size,
+            :auditmap_size, :progress, :curr_res_time, :curr_res_cnt, :curr_avg,
+            :average_res_time, :max_concurrency, :current_page, :eta
         ]
-
     end
 
     describe '#errors' do
@@ -90,7 +47,7 @@ describe Arachni::RPC::Server::Framework do
         end
         context 'when the scan is running' do
             it 'returns true' do
-                @instance.opts.url = server_url_for( :auditor )
+                @instance.opts.url = web_server_url_for( :auditor )
                 @modules.load( 'taint' )
                 @framework.run.should be_true
                 @framework.busy?.should be_true
@@ -107,14 +64,9 @@ describe Arachni::RPC::Server::Framework do
             @framework_clean.revision.should == Arachni::Framework::REVISION
         end
     end
-    describe '#high_performance?' do
-        it 'returns true' do
-            @framework_clean.high_performance?.should be_true
-        end
-    end
     describe '#master?' do
         it 'returns false' do
-            @framework_clean.high_performance?.should be_true
+            @framework_clean.master?.should be_true
         end
     end
     describe '#slave?' do
@@ -129,7 +81,7 @@ describe Arachni::RPC::Server::Framework do
     end
     describe '#set_as_master' do
         it 'sets the instance as the master' do
-            instance = @get_simple_instance.call
+            instance = instance_spawn
             instance.framework.master?.should be_false
             instance.framework.set_as_master
             instance.framework.master?.should be_true
@@ -137,26 +89,22 @@ describe Arachni::RPC::Server::Framework do
     end
     describe '#enslave' do
         it 'enslaves another instance and set itself as its master' do
-            master = @get_simple_instance.call
-            slave  = @get_simple_instance.call
+            master = instance_spawn
+            slave  = instance_spawn
 
             master.framework.master?.should be_false
-            master.framework.enslave( 'url' => slave.url, 'token' => @token )
+            master.framework.enslave(
+                'url'   => slave.url,
+                'token' => instance_token_for( slave )
+            )
             master.framework.master?.should be_true
-        end
-    end
-    describe '#output' do
-        it 'returns the instance\'s output messages' do
-            output = @framework_clean.output.first
-            output.keys.first.is_a?( Symbol ).should be_true
-            output.values.first.is_a?( String ).should be_true
         end
     end
     describe '#run' do
         context 'when Options#restrict_to_paths is set' do
             it 'fails with exception' do
-                instance = @get_instance.call
-                instance.opts.url = server_url_for( :framework_hpg )
+                instance = instance_grid_spawn
+                instance.opts.url = web_server_url_for( :framework_hpg )
                 instance.opts.restrict_paths = [instance.opts.url]
                 instance.modules.load( 'taint' )
 
@@ -172,7 +120,7 @@ describe Arachni::RPC::Server::Framework do
 
         it 'performs a scan' do
             instance = @instance_clean
-            instance.opts.url = server_url_for( :framework_hpg )
+            instance.opts.url = web_server_url_for( :framework_hpg )
             instance.modules.load( 'taint' )
             instance.framework.run.should be_true
             sleep( 1 ) while instance.framework.busy?
@@ -222,24 +170,19 @@ describe Arachni::RPC::Server::Framework do
         end
     end
     describe '#clean_up' do
-        it 'sets the framework state to finished, wait for plugins to finish and merge their results' do
-            instance = @get_instance.call
-            instance.opts.url = server_url_for( :framework_hpg )
+        it 'sets the framework state to finished, waits for plugins to finish and merges their results' do
+            instance = instance_grid_spawn
+            instance.opts.url = web_server_url_for( :framework_hpg )
             instance.modules.load( 'taint' )
             instance.plugins.load( { 'wait' => {}, 'distributable' => {} } )
             instance.framework.run.should be_true
             instance.framework.auditstore.plugins.should be_empty
             instance.framework.busy?.should be_true
-
-            sleep 1 while instance.framework.busy?
+            instance.framework.clean_up.should be_true
 
             instance_count = instance.framework.progress['instances'].size
-
-            instance.framework.clean_up
-
-            auditstore = instance.framework.auditstore
-
-            auditstore.issues.size.should == 500
+            auditstore     = instance.framework.auditstore
+            instance.service.shutdown
 
             results = auditstore.plugins
             results.should be_any
@@ -273,7 +216,7 @@ describe Arachni::RPC::Server::Framework do
                 data['busy'].nil?.should be_false
                 data['messages'].is_a?( Array ).should be_true
                 data['issues'].should be_any
-                data['instances'].size.should == 2
+                data['instances'].size.should == 3
                 data.should_not include 'errors'
 
                 keys = (keys | %w(current_page)).flatten.sort
@@ -286,27 +229,23 @@ describe Arachni::RPC::Server::Framework do
             describe :errors do
                 context 'when set to true' do
                     it 'includes all error messages' do
-                        @instance_clean.framework.
-                            progress( errors: true )['errors'].should be_empty
+                        instance = instance_grid_spawn
+                        instance.framework.progress( errors: true )['errors'].should be_empty
 
                         test = 'Test'
-                        @instance_clean.framework.error_test test
+                        instance.framework.error_test test
 
-                        @instance_clean.framework.
-                            progress( errors: true )['errors'].last.
-                            should end_with test
+                        instance.framework.progress( errors: true )['errors'].last.should end_with test
                     end
                 end
                 context 'when set to an Integer' do
                     it 'returns all logged errors after that line per Instance' do
-                        initial_errors = @instance_clean.framework.
-                            progress( errors: true )['errors']
+                        instance = instance_grid_spawn
 
-                        errors = @instance_clean.framework.
-                            progress( errors: 10 )['errors']
+                        100.times { instance.framework.error_test 'test' }
 
-                        # errors are per instance
-                        initial_errors.size.should == errors.size + 9
+                        (instance.framework.progress( errors: true )['errors'].size -
+                            instance.framework.progress( errors: 10 )['errors'].size).should == 10
                     end
                 end
             end
@@ -429,9 +368,9 @@ describe Arachni::RPC::Server::Framework do
             @instance_clean.framework.update_page_queue( [] ).should be_false
         end
     end
-    describe '#register_issues' do
+    describe '#update_issues' do
         it 'returns false' do
-            @instance_clean.framework.register_issues( [] ).should be_false
+            @instance_clean.framework.update_issues( [] ).should be_false
         end
     end
 end

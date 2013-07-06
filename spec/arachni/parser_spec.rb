@@ -1,10 +1,10 @@
-require_relative '../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Parser do
     before( :all ) do
         @utils = Arachni::Utilities
         @opts = Arachni::Options.instance
-        @opts.url = @utils.normalize_url( server_url_for( :parser ) )
+        @opts.url = @utils.normalize_url( web_server_url_for( :parser ) )
         @opts.audit_links = true
         @opts.audit_forms = true
         @opts.audit_cookies = true
@@ -79,6 +79,31 @@ describe Arachni::Parser do
             cookies.map{ |c| c.action }.uniq.should == [url]
         end
 
+        context 'when Options.no_fingerprint is' do
+            context false do
+                it 'performs platform fingerprinting' do
+                    Arachni::Options.no_fingerprinting = false
+
+                    response = Typhoeus::Response.new(
+                        effective_url: 'http://stuff.com/index.php'
+                    )
+                    parser = Arachni::Parser.new( response, @opts )
+                    parser.page.platforms.should be_any
+                end
+            end
+
+            context true do
+                it 'does not perform platform fingerprinting' do
+                    Arachni::Options.no_fingerprinting = true
+
+                    response = Typhoeus::Response.new(
+                        effective_url: 'http://stuff.com/index2.php'
+                    )
+                    parser = Arachni::Parser.new( response, @opts )
+                    parser.page.platforms.should be_empty
+                end
+            end
+        end
     end
 
     describe '#text?' do
@@ -382,127 +407,6 @@ describe Arachni::Parser do
     describe '#link_vars' do
         it 'returns a hash of link query inputs' do
             @parser.link_vars( @url ).should == { "query_var_input" => "query_var_val" }
-        end
-    end
-
-    describe '#extract_domain' do
-        it 'returns the domain name from a URI object' do
-            @parser.extract_domain( URI( @url ) ).should == 'localhost'
-        end
-    end
-
-    describe '#path_too_deep?' do
-        before { @parser.opts.depth_limit = 3 }
-
-        context 'when the path is above the threshold' do
-            it 'returns true' do
-                @parser.path_too_deep?( @opts.url.to_s + '/test/test/test//test/test' )
-                .should be_true
-
-                @parser.skip?( @opts.url.to_s + '/test/test/test//test/test' )
-                .should be_true
-            end
-        end
-        context 'when the path is bellow the threshold' do
-            it 'returns false' do
-                @parser.path_too_deep?( @opts.url.to_s + '/test/test/test' )
-                .should be_false
-
-                @parser.skip?( @opts.url.to_s + '/test/test/test' )
-                .should be_false
-            end
-        end
-    end
-
-    describe '#path_in_domain?' do
-        before { @parser.url = 'http://bar.com' }
-
-        context 'when follow subdomains is disabled' do
-            before { @parser.opts.follow_subdomains = false }
-
-            context 'with a URL with a different domain' do
-                it 'returns false' do
-                    @parser.path_in_domain?( 'http://google.com' ).should be_false
-                    @parser.skip?( 'http://google.com' ).should be_true
-                end
-            end
-
-            context 'with a URL with the same domain' do
-                it 'returns true' do
-                    @parser.path_in_domain?( 'http://bar.com/test/' ).should be_true
-                    @parser.skip?( 'http://bar.com/test/' ).should be_false
-                end
-            end
-
-
-            context 'with a URL with a different subdomain' do
-                it 'returns false' do
-                    @parser.path_in_domain?( 'http://test.bar.com/test' ).should be_false
-                    @parser.skip?( 'http://test.bar.com/test' ).should be_true
-                end
-            end
-        end
-
-        context 'when follow subdomains is disabled' do
-            before { @parser.opts.follow_subdomains = true }
-
-            context 'with a URL with a different domain' do
-                it 'returns false' do
-                    @parser.path_in_domain?( 'http://google.com' ).should be_false
-                    @parser.skip?( 'http://google.com' ).should be_true
-                end
-            end
-
-            context 'with a URL with the same domain' do
-                it 'returns true' do
-                    @parser.path_in_domain?( 'http://bar.com/test/' ).should be_true
-                    @parser.skip?( 'http://bar.com/test/' ).should be_false
-                end
-            end
-
-
-            context 'with a URL with a different subdomain' do
-                it 'returns true' do
-                    @parser.path_in_domain?( 'http://test.bar.com/test' ).should be_true
-                    @parser.skip?( 'http://test.bar.com/test' ).should be_false
-                end
-            end
-        end
-    end
-
-    describe '#exclude_path?' do
-        before { @parser.opts.exclude << /skip_me/ }
-
-        context 'when a path matches an exclude rule' do
-            it 'returns true' do
-                @parser.exclude_path?( 'skip_me' ).should be_true
-                @parser.skip?( 'http://bar.com/skip_me' ).should be_true
-            end
-        end
-
-        context 'when a path does not match an exclude rule' do
-            it 'returns false' do
-                @parser.exclude_path?( 'not_me' ).should be_false
-                @parser.skip?( 'http://bar.com/not_me' ).should be_false
-            end
-        end
-    end
-
-    describe '#include_path?' do
-        before { @parser.opts.include << /include_me/ }
-
-        context 'when a path matches an include rule' do
-            it 'returns true' do
-                @parser.include_path?( 'include_me' ).should be_true
-                @parser.skip?( 'http://bar.com/include_me' ).should be_false
-            end
-        end
-
-        context 'when a path does not match an include rule' do
-            it 'returns false' do
-                @parser.include_path?( 'not_me' ).should be_false
-                @parser.skip?( 'http://bar.com/not_me' ).should be_true
-            end
         end
     end
 

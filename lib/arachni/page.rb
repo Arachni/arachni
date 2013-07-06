@@ -21,77 +21,59 @@ module Arachni
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-#
 class Page
 
-    #
-    # @return    [String]    url of the page
-    #
+    # @return    [String]    URL of the page
     attr_reader :url
 
-    #
-    # @return    [Fixnum]    the HTTP response code
-    #
+    # @return    [Fixnum]    HTTP response code.
     attr_reader :code
 
-    #
-    # @return    [Hash]    url variables
-    #
+    # @return    [Hash]    URL query parameters.
     attr_reader :query_vars
 
-    #
-    # @return    [String]    the HTML response
-    #
+    # @return    [String]    HTTP response body.
     attr_reader :body
 
-    #
-    # Request headers
-    #
-    # @return    [Array<Element::Header>]
-    #
+    # @return    [Array<Element::Header>]   HTTP request headers.
     attr_reader :headers
 
-    #
-    # @return    [Hash]
-    #
+    # @return    [Hash] HTTP request headers.
     attr_reader :request_headers
 
-    #
-    # @return    [Hash]
-    #
+    # @return    [Hash] HTTP response headers.
     attr_reader :response_headers
 
-    # @return    [Array<String>]
+    # @return    [Array<String>]    Paths contained in this page.
     attr_reader :paths
 
-    #
     # @see Parser#links
-    #
     # @return    [Array<Element::Link>]
-    #
     attr_accessor :links
 
-    #
     # @see Parser#forms
-    #
     # @return    [Array<Element::Form>]
-    #
     attr_accessor :forms
 
-    #
     # @see Parser#cookies
-    #
     # @return    [Array<Element::Cookie>]
-    #
     attr_accessor :cookies
 
-    #
-    # Cookies extracted from the supplied cookiejar
-    #
     # @return    [Array<Element::Cookie>]
-    #
+    #   Cookies extracted from the supplied cookie-jar.
     attr_accessor :cookiejar
 
+    # @param    [String]    url URL to fetch.
+    # @param    [Hash]  opts
+    # @option  opts    [Integer]   :precision  (1)
+    #   How many times to request the page and examine changes between requests.
+    #   Used tp identify nonce tokens etc.
+    # @option  opts    [Hash]  :http   HTTP {HTTP#get request} options.
+    # @param    [Block] block
+    #   Block to which to pass the page object. If given, the request will be
+    #   performed asynchronously. If no block is given, the page will be fetched
+    #   synchronously and be returned by this method.
+    # @return   [Page]
     def self.from_url( url, opts = {}, &block )
         responses = []
 
@@ -110,11 +92,14 @@ class Page
         end
     end
 
+    # @param    [Typhoeus::Response]    res HTTP response to parse.
+    # @return   [Page]
     def self.from_response( res, opts = Options )
         Parser.new( res, opts ).page
     end
     class << self; alias :from_http_response :from_response end
 
+    # @param    [Hash]  opts    Hash from which to set instance attributes.
     def initialize( opts = {} )
         opts.each { |k, v| instance_variable_set( "@#{k}".to_sym, try_dup( v ) ) }
 
@@ -134,19 +119,28 @@ class Page
         @body ||= ''
     end
 
-    #
+    # @return   [Platform] Applicable platforms for the page.
+    def platforms
+        Platform::Manager[@url]
+    end
+
+    # @return   [Array] All page elements.
+    def elements
+        @links | @forms | @cookies | @headers
+    end
+
     # @return    [String]    the request method that returned the page
-    #
     def method( *args )
         return super( *args ) if args.any?
-
         @method
     end
 
+    # @see #body
     def html
         @body
     end
 
+    # @return   [Nokogiri::HTML]    Parsed {#body HTML} document.
     def document
         @document ||= Nokogiri::HTML( @body )
     end
@@ -163,15 +157,19 @@ class Page
         h.each { |k, v| instance_variable_set( k, v ) }
     end
 
+    # @return   [Boolean]
+    #   `true` if the body of the page is text-base, `false` otherwise.
     def text?
         !!@text
     end
 
+    # @return   [String]    Title of the page.
     def title
         document.css( 'title' ).first.text rescue nil
     end
 
-    def to_hash
+    # @return   [Hash]  Converts the page data to a hash.
+    def to_h
         instance_variables.reduce({}) do |h, iv|
             if iv != :@document
                 h[iv.to_s.gsub( '@', '').to_sym] = try_dup( instance_variable_get( iv ) )
@@ -179,6 +177,7 @@ class Page
             h
         end
     end
+    alias :to_hash :to_h
 
     def hash
         ((links.map { |e| e.hash } + forms.map { |e| e.hash } +

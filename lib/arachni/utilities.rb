@@ -15,7 +15,7 @@
 =end
 
 require 'addressable/uri'
-require 'digest/sha1'
+require 'digest/sha2'
 require 'cgi'
 
 module Arachni
@@ -248,7 +248,7 @@ module Utilities
     #
     # @see Options#redundant?
     #
-    def redundant?( url, &block )
+    def redundant_path?( url, &block )
         Options.redundant?( url, &block )
     end
 
@@ -284,7 +284,7 @@ module Utilities
     # * {#path_too_deep?}
     # * {#path_in_domain?}
     #
-    # @note Does **not** call {#redundant?}.
+    # @note Does **not** call {#redundant_path?}.
     #
     # @param    [Arachni::URI, ::URI, Hash, String] path
     #
@@ -384,8 +384,8 @@ module Utilities
 
     def generate_token
         secret = ''
-        1000.times { secret << rand( 1000 ).to_s }
-        Digest::MD5.hexdigest( secret )
+        1000.times { secret << rand( 9999 ).to_s }
+        Digest::SHA2.hexdigest( secret )
     end
 
     #
@@ -404,40 +404,6 @@ module Utilities
         rescue
             false
         end
-    end
-
-    #
-    # Recursively converts a Hash's keys to strings.
-    #
-    # @param    [Hash]  hash
-    # @param    [Bool]  recursive
-    #
-    # @return   [Hash]
-    #
-    def hash_keys_to_str( hash, recursive = true )
-        nh = {}
-        hash.each do |k, v|
-            nh[k.to_s] = v
-            nh[k.to_s] = hash_keys_to_str( v ) if recursive && v.is_a?( Hash )
-        end
-        nh
-    end
-
-    #
-    # Recursively converts a Hash's keys to symbols.
-    #
-    # @param    [Hash]  hash
-    # @param    [Bool]  recursive
-    #
-    # @return   [Hash]
-    #
-    def hash_keys_to_sym( hash, recursive = true )
-        nh = {}
-        hash.each do |k, v|
-            nh[k.to_sym] = v
-            nh[k.to_sym] = hash_keys_to_sym( v ) if recursive && v.is_a?( Hash )
-        end
-        nh
     end
 
     #

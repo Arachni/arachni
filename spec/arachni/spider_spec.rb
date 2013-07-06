@@ -1,9 +1,9 @@
-require_relative '../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Spider do
     before( :all ) do
         @opts = Arachni::Options.instance
-        @opts.url = server_url_for :spider
+        @opts.url = web_server_url_for :spider
         @url = @opts.url.to_s
     end
 
@@ -14,7 +14,7 @@ describe Arachni::Spider do
     end
 
     it 'supports HTTPS' do
-        @opts.url = (server_url_for :spider_https).gsub( 'http', 'https' )
+        @opts.url = (web_server_url_for :spider_https).gsub( 'http', 'https' )
         spider = Arachni::Spider.new
 
         spider.run.size.should == 3
@@ -222,6 +222,17 @@ describe Arachni::Spider do
             end
         end
         context 'when the link-count-limit option has been set' do
+            context 'and the limit has been reached' do
+                it 'immediately returns' do
+                    @opts.link_count_limit = 1
+                    spider = Arachni::Spider.new
+                    spider.run.should == spider.sitemap
+                    spider.sitemap.should == [@url]
+
+                    spider.run.should be_false
+                end
+            end
+
             it 'follows only a <link-count-limit> amount of paths' do
                 @opts.link_count_limit = 1
                 spider = Arachni::Spider.new
@@ -381,7 +392,7 @@ describe Arachni::Spider do
 
             s = Arachni::Spider.new
             paths = [@url + 'a_pushed_path', @url + 'another_pushed_path']
-            s.push( paths )
+            s.push( paths ).should be_true
             (s.paths & paths).sort.should == paths.sort
             s.run
             (s.paths & paths).should be_empty
@@ -396,10 +407,23 @@ describe Arachni::Spider do
             nwp = Arachni::Module::Utilities.to_absolute( wp )
             np = Arachni::Module::Utilities.to_absolute( p )
 
-            s.push( p )
+            s.push( p ).should be_true
             s.run
             s.fancy_sitemap[np].should == 200
             s.fancy_sitemap[nwp].should == 200
+        end
+
+        context 'when the link-count-limit option has been set' do
+            context 'and the limit has been reached' do
+                it 'immediately returns' do
+                    @opts.link_count_limit = 1
+                    spider = Arachni::Spider.new
+                    spider.run.should == spider.sitemap
+                    spider.sitemap.should == [@url]
+
+                    spider.push( Arachni::Module::Utilities.to_absolute( 'test' ) ).should be_false
+                end
+            end
         end
 
         #context 'when called after the crawl has finished' do
@@ -445,7 +469,7 @@ describe Arachni::Spider do
         end
         context 'when running' do
             it 'returns false' do
-                @opts.url = server_url_for( :auditor ) + '/sleep'
+                @opts.url = web_server_url_for( :auditor ) + '/sleep'
                 s = Arachni::Spider.new
                 Thread.new{ s.run }
                 sleep 1

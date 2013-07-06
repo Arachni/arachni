@@ -47,7 +47,7 @@ module Utilities
         issue_cnt = issues.count
         issues.each.with_index do |issue, i|
             input = issue.var ? " input `#{issue.var}`" : ''
-            meth  = issue.method ? " using #{issue.method}" : ''
+            meth  = !issue.method.to_s.empty? ? " using #{issue.method}" : ''
             cnt   = "#{i + 1} |".rjust( issue_cnt.to_s.size + 2 )
 
             print_ok( interceptor.call(  "#{cnt} #{issue.name} at #{issue.url} in" +
@@ -57,6 +57,28 @@ module Utilities
         end
 
         print_line( interceptor.call, unmute )
+    end
+
+    #
+    # Outputs all available modules and their info.
+    #
+    def lsplat( platforms )
+        print_line
+        print_line
+        print_info 'Available platforms:'
+        print_line
+
+        i = 0
+        platforms.each do |type, platforms|
+            print_status "#{type}"
+
+            platforms.each do |shortname, fullname|
+                print_info "#{shortname}:\t\t#{fullname}"
+            end
+
+            print_line
+        end
+
     end
 
     #
@@ -304,9 +326,9 @@ module Utilities
                                 Specify custom headers to be included in the HTTP requests.
                                 (Can be used multiple times.)
 
-    --authed-by=<string>        Who authorized the scan, include name and e-mail address.
+    --authed-by=<string>        E-mail address of the person who authorized the scan.
                                   (It'll make it easier on the sys-admins during log reviews.)
-                                  (Will be appended to the user-agent string.)
+                                  (Will be used as a value for the 'From' HTTP header.)
 
     --login-check-url=<url>     A URL used to verify that the scanner is still logged in to the web application.
                                   (Requires 'login-check-pattern'.)
@@ -417,8 +439,8 @@ module Utilities
                                   (Can be used multiple times.)
 
 
-    -m <modname,modname..>
-    --modules=<modname,modname..>
+    -m <modname,modname,...>
+    --modules=<modname,modname,...>
 
                                 Comma separated list of modules to load.
                                   (Modules are referenced by their filename without the '.rb' extension, use '--lsmod' to list all.
@@ -464,6 +486,19 @@ module Utilities
                                   (Plugins are referenced by their filename without the '.rb' extension, use '--lsplug' to list all.)
                                   (Can be used multiple times.)
 
+    Platforms ----------------------
+
+    --lsplat                    List available platforms.
+
+    --no-fingerprinting         Disable platform fingerprinting.
+                                  (By default, the system will try to identify the deployed server-side platforms automatically
+                                   in order to avoid sending irrelevant payloads.)
+
+    --platforms=<platform,platform,...>
+
+                                Comma separated list of platforms (by shortname) to audit.
+                                  (The given platforms will be used *in addition* to fingerprinting. In order to restrict the audit to
+                                   these platforms enable the '--no-fingerprinting' option.)
 
     Proxy --------------------------
 

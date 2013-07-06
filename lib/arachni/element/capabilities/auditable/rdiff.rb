@@ -16,8 +16,6 @@
 
 module Arachni
 
-require Options.dir['lib'] + 'bloom_filter'
-
 module Element::Capabilities
 
 #
@@ -34,7 +32,7 @@ module Auditable::RDiff
     def self.included( mod )
         # the rdiff attack performs it own redundancy checks so we need this to
         # keep track of audited elements
-        @@rdiff_audited ||= BloomFilter.new
+        @@rdiff_audited ||= Support::LookUp::HashSet.new
     end
 
     RDIFF_OPTIONS =  {
@@ -89,19 +87,29 @@ module Auditable::RDiff
     #   webapp behavior when interpreted).
     # @param    [Block]     block
     #   To be used for custom analysis of responses; will be passed the following:
+    #
     #     * injected string
     #     * audited element
     #     * default response body
     #     * boolean response
     #     * fault injection response body
     #
+    # @return   [Bool]
+    #   `true` if the audit was scheduled successfully, `false` otherwise (like
+    #   if the resource is out of scope or already audited).
+    #
     def rdiff_analysis( opts = {}, &block )
+        if skip_path? self.action
+            print_debug "Element's action matches skip rule, bailing out."
+            return false
+        end
+
         opts = self.class::MUTATION_OPTIONS.merge( RDIFF_OPTIONS.merge( opts ) )
 
         # don't continue if there's a missing value
         auditable.values.each { |val| return if !val || val.empty? }
 
-        return if rdiff_audited?
+        return false if rdiff_audited?
         rdiff_audited
 
         responses = {
@@ -220,6 +228,8 @@ module Auditable::RDiff
                 end
             end
         }
+
+        true
     end
 
     private

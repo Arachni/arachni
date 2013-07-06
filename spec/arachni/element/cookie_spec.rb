@@ -1,10 +1,10 @@
-require_relative '../../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Element::Cookie do
-    it_should_behave_like 'auditable', url: server_url_for( :cookie ), single_input: true
+    it_should_behave_like 'auditable', url: web_server_url_for( :cookie ), single_input: true
 
     before( :all ) do
-        @url = server_url_for( :cookie ) + '/'
+        @url = web_server_url_for( :cookie ) + '/'
         @raw = { 'mycookie' => 'myvalue' }
         @c = Arachni::Element::Cookie.new( @url, @raw )
         @http = Arachni::HTTP.instance
@@ -216,7 +216,7 @@ describe Arachni::Element::Cookie do
 
     describe '.from_file' do
         it 'parses a Netscape cookiejar file into an array of cookies' do
-            cookies =  Arachni::Element::Cookie.from_file( @url, spec_path + 'fixtures/cookies.txt' )
+            cookies =  Arachni::Element::Cookie.from_file( @url, fixtures_path + 'cookies.txt' )
             cookies.size.should == 4
 
             cookie = cookies.shift
@@ -363,11 +363,25 @@ describe Arachni::Element::Cookie do
             c1.name.should == 'SomeCookie'
             c1.value.should == 'MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA=='
 
-            sc3 = "coo%40ki+e2=blah+val2%40; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Path=/; Domain=.foo.com; HttpOnly"
+            sc3 = "coo%40ki+e2=blah+val2%40; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Path=/stuff; Domain=.foo.com; HttpOnly"
             cookies = Arachni::Element::Cookie.from_set_cookie( 'http://test.com', sc3 )
             cookies.size.should == 1
-            cookies.first.name.should == 'coo@ki e2'
-            cookies.first.value.should == 'blah val2@'
+            cookie = cookies.first
+            cookie.name.should == 'coo@ki e2'
+            cookie.value.should == 'blah val2@'
+            cookie.path.should == '/stuff'
+        end
+
+        context 'when there is no path' do
+            it 'reverts to \'/\'' do
+                sc3 = "coo%40ki+e2=blah+val2%40; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Domain=.foo.com; HttpOnly"
+                cookies = Arachni::Element::Cookie.from_set_cookie( 'http://test.com/stuff', sc3 )
+                cookies.size.should == 1
+                cookie = cookies.first
+                cookie.name.should == 'coo@ki e2'
+                cookie.value.should == 'blah val2@'
+                cookie.path.should == '/'
+            end
         end
     end
 

@@ -1,7 +1,5 @@
-require_relative '../../../../spec_helper'
-
-require Arachni::Options.instance.dir['lib'] + 'rpc/client/dispatcher'
-require Arachni::Options.instance.dir['lib'] + 'rpc/server/dispatcher'
+require 'spec_helper'
+require "#{Arachni::Options.dir['lib']}/rpc/server/dispatcher"
 
 class Node < Arachni::RPC::Server::Dispatcher::Node
 
@@ -28,7 +26,7 @@ class Node < Arachni::RPC::Server::Dispatcher::Node
     end
 
     def shutdown
-        kill( Process.pid )
+        process_kill Process.pid
     end
 
     def connect_to_peer( url )
@@ -44,16 +42,40 @@ end
 describe Arachni::RPC::Server::Dispatcher::Node do
     before( :all ) do
         @opts = Arachni::Options.instance
+
         @get_node = proc do |c_port|
             opts = @opts
-            port = c_port || random_port
+            port = c_port || available_port
             opts.rpc_port = port
-            fork_em { Node.new( opts ) }
+            process_fork_em do
+                Node.new( opts )
+            end
             sleep 1
             Node.connect_to_peer( "#{opts.rpc_address}:#{port}", opts )
         end
 
         @node = @get_node.call
+    end
+
+    describe '#grid_member?' do
+        context 'when the dispatcher is a grid member' do
+            it 'should return true' do
+                n = @get_node.call
+
+                @opts.neighbour = n.url
+                c = @get_node.call
+                @opts.neighbour = nil
+                sleep 4
+
+                c.grid_member?.should be_true
+            end
+        end
+
+        context 'when the dispatcher is not a grid member' do
+            it 'should return false' do
+                @node.grid_member?.should be_false
+            end
+        end
     end
 
     context 'when a previously unreachable neighbour comes back to life' do
@@ -68,7 +90,7 @@ describe Arachni::RPC::Server::Dispatcher::Node do
         it 'gets re-added to the neighbours list' do
             n = @get_node.call
 
-            port = random_port
+            port = available_port
             n.add_neighbour( 'localhost:' + port.to_s )
 
             sleep 4

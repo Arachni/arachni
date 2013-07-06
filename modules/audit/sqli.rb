@@ -15,11 +15,11 @@
 =end
 
 #
-# SQL Injection audit module
+# SQL Injection audit module.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.6
+# @version 0.1.7
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://unixwiz.net/techtips/sql-injection.html
@@ -37,14 +37,14 @@ class Arachni::Modules::SQLInjection < Arachni::Module::Base
         @ignore_patterns ||= read_file( 'regexp_ignore.txt' )
     end
 
-    # Prepares the string that will hopefully cause the webapp
-    # to output SQL error messages.
-    def self.variations
-        @variations ||= [ '\'`--', ')' ]
+    # Prepares the payloads that will hopefully cause the webapp to output SQL
+    # error messages if included as part of an SQL query.
+    def self.payloads
+        @payloads ||= [ '\'`--', ')' ]
     end
 
-    def self.opts
-        @opts ||= {
+    def self.options
+        @options ||= {
             format:     [Format::APPEND],
             regexp:     error_patterns,
             ignore:     ignore_patterns,
@@ -53,7 +53,7 @@ class Arachni::Modules::SQLInjection < Arachni::Module::Base
     end
 
     def run
-        self.class.variations.each { |str| audit( str, self.class.opts ) }
+        audit self.class.payloads, self.class.options
     end
 
     def self.info
@@ -62,7 +62,7 @@ class Arachni::Modules::SQLInjection < Arachni::Module::Base
             description: %q{SQL injection module, uses known SQL DB errors to identify vulnerabilities.},
             elements:    [Element::LINK, Element::FORM, Element::COOKIE, Element::HEADER],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.6',
+            version:     '0.1.7',
             references:  {
                 'UnixWiz'    => 'http://unixwiz.net/techtips/sql-injection.html',
                 'Wikipedia'  => 'http://en.wikipedia.org/wiki/SQL_injection',

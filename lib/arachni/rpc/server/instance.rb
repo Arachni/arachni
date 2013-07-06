@@ -143,13 +143,13 @@ class Instance
     # @param    [String]    token   Authentication token.
     #
     def initialize( opts, token )
-        banner
-
         @opts   = opts
         @token  = token
 
-        @server = Base.new( @opts, token )
+        @framework      = Server::Framework.new( Options.instance )
+        @active_options = Server::ActiveOptions.new( @framework )
 
+        @server = Base.new( @opts, token )
         @server.logger.level = @opts.datastore[:log_level] if @opts.datastore[:log_level]
 
         @opts.datastore[:token] = token
@@ -164,14 +164,18 @@ class Instance
 
         set_error_logfile "#{@opts.dir['logs']}/Instance - #{Process.pid}-#{@opts.rpc_port}.error.log"
 
-        set_handlers
+        set_handlers( @server )
 
         # trap interrupts and exit cleanly when required
         %w(QUIT INT).each do |signal|
-            trap( signal ){ shutdown } if Signal.list.has_key?( signal )
+            trap( signal ){ shutdown if !@opts.datastore[:do_not_trap] } if Signal.list.has_key?( signal )
         end
 
-        run
+        @consumed_pids = []
+
+        ::EM.run do
+            run
+        end
     end
 
     # @return   [true]
@@ -183,14 +187,24 @@ class Instance
     #   `true` if the scan is initializing or running, `false` otherwise.
     #   If a scan is started by {#scan} then this method should be used
     #   instead of {Framework#busy?}.
-    def busy?
-        @scan_initializing ? true : @framework.busy?
+    def busy?( &block )
+        if @scan_initializing
+            block.call( true ) if block_given?
+            return true
+        end
+
+        @framework.busy?( &block )
     end
 
     # @param (see Arachni::RPC::Server::Framework#errors)
     # @return (see Arachni::RPC::Server::Framework#errors)
     def errors( starting_line = 0, &block )
         @framework.errors( starting_line, &block )
+    end
+
+    # @return (see Arachni::Framework#list_platforms)
+    def list_platforms
+        @framework.list_platforms
     end
 
     # @return (see Arachni::Framework#list_modules)
@@ -293,7 +307,7 @@ class Instance
     end
 
     #
-    # Simplified version of {Framework#progress}.
+    # Simplified version of {Framework::MultiInstance#progress}.
     #
     # # Recommended usage
     #
@@ -389,7 +403,8 @@ class Instance
         without = parse_progress_opts( options, :without )
 
         @framework.progress( as_hash:   !with.include?( :native_issues ),
-                             issues:    with.include?( :native_issues ) || with.include?( :issues ),
+                             issues:    with.include?( :native_issues ) ||
+                                            with.include?( :issues ),
                              stats:     !without.include?( :stats ),
                              slaves:    with.include?( :instances ),
                              messages:  false,
@@ -461,6 +476,15 @@ class Instance
     #               'check'  => 'MY ACCOUNT'
     #           },
     #       }
+    #
+    # @option opts [String, Symbol, Array<String, Symbol>] :platforms ([])
+    #   Initialize the fingerprinter with the given platforms. The fingerprinter
+    #   cannot identify database servers so specifying the remote DB backend will
+    #   greatly enhance performance and reduce bandwidth consumption.
+    # @option opts [Integer] :no_fingerprinting (false)
+    #   Disable platform fingerprinting and include all payloads in the audit.
+    #   Use this option in addition to the `:platforms` one to restrict the
+    #   audit payloads to explicitly specified platforms.
     # @option opts [Integer] :link_count_limit (nil)
     #   Limit the amount of pages to be crawled and audited.
     # @option opts [Integer] :depth_limit (nil)
@@ -525,57 +549,87 @@ class Instance
     # @option opts [String] :user_agent ('Arachni/v<version>')
     #   User agent to use.
     # @option opts [String] :authed_by (nil)
-    #   The person who authorized the scan.
+    #   The e-mail address of the person who authorized the scan.
     #
-    #       John Doe <john.doe@bigscanners.com>
+    #       john.doe@bigscanners.com
     #
-    # @option opts [Array<Hash>]  :slaves   **(Experimental)**
-    #   Info of Instances to {Framework#enslave enslave}.
+    # @option opts [Array<Hash>]  :slaves
+    #   Info of Instances to {Framework::Master#enslave enslave}.
     #
     #       [
     #           { url: 'address:port', token: 's3cr3t' },
     #           { url: 'anotheraddress:port', token: '3v3nm0r3s3cr3t' }
     #       ]
     #
-    # @option opts [Bool]  :grid    (false) **(Experimental)**
-    #   Utilise the Dispatcher Grid to obtain slave instances for a
-    #   high-performance distributed scan.
-    # @option opts [Integer]  :spawns   (0) **(Experimental)**
-    #   The amount of slaves to spawn.
-    # @option opts [Array<Page>]  :pages    ([])    **(Experimental)**
-    #   Extra pages to audit.
-    # @option opts [Array<String>]  :elements   ([])    **(Experimental)**
-    #   Elements to which to restrict the audit.
+    # @option opts [Bool]  :grid    (false)
+    #   Uses the Dispatcher Grid to obtain slave instances for a multi-Instance
+    #   scan.
     #
-    #   <em>Using elements IDs as returned by {Element::Capabilities::Auditable#scope_audit_id}.</em>
+    #   If set to `true`, it serves as a shorthand for:
+    #
+    #       grid_mode: :balance
+    #
+    # @option opts [String, Symbol]  :grid_mode    (nil)
+    #   Grid mode to use, available modes are:
+    #
+    #   * `nil` -- No grid.
+    #   * `:balance` -- Slave Instances will be provided by the least burdened
+    #       grid members to keep the overall Grid workload even across all Dispatchers.
+    #   * `:aggregate` -- Same as `:balance` but with high-level line-aggregation.
+    #       Will only request Instances from Grid members with different Pipe-IDs.
+    # @option opts [Integer]  :spawns   (0)
+    #   The amount of slaves to spawn. The behavior of this option changes
+    #   depending on the `grid_mode` setting:
+    #
+    #   * `nil` -- All slave Instances will be spawned by this Instance directly,
+    #       and thus reside in the same machine. This has the added benefit of
+    #       using UNIX-domain sockets for inter-process communication and avoiding
+    #       the overhead of TCP/IP.
+    #   * `:balance` -- Slaves will be provided by the least burdened Grid Dispatchers.
+    #   * `:aggregate` -- Slaves will be provided by Grid Dispatchers with unique
+    #       Pipe-IDs and the value of this option will be treated as a possible
+    #       maximum rather than a hard setting. Actual spawn count will be determined
+    #       by Dispatcher availability and the size of the workload.
     #
     def scan( opts = {}, &block )
         # If the instance isn't clean bail out now.
-        if @scan_initializing || @framework.busy?
+        if busy? || @called
             block.call false
             return false
         end
 
-        # Normalize this sucker to have symbols as keys.
-        opts = hash_keys_to_sym( opts, false )
+        # Normalize this sucker to have symbols as keys -- but not recursively.
+        opts = opts.symbolize_keys( false )
 
         slaves      = opts[:slaves] || []
         spawn_count = opts[:spawns].to_i
 
-        if opts[:grid] && spawn_count <= 0
+        if opts[:platforms]
+            begin
+                Platform::Manager.new( [opts[:platforms]].flatten.compact )
+            rescue => e
+                fail ArgumentError, e.to_s
+            end
+        end
+
+        if opts[:grid_mode]
+            @framework.opts.grid_mode = opts[:grid_mode]
+        end
+
+        if (opts[:grid] || opts[:grid_mode]) && spawn_count <= 0
             fail ArgumentError,
                  'Option \'spawns\' must be greater than 1 for Grid scans.'
         end
 
-        if (opts[:grid] || spawn_count > 0) && [opts[:restrict_paths]].flatten.compact.any?
+        if ((opts[:grid] || opts[:grid_mode]) || spawn_count > 0) && [opts[:restrict_paths]].flatten.compact.any?
             fail ArgumentError,
-                 'Option \'restrict_paths\' is not supported when in High-Performance mode.'
+                 'Option \'restrict_paths\' is not supported when in multi-Instance mode.'
         end
 
         # There may be follow-up/retry calls by the client in cases of network
         # errors (after the request has reached us) so we need to keep minimal
         # track of state in order to bail out on subsequent calls.
-        @scan_initializing = true
+        @called = @scan_initializing = true
 
         # Plugins option needs to be a hash...
         if opts[:plugins] && opts[:plugins].is_a?( Array )
@@ -588,43 +642,39 @@ class Instance
             fail ArgumentError, 'Option \'url\' is mandatory.'
         end
 
-        if spawn_count.to_i > 0
-            %w(link_count_limit http_req_limit).each do |name|
-                next if !(v = @active_options.send( name ))
-                @active_options.send( "#{name}=", v / (spawn_count + 1) )
+        # Undocumented option, used internally to distribute workload and knowledge
+        # for multi-Instance scans.
+        if opts[:multi]
+            @framework.update_page_queue( opts[:multi][:pages] || [] )
+            @framework.restrict_to_elements( opts[:multi][:elements] || [] )
+
+            if Options.fingerprint?
+                Platform::Manager.update_light( opts[:multi][:platforms] || {} )
             end
         end
-
-        @framework.update_page_queue( opts[:pages] || [] )
-        @framework.restrict_to_elements( opts[:elements] || [] )
 
         opts[:modules] ||= opts[:mods]
         @framework.modules.load opts[:modules] if opts[:modules]
         @framework.plugins.load opts[:plugins] if opts[:plugins]
 
-        # If the Dispatchers are in a Grid config but the user has not requested
-        # a Grid scan force the framework to ignore the Grid and work with
-        # the instances we give it.
-        @framework.ignore_grid if has_dispatcher? && !opts[:grid]
-
         # Starts the scan after all necessary options have been set.
         after = proc { block.call @framework.run; @scan_initializing = false }
 
-        if opts[:grid]
-            #
+        if @framework.opts.grid?
             # If a Grid scan has been selected then just set us as the master
             # and set the spawn count as max slaves.
             #
-            # The Framework and the Grid will sort out the rest...
-            #
+            # The Framework will sort out the rest...
             @framework.set_as_master
             @framework.opts.max_slaves = spawn_count
 
             # Rock n' roll!
             after.call
         else
-            # Handles each spawn, enslaving it for a high-performance distributed scan.
-            each  = proc { |slave, iter| @framework.enslave( slave ){ iter.next } }
+            # Handles each spawn, enslaving it for a multi-Instance scan.
+            each  = proc do |slave, iter|
+                @framework.enslave( slave ){ iter.next }
+            end
 
             spawn( spawn_count ) do |spawns|
                 # Add our spawns to the slaves list which was passed as an option.
@@ -640,22 +690,27 @@ class Instance
     end
 
     # Makes the server go bye-bye...Lights out!
-    def shutdown
+    def shutdown( &block )
         print_status 'Shutting down...'
 
-        t = []
-        @framework.instance_eval do
-            @instances.each do |instance|
-                # Don't know why but this works better than EM's stuff
-                t << Thread.new { connect_to_instance( instance ).service.shutdown! }
+        ::EM.defer do
+            t = []
+            @framework.instance_eval do
+                next if !has_slaves?
+                @instances.each do |instance|
+                    # Don't know why but this works better than EM's stuff
+                    t << Thread.new { connect_to_instance( instance ).service.shutdown }
+                end
             end
-        end
-        t.join
+            t.join
 
-        @server.shutdown
+            @server.shutdown
+
+            block.call true if block_given?
+        end
+
         true
     end
-    alias :shutdown! :shutdown
 
     # @param (see Arachni::RPC::Server::Framework#auditstore)
     # @return (see Arachni::RPC::Server::Framework#auditstore)
@@ -666,8 +721,12 @@ class Instance
     end
 
     # @private
-    def error_test( str )
-        print_error str.to_s
+    def error_test( str, &block )
+        @framework.error_test( str, &block )
+    end
+
+    def consumed_pids
+        @consumed_pids | [Process.pid]
     end
 
     private
@@ -682,7 +741,7 @@ class Instance
                             when String, Symbol
                                 parsed[q.to_sym] = nil
                             when Hash
-                                parsed.merge!( hash_keys_to_sym( q ) )
+                                parsed.merge!( q.symbolize_keys )
                         end
                     end
 
@@ -690,7 +749,7 @@ class Instance
                     parsed[w.to_sym] = nil
 
                 when Hash
-                    parsed.merge!( hash_keys_to_sym( w ) )
+                    parsed.merge!( w.symbolize_keys )
             end
         end
 
@@ -700,9 +759,9 @@ class Instance
     #
     # Provides `num` Instances.
     #
-    # If this Instance has a Dispatcher, all Instances will be requested
-    # from it. Otherwise, new Instance processes will be directly spawned
-    # and immediately detached.
+    # New Instance processes will be spawned and immediately detached.
+    # Spawns will listen on a UNIX socket and the master will expose itself
+    # over a UNIX socket as well so that IPC won't have to go over TCP/IP.
     #
     # @param    [Integer]   num Amount of Instances to return.
     #
@@ -716,29 +775,32 @@ class Instance
 
         q = ::EM::Queue.new
 
-        if has_dispatcher?
+        # Before spawning slaves, expose our API over a UNIX socket via
+        # which they should talk to us.
+        expose_over_unix_socket do
             num.times do
-                dispatcher.dispatch( @framework.self_url ) do |instance|
-                    q << instance
-                end
-            end
-        else
-            num.times do
-                port  = available_port
                 token = generate_token
 
-                Process.detach ::EM.fork_reactor {
-                    # make sure we start with a clean env (namepsace, opts, etc)
+                pid = fork {
+                    # Make sure we start with a clean env (namepsace, opts, etc).
                     Framework.reset
 
-                    Options.rpc_port = port
+                    # All Instances will be on the same host so use UNIX
+                    # domain sockets to avoid TCP/IP overhead.
+                    Options.rpc_address = nil
+                    Options.rpc_port    = nil
+                    Options.rpc_socket = "/tmp/arachni-instance-slave-#{Process.pid}"
+
                     Server::Instance.new( Options.instance, token )
                 }
 
-                instance_info = { 'url' => "#{Options.rpc_address}:#{port}",
+                Process.detach pid
+                @consumed_pids << pid
+
+                instance_info = { 'url' => "/tmp/arachni-instance-slave-#{pid}",
                                   'token' => token }
 
-                wait_till_alive( instance_info ) { q << instance_info }
+                wait_till_alive( instance_info['url'] ) { q << instance_info }
             end
         end
 
@@ -751,27 +813,16 @@ class Instance
         end
     end
 
-    def wait_till_alive( instance_info, &block )
-        opts = ::OpenStruct.new
-
-        # if after 100 retries we still haven't managed to get through give up
-        opts.max_retries = 100
-        opts.ssl_ca      = @opts.ssl_ca,
-        opts.ssl_pkey    = @opts.node_ssl_pkey || @opts.ssl_pkey,
-        opts.ssl_cert    = @opts.node_ssl_cert || @opts.ssl_cert
-
-        Client::Instance.new(
-            opts, instance_info['url'], instance_info['token']
-        ).service.alive? do |alive|
-            if alive.rpc_exception?
-                raise alive
-            else
-                block.call alive
-            end
+    def wait_till_alive( socket, &block )
+        ::EM.defer do
+            # We're using UNIX sockets as URLs so wait till the Instance
+            # has created its socket before proceeding.
+            sleep 0.1 while !File.exist?( socket )
+            block.call true
         end
     end
 
-    # Starts the HTTPS server and the RPC service.
+    # Starts  RPC service.
     def run
         print_status 'Starting the server...'
         @server.run
@@ -797,22 +848,49 @@ class Instance
         puts
     end
 
-    # Prepares all the RPC handlers.
-    def set_handlers
-        @server.add_async_check do |method|
-            # methods that expect a block are async
-            method.parameters.flatten.include?( :block )
+    # Exposes self over an UNIX socket.
+    #
+    # @param    [Block] block
+    #   Block to call once the operation has completed.
+    def expose_over_unix_socket( &block )
+        # If it's already exposed over a UNIX socket then there's nothing to
+        # be done.
+        if Options.rpc_socket
+            block.call true
+            return
         end
 
-        @framework      = Server::Framework.new( Options.instance )
-        @active_options = Server::ActiveOptions.new( @framework )
+        Options.rpc_socket = "/tmp/arachni-instance-master-#{Process.pid}"
 
-        @server.add_handler( 'service',   self )
-        @server.add_handler( 'framework', @framework )
-        @server.add_handler( "opts",      @active_options )
-        @server.add_handler( 'spider',    @framework.spider )
-        @server.add_handler( 'modules',   @framework.modules )
-        @server.add_handler( 'plugins',   @framework.plugins )
+        ::EM.defer do
+            unix = Base.new( @opts, @token )
+            set_handlers( unix )
+
+            ::EM.defer do
+                unix.run
+            end
+
+            sleep 0.1 while !File.exist?( Options.rpc_socket )
+            block.call true
+        end
+
+        true
+    end
+
+    # @param    [Base]  server
+    #   Prepares all the RPC handlers for the given `server`.
+    def set_handlers( server )
+        server.add_async_check do |method|
+            # methods that expect a block are async
+            method.parameters.flatten.include? :block
+        end
+
+        server.add_handler( 'service',   self )
+        server.add_handler( 'framework', @framework )
+        server.add_handler( 'opts',      @active_options )
+        server.add_handler( 'spider',    @framework.spider )
+        server.add_handler( 'modules',   @framework.modules )
+        server.add_handler( 'plugins',   @framework.plugins )
     end
 
 end

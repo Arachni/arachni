@@ -1,4 +1,4 @@
-require_relative '../../spec_helper'
+require 'spec_helper'
 
 class ObservableTest
     include Arachni::Mixins::Observable
@@ -54,11 +54,9 @@ describe Arachni::Mixins::Observable do
         res2.should == true
     end
 
-    it 'raises NoMethodError on invalid method name' do
-        begin
-            @obs.blah
-        rescue Exception => e
-            e.class.should == NoMethodError
+    context 'on invalid method name' do
+        it 'raises NoMethodError' do
+            expect { @obs.blah }.to raise_error NoMethodError
         end
     end
 

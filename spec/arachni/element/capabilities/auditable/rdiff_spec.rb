@@ -1,10 +1,10 @@
-require_relative '../../../../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Element::Capabilities::Auditable::RDiff do
 
     before :all do
-        @url     = server_url_for( :rdiff )
-        @auditor = Auditor.new
+        Arachni::Options.url = @url = web_server_url_for( :rdiff )
+        @auditor = Auditor.new( nil, Arachni::Framework.new )
     end
 
     describe '#rdiff_analysis' do
@@ -15,6 +15,13 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
             }
             @params = { 'rdiff' => 'blah' }
             issues.clear
+        end
+
+        context 'when the element action matches a skip rule' do
+            it 'returns false' do
+                auditable = Arachni::Element::Link.new( 'http://stuff.com/', @params )
+                auditable.rdiff_analysis( @opts ).should be_false
+            end
         end
 
         context 'when response behavior suggests a vuln' do
@@ -38,6 +45,7 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
                 auditable.rdiff_analysis( @opts )
                 @auditor.http.run
                 @auditor.http.run
+
                 issues.should be_empty
             end
         end

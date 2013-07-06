@@ -1,7 +1,8 @@
-require_relative '../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Options do
     before( :each ) do
+        ENV['ARACHNI_FRAMEWORK_LOGDIR'] = nil
         @opts = Arachni::Options.instance.reset
         @utils = Arachni::Module::Utilities
     end
@@ -11,6 +12,128 @@ describe Arachni::Options do
         Arachni::Options.url.should_not == url
         Arachni::Options.url = url
         Arachni::Options.url.should == url
+    end
+
+    describe "#dir['logs']" do
+        context 'when the ARACHNI_FRAMEWORK_LOGDIR environment variable' do
+            context 'has been set' do
+                it 'returns its value' do
+                    ENV['ARACHNI_FRAMEWORK_LOGDIR'] = 'test'
+                    described_class.reset
+                    described_class.dir['logs'].should == 'test/'
+                end
+            end
+            context 'has not been set' do
+                it 'returns the default location' do
+                    described_class.dir['logs'].should == "#{described_class.dir['root']}logs/"
+                end
+            end
+        end
+    end
+
+    describe '#grid?' do
+        describe 'when the option has been enabled' do
+            context 'via #grid=' do
+                it 'returns true' do
+                    Arachni::Options.grid = true
+                    Arachni::Options.grid?.should be_true
+                end
+            end
+
+            context 'via #grid_mode=' do
+                it 'returns true' do
+                    Arachni::Options.grid_mode = :balance
+                    Arachni::Options.grid?.should be_true
+                end
+            end
+        end
+        describe 'when the option has been disabled' do
+            context 'via #grid=' do
+                it 'returns false' do
+                    Arachni::Options.grid = false
+                    Arachni::Options.grid?.should be_false
+                end
+            end
+
+            context 'via #grid_mode=' do
+                it 'returns false' do
+                    Arachni::Options.grid_mode = false
+                    Arachni::Options.grid?.should be_false
+                end
+            end
+        end
+        describe 'by default' do
+            it 'returns false' do
+                Arachni::Options.grid?.should be_false
+            end
+        end
+    end
+
+    describe '#grid=' do
+        context true do
+            it 'is a shorthand for #grid_mode = :balance' do
+                Arachni::Options.grid = true
+                Arachni::Options.grid_mode.should == :balance
+            end
+        end
+    end
+
+    describe '#grid_mode=' do
+        context 'when given' do
+            context String do
+                it 'converts it to Symbol and sets the option' do
+                    Arachni::Options.grid_mode = 'balance'
+                    Arachni::Options.grid_mode.should == :balance
+                end
+            end
+
+            context Symbol do
+                it 'sets the option' do
+                    Arachni::Options.grid_mode = :aggregate
+                    Arachni::Options.grid_mode.should == :aggregate
+                end
+            end
+
+            context 'an invalid option' do
+                it 'raises ArgumentError' do
+                    expect { Arachni::Options.grid_mode = :stuff }.to raise_error ArgumentError
+                end
+            end
+        end
+    end
+
+    describe '#grid_aggregate?' do
+        context 'when in :aggregate mode' do
+            it 'returns true' do
+                Arachni::Options.grid_aggregate?.should be_false
+                Arachni::Options.grid_mode = :aggregate
+                Arachni::Options.grid_aggregate?.should be_true
+            end
+        end
+        context 'when in :balance mode' do
+            it 'returns false' do
+                Arachni::Options.grid_aggregate?.should be_false
+                Arachni::Options.grid_mode = :balance
+                Arachni::Options.grid_aggregate?.should be_false
+            end
+        end
+    end
+
+    describe '#grid_balance?' do
+        context 'when in :balance mode' do
+            it 'returns true' do
+                Arachni::Options.grid_balance?.should be_false
+                Arachni::Options.grid_mode = :balance
+                Arachni::Options.grid_balance?.should be_true
+            end
+        end
+        context 'when in :balance mode' do
+            it 'returns false' do
+                Arachni::Options.grid_balance?.should be_false
+                Arachni::Options.grid_mode = :aggregate
+                Arachni::Options.grid_balance?.should be_false
+            end
+        end
     end
 
     describe '#no_protocol_for_url' do
@@ -44,6 +167,20 @@ describe Arachni::Options do
             Arachni::Options.no_protocol_for_url
             Arachni::Options.url = 'stuff:80'
             Arachni::Options.url.should == 'stuff:80'
+        end
+    end
+
+    describe '#min_pages_per_instance=' do
+        it 'forces its argument to an Integer' do
+            Arachni::Options.min_pages_per_instance = '55'
+            Arachni::Options.min_pages_per_instance.should == 55
+        end
+    end
+
+    describe '#max_slaves=' do
+        it 'forces its argument to an Integer' do
+            Arachni::Options.max_slaves = '56'
+            Arachni::Options.max_slaves.should == 56
         end
     end
 
@@ -115,6 +252,53 @@ describe Arachni::Options do
         describe 'by default' do
             it 'returns false' do
                 Arachni::Options.exclude_binaries?.should be_false
+            end
+        end
+    end
+
+    describe '#do_not_fingerprint' do
+        it 'sets #no_fingerprinting to true' do
+            Arachni::Options.fingerprint?.should be_true
+            Arachni::Options.no_fingerprinting.should be_false
+
+            Arachni::Options.do_not_fingerprint
+            Arachni::Options.fingerprint?.should be_false
+            Arachni::Options.no_fingerprinting.should be_true
+        end
+    end
+
+    describe '#fingerprint' do
+        it 'sets #no_fingerprinting to false' do
+            Arachni::Options.do_not_fingerprint
+            Arachni::Options.fingerprint?.should be_false
+            Arachni::Options.no_fingerprinting.should be_true
+
+            Arachni::Options.fingerprint
+
+            Arachni::Options.fingerprint?.should be_true
+            Arachni::Options.no_fingerprinting.should be_false
+        end
+    end
+
+    describe '#fingerprint?' do
+        context 'by default' do
+            it 'returns true' do
+                Arachni::Options.fingerprint?.should be_true
+            end
+        end
+        context 'when crawling is enabled' do
+            it 'returns true' do
+                Arachni::Options.do_not_fingerprint
+                Arachni::Options.fingerprint?.should be_false
+                Arachni::Options.fingerprint
+                Arachni::Options.fingerprint?.should be_true
+            end
+        end
+        context 'when crawling is disabled' do
+            it 'returns false' do
+                Arachni::Options.fingerprint?.should be_true
+                Arachni::Options.do_not_fingerprint
+                Arachni::Options.fingerprint?.should be_false
             end
         end
     end

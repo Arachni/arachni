@@ -1,4 +1,4 @@
-require_relative '../spec_helper'
+require 'spec_helper'
 
 class TrainerMockFramework
     attr_reader :pages
@@ -19,6 +19,10 @@ class TrainerMockFramework
         @opts.url = page.url if page
 
         @sitemap = []
+    end
+
+    def link_count_limit_reached?
+        @opts.link_count_limit_reached? @sitemap.size
     end
 
     def run
@@ -46,7 +50,7 @@ end
 describe Arachni::Trainer do
 
     before( :all ) do
-        @url = server_url_for( :trainer )
+        @url = web_server_url_for( :trainer )
         Arachni::Options.audit :links, :forms, :cookies, :headers
     end
 

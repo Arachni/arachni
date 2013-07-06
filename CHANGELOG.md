@@ -1,5 +1,186 @@
 # ChangeLog
 
+## Version 0.4.3 _(July 06, 2013)_
+
+- RPC protocol
+    - YAML serialization switched from `Syck` to `Psych` (the current Ruby default).
+- Executables:
+    - Added `arachni_multi`
+        - Spawns and controls an `RPC::Server::Instance` process in order to
+            provide access to RPC-only features such as multi-Instance scans
+            **without** requiring a Dispatcher.
+- CLI
+    - Added platform fingerprinting options:
+        - `--lsplat` -- Lists all available platforms.
+        - `--no-fingerprinting` -- Disables platform fingerprinting.
+        - `--platforms` -- Allows for user specified platforms.
+    - RPC client
+        - Added the `--grid-mode` option to allow the user to choose between:
+            - Load-balancing -- Slaves will be provided by the least burdened
+                Grid Dispatchers.
+            - Load balancing **with** line-aggregation -- In addition to balancing,
+                slaves will all be from Dispatchers with unique bandwidth Pipe-IDs
+                to result in application-level line-aggregation.
+- Added modular `Page` fingeprinting, via `fingerprinter` components, identifying:
+    - Operating systems
+        - BSD
+        - Linux
+        - Unix
+        - Windows
+        - Solaris
+    - Web servers
+        - Apache
+        - IIS
+        - Nginx
+        - Tomcat
+        - Jetty
+    - Programming languages
+        - PHP
+        - ASP
+        - ASPX
+        - JSP
+        - Python
+        - Ruby
+    - Frameworks
+        - Rack
+- `HTTP`
+    - `Accept-Encoding` set to `gzip, deflate` by default.
+- `Parser`
+    - Now fingerprints the pages it returns.
+- `Framework`
+    - Removed the following deprecated aliases:
+        - `:resume!` -- Only use `resume` from now on.
+        - `:pause!` -- Only use `pause` from now on.
+        - `:clean_up!` -- Only use `clean_up` from now on.
+    - Added `#list_platforms`.
+- `Spider`
+    - Optimized path de-duplication.
+    - Paths-list synchronized using a `Mutex` to prevent issues when running as
+        part of a multi-Instance operation.
+- `RPC::Server::Instance`
+    - Removed the following deprecated aliases:
+        - `:shutdown!` -- Only use `shutdown` from now on.
+    - Added preliminary support for UNIX sockets.
+    - Added `#list_platforms`.
+- `Module::Auditor`
+    - Having access to the `Framework` is now required and guaranteed.
+- `Element::Capabilities::Auditable`
+    - Out of scope elements are now visible in order to allow access to 3rd
+        party resources like Single Sign-On services.
+    - All audit methods return `false` when the element is out of the scan's scope.
+    - `#anonymous_auditor` now instantiates a `Framework`.
+    - Added `#skip_like` method to be passed blocks deciding what elements should
+        not be audited.
+    - `#audit`
+        - Updated to support the following payload types:
+            - `Array` -- Array of payloads to be injected.
+            - `Hash` -- Array of payloads to be injected per platform.
+- Grid
+    - `RPC::Server::Dispatcher#dispatch`
+        - When the Dispatcher is a Grid member, it returns an Instance from the least
+            burdened Grid member by default, thus allowing for easy load-balancing.
+- Multi-Instance scans
+    - Instances now communicate via UNIX domain sockets when all of them are on
+        the same host, to avoid TCP/IP overhead for IPC.
+    - `RPC::Server::Instance#scan`
+        - Added `grid_mode` option:
+            - `:balance` -- Slaves will be provided by the least burdened
+                Grid Dispatchers.
+            - `:aggregate` -- In addition to balancing, slaves will all be from
+                Dispatchers with unique bandwidth Pipe-IDs to result in
+                application-level line-aggregation.
+    - `RPC::Server::Framework`
+        - No longer performs a multi-Instance scan when its Dispatcher is a Grid
+            member. The `grid` or `grid_mode` options need to be set explicitly,
+            along with a `spawns` option value of 1 and higher.
+        - General code cleanup.
+            - Multi-Instance code moved under the `RPC::Server::Framework::MultiInstance`
+                module which concentrates multi-Instance code and pulls in the
+                following modules:
+                - `RPC::Server::Framework::Slave` -- Holds API and utilities for
+                    slave instances.
+                - `RPC::Server::Framework::Master` -- Holds API and utilities for
+                    master instances.
+        - Master seed crawl runs in its own thread to avoid blocking during the
+            initial seeding process.
+        - Removed the concept of issue summaries -- were used for lightweight
+            transmission of issue data for real-time feedback. Instead, full issues
+            are being buffered and flushed to the master after each page is audited.
+    - `RPC::Server::Framework::Distributor#distribute_elements`
+        - Optimized to handle large data sets.
+    - `RPC::Server::Spider`
+        - Updated buffering strategy to reduce RPC calls.
+- Cleaned up and removed `@@` vars from:
+    - `Module::Manager`
+    - `Module::KeyFiller`
+    - `Plugin::Manager`
+    - `Parser`
+- Moved supporting classes under `Arachni::Support`.
+    - `Support::Cache` classes now store `#hash` values of keys to preserve space.
+    - Added:
+        - `Support::LookUp` namespace to hold look-up optimized data structures with:
+            - `Support::LookUp::HashSet` -- Stores hashed items in a `Set`.
+            - `Support::LookUp::Moolb` -- Reverse of a Bloom-filter.
+        - `Support::Queue::Disk` -- Disk Queue with in-memory buffer.
+- Added:
+    - `Arachni::Platform` -- Holds resources relevant to platform identification,
+        storage, and filtering.
+        - `Fingerprinters` -- Namespace under which all fingerprinter
+            components reside.
+        - `List` - List structure holding applicable platforms for a given WWW resource.
+        - `Manager` - Collection of `Lists`s for easy management of platforms of
+            different types.
+    - `IO#tail` -- Returns a specified amount of lines from the bottom of a file.
+    - Process helpers for RPC Instance and Dispatcher servers.
+        - `Arachni::Processes::Dispatchers` -- Spawns and kills Dispatchers.
+        - `Arachni::Processes::Instances` -- Spawns and kills Instances.
+        - `Arachni::Processes::Manager` -- Forks and kills processes.
+- RSpec tests
+    - Major cleanup, using the aforementioned process helpers to remove duplicate code.
+    - Moved supporting components under `spec/support/`.
+- Modules
+    - Audit
+        - `code_injection`
+            - Removed `Ruby` payload since it wasn't applicable.
+            - Updated to categorize payloads by platform.
+        - `code_injection_timing`
+            - Code cleanup.
+            - Removed `payloads.txt`, payloads are now in the module.
+            - Updated to categorize payloads by platform.
+        - `os_cmd_injection`
+            - Code cleanup.
+            - Removed `payloads.txt`, payloads are now in the module.
+            - Updated to categorize payloads by platform.
+        - `os_cmd_injection_timing`
+            - Code cleanup.
+            - Removed `payloads.txt`, payloads are now in the module.
+            - Updated to categorize payloads by platform.
+        - `path_traversal`
+            - Code cleanup.
+            - Updated to categorize payloads by platform.
+        - `sqli_blind_timing`
+            - Code cleanup.
+            - Split `payloads.txt`, to individual files per platform.
+            - Updated to categorize payloads by platform.
+    - Recon
+        - `html_objects`
+            - Updated description.
+- Plugins
+    - Proxy
+        - Out-of-scope pages no longer return a _403 Forbidden_ error but are
+            instead loaded, though ignored.
+        - Fixed bug causing the `Content-Length` header to sometimes hold an
+            incorrect value.
+        - Fixed bug causing the control panel to be injected in a loop.
+        - Added support for `PUT` and `DELETE` methods.
+        - Supports exporting of discovered vectors in YAML format suitable for
+            use with the `vector_feed` plugin.
+        - Fixed bug with `POST` requests resulting in timed-out connections due
+            to forwarding a `Content-Length` request header to the origin server.
+    - AutoLogin
+        - Updated to allow access to out-of-scope resources like Single Sign-On
+            services.
+
 ## Version 0.4.2 _(April 26, 2013)_
 
 - Options

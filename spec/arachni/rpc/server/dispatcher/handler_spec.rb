@@ -1,33 +1,16 @@
-require_relative '../../../../spec_helper'
+require 'spec_helper'
 
-require Arachni::Options.instance.dir['lib'] + 'rpc/server/dispatcher'
+require "#{Arachni::Options.dir['lib']}/rpc/server/dispatcher"
 
 describe Arachni::RPC::Server::Dispatcher::Handler do
     before( :all ) do
-        @opts = Arachni::Options.instance
+        Arachni::Options.dir['rpcd_handlers'] = "#{fixtures_path}rpcd_handlers/"
 
-        @opts.pool_size = 1
-        @opts.rpc_port = random_port
-
-        FileUtils.cp( "#{fixtures_path}rpcd_handlers/echo.rb",
-                      Arachni::Options.dir['rpcd_handlers'] )
-
-        fork_em {
-            Arachni::RPC::Server::Dispatcher.new( @opts )
-        }
-        sleep 1
-
-        @url = "#{@opts.rpc_address}:#{@opts.rpc_port}"
-        @dispatcher = Arachni::RPC::Client::Dispatcher.new( @opts, @url )
+        @dispatcher = dispatcher_light_spawn
 
         @instance_count = 5
         @instance_count.times { @dispatcher.dispatch }
         sleep 1
-    end
-
-    after( :all ) do
-        FileUtils.rm( "#{Arachni::Options.dir['rpcd_handlers']}echo.rb" )
-        @dispatcher.stats['consumed_pids'].each { |p| pids << p }
     end
 
     describe '#dispatcher' do

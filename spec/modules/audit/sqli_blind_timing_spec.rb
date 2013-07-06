@@ -1,4 +1,4 @@
-require_relative '../../spec_helper'
+require 'spec_helper'
 
 describe name_from_filename do
     include_examples 'module'
@@ -13,9 +13,9 @@ describe name_from_filename do
 
     def issue_count_per_target
         {
-            mysql:      120,
-            postgresql: 56,
-            mssql:      18
+            mysql:      180,
+            postgresql: 84,
+            mssql:      27
         }
     end
 

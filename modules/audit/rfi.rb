@@ -17,13 +17,12 @@
 #
 # Simple Remote File Inclusion (and tutorial) module.
 #
-# It audits links, forms and cookies and will give you a good idea<br/>
+# It audits links, forms and cookies and will give you a good idea
 # of how to write modules for Arachni.
-#
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.5
+# @version 0.2
 #
 # @see http://cwe.mitre.org/data/definitions/94.html
 # @see http://projects.webappsec.org/Remote-File-Inclusion
@@ -39,9 +38,9 @@ class Arachni::Modules::RFI < Arachni::Module::Base # *always* extend Arachni::M
     #
     def prepare
         #
-        # You can use print_debug() for debugging.
-        # Don't over-do ti though, debugging messages are supposed to
-        # be helpful so don't flood the output.
+        # You can use #print_debug for debugging.
+        # Don't over-do it though, debugging messages are supposed to be helpful
+        # so don't flood the output.
         #
         # Debugging output will only appear if "--debug" is enabled.
         #
@@ -52,19 +51,27 @@ class Arachni::Modules::RFI < Arachni::Module::Base # *always* extend Arachni::M
     # To prepare static data use class methods with lazy loaded class variables.
     #
     # Each module will be run multiple times so there's no sense in constantly
-    # initializing the same stuff and every little helps.
+    # initializing the same stuff over and over again and every little helps.
     #
 
-    def self.urls_to_inject
-        @url_to_inject ||= [
+    #
+    # It's Framework convention to name the method which contains the strings
+    # to be injected {.payloads}.
+    #
+    def self.payloads
+        @payloads ||= [
             'hTtP://arachni.github.com/arachni/rfi.md5.txt',
             'arachni.github.com/arachni/rfi.md5.txt'
         ]
     end
 
-    def self.opts
-        @opts ||= {
-            substring: '705cd559b16e6946826207c2199bd890',
+    #
+    # It's Framework convention to name the method which contains the audit
+    # options {.options}.
+    #
+    def self.options
+        @options ||= {
+            substring:       '705cd559b16e6946826207c2199bd890',
             follow_location: false
         }
     end
@@ -72,11 +79,11 @@ class Arachni::Modules::RFI < Arachni::Module::Base # *always* extend Arachni::M
     #
     # REQUIRED
     #
-    # This is used to deliver the module's payload whatever it may be.
+    # This is used to deliver the module's payload, whatever it may be.
     #
     def run
         print_debug 'In #run'
-        self.class.urls_to_inject.each { |url| audit( url, self.class.opts ) }
+        audit self.class.payloads, self.class.options
     end
 
     #
@@ -92,7 +99,7 @@ class Arachni::Modules::RFI < Arachni::Module::Base # *always* extend Arachni::M
     #
     # REQUIRED
     #
-    # Do not ommit any of the info.
+    # Do not omit any of the info.
     #
     def self.info
         {
@@ -102,14 +109,14 @@ class Arachni::Modules::RFI < Arachni::Module::Base # *always* extend Arachni::M
             #
             # Arachni needs to know what elements the module plans to audit
             # before invoking it. If a page doesn't have any of those elements
-            # there's no point putting the module in the thread queue.
+            # there's no point in running the module.
             #
-            # If you want the module to run no-matter what leave the array
+            # If you want the module to run no-matter what, leave the array
             # empty or don't define it at all.
             #
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.1.5',
+            version:     '0.2',
             references:  {
                 'WASC'      => 'http://projects.webappsec.org/Remote-File-Inclusion',
                 'Wikipedia' => 'http://en.wikipedia.org/wiki/Remote_File_Inclusion'

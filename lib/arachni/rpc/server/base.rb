@@ -33,6 +33,7 @@ class Base < ::Arachni::RPC::EM::Server
             fallback_serializer:  YAML,
             host:       opts.rpc_address,
             port:       opts.rpc_port,
+            socket:     opts.rpc_socket,
             token:      token,
             ssl_ca:     opts.ssl_ca,
             ssl_pkey:   opts.ssl_pkey,

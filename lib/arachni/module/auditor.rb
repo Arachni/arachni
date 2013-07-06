@@ -141,7 +141,7 @@ module Auditor
         #
         # Elements to audit.
         #
-        # If no elements have been passed to audit candidates will be
+        # If no elements have been passed to audit methods, candidates will be
         # determined by {#candidate_elements}.
         #
         elements: [Element::LINK, Element::FORM,
@@ -180,8 +180,8 @@ module Auditor
     #
     # *OPTIONAL*
     #
-    # Allows modules to ignore HPG scope restrictions in order to audit elements
-    # that are not on the Grid sanctioned whitelist.
+    # Allows modules to ignore multi-Instance scope restrictions in order to
+    # audit elements that are not on the sanctioned whitelist.
     #
     # @return   [Bool]
     #
@@ -201,26 +201,32 @@ module Auditor
     #
     # @param    [Array<Arachni::Issue>]     issues
     #
-    # @see Arachni::Module::Manager.register_results
+    # @see Arachni::Module::Manager#register_results
     #
     def register_results( issues )
         return if issue_limit_reached?
         self.class.issue_counter += issues.size
 
-        Module::Manager.register_results( issues )
+        framework.modules.register_results( issues )
     end
 
     #
+    # @note Ignores custom 404 responses.
+    #
     # Logs a remote file or directory if it exists.
     #
-    # @param    [String]    url
-    # @param    [Bool]      silent  if false, a message will be sent to stdout
-    #                               containing the status of the operation.
-    # @param    [Proc]      block  called if the file exists, just before logging
+    # @param    [String]    url Resource to check.
+    # @param    [Bool]      silent
+    #   If `false`, a message will be printed to stdout containing the status of
+    #   the operation.
+    # @param    [Proc]      block
+    #   Called if the file exists, just before logging the issue, and is passed
+    #   the HTTP response.
     #
-    # @return   [Object]    - nil if no URL was provided
-    #                       - false if the request couldn't be fired
-    #                       - true if everything went fine
+    # @return   [Object]
+    #   * `nil` if no URL was provided.
+    #   * `false` if the request couldn't be fired.
+    #   * `true` if everything went fine.
     #
     # @see #remote_file_exist?
     #
@@ -230,25 +236,32 @@ module Auditor
         print_status( "Checking for #{url}" ) if !silent
         remote_file_exist?( url ) do |bool, res|
             print_status( 'Analyzing response for: ' + url ) if !silent
+            next if !bool
 
-            if bool
-                block.call( res ) if block_given?
-                log_remote_file( res )
+            block.call( res ) if block_given?
+            log_remote_file( res )
 
-                # if the file exists let the trainer parse it since it may
-                # contain brand new data to audit
-                framework.trainer.push( res ) if framework
-            end
+            # If the file exists let the trainer parse it since it may contain
+            # brand new data to audit.
+            framework.trainer.push( res )
         end
          true
     end
     alias :log_remote_directory_if_exists :log_remote_file_if_exists
 
     #
-    # Checks that the response points to an existing file/page and not
-    # an error or custom 404 response.
+    # @note Ignores custom 404 responses.
     #
-    # @param    [String]    url
+    # Checks whether or not a remote resource exists.
+    #
+    # @param    [String]    url Resource to check.
+    # @param    [Block] block
+    #   Block to be passed  `true` if the resource exists, `false` otherwise.
+    #
+    # @return   [Object]
+    #   * `nil` if no URL was provided.
+    #   * `false` if the request couldn't be fired.
+    #   * `true` if everything went fine.
     #
     def remote_file_exist?( url, &block )
         req  = http.get( url )
@@ -269,6 +282,9 @@ module Auditor
     # Logs the existence of a remote file as an issue.
     #
     # @param    [Typhoeus::Response]    res
+    # @param    [Bool]      silent
+    #   If `false`, a message will be printed to stdout containing the status of
+    #   the operation.
     #
     # @see #log_issue
     #
@@ -295,7 +311,7 @@ module Auditor
     #
     # Helper method for issue logging.
     #
-    # @param    [Hash]  opts    issue options ({Issue})
+    # @param    [Hash]  opts    Issue options ({Issue}).
     #
     # @see Arachni::Module::Base#register_results
     #
@@ -305,15 +321,18 @@ module Auditor
     end
 
     #
-    # Matches the "string" (default string is the HTML code in page.body) to
-    # an array of regular expressions and logs the results.
+    # Matches an array of regular expressions against a string and logs the
+    # result as an issue.
     #
-    # For good measure, regexps will also be run against the page headers (page.response_headers).
-    #
-    # @param    [Array<Regexp>]     regexps     array of regular expressions to be tested
-    # @param    [String]            string      string to
-    # @param    [Block]             block       block to verify matches before logging,
-    #                                           must return true/false
+    # @param    [Array<Regexp>]     regexps
+    #   Array of regular expressions to be tested.
+    # @param    [String]            string
+    #   String against which the `regexps` will be matched.
+    #   (If no string has been provided the {#page} body will be used and, for
+    #   good measure, `regexps` will also be matched against
+    #   {Page#response_headers} as well.)
+    # @param    [Block] block
+    #   Block to verify matches before logging, must return `true`/`false`.
     #
     def match_and_log( regexps, string = page.body, &block )
         # make sure that we're working with an array
@@ -357,10 +376,12 @@ module Auditor
     end
 
     #
-    # Populates and logs an {Arachni::Issue} based on data from "opts" and "res".
+    # Populates and logs an {Arachni::Issue} based on data from `opts` and `res`.
     #
-    # @param    [Hash]                  opts    as passed to blocks by audit methods
-    # @param    [Typhoeus::Response]    res     defaults to page data
+    # @param    [Hash]                  opts
+    #   As passed to blocks by audit methods.
+    # @param    [Typhoeus::Response]    res
+    #   Optional HTTP response, defaults to page data.
     #
     def log( opts, res = nil )
         response_headers = {}
@@ -401,47 +422,63 @@ module Auditor
         print_debug( 'Request ID: ' + res.request.id.to_s ) if res
         print_verbose( '---------' ) if only_positives?
 
+        # Platform identification by vulnerability.
+        platform_type = nil
+        if platform = opts[:platform]
+            Platform::Manager[url] << platform if Options.fingerprint?
+            platform_type = Platform::Manager[url].find_type( platform )
+        end
+
         log_issue(
-            var:          var,
-            url:          url,
-            injected:     opts[:injected],
-            id:           opts[:id],
-            regexp:       opts[:regexp],
-            regexp_match: opts[:match],
-            elem:         element,
-            verification: !!opts[:verification],
-            remarks:      opts[:remarks],
-            method:       method,
-            response:     response,
-            opts:         opts,
-            headers:      {
-                request:  request_headers,
-                response: response_headers,
+            var:           var,
+            url:           url,
+            platform:      platform,
+            platform_type: platform_type,
+            injected:      opts[:injected],
+            id:            opts[:id],
+            regexp:        opts[:regexp],
+            regexp_match:  opts[:match],
+            elem:          element,
+            verification:  !!opts[:verification],
+            remarks:       opts[:remarks],
+            method:        method,
+            response:      response,
+            opts:          opts,
+            headers:       {
+                request:   request_headers,
+                response:  response_headers,
             }
         )
     end
 
-    # @see Arachni::Module::Base.preferred
+    # @see Arachni::Module::Base#preferred
+    # @see Arachni::Module::Base.prefer
+    # @abstract
     def preferred
         []
     end
 
     #
-    # This is called right before an [Arachni::Element]
-    # is audited and is used to determine whether to skip it or not.
+    # This is called right before an {Arachni::Element} is audited and is used
+    # to determine whether to skip it or not.
     #
     # Running modules can override this as they wish *but* at their own peril.
     #
     # @param    [Arachni::Element]  elem
     #
+    # @return   [Boolean]
+    #   `true` if the element should be skipped, `false` otherwise.
+    #
     def skip?( elem )
-        if framework
-            @modname ||= framework.modules.map { |k, v| k if v == self.class }.compact.first
-            (preferred | [@modname]).each do |mod|
-                next if !framework.modules.include?( mod )
-                issue_id = elem.provisioned_issue_id( framework.modules[mod].info[:name] )
-                return true if framework.modules.issue_set.include?( issue_id )
-            end
+        # Find out our own shortname.
+        @modname ||= framework.modules.map { |k, v| k if v == self.class }.compact.first
+
+        # Don't audit elements which have been already logged as vulnerable
+        # either by us or preferred modules.
+        (preferred | [@modname]).each do |mod|
+            next if !framework.modules.include?( mod )
+            issue_id = elem.provisioned_issue_id( framework.modules[mod].info[:name] )
+            return true if framework.modules.issue_set.include?( issue_id )
         end
 
         false
@@ -505,30 +542,31 @@ module Auditor
     # @see Arachni::Element::Capabilities::Auditable#audit
     # @see #audit_taint
     #
-    def audit( injection_str, opts = {}, &block )
+    def audit( payloads, opts = {}, &block )
         opts = OPTIONS.merge( opts )
         if !block_given?
-            audit_taint( injection_str, opts )
+            audit_taint( payloads, opts )
         else
-            candidate_elements( opts ).each { |e| e.audit( injection_str, opts, &block ) }
+            candidate_elements( opts ).each { |e| e.audit( payloads, opts, &block ) }
         end
     end
 
     #
-    # Provides easy access to element auditing using simple taint analysis.
+    # Provides easy access to element auditing using simple taint analysis
+    # and automatically logs results.
     #
     # Uses {#candidate_elements} to decide which elements to audit.
     #
     # @see OPTIONS
     # @see Arachni::Element::Capabilities::Auditable::Taint
     #
-    def audit_taint( taint, opts = {} )
+    def audit_taint( payloads, opts = {} )
         opts = OPTIONS.merge( opts )
-        candidate_elements( opts ).each { |e| e.taint_analysis( taint, opts ) }
+        candidate_elements( opts ).each { |e| e.taint_analysis( payloads, opts ) }
     end
 
     #
-    # Audits elements using differential analysis attacks.
+    # Audits elements using differential analysis and automatically logs results.
     #
     # Uses {#candidate_elements} to decide which elements to audit.
     #
@@ -548,11 +586,10 @@ module Auditor
     # @see OPTIONS
     # @see Arachni::Element::Capabilities::Auditable::Timeout
     #
-    def audit_timeout( strings, opts = {} )
+    def audit_timeout( payloads, opts = {} )
         opts = OPTIONS.merge( opts )
-        candidate_elements( opts ).each { |e| e.timeout_analysis( strings, opts ) }
+        candidate_elements( opts ).each { |e| e.timeout_analysis( payloads, opts ) }
     end
-
 
     private
 
@@ -566,7 +603,7 @@ module Auditor
     # @see #audited
     #
     def self.audited
-        @audited ||= BloomFilter.new
+        @audited ||= Support::LookUp::HashSet.new
     end
 
 end

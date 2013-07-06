@@ -1,5 +1,3 @@
-
-
 =begin
     Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
 

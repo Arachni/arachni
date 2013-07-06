@@ -1,4 +1,4 @@
-require_relative '../../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Component::Manager do
     before( :all ) do
@@ -128,32 +128,12 @@ describe Arachni::Component::Manager do
         end
 
         context 'when a component is not found' do
-            it 'raises an exception' do
+            it 'raises Arachni::Component::Error::NotFound' do
                 trigger = proc { @components.load :houa }
 
-                raised = false
-                begin
-                    trigger.call
-                rescue Arachni::Error
-                    raised = true
-                end
-                raised.should be_true
-
-                raised = false
-                begin
-                    trigger.call
-                rescue Arachni::Component::Error
-                    raised = true
-                end
-                raised.should be_true
-
-                raised = false
-                begin
-                    trigger.call
-                rescue Arachni::Component::Error::NotFound
-                    raised = true
-                end
-                raised.should be_true
+                expect { trigger.call }.to raise_error Arachni::Error
+                expect { trigger.call }.to raise_error Arachni::Component::Error
+                expect { trigger.call }.to raise_error Arachni::Component::Error::NotFound
             end
         end
     end
@@ -327,7 +307,7 @@ describe Arachni::Component::Manager do
         end
 
         context 'with invalid options' do
-            it 'raises an exception' do
+            it 'raises Arachni::Component::Options::Error::Invalid' do
                 trigger = proc do
                     begin
                         c = 'with_options'
@@ -338,37 +318,10 @@ describe Arachni::Component::Manager do
                     end
                 end
 
-                raised = false
-                begin
-                    trigger.call
-                rescue Arachni::Error
-                    raised = true
-                end
-                raised.should be_true
-
-                raised = false
-                begin
-                    trigger.call
-                rescue Arachni::Component::Error
-                    raised = true
-                end
-                raised.should be_true
-
-                raised = false
-                begin
-                    trigger.call
-                rescue Arachni::Component::Options::Error
-                    raised = true
-                end
-                raised.should be_true
-
-                raised = false
-                begin
-                    trigger.call
-                rescue Arachni::Component::Options::Error::Invalid
-                    raised = true
-                end
-                raised.should be_true
+                expect { trigger.call }.to raise_error Arachni::Error
+                expect { trigger.call }.to raise_error Arachni::Component::Error
+                expect { trigger.call }.to raise_error Arachni::Component::Options::Error
+                expect { trigger.call }.to raise_error Arachni::Component::Options::Error::Invalid
             end
         end
     end

@@ -1,4 +1,4 @@
-require_relative '../../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Element::Base do
     before( :all ) do
@@ -8,12 +8,23 @@ describe Arachni::Element::Base do
         @e = Arachni::Element::Base.new( @url, @raw )
     end
 
-    it 'should have the assigned URL' do
-        @e.url.should == @url
+    describe '#url' do
+        it 'returns the assigned URL' do
+            @e.url.should == @url
+        end
     end
 
-    it 'should have the assigned raw data' do
-        @e.raw.should == @raw
+    describe '#raw' do
+        it 'returns the raw data' do
+            @e.raw.should == @raw
+        end
+    end
+
+    describe '#platforms' do
+        it 'returns platforms for the given element' do
+            @e.action = @url
+            @e.platforms.should be_kind_of Arachni::Platform::Manager
+        end
     end
 
     describe '#url=' do

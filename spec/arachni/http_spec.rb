@@ -1,11 +1,11 @@
-require_relative '../spec_helper'
+require 'spec_helper'
 
 describe Arachni::HTTP do
 
     before( :all ) do
         @opts = Arachni::Options.instance
         @http = Arachni::HTTP
-        @url = server_url_for( :http )
+        @url  = web_server_url_for( :http )
     end
     before( :each ){
         @opts.reset
@@ -79,7 +79,7 @@ describe Arachni::HTTP do
     describe 'Arachni::Options#url' do
         context 'when the target URL includes auth credentials' do
             it 'uses them globally' do
-                url = Arachni::Module::Utilities.uri_parse( server_url_for( :http_auth ) )
+                url = Arachni::Module::Utilities.uri_parse( web_server_url_for( :http_auth ) )
                 @opts.url = url.to_s
 
                 # first fail to make sure that our test server is actually working properly
@@ -256,7 +256,7 @@ describe Arachni::HTTP do
 
         context 'when the cookie_jar option is set' do
             it 'adds the contained cookies to the CookieJar' do
-                @opts.cookie_jar = spec_path + '/fixtures/cookies.txt'
+                @opts.cookie_jar = fixtures_path + 'cookies.txt'
                 @http.cookie_jar.cookies.should be_empty
                 @http.reset
                 cookies = @http.cookie_jar.cookies
@@ -264,22 +264,16 @@ describe Arachni::HTTP do
                 cookies.should == Arachni::Module::Utilities.cookies_from_file( '', @opts.cookie_jar )
             end
             context 'but the path is invalid' do
-                it 'raises an exception' do
-                    @opts.cookie_jar = spec_path + '/fixtures/cookies.does_not_exist.txt'
-                    raised = false
-                    begin
-                        @http.reset
-                    rescue Arachni::HTTP::CookieJar::Error::CookieJarFileNotFound
-                        raised = true
-                    end
-                    raised.should be_true
+                it 'raises Arachni::HTTP::CookieJar::Error::CookieJarFileNotFound' do
+                    @opts.cookie_jar = fixtures_path + 'cookies.does_not_exist.txt'
+                    expect{ @http.reset }.to raise_error Arachni::HTTP::CookieJar::Error::CookieJarFileNotFound
                 end
             end
         end
 
         context 'when the cookies option is set' do
             it 'adds those cookies to the CookieJar' do
-                cookie_jar_file = spec_path + '/fixtures/cookies.txt'
+                cookie_jar_file = fixtures_path + 'cookies.txt'
                 @opts.cookies = Arachni::Module::Utilities.cookies_from_file( '', cookie_jar_file )
                 @http.cookie_jar.cookies.should be_empty
                 @http.reset
@@ -421,13 +415,7 @@ describe Arachni::HTTP do
         it 'raises exception when no URL is available' do
             @opts.reset
             @http.reset
-            raised = false
-            begin
-                @http.request
-            rescue
-                raised = true
-            end
-            raised.should be_true
+            expect { @http.request }.to raise_error
         end
 
         describe :no_cookiejar do

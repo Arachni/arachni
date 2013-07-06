@@ -3,18 +3,18 @@
 <table>
     <tr>
         <th>Version</th>
-        <td>0.4.2</td>
+        <td>0.4.3</td>
     </tr>
     <tr>
         <th>Homepage</th>
-        <td><a href="http://arachni-scanner.com">http://arachni-scanner.com</a></td>
+        <td><a href="http://www.arachni-scanner.com">http://arachni-scanner.com</a></td>
     </tr>
     <tr>
         <th>Blog</th>
-        <td><a href="http://arachni-scanner.com/blog">http://arachni-scanner.com/blog</a></td>
+        <td><a href="http://www.arachni-scanner.com/blog">http://arachni-scanner.com/blog</a></td>
     <tr>
         <th>Github</th>
-        <td><a href="http://github.com/Arachni/arachni">http://github.com/Arachni/arachni</a></td>
+        <td><a href="https://github.com/Arachni/arachni">http://github.com/Arachni/arachni</a></td>
      <tr/>
     <tr>
         <th>Documentation</th>
@@ -133,17 +133,29 @@ you with its findings.
 
 ### Open [distributed architecture](https://github.com/Arachni/arachni/wiki/Distributed-components)
 
-- High-performance/low-bandwidth [communication protocol](https://github.com/Arachni/arachni-rpc).
-- Multiple clients.
+- High-performance/low-bandwidth [communication protocol](https://github.com/Arachni/arachni-rpc-em).
+    - `Marshal` serialization for performance and efficiency.
+        - Automatically falls back to `YAML` for ease of integration with 3rd party systems.
+    - TCP/IP for general network communications.
+    - UNIX domain sockets for multi-Instance IPC.
+- Remote monitoring and management of Dispatchers and Instances.
 - Parallel scans -- Each scan is compartmentalized to its own OS process to take
     advantage of:
     - Multi-core/SMP architectures.
     - OS-level scheduling/restrictions.
     - Sandboxed failure propagation.
+- Multi-Instance scans for parallelization of _individual scans_ using multiple
+    Instances to:
+    - Take advantage of multi-core/SMP architectures.
+    - Greatly diminish scan-times.
+- Dispatcher Grids supporting:
+    - _(Optional)_ High-Performance mode -- Combines the resources of
+        multiple nodes to perform multi-Instance scans.
+        - Enabled on a per-scan basis.
+    - _(Always-on)_ Load-balancing -- All Instances are automatically provided
+        by the least burdened Grid member.
+        - With optional per-scan opt-out/override.
 - SSL encryption (with optional peer authentication).
-- Remote monitoring and management.
-- Experimental support for High Performance Grid configuration, combining the
-    resources of multiple nodes to perform faster scans.
 
 ### Crawler
 
@@ -175,6 +187,43 @@ you with its findings.
  - Can optionally submit all links and forms of the page along with the cookie
     permutations to provide extensive cookie-audit coverage.
  - Can exclude specific input vectors by name.
+
+### Platform fingerprinter
+
+In order to make efficient use of the available bandwidth, Arachni performs some
+basic platform fingerprinting and tailors the audit process to the server-side
+deployed platforms by only injecting applicable payloads.
+
+Currently, the following platforms can be identified:
+
+- Operating systems
+    - BSD
+    - Linux
+    - Unix
+    - Windows
+    - Solaris
+- Web servers
+    - Apache
+    - IIS
+    - Nginx
+    - Tomcat
+    - Jetty
+- Programming languages
+    - PHP
+    - ASP
+    - ASPX
+    - JSP
+    - Python
+    - Ruby
+- Frameworks
+    - Rack
+
+The user also has the option of specifying extra platforms (like a DB server)
+in order to help the system be as efficient as possible. Alternatively, fingerprinting
+can be disabled altogether.
+
+Finally, Arachni will always err on the side of caution and send all available
+payloads when it fails to identify specific platforms.
 
 ### HTML Parser
 
@@ -400,7 +449,10 @@ You can run `rake spec` to run **all** specs or you can run them selectively usi
     rake spec:reports         # for the reports
     rake spec:path_extractors # for the path extractors
 
-**Note**: _The module specs will take about 90 minutes due to the ones which perform timing attacks._
+**Please be warned**, the core specs will require a beast of a machine due to the
+necessity to test the Grid/multi-Instance features of the system.
+
+**Note**: _The module specs will take about 90 minutes due to the timing-attack tests._
 
 ## Bug reports/Feature requests
 
@@ -409,18 +461,20 @@ get support via the [Support Portal](http://support.arachni-scanner.com).
 
 ## Contributing
 
+(Before starting any work, please read the [instructions](https://github.com/Arachni/arachni/tree/experimental#source)
+for working with the source code.)
+
 We're happy to accept help from fellow code-monkeys and these are the steps you
 need to follow in order to contribute code:
 
-* [Fork the project](https://github.com/Arachni/arachni/fork_select).
-* Start a feature branch based on the `experimental` branch (`git checkout -b <feature-name> experimental`).
+* Fork the project.
+* Start a feature branch based on the [experimental](https://github.com/Arachni/arachni-ui-web/tree/experimental)
+    branch (`git checkout -b <feature-name> experimental`).
 * Add specs for your code.
 * Run the spec suite to make sure you didn't break anything (`rake spec:core`
     for the core libs or `rake spec` for everything).
 * Commit and push your changes.
 * Issue a pull request and wait for your code to be reviewed.
-
-_PS: You may want to setup a [development environment](https://github.com/Arachni/arachni/wiki/Development-environment) first._
 
 ## License
 

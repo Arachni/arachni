@@ -25,122 +25,14 @@ require 'ostruct'
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2.1
+# @version 0.2.2
 #
 class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
     BASEDIR  = "#{File.dirname( __FILE__ )}/proxy/"
     BASE_URL = 'http://arachni.proxy/'
 
-    class TemplateScope
-        include Arachni::Utilities
-
-        PANEL_BASEDIR  = "#{Arachni::Plugins::Proxy::BASEDIR}panel/"
-        PANEL_TEMPLATE = "#{PANEL_BASEDIR}panel.html.erb"
-        PANEL_URL      = "#{Arachni::Plugins::Proxy::BASE_URL}panel/"
-
-        def initialize( params = {} )
-            update( params )
-        end
-
-        def self.new( *args )
-            @self ||= super( *args )
-        end
-
-        def self.get
-            new
-        end
-
-        def root_url
-            PANEL_URL
-        end
-
-        def js_url
-            "#{root_url}js/"
-        end
-
-        def css_url
-            "#{root_url}css/"
-        end
-
-        def img_url
-            "#{root_url}img/"
-        end
-
-        def inspect_url
-            "#{root_url}inspect"
-        end
-
-        def shutdown_url
-            url_for :shutdown
-        end
-
-        def url_for( *args )
-            Arachni::Plugins::Proxy.url_for( *args )
-        end
-
-        def update( params )
-            params.each { |name, value| set( name, value ) }
-            self
-        end
-
-        def set( name, value )
-            self.class.send( :attr_accessor, name )
-            instance_variable_set( "@#{name.to_s}", value )
-            self
-        end
-
-        def content_for?( ivar )
-            !!instance_variable_get( "@#{ivar.to_s}" )
-        end
-
-        def content_for( name, value = :nil )
-            if value == :nil
-                instance_variable_get( "@#{name.to_s}" )
-            else
-                set( name, html_encode( value.to_s ) )
-                nil
-            end
-        end
-
-        def erb( tpl, params = {} )
-            params = params.dup
-            params[:params] ||= {}
-
-            with_layout = true
-            with_layout = !!params.delete( :layout ) if params.include?( :layout )
-
-            update( params )
-
-            tpl = tpl.to_s + '.html.erb' if tpl.is_a?( Symbol )
-
-            path = File.exist?( tpl ) ? tpl : PANEL_BASEDIR + tpl
-
-            evaled = ERB.new( IO.read( path ) ).result( get_binding )
-            with_layout ? layout { evaled } : evaled
-        end
-
-        def render( tpl, opts )
-            erb tpl, opts.merge( layout: false )
-        end
-
-        def layout
-            ERB.new( IO.read( PANEL_BASEDIR + 'layout.html.erb' ) ).result( binding )
-        end
-
-        def panel
-            erb :panel
-        end
-
-        def get_binding
-            binding
-        end
-
-        def clear
-            instance_variables.each { |v| instance_variable_set( v, nil ) }
-        end
-    end
-
+    require_relative 'proxy/template_scope'
 
     MSG_SHUTDOWN = 'Shutting down the Arachni proxy plug-in...'
 
@@ -212,7 +104,31 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         @pages.select { |p| (p.forms.any? || p.links.any? || p.cookies.any?) && p.text? }
     end
 
+    def vectors_yaml
+        vectors = []
+        prepare_pages_for_inspection.each do |page|
+            page.elements.each do |element|
+                next if element.auditable.empty?
+
+                vectors << {
+                    type:   element.type,
+                    method: element.method,
+                    action: element.action,
+                    inputs: element.auditable
+                }
+            end
+        end
+        vectors.to_yaml
+    end
+
     def request_handler( req, res )
+        url = req.request_uri.to_s
+
+        if !url.start_with?( url_for( :panel ) ) && skip_path?( url )
+            print_info "Ignoring, out of scope: #{url}"
+            return true
+        end
+
         # Clear the template scope to prepare it for this request.
         TemplateScope.get.clear
 
@@ -236,27 +152,9 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
         TemplateScope.get.set :sign_in_url, sign_in_url
 
-        url    = req.request_uri.to_s
         params = parse_request_body( req.body.to_s ).merge( parse_query( url ) ) || {}
 
         print_status "Requesting #{url}"
-
-        reasons = []
-        if !system_url?( url )
-            reasons << MSG_NOT_IN_DOMAIN if !path_in_domain?( url )
-            reasons << MSG_EXCLUDED      if exclude_path?( url )
-            reasons << MSG_NOT_INCLUDED  if !include_path?( url )
-        end
-
-        if reasons.any?
-            print_info MSG_DISALLOWED
-            reasons.each { |reason| print_info "  * #{reason}" }
-
-            # Forbidden.
-            res.status = 403
-            set_response_body( res, erb( '403_forbidden'.to_sym, { reasons: reasons } ) )
-            return false
-        end
 
         # This is a sign-in request.
         if params['session_token'] == options['session_token']
@@ -307,6 +205,14 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                         when '/'
                             erb :panel
 
+                        when '/vectors.yml'
+                            res.header['Content-Type'] = 'application/x-yaml'
+
+                            erb :vectors,
+                                layout:  false,
+                                format:  :yml,
+                                vectors: vectors_yaml
+
                         when '/inspect'
                             erb :inspect,
                                 pages: prepare_pages_for_inspection
@@ -356,6 +262,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                             erb :verify_login_final, ok: logged_in
 
                         else
+                            res.header['Cache-Control'] = 'max-age=2592000'
                             begin
                                 IO.read TemplateScope::PANEL_BASEDIR + '/../' + res.request_uri.path
                             rescue Errno::ENOENT
@@ -442,7 +349,10 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     # Called by the proxy for each response.
     #
     def response_handler( req, res )
-        return res if res.request_method.to_s.downcase == 'connect'
+        if res.request_method.to_s.downcase == 'connect' ||
+            skip_path?( res.request_uri.to_s )
+            return res
+        end
 
         headers = {}
         headers.merge!( res.header.dup )    if res.header
@@ -469,9 +379,9 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     end
 
     def inject_panel( res )
-        return res if !res.header['content-type'].to_s.start_with?( 'text/html' )
+        return res if !res.header['content-type'].to_s.start_with?( 'text/html' ) ||
+                        !(body_tag = res.body.match( /<(\s*)body(.*)>/i ))
 
-        body_tag = res.body.match( /<(\s*)body(.*)>/i )
         res.body.gsub!( body_tag.to_s, "#{body_tag}#{panel_iframe}" )
         res.header['content-length'] = res.body.size.to_s
         res
@@ -574,7 +484,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                     this proxy but rather a way to restrict usage enough to avoid
                     users unwittingly interfering with each others' sessions.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.2.1',
+            version:     '0.2.2',
             options:     [
                  Options::Port.new( 'port', [false, 'Port to bind to.', 8282] ),
                  Options::Address.new( 'bind_address',

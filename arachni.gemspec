@@ -27,7 +27,7 @@ Gem::Specification.new do |s|
         ' Ruby framework aimed towards helping penetration testers and' +
         ' administrators evaluate the security of web applications.'
 
-    s.homepage          = 'https://github.com/Arachni/arachni'
+    s.homepage          = 'https://www.arachni-scanner.com'
     s.email             = 'tasos.laskos@gmail.com'
     s.authors           = [ 'Tasos Laskos' ]
 
@@ -38,6 +38,7 @@ Gem::Specification.new do |s|
     s.files            += Dir.glob( 'lib/**/**' )
     s.files            += Dir.glob( 'logs/**/**' )
     s.files            += Dir.glob( 'modules/**/**' )
+    s.files            += Dir.glob( 'fingerprinters/**/**' )
     s.files            += Dir.glob( 'path_extractors/**/**' )
     s.files            += Dir.glob( 'plugins/**/**' )
     s.files            += Dir.glob( 'profiles/**/**' )
@@ -45,9 +46,11 @@ Gem::Specification.new do |s|
     s.files            += Dir.glob( 'rpcd_handlers/**/**' )
     s.files            += Dir.glob( 'spec/**/**' )
     s.files            += %w(Gemfile Rakefile arachni.gemspec)
+    s.test_files        = Dir.glob( 'spec/**/**' )
 
     s.executables       = [ 'arachni', 'arachni_rpcd_monitor', 'arachni_rpcd',
-                          'arachni_rpc', 'arachni_console', 'arachni_script' ]
+                            'arachni_rpc', 'arachni_console', 'arachni_script',
+                            'arachni_multi' ]
 
     s.extra_rdoc_files  = %w(README.md ACKNOWLEDGMENTS.md LICENSE.md
                             AUTHORS.md CHANGELOG.md CONTRIBUTORS.md
@@ -55,7 +58,8 @@ Gem::Specification.new do |s|
 
     s.rdoc_options      = [ '--charset=UTF-8' ]
 
-    s.add_dependency 'bundler',         '>= 1.0.0'
+    # RPC client/server implementation.
+    s.add_dependency 'arachni-rpc-em',  '0.2'
 
     # HTTP interface.
     s.add_dependency 'typhoeus',        '~> 0.3.3'
@@ -84,16 +88,15 @@ Gem::Specification.new do |s|
     # Outputting data in table format (arachni_rpcd_monitor).
     s.add_dependency 'terminal-table',  '>= 1.4.2'
 
-    # RPC client/server implementation.
-    s.add_dependency 'arachni-rpc-em',  '~> 0.1.3'
-
     # For CLI interfaces.
     s.add_dependency 'highline'
 
+    s.add_development_dependency 'bundler'
     s.add_development_dependency 'rake'
     s.add_development_dependency 'rspec'
 
     # For test mini-servers.
+    s.add_development_dependency 'thin'
     s.add_development_dependency 'sinatra',         '~> 1.3.2'
     s.add_development_dependency 'sinatra-contrib', '~> 1.3.1'
 

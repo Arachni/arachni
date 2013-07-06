@@ -1,4 +1,4 @@
-require_relative '../../../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Component::Options::Float do
     before( :all ) do

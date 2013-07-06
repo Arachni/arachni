@@ -17,6 +17,7 @@
 #
 # Goes through all the issues and checks for signs of uniformity using
 # the following criteria:
+#
 #   * Element type (link, form, cookie, header)
 #   * Variable/input name
 #   * The module that logged/discovered the issue -- issue type
@@ -25,7 +26,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.2
+# @version 0.1.3
 #
 class Arachni::Plugins::Uniformity < Arachni::Plugin::Base
 
@@ -40,7 +41,7 @@ class Arachni::Plugins::Uniformity < Arachni::Plugin::Base
         framework.audit_store.deep_clone.issues.each.with_index do |issue, idx|
             next if !issue.var
 
-            id = issue.internal_modname + ':' + issue.elem + ':' + issue.var
+            id = "#{issue.internal_modname}:#{issue.elem}:#{issue.var}"
             uniformals[id] ||= {
                 'issue'   => {
                     'name'   => issue.name,
@@ -74,7 +75,7 @@ class Arachni::Plugins::Uniformity < Arachni::Plugin::Base
                 a bad coding practise.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             tags:        %w(meta uniformity),
-            version:     '0.1.2'
+            version:     '0.1.3'
         }
     end
 

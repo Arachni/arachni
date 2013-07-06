@@ -38,11 +38,19 @@ class Base < ::Arachni::RPC::EM::Client
     #
     def initialize( opts, url, token = nil )
         @url = url
-        host, port = url.split( ':' )
+
+        socket, host, port = nil
+        if url.include? ':'
+            host, port = url.split( ':' )
+        else
+            socket = url
+        end
+
         super(
             serializer:  Marshal,
             host:        host,
             port:        port,
+            socket:      socket,
             token:       token,
             max_retries: opts.max_retries,
             ssl_ca:      opts.ssl_ca,

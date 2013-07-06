@@ -1,19 +1,11 @@
-require_relative '../../../spec_helper'
-
-require Arachni::Options.instance.dir['lib'] + 'rpc/client/instance'
-require Arachni::Options.instance.dir['lib'] + 'rpc/server/instance'
+require 'spec_helper'
 
 describe Arachni::RPC::Client::Instance do
     before( :all ) do
         @opts = Arachni::Options.instance
-        @opts.rpc_port = random_port
+        @opts.rpc_port = available_port
 
-        @token = 'secret!'
-
-        fork_em { Arachni::RPC::Server::Instance.new( @opts, @token ) }
-        sleep 1
-
-        @instance = Arachni::RPC::Client::Instance.new( @opts, "#{@opts.rpc_address}:#{@opts.rpc_port}", @token )
+        @instance = instance_spawn
     end
 
     context 'when connecting to an instance' do

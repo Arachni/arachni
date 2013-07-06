@@ -328,6 +328,10 @@ class CLI
                 when 'only_positives'
                     only_positives
 
+                when 'lsplat'
+                    lsplat
+                    exit 0
+
                 when 'lsmod'
                     next if arg.empty?
                     lsmod
@@ -350,6 +354,19 @@ class CLI
                 when 'save_profile'
                     exception_jail{ save_profile( arg ) }
                     exit 0
+
+                when 'platforms'
+                    begin
+                        Platform::Manager.new( arg )
+                    rescue Platform::Error::Invalid => e
+                        @opts.platforms.clear
+                        print_error e
+                        print_info 'Available platforms are:'
+                        print_info Platform::Manager.new.valid.to_a.join( ', ' )
+                        print_line
+                        print_info 'Use the \'--lsplat\' parameter to see a detailed list of all available platforms.'
+                        exit 1
+                    end
 
                 when 'mods'
                     begin
@@ -413,6 +430,11 @@ class CLI
     def print_version
         print_line "Arachni #{Arachni::VERSION} (#{RUBY_ENGINE} #{RUBY_VERSION}" +
             "p#{RUBY_PATCHLEVEL}) [#{RUBY_PLATFORM}]"
+    end
+
+    # Outputs all available platforms and their info.
+    def lsplat
+        super @arachni.lsplat
     end
 
     # Outputs all available modules and their info.

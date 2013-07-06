@@ -80,16 +80,6 @@ class Options
     attr_accessor :max_retries
 
     #
-    # Supported values:
-    #
-    # * high_performance
-    #
-    # If `nil`, it won't make use of the Grid.
-    #
-    # @return   [String]    current grid mode
-    attr_accessor :grid_mode
-
-    #
     # @return   [String]    the URL of a neighbouring Dispatcher
     #
     attr_accessor :neighbour
@@ -424,6 +414,9 @@ class Options
     # @return   [Array<String>] plugins to load, by name
     attr_accessor :plugins
 
+    # @return   [String]   Path to the UNIX socket to use.
+    attr_accessor :rpc_socket
+
     # @return   [Integer]   port for the RPC server to listen to
     attr_accessor :rpc_port
 
@@ -504,8 +497,27 @@ class Options
     # @return   [Bool]   Only follow HTTPS links.
     attr_accessor :https_only
 
-    attr_accessor :grid
+    # @return   [nil, Symbol]
+    #   Grid mode to use, available modes are:
+    #
+    #   * `nil` -- No grid.
+    #   * `:balance` -- Default load balancing across available Dispatchers.
+    #   * `:aggregate` -- Default load balancing **with** line aggregation.
+    #       Will only request Instances from Grid members with different
+    #       {#pipe_id Pipe-IDs}.
+    attr_accessor :grid_mode
 
+    # @return   [Bool]   Disable platform fingeprinting.
+    attr_accessor :no_fingerprinting
+
+    # @return   [Array<Symbol>]
+    #   User supplied platforms to use instead of (or in addition to --
+    #   depending on the {#no_fingerprinting option}) fingerprinting.
+    attr_accessor :platforms
+
+    attr_accessor :lsplat
+
+    # @return   [Bool]   Display version info and quit?
     attr_accessor :version
 
     def initialize
@@ -520,15 +532,20 @@ class Options
         @dir['root']    = root_path
         @dir['gfx']     = @dir['root'] + 'gfx/'
         @dir['conf']    = @dir['root'] + 'conf/'
-        @dir['logs']    = @dir['root'] + 'logs/'
+
+        @dir['logs']    = ENV['ARACHNI_FRAMEWORK_LOGDIR'] ?
+            "#{ENV['ARACHNI_FRAMEWORK_LOGDIR']}/" : @dir['root'] + 'logs/'
+
         @dir['data']    = @dir['root'] + 'data/'
         @dir['modules'] = @dir['root'] + 'modules/'
         @dir['reports'] = @dir['root'] + 'reports/'
         @dir['plugins'] = @dir['root'] + 'plugins/'
         @dir['rpcd_handlers']   = @dir['root'] + 'rpcd_handlers/'
         @dir['path_extractors'] = @dir['root'] + 'path_extractors/'
+        @dir['fingerprinters']  = @dir['root'] + 'fingerprinters/'
 
         @dir['lib']     = @dir['root'] + 'lib/arachni/'
+        @dir['support'] = @dir['lib'] + 'support/'
         @dir['mixins']  = @dir['lib'] + 'mixins/'
         @dir['arachni'] = @dir['lib'][0...-1]
 
@@ -542,7 +559,7 @@ class Options
         @datastore  = {}
         @redundant  = {}
 
-        @grid = false
+        @grid_mode = nil
 
         @https_only        = false
         @obey_robots_txt   = false
@@ -555,8 +572,8 @@ class Options
         @link_count_limit = nil
         @redirect_limit   = 20
 
-        @lsmod      = []
-        @lsrep      = []
+        @lsmod  = []
+        @lsrep  = []
 
         @http_req_limit = 20
 
@@ -584,8 +601,74 @@ class Options
         @min_pages_per_instance = 30
         @max_slaves = 10
 
+        @no_fingerprinting = false
+        @platforms = []
+
         @spawns = 0
         self
+    end
+
+    # @return   [Bool]  `true` if the Grid should be used, `false` otherwise.
+    def grid?
+        !!@grid_mode
+    end
+
+    # @param    [Bool]  bool
+    #   `true` to use the Grid, `false` otherwise. Serves as a shorthand to
+    #   setting {#grid_mode} to `:balance`.
+    def grid=( bool )
+        @grid_mode = bool ? :balance : nil
+    end
+
+    # @param    [String, Symbol]    mode
+    #   Grid mode to use, available modes are:
+    #
+    #   * `nil` -- No grid.
+    #   * `:balance` -- Default load balancing across available Dispatchers.
+    #   * `:aggregate` -- Default load balancing **with** line aggregation.
+    #       Will only request Instances from Grid members with different
+    #       {#pipe_id Pipe-IDs}.
+    #
+    # @raise    ArgumentError   On invalid mode.
+    def grid_mode=( mode )
+        if mode
+            mode = mode.to_sym
+            if ![:balance, :aggregate].include?( mode )
+                fail ArgumentError, "Unknown grid mode: #{mode}"
+            end
+
+            @grid_mode = mode
+        else
+            @grid_mode = nil
+        end
+    end
+
+    # @return   [Bool]
+    #   `true` if the grid mode is in line-aggregation mode, `false` otherwise.
+    def grid_aggregate?
+        @grid_mode == :aggregate
+    end
+
+    # @return   [Bool]
+    #   `true` if the grid mode is in load-balancing mode, `false` otherwise.
+    def grid_balance?
+        @grid_mode == :balance
+    end
+
+    # Disables platform fingerprinting.
+    def do_not_fingerprint
+        self.no_fingerprinting = true
+    end
+
+    # Enables platform fingerprinting.
+    def fingerprint
+        self.no_fingerprinting = false
+    end
+
+    # @return   [Bool]
+    #   `true` if platform fingerprinting is enabled, `false` otherwise.
+    def fingerprint?
+        !@no_fingerprinting
     end
 
     def show_version?
@@ -594,6 +677,14 @@ class Options
 
     def https_only?
         !!@https_only
+    end
+
+    def min_pages_per_instance=( page_count )
+        @min_pages_per_instance = page_count.to_i
+    end
+
+    def max_slaves=( slave_count )
+        @max_slaves = slave_count.to_i
     end
 
     #
@@ -678,7 +769,7 @@ class Options
         return if !url
 
         require @dir['lib'] + 'ruby'
-        require @dir['lib'] + 'cache'
+        require @dir['lib'] + 'support'
         require @dir['lib'] + 'utilities'
 
         parsed = Utilities.uri_parse( url.to_s )
@@ -828,7 +919,7 @@ class Options
     alias :modules= :mods=
 
     # these options need to contain Array<Regexp>
-    [ :exclude_pages, :include, :exclude, :lsmod, :lsrep, :lsplug ].each do |m|
+    [ :exclude_pages, :include, :exclude, :lsmod, :lsplat, :lsrep, :lsplug ].each do |m|
         define_method( "#{m}=".to_sym ) do |arg|
             arg = [arg].flatten.map { |s| s.is_a?( Regexp ) ? s : Regexp.new( s.to_s ) }
             instance_variable_set( "@#{m}".to_sym, arg )
@@ -843,6 +934,7 @@ class Options
             [ '--only-positives',    '-k', GetoptLong::NO_ARGUMENT ],
             [ '--lsmod',                   GetoptLong::OPTIONAL_ARGUMENT ],
             [ '--lsrep',                   GetoptLong::OPTIONAL_ARGUMENT ],
+            [ '--lsplat',                  GetoptLong::NO_ARGUMENT ],
             [ '--audit-links',       '-g', GetoptLong::NO_ARGUMENT ],
             [ '--audit-forms',       '-p', GetoptLong::NO_ARGUMENT ],
             [ '--audit-cookies',     '-c', GetoptLong::NO_ARGUMENT ],
@@ -912,7 +1004,10 @@ class Options
             [ '--login-check-pattern',    GetoptLong::REQUIRED_ARGUMENT ],
             [ '--spawns',                 GetoptLong::REQUIRED_ARGUMENT ],
             [ '--grid',                   GetoptLong::NO_ARGUMENT ],
+            [ '--grid-mode',              GetoptLong::REQUIRED_ARGUMENT ],
             [ '--https-only',             GetoptLong::NO_ARGUMENT ],
+            [ '--no-fingerprinting',      GetoptLong::NO_ARGUMENT ],
+            [ '--platforms',              GetoptLong::REQUIRED_ARGUMENT ],
             [ '--version',                GetoptLong::NO_ARGUMENT ]
         )
 
@@ -928,6 +1023,12 @@ class Options
 
                     when '--version'
                         @version = true
+
+                    when '--no-fingerprinting'
+                        @no_fingerprinting = true
+
+                    when '--platforms'
+                        @platforms = arg.to_s.split( ',' )
 
                     when '--serialized-opts'
                         merge!( unserialize( arg ) )
@@ -997,6 +1098,9 @@ class Options
                     when '--lsrep'
                         @lsrep << Regexp.new( arg.to_s )
 
+                    when '--lsplat'
+                        @lsplat = true
+
                     when '--http-req-limit'
                         @http_req_limit = arg.to_i
 
@@ -1019,7 +1123,7 @@ class Options
                         @audit_headers = true
 
                     when '--mods', '--modules'
-                        @mods = arg.to_s.split( /,/ )
+                        @mods = arg.to_s.split( ',' )
 
                     when '--report'
                         report, opt_str = arg.split( ':' )
@@ -1163,7 +1267,10 @@ class Options
                         @spawns = arg.to_i
 
                     when '--grid'
-                        @grid = true
+                        self.grid = true
+
+                    when '--grid-mode'
+                        self.grid_mode = arg
 
                     when '--https-only'
                         @https_only = true

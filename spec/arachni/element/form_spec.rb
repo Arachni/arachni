@@ -1,12 +1,12 @@
-require_relative '../../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Element::Form do
     it_should_behave_like 'refreshable'
-    it_should_behave_like 'auditable', url: server_url_for( :form )
+    it_should_behave_like 'auditable', url: web_server_url_for( :form )
 
     before( :all ) do
         @utils = Arachni::Module::Utilities
-        @url = @utils.normalize_url( server_url_for( :form ) )
+        @url = @utils.normalize_url( web_server_url_for( :form ) )
 
         @raw = {
             'attrs' => {
@@ -300,35 +300,15 @@ describe Arachni::Element::Form do
         end
 
         context 'when there is no input called nonce_name' do
-            it 'raises an exception' do
+            it 'raises Arachni::Element::Form::Error::FieldNotFound' do
                 trigger = proc do
                     Arachni::Element::Form.new( @url, name: 'value' ).
                         nonce_name = 'stuff'
                 end
 
-                raised = false
-                begin
-                    trigger.call
-                rescue Arachni::Error
-                    raised = true
-                end
-                raised.should be_true
-
-                raised = false
-                begin
-                    trigger.call
-                rescue Arachni::Element::Form::Error
-                    raised = true
-                end
-                raised.should be_true
-
-                raised = false
-                begin
-                    trigger.call
-                rescue Arachni::Element::Form::Error::FieldNotFound
-                    raised = true
-                end
-                raised.should be_true
+                expect { trigger.call }.to raise_error Arachni::Error
+                expect { trigger.call }.to raise_error Arachni::Element::Form::Error
+                expect { trigger.call }.to raise_error Arachni::Element::Form::Error::FieldNotFound
             end
         end
     end
@@ -451,37 +431,6 @@ describe Arachni::Element::Form do
                         'my_first_input'  => 'my_first_value',
                         'my_second_input' => 'my_second_value'
                     }
-                end
-            end
-
-            context 'when the action match a skip rule' do
-                it 'is ignored' do
-                    Arachni::Options.url     = @url
-                    Arachni::Options.exclude = 'skip-this'
-
-                    url = "http://test.com/this_is_the_base/"
-
-                    html = <<-HTML
-                    <html>
-                        <body>
-                            <form method="get" action="form_action" name="my_form">
-                                <input name="my_first_input" value="my_first_value" />
-                            </form>
-
-                            <form method="get" action="#{url}" name="my_form">
-                                <input name="my_first_input" value="my_first_value" />
-                            </form>
-
-                            <form method="get" action="?skip-this" name="my_form">
-                                <input name="my_first_input" value="my_first_value" />
-                            </form>
-
-                        </body>
-                    </html>
-                    HTML
-
-                    Arachni::Element::Form.from_document( @url, html ).size.should == 1
-                    Arachni::Options.reset
                 end
             end
 

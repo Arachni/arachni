@@ -2,6 +2,7 @@
 --markup=markdown
 --verbose
 --title "Arachni - Web Application Security Scanner Framework"
+fingerprinters/**/*.rb
 path_extractors/**/*.rb
 plugins/**/*.rb
 reports/**/*.rb

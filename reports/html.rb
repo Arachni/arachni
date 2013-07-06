@@ -84,6 +84,7 @@ class Arachni::Reports::HTML < Arachni::Report::Base
 
         def format_issue( hash )
             idx, issue = find_issue_by_hash( hash )
+            return if !issue
             erb :issue, idx: idx, issue: issue
         end
 

@@ -1,5 +1,5 @@
 # encoding: utf-8
-require_relative '../../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Module::Utilities do
 

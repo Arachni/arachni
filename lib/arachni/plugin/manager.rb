@@ -38,12 +38,13 @@ class Manager < Arachni::Component::Manager
     include Utilities
     extend  Utilities
 
+    # Namespace under which all plugins reside.
     NAMESPACE = Arachni::Plugins
+
+    # Expressions matching default plugins.
     DEFAULT   = %w(defaults/*)
 
-    #
-    # @param    [Arachni::Framework]    framework   framework instance
-    #
+    # @param    [Arachni::Framework]    framework   Framework instance.
     def initialize( framework )
         super( framework.opts.dir['plugins'], NAMESPACE )
         @framework = framework
@@ -51,19 +52,24 @@ class Manager < Arachni::Component::Manager
         @jobs = []
     end
 
+    # Loads the default plugins.
+    #
+    # @see DEFAULT
     def load_default
         load DEFAULT
     end
     alias :load_defaults :load_default
 
+    # @return   [Array<String>] Components to load, by name.
     def default
         parse DEFAULT
     end
     alias :defaults :default
 
-    #
     # Runs each plug-in in its own thread.
     #
+    # @raise [Error::UnsatisfiedDependency]
+    #   If the environment is {#sane_env? not sane}.
     def run
         ordered   = []
         unordered = []
@@ -87,12 +93,12 @@ class Manager < Arachni::Component::Manager
             if( ret = sane_env?( plugin ) ) != true
                 deps = ''
                 if !ret[:gem_errors].empty?
-                    print_bad( "[#{name}] The following plug-in dependencies aren't satisfied:" )
-                    ret[:gem_errors].each { |gem| print_bad( "\t* #{gem}" ) }
+                    print_bad "[#{name}] The following plug-in dependencies aren't satisfied:"
+                    ret[:gem_errors].each { |gem| print_bad "\t* #{gem}" }
 
                     deps = ret[:gem_errors].join( ' ' )
-                    print_bad( "Try installing them by running:" )
-                    print_bad( "\tgem install #{deps}" )
+                    print_bad 'Try installing them by running:'
+                    print_bad "\tgem install #{deps}"
                 end
 
                 fail Error::UnsatisfiedDependency,
@@ -116,12 +122,16 @@ class Manager < Arachni::Component::Manager
             }
         end
 
-        if @jobs.size > 0
-            print_status( 'Waiting for plugins to settle...' )
-            ::IO::select( nil, nil, nil, 1 )
-        end
+        return if @jobs.empty?
+
+        print_status 'Waiting for plugins to settle...'
+        ::IO::select( nil, nil, nil, 1 )
     end
 
+    # Checks whether or not the environment satisfies all plugin dependencies.
+    #
+    # @return   [TrueClass, Hash]
+    #   `true` if the environment is sane, a hash with errors otherwise.
     def sane_env?( plugin )
         gem_errors = []
 
@@ -141,50 +151,38 @@ class Manager < Arachni::Component::Manager
         self[name].new( @framework, opts )
     end
 
-    #
     # Blocks until all plug-ins have finished executing.
-    #
     def block
         while !@jobs.empty?
             print_debug
-            print_debug( "Waiting on the following (#{@jobs.size}) plugins to finish:" )
-            print_debug( job_names.join( ', ' ) )
+            print_debug "Waiting on the following (#{@jobs.size}) plugins to finish:"
+            print_debug job_names.join( ', ' )
             print_debug
 
             @jobs.delete_if { |j| !j.alive? }
             ::IO::select( nil, nil, nil, 1 )
         end
+        nil
     end
 
-    #
-    # Will return false if all plug-ins have finished executing.
-    #
     # @return   [Bool]
-    #
+    #   `false` if all plug-ins have finished executing, `true` otherwise.
     def busy?
         !@jobs.reject{ |j| j.alive? }.empty?
     end
 
-    #
-    # Returns the names of the running plug-ins.
-    #
-    # @return   [Array]
-    #
+    # @return   [Array] Names of all running plug-ins.
     def job_names
         @jobs.map{ |j| j[:name] }
     end
 
-    #
-    # Returns all the running threads.
-    #
-    # @return   [Array<Thread>]
-    #
+    # @return   [Array<Thread>] All the running threads.
     def jobs
         @jobs
     end
 
     #
-    # Kills a plug-in by name.
+    # Kills a plug-in by `name`.
     #
     # @param    [String]    name
     #
@@ -207,9 +205,9 @@ class Manager < Arachni::Component::Manager
     end
 
     #
-    # Registers plugin results
+    # Registers plugin results.
     #
-    # @param    [Arachni::Plugin::Base]    plugin   instance of a plugin
+    # @param    [Arachni::Plugin::Base]    plugin   Instance of a plugin.
     # @param    [Object]    results
     #
     def register_results( plugin, results )
@@ -223,7 +221,8 @@ class Manager < Arachni::Component::Manager
             end
 
             return if !name
-            self.class.results[name] = { results: results }.merge( plugin.class.info )
+            self.class.results[name] =
+                { results: results }.merge( plugin.class.info )
         }
     end
 
@@ -235,14 +234,14 @@ class Manager < Arachni::Component::Manager
     end
 
     def self.results
-        @@results ||= {}
+        @results ||= {}
     end
     def results
         self.class.results
     end
 
     def self.results=( v )
-        @@results = v
+        @results = v
     end
     def results=( v )
         self.class.results = v

@@ -1,11 +1,11 @@
-require_relative '../../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Element::Link do
     it_should_behave_like 'refreshable'
-    it_should_behave_like 'auditable', url: server_url_for( :link )
+    it_should_behave_like 'auditable', url: web_server_url_for( :link )
 
     before( :all ) do
-        @url = server_url_for( :link )
+        @url = web_server_url_for( :link )
         Arachni::Options.instance.url = @url
         @url = Arachni::Options.instance.url
 
@@ -179,29 +179,6 @@ describe Arachni::Element::Link do
                         'param_one'  => 'value_one',
                         'param_two'  => 'value_two'
                     }
-                end
-            end
-            context 'when the action match a skip rule' do
-                it 'should be ignored' do
-                    Arachni::Options.url     = @url
-                    Arachni::Options.exclude = 'skip-this'
-
-                    base_url = "http://test.com/this_is_the_base/"
-                    html = <<-HTML
-                    <html>
-                        <head>
-                            <base href="#{base_url}" />
-                        </head>
-                        <body>
-                            <a href="test?param_one=value_one&param_two=value_two"></a>
-                            <a href="#{@url}/test?param_one=value_one&param_two=value_two"></a>
-                            <a href="#{@url}/test?param_one=value_one&param_two=skip-this"></a>
-                        </body>
-                    </html>
-                    HTML
-
-                    Arachni::Element::Link.from_document( @url, html ).size.should == 1
-                    Arachni::Options.reset
                 end
             end
         end

@@ -31,18 +31,15 @@ module Module
 #
 class Manager < Arachni::Component::Manager
     include Utilities
-    extend Utilities
+    extend  Utilities
 
+    # Namespace under which all modules reside.
     NAMESPACE = ::Arachni::Modules
-
-    @@results             ||= []
-    @@issue_set           ||= BloomFilter.new
-    @@do_not_store        ||= false
-    @@on_register_results_blocks ||= []
-    @@on_register_results_blocks_raw ||= []
 
     # @param    [Arachni::Framework]  framework
     def initialize( framework )
+        self.class.reset
+
         @framework = framework
         @opts = @framework.opts
         super( @opts.dir['modules'], NAMESPACE )
@@ -51,17 +48,13 @@ class Manager < Arachni::Component::Manager
     #
     # Runs all modules against 'page'.
     #
-    # @param    [::Arachni::Page]   page    page to audit
+    # @param    [::Arachni::Page]   page    Page to audit.
     #
     def run( page )
         schedule.each { |mod| exception_jail( false ){ run_one( mod, page ) } }
     end
 
-    #
-    # Returns the modules in proper running order.
-    #
-    # @return   [Array]
-    #
+    # @return   [Array] Modules in proper running order.
     def schedule
         schedule       = Set.new
         preferred_over = Hash.new([])
@@ -121,11 +114,11 @@ class Manager < Arachni::Component::Manager
         return true if !elements || elements.empty?
 
         elems = {
-            Element::LINK => page.links && page.links.any? && @opts.audit_links,
-            Element::FORM => page.forms && page.forms.any? && @opts.audit_forms,
-            Element::COOKIE => page.cookies && page.cookies.any? && @opts.audit_cookies,
-            Element::HEADER => page.headers && page.headers.any? && @opts.audit_headers,
-            Element::BODY   => page.body && !page.body.empty?,
+            Element::LINK   => page.links.any?   && @opts.audit_links,
+            Element::FORM   => page.forms.any?   && @opts.audit_forms,
+            Element::COOKIE => page.cookies.any? && @opts.audit_cookies,
+            Element::HEADER => page.headers.any? && @opts.audit_headers,
+            Element::BODY   => !page.body.empty?,
             Element::PATH   => true,
             Element::SERVER => true
         }
@@ -141,13 +134,6 @@ class Manager < Arachni::Component::Manager
         self.class.on_register_results( &block )
     end
 
-    def self.on_register_results_blocks
-        @@on_register_results_blocks
-    end
-    def on_register_results_blocks
-        self.class.on_register_results_blocks
-    end
-
     def self.on_register_results_raw( &block )
         on_register_results_blocks_raw << block
     end
@@ -155,29 +141,22 @@ class Manager < Arachni::Component::Manager
         self.class.on_register_results_raw( &block )
     end
 
-    def self.on_register_results_blocks_raw
-        @@on_register_results_blocks_raw
-    end
-    def on_register_results_blocks_raw
-        self.class.on_register_results_blocks_raw
-    end
-
     def self.store?
-        !@@do_not_store
+        !@do_not_store
     end
     def store?
         self.class.store
     end
 
     def self.do_not_store
-        @@do_not_store = true
+        @do_not_store = true
     end
     def do_not_store
         self.class.do_not_store
     end
 
     def self.store
-        @@do_not_store = false
+        @do_not_store = false
     end
     def store
         self.class.store
@@ -196,7 +175,9 @@ class Manager < Arachni::Component::Manager
         unique = dedup( results )
         return 0 if unique.empty?
 
-        unique.each { |issue| issue_set << issue.unique_id if issue.var }
+        # Don't allow multiple variations of the same audit-type issue,
+        # only allow variations for recon modules.
+        unique.each { |issue| issue_set << issue.unique_id if issue.audit? }
 
         on_register_results_blocks.each { |block| block.call( unique ) }
         return 0 if !store?
@@ -208,22 +189,8 @@ class Manager < Arachni::Component::Manager
         self.class.register_results( results )
     end
 
-    def self.issue_set
-        @@issue_set
-    end
-    def issue_set
-        self.class.issue_set
-    end
-
-    #
-    # Class method
-    #
-    # Gets module results
-    #
-    # @param    [Array]
-    #
     def self.results
-        @@results ||= []
+        @results
     end
     def results
         self.class.results
@@ -234,16 +201,38 @@ class Manager < Arachni::Component::Manager
         results
     end
 
+    def self.issue_set
+        @issue_set
+    end
+    def issue_set
+        self.class.issue_set
+    end
+
     def self.reset
-        store
-        on_register_results_blocks.clear
-        on_register_results_blocks_raw.clear
-        issue_set.clear
-        results.clear
+        # Holds issues.
+        @results                        = []
+        # Used to deduplicate issues.
+        @issue_set                      = Support::LookUp::HashSet.new
+        # Determines whether or not to store the pushed issues.
+        @do_not_store                   = false
+        # Blocks to call for logged issues after deduplication takes place.
+        @on_register_results_blocks     = []
+        # Blocks to call for logged issues without deduplication taking place.
+        @on_register_results_blocks_raw = []
+
         remove_constants( NAMESPACE )
     end
     def reset
         self.class.reset
+    end
+
+    private
+
+    def self.on_register_results_blocks_raw
+        @on_register_results_blocks_raw
+    end
+    def on_register_results_blocks_raw
+        self.class.on_register_results_blocks_raw
     end
 
     def self.dedup( issues )
@@ -252,6 +241,14 @@ class Manager < Arachni::Component::Manager
     def dedup( issues )
         self.class.dedup( issues )
     end
+
+    def self.on_register_results_blocks
+        @on_register_results_blocks
+    end
+    def on_register_results_blocks
+        self.class.on_register_results_blocks
+    end
+
 
 end
 end

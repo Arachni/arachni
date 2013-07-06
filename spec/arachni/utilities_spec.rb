@@ -1,5 +1,5 @@
 # encoding: utf-8
-require_relative '../spec_helper'
+require 'spec_helper'
 
 describe Arachni::Utilities do
 
@@ -67,17 +67,17 @@ describe Arachni::Utilities do
         end
     end
 
-    describe '#redundant?' do
+    describe '#redundant_path?' do
         context "when a URL's counter reaches 0" do
             it 'returns true' do
                 Arachni::Options.redundant = { /match_this/ => 10 }
 
                 url = 'http://stuff.com/match_this'
                 10.times do
-                    @utils.redundant?( url ).should be_false
+                    @utils.redundant_path?( url ).should be_false
                 end
 
-                @utils.redundant?( url ).should be_true
+                @utils.redundant_path?( url ).should be_true
             end
         end
         context "when a URL's counter has not reached 0" do
@@ -86,10 +86,10 @@ describe Arachni::Utilities do
 
                 url = 'http://stuff.com/match_this'
                 10.times do
-                    @utils.redundant?( url ).should be_false
+                    @utils.redundant_path?( url ).should be_false
                 end
 
-                @utils.redundant?( url ).should be_false
+                @utils.redundant_path?( url ).should be_false
             end
         end
     end
@@ -591,46 +591,6 @@ describe Arachni::Utilities do
                     'path %"&*[$)?query=crap&other=$54$5466][(\'"#fragment',
                 'http://test.com/login.php?goto?=domain.tld/index.php'
             ].each { |p| @utils.normalize_url( p ).should == Arachni::URI.normalize( p ) }
-        end
-    end
-
-    describe '#hash_keys_to_str' do
-        it 'should recursively convert a Hash\'s keys to strings' do
-            h1 = {
-                key1: 'val1',
-                hash: {
-                    lvl2: 'val2',
-                }
-            }
-
-            h2 = {
-                'key1' => 'val1',
-                'hash' => {
-                    'lvl2' => 'val2',
-                }
-            }
-
-            @utils.hash_keys_to_str( h1 ).should == h2
-        end
-    end
-
-    describe '#hash_keys_to_sym' do
-        it 'should recursively convert a Hash\'s keys to strings' do
-            h1 = {
-                key1: 'val1',
-                hash: {
-                    lvl2: 'val2',
-                }
-            }
-
-            h2 = {
-                'key1' => 'val1',
-                'hash' => {
-                    'lvl2' => 'val2',
-                }
-            }
-
-            @utils.hash_keys_to_sym( h2 ).should == h1
         end
     end
 

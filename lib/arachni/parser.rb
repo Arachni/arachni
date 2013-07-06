@@ -18,7 +18,7 @@ module Arachni
 
 lib = Options.dir['lib']
 
-# load all available element types
+# Load all available element types.
 Dir.glob( lib + 'element/*.rb' ).each { |f| require f }
 
 require lib + 'page'
@@ -26,27 +26,11 @@ require lib + 'utilities'
 require lib + 'component/manager'
 
 #
-# Analyzer class
+# HTML Parser
 #
-# Analyzes HTML code extracting forms, links and cookies
-# depending on user opts.
+# Analyzes HTML code extracting forms, links and cookies depending on user opts.
 #
-# It grabs <b>all</b> element attributes not just URLs and variables.
-# All URLs are converted to absolute and URLs outside the domain are ignored.
-#
-# === Forms
-# Form analysis uses both regular expressions and the Nokogiri parser
-# in order to be able to handle badly written HTML code, such as not closed
-# tags and tag overlaps.
-#
-# In order to ease audits, in addition to parsing forms into data structures
-# like "select" and "option", all auditable inputs are put under the "auditable" key.
-#
-# === Links
-# Links are extracted using the Nokogiri parser.
-#
-# === Cookies
-# Cookies are extracted from the HTTP headers and parsed by WEBrick::Cookie
+# ignored.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
@@ -56,12 +40,9 @@ class Parser
     include Utilities
 
     module Extractors
-        #
-        #
+
         # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-        #
         # @abstract
-        #
         class Base
 
             #
@@ -80,22 +61,18 @@ class Parser
 
     alias :skip? :skip_path?
 
-    #
-    # @return    [String]    the url of the page
-    #
+    # @return    [String]    The url of the page.
     attr_reader :url
 
-    #
-    # Options instance
-    #
-    # @return    [Options]
-    #
+    # @return    [Options]  Options instance.
     attr_reader :opts
 
     #
-    # Instantiates Analyzer class with user options.
-    #
     # @param  [Typhoeus::Responses, Array<Typhoeus::Responses>] res
+    #   Response(s) to analyze and parse into a {Page}. By providing multiple
+    #   responses the parser will be able to perform some preliminary differential
+    #   analysis and identify nonce tokens in inputs.
+    #
     # @param  [Options] opts
     #
     def initialize( res, opts = Options )
@@ -127,7 +104,9 @@ class Parser
     #
     # Converts a relative URL to an absolute one.
     #
-    # @return   [String]    absolute URL
+    # @param    [String]    relative_url    URL to convert to absolute.
+    #
+    # @return   [String]    Absolute URL.
     #
     def to_absolute( relative_url )
         if url = base
@@ -138,32 +117,16 @@ class Parser
         super( relative_url, base_url )
     end
 
-    #
-    # @param    [String]    url     to check
-    #
-    # @return   [Bool]    true if URL is within domain limits, false if not
-    #
-    def path_in_domain?( url )
-        super( url, @url )
-    end
-
-    #
-    # Runs the Analyzer and extracts forms, links and cookies
-    #
     # @return [Page]
-    #
+    #   Parsed page object based on the given options and HTTP responses.
     def page
-        req_method = 'get'
-        begin
-            req_method = @response.request.method.to_s
-        rescue
-        end
+        req_method = @response.request ? @response.request.method.to_s : 'get'
 
         self_link = Link.new( @url, inputs: link_vars( @url ) )
 
-        # non text files won't contain any auditable elements
+        # Non text files won't contain any auditable elements.
         if !text?
-            return Page.new(
+            page = Page.new(
                 code:             @code,
                 url:              @url,
                 method:           req_method,
@@ -173,25 +136,27 @@ class Parser
                 response_headers: @response_headers,
                 text:             false
             )
+            Platform::Manager.fingerprint( page ) if Options.fingerprint?
+            return page
         end
 
-        # extract cookies from the response
+        # Extract cookies from the response.
         c_cookies = cookies
 
-        # make a list of the response cookie names
+        # Make a list of the response cookie names.
         cookie_names = c_cookies.map { |c| c.name }
 
         from_jar = []
 
-        # if there's a Netscape cookiejar file load cookies from it but only new ones,
-        # i.e. only if they weren't in the response
+        # If there's a Netscape cookiejar file load cookies from it but only
+        # new ones, i.e. only if they weren't already in the response.
         if @opts.cookie_jar.is_a?( String ) && File.exists?( @opts.cookie_jar )
             from_jar |= cookies_from_file( @url, @opts.cookie_jar )
                 .reject { |c| cookie_names.include?( c.name ) }
         end
 
-        # if we somehow have any runtime configuration cookies load them too
-        # but only if they haven't already been seen
+        # If we somehow have runtime configuration cookies load them too, but
+        # only if they haven't already been seen.
         if @opts.cookies && !@opts.cookies.empty?
             from_jar |= @opts.cookies.reject { |c| cookie_names.include?( c.name ) }
         end
@@ -201,17 +166,17 @@ class Parser
             cookie_names.include?( c.name )
         end
 
-        # these cookies are to be audited and thus are dirty and anarchistic
+        # These cookies are to be audited and thus are dirty and anarchistic,
         # so they have to contain even cookies completely irrelevant to the
-        # current page, i.e. it contains all cookies that have been observed
-        # from the beginning of the scan
+        # current page. I.e. it contains all cookies that have been observed
+        # since the beginning of the scan
         cookies_to_be_audited = (c_cookies | from_jar | from_http_jar).map do |c|
             dc = c.dup
             dc.action = @url
             dc
         end
 
-        Page.new(
+        page = Page.new(
             code:             @code,
             url:              @url,
             query_vars:       self_link.auditable,
@@ -223,43 +188,50 @@ class Parser
 
             document:         doc,
 
-            # all paths seen in the page
+            # All paths seen in the page.
             paths:            paths,
             forms:            forms,
 
-            # all href attributes from 'a' elements
+            # All `href` attributes from `a` elements.
             links:            links | [self_link],
 
             cookies:          cookies_to_be_audited,
             headers:          headers,
 
-            # this is the page cookiejar, each time the page is to be audited
-            # by a module the cookiejar of the HTTP class will be updated
-            # with the cookies specified here
+            # This is the page cookiejar, each time the page is to be audited
+            # by a module, the cookiejar of the HTTP class will be updated
+            # with the cookies specified here.
             cookiejar:        c_cookies | from_jar,
 
+            # Contains text-based data -- i.e. not a binary response.
             text:             true
         )
+        Platform::Manager.fingerprint( page ) if Options.fingerprint?
+        page
     end
     alias :run :page
 
+    # @return   [Boolean]
+    #   `true` if the given HTTP response data are text based, `false` otherwise.
     def text?
         @response.text?
     end
 
+    # @return   [Nokogiri::HTML, nil]
+    #   Returns a parsed HTML document from the body of the HTTP response or
+    #   `nil` if the response data wasn't {#text? text-based} or the response
+    #   couldn't be parsed.
     def doc
         return @doc if @doc
         @doc = Nokogiri::HTML( @html ) if text? rescue nil
     end
 
     #
-    # Returns a list of valid auditable HTTP header fields.
+    # @note It's more of a placeholder method, it doesn't actually analyze anything.
+    #   It's a long shot that any of these will be vulnerable but better be safe
+    #   than sorry.
     #
-    # It's more of a placeholder method, it doesn't actually analyze anything.<br/>
-    # It's a long shot that any of these will be vulnerable but better
-    # be safe than sorry.
-    #
-    # @return    [Hash]    HTTP header fields
+    # @return    [Hash]    List of valid auditable HTTP header fields.
     #
     def headers
         {
@@ -267,37 +239,36 @@ class Parser
                 '/xml;q=0.9,*/*;q=0.8',
             'Accept-Charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
             'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-            'From'       => @opts.authed_by  || '',
-            'User-Agent' => @opts.user_agent || '',
-            'Referer'    => @url,
-            'Pragma'     => 'no-cache'
+            'From'            => @opts.authed_by  || '',
+            'User-Agent'      => @opts.user_agent || '',
+            'Referer'         => @url,
+            'Pragma'          => 'no-cache'
         }.map { |k, v| Header.new( @url, { k => v } ) }
     end
 
+    # @param  [String, Nokogiri::HTML] html
+    #   Document to analyze, defaults to {#doc}.
     #
-    # Extracts forms from HTML document
-    #
-    # @param  [String] html
-    #
-    # @return [Array<Element::Form>] array of forms
-    #
+    # @return [Array<Element::Form>]    Forms from `html`.
     def forms( html = nil )
         return [] if !text? && !html
 
         f = Form.from_document( @url, html || doc )
+        return f if !@secondary_responses
 
-        if @secondary_responses
-            @secondary_responses.each do |response|
-                next if response.body.to_s.empty?
+        @secondary_responses.each do |response|
+            next if response.body.to_s.empty?
 
-                Form.from_document( @url, response.body ).each do |form2|
-                    f.each do |form|
-                        next if form.auditable.keys.sort != form2.auditable.keys.sort
-                        form.auditable.each do |k, v|
-                            if v != form2.auditable[k] && form.field_type_for( k ) == 'hidden'
-                                form.nonce_name = k
-                            end
-                        end
+            Form.from_document( @url, response.body ).each do |form2|
+                f.each do |form|
+                    next if "#{form.id}:#{form.name_or_id}" !=
+                        "#{form2.id}:#{form2.name_or_id}"
+
+                    form.auditable.each do |k, v|
+                        next if !(v != form2.auditable[k] &&
+                            form.field_type_for( k ) == 'hidden')
+
+                        form.nonce_name = k
                     end
                 end
             end
@@ -306,13 +277,10 @@ class Parser
         f
     end
 
+    # @param  [String, Nokogiri::HTML] html
+    #   Document to analyze, defaults to {#doc}.
     #
-    # Extracts links from HTML document
-    #
-    # @param  [String] html
-    #
-    # @return [Array<Element::Link>] of links
-    #
+    # @return [Array<Element::Link>] Links in `html`.
     def links( html = nil )
         return [] if !text? && !html
 
@@ -323,34 +291,21 @@ class Parser
         end | Link.from_document( @url, html || doc )
     end
 
-    #
-    # Extracts variables and their values from a link
-    #
-    # @see #links
-    #
-    # @param    [String]    url
-    #
-    # @return   [Hash]    name=>value pairs
-    #
+    # @param    [String]    url URL to analyze.
+    # @return   [Hash]    Parameters found in `url`.
     def link_vars( url )
         Link.parse_query_vars( url )
     end
 
     #
-    # Extracts cookies from an HTTP headers and the response body
-    #
     # @return   [Array<Element::Cookie>]
-    #
+    #   Cookies from HTTP headers and response body.
     def cookies
         ( Cookie.from_document( @url, doc ) |
           Cookie.from_headers( @url, @response_headers ) )
     end
 
-    #
-    # Array of distinct links to follow
-    #
-    # @return   [Array<String>]
-    #
+    # @return   [Array<String>] Distinct links to follow.
     def paths
       return @paths unless @paths.nil?
       @paths = []
@@ -359,36 +314,33 @@ class Parser
       @paths = run_extractors
     end
 
-    #
-    # @return   [String]    base href if there is one
-    #
+    # @return   [String]    `base href`, if there is one.
     def base
-        @base ||= begin
-            doc.search( '//base[@href]' ).first['href']
-        rescue
-        end
+        @base ||= doc.search( '//base[@href]' ).first['href'] rescue nil
     end
 
     private
 
     #
-    # Runs all Spider (path extraction) modules and returns an array of paths
+    # Runs all path extraction components and returns an array of paths.
     #
-    # @return   [Array]   paths
+    # @return   [Array<String>]   Paths.
     #
     def run_extractors
         begin
-            @@manager ||= Component::Manager.new( @opts.dir['path_extractors'], Extractors )
-
-            return @@manager.available.map do |name|
-                exception_jail( false ){ @@manager[name].new.run( doc ) }
-            end.flatten.uniq.compact.
-            map { |path| to_absolute( path ) }.compact.uniq.
-            reject { |path| skip?( path ) }
+            return self.class.extractors.available.map do |name|
+                    exception_jail( false ){ self.class.extractors[name].new.run( doc ) }
+                end.flatten.uniq.compact.
+                map { |path| to_absolute( path ) }.compact.uniq.
+                reject { |path| skip?( path ) }
         rescue ::Exception => e
-            print_error( e.to_s )
-            print_error_backtrace( e )
+            print_error e.to_s
+            print_error_backtrace e
         end
+    end
+
+    def self.extractors
+        @manager ||= Component::Manager.new( Options.dir['path_extractors'], Extractors )
     end
 
 end
