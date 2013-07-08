@@ -2,6 +2,8 @@
 
 ## _Under development_
 
+- `Session#find_login_form` -- Stores cookies set by the page containing the login form.
+
 ## Version 0.4.3 _(July 06, 2013)_
 
 - RPC protocol

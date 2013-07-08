@@ -166,10 +166,12 @@ class Session
                 elsif opts[:forms]
                     opts[:forms]
                 elsif url = opts[:url]
+                    http_opts = { http: { update_cookies: true } }
+
                     if async
-                        page_from_url( url ) { |p| block.call find.call( p.forms ) }
+                        page_from_url( url, http_opts ) { |p| block.call find.call( p.forms ) }
                     else
-                        page_from_url( url ).forms
+                        page_from_url( url, http_opts ).forms
                     end
                 end
 
