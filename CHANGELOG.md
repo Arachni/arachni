@@ -3,6 +3,8 @@
 ## _Under development_
 
 - `Session#find_login_form` -- Stores cookies set by the page containing the login form.
+- Plugins
+    - AutoLogin -- All responses now update the framework cookies.
 
 ## Version 0.4.3 _(July 06, 2013)_
 

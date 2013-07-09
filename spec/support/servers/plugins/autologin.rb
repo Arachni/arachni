@@ -14,6 +14,8 @@ get '/' do
 end
 
 get '/login' do
+    cookies[:preserve] = 'this'
+
     <<-HTML
         <form method='post' name='login_form' action="/login">
             <input name='username' value='' />
@@ -25,7 +27,7 @@ end
 
 post '/login' do
     if params['username'] == 'john' && params['password'] == 'doe' &&
-        params['token'] == 'secret!'
+        params['token'] == 'secret!' && cookies[:preserve] == 'this'
         cookies[:success] = true
         redirect '/'
     else
