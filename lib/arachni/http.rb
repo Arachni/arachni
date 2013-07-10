@@ -18,8 +18,9 @@ require 'typhoeus'
 require 'singleton'
 
 module Arachni
+
 lib = Options.dir['lib']
-require lib + 'typhoeus/utils'
+require lib + 'ethon/easy'
 require lib + 'typhoeus/hydra'
 require lib + 'typhoeus/request'
 require lib + 'typhoeus/response'
@@ -104,17 +105,15 @@ class HTTP
         req_limit = opts.http_req_limit || MAX_CONCURRENCY
 
         hydra_opts = {
-            max_concurrency: req_limit,
-            method:          :auto
+            max_concurrency: req_limit
         }
 
-        if opts.url
-            parsed_url = uri_parse( opts.url )
-            hydra_opts.merge!(
-                username: parsed_url.user,
-                password: parsed_url.password
-            )
-        end
+        #if opts.url
+        #    parsed_url = uri_parse( opts.url )
+        #    hydra_opts.merge!(
+        #        userpwd: "#{parsed_url.user}:#{parsed_url.password}"
+        #    )
+        #end
 
         @url = opts.url.to_s
         @url = nil if @url.empty?
@@ -122,12 +121,8 @@ class HTTP
         @hydra      = Typhoeus::Hydra.new( hydra_opts )
         @hydra_sync = Typhoeus::Hydra.new( hydra_opts.merge( max_concurrency: 1 ) )
 
-        @hydra.disable_memoization
-        @hydra_sync.disable_memoization
-
         @headers = {
             'Accept'          => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Encoding' => 'gzip, deflate',
             'User-Agent'      => opts.user_agent
         }
         @headers['From'] = opts.authed_by if opts.authed_by
@@ -143,15 +138,16 @@ class HTTP
             proxy:          "#{opts.proxy_host}:#{opts.proxy_port}",
             proxy_username: opts.proxy_username,
             proxy_password: opts.proxy_password,
-            proxy_type:     opts.proxy_type
+            proxy_type:     opts.proxy_type,
         } if opts.proxy_host
 
         opts.redirect_limit ||= REDIRECT_LIMIT
         @opts = {
-            follow_location:               false,
-            max_redirects:                 opts.redirect_limit,
-            disable_ssl_peer_verification: true,
-            timeout:                       opts.http_timeout || HTTP_TIMEOUT
+            followlocation:     false,
+            maxredirs:          opts.redirect_limit,
+            ssl_verifypeer:     false,
+            timeout_ms:         opts.http_timeout || HTTP_TIMEOUT,
+            accept_encoding:    'gzip, deflate'
         }.merge( proxy_opts )
 
         @request_count  = 0
@@ -333,11 +329,6 @@ class HTTP
                 rescue
                     return
                 end
-            else
-                cparams = cparams.inject( {} ) do |h, (k, v)|
-                    h[form_encode( k )] = form_encode( v ) if v && k
-                    h
-                end
             end
 
             opts = {
@@ -347,8 +338,8 @@ class HTTP
                 body:    opts[:body]
             }.merge( @opts )
 
-            opts[:follow_location] = follow_location if follow_location
-            opts[:timeout]         = timeout if timeout
+            opts[:followlocation] = follow_location if follow_location
+            opts[:timeout_ms]     = timeout if timeout
 
             req = Typhoeus::Request.new( curl, opts )
             req.train if train
@@ -648,14 +639,13 @@ class HTTP
         print_debug 'Queued request.'
         print_debug "ID#: #{req.id}"
         print_debug "URL: #{req.url}"
-        print_debug "Method: #{req.method}"
-        print_debug "Params: #{req.params}"
-        print_debug "Headers: #{req.headers}"
+        print_debug "Method: #{req.options[:method]}"
+        print_debug "Params: #{req.options[:params]}"
+        print_debug "Headers: #{req.options[:headers]}"
         print_debug "Train?: #{req.train?}"
         print_debug  '------------'
 
-        req.on_complete( true ) do |res|
-
+        req.on_complete do |res|
             @response_count += 1
             @curr_res_cnt   += 1
             @curr_res_time  += res.start_transfer_time
@@ -667,7 +657,7 @@ class HTTP
             print_debug '------------'
             print_debug "Got response for request ID#: #{res.request.id}"
             print_debug "Status: #{res.code}"
-            print_debug "Error msg: #{res.curl_error_message}"
+            print_debug "Error msg: #{res.return_message}"
             print_debug "URL: #{res.effective_url}"
             print_debug "Headers:\n#{res.headers}"
             print_debug "Parsed headers: #{res.headers_hash}"

@@ -20,9 +20,24 @@ class Response
     alias :url :effective_url
 
     alias :old_initialize :initialize
-    def initialize( *args )
-        old_initialize( *args )
+    def initialize( options = {} )
+        old_initialize( options )
+
+        self.request = options[:request]
+
+        @body = response_body
         @body = @body.recode if text?
+    end
+
+    alias :code :response_code
+
+    def headers
+        super || {}
+    end
+    alias :headers_hash :headers
+
+    def body
+        @body
     end
 
     def []( k )
@@ -62,19 +77,19 @@ class Response
     end
 
     def redirection?
-        (300..399).include?( @code ) || !location.nil?
+        (300..399).include?( code ) || !location.nil?
     end
 
     # @return    [Hash]   converts self to hash
     def to_hash
-        hash = {}
+        hash = options.stringify_keys
         instance_variables.each do |var|
             hash[var.to_s.gsub( /@/, '' )] = instance_variable_get( var )
         end
 
-        hash['headers_hash'] = {}
-        headers_hash.to_hash.each_pair { |k, v| hash['headers_hash'][k] = v }
+        hash['headers'] = {}.merge( hash['headers'] )
 
+        hash.delete( 'options' )
         hash.delete( 'request' )
         hash
     end
@@ -82,13 +97,13 @@ class Response
     private
 
     def find_header_value( field )
-        return if !headers_hash.is_a?( Hash ) || headers_hash[field].empty?
+        return if !headers_hash.is_a?( Hash ) || !headers_hash[field] || headers_hash[field].empty?
         headers_hash.to_hash.each { |k, v| return v if k.downcase == field.downcase }
         nil
     end
 
     def find_header_field( field )
-        return if !headers_hash.is_a?( Hash ) || headers_hash[field].empty?
+        return if !headers_hash.is_a?( Hash ) || !headers_hash[field] || headers_hash[field].empty?
         headers_hash.to_hash.each { |k, v| return k if k.downcase == field.downcase }
         nil
     end

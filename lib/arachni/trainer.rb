@@ -47,7 +47,7 @@ class Trainer
         HTTP.add_on_queue do |req, _|
             next if !req.train?
 
-            req.on_complete( true ) do |res|
+            req.on_complete do |res|
                 # handle redirections
                 if res.redirection? && res.location.is_a?( String )
                     reference_url = @page ? @page.url : framework.opts.url

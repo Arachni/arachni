@@ -14,43 +14,17 @@
     limitations under the License.
 =end
 
-module Typhoeus
-class Hydra
+module Ethon
+class Easy
 
-    attr_accessor :max_concurrency
+module Util
 
-    alias :old_run :run
-    def run
-        synchronize { old_run }
+    # Overridden to just return the string as is, Arachni loves null-bytes.
+    def escape_zero_byte( value )
+        value
     end
 
-    alias :old_queue :queue
-    def queue( *args )
-        synchronize { old_queue( *args ) }
-    end
-
-    private
-    def locked?
-        !!Thread.current[:locked]
-    end
-
-    def lock
-        Thread.current[:locked] = true
-    end
-
-    def unlock
-        Thread.current[:locked] = false
-    end
-
-    def synchronize( &block )
-        if locked?
-            block.call
-        else
-            lock
-            (@@mutex ||= Mutex.new).synchronize( &block )
-            unlock
-        end
-    end
-
+    extend self
+end
 end
 end

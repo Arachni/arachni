@@ -72,7 +72,7 @@ class Header < Arachni::Element::Base
     end
 
     def self.encode( header )
-        ::URI.encode( header, "\r\n" )
+        ::URI.encode( header, "\0\r\n" )
     end
     def encode( header )
         self.class.encode( header )

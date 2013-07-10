@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'json'
 
-describe Arachni::RPC::Server::Framework do
+describe 'Arachni::RPC::Server::Framework' do
     before( :all ) do
         @opts = Arachni::Options.instance
 
@@ -460,7 +460,8 @@ describe Arachni::RPC::Server::Framework do
         end
     end
     describe '#update_page_queue' do
-        it 'pushs the provided page objects to the page audit queue' do
+        it 'pushes the provided page objects to the page audit queue' do
+            @opts.dir['modules'] = fixtures_path + '/taint_module/'
             url = web_server_url_for( :framework_simple )
             inst = instance_spawn
             inst.opts.url = url

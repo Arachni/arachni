@@ -41,11 +41,11 @@ options '/' do
 end
 
 get '/echo' do
-    params.to_s
+    YAML.dump params
 end
 
 post '/echo' do
-    params.to_s
+    YAML.dump params
 end
 
 get '/redirect' do

@@ -62,7 +62,7 @@ Gem::Specification.new do |s|
     s.add_dependency 'arachni-rpc-em',  '0.2'
 
     # HTTP interface.
-    s.add_dependency 'typhoeus',        '~> 0.3.3'
+    s.add_dependency 'typhoeus',        '0.6.3'
 
     # Fallback URI parsing and encoding utilities.
     s.add_dependency 'addressable',     '~> 2.3.2'

@@ -53,7 +53,7 @@ describe Arachni::Page do
                     effective_url: 'http://test.com',
                     body: '',
                     request: Typhoeus::Request.new( 'http://test.com' ),
-                    headers_hash: {
+                    headers: {
                        'Content-Type' => 'text/html',
                        'Set-Cookie'   => 'cname=cval'
                    }

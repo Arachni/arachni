@@ -14,12 +14,20 @@
     limitations under the License.
 =end
 
-module Typhoeus::Utils
-    def escape( s )
-        s.encode( 'UTF-8', invalid: :replace, undef: :replace ).
-            to_s.gsub( /([^ a-zA-Z0-9_.-]+)/u ) {
-                '%' + $1.unpack( 'H2' * bytesize( $1 ) ).join( '%' ).upcase
-            }.tr( ' ', '+' )
+require_relative 'easy/util'
+
+module Ethon
+class Easy
+
+    NULLBYTE = "_null#{rand( 9999999999999 )}byte_"
+
+    alias :old_escape :escape
+
+    # Overridden to preserve null-bytes.
+    def escape( value )
+        value = value.gsub( "\0", NULLBYTE )
+        old_escape( value ).gsub( NULLBYTE, '%00' )
     end
-    module_function :escape
+
+end
 end

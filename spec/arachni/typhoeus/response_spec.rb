@@ -17,10 +17,10 @@ describe Typhoeus::Response do
             Typhoeus::Response.new.location.should be_nil
 
             ct = 'http://test.com'
-            h = { headers_hash: { 'location' => ct } }
+            h = { headers: { 'location' => ct } }
             Typhoeus::Response.new( h ).location.should == ct
 
-            h = { headers_hash: { 'Location' => ct } }
+            h = { headers: { 'Location' => ct } }
             Typhoeus::Response.new( h ).location.should == ct
         end
     end
@@ -30,10 +30,10 @@ describe Typhoeus::Response do
             Typhoeus::Response.new.content_type.should be_nil
 
             ct = 'text/html'
-            h = { headers_hash: { 'content-type' => ct } }
+            h = { headers: { 'content-type' => ct } }
             Typhoeus::Response.new( h ).content_type.should == ct
 
-            h = { headers_hash: { 'Content-Type' => ct } }
+            h = { headers: { 'Content-Type' => ct } }
             Typhoeus::Response.new( h ).content_type.should == ct
         end
     end
@@ -43,7 +43,7 @@ describe Typhoeus::Response do
             context 'text/*' do
                 it 'returns true' do
                     h = {
-                        headers_hash: { 'Content-Type' => 'text/stuff' },
+                        headers: { 'Content-Type' => 'text/stuff' },
                         body:         "stuff"
                     }
                     Typhoeus::Response.new( h ).text?.should be_true
@@ -55,7 +55,7 @@ describe Typhoeus::Response do
                     context 'binary' do
                         it 'returns false' do
                             h = {
-                                headers_hash: { 'Content-Type' => 'application/stuff' },
+                                headers: { 'Content-Type' => 'application/stuff' },
                                 body:         "\00\00\00"
                             }
                             Typhoeus::Response.new( h ).text?.should be_false
@@ -65,7 +65,7 @@ describe Typhoeus::Response do
                     context 'text' do
                         it 'returns true' do
                             h = {
-                                headers_hash: { 'Content-Type' => 'application/stuff' },
+                                headers: { 'Content-Type' => 'application/stuff' },
                                 body:         "stuff"
                             }
                             Typhoeus::Response.new( h ).text?.should be_true
@@ -77,7 +77,7 @@ describe Typhoeus::Response do
             context 'other' do
                 it 'returns false' do
                     h = {
-                        headers_hash: { 'Content-Type' => 'blah/stuff' },
+                        headers: { 'Content-Type' => 'blah/stuff' },
                         body:         "stuff"
                     }
                     Typhoeus::Response.new( h ).text?.should be_false
@@ -128,7 +128,6 @@ describe Typhoeus::Response do
                 "curl_error_message" => nil,
                 "status_message" => nil,
                 "http_version" => nil,
-                "headers" => nil,
                 "body" => 'stuff',
                 "time" => 0.1,
                 "requested_url" => 'http://test.com',
@@ -142,7 +141,7 @@ describe Typhoeus::Response do
                 "effective_url" => nil,
                 "primary_ip" => nil,
                 "mock" => false,
-                "headers_hash" => { 'Context-Type' => 'text/html' }
+                "headers" => { 'Context-Type' => 'text/html' }
             }
 
             h2 = {}

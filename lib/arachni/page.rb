@@ -112,6 +112,10 @@ class Page
         @paths ||= []
 
         @response_headers ||= {}
+
+        # Force to a native Ruby Hash.
+        @response_headers   = {}.merge( @response_headers )
+
         @request_headers  ||= {}
         @query_vars       ||= {}
 

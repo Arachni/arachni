@@ -10,33 +10,6 @@ describe Typhoeus::Request do
         end
     end
 
-    describe '#on_complete' do
-        context 'when multi is enabled' do
-            it 'allows multiple callbacks' do
-                req = Typhoeus::Request.new( '' )
-
-                a = []
-                req.on_complete( true ) { a << 1 }
-                req.on_complete( true ) { a << 2 }
-                req.on_complete{ a << 3 }
-
-                req.call_handlers
-                a.should == [1, 2, 3]
-            end
-        end
-
-        it 'sets a single callback to handle the response' do
-            req = Typhoeus::Request.new( '' )
-
-            a = []
-            req.on_complete { a << 1 }
-            req.on_complete { a << 2 }
-
-            req.call_handlers
-            a.should == [2]
-        end
-    end
-
     describe '#train' do
         it 'sets train? to return true' do
             req = Typhoeus::Request.new( '' )

@@ -27,37 +27,19 @@ class Request
     attr_accessor :id
 
     alias :old_initialize :initialize
-    def initialize( url, options = {} )
-        old_initialize( url, options )
+    def initialize( *args )
+        old_initialize( *args )
 
-        @on_complete        = []
-        @handled_response   = []
-        @multiple_callbacks = false
-        @train              = false
-        @update_cookies     = false
+        @train          = false
+        @update_cookies = false
     end
 
-    def on_complete( multi = false, &block )
-        # remember user preference for subsequent calls
-        if multi || @multiple_callbacks
-            @multiple_callbacks = true
-            @on_complete << block
-        else
-            @on_complete = block
-        end
-
+    def headers
+        options[:headers]
     end
 
-    def call_handlers
-        if @on_complete.is_a? Array
-            @on_complete.each do |callback|
-                @handled_response << callback.call( response )
-            end
-        else
-            @handled_response << @on_complete.call( response )
-        end
-
-      call_after_complete
+    def method
+        options[:method]
     end
 
     def train?

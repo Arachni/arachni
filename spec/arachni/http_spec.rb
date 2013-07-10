@@ -509,7 +509,7 @@ describe Arachni::HTTP do
                             remove_id: true, params: params, method: :get
                         ){ |res| body = res.body }
                         @http.run
-                        body.should == params.merge( 'param3' => 'value3' ).to_s
+                        YAML.load( body ).should eq params.merge( 'param3' => 'value3' )
                     end
                 end
             end
@@ -555,7 +555,7 @@ describe Arachni::HTTP do
                     remove_id: true
                 ) { |res| body = res.body }
                 @http.run
-                params.to_s.should == body
+                params.should eq YAML.load( body )
             end
             context 'POST' do
                 it 'encodes special characters' do
@@ -563,14 +563,25 @@ describe Arachni::HTTP do
                     params = { '% param\ +=&;' => '% value\ +=&;', 'nil' => nil }
                     @http.request( @url + '/echo',
                                    method: :post,
-                                   params: params,
+                                   params:  params,
                                    remove_id: true
                     ) { |res| body = res.body }
                     @http.run
-                    body.should == { '% param\ +=&;' => '% value\ +=&;' }.to_s
+                    YAML.load( body ).should == { '% param\ +=&;' => '% value\ +=&;', 'nil' => '' }
+                end
+
+                it 'preserves nullbytes in params' do
+                    body = nil
+                    params = { 'stuff' => "test\0" }
+                    @http.request( @url + '/echo',
+                                   method: :post,
+                                   params:  params,
+                                   remove_id: true
+                    ) { |res| body = res.body }
+                    @http.run
+                    YAML.load( body ).should == params
                 end
             end
-
         end
 
         describe :timeout do
@@ -812,7 +823,7 @@ describe Arachni::HTTP do
             cookies = []
             cookies << Arachni::Element::Cookie.new( @url,
                 'name' => 'value' )
-            res = Typhoeus::Response.new( effective_url: @url, headers_hash: { 'Set-Cookie' => 'name=value' } )
+            res = Typhoeus::Response.new( effective_url: @url, headers: { 'Set-Cookie' => 'name=value' } )
 
             callback_cookies  = nil
             callback_response = nil
@@ -832,7 +843,7 @@ describe Arachni::HTTP do
             cookies = []
             cookies << Arachni::Element::Cookie.new( @url,
                 'name' => 'value' )
-            res = Typhoeus::Response.new( effective_url: @url, headers_hash: { 'Set-Cookie' => 'name=value' } )
+            res = Typhoeus::Response.new( effective_url: @url, headers: { 'Set-Cookie' => 'name=value' } )
 
             @opts.cookies.should be_nil
             @http.cookies.should be_empty
