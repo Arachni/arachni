@@ -108,13 +108,6 @@ class HTTP
             max_concurrency: req_limit
         }
 
-        #if opts.url
-        #    parsed_url = uri_parse( opts.url )
-        #    hydra_opts.merge!(
-        #        userpwd: "#{parsed_url.user}:#{parsed_url.password}"
-        #    )
-        #end
-
         @url = opts.url.to_s
         @url = nil if @url.empty?
 
