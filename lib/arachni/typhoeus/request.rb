@@ -42,6 +42,10 @@ class Request
         options[:method]
     end
 
+    def params
+        options[:params]
+    end
+
     def train?
         @train
     end
