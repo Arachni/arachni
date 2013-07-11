@@ -82,7 +82,8 @@ shared_examples_for "module" do
 
                     elements.each do |type|
                         it "logs vulnerable #{type}s" do
-                            if !issue_count && !issue_count_per_target && !issue_count_per_element
+                            if !issue_count && !issue_count_per_target &&
+                                !issue_count_per_element && !issue_count_per_element_per_target
                                 raise 'No issue count provided via a suitable method.'
                             end
 
@@ -98,6 +99,10 @@ shared_examples_for "module" do
 
                             if issue_count_per_element
                                 issues.size.should == issue_count_per_element[type]
+                            end
+
+                            if issue_count_per_element_per_target
+                                issues.size.should == issue_count_per_element_per_target[target.downcase.to_sym][type]
                             end
 
                             instance_eval &block if block_given?
@@ -120,6 +125,9 @@ shared_examples_for "module" do
     end
 
     def issue_count_per_element
+    end
+
+    def issue_count_per_element_per_target
     end
 
     def self.targets
