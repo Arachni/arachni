@@ -740,7 +740,7 @@ shared_examples_for 'auditable' do |options = {}|
                 cnt = 0
                 @auditable.audit( @seed ) { cnt += 1 }
                 @auditor.http.run
-                cnt.should == (options[:supports_nulls] ? 4 : 2)
+                cnt.should == (opts[:supports_nulls] ? 4 : 2)
             end
         end
 
