@@ -147,42 +147,33 @@ OUT.keys.each do |system|
     get "/#{system_str}/cookie" do
         <<-HTML
             <a href="/#{system_str}/cookie/straight">Cookie</a>
-            <!-- <a href="/#{system_str}/cookie/with_null">Cookie</a> -->
+            <a href="/#{system_str}/cookie/with_null">Cookie</a>
         HTML
     end
 
     get "/#{system_str}/cookie/straight" do
         cookies['cookie'] ||= default
-        return if cookies['cookie'].start_with?( default ) #|| cookies['cookie'].include?( "\0" )
+        return if cookies['cookie'].start_with?( default ) || cookies['cookie'].include?( "\0" )
 
         get_variations( system, cookies['cookie'] )
     end
 
-    #get "/#{system_str}/cookie/with_null" do
-    #    cookies['cookie1'] ||= default
-    #    return if !cookies['cookie1'].end_with?( "\00.html" )
-    #
-    #    p cookies['cookie1']
-    #    get_variations( system, cookies['cookie1'] )
-    #end
+    get "/#{system_str}/cookie/with_null" do
+        cookies['cookie1'] ||= default
+        return if !cookies['cookie1'].include?( "\00." )
+
+        get_variations( system, cookies['cookie1'] )
+    end
 
     get "/#{system_str}/header" do
         <<-EOHTML
             <a href="/#{system_str}/header/straight">Header</a>
-            <a href="/#{system_str}/header/with_null">Header</a>
         EOHTML
     end
 
     get "/#{system_str}/header/straight" do
         default = 'arachni_user'
-        return if env['HTTP_USER_AGENT'].start_with?( default ) || env['HTTP_USER_AGENT'].include?( "\0" )
-
-        get_variations( system, env['HTTP_USER_AGENT'] )
-    end
-
-    get "/#{system_str}/header/with_null" do
-        default = 'arachni_user'
-        return if !env['HTTP_USER_AGENT'].end_with?( "\00.html" )
+        return if env['HTTP_USER_AGENT'].start_with?( default )
 
         get_variations( system, env['HTTP_USER_AGENT'] )
     end
