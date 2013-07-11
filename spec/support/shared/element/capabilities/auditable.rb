@@ -3,8 +3,9 @@ shared_examples_for 'auditable' do |options = {}|
     let( :auditable ) { described_class }
     let( :opts ) do
         {
-            single_input: false,
-            url:          nil
+            single_input:   false,
+            supports_nulls: true,
+            url:            nil
         }.merge( options )
     end
 
@@ -739,7 +740,7 @@ shared_examples_for 'auditable' do |options = {}|
                 cnt = 0
                 @auditable.audit( @seed ) { cnt += 1 }
                 @auditor.http.run
-                cnt.should == 4
+                cnt.should == (options[:supports_nulls] ? 4 : 2)
             end
         end
 

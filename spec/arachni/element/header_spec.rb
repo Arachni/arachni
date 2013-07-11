@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Arachni::Element::Header do
     it_should_behave_like 'auditable', url: web_server_url_for( :header ),
-                          single_input: true
+                          single_input: true, supports_nulls: false
 
     before( :all ) do
         @url = web_server_url_for( :header )
@@ -34,8 +34,15 @@ describe Arachni::Element::Header do
     describe '#mutations' do
         describe :param_flip do
             it 'creates a new header' do
-                @header.mutations( 'seed', param_flip: true ).last.auditable.keys.should ==
-                    %w(seed)
+                @header.mutations( 'seed', param_flip: true ).last.
+                    auditable.keys.should == %w(seed)
+            end
+        end
+
+        describe :format do
+            it 'does not include NULLs' do
+                @header.mutations( 'seed' ).
+                    select { |m| m.altered_value.include? "\0" }.should be_empty
             end
         end
     end

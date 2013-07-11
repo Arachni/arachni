@@ -39,7 +39,10 @@ class Header < Arachni::Element::Base
 
     def mutations( injection_str, opts = {} )
         flip = opts.delete( :param_flip )
-        muts = super( injection_str, opts )
+
+        # Headers don't support NULLs.
+        muts = super( injection_str, opts ).
+            reject { |mutation| mutation.format & Format::NULL != 0 }
 
         if flip
             elem = self.dup
@@ -84,7 +87,6 @@ class Header < Arachni::Element::Base
     def decode( header )
         self.class.decode( header )
     end
-
 
     private
     def http_request( opts, &block )
