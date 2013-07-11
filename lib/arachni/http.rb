@@ -20,7 +20,6 @@ require 'singleton'
 module Arachni
 
 lib = Options.dir['lib']
-require lib + 'ethon/easy'
 require lib + 'typhoeus/hydra'
 require lib + 'typhoeus/request'
 require lib + 'typhoeus/response'
