@@ -24,6 +24,8 @@ module Mutable
     # @return   [String]    Name of the altered/mutated parameter.
     attr_accessor :altered
 
+    attr_accessor :format
+
     # Holds constant bitfields that describe the preferred formatting
     # of injection strings.
     module Format
@@ -128,6 +130,7 @@ module Mutable
 
                 elem = self.dup
                 elem.altered = k.dup
+                elem.format  = format
                 elem.auditable = chash.merge( { k => str } )
                 var_combo << elem
             end

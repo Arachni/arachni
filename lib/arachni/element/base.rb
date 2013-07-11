@@ -130,6 +130,7 @@ class Base
         new.auditor   = self.auditor
         new.method    = self.method.dup
         new.altered   = self.altered.dup if self.altered
+        new.format    = self.format
         new.auditable = self.auditable.dup
         new
     end
