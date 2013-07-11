@@ -75,7 +75,6 @@ describe Arachni::HTTP do
         end
     end
 
-
     describe 'Arachni::Options#url' do
         context 'when the target URL includes auth credentials' do
             it 'uses them globally' do
@@ -547,16 +546,30 @@ describe Arachni::HTTP do
             end
         end
         describe :params do
-            it 'specifies the query params as a hash' do
-                body = nil
-                params = { 'param' => 'value' }
-                @http.request( @url + '/echo',
-                    params: params,
-                    remove_id: true
-                ) { |res| body = res.body }
-                @http.run
-                params.should eq YAML.load( body )
+            context 'GET' do
+                it 'specifies the query params as a hash' do
+                    body = nil
+                    params = { 'param' => 'value' }
+                    @http.request( @url + '/echo',
+                        params: params,
+                        remove_id: true
+                    ) { |res| body = res.body }
+                    @http.run
+                    params.should eq YAML.load( body )
+                end
+
+                it 'preserves nullbytes' do
+                    body = nil
+                    params = { "pa\0ram" => "v\0alue" }
+                    @http.request( @url + '/echo',
+                                   params: params,
+                                   remove_id: true
+                    ) { |res| body = res.body }
+                    @http.run
+                    params.should eq YAML.load( body )
+                end
             end
+
             context 'POST' do
                 it 'encodes special characters' do
                     body = nil
@@ -570,9 +583,9 @@ describe Arachni::HTTP do
                     YAML.load( body ).should == { '% param\ +=&;' => '% value\ +=&;', 'nil' => '' }
                 end
 
-                it 'preserves nullbytes in params' do
+                it 'preserves nullbytes' do
                     body = nil
-                    params = { 'stuff' => "test\0" }
+                    params = { "st\0uff" => "test\0" }
                     @http.request( @url + '/echo',
                                    method: :post,
                                    params:  params,
@@ -639,6 +652,15 @@ describe Arachni::HTTP do
                     body.should == cookies.keys.first.to_s  + '=' + cookies.values.first.to_s
                 end
             end
+
+            it 'preserves nullbytess' do
+                cookies = { "name\0" => "val\0" }
+                body = nil
+                @http.request( @url + '/cookies', cookies: cookies ) { |res| body = res.body }
+                @http.run
+                body.should == cookies.keys.first.to_s  + '=' + cookies.values.first.to_s
+            end
+
         end
 
         describe :async do
