@@ -16,7 +16,7 @@ describe name_from_filename do
             Element::FORM   => 12,
             Element::LINK   => 12,
             Element::COOKIE => 6,
-            Element::HEADER => 6
+            Element::HEADER => 3
         }
     end
 
