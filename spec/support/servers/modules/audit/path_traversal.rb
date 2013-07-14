@@ -16,6 +16,7 @@ FILE_TO_PLATFORM = {
 OUT = {
     unix:    'root:x:0:0:root:/root:/bin/bash
 daemon:x:1:1:daemon:/usr/sbin:/bin/sh
+mail:x:8:8:mail:/var/mail:/bin/sh
 ',
     windows: '[boot loader]
 timeout=30

@@ -2,7 +2,16 @@
 
 ## _Under development_
 
+## 0.4.3.1 _(July 14, 2013)_
+
 - `Session#find_login_form` -- Stores cookies set by the page containing the login form.
+- Plugins
+    - AutoLogin -- All responses now update the framework cookies.
+    - Proxy -- Fixed out-of-scope error for `TemplateScope` helper class.
+- Modules
+    - Audit
+        - Path traversal (`path_traversal`)
+            - Added more fingerprints for `/etc/passwd`.
 
 ## Version 0.4.3 _(July 06, 2013)_
 

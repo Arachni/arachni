@@ -25,14 +25,12 @@ require 'ostruct'
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2.2
+# @version 0.2.3
 #
 class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
     BASEDIR  = "#{File.dirname( __FILE__ )}/proxy/"
     BASE_URL = 'http://arachni.proxy/'
-
-    require_relative 'proxy/template_scope'
 
     MSG_SHUTDOWN = 'Shutting down the Arachni proxy plug-in...'
 
@@ -53,7 +51,8 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         framework.pause
         print_info 'System paused.'
 
-        require "#{File.dirname( __FILE__ )}/proxy/server"
+        require_relative 'proxy/template_scope'
+        require_relative 'proxy/server'
 
         @server = Server.new(
              BindAddress:         options['bind_address'],
@@ -484,7 +483,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                     this proxy but rather a way to restrict usage enough to avoid
                     users unwittingly interfering with each others' sessions.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.2.2',
+            version:     '0.2.3',
             options:     [
                  Options::Port.new( 'port', [false, 'Port to bind to.', 8282] ),
                  Options::Address.new( 'bind_address',

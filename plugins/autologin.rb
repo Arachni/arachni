@@ -65,7 +65,7 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
         check_url = res.effective_url
         body = if res.redirection?
             check_url = to_absolute( res.location )
-            http.get( check_url, async: false, follow_location: true ).response.body
+            http.get( check_url, async: false, update_cookies: true, follow_location: true ).response.body
         else
             res.body
         end
