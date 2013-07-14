@@ -1,5 +1,7 @@
 # ChangeLog
 
+## _Under development_
+
 ## 0.4.3.1 _(July 14, 2013)_
 
 - `Session#find_login_form` -- Stores cookies set by the page containing the login form.
