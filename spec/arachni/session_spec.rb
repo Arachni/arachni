@@ -142,6 +142,16 @@ describe Arachni::Session do
             end
         end
         context 'when passed a url' do
+            it 'store the cookies set by that url' do
+                Arachni::HTTP.cookies.should be_empty
+
+                new_session.find_login_form( url: @url + '/login' ).id.should == @id
+
+                Arachni::HTTP.cookies.find do |c|
+                    c.name == 'you_need_to' && c.value == 'preserve this'
+                end.should be_kind_of Arachni::Cookie
+            end
+
             context 'and called without a block' do
                 it 'should operate in blocking mode, go through its forms and locate the login one' do
                     s = new_session

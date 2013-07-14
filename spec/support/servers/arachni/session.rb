@@ -21,6 +21,8 @@ get '/' do
 end
 
 get '/login' do
+    cookies[:you_need_to] = 'preserve this'
+
     <<-HTML
         <form method='post' name='login_form' action="/login">
             <input name='username' value='' />
