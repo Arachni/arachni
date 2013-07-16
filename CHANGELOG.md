@@ -1,6 +1,9 @@
 # ChangeLog
 
-## _Under development_
+## 0.4.3.2 _(July 16, 2013)_
+
+- Plugins
+    - Proxy -- Fixed bug causing it to ignore the shutdown URL.
 
 ## 0.4.3.1 _(July 14, 2013)_
 
