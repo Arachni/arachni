@@ -25,7 +25,7 @@ require 'ostruct'
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2.3
+# @version 0.2.4
 #
 class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
@@ -123,7 +123,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     def request_handler( req, res )
         url = req.request_uri.to_s
 
-        if !url.start_with?( url_for( :panel ) ) && skip_path?( url )
+        if !system_url?( url ) && skip_path?( url )
             print_info "Ignoring, out of scope: #{url}"
             return true
         end
@@ -483,7 +483,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                     this proxy but rather a way to restrict usage enough to avoid
                     users unwittingly interfering with each others' sessions.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.2.3',
+            version:     '0.2.4',
             options:     [
                  Options::Port.new( 'port', [false, 'Port to bind to.', 8282] ),
                  Options::Address.new( 'bind_address',

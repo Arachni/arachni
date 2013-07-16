@@ -1,40 +1,9 @@
-# Experimental/unstable branch -- used for development/integration
-
-This branch is where all development takes place, once its code has been tested and
-is considered stable, it is then merged into the `master` branch and released.
-
-Do not be confused by the version of this branch, `1.0dev` is a placeholder
-which simply means _next release_.
-
-## Nightlies
-
-For self-contained, nightly snapshot packages take a look at:
-http://downloads.arachni-scanner.com/nightlies/
-
-## Source
-
-To run from source you first need to setup a
-[development environment](https://github.com/Arachni/arachni/wiki/Development-environment).
-
-**After** you've setup a [development environment](https://github.com/Arachni/arachni/wiki/Development-environment),
-run the following to checkout the source code of the `experimental` branch and
-resolve its dependencies:
-
-    git clone git://github.com/Arachni/arachni.git
-    cd arachni
-    git checkout experimental
-    bundle install # to resolve dev dependencies
-
-Then you can run Arachni using the the executables under `bin/`.<br/>
-If you get an error when trying to run Arachni, use `bundle exec` like so:
-`bundle exec <executable>`.
-
 # Arachni - Web Application Security Scanner Framework
 
 <table>
     <tr>
         <th>Version</th>
-        <td>1.0dev</td>
+        <td>0.4.3.2</td>
     </tr>
     <tr>
         <th>Homepage</th>
