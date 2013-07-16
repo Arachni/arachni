@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 0.4.3.2 _(July 16, 2013)_
+
+- Plugins
+    - Proxy -- Fixed bug causing it to ignore the shutdown URL.
+
 ## 0.4.3.1 _(July 14, 2013)_
 
 - `Session#find_login_form` -- Stores cookies set by the page containing the login form.
