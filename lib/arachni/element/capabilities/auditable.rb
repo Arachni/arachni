@@ -68,14 +68,11 @@ module Auditable
         # Enable skipping of already audited inputs.
         redundant: false,
 
-        # Make requests asynchronously.
-        async:     true,
+        # Perform requests asynchronously.
+        mode:      :async,
 
-        #
         # Block to be passed each mutation right before being submitted.
-        #
         # Allows for last minute changes.
-        #
         each_mutation:  nil
     }
 
@@ -323,7 +320,7 @@ module Auditable
     # @param    [Hash]      opts
     # @param    [Block]     block    Callback to be passed the HTTP response.
     #
-    # @return   [Typhoeus::Request]
+    # @return   [Arachni::HTTP::Request]
     #
     # @see #submit
     # @abstract
@@ -333,7 +330,7 @@ module Auditable
 
     # @return   [Arachni::HTTP]
     def http
-        HTTP
+        HTTP::Client
     end
 
     # @return   [Bool]  `true` if it has no auditor, `false` otherwise.
@@ -361,7 +358,7 @@ module Auditable
     #
     def submit( opts = {}, &block )
         opts = OPTIONS.merge( opts )
-        opts[:params]  = @auditable.dup
+        opts[:parameters]  = @auditable.dup
         opts[:follow_location] = true if !opts.include?( :follow_location )
 
         @opts ||= {}
@@ -397,7 +394,7 @@ module Auditable
     # @param  [Block]   block
     #   Block to be used for analysis of responses; will be passed the following:
     #
-    #   * {Typhoeus::Response HTTP response}.
+    #   * {Arachni::HTTP::Response HTTP response}.
     #   * Audit options, as a hash.
     #   * Vulnerable element mutation.
     #
@@ -675,12 +672,12 @@ module Auditable
     end
 
     #
-    # Registers a block to be executed as soon as the Typhoeus request (reg)
+    # Registers a block to be executed as soon as the Arachni::HTTP request (reg)
     # has been completed and a response has been received.
     #
     # If no &block has been provided {#get_matches} will be called instead.
     #
-    # @param  [Typhoeus::Request]  req    request
+    # @param  [Arachni::HTTP::Request]  req    request
     # @param  [Auditable]    elem    element
     # @param  [Block]   block
     #   Block to be used for analysis of responses; will be passed the following:
@@ -698,8 +695,10 @@ module Auditable
         elem.opts[:combo]    = elem.auditable
         elem.opts[:action]   = elem.action
 
-        if !elem.opts[:async]
-            after_complete( req.response, elem, &block ) if req && req.response
+        # If we're in blocking mode the passed object will be a response not
+        # a request.
+        if req.is_a? Arachni::HTTP::Response
+            after_complete( req, elem, &block )
             return
         end
 

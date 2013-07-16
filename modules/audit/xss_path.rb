@@ -59,7 +59,7 @@ class Arachni::Modules::XSSPath < Arachni::Module::Base
 
             print_status( "Checking for: #{url}" )
 
-            http.get( url, params: params ) { |res| check_and_log( res, str ) }
+            http.get( url, parameters: params ) { |res| check_and_log( res, str ) }
         end
     end
 

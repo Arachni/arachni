@@ -15,7 +15,7 @@
 =end
 
 module Arachni
-class HTTP
+module HTTP
 
 #
 # Basic CookieJar implementation.

@@ -30,7 +30,7 @@ end
 def reset_all
     Arachni::Framework.reset
     reset_options
-    Arachni::HTTP.reset
+    Arachni::HTTP::Client.reset
 end
 
 def killall

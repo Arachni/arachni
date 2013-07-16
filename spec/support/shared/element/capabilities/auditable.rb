@@ -681,12 +681,21 @@ shared_examples_for 'auditable' do |options = {}|
                 end
             end
 
-            describe :async do
-
-                context true do
+            describe :mode do
+                context 'nil' do
                     it 'performs all HTTP requests asynchronously' do
                         before = Time.now
-                        @sleep.audit( @seed, async: true ){}
+                        @sleep.audit( @seed ){}
+                        @auditor.http.run
+
+                        (Time.now - before).to_i.should == 2
+                    end
+                end
+
+                context :async do
+                    it 'performs all HTTP requests asynchronously' do
+                        before = Time.now
+                        @sleep.audit( @seed, mode: :async ){}
                         @auditor.http.run
 
                         # should take as long as the longest request
@@ -701,20 +710,10 @@ shared_examples_for 'auditable' do |options = {}|
                 context false do
                     it 'performs all HTTP requests synchronously' do
                         before = Time.now
-                        @sleep.audit( @seed, async: false ){}
+                        @sleep.audit( @seed, mode: :sync ){}
                         @auditor.http.run
 
                         (Time.now - before).should > 4.0
-                    end
-                end
-
-                context 'default' do
-                    it 'performs all HTTP requests asynchronously' do
-                        before = Time.now
-                        @sleep.audit( @seed ){}
-                        @auditor.http.run
-
-                        (Time.now - before).to_i.should == 2
                     end
                 end
 

@@ -75,7 +75,7 @@ class Arachni::Modules::WebDav < Arachni::Module::Base
 
     def check_and_log( res )
         begin
-            allowed = res.headers_hash['Allow'].split( ',' ).map { |method| method.strip }
+            allowed = res.headers['Allow'].split( ',' ).map { |method| method.strip }
             return if !allowed.include?( self.class.dav_method )
         rescue
             return
@@ -84,7 +84,7 @@ class Arachni::Modules::WebDav < Arachni::Module::Base
         self.class.found
 
         log( { element: Element::SERVER }, res )
-        print_ok "Enabled for: #{res.effective_url}"
+        print_ok "Enabled for: #{res.url}"
     end
 
 end

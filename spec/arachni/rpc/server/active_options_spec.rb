@@ -5,11 +5,11 @@ require Arachni::Options.dir['lib'] + 'rpc/server/instance'
 
 class Arachni::RPC::Server::Instance
     def cookies
-        Arachni::HTTP.cookies
+        Arachni::HTTP::Client.cookies
     end
     def clear_cookies
         Arachni::Options.reset
-        Arachni::HTTP.cookie_jar.clear
+        Arachni::HTTP::Client.cookie_jar.clear
         true
     end
 end

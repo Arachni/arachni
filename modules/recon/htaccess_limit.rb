@@ -29,7 +29,7 @@ class Arachni::Modules::Htaccess < Arachni::Module::Base
     def check_and_log( res )
         return if res.code != 200
         log( { element: Element::SERVER }, res )
-        print_ok 'Request was accepted: ' + res.effective_url
+        print_ok 'Request was accepted: ' + res.url
     end
 
     def self.info

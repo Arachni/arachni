@@ -2,6 +2,16 @@
 
 ## _Under development_
 
+- `Arachni::HTTP` expanded to be a complete wrapper around Typhoeus, providing:
+    - `Headers`
+    - `Message`
+    - `Request`
+    - `Response`
+    - `Client`
+        - `#request` options:
+            - `:params` => `:parameters`
+            - `:async` => `:mode` (with values of `:async` and `:sync`)
+
 ## 0.4.3.1 _(July 14, 2013)_
 
 - `Session#find_login_form` -- Stores cookies set by the page containing the login form.

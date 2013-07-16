@@ -66,7 +66,7 @@ class Arachni::Modules::DirectoryListing < Arachni::Module::Base
         # little girls...
         @harvested.each { |res| return if res.code == 403 }
 
-        if !File.basename( @harvested[0].effective_url, '?*' ).empty? &&
+        if !File.basename( @harvested[0].url, '?*' ).empty? &&
             same_page?( @harvested[0], @harvested[5] )
             return
         end

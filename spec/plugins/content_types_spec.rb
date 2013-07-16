@@ -17,11 +17,11 @@ describe name_from_filename do
 image/png:
 - :url: __URL__png
   :method: GET
-  :params:
+  :params: {}
 application/vnd.ms-excel:
 - :url: __URL__excel
   :method: GET
-  :params:
+  :params: {}
 YAML
     end
 
@@ -31,11 +31,11 @@ YAML
 text/html;charset=utf-8:
 - :url: __URL__
   :method: GET
-  :params:
+  :params: {}
 text/css:
 - :url: __URL__css
   :method: GET
-  :params:
+  :params: {}
 YAML
     end
 
@@ -45,19 +45,19 @@ YAML
 text/html;charset=utf-8:
 - :url: __URL__
   :method: GET
-  :params:
+  :params: {}
 text/css:
 - :url: __URL__css
   :method: GET
-  :params:
+  :params: {}
 image/png:
 - :url: __URL__png
   :method: GET
-  :params:
+  :params: {}
 application/vnd.ms-excel:
 - :url: __URL__excel
   :method: GET
-  :params:
+  :params: {}
 YAML
     end
 

@@ -324,7 +324,7 @@ describe Arachni::Module::Auditor do
                     logged_issue = @framework.modules.results.first
                     logged_issue.should be_true
 
-                    logged_issue.url.should == res.effective_url
+                    logged_issue.url.should == res.url
                     logged_issue.elem.should == Arachni::Element::LINK
                     logged_issue.opts[:regexp].should == @log_opts[:regexp].to_s
                     logged_issue.opts[:match].should == @log_opts[:match]

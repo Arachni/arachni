@@ -34,7 +34,7 @@ class PluginFormatters::CookieCollector < Arachni::Plugin::Formatter
             <ul>
             <% results.each do |entry| %>
                 <li>
-                    On <%=entry[:time].to_s%> @ <a href="<%=escapeHTML(entry[:res]['effective_url'])%>"><%=escapeHTML(entry[:res]['effective_url'])%></a>
+                    On <%=entry[:time].to_s%> @ <a href="<%=escapeHTML(entry[:res]['url'])%>"><%=escapeHTML(entry[:res]['url'])%></a>
                     <br/>
                     Cookies were forced to:
                     <ul>

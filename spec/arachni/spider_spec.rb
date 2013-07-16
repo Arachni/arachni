@@ -10,7 +10,7 @@ describe Arachni::Spider do
     before( :each ) do
         reset_options
         @opts.url = @url
-        Arachni::HTTP.instance.reset
+        Arachni::HTTP::Client.reset
     end
 
     it 'supports HTTPS' do
@@ -322,7 +322,7 @@ describe Arachni::Spider do
                         responses = []
                         spider.run( false ) { |res| responses << res }
                         responses.size.should == spider.sitemap.size
-                        responses.first.is_a?( Typhoeus::Response ).should be_true
+                        responses.first.is_a?( Arachni::HTTP::Response ).should be_true
                     end
                 end
             end
@@ -363,7 +363,7 @@ describe Arachni::Spider do
             responses.should == responses2
 
             responses.size.should == s.sitemap.size
-            responses.first.is_a?( Typhoeus::Response ).should be_true
+            responses.first.is_a?( Arachni::HTTP::Response ).should be_true
         end
     end
 

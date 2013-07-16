@@ -49,7 +49,7 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
             # let's hope for a proper and clean parse but be prepared for
             # all hell to break loose too...
             begin
-                url = uri_parse( res.effective_url ).up_to_path
+                url = uri_parse( res.url ).up_to_path
             rescue => e
                 next
             end
@@ -57,7 +57,7 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
             @counter[url] ||= @times[url] ||= 0
 
             # add up all request times for a specific path
-            @times[url] += res.start_transfer_time
+            @times[url] += res.time
 
             # add up all requests for each path
             @counter[url] += 1

@@ -49,7 +49,7 @@ class Arachni::Modules::InterestingResponses < Arachni::Module::Base
             issue_limit_reached?
 
         digest = Digest::MD5.hexdigest( res.body )
-        path   = uri_parse( res.effective_url ).path
+        path   = uri_parse( res.url ).path
 
         return if audited?( path ) || audited?( digest )
 

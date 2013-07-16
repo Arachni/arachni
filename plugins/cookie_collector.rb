@@ -38,7 +38,7 @@ class Arachni::Plugins::CookieCollector < Arachni::Plugin::Base
     def update( cookies, res )
         return if cookies.empty? || !update?( cookies )
 
-        res_hash = res.to_hash
+        res_hash = res.to_h
         res_hash.delete( 'body' )
 
         @cookies << { time: Time.now, res: res_hash, cookies: cookies }

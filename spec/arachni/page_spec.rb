@@ -49,10 +49,10 @@ describe Arachni::Page do
     describe '#text?' do
         context 'when the HTTP response was text based' do
             it 'returns true' do
-                res = Typhoeus::Response.new(
-                    effective_url: 'http://test.com',
+                res = Arachni::HTTP::Response.new(
+                    url: 'http://test.com',
                     body: '',
-                    request: Typhoeus::Request.new( 'http://test.com' ),
+                    request: Arachni::HTTP::Request.new( 'http://test.com' ),
                     headers: {
                        'Content-Type' => 'text/html',
                        'Set-Cookie'   => 'cname=cval'
@@ -64,8 +64,8 @@ describe Arachni::Page do
 
         context 'when the response is not text based' do
             it 'returns false' do
-                res = Typhoeus::Response.new( effective_url: 'http://test.com',
-                                              request: Typhoeus::Request.new( 'http://test.com' ), )
+                res = Arachni::HTTP::Response.new( url: 'http://test.com',
+                                              request: Arachni::HTTP::Request.new( 'http://test.com' ), )
                 Arachni::Parser.new( res, @opts ).page.text?.should be_false
             end
         end
@@ -299,8 +299,8 @@ describe Arachni::Page do
 
     describe '.from_http_response' do
         it 'returns a page from an HTTP response and opts' do
-            res = Typhoeus::Response.new( effective_url: 'http://url.com',
-                                          request: Typhoeus::Request.new( 'http://test.com' ))
+            res = Arachni::HTTP::Response.new( url: 'http://url.com',
+                                          request: Arachni::HTTP::Request.new( 'http://test.com' ))
             page = Arachni::Page.from_http_response( res, Arachni::Options.instance )
             page.class.should == Arachni::Page
         end

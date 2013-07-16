@@ -174,7 +174,7 @@ describe Arachni::Framework do
 
     describe '#http' do
         it 'provides access to the HTTP interface' do
-            @f.http.is_a?( Arachni::HTTP ).should be_true
+            @f.http.is_a?( Arachni::HTTP::Client ).should be_true
         end
     end
 
@@ -725,7 +725,7 @@ describe Arachni::Framework do
                 f.modules.load_all
 
                 f.session.login_sequence = proc do
-                    res = f.http.get( url, async: false, follow_location: true ).response
+                    res = f.http.get( url, mode: :sync, follow_location: true )
                     return false if !res
 
                     login_form = f.forms_from_response( res ).first
@@ -733,15 +733,15 @@ describe Arachni::Framework do
 
                     login_form['username'] = 'john'
                     login_form['password'] = 'doe'
-                    res = login_form.submit( async: false, update_cookies: true, follow_location: false ).response
+                    res = login_form.submit( mode: :sync, update_cookies: true, follow_location: false )
                     return false if !res
 
                     true
                 end
 
                 f.session.login_check = proc do
-                    !!f.http.get( url, async: false, follow_location: true ).
-                        response.body.match( 'logged-in user' )
+                    !!f.http.get( url, mode: :sync, follow_location: true ).
+                        body.match( 'logged-in user' )
                 end
 
                 f.run

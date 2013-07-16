@@ -45,7 +45,7 @@ class Arachni::Modules::HTTP_PUT < Arachni::Module::Base
         return if !res.body.to_s.include?( self.class.substring )
 
         log( { element: Element::SERVER }, res )
-        print_ok 'File has been created: ' + res.effective_url
+        print_ok 'File has been created: ' + res.url
     end
 
     def self.info

@@ -72,15 +72,15 @@ class Arachni::Plugins::FormDicattack < Arachni::Plugin::Base
                 form.submit( opts ) do |res|
                     next if @found
 
-                    print_status "#{@user_field}: '#{res.request.params[@user_field]}'" +
-                        " -- #{@passwd_field}: '#{res.request.params[@passwd_field]}'"
+                    print_status "#{@user_field}: '#{res.request.parameters[@user_field]}'" +
+                        " -- #{@passwd_field}: '#{res.request.parameters[@passwd_field]}'"
 
                     next if !res.body.match( @verifier )
 
                     @found = true
 
-                    print_ok "Found a match -- #{@user_field}: '#{res.request.params[@user_field]}'" +
-                        " -- #{@passwd_field}: '#{res.request.params[@passwd_field]}'"
+                    print_ok "Found a match -- #{@user_field}: '#{res.request.parameters[@user_field]}'" +
+                        " -- #{@passwd_field}: '#{res.request.parameters[@passwd_field]}'"
 
                     # register our findings...
                     register_results( username: user, password: pass )

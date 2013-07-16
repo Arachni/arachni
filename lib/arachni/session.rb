@@ -267,10 +267,7 @@ class Session
         if @login_form && !block_given?
             @login_sequence = proc do
                 @login_form.refresh( update_cookies: true ).
-                    submit( async: false,
-                            update_cookies: true,
-                            follow_location: false ).
-                    response
+                    submit( mode: :sync, update_cookies: true, follow_location: false )
             end
         end
 
@@ -288,7 +285,7 @@ class Session
     def set_login_check( url, pattern )
         login_check do |opts, block|
             bool = nil
-            http.get( url.to_s, opts.merge( async: !!block ) ) do |res|
+            http.get( url.to_s, opts.merge( mode: block_given? ? :async : :sync ) ) do |res|
                 bool = !!res.body.match( pattern )
                 block.call( bool ) if block
             end
@@ -299,7 +296,7 @@ class Session
 
     # @return   [HTTP]  http interface
     def http
-        HTTP
+        HTTP::Client
     end
 
 end

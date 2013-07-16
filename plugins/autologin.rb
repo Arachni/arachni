@@ -55,17 +55,17 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
         # merge the input fields of the form with the user supplied parameters
         login_form.update @params
 
-        res = login_form.submit( async: false, update_cookies: true, follow_location: false ).response
+        res = login_form.submit( mode: :sync, update_cookies: true, follow_location: false )
         if !res
             register_results( code: -1, msg: MSG_NO_RESPONSE )
             print_bad MSG_NO_RESPONSE
             return
         end
 
-        check_url = res.effective_url
+        check_url = res.url
         body = if res.redirection?
-            check_url = to_absolute( res.location )
-            http.get( check_url, async: false, update_cookies: true, follow_location: true ).response.body
+            check_url = to_absolute( res.headers.location )
+            http.get( check_url, mode: :sync, update_cookies: true, follow_location: true ).body
         else
             res.body
         end

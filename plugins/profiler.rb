@@ -70,9 +70,9 @@ class Arachni::Plugins::Profiler < Arachni::Plugin::Base
                 elems << cookie if cookie.auditable.to_s.substring?( seed_id )
             end
 
-            res.headers_hash.each_pair do |k, v|
+            res.headers.each_pair do |k, v|
                 next if !v.to_s.substring?( seed_id )
-                elems << Header.new( res.effective_url, { k => v.to_s } )
+                elems << Header.new( res.url, { k => v.to_s } )
             end
 
             elems
@@ -87,7 +87,7 @@ class Arachni::Plugins::Profiler < Arachni::Plugin::Base
                 elems << form if form.auditable.to_s.substring?( seed_id )
             end
 
-            self_url = Link.new( res.effective_url )
+            self_url = Link.new( res.url )
             parser.links.each do |link|
                 if link.auditable.to_s.substring?( seed_id )
                     # skip ourselves
@@ -125,8 +125,8 @@ class Arachni::Plugins::Profiler < Arachni::Plugin::Base
     end
 
     def log( taint, res, elem, landed_elems )
-        res_hash = res.to_hash
-        res_hash['headers'] = res_hash['headers_hash']
+        res_hash = res.to_h
+        res_hash['headers'] = res_hash['headers']
 
         result = {
             'taint'       => taint,
@@ -143,7 +143,7 @@ class Arachni::Plugins::Profiler < Arachni::Plugin::Base
             'request' => {
                 'url'      => res.request.url,
                 'method'   => res.request.method.to_s.upcase,
-                'params'   => res.request.params || {},
+                'params'   => res.request.parameters || {},
                 'headers'  => res.request.headers,
             }
         }

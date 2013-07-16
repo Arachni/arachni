@@ -207,15 +207,15 @@ describe Arachni::Utilities do
 
         context 'when the body matches an ignore rule' do
             it 'returns true' do
-                res = Typhoeus::Response.new( body: 'ignore me' )
+                res = Arachni::HTTP::Response.new( body: 'ignore me' )
                 @utils.skip_response?( res ).should be_true
             end
         end
 
         context 'when the body does not match an ignore rule' do
             it 'returns false' do
-                res = Typhoeus::Response.new(
-                    effective_url: 'http://test/',
+                res = Arachni::HTTP::Response.new(
+                    url: 'http://test/',
                     body: 'not me'
                 )
                 @utils.skip_response?( res ).should be_false
@@ -248,12 +248,12 @@ describe Arachni::Utilities do
         end
 
         context 'when passed a' do
-            context Typhoeus::Response do
+            context Arachni::HTTP::Response do
 
                 context 'whose body matches an ignore rule' do
                     it 'returns true' do
-                        res = Typhoeus::Response.new(
-                            effective_url: 'http://stuff/here',
+                        res = Arachni::HTTP::Response.new(
+                            url: 'http://stuff/here',
                             body: 'ignore me'
                         )
                         @utils.skip_resource?( res ).should be_true
@@ -262,8 +262,8 @@ describe Arachni::Utilities do
 
                 context 'whose the body does not match an ignore rule' do
                     it 'returns false' do
-                        res = Typhoeus::Response.new(
-                            effective_url: 'http://stuff/here',
+                        res = Arachni::HTTP::Response.new(
+                            url: 'http://stuff/here',
                             body: 'stuff'
                         )
                         @utils.skip_resource?( res ).should be_false
@@ -272,8 +272,8 @@ describe Arachni::Utilities do
 
                 context 'whose URL matches an exclude rule' do
                     it 'returns true' do
-                        res = Typhoeus::Response.new(
-                            effective_url: 'http://stuff/here/to/ignore/',
+                        res = Arachni::HTTP::Response.new(
+                            url: 'http://stuff/here/to/ignore/',
                             body: 'ignore me'
                         )
                         @utils.skip_resource?( res ).should be_true
@@ -282,8 +282,8 @@ describe Arachni::Utilities do
 
                 context 'whose URL does not match an exclude rule' do
                     it 'returns false' do
-                        res = Typhoeus::Response.new(
-                            effective_url: 'http://stuff/here',
+                        res = Arachni::HTTP::Response.new(
+                            url: 'http://stuff/here',
                             body: 'stuff'
                         )
                         @utils.skip_resource?( res ).should be_false

@@ -46,7 +46,7 @@ class Arachni::Modules::AllowedMethods < Arachni::Module::Base
     end
 
     def check_and_log( res )
-        methods = res.headers_hash['Allow']
+        methods = res.headers['Allow']
         return if !methods || methods.empty?
 
         log( { element: Element::SERVER, match: methods }, res )

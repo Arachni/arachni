@@ -32,7 +32,7 @@ module Capabilities::Refreshable
     #
     def refresh( http_opts = {}, &block )
         updated = nil
-        http.get( url.to_s, http_opts.merge( async: !!block ) ) do |res|
+        http.get( url.to_s, http_opts.merge( mode: block_given? ? :async : :sync ) ) do |res|
             # find ourselves
             f = self.class.from_response( res ).select { |f| f.id == id_from( :original ) }.first
             # get user updates

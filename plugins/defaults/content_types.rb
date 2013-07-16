@@ -36,14 +36,14 @@ class Arachni::Plugins::ContentTypes < Arachni::Plugin::Base
         framework.http.add_on_complete do |res|
             next if skip?( res )
 
-            type = res.content_type
+            type = res.headers.content_type
             type = type.join( ' - ' ) if type.is_a?( Array )
 
             @results[type] ||= []
             @results[type] << {
-                url:    res.effective_url,
+                url:    res.url,
                 method: res.request.method.to_s.upcase,
-                params: res.request.params
+                params: res.request.parameters
             }
 
             log( res )
@@ -51,11 +51,11 @@ class Arachni::Plugins::ContentTypes < Arachni::Plugin::Base
     end
 
     def skip?( res )
-        logged?( res ) || res.content_type.to_s.empty? || !log?( res )
+        logged?( res ) || res.headers.content_type.to_s.empty? || !log?( res )
     end
 
     def log?( res )
-        options['exclude'].empty? || !res.content_type.to_s.match( @exclude )
+        options['exclude'].empty? || !res.headers.content_type.to_s.match( @exclude )
     end
 
     def logged?( res )
@@ -67,7 +67,7 @@ class Arachni::Plugins::ContentTypes < Arachni::Plugin::Base
     end
 
     def log_id( res )
-        res.request.method.to_s.upcase + res.effective_url
+        res.request.method.to_s.upcase + res.url
     end
 
     def clean_up

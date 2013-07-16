@@ -139,12 +139,12 @@ class Link < Arachni::Element::Base
     #
     # Extracts links from an HTTP response.
     #
-    # @param   [Typhoeus::Response]    response
+    # @param   [Arachni::HTTP::Response]    response
     #
     # @return   [Array<Link>]
     #
     def self.from_response( response )
-        url = response.effective_url
+        url = response.url
         [new( url, parse_query_vars( url ) )] | from_document( url, response.body )
     end
 

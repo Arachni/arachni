@@ -29,7 +29,7 @@ class PluginFormatters::CookieCollector < Arachni::Plugin::Formatter
             start_tag 'response'
 
             simple_tag( 'time', result[:time].to_s )
-            simple_tag( 'url', result[:res]['effective_url'] )
+            simple_tag( 'url', result[:res]['url'] )
 
             start_tag 'cookies'
             result[:cookies].each { |name, value| add_cookie( name, value ) }

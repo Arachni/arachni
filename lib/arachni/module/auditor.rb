@@ -191,9 +191,9 @@ module Auditor
         false
     end
 
-    # @return   [Arachni::HTTP]
+    # @return   [HTTP::Client]
     def http
-        HTTP
+        HTTP::Client
     end
 
     #
@@ -281,7 +281,7 @@ module Auditor
     #
     # Logs the existence of a remote file as an issue.
     #
-    # @param    [Typhoeus::Response]    res
+    # @param    [HTTP::Response]    res
     # @param    [Bool]      silent
     #   If `false`, a message will be printed to stdout containing the status of
     #   the operation.
@@ -289,8 +289,8 @@ module Auditor
     # @see #log_issue
     #
     def log_remote_file( res, silent = false )
-        url = res.effective_url
-        filename = File.basename( URI( res.effective_url ).path )
+        url = res.url
+        filename = File.basename( res.parsed_url.path )
 
         log_issue(
             url:      url,
@@ -300,7 +300,7 @@ module Auditor
             response: res.body,
             headers:  {
                 request:  res.request.headers,
-                response: res.headers_hash,
+                response: res.headers,
             }
         )
 
@@ -380,7 +380,7 @@ module Auditor
     #
     # @param    [Hash]                  opts
     #   As passed to blocks by audit methods.
-    # @param    [Typhoeus::Response]    res
+    # @param    [HTTP::Response]    res
     #   Optional HTTP response, defaults to page data.
     #
     def log( opts, res = nil )
@@ -399,9 +399,9 @@ module Auditor
 
         if res
             request_headers  = res.request.headers
-            response_headers = res.headers_hash
+            response_headers = res.headers
             response         = res.body
-            url              = opts[:action] || res.effective_url
+            url              = opts[:action] || res.url
             method           = res.request.method.to_s.upcase
         end
 

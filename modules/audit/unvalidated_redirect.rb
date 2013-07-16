@@ -38,7 +38,7 @@ class Arachni::Modules::UnvalidatedRedirect < Arachni::Module::Base
 
     def run
         audit( self.class.payloads ) do |res, opts|
-            next if !self.class.payloads.include?( res.location )
+            next if !self.class.payloads.include?( res.headers.location )
             log( opts, res )
         end
     end

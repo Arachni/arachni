@@ -127,7 +127,7 @@ class Arachni::Plugins::WAFDetector < Arachni::Plugin::Base
 
     def queue_vanilla
         @precision.times {
-            http.get( @url.to_s, params: @safe ) do |res|
+            http.get( @url.to_s, parameters: @safe ) do |res|
                 @responses[:vanilla] ||= res.body
                 @responses[:vanilla] = @responses[:vanilla].rdiff( res.body )
             end
@@ -136,7 +136,7 @@ class Arachni::Plugins::WAFDetector < Arachni::Plugin::Base
 
     def queue_spicy
         @precision.times {
-            http.get( @url.to_s, params: @unsafe ) do |res|
+            http.get( @url.to_s, parameters: @unsafe ) do |res|
                 @responses[:spicy] ||= res.body
                 @responses[:spicy] = @responses[:spicy].rdiff( res.body )
             end

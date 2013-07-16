@@ -97,7 +97,7 @@ class Spider
     #
     # @param [Bool] pass_pages_to_block
     #   Decides weather the block should be passed {Arachni::Page}s or
-    #   {Typhoeus::Response}s.
+    #   {HTTP::Response}s.
     # @param [Block] block  To be passed each page as visited.
     #
     # @return [Array<String>]   sitemap
@@ -282,7 +282,7 @@ class Spider
 
     # @return   [Arachni::HTTP]   HTTP interface
     def http
-        HTTP
+        HTTP::Client
     end
 
     #
@@ -381,7 +381,7 @@ class Spider
         }.merge( opts )
 
         wrap = proc do |res|
-            effective_url = normalize_url( res.effective_url )
+            effective_url = normalize_url( res.url )
 
             if res.code == 0
                 @retries[url.hash] ||= 0
@@ -407,9 +407,9 @@ class Spider
 
             print_status "[HTTP: #{res.code}] #{effective_url}"
 
-            if res.redirection? && res.location
+            if res.redirection?
                 @redirects << res.request.url
-                location = to_absolute( res.location )
+                location = to_absolute( res.headers.location )
                 if hit_redirect_limit? || skip?( location )
                     print_info "Redirect limit reached, skipping: #{location}"
                     decrease_pending

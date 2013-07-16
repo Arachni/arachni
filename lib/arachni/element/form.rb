@@ -1051,7 +1051,7 @@ class Form < Arachni::Element::Base
     #       </form>
     #    HTML
     #
-    #    res = Typhoeus::Response.new( effective_url: 'http://host', body: body )
+    #    res = Arachni::HTTP::Response.new( url: 'http://host', body: body )
     #
     #    ap Form.from_response( res ).first
     #    #=> #<Arachni::Element::Form:0x017c7788
@@ -1088,12 +1088,12 @@ class Form < Arachni::Element::Base
     #    #    }
     #    #>
     #
-    # @param   [Typhoeus::Response]    response
+    # @param   [Arachni::HTTP::Response]    response
     #
     # @return   [Array<Form>]
     #
     def self.from_response( response )
-        from_document( response.effective_url, response.body )
+        from_document( response.url, response.body )
     end
 
     #
@@ -1376,12 +1376,12 @@ class Form < Arachni::Element::Base
         end
 
         opts = opts.dup
-        opts[:method] = self.method.downcase.to_s.to_sym
+        opts[:method] = (self.method || :get).to_s.downcase.to_sym
 
         if has_nonce?
             print_info "Refreshing nonce for '#{nonce_name}'."
 
-            f = self.class.from_response( http.get( @url, async: false ).response ).
+            f = self.class.from_response( http.get( @url, mode: :sync ) ).
                     select { |f| f.auditable.keys == auditable.keys }.first
 
             if !f
@@ -1391,12 +1391,13 @@ class Form < Arachni::Element::Base
 
                 print_info "Got new nonce '#{nonce}'."
 
-                opts[:params][nonce_name] = nonce
-                opts[:async] = false
+                opts[:parameters][nonce_name] = nonce
+                opts[:mode] = :sync
             end
         end
 
-        http.request( self.action, opts, &block )
+        opts[:method] == :post ?
+            http.post( self.action, opts, &block ) : http.get( self.action, opts, &block )
     end
 
 end

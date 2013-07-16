@@ -260,11 +260,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
             @opts.audit_headers = true
 
             @url = @opts.url.to_s + '/?query_var_input=query_var_val'
-            @response = Arachni::HTTP.instance.get(
-                @url,
-                async: false,
-                remove_id: true
-            ).response
+            @response = Arachni::HTTP::Client.get( @url, mode: :sync )
 
             @distributor.build_elem_list( Arachni::Parser.new( @response, @opts ).page ).
                 size.should == 7

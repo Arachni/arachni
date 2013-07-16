@@ -7,7 +7,7 @@ describe Arachni::Element::Cookie do
         @url = web_server_url_for( :cookie ) + '/'
         @raw = { 'mycookie' => 'myvalue' }
         @c = Arachni::Element::Cookie.new( @url, @raw )
-        @http = Arachni::HTTP.instance
+        @http = Arachni::HTTP::Client.instance
     end
 
     it 'should be assigned to Arachni::Cookie for easy access' do
@@ -276,7 +276,7 @@ describe Arachni::Element::Cookie do
     describe '.from_response' do
         context 'when the response contains cookies' do
             it 'returns an array of cookies' do
-                response = @http.get( @url + '/set_cookie', async: false ).response
+                response = @http.get( @url + '/set_cookie', mode: :sync )
                 cookies = Arachni::Element::Cookie.from_response( response )
                 cookies.size.should == 1
                 cookie = cookies.first

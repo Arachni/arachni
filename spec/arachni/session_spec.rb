@@ -9,7 +9,7 @@ describe Arachni::Session do
 
     after( :each ) do
         Arachni::Options.reset
-        Arachni::HTTP.reset
+        Arachni::HTTP::Client.reset
     end
 
     def new_session
@@ -24,7 +24,7 @@ describe Arachni::Session do
 
                 s.has_login_sequence?.should be_false
                 s.login_sequence = proc do
-                    res = s.http.get( @url, async: false, follow_location: true ).response
+                    res = s.http.get( @url, mode: :sync, follow_location: true )
                     return false if !res
 
                     login_form = s.forms_from_response( res ).first
@@ -32,7 +32,7 @@ describe Arachni::Session do
 
                     login_form['username'] = 'john'
                     login_form['password'] = 'doe'
-                    res = login_form.submit( async: false, update_cookies: true, follow_location: false ).response
+                    res = login_form.submit( mode: :sync, update_cookies: true, follow_location: false )
                     return false if !res
 
                     true
@@ -64,7 +64,7 @@ describe Arachni::Session do
     describe '#cookies' do
         it 'returns session cookies' do
             s = new_session
-            s.http.get @url + '/cookies', async: false, update_cookies: true
+            s.http.get @url + '/cookies', mode: :sync, update_cookies: true
 
             s.cookies.select { |c| c.name == 'rack.session' }.size == 1
             s.cookies.select { |c| c.name == 'session_cookie' }.size == 1
@@ -77,7 +77,7 @@ describe Arachni::Session do
 
             # lets invalidate the form nonce now
             # (to make sure that it will be refreshed before logging in)
-            s.http.get @url + '/nonce_login', async: false
+            s.http.get @url + '/nonce_login', mode: :sync
 
             s.has_login_sequence?.should be_true
 
@@ -143,11 +143,11 @@ describe Arachni::Session do
         end
         context 'when passed a url' do
             it 'store the cookies set by that url' do
-                Arachni::HTTP.cookies.should be_empty
+                Arachni::HTTP::Client.cookies.should be_empty
 
                 new_session.find_login_form( url: @url + '/login' ).id.should == @id
 
-                Arachni::HTTP.cookies.find do |c|
+                Arachni::HTTP::Client.cookies.find do |c|
                     c.name == 'you_need_to' && c.value == 'preserve this'
                 end.should be_kind_of Arachni::Cookie
             end
@@ -206,7 +206,7 @@ describe Arachni::Session do
 
             # lets invalidate the form nonce now
             # (to make sure that it will be refreshed before logging in)
-            s.http.get @url + '/nonce_login', async: false
+            s.http.get @url + '/nonce_login', mode: :sync
 
             s.has_login_sequence?.should be_true
 
@@ -298,7 +298,7 @@ describe Arachni::Session do
 
             s.has_login_sequence?.should be_false
             s.login_sequence = proc do
-                res = s.http.get( url, async: false, follow_location: true ).response
+                res = s.http.get( url, mode: :sync, follow_location: true )
                 return false if !res
 
                 login_form = s.forms_from_response( res ).first
@@ -306,7 +306,7 @@ describe Arachni::Session do
 
                 login_form['username'] = 'john'
                 login_form['password'] = 'doe'
-                res = login_form.submit( async: false, update_cookies: true, follow_location: false ).response
+                res = login_form.submit( mode: :sync, update_cookies: true, follow_location: false )
                 return false if !res
 
                 true

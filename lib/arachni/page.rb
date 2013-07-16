@@ -68,7 +68,7 @@ class Page
     # @option  opts    [Integer]   :precision  (1)
     #   How many times to request the page and examine changes between requests.
     #   Used tp identify nonce tokens etc.
-    # @option  opts    [Hash]  :http   HTTP {HTTP#get request} options.
+    # @option  opts    [Hash]  :http   HTTP {HTTP::Client#get request} options.
     # @param    [Block] block
     #   Block to which to pass the page object. If given, the request will be
     #   performed asynchronously. If no block is given, the page will be fetched
@@ -79,7 +79,7 @@ class Page
 
         opts[:precision] ||= 1
         opts[:precision].times {
-            HTTP.get( url, opts[:http] || {} ) do |res|
+            HTTP::Client.get( url, opts[:http] || {} ) do |res|
                 responses << res
                 next if responses.size != opts[:precision]
                 block.call( from_response( responses ) ) if block_given?
@@ -87,12 +87,12 @@ class Page
         }
 
         if !block_given?
-            HTTP.run
+            HTTP::Client.run
             from_response( responses )
         end
     end
 
-    # @param    [Typhoeus::Response]    res HTTP response to parse.
+    # @param    [HTTP::Response]    res HTTP response to parse.
     # @return   [Page]
     def self.from_response( res, opts = Options )
         Parser.new( res, opts ).page

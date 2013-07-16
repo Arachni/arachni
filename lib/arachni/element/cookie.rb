@@ -641,7 +641,7 @@ class Cookie < Arachni::Element::Base
     end
 
     #
-    # Extracts cookies from an HTTP {Typhoeus::Response response}.
+    # Extracts cookies from an HTTP {Arachni::HTTP::Response response}.
     #
     # @example
     #    body = <<-HTML
@@ -653,10 +653,10 @@ class Cookie < Arachni::Element::Base
     #        </html>
     #    HTML
     #
-    #    response = Typhoeus::Response.new(
+    #    response = Arachni::HTTP::Response.new(
     #        body:          body,
-    #        effective_url: 'http://stuff.com',
-    #        headers_hash:  {
+    #        url: 'http://stuff.com',
+    #        headers:  {
     #           'Set-Cookie' => "coo%40ki+e2=blah+val2%40; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Path=/; Domain=.foo.com; HttpOnly"
     #       }
     #    )
@@ -752,7 +752,7 @@ class Cookie < Arachni::Element::Base
     #    #     >
     #    # ]
     #
-    # @param   [Typhoeus::Response]    response
+    # @param   [Arachni::HTTP::Response]    response
     #
     # @return   [Array<Cookie>]
     #
@@ -760,8 +760,8 @@ class Cookie < Arachni::Element::Base
     # @see .from_headers
     #
     def self.from_response( response )
-        ( from_document( response.effective_url, response.body ) |
-         from_headers( response.effective_url, response.headers_hash ) )
+        ( from_document( response.url, response.body ) |
+         from_headers( response.url, response.headers ) )
     end
 
     #
@@ -919,12 +919,11 @@ class Cookie < Arachni::Element::Base
     # @see .forms_set_cookie
     #
     def self.from_headers( url, headers )
-        set_strings = []
-        headers.each { |k, v| set_strings = [v].flatten if k.downcase == 'set-cookie' }
+        headers = Arachni::HTTP::Headers.new( headers )
+        return [] if headers.set_cookie.empty?
 
-        return set_strings if set_strings.empty?
         exception_jail {
-            set_strings.map { |c| parse_set_cookie( url, c ) }.flatten
+            headers.set_cookie.map { |c| parse_set_cookie( url, c ) }.flatten
         } rescue []
     end
 
@@ -1097,6 +1096,7 @@ class Cookie < Arachni::Element::Base
     # @return   [Array<Cookie>]
     #
     def self.from_string( url, string )
+        return [] if string.empty?
         string.split( ';' ).map do |cookie_pair|
             k, v = *cookie_pair.split( '=', 2 )
             new( url, decode( k.strip ) => decode( v.strip ) )
@@ -1144,8 +1144,7 @@ class Cookie < Arachni::Element::Base
 
     private
     def http_request( opts = {}, &block )
-        opts[:cookies] = opts[:params].dup
-        opts[:params] = {}
+        opts[:cookies] = opts.delete( :parameters )
 
         self.method.downcase.to_s != 'get' ?
             http.post( self.action, opts, &block ) : http.get( self.action, opts, &block )

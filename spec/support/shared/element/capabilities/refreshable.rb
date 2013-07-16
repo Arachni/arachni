@@ -6,7 +6,7 @@ shared_examples_for 'refreshable' do
     describe '#refresh' do
         context 'when called without a block' do
             it 'refreshes the inputs of the form in blocking mode' do
-                res = Arachni::HTTP.get( url, async: false ).response
+                res = Arachni::HTTP::Client.get( url, mode: :sync )
                 f   = refreshable.from_response( res ).select do |f|
                     !!f.auditable['nonce']
                 end.first
@@ -26,7 +26,7 @@ shared_examples_for 'refreshable' do
         end
         context 'when called with a block' do
             it 'refreshes the inputs of the form in async mode' do
-                res = Arachni::HTTP.get( url, async: false ).response
+                res = Arachni::HTTP::Client.get( url, mode: :sync )
                 f   = refreshable.from_response( res ).select do |f|
                     !!f.auditable['nonce']
                 end.first
@@ -47,7 +47,7 @@ shared_examples_for 'refreshable' do
                     ran = true
                 end
 
-                Arachni::HTTP.run
+                Arachni::HTTP::Client.run
                 ran.should be_true
             end
         end

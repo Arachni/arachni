@@ -61,6 +61,23 @@ describe Hash do
         end
     end
 
+    describe '#stringify' do
+        it 'returns a Hash with keys and values recursively converted to strings' do
+            {
+                test:         'blah',
+                another_hash: {
+                    stuff: 'test'
+                }
+            }.stringify.should == {
+                'test'         => 'blah',
+                'another_hash' => {
+                    'stuff' => 'test'
+                }
+            }
+
+        end
+    end
+
     describe '#downcase' do
         it 'converts keys and values to lower-case strings' do
             { Stuff: 'VaLue', 'BlAh' => 'VaLUe 2' }.downcase.should ==

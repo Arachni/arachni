@@ -43,7 +43,7 @@ class Arachni::Modules::ResponseSplitting < Arachni::Module::Base
         # try to inject the headers into all vectors
         # and pass a block that will check for a positive result
         audit( header, param_flip: true, follow_location: false ) do |res, opts|
-            next if res.headers_hash[header_name].to_s.downcase != 'no'
+            next if res.headers[header_name].to_s.downcase != 'no'
             opts[:injected] = uri_encode( opts[:injected] )
             log( opts, res )
         end

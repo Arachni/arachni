@@ -23,7 +23,7 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
         @negative.disable_deduplication
 
         @run = proc do
-            Arachni::HTTP.run
+            Arachni::HTTP::Client.run
             Arachni::Element::Capabilities::Auditable.timeout_audit_run
         end
     end

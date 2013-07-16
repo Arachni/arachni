@@ -36,7 +36,7 @@ class ActiveOptions
             self.class.class_eval do
                 define_method m do |v|
                     @opts.send( m, v )
-                    HTTP.reset false
+                    HTTP::Client.reset false
                     v
                 end
             end
@@ -63,7 +63,7 @@ class ActiveOptions
             end
         end
 
-        HTTP.reset false
+        HTTP::Client.reset false
         true
     end
 
@@ -71,12 +71,12 @@ class ActiveOptions
         @opts.proxy_host, @opts.proxy_port = proxy_url.to_s.split( /:/ )
         @opts.proxy_port = @opts.proxy_port.to_i
 
-        HTTP.reset false
+        HTTP::Client.reset false
         @opts.proxy = proxy_url
     end
 
     def cookie_jar=( cookie_jar )
-        HTTP.update_cookies( cookie_jar )
+        HTTP::Client.update_cookies( cookie_jar )
         @cookie_jar = cookie_jar
     end
 

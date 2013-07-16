@@ -12,7 +12,7 @@ class TrainerMockFramework
         @pages       = []
         @on_audit_page = []
 
-        Arachni::HTTP.reset
+        http.reset
         @trainer = Arachni::Trainer.new( self )
 
         @opts = Arachni::Options.instance
@@ -30,7 +30,11 @@ class TrainerMockFramework
             b.call @page
         end
 
-        Arachni::HTTP.run
+        http.run
+    end
+
+    def http
+        Arachni::HTTP::Client
     end
 
     def on_audit_page( &block )
@@ -44,7 +48,7 @@ class TrainerMockFramework
 end
 
 def request( url )
-    Arachni::HTTP.instance.get( url.to_s, async: false ).response
+    Arachni::HTTP::Client.get( url.to_s, mode: :sync )
 end
 
 describe Arachni::Trainer do
@@ -57,7 +61,7 @@ describe Arachni::Trainer do
     before( :each ) do
         Arachni::Options.reset
 
-        res  = Arachni::HTTP.get( @url, async: false ).response
+        res  = Arachni::HTTP::Client.get( @url, mode: :sync )
         @page = Arachni::Page.from_response( res, Arachni::Options.instance )
 
         @framework = TrainerMockFramework.new( @page )
@@ -69,7 +73,7 @@ describe Arachni::Trainer do
             it 'skips the Trainer' do
                 @framework.pages.size.should == 0
 
-                Arachni::HTTP.request( @url + '/elems' )
+                Arachni::HTTP::Client.request( @url + '/elems' )
                 @framework.run
 
                 @framework.pages.size.should == 0
@@ -79,7 +83,7 @@ describe Arachni::Trainer do
             it 'skips the Trainer' do
                 @framework.pages.size.should == 0
 
-                Arachni::HTTP.request( @url + '/elems', train: false )
+                Arachni::HTTP::Client.request( @url + '/elems', train: false )
                 @framework.run
 
                 @framework.pages.size.should == 0
@@ -89,7 +93,7 @@ describe Arachni::Trainer do
             it 'passes the response to the Trainer' do
                 @framework.pages.size.should == 0
 
-                Arachni::HTTP.request( @url + '/elems', train: true )
+                Arachni::HTTP::Client.request( @url + '/elems', train: true )
                 @framework.run
 
                 @framework.pages.size.should == 1
@@ -99,7 +103,7 @@ describe Arachni::Trainer do
                 it 'passes the response to the Trainer' do
                     @framework.pages.size.should == 0
 
-                    Arachni::HTTP.request( @url + '/train/redirect', train: true )
+                    Arachni::HTTP::Client.request( @url + '/train/redirect', train: true )
                     @framework.run
 
                     page = @framework.pages.first
@@ -114,7 +118,7 @@ describe Arachni::Trainer do
             it 'is skipped' do
                 @framework.pages.size.should == 0
 
-                Arachni::HTTP.request( @url, train: true )
+                Arachni::HTTP::Client.request( @url, train: true )
                 @framework.run
 
                 @framework.pages.should be_empty
@@ -124,11 +128,11 @@ describe Arachni::Trainer do
         context 'gets updated more than Trainer::MAX_TRAININGS_PER_URL times' do
             it 'is ignored' do
                 get_response = proc do
-                    Typhoeus::Response.new(
-                        effective_url: @url,
-                        body:          "<a href='?#{rand( 9999 )}=1'>Test</a>",
-                        headers_hash: { 'Content-type' => 'text/html' },
-                        request:      Typhoeus::Request.new( @url )
+                    Arachni::HTTP::Response.new(
+                        url: @url,
+                        body:    "<a href='?#{rand( 9999 )}=1'>Test</a>",
+                        headers: { 'Content-type' => 'text/html' },
+                        request: Arachni::HTTP::Request.new( @url )
                     )
                 end
 
@@ -145,8 +149,8 @@ describe Arachni::Trainer do
 
         context 'matches excluding criteria' do
             it 'is ignored' do
-                res = Typhoeus::Response.new(
-                    effective_url: @url + '/exclude_me'
+                res = Arachni::HTTP::Response.new(
+                    url: @url + '/exclude_me'
                 )
                 @trainer.push( res ).should be_false
             end
@@ -158,11 +162,11 @@ describe Arachni::Trainer do
                 trainer = TrainerMockFramework.new.trainer
 
                 get_response = proc do
-                    Typhoeus::Response.new(
-                        effective_url: 'http://stuff.com/match_this',
+                    Arachni::HTTP::Response.new(
+                        url: 'http://stuff.com/match_this',
                         body:          "<a href='?#{rand( 9999 )}=1'>Test</a>",
-                        headers_hash: { 'Content-type' => 'text/html' },
-                        request:      Typhoeus::Request.new( 'http://stuff.com/match_this' )
+                        headers: { 'Content-type' => 'text/html' },
+                        request:      Arachni::HTTP::Request.new( 'http://stuff.com/match_this' )
                     )
                 end
 
@@ -188,11 +192,11 @@ describe Arachni::Trainer do
             trainer = framework.trainer
 
             get_response = proc do
-                Typhoeus::Response.new(
-                    effective_url: "http://stuff.com/#{rand( 9999 )}",
+                Arachni::HTTP::Response.new(
+                    url: "http://stuff.com/#{rand( 9999 )}",
                     body:          "<a href='?#{rand( 9999 )}=1'>Test</a>",
-                    headers_hash: { 'Content-type' => 'text/html' },
-                    request:      Typhoeus::Request.new( 'http://stuff.com/match_this' )
+                    headers: { 'Content-type' => 'text/html' },
+                    request:      Arachni::HTTP::Request.new( 'http://stuff.com/match_this' )
                 )
             end
 

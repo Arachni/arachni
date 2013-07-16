@@ -22,9 +22,9 @@ describe Arachni::Element::Form do
             ]
         }
         @inputs = { inputs: { 'param_name' => 'param_value' } }
-        @form = Arachni::Element::Form.new( @url, @inputs )
+        @form = Arachni::Element::Form.new( @url, @raw )
 
-        @http = Arachni::HTTP.instance
+        @http = Arachni::HTTP::Client.instance
     end
 
     it 'assigned to Arachni::Form for easy access' do
@@ -335,7 +335,7 @@ describe Arachni::Element::Form do
                 body_should = @form.method + @form.auditable.to_s
                 body = nil
 
-                @form.submit( remove_id: true ) { |res| body = res.body }
+                @form.submit { |res| body = res.body }
                 @http.run
                 body_should.should == body
             end
@@ -346,7 +346,7 @@ describe Arachni::Element::Form do
                 body_should = f.method + f.auditable.to_s
                 body = nil
 
-                f.submit( remove_id: true ).on_complete { |res| body = res.body }
+                f.submit.on_complete { |res| body = res.body }
                 @http.run
                 body_should.should == body
             end
@@ -359,7 +359,6 @@ describe Arachni::Element::Form do
                 f.update 'nonce' => rand( 999 )
                 f.nonce_name = 'nonce'
 
-                body_should = f.method + f.auditable.to_s
                 body = nil
 
                 f.submit { |res| body = res.body }

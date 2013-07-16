@@ -28,7 +28,7 @@ class PluginFormatters::CookieCollector < Arachni::Plugin::Formatter
     def run
         results.each_with_index do |result, i|
             print_info "[#{(i + 1).to_s}] On #{result[:time]}"
-            print_info "URL: " + result[:res]['effective_url']
+            print_info "URL: " + result[:res]['url']
 
             print_info 'Cookies forced to: '
             result[:cookies].each_pair do |name, value|

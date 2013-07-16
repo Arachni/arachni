@@ -68,7 +68,7 @@ class Parser
     attr_reader :opts
 
     #
-    # @param  [Typhoeus::Responses, Array<Typhoeus::Responses>] res
+    # @param  [Arachni::HTTP::Responses, Array<HTTP::Responses>] res
     #   Response(s) to analyze and parse into a {Page}. By providing multiple
     #   responses the parser will be able to perform some preliminary differential
     #   analysis and identify nonce tokens in inputs.
@@ -85,11 +85,11 @@ class Parser
         end
 
         @code     = res.code
-        self.url  = res.effective_url
+        self.url  = res.url
         @html     = res.body
         @response = res
 
-        @response_headers = res.headers_hash
+        @response_headers = res.headers
 
         @doc   = nil
         @paths = nil
@@ -162,7 +162,7 @@ class Parser
         end
 
         # grab cookies from the HTTP cookiejar and filter out old ones, as usual
-        from_http_jar = HTTP.instance.cookie_jar.cookies.reject do |c|
+        from_http_jar = HTTP::Client.cookie_jar.cookies.reject do |c|
             cookie_names.include?( c.name )
         end
 

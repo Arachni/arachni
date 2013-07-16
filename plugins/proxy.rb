@@ -357,13 +357,13 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         headers.merge!( res.header.dup )    if res.header
         headers['set-cookie'] = res.cookies if !res.cookies.empty?
 
-        page = page_from_response( Typhoeus::Response.new(
-                effective_url: res.request_uri.to_s,
+        page = page_from_response( Arachni::HTTP::Response.new(
+                url: res.request_uri.to_s,
                 body:          res.body.dup,
-                headers_hash:  headers,
+                headers:  headers,
                 method:        res.request_method,
                 code:          res.status.to_i,
-                request:       Typhoeus::Request.new( req.request_uri.to_s )
+                request:       Arachni::HTTP::Request.new( req.request_uri.to_s )
             )
         )
         page = update_forms( page, req, res ) if req.body

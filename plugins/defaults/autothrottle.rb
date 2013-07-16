@@ -19,7 +19,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.3
+# @version 0.1.4
 #
 class Arachni::Plugins::AutoThrottle < Arachni::Plugin::Base
 
@@ -41,13 +41,15 @@ class Arachni::Plugins::AutoThrottle < Arachni::Plugin::Base
         http = framework.http
 
         # run for each response as it arrives
-        http.add_on_complete {
+        http.add_on_complete do
             # adjust on a per-burst basis
-            next if http.curr_res_cnt == 0 || http.curr_res_cnt % http.max_concurrency != 0
+            next if http.burst_response_count == 0 ||
+                http.burst_response_count % http.max_concurrency != 0
 
             print_debug "Max concurrency: #{http.max_concurrency}"
 
-            if( http.max_concurrency > MIN_CONCURRENCY && http.average_res_time > THRESHOLD ) ||
+            if( http.max_concurrency > MIN_CONCURRENCY &&
+                http.burst_average_response_time > THRESHOLD ) ||
                 http.max_concurrency > framework.opts.http_req_limit
 
                 step = http.max_concurrency + STEP_DOWN < MIN_CONCURRENCY ?
@@ -56,11 +58,13 @@ class Arachni::Plugins::AutoThrottle < Arachni::Plugin::Base
                 print_debug "Stepping down!: #{step}"
                 http.max_concurrency = http.max_concurrency + step
 
-            elsif http.average_res_time < THRESHOLD && http.max_concurrency < framework.opts.http_req_limit
+            elsif http.burst_average_response_time < THRESHOLD &&
+                http.max_concurrency < framework.opts.http_req_limit
+
                 print_debug "Stepping up!: +#{STEP_UP}"
                 http.max_concurrency = http.max_concurrency + STEP_UP
             end
-        }
+        end
     end
 
     def self.info
@@ -71,7 +75,7 @@ class Arachni::Plugins::AutoThrottle < Arachni::Plugin::Base
                 and avoid from killing the server.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             tags:        %w(meta http throttle),
-            version:     '0.1.3'
+            version:     '0.1.4'
         }
     end
 

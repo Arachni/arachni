@@ -44,14 +44,14 @@ class Trainer
         # get us setup using the page that is being audited as a seed page
         framework.on_audit_page { |page| self.page = page }
 
-        HTTP.add_on_queue do |req, _|
+        framework.http.add_on_queue do |req, _|
             next if !req.train?
 
             req.on_complete do |res|
                 # handle redirections
-                if res.redirection? && res.location.is_a?( String )
+                if res.redirection?
                     reference_url = @page ? @page.url : framework.opts.url
-                    HTTP.get( to_absolute( res.location, reference_url ) ) do |res2|
+                    framework.http.get( to_absolute( res.headers.location, reference_url ) ) do |res2|
                         push( res2 )
                     end
                 else
@@ -69,7 +69,7 @@ class Trainer
     #
     # These new pages can then be retrieved by flushing the buffer (#flush).
     #
-    # @param  [Typhoeus::Response]  res
+    # @param  [Arachni::HTTP::Response]  res
     #
     def push( res )
         if !@page
@@ -115,7 +115,7 @@ class Trainer
     #
     # Analyzes a response looking for new links, forms and cookies.
     #
-    # @param   [Typhoeus::Response]  res
+    # @param   [Arachni::HTTP::Response]  res
     #
     def analyze( res )
         print_debug "Started for response with request ID: ##{res.request.id}"
@@ -139,7 +139,7 @@ class Trainer
             page_data[:method]           = res.request.method.to_s.upcase
             page_data[:body]             = res.body
             page_data[:doc]              = @parser.doc
-            page_data[:response_headers] = res.headers_hash
+            page_data[:response_headers] = res.headers
 
             @trainings_per_url[@parser.url] += 1
 

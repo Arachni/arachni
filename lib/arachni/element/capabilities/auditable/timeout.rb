@@ -47,7 +47,7 @@ module Arachni::Element::Capabilities
 # # Usage
 #
 # * Call {#timeout_analysis} to schedule requests for Phase 1.
-# * Call {Arachni::HTTP#run} to run the Phase 1 requests which will populate
+# * Call {Arachni::HTTP::Client#run} to run the Phase 1 requests which will populate
 #   the Phase 2 queue with candidates -- if there are any.
 # * Call {timeout_audit_run} to filter the candidates through Phases 2 and 3
 #   to ensure that false-positives are weeded out.
@@ -366,7 +366,7 @@ module Auditable::Timeout
             redundant: true,
             timeout:   limit * 1000,
             silent:    true,
-            async:     false
+            mode:      :sync
         }
 
         orig_opts = opts
@@ -375,7 +375,7 @@ module Auditable::Timeout
         print_info "Max waiting time: #{limit} seconds."
 
         @auditable = @orig
-        res = submit( d_opts ).response
+        res = submit( d_opts )
 
         @opts.merge!( orig_opts )
 
@@ -411,7 +411,7 @@ module Auditable::Timeout
     #   Options as described in {Arachni::Element::Mutable::OPTIONS}.
     # @param    [Block]     block
     #   Block to call if a timeout occurs, it will be passed the
-    #   {Typhoeus::Response response} and `opts`.
+    #   {Arachni::HTTP::Response response} and `opts`.
     #
     def timing_attack( payloads, opts, &block )
         opts = opts.dup

@@ -63,7 +63,7 @@ class Server < WEBrick::HTTPProxyServer
     #
     def do_GET( req, res )
         perform_proxy_request( req, res ) do |url, header|
-            Arachni::HTTP.get( url, http_opts( headers: header ) ).response
+            Arachni::HTTP::Client.get( url, http_opts( headers: header ) ).response
         end
     end
 
@@ -81,7 +81,7 @@ class Server < WEBrick::HTTPProxyServer
             # a response.
             header.delete 'Content-Length'
 
-            Arachni::HTTP.post( url, http_opts( params: params, headers: header ) ).response
+            Arachni::HTTP::Client.post( url, http_opts( parameters: params, headers: header ) ).response
         end
     end
 
@@ -92,7 +92,7 @@ class Server < WEBrick::HTTPProxyServer
     #
     def do_PUT( req, res )
         perform_proxy_request( req, res ) do |url, header|
-            Arachni::HTTP.request( url, http_opts( method: :put, headers: header ) ).response
+            Arachni::HTTP::Client.request( url, http_opts( method: :put, headers: header ) ).response
         end
     end
 
@@ -103,7 +103,7 @@ class Server < WEBrick::HTTPProxyServer
     #
     def do_DELETE( req, res )
         perform_proxy_request( req, res ) do |url, header|
-            Arachni::HTTP.request( url, http_opts( method: :delete, headers: header ) ).response
+            Arachni::HTTP::Client.request( url, http_opts( method: :delete, headers: header ) ).response
         end
     end
 
@@ -127,13 +127,13 @@ class Server < WEBrick::HTTPProxyServer
     #
     def do_HEAD( req, res )
         perform_proxy_request( req, res ) do |url, header|
-            Arachni::HTTP.request( url, http_opts( method: :head, headers: header ) ).response
+            Arachni::HTTP::Client.request( url, http_opts( method: :head, headers: header ) ).response
         end
     end
 
     # @param    [Hash]  opts    merges HTTP opts with some defaults
     def http_opts( opts = {} )
-        opts.merge( no_cookiejar: true, async: false, follow_location: false,
+        opts.merge( no_cookiejar: true, mode: :sync, follow_location: false,
                     timeout: @config[:Timeout], update_cookies: true )
     end
 
@@ -199,13 +199,13 @@ class Server < WEBrick::HTTPProxyServer
         res['proxy-connection'] = 'close'
         res['connection']       = 'close'
 
-        # Convert Typhoeus::Response to WEBrick::HTTPResponse.
+        # Convert Arachni::HTTP::Response to WEBrick::HTTPResponse.
 
         res.status = response.code.to_i
         choose_header( response, res )
 
         # scrub the existing cookies clean and pass the new ones
-        sc = response.headers_hash['Set-Cookie']
+        sc = response.headers['Set-Cookie']
         sc.each { |c| res.cookies << c } if sc.is_a?( Array )
         res.header.delete( 'set-cookie' )
 

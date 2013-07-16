@@ -5,24 +5,18 @@ describe Arachni::Parser do
         @utils = Arachni::Utilities
         @opts = Arachni::Options.instance
         @opts.url = @utils.normalize_url( web_server_url_for( :parser ) )
-        @opts.audit_links = true
-        @opts.audit_forms = true
-        @opts.audit_cookies = true
-        @opts.audit_headers = true
+        @opts.audit :links, :forms, :cookies, :headers
 
         @url = @utils.normalize_url( @opts.url + '/?query_var_input=query_var_val' )
 
         @opts.cookies = [
-            Arachni::Element::Cookie.new( @url,
+            Arachni::Element::Cookie.new(
+                @url,
                 { 'name_from_cookiejar' => 'val_from_cookiejar' }
             )
         ]
 
-        @response = Arachni::HTTP.get(
-            @url,
-            async: false,
-            remove_id: true
-        ).response
+        @response = Arachni::HTTP::Client.get( @url, mode: :sync )
         @parser = Arachni::Parser.new( @response, @opts )
     end
 
@@ -48,7 +42,7 @@ describe Arachni::Parser do
             page.method.should == @response.request.method.to_s
             page.query_vars.should == { 'query_var_input' => 'query_var_val' }
             page.body.should == @response.body
-            page.response_headers.should == @response.headers_hash
+            page.response_headers.should == @response.headers
             page.paths.should == @parser.paths
 
             link = Arachni::Element::Link.new( @url,
@@ -57,17 +51,17 @@ describe Arachni::Parser do
 
             page.links.should == @parser.links | [link]
             page.forms.should == @parser.forms
-            page.cookies.should == @parser.cookies | @opts.cookies | Arachni::HTTP.instance.cookie_jar.cookies
+            page.cookies.should == @parser.cookies | @opts.cookies | Arachni::HTTP::Client.cookie_jar.cookies
             page.headers.should == @parser.headers
             page.cookiejar.should == @parser.cookies | @opts.cookies
         end
 
         it 'forces page\'s cookies\'s action to the response\'s effective URL' do
             url = 'http://stuff.com/'
-            response = Typhoeus::Response.new(
-                effective_url: url,
+            response = Arachni::HTTP::Response.new(
+                url: url,
                 body: '',
-                request: Typhoeus::Request.new( url ),
+                request: Arachni::HTTP::Request.new( url ),
                 headers: {
                     'Content-Type' => 'text/html',
                     'Set-Cookie'   => 'cname=cval'
@@ -84,8 +78,8 @@ describe Arachni::Parser do
                 it 'performs platform fingerprinting' do
                     Arachni::Options.no_fingerprinting = false
 
-                    response = Typhoeus::Response.new(
-                        effective_url: 'http://stuff.com/index.php'
+                    response = Arachni::HTTP::Response.new(
+                        url: 'http://stuff.com/index.php'
                     )
                     parser = Arachni::Parser.new( response, @opts )
                     parser.page.platforms.should be_any
@@ -96,8 +90,8 @@ describe Arachni::Parser do
                 it 'does not perform platform fingerprinting' do
                     Arachni::Options.no_fingerprinting = true
 
-                    response = Typhoeus::Response.new(
-                        effective_url: 'http://stuff.com/index2.php'
+                    response = Arachni::HTTP::Response.new(
+                        url: 'http://stuff.com/index2.php'
                     )
                     parser = Arachni::Parser.new( response, @opts )
                     parser.page.platforms.should be_empty
@@ -113,7 +107,7 @@ describe Arachni::Parser do
 
         context 'when the response is not text based' do
             before {
-                res = Typhoeus::Response.new( effective_url: @url )
+                res = Arachni::HTTP::Response.new( url: @url )
                 @parser_2 = Arachni::Parser.new( res, @opts )
             }
             it { @parser_2.text?.should be_false }
@@ -129,7 +123,7 @@ describe Arachni::Parser do
 
         context 'when the response is not text based' do
             it 'returns nil' do
-                res = Typhoeus::Response.new( effective_url: @url )
+                res = Arachni::HTTP::Response.new( url: @url )
                 Arachni::Parser.new( res, @opts ).doc.should be_nil
             end
         end
@@ -140,10 +134,10 @@ describe Arachni::Parser do
         context 'when the response was a result of redirection' do
             it 'includes the URL in the array' do
                 url = 'http://stuff.com/'
-                response = Typhoeus::Response.new(
-                    effective_url: url,
+                response = Arachni::HTTP::Response.new(
+                    url: url,
                     body: '',
-                    headers_hash: {
+                    headers: {
                         'Content-Type' => 'text/html',
                         'Location'     => url
                     }
@@ -155,10 +149,10 @@ describe Arachni::Parser do
         context 'when the response URL contains auditable inputs' do
             it 'includes the URL in the array' do
                 url = 'http://stuff.com/?stuff=ba'
-                response = Typhoeus::Response.new(
-                    effective_url: url,
+                response = Arachni::HTTP::Response.new(
+                    url: url,
                     body: '',
-                    headers_hash: {
+                    headers: {
                         'Content-Type' => 'text/html'
                     }
                 )
@@ -170,10 +164,10 @@ describe Arachni::Parser do
         context 'otherwise' do
             it 'should not include it the response URL' do
                 url = 'http://stuff.com/'
-                response = Typhoeus::Response.new(
-                    effective_url: url,
+                response = Arachni::HTTP::Response.new(
+                    url: url,
                     body: '',
-                    headers_hash: {
+                    headers: {
                         'Content-Type' => 'text/html'
                     }
                 )
@@ -183,7 +177,7 @@ describe Arachni::Parser do
         end
         context 'when the response is not text based' do
             it 'returns nil' do
-                res = Typhoeus::Response.new( effective_url: @url )
+                res = Arachni::HTTP::Response.new( url: @url )
                 Arachni::Parser.new( res, @opts ).links.should be_empty
             end
         end
@@ -252,8 +246,8 @@ describe Arachni::Parser do
             it 'identifies the nonces' do
                 responses = []
 
-                responses << Arachni::HTTP.get( @opts.url + 'with_nonce', async: false ).response
-                responses << Arachni::HTTP.get( @opts.url + 'with_nonce', async: false ).response
+                responses << Arachni::HTTP::Client.get( @opts.url + 'with_nonce', mode: :sync )
+                responses << Arachni::HTTP::Client.get( @opts.url + 'with_nonce', mode: :sync )
 
                 parser = Arachni::Parser.new( responses, @opts )
                 parser.forms.map { |f| f.nonce_name }.sort.should == %w(nonce nonce2).sort
@@ -261,7 +255,7 @@ describe Arachni::Parser do
         end
         context 'when the response is not text based' do
             it 'returns nil' do
-                res = Typhoeus::Response.new( effective_url: @url )
+                res = Arachni::HTTP::Response.new( url: @url )
                 Arachni::Parser.new( res, @opts ).forms.should be_empty
             end
         end
@@ -347,11 +341,7 @@ describe Arachni::Parser do
     context 'with base' do
         before {
             @url_with_base = @utils.normalize_url( @opts.url + '/with_base?stuff=ha' )
-            res = Arachni::HTTP.instance.get(
-                @url_with_base,
-                async: false,
-                remove_id: true
-            ).response
+            res = Arachni::HTTP::Client.get( @url_with_base, mode: :sync )
             @parser_with_base = Arachni::Parser.new( res, @opts )
         }
 

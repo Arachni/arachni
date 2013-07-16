@@ -143,7 +143,7 @@ class Framework
 
         @session = Session.new( @opts )
         reset_spider
-        @http    = HTTP.instance
+        @http    = HTTP::Client.instance
 
         reset_trainer
 
@@ -290,9 +290,6 @@ class Framework
     # @return   [Hash]
     #
     def stats( refresh_time = false, override_refresh = false )
-        req_cnt = http.request_count
-        res_cnt = http.response_count
-
         @opts.start_datetime = Time.now if !@opts.start_datetime
 
         sitemap_sz  = @sitemap.size
@@ -303,9 +300,6 @@ class Framework
         else
             @opts.delta_time = Time.now - @opts.start_datetime
         end
-
-        avg = 0
-        avg = (res_cnt / @opts.delta_time).to_i if res_cnt > 0
 
         # We need to remove URLs that lead to redirects from the sitemap
         # when calculating the progress %.
@@ -334,18 +328,18 @@ class Framework
         pb = Mixins::ProgressBar.eta( progress, @opts.start_datetime )
 
         {
-            requests:         req_cnt,
-            responses:        res_cnt,
+            requests:         http.request_count,
+            responses:        http.response_count,
             time_out_count:   http.time_out_count,
             time:             audit_store.delta_time,
-            avg:              avg,
+            avg:              http.total_responses_per_second,
             sitemap_size:     auditstore_sitemap.size,
             auditmap_size:    auditmap_sz,
             progress:         progress,
-            curr_res_time:    http.curr_res_time,
-            curr_res_cnt:     http.curr_res_cnt,
-            curr_avg:         http.curr_res_per_second,
-            average_res_time: http.average_res_time,
+            curr_res_time:    http.burst_response_time_sum,
+            curr_res_cnt:     http.burst_response_count,
+            curr_avg:         http.burst_responses_per_second,
+            average_res_time: http.burst_average_response_time,
             max_concurrency:  http.max_concurrency,
             current_page:     @current_url,
             eta:              pb
@@ -671,7 +665,7 @@ class Framework
         Module::Manager.reset
         Plugin::Manager.reset
         Report::Manager.reset
-        HTTP.reset
+        HTTP::Client.reset
     end
 
     private

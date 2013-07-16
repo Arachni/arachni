@@ -186,8 +186,8 @@ describe Arachni::Element::Link do
 
     describe '.from_response' do
         it 'returns all available links from an HTTP response' do
-            res = Typhoeus::Response.new(
-                effective_url: @url + '/?param=val',
+            res = Arachni::HTTP::Response.new(
+                url: @url + '/?param=val',
                 body: '<a href="test?param_one=value_one&param_two=value_two"></a>'
             )
             Arachni::Element::Link.from_response( res ).size.should == 2

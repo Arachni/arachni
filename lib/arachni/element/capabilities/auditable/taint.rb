@@ -99,7 +99,7 @@ module Auditable::Taint
     #
     # If a issue is found a message will be printed and the issue will be logged.
     #
-    # @param  [Typhoeus::Response]  res
+    # @param  [Arachni::HTTP::Response]  res
     # @param  [Hash]  opts
     #
     def get_matches( res, opts )

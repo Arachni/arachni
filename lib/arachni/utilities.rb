@@ -310,10 +310,10 @@ module Utilities
     end
 
     #
-    # Determines whether or not a given {Arachni::Page} or {Typhoeus::Response}
+    # Determines whether or not a given {Arachni::Page} or {Arachni::HTTP::Response}
     # should be ignored.
     #
-    # @param    [Page,Typhoeus::Response,#body]   page_or_response
+    # @param    [Page,Arachni::HTTP::Response,#body]   page_or_response
     #
     # @return   [Bool]
     #   `true` if the `#body` of the given object matches any of the exclusion
@@ -334,11 +334,11 @@ module Utilities
     # Determines whether or not the given `resource` should be ignored
     # depending on its type and content.
     #
-    # @param    [Page,Typhoeus::Response,String]    resource
+    # @param    [Page,Arachni::HTTP::Response,String]    resource
     #   If given a:
     #
     #       * {Page}: both its URL and body will be examined.
-    #       * {Typhoeus::Response}: both its effective URL and body will be examined.
+    #       * {Arachni::HTTP::Response}: both its effective URL and body will be examined.
     #       * {String}: if multi-line it will be treated as a response body,
     #           otherwise as a path.
     #
@@ -355,7 +355,7 @@ module Utilities
             when Page
                 skip_page?( resource )
 
-            when Typhoeus::Response
+            when Arachni::HTTP::Response
                 skip_response?( resource )
 
             else

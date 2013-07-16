@@ -66,9 +66,9 @@ class Arachni::Plugins::HTTPDicattack < Arachni::Plugin::Base
                     @found = true
 
                     print_ok "Found a match. Username: '#{user}' -- Password: '#{pass}'"
-                    print_info "URL: #{res.effective_url}"
+                    print_info "URL: #{res.url}"
 
-                    framework.opts.url = res.effective_url
+                    framework.opts.url = res.url
 
                     # register our findings...
                     register_results( username: user, password: pass )
@@ -89,7 +89,7 @@ class Arachni::Plugins::HTTPDicattack < Arachni::Plugin::Base
     end
 
     def protected?( url )
-        http.get( url, async: false ).response.code == 401
+        http.get( url, mode: :sync ).code == 401
     end
 
     def self.info

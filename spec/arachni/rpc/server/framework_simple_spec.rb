@@ -445,8 +445,7 @@ describe 'Arachni::RPC::Server::Framework' do
             inst.opts.audit_links = true
             inst.modules.load( 'taint' )
 
-            opts = { async: false, remove_id: true }
-            res = Arachni::HTTP.instance.get( inst.opts.url.to_s, opts ).response
+            res = Arachni::HTTP::Client.get( inst.opts.url.to_s, mode: :sync )
 
             link = Arachni::Element::Link.from_response( res ).pop
             inst.framework.restrict_to_elements(  [ link.scope_audit_id ] ).should be_true
@@ -468,9 +467,8 @@ describe 'Arachni::RPC::Server::Framework' do
             inst.opts.audit_links = true
             inst.modules.load( 'taint' )
 
-            opts = { async: false, remove_id: true }
             url_to_audit = url +  '/restrict_to_elements'
-            res = Arachni::HTTP.instance.get( url_to_audit, opts ).response
+            res = Arachni::HTTP::Client.get( url_to_audit, mode: :sync )
 
             page = Arachni::Page.from_response( res, @opts )
             inst.framework.update_page_queue( [ page ] ).should be_true
