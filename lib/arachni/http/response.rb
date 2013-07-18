@@ -107,6 +107,11 @@ class Response < Message
         [:operation_timedout, :couldnt_connect].include? return_code
     end
 
+    # @return [Arachni::Page]
+    def to_page
+        Page.from_response self
+    end
+
     # @return   [Hash]
     def to_h
         hash = {}
@@ -120,6 +125,14 @@ class Response < Message
         hash.delete( 'redirections' )
         hash.delete( 'request' )
         hash
+    end
+
+    def ==( other )
+        hash == other.hash
+    end
+
+    def hash
+        to_h.hash
     end
 
     def self.from_typhoeus( response )

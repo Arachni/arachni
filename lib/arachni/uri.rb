@@ -630,6 +630,14 @@ class URI
         @parsed_url.to_s
     end
 
+    def _dump( _ )
+        to_s
+    end
+
+    def self._load( url )
+        new url
+    end
+
     def hash
         to_s.hash
     end

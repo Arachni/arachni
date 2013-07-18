@@ -5,20 +5,13 @@ class AuditorTest
 
     def initialize( framework )
         @framework = framework
+        load_page_from @framework.opts.url
         framework.trainer.page = page
         mute
     end
 
     def reset
         @framework.reset
-    end
-
-    def page
-        @page ||= Arachni::Page.new(
-            url:  @framework.opts.url,
-            body: 'Match this!',
-            method: 'get'
-        )
     end
 
     def http

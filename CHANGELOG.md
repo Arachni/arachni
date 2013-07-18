@@ -11,6 +11,13 @@
         - `#request` options:
             - `:params` => `:parameters`
             - `:async` => `:mode` (with values of `:async` and `:sync`)
+- `Arachni::Page`
+    - Cleaned-up attributes.
+    - Added `#response`, holding the associated `HTTP::Response`.
+    - Attributes (`#links`, `#forms`, `#paths` etc.) are lazy-parsed on-demand.
+- `Arachni::Parser` -- Updated to **only** operate under the context of the
+    `HTTP::Response` with which it was initialized -- no longer supports parsing
+    data from external sources.
 
 ## 0.4.3.1 _(July 14, 2013)_
 

@@ -5,7 +5,7 @@ describe Arachni::Platform::Fingerprinters::ASP do
 
     context 'when the page has a .asp extension' do
         it 'identifies it as ASP' do
-            page = Arachni::Page.new( url: 'http://stuff.com/blah.asp' )
+            page = Arachni::Page.from_data( url: 'http://stuff.com/blah.asp' )
             platforms_for( page ).should include :asp
             platforms_for( page ).should include :windows
         end
@@ -13,7 +13,7 @@ describe Arachni::Platform::Fingerprinters::ASP do
 
     context 'when there is a ASPSESSIONID query parameter' do
         it 'identifies it as ASP' do
-            page = Arachni::Page.new(
+            page = Arachni::Page.from_data(
                 url:        'http://stuff.com/blah?ASPSESSIONID=stuff',
                 query_vars: {
                     'ASPSESSIONID' => 'stuff'
@@ -26,7 +26,7 @@ describe Arachni::Platform::Fingerprinters::ASP do
 
     context 'when there is a ASPSESSIONID cookie' do
         it 'identifies it as ASP' do
-            page = Arachni::Page.new(
+            page = Arachni::Page.from_data(
                 url:     'http://stuff.com/blah',
                 cookies: [Arachni::Cookie.new( 'http://stuff.com/blah',
                                                'ASPSESSIONID' => 'stuff' )]

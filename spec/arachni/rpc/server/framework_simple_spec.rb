@@ -470,7 +470,7 @@ describe 'Arachni::RPC::Server::Framework' do
             url_to_audit = url +  '/restrict_to_elements'
             res = Arachni::HTTP::Client.get( url_to_audit, mode: :sync )
 
-            page = Arachni::Page.from_response( res, @opts )
+            page = Arachni::Page.from_response( res )
             inst.framework.update_page_queue( [ page ] ).should be_true
 
             inst.framework.run.should be_true

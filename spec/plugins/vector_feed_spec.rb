@@ -54,12 +54,12 @@ describe name_from_filename do
 
         oks = 0
         pages.each do |page|
-            if page.response_headers.any?
+            if page.response.headers.any?
                 page.url.should  == v.first['url']
                 page.code.should == v.first['code']
                 page.body.should == v.first['body']
 
-                page.response_headers.should == v.first['headers']
+                page.response.headers.should == v.first['headers']
 
                 oks += 1
             end

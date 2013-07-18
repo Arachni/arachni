@@ -259,7 +259,6 @@ describe Arachni::Framework do
                     f.opts.audit :links
                     f.modules.load %w(body)
 
-                    link = Arachni::Element::Link.new( 'http://test' )
                     p = Arachni::Page.new( url: 'http://test', body: 'stuff' )
                     f.push_to_page_queue( p )
 
@@ -276,7 +275,6 @@ describe Arachni::Framework do
                     f.opts.audit :links
                     f.modules.load %w(body)
 
-                    link = Arachni::Element::Link.new( 'http://test' )
                     p = Arachni::Page.new( url: 'http://test', body: '' )
                     f.push_to_page_queue( p )
 

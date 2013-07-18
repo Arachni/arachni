@@ -117,6 +117,22 @@ describe Arachni::HTTP::Request do
         end
     end
 
+    describe '#clear_callbacks' do
+        it 'clears #on_complete callbacks' do
+            request = described_class.new( url )
+
+            passed_response = nil
+            request.on_complete { |res| passed_response = res }
+
+            response = Arachni::HTTP::Response.new( url )
+            request.clear_callbacks
+            request.handle_response( response )
+
+            passed_response.should be_nil
+        end
+    end
+
+
     describe '#handle_response' do
         it 'assigns self as the #request attribute of the response' do
             request = described_class.new( url )

@@ -356,7 +356,7 @@ module Auditor
 
             next if string != page.body
 
-            page.response_headers.each do |k,v|
+            page.response.headers.each do |k,v|
                 next if !v
 
                 v.to_s.scan( regexp ).flatten.uniq.each do |match|
@@ -378,53 +378,29 @@ module Auditor
     #
     # Populates and logs an {Arachni::Issue} based on data from `opts` and `res`.
     #
-    # @param    [Hash]                  opts
+    # @param    [Hash]  options
     #   As passed to blocks by audit methods.
-    # @param    [HTTP::Response]    res
+    # @param    [HTTP::Response]    response
     #   Optional HTTP response, defaults to page data.
     #
-    def log( opts, res = nil )
-        response_headers = {}
-        request_headers  = {}
-        response = nil
-        method   = nil
-
-        if page
-            request_headers  = page.request_headers
-            response_headers = page.response_headers
-            response         = page.body
-            url              = page.url
-            method           = page.method.to_s.upcase if page.method
-        end
-
-        if res
-            request_headers  = res.request.headers
-            response_headers = res.headers
-            response         = res.body
-            url              = opts[:action] || res.url
-            method           = res.request.method.to_s.upcase
-        end
-
-        if !response_headers['content-type'].to_s.include?( 'text' )
-            response = nil
-        end
-
-        var     = opts[:altered] || opts[:var]
-        element = opts[:element] || opts[:elem]
+    def log( options, response = page.response )
+        url     = options[:action]  || response.url
+        var     = options[:altered] || options[:var]
+        element = options[:element] || options[:elem]
 
         msg = "In #{element}"
         msg << " var '#{var}'" if var
         print_ok "#{msg} ( #{url} )"
 
-        print_verbose( "Injected string:\t" + opts[:injected] ) if opts[:injected]
-        print_verbose( "Verified string:\t" + opts[:match].to_s ) if opts[:match]
-        print_verbose( "Matched regular expression: " + opts[:regexp].to_s ) if opts[:regexp]
-        print_debug( 'Request ID: ' + res.request.id.to_s ) if res
-        print_verbose( '---------' ) if only_positives?
+        print_verbose( "Injected string:\t#{options[:injected]}" )         if options[:injected]
+        print_verbose( "Verified string:\t#{options[:match]}" )            if options[:match]
+        print_verbose( "Matched regular expression: #{options[:regexp]}" ) if options[:regexp]
+        print_debug( "Request ID: #{response.request.id}" )
+        print_verbose( '---------' )                                       if only_positives?
 
         # Platform identification by vulnerability.
         platform_type = nil
-        if platform = opts[:platform]
+        if (platform = options[:platform])
             Platform::Manager[url] << platform if Options.fingerprint?
             platform_type = Platform::Manager[url].find_type( platform )
         end
@@ -434,19 +410,19 @@ module Auditor
             url:           url,
             platform:      platform,
             platform_type: platform_type,
-            injected:      opts[:injected],
-            id:            opts[:id],
-            regexp:        opts[:regexp],
-            regexp_match:  opts[:match],
+            injected:      options[:injected],
+            id:            options[:id],
+            regexp:        options[:regexp],
+            regexp_match:  options[:match],
             elem:          element,
-            verification:  !!opts[:verification],
-            remarks:       opts[:remarks],
-            method:        method,
-            response:      response,
-            opts:          opts,
+            verification:  !!options[:verification],
+            remarks:       options[:remarks],
+            method:        response.request.method.to_s.upcase,
+            response:      response.body,
+            opts:          options,
             headers:       {
-                request:   request_headers,
-                response:  response_headers,
+                request:   response.request.headers,
+                response:  response.headers,
             }
         )
     end

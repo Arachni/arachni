@@ -61,7 +61,7 @@ module ElementFilter
     # Initializes @@cookies with the cookies found during the crawl/analysis
     #
     def init_cookies( cookies )
-        @@cookies = cookies
+        @@cookies = cookies.dup
     end
 
     #

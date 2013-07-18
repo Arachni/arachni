@@ -69,7 +69,7 @@ class Fingerprinter
 
     # @return   [Hash]  Response headers with keys and values downcased.
     def headers
-        @headers ||= page.response_headers.downcase
+        @headers ||= page.response.headers.downcase
     end
 
     # @return   [String. nil] Value of the `X-Powered-By` header.

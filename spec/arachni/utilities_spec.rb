@@ -186,14 +186,14 @@ describe Arachni::Utilities do
 
         context 'when the body matches an ignore rule' do
             it 'returns true' do
-                page = Arachni::Page.new( body: 'ignore me' )
+                page = Arachni::Page.from_data( url: 'http://test/', body: 'ignore me' )
                 @utils.skip_page?( page ).should be_true
             end
         end
 
         context 'when the body does not match an ignore rule' do
             it 'returns false' do
-                page = Arachni::Page.new(
+                page = Arachni::Page.from_data(
                     url: 'http://test/',
                     body: 'not me'
                 )
@@ -294,7 +294,7 @@ describe Arachni::Utilities do
             context Arachni::Page do
                 context 'whose the body matches an ignore rule' do
                     it 'returns true' do
-                        page = Arachni::Page.new(
+                        page = Arachni::Page.from_data(
                             url:   'http://stuff/here',
                             body: 'ignore me'
                         )
@@ -304,7 +304,7 @@ describe Arachni::Utilities do
 
                 context 'whose the body does not match an ignore rule' do
                     it 'returns false' do
-                        page = Arachni::Page.new(
+                        page = Arachni::Page.from_data(
                             url:   'http://stuff/here',
                             body: 'stuff'
                         )
@@ -314,7 +314,7 @@ describe Arachni::Utilities do
 
                 context 'whose URL matches an exclude rule' do
                     it 'returns true' do
-                        res = Arachni::Page.new(
+                        res = Arachni::Page.from_data(
                             url:   'http://stuff/here/to/ignore/',
                             body: 'ignore me'
                         )
@@ -324,7 +324,7 @@ describe Arachni::Utilities do
 
                 context 'whose URL does not match an exclude rule' do
                     it 'returns false' do
-                        res = Arachni::Page.new(
+                        res = Arachni::Page.from_data(
                             url:  'http://stuff/here',
                             body: 'stuff'
                         )

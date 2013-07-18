@@ -171,6 +171,11 @@ class Request < Message
         self
     end
 
+    # Clears {#on_complete} callbacks.
+    def clear_callbacks
+        @on_complete.clear
+    end
+
     # @return   [Bool]
     #   `true` if redirects should be followed, `false` otherwise.
     def follow_location?

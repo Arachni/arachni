@@ -23,46 +23,6 @@ module Arachni
 #
 class Page
 
-    # @return    [String]    URL of the page
-    attr_reader :url
-
-    # @return    [Fixnum]    HTTP response code.
-    attr_reader :code
-
-    # @return    [Hash]    URL query parameters.
-    attr_reader :query_vars
-
-    # @return    [String]    HTTP response body.
-    attr_reader :body
-
-    # @return    [Array<Element::Header>]   HTTP request headers.
-    attr_reader :headers
-
-    # @return    [Hash] HTTP request headers.
-    attr_reader :request_headers
-
-    # @return    [Hash] HTTP response headers.
-    attr_reader :response_headers
-
-    # @return    [Array<String>]    Paths contained in this page.
-    attr_reader :paths
-
-    # @see Parser#links
-    # @return    [Array<Element::Link>]
-    attr_accessor :links
-
-    # @see Parser#forms
-    # @return    [Array<Element::Form>]
-    attr_accessor :forms
-
-    # @see Parser#cookies
-    # @return    [Array<Element::Cookie>]
-    attr_accessor :cookies
-
-    # @return    [Array<Element::Cookie>]
-    #   Cookies extracted from the supplied cookie-jar.
-    attr_accessor :cookiejar
-
     # @param    [String]    url URL to fetch.
     # @param    [Hash]  opts
     # @option  opts    [Integer]   :precision  (1)
@@ -92,79 +52,215 @@ class Page
         end
     end
 
-    # @param    [HTTP::Response]    res HTTP response to parse.
+    # @param    [HTTP::Response]    response    HTTP response to parse.
     # @return   [Page]
-    def self.from_response( res, opts = Options )
-        Parser.new( res, opts ).page
+    def self.from_response( response )
+        new response: response
     end
-    class << self; alias :from_http_response :from_response end
 
-    # @param    [Hash]  opts    Hash from which to set instance attributes.
-    def initialize( opts = {} )
-        opts.each { |k, v| instance_variable_set( "@#{k}".to_sym, try_dup( v ) ) }
+    # @option options  [String]    :url
+    #   URL of the page.
+    # @option options  [String]    :body
+    #   Body of the page.
+    # @option options  [Array<Link>]    :links
+    #   {Link} elements.
+    # @option options  [Array<Form>]    :forms
+    #   {Form} elements.
+    # @option options  [Array<Cookie>]    :cookies
+    #   {Cookie} elements.
+    # @option options  [Array<Header>]    :headers
+    #   {Header} elements.
+    # @option options  [Array<Cookie>]    :cookiejar
+    #   {Cookie} elements with which to update the HTTP cookiejar before
+    #   auditing.
+    # @option options  [Array<String>]    :paths
+    #   Paths contained in the page.
+    # @option options  [Array<String>]    :request
+    #   {Request#initialize} options.
+    def self.from_data( data )
+        data = data.dup
 
-        @forms ||= []
-        @links ||= []
-        @cookies ||= []
-        @headers ||= []
+        data[:response]        ||= {}
+        data[:response][:code] ||= 200
+        data[:response][:url]  ||= data.delete( :url )
+        data[:response][:body] ||= data.delete( :body ) || ''
 
-        @cookiejar ||= {}
-        @paths ||= []
+        data[:response][:request] ||= {}
 
-        @response_headers ||= {}
+        data[:links]   ||= []
+        data[:forms]   ||= []
+        data[:cookies] ||= []
+        data[:headers] ||= []
 
-        # Force to a native Ruby Hash.
-        @response_headers   = {}.merge( @response_headers )
+        data[:cookiejar] ||= []
 
-        @request_headers  ||= {}
-        @query_vars       ||= {}
+        data[:response][:request] =
+            Arachni::HTTP::Request.new( data[:response][:url], data[:response][:request] )
 
-        @url    = Utilities.normalize_url( @url )
-        @body ||= ''
+        data[:response] = Arachni::HTTP::Response.new( data[:response] )
+
+        new data
+    end
+
+    # Needs either a `:parser` or a `:response` or user provided data.
+    #
+    # @param    [Hash]  options    Hash from which to set instance attributes.
+    # @option options  [Array<HTTP::Response>, HTTP::Response]    :response
+    #   HTTP response of the page -- or array of responses for the page for
+    #   content refinement.
+    # @option options  [Parser]    :parser
+    #   An instantiated {Parser}.
+    def initialize( options )
+        fail ArgumentError, 'Options cannot be empty.' if options.empty?
+
+        options.each { |k, v| instance_variable_set( "@#{k}".to_sym, try_dup( v ) ) }
+
+        @parser ||= Parser.new( @response ) if @response
+
+        Platform::Manager.fingerprint( self ) if Options.fingerprint?
+    end
+
+    # @return    [HTTP::Response]    HTTP response.
+    def response
+        return if !@parser
+        @parser.response
+    end
+
+    # @return    [String]    URL of the page.
+    def url
+        @url ||= @parser.url
+    end
+
+    # @return    [String]    URL of the page.
+    def code
+        return 0 if !@code && !response
+        @code ||= response.code
+    end
+
+    # @return    [Hash]    {#url URL} query parameters.
+    def query_vars
+        @query_vars ||= Link.parse_query_vars( url )
+    end
+
+    # @return    [String]    HTTP response body.
+    def body
+        return '' if !@body && !@parser
+        @body ||= response.body
+    end
+
+    # @return    [Array<Element::Link>]
+    # @see Parser#links
+    def links
+        return [] if !@links && !@parser
+        @links ||= @parser.links
+    end
+
+    # @param    [Array<Element::Link>]  links
+    # @see Parser#links
+    def links=( links )
+        @links = links.freeze
+    end
+
+    # @return    [Array<Element::Form>]
+    # @see Parser#forms
+    def forms
+        return [] if !@forms && !@parser
+        @forms ||= @parser.forms
+    end
+
+    # @param    [Array<Element::Form>]  forms
+    # @see Parser#forms
+    def forms=( forms )
+        @forms = forms.freeze
+    end
+
+    # @return    [Array<Element::Cookie>]
+    # @see Parser#cookies
+    def cookies
+        return [] if !@cookies && !@parser
+        @cookies ||= @parser.cookies_to_be_audited
+    end
+
+    # @param    [Array<Element::Cookies>]  cookies
+    # @see Parser#cookies
+    def cookies=( cookies )
+        @cookies = cookies.freeze
+    end
+
+    # @return    [Array<Element::Header>]   HTTP request headers.
+    def headers
+        return [] if !@headers && !@parser
+        @headers ||= @parser.headers
+    end
+
+    # @param    [Array<Element::Headers>]  headers
+    # @see Parser#headers
+    def headers=( headers )
+        @headers = headers.freeze
+    end
+
+    # @return    [Array<Element::Cookie>]
+    #   Cookies extracted from the supplied cookie-jar.
+    def cookiejar
+        return [] if !@cookiejar && !@parser
+        @cookiejar ||= @parser.cookie_jar
+    end
+
+    # @return    [Array<String>]    Paths contained in this page.
+    # @see Parser#paths
+    def paths
+        return [] if !@paths && !@parser
+        @paths ||= @parser.paths
     end
 
     # @return   [Platform] Applicable platforms for the page.
     def platforms
-        Platform::Manager[@url]
+        Platform::Manager[url]
     end
 
     # @return   [Array] All page elements.
     def elements
-        @links | @forms | @cookies | @headers
+        links | forms | cookies | headers
     end
 
     # @return    [String]    the request method that returned the page
     def method( *args )
         return super( *args ) if args.any?
-        @method
-    end
-
-    # @see #body
-    def html
-        @body
+        response.request.method
     end
 
     # @return   [Nokogiri::HTML]    Parsed {#body HTML} document.
     def document
-        @document ||= Nokogiri::HTML( @body )
+        @parser.nil? ? Nokogiri::HTML( body ) : @parser.document
     end
 
-    def marshal_dump
-        @document = nil
-        instance_variables.inject( {} ) do |h, iv|
-            h[iv] = instance_variable_get( iv )
-            h
+    def _dump( _ )
+        if response
+            response.request.clear_callbacks
+            return Marshal.dump( response )
         end
+
+        @document = nil
+
+        h = {}
+        instance_variables.each do |iv|
+            h[iv.to_s.gsub( '@', '' )] = instance_variable_get( iv )
+        end
+
+        Marshal.dump( h )
     end
 
-    def marshal_load( h )
-        h.each { |k, v| instance_variable_set( k, v ) }
+    def self._load( data )
+        (data = Marshal.load( data )).is_a?( Hash ) ?
+            new( data ) :
+            from_response( data )
     end
 
     # @return   [Boolean]
     #   `true` if the body of the page is text-base, `false` otherwise.
     def text?
-        !!@text
+        return false if !@parser
+        @parser.text?
     end
 
     # @return   [String]    Title of the page.
@@ -172,21 +268,8 @@ class Page
         document.css( 'title' ).first.text rescue nil
     end
 
-    # @return   [Hash]  Converts the page data to a hash.
-    def to_h
-        instance_variables.reduce({}) do |h, iv|
-            if iv != :@document
-                h[iv.to_s.gsub( '@', '').to_sym] = try_dup( instance_variable_get( iv ) )
-            end
-            h
-        end
-    end
-    alias :to_hash :to_h
-
     def hash
-        ((links.map { |e| e.hash } + forms.map { |e| e.hash } +
-            cookies.map { |e| e.hash } + headers.map { |e| e.hash }).sort.join +
-            body.to_s).hash
+        "#{body.hash}:#{response.hash}"
     end
 
     def ==( other )

@@ -69,9 +69,9 @@ class Trainer
     #
     # These new pages can then be retrieved by flushing the buffer (#flush).
     #
-    # @param  [Arachni::HTTP::Response]  res
+    # @param  [Arachni::HTTP::Response]  response
     #
-    def push( res )
+    def push( response )
         if !@page
             print_debug 'No seed page assigned yet.'
             return
@@ -82,17 +82,17 @@ class Trainer
             return
         end
 
-        @parser = Parser.new( res )
+        @parser = Parser.new( response )
 
         return false if !@parser.text? ||
             @trainings_per_url[@parser.url] >= MAX_TRAININGS_PER_URL ||
-            redundant_path?( @parser.url ) || skip_resource?( res )
+            redundant_path?( @parser.url ) || skip_resource?( response )
 
-        analyze( res )
+        analyze response
         true
     rescue => e
-        print_error( e.to_s )
-        print_error_backtrace( e )
+        print_error e.to_s
+        print_error_backtrace e
     end
 
     #
@@ -101,8 +101,8 @@ class Trainer
     # @param    [Arachni::Page]    page
     #
     def page=( page )
-        init_db_from_page( page )
-        @page = page.deep_clone
+        init_db_from_page page
+        @page = page.dup
     end
     alias :init :page=
 
@@ -120,8 +120,9 @@ class Trainer
     def analyze( res )
         print_debug "Started for response with request ID: ##{res.request.id}"
 
-        page_data           = @page.to_hash
-        page_data[:cookies] = find_new( :cookies )
+        new_elements = {
+            cookies: find_new( :cookies )
+        }
 
         # if the response body is the same as the page body and
         # no new cookies have appeared there's no reason to analyze the page
@@ -130,20 +131,15 @@ class Trainer
             return
         end
 
-        [ :forms, :links ].each { |type| page_data[type] = find_new( type ) }
+        [ :forms, :links ].each { |type| new_elements[type] = find_new( type ) }
 
         if @updated
-            page_data[:url]              = @parser.url
-            page_data[:query_vars]       = @parser.link_vars( @parser.url )
-            page_data[:code]             = res.code
-            page_data[:method]           = res.request.method.to_s.upcase
-            page_data[:body]             = res.body
-            page_data[:doc]              = @parser.doc
-            page_data[:response_headers] = res.headers
-
             @trainings_per_url[@parser.url] += 1
 
-            page = Page.new( page_data )
+            page = @parser.page
+
+            # Only keep new elements.
+            new_elements.each { |type, elements| page.send( "#{type}=", elements ) }
 
             @on_new_page_blocks.each { |block| block.call page }
 

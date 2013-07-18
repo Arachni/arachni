@@ -121,7 +121,7 @@ class Spider
 
                 visit( url ) do |res|
                     obj = if pass_pages_to_block
-                        Page.from_response( res, @opts )
+                        res.to_page
                     else
                         Parser.new( res, @opts )
                     end

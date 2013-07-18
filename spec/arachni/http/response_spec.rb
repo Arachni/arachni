@@ -90,6 +90,77 @@ describe Arachni::HTTP::Response do
         end
     end
 
+    describe '#to_page' do
+        it 'returns an Arachni::Page based on the response data' do
+            body = <<-EOHTML
+                <a href="http://a-url.com/path?var1=1">1</a>
+                <a href="http://a-url.com/a/path?var2=2">2</a>
+                <a href="http://a-url.com/another/path/?var3=3">3</a>
+            EOHTML
+
+            response = described_class.new(
+                request: Arachni::HTTP::Request.new(
+                             'http://a-url.com/',
+                             method: :get,
+                             headers: {
+                                 'req-header-name' => 'req header value'
+                             }
+                         ),
+
+                code:    200,
+                url:     'http://a-url.com/?myvar=my%20value',
+                body:    body,
+                headers: {
+                    'res-header-name' => 'res header value',
+                    'Set-Cookie'      => 'cookiename=cokie+value'
+                }
+            )
+
+            parser = Arachni::Parser.new( response )
+            page = parser.page
+
+            page.url.should == parser.url
+            page.method.should == parser.response.request.method
+            page.response.should == parser.response
+            page.body.should == parser.response.body
+            page.query_vars.should == parser.link_vars
+            page.paths.should == parser.paths
+            page.links.should == parser.links
+            page.forms.should == parser.forms
+            page.cookies.should == parser.cookies_to_be_audited
+            page.headers.should == parser.headers
+            page.cookiejar.should == parser.cookie_jar
+            page.text?.should == parser.text?
+        end
+    end
+
+    describe '#==' do
+        context 'when responses are identical' do
+            it 'returns true' do
+                h = {
+                    headers: { 'Content-Type' => 'application/stuff' },
+                    body:    'stuff'
+                }
+                described_class.new( 'http://test.com', h.dup ).should ==
+                    described_class.new( 'http://test.com', h.dup )
+            end
+        end
+        context 'when responses are not identical' do
+            it 'returns false' do
+                described_class.new(
+                    'http://test.com',
+                    headers: { 'Content-Type' => 'application/stuff' },
+                    body:    'stuff'
+                ).should_not ==
+                    described_class.new(
+                        'http://test.com',
+                        headers: { 'Content-Type' => 'application/stuff1' },
+                        body:    'stuff'
+                    )
+            end
+        end
+    end
+
     describe '#to_h' do
         it 'returns a hash representation of self' do
             h = {

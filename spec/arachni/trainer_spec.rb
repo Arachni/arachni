@@ -61,8 +61,7 @@ describe Arachni::Trainer do
     before( :each ) do
         Arachni::Options.reset
 
-        res  = Arachni::HTTP::Client.get( @url, mode: :sync )
-        @page = Arachni::Page.from_response( res, Arachni::Options.instance )
+        @page = Arachni::Page.from_url( @url )
 
         @framework = TrainerMockFramework.new( @page )
         @trainer   = @framework.trainer
@@ -234,8 +233,11 @@ describe Arachni::Trainer do
                 url = @url + '/new_form'
                 @trainer.page = @page
                 @trainer.push( request( url ) ).should be_true
-                page = @framework.pages.first
-                page.should be_true
+
+                pages = @framework.pages
+                pages.size.should == 1
+
+                page = pages.pop
                 page.forms.size.should == 1
                 page.forms.first.auditable.include?( 'input2' ).should be_true
             end
@@ -246,8 +248,9 @@ describe Arachni::Trainer do
                 url = @url + '/new_link'
                 @trainer.page = @page
                 @trainer.push( request( url ) ).should be_true
+
                 page = @framework.pages.first
-                page.should be_true
+                page.links.size.should == 1
                 page.links.select { |l| l.auditable.include?( 'link_param' ) }.should be_any
             end
         end
@@ -257,9 +260,10 @@ describe Arachni::Trainer do
                 url = @url + '/new_cookie'
                 @trainer.page = @page
                 @trainer.push( request( url ) ).should be_true
+
                 page = @framework.pages.first
-                page.should be_true
-                page.cookies.last.auditable.include?( 'new_cookie' ).should be_true
+                page.cookies.size.should == 2
+                page.cookies.select { |l| l.auditable.include?( 'new_cookie' ) }.should be_any
             end
         end
     end

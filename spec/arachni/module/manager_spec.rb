@@ -5,7 +5,7 @@ describe Arachni::Module::Manager do
     before( :all ) do
         @modules = Arachni::Framework.new.modules
 
-        @page  = Arachni::Page.new
+        @page  = Arachni::Page.from_url( web_server_url_for( :auditor ) )
         @issue = Arachni::Issue.new( url: 'http://blah' )
     end
 

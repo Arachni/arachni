@@ -5,9 +5,9 @@ describe Arachni::Platform::Fingerprinters::BSD do
 
     context 'when there is an Server header' do
         it 'identifies it as BSD' do
-            page = Arachni::Page.new(
+            page = Arachni::Page.from_data(
                 url:     'http://stuff.com/blah',
-                response_headers: { 'Server' => 'Apache/2.2.21 (FreeBSD)' }
+                response: { headers: { 'Server' => 'Apache/2.2.21 (FreeBSD)' } }
             )
             platforms_for( page ).should include :bsd
         end
@@ -15,9 +15,9 @@ describe Arachni::Platform::Fingerprinters::BSD do
 
     context 'when there is a X-Powered-By header' do
         it 'identifies it as BSD' do
-            page = Arachni::Page.new(
+            page = Arachni::Page.from_data(
                 url:     'http://stuff.com/blah',
-                response_headers: { 'X-Powered-By' => 'Stuf/0.4 (FreeBSD)' }
+                response: { headers: { 'X-Powered-By' => 'Stuf/0.4 (FreeBSD)' } }
             )
             platforms_for( page ).should include :bsd
         end

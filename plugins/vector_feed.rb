@@ -80,12 +80,11 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
 
                     next if !(element = hash_to_element( vector ))
 
-                    pages[element.url] ||= Page.new(
-                        code: 200,
-                        url: element.url
+                    pages[element.url] ||= Page.from_data( url: element.url )
+                    pages[element.url].send(
+                        "#{element.type}s=",
+                        pages[element.url].send( "#{element.type}s" ) | [element]
                     )
-
-                    pages[element.url].send( "#{element.type}s" ) << element
                 }
             rescue
                 next
@@ -93,7 +92,8 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
         end
 
         pages  = pages.values
-        pages |= page_buffer
+        pages << page_buffer
+        pages.flatten!
         if !pages.empty?
             print_status 'Pushing the vectors to the audit queue...'
             pages.each { |page| framework.push_to_page_queue( page ) }
@@ -108,11 +108,13 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
     end
 
     def page_from_body_vector( vector )
-        Page.new(
-            code:             Integer( vector[:code] || 200 ),
-            url:              vector[:url]      || framework.opts.url.to_s,
-            body:             vector[:body]     || '',
-            response_headers: vector[:headers]  || {}
+        Page.from_data(
+            url:      vector[:url] || framework.opts.url.to_s,
+            response: {
+                code:    Integer( vector[:code] || 200 ),
+                body:    vector[:body]     || '',
+                headers: vector[:headers]  || {}
+            }
         )
     end
 
@@ -139,7 +141,7 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
                 )
             when Element::COOKIE
                 Cookie.new( action, inputs )
-            when Element::HEADER
+                when Element::HEADER
                 Header.new( action, inputs )
             else
                 Link.new( owner,
@@ -214,7 +216,7 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
 
             },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.3',
+            version:     '0.1.4',
             options:     [
                 Options::Base.new( 'vectors', [false, ' Vector array (for configuration over RPC).'] ),
                 Options::String.new( 'yaml_string', [false, 'A string of YAML serialized vectors (for configuration over RPC).'] ),

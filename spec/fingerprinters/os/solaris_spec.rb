@@ -7,9 +7,9 @@ describe Arachni::Platform::Fingerprinters::Solaris do
         described_class::IDs.each do |id|
             context "and it contains #{id}" do
                 it 'identifies it as Solaris' do
-                    page = Arachni::Page.new(
+                    page = Arachni::Page.from_data(
                         url:     'http://stuff.com/blah',
-                        response_headers: { 'Server' => "Apache/2.2.21 (#{id})" }
+                        response: { headers: { 'Server' => "Apache/2.2.21 (#{id})" } }
                     )
                     platforms_for( page ).should include :solaris
                 end
@@ -21,9 +21,9 @@ describe Arachni::Platform::Fingerprinters::Solaris do
         described_class::IDs.each do |id|
             context "and it contains #{id}" do
                 it 'identifies it as Solaris' do
-                    page = Arachni::Page.new(
+                    page = Arachni::Page.from_data(
                         url:     'http://stuff.com/blah',
-                        response_headers: { 'X-Powered-By' => "Apache/2.2.21 (#{id})" }
+                        response: { headers: { 'X-Powered-By' => "Apache/2.2.21 (#{id})" } }
                     )
                     platforms_for( page ).should include :solaris
                 end

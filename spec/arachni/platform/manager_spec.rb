@@ -32,9 +32,8 @@ describe Arachni::Platform::Manager do
 
     describe '.fingerprint' do
         it 'runs all fingerprinters against the given page' do
-            page = Arachni::Page.new( url: 'http://stuff.com/blah.php' )
+            page = Arachni::Page.from_url( "#{web_server_url_for( :auditor )}/s.php" )
 
-            page.platforms.should be_empty
             described_class.fingerprint page
             page.platforms.sort.should == [:php].sort
 
@@ -42,7 +41,7 @@ describe Arachni::Platform::Manager do
         end
 
         it 'returns the given page' do
-            page = Arachni::Page.new( url: 'http://stuff.com/' )
+            page = Arachni::Page.from_url( web_server_url_for( :auditor ) )
             described_class.fingerprint( page ).should == page
         end
     end

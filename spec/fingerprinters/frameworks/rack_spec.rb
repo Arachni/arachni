@@ -5,7 +5,7 @@ describe Arachni::Platform::Fingerprinters::Rack do
 
     context 'when there is a rack.session cookie' do
         it 'identifies it as Rack' do
-            page = Arachni::Page.new(
+            page = Arachni::Page.from_data(
                 url:     'http://stuff.com/blah',
                 cookies: [Arachni::Cookie.new( 'http://stuff.com/blah',
                                                'rack.session' => 'stuff' )]
@@ -18,9 +18,9 @@ describe Arachni::Platform::Fingerprinters::Rack do
 
     context 'when there is a Server header' do
         it 'identifies it as Rack' do
-            page = Arachni::Page.new(
+            page = Arachni::Page.from_data(
                 url: 'http://stuff.com/blah',
-                response_headers: { 'Server' => 'mod_rack' }
+                response: { headers: { 'Server' => 'mod_rack' } }
             )
             platforms_for( page ).should include :ruby
             platforms_for( page ).should include :rack
@@ -29,9 +29,9 @@ describe Arachni::Platform::Fingerprinters::Rack do
 
     context 'when there is an X-Powered-By header' do
         it 'identifies it as Rack' do
-            page = Arachni::Page.new(
+            page = Arachni::Page.from_data(
                 url: 'http://stuff.com/blah',
-                response_headers: { 'X-Powered-By' => 'mod_rack' }
+                response: { headers: { 'X-Powered-By' => 'mod_rack' } }
             )
             platforms_for( page ).should include :ruby
             platforms_for( page ).should include :rack

@@ -4,7 +4,7 @@ require 'digest/md5'
 set :logging, false
 
 get '/' do
-    'OK'
+    'Match this!'
 end
 
 get '/binary' do

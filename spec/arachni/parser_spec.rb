@@ -4,7 +4,7 @@ describe Arachni::Parser do
     before( :all ) do
         @utils = Arachni::Utilities
         @opts = Arachni::Options.instance
-        @opts.url = @utils.normalize_url( web_server_url_for( :parser ) )
+        @opts.url = web_server_url_for( :parser )
         @opts.audit :links, :forms, :cookies, :headers
 
         @url = @utils.normalize_url( @opts.url + '/?query_var_input=query_var_val' )
@@ -17,7 +17,7 @@ describe Arachni::Parser do
         ]
 
         @response = Arachni::HTTP::Client.get( @url, mode: :sync )
-        @parser = Arachni::Parser.new( @response, @opts )
+        @parser   = Arachni::Parser.new( @response, @opts )
     end
 
     describe '#url' do
@@ -26,28 +26,19 @@ describe Arachni::Parser do
         end
     end
 
-    describe '#opts' do
-        it 'holds the provided opts' do
-            @parser.opts.should == @opts
-        end
-    end
-
-    describe '#run' do
+    describe '#page' do
         it 'returns a Page' do
-            page = @parser.run
+            page = @parser.page
 
-            page.class.should == Arachni::Page
+            page.should be_kind_of Arachni::Page
             page.url.should == @parser.url
-            page.code.should == @response.code
-            page.method.should == @response.request.method.to_s
+            page.method.should == @response.request.method
             page.query_vars.should == { 'query_var_input' => 'query_var_val' }
             page.body.should == @response.body
-            page.response_headers.should == @response.headers
+            page.response.should == @response
             page.paths.should == @parser.paths
 
-            link = Arachni::Element::Link.new( @url,
-                inputs: @parser.link_vars( @url )
-            )
+            link = Arachni::Element::Link.new( @url, inputs: @parser.link_vars )
 
             page.links.should == @parser.links | [link]
             page.forms.should == @parser.forms
@@ -117,14 +108,14 @@ describe Arachni::Parser do
     describe '#doc' do
         context 'when the response is text based' do
             it 'returns the parsed document' do
-                @parser.doc.class == Nokogiri::HTML::Document
+                @parser.document.class == Nokogiri::HTML::Document
             end
         end
 
         context 'when the response is not text based' do
             it 'returns nil' do
                 res = Arachni::HTTP::Response.new( url: @url )
-                Arachni::Parser.new( res, @opts ).doc.should be_nil
+                Arachni::Parser.new( res, @opts ).document.should be_nil
             end
         end
 
@@ -265,15 +256,7 @@ describe Arachni::Parser do
         it 'returns an array of cookies' do
             @parser.cookies.size.should == 3
 
-            cookies = @parser.cookies
-
-            cookie = cookies.pop
-            cookie.action.should == @url
-            cookie.auditable.should == { 'cookie_input2' => 'cookie_val2' }
-            cookie.method.should == 'get'
-            cookie.secure?.should be_false
-            cookie.http_only?.should be_false
-            cookie.url.should == @url
+            cookies = @parser.cookies.sort_by { |cookie| cookie.name }.reverse
 
             cookie = cookies.pop
             cookie.action.should == @url
@@ -281,6 +264,14 @@ describe Arachni::Parser do
             cookie.method.should == 'get'
             cookie.secure?.should be_true
             cookie.http_only?.should be_true
+            cookie.url.should == @url
+
+            cookie = cookies.pop
+            cookie.action.should == @url
+            cookie.auditable.should == { 'cookie_input2' => 'cookie_val2' }
+            cookie.method.should == 'get'
+            cookie.secure?.should be_false
+            cookie.http_only?.should be_false
             cookie.url.should == @url
 
             cookie = cookies.pop
@@ -396,7 +387,7 @@ describe Arachni::Parser do
 
     describe '#link_vars' do
         it 'returns a hash of link query inputs' do
-            @parser.link_vars( @url ).should == { "query_var_input" => "query_var_val" }
+            @parser.link_vars.should == { "query_var_input" => "query_var_val" }
         end
     end
 
