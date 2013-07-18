@@ -24,6 +24,8 @@ describe Arachni::Page do
                 <a href="http://a-url.com/path?var1=1">1</a>
                 <a href="http://a-url.com/a/path?var2=2">2</a>
                 <a href="http://a-url.com/another/path/?var3=3">3</a>
+
+                <form> <input name=""/> </form>
         EOHTML
 
         Arachni::HTTP::Response.new(
