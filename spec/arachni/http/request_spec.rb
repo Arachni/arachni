@@ -26,7 +26,9 @@ describe Arachni::HTTP::Request do
                 parameters: { 'test' => 'blah' },
                 timeout:    10_000,
                 headers:    { 'Content-Type' => 'test/html' },
-                cookies:    { 'cname'=> 'cvalue' }
+                cookies:    { 'cname'=> 'cvalue' },
+                username:   'user',
+                password:   'pass'
             }
             r = described_class.new( url, options )
             r.url.should          == url
@@ -34,7 +36,8 @@ describe Arachni::HTTP::Request do
             r.parameters.should   == options[:parameters]
             r.timeout.should      == options[:timeout]
             r.headers.should      == options[:headers]
-            r.cookies.should      == options[:cookies]
+            r.username.should     == options[:username]
+            r.password.should     == options[:password]
         end
 
         it 'uses the setter methods when configuring' do

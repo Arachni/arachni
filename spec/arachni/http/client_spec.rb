@@ -1,3 +1,4 @@
+# encoding: utf-8
 require 'spec_helper'
 
 describe Arachni::HTTP::Client do
@@ -79,22 +80,19 @@ describe Arachni::HTTP::Client do
     describe 'Arachni::Options#url' do
         context 'when the target URL includes auth credentials' do
             it 'uses them globally' do
-                url = Arachni::Module::Utilities.uri_parse( web_server_url_for( :client_auth ) )
-                @opts.url = url.to_s
-
                 # first fail to make sure that our test server is actually working properly
                 code = 0
-                @http.get( @opts.url + 'auth' ) { |res| code = res.code }
+                @http.get( "#{@opts.url}auth/simple-chars" ) { |res| code = res.code }
                 @http.run
                 code.should == 401
 
-                # now test the client
+                url = Arachni::Module::Utilities.uri_parse( "#{@opts.url}auth/simple-chars" )
                 url.user = 'username'
                 url.password = 'password'
                 @opts.url = url.to_s
 
                 body = nil
-                @http.get( @opts.url + 'auth' ) { |res| body = res.body }
+                @http.get( @opts.url ) { |res| body = res.body }
                 @http.run
                 body.should == 'authenticated!'
             end
@@ -103,25 +101,20 @@ describe Arachni::HTTP::Client do
 
     describe 'Arachni::Options#http_username and Arachni::Options#http_password' do
         it 'uses them globally' do
-            url = web_server_url_for( :http_auth )
-            @opts.url = url.to_s
-
             Arachni::Options.http_username = 'username1'
             Arachni::Options.http_password = 'password1'
-            @http.reset
 
             # first fail to make sure that our test server is actually working properly
             code = 0
-            @http.get( @opts.url + 'auth' ) { |res| code = res.code }
+            @http.get( @opts.url + 'auth/weird-chars' ) { |res| code = res.code }
             @http.run
             code.should == 401
 
-            Arachni::Options.http_username = 'username'
-            Arachni::Options.http_password = 'password'
-            @http.reset
+            Arachni::Options.http_username, Arachni::Options.http_password =
+                ['u se rname$@#@#%$3#@%@#', 'p a  :wo\'rd$@#@#%$3#@%@#' ]
 
             response = nil
-            @http.get( @opts.url + 'auth' ) { |res| response = res }
+            @http.get( @opts.url + 'auth/weird-chars' ) { |res| response = res }
             @http.run
             response.code.should == 200
             response.body.should == 'authenticated!'
@@ -657,6 +650,25 @@ describe Arachni::HTTP::Client do
                     @http.run
                     timed_out.should be_false
                 end
+            end
+        end
+
+        describe ':username/:password' do
+            it 'uses them to authenticate' do
+                # first fail to make sure that our test server is actually working properly
+                code = 0
+                @http.get( @opts.url + 'auth/weird-chars' ) { |res| code = res.code }
+                @http.run
+                code.should == 401
+
+                response = nil
+                @http.get(
+                    @opts.url + 'auth/weird-chars',
+                    username: 'u se rname$@#@#%$3#@%@#',
+                    password: 'p a  :wo\'rd$@#@#%$3#@%@#' ) { |res| response = res }
+                @http.run
+                response.code.should == 200
+                response.body.should == 'authenticated!'
             end
         end
 

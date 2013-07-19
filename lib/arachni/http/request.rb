@@ -51,6 +51,12 @@ class Request < Message
     # @see #follow_location
     attr_accessor :max_redirects
 
+    # @return   [String]   HTTP username.
+    attr_accessor :username
+
+    # @return   [String]   HTTP password.
+    attr_accessor :password
+
     # @return   [Hash]  Cookies set for this request.
     attr_reader :cookies
 
@@ -226,12 +232,19 @@ class Request < Message
         headers.delete( 'Cookie' ) if headers['Cookie'].empty?
         headers.each { |k, v| headers[k] = Header.encode( v ) if v }
 
+        if (userpwd = (@username || Arachni::Options.http_username))
+            if (passwd = (@password || Arachni::Options.http_password))
+                userpwd += ":#{passwd}"
+            end
+        end
+
         options = {
             method:          method,
             headers:         headers,
             body:            body,
             params:          Arachni::Utilities.parse_url_vars( url ).
                                  merge( parameters || {} ),
+            userpwd:         userpwd,
             followlocation:  follow_location?,
             maxredirs:       @max_redirects,
             ssl_verifypeer:  false,

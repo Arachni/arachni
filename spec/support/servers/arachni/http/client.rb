@@ -1,7 +1,44 @@
+# encoding: utf-8
 require 'zlib'
 require 'sinatra'
 require 'sinatra/contrib'
 set :logging, false
+
+helpers do
+    def simple_protected!
+        return if simple_authorized?
+        headers['WWW-Authenticate'] = 'Basic realm="Restricted Area"'
+        halt 401, "Not authorized\n"
+    end
+
+    def simple_authorized?
+        @auth ||=  Rack::Auth::Basic::Request.new(request.env)
+        @auth.provided? && @auth.basic? && @auth.credentials &&
+            @auth.credentials == ['username', 'password']
+    end
+
+    def weird_protected!
+        return if weird_authorized?
+        headers['WWW-Authenticate'] = 'Basic realm="Restricted Area 2"'
+        halt 401, "Not authorized\n"
+    end
+
+    def weird_authorized?
+        @auth ||=  Rack::Auth::Basic::Request.new(request.env)
+        @auth.provided? and @auth.basic? and @auth.credentials and
+            @auth.credentials == ['u se rname$@#@#%$3#@%@#', 'p a  :wo\'rd$@#@#%$3#@%@#' ]
+    end
+end
+
+get '/auth/simple-chars' do
+    simple_protected!
+    'authenticated!'
+end
+
+get '/auth/weird-chars' do
+    weird_protected!
+    'authenticated!'
+end
 
 post '/body' do
     request.body.read
