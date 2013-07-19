@@ -101,6 +101,33 @@ describe Arachni::HTTP::Client do
         end
     end
 
+    describe 'Arachni::Options#http_username and Arachni::Options#http_password' do
+        it 'uses them globally' do
+            url = web_server_url_for( :http_auth )
+            @opts.url = url.to_s
+
+            Arachni::Options.http_username = 'username1'
+            Arachni::Options.http_password = 'password1'
+            @http.reset
+
+            # first fail to make sure that our test server is actually working properly
+            code = 0
+            @http.get( @opts.url + 'auth' ) { |res| code = res.code }
+            @http.run
+            code.should == 401
+
+            Arachni::Options.http_username = 'username'
+            Arachni::Options.http_password = 'password'
+            @http.reset
+
+            response = nil
+            @http.get( @opts.url + 'auth' ) { |res| response = res }
+            @http.run
+            response.code.should == 200
+            response.body.should == 'authenticated!'
+        end
+    end
+
     describe 'Arachni::Options#user_agent' do
         it 'uses the default user-agent setting' do
             body = nil

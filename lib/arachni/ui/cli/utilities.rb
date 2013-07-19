@@ -306,6 +306,10 @@ module Utilities
 
     --only-positives            Echo positive results *only*.
 
+    --http-username=<string>    Username for HTTP authentication.
+
+    --http-password=<string>    Password for HTTP authentication.
+
     --http-req-limit=<integer>  Concurrent HTTP requests limit.
                                   (Default: #{@opts.http_req_limit})
                                   (Be careful not to kill your server.)

@@ -18,6 +18,17 @@
 - `Arachni::Parser` -- Updated to **only** operate under the context of the
     `HTTP::Response` with which it was initialized -- no longer supports parsing
     data from external sources.
+- Options
+    - Added:
+        - `--http-username` -- Username for HTTP authentication.
+        - `--http-password` -- Password for HTTP authentication.
+- Reports
+    - HTML -- Fixed display of untrusted issues.
+
+## 0.4.3.2 _(July 16, 2013)_
+
+- Plugins
+    - Proxy -- Fixed bug causing it to ignore the shutdown URL.
 
 ## 0.4.3.1 _(July 14, 2013)_
 

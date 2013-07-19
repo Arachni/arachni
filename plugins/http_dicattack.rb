@@ -17,7 +17,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.2
+# @version 0.1.3
 #
 class Arachni::Plugins::HTTPDicattack < Arachni::Plugin::Base
 
@@ -52,12 +52,8 @@ class Arachni::Plugins::HTTPDicattack < Arachni::Plugin::Base
         print_status "Maximum number of requests to be transmitted: #{total_req}"
 
         @users.each do |user|
-            url.user = user
-
             @passwds.each do |pass|
-                url.password = pass.strip
-
-                http.get( url.to_s ).on_complete do |res|
+                http.get( url.to_s, username: user, password: pass ).on_complete do |res|
                     next if @found
 
                     print_status "Username: '#{user}' -- Password: '#{pass}'"
@@ -68,7 +64,8 @@ class Arachni::Plugins::HTTPDicattack < Arachni::Plugin::Base
                     print_ok "Found a match. Username: '#{user}' -- Password: '#{pass}'"
                     print_info "URL: #{res.url}"
 
-                    framework.opts.url = res.url
+                    framework.opts.http_username = user
+                    framework.opts.http_password = pass
 
                     # register our findings...
                     register_results( username: user, password: pass )
@@ -100,7 +97,7 @@ class Arachni::Plugins::HTTPDicattack < Arachni::Plugin::Base
                 framework-wide and used for the duration of the audit.
                 If that's not what you want set the crawler's link-count limit to "0".},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.2',
+            version:     '0.1.3',
             options:     [
                 Options::Path.new( 'username_list', [true, 'File with a list of usernames (newline separated).'] ),
                 Options::Path.new( 'password_list', [true, 'File with a list of passwords (newline separated).'] )
