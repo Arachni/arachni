@@ -2,6 +2,10 @@
 
 ## _Under development_
 
+- Options
+    - Added:
+        - `--http-username` -- Username for HTTP authentication.
+        - `--http-password` -- Password for HTTP authentication.
 - Reports
     - HTML -- Fixed display of untrusted issues.
 

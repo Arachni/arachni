@@ -494,6 +494,12 @@ class Options
     # @return   [Integer]   HTTP request timeout in milliseconds
     attr_accessor :http_timeout
 
+    # @return   [Integer]   HTTP auth username.
+    attr_accessor :http_username
+
+    # @return   [Integer]   HTTP auth password.
+    attr_accessor :http_password
+
     # @return   [Bool]   Only follow HTTPS links.
     attr_accessor :https_only
 
@@ -576,6 +582,8 @@ class Options
         @lsrep  = []
 
         @http_req_limit = 20
+        @http_username = nil
+        @http_password = nil
 
         @mods = []
 
@@ -1005,6 +1013,8 @@ class Options
             [ '--spawns',                 GetoptLong::REQUIRED_ARGUMENT ],
             [ '--grid',                   GetoptLong::NO_ARGUMENT ],
             [ '--grid-mode',              GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--http-username',          GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--http-password',          GetoptLong::REQUIRED_ARGUMENT ],
             [ '--https-only',             GetoptLong::NO_ARGUMENT ],
             [ '--no-fingerprinting',      GetoptLong::NO_ARGUMENT ],
             [ '--platforms',              GetoptLong::REQUIRED_ARGUMENT ],
@@ -1274,6 +1284,12 @@ class Options
 
                     when '--https-only'
                         @https_only = true
+
+                    when '--http-username'
+                        @http_username = arg
+
+                    when '--http-password'
+                        @http_password = arg
                 end
             end
 

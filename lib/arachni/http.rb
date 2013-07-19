@@ -108,14 +108,6 @@ class HTTP
             method:          :auto
         }
 
-        if opts.url
-            parsed_url = uri_parse( opts.url )
-            hydra_opts.merge!(
-                username: parsed_url.user,
-                password: parsed_url.password
-            )
-        end
-
         @url = opts.url.to_s
         @url = nil if @url.empty?
 
@@ -151,7 +143,9 @@ class HTTP
             follow_location:               false,
             max_redirects:                 opts.redirect_limit,
             disable_ssl_peer_verification: true,
-            timeout:                       opts.http_timeout || HTTP_TIMEOUT
+            timeout:                       opts.http_timeout || HTTP_TIMEOUT,
+            username:                      opts.http_username,
+            password:                      opts.http_password
         }.merge( proxy_opts )
 
         @request_count  = 0
@@ -289,6 +283,9 @@ class HTTP
         update_cookies  = opts[:update_cookies]
         follow_location = opts[:follow_location] || false
 
+        username = opts.delete( :username )
+        password = opts.delete( :password )
+
         #
         # The exception jail function wraps the block passed to it
         # in exception handling and runs it.
@@ -348,7 +345,9 @@ class HTTP
             }.merge( @opts )
 
             opts[:follow_location] = follow_location if follow_location
-            opts[:timeout]         = timeout if timeout
+            opts[:timeout]         = timeout  if timeout
+            opts[:username]        = username if username
+            opts[:password]        = password if password
 
             req = Typhoeus::Request.new( curl, opts )
             req.train if train

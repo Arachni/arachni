@@ -31,7 +31,7 @@ class ActiveOptions
 
         %w( url http_req_limit http_timeout user_agent redirect_limit proxy_username
             proxy_password proxy_type proxy_host proxy_port authed_by cookies
-            cookie_string ).each do |m|
+            cookie_string http_username http_password ).each do |m|
             m = "#{m}=".to_sym
             self.class.class_eval do
                 define_method m do |v|
