@@ -54,16 +54,16 @@ class Arachni::Modules::XSS < Arachni::Module::Base
 
     def run
         self.class.strings.each do |str|
-            audit( str, self.class.opts ) { |res, opts| check_and_log( res, opts ) }
+            audit( str, self.class.opts ) { |response| check_and_log( response ) }
         end
     end
 
-    def check_and_log( res, opts )
+    def check_and_log( response )
         # if the body doesn't include the tag name at all bail out early
-        return if !res.body || !res.body.include?( self.class.tag )
+        return if !response.body || !response.body.include?( self.class.tag )
 
         # see if we managed to successfully inject our element in the doc tree
-        return if Nokogiri::HTML( res.body ).css( self.class.tag ).empty?
+        return if Nokogiri::HTML( response.body ).css( self.class.tag ).empty?
 
         # Nokogiri seems to think that an HTML node inside a textarea is a node
         # and not just text, however I disagree.
@@ -72,8 +72,9 @@ class Arachni::Modules::XSS < Arachni::Module::Base
         # textarea hence I'll leave this commented and sleep on it.
         #our_nodes.each { |node| return if !node.ancestors( 'textarea' ).empty? }
 
+        opts = response.request.performer.audit_options
         opts[:match] = opts[:injected]
-        log( opts, res )
+        log( opts, response )
     end
 
     def self.info

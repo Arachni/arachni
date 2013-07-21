@@ -691,10 +691,14 @@ describe Arachni::HTTP::Client do
 
                 it 'only sends the appropriate cookies for the domain' do
                     cookies = []
-                    cookies << Arachni::Element::Cookie.new( 'http://test.com',
-                        'key1' => 'val1' )
-                    cookies << Arachni::Element::Cookie.new( @url,
-                        'key2' => 'val2' )
+                    cookies << Arachni::Element::Cookie.new(
+                        url:    'http://test.com',
+                        inputs: { 'key1' => 'val1' }
+                    )
+                    cookies << Arachni::Element::Cookie.new(
+                        url:    @url,
+                        inputs: { 'key2' => 'val2' }
+                    )
 
                     @http.cookie_jar.update( cookies )
                     body = nil
@@ -801,8 +805,10 @@ describe Arachni::HTTP::Client do
             describe 'nil' do
                 it 'skips the cookiejar' do
                     cookies = []
-                    cookies << Arachni::Element::Cookie.new( @url,
-                        'key2' => 'val2' )
+                    cookies << Arachni::Element::Cookie.new(
+                        url: @url,
+                        inputs: { 'key2' => 'val2' }
+                    )
                     @http.update_cookies( cookies )
                     @http.request( @url + '/update_cookies' )
                     @http.run
@@ -813,8 +819,10 @@ describe Arachni::HTTP::Client do
             describe false do
                 it 'skips the cookiejar' do
                     cookies = []
-                    cookies << Arachni::Element::Cookie.new( @url,
-                        'key2' => 'val2' )
+                    cookies << Arachni::Element::Cookie.new(
+                        url: @url,
+                        inputs: { 'key2' => 'val2' }
+                    )
                     @http.update_cookies( cookies )
                     @http.request( @url + '/update_cookies', update_cookies: false )
                     @http.run
@@ -825,8 +833,10 @@ describe Arachni::HTTP::Client do
             describe true do
                 it 'updates the cookiejar' do
                     cookies = []
-                    cookies << Arachni::Element::Cookie.new( @url,
-                        'key2' => 'val2' )
+                    cookies << Arachni::Element::Cookie.new(
+                        url: @url,
+                        inputs: { 'key2' => 'val2' }
+                    )
                     @http.update_cookies( cookies )
                     @http.request( @url + '/update_cookies', update_cookies: true )
                     @http.run
@@ -915,7 +925,10 @@ describe Arachni::HTTP::Client do
     describe '#update_cookies' do
         it 'updates the cookies' do
             cookies = []
-            cookies << Arachni::Element::Cookie.new( @url, 'key2' => 'val2' )
+            cookies << Arachni::Element::Cookie.new(
+                url: @url,
+                inputs: { 'key2' => 'val2' }
+            )
 
             @http.cookies.should be_empty
             @http.update_cookies( cookies )
@@ -926,7 +939,10 @@ describe Arachni::HTTP::Client do
             Arachni::Options.cookies.should be_nil
 
             cookies = []
-            cookies << Arachni::Element::Cookie.new( @url, 'key2' => 'val2' )
+            cookies << Arachni::Element::Cookie.new(
+                url: @url,
+                inputs: { 'key2' => 'val2' }
+            )
             @http.update_cookies( cookies )
 
             Arachni::Options.cookies.should == cookies
@@ -936,8 +952,10 @@ describe Arachni::HTTP::Client do
     describe '#on_new_cookies' do
         it 'adds blocks to be called when new cookies arrive' do
             cookies = []
-            cookies << Arachni::Element::Cookie.new( @url,
-                'name' => 'value' )
+            cookies << Arachni::Element::Cookie.new(
+                url:    @url,
+                inputs: { 'name' => 'value' }
+            )
             res = Arachni::HTTP::Response.new( url: @url, headers: { 'Set-Cookie' => 'name=value' } )
 
             callback_cookies  = nil
@@ -956,8 +974,10 @@ describe Arachni::HTTP::Client do
     describe '#parse_and_set_cookies' do
         it 'updates the cookies from a response and call on_new_cookies blocks' do
             cookies = []
-            cookies << Arachni::Element::Cookie.new( @url,
-                'name' => 'value' )
+            cookies << Arachni::Element::Cookie.new(
+                url:    @url,
+                inputs: { 'name' => 'value' }
+            )
             res = Arachni::HTTP::Response.new( url: @url, headers: { 'Set-Cookie' => 'name=value' } )
 
             @opts.cookies.should be_nil

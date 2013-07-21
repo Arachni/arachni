@@ -106,7 +106,7 @@ describe Arachni::Trainer do
                     @framework.run
 
                     page = @framework.pages.first
-                    page.links.first.auditable.include?( 'msg' ).should be_true
+                    page.links.first.inputs.include?( 'msg' ).should be_true
                 end
             end
         end
@@ -239,7 +239,7 @@ describe Arachni::Trainer do
 
                 page = pages.pop
                 page.forms.size.should == 1
-                page.forms.first.auditable.include?( 'input2' ).should be_true
+                page.forms.first.inputs.include?( 'input2' ).should be_true
             end
         end
 
@@ -251,7 +251,7 @@ describe Arachni::Trainer do
 
                 page = @framework.pages.first
                 page.links.size.should == 1
-                page.links.select { |l| l.auditable.include?( 'link_param' ) }.should be_any
+                page.links.select { |l| l.inputs.include?( 'link_param' ) }.should be_any
             end
         end
 
@@ -263,7 +263,7 @@ describe Arachni::Trainer do
 
                 page = @framework.pages.first
                 page.cookies.size.should == 2
-                page.cookies.select { |l| l.auditable.include?( 'new_cookie' ) }.should be_any
+                page.cookies.select { |l| l.inputs.include?( 'new_cookie' ) }.should be_any
             end
         end
     end
@@ -274,7 +274,7 @@ describe Arachni::Trainer do
             @trainer.page = @page
             @trainer.push( request( url ) ).should be_true
             page = @framework.pages.first
-            page.links.last.auditable['redirected'].should == 'true'
+            page.links.last.inputs['redirected'].should == 'true'
         end
     end
 

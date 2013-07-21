@@ -295,7 +295,7 @@ describe Arachni::Framework do
                         f.opts.audit :links
                         f.modules.load %w(links forms cookies headers flch)
 
-                        link = Arachni::Element::Link.new( 'http://test' )
+                        link = Arachni::Element::Link.new( url: 'http://test' )
                         p = Arachni::Page.new( url: 'http://test', links: [link] )
                         f.push_to_page_queue( p )
 
@@ -311,7 +311,7 @@ describe Arachni::Framework do
                         f.opts.audit :links
                         f.modules.load %w(path server)
 
-                        link = Arachni::Element::Link.new( 'http://test' )
+                        link = Arachni::Element::Link.new( url: 'http://test' )
                         p = Arachni::Page.new( url: 'http://test', links: [link] )
                         f.push_to_page_queue( p )
 
@@ -327,7 +327,7 @@ describe Arachni::Framework do
                         f.opts.audit :links
                         f.modules.load %w(nil empty)
 
-                        link = Arachni::Element::Link.new( 'http://test' )
+                        link = Arachni::Element::Link.new( url: 'http://test' )
                         p = Arachni::Page.new( url: 'http://test', links: [link] )
                         f.push_to_page_queue( p )
 
@@ -347,7 +347,7 @@ describe Arachni::Framework do
                         f.opts.dont_audit :links
                         f.modules.load %w(links forms cookies headers flch)
 
-                        link = Arachni::Element::Link.new( 'http://test' )
+                        link = Arachni::Element::Link.new( url: 'http://test' )
                         p = Arachni::Page.new( url: 'http://test', links: [link] )
                         f.push_to_page_queue( p )
 
@@ -363,7 +363,7 @@ describe Arachni::Framework do
                         f.opts.dont_audit :links
                         f.modules.load %w(path server)
 
-                        link = Arachni::Element::Link.new( 'http://test' )
+                        link = Arachni::Element::Link.new( url: 'http://test' )
                         p = Arachni::Page.new( url: 'http://test', links: [link] )
                         f.push_to_page_queue( p )
 
@@ -379,7 +379,7 @@ describe Arachni::Framework do
                         f.opts.dont_audit :links
                         f.modules.load %w(nil empty)
 
-                        link = Arachni::Element::Link.new( 'http://test' )
+                        link = Arachni::Element::Link.new( url: 'http://test' )
                         p = Arachni::Page.new( url: 'http://test', links: [link] )
                         f.push_to_page_queue( p )
 
@@ -402,7 +402,7 @@ describe Arachni::Framework do
                         f.opts.audit :forms
                         f.modules.load %w(links forms cookies headers flch)
 
-                        form = Arachni::Element::Form.new( 'http://test' )
+                        form = Arachni::Element::Form.new( url: 'http://test' )
                         p = Arachni::Page.new( url: 'http://test', forms: [form] )
                         f.push_to_page_queue( p )
 
@@ -418,7 +418,7 @@ describe Arachni::Framework do
                         f.opts.audit :forms
                         f.modules.load %w(path server)
 
-                        form = Arachni::Element::Form.new( 'http://test' )
+                        form = Arachni::Element::Form.new( url: 'http://test' )
                         p = Arachni::Page.new( url: 'http://test', forms: [form] )
                         f.push_to_page_queue( p )
 
@@ -434,7 +434,7 @@ describe Arachni::Framework do
                         f.opts.audit :forms
                         f.modules.load %w(nil empty)
 
-                        form = Arachni::Element::Form.new( 'http://test' )
+                        form = Arachni::Element::Form.new( url: 'http://test' )
                         p = Arachni::Page.new( url: 'http://test', forms: [form] )
                         f.push_to_page_queue( p )
 
@@ -454,7 +454,7 @@ describe Arachni::Framework do
                         f.opts.dont_audit :forms
                         f.modules.load %w(links forms cookies headers flch)
 
-                        form = Arachni::Element::Form.new( 'http://test' )
+                        form = Arachni::Element::Form.new( url: 'http://test' )
                         p = Arachni::Page.new( url: 'http://test', forms: [form] )
                         f.push_to_page_queue( p )
 
@@ -470,7 +470,7 @@ describe Arachni::Framework do
                         f.opts.dont_audit :forms
                         f.modules.load %w(path server)
 
-                        form = Arachni::Element::Form.new( 'http://test' )
+                        form = Arachni::Element::Form.new( url: 'http://test' )
                         p = Arachni::Page.new( url: 'http://test', forms: [form] )
                         f.push_to_page_queue( p )
 
@@ -486,7 +486,7 @@ describe Arachni::Framework do
                         f.opts.dont_audit :forms
                         f.modules.load %w(nil empty)
 
-                        form = Arachni::Element::Form.new( 'http://test' )
+                        form = Arachni::Element::Form.new( url: 'http://test' )
                         p = Arachni::Page.new( url: 'http://test', forms: [form] )
                         f.push_to_page_queue( p )
 
@@ -509,7 +509,7 @@ describe Arachni::Framework do
                         f.opts.audit :cookies
                         f.modules.load %w(links forms cookies headers flch)
 
-                        cookie = Arachni::Element::Cookie.new( 'http://test' )
+                        cookie = Arachni::Element::Cookie.new( url: 'http://test' )
                         p = Arachni::Page.new( url: 'http://test', cookies: [cookie] )
                         f.push_to_page_queue( p )
 
@@ -525,7 +525,7 @@ describe Arachni::Framework do
                         f.opts.audit :cookies
                         f.modules.load %w(path server)
 
-                        cookie = Arachni::Element::Form.new( 'http://test' )
+                        cookie = Arachni::Element::Form.new( url: 'http://test' )
                         p = Arachni::Page.new( url: 'http://test', cookies: [cookie] )
                         f.push_to_page_queue( p )
 
@@ -541,7 +541,7 @@ describe Arachni::Framework do
                         f.opts.audit :cookies
                         f.modules.load %w(nil empty)
 
-                        cookie = Arachni::Element::Form.new( 'http://test' )
+                        cookie = Arachni::Element::Form.new( url: 'http://test' )
                         p = Arachni::Page.new( url: 'http://test', cookies: [cookie] )
                         f.push_to_page_queue( p )
 
@@ -561,7 +561,7 @@ describe Arachni::Framework do
                         f.opts.dont_audit :cookies
                         f.modules.load %w(links forms cookies headers flch)
 
-                        cookie = Arachni::Element::Form.new( 'http://test' )
+                        cookie = Arachni::Element::Form.new( url: 'http://test' )
                         p = Arachni::Page.new( url: 'http://test', cookies: [cookie] )
                         f.push_to_page_queue( p )
 
@@ -577,7 +577,7 @@ describe Arachni::Framework do
                         f.opts.dont_audit :cookies
                         f.modules.load %w(path server)
 
-                        cookie = Arachni::Element::Form.new( 'http://test' )
+                        cookie = Arachni::Element::Form.new( url: 'http://test' )
                         p = Arachni::Page.new( url: 'http://test', cookies: [cookie] )
                         f.push_to_page_queue( p )
 
@@ -593,7 +593,7 @@ describe Arachni::Framework do
                         f.opts.dont_audit :cookies
                         f.modules.load %w(nil empty)
 
-                        cookie = Arachni::Element::Form.new( 'http://test' )
+                        cookie = Arachni::Element::Form.new( url: 'http://test' )
                         p = Arachni::Page.new( url: 'http://test', cookies: [cookie] )
                         f.push_to_page_queue( p )
 
@@ -616,7 +616,7 @@ describe Arachni::Framework do
                         f.opts.audit :headers
                         f.modules.load %w(links forms cookies headers flch)
 
-                        header = Arachni::Element::Cookie.new( 'http://test' )
+                        header = Arachni::Element::Cookie.new( url: 'http://test' )
                         p = Arachni::Page.new( url: 'http://test', headers: [header] )
                         f.push_to_page_queue( p )
 
@@ -632,7 +632,7 @@ describe Arachni::Framework do
                         f.opts.audit :headers
                         f.modules.load %w(path server)
 
-                        header = Arachni::Element::Form.new( 'http://test' )
+                        header = Arachni::Element::Form.new( url: 'http://test' )
                         p = Arachni::Page.new( url: 'http://test', headers: [header] )
                         f.push_to_page_queue( p )
 
@@ -648,7 +648,7 @@ describe Arachni::Framework do
                         f.opts.audit :headers
                         f.modules.load %w(nil empty)
 
-                        header = Arachni::Element::Form.new( 'http://test' )
+                        header = Arachni::Element::Form.new( url: 'http://test' )
                         p = Arachni::Page.new( url: 'http://test', headers: [header] )
                         f.push_to_page_queue( p )
 
@@ -668,7 +668,7 @@ describe Arachni::Framework do
                         f.opts.dont_audit :headers
                         f.modules.load %w(links forms cookies headers flch)
 
-                        header = Arachni::Element::Form.new( 'http://test' )
+                        header = Arachni::Element::Form.new( url: 'http://test' )
                         p = Arachni::Page.new( url: 'http://test', headers: [header] )
                         f.push_to_page_queue( p )
 
@@ -684,7 +684,7 @@ describe Arachni::Framework do
                         f.opts.dont_audit :headers
                         f.modules.load %w(path server)
 
-                        header = Arachni::Element::Form.new( 'http://test' )
+                        header = Arachni::Element::Form.new( url: 'http://test' )
                         p = Arachni::Page.new( url: 'http://test', headers: [header] )
                         f.push_to_page_queue( p )
 
@@ -700,7 +700,7 @@ describe Arachni::Framework do
                         f.opts.dont_audit :headers
                         f.modules.load %w(nil empty)
 
-                        header = Arachni::Element::Form.new( 'http://test' )
+                        header = Arachni::Element::Form.new( url: 'http://test' )
                         p = Arachni::Page.new( url: 'http://test', headers: [header] )
                         f.push_to_page_queue( p )
 

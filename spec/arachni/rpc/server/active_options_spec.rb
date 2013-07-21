@@ -43,9 +43,10 @@ describe Arachni::RPC::Server::ActiveOptions do
                 @instance.opts.include.should == [/include me/]
                 @instance.opts.datastore.should == opts['datastore']
 
-                @instance.service.cookies.should ==
-                    [ Arachni::Cookie.new( opts['url'], opts['cookies'] ),
-                      Arachni::Cookie.new( opts['url'], { name3: 'value3' } )]
+                @instance.service.cookies.should == [
+                    Arachni::Cookie.new( url: opts['url'], inputs: opts['cookies'] ),
+                    Arachni::Cookie.new( url: opts['url'], inputs: { name3: 'value3' } )
+                ]
 
                 @instance.opts.cookies.should == @instance.service.cookies
             end
@@ -71,9 +72,10 @@ describe Arachni::RPC::Server::ActiveOptions do
                 @instance.opts.include.should == [/include me2/]
                 @instance.opts.datastore.should == opts[:datastore]
 
-                @instance.service.cookies.should ==
-                    [ Arachni::Cookie.new( opts[:url], opts[:cookies] ),
-                      Arachni::Cookie.new( opts[:url], { name3: 'value3' } )]
+                @instance.service.cookies.should == [
+                    Arachni::Cookie.new( url: opts[:url], inputs: opts[:cookies] ),
+                    Arachni::Cookie.new( url: opts[:url], inputs: { name3: 'value3' } )
+                ]
 
                 @instance.opts.cookies.should == @instance.service.cookies
             end
@@ -144,7 +146,7 @@ describe Arachni::RPC::Server::ActiveOptions do
         context 'when passed a' do
             context Arachni::Cookie do
                 it 'updates the cookie-jar' do
-                    c = Arachni::Cookie.new( 'http://test.com', name: 'value' )
+                    c = Arachni::Cookie.new( url: 'http://test.com', inputs: { name: 'value' } )
 
                     @instance.service.cookies.should be_empty
 
@@ -189,7 +191,7 @@ describe Arachni::RPC::Server::ActiveOptions do
                     @instance.opts.url = 'http://test.com'
 
                     @instance.opts.cookies = [
-                        Arachni::Cookie.new( 'http://test.com', cookie_name: 'cookie_value' ),
+                        Arachni::Cookie.new( url: 'http://test.com', inputs: { cookie_name: 'cookie_value' } ),
                         { hash_name: 'hash_value' },
                         'string_name=string_value'
                     ]
@@ -219,7 +221,7 @@ describe Arachni::RPC::Server::ActiveOptions do
         context 'when passed a' do
             context Arachni::Cookie do
                 it 'updates the cookie-jar' do
-                    c = Arachni::Cookie.new( 'http://test.com', name: 'value' )
+                    c = Arachni::Cookie.new( url: 'http://test.com', inputs: { name: 'value' } )
 
                     @instance.service.cookies.should be_empty
 
@@ -263,7 +265,10 @@ describe Arachni::RPC::Server::ActiveOptions do
 
                     @instance.opts.url = 'http://test.com'
                     @instance.opts.cookie_jar = [
-                        Arachni::Cookie.new( 'http://test.com', cookie_name: 'cookie_value' ),
+                        Arachni::Cookie.new(
+                            url: 'http://test.com',
+                            inputs: { cookie_name: 'cookie_value' }
+                        ),
                         { hash_name: 'hash_value' },
                         'string_name=string_value'
                     ]

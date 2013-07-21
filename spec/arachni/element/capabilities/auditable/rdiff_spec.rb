@@ -19,14 +19,14 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
 
         context 'when the element action matches a skip rule' do
             it 'returns false' do
-                auditable = Arachni::Element::Link.new( 'http://stuff.com/', @params )
+                auditable = Arachni::Element::Link.new( url: 'http://stuff.com/', inputs: @params )
                 auditable.rdiff_analysis( @opts ).should be_false
             end
         end
 
         context 'when response behavior suggests a vuln' do
             it 'logs an issue' do
-                auditable = Arachni::Element::Link.new( @url + '/true', @params )
+                auditable = Arachni::Element::Link.new( url: @url + '/true', inputs: @params )
                 auditable.auditor = @auditor
                 auditable.rdiff_analysis( @opts )
                 @auditor.http.run
@@ -40,7 +40,7 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
 
         context 'when responses are\'t consistent with vuln behavior' do
             it 'does not log any issues' do
-                auditable = Arachni::Element::Link.new( @url + '/false', @params )
+                auditable = Arachni::Element::Link.new( url: @url + '/false', inputs: @params )
                 auditable.auditor = @auditor
                 auditable.rdiff_analysis( @opts )
                 @auditor.http.run

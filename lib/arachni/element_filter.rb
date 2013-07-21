@@ -121,7 +121,7 @@ module ElementFilter
 
         cookies.reverse.each do |cookie|
             @@cookies.each_with_index do |page_cookie, i|
-                if page_cookie.raw['name'] == cookie.raw['name']
+                if page_cookie.name == cookie.name
                     @@cookies[i] = cookie
                 elsif !cookie_in_jar?( cookie )
                     @new_cookies << cookie
@@ -137,7 +137,7 @@ module ElementFilter
     end
 
     def cookie_in_jar?( cookie )
-        @@cookies.each { |c| return true if c.raw['name'] == cookie.raw['name'] }
+        @@cookies.each { |c| return true if c.name == cookie.name }
         false
     end
 

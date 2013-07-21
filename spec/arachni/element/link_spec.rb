@@ -9,8 +9,8 @@ describe Arachni::Element::Link do
         Arachni::Options.instance.url = @url
         @url = Arachni::Options.instance.url
 
-        @inputs = { inputs: { 'param_name' => 'param_value' } }
-        @link = Arachni::Element::Link.new( @url, @inputs )
+        @inputs = { 'param_name' => 'param_value' }
+        @link = Arachni::Element::Link.new( url: @url, inputs: @inputs )
     end
 
     it 'is assigned to Arachni::Link for easy access' do
@@ -27,79 +27,20 @@ describe Arachni::Element::Link do
         context 'when only a url is provided' do
             it 'is used for both the owner #url and #action and be parsed in order to extract #auditable inputs' do
                 url = 'http://test.com/?one=2&three=4'
-                e = Arachni::Element::Link.new( url )
+                e = Arachni::Element::Link.new( url: url )
                 e.url.should == url
                 e.action.should == url
-                e.auditable.should == { 'one' => '2', 'three' => '4' }
-                e.raw.should == {}
+                e.inputs.should == { 'one' => '2', 'three' => '4' }
             end
         end
         context 'when the raw option is a string' do
             it 'is treated as an #action URL and parsed in order to extract #auditable inputs' do
                 url    = 'http://test.com/test'
                 action = '?one=2&three=4'
-                e = Arachni::Element::Link.new( url, action )
+                e = Arachni::Element::Link.new( url: url, action: action )
                 e.url.should == url
                 e.action.should == url + action
-                e.auditable.should == { 'one' => '2', 'three' => '4' }
-                e.raw.should == { action: e.action, inputs: e.auditable }
-            end
-        end
-        context "when the raw hash option contains a url in 'href', :href, 'action' or :action" do
-            it 'is treated as an #action URL and parsed in order to extract #auditable inputs' do
-                ['href', :href, 'action', :action].each do |k|
-                    action = '?one=2&three=4'
-                    raw    = { k => action }
-                    url    = 'http://test.com/test'
-
-                    e = Arachni::Element::Link.new( url, raw )
-                    e.url.should == url
-                    e.action.should == url + action
-                    e.auditable.should == { 'one' => '2', 'three' => '4' }
-                    e.raw.should == raw
-                end
-            end
-        end
-        context "when the raw hash option contains a auditable inputs in 'vars', :vars, 'inputs' or :inputs" do
-            it 'is used as auditable inputs' do
-                ['vars', :vars, 'inputs', :inputs].each do |k|
-                    raw    = { k => { 'one' => '2', 'three' => '4' } }
-                    url    = 'http://test.com/test'
-
-                    e = Arachni::Element::Link.new( url, raw )
-                    e.url.should == url
-                    e.action.should == url
-                    e.auditable.should == { 'one' => '2', 'three' => '4' }
-                    e.raw.should == raw
-                end
-            end
-        end
-        context "when the raw hash option contains a auditable inputs in :action and :inputs" do
-            it 'is treated as an #action URL and #auditable inputs respectively' do
-                url    = 'http://test.com/test/'
-                action = 'some/path'
-                raw = {
-                    :action => action,
-                    :inputs => { 'one' => '2', 'three' => '4' }
-                }
-
-                e = Arachni::Element::Link.new( url, raw )
-                e.url.should == url
-                e.action.should == url + action
-                e.auditable.should == { 'one' => '2', 'three' => '4' }
-                e.raw.should == raw
-            end
-        end
-        context "when the raw hash option contains a auditable inputs in :action and :inputs" do
-            it 'is treated as an #action URL and #auditable inputs respectively' do
-                url = 'http://test.com/test/'
-                raw = { 'one' => '2', 'three' => '4' }
-
-                e = Arachni::Element::Link.new( url, raw )
-                e.url.should == url
-                e.action.should == url
-                e.auditable.should == { 'one' => '2', 'three' => '4' }
-                e.raw.should == raw
+                e.inputs.should == { 'one' => '2', 'three' => '4' }
             end
         end
     end
@@ -107,8 +48,8 @@ describe Arachni::Element::Link do
     describe '#id' do
         context 'when the action it contains path parameters' do
             it 'ignores them' do
-                e = Arachni::Element::Link.new( 'http://test.com/path;p=v?p1=v1&p2=v2', @inputs[:inputs] )
-                c = Arachni::Element::Link.new( 'http://test.com/path?p1=v1&p2=v2', @inputs[:inputs] )
+                e = Arachni::Element::Link.new( url: 'http://test.com/path;p=v?p1=v1&p2=v2', inputs: @inputs )
+                c = Arachni::Element::Link.new( url: 'http://test.com/path?p1=v1&p2=v2', inputs: @inputs )
                 e.id.should == c.id
             end
         end
@@ -116,15 +57,15 @@ describe Arachni::Element::Link do
 
     describe '#simple' do
         it 'should return a simplified version as a hash' do
-            @link.simple.should == { @link.action => @link.auditable }
+            @link.simple.should == { @link.action => @link.inputs }
         end
     end
 
     describe '#to_s' do
         it 'should return a URL' do
             url = Arachni::Element::Link.new(
-                'http://test.com/test?one=two&amp;three=four',
-                { 'one' => 2, '5' => 'six' }
+                url:    'http://test.com/test?one=two&amp;three=four',
+                inputs: { 'one' => 2, '5' => 'six' }
             ).to_s
             url.should == 'http://test.com/test?one=2&three=four&5=six'
         end
@@ -154,7 +95,7 @@ describe Arachni::Element::Link do
                 link = Arachni::Element::Link.from_document( @url, html ).first
                 link.action.should == @url + 'test2?param_one=value_one&param_two=value_two'
                 link.url.should == @url
-                link.auditable.should == {
+                link.inputs.should == {
                     'param_one'  => 'value_one',
                     'param_two'  => 'value_two'
                 }
@@ -175,7 +116,7 @@ describe Arachni::Element::Link do
                     link = Arachni::Element::Link.from_document( @url, html ).first
                     link.action.should == base_url + 'test?param_one=value_one&param_two=value_two'
                     link.url.should == @url
-                    link.auditable.should == {
+                    link.inputs.should == {
                         'param_one'  => 'value_one',
                         'param_two'  => 'value_two'
                     }

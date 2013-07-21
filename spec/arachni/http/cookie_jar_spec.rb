@@ -69,7 +69,7 @@ describe Arachni::HTTP::CookieJar do
                 @jar.cookies.first.should == cookie
 
                 c = cookie.dup
-                c.auditable = { c.name => 'my val' }
+                c.inputs = { c.name => 'my val' }
 
                 (@jar << c).should == @jar
                 @jar.cookies.first.should == c
@@ -99,7 +99,7 @@ describe Arachni::HTTP::CookieJar do
                 @jar.update( cookies ).should == @jar
                 @jar.cookies.should == cookies
 
-                c = cookies.dup.map { |dc| dc.auditable = { dc.name => dc.name + '-updated' }; dc }
+                c = cookies.dup.map { |dc| dc.inputs = { dc.name => dc.name + '-updated' }; dc }
                 @jar.update( c ).should == @jar
                 @jar.cookies.should == c
 
@@ -110,7 +110,7 @@ describe Arachni::HTTP::CookieJar do
         context 'when passed a' do
             context Arachni::Cookie do
                 it 'updates the cookie jar with it' do
-                    c = Arachni::Cookie.new( 'http://test.com', name: 'value' )
+                    c = Arachni::Cookie.new( url: 'http://test.com', inputs: { name: 'value' } )
 
                     @jar.should be_empty
 
@@ -148,7 +148,8 @@ describe Arachni::HTTP::CookieJar do
 
                     Arachni::Options.url = 'http://test.com'
                     @jar.update([
-                        Arachni::Cookie.new( 'http://test.com', cookie_name: 'cookie_value' ),
+                        Arachni::Cookie.new(
+                            url: 'http://test.com', inputs: { cookie_name: 'cookie_value' } ),
                         { hash_name: 'hash_value' },
                         'string_name=string_value'
                     ] )
@@ -177,54 +178,61 @@ describe Arachni::HTTP::CookieJar do
     describe '#for_url' do
         it 'returns all cookies for that particular URL' do
             cookies = {}
-            cookies[:with_path] = Arachni::Element::Cookie.new( '',
-                'name'  => 'my_cookie',
-                'value' => 'my_value',
-                'domain'=> 'domain.com',
-                'path'  => '/my/path'
+            cookies[:with_path] = Arachni::Element::Cookie.new(
+                url:    '',
+                name:   'my_cookie',
+                value:  'my_value',
+                domain: 'domain.com',
+                path:   '/my/path'
             )
 
-            cookies[:without_path] = Arachni::Element::Cookie.new( '',
-                'name'  => 'my_cookie1',
-                'value' => 'my_value2',
-                'domain'=> 'domain.com',
-                'path'  => '/'
+            cookies[:without_path] = Arachni::Element::Cookie.new(
+                url:    '',
+                name:   'my_cookie1',
+                value:  'my_value2',
+                domain: 'domain.com',
+                path:   '/'
             )
 
-            cookies[:another_domain] = Arachni::Element::Cookie.new( '',
-                'name'  => 'my_cookie1',
-                'value' => 'my_value2',
-                'domain'=> 'mydomain.com',
-                'path'  => '/'
+            cookies[:another_domain] = Arachni::Element::Cookie.new(
+                url:    '',
+                name:   'my_cookie1',
+                value:  'my_value2',
+                domain: 'mydomain.com',
+                path:   '/'
             )
 
-            cookies[:tailmatching] = Arachni::Element::Cookie.new( '',
-                'name'  => 'tail_name',
-                'value' => 'tail_value',
-                'domain'=> '.mydomain.com',
-                'path'  => '/'
+            cookies[:tailmatching] = Arachni::Element::Cookie.new(
+                url:    '',
+                name:   'tail_name',
+                value:  'tail_value',
+                domain: '.mydomain.com',
+                path:   '/'
             )
 
-            cookies[:subdomain] = Arachni::Element::Cookie.new( '',
-                'name'  => 'name',
-                'value' => 'value',
-                'domain'=> 'sub.domain.com',
-                'path'  => '/'
+            cookies[:subdomain] = Arachni::Element::Cookie.new(
+                url:    '',
+                name:   'name',
+                value:  'value',
+                domain: 'sub.domain.com',
+                path:   '/'
             )
 
-            cookies[:subdomain_tailmatching] = Arachni::Element::Cookie.new( '',
-                'name'  => 'tail_name',
-                'value' => 'tail_value',
-                'domain'=> '.sub.domain.com',
-                'path'  => '/'
+            cookies[:subdomain_tailmatching] = Arachni::Element::Cookie.new(
+                url:    '',
+                name:   'tail_name',
+                value:  'tail_value',
+                domain: '.sub.domain.com',
+                path:   '/'
             )
 
-            cookies[:expired] = Arachni::Element::Cookie.new( '',
-                'name'  => 'expired_name',
-                'value' => 'expired_value',
-                'domain'=> 'expired.com',
-                'path'  => '/',
-                'expires' => Time.now - 999999
+            cookies[:expired] = Arachni::Element::Cookie.new(
+                url:    '',
+                name:   'expired_name',
+                value:  'expired_value',
+                domain: 'expired.com',
+                path:   '/',
+                expires: Time.now - 999999
             )
 
             @jar.update( cookies.values )
@@ -247,18 +255,20 @@ describe Arachni::HTTP::CookieJar do
 
     describe '#cookies' do
         before( :each ) do
-            @jar << Arachni::Element::Cookie.new( '',
-                'name'  => 'expired_name',
-                'value' => 'expired_value',
-                'domain'=> 'expired.com',
-                'path'  => '/',
-                'expires' => Time.now - 999999
+            @jar << Arachni::Element::Cookie.new(
+                url:     '',
+                name:    'expired_name',
+                value:   'expired_value',
+                domain:  'expired.com',
+                path:    '/',
+                expires: Time.now - 999999
             )
-            @jar << Arachni::Element::Cookie.new( '',
-                'name'  => 'my_name',
-                'value' => 'my_value',
-                'domain'=> 'domain.com',
-                'path'  => '/',
+            @jar << Arachni::Element::Cookie.new(
+                url:    '',
+                name:   'my_name',
+                value:  'my_value',
+                domain: 'domain.com',
+                path:   '/',
             )
         end
         describe 'include_expired' do

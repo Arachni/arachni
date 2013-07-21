@@ -22,7 +22,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.5
+# @version 0.1.6
 #
 # @see http://www.owasp.org/index.php/Top_10_2010-A10-Unvalidated_Redirects_and_Forwards
 #
@@ -37,9 +37,9 @@ class Arachni::Modules::UnvalidatedRedirect < Arachni::Module::Base
     end
 
     def run
-        audit( self.class.payloads ) do |res, opts|
+        audit( self.class.payloads ) do |res, element|
             next if !self.class.payloads.include?( res.headers.location )
-            log( opts, res )
+            log( element.audit_options, res )
         end
     end
 
@@ -50,7 +50,7 @@ class Arachni::Modules::UnvalidatedRedirect < Arachni::Module::Base
                 to determnine whether the attack was successful.},
             elements:    [Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.5',
+            version:     '0.1.6',
             references:  {
                 'OWASP Top 10 2010' => 'http://www.owasp.org/index.php/Top_10_2010-A10-Unvalidated_Redirects_and_Forwards'
             },

@@ -22,7 +22,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.7
+# @version 0.1.8
 #
 # @see http://cwe.mitre.org/data/definitions/20.html
 # @see http://www.owasp.org/index.php/HTTP_Response_Splitting
@@ -42,8 +42,9 @@ class Arachni::Modules::ResponseSplitting < Arachni::Module::Base
 
         # try to inject the headers into all vectors
         # and pass a block that will check for a positive result
-        audit( header, param_flip: true, follow_location: false ) do |res, opts|
+        audit( header, param_flip: true, follow_location: false ) do |res, element|
             next if res.headers[header_name].to_s.downcase != 'no'
+            opts = element.audit_options
             opts[:injected] = uri_encode( opts[:injected] )
             log( opts, res )
         end
@@ -56,7 +57,7 @@ class Arachni::Modules::ResponseSplitting < Arachni::Module::Base
                 if any of them end up in the response header.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.1.7',
+            version:     '0.1.8',
             references:  {
                 'SecuriTeam' => 'http://www.securiteam.com/securityreviews/5WP0E2KFGK.html',
                 'OWASP'      => 'http://www.owasp.org/index.php/HTTP_Response_Splitting'

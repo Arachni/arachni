@@ -455,7 +455,7 @@ describe 'Arachni::RPC::Server::Framework' do
 
             issues = inst.framework.issues
             issues.size.should == 1
-            issues.first.var.should == link.auditable.keys.first
+            issues.first.var.should == link.inputs.keys.first
         end
     end
     describe '#update_page_queue' do

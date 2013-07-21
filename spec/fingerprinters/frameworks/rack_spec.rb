@@ -7,8 +7,9 @@ describe Arachni::Platform::Fingerprinters::Rack do
         it 'identifies it as Rack' do
             page = Arachni::Page.from_data(
                 url:     'http://stuff.com/blah',
-                cookies: [Arachni::Cookie.new( 'http://stuff.com/blah',
-                                               'rack.session' => 'stuff' )]
+                cookies: [Arachni::Cookie.new(
+                              url:    'http://stuff.com/blah',
+                              inputs: { 'rack.session' => 'stuff' } )]
 
             )
             platforms_for( page ).should include :ruby

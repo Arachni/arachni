@@ -20,7 +20,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.4
+# @version 0.1.5
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -37,7 +37,9 @@ class Arachni::Modules::XSSHTMLTag < Arachni::Module::Base
 
     def run
         self.class.strings.each do |str|
-            audit( str, format: [ Format::APPEND ] ) { |res, opts| check_and_log( res, opts ) }
+            audit( str, format: [ Format::APPEND ] ) do |res, element|
+                check_and_log( res, element.audit_options )
+            end
         end
     end
 
@@ -69,7 +71,7 @@ class Arachni::Modules::XSSHTMLTag < Arachni::Module::Base
             description: %q{Cross-Site Scripting in HTML tag.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.1.4',
+            version:     '0.1.5',
             references:  {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/'

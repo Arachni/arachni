@@ -6,11 +6,11 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
         Arachni::Options.url = @url = web_server_url_for( :taint )
         @auditor = Auditor.new( nil, Arachni::Framework.new )
 
-        @positive = Arachni::Element::Link.new( @url, 'input' => '' )
+        @positive = Arachni::Element::Link.new( url: @url, inputs: { 'input' => '' } )
         @positive.auditor = @auditor
         @positive.auditor.page = Arachni::Page.from_url( @url )
 
-        @negative = Arachni::Element::Link.new( @url, 'inexistent_input' => '' )
+        @negative = Arachni::Element::Link.new( url: @url, inputs: { 'inexistent_input' => '' } )
         @negative.auditor = @auditor
         @negative.auditor.page = Arachni::Page.from_url( @url )
     end
@@ -24,8 +24,10 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
 
         context 'when the element action matches a skip rule' do
             it 'returns false' do
-                auditable = Arachni::Element::Link.new( 'http://stuff.com/',
-                                                        { 'input' => '' } )
+                auditable = Arachni::Element::Link.new(
+                    url: 'http://stuff.com/',
+                    inputs: { 'input' => '' }
+                )
                 auditable.taint_analysis( @seed ).should be_false
             end
         end

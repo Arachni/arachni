@@ -221,18 +221,23 @@ describe Arachni::Page do
 
     describe '.from_data' do
         it 'creates a page from the given data' do
+            elem_opts = {
+                url: 'http://test.com',
+                inputs: { 'test' => 'stuff' }
+            }
+
             data = {
                 url:  'http://test/',
                 body: 'test',
                 paths: [ 'http://test/1', 'http://test/2' ],
-                links: [ Arachni::Element::Link.new( 'http://test.com', 'test' => 'stuff' ) ],
-                forms: [Arachni::Element::Form.new( 'http://test.com', 'test' => 'stuff' )],
-                cookies: [Arachni::Element::Cookie.new( 'http://test.com', 'test' => 'stuff' )],
+                links: [Arachni::Element::Link.new( elem_opts )],
+                forms: [Arachni::Element::Form.new( elem_opts )],
+                cookies: [Arachni::Element::Cookie.new( elem_opts )],
                 cookiejar: [
-                    Arachni::Element::Cookie.new( 'http://test.com', 'test' => 'stuff' ),
-                    Arachni::Element::Cookie.new( 'http://test.com', 'test1' => 'stuff1' )
+                    Arachni::Element::Cookie.new( elem_opts ),
+                    Arachni::Element::Cookie.new( elem_opts )
                 ],
-                headers: [Arachni::Element::Header.new( 'http://test.com', 'test' => 'stuff' )],
+                headers: [Arachni::Element::Header.new( elem_opts )],
                 response: {
                     code: 200
                 }

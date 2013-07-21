@@ -172,7 +172,7 @@ module Distributor
 
         scoppe_list = proc do |elems|
             elems.map do |e|
-                next if e.auditable.empty?
+                next if e.inputs.empty?
 
                 id = e.scope_audit_id
                 next if @elem_ids_filter.include?( id )

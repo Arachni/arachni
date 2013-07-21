@@ -20,7 +20,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.3
+# @version 0.1.4
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -46,7 +46,9 @@ class Arachni::Modules::XSSScriptTag < Arachni::Module::Base
 
     def run
         self.class.strings.each do |str|
-            audit( str, self.class.opts ) { |res, opts| check_and_log( res, str, opts ) }
+            audit( str, self.class.opts ) do |res, element|
+                check_and_log( res, str, element.audit_options )
+            end
         end
     end
 
@@ -64,7 +66,7 @@ class Arachni::Modules::XSSScriptTag < Arachni::Module::Base
 
         opts[:match]        = html_elem.to_s
         opts[:verification] = true
-        opts[:remarks]      =  { module: [ REMARK ] }
+        opts[:remarks]      = { module: [ REMARK ] }
         log( opts, res )
     end
 
@@ -74,7 +76,7 @@ class Arachni::Modules::XSSScriptTag < Arachni::Module::Base
             description: %q{Injects strings and checks if they appear inside HTML 'script' tags.},
             elements:    [Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.1.3',
+            version:     '0.1.4',
             references:  {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/'

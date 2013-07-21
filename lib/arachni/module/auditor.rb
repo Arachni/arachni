@@ -264,7 +264,7 @@ module Auditor
     #   * `true` if everything went fine.
     #
     def remote_file_exist?( url, &block )
-        req  = http.get( url )
+        req  = http.get( url, performer: self )
         return false if !req
 
         req.on_complete do |res|
@@ -330,7 +330,7 @@ module Auditor
     #   String against which the `regexps` will be matched.
     #   (If no string has been provided the {#page} body will be used and, for
     #   good measure, `regexps` will also be matched against
-    #   {Page#response_headers} as well.)
+    #   {HTTP::Response#headers} as well.)
     # @param    [Block] block
     #   Block to verify matches before logging, must return `true`/`false`.
     #

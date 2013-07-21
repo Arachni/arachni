@@ -107,14 +107,14 @@ module Auditable::RDiff
         opts = self.class::MUTATION_OPTIONS.merge( RDIFF_OPTIONS.merge( opts ) )
 
         # don't continue if there's a missing value
-        auditable.values.each { |val| return if !val || val.empty? }
+        inputs.values.each { |val| return if !val || val.empty? }
 
         return false if rdiff_audited?
         rdiff_audited
 
         responses = {
             # will hold the original, default, response that results from submitting
-            orig: nil,
+            original: nil,
 
             # will hold responses of boolean injections
             good: {},
@@ -129,9 +129,9 @@ module Auditable::RDiff
         opts[:precision].times {
             # get the default responses
             audit( '', opts ) do |res|
-                responses[:orig] ||= res.body
+                responses[:original] ||= res.body
                 # remove context-irrelevant dynamic content like banners and such
-                responses[:orig] = responses[:orig].rdiff( res.body )
+                responses[:original] = responses[:original].rdiff( res.body )
             end
         }
 
@@ -188,14 +188,14 @@ module Auditable::RDiff
                     # if there's a block passed then delegate analysis to it
                     if block
                         exception_jail( false ){
-                            block.call( res['str'], res['elem'], responses[:orig],
+                            block.call( res['str'], res['elem'], responses[:original],
                                         res['res'], responses[:bad][key] )
                         }
 
                     # if default_response_body == bool_response_body AND
                     #    bool_response_code == 200 AND
                     #    fault_response_body != bool_response_body
-                    elsif responses[:orig] == res['res'].body &&
+                    elsif responses[:original] == res['res'].body &&
                             responses[:bad][key] != res['res'].body &&
                             res['res'].code == 200
 
@@ -211,7 +211,7 @@ module Auditable::RDiff
                             # information for the Metareport report
                             opts = {
                                 injected_orig: res['str'],
-                                combo:         res['elem'].auditable
+                                combo:         res['elem'].inputs
                             }
 
                             @auditor.log({
@@ -242,7 +242,7 @@ module Auditable::RDiff
     end
 
     def rdiff_audit_id
-        @action + @auditable.keys.to_s
+        @action + @inputs.keys.to_s
     end
 
 end

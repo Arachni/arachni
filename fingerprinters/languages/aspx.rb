@@ -42,7 +42,7 @@ class ASPX < Platform::Fingerprinter
         end
 
         page.forms.each do |form|
-            form.auditable.each do |k, v|
+            form.inputs.each do |k, v|
                 return update_platforms if k.downcase.include? VIEWSTATE
             end
         end

@@ -4,19 +4,17 @@ describe Arachni::Element::Base do
     before( :all ) do
         @utils=  Arachni::Module::Utilities
         @url = @utils.normalize_url( 'http://test.com' )
-        @raw = { raw: { hash: 'stuff' } }
-        @e = Arachni::Element::Base.new( @url, @raw )
+
+        @options = {
+            url:    @url,
+            inputs: { hash: 'stuff' }
+        }
+        @e = Arachni::Element::Base.new( @options )
     end
 
     describe '#url' do
         it 'returns the assigned URL' do
             @e.url.should == @url
-        end
-    end
-
-    describe '#raw' do
-        it 'returns the raw data' do
-            @e.raw.should == @raw
         end
     end
 
@@ -29,7 +27,7 @@ describe Arachni::Element::Base do
 
     describe '#url=' do
         it 'normalizes the passed URL' do
-            e = Arachni::Element::Base.new( @url, @raw )
+            e = Arachni::Element::Base.new( @options )
             url = 'http://test.com/some stuff#frag!'
             e.url = url
             e.url.should == @utils.normalize_url( url )
@@ -38,14 +36,14 @@ describe Arachni::Element::Base do
 
     describe '#action=' do
         it 'normalizes the passed URL' do
-            e = Arachni::Element::Base.new( @url, @raw )
+            e = Arachni::Element::Base.new( @options )
             url = 'http://test.com/some stuff#frag!'
             e.action = url
             e.action.should == @utils.normalize_url( url )
         end
 
         it 'converts the passed URL to absolute' do
-            e = Arachni::Element::Base.new( @url, @raw )
+            e = Arachni::Element::Base.new( @options )
             url = 'some stuff#frag!'
             e.action = url
             e.action.should == @utils.to_absolute( url, @url )
@@ -54,43 +52,43 @@ describe Arachni::Element::Base do
 
     describe '#==' do
         it 'asserts equality based on method, action and inputs' do
-            e = Arachni::Element::Link.new( @url, inputs: { 'name' => 'val' } )
-            c = Arachni::Element::Link.new( @url, inputs: { 'name' => 'val' } )
+            e = Arachni::Element::Form.new( url: @url, inputs: { 'name' => 'val' } )
+            c = Arachni::Element::Form.new( url: @url, inputs: { 'name' => 'val' } )
             c.should == e
 
-            e = Arachni::Element::Form.new( @url, inputs: { 'name' => 'val' } )
-            c = Arachni::Element::Form.new( @url, inputs: { 'name' => 'val' } )
+            e = Arachni::Element::Form.new( url: @url, inputs: { 'name' => 'val' } )
+            c = Arachni::Element::Form.new( url: @url, inputs: { 'name' => 'val' } )
             c.should == e
 
-            e = Arachni::Element::Form.new( @url, method: 'post', inputs: { 'name' => 'val' } )
-            c = Arachni::Element::Form.new( @url, method: 'post', inputs: { 'name' => 'val' } )
+            e = Arachni::Element::Form.new( url: @url, method: 'post', inputs: { 'name' => 'val' } )
+            c = Arachni::Element::Form.new( url: @url, method: 'post', inputs: { 'name' => 'val' } )
             c.should == e
 
-            e = Arachni::Element::Form.new( @url, inputs: { 'name' => 'val' } )
-            c = Arachni::Element::Form.new( @url, method: 'post', inputs: { 'name' => 'val' } )
+            e = Arachni::Element::Form.new( url: @url, inputs: { 'name' => 'val' } )
+            c = Arachni::Element::Form.new( url: @url, method: 'post', inputs: { 'name' => 'val' } )
 
             c.should_not == e
 
-            e = Arachni::Element::Form.new( @url, inputs: { 'name' => 'val' } )
-            c = Arachni::Element::Form.new( @url + 's', inputs: { 'name' => 'val' } )
+            e = Arachni::Element::Form.new( url: @url, inputs: { 'name' => 'val' } )
+            c = Arachni::Element::Form.new( url: @url + 's', inputs: { 'name' => 'val' } )
             c.should_not == e
 
-            e = Arachni::Element::Form.new( @url, inputs: { 'name' => 'val' } )
-            c = Arachni::Element::Form.new( @url, inputs: { 'name2' => 'val' } )
+            e = Arachni::Element::Form.new( url: @url, inputs: { 'name' => 'val' } )
+            c = Arachni::Element::Form.new( url: @url, inputs: { 'name2' => 'val' } )
             c.should_not == e
         end
     end
 
     describe '#dup' do
         before do
-            @elem = Arachni::Element::Link.new( @url, inputs: { 'name' => 'val' } )
+            @elem = Arachni::Element::Form.new( url: @url, inputs: { 'name' => 'val' } )
         end
         it 'duplicates the element' do
             e = @elem.dup
             e.should == @elem
             e.url = 'blah'
-            e.auditable = e.auditable.merge( 'crap' => 'stuff' )
-            @elem.auditable['crap'].should be_nil
+            e.inputs = e.inputs.merge( 'crap' => 'stuff' )
+            @elem.inputs['crap'].should be_nil
             @elem.url.should == @url
         end
         it 'maintains the scope override' do
@@ -112,7 +110,7 @@ describe Arachni::Element::Base do
     describe '#hash' do
         context 'when the #method is updated' do
             it 'gets updated' do
-                e = Arachni::Element::Base.new( @url, @raw )
+                e = Arachni::Element::Base.new( @options )
                 h = e.hash
                 e.method = 'get'
                 e.hash.should_not == h
@@ -120,7 +118,7 @@ describe Arachni::Element::Base do
         end
         context 'when the #action is updated' do
             it 'gets updated' do
-                e = Arachni::Element::Base.new( @url, @raw )
+                e = Arachni::Element::Base.new( @options )
                 h = e.hash
                 e.action = 'http://stuff.com'
                 e.hash.should_not == h
@@ -128,9 +126,9 @@ describe Arachni::Element::Base do
         end
         context 'when the #auditable is updated' do
             it 'gets updated' do
-                e = Arachni::Element::Base.new( @url, @raw )
+                e = Arachni::Element::Base.new( @options )
                 h = e.hash
-                e.auditable = { 'stuff' => 'blah' }
+                e.inputs = { 'stuff' => 'blah' }
                 e.hash.should_not == h
             end
         end

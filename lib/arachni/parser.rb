@@ -140,7 +140,7 @@ class Parser
             'User-Agent'      => @options.user_agent || '',
             'Referer'         => @url,
             'Pragma'          => 'no-cache'
-        }.map { |k, v| Header.new( @url, { k => v } ) }.freeze
+        }.map { |k, v| Header.new( url: @url, inputs: { k => v } ) }.freeze
     end
 
     # @return [Array<Element::Form>]    Forms from {#document}.
@@ -159,9 +159,9 @@ class Parser
                     next if "#{form.id}:#{form.name_or_id}" !=
                         "#{form2.id}:#{form2.name_or_id}"
 
-                    form.auditable.each do |k, v|
-                        next if !(v != form2.auditable[k] &&
-                            form.field_type_for( k ) == 'hidden')
+                    form.inputs.each do |k, v|
+                        next if !(v != form2.inputs[k] &&
+                            form.field_type_for( k ) == :hidden)
 
                         form.nonce_name = k
                     end
@@ -178,7 +178,7 @@ class Parser
         return [] if !text?
 
         @links = (if !link_vars.empty? || @response.redirection?
-            [Link.new( @url, link_vars )]
+            [Link.new( url: @url, inputs: link_vars )]
         else
             []
         end | Link.from_document( @url, document ))

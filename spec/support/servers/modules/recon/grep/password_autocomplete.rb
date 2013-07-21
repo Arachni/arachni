@@ -10,11 +10,11 @@ end
 get '/insecure' do
     <<-EOHTML
         <form name="insecure">
-            <input type='password' />
+            <input name="insecure_password" type='password' />
         </form>
 
         <form id='insecure_2'>
-            <input type='password' />
+            <input name="insecure_password2" type='password' />
         </form>
 
     EOHTML

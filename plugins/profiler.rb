@@ -47,7 +47,7 @@ class Arachni::Plugins::Profiler < Arachni::Plugin::Base
         end
 
         def run( &logger )
-            audit( seed_id, format: [Format::APPEND] ) do |res, _, elem|
+            audit( seed_id, format: [Format::APPEND] ) do |res|
                 landed_elems = []
 
                 if res.body.include?( seed_id )
@@ -58,7 +58,7 @@ class Arachni::Plugins::Profiler < Arachni::Plugin::Base
                     landed_elems |= find_landing_header_fields( res )
                 end
 
-                logger.call( seed_id, res, elem, landed_elems ) if landed_elems.any?
+                logger.call( seed_id, res, landed_elems ) if landed_elems.any?
             end
         end
 
@@ -67,12 +67,12 @@ class Arachni::Plugins::Profiler < Arachni::Plugin::Base
 
             parser = Parser.new( res )
             parser.cookies.each do |cookie|
-                elems << cookie if cookie.auditable.to_s.substring?( seed_id )
+                elems << cookie if cookie.inputs.to_s.substring?( seed_id )
             end
 
             res.headers.each_pair do |k, v|
                 next if !v.to_s.substring?( seed_id )
-                elems << Header.new( res.url, { k => v.to_s } )
+                elems << Header.new( url: res.url, inputs: { k => v.to_s } )
             end
 
             elems
@@ -80,18 +80,18 @@ class Arachni::Plugins::Profiler < Arachni::Plugin::Base
 
         def find_landing_elements( res )
             elems = []
-            elems << Struct::Body.new( 'body', nil, { 'attrs' => {} } )
+            elems << Struct::Body.new( 'body', nil, {} )
 
             parser = Parser.new( res )
             parser.forms.each do |form|
-                elems << form if form.auditable.to_s.substring?( seed_id )
+                elems << form if form.inputs.to_s.substring?( seed_id )
             end
 
-            self_url = Link.new( res.url )
+            self_url = Link.new( url: res.url )
             parser.links.each do |link|
-                if link.auditable.to_s.substring?( seed_id )
+                if link.inputs.to_s.substring?( seed_id )
                     # skip ourselves
-                    next if link.auditable == self_url.auditable
+                    next if link.inputs == self_url.inputs
                     elems << link
                 end
             end
@@ -106,15 +106,15 @@ class Arachni::Plugins::Profiler < Arachni::Plugin::Base
     end
 
     def prepare
-        Struct.new( 'Body', :type, :method, :raw, :auditable )
+        Struct.new( 'Body', :type, :method, :inputs )
 
         @inputs = []
     end
 
     def run
         framework.on_audit_page do |page|
-            Auditor.new( page, framework ).run do |taint, res, elem, found_in|
-                log( taint, res, elem, found_in )
+            Auditor.new( page, framework ).run do |taint, res, found_in|
+                log( taint, res, found_in )
             end
         end
     end
@@ -124,16 +124,18 @@ class Arachni::Plugins::Profiler < Arachni::Plugin::Base
         register_results( @inputs )
     end
 
-    def log( taint, res, elem, landed_elems )
+    def log( taint, res, landed_elems )
+        elem = res.request.performer
+
         res_hash = res.to_h
-        res_hash['headers'] = res_hash['headers']
+        res_hash['headers'] = {}.merge( res_hash['headers'] )
 
         result = {
             'taint'       => taint,
             'element'     =>  {
                 'type'      => elem.type,
-                'auditable' => elem.auditable,
-                'name'      => elem.raw['attrs'] ? elem.raw['attrs']['name'] : nil,
+                'auditable' => elem.inputs,
+                'name'      => elem.is_a?( Form ) ? elem.name_or_id : nil,
                 'altered'   => elem.altered,
                 'owner'     => elem.url,
                 'action'    => elem.action,
@@ -151,9 +153,9 @@ class Arachni::Plugins::Profiler < Arachni::Plugin::Base
         result['landed'] = landed_elems.map do |elem|
             {
                 'type'   => elem.type,
-                'method' => elem.method ? elem.method.upcase : nil,
-                'name'   => elem.raw['attrs'] ? elem.raw['attrs']['name'] : nil,
-                'auditable' => elem.auditable
+                'method' => elem.method.to_s.upcase,
+                'name'   => elem.is_a?( Form ) ? elem.name_or_id : nil,
+                'auditable' => elem.inputs
             }
         end
 

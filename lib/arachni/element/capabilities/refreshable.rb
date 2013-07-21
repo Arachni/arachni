@@ -32,15 +32,25 @@ module Capabilities::Refreshable
     #
     def refresh( http_opts = {}, &block )
         updated = nil
+        f       = nil
         http.get( url.to_s, http_opts.merge( mode: block_given? ? :async : :sync ) ) do |res|
             # find ourselves
-            f = self.class.from_response( res ).select { |f| f.id == id_from( :original ) }.first
+            f = self.class.from_response( res ).
+                select { |form| form.id == id_from( :original ) }.first
+
+            if !f
+                block.call( false ) if block_given?
+                next
+            end
+
             # get user updates
             updates = changes
             # update the form's inputs with the fresh ones and re-apply the user changes
-            updated = update( f.auditable ).update( updates )
+            updated = update( f.inputs ).update( updates )
             block.call( updated ) if block_given?
         end
+
+        return false if !f
         updated
     end
 

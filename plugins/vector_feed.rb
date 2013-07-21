@@ -129,22 +129,25 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
 
         e = case type
             when Element::LINK
-                Link.new( owner,
+                Link.new(
+                    url:    owner,
                     action: action,
                     inputs: inputs,
                 )
             when Element::FORM
-                Form.new( owner,
+                Form.new(
+                    url:    owner,
                     method: method,
                     action: action,
                     inputs: inputs
                 )
             when Element::COOKIE
-                Cookie.new( action, inputs )
+                Cookie.new( url: action, inputs: inputs )
                 when Element::HEADER
-                Header.new( action, inputs )
+                Header.new( url: action, inputs: inputs )
             else
-                Link.new( owner,
+                Link.new(
+                    url:    owner,
                     action: action,
                     inputs: inputs
                 )
@@ -216,7 +219,7 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
 
             },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.4',
+            version:     '0.1.5',
             options:     [
                 Options::Base.new( 'vectors', [false, ' Vector array (for configuration over RPC).'] ),
                 Options::String.new( 'yaml_string', [false, 'A string of YAML serialized vectors (for configuration over RPC).'] ),

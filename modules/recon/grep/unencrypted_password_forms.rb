@@ -21,23 +21,11 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.6
+# @version 0.1.7
 #
 # @see http://www.owasp.org/index.php/Top_10_2010-A9-Insufficient_Transport_Layer_Protection
 #
 class Arachni::Modules::UnencryptedPasswordForms < Arachni::Module::Base
-
-    def determine_name( input )
-        input['name'] || input['id']
-    end
-
-    def password?( input )
-        input['type'].to_s.downcase == 'password'
-    end
-
-    def check_form?( form )
-        uri_parse( form.action ).scheme.downcase == 'http' && form.raw['auditable']
-    end
 
     def run
         page.forms.each { |form| check_and_log( form ) }
@@ -46,15 +34,18 @@ class Arachni::Modules::UnencryptedPasswordForms < Arachni::Module::Base
     def check_and_log( form )
         return if !check_form?( form )
 
-        form.raw['auditable'].each do |input|
-            name = determine_name( input )
-            next if !password?( input ) || audited?( input ) || !name
+        form.inputs.each do |name, v|
+            next if form.field_type_for( name ) != :password || audited?( form.id )
 
             log( var: name, match: form.to_html, element: Element::FORM )
 
             print_ok( "Found unprotected password field '#{name}' at #{page.url}" )
-            audited( input )
+            audited form.id
         end
+    end
+
+    def check_form?( form )
+        uri_parse( form.action ).scheme.downcase == 'http'
     end
 
     def self.info
@@ -64,7 +55,7 @@ class Arachni::Modules::UnencryptedPasswordForms < Arachni::Module::Base
                 over an encrypted channel (HTTPS).},
             elements:    [ Element::FORM ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.1.6',
+            version:     '0.1.7',
             references:  {
                 'OWASP Top 10 2010' => 'http://www.owasp.org/index.php/Top_10_2010-A9-Insufficient_Transport_Layer_Protection'
             },

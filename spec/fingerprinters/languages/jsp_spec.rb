@@ -23,8 +23,9 @@ describe Arachni::Platform::Fingerprinters::JSP do
         it 'identifies it as JSP' do
             page = Arachni::Page.from_data(
                 url:     'http://stuff.com/blah',
-                cookies: [Arachni::Cookie.new( 'http://stuff.com/blah',
-                                               'JSESSIONID' => 'stuff' )]
+                cookies: [Arachni::Cookie.new(
+                              url: 'http://stuff.com/blah',
+                              inputs: { 'JSESSIONID' => 'stuff' } )]
 
             )
             platforms_for( page ).should include :jsp

@@ -35,7 +35,7 @@ class Request < Message
     ]
 
     # @return   [Integer]
-    #   Auto-incremented ID for this request (set by {HTTP#request}).
+    #   Auto-incremented ID for this request (set by {Client#request}).
     attr_accessor :id
 
     # @return [Hash]  Request parameters.
@@ -65,6 +65,10 @@ class Request < Message
     #
     # @see MODES
     attr_reader :mode
+
+    # Entity which performed the request -- mostly used to track which response
+    # was a result of which submitted element.
+    attr_accessor :performer
 
     # @private
     attr_accessor :root_redirect_id

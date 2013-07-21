@@ -73,13 +73,13 @@ end
 
 get '/with_nonce' do
     <<HTML
-    <form method="post" action="/form" name="my_form">
+    <form method="post" action="/get_nonce" name="my_form">
         <p>
             <input type="text" name="param_name" value="param_value">
         </p>
     </form>
 
-    <form method="post" action="/form" name="my_form">
+    <form method="post" action="/get_nonce" name="my_form">
         <p>
             <input type="text" name="param_name" value="param_value">
             <input type="hidden" name="nonce" value="#{rand(999)}">
@@ -88,6 +88,6 @@ get '/with_nonce' do
 HTML
 end
 
-get '/get_nonce' do
+post '/get_nonce' do
     params['nonce']
 end

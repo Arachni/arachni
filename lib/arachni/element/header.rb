@@ -22,19 +22,17 @@ HEADER = 'header'
 
 class Header < Arachni::Element::Base
 
-    def initialize( url, raw = {} )
-        super( url, raw )
+    def initialize( options )
+        super( options )
 
-        self.action    = @url
-        self.method    = 'get'
-        self.auditable = @raw
+        self.method = :get
+        self.inputs = options[:inputs]
 
-        @orig = self.auditable.dup
-        @orig.freeze
+        @original = self.inputs.dup.freeze
     end
 
     def simple
-        @auditable.dup
+        @inputs.dup
     end
 
     def mutations( injection_str, opts = {} )
@@ -53,7 +51,7 @@ class Header < Arachni::Element::Base
             elem.override_instance_scope
 
             elem.altered = 'Parameter flip'
-            elem.auditable = { injection_str => seed }
+            elem.inputs = { injection_str => seed }
             muts << elem
         end
 
@@ -62,12 +60,12 @@ class Header < Arachni::Element::Base
 
     # @return   [String]    Header name.
     def name
-        @auditable.first.first
+        @inputs.first.first
     end
 
     # @return   [String]    Header value.
     def value
-        @auditable.first.last
+        @inputs.first.last
     end
 
     def type

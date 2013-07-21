@@ -2,6 +2,16 @@
 
 ## _Under development_
 
+- `Arachni::Element`
+    - Cleaned up initializers.
+        - Now passed a single Hash argument with configuration options.
+    - `Capabilities::Auditable`
+        - `#auditable` => `#inputs`
+        - `#orig` => `#original`
+        - `#opts` => `#audit_options`
+        - `#audit` - Callback now get passed the HTTP response and element mutation
+            instead of response, audit options and mutation -- options can now be
+            accessed via the element's `#audit_options` attribute.
 - `Arachni::HTTP` expanded to be a complete wrapper around Typhoeus, providing:
     - `Headers`
     - `Message`

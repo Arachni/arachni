@@ -107,13 +107,13 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         vectors = []
         prepare_pages_for_inspection.each do |page|
             page.elements.each do |element|
-                next if element.auditable.empty?
+                next if element.inputs.empty?
 
                 vectors << {
                     type:   element.type,
                     method: element.method,
                     action: element.action,
-                    inputs: element.auditable
+                    inputs: element.inputs
                 }
             end
         end

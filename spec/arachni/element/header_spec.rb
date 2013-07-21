@@ -8,7 +8,7 @@ describe Arachni::Element::Header do
         @url = web_server_url_for( :header )
 
         @inputs = { 'My-header' => 'header_value' }
-        @header = Arachni::Element::Header.new( @url, @inputs )
+        @header = Arachni::Element::Header.new( url: @url, inputs: @inputs )
     end
 
     it 'is be assigned to Arachni::Header for easy access' do
@@ -22,7 +22,7 @@ describe Arachni::Element::Header do
     end
 
     it 'retains its assigned inputs' do
-        @header.auditable.should == @inputs
+        @header.inputs.should == @inputs
     end
 
     describe '#simple' do
@@ -35,7 +35,7 @@ describe Arachni::Element::Header do
         describe :param_flip do
             it 'creates a new header' do
                 @header.mutations( 'seed', param_flip: true ).last.
-                    auditable.keys.should == %w(seed)
+                    inputs.keys.should == %w(seed)
             end
         end
 

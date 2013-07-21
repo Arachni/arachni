@@ -12,7 +12,10 @@ describe name_from_filename do
     end
 
     before( :each ) do
-        http.cookie_jar << Arachni::Element::Cookie.new( url, 'logged_in' => 'true' )
+        http.cookie_jar << Arachni::Element::Cookie.new(
+            url: url,
+            inputs: { 'logged_in' => 'true' }
+        )
     end
 
     it 'logs forms that lack CSRF protection' do

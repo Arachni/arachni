@@ -60,7 +60,7 @@ module Mutable
 
         # Skip mutation with default/original values
         # (for {Arachni::Element::Form} elements).
-        skip_orig:  false,
+        skip_original:  false,
 
         # Flip injection value and input name.
         param_flip: false,
@@ -114,7 +114,7 @@ module Mutable
     #
     def mutations( injection_str, opts = {} )
         opts = MUTATION_OPTIONS.merge( opts )
-        hash = auditable.dup
+        hash = inputs.dup
 
         var_combo = []
         return [] if !hash || hash.empty?
@@ -131,7 +131,7 @@ module Mutable
                 elem = self.dup
                 elem.altered = k.dup
                 elem.format  = format
-                elem.auditable = chash.merge( { k => str } )
+                elem.inputs = chash.merge( { k => str } )
                 var_combo << elem
             end
 
@@ -250,7 +250,7 @@ module Mutable
 
         combos.each do |elem|
           altered = elem.altered
-          combo   = elem.auditable
+          combo   = elem.inputs
 
           print_debug '|'
           print_debug "|--> Auditing: #{altered}"

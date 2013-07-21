@@ -89,24 +89,25 @@ module Auditable::Taint
         end
 
         opts = self.class::OPTIONS.merge( TAINT_OPTIONS.merge( opts ) )
-        audit( payloads, opts ) { |res, c_opts| get_matches( res, c_opts ) }
+        audit( payloads, opts ) { |response| get_matches( response ) }
     end
 
     private
 
-    #
     # Tries to identify an issue through pattern matching.
     #
     # If a issue is found a message will be printed and the issue will be logged.
     #
-    # @param  [Arachni::HTTP::Response]  res
-    # @param  [Hash]  opts
-    #
-    def get_matches( res, opts )
+    # @param  [Arachni::HTTP::Response]  response
+    def get_matches( response )
+        opts = response.request.performer.audit_options.dup
         opts[:substring] = opts[:injected_orig] if !opts[:regexp] && !opts[:substring]
 
-        [opts[:regexp]].flatten.compact.each { |regexp| match_regexp_and_log( regexp, res, opts ) }
-        [opts[:substring]].flatten.compact.each { |substring| match_substring_and_log( substring, res, opts ) }
+        [opts[:regexp]].flatten.compact.
+            each { |regexp| match_regexp_and_log( regexp, response, opts ) }
+
+        [opts[:substring]].flatten.compact.
+            each { |substring| match_substring_and_log( substring, response, opts ) }
     end
 
     def match_substring_and_log( substring, res, opts )

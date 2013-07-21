@@ -14,7 +14,7 @@ get '/insecure' do
         </form>
 
         <form>
-            <input id='insecure_2' type='password' />
+            <input name='insecure_2' type='password' />
         </form>
 
         Will be ignored.

@@ -6,7 +6,7 @@ describe Arachni::Element::Cookie do
     before( :all ) do
         @url = web_server_url_for( :cookie ) + '/'
         @raw = { 'mycookie' => 'myvalue' }
-        @c = Arachni::Element::Cookie.new( @url, @raw )
+        @c = Arachni::Element::Cookie.new( url: @url, inputs: @raw )
         @http = Arachni::HTTP::Client.instance
     end
 
@@ -24,18 +24,23 @@ describe Arachni::Element::Cookie do
         context 'with hash key/pair' do
             describe '#simple' do
                 it 'returns name/val as a key/pair' do
-                    raw = { 'name' => 'val' }
-                    c = Arachni::Element::Cookie.new( @url, raw )
-                    c.simple.should == raw
+                    c = Arachni::Element::Cookie.new(
+                        url: @url,
+                        inputs: { 'name' => 'val' }
+                    )
+                    c.simple.should == { 'name' => 'val' }
                 end
             end
         end
         context 'with attributes' do
             describe '#simple' do
                 it 'returns name/val as a key/pair' do
-                    raw = { 'name' => 'myname', 'value' => 'myvalue' }
-                    c = Arachni::Element::Cookie.new( @url, raw )
-                    c.simple.should == { raw['name'] => raw['value'] }
+                    c = Arachni::Element::Cookie.new(
+                        url:   @url,
+                        name:  'myname',
+                        value: 'myvalue'
+                    )
+                    c.simple.should == { 'myname' => 'myvalue' }
                 end
             end
         end
@@ -44,8 +49,10 @@ describe Arachni::Element::Cookie do
     describe '#dup' do
         it 'preserves its action URL' do
             url = 'http://stuff.net'
-            raw = { 'name' => 'myname', 'value' => 'myvalue' }
-            c = Arachni::Element::Cookie.new( url, raw )
+            c = Arachni::Element::Cookie.new(
+                url: url,
+                inputs: { 'name' => 'myname', 'value' => 'myvalue' }
+            )
             c.action = url + '2'
             d = c.dup
             d.action.should == url + '2/'
@@ -56,7 +63,7 @@ describe Arachni::Element::Cookie do
     describe '#mutations' do
         describe :param_flip do
             it 'creates a new cookie' do
-                @c.mutations( 'seed', param_flip: true ).last.auditable.keys.should ==
+                @c.mutations( 'seed', param_flip: true ).last.inputs.keys.should ==
                     %w(seed)
             end
         end
@@ -89,10 +96,11 @@ describe Arachni::Element::Cookie do
     describe '#secure?' do
         context 'when set' do
             it 'returns true' do
-                Arachni::Element::Cookie.new( @url,
-                    'name'   => 'mycookie',
-                    'value'  => 'myvalue',
-                    'secure' => true
+                Arachni::Element::Cookie.new(
+                    url:    @url,
+                    name:  'mycookie',
+                    value: 'myvalue',
+                    secure: true
                 ).secure?.should be_true
             end
         end
@@ -107,10 +115,11 @@ describe Arachni::Element::Cookie do
     describe '#httponly?' do
         context 'when set' do
             it 'returns true' do
-                Arachni::Element::Cookie.new( @url,
-                    'name'   => 'mycookie',
-                    'value'  => 'myvalue',
-                    'httponly' => true
+                Arachni::Element::Cookie.new(
+                    url:      @url,
+                    name:     'mycookie',
+                    value:    'myvalue',
+                    httponly: true
                 ).http_only?.should be_true
             end
         end
@@ -125,20 +134,22 @@ describe Arachni::Element::Cookie do
     describe '#session?' do
         context 'when cookie is session cookie' do
             it 'returns true' do
-                Arachni::Element::Cookie.new( @url,
-                    'name'   => 'mycookie',
-                    'value'  => 'myvalue',
-                    'httponly' => true
+                Arachni::Element::Cookie.new(
+                    url:      @url,
+                    name:     'mycookie',
+                    value:    'myvalue',
+                    httponly: true
                 ).session?.should be_true
             end
         end
 
         context 'when cookie is not session cookie' do
             it 'returns false' do
-                Arachni::Element::Cookie.new( @url,
-                    'name'   => 'mycookie',
-                    'value'  => 'myvalue',
-                    'expires' => Time.now
+                Arachni::Element::Cookie.new(
+                    url:     @url,
+                    name:    'mycookie',
+                    value:   'myvalue',
+                    expires: Time.now
                 ).session?.should be_false
             end
         end
@@ -148,20 +159,22 @@ describe Arachni::Element::Cookie do
         context 'when expiry date is set' do
             context 'and has expired' do
                 it 'returns true' do
-                    Arachni::Element::Cookie.new( @url,
-                        'name'  => '',
-                        'value' => '',
-                        'expires' => Time.at( 0 )
+                    Arachni::Element::Cookie.new(
+                        url:     @url,
+                        name:    '',
+                        value:   '',
+                        expires: Time.at( 0 )
                     ).expired?
                 end
             end
 
             context 'and has not expired' do
                 it 'returns false' do
-                    Arachni::Element::Cookie.new( @url,
-                        'name'  => '',
-                        'value' => '',
-                        'expires' => Time.now + 999999
+                    Arachni::Element::Cookie.new(
+                        url:     @url,
+                        name:    '',
+                        value:   '',
+                        expires: Time.now + 999999
                     ).expired?.should be_false
                 end
             end
@@ -195,9 +208,10 @@ describe Arachni::Element::Cookie do
 
     describe '#to_s' do
         it 'returns a string representation of the cookie' do
-            c = Arachni::Element::Cookie.new( @url,
-                                                      'name'  => 'blah=ha%',
-                                                      'value' => 'some stuff ;',
+            c = Arachni::Element::Cookie.new(
+                url:    @url,
+                name:  'blah=ha%',
+                value: 'some stuff ;',
             )
             c.to_s.should == 'blah%3Dha%25=some+stuff+%3B'
         end
@@ -205,12 +219,13 @@ describe Arachni::Element::Cookie do
 
     describe '#auditable=' do
         it 'properly encodes the value before storing it' do
-            c = Arachni::Element::Cookie.new( @url,
-                                                      'name'  => 'blah',
-                                                      'value' => 'some stuff ;',
+            c = Arachni::Element::Cookie.new(
+                url:   @url,
+                name:  'blah',
+                value: 'some stuff ;',
             )
 
-            c.auditable.values.first.should == 'some stuff ;'
+            c.inputs.values.first.should == 'some stuff ;'
         end
     end
 
@@ -222,7 +237,7 @@ describe Arachni::Element::Cookie do
             cookie = cookies.shift
             cookie.action.should == @url
             cookie.url.should == @url
-            cookie.auditable.should == { 'first_name' => 'first_value' }
+            cookie.inputs.should == { 'first_name' => 'first_value' }
             cookie.simple.should == { 'first_name' => 'first_value' }
             cookie.domain.should == '.domain.com'
             cookie.path.should == '/path/to/somewhere'
@@ -235,7 +250,7 @@ describe Arachni::Element::Cookie do
             cookie = cookies.shift
             cookie.action.should == @url
             cookie.url.should == @url
-            cookie.auditable.should == { 'second_name' => 'second_value' }
+            cookie.inputs.should == { 'second_name' => 'second_value' }
             cookie.simple.should == { 'second_name' => 'second_value' }
             cookie.domain.should == 'another-domain.com'
             cookie.path.should == '/'
@@ -248,7 +263,7 @@ describe Arachni::Element::Cookie do
             cookie = cookies.shift
             cookie.action.should == @url
             cookie.url.should == @url
-            cookie.auditable.should == { 'NAME' => 'OP5jTLV6VhYHADJAbJ1ZR@L8~081210' }
+            cookie.inputs.should == { 'NAME' => 'OP5jTLV6VhYHADJAbJ1ZR@L8~081210' }
             cookie.simple.should == { 'NAME' => 'OP5jTLV6VhYHADJAbJ1ZR@L8~081210' }
             cookie.domain.should == '.blah-domain'
             cookie.path.should == '/'
@@ -261,7 +276,7 @@ describe Arachni::Element::Cookie do
             cookie = cookies.shift
             cookie.action.should == @url
             cookie.url.should == @url
-            cookie.auditable.should == { '_superapp_session' => 'BAh7CkkiD3Nlc3Npb25faWQGOgZFRiIlNWMyOWY5MjE5YmU0MWMzMWM0ZGQxNTdkNzJkOTFmZTRJIhBfY3NyZl90b2tlbgY7AEZJIjF6RStYQzdONGxScUZybWxhbUwwUDI2RWZuai9laWVsS3FKRXhZYnlQUmJjPQY7AEZJIgtsb2NhbGUGOwBGSSIHZW4GOwBGSSIVdXNlcl9jcmVkZW50aWFscwY7AEZJIgGAOThiOGU5ZTcwMDFlOGI4N2IzNjQxMjlkNWYxNGExYzg3NjY5ZjE1ZjFjMDM3MWJiNjg1OGFlOTBlNjQxM2I1Y2JiODlkNTExMjU1MzBhMDk0ZjlmN2JlNjAyZTMzMjYxNzc5OGM2OTg1ZGRlYzgxNmFlZmEzYmRjNDk4YTBjNzcGOwBUSSIYdXNlcl9jcmVkZW50aWFsc19pZAY7AEZpBg%3D%3D--810acaa3759101ed79740e25de31e0c5bad76cdc' }
+            cookie.inputs.should == { '_superapp_session' => 'BAh7CkkiD3Nlc3Npb25faWQGOgZFRiIlNWMyOWY5MjE5YmU0MWMzMWM0ZGQxNTdkNzJkOTFmZTRJIhBfY3NyZl90b2tlbgY7AEZJIjF6RStYQzdONGxScUZybWxhbUwwUDI2RWZuai9laWVsS3FKRXhZYnlQUmJjPQY7AEZJIgtsb2NhbGUGOwBGSSIHZW4GOwBGSSIVdXNlcl9jcmVkZW50aWFscwY7AEZJIgGAOThiOGU5ZTcwMDFlOGI4N2IzNjQxMjlkNWYxNGExYzg3NjY5ZjE1ZjFjMDM3MWJiNjg1OGFlOTBlNjQxM2I1Y2JiODlkNTExMjU1MzBhMDk0ZjlmN2JlNjAyZTMzMjYxNzc5OGM2OTg1ZGRlYzgxNmFlZmEzYmRjNDk4YTBjNzcGOwBUSSIYdXNlcl9jcmVkZW50aWFsc19pZAY7AEZpBg%3D%3D--810acaa3759101ed79740e25de31e0c5bad76cdc' }
             cookie.simple.should == { '_superapp_session' => 'BAh7CkkiD3Nlc3Npb25faWQGOgZFRiIlNWMyOWY5MjE5YmU0MWMzMWM0ZGQxNTdkNzJkOTFmZTRJIhBfY3NyZl90b2tlbgY7AEZJIjF6RStYQzdONGxScUZybWxhbUwwUDI2RWZuai9laWVsS3FKRXhZYnlQUmJjPQY7AEZJIgtsb2NhbGUGOwBGSSIHZW4GOwBGSSIVdXNlcl9jcmVkZW50aWFscwY7AEZJIgGAOThiOGU5ZTcwMDFlOGI4N2IzNjQxMjlkNWYxNGExYzg3NjY5ZjE1ZjFjMDM3MWJiNjg1OGFlOTBlNjQxM2I1Y2JiODlkNTExMjU1MzBhMDk0ZjlmN2JlNjAyZTMzMjYxNzc5OGM2OTg1ZGRlYzgxNmFlZmEzYmRjNDk4YTBjNzcGOwBUSSIYdXNlcl9jcmVkZW50aWFsc19pZAY7AEZpBg%3D%3D--810acaa3759101ed79740e25de31e0c5bad76cdc' }
             cookie.domain.should == '192.168.1.1'
             cookie.path.should == '/'
@@ -354,7 +369,7 @@ describe Arachni::Element::Cookie do
             sc = "SomeCookie=MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA%3D%3D"
             c1 = Arachni::Element::Cookie.from_set_cookie( 'http://test.com', sc ).first
 
-            c1.should == Arachni::Element::Cookie.parse_set_cookie( 'http://test.com', sc ).first
+            c1.should == Arachni::Element::Cookie.from_set_cookie( 'http://test.com', sc ).first
 
             sc2 = "SomeCookie=\"MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA==\""
             c2 = Arachni::Element::Cookie.from_set_cookie( 'http://test.com', sc2 ).first

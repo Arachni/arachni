@@ -562,10 +562,12 @@ describe Arachni::RPC::Server::Framework::Distributor do
             it 'restricts the audit to these elements' do
 
                 ids = []
-                ids << Arachni::Element::Link.new( @url + '/vulnerable',
+                ids << Arachni::Element::Link.new(
+                    url:    @url + '/vulnerable',
                     inputs: { '0_vulnerable_20' => 'stuff20' }
                 ).scope_audit_id
-                ids << Arachni::Element::Link.new( @url + '/vulnerable',
+                ids << Arachni::Element::Link.new(
+                    url:    @url + '/vulnerable',
                     inputs: { '9_vulnerable_30' => 'stuff30' }
                 ).scope_audit_id
 
@@ -590,7 +592,8 @@ describe Arachni::RPC::Server::Framework::Distributor do
                     @opts.url = web_server_url_for( :auditor ) + '/train/default'
                     url = @opts.url.to_s
 
-                    id = Arachni::Element::Form.new( url + '?',
+                    id = Arachni::Element::Form.new(
+                        url:    url + '?',
                         inputs: { 'step_1' => 'form_blah_step_1' }
                     ).scope_audit_id
 
@@ -612,10 +615,12 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
                 exp_urls = []
                 links = []
-                links << Arachni::Element::Link.new( @url + '/vulnerable?2_vulnerable_20=stuff20',
+                links << Arachni::Element::Link.new(
+                    url:    @url + '/vulnerable?2_vulnerable_20=stuff20',
                     inputs: { '2_vulnerable_20' => 'stuff20' }
                 )
-                links << Arachni::Element::Link.new( @url + '/vulnerable?5_vulnerable_30=stuff30',
+                links << Arachni::Element::Link.new(
+                    url:    @url + '/vulnerable?5_vulnerable_30=stuff30',
                     inputs: { '5_vulnerable_30' => 'stuff30' }
                 )
                 exp_urls |= links.map { |l| l.url }
@@ -627,10 +632,12 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 )
 
                 links = []
-                links << Arachni::Element::Link.new( @url + '/vulnerable?6_vulnerable_12=stuff12',
+                links << Arachni::Element::Link.new(
+                    url:    @url + '/vulnerable?6_vulnerable_12=stuff12',
                     inputs: { '6_vulnerable_12' => 'stuff12' }
                 )
-                links << Arachni::Element::Link.new( @url + '/vulnerable?0_vulnerable_23=stuff23',
+                links << Arachni::Element::Link.new(
+                    url:    @url + '/vulnerable?0_vulnerable_23=stuff23',
                     inputs: { '0_vulnerable_23' => 'stuff23' }
                 )
 

@@ -17,7 +17,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.4
+# @version 0.1.5
 #
 class Arachni::Plugins::FormDicattack < Arachni::Plugin::Base
 
@@ -49,8 +49,7 @@ class Arachni::Plugins::FormDicattack < Arachni::Plugin::Base
             return
         end
 
-        name = form.raw['attrs']['name'] ? form.raw['attrs']['name'] : '<n/a>'
-        print_status "Found log-in form with name: #{name}"
+        print_status "Found log-in form with name: #{form.name_or_id || '<n/a>'}"
 
         print_status 'Building the request queue...'
 
@@ -108,7 +107,7 @@ class Arachni::Plugins::FormDicattack < Arachni::Plugin::Base
                 framework-wide and used for the duration of the audit.
                 If that's not what you want set the crawler's link-count limit to "0".},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.4',
+            version:     '0.1.5',
             options:     [
                 Options::Path.new( 'username_list', [true, 'File with a list of usernames (newline separated).'] ),
                 Options::Path.new( 'password_list', [true, 'File with a list of passwords (newline separated).'] ),

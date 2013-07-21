@@ -37,8 +37,9 @@ describe Arachni::Platform::Fingerprinters::PHP do
         it 'identifies it as PHP' do
             page = Arachni::Page.from_data(
                 url:     'http://stuff.com/blah',
-                cookies: [Arachni::Cookie.new( 'http://stuff.com/blah',
-                                               'PHPSESSID' => 'stuff' )]
+                cookies: [Arachni::Cookie.new(
+                              url: 'http://stuff.com/blah',
+                              inputs: { 'PHPSESSID' => 'stuff' } )]
 
             )
             platforms_for( page ).should include :php

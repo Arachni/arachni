@@ -102,7 +102,13 @@ class CookieJar
                         when String
                             Cookie.from_string( ::Arachni::Options.url.to_s, c )
                         when Hash
-                            Cookie.new( ::Arachni::Options.url.to_s, c ) if c.any?
+                            next if c.empty?
+
+                            if c.size > 1
+                                Cookie.new( { url: ::Arachni::Options.url.to_s }.merge( c ) )
+                            else
+                                Cookie.new( url: ::Arachni::Options.url.to_s, inputs: c )
+                            end
                         when Cookie
                             c
                     end

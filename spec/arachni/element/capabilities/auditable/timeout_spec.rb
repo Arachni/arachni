@@ -8,17 +8,17 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
 
         inputs = { 'sleep' => '' }
 
-        @positive = Arachni::Element::Link.new( @url + '/true', inputs )
+        @positive = Arachni::Element::Link.new( url: @url + '/true', inputs: inputs )
         @positive.auditor = @auditor
         @positive.disable_deduplication
 
         @positive_high_res = Arachni::Element::Link.new(
-            @url + '/high_response_time',
-            inputs
+            url:    @url + '/high_response_time',
+            inputs: inputs
         )
         @positive_high_res.auditor = @auditor
 
-        @negative = Arachni::Element::Link.new( @url + '/false', inputs )
+        @negative = Arachni::Element::Link.new( url: @url + '/false', inputs: inputs )
         @negative.auditor = @auditor
         @negative.disable_deduplication
 
@@ -33,12 +33,12 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
     describe '#responsive?' do
         context 'when the server is responsive' do
             it 'returns true' do
-                Arachni::Element::Link.new( @url + '/true' ).responsive?.should be_true
+                Arachni::Element::Link.new( url: @url + '/true' ).responsive?.should be_true
             end
         end
         context 'when the server is not responsive' do
             it 'returns false' do
-                Arachni::Element::Link.new( @url + '/sleep' ).responsive?( 1 ).should be_false
+                Arachni::Element::Link.new( url: @url + '/sleep' ).responsive?( 1 ).should be_false
             end
         end
     end
@@ -54,8 +54,10 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
 
         context 'when the element action matches a skip rule' do
             it 'returns false' do
-                auditable = Arachni::Element::Link.new( 'http://stuff.com/',
-                                                        { 'input' => '' } )
+                auditable = Arachni::Element::Link.new(
+                    url:    'http://stuff.com/',
+                    inputs: { 'input' => '' }
+                )
                 auditable.timeout_analysis( '__TIME__', @timeout_opts.merge( timeout: 2000 ) ).should be_false
             end
         end
@@ -94,7 +96,6 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
 
                     issues.should be_any
                     issues.first.injected.should == '8'
-                    #issues.first.verification.should be_true
                 end
             end
 
@@ -107,7 +108,6 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
 
                     issues.should be_any
                     issues.first.injected.should == 8000.to_s
-                    #issues.first.verification.should be_true
                 end
             end
         end

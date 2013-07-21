@@ -34,7 +34,7 @@
     </p>
     <p>
         <ul>
-            <% form.auditable.each do |k, v| %>
+            <% form.inputs.each do |k, v| %>
                 <li><%= k.inspect %> = <%= v.inspect %></li>
             <% end %>
         </ul>

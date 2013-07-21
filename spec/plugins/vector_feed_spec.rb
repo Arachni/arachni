@@ -68,7 +68,7 @@ describe name_from_filename do
                 page.cookies.size.should == 1
                 cookie = v.select { |vector| vector['type'] == 'cookie' }.first
                 page.cookies.first.action.should == cookie['action']
-                page.cookies.first.auditable.should == cookie['inputs']
+                page.cookies.first.inputs.should == cookie['inputs']
 
                 page.url.should  == cookie['action']
                 page.code.should == 200
@@ -80,7 +80,7 @@ describe name_from_filename do
             if page.links.any?
                 link = v.select { |vector| vector['type'] == 'link' }.first
                 page.links.first.action.should == link['action']
-                page.links.first.auditable.should == link['inputs']
+                page.links.first.inputs.should == link['inputs']
 
                 page.url.should  == url
                 page.code.should == 200
@@ -92,7 +92,7 @@ describe name_from_filename do
             if page.forms.any?
                 form = v.select { |vector| vector['type'] == 'form' }.first
                 page.forms.first.action.should == form['action']
-                page.forms.first.auditable.should == form['inputs']
+                page.forms.first.inputs.should == form['inputs']
 
                 page.forms.first.immutables.include?( form['skip'].first ).should be_true
 
@@ -106,7 +106,7 @@ describe name_from_filename do
             if page.headers.any?
                 header = v.select { |vector| vector['type'] == 'header' }.first
                 page.headers.first.action.should == header['action']
-                page.headers.first.auditable.should == header['inputs']
+                page.headers.first.inputs.should == header['inputs']
 
                 page.url.should  == header['action']
                 page.code.should == 200

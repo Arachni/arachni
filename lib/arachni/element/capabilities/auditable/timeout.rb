@@ -146,7 +146,7 @@ module Auditable::Timeout
         # * Stabilize responsiveness: Wait for the effects of the timing attack to wear off
         #
         def @@parent.timeout_analysis_phase_2( elem )
-            opts = elem.opts
+            opts = elem.audit_options
             injected_timeout = opts[:timeout] *= 2
 
             str = opts[:timing_string].gsub( '__TIME__',
@@ -154,7 +154,7 @@ module Auditable::Timeout
 
             opts[:timeout] *= 0.7
 
-            elem.auditable = elem.orig
+            elem.inputs = elem.original
 
             # this is the control; request the URL of the element to make sure
             # that the web page is alive i.e won't time-out by default
@@ -173,7 +173,7 @@ module Auditable::Timeout
                         next
                     end
 
-                    elem.opts[:timeout] = injected_timeout
+                    elem.audit_options[:timeout] = injected_timeout
 
                     if deduplicate?
                         next if @@timeout_candidate_phase3_ids.include?( elem.audit_id )
@@ -204,7 +204,7 @@ module Auditable::Timeout
         end
 
         def @@parent.timeout_analysis_phase_3( elem )
-            opts = elem.opts
+            opts = elem.audit_options
             opts[:timeout] *= 2
 
             str = opts[:timing_string].
@@ -212,7 +212,7 @@ module Auditable::Timeout
 
             opts[:timeout] *= 0.7
 
-            elem.auditable = elem.orig
+            elem.inputs = elem.original
 
             # this is the control; request the URL of the element to make sure
             # that the web page is alive i.e won't time-out by default
@@ -225,16 +225,13 @@ module Auditable::Timeout
                 end
 
                 elem.print_info 'Phase 3: Liveness check was successful, progressing to verification...'
-                elem.audit( str, opts ) do |c_res, c_opts|
+                elem.audit( str, opts ) do |c_res|
                     if !c_res.timed_out?
                         elem.print_info 'Phase 3: Verification failed.'
                         next
                     end
 
-                    # Not sure about this yet...
-                    #c_opts[:verification] = true
-
-                    elem.auditor.log( c_opts, c_res )
+                    elem.auditor.log( c_res.request.performer.audit_options, c_res )
                     elem.responsive?
                 end
 
@@ -362,22 +359,22 @@ module Auditable::Timeout
     #
     def responsive?( limit = 120.0 )
         d_opts = {
-            skip_orig: true,
-            redundant: true,
-            timeout:   limit * 1000,
-            silent:    true,
-            mode:      :sync
+            skip_original: true,
+            redundant:     true,
+            timeout:       limit * 1000,
+            silent:        true,
+            mode:          :sync
         }
 
-        orig_opts = opts
+        orig_opts = @audit_options.dup
 
         print_info 'Waiting for the effects of the timing attack to wear off.'
         print_info "Max waiting time: #{limit} seconds."
 
-        @auditable = @orig
+        @auditable = @original.dup
         res = submit( d_opts )
 
-        @opts.merge!( orig_opts )
+        @audit_options.merge!( orig_opts )
 
         if !res.timed_out?
             print_info 'Server seems responsive again.'
@@ -411,7 +408,7 @@ module Auditable::Timeout
     #   Options as described in {Arachni::Element::Mutable::OPTIONS}.
     # @param    [Block]     block
     #   Block to call if a timeout occurs, it will be passed the
-    #   {Arachni::HTTP::Response response} and `opts`.
+    #   {Arachni::HTTP::Response response} and element mutation.
     #
     def timing_attack( payloads, opts, &block )
         opts = opts.dup
@@ -425,16 +422,18 @@ module Auditable::Timeout
 
             # Preserve the original because it's going to be needed for the
             # verification phases.
-            mutation.opts[:timing_string] = injected
+            mutation.audit_options[:timing_string] = injected
 
             mutation.altered_value = injected.gsub( '__TIME__', delay.to_s )
         end
 
-        opts.merge!( each_mutation: each_mutation, skip_orig: true )
+        opts.merge!( each_mutation: each_mutation, skip_original: true )
 
-        audit( payloads, opts ) do |res, _, elem|
-            call_on_timing_blocks( res, elem )
-            block.call( elem ) if block && res.timed_out?
+        audit( payloads, opts ) do |response|
+            call_on_timing_blocks( response, response.request.performer )
+            next if !block || !response.timed_out?
+
+            block.call( response.request.performer )
         end
     end
 

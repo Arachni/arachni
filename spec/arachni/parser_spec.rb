@@ -11,8 +11,8 @@ describe Arachni::Parser do
 
         @opts.cookies = [
             Arachni::Element::Cookie.new(
-                @url,
-                { 'name_from_cookiejar' => 'val_from_cookiejar' }
+                url:    @url,
+                inputs: { 'name_from_cookiejar' => 'val_from_cookiejar' }
             )
         ]
 
@@ -38,7 +38,7 @@ describe Arachni::Parser do
             page.response.should == @response
             page.paths.should == @parser.paths
 
-            link = Arachni::Element::Link.new( @url, inputs: @parser.link_vars )
+            link = Arachni::Element::Link.new( url: @url, inputs: @parser.link_vars )
 
             page.links.should == @parser.links | [link]
             page.forms.should == @parser.forms
@@ -149,7 +149,7 @@ describe Arachni::Parser do
                 )
                 parser = Arachni::Parser.new( response, @opts )
                 parser.links.size == 1
-                parser.links.first.auditable.should == { 'stuff' => 'ba' }
+                parser.links.first.inputs.should == { 'stuff' => 'ba' }
             end
         end
         context 'otherwise' do
@@ -182,55 +182,16 @@ describe Arachni::Parser do
             form.action.should == @utils.normalize_url( @opts.url + '/form' )
             form.url.should == @url
 
-            form.auditable.should == {
+            form.inputs.should == {
                 "form_input_1" => "form_val_1",
                 "form_input_2" => "form_val_2"
             }
-            form.method.should == 'post'
-            form.raw.should == {
-                    "attrs" => {
-                    "method" => "post",
-                    "action" => form.action,
-                      "name" => "my_form"
-                },
-                 "textarea" => [],
-                   "select" => [],
-                    "input" => [
-                    {
-                         "type" => "text",
-                         "name" => "form_input_1",
-                        "value" => "form_val_1"
-                    },
-                    {
-                         "type" => "text",
-                         "name" => "form_input_2",
-                        "value" => "form_val_2"
-                    },
-                    {
-                        "type" => "submit"
-                    }
-                ],
-                "auditable" => [
-                    {
-                         "type" => "text",
-                         "name" => "form_input_1",
-                        "value" => "form_val_1"
-                    },
-                    {
-                         "type" => "text",
-                         "name" => "form_input_2",
-                        "value" => "form_val_2"
-                    },
-                    {
-                        "type" => "submit"
-                    }
-                ]
-            }
+            form.method.should == :post
 
             form = @parser.forms.last
             form.action.should == @utils.normalize_url( @opts.url + '/form_2')
             form.url.should == @url
-            form.auditable.should == { "form_2_input_1" => "form_2_val_1" }
+            form.inputs.should == { "form_2_input_1" => "form_2_val_1" }
         end
 
         context 'when passed secondary responses' do
@@ -260,26 +221,26 @@ describe Arachni::Parser do
 
             cookie = cookies.pop
             cookie.action.should == @url
-            cookie.auditable.should == { 'cookie_input' => 'cookie_val' }
-            cookie.method.should == 'get'
+            cookie.inputs.should == { 'cookie_input' => 'cookie_val' }
+            cookie.method.should == :get
             cookie.secure?.should be_true
             cookie.http_only?.should be_true
             cookie.url.should == @url
 
             cookie = cookies.pop
             cookie.action.should == @url
-            cookie.auditable.should == { 'cookie_input2' => 'cookie_val2' }
-            cookie.method.should == 'get'
+            cookie.inputs.should == { 'cookie_input2' => 'cookie_val2' }
+            cookie.method.should == :get
             cookie.secure?.should be_false
             cookie.http_only?.should be_false
             cookie.url.should == @url
 
             cookie = cookies.pop
             cookie.action.should == @url
-            cookie.auditable.should == { "http_equiv_cookie_name" => "http_equiv_cookie_val" }
+            cookie.inputs.should == { "http_equiv_cookie_name" => "http_equiv_cookie_val" }
             cookie.secure?.should be_true
             cookie.http_only?.should be_true
-            cookie.method.should == 'get'
+            cookie.method.should == :get
             cookie.url.should == @url
         end
     end
@@ -304,14 +265,14 @@ describe Arachni::Parser do
 
                 link = links.first
                 link.action.should == @utils.normalize_url( @url )
-                link.auditable.should == { 'query_var_input' => 'query_var_val' }
-                link.method.should == 'get'
+                link.inputs.should == { 'query_var_input' => 'query_var_val' }
+                link.method.should == :get
                 link.url.should == @url
 
                 link = links.last
                 link.action.should == @utils.normalize_url( @opts.url + '/link?link_input=link_val' )
-                link.auditable.should == { 'link_input' => 'link_val' }
-                link.method.should == 'get'
+                link.inputs.should == { 'link_input' => 'link_val' }
+                link.method.should == :get
                 link.url.should == @url
             end
         end
@@ -355,14 +316,14 @@ describe Arachni::Parser do
 
                 link = links.first
                 link.action.should == @url_with_base
-                link.auditable.should ==  { 'stuff' => 'ha' }
-                link.method.should == 'get'
+                link.inputs.should ==  { 'stuff' => 'ha' }
+                link.method.should == :get
                 link.url.should == @url_with_base
 
                 link = links.last
                 link.action.should == @parser_with_base.base + 'link_with_base?link_input=link_val'
-                link.auditable.should == { 'link_input' => 'link_val' }
-                link.method.should == 'get'
+                link.inputs.should == { 'link_input' => 'link_val' }
+                link.method.should == :get
                 link.url.should == @url_with_base
             end
         end

@@ -29,7 +29,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1
+# @version 0.1.1
 #
 class Arachni::Modules::SessionFixation < Arachni::Module::Base
 
@@ -53,10 +53,12 @@ class Arachni::Modules::SessionFixation < Arachni::Module::Base
                 name = cookie.name
                 print_info "Found session cookie named: #{name}"
 
-                audit( token ) do |response, opts, _|
-                    cookie = cookies_from_response( response ).select { |c| c.name == name }.first
+                audit( token ) do |response, element|
+                    cookie = cookies_from_response( response ).
+                        select { |c| c.name == name }.first
                     next if !cookie || !cookie.value.include?( token )
-                    log( opts, response )
+
+                    log( element.audit_options, response )
                 end
             end
         end
@@ -68,7 +70,7 @@ class Arachni::Modules::SessionFixation < Arachni::Module::Base
             description: %q{Checks whether or not the session cookie can be set to an arbitrary value.},
             elements:    [ Element::FORM, Element::LINK ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1',
+            version:     '0.1.1',
             references:  {
                  'OWASP - Session fixation' => 'hhttps://www.owasp.org/index.php/Session_fixation'
              },

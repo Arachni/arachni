@@ -20,19 +20,25 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1
+# @version 0.1.1
 #
 class Arachni::Modules::PasswordAutocomplete < Arachni::Module::Base
 
     def run
         page.forms.each do |form|
             next if !form.requires_password?
-            next if form.raw['attrs'] && form.raw['attrs']['autocomplete'] == 'off'
-            next if form.raw['input'].map { |i| i['autocomplete'] == 'off' }.
-                                    include?( true )
+            next if form.simple[:autocomplete] == 'off'
+            next if has_input_with_autocomplete_off? form
 
             log( var: form.name_or_id, match: form.to_html, element: Element::FORM )
         end
+    end
+
+    def has_input_with_autocomplete_off?( form )
+        form.inputs.each do |k, v|
+            return true if form.details_for( k )[:autocomplete] == 'off'
+        end
+        false
     end
 
     def self.info
@@ -42,7 +48,7 @@ class Arachni::Modules::PasswordAutocomplete < Arachni::Module::Base
                 without explicitly disabling auto-complete.},
             elements:    [ Element::FORM ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1',
+            version:     '0.1.1',
             targets:     %w(Generic),
             issue:       {
                 name:        %q{Password field with auto-complete},

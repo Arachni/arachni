@@ -42,7 +42,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.3.1
+# @version 0.3.2
 #
 # @see http://en.wikipedia.org/wiki/Cross-site_request_forgery
 # @see http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)
@@ -58,7 +58,7 @@ class Arachni::Modules::CSRF < Arachni::Module::Base
         # request page without cookies, simulating a logged-out user
         http.get( page.url, cookies: {}, no_cookiejar: true ) do |res|
             # extract forms from the body of the response
-            logged_out = forms_from_response( res ).reject { |f| f.auditable.empty? }
+            logged_out = forms_from_response( res ).reject { |f| f.inputs.empty? }
 
             print_status "Found #{logged_out.size} context irrelevant forms."
 
@@ -86,9 +86,9 @@ class Arachni::Modules::CSRF < Arachni::Module::Base
         # Nobody says that tokens must be in a +value+ attribute, they can
         # just as well be in +name+ -- so we check them both...
         #
-        found_token = (form.raw['auditable'] || []).map do |input|
-            next if !input['type'] || input['type'].downcase != 'hidden'
-            csrf_token?( input['value'] ) || csrf_token?( input['name'] )
+        found_token = (form.inputs || []).map do |k, v|
+            next if form.field_type_for( k ) != :hidden
+            csrf_token?( v ) || csrf_token?( k )
         end.include?( true )
 
         return false if found_token
@@ -143,10 +143,8 @@ class Arachni::Modules::CSRF < Arachni::Module::Base
     end
 
     def _log( form )
-        return if !form.raw['attrs']
-
         url  = form.action
-        name = form.raw['attrs']['name'] || form.raw['attrs']['id']
+        name = form.name_or_id
 
         if audited?( "#{url}::#{name}" )
             print_info "Skipping already audited form '#{name}' at '#{page.url}'"
@@ -167,7 +165,7 @@ class Arachni::Modules::CSRF < Arachni::Module::Base
                 It requires a logged-in user's cookie-jar.},
             elements:    [ Element::FORM ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.3.1',
+            version:     '0.3.2',
             references:  {
                 'Wikipedia'    => 'http://en.wikipedia.org/wiki/Cross-site_request_forgery',
                 'OWASP'        => 'http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)',

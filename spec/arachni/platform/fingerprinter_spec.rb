@@ -22,8 +22,8 @@ describe Arachni::Platform::Fingerprinter do
             page = Arachni::Page.new(
                 url: 'http://stuff.com/?A=B',
                 cookies: [ Arachni::Cookie.new(
-                               'http://stuff.com/?A=B',
-                               { 'nAmE' => 'vAlUe' }
+                               url:    'http://stuff.com/?A=B',
+                               inputs: { 'nAmE' => 'vAlUe' }
                            )]
             )
             described_class.new( page ).cookies.should ==

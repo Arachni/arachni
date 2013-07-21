@@ -39,18 +39,19 @@ class Base
     include Capabilities::Auditable
     extend  Utilities
 
-    # @return  [Hash]
-    #   'raw' (frozen) hash holding the element's HTML attributes, values, etc.
-    attr_reader :raw
+    def initialize( options )
+        options = options.symbolize_keys
 
-    # @param    [String]  url     {#url}
-    # @param    [Hash]    raw     {#raw}
-    def initialize( url, raw = {} )
-        @raw = raw.dup
-        @raw.freeze
-        self.url = url.to_s
+        if !(options[:url] || options[:action])
+            fail 'Needs :url or :action option.'
+        end
 
-        @opts = {}
+        super
+
+        @initialised_options = options.deep_clone
+
+        self.url    = options[:url]    || options[:action]
+        self.action = options[:action] || self.url
     end
 
     # @return   [Platform]
@@ -62,7 +63,7 @@ class Base
     # @return  [String] String uniquely identifying self.
     # @abstract
     def id
-        @raw.to_s
+        "#{action}:#{method}:#{inputs}"
     end
 
     # @return   [Hash] Simple representation of self.
@@ -80,13 +81,12 @@ class Base
     # @return [Symbol]  HTTP request method for the element.
     def method( *args )
         return super( *args ) if args.any?
-
         @method.freeze
     end
 
     # @see #method
     def method=( method )
-        @method = method
+        @method = method.to_s.downcase.to_sym
         rehash
         self.method
     end
@@ -125,13 +125,14 @@ class Base
     end
 
     def dup
-        new = self.class.new( @url ? @url.dup : nil, @raw.dup )
+        new = self.class.new( @initialised_options )
         new.override_instance_scope if override_instance_scope?
-        new.auditor   = self.auditor
-        new.method    = self.method.dup
-        new.altered   = self.altered.dup if self.altered
-        new.format    = self.format
-        new.auditable = self.auditable.dup
+        new.auditor = self.auditor
+        new.method  = self.method
+        new.altered = self.altered.dup if self.altered
+        new.format  = self.format
+        new.audit_options  = self.audit_options.dup
+        new.inputs  = self.inputs.dup
         new
     end
 

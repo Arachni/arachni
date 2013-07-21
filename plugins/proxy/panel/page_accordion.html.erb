@@ -24,7 +24,7 @@
                                     (method <%= form.method.to_s.upcase %>)
                                 </b>
                                 <ul>
-                                    <% form.auditable.each do |k, v| %>
+                                    <% form.inputs.each do |k, v| %>
                                         <li><%= k.inspect %> = <%= v.inspect %></li>
                                     <% end %>
                                 </ul>
@@ -38,7 +38,7 @@
                             <p>
                                 <b>Action: <%= html_encode link.action %></b>
                             <ul>
-                                <% link.auditable.each do |k, v| %>
+                                <% link.inputs.each do |k, v| %>
                                     <li><%= k.inspect %> = <%= v.inspect %></li>
                                 <% end %>
                             </ul>
@@ -52,7 +52,7 @@
                             <p>
                                 <b>Action: <%= html_encode cookie.action %></b>
                             <ul>
-                                <% cookie.auditable.each do |k, v| %>
+                                <% cookie.inputs.each do |k, v| %>
                                     <li><%= k.inspect %> = <%= v.inspect %></li>
                                 <% end %>
                             </ul>

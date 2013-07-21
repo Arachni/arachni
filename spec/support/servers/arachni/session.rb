@@ -26,11 +26,6 @@ get '/login' do
     <<-HTML
         <form method='post' name='login_form' action="/login">
             <input name='username' value='' />
-            <input name='token' type='hidden' value='secret!' />
-        </form>
-
-        <form method='post' name='login_form' action="/login">
-            <input name='username' value='' />
             <input name='password' type='password' value='' />
             <input name='token' type='hidden' value='secret!' />
         </form>

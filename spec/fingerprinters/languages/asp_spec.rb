@@ -28,8 +28,9 @@ describe Arachni::Platform::Fingerprinters::ASP do
         it 'identifies it as ASP' do
             page = Arachni::Page.from_data(
                 url:     'http://stuff.com/blah',
-                cookies: [Arachni::Cookie.new( 'http://stuff.com/blah',
-                                               'ASPSESSIONID' => 'stuff' )]
+                cookies: [Arachni::Cookie.new(
+                              url:    'http://stuff.com/blah',
+                              inputs: { 'ASPSESSIONID' => 'stuff' } )]
 
             )
             platforms_for( page ).should include :asp
