@@ -27,7 +27,7 @@ module ProgressBar
     # Formats elapsed time to hour:min:sec
     #
     def format_time( t )
-        t = t.to_i
+        t = t.to_i rescue 0
         sec = t % 60
         min = ( t / 60 ) % 60
         hour = t / 3600
