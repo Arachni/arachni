@@ -4,13 +4,16 @@ describe Arachni::Browser do
 
     before( :all ) do
         @url = Arachni::Utilities.normalize_url( web_server_url_for( :browser ) )
+    end
+
+    before( :each ) do
         @browser = described_class.new
     end
 
     after( :each ) do
-        @browser.flush_pages
-        @browser.cache.clear
-        @browser.preloads.clear
+        Arachni::Options.reset
+        Arachni::Framework.reset
+        @browser.close
         clear_hit_count
     end
 
@@ -47,7 +50,64 @@ describe Arachni::Browser do
         end
     end
 
+    describe '#goto' do
+
+        it 'loads the given URL' do
+            @browser.load @url
+
+            ua = Arachni::Options.user_agent
+            ua.should_not be_empty
+
+            @browser.source.should include( ua )
+        end
+
+        it 'uses the system cookies' do
+            url = @url + '/cookie-test'
+            Arachni::HTTP::Client.cookie_jar << Arachni::Cookie.new(
+                url:    @url,
+                inputs: { 'cookie-name' => 'value' }
+            )
+
+            @browser.goto url
+            @browser.watir.div( id: 'cookies' ).text.should ==
+                "{\"cookie-name\"=>\"value\"}"
+        end
+
+        it 'updates the system cookies' do
+            Arachni::HTTP::Client.cookies.
+                find { |cookie| cookie.name == 'update' }.should be_nil
+
+            @browser.goto @url + '/update-cookies'
+
+            Arachni::HTTP::Client.cookies.
+                find { |cookie| cookie.name == 'update' }.should be_true
+        end
+    end
+
     describe '#load' do
+
+        it 'uses the system cookies' do
+            url = @url + '/cookie-test'
+            Arachni::HTTP::Client.cookie_jar << Arachni::Cookie.new(
+                url:    @url,
+                inputs: { 'cookie-name' => 'value' }
+            )
+
+            @browser.goto url
+            @browser.watir.div( id: 'cookies' ).text.should ==
+                "{\"cookie-name\"=>\"value\"}"
+        end
+
+        it 'updates the system cookies' do
+            Arachni::HTTP::Client.cookies.
+                find { |cookie| cookie.name == 'update' }.should be_nil
+
+            @browser.goto @url + '/update-cookies'
+
+            Arachni::HTTP::Client.cookies.
+                find { |cookie| cookie.name == 'update' }.should be_true
+        end
+
         context 'when given a' do
             describe String do
                 it 'treats it as a URL' do
@@ -84,6 +144,12 @@ describe Arachni::Browser do
                     hit_count.should == 1
                 end
             end
+
+            describe 'other' do
+                it 'raises Arachni::Browser::Error::Load' do
+                    expect { @browser.load [] }.to raise_error Arachni::Browser::Error::Load
+                end
+            end
         end
     end
 
@@ -108,6 +174,14 @@ describe Arachni::Browser do
             @browser.preloads.should_not include( @url )
 
             hit_count.should == 2
+        end
+
+        it 'returns the URL of the resource' do
+            response = Arachni::HTTP::Client.get( @url, mode: :sync )
+            @browser.preload( response ).should == response.url
+
+            @browser.load response.url
+            @browser.source.should include( ua )
         end
 
         context 'when given a' do
@@ -140,6 +214,12 @@ describe Arachni::Browser do
                     hit_count.should == 0
                 end
             end
+
+            describe 'other' do
+                it 'raises Arachni::Browser::Error::Load' do
+                    expect { @browser.preload [] }.to raise_error Arachni::Browser::Error::Load
+                end
+            end
         end
     end
 
@@ -164,6 +244,15 @@ describe Arachni::Browser do
             @browser.cache.should include( @url )
 
             hit_count.should == 0
+        end
+
+        it 'returns the URL of the resource' do
+            response = Arachni::HTTP::Client.get( @url, mode: :sync )
+            @browser.cache( response ).should == response.url
+
+            @browser.load response.url
+            @browser.source.should include( ua )
+            @browser.cache.should include( response.url )
         end
 
         context 'when given a' do
@@ -196,6 +285,13 @@ describe Arachni::Browser do
                     hit_count.should == 0
                 end
             end
+
+            describe 'other' do
+                it 'raises Arachni::Browser::Error::Load' do
+                    expect { @browser.cache [] }.to raise_error Arachni::Browser::Error::Load
+                end
+            end
+
         end
     end
 
@@ -301,6 +397,7 @@ describe Arachni::Browser do
 
     describe '#cookies' do
         it 'returns the browser cookies' do
+            @browser.load @url
             @browser.cookies.size.should == 1
             cookie = @browser.cookies.first
 

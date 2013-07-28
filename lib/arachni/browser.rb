@@ -23,6 +23,20 @@ module Arachni
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Browser
 
+    # {Browser} error namespace.
+    #
+    # All {Browser} errors inherit from and live under it.
+    #
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    class Error < Arachni::Error
+
+        # Raised when a given resource can't be loaded.
+        #
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        class Load < Error
+        end
+    end
+
     # @return   [Hash]   Preloaded resources, by URL.
     attr_reader :preloads
 
@@ -47,6 +61,12 @@ class Browser
         @current_response = nil
     end
 
+    def close
+        watir.cookies.clear
+        watir.close
+        proxy.shutdown
+    end
+
     # @return   [String]    Current URL.
     def url
         @url || @current_response.url
@@ -68,17 +88,24 @@ class Browser
     def load( resource )
         case resource
             when String
-                @url = resource
-
-                load_cookies
-                watir.goto resource
+                goto resource
 
             when HTTP::Response, Page
-                url = preload( resource ).url
+                goto preload( resource )
 
-                load_cookies
-                watir.goto url
+            else
+                fail Error::Load,
+                     "Can't load resource of type #{resource.class}."
         end
+
+        nil
+    end
+
+    # @param    [String]  url Loads the given URL in the browser.
+    def goto( url )
+        load_cookies url
+        watir.goto @url = url
+        HTTP::Client.update_cookies cookies
         nil
     end
 
@@ -94,9 +121,14 @@ class Browser
 
                         when Page
                             resource.response
+
+                        else
+                            fail Error::Load,
+                                 "Can't load resource of type #{resource.class}."
                     end
 
         @preloads[response.url] = response
+        response.url
     end
 
     # @param    [HTTP::Response, Page]  resource
@@ -110,9 +142,14 @@ class Browser
 
                         when Page
                             resource.response
+
+                        else
+                            fail Error::Load,
+                                 "Can't load resource of type #{resource.class}."
                     end
 
         @cache[response.url] = response
+        response.url
     end
 
     # Starts capturing requests and parsing them into elements of pages,
@@ -171,13 +208,20 @@ class Browser
 
     private
 
-    def load_cookies
-        HTTP::Client.cookies.each do |cookie|
-            c = cookie.to_h
-            next if !c[:name]
+    def load_cookies( url )
+        # First clears the browser's cookies and then tricks it into accepting
+        # the system cookies for its cookie-jar.
 
-            watir.cookies.add c.delete( :name ), c.delete( :value ), c
-        end
+        watir.cookies.clear
+
+        url = "#{url}/set-cookies-#{Utilities.generate_token}"
+        watir.goto preload( HTTP::Response.new(
+            url:     url,
+            headers: {
+                'Set-Cookie' => HTTP::Client.cookie_jar.for_url( url ).
+                    map( &:to_set_cookie )
+            }
+        ))
     end
 
     def phantomjs_options
@@ -187,9 +231,7 @@ class Browser
     end
 
     def proxy
-        @proxy ||= HTTP::ProxyServer.new(
-            request_handler: method( :request_handler )
-        )
+        @proxy ||= HTTP::ProxyServer.new( request_handler: method( :request_handler ))
     end
 
     def request_handler( request, response )

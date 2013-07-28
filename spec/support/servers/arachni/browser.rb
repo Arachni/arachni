@@ -64,6 +64,16 @@ get '/get-ajax' do
 HTML
 end
 
+get '/cookie-test' do
+    <<HTML
+    <div id="cookies">#{cookies.to_hash}</div>
+HTML
+end
+
+get '/update-cookies' do
+    cookies[:update] = 'this'
+end
+
 get '/with-image' do
     <<HTML
     <img src="/" />
