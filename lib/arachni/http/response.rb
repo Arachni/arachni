@@ -23,13 +23,13 @@ module HTTP
 class Response < Message
 
     # @return [Integer] HTTP response status code.
-    attr_reader :code
+    attr_accessor :code
 
     # @return [String] IP address of the server.
-    attr_reader :ip_address
+    attr_accessor :ip_address
 
     # @return [String] HTTP response status message.
-    attr_reader :message
+    attr_accessor :message
 
     # @return [Request] HTTP {Request} which triggered this {Response}.
     attr_accessor :request
@@ -39,27 +39,28 @@ class Response < Message
     attr_accessor :redirections
 
     # @return   [Symbol]    `libcurl` return code.
-    attr_reader :return_code
+    attr_accessor :return_code
 
     # @return [String]  `libcurl` return code.
-    attr_reader :return_message
+    attr_accessor :return_message
 
     # @return   [String]    Raw headers.
-    attr_reader :headers_string
+    attr_accessor :headers_string
 
     # @return   [Float]
     #   Total time in seconds for the transfer, including name resolving, TCP
     #   connect etc.
-    attr_reader :total_time
+    attr_accessor :total_time
 
     # @return   [Float]
     #   Time, in seconds, it took from the start until the first byte was
     #   received
-    attr_reader :time
+    attr_accessor :time
 
     def initialize( *args )
         super( *args )
 
+        @body ||= ''
         @body   = @body.recode if text?
         @code ||= 0
 

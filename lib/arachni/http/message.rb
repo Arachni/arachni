@@ -19,19 +19,19 @@ module HTTP
 class Message
 
     # @return   [String]    Resource location.
-    attr_reader :url
+    attr_accessor :url
 
     # @return [Arachni::URI]  Parsed version of {#url}.
     attr_reader :parsed_url
 
     # @return [String]  HTTP version.
-    attr_reader :version
+    attr_accessor :version
 
     # @return [Headers<String, String>]  HTTP headers as a Hash-like object.
-    attr_reader :headers
+    attr_accessor :headers
 
     # @return [String]  {Request}/{Response} body.
-    attr_reader :body
+    attr_accessor :body
 
     # @note All options will be sent through the class setters whenever
     #   possible to allow for normalization.
@@ -60,10 +60,9 @@ class Message
         @version ||= '1.1'
     end
 
-    def url=( uri )
-        @url        = uri.to_s
-        @parsed_url = Arachni::URI( @url )
-        @url
+    def url=( url )
+        @parsed_url = Arachni::URI( url )
+        @url        = @parsed_url.to_s
     end
 
     private
