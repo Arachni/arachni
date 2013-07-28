@@ -32,8 +32,12 @@ describe Arachni::Browser do
             @browser.load @url + '/with-events'
             @browser.flush_pages.should be_empty
 
+            @browser.to_page.forms.should be_empty
+
             @browser.start_capture
             @browser.trigger_events
+
+            @browser.to_page.forms.select { |f| f.inputs.include? 'by-ajax' }.should be_true
 
             forms = @browser.flush_pages.first.forms
 
