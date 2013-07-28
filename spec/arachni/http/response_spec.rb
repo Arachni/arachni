@@ -165,7 +165,7 @@ describe Arachni::HTTP::Response do
         it 'returns a hash representation of self' do
             h = {
                 version:        '1.1',
-                url:            'http://stuff.com',
+                url:            'http://stuff.com/',
                 code:           200,
                 ip_address:     '10.0.0.1',
                 headers:        { 'Content-Type' => 'test/html' },

@@ -31,7 +31,7 @@ describe Arachni::HTTP::Request do
                 password:   'pass'
             }
             r = described_class.new( url, options )
-            r.url.should          == url
+            r.url.should          == Arachni::Utilities.normalize_url( url )
             r.method.should       == options[:method]
             r.parameters.should   == options[:parameters]
             r.timeout.should      == options[:timeout]

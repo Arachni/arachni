@@ -98,7 +98,9 @@ describe Arachni::Parser do
 
         context 'when the response is not text based' do
             before {
-                res = Arachni::HTTP::Response.new( url: @url )
+                res = Arachni::HTTP::Response.new( url: @url, headers: {
+                    'Content-Type' => 'bin/stuff'
+                })
                 @parser_2 = Arachni::Parser.new( res, @opts )
             }
             it { @parser_2.text?.should be_false }
@@ -114,7 +116,9 @@ describe Arachni::Parser do
 
         context 'when the response is not text based' do
             it 'returns nil' do
-                res = Arachni::HTTP::Response.new( url: @url )
+                res = Arachni::HTTP::Response.new( url: @url, headers: {
+                    'Content-Type' => 'bin/stuff'
+                })
                 Arachni::Parser.new( res, @opts ).document.should be_nil
             end
         end
@@ -168,7 +172,9 @@ describe Arachni::Parser do
         end
         context 'when the response is not text based' do
             it 'returns nil' do
-                res = Arachni::HTTP::Response.new( url: @url )
+                res = Arachni::HTTP::Response.new( url: @url, headers: {
+                    'Content-Type' => 'bin/stuff'
+                })
                 Arachni::Parser.new( res, @opts ).links.should be_empty
             end
         end
