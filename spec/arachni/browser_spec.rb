@@ -27,6 +27,22 @@ describe Arachni::Browser do
         Typhoeus::Request.get( "#{@url}/clear-hit-count" )
     end
 
+    describe '#trigger_events' do
+        it 'triggers all events on all elements' do
+            @browser.load @url + '/with-events'
+            @browser.flush_pages.should be_empty
+
+            @browser.start_capture
+            @browser.trigger_events
+
+            forms = @browser.flush_pages.first.forms
+
+            forms.size.should == 2
+            forms.find { |form| form.inputs.include? 'ajax-token' }.should be_true
+            forms.find { |form| form.inputs.include? 'post-name' }.should be_true
+        end
+    end
+
     describe '#source' do
         it 'returns the evaluated HTML source' do
             @browser.load @url

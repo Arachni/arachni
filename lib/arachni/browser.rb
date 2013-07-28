@@ -37,6 +37,28 @@ class Browser
         end
     end
 
+    EVENT_ATTRIBUTES = [
+        'onload',
+        'onunload',
+        'onblur',
+        'onchange',
+        'onfocus',
+        'onreset',
+        'onselect',
+        'onsubmit',
+        'onabort',
+        'onkeydown',
+        'onkeypress',
+        'onkeyup',
+        'onclick',
+        'ondblclick',
+        'onmousedown',
+        'onmousemove',
+        'onmouseout',
+        'onmouseover',
+        'onmouseup'
+    ]
+
     # @return   [Hash]   Preloaded resources, by URL.
     attr_reader :preloads
 
@@ -80,6 +102,17 @@ class Browser
         page = @current_response.to_page
         page.cookies |= cookies
         page
+    end
+
+    # Triggers all events on all page elements.
+    def trigger_events
+        watir.elements.each do |element|
+            EVENT_ATTRIBUTES.each do |event|
+                # Not all elements support all events so rescue exceptions and
+                # move on.
+                element.fire_event( event ) rescue nil
+            end
+        end
     end
 
     # @param    [String, HTTP::Response, Page]  resource
@@ -276,6 +309,8 @@ class Browser
                     inputs: Utilities.form_parse_request_body( request.body )
                 ).tap(&:override_instance_scope)
         end
+
+        page.forms.uniq!
     end
 
     def from_preloads( request, response )
