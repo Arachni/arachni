@@ -235,17 +235,10 @@ class Browser
     end
 
     def request_handler( request, response )
-        if (preloaded = preloads.delete( request.url ))
-            copy_response_data( preloaded, response )
-            @current_response = preloaded
-            return
-        end
-
-        if (cached = @cache[request.url])
-            copy_response_data( cached, response )
-            @current_response = cached
-            return
-        end
+        # Signal the proxy to not actually perform the request if we have a
+        # preloaded or cached response for it.
+        return if from_preloads( request, response ) ||
+            from_cache( request, response )
 
         return true if !capture?
 
@@ -274,6 +267,20 @@ class Browser
         end
 
         true
+    end
+
+    def from_preloads( request, response )
+        return if !(preloaded = preloads.delete( request.url ))
+
+        copy_response_data( preloaded, response )
+        @current_response = preloaded
+    end
+
+    def from_cache( request, response )
+        return if !(cached = @cache[request.url])
+
+        copy_response_data( cached, response )
+        @current_response = cached
     end
 
     def copy_response_data( source, destination )
