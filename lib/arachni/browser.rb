@@ -237,10 +237,19 @@ class Browser
     def request_handler( request, response )
         # Signal the proxy to not actually perform the request if we have a
         # preloaded or cached response for it.
-        return if from_preloads( request, response ) ||
-            from_cache( request, response )
+        return if from_preloads( request, response ) || from_cache( request, response )
 
-        return true if !capture?
+        # Capture the request as elements of pages -- let's us grab AJAX and
+        # other browser requests and convert them into system elements we can
+        # analyze and audit.
+        capture( request )
+
+        # Signal the proxy to continue with its request to the origin server.
+        true
+    end
+
+    def capture( request )
+        return if !capture?
 
         if !@pages.include? url
             page = Page.from_data( url: url )
@@ -261,12 +270,7 @@ class Browser
                     method: request.method,
                     inputs: Utilities.form_parse_request_body( request.body )
                 )
-
-            else
-                return true
         end
-
-        true
     end
 
     def from_preloads( request, response )
