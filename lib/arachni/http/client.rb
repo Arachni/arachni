@@ -365,6 +365,24 @@ class Client
         request( url, options, &block )
     end
 
+    # @note If the request is synchronous, it will perform it.
+    #
+    # Queues a {Request} and calls the following callbacks:
+    #
+    # * `#on_queue` -- intersects a queued request and gets passed the original
+    #       and the async method. If the block returns one or more request
+    #       objects these will be queued instead of the original request.
+    # * `#on_complete` -- calls the block with the each requests as it arrives.
+    #
+    # @param  [Request]  request  the request to queue
+    def queue( request )
+        requests   = call_on_queue( request )
+        requests ||= request
+
+        [requests].flatten.reject { |p| !p.is_a?( Request ) }.
+            each { |request| forward_request( request ) }
+    end
+
     # @note Cookies or new callbacks set as a result of the block won't affect
     #   the HTTP singleton.
     #
@@ -539,22 +557,6 @@ class Client
 
         @burst_runtime += Time.now - @burst_runtime_start
         @total_runtime += @burst_runtime
-    end
-
-    # Queues a {Request} and calls the following callbacks:
-    #
-    # * on_queue() -- intersects a queued request and gets passed the original
-    #   and the async method. If the block returns one or more request
-    #   objects these will be queued instead of the original request.
-    # * on_complete() -- calls the block with the each requests as it arrives.
-    #
-    # @param  [Request]  request  the request to queue
-    def queue( request )
-        requests   = call_on_queue( request )
-        requests ||= request
-
-        [requests].flatten.reject { |p| !p.is_a?( Request ) }.
-            each { |request| forward_request( request ) }
     end
 
     # Performs the actual queueing of requests, passes them to Hydra and sets

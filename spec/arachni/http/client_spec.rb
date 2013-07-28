@@ -922,6 +922,37 @@ describe Arachni::HTTP::Client do
         end
     end
 
+    describe '#queue' do
+        it 'queues a request' do
+            r = nil
+
+            request = Arachni::HTTP::Request.new( @url )
+            request.on_complete do |response|
+                r = response
+            end
+
+            @http.queue request
+            @http.run
+
+            r.should be_kind_of Arachni::HTTP::Response
+        end
+
+        context 'when the request is synchronous' do
+            it 'also performs it' do
+                r = nil
+
+                request = Arachni::HTTP::Request.new( @url, mode: :sync )
+                request.on_complete do |response|
+                    r = response
+                end
+
+                @http.queue request
+
+                r.should be_kind_of Arachni::HTTP::Response
+            end
+        end
+    end
+
     describe '#update_cookies' do
         it 'updates the cookies' do
             cookies = []
