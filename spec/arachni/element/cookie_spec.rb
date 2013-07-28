@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Arachni::Element::Cookie do
-    #it_should_behave_like 'auditable', url: web_server_url_for( :cookie ), single_input: true
+    it_should_behave_like 'auditable', url: web_server_url_for( :cookie ), single_input: true
 
     before( :all ) do
         @url = web_server_url_for( :cookie ) + '/'
@@ -217,7 +217,7 @@ describe Arachni::Element::Cookie do
             )
 
             c.to_set_cookie.should ==
-                'blah%3Dha%25=some+stuff+%3B; Version=0; Path=/; Domain=127.0.0.2; Secure; HttpOnly'
+                'blah%3Dha%25=some+stuff+%3B; Path=/; Domain=.127.0.0.2; Secure; HttpOnly'
             Arachni::Element::Cookie.from_set_cookie( @url, c.to_set_cookie ).first.should == c
 
             c = Arachni::Element::Cookie.new(
@@ -229,7 +229,7 @@ describe Arachni::Element::Cookie do
 
             Arachni::Element::Cookie.from_set_cookie( @url, c.to_set_cookie ).first.should == c
             c.to_set_cookie.should ==
-                'blah%3Dha%25=some+stuff+%3B; Path=/stuff; Version=0; Domain=127.0.0.2'
+                'blah%3Dha%25=some+stuff+%3B; Path=/stuff; Domain=.127.0.0.2'
         end
     end
 

@@ -82,7 +82,7 @@ class Cookie < Arachni::Element::Base
             @data[:path] = path
         end
 
-        @data[:domain] ||= parsed_uri.host
+        @data[:domain] ||= ".#{parsed_uri.host}"
 
         @original = self.inputs.dup.freeze
     end
@@ -477,6 +477,7 @@ class Cookie < Arachni::Element::Base
         @keep.delete( :url )
         @keep.delete( :secure )
         @keep.delete( :httponly )
+        @keep.delete( :version )
         @keep
     end
 
