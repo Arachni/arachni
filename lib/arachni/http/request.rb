@@ -171,6 +171,13 @@ class Request < Message
         @mode = v.to_sym
     end
 
+    def effective_cookies
+        Cookie.from_string( url, headers['Cookie'] || '' ).inject({}) do |h, cookie|
+            h[cookie.name] = cookie.value
+            h
+        end.merge( cookies )
+    end
+
     # @note Can be invoked multiple times.
     #
     # @param    [Block] block
@@ -224,12 +231,7 @@ class Request < Message
 
     # @return [Typhoeus::Response] Converts self to a `Typhoeus::Response`.
     def to_typhoeus
-        h_cookies = Cookie.from_string( url, headers['Cookie'] || '' ).inject({}) do |h, cookie|
-            h[cookie.name] = cookie.value
-            h
-        end
-
-        headers['Cookie'] = h_cookies.merge( cookies ).
+        headers['Cookie'] = effective_cookies.
             map { |k, v| "#{Cookie.encode( k )}=#{Cookie.encode( v )}" }.
             join( ';' )
 

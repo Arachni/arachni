@@ -196,6 +196,31 @@ describe Arachni::HTTP::Request do
         end
     end
 
+    describe '#effective_cookies' do
+        it 'returns the given :cookies merged with the cookies in Headers' do
+            request = described_class.new(
+                url,
+                headers: {
+                    'Cookie' => 'my_cookie=my_value; cookie2=value2'
+                },
+                cookies: {
+                    'cookie2' => 'updated_value',
+                    'cookie3' => 'value3',
+                }
+            )
+
+            request.cookies.should == {
+                'cookie2' => 'updated_value',
+                'cookie3' => 'value3'
+            }
+            request.effective_cookies.should == {
+                'my_cookie' => 'my_value',
+                'cookie2'   => 'updated_value',
+                'cookie3'   => 'value3'
+            }
+        end
+    end
+
     describe '#id' do
         it 'is incremented by the Arachni::HTTP::Client' do
             10.times do |i|
