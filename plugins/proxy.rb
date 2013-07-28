@@ -25,7 +25,7 @@ require 'ostruct'
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2.4
+# @version 0.3
 #
 class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
@@ -52,17 +52,13 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         print_info 'System paused.'
 
         require_relative 'proxy/template_scope'
-        require_relative 'proxy/server'
 
-        @server = Server.new(
-             BindAddress:         options['bind_address'],
-             Port:                options['port'],
-             ProxyVia:            false,
-             ProxyContentHandler: method( :response_handler ),
-             ProxyRequestHandler: method( :request_handler ),
-             AccessLog:           [],
-             Logger:              WEBrick::Log::new( '/dev/null', 7 ),
-             Timeout:             options['timeout']
+        @server = Arachni::HTTP::ProxyServer.new(
+             address:          options['bind_address'],
+             port:             options['port'],
+             response_handler: method( :response_handler ),
+             request_handler:  method( :request_handler ),
+             timeout:          options['timeout']
         )
 
         @pages = Set.new
@@ -80,15 +76,6 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         print_info '* You need to clear your browser\'s cookies for this site before using the proxy! *'
         print_info '*' * 82
         print_info
-
-        def @server.service( req, res )
-            if req.request_method.downcase == 'connect'
-                super( req, res )
-                return
-            end
-
-            super( req, res ) if @config[:ProxyRequestHandler].call( req, res )
-        end
 
         TemplateScope.get.set :params, {}
         @server.start
@@ -121,7 +108,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     end
 
     def request_handler( req, res )
-        url = req.request_uri.to_s
+        url = req.url
 
         if !system_url?( url ) && skip_path?( url )
             print_info "Ignoring, out of scope: #{url}"
@@ -155,24 +142,30 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
         print_status "Requesting #{url}"
 
+        ap params
+
         # This is a sign-in request.
         if params['session_token'] == options['session_token']
             # Set us up for the redirection that's coming.
-            res.status = 302
+            res.code = 302
 
             # Set the session cookie.
-            res.header['Set-Cookie'] = "#{SESSION_TOKEN_COOKIE}=#{options['session_token']}; path=/"
+            res.headers['Set-Cookie'] = "#{SESSION_TOKEN_COOKIE}=#{options['session_token']}; path=/"
 
             # This is the cookie-set request for the domain of the scan target domain...
-            if url == sign_in_url && req.request_method == 'POST'
+            if url == sign_in_url && req.method == :post
+                ap 1
+
                 # ...now we need to set the cookie for the proxy control domain
                 # so redirect us to its handler.
-                res.header['Location'] = "#{url_for( :sign_in )}?session_token=#{params['session_token']}"
+                res.headers['Location'] = "#{url_for( :sign_in )}?session_token=#{params['session_token']}"
 
             # This is the cookie-set request for the domain of the proxy control domain...
             elsif url.start_with?( url_for( :sign_in ) )
+                ap 2
+
                 # ...time to send the user to the webapp.
-                res.header['Location'] = framework.opts.url
+                res.headers['Location'] = framework.opts.url
             end
 
             return
@@ -181,7 +174,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
             print_info '  * Request does not have a valid session token'
 
             # Unauthorized.
-            res.status = 401
+            res.code = 401
             set_response_body( res, erb( 'sign_in'.to_sym ) )
 
             return
@@ -197,15 +190,15 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         @login_sequence << req if recording?
 
         # Avoid propagating the proxy's session cookie to the webapp.
-        req.cookies.reject! { |c| c.name == SESSION_TOKEN_COOKIE }
+        req.cookies.delete SESSION_TOKEN_COOKIE
 
         if url.start_with? url_for( :panel )
-            body =  case '/' + res.request_uri.path.split( '/' )[2..-1].join( '/' )
+            body =  case '/' + res.parsed_url.path.split( '/' )[2..-1].join( '/' )
                         when '/'
                             erb :panel
 
                         when '/vectors.yml'
-                            res.header['Content-Type'] = 'application/x-yaml'
+                            res.headers['Content-Type'] = 'application/x-yaml'
 
                             erb :vectors,
                                 layout:  false,
@@ -232,13 +225,15 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
                         when '/verify/login_check'
 
-                            if req.request_method != 'POST'
+                            if req.method != :post
                                 erb :verify_login_check, verify_fail: false
                             else
                                 session.set_login_check( params['url'], params['pattern'] )
 
                                 if !session.logged_in?
-                                    erb :verify_login_check, verify_fail: true
+                                    erb :verify_login_check,
+                                        params:      params,
+                                        verify_fail: true
                                 else
                                     erb :verify_login_sequence,
                                         params: params,
@@ -261,12 +256,12 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                             erb :verify_login_final, ok: logged_in
 
                         else
-                            res.header['Cache-Control'] = 'max-age=2592000'
+                            res.headers['Cache-Control'] = 'max-age=2592000'
                             begin
-                                IO.read TemplateScope::PANEL_BASEDIR + '/../' + res.request_uri.path
+                                IO.read TemplateScope::PANEL_BASEDIR + '/../' + res.parsed_url.path
                             rescue Errno::ENOENT
                                 # forbidden
-                                res.status = 404
+                                res.code = 404
                                 erb '404_not_found'.to_sym
                             end
                         end.to_s
@@ -281,11 +276,11 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         !(asset?( url ) || url.start_with?( url_for( :sign_in ) ))
     end
 
-    def valid_session_token?( req )
+    def valid_session_token?( request )
         session_token = options['session_token']
-        return true if options['session_token'].to_s.empty?
+        return true if session_token.to_s.empty?
 
-        cookies_to_hash( req.cookies )[SESSION_TOKEN_COOKIE] == session_token
+        request.effective_cookies[SESSION_TOKEN_COOKIE] == session_token
     end
 
     def recording?
@@ -300,12 +295,10 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         @record = false
     end
 
-    #
     # Tries to determine which form is the login one from the logged requests in
     # the recorded login sequence.
     #
     # @return   [Array<Arachni::Element::Form>]
-    #
     def find_login_form
         @login_sequence.each do |r|
             form = find_login_form_from_request( r )
@@ -314,59 +307,39 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         nil
     end
 
-    #
     # Goes through all forms which contain password fields and tries to match
     # them to the given request.
     #
-    # @param    [WEBrick::HTTPRequest]  request
+    # @param    [HTTP::Request]  request
     #
     # @return   [Array<Arachni::Element::Form>]
     #
     # @see #forms_with_password
-    #
     def find_login_form_from_request( request )
         return if (params = parse_request_body( request.body )).empty?
 
         f = session.find_login_form( pages:  @pages.to_a,
-                                     action: normalize_url( request.request_uri.to_s ),
+                                     action: normalize_url( request.url ),
                                      inputs: params.keys )
 
         return if !f
         f.update( params )
     end
 
-    #
-    # Goes through the logged pages and returns all forms which contain password fields
+    # Goes through the logged pages and returns all forms which contain
+    # password fields
     #
     # @return   [Array<Arachni::Element::Form>]
-    #
     def forms_with_password
         @pages.map { |p| p.forms.select { |f| f.requires_password? } }.flatten
     end
 
-    #
     # Called by the proxy for each response.
-    #
-    def response_handler( req, res )
-        if res.request_method.to_s.downcase == 'connect' ||
-            skip_path?( res.request_uri.to_s )
-            return res
-        end
+    def response_handler( request, response )
+        return response if skip_path?( response.url )
 
-        headers = {}
-        headers.merge!( res.header.dup )    if res.header
-        headers['set-cookie'] = res.cookies if !res.cookies.empty?
-
-        page = page_from_response( Arachni::HTTP::Response.new(
-                url: res.request_uri.to_s,
-                body:          res.body.dup,
-                headers:  headers,
-                method:        res.request_method,
-                code:          res.status.to_i,
-                request:       Arachni::HTTP::Request.new( req.request_uri.to_s )
-            )
-        )
-        page = update_forms( page, req, res ) if req.body
+        page = response.to_page
+        page = update_forms( page, request, response ) if request.body
 
         print_info " *  #{page.forms.size} forms"
         print_info " *  #{page.links.size} links"
@@ -374,20 +347,18 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
         @pages << page.dup
 
-        inject_panel( res )
+        inject_panel response
     end
 
-    def inject_panel( res )
-        return res if !res.header['content-type'].to_s.start_with?( 'text/html' ) ||
-                        !(body_tag = res.body.match( /<(\s*)body(.*)>/i ))
+    def inject_panel( response )
+        if !response.headers.content_type.to_s.start_with?( 'text/html' ) ||
+            !(body_tag = response.body.match( /<(\s*)body(.*)>/i ))
+            return response
+        end
 
-        res.body.gsub!( body_tag.to_s, "#{body_tag}#{panel_iframe}" )
-        res.header['content-length'] = res.body.size.to_s
-        res
-    end
-
-    def cookies_to_hash( cookies )
-        cookies.inject({}) { |h, c| h[c.name] = c.value; h }
+        response.body.gsub!( body_tag.to_s, "#{body_tag}#{panel_iframe}" )
+        response.headers['content-length'] = response.body.size.to_s
+        response
     end
 
     def panel_iframe
@@ -414,11 +385,12 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         TemplateScope.get.erb( *args )
     end
 
-    def update_forms( page, req, res )
-        page.forms << Form.new( res.request_uri.to_s,
-            action: res.request_uri.to_s,
-            method: req.request_method,
-            inputs: form_parse_request_body( req.body )
+    def update_forms( page, request, response )
+        page.forms << Form.new(
+            url:    response.url,
+            action: response.url,
+            method: request.method,
+            inputs: form_parse_request_body( request.body )
         )
         page
     end
@@ -433,8 +405,8 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
     def set_response_body( res, body )
         res.body = body
-        res.header['content-length'] = res.body.size.to_s
-        res.header['content-type'] = 'text/html' if body =~ /<(\s)*html(\s*)(.*?)>/i
+        res.headers['content-length'] = res.body.size.to_s
+        res.headers['content-type'] = 'text/html' if body =~ /<(\s)*html(\s*)(.*?)>/i
         res
     end
 
@@ -483,7 +455,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                     this proxy but rather a way to restrict usage enough to avoid
                     users unwittingly interfering with each others' sessions.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.2.4',
+            version:     '0.3',
             options:     [
                  Options::Port.new( 'port', [false, 'Port to bind to.', 8282] ),
                  Options::Address.new( 'bind_address',

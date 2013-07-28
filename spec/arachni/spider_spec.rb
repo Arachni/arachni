@@ -14,7 +14,7 @@ describe Arachni::Spider do
     end
 
     it 'supports HTTPS' do
-        @opts.url = (web_server_url_for :spider_https).gsub( 'http', 'https' )
+        @opts.url = web_server_url_for( :spider_https ).gsub( 'http', 'https' )
         spider = Arachni::Spider.new
 
         spider.run.size.should == 3

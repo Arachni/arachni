@@ -91,6 +91,8 @@ Gem::Specification.new do |s|
     # For CLI interfaces.
     s.add_dependency 'highline'
 
+    s.add_dependency 'watir-webdriver'
+
     s.add_development_dependency 'bundler'
     s.add_development_dependency 'rake'
     s.add_development_dependency 'rspec'

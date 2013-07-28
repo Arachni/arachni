@@ -15,3 +15,4 @@
 =end
 
 require_relative 'http/client'
+require_relative 'http/proxy_server'

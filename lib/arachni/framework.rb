@@ -45,6 +45,7 @@ require lib + 'http'
 require lib + 'report'
 require lib + 'session'
 require lib + 'trainer'
+require lib + 'browser'
 
 require Options.dir['mixins'] + 'progress_bar'
 

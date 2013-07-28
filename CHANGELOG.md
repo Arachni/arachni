@@ -21,6 +21,8 @@
         - `#request` options:
             - `:params` => `:parameters`
             - `:async` => `:mode` (with values of `:async` and `:sync`)
+    - `ProxyServer` -- Moved the proxy server out of the `Proxy` plugin and
+        updated it to work with `Arachni::HTTP` objects.
 - `Arachni::Page`
     - Cleaned-up attributes.
     - Added `#response`, holding the associated `HTTP::Response`.
@@ -34,6 +36,9 @@
         - `--http-password` -- Password for HTTP authentication.
 - Reports
     - HTML -- Fixed display of untrusted issues.
+- Plugins
+    - `proxy`
+        - Updated to use `HTTP::ProxyServer`.
 
 ## 0.4.3.2 _(July 16, 2013)_
 
