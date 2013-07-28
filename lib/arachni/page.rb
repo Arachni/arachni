@@ -269,7 +269,7 @@ class Page
     end
 
     def hash
-        "#{body.hash}:#{response.hash}"
+        "#{body.hash}:#{response.hash}".hash
     end
 
     def ==( other )

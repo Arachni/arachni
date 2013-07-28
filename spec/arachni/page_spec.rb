@@ -155,8 +155,13 @@ describe Arachni::Page do
 
         context 'when the response is not text based' do
             it 'returns false' do
-                res = Arachni::HTTP::Response.new( url: 'http://test.com',
-                                              request: Arachni::HTTP::Request.new( 'http://test.com' ), )
+                res = Arachni::HTTP::Response.new(
+                    url:     'http://test.com',
+                    headers: {
+                        'Content-Type' => 'stuff/bin'
+                    },
+                    request: Arachni::HTTP::Request.new( 'http://test.com' )
+                )
                 Arachni::Parser.new( res ).page.text?.should be_false
             end
         end
