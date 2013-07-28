@@ -305,11 +305,11 @@ describe Arachni::Browser do
 
             page = pages.first
 
-            page.links.find { |link| link.inputs.include? 'ajax-token' }.should be_true
+            page.forms.find { |form| form.inputs.include? 'ajax-token' }.should be_true
         end
 
         context 'when a GET request is performed' do
-            it 'is added as an Arachni::Link to the page' do
+            it 'is added as an Arachni::Form to the page' do
                 @browser.start_capture
                 @browser.load @url + '/with-ajax'
 
@@ -318,12 +318,13 @@ describe Arachni::Browser do
 
                 page = pages.first
 
-                link = page.links.find { |link| link.inputs.include? 'ajax-token' }
+                form = page.forms.find { |form| form.inputs.include? 'ajax-token' }
 
-                link.url.should == @url + 'with-ajax'
-                link.action.should == @url + 'get-ajax?ajax-token=my-token'
-                link.inputs.should == { 'ajax-token' => 'my-token' }
-                link.method.should == :get
+                form.url.should == @url + 'with-ajax'
+                form.action.should == @url + 'get-ajax?ajax-token=my-token'
+                form.inputs.should == { 'ajax-token' => 'my-token' }
+                form.method.should == :get
+                form.override_instance_scope?.should be_true
             end
         end
 
@@ -343,6 +344,7 @@ describe Arachni::Browser do
                 form.action.should == @url + 'post-ajax'
                 form.inputs.should == { 'post-name' => 'post-value' }
                 form.method.should == :post
+                form.override_instance_scope?.should be_true
             end
         end
     end

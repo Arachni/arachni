@@ -261,7 +261,12 @@ class Browser
 
         case request.method
             when :get
-                page.links << Link.new( url: url, action: request.url )
+                page.forms << Form.new(
+                    url:    url,
+                    action: request.url,
+                    method: request.method,
+                    inputs: Utilities.parse_url_vars( request.url )
+                ).tap { |f| f.override_instance_scope }
 
             when :post
                 page.forms << Form.new(
@@ -269,7 +274,7 @@ class Browser
                     action: request.url,
                     method: request.method,
                     inputs: Utilities.form_parse_request_body( request.body )
-                )
+                ).tap { |f| f.override_instance_scope }
         end
     end
 
