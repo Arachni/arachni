@@ -159,6 +159,10 @@ class Cookie < Arachni::Element::Base
         Arachni::Element::COOKIE
     end
 
+    def to_h
+        @data.dup
+    end
+
     def dup
         super.tap { |d| d.action = self.action }
     end
