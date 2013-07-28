@@ -40,7 +40,7 @@ class Base
     extend  Utilities
 
     def initialize( options )
-        options = options.symbolize_keys
+        options = options.symbolize_keys( false )
 
         if !(options[:url] || options[:action])
             fail 'Needs :url or :action option.'
