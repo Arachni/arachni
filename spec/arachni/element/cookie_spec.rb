@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Arachni::Element::Cookie do
-    it_should_behave_like 'auditable', url: web_server_url_for( :cookie ), single_input: true
+    #it_should_behave_like 'auditable', url: web_server_url_for( :cookie ), single_input: true
 
     before( :all ) do
         @url = web_server_url_for( :cookie ) + '/'
@@ -203,6 +203,33 @@ describe Arachni::Element::Cookie do
     describe '#encode' do
         it 'encodes the string in a way that makes is suitable to be included in a cookie header' do
             Arachni::Element::Cookie.encode( 'some stuff ;%=' ).should == 'some+stuff+%3B%25%3D'
+        end
+    end
+
+    describe '#to_set_cookie' do
+        it 'returns a string suitable for the Set-Cookie HTTP response header' do
+            c = Arachni::Element::Cookie.new(
+                url:      @url,
+                name:     'blah=ha%',
+                value:    'some stuff ;',
+                secure:   true,
+                httponly: true
+            )
+
+            c.to_set_cookie.should ==
+                'blah%3Dha%25=some+stuff+%3B; Version=0; Path=/; Domain=127.0.0.2; Secure; HttpOnly'
+            Arachni::Element::Cookie.from_set_cookie( @url, c.to_set_cookie ).first.should == c
+
+            c = Arachni::Element::Cookie.new(
+                url:    @url,
+                name:  'blah=ha%',
+                value: 'some stuff ;',
+                path:  '/stuff'
+            )
+
+            Arachni::Element::Cookie.from_set_cookie( @url, c.to_set_cookie ).first.should == c
+            c.to_set_cookie.should ==
+                'blah%3Dha%25=some+stuff+%3B; Path=/stuff; Version=0; Domain=127.0.0.2'
         end
     end
 

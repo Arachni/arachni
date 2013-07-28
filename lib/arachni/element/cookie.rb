@@ -256,6 +256,19 @@ class Cookie < Arachni::Element::Base
         "#{encode( name )}=#{encode( value )}"
     end
 
+    # @return   [String]    Converts self to a `Set-Cookie` string.
+    def to_set_cookie
+        set_cookie = "#{self.to_s}; "
+        set_cookie << to_h.map do |k, v|
+            next if !v || !self.class.keep_for_set_cookie.include?( k )
+            "#{k.capitalize}=#{v}"
+        end.compact.join( '; ' )
+
+        set_cookie << '; Secure'   if secure?
+        set_cookie << '; HttpOnly' if http_only?
+        set_cookie
+    end
+
     # Parses a Netscape Cookie-jar into an Array of {Cookie}.
     #
     # @param   [String]    url          request URL
@@ -396,7 +409,7 @@ class Cookie < Arachni::Element::Base
     # into cookie elements.
     #
     # @param    [String]    url     Request URL.
-    # @param    [Hash]      string  `Set-Cookie` string.
+    # @param    [Hash]      string  `Cookie` string.
     #
     # @return   [Array<Cookie>]
     def self.from_string( url, string )
@@ -453,6 +466,18 @@ class Cookie < Arachni::Element::Base
         self.method == :get ?
             http.get( self.action, opts, &block ) :
             http.post( self.action, opts, &block )
+    end
+
+    def self.keep_for_set_cookie
+        return @keep if @keep
+
+        @keep = Set.new( DEFAULT.keys )
+        @keep.delete( :name )
+        @keep.delete( :value )
+        @keep.delete( :url )
+        @keep.delete( :secure )
+        @keep.delete( :httponly )
+        @keep
     end
 
 end
