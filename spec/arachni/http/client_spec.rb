@@ -834,8 +834,10 @@ describe Arachni::HTTP::Client do
                 it 'updates the cookiejar' do
                     cookies = []
                     cookies << Arachni::Element::Cookie.new(
-                        url: @url,
-                        inputs: { 'key2' => 'val2' }
+                        url:    @url,
+                        name:   'key2',
+                        value:  'val2',
+                        domain: Arachni::URI( @url ).domain
                     )
                     @http.update_cookies( cookies )
                     @http.request( @url + '/update_cookies', update_cookies: true )
