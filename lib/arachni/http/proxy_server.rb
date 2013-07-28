@@ -35,7 +35,7 @@ class ProxyServer < WEBrick::HTTPProxyServer
     INTERCEPTOR_PRIVATE_KEY =
         File.dirname( __FILE__ ) + '/proxy_server/ssl-interceptor-pkey.pem'
 
-    # @params   [Hash]  options
+    # @param   [Hash]  options
     # @option options   [String]    :address    ('0.0.0.0')
     #   Address to bind to.
     # @option options   [Integer]    :port
