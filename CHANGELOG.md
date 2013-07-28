@@ -23,6 +23,7 @@
             - `:async` => `:mode` (with values of `:async` and `:sync`)
     - `ProxyServer` -- Moved the proxy server out of the `Proxy` plugin and
         updated it to work with `Arachni::HTTP` objects.
+- `Arachni::Browser` -- Real browser driver providing DOM/JS/AJAX support.
 - `Arachni::Page`
     - Cleaned-up attributes.
     - Added `#response`, holding the associated `HTTP::Response`.
