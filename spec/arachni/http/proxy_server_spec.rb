@@ -53,17 +53,17 @@ describe Arachni::HTTP::ProxyServer do
             end
         end
 
-        #describe :timeout do
-        #    it 'sets the HTTP request timeout' do
-        #        proxy = described_class.new( timeout: 1_000 )
-        #        proxy.start_async
-        #
-        #        sleep_url = @url + 'sleep'
-        #
-        #        Typhoeus::Request.get( sleep_url ).code.should_not == 0
-        #        via_proxy( proxy, sleep_url ).code.should == 0
-        #    end
-        #end
+        describe :timeout do
+            it 'sets the HTTP request timeout' do
+                proxy = described_class.new( timeout: 1_000 )
+                proxy.start_async
+
+                sleep_url = @url + 'sleep'
+
+                Typhoeus::Request.get( sleep_url ).code.should_not == 0
+                via_proxy( proxy, sleep_url ).code.should == 0
+            end
+        end
 
         describe :request_handler do
             it 'sets a block to handle each HTTP response and request before the request is forwarded to the origin server' do
@@ -182,4 +182,55 @@ describe Arachni::HTTP::ProxyServer do
         end
     end
 
+    describe '#has_connections?' do
+        context 'when there are active connections' do
+            it 'returns true' do
+                proxy = described_class.new
+                proxy.start_async
+
+                proxy.has_connections?.should be_false
+                Thread.new { via_proxy( proxy, @url + 'sleep' ) }
+                sleep 1
+                proxy.has_connections?.should be_true
+            end
+        end
+
+        context 'when there are no active connections' do
+            it 'returns false' do
+                proxy = described_class.new
+                proxy.start_async
+
+                proxy.has_connections?.should be_false
+                via_proxy( proxy, @url + 'sleep' )
+                proxy.has_connections?.should be_false
+            end
+        end
+    end
+
+    describe '#active_connections' do
+        context 'when there are active connections' do
+            it 'returns the amount' do
+                proxy = described_class.new
+                proxy.start_async
+
+                proxy.active_connections.should == 0
+                3.times do
+                    Thread.new { via_proxy( proxy, @url + 'sleep' ) }
+                end
+                sleep 1
+                proxy.active_connections.should == 3
+            end
+        end
+
+        context 'when there are no active connections' do
+            it 'returns 0' do
+                proxy = described_class.new
+                proxy.start_async
+
+                proxy.active_connections.should == 0
+                via_proxy( proxy, @url + 'sleep' )
+                proxy.active_connections.should == 0
+            end
+        end
+    end
 end

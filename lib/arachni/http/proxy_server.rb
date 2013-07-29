@@ -93,6 +93,17 @@ class ProxyServer < WEBrick::HTTPProxyServer
         "#{@options[:address]}:#{@options[:port]}"
     end
 
+    # @return   [Bool]
+    #   `true` if the proxy has active connections, `false` otherwise.
+    def has_connections?
+        active_connections != 0
+    end
+
+    # @return   [Integer]   Amount of active connections.
+    def active_connections
+        @tokens.max - @tokens.size
+    end
+
     private
 
     # Performs a GET request.
