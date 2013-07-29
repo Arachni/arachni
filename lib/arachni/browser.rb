@@ -15,6 +15,7 @@
 =end
 
 require 'watir-webdriver'
+require_relative 'watir/element'
 
 module Arachni
 
@@ -114,7 +115,7 @@ class Browser
     # hrefs containing JavaScript ('javascript:').
     def trigger_events
         watir.elements.each do |element|
-            EVENT_ATTRIBUTES.each do |event|
+            (element.attributes & EVENT_ATTRIBUTES).each do |event|
                 # Not all elements support all events so rescue exceptions and
                 # move on.
                 element.fire_event( event ) rescue nil
@@ -122,7 +123,8 @@ class Browser
         end
 
         watir.as.each do |a|
-            next if !a.href.to_s.start_with?( 'javascript:' )
+            next if !a.href.to_s.start_with?( 'javascript:' ) ||
+                a.href =~ /javascript:\s*void\(/
             a.click
         end
 
