@@ -27,6 +27,16 @@ describe Arachni::Browser do
         Typhoeus::Request.get( "#{@url}/clear-hit-count" )
     end
 
+    def image_hit
+        Typhoeus::Request.get( "#{@url}/image-hit" ).body == 'true'
+    end
+
+    it 'does not load inline images' do
+        image_hit.should be_false
+        @browser.load @url + '/with-image'
+        image_hit.should be_false
+    end
+
     describe '#trigger_events' do
         it 'triggers all events on all elements' do
             @browser.load @url + '/with-events'
@@ -385,6 +395,7 @@ describe Arachni::Browser do
             @browser.start_capture
             @browser.load @url + '/with-ajax'
             @browser.load @url + '/with-image'
+
             @browser.flush_pages.size.should == 2
 
             @browser.start_capture

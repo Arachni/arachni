@@ -75,9 +75,18 @@ get '/update-cookies' do
 end
 
 get '/with-image' do
+    @@image_hit = false
     <<HTML
-    <img src="/" />
+    <img src="/image.png" />
 HTML
+end
+
+get '/image.png' do
+    @@image_hit = true
+end
+
+get '/image-hit' do
+    @@image_hit.to_s
 end
 
 get '/with-events' do

@@ -66,18 +66,24 @@ class Browser
     attr_reader :watir
 
     def initialize
-        proxy.start_async
+        @proxy = HTTP::ProxyServer.new( request_handler: method( :request_handler ) )
+        @proxy.start_async
 
         @watir = ::Watir::Browser.new(
             Selenium::WebDriver.for( :phantomjs,
                 desired_capabilities: Selenium::WebDriver::Remote::Capabilities.
                                           phantomjs( phantomjs_options ),
-                args: "--proxy=http://#{proxy.address}/ --ignore-ssl-errors=true"
+                args: "--proxy=http://#{@proxy.address}/ --ignore-ssl-errors=true"
             )
         )
 
+        # Captured pages, by URL.
         @pages    = {}
+
+        # Response cache, by URL.
         @cache    = {}
+
+        # Preloaded responses, by URL.
         @preloads = {}
 
         @current_response = nil
@@ -86,7 +92,7 @@ class Browser
     def close
         watir.cookies.clear
         watir.close
-        proxy.shutdown
+        @proxy.shutdown
     end
 
     # @return   [String]    Current URL.
@@ -259,12 +265,9 @@ class Browser
 
     def phantomjs_options
         {
-            'phantomjs.page.settings.userAgent' => Options.user_agent
+            'phantomjs.page.settings.userAgent'  => Options.user_agent,
+            'phantomjs.page.settings.loadImages' => false
         }
-    end
-
-    def proxy
-        @proxy ||= HTTP::ProxyServer.new( request_handler: method( :request_handler ))
     end
 
     def request_handler( request, response )
