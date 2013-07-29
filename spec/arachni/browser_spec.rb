@@ -37,7 +37,80 @@ describe Arachni::Browser do
         image_hit.should be_false
     end
 
+    describe '#wait_for_pending_requests' do
+        it 'waits for HTTP requests to complete' do
+            @browser.load @url + '/trigger_events-wait-for-ajax'
+            @browser.start_capture
+            @browser.trigger_events
+            @browser.to_page.forms.should be_empty
+            @browser.close
+
+            @browser = described_class.new
+            @browser.load @url + '/trigger_events-wait-for-ajax'
+            @browser.start_capture
+            @browser.trigger_events
+            @browser.wait_for_pending_requests
+            @browser.to_page.forms.size.should == 1
+        end
+
+        context 'when a timeout has been provided' do
+            context 'as an argument' do
+                it 'waits for that amount of time' do
+                    @browser.load @url + '/trigger_events-wait-for-ajax'
+                    @browser.start_capture
+                    @browser.trigger_events
+                    @browser.trigger_events
+                    @browser.wait_for_pending_requests( 1 ).should be_false
+                    @browser.to_page.forms.should be_empty
+                    @browser.close
+
+                    @browser = described_class.new
+                    @browser.load @url + '/trigger_events-wait-for-ajax'
+                    @browser.start_capture
+                    @browser.trigger_events
+                    @browser.wait_for_pending_requests( 6 ).should be_true
+                    @browser.to_page.forms.size.should == 1
+                end
+            end
+
+            context 'as an instance option' do
+                it 'waits for that amount of time' do
+                    @browser = described_class.new( timeout: 1 )
+                    @browser.load @url + '/trigger_events-wait-for-ajax'
+                    @browser.start_capture
+                    @browser.trigger_events
+                    @browser.trigger_events
+                    @browser.wait_for_pending_requests.should be_false
+                    @browser.to_page.forms.should be_empty
+                    @browser.close
+
+                    @browser = described_class.new( timeout: 6 )
+                    @browser.load @url + '/trigger_events-wait-for-ajax'
+                    @browser.start_capture
+                    @browser.trigger_events
+                    @browser.wait_for_pending_requests.should be_true
+                    @browser.to_page.forms.size.should == 1
+                end
+            end
+
+        end
+    end
+
     describe '#trigger_events' do
+
+        context 'when the wait flag has been enabled' do
+            it 'waits for AJAX requests to complete' do
+                @browser.load @url + '/trigger_events-wait-for-ajax'
+
+                @browser.start_capture
+                @browser.trigger_events true
+
+                @browser.to_page.forms.size.should == 1
+                @browser.flush_pages.first.forms.
+                    find { |form| form.inputs.include? 'ajax-token' }.should be_true
+            end
+        end
+
         it 'triggers all events on all elements' do
             @browser.load @url + '/trigger_events'
             @browser.flush_pages.should be_empty

@@ -140,6 +140,45 @@ get '/trigger_events' do
 HTML
 end
 
+get '/trigger_events-wait-for-ajax' do
+    <<HTML
+<html>
+    <head>
+        <script>
+            function addForm() {
+                get_ajax = new XMLHttpRequest();
+                get_ajax.onreadystatechange = function() {
+                    if( get_ajax.readyState == 4 && get_ajax.status == 200 ) {
+                        document.getElementById( "my-div" ).innerHTML = get_ajax.responseText;
+                    }
+                }
+
+                get_ajax.open( "GET", "/get-ajax-with-sleep?ajax-token=my-token", true );
+                get_ajax.send();
+            }
+        </script>
+    <head>
+
+    <body>
+        <div id="my-div" onclick="addForm();">
+            Test
+        </div>
+    </body>
+</html>
+HTML
+end
+
+get '/get-ajax-with-sleep' do
+    return if params['ajax-token'] != 'my-token'
+
+    sleep 4
+    <<HTML
+    <form>
+        <input name="by-ajax">
+    </form>
+HTML
+end
+
 get '/hit-count' do
     @@hit_count.to_s
 end

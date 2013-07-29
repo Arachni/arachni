@@ -66,9 +66,21 @@ class Browser
     # @return   [Watir::Browser]   Watir driver interface.
     attr_reader :watir
 
-    def initialize
-        @proxy = HTTP::ProxyServer.new( request_handler: method( :request_handler ) )
-        @proxy.start_async
+    # @param    [Hash]  options
+    # @option   options [Integer] :timeout  (5)
+    #   Max time to wait for the page to settle (for pending AJAX requests etc).
+    # @option   options [HTTP::ProxyServer] :proxy
+    def initialize( options = {} )
+        @options = options.dup
+        if @options[:proxy]
+            @proxy = options[:proxy]
+        else
+            @proxy = HTTP::ProxyServer.new( request_handler: method( :request_handler ) )
+        end
+
+        @options[:timeout] ||= 5
+
+        @proxy.start_async if !@proxy.running?
 
         @watir = ::Watir::Browser.new(
             Selenium::WebDriver.for( :phantomjs,
@@ -113,12 +125,14 @@ class Browser
 
     # Triggers all events on all page elements and also clicks anchors with
     # hrefs containing JavaScript ('javascript:').
-    def trigger_events
+    #
+    # @param    [Bool]  wait
+    #   Wait for any resulting HTTP requests to complete.
+    def trigger_events( wait = false )
         watir.elements.each do |element|
             (element.attributes & EVENT_ATTRIBUTES).each do |event|
-                # Not all elements support all events so rescue exceptions and
-                # move on.
                 element.fire_event( event ) rescue nil
+                wait_for_pending_requests if wait
             end
         end
 
@@ -128,7 +142,21 @@ class Browser
             a.click
         end
 
+        wait_for_pending_requests if wait
+
         nil
+    end
+
+    # @param    [Integer]   timeout
+    #   Max time to wait for HTTP requests to complete -- defaults to the
+    #   `:timeout` option passed in {#initialize}.
+    def wait_for_pending_requests( timeout = nil )
+        Timeout.timeout( timeout || @options[:timeout] ) do
+            sleep 0.1 while @proxy.has_connections?
+        end
+        true
+    rescue Timeout::Error
+        false
     end
 
     # @param    [String, HTTP::Response, Page]  resource
