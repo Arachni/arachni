@@ -97,7 +97,7 @@ get '/image-hit' do
     @@image_hit.to_s
 end
 
-get '/with-events' do
+get '/trigger_events' do
     <<HTML
 <html>
     <head>
@@ -119,13 +119,22 @@ get '/with-events' do
                 post_ajax.open( "POST", "/post-ajax", true );
                 post_ajax.send( "post-name=post-value" );
             }
+
+            function inHref() {
+                post_ajax = new XMLHttpRequest();
+                post_ajax.open( "POST", "/href-ajax", true );
+                post_ajax.send( "href-post-name=href-post-value" );
+            }
         </script>
     <head>
 
     <body onmouseover="makePOST();">
+
         <div id="my-div" onclick="addForm();">
             Test
         </div>
+
+        <a href="javascript:inHref();">Stuff</a>
     </body>
 </html>
 HTML

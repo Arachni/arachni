@@ -110,7 +110,8 @@ class Browser
         page
     end
 
-    # Triggers all events on all page elements.
+    # Triggers all events on all page elements and also clicks anchors with
+    # hrefs containing JavaScript ('javascript:').
     def trigger_events
         watir.elements.each do |element|
             EVENT_ATTRIBUTES.each do |event|
@@ -119,6 +120,13 @@ class Browser
                 element.fire_event( event ) rescue nil
             end
         end
+
+        watir.as.each do |a|
+            next if !a.href.to_s.start_with?( 'javascript:' )
+            a.click
+        end
+
+        nil
     end
 
     # @param    [String, HTTP::Response, Page]  resource

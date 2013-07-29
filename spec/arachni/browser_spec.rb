@@ -39,7 +39,7 @@ describe Arachni::Browser do
 
     describe '#trigger_events' do
         it 'triggers all events on all elements' do
-            @browser.load @url + '/with-events'
+            @browser.load @url + '/trigger_events'
             @browser.flush_pages.should be_empty
 
             @browser.to_page.forms.should be_empty
@@ -51,9 +51,10 @@ describe Arachni::Browser do
 
             forms = @browser.flush_pages.first.forms
 
-            forms.size.should == 2
+            forms.size.should == 3
             forms.find { |form| form.inputs.include? 'ajax-token' }.should be_true
             forms.find { |form| form.inputs.include? 'post-name' }.should be_true
+            forms.find { |form| form.inputs.include? 'href-post-name' }.should be_true
         end
     end
 
