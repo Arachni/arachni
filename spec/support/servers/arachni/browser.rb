@@ -25,6 +25,14 @@ get '/' do
 HTML
 end
 
+get '/set-javascript-cookie' do
+    <<HTML
+    <script>
+        document.cookie = "js-cookie-name=js-cookie-value"
+    </script>
+HTML
+end
+
 get '/with-ajax' do
     <<HTML
 <html>

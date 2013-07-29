@@ -112,31 +112,22 @@ describe Arachni::Browser do
             Arachni::HTTP::Client.cookies.
                 find { |cookie| cookie.name == 'update' }.should be_true
         end
+
+        it 'accepts cookies set via JavaScript' do
+            Arachni::HTTP::Client.cookies.
+                find { |cookie| cookie.name == 'js-cookie-name' }.should be_nil
+
+            @browser.goto @url + '/set-javascript-cookie'
+
+            Arachni::HTTP::Client.cookies.
+                find { |cookie| cookie.name == 'js-cookie-name' }.should be_true
+
+            @browser.to_page.cookies.
+                find { |cookie| cookie.name == 'js-cookie-name' }.should be_true
+        end
     end
 
     describe '#load' do
-
-        it 'uses the system cookies' do
-            url = @url + '/cookie-test'
-            Arachni::HTTP::Client.cookie_jar << Arachni::Cookie.new(
-                url:    @url,
-                inputs: { 'cookie-name' => 'value' }
-            )
-
-            @browser.goto url
-            @browser.watir.div( id: 'cookies' ).text.should ==
-                "{\"cookie-name\"=>\"value\"}"
-        end
-
-        it 'updates the system cookies' do
-            Arachni::HTTP::Client.cookies.
-                find { |cookie| cookie.name == 'update' }.should be_nil
-
-            @browser.goto @url + '/update-cookies'
-
-            Arachni::HTTP::Client.cookies.
-                find { |cookie| cookie.name == 'update' }.should be_true
-        end
 
         context 'when given a' do
             describe String do
