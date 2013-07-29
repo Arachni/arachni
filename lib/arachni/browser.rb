@@ -232,7 +232,10 @@ class Browser
 
     # @return   [Array<Cookie>]   Browser cookies.
     def cookies
-        watir.cookies.to_a.map { |c| Cookie.new c.merge( url: url ) }
+        watir.cookies.to_a.map do |c|
+            c[:path] = '/' if c[:path] == '//'
+            Cookie.new c.merge( url: url )
+        end
     end
 
     # @return   [String]   HTML code of the evaluated (DOM/JS/AJAX) page.
