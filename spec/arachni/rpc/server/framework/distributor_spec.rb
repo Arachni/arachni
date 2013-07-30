@@ -626,7 +626,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 exp_urls |= links.map { |l| l.url }
 
                 pages = []
-                pages << Arachni::Page.new(
+                pages << Arachni::Page.from_data(
                     url: @url,
                     links: links
                 )
@@ -643,7 +643,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
                 exp_urls |= links.map { |l| l.url }
 
-                pages << Arachni::Page.new(
+                pages << Arachni::Page.from_data(
                     url: @url,
                     links: links
                 )

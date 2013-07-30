@@ -231,29 +231,24 @@ class Page
 
     # @return   [Nokogiri::HTML]    Parsed {#body HTML} document.
     def document
-        @parser.nil? ? Nokogiri::HTML( body ) : @parser.document
+        @document ||= (@parser.nil? ? Nokogiri::HTML( body ) : @parser.document)
     end
 
     def _dump( _ )
-        if response
-            response.request.clear_callbacks
-            return Marshal.dump( response )
-        end
-
         @document = nil
+        response.request.clear_callbacks if response
 
         h = {}
-        instance_variables.each do |iv|
-            h[iv.to_s.gsub( '@', '' )] = instance_variable_get( iv )
+        [:response, :body, :links, :forms, :cookies, :headers, :cookiejar,
+         :paths].each do |m|
+            h[m] = send( m )
         end
 
         Marshal.dump( h )
     end
 
     def self._load( data )
-        (data = Marshal.load( data )).is_a?( Hash ) ?
-            new( data ) :
-            from_response( data )
+        new Marshal.load( data )
     end
 
     # @return   [Boolean]
@@ -269,7 +264,7 @@ class Page
     end
 
     def hash
-        "#{body.hash}:#{response.hash}".hash
+        "#{body}:#{elements.map(&:hash).sort}".hash
     end
 
     def ==( other )

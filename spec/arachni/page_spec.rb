@@ -168,36 +168,101 @@ describe Arachni::Page do
     end
 
     describe '#==' do
-        context 'when the bodies or headers are different' do
+        context 'when the pages are different' do
             it 'returns false' do
-                create_page( body: '1body' ).should_not == create_page( body: 'body' )
-                create_page( headers: { '1' => '1'} ).should_not == create_page( headers: { '1' => '2'} )
-                create_page( body: 'body', headers: { '1' => '1'} ).should_not == create_page( body: 'body', headers: { '1' => '2'} )
+                p = create_page( body: 'stuff here' )
+                p.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
+                p.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
+                p.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
+
+                c = p.dup
+                c.body << 'test'
+                c.should_not == p
+
+                c = p.dup
+                c.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                c.should_not == p
+
+                c = p.dup
+                c.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                c.should_not == p
+
+                c = p.dup
+                c.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                c.should_not == p
             end
         end
-
-        context 'when the bodies and headers are identical' do
+        context 'when the pages are identical' do
             it 'returns true' do
-                create_page( body: 'body' ).should == create_page( body: 'body' )
-                create_page( headers: { '1' => '1'} ).should == create_page( headers: { '1' => '1'} )
-                create_page( body: 'body', headers: { '1' => '1'} ).should == create_page( body: 'body', headers: { '1' => '1'} )
+                p = create_page( body: 'stuff here')
+                p.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
+                p.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
+                p.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
+
+                c = p.dup
+                c.should == p
+
+                c = p.dup
+                p.body << 'test'
+                p.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                p.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                p.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+
+                c.body << 'test'
+                c.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                c.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                c.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                c.should == p
             end
         end
     end
 
     describe '#eql?' do
-        context 'when the bodies or headers are different' do
+        context 'when the pages are different' do
             it 'returns false' do
-                create_page( body: '1body' ).should_not eq create_page( body: 'body' )
-                create_page( headers: { '1' => '1'} ).should_not eq create_page( headers: { '1' => '2'} )
-                create_page( body: 'body', headers: { '1' => '1'} ).should_not eq create_page( body: 'body', headers: { '1' => '2'} )
+                p = create_page( body: 'stuff here')
+                p.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
+                p.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
+                p.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
+
+                c = p.dup
+                c.body << 'test'
+                c.should_not eql p
+
+                c = p.dup
+                c.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                c.should_not eql p
+
+                c = p.dup
+                c.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                c.should_not eql p
+
+                c = p.dup
+                c.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                c.should_not eql p
             end
         end
-        context 'when the bodies and headers are identical' do
+        context 'when the pages are identical' do
             it 'returns true' do
-                create_page( body: 'body' ).should eq create_page( body: 'body' )
-                create_page( headers: { '1' => '1'} ).should eq create_page( headers: { '1' => '1'} )
-                create_page( body: 'body', headers: { '1' => '1'} ).should eq create_page( body: 'body', headers: { '1' => '1'} )
+                p = create_page( body: 'stuff here')
+                p.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
+                p.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
+                p.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
+
+                c = p.dup
+                c.should eql p
+
+                c = p.dup
+                p.body << 'test'
+                p.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                p.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                p.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+
+                c.body << 'test'
+                c.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                c.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                c.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                c.should eql p
             end
         end
     end
