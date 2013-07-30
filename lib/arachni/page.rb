@@ -234,21 +234,10 @@ class Page
         @document ||= (@parser.nil? ? Nokogiri::HTML( body ) : @parser.document)
     end
 
-    def _dump( _ )
-        @document = nil
-        response.request.clear_callbacks if response
-
-        h = {}
-        [:response, :body, :links, :forms, :cookies, :headers, :cookiejar,
-         :paths].each do |m|
-            h[m] = send( m )
-        end
-
-        Marshal.dump( h )
-    end
-
-    def self._load( data )
-        new Marshal.load( data )
+    # @return   [Boolean]
+    #   `true` if the page contains JavaScript code, `false` otherwise.
+    def has_javascript?
+        document.css( 'script' ).any? if document
     end
 
     # @return   [Boolean]
@@ -277,6 +266,22 @@ class Page
 
     def dup
         self.deep_clone
+    end
+
+    def _dump( _ )
+        h = {}
+        [:response, :body, :links, :forms, :cookies, :headers, :cookiejar,
+         :paths].each do |m|
+            h[m] = send( m )
+        end
+
+        h[:forms].each { |f| f.node = nil }
+
+        Marshal.dump( h )
+    end
+
+    def self._load( data )
+        new Marshal.load( data )
     end
 
     private

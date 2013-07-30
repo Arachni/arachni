@@ -137,6 +137,21 @@ describe Arachni::Page do
         end
     end
 
+    describe '#has_javascript?' do
+        context 'when the page has JavaScript code' do
+            it 'returns true' do
+                create_page( body: '<Script>var i = '';</script>' ).
+                    has_javascript?.should be_true
+            end
+        end
+        context 'when the page does not have JavaScript code' do
+            it 'returns false' do
+                create_page( body: 'stuff' ).
+                    has_javascript?.should be_false
+            end
+        end
+    end
+
     describe '#text?' do
         context 'when the HTTP response was text based' do
             it 'returns true' do
