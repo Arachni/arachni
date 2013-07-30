@@ -54,11 +54,10 @@ class Link < Arachni::Element::Base
 
     # @return   [String]    Unique link ID.
     def id
-        query_vars = self.class.parse_query_vars( self.action )
-        "#{@audit_id_url}::#{self.method}::#{query_vars.merge( self.inputs ).keys.compact.sort.to_s}"
+        id_from :inputs
     end
 
-    def id_from( type = :auditable )
+    def id_from( type = :inputs )
         query_vars = self.class.parse_query_vars( self.action )
         "#{@audit_id_url}::#{self.method}::#{query_vars.merge( self.send( type ) ).keys.compact.sort.to_s}"
     end
