@@ -277,6 +277,25 @@ class Request < Message
         r
     end
 
+    def marshal_dump
+        callbacks = @on_complete.dup
+        performer = @performer ? @performer.dup : nil
+
+        @performer   = nil
+        @on_complete = []
+
+        instance_variables.inject( {} ) do |h, iv|
+            h[iv] = instance_variable_get( iv )
+            h
+        end
+    ensure
+        @on_complete = callbacks
+        @performer   = performer.dup if performer
+    end
+
+    def marshal_load( h )
+        h.each { |k, v| instance_variable_set( k, v ) }
+    end
 end
 end
 end
