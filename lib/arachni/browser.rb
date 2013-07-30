@@ -23,6 +23,7 @@ module Arachni
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Browser
+    include UI::Output
 
     # {Browser} error namespace.
     #
@@ -92,6 +93,8 @@ class Browser
                 args: "--proxy=http://#{@proxy.address}/ --ignore-ssl-errors=true"
             )
         )
+
+        ensure_open_window
 
         # User-controlled response cache, by URL.
         @cache = Support::Cache::LeastRecentlyUsed.new( 200 )
@@ -248,6 +251,8 @@ class Browser
     #
     # @return   [Browser]   `self`
     def goto( url )
+        ensure_open_window
+
         load_cookies url
         watir.goto @url = url
         HTTP::Client.update_cookies cookies
@@ -390,6 +395,9 @@ class Browser
 
         @page_snapshots[page.hash] = page
         @skip << hash
+    rescue => e
+        print_error e
+        print_error_backtrace e
     end
 
     def wait_for_pending_requests
@@ -415,6 +423,15 @@ class Browser
                     map( &:to_set_cookie )
             }
         ))
+    end
+
+    # Makes sure we have at least 2 windows open so that we can switch to the
+    # last available one in case there's some JS in the page that closes one.
+    def ensure_open_window
+        return if watir.windows.size > 1
+
+        watir.windows.last.use
+        watir.execute_script( 'window.open()' )
     end
 
     def phantomjs_options

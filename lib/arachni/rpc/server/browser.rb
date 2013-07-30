@@ -31,6 +31,7 @@ class Server
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Browser
+    include UI::Output
 
     # Spawns a {Server::Browser} in it own process and connects to it.
     #
@@ -87,8 +88,14 @@ class Browser
     # @see Arachni::Browser#shake
     def analyze( page, &block )
         ::EM.defer do
-            @browser.load page
-            @browser.shake
+            begin
+                @browser.load page
+                @browser.shake
+            rescue => e
+                print_error e
+                print_error_backtrace e
+            end
+
             block.call @browser.flush_pages
         end
 
@@ -104,8 +111,9 @@ class Browser
     #
     # @see Arachni::Browser#close
     def close
-        @browser.close
-        @server.shutdown
+        @browser.close rescue nil
+        @server.shutdown rescue nil
+        nil
     end
     alias :shutdown :close
 
