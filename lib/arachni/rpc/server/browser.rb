@@ -39,7 +39,7 @@ class Browser
         socket = "/tmp/arachni-browser-#{Utilities.available_port}"
         token  = Utilities.generate_token
 
-        Arachni::Processes::Manager.preserve_output
+        #Arachni::Processes::Manager.preserve_output
         Arachni::Processes::Manager.fork_em do
             Options.rpc_socket = socket
             new token
