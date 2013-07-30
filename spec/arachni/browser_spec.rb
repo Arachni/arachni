@@ -27,107 +27,61 @@ describe Arachni::Browser do
         Typhoeus::Request.get( "#{@url}/clear-hit-count" )
     end
 
-    def image_hit
-        Typhoeus::Request.get( "#{@url}/image-hit" ).body == 'true'
+    def pages_should_have_form_with_input( pages, input_name )
+        pages.find do |page|
+            page.forms.find { |form| form.inputs.include? input_name }
+        end.should be_true
     end
 
-    it 'does not load inline images' do
-        image_hit.should be_false
-        @browser.load @url + '/with-image'
-        image_hit.should be_false
-    end
+    describe 'shake' do
+        it 'triggers all events on all elements and follows all javascript links' do
+            @browser.load( @url + '/shake' ).start_capture.shake
 
-    describe '#wait_for_pending_requests' do
-        it 'waits for HTTP requests to complete' do
-            @browser.load @url + '/trigger_events-wait-for-ajax'
-            @browser.start_capture
-            @browser.trigger_events
-            @browser.to_page.forms.should be_empty
-            @browser.close
-
-            @browser = described_class.new
-            @browser.load @url + '/trigger_events-wait-for-ajax'
-            @browser.start_capture
-            @browser.trigger_events
-            @browser.wait_for_pending_requests
-            @browser.to_page.forms.size.should == 1
+            pages_should_have_form_with_input @browser.page_snapshots, 'by-ajax'
+            pages_should_have_form_with_input @browser.captured_pages, 'ajax-token'
+            pages_should_have_form_with_input @browser.captured_pages, 'href-post-name'
         end
 
-        context 'when a timeout has been provided' do
-            context 'as an argument' do
-                it 'waits for that amount of time' do
-                    @browser.load @url + '/trigger_events-wait-for-ajax'
-                    @browser.start_capture
-                    @browser.trigger_events
-                    @browser.trigger_events
-                    @browser.wait_for_pending_requests( 1 ).should be_false
-                    @browser.to_page.forms.should be_empty
-                    @browser.close
-
-                    @browser = described_class.new
-                    @browser.load @url + '/trigger_events-wait-for-ajax'
-                    @browser.start_capture
-                    @browser.trigger_events
-                    @browser.wait_for_pending_requests( 6 ).should be_true
-                    @browser.to_page.forms.size.should == 1
-                end
-            end
-
-            context 'as an instance option' do
-                it 'waits for that amount of time' do
-                    @browser = described_class.new( timeout: 1 )
-                    @browser.load @url + '/trigger_events-wait-for-ajax'
-                    @browser.start_capture
-                    @browser.trigger_events
-                    @browser.trigger_events
-                    @browser.wait_for_pending_requests.should be_false
-                    @browser.to_page.forms.should be_empty
-                    @browser.close
-
-                    @browser = described_class.new( timeout: 6 )
-                    @browser.load @url + '/trigger_events-wait-for-ajax'
-                    @browser.start_capture
-                    @browser.trigger_events
-                    @browser.wait_for_pending_requests.should be_true
-                    @browser.to_page.forms.size.should == 1
-                end
-            end
-
+        it 'returns self' do
+            @browser.load( @url + '/shake' ).shake.should == @browser
         end
     end
 
     describe '#trigger_events' do
+        it 'waits for AJAX requests to complete' do
+            @browser.load( @url + '/trigger_events-wait-for-ajax' ).start_capture.trigger_events
 
-        context 'when the wait flag has been enabled' do
-            it 'waits for AJAX requests to complete' do
-                @browser.load @url + '/trigger_events-wait-for-ajax'
-
-                @browser.start_capture
-                @browser.trigger_events true
-
-                @browser.to_page.forms.size.should == 1
-                @browser.flush_pages.first.forms.
-                    find { |form| form.inputs.include? 'ajax-token' }.should be_true
-            end
+            pages_should_have_form_with_input @browser.captured_pages, 'ajax-token'
+            pages_should_have_form_with_input @browser.page_snapshots, 'by-ajax'
         end
 
         it 'triggers all events on all elements' do
-            @browser.load @url + '/trigger_events'
-            @browser.flush_pages.should be_empty
+            @browser.load( @url + '/trigger_events' ).start_capture.trigger_events
 
-            @browser.to_page.forms.should be_empty
+            pages_should_have_form_with_input @browser.page_snapshots, 'by-ajax'
+            pages_should_have_form_with_input @browser.captured_pages, 'ajax-token'
+        end
 
-            @browser.start_capture
-            @browser.trigger_events
+        it 'returns self' do
+            @browser.load( @url + '/trigger_events' ).trigger_events.should == @browser
+        end
+    end
 
-            @browser.to_page.forms.select { |f| f.inputs.include? 'by-ajax' }.should be_true
+    describe '#visit_links' do
+        it 'waits for AJAX requests to complete' do
+            @browser.load( @url + '/visit_links-sleep' ).start_capture.visit_links
 
-            forms = @browser.flush_pages.first.forms
+            pages_should_have_form_with_input @browser.captured_pages, 'href-post-name-sleep'
+        end
 
-            forms.size.should == 3
-            forms.find { |form| form.inputs.include? 'ajax-token' }.should be_true
-            forms.find { |form| form.inputs.include? 'post-name' }.should be_true
-            forms.find { |form| form.inputs.include? 'href-post-name' }.should be_true
+        it 'visits all javascript links' do
+            @browser.load( @url + '/visit_links' ).start_capture.visit_links
+
+            pages_should_have_form_with_input @browser.captured_pages, 'href-post-name'
+        end
+
+        it 'returns self' do
+            @browser.load( @url + '/visit_links' ).visit_links.should == @browser
         end
     end
 
@@ -155,7 +109,6 @@ describe Arachni::Browser do
     end
 
     describe '#goto' do
-
         it 'loads the given URL' do
             @browser.load @url
 
@@ -199,9 +152,16 @@ describe Arachni::Browser do
             @browser.to_page.cookies.
                 find { |cookie| cookie.name == 'js-cookie-name' }.should be_true
         end
+
+        it 'returns self' do
+            @browser.goto( @url ).should == @browser
+        end
     end
 
     describe '#load' do
+        it 'returns self' do
+            @browser.load( @url ).should == @browser
+        end
 
         context 'when given a' do
             describe String do
@@ -391,7 +351,7 @@ describe Arachni::Browser do
     end
 
     describe '#start_capture' do
-        it 'starts capturing requests and parses them into pages' do
+        it 'starts capturing requests and parses them into forms of pages' do
             @browser.start_capture
             @browser.load @url + '/with-ajax'
 

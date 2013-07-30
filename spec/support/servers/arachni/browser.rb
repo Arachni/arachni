@@ -97,7 +97,7 @@ get '/image-hit' do
     @@image_hit.to_s
 end
 
-get '/trigger_events' do
+get '/shake' do
     <<HTML
 <html>
     <head>
@@ -139,6 +139,86 @@ get '/trigger_events' do
 </html>
 HTML
 end
+
+get '/visit_links' do
+    <<HTML
+<html>
+    <head>
+        <script>
+            function inHref() {
+                post_ajax = new XMLHttpRequest();
+                post_ajax.open( "POST", "/href-ajax", true );
+                post_ajax.send( "href-post-name=href-post-value" );
+            }
+        </script>
+    <head>
+
+    <body>
+        <a href="javascript:inHref();">Stuff</a>
+    </body>
+</html>
+HTML
+end
+
+get '/visit_links-sleep' do
+    <<HTML
+<html>
+    <head>
+        <script>
+            function inHref() {
+                post_ajax = new XMLHttpRequest();
+                post_ajax.open( "POST", "/href-ajax-sleep", true );
+                post_ajax.send( "href-post-name-sleep=href-post-value" );
+            }
+        </script>
+    <head>
+
+    <body>
+        <a href="javascript:inHref();">Stuff</a>
+    </body>
+</html>
+HTML
+end
+
+post '/href-ajax-sleep' do
+    sleep 4
+end
+
+get '/trigger_events' do
+    <<HTML
+<html>
+    <head>
+        <script>
+            function addForm() {
+                get_ajax = new XMLHttpRequest();
+                get_ajax.onreadystatechange = function() {
+                    if( get_ajax.readyState == 4 && get_ajax.status == 200 ) {
+                        document.getElementById( "my-div" ).innerHTML = get_ajax.responseText;
+                    }
+                }
+
+                get_ajax.open( "GET", "/get-ajax?ajax-token=my-token", true );
+                get_ajax.send();
+            }
+
+            function makePOST() {
+                post_ajax = new XMLHttpRequest();
+                post_ajax.open( "POST", "/post-ajax", true );
+                post_ajax.send( "post-name=post-value" );
+            }
+        </script>
+    <head>
+
+    <body onmouseover="makePOST();">
+
+        <div id="my-div" onclick="addForm();">
+            Test
+        </div>
+    </body>
+</html>
+HTML
+end
+
 
 get '/trigger_events-wait-for-ajax' do
     <<HTML
