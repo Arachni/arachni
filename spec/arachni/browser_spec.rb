@@ -356,7 +356,7 @@ describe Arachni::Browser do
             @browser.load @url + '/with-ajax'
 
             pages = @browser.flush_pages
-            pages.size.should == 1
+            pages.size.should == 2
 
             page = pages.first
 
@@ -369,7 +369,7 @@ describe Arachni::Browser do
                 @browser.load @url + '/with-ajax'
 
                 pages = @browser.flush_pages
-                pages.size.should == 1
+                pages.size.should == 2
 
                 page = pages.first
 
@@ -389,7 +389,7 @@ describe Arachni::Browser do
                 @browser.load @url + '/with-ajax'
 
                 pages = @browser.flush_pages
-                pages.size.should == 1
+                pages.size.should == 2
 
                 page = pages.first
 
@@ -410,7 +410,7 @@ describe Arachni::Browser do
             @browser.load @url + '/with-ajax'
 
             pages = @browser.flush_pages
-            pages.size.should == 1
+            pages.size.should == 2
             @browser.flush_pages.should be_empty
         end
     end
@@ -421,13 +421,13 @@ describe Arachni::Browser do
             @browser.load @url + '/with-ajax'
             @browser.load @url + '/with-image'
 
-            @browser.flush_pages.size.should == 2
+            @browser.flush_pages.size.should == 4
 
             @browser.start_capture
             @browser.load @url + '/with-ajax'
             @browser.stop_capture
             @browser.load @url + '/with-image'
-            @browser.flush_pages.size.should == 1
+            @browser.flush_pages.size.should == 3
         end
     end
 

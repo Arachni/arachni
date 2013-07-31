@@ -133,10 +133,10 @@ class Browser
         return if !@current_response
 
         current_response = @current_response.deep_clone
-        current_response.body = source
 
-        page = current_response.to_page
-        page.cookies |= cookies
+        page           = current_response.to_page
+        page.dom_body  = source
+        page.cookies  |= cookies
         page
     end
 
@@ -257,6 +257,9 @@ class Browser
         watir.goto @url = url
         HTTP::Client.update_cookies cookies
 
+        # Capture the page at its initial state.
+        capture_snapshot
+
         self
     end
 
@@ -271,7 +274,9 @@ class Browser
                             resource
 
                         when Page
-                            resource.response
+                            response      = resource.response.deep_clone
+                            response.body = resource.dom_body
+                            response
 
                         else
                             fail Error::Load,

@@ -40,8 +40,7 @@ class Browser
         socket = "/tmp/arachni-browser-#{Utilities.available_port}"
         token  = Utilities.generate_token
 
-        #Arachni::Processes::Manager.preserve_output
-        Arachni::Processes::Manager.fork_em do
+        ::EM.fork_reactor do
             Options.rpc_socket = socket
             new token
         end
@@ -70,6 +69,7 @@ class Browser
         @browser.start_capture
 
         @server = Base.new( Options.instance, token )
+        @server.logger.level = ::Logger::Severity::FATAL
 
         @server.add_async_check do |method|
             # methods that expect a block are async
