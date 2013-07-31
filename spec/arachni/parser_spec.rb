@@ -26,6 +26,39 @@ describe Arachni::Parser do
         end
     end
 
+    describe '#body=' do
+        it 'overrides the body of the HTTP response for the parsing process' do
+            url = 'http://stuff.com/'
+            response = Arachni::HTTP::Response.new(
+                url: url,
+                body: '<a href="/?name=val">Stuff</a>',
+                request: Arachni::HTTP::Request.new( url )
+            )
+
+            parser = Arachni::Parser.new( response, @opts )
+            parser.body = '<a href="/?name2=val2">Stuff</a>'
+            parser.links.size.should == 1
+            parser.links.first.inputs.should == { 'name2' => 'val2' }
+        end
+
+        it 'clears the existing element cache' do
+            url = 'http://stuff.com/'
+            response = Arachni::HTTP::Response.new(
+                url: url,
+                body: '<a href="/?name=val">Stuff</a>',
+                request: Arachni::HTTP::Request.new( url )
+            )
+
+            parser = Arachni::Parser.new( response, @opts )
+            parser.links.size.should == 1
+            parser.links.first.inputs.should == { 'name' => 'val' }
+
+            parser.body = '<a href="/?name2=val2">Stuff</a>'
+            parser.links.size.should == 1
+            parser.links.first.inputs.should == { 'name2' => 'val2' }
+        end
+    end
+
     describe '#page' do
         it 'returns a Page' do
             page = @parser.page

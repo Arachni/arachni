@@ -113,7 +113,18 @@ class Parser
     # @return   [Boolean]
     #   `true` if the given HTTP response data are text based, `false` otherwise.
     def text?
-        @response.text?
+        !@body.to_s.empty? || @response.text?
+    end
+
+    # @return    [String]
+    #   Override the {#response} body for the parsing process.
+    def body=( string )
+        @links = @forms = @cookies = @document = nil
+        @body = string
+    end
+
+    def body
+        @body || @response.body
     end
 
     # @return   [Nokogiri::HTML, nil]
@@ -122,7 +133,7 @@ class Parser
     #   couldn't be parsed.
     def document
         return @document.freeze if @document
-        @document = Nokogiri::HTML( @response.body ) if text? rescue nil
+        @document = Nokogiri::HTML( body ) if text? rescue nil
     end
 
     # @note It's more of a placeholder method, it doesn't actually analyze anything.
