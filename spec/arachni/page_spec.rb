@@ -96,7 +96,37 @@ describe Arachni::Page do
                 expect{ described_class.new }.to raise_error ArgumentError
             end
         end
+    end
 
+    describe '#dom_body=' do
+        it 'overrides the body of the HTTP response for the parsing process' do
+            url = 'http://stuff.com/'
+            page = Arachni::HTTP::Response.new(
+                url: url,
+                body: '<a href="/?name=val">Stuff</a>',
+                request: Arachni::HTTP::Request.new( url )
+            ).to_page
+
+            page.dom_body = '<a href="/?name2=val2">Stuff</a>'
+            page.links.size.should == 1
+            page.links.first.inputs.should == { 'name2' => 'val2' }
+        end
+
+        it 'clears the existing element cache' do
+            url = 'http://stuff.com/'
+            page = Arachni::HTTP::Response.new(
+                url: url,
+                body: '<a href="/?name=val">Stuff</a>',
+                request: Arachni::HTTP::Request.new( url )
+            ).to_page
+
+            page.links.size.should == 1
+            page.links.first.inputs.should == { 'name' => 'val' }
+
+            page.dom_body = '<a href="/?name2=val2">Stuff</a>'
+            page.links.size.should == 1
+            page.links.first.inputs.should == { 'name2' => 'val2' }
+        end
     end
 
     describe '#links=' do

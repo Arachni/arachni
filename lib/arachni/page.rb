@@ -148,6 +148,19 @@ class Page
         @body ||= response.body
     end
 
+    # @return    [String]
+    #   Calculated body, taking into account JS/DOM -- defaults to {#body}.
+    def dom_body
+        @dom_body ||= body
+    end
+
+    # @param    [String]    string
+    #   Calculated body, taking into account JS/DOM.
+    def dom_body=( string )
+        @links = @forms = @cookies = @document = nil
+        @parser.body = @dom_body = string
+    end
+
     # @return    [Array<Element::Link>]
     # @see Parser#links
     def links
@@ -229,9 +242,9 @@ class Page
         response.request.method
     end
 
-    # @return   [Nokogiri::HTML]    Parsed {#body HTML} document.
+    # @return   [Nokogiri::HTML]    Parsed {#dom_body HTML} document.
     def document
-        @document ||= (@parser.nil? ? Nokogiri::HTML( body ) : @parser.document)
+        @document ||= (@parser.nil? ? Nokogiri::HTML( dom_body ) : @parser.document)
     end
 
     # @return   [Boolean]
