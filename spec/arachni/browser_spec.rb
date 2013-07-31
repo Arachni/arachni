@@ -33,17 +33,103 @@ describe Arachni::Browser do
         end.should be_true
     end
 
-    describe 'shake' do
+    it 'handles deep DOM/page transitions' do
+        @browser.start_capture
+
+        pages = []
+
+        pages << @browser.load( @url + '/deep-dom' ).to_page
+
+        done = false
+        while !done do
+            pages.each do |page|
+                @browser.load( page ).explore
+
+                bcnt = pages.size
+                pages |= @browser.flush_pages
+
+                if pages.size == bcnt
+                    done = true
+                    break
+                end
+            end
+        end
+
+        page = pages.last
+        page.forms.find { |f| f.inputs.include? 'by-ajax' }.should be_true
+        page.transitions.should == [
+            { "#{@url}deep-dom" => :request },
+            { "#{@url}level2" => :request },
+            { page: :load },
+            { "#{@url}level2" => :request },
+            { page: :load },
+            { "<a href=\"javascript:level3();\">" => :click },
+            { "#{@url}level4" => :request },
+            { "#{@url}level4" => :request },
+            { "#{@url}level6" => :request },
+            { "<div onclick=\"level6();\" id=\"level5\">" => :onclick }
+        ]
+    end
+
+    describe '#to_page' do
+        it 'converts the working window to an Arachni::Page' do
+            ua = Arachni::Options.user_agent
+
+            @browser.load( @url )
+            page = @browser.to_page
+
+            page.should be_kind_of Arachni::Page
+
+            ua.should_not be_empty
+            page.body.should_not include( ua )
+            page.dom_body.should include( ua )
+        end
+
+        it 'assigns the proper page transitions' do
+            @browser.load( @url )
+            page = @browser.to_page
+
+            page.transitions.should == [ { page: :load } ]
+        end
+    end
+
+    describe 'explore' do
         it 'triggers all events on all elements and follows all javascript links' do
-            @browser.load( @url + '/shake' ).start_capture.shake
+            @browser.load( @url + '/explore' ).start_capture.explore
 
             pages_should_have_form_with_input @browser.page_snapshots, 'by-ajax'
             pages_should_have_form_with_input @browser.captured_pages, 'ajax-token'
             pages_should_have_form_with_input @browser.captured_pages, 'href-post-name'
         end
 
+        it 'assigns the proper page transitions' do
+            @browser.load( @url + '/explore' ).start_capture.explore
+
+            pages = @browser.page_snapshots
+
+            pages[0].transitions == [ { page: :load } ]
+            pages[1].transitions.should == [
+                { page: :load },
+                { "<body onmouseover=\"makePOST();\">" => :onmouseover },
+                { "#{@url}post-ajax" => :request },
+                { "#{@url}get-ajax?ajax-token=my-token" => :request },
+                { "<div id=\"my-div\" onclick=\"addForm();\">" => :onclick }
+            ]
+            pages[2].transitions.should == [
+                { page: :load },
+                { "<body onmouseover=\"makePOST();\">" => :onmouseover },
+                { "#{@url}post-ajax" => :request },
+                { "#{@url}get-ajax?ajax-token=my-token" => :request },
+                { "<div id=\"my-div\" onclick=\"addForm();\">" => :onclick },
+                { "<a href=\"javascript:inHref();\">" => :click},
+                { "#{@url}post-ajax" => :request },
+                { "#{@url}href-ajax" => :request },
+                { "#{@url}href-ajax" => :request }
+            ]
+        end
+
         it 'returns self' do
-            @browser.load( @url + '/shake' ).shake.should == @browser
+            @browser.load( @url + '/explore' ).explore.should == @browser
         end
     end
 
@@ -62,6 +148,21 @@ describe Arachni::Browser do
             pages_should_have_form_with_input @browser.captured_pages, 'ajax-token'
         end
 
+        it 'assigns the proper page transitions' do
+            @browser.load( @url + '/trigger_events' ).start_capture.trigger_events
+
+            pages = @browser.page_snapshots
+
+            pages[0].transitions.should == [ { page: :load } ]
+            pages[1].transitions.should == [
+                { page: :load },
+                { "<body onmouseover=\"makePOST();\">" => :onmouseover },
+                { "#{@url}post-ajax" => :request },
+                { "#{@url}get-ajax?ajax-token=my-token" => :request },
+                { "<div id=\"my-div\" onclick=\"addForm();\">" => :onclick }
+            ]
+        end
+
         it 'returns self' do
             @browser.load( @url + '/trigger_events' ).trigger_events.should == @browser
         end
@@ -78,6 +179,21 @@ describe Arachni::Browser do
             @browser.load( @url + '/visit_links' ).start_capture.visit_links
 
             pages_should_have_form_with_input @browser.captured_pages, 'href-post-name'
+            pages_should_have_form_with_input @browser.page_snapshots, 'from-post-ajax'
+        end
+
+        it 'assigns the proper page transitions' do
+            @browser.load( @url + '/visit_links' ).start_capture.visit_links
+
+            pages = @browser.page_snapshots
+
+            pages[0].transitions == [ { page: :load } ]
+            pages[1].transitions == [
+                {:page=>:load},
+                {"<a href=\"javascript:inHref();\">"=>:click},
+                {"#{@url}href-ajax"=>:request},
+                {"#{@url}href-ajax"=>:request}
+            ]
         end
 
         it 'returns self' do
@@ -110,12 +226,41 @@ describe Arachni::Browser do
 
     describe '#goto' do
         it 'loads the given URL' do
-            @browser.load @url
+            @browser.goto @url
 
             ua = Arachni::Options.user_agent
             ua.should_not be_empty
 
             @browser.source.should include( ua )
+        end
+
+        context 'when the take_snapshot argument has been set to' do
+            describe true do
+                it 'captures a snapshot of the loaded page' do
+                    @browser.goto @url, true
+                    pages = @browser.page_snapshots
+                    pages.size.should == 1
+
+                    pages.first.transitions.should == [ { page: :load } ]
+                end
+            end
+
+            describe false do
+                it 'does not capture a snapshot of the loaded page' do
+                    @browser.goto @url, false
+                    @browser.page_snapshots.should be_empty
+                end
+            end
+
+            describe 'default' do
+                it 'captures a snapshot of the loaded page' do
+                    @browser.goto @url
+                    pages = @browser.page_snapshots
+                    pages.size.should == 1
+
+                    pages.first.transitions.should == [ { page: :load } ]
+                end
+            end
         end
 
         it 'uses the system cookies' do
@@ -161,6 +306,35 @@ describe Arachni::Browser do
     describe '#load' do
         it 'returns self' do
             @browser.load( @url ).should == @browser
+        end
+
+        context 'when the take_snapshot argument has been set to' do
+            describe true do
+                it 'captures a snapshot of the loaded page' do
+                    @browser.load @url, true
+                    pages = @browser.page_snapshots
+                    pages.size.should == 1
+
+                    pages.first.transitions.should == [ { page: :load } ]
+                end
+            end
+
+            describe false do
+                it 'does not capture a snapshot of the loaded page' do
+                    @browser.load @url, false
+                    @browser.page_snapshots.should be_empty
+                end
+            end
+
+            describe 'default' do
+                it 'captures a snapshot of the loaded page' do
+                    @browser.load @url
+                    pages = @browser.page_snapshots
+                    pages.size.should == 1
+
+                    pages.first.transitions.should == [ { page: :load } ]
+                end
+            end
         end
 
         context 'when given a' do
@@ -427,7 +601,7 @@ describe Arachni::Browser do
             @browser.load @url + '/with-ajax'
             @browser.stop_capture
             @browser.load @url + '/with-image'
-            @browser.flush_pages.size.should == 3
+            @browser.flush_pages.size.should == 1
         end
     end
 

@@ -33,6 +33,88 @@ get '/set-javascript-cookie' do
 HTML
 end
 
+get '/deep-dom' do
+    <<HTML
+<html>
+    <head>
+        <script>
+            function level3() {
+                ajax = new XMLHttpRequest();
+                ajax.onreadystatechange = function() {
+                    if( ajax.readyState == 4 && ajax.status == 200 ) {
+                        document.getElementById( "level3" ).innerHTML = ajax.responseText;
+                    }
+                }
+
+                ajax.open( "GET", "/level4", true );
+                ajax.send();
+            }
+
+            function level6() {
+                ajax = new XMLHttpRequest();
+                ajax.onreadystatechange = function() {
+                    if( ajax.readyState == 4 && ajax.status == 200 ) {
+                        document.getElementById( "level6" ).innerHTML = ajax.responseText;
+                    }
+                }
+
+                ajax.open( "GET", "/level6", true );
+                ajax.send();
+            }
+
+
+            level1_ajax = new XMLHttpRequest();
+            level1_ajax.onreadystatechange = function() {
+                if( level1_ajax.readyState == 4 && level1_ajax.status == 200 ) {
+                    document.getElementById( "level1" ).innerHTML = level1_ajax.responseText;
+                }
+            }
+
+            level1_ajax.open( "GET", "/level2", true );
+            level1_ajax.send();
+        </script>
+    <head>
+
+    <body>
+        <div id="level1">
+        </div>
+    </body>
+</html>
+HTML
+end
+
+get '/level2' do
+    <<HTML
+    <div id="level2">
+        <a href="javascript:level3();">level3 link</a>
+
+        <div id="level3">
+        </div>
+    </div>
+HTML
+end
+
+get '/level4' do
+    <<HTML
+    <div id="level4">
+        <div onclick="level6();" id="level5">
+            Level 5 div
+        </div>
+
+        <div id="level6">
+        </div>
+    </div>
+HTML
+end
+
+get '/level6' do
+    <<HTML
+    <form>
+        <input name="by-ajax">
+    </form>
+HTML
+end
+
 get '/with-ajax' do
     <<HTML
 <html>
@@ -97,7 +179,7 @@ get '/image-hit' do
     @@image_hit.to_s
 end
 
-get '/shake' do
+get '/explore' do
     <<HTML
 <html>
     <head>
@@ -147,6 +229,14 @@ get '/visit_links' do
         <script>
             function inHref() {
                 post_ajax = new XMLHttpRequest();
+
+                post_ajax.onreadystatechange = function() {
+                    if( post_ajax.readyState == 4 && post_ajax.status == 200 ) {
+                        document.getElementById( "my-div" ).innerHTML = post_ajax.responseText;
+                    }
+                }
+
+
                 post_ajax.open( "POST", "/href-ajax", true );
                 post_ajax.send( "href-post-name=href-post-value" );
             }
@@ -154,9 +244,22 @@ get '/visit_links' do
     <head>
 
     <body>
+        <div id="my-div">
+            Test
+        </div>
+
         <a href="javascript:inHref();">Stuff</a>
     </body>
 </html>
+HTML
+end
+
+post '/href-ajax' do
+
+    <<HTML
+    <form>
+        <input name="from-post-ajax">
+    </form>
 HTML
 end
 

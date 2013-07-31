@@ -85,12 +85,12 @@ class Browser
     #   Pages which resulted from firing events, clicking JavaScript links
     #   and capturing AJAX requests.
     #
-    # @see Arachni::Browser#shake
+    # @see Arachni::Browser#explore
     def analyze( page, &block )
         ::EM.defer do
             begin
                 @browser.load page
-                @browser.shake
+                @browser.explore
             rescue => e
                 print_error e
                 print_error_backtrace e

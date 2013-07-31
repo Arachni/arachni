@@ -98,6 +98,51 @@ describe Arachni::Page do
         end
     end
 
+    describe '#transitions' do
+        it 'defaults to an empty Array' do
+            create_page.transitions.should == []
+        end
+    end
+
+    describe '#transitions=' do
+        it 'sets #transitions' do
+            transitions = [ { element: :stuffed } ]
+
+            page = create_page
+            page.transitions = transitions
+
+            page.transitions.should == transitions
+        end
+    end
+
+    describe '#dom_depth' do
+        it 'returns the amount of page transitions' do
+            page.dom_depth.should == 0
+
+            page.transitions = [
+                { element: :stuffed },
+                { element2: :stuffed2 }
+            ]
+
+            page.dom_depth.should == 2
+        end
+    end
+
+    describe '#push_transition' do
+        it 'pushes a state transition' do
+            page = create_page
+
+            transitions = [
+                { element: :stuffed },
+                { element2: :stuffed2 }
+            ].each do |transition|
+                page.push_transition transition
+            end
+
+            page.transitions.should == transitions
+        end
+    end
+
     describe '#dom_body=' do
         it 'overrides the body of the HTTP response for the parsing process' do
             url = 'http://stuff.com/'

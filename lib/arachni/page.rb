@@ -102,6 +102,8 @@ class Page
         new data
     end
 
+    attr_accessor :transitions
+
     # Needs either a `:parser` or a `:response` or user provided data.
     #
     # @param    [Hash]  options    Hash from which to set instance attributes.
@@ -117,7 +119,17 @@ class Page
 
         @parser ||= Parser.new( @response ) if @response
 
+        @transitions ||= []
+
         Platform::Manager.fingerprint( self ) if Options.fingerprint?
+    end
+
+    def push_transition( transition )
+        @transitions << transition
+    end
+
+    def dom_depth
+        @transitions.size
     end
 
     # @return    [HTTP::Response]    HTTP response.

@@ -78,7 +78,10 @@ class Browser
         if @options[:proxy]
             @proxy = options[:proxy]
         else
-            @proxy = HTTP::ProxyServer.new( request_handler:  method( :request_handler ) )
+            @proxy = HTTP::ProxyServer.new(
+                request_handler:  method( :request_handler ),
+                response_handler: method( :response_handler )
+            )
         end
 
         @options[:timeout] ||= 5
@@ -115,115 +118,8 @@ class Browser
         # Keeps track of resources which should be skipped -- like already fired
         # events and clicked links etc.
         @skip = Support::LookUp::HashSet.new
-    end
 
-    def close
-        watir.cookies.clear
-        watir.close
-        @proxy.shutdown
-    end
-
-    # @return   [String]    Current URL.
-    def url
-        Utilities.normalize_url(@url || @current_response.url )
-    end
-
-    # @return   [Page]  Converts the current browser window to a {Page page}.
-    def to_page
-        return if !@current_response
-
-        current_response = @current_response.deep_clone
-
-        page           = current_response.to_page
-        page.dom_body  = source
-        page.cookies  |= cookies
-        page
-    end
-
-    # {#trigger_events Triggers events} and {#visit_links visits javascript links}.
-    #
-    # @return   [Browser]   `self`
-    #
-    # @see #trigger_events
-    # @see #visit_links
-    def shake
-        trigger_events
-        visit_links
-        self
-    end
-
-    # Triggers all events on all elements (**once**) and captures
-    # {#page_snapshots page snapshots}.
-    #
-    # @return   [Browser]   `self`
-    def trigger_events
-        pending = Set.new
-
-        watir.elements.each_with_index do |element, i|
-            events = element.attributes & EVENT_ATTRIBUTES
-            next if events.empty?
-
-            html = element.html
-            next if @skip.include? html
-
-            @skip   << html
-            pending << [i, events]
-        end
-
-        return self if pending.empty?
-
-        root_page = to_page
-
-        while (tuple = pending.shift) do
-            element_idx, events = *tuple
-            element = watir.elements[element_idx]
-
-            events.each do |event|
-                element.fire_event( event ) rescue nil
-                wait_for_pending_requests
-                capture_snapshot
-            end
-
-            load root_page
-            wait_for_pending_requests
-        end
-
-        self
-    end
-
-    # Visits javascript links **once** and captures
-    # {#page_snapshots page snapshots}.
-    #
-    # @return   [Browser]   `self`
-    def visit_links
-        pending = Set.new
-
-        watir.links.each do |a|
-            href = a.href.to_s
-
-            next if @skip.include?( href ) ||
-                !href.start_with?( 'javascript:' ) ||
-                href =~ /javascript:\s*void\(/
-
-            @skip   << href
-            pending << href.gsub( '%20', ' ' )
-        end
-
-        return self if pending.empty?
-
-        root_page = to_page
-
-        while (href = pending.shift) do
-            watir.link( href: href ).click
-            wait_for_pending_requests
-
-            capture_snapshot
-
-            load root_page
-            wait_for_pending_requests
-        end
-
-        self
+        @transitions = []
     end
 
     # @param    [String, HTTP::Response, Page]  resource
@@ -231,34 +127,22 @@ class Browser
     #   treated like a URL.
     #
     # @return   [Browser]   `self`
-    def load( resource )
+    def load( resource, take_snapshot = true )
         case resource
             when String
-                goto resource
+                goto resource, take_snapshot
 
-            when HTTP::Response, Page
-                goto preload( resource )
+            when HTTP::Response
+                goto preload( resource ), take_snapshot
+
+            when Page
+                @transitions = resource.transitions.dup
+                goto preload( resource ), take_snapshot
 
             else
                 fail Error::Load,
                      "Can't load resource of type #{resource.class}."
         end
-
-        self
-    end
-
-    # @param    [String]  url Loads the given URL in the browser.
-    #
-    # @return   [Browser]   `self`
-    def goto( url )
-        ensure_open_window
-
-        load_cookies url
-        watir.goto @url = url
-        HTTP::Client.update_cookies cookies
-
-        # Capture the page at its initial state.
-        capture_snapshot
 
         self
     end
@@ -306,6 +190,125 @@ class Browser
 
         @cache[response.url] = response
         response.url
+    end
+
+    # @param    [String]  url Loads the given URL in the browser.
+    #
+    # @return   [Browser]   `self`
+    def goto( url, take_snapshot = true )
+        ensure_open_window
+
+        load_cookies url
+
+        watir.goto @url = url
+        wait_for_pending_requests
+        HTTP::Client.update_cookies cookies
+
+        @transitions << { page: :load }
+
+        # Capture the page at its initial state.
+        capture_snapshot if take_snapshot
+
+        self
+    end
+
+    def close
+        watir.cookies.clear
+        watir.close
+        @proxy.shutdown
+    end
+
+    # @return   [String]    Current URL.
+    def url
+        Utilities.normalize_url(@url || @current_response.url )
+    end
+
+    # {#trigger_events Triggers events} and {#visit_links visits javascript links}.
+    #
+    # @param    [Integer]   depth
+    #   How deep should it go in cases where events or links create further
+    #   paths to explore.
+    # @return   [Browser]   `self`
+    #
+    # @see #trigger_events
+    # @see #visit_links
+    def explore( depth = 3 )
+        depth.times do
+            trigger_events
+            visit_links
+        end
+        self
+    end
+
+    # Triggers all events on all elements (**once**) and captures
+    # {#page_snapshots page snapshots}.
+    #
+    # @return   [Browser]   `self`
+    def trigger_events
+        pending = Set.new
+
+        watir.elements.each_with_index do |element, i|
+            events = element.attributes & EVENT_ATTRIBUTES
+            next if events.empty?
+
+            html = element.html
+            next if @skip.include? html
+
+            @skip   << html
+            pending << [i, events]
+        end
+
+        return self if pending.empty?
+
+        while (tuple = pending.shift) do
+            element_idx, events = *tuple
+            element = watir.elements[element_idx]
+            opening_tag = element.opening_tag
+
+            events.each do |event|
+                element.fire_event( event ) rescue nil
+                wait_for_pending_requests
+
+                @transitions << { opening_tag => event.to_sym }
+                capture_snapshot
+            end
+        end
+
+        self
+    end
+
+    # Visits javascript links **once** and captures
+    # {#page_snapshots page snapshots}.
+    #
+    # @return   [Browser]   `self`
+    def visit_links
+        pending = Set.new
+
+        watir.links.each do |a|
+            href = a.href.to_s
+
+            next if @skip.include?( href ) ||
+                !href.start_with?( 'javascript:' ) ||
+                href =~ /javascript:\s*void\(/
+
+            @skip   << href
+            pending << href.gsub( '%20', ' ' )
+        end
+
+        return self if pending.empty?
+
+        while (href = pending.shift) do
+            element = watir.link( href: href )
+
+            @transitions << { element.opening_tag => :click }
+
+            element.click
+            wait_for_pending_requests
+
+            capture_snapshot
+        end
+
+        self
     end
 
     # Starts capturing requests and parses them into elements of pages,
@@ -357,6 +360,20 @@ class Browser
         @captured_pages.values
     end
 
+    # @return   [Page]  Converts the current browser window to a {Page page}.
+    def to_page
+        return if !@current_response
+
+        current_response = @current_response.deep_clone
+
+        page             = current_response.to_page
+        page.dom_body    = source
+        page.cookies    |= cookies
+        page.transitions = @transitions.dup
+
+        page
+    end
+
     # @return   [Array<Page>]
     #   Flushes and returns the {#captured_pages captured} and
     #   {#page_snapshots snapshot} pages.
@@ -393,12 +410,19 @@ class Browser
 
     private
 
+    # Loads `page` without taking a snapshot, used for restoring  the root page
+    # after manipulation.
+    def restore( page )
+        load page, false
+        wait_for_pending_requests
+    end
+
     def capture_snapshot
         page = to_page
         hash = page.hash
         return if @skip.include? hash
 
-        @page_snapshots[page.hash] = page
+        @page_snapshots[hash] = page
         @skip << hash
     rescue => e
         print_error e
@@ -420,7 +444,7 @@ class Browser
 
         watir.cookies.clear
 
-        url = "#{url}/set-cookies-#{Utilities.generate_token}"
+        url = "#{url}/set-cookies-#{request_token}"
         watir.goto preload( HTTP::Response.new(
             url:     url,
             headers: {
@@ -428,6 +452,10 @@ class Browser
                     map( &:to_set_cookie )
             }
         ))
+    end
+
+    def request_token
+        @request_token ||= Utilities.generate_token
     end
 
     # Makes sure we have at least 2 windows open so that we can switch to the
@@ -460,6 +488,12 @@ class Browser
         true
     end
 
+    def response_handler( request, response )
+        return if request.url.include?( request_token )
+        @current_response = response
+    end
+
+
     def capture( request )
         return if !capture?
 
@@ -470,6 +504,9 @@ class Browser
         end
 
         page = @captured_pages[url]
+
+        @transitions << { request.url => :request }
+        page.push_transition request.url => :request
 
         case request.method
             when :get
@@ -496,13 +533,19 @@ class Browser
                 ).tap(&:override_instance_scope)
                 page.forms.uniq!
         end
+
     end
 
     def from_preloads( request, response )
         return if !(preloaded = preloads.delete( request.url ))
 
         copy_response_data( preloaded, response )
-        @current_response = preloaded
+
+        if !preloaded.url.include?( request_token )
+            @current_response = preloaded
+        end
+
+        preloaded
     end
 
     def from_cache( request, response )

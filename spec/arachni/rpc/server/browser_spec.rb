@@ -17,7 +17,7 @@ describe 'Arachni::RPC::Server::Browser' do
 
     describe 'analyze' do
         it 'triggers all events on all elements and follows all javascript links' do
-            pages = @browser.analyze( @url + '/shake' )
+            pages = @browser.analyze( @url + '/explore' )
 
             pages_should_have_form_with_input pages, 'by-ajax'
             pages_should_have_form_with_input pages, 'ajax-token'

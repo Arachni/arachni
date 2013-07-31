@@ -16,6 +16,11 @@
 
 module Watir
     class Element
+
+        def opening_tag
+            html.match( /<#{tag_name}.*?>/i )[0]
+        end
+
         def attributes
             browser.execute_script(
                 %Q[
