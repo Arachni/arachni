@@ -19,7 +19,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.3.2
+# @version 0.3.3
 #
 # @see http://cwe.mitre.org/data/definitions/22.html
 # @see http://www.owasp.org/index.php/Path_Traversal
@@ -97,7 +97,7 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
                 based on the presence of relevant content in the HTML responses.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.3.2',
+            version:     '0.3.3',
             references:  {
                 'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
                 'WASC'  => 'http://projects.webappsec.org/Path-Traversal'
@@ -110,7 +110,7 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
     of a pathname to a restricted directory.},
                 tags:            %w(path traversal injection regexp),
                 cwe:             '22',
-                severity:        Severity::MEDIUM,
+                severity:        Severity::HIGH,
                 cvssv2:          '4.3',
                 remedy_guidance: %q{User inputs must be validated and filtered
     before being used as a part of a filesystem path.},
