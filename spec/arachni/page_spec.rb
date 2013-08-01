@@ -116,15 +116,18 @@ describe Arachni::Page do
     end
 
     describe '#dom_depth' do
-        it 'returns the amount of page transitions' do
+        it 'returns the amount of DOM transitions' do
             page.dom_depth.should == 0
 
             page.transitions = [
-                { element: :stuffed },
-                { element2: :stuffed2 }
+                { "http://test.com/"                 => :request },
+                { :page                              => :load },
+                { "<body onload='loadStuff();'>"     => :onload },
+                { "http://test.com/ajax"             => :request },
+                { "<a href='javascript:clickMe();'>" => :click },
             ]
 
-            page.dom_depth.should == 2
+            page.dom_depth.should == 3
         end
     end
 
@@ -266,10 +269,6 @@ describe Arachni::Page do
                 p.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
 
                 c = p.dup
-                c.body << 'test'
-                c.should_not == p
-
-                c = p.dup
                 c.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
                 c.should_not == p
 
@@ -292,16 +291,14 @@ describe Arachni::Page do
                 c = p.dup
                 c.should == p
 
-                c = p.dup
-                p.body << 'test'
                 p.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
                 p.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
                 p.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
 
-                c.body << 'test'
                 c.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
                 c.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
                 c.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+
                 c.should == p
             end
         end
@@ -314,10 +311,6 @@ describe Arachni::Page do
                 p.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
                 p.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
                 p.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
-
-                c = p.dup
-                c.body << 'test'
-                c.should_not eql p
 
                 c = p.dup
                 c.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
@@ -343,12 +336,10 @@ describe Arachni::Page do
                 c.should eql p
 
                 c = p.dup
-                p.body << 'test'
                 p.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
                 p.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
                 p.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
 
-                c.body << 'test'
                 c.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
                 c.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
                 c.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )

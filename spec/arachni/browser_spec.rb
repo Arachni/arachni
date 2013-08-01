@@ -33,42 +33,82 @@ describe Arachni::Browser do
         end.should be_true
     end
 
-    it 'handles deep DOM/page transitions' do
-        @browser.start_capture
+    describe '#explore_deep_and_flush' do
+        it 'handles deep DOM/page transitions' do
+            pages = @browser.load( @url + '/deep-dom' ).explore_deep_and_flush
 
-        pages = []
+            pages_should_have_form_with_input pages, 'by-ajax'
 
-        pages << @browser.load( @url + '/deep-dom' ).to_page
-
-        done = false
-        while !done do
-            pages.each do |page|
-                @browser.load( page ).explore
-
-                bcnt = pages.size
-                pages |= @browser.flush_pages
-
-                if pages.size == bcnt
-                    done = true
-                    break
-                end
-            end
+            pages.map(&:transitions).should == [
+                [
+                    { "#{@url}deep-dom" => :request },
+                    { "#{@url}level2" => :request },
+                    { :page => :load }
+                ],
+                [
+                    { "#{@url}deep-dom" => :request },
+                    { "#{@url}level2" => :request },
+                    { :page => :load },
+                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :onmouseover }
+                ],
+                [
+                    { "#{@url}deep-dom" => :request },
+                    { "#{@url}level2" => :request },
+                    { :page => :load },
+                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :click },
+                    { "#{@url}level4" => :request },
+                    { "#{@url}level4" => :request }
+                ],
+                [
+                    { "#{@url}deep-dom" => :request },
+                    { "#{@url}level2" => :request },
+                    { :page => :load },
+                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :onmouseover }
+                ],
+                [
+                    { "#{@url}deep-dom" => :request },
+                    { "#{@url}level2" => :request },
+                    { :page => :load },
+                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :onmouseover },
+                    { "<button onclick=\"writeUserAgent();\">" => :onclick }
+                ],
+                [
+                    { "#{@url}deep-dom" => :request },
+                    { "#{@url}level2" => :request },
+                    { :page => :load },
+                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :click },
+                    { "#{@url}level4" => :request },
+                    { "#{@url}level4" => :request }
+                ],
+                [
+                    { "#{@url}deep-dom" => :request },
+                    { "#{@url}level2" => :request },
+                    { :page => :load },
+                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :click },
+                    { "#{@url}level4" => :request },
+                    { "#{@url}level4" => :request },
+                    { "#{@url}level6" => :request },
+                    { "<div onclick=\"level6();\" id=\"level5\">" => :onclick }
+                ],
+                [
+                    { "#{@url}deep-dom" => :request },
+                    { "#{@url}level2" => :request },
+                    { :page => :load },
+                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :onmouseover },
+                    { "<button onclick=\"writeUserAgent();\">" => :onclick }
+                ],
+                [
+                    { "#{@url}deep-dom" => :request },
+                    { "#{@url}level2" => :request },
+                    { :page => :load },
+                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :click },
+                    { "#{@url}level4" => :request },
+                    { "#{@url}level4" => :request },
+                    { "#{@url}level6" => :request },
+                    { "<div onclick=\"level6();\" id=\"level5\">" => :onclick }
+                ]
+            ]
         end
-
-        page = pages.last
-        page.forms.find { |f| f.inputs.include? 'by-ajax' }.should be_true
-        page.transitions.should == [
-            { "#{@url}deep-dom" => :request },
-            { "#{@url}level2" => :request },
-            { page: :load },
-            { "#{@url}level2" => :request },
-            { page: :load },
-            { "<a href=\"javascript:level3();\">" => :click },
-            { "#{@url}level4" => :request },
-            { "#{@url}level4" => :request },
-            { "#{@url}level6" => :request },
-            { "<div onclick=\"level6();\" id=\"level5\">" => :onclick }
-        ]
     end
 
     describe '#to_page' do
@@ -89,7 +129,10 @@ describe Arachni::Browser do
             @browser.load( @url )
             page = @browser.to_page
 
-            page.transitions.should == [ { page: :load } ]
+            page.transitions.should == [
+                { @url => :request },
+                { page: :load }
+            ]
         end
     end
 
@@ -103,29 +146,25 @@ describe Arachni::Browser do
         end
 
         it 'assigns the proper page transitions' do
-            @browser.load( @url + '/explore' ).start_capture.explore
+            pages = @browser.load( @url + '/explore' ).start_capture.explore.page_snapshots
 
-            pages = @browser.page_snapshots
+            pages.map(&:transitions).should == [
+                [{ "http://127.0.0.2:29106/explore" => :request }, { :page => :load }],
+                [{ "http://127.0.0.2:29106/explore" => :request },
+                 { :page => :load },
+                 { "<body onmouseover=\"makePOST();\">" => :onmouseover },
+                 { "http://127.0.0.2:29106/post-ajax" => :request }],
+                [{ "http://127.0.0.2:29106/explore" => :request },
+                 { :page => :load },
+                 { "http://127.0.0.2:29106/get-ajax?ajax-token=my-token" => :request },
+                 { "<div id=\"my-div\" onclick=\"addForm();\">" => :onclick }],
+                [{ "http://127.0.0.2:29106/explore" => :request },
+                 { :page => :load },
+                 { "<a href=\"javascript:inHref();\">" => :click },
+                 { "http://127.0.0.2:29106/href-ajax" => :request },
+                 { "http://127.0.0.2:29106/post-ajax" => :request },
+                 { "http://127.0.0.2:29106/href-ajax" => :request }]]
 
-            pages[0].transitions == [ { page: :load } ]
-            pages[1].transitions.should == [
-                { page: :load },
-                { "<body onmouseover=\"makePOST();\">" => :onmouseover },
-                { "#{@url}post-ajax" => :request },
-                { "#{@url}get-ajax?ajax-token=my-token" => :request },
-                { "<div id=\"my-div\" onclick=\"addForm();\">" => :onclick }
-            ]
-            pages[2].transitions.should == [
-                { page: :load },
-                { "<body onmouseover=\"makePOST();\">" => :onmouseover },
-                { "#{@url}post-ajax" => :request },
-                { "#{@url}get-ajax?ajax-token=my-token" => :request },
-                { "<div id=\"my-div\" onclick=\"addForm();\">" => :onclick },
-                { "<a href=\"javascript:inHref();\">" => :click},
-                { "#{@url}post-ajax" => :request },
-                { "#{@url}href-ajax" => :request },
-                { "#{@url}href-ajax" => :request }
-            ]
         end
 
         it 'returns self' do
@@ -149,18 +188,18 @@ describe Arachni::Browser do
         end
 
         it 'assigns the proper page transitions' do
-            @browser.load( @url + '/trigger_events' ).start_capture.trigger_events
+            pages = @browser.load( @url + '/trigger_events' ).trigger_events.page_snapshots
+            pages.map(&:transitions).should == [
+                [{ "#{@url}trigger_events" => :request }, { :page => :load }],
+                [{ "#{@url}trigger_events" => :request },
+                 { :page => :load },
+                 { "<body onmouseover=\"makePOST();\">" => :onmouseover },
+                 { "#{@url}post-ajax" => :request }],
+                [{ "#{@url}trigger_events" => :request },
+                 { :page => :load },
+                 { "#{@url}get-ajax?ajax-token=my-token" => :request },
+                 { "<div id=\"my-div\" onclick=\"addForm();\">" => :onclick }]]
 
-            pages = @browser.page_snapshots
-
-            pages[0].transitions.should == [ { page: :load } ]
-            pages[1].transitions.should == [
-                { page: :load },
-                { "<body onmouseover=\"makePOST();\">" => :onmouseover },
-                { "#{@url}post-ajax" => :request },
-                { "#{@url}get-ajax?ajax-token=my-token" => :request },
-                { "<div id=\"my-div\" onclick=\"addForm();\">" => :onclick }
-            ]
         end
 
         it 'returns self' do
@@ -187,7 +226,10 @@ describe Arachni::Browser do
 
             pages = @browser.page_snapshots
 
-            pages[0].transitions == [ { page: :load } ]
+            pages[0].transitions.should == [
+                { @url + 'visit_links' => :request },
+                { page: :load }
+            ]
             pages[1].transitions == [
                 {:page=>:load},
                 {"<a href=\"javascript:inHref();\">"=>:click},
@@ -241,7 +283,10 @@ describe Arachni::Browser do
                     pages = @browser.page_snapshots
                     pages.size.should == 1
 
-                    pages.first.transitions.should == [ { page: :load } ]
+                    pages.first.transitions.should == [
+                        { @url => :request },
+                        { page: :load }
+                    ]
                 end
             end
 
@@ -258,7 +303,10 @@ describe Arachni::Browser do
                     pages = @browser.page_snapshots
                     pages.size.should == 1
 
-                    pages.first.transitions.should == [ { page: :load } ]
+                    pages.first.transitions.should == [
+                        { @url => :request },
+                        { page: :load }
+                    ]
                 end
             end
         end
@@ -315,7 +363,10 @@ describe Arachni::Browser do
                     pages = @browser.page_snapshots
                     pages.size.should == 1
 
-                    pages.first.transitions.should == [ { page: :load } ]
+                    pages.first.transitions.should == [
+                        { @url => :request },
+                        { page: :load }
+                    ]
                 end
             end
 
@@ -332,7 +383,10 @@ describe Arachni::Browser do
                     pages = @browser.page_snapshots
                     pages.size.should == 1
 
-                    pages.first.transitions.should == [ { page: :load } ]
+                    pages.first.transitions.should == [
+                        { @url => :request },
+                        { page: :load }
+                    ]
                 end
             end
         end
@@ -601,7 +655,7 @@ describe Arachni::Browser do
             @browser.load @url + '/with-ajax'
             @browser.stop_capture
             @browser.load @url + '/with-image'
-            @browser.flush_pages.size.should == 1
+            @browser.flush_pages.size.should == 3
         end
     end
 

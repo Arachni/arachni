@@ -129,7 +129,7 @@ class Page
     end
 
     def dom_depth
-        @transitions.size
+        @transitions.select { |t| t.values.first != :request }.size
     end
 
     # @return    [HTTP::Response]    HTTP response.
@@ -156,7 +156,7 @@ class Page
 
     # @return    [String]    HTTP response body.
     def body
-        return '' if !@body && !@parser
+        return '' if !@body && !@body && !@parser
         @body ||= response.body
     end
 
@@ -170,7 +170,7 @@ class Page
     #   Calculated body, taking into account JS/DOM.
     def dom_body=( string )
         @links = @forms = @cookies = @document = nil
-        @parser.body = @dom_body = string
+        @parser.body = @dom_body = string.dup
     end
 
     # @return    [Array<Element::Link>]
@@ -278,7 +278,7 @@ class Page
     end
 
     def hash
-        "#{body}:#{elements.map(&:hash).sort}".hash
+        "#{@transitions}:#{@body.hash}:#{elements.map(&:hash).sort}".hash
     end
 
     def ==( other )
@@ -295,8 +295,8 @@ class Page
 
     def _dump( _ )
         h = {}
-        [:response, :body, :links, :forms, :cookies, :headers, :cookiejar,
-         :paths].each do |m|
+        [:response, :transitions, :dom_body, :body, :links, :forms, :cookies,
+         :headers, :cookiejar, :paths].each do |m|
             h[m] = send( m )
         end
 

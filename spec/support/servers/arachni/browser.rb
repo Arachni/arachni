@@ -33,11 +33,61 @@ get '/set-javascript-cookie' do
 HTML
 end
 
+get '/replay-transitions' do
+    <<HTML
+    <html>
+    <head>
+        <script>
+            function writeUserAgent(){
+                document.getElementById( "transition1" ).innerHTML = navigator.userAgent;
+            }
+
+            function writeButton(){
+                document.getElementById( "transition1" ).innerHTML =
+                    "<button onclick='writeUserAgent();'>Write user agent</button>";
+            }
+
+            level1_ajax = new XMLHttpRequest();
+            level1_ajax.onreadystatechange = function() {
+                if( level1_ajax.readyState == 4 && level1_ajax.status == 200 ) {
+                    document.getElementById( "transition1" ).innerHTML = level1_ajax.responseText;
+                }
+            }
+
+            level1_ajax.open( "GET", "/transition1", true );
+            level1_ajax.send();
+        </script>
+    <head>
+
+    <body>
+        <div id="transition1">
+        </div>
+    </body>
+</html>
+
+HTML
+end
+
+get '/transition1' do
+    <<HTML
+    <a href="javascript:writeButton();">Click to write button</a>
+HTML
+end
+
 get '/deep-dom' do
     <<HTML
 <html>
     <head>
         <script>
+            function writeUserAgent(){
+                document.getElementById( "level2" ).innerHTML = navigator.userAgent;
+            }
+
+            function writeButton(){
+                document.getElementById( "level2" ).innerHTML =
+                    "<button onclick='writeUserAgent();'>Write user agent</button>";
+            }
+
             function level3() {
                 ajax = new XMLHttpRequest();
                 ajax.onreadystatechange = function() {
@@ -86,10 +136,10 @@ end
 get '/level2' do
     <<HTML
     <div id="level2">
-        <a href="javascript:level3();">level3 link</a>
-
         <div id="level3">
         </div>
+
+        <a onmouseover="writeButton();" href="javascript:level3();">level3 link</a>
     </div>
 HTML
 end
@@ -97,11 +147,11 @@ end
 get '/level4' do
     <<HTML
     <div id="level4">
-        <div onclick="level6();" id="level5">
-            Level 5 div
+        <div id="level6">
         </div>
 
-        <div id="level6">
+        <div onclick="level6();" id="level5">
+            Level 5 div
         </div>
     </div>
 HTML

@@ -24,6 +24,7 @@ module Arachni
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Browser
     include UI::Output
+    include Utilities
 
     # {Browser} error namespace.
     #
@@ -70,22 +71,15 @@ class Browser
     # @param    [Hash]  options
     # @option   options [Integer] :timeout  (5)
     #   Max time to wait for the page to settle (for pending AJAX requests etc).
-    # @option   options [Integer] :depth  (5)
-    #   How deep should DOM/JS/AJAX go.
-    # @option   options [HTTP::ProxyServer] :proxy
     def initialize( options = {} )
         @options = options.dup
-        if @options[:proxy]
-            @proxy = options[:proxy]
-        else
-            @proxy = HTTP::ProxyServer.new(
-                request_handler:  method( :request_handler ),
-                response_handler: method( :response_handler )
-            )
-        end
+
+        @proxy = HTTP::ProxyServer.new(
+            request_handler:  method( :request_handler ),
+            response_handler: method( :response_handler )
+        )
 
         @options[:timeout] ||= 5
-        @options[:depth]   ||= 5
 
         @proxy.start_async if !@proxy.running?
 
@@ -105,9 +99,6 @@ class Browser
         # User-controlled preloaded responses, by URL.
         @preloads = {}
 
-        # HTTP::Response for the current loaded page.
-        @current_response = nil
-
         # Captured pages, by URL -- populated by #capture.
         @captured_pages = {}
 
@@ -120,6 +111,7 @@ class Browser
         @skip = Support::LookUp::HashSet.new
 
         @transitions = []
+        @add_request_transitions = true
     end
 
     # @param    [String, HTTP::Response, Page]  resource
@@ -137,7 +129,13 @@ class Browser
 
             when Page
                 @transitions = resource.transitions.dup
+
+                @add_request_transitions = false if @transitions.any?
+
                 goto preload( resource ), take_snapshot
+                replay_transitions
+
+                @add_request_transitions = true
 
             else
                 fail Error::Load,
@@ -158,9 +156,7 @@ class Browser
                             resource
 
                         when Page
-                            response      = resource.response.deep_clone
-                            response.body = resource.dom_body
-                            response
+                            resource.response.deep_clone
 
                         else
                             fail Error::Load,
@@ -198,13 +194,18 @@ class Browser
     def goto( url, take_snapshot = true )
         ensure_open_window
 
+        @root_page_response = nil
+
         load_cookies url
 
-        watir.goto @url = url
+        watir.goto @url = normalize_url( url )
         wait_for_pending_requests
+
         HTTP::Client.update_cookies cookies
 
-        @transitions << { page: :load }
+        if @add_request_transitions
+            @transitions << { page: :load }
+        end
 
         # Capture the page at its initial state.
         capture_snapshot if take_snapshot
@@ -220,23 +221,67 @@ class Browser
 
     # @return   [String]    Current URL.
     def url
-        Utilities.normalize_url(@url || @current_response.url )
+        @url || @root_page_response.url
     end
 
-    # {#trigger_events Triggers events} and {#visit_links visits javascript links}.
+    # Explores the browser's DOM tree and captures page snapshots for each
+    # state change until there are no more available.
     #
-    # @param    [Integer]   depth
-    #   How deep should it go in cases where events or links create further
-    #   paths to explore.
+    # @param    [Hash]      strategy
+    #   Strategy to use for traversal and retrieval of pages:
+    # @option  strategy :depth  [Integer]   (nil)
+    #   How deep to go into the DOM tree.
+    # @option  strategy :exploration  [Symbol]
+    #   Exploration strategy, available options are:
+    #
+    #   * {#explore} (Default)
+    #   * {#trigger_events}
+    #   * {#visit_links}
+    #
+    # @option  strategy :retrieval  [Symbol]
+    #   Page retrieval strategy, available options are:
+    #
+    #   * {#flush_pages} (Default)
+    #   * {#captured_pages}
+    #   * {#page_snapshots}
+    def explore_deep_and_flush( strategy = { } )
+        strategy = {
+            depth:       nil,
+            exploration: :explore
+        }.merge( strategy )
+
+        pages = [ to_page ]
+
+        done  = false
+        depth = 0
+
+        while !done do
+            bcnt = pages.size
+            pages |= pages.map do |p|
+                load( p ).send( strategy[:exploration] ).flush_pages
+            end.flatten
+
+            if pages.size == bcnt || (strategy[:depth] && strategy[:depth] >= depth)
+                done = true
+                break
+            end
+
+            depth += 1
+        end
+
+        pages
+    end
+
+    # {#trigger_events Triggers events} and
+    # {#visit_links visits javascript links} on the current page's DOM depth.
+    #
     # @return   [Browser]   `self`
     #
     # @see #trigger_events
     # @see #visit_links
-    def explore( depth = 3 )
-        depth.times do
-            trigger_events
-            visit_links
-        end
+    def explore
+        trigger_events
+        visit_links
         self
     end
 
@@ -246,6 +291,9 @@ class Browser
     # @return   [Browser]   `self`
     def trigger_events
         pending = Set.new
+
+        #ap 1
+        #puts source
 
         watir.elements.each_with_index do |element, i|
             events = element.attributes & EVENT_ATTRIBUTES
@@ -260,10 +308,18 @@ class Browser
 
         return self if pending.empty?
 
+        root_page = to_page
+
+        #puts source
+        #ap '-' * 80
+
         while (tuple = pending.shift) do
+            #puts source
+
             element_idx, events = *tuple
             element = watir.elements[element_idx]
             opening_tag = element.opening_tag
+            #ap events
 
             events.each do |event|
                 element.fire_event( event ) rescue nil
@@ -271,7 +327,13 @@ class Browser
 
                 @transitions << { opening_tag => event.to_sym }
                 capture_snapshot
+
+                #puts source
+
+                restore root_page
             end
+
+            restore root_page
         end
 
         self
@@ -297,15 +359,23 @@ class Browser
 
         return self if pending.empty?
 
+        root_page = to_page
+
+        #puts source
+        #ap '-' * 80
+
         while (href = pending.shift) do
             element = watir.link( href: href )
 
             @transitions << { element.opening_tag => :click }
 
-            element.click
+            exception_jail( false ) { element.click }
             wait_for_pending_requests
 
+            #puts source
+
             capture_snapshot
+            restore root_page
         end
 
         self
@@ -362,14 +432,15 @@ class Browser
 
     # @return   [Page]  Converts the current browser window to a {Page page}.
     def to_page
-        return if !@current_response
+        return if !@root_page_response
 
-        current_response = @current_response.deep_clone
+        current_response = @root_page_response.deep_clone
 
-        page             = current_response.to_page
-        page.dom_body    = source
-        page.cookies    |= cookies
-        page.transitions = @transitions.dup
+        page               = current_response.to_page
+        page.response.body ||= source.dup
+        page.dom_body      = source.dup
+        page.cookies      |= cookies.dup
+        page.transitions   = @transitions.dup
 
         page
     end
@@ -414,7 +485,22 @@ class Browser
     # after manipulation.
     def restore( page )
         load page, false
-        wait_for_pending_requests
+    end
+
+    def replay_transitions
+        @transitions.each do |transition|
+            element, event = transition.to_a.first
+            next if [:request, :load].include? event
+
+            tag = element.match( /<(\w+)\b/ )[1]
+            attributes = Nokogiri::HTML( element ).css( tag ).first.attributes.
+                inject({}) { |h, (k, v)| h[k.to_sym] = v.to_s; h }
+
+            element = watir.send( "#{tag}s", attributes ).first
+            element.fire_event( event )
+
+            wait_for_pending_requests
+        end
     end
 
     def capture_snapshot
@@ -422,7 +508,11 @@ class Browser
         hash = page.hash
         return if @skip.include? hash
 
+        #ap page.transitions
+        #puts page.dom_body
+
         @page_snapshots[hash] = page
+
         @skip << hash
     rescue => e
         print_error e
@@ -455,7 +545,7 @@ class Browser
     end
 
     def request_token
-        @request_token ||= Utilities.generate_token
+        @request_token ||= generate_token
     end
 
     # Makes sure we have at least 2 windows open so that we can switch to the
@@ -475,6 +565,10 @@ class Browser
     end
 
     def request_handler( request, response )
+        if !request.url.include?( request_token ) && @add_request_transitions
+            @transitions << { request.url => :request }
+        end
+
         # Signal the proxy to not actually perform the request if we have a
         # preloaded or cached response for it.
         return if from_preloads( request, response ) || from_cache( request, response )
@@ -490,9 +584,9 @@ class Browser
 
     def response_handler( request, response )
         return if request.url.include?( request_token )
-        @current_response = response
+        #@current_response = response
+        @root_page_response ||= response
     end
-
 
     def capture( request )
         return if !capture?
@@ -504,13 +598,11 @@ class Browser
         end
 
         page = @captured_pages[url]
-
-        @transitions << { request.url => :request }
         page.push_transition request.url => :request
 
         case request.method
             when :get
-                inputs = Utilities.parse_url_vars( request.url )
+                inputs = parse_url_vars( request.url )
                 return if inputs.empty?
 
                 page.forms << Form.new(
@@ -522,7 +614,7 @@ class Browser
                 page.forms.uniq!
 
             when :post
-                inputs = Utilities.form_parse_request_body( request.body )
+                inputs = form_parse_request_body( request.body )
                 return if inputs.empty?
 
                 page.forms << Form.new(
@@ -542,7 +634,7 @@ class Browser
         copy_response_data( preloaded, response )
 
         if !preloaded.url.include?( request_token )
-            @current_response = preloaded
+            @root_page_response ||= preloaded
         end
 
         preloaded
@@ -552,7 +644,7 @@ class Browser
         return if !(cached = @cache[request.url])
 
         copy_response_data( cached, response )
-        @current_response = cached
+        @root_page_response ||= cached
     end
 
     def copy_response_data( source, destination )
