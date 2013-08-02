@@ -156,7 +156,7 @@ class Browser
                             resource
 
                         when Page
-                            resource.response.deep_clone
+                            resource.response
 
                         else
                             fail Error::Load,
