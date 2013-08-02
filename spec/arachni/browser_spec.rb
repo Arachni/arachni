@@ -148,23 +148,40 @@ describe Arachni::Browser do
         it 'assigns the proper page transitions' do
             pages = @browser.load( @url + '/explore' ).start_capture.explore.page_snapshots
 
-            pages.map(&:transitions).should == [
-                [{ "http://127.0.0.2:29106/explore" => :request }, { :page => :load }],
-                [{ "http://127.0.0.2:29106/explore" => :request },
-                 { :page => :load },
-                 { "<body onmouseover=\"makePOST();\">" => :onmouseover },
-                 { "http://127.0.0.2:29106/post-ajax" => :request }],
-                [{ "http://127.0.0.2:29106/explore" => :request },
-                 { :page => :load },
-                 { "http://127.0.0.2:29106/get-ajax?ajax-token=my-token" => :request },
-                 { "<div id=\"my-div\" onclick=\"addForm();\">" => :onclick }],
-                [{ "http://127.0.0.2:29106/explore" => :request },
-                 { :page => :load },
-                 { "<a href=\"javascript:inHref();\">" => :click },
-                 { "http://127.0.0.2:29106/href-ajax" => :request },
-                 { "http://127.0.0.2:29106/post-ajax" => :request },
-                 { "http://127.0.0.2:29106/href-ajax" => :request }]]
+            transitions = pages.map(&:transitions)
 
+            # The last one needs special treatment because of the unpredictable
+            # order of AJAX requests.
+            transition_with_lots_of_ajax = transitions.pop
+
+            transitions.should == [
+                [
+                    { "#{@url}explore" => :request },
+                    { :page => :load }
+                ],
+                [
+                    { "#{@url}explore" => :request },
+                    { :page => :load },
+                    { "<body onmouseover=\"makePOST();\">" => :onmouseover },
+                    { "#{@url}post-ajax" => :request }
+                ],
+                [
+                    { "#{@url}explore" => :request },
+                    { :page => :load },
+                    { "#{@url}get-ajax?ajax-token=my-token" => :request },
+                    { "<div id=\"my-div\" onclick=\"addForm();\">" => :onclick }
+                ]
+            ]
+
+            # We don't care about the order of AJAX requests.
+            transition_with_lots_of_ajax.should =~ [
+                { "#{@url}explore" => :request },
+                { :page => :load },
+                { "<a href=\"javascript:inHref();\">" => :click },
+                { "#{@url}href-ajax" => :request },
+                { "#{@url}post-ajax" => :request },
+                { "#{@url}href-ajax" => :request }
+            ]
         end
 
         it 'returns self' do
