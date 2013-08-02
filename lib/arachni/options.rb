@@ -165,13 +165,20 @@ class Options
     #
     attr_accessor :obey_robots_txt
 
+    # @note `nil` is infinite -- default is `nil`.
     #
-    # How deep to go in the site structure?<br/>
-    # If nil, depth_limit = inf
+    # How deep to go in the site structure?
     #
     # @return    [Integer]
     #
     attr_accessor :depth_limit
+
+    # @note `nil` is infinite -- default is `10`.
+    #
+    # How deep to go into each page's DOM tree.
+    #
+    # @return    [Integer]
+    attr_accessor :dom_depth_limit
 
     #
     # How many links to follow?
@@ -575,6 +582,7 @@ class Options
         @auto_redundant    = nil
 
         @depth_limit      = nil
+        @dom_depth_limit  = 10
         @link_count_limit = nil
         @redirect_limit   = 20
 
@@ -719,6 +727,10 @@ class Options
             redundant[regexp] -= 1
         end
         false
+    end
+
+    def dom_depth_limit_reached?( page )
+        Options.dom_depth_limit && page.dom_depth > Options.dom_depth_limit
     end
 
     #
@@ -952,6 +964,7 @@ class Options
             [ '--obey-robots-txt',   '-o', GetoptLong::NO_ARGUMENT ],
             [ '--redundant',               GetoptLong::REQUIRED_ARGUMENT ],
             [ '--depth',             '-d', GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--dom-depth',               GetoptLong::REQUIRED_ARGUMENT ],
             [ '--redirect-limit',    '-q', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--link-count',        '-u', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--mods',              '-m', GetoptLong::REQUIRED_ARGUMENT ],
@@ -1092,6 +1105,9 @@ class Options
 
                     when '--depth'
                         @depth_limit = arg.to_i
+
+                    when '--dom-depth'
+                        @dom_depth_limit = arg.to_i
 
                     when '--link-count'
                         @link_count_limit = arg.to_i

@@ -65,6 +65,10 @@ class Browser
 
     # @param    [String]    token   Authentication token for the clients.
     def initialize( token = nil )
+        %w(QUIT INT).each do |signal|
+            trap( signal, 'IGNORE' ) if Signal.list.has_key?( signal )
+        end
+
         @browser = Arachni::Browser.new
         @browser.start_capture
 

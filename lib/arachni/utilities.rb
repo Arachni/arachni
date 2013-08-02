@@ -309,11 +309,10 @@ module Utilities
         end
     end
 
+    # Determines whether or not the given {Arachni::HTTP::Response} should be
+    # ignored.
     #
-    # Determines whether or not a given {Arachni::Page} or {Arachni::HTTP::Response}
-    # should be ignored.
-    #
-    # @param    [Page,Arachni::HTTP::Response,#body]   page_or_response
+    # @param    [Arachni::HTTP::Response]   response
     #
     # @return   [Bool]
     #   `true` if the `#body` of the given object matches any of the exclusion
@@ -322,13 +321,28 @@ module Utilities
     # @see #skip_path?
     # @see Options#exclude_binaries?
     # @see Options#exclude_page?
-    #
-    def skip_page?( page_or_response )
-        (Options.exclude_binaries? && !page_or_response.text?) ||
-            skip_path?( page_or_response.url ) ||
-            Options.exclude_page?( page_or_response.body )
+    def skip_response?( response )
+        (Options.exclude_binaries? && !response.text?) ||
+            skip_path?( response.url ) ||
+            Options.exclude_page?( response.body )
     end
-    alias :skip_response? :skip_page?
+
+    # Determines whether or not the given {Arachni::Page}.
+    #
+    # @param    [Page]   page
+    #
+    # @return   [Bool]
+    #   `true` if the `#body` of the given object matches any of the exclusion
+    #   patterns or the  {Options#dom_depth_limit} has been reached, `false`
+    #   otherwise.
+    #
+    # @see #skip_path?
+    # @see Options#exclude_binaries?
+    # @see Options#exclude_page?
+    # @see Options#dom_depth_limit
+    def skip_page?( page )
+        skip_response?( page.response ) || Options.dom_depth_limit_reached?( page )
+    end
 
     #
     # Determines whether or not the given `resource` should be ignored

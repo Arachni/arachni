@@ -46,6 +46,7 @@ require lib + 'report'
 require lib + 'session'
 require lib + 'trainer'
 require lib + 'browser'
+require lib + 'rpc/server/browser'
 
 require Options.dir['mixins'] + 'progress_bar'
 
@@ -175,6 +176,10 @@ class Framework
         @failures = []
         @retries  = {}
 
+        # Dup filters for the synonymous methods.
+        @push_to_url_queue_filter  = Support::LookUp::HashSet.new
+        @push_to_page_queue_filter = Support::LookUp::HashSet.new
+
         if block_given?
             block.call self
             reset
@@ -231,9 +236,26 @@ class Framework
             print_info "Identified as: #{page.platforms.to_a.join( ', ' )}"
         end
 
+        if has_browser?
+            dom_depth = "#{page.dom_depth} (Limit: #{@opts.dom_depth_limit})"
+        else
+            dom_depth = 'N/A (Could not find browser).'
+        end
+
+        print_info "DOM depth: #{dom_depth}"
+
         call_on_audit_page( page )
 
         @current_url = page.url.to_s
+
+        # DOM/JS/AJAX analysis starts now, and in its own thread, in order
+        # to take advantage of the regular page audit runtime so as to
+        # conceal its overhead.
+        #
+        # The thread part is used for signaling more than anything else,
+        # the actual Browser worker is in a separate OS process to get
+        # around the GIL anyways.
+        browser_analysis_thread = perform_browser_analysis( page )
 
         @modules.schedule.each do |mod|
             wait_if_paused
@@ -241,6 +263,11 @@ class Framework
         end
 
         harvest_http_responses
+
+        # This could be stupid, there's no actual need to block here, browser
+        # analysis could be fully asynchronous, but let's take it one step at
+        # a time.
+        browser_analysis_thread.join if browser_analysis_thread
 
         if !Module::Auditor.timeout_candidates.empty?
             print_line
@@ -250,6 +277,10 @@ class Framework
         end
 
         true
+    end
+
+    def has_browser?
+        Browser.has_executable?
     end
 
     def on_audit_page( &block )
@@ -262,6 +293,15 @@ class Framework
     #   otherwise.
     def link_count_limit_reached?
         @opts.link_count_limit_reached? @sitemap.size
+    end
+
+    def browser
+        @browser ||= Arachni::RPC::Server::Browser.spawn
+    end
+
+    def close_browser
+        @browser.close if @browser
+        @browser = nil
     end
 
     #
@@ -357,12 +397,13 @@ class Framework
     #   exclusion criteria.
     #
     def push_to_page_queue( page )
-        return false if skip_page? page
+        return false if skip_page?( page ) || @push_to_page_queue_filter.include?( page )
 
         @page_queue << page
         @page_queue_total_size += 1
 
-        @sitemap |= [page.url]
+        @push_to_page_queue_filter << page
+
         true
     end
 
@@ -376,15 +417,18 @@ class Framework
     #   exclusion criteria.
     #
     def push_to_url_queue( url )
-        return false if skip_path? url
+        url = to_absolute( url ) || url
 
-        abs = to_absolute( url )
+        return false if skip_path?( url ) || @push_to_url_queue_filter.include?( url )
 
-        @url_queue.push( abs ? abs : url )
+        @push_to_url_queue_filter ||= Support::LookUp::HashSet.new
+
+        @url_queue.push( url )
         @url_queue_total_size += 1
 
-        @sitemap |= [url]
-        false
+        @push_to_url_queue_filter << url
+
+        true
     end
 
     #
@@ -602,6 +646,8 @@ class Framework
     def clean_up
         @status = :cleanup
 
+        close_browser
+
         @opts.finish_datetime  = Time.now
         @opts.start_datetime ||= Time.now
 
@@ -626,6 +672,11 @@ class Framework
         @trainer = Trainer.new( self )
     end
 
+    def reset_filters
+        @push_to_page_queue_filter.clear
+        @push_to_url_queue_filter.clear
+    end
+
     #
     # Resets everything and allows the framework to be re-used.
     #
@@ -636,6 +687,7 @@ class Framework
     def reset
         @page_queue_total_size = 0
         @url_queue_total_size  = 0
+        reset_filters
         @failures.clear
         @retries.clear
         @sitemap.clear
@@ -670,6 +722,37 @@ class Framework
     end
 
     private
+
+    # Passes the `page` to {RPC::Server::Browser#analyze} and then pushes
+    # the resulting pages to {#push_to_page_queue}.
+    #
+    # @param    [Page]  page
+    #   Page to analyze.
+    def perform_browser_analysis( page )
+        return if !page.has_javascript? ||
+            # Don't exceed the DOM depth limit.
+            (Options.dom_depth_limit && Options.dom_depth_limit < page.dom_depth + 1) ||
+            !has_browser?
+
+        print_info 'Starting DOM/JS/AJAX analysis in the background.'
+
+        Thread.new do
+            pushed_pages = 0
+            pushed_paths = 0
+
+            browser.analyze( page ).each do |p|
+                pushed_pages += 1 if push_to_page_queue( p )
+
+                p.paths.each do |path|
+                    pushed_paths +=1 if push_to_url_queue( path )
+                end
+            end
+
+            print_info 'DOM/JS/AJAX analysis resulted in:'
+            print_info "  * #{pushed_pages} page variations"
+            print_info "  * #{pushed_paths} new paths"
+        end
+    end
 
     #
     # Prepares the framework for the audit.

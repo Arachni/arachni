@@ -7,6 +7,89 @@ get '/' do
     'Match this!'
 end
 
+get '/with_javascript' do
+    <<HTML
+    <html>
+        <body>
+            <script>
+                var f = document.createElement("form");
+                f.setAttribute('method',"post");
+                f.setAttribute('action',"/taint");
+
+                var i = document.createElement("input");
+                i.setAttribute('type',"text");
+                i.setAttribute('name',"form_input");
+
+                var s = document.createElement("input");
+                s.setAttribute('type',"submit");
+                s.setAttribute('value',"Submit");
+
+                f.appendChild(i);
+                f.appendChild(s);
+
+                document.getElementsByTagName('body')[0].appendChild(f);
+
+
+                a = document.createElement('a');
+                a.href =  '/taint?link_input';
+                a.innerHTML = "Link"
+                document.getElementsByTagName('body')[0].appendChild(a);
+
+                document.cookie = "cookie_input=cookie-value";
+            </script>
+
+            #{cookies[:cookie_input]}
+        </body>
+    </html>
+HTML
+end
+
+get '/with_ajax' do
+    <<HTML
+<html>
+    <head>
+        <script>
+            get_ajax = new XMLHttpRequest();
+            get_ajax.onreadystatechange = function() {
+                if( get_ajax.readyState == 4 && get_ajax.status == 200 ) {
+                    document.getElementById( "my-div" ).innerHTML = get_ajax.responseText;
+                }
+            }
+            get_ajax.open( "GET", "/taint?link_input=my-val", true );
+            get_ajax.send();
+
+            post_ajax = new XMLHttpRequest();
+            post_ajax.open( "POST", "/taint", true );
+            post_ajax.send( "form_input=post-value" );
+
+            cookie_ajax = new XMLHttpRequest();
+            cookie_ajax.open( "GET", "/cookie-taint", true );
+            cookie_ajax.send();
+        </script>
+    <head>
+
+    <body>
+        <div id="my-div">
+        </div>
+
+        #{cookies[:cookie_taint]}
+    </body>
+</html>
+HTML
+end
+
+get '/cookie-taint' do
+    cookies[:cookie_taint] ||= 'stuff'
+end
+
+get '/taint' do
+    params[:link_input]
+end
+
+post '/taint' do
+    params[:form_input]
+end
+
 get '/binary' do
     content_type 'application/stuff'
     "\00\00\00"

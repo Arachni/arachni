@@ -1,33 +1,32 @@
-# Experimental/unstable branch -- used for development/integration
+# Development branch for Arachni v0.5
 
-This branch is where all development takes place, once its code has been tested and
-is considered stable, it is then merged into the `master` branch and released.
+This branch is used for development, testing and integration of features for the
+0.5 version of Arachni.
 
-Do not be confused by the version of this branch, `1.0dev` is a placeholder
-which simply means _next release_.
+## How to run the code
 
-## Nightlies
+First of, setup a [development environment](https://github.com/Arachni/arachni/wiki/Development-environment).
 
-For self-contained, nightly snapshot packages take a look at:
-http://downloads.arachni-scanner.com/nightlies/
-
-## Source
-
-To run from source you first need to setup a
-[development environment](https://github.com/Arachni/arachni/wiki/Development-environment).
-
-**After** you've setup a [development environment](https://github.com/Arachni/arachni/wiki/Development-environment),
-run the following to checkout the source code of the `experimental` branch and
-resolve its dependencies:
+Secondly, run the following to checkout the branch and resolve its dependencies:
 
     git clone git://github.com/Arachni/arachni.git
     cd arachni
-    git checkout experimental
+    git checkout v0.5
     bundle install # to resolve dev dependencies
 
-Then you can run Arachni using the the executables under `bin/`.<br/>
+Then, you can run Arachni using the the executables under `bin/`.<br/>
 If you get an error when trying to run Arachni, use `bundle exec` like so:
 `bundle exec <executable>`.
+
+### DOM/JS/AJAX support
+
+This branch contains experimental support for DOM/JS/AJAX analysis, which requires
+[PhantomJS](http://phantomjs.org/download.html) to be installed and in the OS PATH.
+
+If the `phantomjs` executable cannot be located, this feature will be disabled
+and that will be visible by the following message during each page audit:
+
+    [~] DOM depth: N/A (Could not find browser).
 
 # Arachni - Web Application Security Scanner Framework
 

@@ -433,6 +433,10 @@ module Utilities
     --fuzz-methods              Audit links, forms and cookies using both GET and POST requests.
                                   (*WARNING*: This will severely increase the scan-time.)
 
+    --dom-depth=<integer>       How deep to go into the DOM tree -- for pages with JavaScript code.
+                                  (Default: 10)
+                                  (Setting it to '0' will skip DOM/JS/AJAX analysis.)
+
     --exclude-binaries          Exclude non text-based pages from the audit.
                                   (Binary content can confuse recon modules that perform pattern matching.)
 

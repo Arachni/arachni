@@ -68,6 +68,13 @@ class Browser
     # @return   [Watir::Browser]   Watir driver interface.
     attr_reader :watir
 
+    # @return   [Bool]
+    #   `true` if `phantomjs` is in the OS PATH, `false` otherwise.
+    def self.has_executable?
+        return @has_executable if !@has_executable.nil?
+        @has_executable = !!Selenium::WebDriver::PhantomJS.path
+    end
+
     # @param    [Hash]  options
     # @option   options [Integer] :timeout  (5)
     #   Max time to wait for the page to settle (for pending AJAX requests etc).

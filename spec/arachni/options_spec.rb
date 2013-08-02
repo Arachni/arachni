@@ -31,6 +31,24 @@ describe Arachni::Options do
         end
     end
 
+    describe '#dom_depth_limit' do
+        it 'defaults to 10' do
+            described_class.dom_depth_limit.should == 10
+        end
+
+        it 'returns the DOM depth limit for each page' do
+            described_class.dom_depth_limit = 5
+            described_class.dom_depth_limit.should == 5
+        end
+    end
+
+    describe '#dom_depth_limit=' do
+        it 'sets the DOM depth limit' do
+            described_class.dom_depth_limit = 5
+            described_class.dom_depth_limit.should == 5
+        end
+    end
+
     describe '#grid?' do
         describe 'when the option has been enabled' do
             context 'via #grid=' do

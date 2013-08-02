@@ -181,8 +181,25 @@ describe Arachni::Utilities do
         end
     end
 
-    describe '#ignore_page?' do
+    describe '#skip_page?' do
         before { @opts.exclude_pages << /ignore me/ }
+
+        context 'when the page DOM depth limit has been exceeded' do
+            it 'returns false' do
+                page = Arachni::Page.from_data(
+                    url:         'http://test',
+                    transitions: [
+                                     { page: :load },
+                                     { "<a href='javascript:click();'>" => :click },
+                                     { "<button dblclick='javascript:doubleClick();'>" => :ondblclick }
+                                 ]
+                )
+                @utils.skip_page?( page ).should be_false
+
+                @opts.dom_depth_limit = 2
+                @utils.skip_page?( page ).should be_true
+            end
+        end
 
         context 'when the body matches an ignore rule' do
             it 'returns true' do
@@ -202,7 +219,7 @@ describe Arachni::Utilities do
         end
     end
 
-    describe '#ignore_response?' do
+    describe '#skip_response?' do
         before { @opts.exclude_pages << /ignore me/ }
 
         context 'when the body matches an ignore rule' do

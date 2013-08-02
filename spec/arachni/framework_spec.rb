@@ -250,6 +250,32 @@ describe Arachni::Framework do
             f.modules.clear
         end
 
+        it 'handles pages with JavaScript code' do
+            @f.opts.url = @url + '/with_javascript'
+            @f.opts.audit :links, :forms, :cookies
+
+            @f.modules.load :taint
+            @f.run
+
+            issues = @f.auditstore.issues
+            issues.find { |i| i.var == 'link_input' }.should be_true
+            issues.find { |i| i.var == 'form_input' }.should be_true
+            issues.find { |i| i.var == 'cookie_input' }.should be_true
+        end
+
+        it 'handles AJAX' do
+            @f.opts.url = @url + '/with_ajax'
+            @f.opts.audit :links, :forms, :cookies
+
+            @f.modules.load :taint
+            @f.run
+
+            issues = @f.auditstore.issues
+            issues.find { |i| i.var == 'link_input' }.should be_true
+            issues.find { |i| i.var == 'form_input' }.should be_true
+            issues.find { |i| i.var == 'cookie_taint' }.should be_true
+        end
+
         context 'when the page has a body which is' do
             context 'not empty' do
                 it 'runs modules that audit the page body' do
@@ -259,7 +285,7 @@ describe Arachni::Framework do
                     f.opts.audit :links
                     f.modules.load %w(body)
 
-                    p = Arachni::Page.new( url: 'http://test', body: 'stuff' )
+                    p = Arachni::Page.from_data( url: 'http://test', body: 'stuff' )
                     f.push_to_page_queue( p )
 
                     f.run
@@ -275,7 +301,7 @@ describe Arachni::Framework do
                     f.opts.audit :links
                     f.modules.load %w(body)
 
-                    p = Arachni::Page.new( url: 'http://test', body: '' )
+                    p = Arachni::Page.from_data( url: 'http://test', body: '' )
                     f.push_to_page_queue( p )
 
                     f.run
@@ -296,7 +322,7 @@ describe Arachni::Framework do
                         f.modules.load %w(links forms cookies headers flch)
 
                         link = Arachni::Element::Link.new( url: 'http://test' )
-                        p = Arachni::Page.new( url: 'http://test', links: [link] )
+                        p = Arachni::Page.from_data( url: 'http://test', links: [link] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -312,7 +338,7 @@ describe Arachni::Framework do
                         f.modules.load %w(path server)
 
                         link = Arachni::Element::Link.new( url: 'http://test' )
-                        p = Arachni::Page.new( url: 'http://test', links: [link] )
+                        p = Arachni::Page.from_data( url: 'http://test', links: [link] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -328,7 +354,7 @@ describe Arachni::Framework do
                         f.modules.load %w(nil empty)
 
                         link = Arachni::Element::Link.new( url: 'http://test' )
-                        p = Arachni::Page.new( url: 'http://test', links: [link] )
+                        p = Arachni::Page.from_data( url: 'http://test', links: [link] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -348,7 +374,7 @@ describe Arachni::Framework do
                         f.modules.load %w(links forms cookies headers flch)
 
                         link = Arachni::Element::Link.new( url: 'http://test' )
-                        p = Arachni::Page.new( url: 'http://test', links: [link] )
+                        p = Arachni::Page.from_data( url: 'http://test', links: [link] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -364,7 +390,7 @@ describe Arachni::Framework do
                         f.modules.load %w(path server)
 
                         link = Arachni::Element::Link.new( url: 'http://test' )
-                        p = Arachni::Page.new( url: 'http://test', links: [link] )
+                        p = Arachni::Page.from_data( url: 'http://test', links: [link] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -380,7 +406,7 @@ describe Arachni::Framework do
                         f.modules.load %w(nil empty)
 
                         link = Arachni::Element::Link.new( url: 'http://test' )
-                        p = Arachni::Page.new( url: 'http://test', links: [link] )
+                        p = Arachni::Page.from_data( url: 'http://test', links: [link] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -403,7 +429,7 @@ describe Arachni::Framework do
                         f.modules.load %w(links forms cookies headers flch)
 
                         form = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.new( url: 'http://test', forms: [form] )
+                        p = Arachni::Page.from_data( url: 'http://test', forms: [form] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -419,7 +445,7 @@ describe Arachni::Framework do
                         f.modules.load %w(path server)
 
                         form = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.new( url: 'http://test', forms: [form] )
+                        p = Arachni::Page.from_data( url: 'http://test', forms: [form] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -435,7 +461,7 @@ describe Arachni::Framework do
                         f.modules.load %w(nil empty)
 
                         form = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.new( url: 'http://test', forms: [form] )
+                        p = Arachni::Page.from_data( url: 'http://test', forms: [form] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -455,7 +481,7 @@ describe Arachni::Framework do
                         f.modules.load %w(links forms cookies headers flch)
 
                         form = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.new( url: 'http://test', forms: [form] )
+                        p = Arachni::Page.from_data( url: 'http://test', forms: [form] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -471,7 +497,7 @@ describe Arachni::Framework do
                         f.modules.load %w(path server)
 
                         form = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.new( url: 'http://test', forms: [form] )
+                        p = Arachni::Page.from_data( url: 'http://test', forms: [form] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -487,7 +513,7 @@ describe Arachni::Framework do
                         f.modules.load %w(nil empty)
 
                         form = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.new( url: 'http://test', forms: [form] )
+                        p = Arachni::Page.from_data( url: 'http://test', forms: [form] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -510,7 +536,7 @@ describe Arachni::Framework do
                         f.modules.load %w(links forms cookies headers flch)
 
                         cookie = Arachni::Element::Cookie.new( url: 'http://test' )
-                        p = Arachni::Page.new( url: 'http://test', cookies: [cookie] )
+                        p = Arachni::Page.from_data( url: 'http://test', cookies: [cookie] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -526,7 +552,7 @@ describe Arachni::Framework do
                         f.modules.load %w(path server)
 
                         cookie = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.new( url: 'http://test', cookies: [cookie] )
+                        p = Arachni::Page.from_data( url: 'http://test', cookies: [cookie] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -542,7 +568,7 @@ describe Arachni::Framework do
                         f.modules.load %w(nil empty)
 
                         cookie = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.new( url: 'http://test', cookies: [cookie] )
+                        p = Arachni::Page.from_data( url: 'http://test', cookies: [cookie] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -562,7 +588,7 @@ describe Arachni::Framework do
                         f.modules.load %w(links forms cookies headers flch)
 
                         cookie = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.new( url: 'http://test', cookies: [cookie] )
+                        p = Arachni::Page.from_data( url: 'http://test', cookies: [cookie] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -578,7 +604,7 @@ describe Arachni::Framework do
                         f.modules.load %w(path server)
 
                         cookie = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.new( url: 'http://test', cookies: [cookie] )
+                        p = Arachni::Page.from_data( url: 'http://test', cookies: [cookie] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -594,7 +620,7 @@ describe Arachni::Framework do
                         f.modules.load %w(nil empty)
 
                         cookie = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.new( url: 'http://test', cookies: [cookie] )
+                        p = Arachni::Page.from_data( url: 'http://test', cookies: [cookie] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -617,7 +643,7 @@ describe Arachni::Framework do
                         f.modules.load %w(links forms cookies headers flch)
 
                         header = Arachni::Element::Cookie.new( url: 'http://test' )
-                        p = Arachni::Page.new( url: 'http://test', headers: [header] )
+                        p = Arachni::Page.from_data( url: 'http://test', headers: [header] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -633,7 +659,7 @@ describe Arachni::Framework do
                         f.modules.load %w(path server)
 
                         header = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.new( url: 'http://test', headers: [header] )
+                        p = Arachni::Page.from_data( url: 'http://test', headers: [header] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -649,7 +675,7 @@ describe Arachni::Framework do
                         f.modules.load %w(nil empty)
 
                         header = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.new( url: 'http://test', headers: [header] )
+                        p = Arachni::Page.from_data( url: 'http://test', headers: [header] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -669,7 +695,7 @@ describe Arachni::Framework do
                         f.modules.load %w(links forms cookies headers flch)
 
                         header = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.new( url: 'http://test', headers: [header] )
+                        p = Arachni::Page.from_data( url: 'http://test', headers: [header] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -685,7 +711,7 @@ describe Arachni::Framework do
                         f.modules.load %w(path server)
 
                         header = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.new( url: 'http://test', headers: [header] )
+                        p = Arachni::Page.from_data( url: 'http://test', headers: [header] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -701,7 +727,7 @@ describe Arachni::Framework do
                         f.modules.load %w(nil empty)
 
                         header = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.new( url: 'http://test', headers: [header] )
+                        p = Arachni::Page.from_data( url: 'http://test', headers: [header] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -776,30 +802,102 @@ describe Arachni::Framework do
     end
 
     describe '#audit_page' do
-        context 'when the page does not match exclusion criteria' do
-            it 'audits it and returns true' do
-                @f.opts.audit :links, :forms, :cookies
+        it 'audits it' do
+            @f.opts.audit :links, :forms, :cookies
+            @f.modules.load :taint
 
+            @f.audit_page( Arachni::Page.from_url( @url + '/link' ) )
+            @f.auditstore.issues.size.should == 1
+        end
+
+        it 'returns true' do
+            @f.audit_page( Arachni::Page.from_url( @url + '/link' ) ).should be_true
+        end
+
+        context 'when the page contains JavaScript code' do
+            it 'analyzes the DOM and pushes new pages to the page queue' do
+                @f.opts.audit :links, :forms, :cookies
                 @f.modules.load :taint
 
-                @f.audit_page( Arachni::Page.from_url( @url + '/link' ) ).should be_true
-                @f.auditstore.issues.size.should == 1
+                @f.page_queue_total_size.should == 0
+
+                @f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) )
+
+                @f.page_queue_total_size.should == 1
+            end
+
+            it 'analyzes the DOM and pushes new paths to the url queue' do
+                @f.opts.audit :links, :forms, :cookies
+                @f.modules.load :taint
+
+                @f.url_queue_total_size.should == 0
+
+                @f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) )
+
+                @f.url_queue_total_size.should == 3
+            end
+
+            context 'when the DOM depth limit has been reached' do
+                it 'does not analyze the DOM' do
+                    @f.opts.audit :links, :forms, :cookies
+                    @f.modules.load :taint
+                    @f.opts.dom_depth_limit = 1
+                    @f.url_queue_total_size.should == 0
+                    @f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) ).should be_true
+                    @f.url_queue_total_size.should == 3
+
+                    @f.reset
+
+                    @f.opts.audit :links, :forms, :cookies
+                    @f.modules.load :taint
+                    @f.opts.dom_depth_limit = 1
+                    @f.url_queue_total_size.should == 0
+
+                    page = Arachni::Page.from_url( @url + '/with_javascript' )
+                    page.push_transition page: :load
+
+                    @f.audit_page( page ).should be_true
+                    @f.url_queue_total_size.should == 0
+                end
             end
         end
+
+        context 'when the page DOM depth limit has been exceeded' do
+            it 'returns false' do
+                page = Arachni::Page.from_data(
+                    url:         @url,
+                    transitions: [
+                        { page: :load },
+                        { "<a href='javascript:click();'>" => :click },
+                        { "<button dblclick='javascript:doubleClick();'>" => :ondblclick }
+                    ]
+                )
+                @f.audit_page( page ).should be_true
+
+                @f.opts.dom_depth_limit = 2
+                @f.audit_page( page ).should be_false
+            end
+        end
+
         context 'when the page matches exclusion criteria' do
-            it 'does not audit it and returns false' do
+            it 'does not audit it' do
                 @f.opts.exclude << /link/
                 @f.opts.audit :links, :forms, :cookies
 
                 @f.modules.load :taint
 
-                @f.audit_page( Arachni::Page.from_url( @url + '/link' ) ).should be_false
+                @f.audit_page( Arachni::Page.from_url( @url + '/link' ) )
                 @f.auditstore.issues.size.should == 0
+            end
+
+            it 'returns false' do
+                @f.opts.exclude << /link/
+                @f.audit_page( Arachni::Page.from_url( @url + '/link' ) ).should be_false
             end
         end
     end
 
-    describe 'link_count_limit_reached?' do
+    describe '#link_count_limit_reached?' do
         context 'when the Options#link_count_limit has' do
             context 'been reached' do
                 it 'returns true' do
@@ -849,23 +947,44 @@ describe Arachni::Framework do
     end
 
     describe '#push_to_page_queue' do
-        context 'when the page does not match exclusion criteria' do
-            it 'pushes it to the page audit queue and returns true' do
-                page = Arachni::Page.from_url( @url + '/train/true' )
+        it 'pushes it to the page audit queue and returns true' do
+            page = Arachni::Page.from_url( @url + '/train/true' )
 
-                @f.opts.audit :links, :forms, :cookies
-                @f.modules.load :taint
+            @f.opts.audit :links, :forms, :cookies
+            @f.modules.load :taint
+
+            @f.page_queue_total_size.should == 0
+            @f.push_to_page_queue( page ).should be_true
+            @f.run
+            @f.auditstore.issues.size.should == 3
+            @f.page_queue_total_size.should > 0
+            @f.modules.clear
+        end
+
+        context 'when the page has already been seen' do
+            it 'ignores it' do
+                page = Arachni::Page.from_url( @url + '/stuff' )
+
+                @f.page_queue_total_size.should == 0
+                @f.push_to_page_queue( page )
+                @f.push_to_page_queue( page )
+                @f.push_to_page_queue( page )
+                @f.page_queue_total_size.should == 1
+            end
+
+            it 'returns false' do
+                page = Arachni::Page.from_url( @url + '/stuff' )
 
                 @f.page_queue_total_size.should == 0
                 @f.push_to_page_queue( page ).should be_true
-                @f.run
-                @f.auditstore.issues.size.should == 3
-                @f.page_queue_total_size.should > 0
-                @f.modules.clear
+                @f.push_to_page_queue( page ).should be_false
+                @f.push_to_page_queue( page ).should be_false
+                @f.page_queue_total_size.should == 1
             end
         end
+
         context 'when the page matches exclusion criteria' do
-            it 'does not push it to the page audit queue and returns false' do
+            it 'ignores it' do
                 page = Arachni::Page.from_url( @url + '/train/true' )
 
                 @f.opts.audit :links, :forms, :cookies
@@ -874,11 +993,19 @@ describe Arachni::Framework do
                 @f.opts.exclude << /train/
 
                 @f.page_queue_total_size.should == 0
-                @f.push_to_page_queue( page ).should be_false
+                @f.push_to_page_queue( page )
                 @f.run
                 @f.auditstore.issues.size.should == 0
                 @f.page_queue_total_size.should == 0
                 @f.modules.clear
+            end
+
+            it 'returns false' do
+                page = Arachni::Page.from_url( @url + '/train/true' )
+                @f.opts.exclude << /train/
+                @f.page_queue_total_size.should == 0
+                @f.push_to_page_queue( page ).should be_false
+                @f.page_queue_total_size.should == 0
             end
         end
     end
@@ -889,10 +1016,25 @@ describe Arachni::Framework do
             @f.modules.load :taint
 
             @f.url_queue_total_size.should == 0
-            @f.push_to_url_queue(  @url + '/link' )
+            @f.push_to_url_queue(  @url + '/link' ).should be_true
             @f.run
             @f.auditstore.issues.size.should == 1
-            @f.url_queue_total_size.should > 0
+            @f.url_queue_total_size.should == 1
+        end
+
+        context 'when the URL has already been seen' do
+            it 'returns false' do
+                @f.push_to_url_queue(  @url + '/link' ).should be_true
+                @f.push_to_url_queue(  @url + '/link' ).should be_false
+            end
+
+            it 'ignores it' do
+                @f.url_queue_total_size.should == 0
+                @f.push_to_url_queue(  @url + '/link' )
+                @f.push_to_url_queue(  @url + '/link' )
+                @f.push_to_url_queue(  @url + '/link' )
+                @f.url_queue_total_size.should == 1
+            end
         end
     end
 

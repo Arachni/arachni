@@ -44,6 +44,7 @@ shared_examples_for "module" do
         http.cookie_jar.clear
 
         framework.reset_spider
+        framework.reset_filters
         framework.opts.dont_audit :links, :forms, :cookies, :headers
     end
 

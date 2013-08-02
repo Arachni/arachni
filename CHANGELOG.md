@@ -2,6 +2,9 @@
 
 ## _Under development_
 
+- `Framework`
+    - `#audit_page` -- Updated to perform DOM/JS/AJAX analysis on the page and
+        feed DOM page snapshots and new paths back to the `Framework`.
 - `Arachni::Element`
     - Cleaned up initializers.
         - Now passed a single Hash argument with configuration options.
@@ -26,13 +29,18 @@
 - `Arachni::Browser` -- Real browser driver providing DOM/JS/AJAX support.
 - `Arachni::Page`
     - Cleaned-up attributes.
-    - Added `#response`, holding the associated `HTTP::Response`.
     - Attributes (`#links`, `#forms`, `#paths` etc.) are lazy-parsed on-demand.
+    - Added:
+        - `#response` -- Associated `HTTP::Response`.
+        - `#dom_body` -- Browser-evaluated `#body`.
+        - `#transitions` -- Replay-able DOM event/state transitions in order to
+            go from `#body` to `#dom_body`.
 - `Arachni::Parser` -- Updated to **only** operate under the context of the
     `HTTP::Response` with which it was initialized -- no longer supports parsing
     data from external sources.
 - Options
     - Added:
+        - `--dom-depth` -- How deep to go into the each page's DOM tree.
         - `--http-username` -- Username for HTTP authentication.
         - `--http-password` -- Password for HTTP authentication.
 - Reports
