@@ -705,8 +705,8 @@ describe Arachni::Browser do
             cookie = @browser.cookies.first
 
             cookie.should be_kind_of Arachni::Cookie
-            cookie.name.should == 'stuff'
-            cookie.value.should == 'true'
+            cookie.name.should == 'This name should be updated; and properly escaped'
+            cookie.value.should == 'This value should be updated; and properly escaped'
         end
     end
 

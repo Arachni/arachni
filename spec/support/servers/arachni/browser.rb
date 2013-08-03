@@ -6,7 +6,8 @@ require 'sinatra/contrib'
 get '/' do
     @@hit_count += 1
 
-    cookies[:stuff] = 'true'
+    cookies['This name should be updated; and properly escaped'] =
+        'This value should be updated; and properly escaped'
 
     <<HTML
 <html>
