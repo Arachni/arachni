@@ -471,7 +471,10 @@ class Browser
     # @return   [Array<Cookie>]   Browser cookies.
     def cookies
         watir.cookies.to_a.map do |c|
-            c[:path] = '/' if c[:path] == '//'
+            c[:path]  = '/' if c[:path] == '//'
+            c[:name]  = Cookie.decode( c[:name].to_s )
+            c[:value] = Cookie.decode( c[:value].to_s )
+
             Cookie.new c.merge( url: url )
         end
     end
