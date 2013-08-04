@@ -27,6 +27,9 @@
 #
 class Arachni::Modules::PathTraversal < Arachni::Module::Base
 
+    MINIMUM_TRAVERSALS = 0
+    MAXIMUM_TRAVERSALS = 6
+
     def self.options
         @options ||= {
             format: [Format::STRAIGHT],
@@ -74,10 +77,11 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
             h[platform] = payloads.map do |payload|
                 trv = '/'
 
-                [ "/#{payload}", "file:///#{payload}" ] + (0..10).map do
-                    trv << '../'
-                    [ "#{trv}#{payload}", "file://#{trv}#{payload}" ]
-                end
+                [ "/#{payload}", "file:///#{payload}" ] +
+                    (MINIMUM_TRAVERSALS..MAXIMUM_TRAVERSALS).map do
+                        trv << '../'
+                        [ "#{trv}#{payload}", "file://#{trv}#{payload}" ]
+                    end
             end.flatten
 
             h
