@@ -9,6 +9,9 @@
 - Reports
     - HTML -- Fixed display of untrusted issues.
 - Modules
+    - Recon
+        - .htaccess LIMIT misconfiguration (`htaccess_limit`)
+            - Updated to use verb tampering as well.
     - Audit
         - Path traversal (`path_traversal`)
             - Severity set to "High".
