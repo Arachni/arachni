@@ -8,6 +8,12 @@
         - `--http-password` -- Password for HTTP authentication.
 - Reports
     - HTML -- Fixed display of untrusted issues.
+- Modules
+    - Audit
+        - `path_traversal`
+            - Severity set to "High".
+            - Updated to start with `/` and go all the way up to
+                `/../../../../../../../../../../../`.
 
 ## 0.4.3.2 _(July 16, 2013)_
 

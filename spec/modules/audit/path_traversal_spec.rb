@@ -13,8 +13,8 @@ describe name_from_filename do
 
     def issue_count_per_target
         {
-            unix:    8,
-            windows: 24,
+            unix:    48,
+            windows: 144,
             tomcat:  12
         }
     end

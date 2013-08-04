@@ -67,14 +67,15 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
                 'winnt/win.ini'
             ]
         }.inject({}) do |h, (platform, payloads)|
-            h[platform] = [
-                '/',
-                '/../../../../../../../../../../../../../../../../'
-            ].map do |trv|
-                payloads.map do |payload|
+            h[platform] = payloads.map do |payload|
+                trv = '/'
+
+                [ "/#{payload}", "file:///#{payload}" ] + (0..10).map do
+                    trv << '../'
                     [ "#{trv}#{payload}", "file://#{trv}#{payload}" ]
                 end
             end.flatten
+
             h
         end
 
