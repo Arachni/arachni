@@ -31,6 +31,7 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
         @options ||= {
             format: [Format::STRAIGHT],
             regexp: [
+                /DOCUMENT_ROOT.*HTTP_USER_AGENT/,
                 /root:x:0:0:.+:[0-9a-zA-Z\/]+/im,
                 /mail:x:\d+:\d+:.+:[0-9a-zA-Z\/]+/im,
                 /\[boot loader\](.*)\[operating systems\]/im,
@@ -60,7 +61,10 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
         return @payloads if @payloads
 
         @payloads = {
-            unix:    [ 'etc/passwd' ],
+            unix:    [
+                'proc/self/environ',
+                'etc/passwd'
+            ],
             windows: [
                 'boot.ini',
                 'windows/win.ini',
