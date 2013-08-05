@@ -33,6 +33,17 @@ describe Arachni::Browser do
         end.should be_true
     end
 
+    it 'supports HTTPS' do
+        url = web_server_url_for( :browser_https ).gsub( 'http', 'https' )
+
+        @browser.start_capture
+        pages = @browser.load( url ).flush_pages
+
+        pages.size.should == 2
+        pages_should_have_form_with_input( pages, 'ajax-token' )
+        pages_should_have_form_with_input( pages, 'by-ajax' )
+    end
+
     describe '#explore_deep_and_flush' do
         it 'handles deep DOM/page transitions' do
             pages = @browser.load( @url + '/deep-dom' ).explore_deep_and_flush

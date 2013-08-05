@@ -82,21 +82,16 @@ class Browser
         @options = options.dup
 
         @proxy = HTTP::ProxyServer.new(
+            port: 1111,
             request_handler:  method( :request_handler ),
             response_handler: method( :response_handler )
         )
 
         @options[:timeout] ||= 5
 
-        @proxy.start_async if !@proxy.running?
+        @proxy.start_async
 
-        @watir = ::Watir::Browser.new(
-            Selenium::WebDriver.for( :phantomjs,
-                desired_capabilities: Selenium::WebDriver::Remote::Capabilities.
-                                          phantomjs( phantomjs_options ),
-                args: "--proxy=http://#{@proxy.address}/ --ignore-ssl-errors=true"
-            )
-        )
+        @watir = ::Watir::Browser.new( selenium )
 
         ensure_open_window
 
@@ -299,9 +294,6 @@ class Browser
     def trigger_events
         pending = Set.new
 
-        #ap 1
-        #puts source
-
         watir.elements.each_with_index do |element, i|
             events = element.attributes & EVENT_ATTRIBUTES
             next if events.empty?
@@ -317,16 +309,11 @@ class Browser
 
         root_page = to_page
 
-        #puts source
-        #ap '-' * 80
-
         while (tuple = pending.shift) do
-            #puts source
 
             element_idx, events = *tuple
             element = watir.elements[element_idx]
             opening_tag = element.opening_tag
-            #ap events
 
             events.each do |event|
                 element.fire_event( event ) rescue nil
@@ -334,8 +321,6 @@ class Browser
 
                 @transitions << { opening_tag => event.to_sym }
                 capture_snapshot
-
-                #puts source
 
                 restore root_page
             end
@@ -368,9 +353,6 @@ class Browser
 
         root_page = to_page
 
-        #puts source
-        #ap '-' * 80
-
         while (href = pending.shift) do
             element = watir.link( href: href )
 
@@ -378,8 +360,6 @@ class Browser
 
             exception_jail( false ) { element.click }
             wait_for_pending_requests
-
-            #puts source
 
             capture_snapshot
             restore root_page
@@ -486,7 +466,7 @@ class Browser
 
     # @return   [Selenium::WebDriver::Driver]   Selenium driver interface.
     def selenium
-        watir.driver
+        @selenum ||= Selenium::WebDriver.for( :phantomjs, desired_capabilities: capabilities )
     end
 
     private
@@ -517,9 +497,6 @@ class Browser
         page = to_page
         hash = page.hash
         return if @skip.include? hash
-
-        #ap page.transitions
-        #puts page.dom_body
 
         @page_snapshots[hash] = page
 
@@ -567,11 +544,15 @@ class Browser
         watir.execute_script( 'window.open()' )
     end
 
-    def phantomjs_options
-        {
+    def capabilities
+        Selenium::WebDriver::Remote::Capabilities.phantomjs(
             'phantomjs.page.settings.userAgent'  => Options.user_agent,
-            #'phantomjs.page.settings.loadImages' => false
-        }
+            #'phantomjs.page.settings.loadImages' => false,
+            'phantomjs.cli.args'                 => [
+                "--proxy=http://#{@proxy.address}/",
+                '--ignore-ssl-errors=true'
+            ]
+        )
     end
 
     def request_handler( request, response )
@@ -594,7 +575,6 @@ class Browser
 
     def response_handler( request, response )
         return if request.url.include?( request_token )
-        #@current_response = response
         @root_page_response ||= response
     end
 
