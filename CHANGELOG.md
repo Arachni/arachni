@@ -16,6 +16,8 @@
             - Retries denied requests with a `X-Forwarded-For` header
               to trick the web application into thinking that the request originates
               from `localhost` and checks whether the restrictions was bypassed.
+        - Form-based upload (`form_upload`)
+            - Flags upload forms which require manual testing.
     - Audit
         - Path traversal (`path_traversal`)
             - Severity set to "High".
