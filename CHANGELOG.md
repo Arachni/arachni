@@ -24,6 +24,7 @@
             - Updated to start with `/` and go all the way up to
                 `/../../../../../../../../../../../`.
             - Added fingerprints for `/proc/self/environ`.
+            - Improved coverage for MS Windows.
 
 ## 0.4.3.2 _(July 16, 2013)_
 

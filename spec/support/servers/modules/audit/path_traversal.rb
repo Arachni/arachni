@@ -92,7 +92,8 @@ MAPIX=1
 def get_variations( system, str )
     return if !str
     str = str.split( "\0" ).first
-    str = str.split( "file:/" ).last
+    str = str.split( 'file:/' ).last
+    str = str.split( 'c:' ).last
     file = File.expand_path( str ).gsub( /\/+/, '/' )
 
     OUT[FILE_TO_PLATFORM[file]] if system == FILE_TO_PLATFORM[file]

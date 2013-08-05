@@ -76,8 +76,9 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
         }.inject({}) do |h, (platform, payloads)|
             h[platform] = payloads.map do |payload|
                 trv = '/'
+                prefix = (platform == :windows ? 'c:' : nil)
 
-                [ "/#{payload}", "file:///#{payload}" ] +
+                [ "#{prefix}/#{payload}", "file://#{prefix}/#{payload}" ] +
                     (MINIMUM_TRAVERSALS..MAXIMUM_TRAVERSALS).map do
                         trv << '../'
                         [ "#{trv}#{payload}", "file://#{trv}#{payload}" ]
