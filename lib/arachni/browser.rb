@@ -40,27 +40,20 @@ class Browser
         end
     end
 
-    EVENT_ATTRIBUTES = [
-        'onload',
-        'onunload',
-        'onblur',
-        'onchange',
-        'onfocus',
-        'onreset',
-        'onselect',
-        'onsubmit',
-        'onabort',
-        'onkeydown',
-        'onkeypress',
-        'onkeyup',
-        'onclick',
-        'ondblclick',
-        'onmousedown',
-        'onmousemove',
-        'onmouseout',
-        'onmouseover',
-        'onmouseup'
+    GLOBAL_EVENTS = [
+        :onclick,
+        :ondblclick,
+        :onmousedown,
+        :onmousemove,
+        :onmouseout,
+        :onmouseover,
+        :onmouseup
     ]
+
+    NO_EVENT_FOR_ELEMENTS = Set.new([
+        :base, :bdo, :br, :head, :html, :iframe, :meta, :param, :script,
+        :style, :title
+    ])
 
     # @return   [Hash]   Preloaded resources, by URL.
     attr_reader :preloads
@@ -82,7 +75,6 @@ class Browser
         @options = options.dup
 
         @proxy = HTTP::ProxyServer.new(
-            port: 1111,
             request_handler:  method( :request_handler ),
             response_handler: method( :response_handler )
         )
@@ -113,6 +105,7 @@ class Browser
         @skip = Support::LookUp::HashSet.new
 
         @transitions = []
+        @request_transitions = []
         @add_request_transitions = true
     end
 
@@ -292,37 +285,38 @@ class Browser
     #
     # @return   [Browser]   `self`
     def trigger_events
-        pending = Set.new
-
-        watir.elements.each_with_index do |element, i|
-            events = element.attributes & EVENT_ATTRIBUTES
-            next if events.empty?
-
-            html = element.html
-            next if @skip.include? html
-
-            @skip   << html
-            pending << [i, events]
-        end
-
-        return self if pending.empty?
-
         root_page = to_page
 
-        while (tuple = pending.shift) do
-
-            element_idx, events = *tuple
-            element = watir.elements[element_idx]
+        watir.elements.each.with_index do |_, element_idx|
+            element     = watir.elements[element_idx]
+            tag_name    = element.tag_name
             opening_tag = element.opening_tag
 
-            events.each do |event|
-                element.fire_event( event ) rescue nil
-                wait_for_pending_requests
+            next if @skip.include? opening_tag
+            @skip << opening_tag
 
-                @transitions << { opening_tag => event.to_sym }
-                capture_snapshot
+            # Don't follow regular, non-JS links, these can be handled more
+            # efficiently by other framework components.
+            if (tag_name == 'a' && (href = element.attribute_value( :href ))) &&
+                !href.start_with?( 'javascript:' )
+                @skip << opening_tag
+                next
+            end
+
+            events_to_trigger_for( tag_name ).each do |event|
+                begin
+                    element.fire_event( event )
+                rescue Selenium::WebDriver::Error::UnknownError
+                    restore root_page
+                    element = watir.elements[element_idx]
+                    next
+                end
+
+                wait_for_pending_requests
+                capture_snapshot( opening_tag => event.to_sym )
 
                 restore root_page
+                element = watir.elements[element_idx]
             end
 
             restore root_page
@@ -343,7 +337,7 @@ class Browser
 
             next if @skip.include?( href ) ||
                 !href.start_with?( 'javascript:' ) ||
-                href =~ /javascript:\s*void\(/
+                href =~ /javascript:\s*void\(/ || href =~ /javascript:\s*;/
 
             @skip   << href
             pending << href.gsub( '%20', ' ' )
@@ -354,14 +348,20 @@ class Browser
         root_page = to_page
 
         while (href = pending.shift) do
-            element = watir.link( href: href )
+            element     = watir.link( href: href )
+            opening_tag = element.opening_tag
 
-            @transitions << { element.opening_tag => :click }
+            begin
+                element.click
+            rescue Selenium::WebDriver::Error::UnknownError
+                restore root_page
+                element = watir.link( href: href )
+                next
+            end
 
-            exception_jail( false ) { element.click }
             wait_for_pending_requests
 
-            capture_snapshot
+            capture_snapshot( opening_tag => :click )
             restore root_page
         end
 
@@ -493,14 +493,23 @@ class Browser
         end
     end
 
-    def capture_snapshot
+    def capture_snapshot( transition = nil )
         page = to_page
-        hash = page.hash
+
+        request_transitions = flush_request_transitions
+
+        hash = "#{page.dom_body.hash}:#{cookies.map(&:hash).sort}"
         return if @skip.include? hash
+        @skip << hash
+
+        transitions = ([transition] + request_transitions).flatten.compact
+
+        transitions.each do |t|
+            @transitions << t
+            page.push_transition t
+        end
 
         @page_snapshots[hash] = page
-
-        @skip << hash
     rescue => e
         print_error e
         print_error_backtrace e
@@ -513,6 +522,36 @@ class Browser
         true
     rescue Timeout::Error
         false
+    end
+
+    def events_to_trigger_for( tag_name )
+        tag_name = tag_name.to_sym
+        return [] if NO_EVENT_FOR_ELEMENTS.include?( tag_name )
+
+        case tag_name
+            when :body
+                [:onload]
+
+            when :form
+                [:onsubmit, :onreset]
+
+            # These need to be covered via Watir's API, #send_keys etc.
+            when :input, :textarea
+                [:onselect, :onchange, :onfocus, :onblur, :onkeydown,
+                 :onkeypress, :onkeyup]
+
+            when :select
+                [:onchange, :onfocus, :onblur]
+
+            when :button
+                [:onfocus, :onblur]
+
+            when :label
+                [:onfocus, :onblur]
+
+            else
+                []
+        end + GLOBAL_EVENTS
     end
 
     def load_cookies( url )
@@ -555,9 +594,15 @@ class Browser
         )
     end
 
+    def flush_request_transitions
+        @request_transitions.dup
+    ensure
+        @request_transitions.clear
+    end
+
     def request_handler( request, response )
         if !request.url.include?( request_token ) && @add_request_transitions
-            @transitions << { request.url => :request }
+            @request_transitions << { request.url => :request }
         end
 
         # Signal the proxy to not actually perform the request if we have a

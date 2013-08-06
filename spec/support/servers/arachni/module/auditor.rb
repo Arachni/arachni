@@ -31,7 +31,7 @@ get '/with_javascript' do
 
 
                 a = document.createElement('a');
-                a.href =  '/taint?link_input';
+                a.href =  '/taint?link_input=test';
                 a.innerHTML = "Link"
                 document.getElementsByTagName('body')[0].appendChild(a);
 

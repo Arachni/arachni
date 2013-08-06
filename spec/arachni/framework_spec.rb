@@ -823,7 +823,7 @@ describe Arachni::Framework do
 
                 @f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) )
 
-                @f.page_queue_total_size.should == 1
+                @f.page_queue_total_size.should > 0
             end
 
             it 'analyzes the DOM and pushes new paths to the url queue' do

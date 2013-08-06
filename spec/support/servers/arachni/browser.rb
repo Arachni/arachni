@@ -255,6 +255,12 @@ get '/explore' do
 
             function inHref() {
                 post_ajax = new XMLHttpRequest();
+                post_ajax.onreadystatechange = function() {
+                    if( post_ajax.readyState == 4 && post_ajax.status == 200 ) {
+                        document.getElementById( "my-div2" ).innerHTML = post_ajax.responseText;
+                    }
+                }
+
                 post_ajax.open( "POST", "/href-ajax", true );
                 post_ajax.send( "href-post-name=href-post-value" );
             }
@@ -265,6 +271,10 @@ get '/explore' do
 
         <div id="my-div" onclick="addForm();">
             Test
+        </div>
+
+        <div id="my-div2">
+            Test2
         </div>
 
         <a href="javascript:inHref();">Stuff</a>
