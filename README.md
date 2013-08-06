@@ -339,6 +339,7 @@ Audit modules actively engage the web application via its inputs.
 - XSS in event attributes of HTML elements (`xss_event`).
 - XSS in HTML tags (`xss_tag`).
 - XSS in HTML 'script' tags  (`xss_script_tag`).
+- Source code disclosure (`source_code_disclosure`)
 
 ##### Recon (Passive)
 

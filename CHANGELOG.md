@@ -10,15 +10,20 @@
     - HTML -- Fixed display of untrusted issues.
 - Modules
     - Recon
+        - Added:
+            - X-Forwarded-For Access Restriction Bypass (`x_forwarded_for_access_restriction_bypass`)
+                - Retries denied requests with a `X-Forwarded-For` header
+                  to trick the web application into thinking that the request originates
+                  from `localhost` and checks whether the restrictions was bypassed.
+            - Form-based upload (`form_upload`)
+                - Flags upload forms which require manual testing.
         - .htaccess LIMIT misconfiguration (`htaccess_limit`)
             - Updated to use verb tampering as well.
-        - X-Forwarded-For Access Restriction Bypass (`x_forwarded_for_access_restriction_bypass`)
-            - Retries denied requests with a `X-Forwarded-For` header
-              to trick the web application into thinking that the request originates
-              from `localhost` and checks whether the restrictions was bypassed.
-        - Form-based upload (`form_upload`)
-            - Flags upload forms which require manual testing.
     - Audit
+        - Added:
+            - Source code disclosure (`source_code_disclosure`)
+                - Checks whether or not the web application can be forced to
+                    reveal source code.
         - Path traversal (`path_traversal`)
             - Severity set to "High".
             - Updated to start with `/` and go all the way up to
