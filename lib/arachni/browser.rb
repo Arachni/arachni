@@ -123,6 +123,8 @@ class Browser
                 goto preload( resource ), take_snapshot
 
             when Page
+                HTTP::Client.update_cookies resource.cookiejar
+
                 @transitions = resource.transitions.dup
 
                 @add_request_transitions = false if @transitions.any?

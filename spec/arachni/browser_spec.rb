@@ -7,6 +7,7 @@ describe Arachni::Browser do
     end
 
     before( :each ) do
+        clear_hit_count
         @browser = described_class.new
     end
 
@@ -416,6 +417,25 @@ describe Arachni::Browser do
                     @browser.preloads.should_not include( @url )
 
                     hit_count.should == 1
+                end
+
+                it 'uses its #cookiejar' do
+                    @browser.cookies.should be_empty
+
+                    page = Arachni::Page.from_data(
+                        url:        @url,
+                        cookiejar:  [
+                            Arachni::Cookie.new(
+                                url:    @url,
+                                inputs: {
+                                    'my-name' => 'my-value'
+                                }
+                            )
+                        ]
+                    )
+
+                    @browser.load( page )
+                    @browser.cookies.should == page.cookiejar
                 end
             end
 
