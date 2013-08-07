@@ -151,8 +151,6 @@ module Auditable::RDiff
                 end
 
                 mutations( false_expr, opts ).each do |elem|
-                    print_status elem.status_string
-
                     responses[pair][elem.altered] ||= {}
 
                     # Submit the mutation and store the response.
