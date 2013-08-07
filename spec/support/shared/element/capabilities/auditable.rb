@@ -49,7 +49,7 @@ shared_examples_for 'auditable' do |options = {}|
             i = 0
             (@auditable.audit( 'seed' ){ i += 1 }).should be_true
             @auditable.http.run
-            i.should == 5
+            i.should == (@auditable.is_a?( Arachni::Form) ? 5 : 4)
 
             Arachni::Element::Capabilities::Auditable.reset
             Arachni::Element::Capabilities::Auditable.skip_like do |element|
@@ -59,7 +59,7 @@ shared_examples_for 'auditable' do |options = {}|
             i = 0
             (@auditable.audit( 'seed' ){ i += 1}).should be_true
             @auditable.http.run
-            i.should == 1
+            i.should == (@auditable.is_a?( Arachni::Form) ? 1 : 0)
         end
     end
 
