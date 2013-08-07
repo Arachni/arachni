@@ -123,31 +123,33 @@ module Auditable::RDiff
             responses[pair] ||= {}
             true_expr, false_expr = pair.to_a.first
 
-            mutations( true_expr, opts ).each do |elem|
-                print_status elem.status_string
-
-                # Submit the mutation and store the response.
-                elem.submit( opts ) do |res|
-                    elem.print_status "Gathering data for '#{elem.altered}' " <<
-                                          "#{type} input -- Got true  response:" <<
-                                          " #{true_expr}"
-
-                    responses[pair][elem.altered] ||= {}
-                    responses[pair][elem.altered][:mutation] = elem
-
-                    # Keep the latest response for the {Arachni::Issue}.
-                    responses[pair][elem.altered][:response]        = res
-                    responses[pair][elem.altered][:injected_string] = true_expr
-
-                    responses[pair][elem.altered][:true] ||= res.body.clone
-                    # Remove context-irrelevant dynamic content like banners
-                    # and such from the error page.
-                    responses[pair][elem.altered][:true] =
-                        responses[pair][elem.altered][:true].rdiff( res.body.clone )
-                end
-            end
-
             opts[:precision].times do
+                mutations( true_expr, opts ).each do |elem|
+                    print_status elem.status_string
+
+                    # Submit the mutation and store the response.
+                    elem.submit( opts ) do |res|
+                        if responses[pair][elem.altered][:true]
+                            elem.print_status "Gathering data for '#{elem.altered}' " <<
+                                                  "#{type} input -- Got true  response:" <<
+                                                  " #{true_expr}"
+                        end
+
+                        responses[pair][elem.altered] ||= {}
+                        responses[pair][elem.altered][:mutation] = elem
+
+                        # Keep the latest response for the {Arachni::Issue}.
+                        responses[pair][elem.altered][:response]        = res
+                        responses[pair][elem.altered][:injected_string] = true_expr
+
+                        responses[pair][elem.altered][:true] ||= res.body.clone
+                        # Remove context-irrelevant dynamic content like banners
+                        # and such from the error page.
+                        responses[pair][elem.altered][:true] =
+                            responses[pair][elem.altered][:true].rdiff( res.body.clone )
+                    end
+                end
+
                 mutations( false_expr, opts ).each do |elem|
                     print_status elem.status_string
 
@@ -183,13 +185,11 @@ module Auditable::RDiff
                 end
 
                 data.each do |input_name, result|
-                    true_response = result[:true].rdiff( control )
-
                     # if default_response_body == true_response_body AND
                     #    false_response_body != true_response_code AND
                     #    true_response_code == 200
-                    if control == true_response &&
-                        result[:false] != true_response &&
+                    if control == result[:true] &&
+                        result[:false] != result[:true] &&
                         result[:response].code == 200
 
                         # Check to see if the `true` response we're analyzing
