@@ -471,7 +471,7 @@ class Browser
     # @see #stop_capture
     # @see #capture?
     def flush_pages
-        captured_pages | page_snapshots
+        captured_pages + page_snapshots
     ensure
         @captured_pages.clear
         @page_snapshots.clear

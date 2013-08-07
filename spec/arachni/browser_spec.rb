@@ -34,6 +34,12 @@ describe Arachni::Browser do
         end.should be_true
     end
 
+    def pages_should_not_have_form_with_input( pages, input_name )
+        pages.find do |page|
+            page.forms.find { |form| form.inputs.include? input_name }
+        end.should be_false
+    end
+
     it 'supports HTTPS' do
         url = web_server_url_for( :browser_https ).gsub( 'http', 'https' )
 
@@ -43,6 +49,19 @@ describe Arachni::Browser do
         pages.size.should == 2
         pages_should_have_form_with_input( pages, 'ajax-token' )
         pages_should_have_form_with_input( pages, 'by-ajax' )
+    end
+
+    it 'respects scope restrictions' do
+        pages = @browser.load( @url + '/explore' ).start_capture.explore.page_snapshots
+        pages_should_have_form_with_input pages, 'by-ajax'
+
+        @browser.close
+        @browser = described_class.new
+
+        Arachni::Options.exclude << /ajax/
+
+        pages = @browser.load( @url + '/explore' ).start_capture.explore.page_snapshots
+        pages_should_not_have_form_with_input pages, 'by-ajax'
     end
 
     describe '#explore_deep_and_flush' do
