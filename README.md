@@ -3,6 +3,9 @@
 This branch is used for development, testing and integration of features for the
 0.5 version of Arachni.
 
+It is **really** far from being production-ready and it'll be a wonder if it doesn't
+immediately blow up in your face.
+
 ## How to run the code
 
 First of, setup a [development environment](https://github.com/Arachni/arachni/wiki/Development-environment).
@@ -18,15 +21,21 @@ Then, you can run Arachni using the the executables under `bin/`.<br/>
 If you get an error when trying to run Arachni, use `bundle exec` like so:
 `bundle exec <executable>`.
 
+**DO NOT** try to use the WebUI with this branch, and if you do don't report any
+issues, it is not supported yet.
+
 ### DOM/JS/AJAX support
 
 This branch contains experimental support for DOM/JS/AJAX analysis, which requires
-[PhantomJS](http://phantomjs.org/download.html) to be installed and in the OS PATH.
+[PhantomJS](http://phantomjs.org/download.html) to be installed and in the OS `PATH`.
 
 If the `phantomjs` executable cannot be located, this feature will be disabled
 and that will be visible by the following message during each page audit:
 
     [~] DOM depth: N/A (Could not find browser).
+
+To see details about the DOM analysis you can pass the `-v` flag to make the
+system output be more verbose.
 
 # Arachni - Web Application Security Scanner Framework
 

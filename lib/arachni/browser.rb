@@ -50,9 +50,9 @@ class Browser
         :onmouseup
     ]
 
-    NO_EVENT_FOR_ELEMENTS = Set.new([
+    NO_EVENTS_FOR_ELEMENTS = Set.new([
         :base, :bdo, :br, :head, :html, :iframe, :meta, :param, :script,
-        :style, :title
+        :style, :title, :link, :script
     ])
 
     # @return   [Hash]   Preloaded resources, by URL.
@@ -285,15 +285,15 @@ class Browser
     #
     # @return   [Browser]   `self`
     def trigger_events
-        root_page = to_page
-
-        watir.elements.each.with_index do |_, element_idx|
-            element     = watir.elements[element_idx]
+        # Filter out irrelevant stuff first because the manipulation that comes
+        # next is expensive, so let's not waste our time with them at all.
+        pending = Set.new
+        watir.elements.each.with_index do |element, i|
             tag_name    = element.tag_name
             opening_tag = element.opening_tag
 
-            next if @skip.include? opening_tag
-            @skip << opening_tag
+            next if @skip.include?( opening_tag ) ||
+                NO_EVENTS_FOR_ELEMENTS.include?( tag_name.to_sym )
 
             # Don't follow regular, non-JS links, these can be handled more
             # efficiently by other framework components.
@@ -303,20 +303,47 @@ class Browser
                 next
             end
 
+            @skip << opening_tag
+
+            pending << {
+                index:       i,
+                tag_name:    tag_name,
+                opening_tag: opening_tag
+            }
+        end
+
+        root_page = to_page
+
+        while (info = pending.shift) do
+            index       = info[:index]
+            element     = watir.elements[index]
+            tag_name    = info[:tag_name]
+            opening_tag = info[:opening_tag]
+
+            print_verbose "Analyzing: #{opening_tag}"
             events_to_trigger_for( tag_name ).each do |event|
                 begin
+                    print_verbose "* #{event}"
                     element.fire_event( event )
                 rescue Selenium::WebDriver::Error::UnknownError
                     restore root_page
-                    element = watir.elements[element_idx]
+                    element = watir.elements[index]
                     next
                 end
 
                 wait_for_pending_requests
-                capture_snapshot( opening_tag => event.to_sym )
+                if (snapshot = capture_snapshot( opening_tag => event.to_sym ))
+                    print_status "Found new page variation by triggering '#{event}' on: #{opening_tag}"
+
+                    print_verbose 'Page transitions:'
+                    snapshot.transitions.each do |t|
+                        element, event = t.first.to_a
+                        print_verbose "-- '#{event}' on: #{element}"
+                    end
+                end
 
                 restore root_page
-                element = watir.elements[element_idx]
+                element = watir.elements[index]
             end
 
             restore root_page
@@ -484,7 +511,7 @@ class Browser
 
             tag = element.match( /<(\w+)\b/ )[1]
             attributes = Nokogiri::HTML( element ).css( tag ).first.attributes.
-                inject({}) { |h, (k, v)| h[k.to_sym] = v.to_s; h }
+                inject({}) { |h, (k, v)| h[k.gsub( '-' ,'_' ).to_sym] = v.to_s; h }
 
             element = watir.send( "#{tag}s", attributes ).first
             element.fire_event( event )
@@ -498,7 +525,7 @@ class Browser
 
         request_transitions = flush_request_transitions
 
-        hash = "#{page.dom_body.hash}:#{cookies.map(&:hash).sort}"
+        hash = "#{page.dom_body.hash}:#{cookies.map(&:name).sort}"
         return if @skip.include? hash
         @skip << hash
 
@@ -526,7 +553,7 @@ class Browser
 
     def events_to_trigger_for( tag_name )
         tag_name = tag_name.to_sym
-        return [] if NO_EVENT_FOR_ELEMENTS.include?( tag_name )
+        return [] if NO_EVENTS_FOR_ELEMENTS.include?( tag_name )
 
         case tag_name
             when :body
