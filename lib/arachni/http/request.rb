@@ -255,7 +255,8 @@ class Request < Message
             maxredirs:       @max_redirects,
             ssl_verifypeer:  false,
             ssl_verifyhost:  0,
-            accept_encoding: 'gzip, deflate'
+            accept_encoding: 'gzip, deflate',
+            nosignal:        true
         }
 
         options[:timeout_ms] = timeout if timeout
