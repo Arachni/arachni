@@ -628,6 +628,8 @@ class Browser
     end
 
     def request_handler( request, response )
+        return if ignore_request?( request )
+
         if !request.url.include?( request_token ) && @add_request_transitions
             @request_transitions << { request.url => :request }
         end
@@ -648,6 +650,12 @@ class Browser
     def response_handler( request, response )
         return if request.url.include?( request_token )
         @root_page_response ||= response
+    end
+
+    def ignore_request?( request )
+        # Only allow CSS and JS resources to be loaded from out-of-scope domains.
+        !['css', 'js'].include?( request.parsed_url.resource_extension ) &&
+            skip_path?( request.url )
     end
 
     def capture( request )
