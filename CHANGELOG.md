@@ -6,6 +6,8 @@
     - Added:
         - `--http-username` -- Username for HTTP authentication.
         - `--http-password` -- Password for HTTP authentication.
+- `Element::Capabilities::Auditable::RDiff` -- Optimized and improved accuracy
+    of analysis.
 - Reports
     - HTML -- Fixed display of untrusted issues.
 - Modules
@@ -24,6 +26,8 @@
             - Source code disclosure (`source_code_disclosure`)
                 - Checks whether or not the web application can be forced to
                     reveal source code.
+        - Blind SQL Injection (Boolean/Differential analysis) (`sqli_blind_rdiff`)
+            - Improved accuracy of results.
         - Path traversal (`path_traversal`)
             - Severity set to "High".
             - Updated to start with `/` and go all the way up to

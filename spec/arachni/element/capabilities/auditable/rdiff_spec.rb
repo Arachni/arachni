@@ -10,8 +10,9 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
     describe '#rdiff_analysis' do
         before do
             @opts = {
-                faults: ['bad'],
-                bools:  ['good']
+                pairs: [
+                    { 'good' => 'bad '}
+                ]
             }
             @params = { 'rdiff' => 'blah' }
             issues.clear
