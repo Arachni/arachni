@@ -27,6 +27,8 @@
     - `ProxyServer` -- Moved the proxy server out of the `Proxy` plugin and
         updated it to work with `Arachni::HTTP` objects.
 - `Arachni::Browser` -- Real browser driver providing DOM/JS/AJAX support.
+- `Arachni::BrowserCluster` -- Maintains a pool of `Arachni::Browser` instances
+    and distributes the analysis workload of multiple resources.
 - `Arachni::Page`
     - Cleaned-up attributes.
     - Attributes (`#links`, `#forms`, `#paths` etc.) are lazy-parsed on-demand.

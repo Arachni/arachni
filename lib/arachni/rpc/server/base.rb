@@ -14,6 +14,7 @@
     limitations under the License.
 =end
 
+require 'ostruct'
 require 'arachni/rpc/em'
 
 module Arachni
@@ -28,6 +29,8 @@ class Server
 class Base < ::Arachni::RPC::EM::Server
 
     def initialize( opts, token = nil )
+        opts = OpenStruct.new( opts ) if opts.is_a?( Hash )
+
         super(
             serializer: Marshal,
             fallback_serializer:  YAML,

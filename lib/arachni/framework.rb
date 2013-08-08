@@ -45,8 +45,7 @@ require lib + 'http'
 require lib + 'report'
 require lib + 'session'
 require lib + 'trainer'
-require lib + 'browser'
-require lib + 'rpc/server/browser'
+require lib + 'browser_cluster'
 
 require Options.dir['mixins'] + 'progress_bar'
 
@@ -180,6 +179,10 @@ class Framework
         @push_to_url_queue_filter  = Support::LookUp::HashSet.new
         @push_to_page_queue_filter = Support::LookUp::HashSet.new
 
+        if has_browser? && @opts.dom_depth_limit > 0
+            @browser = BrowserCluster.new( handler: method( :push_to_page_queue ) )
+        end
+
         if block_given?
             block.call self
             reset
@@ -248,14 +251,7 @@ class Framework
 
         @current_url = page.url.to_s
 
-        # DOM/JS/AJAX analysis starts now, and in its own thread, in order
-        # to take advantage of the regular page audit runtime so as to
-        # conceal its overhead.
-        #
-        # The thread part is used for signaling more than anything else,
-        # the actual Browser worker is in a separate OS process to get
-        # around the GIL anyways.
-        browser_analysis_thread = perform_browser_analysis( page )
+        perform_browser_analysis( page )
 
         @modules.schedule.each do |mod|
             wait_if_paused
@@ -263,11 +259,6 @@ class Framework
         end
 
         harvest_http_responses
-
-        # This could be stupid, there's no actual need to block here, browser
-        # analysis could be fully asynchronous, but let's take it one step at
-        # a time.
-        browser_analysis_thread.join if browser_analysis_thread
 
         if !Module::Auditor.timeout_candidates.empty?
             print_line
@@ -295,12 +286,8 @@ class Framework
         @opts.link_count_limit_reached? @sitemap.size
     end
 
-    def browser
-        @browser ||= Arachni::RPC::Server::Browser.spawn
-    end
-
     def close_browser
-        @browser.close if @browser
+        @browser.shutdown if @browser
         @browser = nil
     end
 
@@ -402,6 +389,21 @@ class Framework
         @page_queue << page
         @page_queue_total_size += 1
 
+        pushed_paths = 0
+        page.paths.each do |path|
+            pushed_paths +=1 if push_to_url_queue( path )
+        end
+
+        if page.dom_depth > 1
+            print_info 'Got page via DOM/AJAX analysis with the following transitions:'
+            page.transitions.each do |t|
+                element, event = t.first.to_a
+                print_info "-- '#{event}' on: #{element}"
+            end
+
+            print_info "-- Analysis resulted in #{pushed_paths} usable paths."
+        end
+
         @push_to_page_queue_filter << page
 
         true
@@ -417,9 +419,10 @@ class Framework
     #   exclusion criteria.
     #
     def push_to_url_queue( url )
-        url = to_absolute( url ) || url
+        return if link_count_limit_reached?
 
-        return false if skip_path?( url ) || @push_to_url_queue_filter.include?( url )
+        url = to_absolute( url ) || url
+        return false if @push_to_url_queue_filter.include?( url ) || skip_path?( url )
 
         @push_to_url_queue_filter ||= Support::LookUp::HashSet.new
 
@@ -729,29 +732,12 @@ class Framework
     # @param    [Page]  page
     #   Page to analyze.
     def perform_browser_analysis( page )
-        return if !page.has_javascript? ||
+        return if !@browser || !page.has_javascript? ||
             # Don't exceed the DOM depth limit.
             (Options.dom_depth_limit && Options.dom_depth_limit < page.dom_depth + 1) ||
             !has_browser?
 
-        print_info 'Starting DOM/JS/AJAX analysis in the background.'
-
-        Thread.new do
-            pushed_pages = 0
-            pushed_paths = 0
-
-            browser.analyze( page ).each do |p|
-                pushed_pages += 1 if push_to_page_queue( p )
-
-                p.paths.each do |path|
-                    pushed_paths +=1 if push_to_url_queue( path )
-                end
-            end
-
-            print_info 'DOM/JS/AJAX analysis resulted in:'
-            print_info "  * #{pushed_pages} page variations"
-            print_info "  * #{pushed_paths} new paths"
-        end
+        @browser.analyze page
     end
 
     #
@@ -782,13 +768,14 @@ class Framework
 
         @status = :crawling
 
-        # if we're restricted to a given list of paths there's no reason to run the spider
+        # If we're restricted to a given list of paths there's no reason to run
+        # the spider.
         if @opts.restrict_paths && !@opts.restrict_paths.empty?
             @opts.restrict_paths = @opts.restrict_paths.map { |p| to_absolute( p ) }
             @sitemap = @opts.restrict_paths.dup
             @opts.restrict_paths.each { |url| push_to_url_queue( url ) }
         else
-            # initiates the crawl
+            # Initiates the crawl.
             spider.run do |page|
                 @sitemap |= spider.sitemap
                 push_to_url_queue page.url
@@ -798,16 +785,31 @@ class Framework
             end
         end
 
-        audit_queues
+        if @browser
+            # Keep auditing until there are no more resources in the queues and the
+            # browsers have stopped spinning.
+            loop do
+                sleep 0.1 while !@browser.done? && !has_audit_workload?
+                audit_queues
+                break if @browser.done? && !has_audit_workload?
+            end
+        else
+            audit_queues
+        end
+    end
+
+    def has_audit_workload?
+        !@url_queue.empty? || !@page_queue.empty?
     end
 
     #
     # Audits the URL and Page queues
     #
     def audit_queues
-        return if modules.empty?
+        return if @audit_queues_done == false || modules.empty? || !has_audit_workload?
 
-        @status = :auditing
+        @status            = :auditing
+        @audit_queues_done = false
 
         # goes through the URLs discovered by the spider, repeats the request
         # and parses the responses into page objects
@@ -841,6 +843,9 @@ class Framework
         end
 
         audit_page_queue
+
+        @audit_queues_done = true
+        true
     end
 
     #

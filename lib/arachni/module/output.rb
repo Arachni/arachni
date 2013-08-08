@@ -27,35 +27,35 @@ module Output
     include UI::Output
 
     def print_error( str = '' )
-        super( fancy_name + ": " + str )
+        super "#{fancy_name}: #{str}"
     end
 
     def print_bad( str = '', out = $stdout )
-        super( fancy_name + ": " + str )
+        super "#{fancy_name}: #{str}"
     end
 
     def print_status( str = '' )
-        super( fancy_name + ": " + str )
+        super "#{fancy_name}: #{str}"
     end
 
     def print_info( str = '' )
-        super( fancy_name + ": " + str )
+        super "#{fancy_name}: #{str}"
     end
 
     def print_ok( str = '' )
-        super( fancy_name + ": " + str )
+        super "#{fancy_name}: #{str}"
     end
 
     def print_debug( str = '' )
-        super( fancy_name + ": " + str ) if debug?
+        super "#{fancy_name}: #{str}"
     end
 
     def print_verbose( str = '' )
-        super( fancy_name + ": " + str )
+        super "#{fancy_name}: #{str}"
     end
 
     def print_line( str = '' )
-        super( fancy_name + ": " + str )
+        super "#{fancy_name}: #{str}"
     end
 
     def fancy_name

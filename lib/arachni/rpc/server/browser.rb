@@ -36,47 +36,47 @@ class Browser
     # Spawns a {Server::Browser} in it own process and connects to it.
     #
     # @return   [Client::Browser]
-    def self.spawn
+    def self.spawn( master = nil )
         socket = "/tmp/arachni-browser-#{Utilities.available_port}"
         token  = Utilities.generate_token
 
         ::EM.fork_reactor do
             Options.rpc_socket = socket
-            new token
+            new master: master, token: token
         end
 
         # Wait for the browser to boot up.
-        begin
-            Timeout.timeout( 10 ) do
-                while sleep( 0.1 )
-                    begin
-                        RPC::Client::Browser.new( socket, token ).alive?
-                        break
-                    rescue Exception
-                    end
-                end
-            end
-        rescue Timeout::Error
-            fail "Browser '#{socket}' never started!"
-        end
+        sleep 0.1 while !File.exists?( socket )
 
         RPC::Client::Browser.new( socket, token )
     end
 
-    # @param    [String]    token   Authentication token for the clients.
-    def initialize( token = nil )
+    # @param    [Hash]    options
+    # @option   [String]    :token  Authentication token for the clients.
+    def initialize( options = {} )
         %w(QUIT INT).each do |signal|
             trap( signal, 'IGNORE' ) if Signal.list.has_key?( signal )
         end
 
-        @browser = Arachni::Browser.new
+        token = options.delete( :token )
+        if (master = options.delete( :master ))
+            options[:store_pages] = false
+        end
+
+        @browser = Arachni::Browser.new( options )
         @browser.start_capture
+
+        if master
+            @browser.on_new_page do |page|
+                master.handle_page page
+            end
+        end
 
         @server = Base.new( Options.instance, token )
         @server.logger.level = ::Logger::Severity::FATAL
 
         @server.add_async_check do |method|
-            # methods that expect a block are async
+            # Methods that expect a block are async.
             method.parameters.flatten.include? :block
         end
 
@@ -84,16 +84,24 @@ class Browser
         @server.start
     end
 
-    # @param    [Page]  page    Page to analyze.
+    # @param    [Page, String, HTTP::Response]  resource
+    #   Resource to analyze. If `String` is given it will be treated as a URL.
+    # @param    [Hash]  options
+    # @option   options [Array<Cookie>] :cookies
+    #   Cookies with which to update the browser's cookie-jar before analyzing
+    #   the given resource.
+    #
     # @return   [Array<Page>]
     #   Pages which resulted from firing events, clicking JavaScript links
     #   and capturing AJAX requests.
     #
     # @see Arachni::Browser#explore
-    def analyze( page, &block )
+    def analyze( resource, options = {}, &block )
+        HTTP::Client.update_cookies( options[:cookies] || [] )
+
         ::EM.defer do
             begin
-                @browser.load page
+                @browser.load resource
                 @browser.explore
             rescue => e
                 print_error e

@@ -28,16 +28,18 @@ describe Arachni::Browser do
         Typhoeus::Request.get( "#{@url}/clear-hit-count" )
     end
 
-    def pages_should_have_form_with_input( pages, input_name )
+    def find_page_with_form_with_input( pages, input_name )
         pages.find do |page|
             page.forms.find { |form| form.inputs.include? input_name }
-        end.should be_true
+        end
+    end
+
+    def pages_should_have_form_with_input( pages, input_name )
+        find_page_with_form_with_input( pages, input_name ).should be_true
     end
 
     def pages_should_not_have_form_with_input( pages, input_name )
-        pages.find do |page|
-            page.forms.find { |form| form.inputs.include? input_name }
-        end.should be_false
+        find_page_with_form_with_input( pages, input_name ).should be_false
     end
 
     it 'supports HTTPS' do
@@ -46,7 +48,6 @@ describe Arachni::Browser do
         @browser.start_capture
         pages = @browser.load( url ).flush_pages
 
-        pages.size.should == 2
         pages_should_have_form_with_input( pages, 'ajax-token' )
         pages_should_have_form_with_input( pages, 'by-ajax' )
     end
@@ -62,6 +63,74 @@ describe Arachni::Browser do
 
         pages = @browser.load( @url + '/explore' ).start_capture.explore.page_snapshots
         pages_should_not_have_form_with_input pages, 'by-ajax'
+    end
+
+    describe '#initialize' do
+        describe :store_pages do
+            describe 'default' do
+                it 'stores snapshot pages' do
+                    @browser.close
+                    @browser = described_class.new
+                    @browser.load( @url + '/explore' ).flush_pages.should be_any
+                end
+
+                it 'stores captured pages' do
+                    @browser.close
+                    @browser = described_class.new
+                    @browser.start_capture
+                    @browser.load( @url + '/with-ajax' ).flush_pages.should be_any
+                end
+            end
+
+            describe true do
+                it 'stores snapshot pages' do
+                    @browser.close
+                    @browser = described_class.new( store_pages: true )
+                    @browser.load( @url + '/explore' ).explore.flush_pages.should be_any
+                end
+
+                it 'stores captured pages' do
+                    @browser.close
+                    @browser = described_class.new( store_pages: true )
+                    @browser.start_capture
+                    @browser.load( @url + '/with-ajax' ).flush_pages.should be_any
+                end
+            end
+
+            describe false do
+                it 'stores snapshot pages' do
+                    @browser.close
+                    @browser = described_class.new( store_pages: false )
+                    @browser.load( @url + '/explore' ).explore.flush_pages.should be_empty
+                end
+
+                it 'stores captured pages' do
+                    @browser.close
+                    @browser = described_class.new( store_pages: false )
+                    @browser.start_capture
+                    @browser.load( @url + '/with-ajax' ).flush_pages.should be_empty
+                end
+            end
+        end
+    end
+
+    describe '#on_new_page' do
+        it 'is passed each snapshot' do
+            pages = []
+            @browser.on_new_page { |page| pages << page }
+
+            @browser.load( @url + '/explore' ).explore.
+                page_snapshots.should == pages
+        end
+
+        it 'is passed each request capture' do
+            pages = []
+            @browser.on_new_page { |page| pages << page }
+            @browser.start_capture
+
+            # Last page will be the root snapshot so ignore it.
+            @browser.load( @url + '/with-ajax' ).captured_pages.should == pages[0...2]
+        end
     end
 
     describe '#explore_deep_and_flush' do
@@ -614,7 +683,7 @@ describe Arachni::Browser do
             @browser.load @url + '/with-ajax'
 
             pages = @browser.flush_pages
-            pages.size.should == 2
+            pages.size.should == 3
 
             page = pages.first
 
@@ -627,7 +696,7 @@ describe Arachni::Browser do
                 @browser.load @url + '/with-ajax'
 
                 pages = @browser.flush_pages
-                pages.size.should == 2
+                pages.size.should == 3
 
                 page = pages.first
 
@@ -647,11 +716,10 @@ describe Arachni::Browser do
                 @browser.load @url + '/with-ajax'
 
                 pages = @browser.flush_pages
-                pages.size.should == 2
+                pages.size.should == 3
 
-                page = pages.first
-
-                form = page.forms.find { |form| form.inputs.include? 'post-name' }
+                form = find_page_with_form_with_input( pages, 'post-name' ).
+                    forms.find { |form| form.inputs.include? 'post-name' }
 
                 form.url.should == @url + 'with-ajax'
                 form.action.should == @url + 'post-ajax'
@@ -668,7 +736,7 @@ describe Arachni::Browser do
             @browser.load @url + '/with-ajax'
 
             pages = @browser.flush_pages
-            pages.size.should == 2
+            pages.size.should == 3
             @browser.flush_pages.should be_empty
         end
     end
@@ -685,7 +753,7 @@ describe Arachni::Browser do
             @browser.load @url + '/with-ajax'
             @browser.stop_capture
             @browser.load @url + '/with-image'
-            @browser.flush_pages.size.should == 1
+            @browser.flush_pages.size.should == 2
         end
     end
 

@@ -36,6 +36,17 @@ class HashSet < Base
         @collection = Set.new
     end
 
+    def merge( other )
+        @collection.merge other.collection
+        self
+    end
+
+    protected
+
+    def collection
+        @collection
+    end
+
 end
 
 end

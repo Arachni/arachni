@@ -23,7 +23,7 @@ module Arachni
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Browser
-    include UI::Output
+    include Module::Output
     include Utilities
 
     # {Browser} error namespace.
@@ -71,6 +71,8 @@ class Browser
     # @param    [Hash]  options
     # @option   options [Integer] :timeout  (5)
     #   Max time to wait for the page to settle (for pending AJAX requests etc).
+    # @option   options [Bool] :store_pages  (true)
+    #   Whether to store pages in addition to just passing them to {#on_new_page}.
     def initialize( options = {} )
         @options = options.dup
 
@@ -79,7 +81,8 @@ class Browser
             response_handler: method( :response_handler )
         )
 
-        @options[:timeout] ||= 5
+        @options[:timeout]     ||= 5
+        @options[:store_pages]   = true if !@options.include?( :store_pages )
 
         @proxy.start_async
 
@@ -93,8 +96,8 @@ class Browser
         # User-controlled preloaded responses, by URL.
         @preloads = {}
 
-        # Captured pages, by URL -- populated by #capture.
-        @captured_pages = {}
+        # Captured pages -- populated by #capture.
+        @captured_pages = []
 
         # Snapshots of the working page resulting from firing of events and
         # clicking of JS links.
@@ -102,11 +105,18 @@ class Browser
 
         # Keeps track of resources which should be skipped -- like already fired
         # events and clicked links etc.
-        @skip = Support::LookUp::HashSet.new
+        @skip = Support::LookUp::HashSet.new( hasher: :persistent_hash )
 
         @transitions = []
         @request_transitions = []
         @add_request_transitions = true
+
+        @on_new_page_blocks = []
+    end
+
+    def on_new_page( &block )
+        fail ArgumentError, 'Missing block.' if !block_given?
+        @on_new_page_blocks << block
     end
 
     # @param    [String, HTTP::Response, Page]  resource
@@ -126,6 +136,7 @@ class Browser
                 HTTP::Client.update_cookies resource.cookiejar
 
                 @transitions = resource.transitions.dup
+                @skip.merge resource.skip_events
 
                 @add_request_transitions = false if @transitions.any?
 
@@ -322,12 +333,13 @@ class Browser
             tag_name    = info[:tag_name]
             opening_tag = info[:opening_tag]
 
-            print_verbose "Analyzing: #{opening_tag}"
+            print_debug "Analyzing: #{opening_tag}"
             events_to_trigger_for( tag_name ).each do |event|
                 begin
-                    print_verbose "* #{event}"
+                    print_debug "* #{event}"
                     element.fire_event( event )
-                rescue Selenium::WebDriver::Error::UnknownError
+                rescue Selenium::WebDriver::Error::UnknownError,
+                        Watir::Exception::UnknownObjectException
                     restore root_page
                     element = watir.elements[index]
                     next
@@ -335,12 +347,12 @@ class Browser
 
                 wait_for_pending_requests
                 if (snapshot = capture_snapshot( opening_tag => event.to_sym ))
-                    print_status "Found new page variation by triggering '#{event}' on: #{opening_tag}"
+                    print_debug "Found new page variation by triggering '#{event}' on: #{opening_tag}"
 
-                    print_verbose 'Page transitions:'
+                    print_debug 'Page transitions:'
                     snapshot.transitions.each do |t|
                         element, event = t.first.to_a
-                        print_verbose "-- '#{event}' on: #{element}"
+                        print_debug "-- '#{event}' on: #{element}"
                     end
                 end
 
@@ -443,7 +455,7 @@ class Browser
     #   Captured HTTP requests performed by the web page (AJAX etc.) converted
     #   into forms of pages to assist with analysis and audit.
     def captured_pages
-        @captured_pages.values
+        @captured_pages
     end
 
     # @return   [Page]  Converts the current browser window to a {Page page}.
@@ -452,11 +464,12 @@ class Browser
 
         current_response = @root_page_response.deep_clone
 
-        page               = current_response.to_page
+        page                 = current_response.to_page
         page.response.body ||= source.dup
-        page.dom_body      = source.dup
-        page.cookies      |= cookies.dup
-        page.transitions   = @transitions.dup
+        page.dom_body        = source.dup
+        page.cookies        |= cookies.dup
+        page.transitions     = @transitions.dup
+        page.skip_events     = @skip.dup
 
         page
     end
@@ -498,7 +511,19 @@ class Browser
         @selenum ||= Selenium::WebDriver.for( :phantomjs, desired_capabilities: capabilities )
     end
 
+    def self.info
+        { name: 'Browser' }
+    end
+
     private
+
+    def store_pages?
+        !!@options[:store_pages]
+    end
+
+    def call_on_new_page_blocks( page )
+        @on_new_page_blocks.each { |b| b.call page }
+    end
 
     # Loads `page` without taking a snapshot, used for restoring  the root page
     # after manipulation.
@@ -527,9 +552,9 @@ class Browser
 
         request_transitions = flush_request_transitions
 
-        hash = "#{page.dom_body.hash}:#{cookies.map(&:name).sort}"
-        return if @skip.include? hash
-        @skip << hash
+        unique_id = "#{page.dom_body.persistent_hash}:#{cookies.map(&:name).sort}"
+        return if @skip.include? unique_id
+        @skip << unique_id
 
         transitions = ([transition] + request_transitions).flatten.compact
 
@@ -538,7 +563,10 @@ class Browser
             page.push_transition t
         end
 
-        @page_snapshots[hash] = page
+        call_on_new_page_blocks( page )
+        @page_snapshots[unique_id] = page if store_pages?
+
+        page
     rescue => e
         print_error e
         print_error_backtrace e
@@ -663,13 +691,8 @@ class Browser
     def capture( request )
         return if !capture?
 
-        if !@captured_pages.include? url
-            page = Page.from_data( url: url )
-            page.response.request = request
-            @captured_pages[url] = page
-        end
-
-        page = @captured_pages[url]
+        page = Page.from_data( url: url )
+        page.response.request = request
         page.push_transition request.url => :request
 
         case request.method
@@ -698,6 +721,8 @@ class Browser
                 page.forms.uniq!
         end
 
+        @captured_pages << page if store_pages?
+        call_on_new_page_blocks( page )
     end
 
     def from_preloads( request, response )
