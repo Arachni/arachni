@@ -34,6 +34,9 @@
                 `/../../../../../../../../../../../`.
             - Added fingerprints for `/proc/self/environ`.
             - Improved coverage for MS Windows.
+        - Remote file inclusion (`rfi`)
+            - Updated to handle cases where the web application appends its own
+                extension to the injected string.
 
 ## 0.4.3.2 _(July 16, 2013)_
 

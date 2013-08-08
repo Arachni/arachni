@@ -60,8 +60,8 @@ class Arachni::Modules::RFI < Arachni::Module::Base # *always* extend Arachni::M
     #
     def self.payloads
         @payloads ||= [
-            'hTtP://arachni.github.com/arachni/rfi.md5.txt',
-            'arachni.github.com/arachni/rfi.md5.txt'
+            'hTtP://tests.arachni-scanner.com/rfi.md5.txt',
+            'tests.arachni-scanner.com/rfi.md5.txt'
         ]
     end
 
@@ -116,7 +116,7 @@ class Arachni::Modules::RFI < Arachni::Module::Base # *always* extend Arachni::M
             #
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.2',
+            version:     '0.2.1',
             references:  {
                 'WASC'      => 'http://projects.webappsec.org/Remote-File-Inclusion',
                 'Wikipedia' => 'http://en.wikipedia.org/wiki/Remote_File_Inclusion'
