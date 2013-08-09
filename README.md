@@ -34,9 +34,6 @@ and that will be visible by the following message during each page audit:
 
     [~] DOM depth: N/A (Could not find browser).
 
-To see details about the DOM analysis you can pass the `-v` flag to make the
-system output be more verbose.
-
 # Arachni - Web Application Security Scanner Framework
 
 <table>
