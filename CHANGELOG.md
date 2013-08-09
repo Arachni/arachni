@@ -15,10 +15,11 @@
         - Added:
             - X-Forwarded-For Access Restriction Bypass (`x_forwarded_for_access_restriction_bypass`)
                 - Retries denied requests with a `X-Forwarded-For` header
-                  to trick the web application into thinking that the request originates
-                  from `localhost` and checks whether the restrictions was bypassed.
+                  to try and trick the web application into thinking that the
+                  request originates from `localhost` and checks whether the
+                  restrictions were bypassed.
             - Form-based upload (`form_upload`)
-                - Flags upload forms which require manual testing.
+                - Flags file-upload forms as they require manual testing.
         - .htaccess LIMIT misconfiguration (`htaccess_limit`)
             - Updated to use verb tampering as well.
     - Audit
@@ -34,7 +35,7 @@
         - Path traversal (`path_traversal`)
             - Severity set to "High".
             - Updated to start with `/` and go all the way up to
-                `/../../../../../../../../../../../`.
+                `/../../../../../../`.
             - Added fingerprints for `/proc/self/environ`.
             - Improved coverage for MS Windows.
         - Remote file inclusion (`rfi`)
