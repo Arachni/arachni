@@ -1,0 +1,60 @@
+=begin
+    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+=end
+
+# @see OWASP    https://www.owasp.org/index.php/Top_10_2007-Malicious_File_Execution
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+# @version 0.1
+class Arachni::Modules::CodeExecutionPHPInputWrapper < Arachni::Module::Base
+
+    def self.options
+        @options ||= {
+            format:    [Format::STRAIGHT],
+            body:      "<?php echo 'vDBVBsbVdv'; ?> <?php echo chr(80).chr(76).chr(76).chr(33).chr(56).chr(111).chr(55) ?>",
+            substring: 'vDBVBsbVdv PLL!8o7'
+        }
+    end
+
+    def run
+        audit 'php://input', self.class.options
+    end
+
+    def self.info
+        {
+            name:        'Code injection (php://input wrapper)',
+            description: %q{It injects PHP code into the HTTP request body and
+                uses the php://input wrapper to try and load it.},
+            elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+            version:     '0.1',
+            references:  {
+                'OWASP'     => 'https://www.owasp.org/index.php/Top_10_2007-Malicious_File_Execution'
+            },
+            targets:     %w(PHP),
+            issue:       {
+                name:            %q{Code injection (php://input wrapper)},
+                description:     %q{The web application can be forced to execute
+                    arbitrary code via the php://input wrapper.},
+                tags:            %w(remote injection php code execution),
+                cwe:             '94',
+                severity:        Severity::HIGH
+            }
+
+        }
+    end
+
+end

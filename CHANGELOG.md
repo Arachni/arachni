@@ -26,6 +26,9 @@
             - Source code disclosure (`source_code_disclosure`)
                 - Checks whether or not the web application can be forced to
                     reveal source code.
+            - Code execution via the php://input wrapper (`code_execution_php_input_wrapper`)
+                - It injects PHP code into the HTTP request body and uses the
+                php://input wrapper to try and load it
         - Blind SQL Injection (Boolean/Differential analysis) (`sqli_blind_rdiff`)
             - Improved accuracy of results.
         - Path traversal (`path_traversal`)
