@@ -61,6 +61,7 @@ class Arachni::Modules::RFI < Arachni::Module::Base # *always* extend Arachni::M
     def self.payloads
         @payloads ||= [
             'hTtP://tests.arachni-scanner.com/rfi.md5.txt',
+            'http://tests.arachni-scanner.com/rfi.md5.txt',
             'tests.arachni-scanner.com/rfi.md5.txt'
         ]
     end
