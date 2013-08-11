@@ -16,5 +16,4 @@ wp-admin/install.php
 wp-admin/setup-config.php
 config.php
 php.ini
-index.php?=PHPB8B5F2A0-3C92-11d3-A3A9-4C7B08C10000
 error_log
