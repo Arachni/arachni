@@ -15,9 +15,9 @@
                         These issues are considered trusted and fairly accurate.
                     </blockquote>
 
-                    <% if !filtered_hashes.empty? %>
+                    <% if filtered_hashes.any? %>
                         <% auditstore.issues.each_with_index do |issue, i|%>
-                            <% next if !filtered_hashes.include?( issue._hash ) %>
+                            <% next if issue.untrusted? %>
 
                             <%= erb :issue, { :idx => i+1, :issue => issue, :crypto_issues => crypto_issues } %>
                         <% end %>
@@ -37,27 +37,12 @@
                         The listed issues need verification by a human.
                     </blockquote>
 
-                    <% if !anomalous_hashes.empty? %>
-                        <div id="untrusted-tabs">
-                            <ul>
-                                <% anomalous_meta_results.each_pair do |name, data|%>
-                                    <li><a href="#<%=name%>"><%=data[:name]%></a></li>
-                                <% end %>
-                            </ul>
+                    <% if anomalous_hashes.any? %>
+                        <% auditstore.issues.each_with_index do |issue, i|%>
+                            <% next if issue.trusted? %>
 
-
-                            <% anomalous_meta_results.each_pair do |name, data|%>
-                            <div id="<%=name%>">
-                                <h3>Component description:</h3>
-                                <blockquote> <%=data[:description]%> </blockquote>
-                                <br/>
-                                <% data[:results].each do |issue| %>
-                                    <%= format_issue( issue['hash'] ) %>
-                                <% end %>
-                            </div>
-                            <% end %>
-
-                        </div>
+                            <%= erb :issue, { :idx => i+1, :issue => issue, :crypto_issues => crypto_issues } %>
+                        <% end %>
                     <% else %>
                         <p class="notice">No untrusted issues have been logged.</p>
                     <% end %>

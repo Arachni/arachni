@@ -14,15 +14,15 @@ describe name_from_filename do
         results_for( name_from_filename )
     end
 
-    context "when given the right params" do
-        it 'locates the form and login successfully' do
+    context 'when given the right params' do
+        it 'logins successfully' do
             options.url = web_server_url_for( name_from_filename )
             run
             results.should == { username: 'admin', password: 'pass' }
         end
     end
 
-    context "when being unable to login" do
+    context 'when being unable to login' do
         it 'logs nothing' do
             options.url = web_server_url_for( "#{name_from_filename}_secure" )
             run

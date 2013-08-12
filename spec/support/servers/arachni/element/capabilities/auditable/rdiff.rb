@@ -13,6 +13,7 @@ get '/true' do
     end
 
     <<-EOHTML
+    #{rand(9999999)}
     <a href='?rdiff=blah'>Inject here</a>
     #{out}
 EOHTML
@@ -29,7 +30,8 @@ get '/false' do
             'No idea what you want mate...'
     end
 
-<<-EOHTML
+    <<-EOHTML
+    #{rand(9999999)}
     <a href='?rdiff=blah'>Inject here</a>
     #{out}
 EOHTML

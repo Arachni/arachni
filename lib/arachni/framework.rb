@@ -800,7 +800,10 @@ class Framework
         print_info 'Depending on server responsiveness and network' <<
             ' conditions this may take a while.'
 
-        # run all the queued HTTP requests and harvest the responses
+        # Run all the queued HTTP requests and harvest the responses.
+        http.run
+
+        # Needed for some HTTP callbacks.
         http.run
 
         session.ensure_logged_in

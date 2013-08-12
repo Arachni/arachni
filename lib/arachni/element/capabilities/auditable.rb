@@ -631,6 +631,11 @@ module Auditable
                 next
             end
 
+            if elem.matches_skip_like_blocks?
+                print_debug 'Element matches one or more skip_like blocks, skipping.'
+                next
+            end
+
             if !orphan? && @auditor.skip?( elem )
                 mid = elem.audit_id( injection_str, opts )
                 print_debug "Auditor's #skip? method returned true for mutation, skipping: #{mid}"

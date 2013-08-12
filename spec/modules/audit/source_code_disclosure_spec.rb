@@ -4,18 +4,19 @@ describe name_from_filename do
     include_examples 'module'
 
     def self.targets
-        %w(Unix Windows Tomcat)
+        %w(PHP JSP ASP)
     end
 
     def self.elements
         [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ]
     end
 
-    def issue_count_per_target
+    def issue_count_per_element
         {
-            unix:    64,
-            windows: 96,
-            tomcat:  12
+            Element::FORM => 2,
+            Element::LINK => 4,
+            Element::COOKIE => 1,
+            Element::HEADER => 2
         }
     end
 

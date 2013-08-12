@@ -8,11 +8,11 @@ describe name_from_filename do
     end
 
     def self.elements
-        [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ]
+        [ Element::FORM ]
     end
 
     def issue_count
-        12
+        1
     end
 
     easy_test

@@ -19,7 +19,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.3.1
+# @version 0.3.3
 #
 # @see http://cwe.mitre.org/data/definitions/22.html
 # @see http://www.owasp.org/index.php/Path_Traversal
@@ -27,11 +27,15 @@
 #
 class Arachni::Modules::PathTraversal < Arachni::Module::Base
 
+    MINIMUM_TRAVERSALS = 0
+    MAXIMUM_TRAVERSALS = 6
+
     def self.options
         @options ||= {
             format: [Format::STRAIGHT],
             regexp: [
-                /root:x:0:0:.+:[0-9a-zA-Z\/]+/im,
+                /DOCUMENT_ROOT.*HTTP_USER_AGENT/,
+                /root:[x\*]:0:0:.+:[0-9a-zA-Z\/]+/im,
                 /mail:x:\d+:\d+:.+:[0-9a-zA-Z\/]+/im,
                 /\[boot loader\](.*)\[operating systems\]/im,
                 /\[fonts\](.*)\[extensions\]/im,
@@ -44,7 +48,7 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
                 m = mutation.dup
 
                 # Figure out the extension of the default value, if it has one.
-                ext = m.orig[m.altered].to_s.split( '.' )
+                ext = m.original[m.altered].to_s.split( '.' )
                 ext = ext.size > 1 ? ext.last : nil
 
                 # Null-terminate the injected value and append the ext.
@@ -60,21 +64,27 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
         return @payloads if @payloads
 
         @payloads = {
-            unix:    [ 'etc/passwd' ],
+            unix:    [
+                'proc/self/environ',
+                'etc/passwd'
+            ],
             windows: [
                 'boot.ini',
                 'windows/win.ini',
                 'winnt/win.ini'
             ]
         }.inject({}) do |h, (platform, payloads)|
-            h[platform] = [
-                '/',
-                '/../../../../../../../../../../../../../../../../'
-            ].map do |trv|
-                payloads.map do |payload|
-                    [ "#{trv}#{payload}", "file://#{trv}#{payload}" ]
-                end
+            h[platform] = payloads.map do |payload|
+                trv = '/'
+                prefix = (platform == :windows ? 'c:' : nil)
+
+                [ "#{prefix}/#{payload}", "file://#{prefix}/#{payload}" ] +
+                    (MINIMUM_TRAVERSALS..MAXIMUM_TRAVERSALS).map do
+                        trv << '../'
+                        [ "#{trv}#{payload}", "file://#{trv}#{payload}" ]
+                    end
             end.flatten
+
             h
         end
 
@@ -97,7 +107,7 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
                 based on the presence of relevant content in the HTML responses.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.3.1',
+            version:     '0.3.3',
             references:  {
                 'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
                 'WASC'  => 'http://projects.webappsec.org/Path-Traversal'
@@ -110,7 +120,7 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
     of a pathname to a restricted directory.},
                 tags:            %w(path traversal injection regexp),
                 cwe:             '22',
-                severity:        Severity::MEDIUM,
+                severity:        Severity::HIGH,
                 cvssv2:          '4.3',
                 remedy_guidance: %q{User inputs must be validated and filtered
     before being used as a part of a filesystem path.},

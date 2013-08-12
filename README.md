@@ -3,7 +3,7 @@
 <table>
     <tr>
         <th>Version</th>
-        <td>0.4.3.2</td>
+        <td>0.4.4</td>
     </tr>
     <tr>
         <th>Homepage</th>
@@ -308,6 +308,7 @@ Audit modules actively engage the web application via its inputs.
 - XSS in event attributes of HTML elements (`xss_event`).
 - XSS in HTML tags (`xss_tag`).
 - XSS in HTML 'script' tags  (`xss_script_tag`).
+- Source code disclosure (`source_code_disclosure`)
 
 ##### Recon (Passive)
 
@@ -335,6 +336,8 @@ Recon modules look for the existence of files, folders and signatures.
 - Insecure cookies (`insecure_cookies`).
 - HttpOnly cookies (`http_only_cookies`).
 - Auto-complete for password form fields (`password_autocomplete`).
+- X-Forwarded-For Access Restriction Bypass (`x_forwarded_for_access_restriction_bypass`)
+- Form-based upload (`form_upload`)
 
 ### Report Management
 

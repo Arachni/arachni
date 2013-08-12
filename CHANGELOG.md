@@ -1,5 +1,47 @@
 # ChangeLog
 
+## 0.4.4 _(August 10, 2013)_
+
+- Options
+    - Added:
+        - `--http-username` -- Username for HTTP authentication.
+        - `--http-password` -- Password for HTTP authentication.
+- `Element::Capabilities::Auditable::RDiff` -- Optimized and improved accuracy
+    of analysis.
+- Reports
+    - HTML -- Fixed display of untrusted issues.
+- Modules
+    - Recon
+        - Added:
+            - X-Forwarded-For Access Restriction Bypass (`x_forwarded_for_access_restriction_bypass`)
+                - Retries denied requests with a `X-Forwarded-For` header
+                  to try and trick the web application into thinking that the
+                  request originates from `localhost` and checks whether the
+                  restrictions were bypassed.
+            - Form-based upload (`form_upload`)
+                - Flags file-upload forms as they require manual testing.
+        - .htaccess LIMIT misconfiguration (`htaccess_limit`)
+            - Updated to use verb tampering as well.
+    - Audit
+        - Added:
+            - Source code disclosure (`source_code_disclosure`)
+                - Checks whether or not the web application can be forced to
+                    reveal source code.
+            - Code execution via the php://input wrapper (`code_execution_php_input_wrapper`)
+                - It injects PHP code into the HTTP request body and uses the
+                php://input wrapper to try and load it
+        - Blind SQL Injection (Boolean/Differential analysis) (`sqli_blind_rdiff`)
+            - Improved accuracy of results.
+        - Path traversal (`path_traversal`)
+            - Severity set to "High".
+            - Updated to start with `/` and go all the way up to
+                `/../../../../../../`.
+            - Added fingerprints for `/proc/self/environ`.
+            - Improved coverage for MS Windows.
+        - Remote file inclusion (`rfi`)
+            - Updated to handle cases where the web application appends its own
+                extension to the injected string.
+
 ## 0.4.3.2 _(July 16, 2013)_
 
 - Plugins
