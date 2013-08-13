@@ -58,6 +58,7 @@ JET Database Engine
 Access Database Engine
 Oracle error
 Oracle.*Driver
+ORA-[0-9][0-9][0-9][0-9]
 Warning.*oci_.*
 Warning.*ora_.*
 CLI Driver.*DB2
