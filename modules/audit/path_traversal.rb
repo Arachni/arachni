@@ -19,7 +19,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.3.3
+# @version 0.3.4
 #
 # @see http://cwe.mitre.org/data/definitions/22.html
 # @see http://www.owasp.org/index.php/Path_Traversal
@@ -35,8 +35,7 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
             format: [Format::STRAIGHT],
             regexp: [
                 /DOCUMENT_ROOT.*HTTP_USER_AGENT/,
-                /root:[x\*]:0:0:.+:[0-9a-zA-Z\/]+/im,
-                /mail:x:\d+:\d+:.+:[0-9a-zA-Z\/]+/im,
+                /(root|mail):.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im,
                 /\[boot loader\](.*)\[operating systems\]/im,
                 /\[fonts\](.*)\[extensions\]/im,
                 /<web\-app/im
@@ -107,7 +106,7 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
                 based on the presence of relevant content in the HTML responses.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.3.3',
+            version:     '0.3.4',
             references:  {
                 'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
                 'WASC'  => 'http://projects.webappsec.org/Path-Traversal'
