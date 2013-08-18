@@ -83,7 +83,7 @@ class Framework
     end
 
     # The version of this class.
-    REVISION = '0.2.8'
+    REVISION = '0.3'
 
     # How many times to request a page upon failure.
     AUDIT_PAGE_MAX_TRIES = 5
@@ -180,11 +180,12 @@ class Framework
         @push_to_page_queue_filter = Support::LookUp::HashSet.new
 
         if has_browser? && @opts.dom_depth_limit > 0
-            @browser = BrowserCluster.new( handler: method( :push_to_page_queue ) )
+            @browser = BrowserCluster.new( handler: method( :handle_browser_pages ) )
         end
 
         if block_given?
             block.call self
+            clean_up
             reset
         end
     end
@@ -283,12 +284,12 @@ class Framework
     #   `true` if the {Options#link_count_limit} has been reached, `false`
     #   otherwise.
     def link_count_limit_reached?
-        @opts.link_count_limit_reached? @sitemap.size
+        @opts.link_count_limit_reached?( @sitemap.size )
     end
 
     def close_browser
-        @browser.shutdown if @browser
-        @browser = nil
+        return if !@browser
+        @browser.shutdown
     end
 
     #
@@ -388,21 +389,6 @@ class Framework
 
         @page_queue << page
         @page_queue_total_size += 1
-
-        pushed_paths = 0
-        page.paths.each do |path|
-            pushed_paths +=1 if push_to_url_queue( path )
-        end
-
-        if page.dom_depth > 1
-            print_info 'Got page via DOM/AJAX analysis with the following transitions:'
-            page.transitions.each do |t|
-                element, event = t.first.to_a
-                print_info "-- '#{event}' on: #{element}"
-            end
-
-            print_info "-- Analysis resulted in #{pushed_paths} usable paths."
-        end
 
         @push_to_page_queue_filter << page
 
@@ -667,6 +653,10 @@ class Framework
         true
     end
 
+    def browser_done?
+        @browser.done?
+    end
+
     def reset_spider
         @spider = Spider.new( @opts )
     end
@@ -726,6 +716,26 @@ class Framework
 
     private
 
+    def handle_browser_pages( page )
+        push_to_page_queue page
+
+        pushed_paths = 0
+        page.paths.each do |path|
+            pushed_paths +=1 if push_to_url_queue( path )
+        end
+
+        if page.dom_depth > 1
+            print_info 'Got page via DOM/AJAX analysis with the following transitions:'
+            page.transitions.each do |t|
+                element, event = t.first.to_a
+                print_info "-- '#{event}' on: #{element}"
+            end
+
+            print_info "-- Analysis resulted in #{pushed_paths} usable paths."
+        end
+
+    end
+
     # Passes the `page` to {RPC::Server::Browser#analyze} and then pushes
     # the resulting pages to {#push_to_page_queue}.
     #
@@ -784,6 +794,8 @@ class Framework
                 print_info "Identified as: #{page.platforms.to_a.join( ', ' )}"
             end
         end
+
+        return if modules.empty?
 
         if @browser
             # Keep auditing until there are no more resources in the queues and the

@@ -117,7 +117,7 @@ class BrowserCluster
 
     # Shuts the cluster down.
     def shutdown
-        fail_if_shutdown
+        return false if !@running
 
         @running = false
 
@@ -144,6 +144,10 @@ class BrowserCluster
         exception_jail( false ){ @handler.call page }
     end
 
+    def alive?
+        true
+    end
+
     private
 
     def fail_if_shutdown
@@ -151,6 +155,8 @@ class BrowserCluster
     end
 
     def start
+        Thread.abort_on_exception = true
+
         @running = true
         @worker  = Thread.new do
             while @running do
@@ -187,18 +193,25 @@ class BrowserCluster
         RPC::EM.schedule { server.start }
         sleep 0.1 while !File.exists?( socket )
 
-        RPC::RemoteObjectMapper.new(
+        handler = RPC::RemoteObjectMapper.new(
             RPC::Client::Base.new( Options.instance, socket, token ),
             'cluster'
         )
-    end
+        begin
+            Timeout.timeout( 10 ) do
+                while sleep( 0.1 )
+                    begin
+                        handler.alive?
+                        break
+                    rescue Exception
+                    end
+                end
+            end
+        rescue Timeout::Error
+            abort "Browser cluster '#{socket}' never started!"
+        end
 
-    def pop_browser( state = :idle )
-        synchronize { @browsers[state].pop }
-    end
-
-    def push_browser( browser, state )
-        synchronize { @browsers[state] << browser }
+        handler
     end
 
     def move_browser( browser, from_state, to_state )

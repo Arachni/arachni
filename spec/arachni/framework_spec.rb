@@ -15,9 +15,17 @@ describe Arachni::Framework do
         @opts.dir['modules'] = fixtures_path + '/taint_module/'
 
         @f = Arachni::Framework.new
+    end
+    after( :each ) do
+        @f.clean_up
+
+        if ::EM.reactor_running?
+            ::EM.stop
+            sleep 0.1 while ::EM.reactor_running?
+        end
+
         @f.reset
     end
-    after( :each ) { @f.reset }
 
     context 'when passed a block' do
         it 'executes it' do
@@ -251,29 +259,35 @@ describe Arachni::Framework do
         end
 
         it 'handles pages with JavaScript code' do
-            @f.opts.url = @url + '/with_javascript'
-            @f.opts.audit :links, :forms, :cookies
+            f = Arachni::Framework.new
+            f.opts.url = @url + '/with_javascript'
+            f.opts.audit :links, :forms, :cookies
 
-            @f.modules.load :taint
-            @f.run
+            f.modules.load :taint
+            f.run
 
-            issues = @f.auditstore.issues
+            issues = f.auditstore.issues
             issues.find { |i| i.var == 'link_input' }.should be_true
             issues.find { |i| i.var == 'form_input' }.should be_true
             issues.find { |i| i.var == 'cookie_input' }.should be_true
+
+            f.reset
         end
 
         it 'handles AJAX' do
-            @f.opts.url = @url + '/with_ajax'
-            @f.opts.audit :links, :forms, :cookies
+            f = Arachni::Framework.new
+            f.opts.url = @url + '/with_ajax'
+            f.opts.audit :links, :forms, :cookies
 
-            @f.modules.load :taint
-            @f.run
+            f.modules.load :taint
+            f.run
 
-            issues = @f.auditstore.issues
+            issues = f.auditstore.issues
             issues.find { |i| i.var == 'link_input' }.should be_true
             issues.find { |i| i.var == 'form_input' }.should be_true
             issues.find { |i| i.var == 'cookie_taint' }.should be_true
+
+            f.reset
         end
 
         context 'when the page has a body which is' do
@@ -281,11 +295,12 @@ describe Arachni::Framework do
                 it 'runs modules that audit the page body' do
                     @opts.dir['modules']  = fixtures_path + '/run_mod/'
                     f = Arachni::Framework.new
-
+                    f.opts.url = @url
+                    f.opts.do_not_crawl
                     f.opts.audit :links
                     f.modules.load %w(body)
 
-                    p = Arachni::Page.from_data( url: 'http://test', body: 'stuff' )
+                    p = Arachni::Page.from_data( url: @url, body: 'stuff' )
                     f.push_to_page_queue( p )
 
                     f.run
@@ -297,11 +312,12 @@ describe Arachni::Framework do
                 it 'skips modules that audit the page body' do
                     @opts.dir['modules']  = fixtures_path + '/run_mod/'
                     f = Arachni::Framework.new
-
+                    f.opts.url = @url
+                    f.opts.do_not_crawl
                     f.opts.audit :links
                     f.modules.load %w(body)
 
-                    p = Arachni::Page.from_data( url: 'http://test', body: '' )
+                    p = Arachni::Page.from_data( url: @url, body: '' )
                     f.push_to_page_queue( p )
 
                     f.run
@@ -317,12 +333,13 @@ describe Arachni::Framework do
                     it 'runs modules that audit links' do
                         @opts.dir['modules']  = fixtures_path + '/run_mod/'
                         f = Arachni::Framework.new
-
+                        f.opts.url = @url
+                        f.opts.do_not_crawl
                         f.opts.audit :links
                         f.modules.load %w(links forms cookies headers flch)
 
-                        link = Arachni::Element::Link.new( url: 'http://test' )
-                        p = Arachni::Page.from_data( url: 'http://test', links: [link] )
+                        link = Arachni::Element::Link.new( url: @url )
+                        p = Arachni::Page.from_data( url: @url, links: [link] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -333,12 +350,13 @@ describe Arachni::Framework do
                     it 'runs modules that audit path and server' do
                         @opts.dir['modules']  = fixtures_path + '/run_mod/'
                         f = Arachni::Framework.new
-
+                        f.opts.url = @url
+                        f.opts.do_not_crawl
                         f.opts.audit :links
                         f.modules.load %w(path server)
 
-                        link = Arachni::Element::Link.new( url: 'http://test' )
-                        p = Arachni::Page.from_data( url: 'http://test', links: [link] )
+                        link = Arachni::Element::Link.new( url: @url )
+                        p = Arachni::Page.from_data( url: @url, links: [link] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -349,12 +367,13 @@ describe Arachni::Framework do
                     it 'runs modules that have not specified any elements' do
                         @opts.dir['modules']  = fixtures_path + '/run_mod/'
                         f = Arachni::Framework.new
-
+                        f.opts.url = @url
+                        f.opts.do_not_crawl
                         f.opts.audit :links
                         f.modules.load %w(nil empty)
 
-                        link = Arachni::Element::Link.new( url: 'http://test' )
-                        p = Arachni::Page.from_data( url: 'http://test', links: [link] )
+                        link = Arachni::Element::Link.new( url: @url )
+                        p = Arachni::Page.from_data( url: @url, links: [link] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -369,12 +388,13 @@ describe Arachni::Framework do
                     it 'skips modules that audit links' do
                         @opts.dir['modules']  = fixtures_path + '/run_mod/'
                         f = Arachni::Framework.new
-
+                        f.opts.url = @url
+                        f.opts.do_not_crawl
                         f.opts.dont_audit :links
                         f.modules.load %w(links forms cookies headers flch)
 
-                        link = Arachni::Element::Link.new( url: 'http://test' )
-                        p = Arachni::Page.from_data( url: 'http://test', links: [link] )
+                        link = Arachni::Element::Link.new( url: @url )
+                        p = Arachni::Page.from_data( url: @url, links: [link] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -385,12 +405,13 @@ describe Arachni::Framework do
                     it 'runs modules that audit path and server' do
                         @opts.dir['modules']  = fixtures_path + '/run_mod/'
                         f = Arachni::Framework.new
-
+                        f.opts.url = @url
+                        f.opts.do_not_crawl
                         f.opts.dont_audit :links
                         f.modules.load %w(path server)
 
-                        link = Arachni::Element::Link.new( url: 'http://test' )
-                        p = Arachni::Page.from_data( url: 'http://test', links: [link] )
+                        link = Arachni::Element::Link.new( url: @url )
+                        p = Arachni::Page.from_data( url: @url, links: [link] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -401,12 +422,13 @@ describe Arachni::Framework do
                     it 'runs modules that have not specified any elements' do
                         @opts.dir['modules']  = fixtures_path + '/run_mod/'
                         f = Arachni::Framework.new
-
+                        f.opts.url = @url
+                        f.opts.do_not_crawl
                         f.opts.dont_audit :links
                         f.modules.load %w(nil empty)
 
-                        link = Arachni::Element::Link.new( url: 'http://test' )
-                        p = Arachni::Page.from_data( url: 'http://test', links: [link] )
+                        link = Arachni::Element::Link.new( url: @url )
+                        p = Arachni::Page.from_data( url: @url, links: [link] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -424,12 +446,13 @@ describe Arachni::Framework do
                     it 'runs modules that audit forms' do
                         @opts.dir['modules']  = fixtures_path + '/run_mod/'
                         f = Arachni::Framework.new
-
+                        f.opts.url = @url
+                        f.opts.do_not_crawl
                         f.opts.audit :forms
                         f.modules.load %w(links forms cookies headers flch)
 
-                        form = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.from_data( url: 'http://test', forms: [form] )
+                        form = Arachni::Element::Form.new( url: @url )
+                        p = Arachni::Page.from_data( url: @url, forms: [form] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -440,12 +463,13 @@ describe Arachni::Framework do
                     it 'runs modules that audit path and server' do
                         @opts.dir['modules']  = fixtures_path + '/run_mod/'
                         f = Arachni::Framework.new
-
+                        f.opts.url = @url
+                        f.opts.do_not_crawl
                         f.opts.audit :forms
                         f.modules.load %w(path server)
 
-                        form = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.from_data( url: 'http://test', forms: [form] )
+                        form = Arachni::Element::Form.new( url: @url )
+                        p = Arachni::Page.from_data( url: @url, forms: [form] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -456,12 +480,13 @@ describe Arachni::Framework do
                     it 'runs modules that have not specified any elements' do
                         @opts.dir['modules']  = fixtures_path + '/run_mod/'
                         f = Arachni::Framework.new
-
+                        f.opts.url = @url
+                        f.opts.do_not_crawl
                         f.opts.audit :forms
                         f.modules.load %w(nil empty)
 
-                        form = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.from_data( url: 'http://test', forms: [form] )
+                        form = Arachni::Element::Form.new( url: @url )
+                        p = Arachni::Page.from_data( url: @url, forms: [form] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -476,12 +501,13 @@ describe Arachni::Framework do
                     it 'skips modules that audit forms' do
                         @opts.dir['modules']  = fixtures_path + '/run_mod/'
                         f = Arachni::Framework.new
-
+                        f.opts.url = @url
+                        f.opts.do_not_crawl
                         f.opts.dont_audit :forms
                         f.modules.load %w(links forms cookies headers flch)
 
-                        form = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.from_data( url: 'http://test', forms: [form] )
+                        form = Arachni::Element::Form.new( url: @url )
+                        p = Arachni::Page.from_data( url: @url, forms: [form] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -492,12 +518,13 @@ describe Arachni::Framework do
                     it 'runs modules that audit path and server' do
                         @opts.dir['modules']  = fixtures_path + '/run_mod/'
                         f = Arachni::Framework.new
-
+                        f.opts.url = @url
+                        f.opts.do_not_crawl
                         f.opts.dont_audit :forms
                         f.modules.load %w(path server)
 
-                        form = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.from_data( url: 'http://test', forms: [form] )
+                        form = Arachni::Element::Form.new( url: @url )
+                        p = Arachni::Page.from_data( url: @url, forms: [form] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -508,12 +535,13 @@ describe Arachni::Framework do
                     it 'runs modules that have not specified any elements' do
                         @opts.dir['modules']  = fixtures_path + '/run_mod/'
                         f = Arachni::Framework.new
-
+                        f.opts.url = @url
+                        f.opts.do_not_crawl
                         f.opts.dont_audit :forms
                         f.modules.load %w(nil empty)
 
-                        form = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.from_data( url: 'http://test', forms: [form] )
+                        form = Arachni::Element::Form.new( url: @url )
+                        p = Arachni::Page.from_data( url: @url, forms: [form] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -531,12 +559,13 @@ describe Arachni::Framework do
                     it 'runs modules that audit cookies' do
                         @opts.dir['modules']  = fixtures_path + '/run_mod/'
                         f = Arachni::Framework.new
-
+                        f.opts.url = @url
+                        f.opts.do_not_crawl
                         f.opts.audit :cookies
                         f.modules.load %w(links forms cookies headers flch)
 
-                        cookie = Arachni::Element::Cookie.new( url: 'http://test' )
-                        p = Arachni::Page.from_data( url: 'http://test', cookies: [cookie] )
+                        cookie = Arachni::Element::Cookie.new( url: @url )
+                        p = Arachni::Page.from_data( url: @url, cookies: [cookie] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -547,12 +576,13 @@ describe Arachni::Framework do
                     it 'runs modules that audit path and server' do
                         @opts.dir['modules']  = fixtures_path + '/run_mod/'
                         f = Arachni::Framework.new
-
+                        f.opts.url = @url
+                        f.opts.do_not_crawl
                         f.opts.audit :cookies
                         f.modules.load %w(path server)
 
-                        cookie = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.from_data( url: 'http://test', cookies: [cookie] )
+                        cookie = Arachni::Element::Form.new( url: @url )
+                        p = Arachni::Page.from_data( url: @url, cookies: [cookie] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -563,12 +593,13 @@ describe Arachni::Framework do
                     it 'runs modules that have not specified any elements' do
                         @opts.dir['modules']  = fixtures_path + '/run_mod/'
                         f = Arachni::Framework.new
-
+                        f.opts.url = @url
+                        f.opts.do_not_crawl
                         f.opts.audit :cookies
                         f.modules.load %w(nil empty)
 
-                        cookie = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.from_data( url: 'http://test', cookies: [cookie] )
+                        cookie = Arachni::Element::Form.new( url: @url )
+                        p = Arachni::Page.from_data( url: @url, cookies: [cookie] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -583,12 +614,13 @@ describe Arachni::Framework do
                     it 'skips modules that audit cookies' do
                         @opts.dir['modules']  = fixtures_path + '/run_mod/'
                         f = Arachni::Framework.new
-
+                        f.opts.url = @url
+                        f.opts.do_not_crawl
                         f.opts.dont_audit :cookies
                         f.modules.load %w(links forms cookies headers flch)
 
-                        cookie = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.from_data( url: 'http://test', cookies: [cookie] )
+                        cookie = Arachni::Element::Form.new( url: @url )
+                        p = Arachni::Page.from_data( url: @url, cookies: [cookie] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -599,12 +631,13 @@ describe Arachni::Framework do
                     it 'runs modules that audit path and server' do
                         @opts.dir['modules']  = fixtures_path + '/run_mod/'
                         f = Arachni::Framework.new
-
+                        f.opts.url = @url
+                        f.opts.do_not_crawl
                         f.opts.dont_audit :cookies
                         f.modules.load %w(path server)
 
-                        cookie = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.from_data( url: 'http://test', cookies: [cookie] )
+                        cookie = Arachni::Element::Form.new( url: @url )
+                        p = Arachni::Page.from_data( url: @url, cookies: [cookie] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -615,12 +648,13 @@ describe Arachni::Framework do
                     it 'runs modules that have not specified any elements' do
                         @opts.dir['modules']  = fixtures_path + '/run_mod/'
                         f = Arachni::Framework.new
-
+                        f.opts.url = @url
+                        f.opts.do_not_crawl
                         f.opts.dont_audit :cookies
                         f.modules.load %w(nil empty)
 
-                        cookie = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.from_data( url: 'http://test', cookies: [cookie] )
+                        cookie = Arachni::Element::Form.new( url: @url )
+                        p = Arachni::Page.from_data( url: @url, cookies: [cookie] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -638,12 +672,13 @@ describe Arachni::Framework do
                     it 'runs modules that audit headers' do
                         @opts.dir['modules']  = fixtures_path + '/run_mod/'
                         f = Arachni::Framework.new
-
+                        f.opts.url = @url
+                        f.opts.do_not_crawl
                         f.opts.audit :headers
                         f.modules.load %w(links forms cookies headers flch)
 
-                        header = Arachni::Element::Cookie.new( url: 'http://test' )
-                        p = Arachni::Page.from_data( url: 'http://test', headers: [header] )
+                        header = Arachni::Element::Cookie.new( url: @url )
+                        p = Arachni::Page.from_data( url: @url, headers: [header] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -654,12 +689,13 @@ describe Arachni::Framework do
                     it 'runs modules that audit path and server' do
                         @opts.dir['modules']  = fixtures_path + '/run_mod/'
                         f = Arachni::Framework.new
-
+                        f.opts.url = @url
+                        f.opts.do_not_crawl
                         f.opts.audit :headers
                         f.modules.load %w(path server)
 
-                        header = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.from_data( url: 'http://test', headers: [header] )
+                        header = Arachni::Element::Form.new( url: @url )
+                        p = Arachni::Page.from_data( url: @url, headers: [header] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -670,12 +706,13 @@ describe Arachni::Framework do
                     it 'runs modules that have not specified any elements' do
                         @opts.dir['modules']  = fixtures_path + '/run_mod/'
                         f = Arachni::Framework.new
-
+                        f.opts.url = @url
+                        f.opts.do_not_crawl
                         f.opts.audit :headers
                         f.modules.load %w(nil empty)
 
-                        header = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.from_data( url: 'http://test', headers: [header] )
+                        header = Arachni::Element::Form.new( url: @url )
+                        p = Arachni::Page.from_data( url: @url, headers: [header] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -690,12 +727,13 @@ describe Arachni::Framework do
                     it 'skips modules that audit headers' do
                         @opts.dir['modules']  = fixtures_path + '/run_mod/'
                         f = Arachni::Framework.new
-
+                        f.opts.url = @url
+                        f.opts.do_not_crawl
                         f.opts.dont_audit :headers
                         f.modules.load %w(links forms cookies headers flch)
 
-                        header = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.from_data( url: 'http://test', headers: [header] )
+                        header = Arachni::Element::Form.new( url: @url )
+                        p = Arachni::Page.from_data( url: @url, headers: [header] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -706,12 +744,13 @@ describe Arachni::Framework do
                     it 'runs modules that audit path and server' do
                         @opts.dir['modules']  = fixtures_path + '/run_mod/'
                         f = Arachni::Framework.new
-
+                        f.opts.url = @url
+                        f.opts.do_not_crawl
                         f.opts.dont_audit :headers
                         f.modules.load %w(path server)
 
-                        header = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.from_data( url: 'http://test', headers: [header] )
+                        header = Arachni::Element::Form.new( url: @url )
+                        p = Arachni::Page.from_data( url: @url, headers: [header] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -722,12 +761,13 @@ describe Arachni::Framework do
                     it 'runs modules that have not specified any elements' do
                         @opts.dir['modules']  = fixtures_path + '/run_mod/'
                         f = Arachni::Framework.new
-
+                        f.opts.url = @url
+                        f.opts.do_not_crawl
                         f.opts.dont_audit :headers
                         f.modules.load %w(nil empty)
 
-                        header = Arachni::Element::Form.new( url: 'http://test' )
-                        p = Arachni::Page.from_data( url: 'http://test', headers: [header] )
+                        header = Arachni::Element::Form.new( url: @url )
+                        p = Arachni::Page.from_data( url: @url, headers: [header] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -816,48 +856,63 @@ describe Arachni::Framework do
 
         context 'when the page contains JavaScript code' do
             it 'analyzes the DOM and pushes new pages to the page queue' do
-                @f.opts.audit :links, :forms, :cookies
-                @f.modules.load :taint
+                f = Arachni::Framework.new
+                f.opts.audit :links, :forms, :cookies
+                f.modules.load :taint
 
-                @f.page_queue_total_size.should == 0
+                f.page_queue_total_size.should == 0
 
-                @f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) )
+                f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) )
 
-                @f.page_queue_total_size.should > 0
+                sleep 0.1 while !f.browser_done?
+
+                f.page_queue_total_size.should > 0
+                f.clean_up
+                f.reset
             end
 
             it 'analyzes the DOM and pushes new paths to the url queue' do
-                @f.opts.audit :links, :forms, :cookies
-                @f.modules.load :taint
+                f = Arachni::Framework.new
+                f.opts.audit :links, :forms, :cookies
+                f.modules.load :taint
 
-                @f.url_queue_total_size.should == 0
+                f.url_queue_total_size.should == 0
 
-                @f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) )
+                f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) )
 
-                @f.url_queue_total_size.should == 3
+                sleep 0.1 while !f.browser_done?
+
+                f.url_queue_total_size.should == 3
+                f.clean_up
+                f.reset
             end
 
             context 'when the DOM depth limit has been reached' do
                 it 'does not analyze the DOM' do
-                    @f.opts.audit :links, :forms, :cookies
-                    @f.modules.load :taint
-                    @f.opts.dom_depth_limit = 1
-                    @f.url_queue_total_size.should == 0
-                    @f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) ).should be_true
-                    @f.url_queue_total_size.should == 3
+                    f = Arachni::Framework.new
+                    f.opts.audit :links, :forms, :cookies
+                    f.modules.load :taint
+                    f.opts.dom_depth_limit = 1
+                    f.url_queue_total_size.should == 0
+                    f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) ).should be_true
+                    sleep 0.1 while !f.browser_done?
+                    f.url_queue_total_size.should == 3
 
-                    @f.reset
+                    f.reset
 
-                    @f.opts.audit :links, :forms, :cookies
-                    @f.modules.load :taint
-                    @f.opts.dom_depth_limit = 1
-                    @f.url_queue_total_size.should == 0
+                    f.opts.audit :links, :forms, :cookies
+                    f.modules.load :taint
+                    f.opts.dom_depth_limit = 1
+                    f.url_queue_total_size.should == 0
 
                     page = Arachni::Page.from_url( @url + '/with_javascript' )
                     page.push_transition page: :load
 
-                    @f.audit_page( page ).should be_true
-                    @f.url_queue_total_size.should == 0
+                    f.audit_page( page ).should be_true
+                    sleep 0.1 while !f.browser_done?
+                    f.url_queue_total_size.should == 0
+                    f.clean_up
+                    f.reset
                 end
             end
         end

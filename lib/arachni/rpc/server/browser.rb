@@ -44,11 +44,24 @@ class Browser
             Options.rpc_socket = socket
             new master: master, token: token
         end
-
-        # Wait for the browser to boot up.
         sleep 0.1 while !File.exists?( socket )
 
-        RPC::Client::Browser.new( socket, token )
+        client = RPC::Client::Browser.new( socket, token )
+        begin
+            Timeout.timeout( 10 ) do
+                while sleep( 0.1 )
+                    begin
+                        client.alive?
+                        break
+                    rescue Exception
+                    end
+                end
+            end
+        rescue Timeout::Error
+            abort "Browser '#{socket}' never started!"
+        end
+
+        client
     end
 
     # @param    [Hash]    options
@@ -59,16 +72,16 @@ class Browser
         end
 
         token = options.delete( :token )
-        if (master = options.delete( :master ))
+        if (@master = options.delete( :master ))
             options[:store_pages] = false
         end
 
         @browser = Arachni::Browser.new( options )
         @browser.start_capture
 
-        if master
+        if @master
             @browser.on_new_page do |page|
-                master.handle_page page
+                @master.handle_page page
             end
         end
 
@@ -108,7 +121,9 @@ class Browser
                 print_error_backtrace e
             end
 
-            block.call @browser.flush_pages
+            # If there's a master which handles pages as they are captured
+            # there's no need to send anything back here.
+            block.call( @master ? nil : @browser.flush_pages )
         end
 
         true

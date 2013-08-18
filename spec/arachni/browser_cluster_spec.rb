@@ -10,9 +10,12 @@ describe Arachni::BrowserCluster do
 
     after( :each ) do
         @cluster.shutdown if @cluster
-        ::EM.stop
         Arachni::Options.reset
-        Arachni::Framework.reset
+
+        if ::EM.reactor_running?
+            ::EM.stop
+            sleep 0.1 while ::EM.reactor_running?
+        end
     end
 
     def find_page_with_form_with_input( pages, input_name )
