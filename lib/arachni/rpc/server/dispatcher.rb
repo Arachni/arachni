@@ -98,19 +98,25 @@ class Dispatcher
 
         if @opts.pool_size > 0
             print_status 'Warming up the pool...'
-            @opts.pool_size.times { add_instance_to_pool }
+            @opts.pool_size.times { add_instance_to_pool( false ) }
         end
 
-        print_status 'Initialization complete.'
+        # Check up on the pool and start the server once it has been filled.
+        timer = ::EM::PeriodicTimer.new( 0.1 ) do
+            next if @opts.pool_size != @pool.size
+            timer.cancel
 
-        @node = Node.new( @opts, @logfile )
-        @server.add_handler( 'node', @node )
+            _handlers.each do |name, handler|
+                @server.add_handler( name, handler.new( @opts, self ) )
+            end
 
-        _handlers.each do |name, handler|
-            @server.add_handler( name, handler.new( @opts, self ) )
+            @node = Node.new( @opts, @logfile )
+            @server.add_handler( 'node', @node )
+
+            print_status 'Initialization complete.'
+
+            run
         end
-
-        run
     end
 
     def handlers
@@ -133,7 +139,7 @@ class Dispatcher
 
         each = proc do |neighbour, iter|
             connect_to_peer( neighbour ).workload_score do |score|
-                iter.return score.rpc_exception? ? nil : [neighbour, score]
+                iter.return (!score || score.rpc_exception?) ? nil : [neighbour, score]
             end
         end
 
@@ -147,15 +153,20 @@ class Dispatcher
     end
 
     #
-    # Dispatches an Instance from the pool.
+    # Dispatches an {Instance} from the pool.
     #
-    # @param    [String]  owner     An owner to assign to the Instance.
+    # @param    [String]  owner     An owner to assign to the {Instance}.
     # @param    [Hash]    helpers   Hash of helper data to be added to the job.
     # @param    [Boolean]    load_balance
-    #   Return an Instance from the least burdened Dispatcher (when in Grid mode)
+    #   Return an {Instance} from the least burdened {Dispatcher} (when in Grid mode)
     #   or from this one directly?
     #
-    # @return   [Hash]      Includes port number, owner, clock info and proc info.
+    # @return   [Hash, false, nil]
+    #   Depending on availability:
+    #
+    #   * `Hash`: Includes URL, owner, clock info and proc info.
+    #   * `false`: Pool is currently empty, check back again in a few seconds.
+    #   * `nil`: The {Dispatcher} was configured with a pool-size of `0`.
     #
     def dispatch( owner = 'unknown', helpers = {}, load_balance = true, &block )
         if load_balance && @node.grid_member?
@@ -166,20 +177,24 @@ class Dispatcher
         end
 
         if @opts.pool_size <= 0
-            block.call false
+            block.call nil
             return
         end
 
-        @pool.pop do |cjob|
-            cjob['owner']     = owner.to_s
-            cjob['starttime'] = Time.now
-            cjob['helpers']   = helpers
+        if @pool.empty?
+            block.call false
+        else
+            @pool.pop do |cjob|
+                cjob['owner']     = owner.to_s
+                cjob['starttime'] = Time.now
+                cjob['helpers']   = helpers
 
-            print_status "Instance dispatched -- PID: #{cjob['pid']} - " +
-                "Port: #{cjob['port']} - Owner: #{cjob['owner']}"
+                print_status "Instance dispatched -- PID: #{cjob['pid']} - " +
+                    "Port: #{cjob['port']} - Owner: #{cjob['owner']}"
 
-            @jobs << cjob
-            block.call cjob
+                @jobs << cjob
+                block.call cjob
+            end
         end
 
         ::EM.next_tick { add_instance_to_pool }
@@ -389,7 +404,10 @@ USAGE
         end
     end
 
-    def add_instance_to_pool
+    def add_instance_to_pool( one_at_a_time = true )
+        return if @operation_in_progress && one_at_a_time
+        @operation_in_progress = true
+
         owner = 'dispatcher'
         exception_jail {
 
@@ -402,22 +420,39 @@ USAGE
                 Server::Instance.new( @opts, token )
             end
 
+            # let the child go about its business
+            Process.detach( pid )
+
             print_status "Instance added to pool -- PID: #{pid} - " +
                 "Port: #{port} - Owner: #{owner}"
 
-            @pool << {
-                'token'     => token,
-                'pid'       => pid,
-                'port'      => port,
-                'url'       => "#{@opts.rpc_address}:#{port}",
-                'owner'     => owner,
-                'birthdate' => Time.now
-            }
+            url = "#{@opts.rpc_address}:#{port}"
 
-            @consumed_pids << pid
+            options = OpenStruct.new( @opts.to_h.symbolize_keys( false ) )
+            options.max_retries = 0
 
-            # let the child go about its business
-            Process.detach( pid )
+            client = Client::Instance.new( options, url, token )
+            timer = ::EM::PeriodicTimer.new( 0.1 ) do
+                client.service.alive? do |r|
+                    next if r.rpc_exception?
+
+                    timer.cancel
+                    client.close
+
+                    @operation_in_progress = false
+
+                    @pool << {
+                        'token'     => token,
+                        'pid'       => pid,
+                        'port'      => port,
+                        'url'       => url,
+                        'owner'     => owner,
+                        'birthdate' => Time.now
+                    }
+
+                    @consumed_pids << pid
+                end
+            end
         }
     end
 

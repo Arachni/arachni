@@ -47,6 +47,10 @@ class Dispatcher
         @client.url
     end
 
+    def close
+        @client.close
+    end
+
     private
 
     #

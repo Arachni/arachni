@@ -98,7 +98,7 @@ class Instances
             url = "#{options[:rpc_address]}:#{options[:rpc_port]}"
         end
 
-        Manager.quiet_fork do
+        Manager.fork_em do
             Options.set( options )
             block.call( Options.instance ) if block_given?
 
@@ -138,7 +138,7 @@ class Instances
 
         last_member = nil
         options[:grid_size].times do |i|
-            last_member = Dispatchers.light_spawn(
+            last_member = Dispatchers.spawn(
                 neighbour: last_member ? last_member.url : last_member,
                 pipe_id:   available_port.to_s + available_port.to_s
             )

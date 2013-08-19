@@ -47,42 +47,57 @@ describe Arachni::RPC::Server::Dispatcher do
     end
 
     describe '#dispatch' do
-        context 'when not a Grid member' do
-            it 'returns valid Instance info' do
-                info = dispatcher_light_spawn.dispatch
+        it 'returns valid Instance info' do
+            info = dispatcher_light_spawn.dispatch
 
-                %w(token pid port url owner birthdate starttime helpers).each do |k|
-                    info[k].should be_true
-                end
+            %w(token pid port url owner birthdate starttime helpers).each do |k|
+                info[k].should be_true
+            end
 
-                instance = instance_connect( info['url'], info['token'] )
-                instance.service.alive?.should be_true
+            instance = instance_connect( info['url'], info['token'] )
+            instance.service.alive?.should be_true
+        end
+        it 'assigns an optional owner' do
+            owner = 'blah'
+            dispatcher_light_spawn.dispatch( owner )['owner'].should == owner
+        end
+        context 'when the pool is empty' do
+            it 'returns false' do
+                dispatcher = dispatcher_light_spawn
+                dispatcher.dispatch.should be_kind_of Hash
+                dispatcher.dispatch.should be_false
             end
-            it 'assigns an optional owner' do
-                owner = 'blah'
-                dispatcher_light_spawn.dispatch( owner )['owner'].should == owner
-            end
+
             it 'replenishes the pool' do
-                dispatcher = dispatcher_light_spawn( pool_size: 1 )
-                10.times do
-                    dispatcher.dispatch['pid'].should be_true
+                dispatcher = dispatcher_light_spawn
+                dispatcher.dispatch.should be_kind_of Hash
+                dispatcher.dispatch.should be_false
+
+                hash = nil
+                Timeout.timeout 10 do
+                    loop do
+                        break if (hash = dispatcher.dispatch).is_a? Hash
+                    end
                 end
+
+                hash.should be_kind_of Hash
             end
         end
+
         context 'when a Grid member' do
             it 'returns Instance info from the least burdened Dispatcher' do
-                d1 = dispatcher_light_spawn(
+                d1 = dispatcher_spawn(
                     address: '127.0.0.1',
                     weight:  3
                 )
 
-                d2 = dispatcher_light_spawn(
+                d2 = dispatcher_spawn(
                     address:   '127.0.0.2',
                     weight:    2,
                     neighbour: d1.url
                 )
 
-                d3 = dispatcher_light_spawn(
+                d3 = dispatcher_spawn(
                     address:   '127.0.0.3',
                     weight:    1,
                     neighbour: d1.url

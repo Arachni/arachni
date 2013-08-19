@@ -45,22 +45,22 @@ class Browser
             new master: master, token: token
         end
         sleep 0.1 while !File.exists?( socket )
+        sleep 1
 
         client = RPC::Client::Browser.new( socket, token )
-        begin
-            Timeout.timeout( 10 ) do
-                while sleep( 0.1 )
-                    begin
-                        client.alive?
-                        break
-                    rescue Exception
-                    end
-                end
-            end
-        rescue Timeout::Error
-            abort "Browser '#{socket}' never started!"
-        end
-
+        #begin
+        #    Timeout.timeout( 10 ) do
+        #        while sleep( 0.1 )
+        #            begin
+        #                client.alive?
+        #                break
+        #            rescue Exception
+        #            end
+        #        end
+        #    end
+        #rescue Timeout::Error
+        #    abort "Browser '#{socket}' never started!"
+        #end
         client
     end
 
@@ -81,7 +81,7 @@ class Browser
 
         if @master
             @browser.on_new_page do |page|
-                @master.handle_page page
+                @master.handle_page( page ){}
             end
         end
 
