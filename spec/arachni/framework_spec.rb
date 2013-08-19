@@ -926,6 +926,7 @@ Databases:
   :oracle: Oracle
   :pgsql: Postgresql
   :sqlite: SQLite
+  :firebird: Firebird
 Web servers:
   :apache: Apache
   :iis: IIS
