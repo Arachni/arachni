@@ -83,6 +83,7 @@ class Manager
         :coldfusion,
         :interbase,
         :informix
+        :firebird
     ]
 
     SERVERS = [
