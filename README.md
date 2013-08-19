@@ -294,6 +294,7 @@ Audit modules actively engage the web application via its inputs.
     - SQLite
     - DB2
     - Informix
+    - Firebird
 - Blind SQL injection using rDiff analysis (`sqli_blind_rdiff`).
 - Blind SQL injection using timing attacks (`sqli_blind_timing`).
     - MySQL
