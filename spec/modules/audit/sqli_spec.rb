@@ -4,7 +4,7 @@ describe name_from_filename do
     include_examples 'module'
 
     def self.targets
-        %w(Oracle ColdFusion InterBase PostgreSQL MySQL MSSQL EMC SQLite DB2 Informix)
+        %w(Oracle ColdFusion InterBase PostgreSQL MySQL MSSQL EMC SQLite DB2 Informix Firebird)
     end
 
     def self.elements
