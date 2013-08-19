@@ -128,6 +128,7 @@ class Manager
         coldfusion: 'ColdFusion',
         interbase:  'InterBase',
         informix:   'Informix',
+        firebird:   'Firebird',
 
         # Web servers
         apache:     'Apache',
