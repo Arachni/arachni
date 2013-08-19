@@ -82,7 +82,7 @@ class Manager
         :db2,
         :coldfusion,
         :interbase,
-        :informix
+        :informix,
         :firebird
     ]
 
