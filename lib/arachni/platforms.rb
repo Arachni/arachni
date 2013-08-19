@@ -153,7 +153,8 @@ class Platform
         :db2,
         :coldfusion,
         :interbase,
-        :informix
+        :informix,
+        :firebird
     ]
 
     # Web servers.
