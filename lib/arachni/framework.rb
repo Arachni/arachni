@@ -179,10 +179,6 @@ class Framework
         @push_to_url_queue_filter  = Support::LookUp::HashSet.new
         @push_to_page_queue_filter = Support::LookUp::HashSet.new
 
-        if has_browser? && @opts.dom_depth_limit > 0
-            @browser = BrowserCluster.new( handler: method( :handle_browser_pages ) )
-        end
-
         if block_given?
             block.call self
             clean_up
@@ -240,7 +236,7 @@ class Framework
             print_info "Identified as: #{page.platforms.to_a.join( ', ' )}"
         end
 
-        if has_browser?
+        if host_has_has_browser?
             dom_depth = "#{page.dom_depth} (Limit: #{@opts.dom_depth_limit})"
         else
             dom_depth = 'N/A (Could not find browser).'
@@ -271,7 +267,7 @@ class Framework
         true
     end
 
-    def has_browser?
+    def host_has_has_browser?
         Browser.has_executable?
     end
 
@@ -653,8 +649,8 @@ class Framework
         true
     end
 
-    def browser_done?
-        @browser.done?
+    def wait_for_browser?
+        @browser && !@browser.done?
     end
 
     def reset_spider
@@ -742,11 +738,10 @@ class Framework
     # @param    [Page]  page
     #   Page to analyze.
     def perform_browser_analysis( page )
-        return if !@browser || !page.has_javascript? ||
-            # Don't exceed the DOM depth limit.
-            (Options.dom_depth_limit && Options.dom_depth_limit < page.dom_depth + 1) ||
-            !has_browser?
+        return if Options.dom_depth_limit.to_i < page.dom_depth + 1 ||
+            !host_has_has_browser? || !page.has_javascript?
 
+        @browser ||= BrowserCluster.new( handler: method( :handle_browser_pages ) )
         @browser.analyze page
     end
 
@@ -797,16 +792,12 @@ class Framework
 
         return if modules.empty?
 
-        if @browser
-            # Keep auditing until there are no more resources in the queues and the
-            # browsers have stopped spinning.
-            loop do
-                sleep 0.1 while !@browser.done? && !has_audit_workload?
-                audit_queues
-                break if @browser.done? && !has_audit_workload?
-            end
-        else
+        # Keep auditing until there are no more resources in the queues and the
+        # browsers have stopped spinning.
+        loop do
+            sleep 0.1 while wait_for_browser? && !has_audit_workload?
             audit_queues
+            break if !wait_for_browser? && !has_audit_workload?
         end
     end
 

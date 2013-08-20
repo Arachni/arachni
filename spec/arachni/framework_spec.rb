@@ -259,35 +259,33 @@ describe Arachni::Framework do
         end
 
         it 'handles pages with JavaScript code' do
-            f = Arachni::Framework.new
-            f.opts.url = @url + '/with_javascript'
-            f.opts.audit :links, :forms, :cookies
+            Arachni::Framework.new do |f|
+                f.opts.url = @url + '/with_javascript'
+                f.opts.audit :links, :forms, :cookies
 
-            f.modules.load :taint
-            f.run
+                f.modules.load :taint
+                f.run
 
-            issues = f.auditstore.issues
-            issues.find { |i| i.var == 'link_input' }.should be_true
-            issues.find { |i| i.var == 'form_input' }.should be_true
-            issues.find { |i| i.var == 'cookie_input' }.should be_true
-
-            f.reset
+                issues = f.auditstore.issues
+                issues.find { |i| i.var == 'link_input' }.should be_true
+                issues.find { |i| i.var == 'form_input' }.should be_true
+                issues.find { |i| i.var == 'cookie_input' }.should be_true
+            end
         end
 
         it 'handles AJAX' do
-            f = Arachni::Framework.new
-            f.opts.url = @url + '/with_ajax'
-            f.opts.audit :links, :forms, :cookies
+            Arachni::Framework.new do |f|
+                f.opts.url = @url + '/with_ajax'
+                f.opts.audit :links, :forms, :cookies
 
-            f.modules.load :taint
-            f.run
+                f.modules.load :taint
+                f.run
 
-            issues = f.auditstore.issues
-            issues.find { |i| i.var == 'link_input' }.should be_true
-            issues.find { |i| i.var == 'form_input' }.should be_true
-            issues.find { |i| i.var == 'cookie_taint' }.should be_true
-
-            f.reset
+                issues = f.auditstore.issues
+                issues.find { |i| i.var == 'link_input' }.should be_true
+                issues.find { |i| i.var == 'form_input' }.should be_true
+                issues.find { |i| i.var == 'cookie_taint' }.should be_true
+            end
         end
 
         context 'when the page has a body which is' do
@@ -550,7 +548,6 @@ describe Arachni::Framework do
                     end
                 end
             end
-
         end
 
         context 'when auditing cookies is' do
@@ -856,63 +853,60 @@ describe Arachni::Framework do
 
         context 'when the page contains JavaScript code' do
             it 'analyzes the DOM and pushes new pages to the page queue' do
-                f = Arachni::Framework.new
-                f.opts.audit :links, :forms, :cookies
-                f.modules.load :taint
+                Arachni::Framework.new do |f|
+                    f.opts.audit :links, :forms, :cookies
+                    f.modules.load :taint
 
-                f.page_queue_total_size.should == 0
+                    f.page_queue_total_size.should == 0
 
-                f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) )
+                    f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) )
 
-                sleep 0.1 while !f.browser_done?
+                    sleep 0.1 while f.wait_for_browser?
 
-                f.page_queue_total_size.should > 0
-                f.clean_up
-                f.reset
+                    f.page_queue_total_size.should > 0
+                end
             end
 
             it 'analyzes the DOM and pushes new paths to the url queue' do
-                f = Arachni::Framework.new
-                f.opts.audit :links, :forms, :cookies
-                f.modules.load :taint
+                Arachni::Framework.new do |f|
+                    f.opts.audit :links, :forms, :cookies
+                    f.modules.load :taint
 
-                f.url_queue_total_size.should == 0
+                    f.url_queue_total_size.should == 0
 
-                f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) )
+                    f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) )
 
-                sleep 0.1 while !f.browser_done?
+                    sleep 0.1 while f.wait_for_browser?
 
-                f.url_queue_total_size.should == 3
-                f.clean_up
-                f.reset
+                    f.url_queue_total_size.should == 3
+                end
             end
 
             context 'when the DOM depth limit has been reached' do
                 it 'does not analyze the DOM' do
-                    f = Arachni::Framework.new
-                    f.opts.audit :links, :forms, :cookies
-                    f.modules.load :taint
-                    f.opts.dom_depth_limit = 1
-                    f.url_queue_total_size.should == 0
-                    f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) ).should be_true
-                    sleep 0.1 while !f.browser_done?
-                    f.url_queue_total_size.should == 3
+                    Arachni::Framework.new do |f|
+                        f.opts.audit :links, :forms, :cookies
+                        f.modules.load :taint
+                        f.opts.dom_depth_limit = 1
+                        f.url_queue_total_size.should == 0
+                        f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) ).should be_true
+                        sleep 0.1 while f.wait_for_browser?
+                        f.url_queue_total_size.should == 3
 
-                    f.reset
+                        f.reset
 
-                    f.opts.audit :links, :forms, :cookies
-                    f.modules.load :taint
-                    f.opts.dom_depth_limit = 1
-                    f.url_queue_total_size.should == 0
+                        f.opts.audit :links, :forms, :cookies
+                        f.modules.load :taint
+                        f.opts.dom_depth_limit = 1
+                        f.url_queue_total_size.should == 0
 
-                    page = Arachni::Page.from_url( @url + '/with_javascript' )
-                    page.push_transition page: :load
+                        page = Arachni::Page.from_url( @url + '/with_javascript' )
+                        page.push_transition page: :load
 
-                    f.audit_page( page ).should be_true
-                    sleep 0.1 while !f.browser_done?
-                    f.url_queue_total_size.should == 0
-                    f.clean_up
-                    f.reset
+                        f.audit_page( page ).should be_true
+                        sleep 0.1 while f.wait_for_browser?
+                        f.url_queue_total_size.should == 0
+                    end
                 end
             end
         end
@@ -927,10 +921,16 @@ describe Arachni::Framework do
                         { "<button dblclick='javascript:doubleClick();'>" => :ondblclick }
                     ]
                 )
-                @f.audit_page( page ).should be_true
 
-                @f.opts.dom_depth_limit = 2
-                @f.audit_page( page ).should be_false
+                f = Arachni::Framework.new
+                f.opts.dom_depth_limit = 10
+                f.audit_page( page ).should be_true
+
+                f.opts.dom_depth_limit = 2
+                f.audit_page( page ).should be_false
+
+                f.clean_up
+                f.reset
             end
         end
 
