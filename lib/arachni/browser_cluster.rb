@@ -44,7 +44,7 @@ class BrowserCluster
 
     DEFAULT_OPTIONS = {
         # Amount of Browsers to keep in the pool.
-        pool_size:    2,
+        pool_size:    5,
 
         # Lifetime of each Browser counted in pages.
         time_to_live: 10
@@ -192,27 +192,26 @@ class BrowserCluster
 
         RPC::EM.schedule { server.start }
         sleep 0.1 while !File.exists?( socket )
-        sleep 1
 
         handler = RPC::RemoteObjectMapper.new(
             RPC::Client::Base.new( Options.instance, socket, token ),
             'cluster'
         )
 
-        #begin
-        #    Timeout.timeout( 10 ) do
-        #        while sleep( 0.1 )
-        #            begin
-        #                handler.alive?
-        #                break
-        #            rescue Exception => e
-        #                ap e
-        #            end
-        #        end
-        #    end
-        #rescue Timeout::Error
-        #    abort "Browser cluster '#{socket}' never started!"
-        #end
+        begin
+            Timeout.timeout( 10 ) do
+                while sleep( 0.1 )
+                    begin
+                        handler.alive?
+                        break
+                    rescue Exception => e
+                        ap e
+                    end
+                end
+            end
+        rescue Timeout::Error
+            abort "Browser cluster '#{socket}' never started!"
+        end
         handler
     end
 

@@ -13,6 +13,7 @@ describe 'Arachni::RPC::Server::Framework' do
         @instance_clean  = instance_spawn
         @framework_clean = @instance_clean.framework
     end
+    before( :each ) { reset_options }
 
     describe '#errors' do
         context 'when no argument has been provided' do
@@ -132,6 +133,41 @@ describe 'Arachni::RPC::Server::Framework' do
             sleep( 1 ) while instance.framework.busy?
             instance.framework.issues.should be_any
         end
+
+        it 'handles pages with JavaScript code' do
+            @opts.dir['modules'] = fixtures_path + '/taint_module/'
+
+            inst = instance_spawn
+            inst.opts.url = web_server_url_for( :auditor ) + '/with_javascript'
+            inst.opts.audit :links, :forms, :cookies
+            inst.modules.load :taint
+
+            inst.framework.run.should be_true
+            sleep 0.1 while inst.framework.busy?
+
+            issues = inst.framework.issues
+            issues.find { |i| i.var == 'link_input' }.should be_true
+            issues.find { |i| i.var == 'form_input' }.should be_true
+            issues.find { |i| i.var == 'cookie_input' }.should be_true
+        end
+
+        it 'handles AJAX' do
+            @opts.dir['modules'] = fixtures_path + '/taint_module/'
+
+            inst = instance_spawn
+            inst.opts.url = web_server_url_for( :auditor ) + '/with_ajax'
+            inst.opts.audit :links, :forms, :cookies
+            inst.modules.load :taint
+
+            inst.framework.run.should be_true
+            sleep 0.1 while inst.framework.busy?
+
+            issues = inst.framework.issues
+            issues.find { |i| i.var == 'link_input' }.should be_true
+            issues.find { |i| i.var == 'form_input' }.should be_true
+            issues.find { |i| i.var == 'cookie_taint' }.should be_true
+        end
+
     end
     describe '#auditstore' do
         it 'returns an auditstore object' do
@@ -437,7 +473,6 @@ describe 'Arachni::RPC::Server::Framework' do
 
     describe '#restrict_to_elements' do
         it 'restricts the audit to the provided element signatures' do
-            mod_lib = @opts.dir['modules'].dup
             @opts.dir['modules'] = fixtures_path + '/taint_module/'
 
             inst = instance_spawn
