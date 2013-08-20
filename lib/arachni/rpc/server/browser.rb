@@ -35,32 +35,47 @@ class Browser
 
     # Spawns a {Server::Browser} in it own process and connects to it.
     #
-    # @return   [Client::Browser]
-    def self.spawn( master = nil )
+    # @param    [Hash]  options
+    # @option   options  :master [#handle_page]
+    #   Master to be passed each page.
+    # @option   options  :wait [Bool]
+    #   `true` to wait until the {Browser} has booted, `false` otherwise.
+    #
+    # @return   [Array, Client::Browser]
+    #
+    #   * `[socket, token]` if `:wait` has been set to `false`.
+    #   * {Client::Browser} if `:wait` has been set to `true`.
+    def self.spawn( options = {} )
         socket = "/tmp/arachni-browser-#{Utilities.available_port}"
         token  = Utilities.generate_token
 
         ::EM.fork_reactor do
             Options.rpc_socket = socket
-            new master: master, token: token
+            new master: options[:master], token: token
         end
-        sleep 0.1 while !File.exists?( socket )
 
-        client = RPC::Client::Browser.new( socket, token )
-        begin
-            Timeout.timeout( 10 ) do
-                while sleep( 0.1 )
-                    begin
-                        client.alive?
-                        break
-                    rescue Exception
+        if options[:wait]
+            sleep 0.1 while !File.exists?( socket )
+
+            client = RPC::Client::Browser.new( socket, token )
+            begin
+                Timeout.timeout( 10 ) do
+                    while sleep( 0.1 )
+                        begin
+                            client.alive?
+                            break
+                        rescue Exception
+                        end
                     end
                 end
+            rescue Timeout::Error
+                abort "Browser '#{socket}' never started!"
             end
-        rescue Timeout::Error
-            abort "Browser '#{socket}' never started!"
+
+            return client
         end
-        client
+
+        [socket, token]
     end
 
     # @param    [Hash]    options

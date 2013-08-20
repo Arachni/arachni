@@ -4,7 +4,7 @@ describe 'Arachni::RPC::Server::Browser' do
     before( :all ) do
         @url = Arachni::Utilities.normalize_url( web_server_url_for( :browser ) )
 
-        @browser = Arachni::RPC::Server::Browser.spawn
+        @browser = Arachni::RPC::Server::Browser.spawn( wait: true )
     end
 
     after( :all ){ @browser.close }

@@ -76,14 +76,7 @@ class BrowserCluster
         fail ArgumentError, 'Missing :handler option.' if !@handler
 
         @resources = Queue.new
-        @browsers  = {
-            idle: [],
-            busy: []
-        }
-
-        pool_size.times do
-            @browsers[:idle] << RPC::Server::Browser.spawn( ipc_handle )
-        end
+        initialize_browsers
 
         start
     end
@@ -198,20 +191,7 @@ class BrowserCluster
             'cluster'
         )
 
-        begin
-            Timeout.timeout( 10 ) do
-                while sleep( 0.1 )
-                    begin
-                        handler.alive?
-                        break
-                    rescue Exception => e
-                        ap e
-                    end
-                end
-            end
-        rescue Timeout::Error
-            abort "Browser cluster '#{socket}' never started!"
-        end
+        wait_till_service_ready handler
         handler
     end
 
@@ -221,6 +201,54 @@ class BrowserCluster
 
     def synchronize( &block )
         (@mutex ||= Mutex.new).synchronize( &block )
+    end
+
+    def initialize_browsers
+        @browsers  = {
+            idle: [],
+            busy: []
+        }
+
+        booting_browsers = []
+        pool_size.times do
+            booting_browsers << RPC::Server::Browser.spawn( master: ipc_handle )
+        end
+
+        begin
+            Timeout.timeout( 10 ) do
+                loop do
+                    booting_browsers.each do |socket, token|
+                        begin
+                            b = RPC::Client::Browser.new( socket, token )
+                            b.alive?
+                            booting_browsers.delete( [socket, token] )
+                            @browsers[:idle] << b
+                        rescue
+                        end
+                    end
+                    break if booting_browsers.empty?
+                end
+            end
+        rescue Timeout::Error
+            abort 'BrowserCluster failed to initialize worker browsers in time.'
+        end
+    end
+
+    def wait_till_service_ready( service )
+        begin
+            Timeout.timeout( 10 ) do
+                while sleep( 0.1 )
+                    begin
+                        service.alive?
+                        break
+                    rescue Exception => e
+                        ap e
+                    end
+                end
+            end
+        rescue Timeout::Error
+            abort "BrowserCluster (#{socket}) never started!"
+        end
     end
 
 end
