@@ -6,6 +6,8 @@
     - Audit
         - Path traversal (`path_traversal`)
             - Updated `/etc/passwd` signatures to be more generic.
+        - SQL Injection (`sqli`)
+            - Added support for Firebird.
 
 ## 0.4.4 _(August 10, 2013)_
 

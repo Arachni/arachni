@@ -82,7 +82,8 @@ class Manager
         :db2,
         :coldfusion,
         :interbase,
-        :informix
+        :informix,
+        :firebird
     ]
 
     SERVERS = [
@@ -127,6 +128,7 @@ class Manager
         coldfusion: 'ColdFusion',
         interbase:  'InterBase',
         informix:   'Informix',
+        firebird:   'Firebird',
 
         # Web servers
         apache:     'Apache',
