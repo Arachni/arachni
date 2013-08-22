@@ -131,7 +131,7 @@ module Distributor
         # distribution.
         unique_elements_per_chunk = elements_per_chunk.map.with_index do |elements, i|
             elements.reject do |element|
-                more_than_one_in_sets( elements_per_chunk[i..-1], element )
+                more_than_one_in_sets?( elements_per_chunk[i..-1], element )
             end
         end
 
@@ -443,7 +443,7 @@ module Distributor
         connect_to_dispatcher( @opts.datastore[:dispatcher_url] )
     end
 
-    def more_than_one_in_sets( sets, item )
+    def more_than_one_in_sets?( sets, item )
         occurrences = 0
         sets.each do |set|
             occurrences += 1 if set.include?( item )
