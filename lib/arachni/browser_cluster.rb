@@ -118,9 +118,9 @@ class BrowserCluster
         @worker.kill
 
         # Kill the browsers.
-        #q = Queue.new
-        (@browsers[:idle] | @browsers[:busy]).each { |b| b.shutdown { } }
-        #pool_size.times { q.pop }
+        q = Queue.new
+        (@browsers[:idle] | @browsers[:busy]).each { |b| b.shutdown { q << nil } }
+        pool_size.times { q.pop }
 
         # Kill our IPC RPC server.
         @servers.map( &:shutdown )
