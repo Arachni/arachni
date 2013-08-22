@@ -103,7 +103,6 @@ class Page
     end
 
     attr_accessor :transitions
-    attr_accessor :skip_events
 
     # Needs either a `:parser` or a `:response` or user provided data.
     #
@@ -121,7 +120,6 @@ class Page
         @parser ||= Parser.new( @response ) if @response
 
         @transitions ||= []
-        @skip_events ||= Support::LookUp::HashSet.new( hasher: :persistent_hash )
 
         Platform::Manager.fingerprint( self ) if Options.fingerprint?
     end
@@ -298,7 +296,7 @@ class Page
     def _dump( _ )
         h = {}
         [:response, :transitions, :dom_body, :body, :links, :forms, :cookies,
-         :headers, :cookiejar, :paths, :skip_events].each do |m|
+         :headers, :cookiejar, :paths].each do |m|
             h[m] = send( m )
         end
 

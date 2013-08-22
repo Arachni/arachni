@@ -136,7 +136,6 @@ class Browser
                 HTTP::Client.update_cookies resource.cookiejar
 
                 @transitions = resource.transitions.dup
-                @skip.merge resource.skip_events
 
                 @add_request_transitions = false if @transitions.any?
 
@@ -293,6 +292,14 @@ class Browser
         self
     end
 
+    def skip?( action )
+        @skip.include? action
+    end
+
+    def skip( action )
+        @skip << action
+    end
+
     # Triggers all events on all elements (**once**) and captures
     # {#page_snapshots page snapshots}.
     #
@@ -305,18 +312,18 @@ class Browser
             tag_name    = element.tag_name
             opening_tag = element.opening_tag
 
-            next if @skip.include?( opening_tag ) ||
+            next if skip?( opening_tag ) ||
                 NO_EVENTS_FOR_ELEMENTS.include?( tag_name.to_sym )
 
             # Don't follow regular, non-JS links, these can be handled more
             # efficiently by other framework components.
             if (tag_name == 'a' && (href = element.attribute_value( :href ))) &&
                 !href.start_with?( 'javascript:' )
-                @skip << opening_tag
+                skip opening_tag
                 next
             end
 
-            @skip << opening_tag
+            skip opening_tag
 
             pending << {
                 index:       i,
@@ -376,11 +383,11 @@ class Browser
         watir.links.each do |a|
             href = a.href.to_s
 
-            next if @skip.include?( href ) ||
+            next if skip?( href ) ||
                 !href.start_with?( 'javascript:' ) ||
                 href =~ /javascript:\s*void\(/ || href =~ /javascript:\s*;/
 
-            @skip   << href
+            skip href
             pending << href.gsub( '%20', ' ' )
         end
 
@@ -469,7 +476,6 @@ class Browser
         page.dom_body        = source.dup
         page.cookies        |= cookies.dup
         page.transitions     = @transitions.dup
-        page.skip_events     = @skip.dup
 
         page
     end
@@ -553,8 +559,8 @@ class Browser
         request_transitions = flush_request_transitions
 
         unique_id = "#{page.dom_body.persistent_hash}:#{cookies.map(&:name).sort}"
-        return if @skip.include? unique_id
-        @skip << unique_id
+        return if skip? unique_id
+        skip unique_id
 
         transitions = ([transition] + request_transitions).flatten.compact
 

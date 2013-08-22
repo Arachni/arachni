@@ -75,7 +75,12 @@ class BrowserCluster
 
         fail ArgumentError, 'Missing :handler option.' if !@handler
 
+        # Used to sync operations between browser workers.
+        @skip = Support::LookUp::HashSet.new( hasher: :persistent_hash )
+
+        # Holds resources to consume, Arachni::Page objects usually.
         @resources = Queue.new
+
         initialize_browsers
 
         start
@@ -128,13 +133,31 @@ class BrowserCluster
         true
     end
 
+    # Used to sync operations between browser workers.
+    #
+    # @param    [String]    action  Should the given action be skipped?
+    # @private
+    def skip?( action )
+        synchronize { @skip.include? action }
+    end
+
+    # Used to sync operations between browser workers.
+    #
+    # @param    [String]    action  Action to skip in the future.
+    # @private
+    def skip( action )
+        synchronize { @skip << action }
+    end
+
     # Passes the `page` to the handler.
     #
     # @param    [Page]  page
     def handle_page( page )
         fail_if_shutdown
 
-        exception_jail( false ){ @handler.call page }
+        synchronize do
+            exception_jail( false ){ @handler.call page }
+        end
     end
 
     def alive?

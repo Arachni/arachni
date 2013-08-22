@@ -86,7 +86,7 @@ class Browser
         end
 
         token = options.delete( :token )
-        if (@master = options.delete( :master ))
+        if (@master = options[:master])
             options[:store_pages] = false
         end
 
@@ -94,6 +94,16 @@ class Browser
         @browser.start_capture
 
         if @master
+
+            # Let the master handle deduplication of operations.
+            def @browser.skip?( action )
+                @options[:master].skip? action
+            end
+
+            def @browser.skip( action )
+                @options[:master].skip action
+            end
+
             @browser.on_new_page do |page|
                 @master.handle_page( page ){}
             end
