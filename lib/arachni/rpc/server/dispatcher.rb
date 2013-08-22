@@ -409,51 +409,54 @@ USAGE
         @operation_in_progress = true
 
         owner = 'dispatcher'
-        exception_jail {
+        port  = available_port
+        token = generate_token
 
-            # get an available port for the child
-            port  = available_port
-            token = generate_token
+        pid = fork do
+            @opts.rpc_port = port
+            Server::Instance.new( @opts, token )
+        end
 
-            pid = fork do
-                @opts.rpc_port = port
-                Server::Instance.new( @opts, token )
+        # Let the child go about its business.
+        Process.detach( pid )
+        @consumed_pids << pid
+
+        print_status "Instance added to pool -- PID: #{pid} - " +
+            "Port: #{port} - Owner: #{owner}"
+
+        url = "#{@opts.rpc_address}:#{port}"
+
+        # Wait until the Instance has booted before adding it to the pool.
+        when_instance_ready( url, token ) do
+            @operation_in_progress = false
+
+            @pool << {
+                'token'     => token,
+                'pid'       => pid,
+                'port'      => port,
+                'url'       => url,
+                'owner'     => owner,
+                'birthdate' => Time.now
+            }
+        end
+    end
+
+    def when_instance_ready( url, token, &block )
+        options = OpenStruct.new( @opts.to_h.symbolize_keys( false ) )
+        options.max_retries = 0
+
+        client = Client::Instance.new( options, url, token )
+        timer = ::EM::PeriodicTimer.new( 0.1 ) do
+            client.service.alive? do |r|
+                next if r.rpc_exception?
+
+                timer.cancel
+                client.close
+
+                block.call
             end
+        end
 
-            # let the child go about its business
-            Process.detach( pid )
-
-            print_status "Instance added to pool -- PID: #{pid} - " +
-                "Port: #{port} - Owner: #{owner}"
-
-            url = "#{@opts.rpc_address}:#{port}"
-
-            options = OpenStruct.new( @opts.to_h.symbolize_keys( false ) )
-            options.max_retries = 0
-
-            client = Client::Instance.new( options, url, token )
-            timer = ::EM::PeriodicTimer.new( 0.1 ) do
-                client.service.alive? do |r|
-                    next if r.rpc_exception?
-
-                    timer.cancel
-                    client.close
-
-                    @operation_in_progress = false
-
-                    @pool << {
-                        'token'     => token,
-                        'pid'       => pid,
-                        'port'      => port,
-                        'url'       => url,
-                        'owner'     => owner,
-                        'birthdate' => Time.now
-                    }
-
-                    @consumed_pids << pid
-                end
-            end
-        }
     end
 
     def prep_logging
