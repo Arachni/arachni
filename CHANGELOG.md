@@ -9,6 +9,7 @@
             - Updated MS Windows payloads to include dot truncation.
         - SQL Injection (`sqli`)
             - Added support for Firebird.
+            - Added support for SAP Max DB.
 
 ## 0.4.4 _(August 10, 2013)_
 

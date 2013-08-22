@@ -83,7 +83,8 @@ class Manager
         :coldfusion,
         :interbase,
         :informix,
-        :firebird
+        :firebird,
+        :maxdb
     ]
 
     SERVERS = [
@@ -129,6 +130,7 @@ class Manager
         interbase:  'InterBase',
         informix:   'Informix',
         firebird:   'Firebird',
+        maxdb:      'SAP Max DB',
 
         # Web servers
         apache:     'Apache',

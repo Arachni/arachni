@@ -284,8 +284,8 @@ describe Arachni::Platform::Manager do
             platforms.valid.sort.should ==
                 [:unix, :linux, :bsd, :solaris, :windows,
                  :coldfusion, :db2, :emc, :informix, :interbase, :mssql, :mysql,
-                 :oracle, :firebird, :pgsql, :sqlite, :apache, :iis, :nginx, :tomcat, :asp,
-                 :aspx, :jsp, :perl, :php, :python, :ruby, :rack, :jetty].sort
+                 :oracle, :firebird, :maxdb, :pgsql, :sqlite, :apache, :iis, :nginx,
+                 :tomcat, :asp, :aspx, :jsp, :perl, :php, :python, :ruby, :rack, :jetty].sort
         end
     end
 

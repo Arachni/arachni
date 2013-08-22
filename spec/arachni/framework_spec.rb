@@ -927,6 +927,7 @@ Databases:
   :pgsql: Postgresql
   :sqlite: SQLite
   :firebird: Firebird
+  :maxdb: SAP Max DB
 Web servers:
   :apache: Apache
   :iis: IIS

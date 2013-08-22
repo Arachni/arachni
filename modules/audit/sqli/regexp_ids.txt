@@ -69,3 +69,5 @@ SQLite/JDBCDriver
 SQLite\.Exception
 System\.Data\.SQLite\.SQLiteException
 Dynamic SQL Error
+SQL error.*POS([0-9]+).*
+Warning.*maxdb.*
