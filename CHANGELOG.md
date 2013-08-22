@@ -6,6 +6,7 @@
     - Audit
         - Path traversal (`path_traversal`)
             - Updated `/etc/passwd` signatures to be more generic.
+            - Updated MS Windows payloads to include dot truncation.
         - SQL Injection (`sqli`)
             - Added support for Firebird.
 

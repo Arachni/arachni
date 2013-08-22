@@ -14,17 +14,15 @@
     limitations under the License.
 =end
 
-#
 # Path Traversal audit module.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.3.4
+# @version 0.3.5
 #
 # @see http://cwe.mitre.org/data/definitions/22.html
 # @see http://www.owasp.org/index.php/Path_Traversal
 # @see http://projects.webappsec.org/Path-Traversal
-#
 class Arachni::Modules::PathTraversal < Arachni::Module::Base
 
     MINIMUM_TRAVERSALS = 0
@@ -71,7 +69,7 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
                 'boot.ini',
                 'windows/win.ini',
                 'winnt/win.ini'
-            ]
+            ].map { |payload| [payload, "#{payload}#{'.'* 700}"] }.flatten
         }.inject({}) do |h, (platform, payloads)|
             h[platform] = payloads.map do |payload|
                 trv = '/'
@@ -106,7 +104,7 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
                 based on the presence of relevant content in the HTML responses.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.3.4',
+            version:     '0.3.5',
             references:  {
                 'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
                 'WASC'  => 'http://projects.webappsec.org/Path-Traversal'
