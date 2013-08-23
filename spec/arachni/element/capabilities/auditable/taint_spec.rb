@@ -67,6 +67,96 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
             context 'for matching with' do
 
                 describe :regexp do
+                    context String do
+                        it 'tries to match the provided pattern' do
+                            @positive.taint_analysis( @seed,
+                                                      regexp: @seed,
+                                                      format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                            )
+                            @auditor.http.run
+                            issues.size.should == 1
+                            issues.first.injected.should == @seed
+                            issues.first.verification.should be_false
+                        end
+                    end
+
+                    context Array do
+                        it 'tries to match the provided patterns' do
+                            @positive.taint_analysis( @seed,
+                                                      regexp: [@seed],
+                                                      format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                            )
+                            @auditor.http.run
+                            issues.size.should == 1
+                            issues.first.injected.should == @seed
+                            issues.first.verification.should be_false
+                        end
+                    end
+
+                    context Hash do
+                        it 'assigns the relevant platform to the issue' do
+                            regexps = {
+                                windows: /#{@seed} w.*/,
+                                php:     /#{@seed} p.*/,
+                            }
+
+                            @positive.taint_analysis(
+                                "#{@seed} windows",
+                                regexp: regexps.dup,
+                                format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                            )
+
+                            @auditor.http.run
+
+                            issues.size.should == 1
+                            issues[0].platform.should == :windows
+                            issues[0].regexp.should == regexps[:windows].to_s
+                            issues[0].verification.should be_false
+                        end
+
+                        context 'when the payloads are per platform' do
+                            it 'only tries to matches the regexps for that platform' do
+                                issues = []
+                                Arachni::Module::Manager.on_register_results_raw do |results|
+                                    issues += results
+                                end
+
+                                payloads = {
+                                    windows: "#{@seed} windows",
+                                    php:     "#{@seed} php",
+                                    asp:     "#{@seed} asp"
+                                }
+
+                                regexps = {
+                                    windows: /#{@seed} w.*/,
+                                    php:     /#{@seed} p.*/,
+
+                                    # Can match all but should only match
+                                    # against responses of the ASP payload.
+                                    asp:     /#{@seed}/
+                                }
+
+                                @positive.taint_analysis(
+                                    payloads.dup,
+                                    regexp: regexps.dup,
+                                    format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                                )
+
+                                @auditor.http.run
+
+                                issues.size.should == 3
+                                payloads.keys.each do |platform|
+                                    issue = issues.find{ |i| i.platform == platform }
+
+                                    issue.injected.should == payloads[platform]
+                                    issue.platform.should == platform
+                                    issue.regexp.should == regexps[platform].to_s
+                                    issue.verification.should be_false
+                                end
+                            end
+                        end
+                    end
+
                     context 'with valid :match' do
                         it 'verifies the matched data with the provided string' do
                             @positive.taint_analysis( @seed,
@@ -90,19 +180,6 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                              )
                             @auditor.http.run
                             issues.should be_empty
-                        end
-                    end
-
-                    context 'without :match' do
-                        it 'tries to match the provided pattern' do
-                            @positive.taint_analysis( @seed,
-                                regexp: @seed,
-                                format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
-                             )
-                            @auditor.http.run
-                            issues.size.should == 1
-                            issues.first.injected.should == @seed
-                            issues.first.verification.should be_false
                         end
                     end
 
@@ -144,16 +221,96 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                 end
 
                 describe :substring do
-                    it 'tries to find the provided substring' do
+
+                context String do
+                    it 'tries to match the provided pattern' do
                         @positive.taint_analysis( @seed,
-                            substring: @seed,
-                            format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
-                         )
+                                                  substring: @seed,
+                                                  format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                        )
                         @auditor.http.run
                         issues.size.should == 1
                         issues.first.injected.should == @seed
                         issues.first.verification.should be_false
                     end
+                end
+
+                context Array do
+                    it 'tries to match the provided patterns' do
+                        @positive.taint_analysis( @seed,
+                                                  substring: [@seed],
+                                                  format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                        )
+                        @auditor.http.run
+                        issues.size.should == 1
+                        issues.first.injected.should == @seed
+                        issues.first.verification.should be_false
+                    end
+                end
+
+                context Hash do
+                    it 'assigns the relevant platform to the issue' do
+                        substrings = {
+                            windows: "#{@seed} w",
+                            php:     "#{@seed} p",
+                        }
+
+                        @positive.taint_analysis(
+                            "#{@seed} windows",
+                            substring: substrings.dup,
+                            format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                        )
+
+                        @auditor.http.run
+
+                        issues.size.should == 1
+                        issues[0].platform.should == :windows
+                        issues[0].regexp.should == substrings[:windows].to_s
+                        issues[0].verification.should be_false
+                    end
+
+                    context 'when the payloads are per platform' do
+                        it 'only tries to matches the regexps for that platform' do
+                            issues = []
+                            Arachni::Module::Manager.on_register_results_raw do |results|
+                                issues += results
+                            end
+
+                            payloads = {
+                                windows: "#{@seed} windows",
+                                php:     "#{@seed} php",
+                                asp:     "#{@seed} asp"
+                            }
+
+                            substrings = {
+                                windows: "#{@seed} w",
+                                php:     "#{@seed} p",
+
+                                # Can match all but should only match
+                                # against responses of the ASP payload.
+                                asp:     @seed
+                            }
+
+                            @positive.taint_analysis(
+                                payloads.dup,
+                                substring: substrings.dup,
+                                format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                            )
+
+                            @auditor.http.run
+
+                            issues.size.should == 3
+                            payloads.keys.each do |platform|
+                                issue = issues.find{ |i| i.platform == platform }
+
+                                issue.injected.should == payloads[platform]
+                                issue.platform.should == platform
+                                issue.regexp.should == substrings[platform].to_s
+                                issue.verification.should be_false
+                            end
+                        end
+                    end
+                end
 
                     context 'when the page includes the substring even before we audit it' do
                         it 'flags the issue as requiring manual verification' do

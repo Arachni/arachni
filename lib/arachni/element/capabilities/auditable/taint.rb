@@ -105,8 +105,41 @@ module Auditable::Taint
     def get_matches( res, opts )
         opts[:substring] = opts[:injected_orig] if !opts[:regexp] && !opts[:substring]
 
-        [opts[:regexp]].flatten.compact.each { |regexp| match_regexp_and_log( regexp, res, opts ) }
-        [opts[:substring]].flatten.compact.each { |substring| match_substring_and_log( substring, res, opts ) }
+        case opts[:regexp]
+            when Regexp, String, Array
+                [opts[:regexp]].flatten.compact.each { |regexp| match_regexp_and_log( regexp, res, opts ) }
+
+            when Hash
+                if opts[:platform]
+                    [opts[:regexp][opts[:platform]]].flatten.compact.each do |regexps|
+                        [regexps].flatten.compact.each { |regexp| match_regexp_and_log( regexp, res, opts ) }
+                    end
+                else
+                    opts[:regexp].each do |platform, regexps|
+                        dopts = opts.dup
+                        dopts[:platform] = platform
+                        [regexps].flatten.compact.each { |regexp| match_regexp_and_log( regexp, res, dopts ) }
+                    end
+                end
+        end
+
+        case opts[:substring]
+            when String, Array
+                [opts[:substring]].flatten.compact.each { |substring| match_substring_and_log( substring, res, opts ) }
+
+            when Hash
+                if opts[:platform]
+                    [opts[:substring][opts[:platform]]].flatten.compact.each do |regexps|
+                        [regexps].flatten.compact.each { |substring| match_substring_and_log( substring, res, opts ) }
+                    end
+                else
+                    opts[:substring].each do |platform, substrings|
+                        dopts = opts.dup
+                        dopts[:platform] = platform
+                        [substrings].flatten.compact.each { |substring| match_substring_and_log( substring, res, dopts ) }
+                    end
+                end
+        end
     end
 
     def match_substring_and_log( substring, res, opts )

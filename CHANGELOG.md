@@ -2,6 +2,9 @@
 
 ## _Under development_
 
+- `Element::Capabilities::Auditable::Taint`
+    - Patterns can now be per-platform which results in improved fingerprinting
+        during the audit phase and less CPU stress when analyzing responses.
 - Modules
     - Audit
         - Path traversal (`path_traversal`)
