@@ -10,6 +10,7 @@
         - Path traversal (`path_traversal`)
             - Updated `/etc/passwd` signatures to be more generic.
             - Updated MS Windows payloads to include dot truncation.
+            - Detection patterns organized per platform.
         - SQL Injection (`sqli`)
             - Added support for Firebird.
             - Added support for SAP Max DB.

@@ -18,7 +18,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.3.5
+# @version 0.4
 #
 # @see http://cwe.mitre.org/data/definitions/22.html
 # @see http://www.owasp.org/index.php/Path_Traversal
@@ -31,13 +31,19 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
     def self.options
         @options ||= {
             format: [Format::STRAIGHT],
-            regexp: [
-                /DOCUMENT_ROOT.*HTTP_USER_AGENT/,
-                /(root|mail):.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im,
-                /\[boot loader\](.*)\[operating systems\]/im,
-                /\[fonts\](.*)\[extensions\]/im,
-                /<web\-app/im
-            ],
+            regexp: {
+                unix: [
+                    /DOCUMENT_ROOT.*HTTP_USER_AGENT/,
+                    /(root|mail):.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im
+                ],
+                windows: [
+                    /\[boot loader\](.*)\[operating systems\]/im,
+                    /\[fonts\](.*)\[extensions\]/im
+                ],
+                tomcat: [
+                    /<web\-app/im
+                ]
+            },
 
             # Add one more mutation (on the fly) which will include the extension
             # of the original value (if that value was a filename) after a null byte.
@@ -104,7 +110,7 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
                 based on the presence of relevant content in the HTML responses.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.3.5',
+            version:     '0.4',
             references:  {
                 'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
                 'WASC'  => 'http://projects.webappsec.org/Path-Traversal'
