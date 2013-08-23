@@ -15,7 +15,11 @@ describe Arachni::Page do
             code:    200,
             url:     'http://a-url.com/?myvar=my%20value',
             body:    options[:body],
-            headers: options[:headers]
+            headers: options[:headers],
+
+            dom:     {
+                transitions: [ page: :load ]
+            }
         )
     end
 
@@ -87,6 +91,19 @@ describe Arachni::Page do
                     page.headers.should == parser.headers
                     page.cookiejar.should == parser.cookie_jar
                     page.text?.should == parser.text?
+                end
+            end
+
+            describe :dom do
+                it 'uses it to populate the DOM data' do
+                    described_class.new(
+                        dom:      {
+                            transitions: [
+                                page: :load
+                            ]
+                        }
+                    ).dom.transitions.should == [ page: :load ]
+
                 end
             end
         end
@@ -188,6 +205,7 @@ describe Arachni::Page do
                 p.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
                 p.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
                 p.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
+                p.dom.push_transition "<a href='#' id='stuff'>" => :onclick
 
                 c = p.dup
                 c.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
@@ -199,6 +217,10 @@ describe Arachni::Page do
 
                 c = p.dup
                 c.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                c.should_not == p
+
+                c = p.dup
+                c.dom.push_transition "<a href='#' id='stuff'>" => :onhover
                 c.should_not == p
             end
         end
@@ -215,10 +237,12 @@ describe Arachni::Page do
                 p.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
                 p.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
                 p.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                p.dom.push_transition "<a href='#' id='stuff'>" => :onhover
 
                 c.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
                 c.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
                 c.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                c.dom.push_transition "<a href='#' id='stuff'>" => :onhover
 
                 c.should == p
             end
@@ -312,6 +336,10 @@ describe Arachni::Page do
                 headers: [Arachni::Element::Header.new( elem_opts )],
                 response: {
                     code: 200
+                },
+
+                dom:     {
+                    transitions: [ page: :load ]
                 }
             }
 
@@ -332,6 +360,8 @@ describe Arachni::Page do
             page.response.url.should == data[:url]
             page.response.body.should == data[:body]
             page.response.request.url.should == data[:url]
+
+            page.dom.transitions.should == data[:dom][:transitions]
         end
 
         context 'when no HTTP data is given' do

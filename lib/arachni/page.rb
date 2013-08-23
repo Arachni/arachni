@@ -283,18 +283,13 @@ class Page
 
         h[:forms].each { |f| f.node = nil }
 
-        h[:dom_transitions] = dom.transitions
+        h[:dom] = { transitions: dom.transitions }
 
         Marshal.dump( h )
     end
 
     def self._load( data )
-        options = Marshal.load( data )
-        transitions = options.delete( :dom_transitions )
-
-        page = new( options )
-        page.dom.transitions = transitions
-        page
+        new( Marshal.load( data ) )
     end
 
     private
