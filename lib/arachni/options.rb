@@ -730,7 +730,7 @@ class Options
     end
 
     def dom_depth_limit_reached?( page )
-        Options.dom_depth_limit && page.dom_depth > Options.dom_depth_limit
+        Options.dom_depth_limit && page.dom.depth > Options.dom_depth_limit
     end
 
     #

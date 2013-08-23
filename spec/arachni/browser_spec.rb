@@ -139,7 +139,7 @@ describe Arachni::Browser do
 
             pages_should_have_form_with_input pages, 'by-ajax'
 
-            pages.map(&:transitions).should == [
+            pages.map(&:dom).map(&:transitions).should == [
                 [
                     { :page => :load },
                     { "#{@url}deep-dom" => :request },
@@ -188,15 +188,15 @@ describe Arachni::Browser do
             page.should be_kind_of Arachni::Page
 
             ua.should_not be_empty
-            page.body.should_not include( ua )
-            page.dom_body.should include( ua )
+            page.response.body.should_not include( ua )
+            page.body.should include( ua )
         end
 
         it 'assigns the proper page transitions' do
             @browser.load( @url )
             page = @browser.to_page
 
-            page.transitions.should == [
+            page.dom.transitions.should == [
                 { page: :load },
                 { @url => :request }
             ]
@@ -204,6 +204,26 @@ describe Arachni::Browser do
     end
 
     describe 'explore' do
+        it 'ignores differences in text nodes' do
+            url = @url + '/ever-changing'
+
+            @browser.load( url ).explore
+            @browser.page_snapshots.size.should == 1
+
+            @browser.load( url ).explore
+            @browser.page_snapshots.size.should == 1
+        end
+
+        it 'ignores differences in text nodes performed via JS' do
+            url = @url + '/ever-changing-via-js'
+
+            @browser.load( url ).explore
+            @browser.page_snapshots.size.should == 1
+
+            @browser.load( url ).explore
+            @browser.page_snapshots.size.should == 1
+        end
+
         it 'triggers all events on all elements and follows all javascript links' do
             @browser.load( @url + '/explore' ).start_capture.explore
 
@@ -216,7 +236,7 @@ describe Arachni::Browser do
         it 'assigns the proper page transitions' do
             pages = @browser.load( @url + '/explore' ).explore.page_snapshots
 
-            transitions = pages.map(&:transitions)
+            transitions = pages.map(&:dom).map(&:transitions)
 
             # The last one needs special treatment because of the unpredictable
             # order of AJAX requests.
@@ -268,7 +288,7 @@ describe Arachni::Browser do
 
         it 'assigns the proper page transitions' do
             pages = @browser.load( @url + '/trigger_events' ).trigger_events.page_snapshots
-            pages.map(&:transitions).should == [
+            pages.map(&:dom).map(&:transitions).should == [
                 [
                     { :page => :load },
                     { "#{@url}trigger_events" => :request },
@@ -306,11 +326,11 @@ describe Arachni::Browser do
 
             pages = @browser.page_snapshots
 
-            pages[0].transitions.should == [
+            pages[0].dom.transitions.should == [
                 {:page=>:load},
                 { @url + 'visit_links' => :request }
             ]
-            pages[1].transitions == [
+            pages[1].dom.transitions == [
                 {:page=>:load},
                 {"<a href=\"javascript:inHref();\">"=>:click},
                 {"#{@url}href-ajax"=>:request},
@@ -363,7 +383,7 @@ describe Arachni::Browser do
                     pages = @browser.page_snapshots
                     pages.size.should == 1
 
-                    pages.first.transitions.should == [
+                    pages.first.dom.transitions.should == [
                         { page: :load },
                         { @url => :request }
                     ]
@@ -383,7 +403,7 @@ describe Arachni::Browser do
                     pages = @browser.page_snapshots
                     pages.size.should == 1
 
-                    pages.first.transitions.should == [
+                    pages.first.dom.transitions.should == [
                         { page: :load },
                         { @url => :request }
                     ]
@@ -443,7 +463,7 @@ describe Arachni::Browser do
                     pages = @browser.page_snapshots
                     pages.size.should == 1
 
-                    pages.first.transitions.should == [
+                    pages.first.dom.transitions.should == [
                         { page: :load },
                         { @url => :request }
                     ]
@@ -463,7 +483,7 @@ describe Arachni::Browser do
                     pages = @browser.page_snapshots
                     pages.size.should == 1
 
-                    pages.first.transitions.should == [
+                    pages.first.dom.transitions.should == [
                         { page: :load },
                         { @url => :request }
                     ]

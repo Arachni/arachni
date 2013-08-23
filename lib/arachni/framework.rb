@@ -237,7 +237,7 @@ class Framework
         end
 
         if host_has_has_browser?
-            dom_depth = "#{page.dom_depth} (Limit: #{@opts.dom_depth_limit})"
+            dom_depth = "#{page.dom.depth} (Limit: #{@opts.dom_depth_limit})"
         else
             dom_depth = 'N/A (Could not find browser).'
         end
@@ -720,9 +720,9 @@ class Framework
             pushed_paths +=1 if push_to_url_queue( path )
         end
 
-        if page.dom_depth > 1
+        if page.dom.depth > 1
             print_info 'Got page via DOM/AJAX analysis with the following transitions:'
-            page.transitions.each do |t|
+            page.dom.transitions.each do |t|
                 element, event = t.first.to_a
                 print_info "-- '#{event}' on: #{element}"
             end
@@ -738,7 +738,7 @@ class Framework
     # @param    [Page]  page
     #   Page to analyze.
     def perform_browser_analysis( page )
-        return if Options.dom_depth_limit.to_i < page.dom_depth + 1 ||
+        return if Options.dom_depth_limit.to_i < page.dom.depth + 1 ||
             !host_has_has_browser? || !page.has_javascript?
 
         @browser ||= BrowserCluster.new( handler: method( :handle_browser_pages ) )

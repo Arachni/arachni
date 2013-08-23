@@ -37,9 +37,8 @@
     - Attributes (`#links`, `#forms`, `#paths` etc.) are lazy-parsed on-demand.
     - Added:
         - `#response` -- Associated `HTTP::Response`.
-        - `#dom_body` -- Browser-evaluated `#body`.
-        - `#transitions` -- Replay-able DOM event/state transitions in order to
-            go from `#body` to `#dom_body`.
+        - `#dom` -- Associated `Arachni::Page::DOM`.
+- `Arachni::Page::DOM` -- Static DOM snapshot as computed by a real browser.
 - `Arachni::Parser` -- Updated to **only** operate under the context of the
     `HTTP::Response` with which it was initialized -- no longer supports parsing
     data from external sources.

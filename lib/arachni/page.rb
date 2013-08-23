@@ -14,6 +14,8 @@
     limitations under the License.
 =end
 
+require_relative 'page/dom'
+
 module Arachni
 
 #
@@ -102,7 +104,7 @@ class Page
         new data
     end
 
-    attr_accessor :transitions
+    attr_reader :dom
 
     # Needs either a `:parser` or a `:response` or user provided data.
     #
@@ -118,18 +120,9 @@ class Page
         options.each { |k, v| instance_variable_set( "@#{k}".to_sym, try_dup( v ) ) }
 
         @parser ||= Parser.new( @response ) if @response
-
-        @transitions ||= []
+        @dom      = DOM.new( (options[:dom] || {}).merge( page: self ) )
 
         Platform::Manager.fingerprint( self ) if Options.fingerprint?
-    end
-
-    def push_transition( transition )
-        @transitions << transition
-    end
-
-    def dom_depth
-        @transitions.select { |t| t.values.first != :request }.size
     end
 
     # @return    [HTTP::Response]    HTTP response.
@@ -156,28 +149,21 @@ class Page
 
     # @return    [String]    HTTP response body.
     def body
-        return '' if !@body && !@body && !@parser
+        return '' if !@body && !@parser
         @body ||= response.body
     end
 
-    # @return    [String]
-    #   Calculated body, taking into account JS/DOM -- defaults to {#body}.
-    def dom_body
-        @dom_body ||= body
-    end
-
-    # @param    [String]    string
-    #   Calculated body, taking into account JS/DOM.
-    def dom_body=( string )
+    # @param    [String]    string  Page body.
+    def body=( string )
         @links = @forms = @cookies = @document = nil
-        @parser.body = @dom_body = string.dup
+        dom.clear_caches
+        @parser.body = @body = string.dup
     end
 
     # @return    [Array<Element::Link>]
     # @see Parser#links
     def links
-        return [] if !@links && !@parser
-        @links ||= @parser.links
+        @links ||= (!@links && !@parser) ? [] : @parser.links
     end
 
     # @param    [Array<Element::Link>]  links
@@ -189,8 +175,7 @@ class Page
     # @return    [Array<Element::Form>]
     # @see Parser#forms
     def forms
-        return [] if !@forms && !@parser
-        @forms ||= @parser.forms
+        @forms ||= (!@forms && !@parser) ? [] : @parser.forms
     end
 
     # @param    [Array<Element::Form>]  forms
@@ -202,8 +187,7 @@ class Page
     # @return    [Array<Element::Cookie>]
     # @see Parser#cookies
     def cookies
-        return [] if !@cookies && !@parser
-        @cookies ||= @parser.cookies_to_be_audited
+        @cookies ||= (!@cookies && !@parser) ? [] : @parser.cookies_to_be_audited
     end
 
     # @param    [Array<Element::Cookies>]  cookies
@@ -214,8 +198,7 @@ class Page
 
     # @return    [Array<Element::Header>]   HTTP request headers.
     def headers
-        return [] if !@headers && !@parser
-        @headers ||= @parser.headers
+        @headers ||= (!@headers && !@parser) ? [] : @parser.headers
     end
 
     # @param    [Array<Element::Headers>]  headers
@@ -227,15 +210,13 @@ class Page
     # @return    [Array<Element::Cookie>]
     #   Cookies extracted from the supplied cookie-jar.
     def cookiejar
-        return [] if !@cookiejar && !@parser
-        @cookiejar ||= @parser.cookie_jar
+        @cookiejar ||= (!@cookiejar && !@parser) ? [] : @parser.cookie_jar
     end
 
     # @return    [Array<String>]    Paths contained in this page.
     # @see Parser#paths
     def paths
-        return [] if !@paths && !@parser
-        @paths ||= @parser.paths
+        @paths ||= (!@paths && !@parser) ? [] : @parser.paths
     end
 
     # @return   [Platform] Applicable platforms for the page.
@@ -254,9 +235,9 @@ class Page
         response.request.method
     end
 
-    # @return   [Nokogiri::HTML]    Parsed {#dom_body HTML} document.
+    # @return   [Nokogiri::HTML]    Parsed {#body HTML} document.
     def document
-        @document ||= (@parser.nil? ? Nokogiri::HTML( dom_body ) : @parser.document)
+        @document ||= (@parser.nil? ? Nokogiri::HTML( body ) : @parser.document)
     end
 
     # @return   [Boolean]
@@ -278,7 +259,7 @@ class Page
     end
 
     def hash
-        "#{@transitions}:#{@body.hash}:#{elements.map(&:hash).sort}".hash
+        "#{dom.transitions}:#{@body.hash}:#{elements.map(&:hash).sort}".hash
     end
 
     def ==( other )
@@ -295,18 +276,25 @@ class Page
 
     def _dump( _ )
         h = {}
-        [:response, :transitions, :dom_body, :body, :links, :forms, :cookies,
-         :headers, :cookiejar, :paths].each do |m|
+        [:response, :body, :links, :forms, :cookies, :headers, :cookiejar,
+         :paths].each do |m|
             h[m] = send( m )
         end
 
         h[:forms].each { |f| f.node = nil }
 
+        h[:dom_transitions] = dom.transitions
+
         Marshal.dump( h )
     end
 
     def self._load( data )
-        new Marshal.load( data )
+        options = Marshal.load( data )
+        transitions = options.delete( :dom_transitions )
+
+        page = new( options )
+        page.dom.transitions = transitions
+        page
     end
 
     private

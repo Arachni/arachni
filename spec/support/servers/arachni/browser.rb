@@ -26,6 +26,40 @@ get '/' do
 HTML
 end
 
+get '/ever-changing' do
+    <<HTML
+<html>
+    <head>
+        <title>My title!</title>
+    </head>
+
+    <body>
+        <div>
+            #{Time.now.to_i}
+        </div>
+    </body>
+</html>
+HTML
+end
+
+get '/ever-changing-via-js' do
+    <<HTML
+<html>
+    <head>
+        <title>My title!</title>
+    </head>
+
+    <body>
+        <div>
+            <script type="text/javascript">
+                document.write( new Date() );
+            </script>
+        </div>
+    </body>
+</html>
+HTML
+end
+
 get '/set-javascript-cookie' do
     <<HTML
     <script>

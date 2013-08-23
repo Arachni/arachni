@@ -901,7 +901,7 @@ describe Arachni::Framework do
                         f.url_queue_total_size.should == 0
 
                         page = Arachni::Page.from_url( @url + '/with_javascript' )
-                        page.push_transition page: :load
+                        page.dom.push_transition page: :load
 
                         f.audit_page( page ).should be_true
                         sleep 0.1 while f.wait_for_browser?
@@ -915,11 +915,13 @@ describe Arachni::Framework do
             it 'returns false' do
                 page = Arachni::Page.from_data(
                     url:         @url,
-                    transitions: [
-                        { page: :load },
-                        { "<a href='javascript:click();'>" => :click },
-                        { "<button dblclick='javascript:doubleClick();'>" => :ondblclick }
-                    ]
+                    dom:         {
+                        transitions: [
+                            { page: :load },
+                            { "<a href='javascript:click();'>" => :click },
+                            { "<button dblclick='javascript:doubleClick();'>" => :ondblclick }
+                        ]
+                    }
                 )
 
                 f = Arachni::Framework.new

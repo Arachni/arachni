@@ -135,7 +135,7 @@ class Browser
             when Page
                 HTTP::Client.update_cookies resource.cookiejar
 
-                @transitions = resource.transitions.dup
+                @transitions = resource.dom.transitions.dup
 
                 @add_request_transitions = false if @transitions.any?
 
@@ -357,7 +357,7 @@ class Browser
                     print_debug "Found new page variation by triggering '#{event}' on: #{opening_tag}"
 
                     print_debug 'Page transitions:'
-                    snapshot.transitions.each do |t|
+                    snapshot.dom.transitions.each do |t|
                         element, event = t.first.to_a
                         print_debug "-- '#{event}' on: #{element}"
                     end
@@ -472,10 +472,9 @@ class Browser
         current_response = @root_page_response.deep_clone
 
         page                 = current_response.to_page
-        page.response.body ||= source.dup
-        page.dom_body        = source.dup
+        page.body            = source.dup
         page.cookies        |= cookies.dup
-        page.transitions     = @transitions.dup
+        page.dom.transitions = @transitions.dup
 
         page
     end
@@ -558,7 +557,7 @@ class Browser
 
         request_transitions = flush_request_transitions
 
-        unique_id = "#{page.dom_body.persistent_hash}:#{cookies.map(&:name).sort}"
+        unique_id = "#{page.dom.hash}:#{cookies.map(&:name).sort}"
         return if skip? unique_id
         skip unique_id
 
@@ -566,7 +565,7 @@ class Browser
 
         transitions.each do |t|
             @transitions << t
-            page.push_transition t
+            page.dom.push_transition t
         end
 
         call_on_new_page_blocks( page )
@@ -699,7 +698,7 @@ class Browser
 
         page = Page.from_data( url: url )
         page.response.request = request
-        page.push_transition request.url => :request
+        page.dom.push_transition request.url => :request
 
         case request.method
             when :get

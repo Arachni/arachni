@@ -188,11 +188,13 @@ describe Arachni::Utilities do
             it 'returns false' do
                 page = Arachni::Page.from_data(
                     url:         'http://test',
-                    transitions: [
-                                     { page: :load },
-                                     { "<a href='javascript:click();'>" => :click },
-                                     { "<button dblclick='javascript:doubleClick();'>" => :ondblclick }
-                                 ]
+                    dom:         {
+                        transitions: [
+                             { page: :load },
+                             { "<a href='javascript:click();'>" => :click },
+                             { "<button dblclick='javascript:doubleClick();'>" => :ondblclick }
+                         ]
+                    }
                 )
                 @utils.skip_page?( page ).should be_false
 
