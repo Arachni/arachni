@@ -1,4 +1,4 @@
-(PLS|ORA)-[0-9][0-9][0-9][0-9]
+ORA-[0-9][0-9][0-9][0-9]
 java.sql.SQLException
 Oracle error
 Oracle stuff Driver
