@@ -14,6 +14,8 @@
         - SQL Injection (`sqli`)
             - Added support for Firebird.
             - Added support for SAP Max DB.
+        - OS command injection (`os_cmd_injection`)
+            - Detection patterns organized per platform.
 
 ## 0.4.4 _(August 10, 2013)_
 

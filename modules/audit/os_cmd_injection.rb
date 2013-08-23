@@ -14,25 +14,27 @@
     limitations under the License.
 =end
 
-#
 # Simple OS command injection module.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2
+# @version 0.2.1
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
 # @see http://www.owasp.org/index.php/OS_Command_Injection
-#
 class Arachni::Modules::OSCmdInjection < Arachni::Module::Base
 
     def self.options
         @opts ||= {
-            regexp: [
-                /root:x:0:0:.+:[0-9a-zA-Z\/]+/,
-                /\[boot loader\](.*)\[operating systems\]/,
-                /\[fonts\](.*)\[extensions\]/
-            ],
+            regexp: {
+                unix: [
+                    /(root|mail):.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im
+                ],
+                windows: [
+                    /\[boot loader\](.*)\[operating systems\]/im,
+                    /\[fonts\](.*)\[extensions\]/im
+                ]
+            },
             format: [ Format::STRAIGHT, Format::APPEND ]
         }
     end
@@ -62,7 +64,7 @@ class Arachni::Modules::OSCmdInjection < Arachni::Module::Base
             description: %q{Tries to find operating system command injections.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.2',
+            version:     '0.2.1',
             references:  {
                 'OWASP' => 'http://www.owasp.org/index.php/OS_Command_Injection'
             },
