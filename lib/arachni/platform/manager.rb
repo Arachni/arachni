@@ -84,7 +84,12 @@ class Manager
         :interbase,
         :informix,
         :firebird,
-        :maxdb
+        :maxdb,
+        :sybase,
+        :frontbase,
+        :ingres,
+        :hsqldb,
+        :access
     ]
 
     SERVERS = [
@@ -130,7 +135,12 @@ class Manager
         interbase:  'InterBase',
         informix:   'Informix',
         firebird:   'Firebird',
-        maxdb:      'SAP Max DB',
+        maxdb:      'SaP Max DB',
+        sybase:     'Sybase',
+        frontbase:  'Frontbase',
+        ingres:     'IngresDB',
+        hsqldb:     'HSQLDB',
+        access:     'MS Access',
 
         # Web servers
         apache:     'Apache',

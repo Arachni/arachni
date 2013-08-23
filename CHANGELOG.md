@@ -12,8 +12,14 @@
             - Updated MS Windows payloads to include dot truncation.
             - Detection patterns organized per platform.
         - SQL Injection (`sqli`)
-            - Added support for Firebird.
-            - Added support for SAP Max DB.
+            - Added support for:
+                - Firebird
+                - SAP Max DB
+                - Sybase
+                - Frontbase
+                - IngresDB
+                - HSQLDB
+                - MS Access
         - OS command injection (`os_cmd_injection`)
             - Detection patterns organized per platform.
 

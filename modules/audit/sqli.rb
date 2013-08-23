@@ -14,23 +14,29 @@
     limitations under the License.
 =end
 
-#
 # SQL Injection audit module.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.7
+# @version 0.2
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://unixwiz.net/techtips/sql-injection.html
 # @see http://en.wikipedia.org/wiki/SQL_injection
 # @see http://www.securiteam.com/securityreviews/5DP0N1P76E.html
 # @see http://www.owasp.org/index.php/SQL_Injection
-#
 class Arachni::Modules::SQLInjection < Arachni::Module::Base
 
     def self.error_patterns
-        @error_patterns ||= read_file( 'regexp_ids.txt' )
+        return @error_patterns if @error_patterns
+
+        @error_patterns = {}
+        Dir[File.dirname( __FILE__ ) + '/sqli/patterns/*'].each do |file|
+            @error_patterns[File.basename( file ).to_sym] =
+                IO.read( file ).split( "\n" )
+        end
+
+        @error_patterns
     end
 
     def self.ignore_patterns
@@ -62,14 +68,15 @@ class Arachni::Modules::SQLInjection < Arachni::Module::Base
             description: %q{SQL injection module, uses known SQL DB errors to identify vulnerabilities.},
             elements:    [Element::LINK, Element::FORM, Element::COOKIE, Element::HEADER],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.7',
+            version:     '0.2',
             references:  {
                 'UnixWiz'    => 'http://unixwiz.net/techtips/sql-injection.html',
                 'Wikipedia'  => 'http://en.wikipedia.org/wiki/SQL_injection',
                 'SecuriTeam' => 'http://www.securiteam.com/securityreviews/5DP0N1P76E.html',
                 'OWASP'      => 'http://www.owasp.org/index.php/SQL_Injection'
             },
-            targets:     %w(Oracle ColdFusion InterBase PostgreSQL MySQL MSSQL EMC SQLite DB2 Informix Firebird MaxDB),
+            targets:     %w(Oracle ColdFusion InterBase PostgreSQL MySQL MSSQL EMC
+                            SQLite DB2 Informix Firebird MaxDB Sybase Frontbase Ingres HSQLDB),
             issue:       {
                 name:            %q{SQL Injection},
                 description:     %q{SQL code can be injected into the web application.},
