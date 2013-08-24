@@ -105,38 +105,29 @@ module Auditable::Taint
     def get_matches( res, opts )
         opts[:substring] = opts[:injected_orig] if !opts[:regexp] && !opts[:substring]
 
-        case opts[:regexp]
+        match_patterns( opts[:regexp], method( :match_regexp_and_log ), res, opts.dup )
+        match_patterns( opts[:substring], method( :match_substring_and_log ), res, opts.dup )
+    end
+
+    def match_patterns( patterns, matcher, res, opts )
+        case patterns
             when Regexp, String, Array
-                [opts[:regexp]].flatten.compact.each { |regexp| match_regexp_and_log( regexp, res, opts ) }
+                [patterns].flatten.compact.
+                    each { |pattern| matcher.call( pattern, res, opts ) }
 
             when Hash
-                if opts[:platform]
-                    [opts[:regexp][opts[:platform]]].flatten.compact.each do |regexps|
-                        [regexps].flatten.compact.each { |regexp| match_regexp_and_log( regexp, res, opts ) }
+                if opts[:platform] && patterns[opts[:platform]]
+                    [patterns[opts[:platform]]].flatten.compact.each do |p|
+                        [p].flatten.compact.
+                            each { |pattern| matcher.call( pattern, res, opts ) }
                     end
                 else
-                    opts[:regexp].each do |platform, regexps|
+                    patterns.each do |platform, p|
                         dopts = opts.dup
                         dopts[:platform] = platform
-                        [regexps].flatten.compact.each { |regexp| match_regexp_and_log( regexp, res, dopts ) }
-                    end
-                end
-        end
 
-        case opts[:substring]
-            when String, Array
-                [opts[:substring]].flatten.compact.each { |substring| match_substring_and_log( substring, res, opts ) }
-
-            when Hash
-                if opts[:platform]
-                    [opts[:substring][opts[:platform]]].flatten.compact.each do |regexps|
-                        [regexps].flatten.compact.each { |substring| match_substring_and_log( substring, res, opts ) }
-                    end
-                else
-                    opts[:substring].each do |platform, substrings|
-                        dopts = opts.dup
-                        dopts[:platform] = platform
-                        [substrings].flatten.compact.each { |substring| match_substring_and_log( substring, res, dopts ) }
+                        [p].flatten.compact.
+                            each { |pattern| matcher.call( pattern, res, dopts ) }
                     end
                 end
         end
