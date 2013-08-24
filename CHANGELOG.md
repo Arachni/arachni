@@ -11,6 +11,7 @@
             - Updated `/etc/passwd` signatures to be more generic.
             - Updated MS Windows payloads to include dot truncation.
             - Detection patterns organized per platform.
+            - Moved non-traversal payloads to the `file_inclusion` module.
         - SQL Injection (`sqli`)
             - Added support for:
                 - Firebird
@@ -22,6 +23,9 @@
                 - MS Access
         - OS command injection (`os_cmd_injection`)
             - Detection patterns organized per platform.
+        - Added:
+            - File inclusion (`file_inclusion`) -- Extracted from `path_traversal`.
+                - Uses common server-side files and errors to identify issues.
 
 ## 0.4.4 _(August 10, 2013)_
 

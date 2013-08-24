@@ -4,7 +4,7 @@ describe name_from_filename do
     include_examples 'module'
 
     def self.targets
-        %w(Unix Windows Tomcat)
+        %w(Unix Windows Tomcat PHP)
     end
 
     def self.elements
@@ -13,9 +13,10 @@ describe name_from_filename do
 
     def issue_count_per_target
         {
-            unix:    56,
-            windows: 84,
-            tomcat:  6
+            unix:    8,
+            windows: 24,
+            tomcat:  4,
+            php:     36
         }
     end
 
