@@ -27,21 +27,22 @@ class Arachni::Modules::SourceCodeDisclosure < Arachni::Module::Base
 
     def self.options
         @options ||= {
-            format:        [Format::STRAIGHT],
-            regexp:        [
-                # PHP
-                /<\?php/,
-
-                # JSP
-                /<%|<%=|<%@\s+page|<%@\s+include|<%--|import\s+javax.servlet|
-                    import\s+java.io|import=['"]java.io|request\.getParameterValues\(|
-                    response\.setHeader|response\.setIntHeader\(/m,
-
-                # ASP
-                /<%|Response\.Write|Request\.Form|Request\.QueryString|
-                    Response\.Flush|Session\.SessionID|Session\.Timeout|
-                    Server\.CreateObject|Server\.MapPath/im
-            ],
+            format:  [Format::STRAIGHT],
+            regexp:  {
+                php: [
+                    /<\?php/
+                ],
+                jsp: [
+                    /<%|<%=|<%@\s+page|<%@\s+include|<%--|import\s+javax.servlet|
+                        import\s+java.io|import=['"]java.io|request\.getParameterValues\(|
+                        response\.setHeader|response\.setIntHeader\(/m
+                ],
+                asp: [
+                    /<%|Response\.Write|Request\.Form|Request\.QueryString|
+                        Response\.Flush|Session\.SessionID|Session\.Timeout|
+                        Server\.CreateObject|Server\.MapPath/im
+                ]
+            },
 
             # Add one more mutation (on the fly) which will include the extension
             # of the original value (if that value was a filename) after a null byte.
