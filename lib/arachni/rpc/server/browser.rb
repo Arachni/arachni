@@ -143,8 +143,6 @@ class Browser
             rescue => e
                 print_error e
                 print_error_backtrace e
-            ensure
-                @browser.close
             end
 
             # If there's a master which handles pages as they are captured
