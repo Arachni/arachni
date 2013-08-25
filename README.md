@@ -410,7 +410,7 @@ Recon modules look for the existence of files, folders and signatures.
 #### Available plugins
 
 Plugins add extra functionality to the system in a modular fashion, this way the
-core remains lean and makes it easy for anyone to arbitrary functionality.
+core remains lean and makes it easy for anyone to add arbitrary functionality.
 
 - ReScan  (`rescan`)-- It uses the AFR report of a previous scan to extract the sitemap
     in order to avoid a redundant crawl.
