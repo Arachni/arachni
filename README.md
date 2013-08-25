@@ -132,7 +132,7 @@ From a user’s or a component developer’s point of view everything appears si
 and straight-forward all the while providing power, performance and flexibility.
 
 From the simple command-line utility scanner to the intuitive and user-friendly
-Web interface and collaboration platform, Arachni follows the principle of lease
+Web interface and collaboration platform, Arachni follows the principle of least
 surprise and provides you with plenty of feedback and guidance.
 
 #### In simple terms
