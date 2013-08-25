@@ -26,6 +26,10 @@
         - Added:
             - File inclusion (`file_inclusion`) -- Extracted from `path_traversal`.
                 - Uses common server-side files and errors to identify issues.
+    - Recon
+        - Added:
+            - localstart.asp (`localstart_asp`)
+                - Checks if `localstart.asp` is accessible.
 
 ## 0.4.4 _(August 10, 2013)_
 

@@ -382,6 +382,7 @@ Recon modules look for the existence of files, folders and signatures.
 - Auto-complete for password form fields (`password_autocomplete`).
 - X-Forwarded-For Access Restriction Bypass (`x_forwarded_for_access_restriction_bypass`)
 - Form-based upload (`form_upload`)
+- localstart.asp (`localstart_asp`)
 
 ### Report Management
 
