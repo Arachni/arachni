@@ -72,14 +72,14 @@ class Fingerprinter
         @headers ||= page.response_headers.downcase
     end
 
-    # @return   [String. nil] Value of the `X-Powered-By` header.
+    # @return   [String. nil] Downcased value of the `X-Powered-By` header.
     def powered_by
-        headers['x-powered-by'].to_s
+        headers['x-powered-by'].to_s.downcase
     end
 
-    # @return   [String. nil] Value of the `Server` header.
+    # @return   [String. nil] Downcased value of the `Server` header.
     def server
-        headers['server'].to_s
+        headers['server'].to_s.downcase
     end
 
     # @return   [String] Downcased file extension of the page.
