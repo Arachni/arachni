@@ -30,6 +30,9 @@
         - Added:
             - localstart.asp (`localstart_asp`)
                 - Checks if `localstart.asp` is accessible.
+- Plugins
+    - Added:
+        - Uncommon headers (`uncommon_headers`) -- Logs uncommon headers.
 
 ## 0.4.4 _(August 10, 2013)_
 

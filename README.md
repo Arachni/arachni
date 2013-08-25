@@ -433,6 +433,7 @@ core remains lean and makes it easy for anyone to arbitrary functionality.
     Useful for unit-testing or a gazillion other things.
 - Script (`script`) -- Loads and runs an external Ruby script under the scope of a plugin,
     used for debugging and general hackery.
+- Uncommon headers (`uncommon_headers`) -- Logs uncommon headers.
 
 #### Defaults
 
