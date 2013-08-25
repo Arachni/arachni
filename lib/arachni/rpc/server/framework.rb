@@ -234,54 +234,6 @@ class Framework < ::Arachni::Framework
         each_slave( each, proc { block.call true } )
     end
 
-    #
-    # Merged output of all running instances.
-    #
-    # This is going to be wildly out of sync and lack A LOT of messages.
-    #
-    # It's here to give the notion of progress to the end-user rather than
-    # provide an accurate depiction of the actual progress.
-    #
-    # The returned object will be in the form of:
-    #
-    #   [ { <type> => <message> } ]
-    #
-    # like:
-    #
-    #   [
-    #       { status: 'Initiating'},
-    #       {   info: 'Some informational msg...'},
-    #   ]
-    #
-    # Possible message types are:
-    # * `status`  -- Status messages, usually to denote progress.
-    # * `info`  -- Informational messages, like notices.
-    # * `ok`  -- Denotes a successful operation or a positive result.
-    # * `verbose` -- Verbose messages, extra information about whatever.
-    # * `bad`  -- Opposite of :ok, an operation didn't go as expected,
-    #   something has failed but it's recoverable.
-    # * `error`  -- An error has occurred, this is not good.
-    # * `line`  -- Generic message, no type.
-    #
-    # @return   [Array<Hash>]
-    #
-    # @deprecated
-    #
-    def output( &block )
-        buffer = flush_buffer
-
-        if !has_slaves?
-            block.call( buffer )
-            return
-        end
-
-        foreach = proc do |instance, iter|
-            instance.service.output { |out| iter.return( out ) }
-        end
-        after = proc { |out| block.call( (buffer | out).flatten ) }
-        map_slaves( foreach, after )
-    end
-
     # @see Arachni::Framework#stats
     def stats( *args )
         ss = super( *args )

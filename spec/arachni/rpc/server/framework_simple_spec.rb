@@ -293,7 +293,7 @@ describe 'Arachni::RPC::Server::Framework' do
         end
     end
     describe '#progress' do
-        before { @progress_keys = %W(stats status busy issues instances messages).sort }
+        before { @progress_keys = %W(stats status busy issues instances).sort }
 
         it 'aliased to #progress_data' do
             instance = @instance_clean
@@ -314,7 +314,6 @@ describe 'Arachni::RPC::Server::Framework' do
                 data['instances'].should be_empty
                 data['status'].should be_true
                 data['busy'].nil?.should be_false
-                data['messages'].is_a?( Array ).should be_true
                 data['issues'].should be_any
                 data['instances'].should be_empty
                 data.should_not include 'errors'
@@ -347,17 +346,6 @@ describe 'Arachni::RPC::Server::Framework' do
                             progress( errors: 10 )['errors']
 
                         errors.should == initial_errors[10..-1]
-                    end
-                end
-            end
-            describe :messages do
-                context 'when set to false' do
-                    it 'excludes messages' do
-                        keys = @instance_clean.framework.progress( messages: false ).
-                            keys.sort
-                        pk = @progress_keys.dup
-                        pk.delete( "messages" )
-                        keys.should == pk
                     end
                 end
             end

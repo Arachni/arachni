@@ -407,7 +407,6 @@ class Instance
                                             with.include?( :issues ),
                              stats:     !without.include?( :stats ),
                              slaves:    with.include?( :instances ),
-                             messages:  false,
                              errors:    with[:errors]
         ) do |data|
             data['instances'] ||= [] if with.include?( :instances )
@@ -710,14 +709,6 @@ class Instance
         end
 
         true
-    end
-
-    # @param (see Arachni::RPC::Server::Framework#auditstore)
-    # @return (see Arachni::RPC::Server::Framework#auditstore)
-    #
-    # @deprecated
-    def output( &block )
-        @framework.output( &block )
     end
 
     # @private

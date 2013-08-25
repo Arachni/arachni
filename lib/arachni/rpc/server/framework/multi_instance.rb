@@ -80,14 +80,12 @@ module MultiInstance
     # Returns aggregated progress data and helps to limit the amount of calls
     # required in order to get an accurate depiction of a scan's progress and includes:
     #
-    # * output messages
     # * discovered issues
     # * overall statistics
     # * overall scan status
     # * statistics of all instances individually
     #
     # @param    [Hash]  opts    Options about what data to include:
-    # @option opts [Bool] :messages (true) Output messages.
     # @option opts [Bool] :slaves   (true) Slave statistics.
     # @option opts [Bool] :issues   (true) Issue summaries.
     # @option opts [Bool] :stats   (true) Master/merged statistics.
@@ -101,7 +99,6 @@ module MultiInstance
         opts = opts.symbolize_keys
 
         include_stats    = opts[:stats].nil? ? true : opts[:stats]
-        include_messages = opts[:messages].nil? ? true : opts[:messages]
         include_slaves   = opts[:slaves].nil? ? true : opts[:slaves]
         include_issues   = opts[:issues].nil? ? true : opts[:issues]
         include_errors   = opts.include?( :errors ) ? (opts[:errors] || 0) : false
@@ -113,8 +110,6 @@ module MultiInstance
             'status' => status,
             'busy'   => running?
         }
-
-        data['messages']  = flush_buffer if include_messages
 
         if include_errors
             data['errors'] = errors( include_errors.is_a?( Integer ) ? include_errors : 0 )
@@ -163,8 +158,6 @@ module MultiInstance
         after = proc do |slave_data|
             slave_data.compact!
             slave_data.each do |slave|
-                data['messages'] |= slave['messages'] if include_messages
-
                 if include_errors && slave['errors']
                     data['errors'] ||= []
                     data['errors']  |= slave['errors']

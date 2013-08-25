@@ -107,12 +107,6 @@ describe 'Arachni::RPC::Server::Instance' do
             end
         end
 
-        describe '#output' do
-            it 'delegates to Framework#output' do
-                @instance.service.output.should be_any
-            end
-        end
-
         describe '#scan' do
             it 'configures and starts a scan' do
                 instance = instance_spawn
@@ -471,7 +465,6 @@ describe 'Arachni::RPC::Server::Instance' do
                 p['stats'].should  be_any
 
                 p['instances'].should be_nil
-                p['messages'].should be_nil
                 p['issues'].should be_nil
             end
 
