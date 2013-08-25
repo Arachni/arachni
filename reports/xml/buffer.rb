@@ -59,13 +59,17 @@ module Arachni::Reports::XML::Buffer
     def add_headers( type, headers )
         start_tag type
         headers.each_pair do |name, value|
-            if value.is_a?( Array ) #&& name.downcase == 'set-cookie'
-                append "<field name=\"#{name}\" value=\"#{escape( value.join( "\n" ) )}\" />"
-            else
-                append "<field name=\"#{name}\" value=\"#{escape( value )}\" />"
-            end
+            add_header( name, value )
         end
         end_tag type
+    end
+
+    def add_header( name, value )
+        if value.is_a?( Array ) #&& name.downcase == 'set-cookie'
+            append "<field name=\"#{name}\" value=\"#{escape( value.join( "\n" ) )}\" />"
+        else
+            append "<field name=\"#{name}\" value=\"#{escape( value )}\" />"
+        end
     end
 
     def add_tags( tags )
