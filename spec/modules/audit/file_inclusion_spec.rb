@@ -4,7 +4,7 @@ describe name_from_filename do
     include_examples 'module'
 
     def self.targets
-        %w(Unix Windows Tomcat PHP)
+        %w(Unix Windows Tomcat PHP Perl)
     end
 
     def self.elements
@@ -16,7 +16,8 @@ describe name_from_filename do
             unix:    8,
             windows: 24,
             tomcat:  4,
-            php:     36
+            php:     36,
+            perl:    36
         }
     end
 

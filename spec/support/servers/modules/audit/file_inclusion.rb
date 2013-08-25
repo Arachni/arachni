@@ -96,7 +96,9 @@ failed to open stream: stuff,
 <b>Warning<b>: read_file,
 <b>Warning<b>: highlight_file,
 <b>Warning<b>: show_source
-'
+',
+    perl: '
+in stuff at stuff line 10.'
 }
 
 def get_variations( system, str )
@@ -106,7 +108,7 @@ def get_variations( system, str )
     str = str.split( 'c:' ).last
     file = File.expand_path( str ).gsub( /\/+/, '/' )
 
-    return if system != FILE_TO_PLATFORM[file] && system != :php
+    return if system != FILE_TO_PLATFORM[file] && system != :php && system != :perl
 
     OUT[FILE_TO_PLATFORM[file]]
 end

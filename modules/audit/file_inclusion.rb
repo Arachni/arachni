@@ -50,6 +50,9 @@ class Arachni::Modules::FileInclusion < Arachni::Module::Base
                     /<b>Warning<\/b>:\s+read_file/,
                     /<b>Warning<\/b>:\s+highlight_file/,
                     /<b>Warning<\/b>:\s+show_source/
+                ],
+                perl: [
+                    /in .* at .* line d+?\./
                 ]
             },
 
@@ -104,7 +107,7 @@ class Arachni::Modules::FileInclusion < Arachni::Module::Base
             references:  {
                 'OWASP' => 'https://www.owasp.org/index.php/PHP_File_Inclusion'
             },
-            targets:     %w(Unix Windows Tomcat PHP),
+            targets:     %w(Unix Windows Tomcat PHP Perl),
 
             issue:       {
                 name:            %q{File Inclusion},

@@ -324,6 +324,12 @@ Audit modules actively engage the web application via its inputs.
     - *nix
     - Windows
     - Tomcat
+- File inclusion (`file_inclusion`).
+    - *nix
+    - Windows
+    - Tomcat
+    - PHP
+    - Perl
 - Response splitting (`response_splitting`).
 - OS command injection (`os_cmd_injection`).
     - *nix
