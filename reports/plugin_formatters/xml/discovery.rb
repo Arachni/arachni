@@ -30,6 +30,8 @@ class PluginFormatters::Discovery < Arachni::Plugin::Formatter
                 " index=\"#{issue['index'].to_s}\" name=\"#{issue['name']}\"" +
                 " url=\"#{issue['url']}\" />"
         end
+
+        buffer
     end
 
 end
