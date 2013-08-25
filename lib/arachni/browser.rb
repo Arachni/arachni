@@ -220,12 +220,14 @@ class Browser
         self
     end
 
-    def close
-        watir.close
+    def close_windows
+        watir.windows.each(&:close)
+        watir.execute_script( 'window.open()' )
+        watir.windows.last.use
     end
 
     def shutdown
-        close
+        watir.close
         @proxy.shutdown
     end
 
