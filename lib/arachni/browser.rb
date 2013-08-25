@@ -221,9 +221,10 @@ class Browser
     end
 
     def close_windows
-        watir.windows.each(&:close)
         watir.execute_script( 'window.open()' )
         watir.windows.last.use
+
+        watir.windows[0...-1].each { |w| w.close rescue nil }
     end
 
     def shutdown
