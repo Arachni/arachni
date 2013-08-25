@@ -221,8 +221,11 @@ class Browser
     end
 
     def close
-        watir.cookies.clear
         watir.close
+    end
+
+    def shutdown
+        close
         @proxy.shutdown
     end
 

@@ -14,7 +14,7 @@ describe Arachni::Browser do
     after( :each ) do
         Arachni::Options.reset
         Arachni::Framework.reset
-        @browser.close
+        @browser.shutdown
         clear_hit_count
     end
 
@@ -56,7 +56,7 @@ describe Arachni::Browser do
         pages = @browser.load( @url + '/explore' ).start_capture.explore.page_snapshots
         pages_should_have_form_with_input pages, 'by-ajax'
 
-        @browser.close
+        @browser.shutdown
         @browser = described_class.new
 
         Arachni::Options.exclude << /ajax/
@@ -69,13 +69,13 @@ describe Arachni::Browser do
         describe :store_pages do
             describe 'default' do
                 it 'stores snapshot pages' do
-                    @browser.close
+                    @browser.shutdown
                     @browser = described_class.new
                     @browser.load( @url + '/explore' ).flush_pages.should be_any
                 end
 
                 it 'stores captured pages' do
-                    @browser.close
+                    @browser.shutdown
                     @browser = described_class.new
                     @browser.start_capture
                     @browser.load( @url + '/with-ajax' ).flush_pages.should be_any
@@ -84,13 +84,13 @@ describe Arachni::Browser do
 
             describe true do
                 it 'stores snapshot pages' do
-                    @browser.close
+                    @browser.shutdown
                     @browser = described_class.new( store_pages: true )
                     @browser.load( @url + '/explore' ).explore.flush_pages.should be_any
                 end
 
                 it 'stores captured pages' do
-                    @browser.close
+                    @browser.shutdown
                     @browser = described_class.new( store_pages: true )
                     @browser.start_capture
                     @browser.load( @url + '/with-ajax' ).flush_pages.should be_any
@@ -99,13 +99,13 @@ describe Arachni::Browser do
 
             describe false do
                 it 'stores snapshot pages' do
-                    @browser.close
+                    @browser.shutdown
                     @browser = described_class.new( store_pages: false )
                     @browser.load( @url + '/explore' ).explore.flush_pages.should be_empty
                 end
 
                 it 'stores captured pages' do
-                    @browser.close
+                    @browser.shutdown
                     @browser = described_class.new( store_pages: false )
                     @browser.start_capture
                     @browser.load( @url + '/with-ajax' ).flush_pages.should be_empty

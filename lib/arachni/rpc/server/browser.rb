@@ -164,7 +164,7 @@ class Browser
     #
     # @see Arachni::Browser#close
     def close
-        @browser.close rescue nil
+        @browser.shutdown rescue nil
         @server.shutdown rescue nil
         nil
     end
