@@ -9,9 +9,9 @@
 
                 <% plugins.each_pair do |name, html|%>
                     <div id="<%=name%>">
-                        <blockquote><pre>
-                            <%=prep_description( get_plugin_info( name )[:description] )%>
-                        </pre></blockquote>
+                        <blockquote>
+                            <pre><%=prep_description( get_plugin_info( name )[:description] )%></pre>
+                        </blockquote>
 
                         <p><%=html.force_encoding( 'utf-8' )%></p>
                     </div>
