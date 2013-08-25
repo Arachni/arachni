@@ -439,9 +439,13 @@ module Auditable
 
                 return if platform_payloads.empty?
 
+                payload_platforms = Set.new( payloads.keys )
                 platform_payloads.each do |platform, payloads_for_platform|
                     audit( [payloads_for_platform].flatten.compact,
-                           opts.merge( platform: platform ),
+                           opts.merge(
+                               platform: platform,
+                               payload_platforms: payload_platforms
+                           ),
                            &block )
                 end
             else

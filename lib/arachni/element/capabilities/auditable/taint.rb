@@ -130,6 +130,17 @@ module Auditable::Taint
                             each { |pattern| matcher.call( pattern, res, dopts ) }
                     end
                 end
+
+                # Find out if there are any patterns without associated payloads
+                # and match them against every payload's response.
+                patterns.select { |p, _|  !opts[:payload_platforms].include?( p ) }.
+                    each do |platform, p|
+                        dopts = opts.dup
+                        dopts[:platform] = platform
+
+                        [p].flatten.compact.
+                            each { |pattern| matcher.call( pattern, res, dopts ) }
+                    end
         end
     end
 
