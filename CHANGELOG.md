@@ -58,6 +58,9 @@
 - Plugins
     - `proxy`
         - Updated to use `HTTP::ProxyServer`.
+- Path extractors
+    - Added:
+        - Extract partial paths from HTML comments (`comments`).
 
 ## 0.4.3.2 _(July 16, 2013)_
 
