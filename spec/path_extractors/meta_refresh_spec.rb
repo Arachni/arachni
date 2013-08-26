@@ -14,9 +14,9 @@ describe name_from_filename do
     def text
         <<-HTML
             <meta http-equiv="refresh" content="5">
-            <meta http-equiv="refresh" content="5;URL='test.com'">
-            <meta http-equiv="refresh" content='0;URL="http://test.com"'>
-            <meta http-equiv="refresh" content='0;URL=http://test2.com'>
+            <meta http-equiv="refreSH" content="5;URL='test.com'">
+            <meta http-equiv="Refresh" content='0;URL="http://test.com"'>
+            <meta http-equiv="refResh" content='0;URL=http://test2.com'>
         HTML
     end
 

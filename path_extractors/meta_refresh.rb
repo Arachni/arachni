@@ -19,7 +19,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.1
+# @version 0.1.2
 #
 class Arachni::Parser::Extractors::MetaRefresh < Arachni::Parser::Extractors::Base
 
@@ -31,7 +31,13 @@ class Arachni::Parser::Extractors::MetaRefresh < Arachni::Parser::Extractors::Ba
     # @return   [Array<String>]  paths
     #
     def run( doc )
-        doc.search( "//meta[@http-equiv='refresh']" ).map do |url|
+        doc.search( "//meta[
+                translate(
+                    @http-equiv,
+                        'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+                        'abcdefghijklmnopqrstuvwxyz'
+                    ) = 'refresh'
+            ]" ).map do |url|
             begin
                 _, url = url['content'].split( ';', 2 )
                 next if !url
@@ -40,8 +46,6 @@ class Arachni::Parser::Extractors::MetaRefresh < Arachni::Parser::Extractors::Ba
                 next
             end
         end
-    rescue
-        nil
     end
 
     def unquote( str )
