@@ -33,6 +33,9 @@
 - Plugins
     - Added:
         - Uncommon headers (`uncommon_headers`) -- Logs uncommon headers.
+- Path extractors
+    - Added:
+        - Extract partial paths from HTML comments (`comments`).
 
 ## 0.4.4 _(August 10, 2013)_
 
