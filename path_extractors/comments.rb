@@ -20,11 +20,11 @@ require 'uri'
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 # @version 0.1
-class Arachni::Parser::Extractors::Generic < Arachni::Parser::Extractors::Base
+class Arachni::Parser::Extractors::Comments < Arachni::Parser::Extractors::Base
 
     def run( doc )
         doc.xpath( '//comment()' ).map(&:text).join.
-            scan( /[\/a-zA-Z0-9%.]+/ ).select { |s| s.include? '/' }
+            scan( /[\/a-zA-Z0-9%._-]+/ ).select { |s| s.include? '/' }
     end
 
 end
