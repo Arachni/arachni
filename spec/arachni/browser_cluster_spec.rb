@@ -59,13 +59,13 @@ describe Arachni::BrowserCluster do
                 (browsers[:idle].size + browsers[:busy].size).should == 3
             end
 
-            it 'defaults to 5' do
+            it 'defaults to 10' do
                 @cluster = described_class.new(
                     handler: proc {}
                 )
 
                 browsers = @cluster.instance_variable_get( :@browsers )
-                (browsers[:idle].size + browsers[:busy].size).should == 5
+                (browsers[:idle].size + browsers[:busy].size).should == 10
             end
         end
 
@@ -83,18 +83,9 @@ describe Arachni::BrowserCluster do
                 end
             )
 
-            @cluster.analyze( page ).wait
+            @cluster.analyze( page )
+            @cluster.wait
             pages.should be_any
-        end
-
-        it 'returns self' do
-            @cluster = described_class.new(
-                handler: proc do |page|
-                    pages << page
-                end
-            )
-
-            @cluster.analyze( page ).should == @cluster
         end
 
         context 'when the cluster has ben shutdown' do

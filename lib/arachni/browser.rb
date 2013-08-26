@@ -330,50 +330,15 @@ class Browser
             end
 
             skip opening_tag
-
-            pending << {
-                index:       i,
-                tag_name:    tag_name,
-                opening_tag: opening_tag
-            }
+            pending << { index: i, tag_name: tag_name }
         end
 
         root_page = to_page
 
         while (info = pending.shift) do
-            index       = info[:index]
-            element     = watir.elements[index]
-            tag_name    = info[:tag_name]
-            opening_tag = info[:opening_tag]
-
-            print_debug "Analyzing: #{opening_tag}"
-            events_to_trigger_for( tag_name ).each do |event|
-                begin
-                    print_debug "* #{event}"
-                    element.fire_event( event )
-                rescue Selenium::WebDriver::Error::UnknownError,
-                        Watir::Exception::UnknownObjectException
-                    restore root_page
-                    element = watir.elements[index]
-                    next
-                end
-
-                wait_for_pending_requests
-                if (snapshot = capture_snapshot( opening_tag => event.to_sym ))
-                    print_debug "Found new page variation by triggering '#{event}' on: #{opening_tag}"
-
-                    print_debug 'Page transitions:'
-                    snapshot.dom.transitions.each do |t|
-                        element, event = t.first.to_a
-                        print_debug "-- '#{event}' on: #{element}"
-                    end
-                end
-
-                restore root_page
-                element = watir.elements[index]
+            events_to_trigger_for( info[:tag_name] ).each do |event|
+                distribute_event( root_page, info[:index], event )
             end
-
-            restore root_page
         end
 
         self
@@ -386,40 +351,76 @@ class Browser
     def visit_links
         pending = Set.new
 
-        watir.links.each do |a|
-            href = a.href.to_s
+        watir.elements.each.with_index do |a, index|
+            next if a.tag_name != 'a'
+
+            href = a.attribute_value( :href ).to_s
 
             next if skip?( href ) ||
                 !href.start_with?( 'javascript:' ) ||
                 href =~ /javascript:\s*void\(/ || href =~ /javascript:\s*;/
 
             skip href
-            pending << href.gsub( '%20', ' ' )
+            pending << index
         end
 
         return self if pending.empty?
 
         root_page = to_page
-
-        while (href = pending.shift) do
-            element     = watir.link( href: href )
-            opening_tag = element.opening_tag
-
-            begin
-                element.click
-            rescue Selenium::WebDriver::Error::UnknownError
-                restore root_page
-                element = watir.link( href: href )
-                next
-            end
-
-            wait_for_pending_requests
-
-            capture_snapshot( opening_tag => :click )
-            restore root_page
+        while (index = pending.shift) do
+            distribute_event( root_page, index, :click )
         end
 
         self
+    end
+
+    # @note Only used when running as part of {BrowserCluster} to distribute
+    #   page analysis across a pool of browsers.
+    #
+    # Distributes the triggering of `event` on the element at `element_index`
+    # on `page`.
+    #
+    # @param    [Page]  page
+    # @param    [Integer]  element_index
+    # @param    [Symbol]  event
+    def distribute_event( page, element_index, event )
+        trigger_event( page, element_index, event )
+    end
+
+    # Triggers `event` on the element at `element_index` on `page`.
+    #
+    # @param    [Page]  page
+    # @param    [Integer]  element_index
+    # @param    [Symbol]  event
+    def trigger_event( page, element_index, event )
+        element     = watir.elements[element_index]
+        opening_tag = element.opening_tag
+
+        begin
+            if event == :click
+                element.click
+            else
+                element.fire_event( event )
+            end
+        rescue Selenium::WebDriver::Error::UnknownError,
+                Watir::Exception::UnknownObjectException
+            restore page
+            return
+        end
+
+        wait_for_pending_requests
+
+        if (snapshot = capture_snapshot( opening_tag => event.to_sym ))
+            print_debug "Found new page variation by triggering '#{event}' on: #{opening_tag}"
+
+            print_debug 'Page transitions:'
+            snapshot.dom.transitions.each do |t|
+                element, event = t.first.to_a
+                print_debug "-- '#{event}' on: #{element}"
+            end
+        end
+
+        restore page
     end
 
     # Starts capturing requests and parses them into elements of pages,

@@ -104,6 +104,11 @@ class Browser
                 @options[:master].skip action
             end
 
+            def @browser.distribute_event( *args )
+                @options[:master].analyze args
+                true
+            end
+
             @browser.on_new_page do |page|
                 @master.handle_page( page ){}
             end
@@ -138,8 +143,19 @@ class Browser
 
         ::EM.defer do
             begin
-                @browser.load resource
-                @browser.explore
+                # If it's an array it's an event triggering operation that was
+                # distributed across the cluster to make analyzing a single
+                # page faster.
+                if resource.is_a? Array
+                    @browser.load resource.first
+                    @browser.trigger_event *resource
+
+                # Otherwise it's a seed page/url/response that needs to be
+                # analyzed.
+                else
+                    @browser.load resource
+                    @browser.explore
+                end
             rescue => e
                 print_error e
                 print_error_backtrace e

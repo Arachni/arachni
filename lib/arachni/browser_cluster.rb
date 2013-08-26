@@ -44,7 +44,7 @@ class BrowserCluster
 
     DEFAULT_OPTIONS = {
         # Amount of Browsers to keep in the pool.
-        pool_size:    5,
+        pool_size:    10,
 
         # Lifetime of each Browser counted in pages.
         time_to_live: 10
@@ -92,7 +92,7 @@ class BrowserCluster
         fail_if_shutdown
 
         @resources << resource
-        self
+        true
     end
 
     # @return   [Bool]
@@ -176,7 +176,7 @@ class BrowserCluster
         @running = true
         @worker  = Thread.new do
             while @running do
-                sleep 0.3
+                sleep 0.05
                 next if @resources.empty?
 
                 synchronize do

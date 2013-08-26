@@ -203,7 +203,7 @@ describe Arachni::Browser do
         end
     end
 
-    describe 'explore' do
+    describe '#explore' do
         it 'ignores differences in text nodes' do
             url = @url + '/ever-changing'
 
