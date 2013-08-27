@@ -257,14 +257,18 @@ describe Arachni::Browser do
             pages_should_have_form_with_input @browser.captured_pages, 'href-post-name'
         end
 
+        it 'captures pages from new windows' do
+            pages = @browser.load( @url + '/explore-new-window' ).
+                start_capture.explore.flush_pages
+
+            pages_should_have_form_with_input pages, 'in-old-window'
+            pages_should_have_form_with_input pages, 'in-new-window'
+        end
+
         it 'assigns the proper page transitions' do
             pages = @browser.load( @url + '/explore' ).explore.page_snapshots
 
             transitions = pages.map(&:dom).map(&:transitions)
-
-            # The last one needs special treatment because of the unpredictable
-            # order of AJAX requests.
-            transition_with_lots_of_ajax = transitions.pop
 
             transitions.should == [
                 [
@@ -276,17 +280,12 @@ describe Arachni::Browser do
                     { "#{@url}explore" => :request },
                     { "<div id=\"my-div\" onclick=\"addForm();\">" => :onclick },
                     { "#{@url}get-ajax?ajax-token=my-token" => :request }
+                ],
+                [
+                    { :page => :load },
+                    { "#{@url}explore" => :request },
+                    { "<a href=\"javascript:inHref();\">" => :onclick }
                 ]
-            ]
-
-            # We don't care about the order of AJAX requests.
-            transition_with_lots_of_ajax.should =~ [
-                { :page => :load },
-                { "#{@url}explore" => :request },
-                { "<a href=\"javascript:inHref();\">" => :click },
-                { "#{@url}href-ajax" => :request },
-                { "#{@url}post-ajax" => :request },
-                { "#{@url}href-ajax" => :request }
             ]
         end
 

@@ -317,6 +317,40 @@ get '/explore' do
 HTML
 end
 
+get '/explore-new-window' do
+    <<HTML
+<html>
+    <head>
+        <script>
+            function oldWindowEvent() {
+                post_ajax = new XMLHttpRequest();
+                post_ajax.open( "POST", "/post-ajax", true );
+                post_ajax.send( "in-old-window=post-value" );
+            }
+        </script>
+    <head>
+
+    <body>
+
+        <div id="my-div" onclick="oldWindowEvent();">
+        </div>
+
+        <a href="javascript:window.open( '/new-window', 'new-window', 'resizable=yes,width=500,height=400');">
+            Open new window
+        </a>
+    </body>
+</html>
+HTML
+end
+
+get '/new-window' do
+    <<HTML
+    <form>
+        <input name="in-new-window" />
+    </form>
+HTML
+end
+
 get '/visit_links' do
     <<HTML
 <html>

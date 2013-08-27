@@ -132,8 +132,12 @@ class Browser
         @options = options.dup
 
         @proxy = HTTP::ProxyServer.new(
-            request_handler:  method( :request_handler ),
-            response_handler: method( :response_handler )
+            request_handler:  proc do |request, response|
+                synchronize { request_handler( request, response ) }
+            end,
+            response_handler: proc do |request, response|
+                synchronize { response_handler( request, response ) }
+            end
         )
 
         @options[:timeout]     ||= 5
@@ -158,6 +162,9 @@ class Browser
         # clicking of JS links.
         @page_snapshots = {}
 
+        # Captures HTTP::Response objects per URL.
+        @responses = {}
+
         # Keeps track of resources which should be skipped -- like already fired
         # events and clicked links etc.
         @skip = Support::LookUp::HashSet.new( hasher: :persistent_hash )
@@ -167,6 +174,9 @@ class Browser
         @add_request_transitions = true
 
         @on_new_page_blocks = []
+
+        # Last loaded URL.
+        @last_url = nil
     end
 
     def on_new_page( &block )
@@ -254,13 +264,14 @@ class Browser
     #
     # @return   [Browser]   `self`
     def goto( url, take_snapshot = true )
-        ensure_open_window
+        @last_url = url = normalize_url( url )
 
-        @root_page_response = nil
+        ensure_open_window
 
         load_cookies url
 
-        watir.goto @url = normalize_url( url )
+        watir.goto url
+
         wait_for_pending_requests
 
         HTTP::Client.update_cookies cookies
@@ -276,6 +287,8 @@ class Browser
     end
 
     def close_windows
+        clear_responses
+
         watir.execute_script( 'window.open()' )
         watir.windows.last.use
 
@@ -289,7 +302,7 @@ class Browser
 
     # @return   [String]    Current URL.
     def url
-        @url || @root_page_response.url
+        normalize_url watir.url
     end
 
     # Explores the browser's DOM tree and captures page snapshots for each
@@ -369,6 +382,7 @@ class Browser
         # Filter out irrelevant stuff first because the manipulation that comes
         # next is expensive, so let's not waste our time with them at all.
         pending = Set.new
+
         watir.elements.each.with_index do |element, i|
             tag_name    = element.tag_name
             opening_tag = element.opening_tag
@@ -465,7 +479,7 @@ class Browser
 
         wait_for_pending_requests
 
-        if (snapshot = capture_snapshot( opening_tag => event.to_sym ))
+        capture_snapshot( opening_tag => event.to_sym ).each do |snapshot|
             print_debug "Found new page variation by triggering '#{event}' on: #{opening_tag}"
 
             print_debug 'Page transitions:'
@@ -529,11 +543,7 @@ class Browser
 
     # @return   [Page]  Converts the current browser window to a {Page page}.
     def to_page
-        return if !@root_page_response
-
-        current_response = @root_page_response.deep_clone
-
-        page                 = current_response.to_page
+        page                 = get_response( url ).deep_clone.to_page
         page.body            = source.dup
         page.cookies        |= cookies.dup
         page.dom.transitions = @transitions.dup
@@ -607,36 +617,48 @@ class Browser
             attributes = Nokogiri::HTML( element ).css( tag ).first.attributes.
                 inject({}) { |h, (k, v)| h[k.gsub( '-' ,'_' ).to_sym] = v.to_s; h }
 
+            # Not supported by Watir.
+            attributes.delete( :cellpadding )
+            attributes.delete( :cellspacing )
+
             element = watir.send( "#{tag}s", attributes ).first
             element.fire_event( event )
 
             wait_for_pending_requests
         end
+
+        wait_for_pending_requests
     end
 
     def capture_snapshot( transition = nil )
-        page = to_page
+        pages = []
 
         request_transitions = flush_request_transitions
-
-        unique_id = "#{page.dom.hash}:#{cookies.map(&:name).sort}"
-        return if skip? unique_id
-        skip unique_id
-
         transitions = ([transition] + request_transitions).flatten.compact
 
-        transitions.each do |t|
-            @transitions << t
-            page.dom.push_transition t
+        # Skip about:blank windows.
+        watir.windows( url: /^http/ ).each do |window|
+            window.use do
+                page = to_page
+
+                unique_id = "#{page.dom.hash}:#{cookies.map(&:name).sort}"
+                next if skip? unique_id
+                skip unique_id
+
+                if pages.empty?
+                    transitions.each do |t|
+                        @transitions << t
+                        page.dom.push_transition t
+                    end
+                end
+
+                call_on_new_page_blocks( page )
+                @page_snapshots[unique_id] = page if store_pages?
+                pages << page
+            end
         end
 
-        call_on_new_page_blocks( page )
-        @page_snapshots[unique_id] = page if store_pages?
-
-        page
-    rescue => e
-        print_error e
-        print_error_backtrace e
+        pages
     end
 
     def wait_for_pending_requests
@@ -723,7 +745,7 @@ class Browser
 
     def response_handler( request, response )
         return if request.url.include?( request_token )
-        @root_page_response ||= response
+        save_response response
     end
 
     def ignore_request?( request )
@@ -735,7 +757,7 @@ class Browser
     def capture( request )
         return if !capture?
 
-        page = Page.from_data( url: url )
+        page = Page.from_data( url: @last_url )
         page.response.request = request
         page.dom.push_transition request.url => :request
 
@@ -745,7 +767,7 @@ class Browser
                 return if inputs.empty?
 
                 page.forms << Form.new(
-                    url:    url,
+                    url:    @last_url,
                     action: request.url,
                     method: request.method,
                     inputs: inputs
@@ -757,7 +779,7 @@ class Browser
                 return if inputs.empty?
 
                 page.forms << Form.new(
-                    url:    url,
+                    url:    @last_url,
                     action: request.url,
                     method: request.method,
                     inputs: inputs
@@ -773,10 +795,7 @@ class Browser
         return if !(preloaded = preloads.delete( request.url ))
 
         copy_response_data( preloaded, response )
-
-        if !preloaded.url.include?( request_token )
-            @root_page_response ||= preloaded
-        end
+        save_response( response ) if !preloaded.url.include?( request_token )
 
         preloaded
     end
@@ -785,7 +804,7 @@ class Browser
         return if !(cached = @cache[request.url])
 
         copy_response_data( cached, response )
-        @root_page_response ||= cached
+        save_response response
     end
 
     def copy_response_data( source, destination )
@@ -796,6 +815,23 @@ class Browser
         end
         nil
     end
+
+    def clear_responses
+        @responses.clear
+    end
+
+    def save_response( response )
+        @responses[response.url] = response
+    end
+
+    def get_response( url )
+        @responses[url]
+    end
+
+    def synchronize( &block )
+        (@mutex ||= Mutex.new).synchronize( &block )
+    end
+
 
 end
 end
