@@ -153,17 +153,35 @@ describe Arachni::Page do
         end
     end
 
-    describe '#has_javascript?' do
-        context 'when the page has JavaScript code' do
+    describe '#has_script?' do
+        context 'when the page has <script>' do
             it 'returns true' do
                 create_page( body: '<Script>var i = '';</script>' ).
-                    has_javascript?.should be_true
+                    has_script?.should be_true
             end
         end
-        context 'when the page does not have JavaScript code' do
+        context 'when the page has elements with event attributes' do
+            it 'returns true' do
+                create_page( body: '<a onmouseover="doStuff();">Stuff</a>' ).
+                    has_script?.should be_true
+            end
+        end
+        context 'when the page has anchors with javacript: in href' do
+            it 'returns true' do
+                create_page( body: '<a href="javascript:doStuff();">Stuff</a>' ).
+                    has_script?.should be_true
+            end
+        end
+        context 'when the page has forms with javacript: in action' do
+            it 'returns true' do
+                create_page( body: '<form action="javascript:doStuff();"></form>' ).
+                    has_script?.should be_true
+            end
+        end
+        context 'when the page does not have client-side code' do
             it 'returns false' do
                 create_page( body: 'stuff' ).
-                    has_javascript?.should be_false
+                    has_script?.should be_false
             end
         end
     end

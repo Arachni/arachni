@@ -155,7 +155,7 @@ class Page
 
     # @param    [String]    string  Page body.
     def body=( string )
-        @links = @forms = @cookies = @document = nil
+        @links = @forms = @cookies = @document = @has_javascript = nil
         dom.clear_caches
         @parser.body = @body = string.dup
     end
@@ -241,9 +241,31 @@ class Page
     end
 
     # @return   [Boolean]
-    #   `true` if the page contains JavaScript code, `false` otherwise.
-    def has_javascript?
-        document.css( 'script' ).any? if document
+    #   `true` if the page contains client-side code, `false` otherwise.
+    def has_script?
+        return if !document
+        return @has_javascript if !@has_javascript.nil?
+
+        # First check, quick and simple.
+        return @has_javascript = true if document.css( 'script' ).any?
+
+        # Check for event attributes, if there are any then there's JS to be
+        # executed.
+        Browser.events.flatten.each do |event|
+            return @has_javascript = true if document.xpath( "//*[@#{event}]" ).any?
+        end
+
+        # If there's 'javascript:' in 'href' and 'action' attributes then
+        # there's JS to be executed.
+        [:action, :href].each do |candidate|
+            document.xpath( "//*[@#{candidate}]" ).each do |attribute|
+                if attribute.attributes[candidate.to_s].to_s.start_with?( 'javascript:' )
+                    return @has_javascript = true
+                end
+            end
+        end
+
+        @has_javascript = false
     end
 
     # @return   [Boolean]

@@ -739,7 +739,7 @@ class Framework
     #   Page to analyze.
     def perform_browser_analysis( page )
         return if Options.dom_depth_limit.to_i < page.dom.depth + 1 ||
-            !host_has_has_browser? || !page.has_javascript?
+            !host_has_has_browser? || !page.has_script?
 
         @browser ||= BrowserCluster.new( handler: method( :handle_browser_pages ) )
         @browser.analyze page
