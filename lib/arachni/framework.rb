@@ -722,6 +722,7 @@ class Framework
 
         if page.dom.depth > 1
             print_info 'Got page via DOM/AJAX analysis with the following transitions:'
+            print_info page.url
             page.dom.transitions.each do |t|
                 element, event = t.first.to_a
                 print_info "-- '#{event}' on: #{element}"
@@ -743,6 +744,7 @@ class Framework
 
         @browser ||= BrowserCluster.new( handler: method( :handle_browser_pages ) )
         @browser.analyze page
+        true
     end
 
     #
