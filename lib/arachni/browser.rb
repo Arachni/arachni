@@ -40,6 +40,7 @@ class Browser
         end
     end
 
+    # Events that apply to all elements.
     GLOBAL_EVENTS = [
         :onclick,
         :ondblclick,
@@ -50,9 +51,59 @@ class Browser
         :onmouseup
     ]
 
+    # Special events for each element.
+    EVENTS_PER_ELEMENT = {
+        body: [
+            :onload
+        ],
+
+        form: [
+            :onsubmit,
+            :onreset
+        ],
+
+        # These need to be covered via Watir's API, #send_keys etc.
+        input: [
+            :onselect,
+            :onchange,
+            :onfocus,
+            :onblur,
+            :onkeydown,
+            :onkeypress,
+            :onkeyup
+        ],
+
+        # These need to be covered via Watir's API, #send_keys etc.
+        textarea: [
+            :onselect,
+            :onchange,
+            :onfocus,
+            :onblur,
+            :onkeydown,
+            :onkeypress,
+            :onkeyup
+        ],
+
+        select: [
+            :onchange,
+            :onfocus,
+            :onblur
+        ],
+
+        button: [
+            :onfocus,
+            :onblur
+        ],
+
+        label: [
+            :onfocus,
+            :onblur
+        ]
+    }
+
     NO_EVENTS_FOR_ELEMENTS = Set.new([
-        :base, :bdo, :br, :head, :html, :iframe, :meta, :param, :script,
-        :style, :title, :link, :script
+        :base, :bdo, :br, :head, :html, :iframe, :meta, :param, :script, :style,
+        :title, :link, :script
     ])
 
     # @return   [Hash]   Preloaded resources, by URL.
@@ -66,6 +117,10 @@ class Browser
     def self.has_executable?
         return @has_executable if !@has_executable.nil?
         @has_executable = !!Selenium::WebDriver::PhantomJS.path
+    end
+
+    def self.events
+        Browser::GLOBAL_EVENTS | Browser::EVENTS_PER_ELEMENT.values.flatten.uniq
     end
 
     # @param    [Hash]  options
@@ -336,7 +391,7 @@ class Browser
         root_page = to_page
 
         while (info = pending.shift) do
-            events_to_trigger_for( info[:tag_name] ).each do |event|
+            events_for( info[:tag_name] ).each do |event|
                 distribute_event( root_page, info[:index], event )
             end
         end
@@ -593,36 +648,6 @@ class Browser
         false
     end
 
-    def events_to_trigger_for( tag_name )
-        tag_name = tag_name.to_sym
-        return [] if NO_EVENTS_FOR_ELEMENTS.include?( tag_name )
-
-        case tag_name
-            when :body
-                [:onload]
-
-            when :form
-                [:onsubmit, :onreset]
-
-            # These need to be covered via Watir's API, #send_keys etc.
-            when :input, :textarea
-                [:onselect, :onchange, :onfocus, :onblur, :onkeydown,
-                 :onkeypress, :onkeyup]
-
-            when :select
-                [:onchange, :onfocus, :onblur]
-
-            when :button
-                [:onfocus, :onblur]
-
-            when :label
-                [:onfocus, :onblur]
-
-            else
-                []
-        end + GLOBAL_EVENTS
-    end
-
     def load_cookies( url )
         # First clears the browser's cookies and then tricks it into accepting
         # the system cookies for its cookie-jar.
@@ -661,6 +686,13 @@ class Browser
                 '--ignore-ssl-errors=true'
             ]
         )
+    end
+
+    def events_for( tag_name )
+        tag_name = tag_name.to_sym
+        return [] if NO_EVENTS_FOR_ELEMENTS.include?( tag_name )
+
+        (EVENTS_PER_ELEMENT[tag_name] || []) + GLOBAL_EVENTS
     end
 
     def flush_request_transitions

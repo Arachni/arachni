@@ -65,6 +65,30 @@ describe Arachni::Browser do
         pages_should_not_have_form_with_input pages, 'by-ajax'
     end
 
+    describe '.events' do
+        it 'returns all DOM events' do
+            described_class.events.sort.should == [
+                :onclick,
+                :ondblclick,
+                :onmousedown,
+                :onmousemove,
+                :onmouseout,
+                :onmouseover,
+                :onmouseup,
+                :onload,
+                :onsubmit,
+                :onreset,
+                :onselect,
+                :onchange,
+                :onfocus,
+                :onblur,
+                :onkeydown,
+                :onkeypress,
+                :onkeyup
+            ].sort
+        end
+    end
+
     describe '#initialize' do
         describe :store_pages do
             describe 'default' do
@@ -268,6 +292,21 @@ describe Arachni::Browser do
 
         it 'returns self' do
             @browser.load( @url + '/explore' ).explore.should == @browser
+        end
+    end
+
+    describe '#trigger_event' do
+        it 'triggers the given event' do
+            @browser.load( @url + '/trigger_events' ).start_capture
+
+            @browser.watir.elements.each.with_index do |_, index|
+                described_class.events.each do |e|
+                    @browser.trigger_event @browser.to_page, index, e
+                end
+            end
+
+            pages_should_have_form_with_input @browser.page_snapshots, 'by-ajax'
+            pages_should_have_form_with_input @browser.captured_pages, 'ajax-token'
         end
     end
 
