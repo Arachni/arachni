@@ -578,6 +578,7 @@ class Client
         print_debug "URL: #{request.url}"
         print_debug "Method: #{request.method}"
         print_debug "Params: #{request.parameters}"
+        print_debug "Body: #{request.body}"
         print_debug "Headers: #{request.headers}"
         print_debug "Train?: #{request.train?}"
         print_debug  '------------'
