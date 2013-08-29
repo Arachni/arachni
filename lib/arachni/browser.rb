@@ -825,7 +825,7 @@ class Browser
     end
 
     def get_response( url )
-        @responses[url]
+        synchronize { @responses[url] }
     end
 
     def synchronize( &block )
