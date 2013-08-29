@@ -795,6 +795,7 @@ class Browser
         return if !(preloaded = preloads.delete( request.url ))
 
         copy_response_data( preloaded, response )
+        response.request = request
         save_response( response ) if !preloaded.url.include?( request_token )
 
         preloaded
@@ -804,6 +805,7 @@ class Browser
         return if !(cached = @cache[request.url])
 
         copy_response_data( cached, response )
+        response.request = request
         save_response response
     end
 
