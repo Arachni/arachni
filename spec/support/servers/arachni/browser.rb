@@ -26,6 +26,37 @@ get '/' do
 HTML
 end
 
+get '/timeout-tracker' do
+    <<HTML
+    <script>
+        document.cookie = "timeout=pre"
+
+        setTimeout( function (){
+            document.cookie = "timeout=post-1000"
+        }, 1000 )
+
+        setTimeout( function (){
+            document.cookie = "timeout=post-1500"
+        }, 1500 )
+
+        setTimeout( function (){
+            document.cookie = "timeout=post-2000"
+        }, 2000 )
+    </script>
+HTML
+end
+
+get '/interval-tracker' do
+    <<HTML
+    <script>
+        document.cookie = "timeout=pre"
+        setInterval( function (){
+            document.cookie = "timeout=post-2000"
+        }, 2000 )
+    </script>
+HTML
+end
+
 get '/event-tracker' do
     <<HTML
     <script>

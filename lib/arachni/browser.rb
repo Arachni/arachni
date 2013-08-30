@@ -106,8 +106,8 @@ class Browser
         :title, :link, :script
     ])
 
-    JS_EVENT_INTERCEPTOR =
-        IO.read( "#{File.dirname( __FILE__ )}/browser/eventInterceptor.js" )
+    JS_OVERRIDES =
+        IO.read( "#{File.dirname( __FILE__ )}/browser/overrides.js" )
 
     # @return   [Hash]   Preloaded resources, by URL.
     attr_reader :preloads
@@ -276,6 +276,7 @@ class Browser
 
         watir.goto url
 
+        wait_for_timers
         wait_for_pending_requests
 
         HTTP::Client.update_cookies cookies
@@ -518,7 +519,7 @@ class Browser
 
     # @return   [Page]  Converts the current browser window to a {Page page}.
     def to_page
-        page                 = get_response( url ).deep_clone.to_page
+        page                 = response.deep_clone.to_page
         page.body            = source.dup
         page.cookies        |= cookies.dup
         page.dom.transitions = @transitions.dup
@@ -556,6 +557,35 @@ class Browser
     # @return   [String]   HTML code of the evaluated (DOM/JS/AJAX) page.
     def source
         watir.html
+    end
+
+    def timeouts
+        return [] if !html?
+        watir.execute_script "return _#{js_token}_setTimeouts;"
+    end
+
+    def intervals
+        return [] if !html?
+        watir.execute_script "return _#{js_token}_setIntervals;"
+    end
+
+    def html?
+        response.headers.content_type.to_s.start_with? 'text/html'
+    end
+
+    def load_delay
+        #(intervals + timeouts).map { |t| t.last }.max
+        timeouts.map { |t| t.last }.max
+    end
+
+    def wait_for_timers
+        delay = load_delay
+        return if !delay
+        sleep delay / 1000.0
+    end
+
+    def response
+        get_response url
     end
 
     # @return   [Selenium::WebDriver::Driver]   Selenium driver interface.
@@ -728,14 +758,13 @@ class Browser
         return if !response.headers.content_type.to_s.start_with?( 'text/html' )
         return if response.body.include? js_token
 
-        response.body = "\n<script>#{js_event_interceptor}</script>\n#{response.body}"
+        response.body = "\n<script>#{js_overrides}</script>\n#{response.body}"
 
         response.headers['content-length'] = response.body.size
     end
 
-    def js_event_interceptor
-        @js_event_interceptor ||=
-            JS_EVENT_INTERCEPTOR.gsub( '_token_', "_#{js_token}_" )
+    def js_overrides
+        @js_overrides ||= JS_OVERRIDES.gsub( '_token_', "_#{js_token}_" )
     end
 
     def js_token

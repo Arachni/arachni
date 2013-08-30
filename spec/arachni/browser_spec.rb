@@ -42,6 +42,42 @@ describe Arachni::Browser do
         find_page_with_form_with_input( pages, input_name ).should be_false
     end
 
+    it 'keeps track of setTimeout() timers' do
+        @browser.load( @url + 'timeout-tracker' )
+        @browser.timeouts.should == [
+            [
+                "function () {\n            document.cookie = \"timeout=post-1000\";\n        }",
+                1000
+            ],
+            [
+                "function () {\n            document.cookie = \"timeout=post-1500\";\n        }",
+                1500
+            ],
+            [
+                "function () {\n            document.cookie = \"timeout=post-2000\";\n        }",
+                2000
+            ]
+        ]
+
+        @browser.load_delay.should == 2000
+        @browser.cookies.size.should == 1
+        @browser.cookies.last.value.should == 'post-2000'
+    end
+
+    it 'keeps track of setInterval() timers' do
+        @browser.load( @url + 'interval-tracker' )
+        @browser.intervals.should == [
+            [
+                "function () {\n            document.cookie = \"timeout=post-2000\";\n        }",
+                2000
+            ]
+        ]
+
+        #@browser.load_delay.should == 2000
+        #@browser.cookies.size.should == 1
+        #@browser.cookies.last.value.should == 'post-2000'
+    end
+
     it 'keeps track of which events are expected by each element' do
         @browser.load( @url + 'event-tracker' )
         @browser.watir.buttons.first.events.should == [
