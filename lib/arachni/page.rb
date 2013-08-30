@@ -243,7 +243,9 @@ class Page
     # @return   [Boolean]
     #   `true` if the page contains client-side code, `false` otherwise.
     def has_script?
-        return if !document
+        return if !document || !text? ||
+            !response.headers.content_type.to_s.start_with?( 'text/html' )
+
         return @has_javascript if !@has_javascript.nil?
 
         # First check, quick and simple.

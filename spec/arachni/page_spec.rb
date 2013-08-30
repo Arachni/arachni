@@ -187,7 +187,7 @@ describe Arachni::Page do
     end
 
     describe '#text?' do
-        context 'when the HTTP response was text based' do
+        context 'when the HTTP response is text/html' do
             it 'returns true' do
                 res = Arachni::HTTP::Response.new(
                     url: 'http://test.com',
