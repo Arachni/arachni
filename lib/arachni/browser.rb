@@ -543,9 +543,6 @@ class Browser
 
     # @return   [Page]  Converts the current browser window to a {Page page}.
     def to_page
-        ap "Converting: #{url}"
-        ap @responses.keys
-
         page                 = get_response( url ).deep_clone.to_page
         page.body            = source.dup
         page.cookies        |= cookies.dup
@@ -822,10 +819,7 @@ class Browser
     end
 
     def clear_responses
-        ap 'Clearing'
-        ap @responses.keys
-
-        @responses.clear
+        synchronize { @responses.clear }
     end
 
     def save_response( response )
