@@ -17,6 +17,24 @@
 module Watir
     class Element
 
+        def events
+            events = []
+
+            browser.execute_script( 'return arguments[0].events();', self ).each do |event|
+                events << [event.first.to_sym, event.last]
+            end
+
+            (::Arachni::Browser.events.flatten.map(&:to_s) & attributes).each do |event|
+                events << [event.to_sym, attribute_value( event )]
+            end
+
+            events
+        end
+
+        def submit
+            @element.submit
+        end
+
         def opening_tag
             html.match( /<#{tag_name}.*?>/i )[0]
         end

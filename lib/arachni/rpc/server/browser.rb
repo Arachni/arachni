@@ -51,7 +51,7 @@ class Browser
 
         ::EM.fork_reactor do
             Options.rpc_socket = socket
-            new master: options[:master], token: token
+            new master: options[:master], token: token, shared_token: options[:shared_token]
         end
 
         if options[:wait]

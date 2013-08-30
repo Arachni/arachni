@@ -42,6 +42,20 @@ describe Arachni::Browser do
         find_page_with_form_with_input( pages, input_name ).should be_false
     end
 
+    it 'keeps track of which events are expected by each element' do
+        @browser.load( @url + 'event-tracker' )
+        @browser.watir.buttons.first.events.should == [
+            [
+                :click,
+                "function handlerClick() {\n            document.getElementById( \"console\" ).innerHMTL += 'Clicked!';\n        }"
+            ],
+            [
+                :onmouseover,
+                "doStuff();"
+            ]
+        ]
+    end
+
     it 'supports HTTPS' do
         url = web_server_url_for( :browser_https ).gsub( 'http', 'https' )
 
@@ -173,23 +187,14 @@ describe Arachni::Browser do
                     { :page => :load },
                     { "#{@url}deep-dom" => :request },
                     { "#{@url}level2" => :request },
-                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :onclick },
-                    { "#{@url}level4" => :request }
-                ],
-                [
-                    { :page => :load },
-                    { "#{@url}deep-dom" => :request },
-                    { "#{@url}level2" => :request },
                     { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :onmouseover }
                 ],
                 [
                     { :page => :load },
                     { "#{@url}deep-dom" => :request },
                     { "#{@url}level2" => :request },
-                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :onclick },
-                    { "#{@url}level4" => :request },
-                    { "<div onclick=\"level6();\" id=\"level5\">" => :onclick },
-                    { "#{@url}level6" => :request }
+                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :click },
+                    { "#{@url}level4" => :request }
                 ],
                 [
                     { :page => :load },
@@ -197,6 +202,15 @@ describe Arachni::Browser do
                     { "#{@url}level2" => :request },
                     { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :onmouseover },
                     { "<button onclick=\"writeUserAgent();\">" => :onclick }
+                ],
+                [
+                    { :page => :load },
+                    { "#{@url}deep-dom" => :request },
+                    { "#{@url}level2" => :request },
+                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :click },
+                    { "#{@url}level4" => :request },
+                    { "<div onclick=\"level6();\" id=\"level5\">" => :onclick },
+                    { "#{@url}level6" => :request }
                 ]
             ]
         end
@@ -279,12 +293,13 @@ describe Arachni::Browser do
                     { :page => :load },
                     { "#{@url}explore" => :request },
                     { "<div id=\"my-div\" onclick=\"addForm();\">" => :onclick },
+                    { "#{@url}post-ajax" => :request },
                     { "#{@url}get-ajax?ajax-token=my-token" => :request }
                 ],
                 [
                     { :page => :load },
                     { "#{@url}explore" => :request },
-                    { "<a href=\"javascript:inHref();\">" => :onclick }
+                    { "<a href=\"javascript:inHref();\">" => :click }
                 ]
             ]
         end
@@ -322,6 +337,7 @@ describe Arachni::Browser do
 
             pages_should_have_form_with_input @browser.page_snapshots, 'by-ajax'
             pages_should_have_form_with_input @browser.captured_pages, 'ajax-token'
+            pages_should_have_form_with_input @browser.captured_pages, 'post-name'
         end
 
         it 'assigns the proper page transitions' do
@@ -335,6 +351,7 @@ describe Arachni::Browser do
                     { :page => :load },
                     { "#{@url}trigger_events" => :request },
                     { "<div id=\"my-div\" onclick=\"addForm();\">" => :onclick },
+                    { "#{@url}post-ajax" => :request },
                     { "#{@url}get-ajax?ajax-token=my-token" => :request }
                 ]
             ]
@@ -342,42 +359,6 @@ describe Arachni::Browser do
 
         it 'returns self' do
             @browser.load( @url + '/trigger_events' ).trigger_events.should == @browser
-        end
-    end
-
-    describe '#visit_links' do
-        it 'waits for AJAX requests to complete' do
-            @browser.load( @url + '/visit_links-sleep' ).start_capture.visit_links
-
-            pages_should_have_form_with_input @browser.captured_pages, 'href-post-name-sleep'
-        end
-
-        it 'visits all javascript links' do
-            @browser.load( @url + '/visit_links' ).start_capture.visit_links
-
-            pages_should_have_form_with_input @browser.captured_pages, 'href-post-name'
-            pages_should_have_form_with_input @browser.page_snapshots, 'from-post-ajax'
-        end
-
-        it 'assigns the proper page transitions' do
-            @browser.load( @url + '/visit_links' ).start_capture.visit_links
-
-            pages = @browser.page_snapshots
-
-            pages[0].dom.transitions.should == [
-                {:page=>:load},
-                { @url + 'visit_links' => :request }
-            ]
-            pages[1].dom.transitions == [
-                {:page=>:load},
-                {"<a href=\"javascript:inHref();\">"=>:click},
-                {"#{@url}href-ajax"=>:request},
-                {"#{@url}href-ajax"=>:request}
-            ]
-        end
-
-        it 'returns self' do
-            @browser.load( @url + '/visit_links' ).visit_links.should == @browser
         end
     end
 

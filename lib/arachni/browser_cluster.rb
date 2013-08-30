@@ -232,9 +232,13 @@ class BrowserCluster
             busy: []
         }
 
+        @shared_token = Utilities.generate_token
         booting_browsers = []
         pool_size.times do
-            booting_browsers << RPC::Server::Browser.spawn( master: ipc_handle )
+            booting_browsers << RPC::Server::Browser.spawn(
+                shared_token: @shared_token,
+                master:       ipc_handle
+            )
         end
 
         begin

@@ -106,6 +106,9 @@ class Browser
         :title, :link, :script
     ])
 
+    JS_EVENT_INTERCEPTOR =
+        IO.read( "#{File.dirname( __FILE__ )}/browser/eventInterceptor.js" )
+
     # @return   [Hash]   Preloaded resources, by URL.
     attr_reader :preloads
 
@@ -129,7 +132,8 @@ class Browser
     # @option   options [Bool] :store_pages  (true)
     #   Whether to store pages in addition to just passing them to {#on_new_page}.
     def initialize( options = {} )
-        @options = options.dup
+        @options      = options.dup
+        @shared_token = @options[:shared_token] || Utilities.generate_token
 
         @proxy = HTTP::ProxyServer.new(
             request_handler:  proc do |request, response|
@@ -317,7 +321,6 @@ class Browser
     #
     #   * {#explore} (Default)
     #   * {#trigger_events}
-    #   * {#visit_links}
     #
     # @option  strategy :retrieval  [Symbol]
     #   Page retrieval strategy, available options are:
@@ -353,16 +356,13 @@ class Browser
         pages
     end
 
-    # {#trigger_events Triggers events} and
-    # {#visit_links visits javascript links} on the current page's DOM depth.
+    # {#trigger_events Triggers events} on the current page's DOM depth.
     #
     # @return   [Browser]   `self`
     #
     # @see #trigger_events
-    # @see #visit_links
     def explore
         trigger_events
-        visit_links
         self
     end
 
@@ -386,58 +386,32 @@ class Browser
         watir.elements.each.with_index do |element, i|
             tag_name    = element.tag_name
             opening_tag = element.opening_tag
+            events      = element.events
 
-            next if skip?( opening_tag ) ||
-                NO_EVENTS_FOR_ELEMENTS.include?( tag_name.to_sym )
+            case tag_name
+                when 'a'
+                    href = element.attribute_value( :href )
+                    events << [ :click, href ] if href.start_with?( 'javascript:' )
 
-            # Don't follow regular, non-JS links, these can be handled more
-            # efficiently by other framework components.
-            if (tag_name == 'a' && (href = element.attribute_value( :href ))) &&
-                !href.start_with?( 'javascript:' )
-                skip opening_tag
-                next
+                when 'form'
+                    action = element.attribute_value( :action )
+                    events << [ :submit, action ] if action.start_with?( 'javascript:' )
             end
 
+            next if skip?( opening_tag ) ||
+                NO_EVENTS_FOR_ELEMENTS.include?( tag_name.to_sym ) ||
+                events.empty?
+
             skip opening_tag
-            pending << { index: i, tag_name: tag_name }
+            pending << { index: i, tag_name: tag_name, events: events }
         end
 
         root_page = to_page
 
         while (info = pending.shift) do
-            events_for( info[:tag_name] ).each do |event|
-                distribute_event( root_page, info[:index], event )
+            info[:events].each do |name, _|
+                distribute_event( root_page, info[:index], name.to_sym )
             end
-        end
-
-        self
-    end
-
-    # Visits javascript links **once** and captures
-    # {#page_snapshots page snapshots}.
-    #
-    # @return   [Browser]   `self`
-    def visit_links
-        pending = Set.new
-
-        watir.elements.each.with_index do |a, index|
-            next if a.tag_name != 'a'
-
-            href = a.attribute_value( :href ).to_s
-
-            next if skip?( href ) ||
-                !href.start_with?( 'javascript:' ) ||
-                href =~ /javascript:\s*void\(/ || href =~ /javascript:\s*;/
-
-            skip href
-            pending << index
-        end
-
-        return self if pending.empty?
-
-        root_page = to_page
-        while (index = pending.shift) do
-            distribute_event( root_page, index, :click )
         end
 
         self
@@ -462,12 +436,13 @@ class Browser
     # @param    [Integer]  element_index
     # @param    [Symbol]  event
     def trigger_event( page, element_index, event )
+        event       = event.to_sym
         element     = watir.elements[element_index]
         opening_tag = element.opening_tag
 
         begin
-            if event == :click
-                element.click
+            if element.tag_name == 'form' && event == :submit
+                element.submit
             else
                 element.fire_event( event )
             end
@@ -745,7 +720,26 @@ class Browser
 
     def response_handler( request, response )
         return if request.url.include?( request_token )
+        intercept response
         save_response response
+    end
+
+    def intercept( response )
+        return if !response.headers.content_type.to_s.start_with?( 'text/html' )
+        return if response.body.include? js_token
+
+        response.body = "\n<script>#{js_event_interceptor}</script>\n#{response.body}"
+
+        response.headers['content-length'] = response.body.size
+    end
+
+    def js_event_interceptor
+        @js_event_interceptor ||=
+            JS_EVENT_INTERCEPTOR.gsub( '_token_', "_#{js_token}_" )
+    end
+
+    def js_token
+        @shared_token
     end
 
     def ignore_request?( request )
@@ -815,6 +809,8 @@ class Browser
          :version].each do |m|
             destination.send "#{m}=", source.send( m )
         end
+
+        intercept destination
         nil
     end
 

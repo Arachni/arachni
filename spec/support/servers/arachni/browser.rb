@@ -26,6 +26,26 @@ get '/' do
 HTML
 end
 
+get '/event-tracker' do
+    <<HTML
+    <script>
+        window.addEventListener( "load", handlerLoad, false );
+
+        function handlerLoad() {
+            document.getElementById( "button" ).addEventListener( "click", handlerClick, false )
+        }
+
+        function handlerClick() {
+            document.getElementById( "console" ).innerHMTL += 'Clicked!'
+        }
+    </script>
+
+    <button onmouseover="doStuff();" id="button">click me</button>
+
+    <div id='console'></div>
+HTML
+end
+
 get '/ever-changing' do
     <<HTML
 <html>
