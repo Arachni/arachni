@@ -178,6 +178,7 @@ class Browser
         @add_request_transitions = true
 
         @on_new_page_blocks = []
+        @on_response_blocks = []
 
         # Last loaded URL.
         @last_url = nil
@@ -186,6 +187,11 @@ class Browser
     def on_new_page( &block )
         fail ArgumentError, 'Missing block.' if !block_given?
         @on_new_page_blocks << block
+    end
+
+    def on_response( &block )
+        fail ArgumentError, 'Missing block.' if !block_given?
+        @on_response_blocks << block
     end
 
     # @param    [String, HTTP::Response, Page]  resource
@@ -607,6 +613,10 @@ class Browser
         @on_new_page_blocks.each { |b| b.call page }
     end
 
+    def call_on_response_blocks( page )
+        @on_response_blocks.each { |b| b.call page }
+    end
+
     # Loads `page` without taking a snapshot, used for restoring  the root page
     # after manipulation.
     def restore( page )
@@ -848,6 +858,7 @@ class Browser
     end
 
     def save_response( response )
+        call_on_response_blocks response
         @responses[response.url] = response
     end
 

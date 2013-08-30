@@ -53,6 +53,9 @@ class BrowserCluster
     # @return   [Integer]   Amount of browser instances in the pool.
     attr_reader :pool_size
 
+    # @return   [Set]
+    attr_reader :sitemap
+
     # @param    [Hash]  options
     # @option   options [Integer]   :pool_size (5)
     #   Amount of {RPC::Server::Browser browsers} to add to the pool.
@@ -80,6 +83,7 @@ class BrowserCluster
 
         # Holds resources to consume, Arachni::Page objects usually.
         @resources = Queue.new
+        @sitemap   = Set.new
 
         initialize_browsers
 
@@ -158,6 +162,10 @@ class BrowserCluster
         synchronize do
             exception_jail( false ){ @handler.call page }
         end
+    end
+
+    def push_to_sitemap( url )
+        synchronize { @sitemap << url }
     end
 
     def alive?

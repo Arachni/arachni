@@ -227,6 +227,7 @@ class Framework
 
         @auditmap << page.url
         @sitemap |= @auditmap
+        @sitemap |= browser_sitemap
         @sitemap.uniq!
 
         print_line
@@ -631,6 +632,8 @@ class Framework
     def clean_up
         @status = :cleanup
 
+        @sitemap |= browser_sitemap
+
         close_browser
 
         @opts.finish_datetime  = Time.now
@@ -649,8 +652,19 @@ class Framework
         true
     end
 
+    def push_to_sitemap( url )
+        @sitemap << url
+        @sitemap.uniq!
+        @sitemap
+    end
+
     def wait_for_browser?
         @browser && !@browser.done?
+    end
+
+    def browser_sitemap
+        return [] if !@browser
+        @browser.sitemap.to_a
     end
 
     def reset_spider

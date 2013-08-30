@@ -109,6 +109,10 @@ class Browser
                 true
             end
 
+            @browser.on_response do |response|
+                @master.push_to_sitemap( response.url ){}
+            end
+
             @browser.on_new_page do |page|
                 @master.handle_page( page ){}
             end

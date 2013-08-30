@@ -207,6 +207,49 @@ describe Arachni::Browser do
         end
     end
 
+    describe '#on_response' do
+        context 'when a response is preloaded' do
+            it 'is passed each response' do
+                responses = []
+                @browser.on_response { |response| responses << response }
+
+                @browser.preload Arachni::HTTP::Client.get( @url, mode: :sync )
+                @browser.goto @url
+
+                response = responses.first
+                response.should be_kind_of Arachni::HTTP::Response
+                response.url.should == @url
+            end
+        end
+
+        context 'when a response is cached' do
+            it 'is passed each response' do
+                responses = []
+                @browser.on_response { |response| responses << response }
+
+                @browser.cache Arachni::HTTP::Client.get( @url, mode: :sync )
+                @browser.goto @url
+
+                response = responses.first
+                response.should be_kind_of Arachni::HTTP::Response
+                response.url.should == @url
+            end
+        end
+
+        context 'when a request is performed by the browser' do
+            it 'is passed each response' do
+                responses = []
+                @browser.on_response { |response| responses << response }
+
+                @browser.goto @url
+
+                response = responses.first
+                response.should be_kind_of Arachni::HTTP::Response
+                response.url.should == @url
+            end
+        end
+    end
+
     describe '#explore_deep_and_flush' do
         it 'handles deep DOM/page transitions' do
             pages = @browser.load( @url + '/deep-dom' ).explore_deep_and_flush
