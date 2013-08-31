@@ -684,7 +684,17 @@ class Browser
             attributes.delete( :cellspacing )
 
             begin
-                fire_event watir.send( "#{tag}s", attributes ).first, event
+
+                # Try to find the relevant element but skip the transition if
+                # it's no longer available.
+                element = nil
+                begin
+                    element = watir.send( "#{tag}s", attributes ).first
+                rescue Selenium::WebDriver::Error::UnknownError
+                    next
+                end
+
+                fire_event element, event
             rescue => e
                 print_error "Error when replying transition for: #{url}"
                 @transitions.each do |t|
