@@ -657,6 +657,15 @@ class Browser
                 element.fire_event( event )
                 wait_for_pending_requests
             rescue => e
+                print_error "Error when replying transition for: #{url}"
+                @transitions.each do |t|
+                    el, ev = t.to_a.first
+                    print_error "-#{t == transition ? '>' : '-'} '#{ev}' on: #{el}"
+                end
+
+                print_error
+                print_error "    #{tag} => #{attributes}"
+                print_error
                 print_error e
                 print_error_backtrace e
                 next
