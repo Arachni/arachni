@@ -390,6 +390,7 @@ class Browser
         # Filter out irrelevant stuff first because the manipulation that comes
         # next is expensive, so let's not waste our time with them at all.
         pending = Set.new
+        tries   = 0
 
         watir.elements.each.with_index do |element, i|
             begin
@@ -397,9 +398,14 @@ class Browser
                 opening_tag = element.opening_tag
                 events      = element.events
             rescue => e
-                print_error e
-                print_error_backtrace e
-                next
+                tries += 1
+
+                if tries > 5
+                    next
+                else
+                    print_info "Refreshing page cache because: #{e}"
+                    retry
+                end
             end
 
             case tag_name
@@ -690,9 +696,11 @@ class Browser
     end
 
     def wait_for_pending_requests
+        # Wait for pending requests to complete.
         Timeout.timeout( @options[:timeout] ) do
             sleep 0.1 while @proxy.has_connections?
         end
+
         true
     rescue Timeout::Error
         false
