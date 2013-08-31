@@ -754,6 +754,8 @@ class Browser
         # analyze and audit.
         capture( request )
 
+        request.headers['user-agent'] = Options.user_agent
+
         # Signal the proxy to continue with its request to the origin server.
         true
     end
