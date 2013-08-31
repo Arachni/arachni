@@ -245,7 +245,8 @@ class Browser
                                  "Can't load resource of type #{resource.class}."
                     end
 
-        save_response response
+        save_response( response ) if !response.url.include?( request_token )
+
         @preloads[response.url] = response
         response.url
     end
@@ -401,13 +402,10 @@ class Browser
                 events      = element.events
             rescue => e
                 tries += 1
+                next if tries > 5
 
-                if tries > 5
-                    next
-                else
-                    print_info "Refreshing page cache because: #{e}"
-                    retry
-                end
+                print_info "Refreshing page cache because: #{e}"
+                retry
             end
 
             case tag_name
@@ -462,31 +460,65 @@ class Browser
         element     = watir.elements[element_index]
         opening_tag = element.opening_tag
 
-        begin
-            if element.tag_name == 'form' && event == :submit
-                element.submit
-            else
-                element.fire_event( event )
-            end
-        rescue Selenium::WebDriver::Error::UnknownError,
-                Watir::Exception::UnknownObjectException
+        if !fire_event( element, event )
             restore page
             return
         end
-
-        wait_for_pending_requests
 
         capture_snapshot( opening_tag => event.to_sym ).each do |snapshot|
             print_debug "Found new page variation by triggering '#{event}' on: #{opening_tag}"
 
             print_debug 'Page transitions:'
             snapshot.dom.transitions.each do |t|
-                element, event = t.first.to_a
-                print_debug "-- '#{event}' on: #{element}"
+                el, ev = t.first.to_a
+                print_debug "-- '#{ev}' on: #{el}"
             end
         end
 
         restore page
+    end
+
+    # Triggers `event` on `element`.
+    #
+    # @param    [Watir::Element]  element
+    # @param    [Symbol]  event
+    #
+    # @return   [Bool]
+    #   `true` if the event was fired successfully, `false` otherwise.
+    def fire_event( element, event )
+        event       = event.to_sym
+        opening_tag = element.opening_tag
+        tag_name    = element.tag_name
+
+        tries = 0
+        begin
+            if tag_name == 'form' && event == :submit
+                element.submit
+            elsif [:keyup, :keypress, :keydown].include? event
+                element.send_keys 'Sample text'
+            else
+                element.fire_event( event )
+            end
+
+            wait_for_pending_requests
+
+            true
+        rescue Selenium::WebDriver::Error::UnknownError,
+            Watir::Exception::UnknownObjectException => e
+
+            tries += 1
+            retry if tries < 5
+
+            print_error "Error when triggering event for: #{url}"
+            print_error "-- '#{event}' on: #{opening_tag}"
+            print_error
+            print_error
+            print_error e
+            print_error_backtrace e
+
+            print_info 'Restoring page and aborting.'
+            false
+        end
     end
 
     # Starts capturing requests and parses them into elements of pages,
@@ -652,10 +684,7 @@ class Browser
             attributes.delete( :cellspacing )
 
             begin
-                element = watir.send( "#{tag}s", attributes ).first
-
-                element.fire_event( event )
-                wait_for_pending_requests
+                fire_event watir.send( "#{tag}s", attributes ).first, event
             rescue => e
                 print_error "Error when replying transition for: #{url}"
                 @transitions.each do |t|
@@ -668,7 +697,6 @@ class Browser
                 print_error
                 print_error e
                 print_error_backtrace e
-                next
             end
         end
 

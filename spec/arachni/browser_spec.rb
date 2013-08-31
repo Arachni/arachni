@@ -388,8 +388,16 @@ describe Arachni::Browser do
         end
     end
 
+    describe '#fire_event' do
+        it 'fires the given event' do
+            @browser.load( @url + '/trigger_events' ).start_capture
+            @browser.fire_event @browser.watir.div( id: 'my-div' ), :onclick
+            pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
+        end
+    end
+
     describe '#trigger_event' do
-        it 'triggers the given event' do
+        it 'triggers the given event and captures snapshots' do
             @browser.load( @url + '/trigger_events' ).start_capture
 
             @browser.watir.elements.each.with_index do |_, index|
