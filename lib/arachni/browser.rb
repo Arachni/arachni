@@ -298,6 +298,7 @@ class Browser
     end
 
     def close_windows
+        watir.cookies.clear
         clear_responses
 
         watir.execute_script( 'window.open()' )
@@ -391,9 +392,15 @@ class Browser
         pending = Set.new
 
         watir.elements.each.with_index do |element, i|
-            tag_name    = element.tag_name
-            opening_tag = element.opening_tag
-            events      = element.events
+            begin
+                tag_name    = element.tag_name
+                opening_tag = element.opening_tag
+                events      = element.events
+            rescue => e
+                print_error e
+                print_error_backtrace e
+                next
+            end
 
             case tag_name
                 when 'a'
@@ -636,10 +643,16 @@ class Browser
             attributes.delete( :cellpadding )
             attributes.delete( :cellspacing )
 
-            element = watir.send( "#{tag}s", attributes ).first
-            element.fire_event( event )
+            begin
+                element = watir.send( "#{tag}s", attributes ).first
 
-            wait_for_pending_requests
+                element.fire_event( event )
+                wait_for_pending_requests
+            rescue => e
+                print_error e
+                print_error_backtrace e
+                next
+            end
         end
 
         wait_for_pending_requests
@@ -762,6 +775,7 @@ class Browser
 
     def response_handler( request, response )
         return if request.url.include?( request_token )
+
         intercept response
         save_response response
     end
