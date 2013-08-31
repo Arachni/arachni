@@ -245,6 +245,7 @@ class Browser
                                  "Can't load resource of type #{resource.class}."
                     end
 
+        save_response response
         @preloads[response.url] = response
         response.url
     end
@@ -266,6 +267,7 @@ class Browser
                                  "Can't load resource of type #{resource.class}."
                     end
 
+        save_response response
         @cache[response.url] = response
         response.url
     end
