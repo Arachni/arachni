@@ -61,6 +61,7 @@
 - Path extractors
     - Added:
         - Extract partial paths from HTML comments (`comments`).
+    - `script` - Extract partial paths from scripts.
 
 ## 0.4.3.2 _(July 16, 2013)_
 
