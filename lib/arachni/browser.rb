@@ -285,6 +285,7 @@ class Browser
 
         watir.goto url
 
+        wait_for_overrides
         wait_for_timers
         wait_for_pending_requests
 
@@ -651,6 +652,21 @@ class Browser
     end
 
     private
+
+    def wait_for_overrides
+        return if !response.body.include?( js_token )
+
+        loop do
+            begin
+                if watir.execute_script( "return _#{js_token}_initialized"  ) == true
+                    break
+                end
+            rescue
+            end
+
+            sleep 0.1
+        end
+    end
 
     def store_pages?
         !!@options[:store_pages]
