@@ -832,6 +832,7 @@ class Browser
 
     def response_handler( request, response )
         return if request.url.include?( request_token )
+        return if ignore_request?( request )
 
         intercept response
         save_response response
