@@ -102,19 +102,6 @@ describe Arachni::Browser do
         pages_should_have_form_with_input( pages, 'by-ajax' )
     end
 
-    it 'respects scope restrictions' do
-        pages = @browser.load( @url + '/explore' ).start_capture.explore.page_snapshots
-        pages_should_have_form_with_input pages, 'by-ajax'
-
-        @browser.shutdown
-        @browser = described_class.new
-
-        Arachni::Options.exclude << /ajax/
-
-        pages = @browser.load( @url + '/explore' ).start_capture.explore.page_snapshots
-        pages_should_not_have_form_with_input pages, 'by-ajax'
-    end
-
     describe '.events' do
         it 'returns all DOM events' do
             described_class.events.sort.should == [
@@ -482,38 +469,46 @@ describe Arachni::Browser do
             @browser.source.should include( ua )
         end
 
-        context 'when the take_snapshot argument has been set to' do
-            describe true do
-                it 'captures a snapshot of the loaded page' do
-                    @browser.goto @url, true
-                    pages = @browser.page_snapshots
-                    pages.size.should == 1
+        context 'when Options#exclude has bee configured' do
+            it 'respects scope restrictions' do
+                pages = @browser.load( @url + '/explore' ).start_capture.explore.page_snapshots
+                pages_should_have_form_with_input pages, 'by-ajax'
 
-                    pages.first.dom.transitions.should == [
-                        { page: :load },
-                        { @url => :request }
-                    ]
-                end
+                @browser.shutdown
+                @browser = described_class.new
+
+                Arachni::Options.exclude << /ajax/
+
+                pages = @browser.load( @url + '/explore' ).start_capture.explore.page_snapshots
+                pages_should_not_have_form_with_input pages, 'by-ajax'
             end
+        end
 
-            describe false do
-                it 'does not capture a snapshot of the loaded page' do
-                    @browser.goto @url, false
-                    @browser.page_snapshots.should be_empty
+        context 'when Options#redundant has bee configured' do
+            it 'respects scope restrictions' do
+                Arachni::Options.redundant = { 'explore' => 3 }
+
+                @browser.load( @url + '/explore' ).response.code.should == 200
+
+                2.times do
+                    @browser.load( @url + '/explore' ).response.code.should == 200
                 end
+
+                @browser.load( @url + '/explore' ).response.code.should == 0
             end
+        end
 
-            describe 'default' do
-                it 'captures a snapshot of the loaded page' do
-                    @browser.goto @url
-                    pages = @browser.page_snapshots
-                    pages.size.should == 1
+        context 'when Options#auto_redundant has bee configured' do
+            it 'respects scope restrictions' do
+                Arachni::Options.auto_redundant = 3
 
-                    pages.first.dom.transitions.should == [
-                        { page: :load },
-                        { @url => :request }
-                    ]
+                @browser.load( @url + '/explore?test=1&test2=2' ).response.code.should == 200
+
+                2.times do
+                    @browser.load( @url + '/explore?test=1&test2=2' ).response.code.should == 200
                 end
+
+                @browser.load( @url + '/explore?test=1&test2=2' ).response.code.should == 0
             end
         end
 
@@ -554,6 +549,41 @@ describe Arachni::Browser do
 
         it 'returns self' do
             @browser.goto( @url ).should == @browser
+        end
+
+        context 'when the take_snapshot argument has been set to' do
+            describe true do
+                it 'captures a snapshot of the loaded page' do
+                    @browser.goto @url, true
+                    pages = @browser.page_snapshots
+                    pages.size.should == 1
+
+                    pages.first.dom.transitions.should == [
+                        { page: :load },
+                        { @url => :request }
+                    ]
+                end
+            end
+
+            describe false do
+                it 'does not capture a snapshot of the loaded page' do
+                    @browser.goto @url, false
+                    @browser.page_snapshots.should be_empty
+                end
+            end
+
+            describe 'default' do
+                it 'captures a snapshot of the loaded page' do
+                    @browser.goto @url
+                    pages = @browser.page_snapshots
+                    pages.size.should == 1
+
+                    pages.first.dom.transitions.should == [
+                        { page: :load },
+                        { @url => :request }
+                    ]
+                end
+            end
         end
     end
 
