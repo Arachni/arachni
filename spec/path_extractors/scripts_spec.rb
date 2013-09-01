@@ -7,12 +7,23 @@ describe name_from_filename do
         [
             'http://test.com',
             'test',
-            'test.com'
+            'test.com',
+            'test/stuff2.php'
         ]
     end
 
     def text
-        results.map { |u| "<script src='#{u}'>Stuff</script>" }.join
+        s = <<SCRIPT
+        <script>
+            var path = "test/stuff2.php"
+        </script>
+SCRIPT
+
+        s + [
+            'http://test.com',
+            'test',
+            'test.com'
+        ].map { |u| "<script src='#{u}'>Stuff</script>" }.join
     end
 
     easy_test

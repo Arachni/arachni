@@ -32,7 +32,8 @@ class Arachni::Parser::Extractors::Scripts < Arachni::Parser::Extractors::Base
     def run( doc )
         doc.search( '//script[@src]' ).map { |a| a['src'] } |
             doc.xpath( '//script' ).map(&:text).join.
-                scan( /[\/a-zA-Z0-9%._-]+/ ).select { |s| s.include? '/' }
+                scan( /[\/a-zA-Z0-9%._-]+/ ).
+                select { |s| s.include?( '.' ) && s.include?( '/' ) }
     end
 
 end
