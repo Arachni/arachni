@@ -614,12 +614,12 @@ class Browser
     end
 
     def timeouts
-        return [] if !html?
+        return [] if !has_js_overrides?
         watir.execute_script "return _#{js_token}_setTimeouts;"
     end
 
     def intervals
-        return [] if !html?
+        return [] if !has_js_overrides?
         watir.execute_script "return _#{js_token}_setIntervals;"
     end
 
@@ -653,8 +653,12 @@ class Browser
 
     private
 
+    def has_js_overrides?
+        response.body.include?( js_token )
+    end
+
     def wait_for_overrides
-        return if !response.body.include?( js_token )
+        return if !has_js_overrides?
 
         loop do
             begin
