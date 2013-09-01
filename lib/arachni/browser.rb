@@ -285,7 +285,7 @@ class Browser
 
         watir.goto url
 
-        wait_for_overrides
+        wait_for_js_overrides
         wait_for_timers
         wait_for_pending_requests
 
@@ -573,7 +573,9 @@ class Browser
 
     # @return   [Page]  Converts the current browser window to a {Page page}.
     def to_page
-        page                 = response.deep_clone.to_page
+        return if !(r = response)
+
+        page                 = r.deep_clone.to_page
         page.body            = source.dup
         page.cookies        |= cookies.dup
         page.dom.transitions = @transitions.dup
@@ -639,12 +641,27 @@ class Browser
     end
 
     def response
-        get_response url
+        u = url
+
+        begin
+            Timeout.timeout( @options[:timeout] ) do
+                while !(r = get_response( u )) do
+                    sleep 0.1
+                end
+
+                return r
+            end
+        rescue Timeout::Error
+            print_error "Response for '#{u}' never arrived."
+        end
+
+        nil
     end
 
     # @return   [Selenium::WebDriver::Driver]   Selenium driver interface.
     def selenium
-        @selenum ||= Selenium::WebDriver.for( :phantomjs, desired_capabilities: capabilities )
+        @selenum ||=
+            Selenium::WebDriver.for( :phantomjs, desired_capabilities: capabilities )
     end
 
     def self.info
@@ -654,10 +671,10 @@ class Browser
     private
 
     def has_js_overrides?
-        response.body.include?( js_token )
+        response.body.include?( js_token ) rescue false
     end
 
-    def wait_for_overrides
+    def wait_for_js_overrides
         return if !has_js_overrides?
 
         loop do
@@ -742,7 +759,7 @@ class Browser
         # Skip about:blank windows.
         watir.windows( url: /^http/ ).each do |window|
             window.use do
-                page = to_page
+                next if !(page = to_page)
 
                 unique_id = "#{page.dom.hash}:#{cookies.map(&:name).sort}"
                 next if skip? unique_id
