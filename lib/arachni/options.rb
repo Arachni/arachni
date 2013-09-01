@@ -729,6 +729,21 @@ class Options
         false
     end
 
+    def auto_redundant_path?( url, &block )
+        return false if !auto_redundant?
+        @auto_redundant_h ||= Hash.new( 0 )
+
+        h = "#{url.split( '?' ).first}#{Utilities.parse_query( url ).keys.sort}".hash
+
+        if @auto_redundant_h[h] >= auto_redundant
+            block.call( @auto_redundant_h[h] ) if block_given?
+            return true
+        end
+
+        @auto_redundant_h[h] += 1
+        false
+    end
+
     def dom_depth_limit_reached?( page )
         Options.dom_depth_limit && page.dom.depth > Options.dom_depth_limit
     end

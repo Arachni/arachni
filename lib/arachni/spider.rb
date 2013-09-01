@@ -345,18 +345,9 @@ class Spider
     end
 
     def auto_redundant?( url )
-        return false if !@opts.auto_redundant?
-        @auto_redundant ||= Hash.new( 0 )
-
-        h = "#{url.split( '?' ).first}#{parse_query( url ).keys.sort}".hash
-
-        if @auto_redundant[h] >= @opts.auto_redundant
+        @opts.auto_redundant_path?( url ) do
             print_verbose "Discarding auto-redundant page: #{url}"
-            return true
         end
-
-        @auto_redundant[h] += 1
-        false
     end
 
     def wait_if_paused

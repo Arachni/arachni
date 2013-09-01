@@ -254,6 +254,60 @@ describe Arachni::Options do
         end
     end
 
+    describe '#auto_redundant_path?' do
+        context 'when the #auto_redundant limit has been reached' do
+            it 'returns true' do
+                path = 'http://test.com/?test=2&test2=2'
+
+                Arachni::Options.auto_redundant = 10
+                Arachni::Options.auto_redundant_path?( path ).should be_false
+                9.times do
+                    Arachni::Options.auto_redundant_path?( path ).should be_false
+                end
+
+                Arachni::Options.auto_redundant_path?( path ).should be_true
+            end
+
+            context 'when passed a block' do
+                it 'calls it and passes the counter' do
+                    path = 'http://test.com/?test=2&test2=2'
+
+                    Arachni::Options.auto_redundant = 1
+
+                    counter = 0
+                    i       = 0
+                    Arachni::Options.auto_redundant_path?( path ) do |c|
+                        ap counter = c
+                        i       += 1
+                    end.should be_false
+                    counter.should == 0
+                    i.should       == 0
+
+                    Arachni::Options.auto_redundant_path?( path ) do |c|
+                        counter = c
+                        i       += 1
+                    end.should be_true
+                    counter.should == 1
+                    i.should       == 1
+
+                    Arachni::Options.auto_redundant_path?( path ) do |c|
+                        counter = c
+                        i       += 1
+                    end.should be_true
+                    counter.should == 1
+                    i.should       == 2
+                end
+            end
+        end
+
+        describe 'by default' do
+            it 'returns false' do
+                path = 'http://test.com/?test=2&test2=2'
+                Arachni::Options.auto_redundant_path?( path ).should be_false
+            end
+        end
+    end
+
     describe '#exclude_binaries?' do
         describe 'when the option has been enabled' do
             it 'returns true' do
