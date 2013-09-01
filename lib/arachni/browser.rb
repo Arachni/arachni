@@ -671,7 +671,8 @@ class Browser
     private
 
     def has_js_overrides?
-        response.body.include?( js_token ) rescue false
+        return if !(r = response)
+        r.body.include? js_token
     end
 
     def wait_for_js_overrides
