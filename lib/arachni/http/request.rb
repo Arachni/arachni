@@ -256,7 +256,8 @@ class Request < Message
             ssl_verifypeer:  false,
             ssl_verifyhost:  0,
             accept_encoding: 'gzip, deflate',
-            nosignal:        true
+            nosignal:        true,
+            maxfilesize:     @http_max_response_size || Arachni::Options.http_max_response_size
         }
 
         options[:timeout_ms] = timeout if timeout

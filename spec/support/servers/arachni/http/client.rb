@@ -30,6 +30,10 @@ helpers do
     end
 end
 
+get '/http_max_response_size' do
+    '1' * 1000000
+end
+
 get '/auth/simple-chars' do
     simple_protected!
     'authenticated!'

@@ -510,6 +510,9 @@ class Options
     # @return   [Bool]   Only follow HTTPS links.
     attr_accessor :https_only
 
+    # @return   [Integer]   HTTP max response body size.
+    attr_accessor :http_max_response_size
+
     # @return   [nil, Symbol]
     #   Grid mode to use, available modes are:
     #
@@ -1003,6 +1006,7 @@ class Options
             [ '--include',           '-i', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--http-req-limit',          GetoptLong::REQUIRED_ARGUMENT ],
             [ '--http-timeout',            GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--http-max-response-size',  GetoptLong::REQUIRED_ARGUMENT ],
             [ '--follow-subdomains', '-f', GetoptLong::NO_ARGUMENT ],
             [ '--debug',             '-w', GetoptLong::NO_ARGUMENT ],
             [ '--server',                  GetoptLong::REQUIRED_ARGUMENT ],
@@ -1147,6 +1151,9 @@ class Options
 
                     when '--http-timeout'
                         @http_timeout = arg.to_i
+
+                    when '--http-max-response-size'
+                        @http_max_response_size = arg.to_i
 
                     when '--audit-links'
                         @audit_links = true

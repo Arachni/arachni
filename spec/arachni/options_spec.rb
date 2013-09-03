@@ -209,8 +209,19 @@ describe Arachni::Options do
     end
 
     describe '#http_timeout' do
-        it "defaults to 50000" do
+        it 'defaults to 50000' do
             Arachni::Options.http_timeout.should == 50000
+        end
+    end
+
+    describe '#http_max_response_size' do
+        it 'configures the #http_max_response_size option' do
+            Arachni::Options.http_max_response_size = 50000
+            Arachni::Options.http_max_response_size.should == 50000
+        end
+
+        it 'defaults to nil' do
+            Arachni::Options.http_max_response_size.should be_nil
         end
     end
 

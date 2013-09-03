@@ -33,6 +33,7 @@
         - `#request` options:
             - `:params` => `:parameters`
             - `:async` => `:mode` (with values of `:async` and `:sync`)
+            - Added `:http_max_response_size`.
     - `ProxyServer` -- Moved the proxy server out of the `Proxy` plugin and
         updated it to work with `Arachni::HTTP` objects.
 - `Arachni::Browser` -- Real browser driver providing DOM/JS/AJAX support.
@@ -53,6 +54,8 @@
         - `--dom-depth` -- How deep to go into the each page's DOM tree.
         - `--http-username` -- Username for HTTP authentication.
         - `--http-password` -- Password for HTTP authentication.
+        - `--http-max-response-size` -- Does not download response bodies larger
+            than the specified limit, in bytes.
 - Reports
     - HTML -- Fixed display of untrusted issues.
 - Plugins

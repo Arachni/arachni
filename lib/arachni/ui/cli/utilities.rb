@@ -317,6 +317,10 @@ module Utilities
 
     --http-timeout=<integer>    HTTP request timeout in milliseconds.
 
+    --http-max-response-size=<integer>
+                                Do not download response bodies larger than the specified limit, in bytes.
+                                  (Default: inf)
+
     --cookie-jar=<filepath>     Netscape HTTP cookie file, use curl to create it.
 
     --cookie-string='<name>=<value>; <name2>=<value2>'

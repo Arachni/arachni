@@ -453,6 +453,64 @@ describe Arachni::HTTP::Client do
             expect { @http.request }.to raise_error
         end
 
+        describe :maxfilesize do
+            context 'when Options#http_max_response_size is specified' do
+                it 'ignores bodies of responses which are larger than specified' do
+                    @opts.http_max_response_size = 0
+                    @http.request( @url + '/http_max_response_size',
+                                   mode: :sync
+                    ).body.should_not be_empty
+
+                    @opts.http_max_response_size = 1
+                    @http.request( @url + '/http_max_response_size',
+                                   mode: :sync
+                    ).body.should be_empty
+
+                    @opts.http_max_response_size = 999999
+                    @http.request( @url + '/http_max_response_size',
+                                   mode: :sync
+                    ).body.should be_empty
+
+                    @opts.http_max_response_size = 1000000
+                    @http.request( @url + '/http_max_response_size',
+                                   mode: :sync
+                    ).body.should_not be_empty
+                end
+            end
+
+            context 'when specified' do
+                it 'ignores bodies of responses which are larger than specified' do
+                    @http.request( @url + '/http_max_response_size',
+                                   mode: :sync,
+                                   http_max_response_size: 0
+                    ).body.should_not be_empty
+
+                    @http.request( @url + '/http_max_response_size',
+                                   mode: :sync,
+                                   http_max_response_size: 1
+                    ).body.should be_empty
+
+                    @http.request( @url + '/http_max_response_size',
+                                   mode: :sync,
+                                   http_max_response_size: 999999
+                    ).body.should be_empty
+
+                    @http.request( @url + '/http_max_response_size',
+                                   mode: :sync,
+                                   http_max_response_size: 1000000
+                    ).body.should_not be_empty
+                end
+            end
+
+            context 'by default' do
+                it 'does not enforce a limit' do
+                    @http.request( @url + '/http_max_response_size',
+                                   mode: :sync
+                    ).body.should_not be_empty
+                end
+            end
+        end
+
         describe :no_cookiejar do
             context true do
                 it 'skips the cookie-jar' do
