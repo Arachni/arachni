@@ -1,6 +1,6 @@
 # ChangeLog
 
-## _Under development_
+## 0.4.5 _(September 12, 2013)_
 
 - `Element::Capabilities::Auditable::Taint`
     - Patterns can now be per-platform which results in improved fingerprinting
