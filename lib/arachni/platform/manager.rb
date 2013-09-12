@@ -82,7 +82,14 @@ class Manager
         :db2,
         :coldfusion,
         :interbase,
-        :informix
+        :informix,
+        :firebird,
+        :maxdb,
+        :sybase,
+        :frontbase,
+        :ingres,
+        :hsqldb,
+        :access
     ]
 
     SERVERS = [
@@ -127,6 +134,13 @@ class Manager
         coldfusion: 'ColdFusion',
         interbase:  'InterBase',
         informix:   'Informix',
+        firebird:   'Firebird',
+        maxdb:      'SaP Max DB',
+        sybase:     'Sybase',
+        frontbase:  'Frontbase',
+        ingres:     'IngresDB',
+        hsqldb:     'HSQLDB',
+        access:     'MS Access',
 
         # Web servers
         apache:     'Apache',

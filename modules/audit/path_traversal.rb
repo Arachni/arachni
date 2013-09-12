@@ -14,17 +14,15 @@
     limitations under the License.
 =end
 
-#
 # Path Traversal audit module.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.3.3
+# @version 0.4
 #
 # @see http://cwe.mitre.org/data/definitions/22.html
 # @see http://www.owasp.org/index.php/Path_Traversal
 # @see http://projects.webappsec.org/Path-Traversal
-#
 class Arachni::Modules::PathTraversal < Arachni::Module::Base
 
     MINIMUM_TRAVERSALS = 0
@@ -33,14 +31,19 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
     def self.options
         @options ||= {
             format: [Format::STRAIGHT],
-            regexp: [
-                /DOCUMENT_ROOT.*HTTP_USER_AGENT/,
-                /root:[x\*]:0:0:.+:[0-9a-zA-Z\/]+/im,
-                /mail:x:\d+:\d+:.+:[0-9a-zA-Z\/]+/im,
-                /\[boot loader\](.*)\[operating systems\]/im,
-                /\[fonts\](.*)\[extensions\]/im,
-                /<web\-app/im
-            ],
+            regexp: {
+                unix: [
+                    /DOCUMENT_ROOT.*HTTP_USER_AGENT/,
+                    /(root|mail):.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im
+                ],
+                windows: [
+                    /\[boot loader\](.*)\[operating systems\]/im,
+                    /\[fonts\](.*)\[extensions\]/im
+                ],
+                tomcat: [
+                    /<web\-app/im
+                ]
+            },
 
             # Add one more mutation (on the fly) which will include the extension
             # of the original value (if that value was a filename) after a null byte.
@@ -72,23 +75,20 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
                 'boot.ini',
                 'windows/win.ini',
                 'winnt/win.ini'
-            ]
+            ].map { |payload| [payload, "#{payload}#{'.'* 700}"] }.flatten
         }.inject({}) do |h, (platform, payloads)|
             h[platform] = payloads.map do |payload|
                 trv = '/'
-                prefix = (platform == :windows ? 'c:' : nil)
-
-                [ "#{prefix}/#{payload}", "file://#{prefix}/#{payload}" ] +
-                    (MINIMUM_TRAVERSALS..MAXIMUM_TRAVERSALS).map do
-                        trv << '../'
-                        [ "#{trv}#{payload}", "file://#{trv}#{payload}" ]
-                    end
+                (MINIMUM_TRAVERSALS..MAXIMUM_TRAVERSALS).map do
+                    trv << '../'
+                    [ "#{trv}#{payload}", "file://#{trv}#{payload}" ]
+                end
             end.flatten
 
             h
         end
 
-        @payloads[:tomcat] = [ '', '/', '/../../', '../../', ].map do |trv|
+        @payloads[:tomcat] = [ '/../../', '../../', ].map do |trv|
              [ "#{trv}WEB-INF/web.xml", "file://#{trv}WEB-INF/web.xml" ]
         end.flatten
 
@@ -107,7 +107,7 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
                 based on the presence of relevant content in the HTML responses.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.3.3',
+            version:     '0.4',
             references:  {
                 'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
                 'WASC'  => 'http://projects.webappsec.org/Path-Traversal'

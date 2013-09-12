@@ -1,5 +1,42 @@
 # ChangeLog
 
+## 0.4.5 _(September 12, 2013)_
+
+- `Element::Capabilities::Auditable::Taint`
+    - Patterns can now be per-platform which results in improved fingerprinting
+        during the audit phase and less CPU stress when analyzing responses.
+- Modules
+    - Audit
+        - Path traversal (`path_traversal`)
+            - Updated `/etc/passwd` signatures to be more generic.
+            - Updated MS Windows payloads to include dot truncation.
+            - Detection patterns organized per platform.
+            - Moved non-traversal payloads to the `file_inclusion` module.
+        - SQL Injection (`sqli`)
+            - Added support for:
+                - Firebird
+                - SAP Max DB
+                - Sybase
+                - Frontbase
+                - IngresDB
+                - HSQLDB
+                - MS Access
+        - OS command injection (`os_cmd_injection`)
+            - Detection patterns organized per platform.
+        - Added:
+            - File inclusion (`file_inclusion`) -- Extracted from `path_traversal`.
+                - Uses common server-side files and errors to identify issues.
+    - Recon
+        - Added:
+            - localstart.asp (`localstart_asp`)
+                - Checks if `localstart.asp` is accessible.
+- Plugins
+    - Added:
+        - Uncommon headers (`uncommon_headers`) -- Logs uncommon headers.
+- Path extractors
+    - Added:
+        - Extract partial paths from HTML comments (`comments`).
+
 ## 0.4.4 _(August 10, 2013)_
 
 - Options

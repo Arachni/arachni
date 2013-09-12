@@ -105,8 +105,43 @@ module Auditable::Taint
     def get_matches( res, opts )
         opts[:substring] = opts[:injected_orig] if !opts[:regexp] && !opts[:substring]
 
-        [opts[:regexp]].flatten.compact.each { |regexp| match_regexp_and_log( regexp, res, opts ) }
-        [opts[:substring]].flatten.compact.each { |substring| match_substring_and_log( substring, res, opts ) }
+        match_patterns( opts[:regexp], method( :match_regexp_and_log ), res, opts.dup )
+        match_patterns( opts[:substring], method( :match_substring_and_log ), res, opts.dup )
+    end
+
+    def match_patterns( patterns, matcher, res, opts )
+        case patterns
+            when Regexp, String, Array
+                [patterns].flatten.compact.
+                    each { |pattern| matcher.call( pattern, res, opts ) }
+
+            when Hash
+                if opts[:platform] && patterns[opts[:platform]]
+                    [patterns[opts[:platform]]].flatten.compact.each do |p|
+                        [p].flatten.compact.
+                            each { |pattern| matcher.call( pattern, res, opts ) }
+                    end
+                else
+                    patterns.each do |platform, p|
+                        dopts = opts.dup
+                        dopts[:platform] = platform
+
+                        [p].flatten.compact.
+                            each { |pattern| matcher.call( pattern, res, dopts ) }
+                    end
+                end
+
+                # Find out if there are any patterns without associated payloads
+                # and match them against every payload's response.
+                patterns.select { |p, _|  !opts[:payload_platforms].include?( p ) }.
+                    each do |platform, p|
+                        dopts = opts.dup
+                        dopts[:platform] = platform
+
+                        [p].flatten.compact.
+                            each { |pattern| matcher.call( pattern, res, dopts ) }
+                    end
+        end
     end
 
     def match_substring_and_log( substring, res, opts )

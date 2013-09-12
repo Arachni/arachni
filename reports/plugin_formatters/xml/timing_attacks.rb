@@ -31,6 +31,8 @@ class PluginFormatters::TimingAttacks < Arachni::Plugin::Formatter
                " url=\"#{issue['url']}\" element=\"#{issue['elem']}\" " +
                " variable=\"#{issue['var']}\" method=\"#{issue['method']}\" />"
         end
+
+        buffer
     end
 
 end

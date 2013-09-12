@@ -16,11 +16,6 @@ Unclosed quotation mark before the character string
 Syntax Error (missing operator) in query expression
 Data type mismatch in criteria expression
 ADODB.Field (0x800A0BCD)
-[Microsoft][ODBC Microsoft Access Driver]
 the used select statements have different number of columns
 OLE DB stuff SQL Server
 Warningstuff mssql_
-Access stuff Driver
-Driver stuff Access
-JET Database Engine
-Access Database Engine

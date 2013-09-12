@@ -134,7 +134,7 @@
 
                         <% if variation['injected'] %>
                         <strong>Injected value</strong>:
-                        <pre> <%=escapeHTML(variation['injected'])%> </pre>
+                        <pre> <%=escapeHTML( variation['injected'].inspect )%> </pre>
                         <br/>
                         <%end%>
 
