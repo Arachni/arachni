@@ -2,6 +2,9 @@
 
 ## _Under development_
 
+- `Element::Capabilities::Auditable::Taint`
+    - Fixed bug appearing when modules don't have per-platform payloads.
+
 ## 0.4.5 _(September 12, 2013)_
 
 - `Element::Capabilities::Auditable::Taint`

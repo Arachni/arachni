@@ -131,6 +131,8 @@ module Auditable::Taint
                     end
                 end
 
+                return if !opts[:payload_platforms]
+
                 # Find out if there are any patterns without associated payloads
                 # and match them against every payload's response.
                 patterns.select { |p, _|  !opts[:payload_platforms].include?( p ) }.
