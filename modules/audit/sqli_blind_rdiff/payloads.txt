@@ -1,5 +1,5 @@
-%q% and %q%1
-%q%) and %q%1
-%q%)) and %q%1
-%q%))) and %q%1
-%q%)))) and %q%1
+%q% and %q%
+%q%) and %q%
+%q%)) and %q%
+%q%))) and %q%
+%q%)))) and %q%

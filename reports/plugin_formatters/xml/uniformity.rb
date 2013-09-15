@@ -26,7 +26,6 @@ class PluginFormatters::Uniformity < Arachni::Plugin::Formatter
 
     def run
         uniformals = results['uniformals']
-        pages      = results['pages']
 
         uniformals.each do |id, uniformal|
             start_uniformals id
@@ -37,6 +36,8 @@ class PluginFormatters::Uniformity < Arachni::Plugin::Formatter
 
             end_tag 'uniformals'
         end
+
+        buffer
     end
 
     def add_uniformal( idx, uniformal )

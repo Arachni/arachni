@@ -429,9 +429,13 @@ module Auditable
 
                 return if platform_payloads.empty?
 
+                payload_platforms = Set.new( payloads.keys )
                 platform_payloads.each do |platform, payloads_for_platform|
                     audit( [payloads_for_platform].flatten.compact,
-                           opts.merge( platform: platform ),
+                           opts.merge(
+                               platform: platform,
+                               payload_platforms: payload_platforms
+                           ),
                            &block )
                 end
 
@@ -612,6 +616,11 @@ module Auditable
         mutations( injection_str, @audit_options ).each do |elem|
             if Options.exclude_vectors.include?( elem.altered )
                 print_info "Skipping audit of '#{elem.altered}' #{type} vector."
+                next
+            end
+
+            if elem.matches_skip_like_blocks?
+                print_debug 'Element matches one or more skip_like blocks, skipping.'
                 next
             end
 

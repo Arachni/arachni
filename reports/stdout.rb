@@ -23,7 +23,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2.3
+# @version 0.2.4
 #
 class Arachni::Reports::Stdout < Arachni::Report::Base
 
@@ -159,7 +159,7 @@ class Arachni::Reports::Stdout < Arachni::Report::Base
             name:        'Stdout',
             description: %q{Prints the results to standard output.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.2.3'
+            version:     '0.2.4'
         }
     end
 
@@ -172,7 +172,7 @@ class Arachni::Reports::Stdout < Arachni::Report::Base
             print_info "Variation #{i+1}:"
             print_info "URL: #{var['url']}"
             print_info "ID:  #{var['id']}"                          if var['id']
-            print_info "Injected value:     #{var['injected']}"     if var['injected']
+            print_info "Injected value:     #{var['injected'].inspect}"     if var['injected']
             print_info "Regular expression: #{var['regexp']}"       if var['regexp']
             print_info "Matched string:     #{var['regexp_match']}" if var['regexp_match']
 

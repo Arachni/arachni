@@ -5,19 +5,10 @@ def default
     'default'
 end
 
-@@ignore ||= IO.read( File.dirname( __FILE__ ) + '/../../../../../modules/audit/sqli_blind_rdiff/payloads.txt' ).split( "\n" )
-@@faults ||= [ default + '\'"`' ]
-
-def booleans
-    @@booleans ||= [ '\'', '"', '' ].map do |quote|
-        @@ignore.map { |i| default + i.gsub( '%q%', quote ) }
-    end.flatten
-end
-
 def get_result( str )
-    if @@faults.include?( str )
+    if str.end_with?( '1=2' )
         'Could not find any results, bugger off!'
-    elsif booleans.include?( str ) || str == default
+    elsif str.end_with?( '1=1' ) || str == default
         '1 item found: Blah blah blah...'
     else
         'No idea what you want mate...'

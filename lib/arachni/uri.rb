@@ -532,13 +532,14 @@ class URI
     # @return   [String]
     #   The URL up to its path component (no resource name, query, fragment, etc).
     def up_to_path
+        return if !path
         uri_path = path.dup
 
         uri_path = File.dirname( uri_path ) if !File.extname( path ).empty?
 
         uri_path << '/' if uri_path[-1] != '/'
 
-        uri_str = scheme + "://" + host
+        uri_str = "#{scheme}://#{host}"
         uri_str << ':' + port.to_s if port && port != 80
         uri_str << uri_path
     end

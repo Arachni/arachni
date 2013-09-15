@@ -37,7 +37,11 @@ shared_examples_for 'auditable' do |options = {}|
         @default_input_value = @auditable.inputs['param']
     end
 
-    describe '#skip_like' do
+    before :each do
+        Arachni::Element::Capabilities::Auditable.reset
+    end
+
+    describe '.skip_like' do
         it 'skips elements based on the block\'s return value' do
             (@auditable.audit( 'seed' ){}).should be_true
             Arachni::Element::Capabilities::Auditable.reset
@@ -45,6 +49,23 @@ shared_examples_for 'auditable' do |options = {}|
                 element.action.end_with? '/submit'
             end
             (@auditable.audit( 'seed' ){}).should be_false
+        end
+
+        it 'skips element mutations based on the block\'s return value' do
+            i = 0
+            (@auditable.audit( 'seed' ){ i += 1 }).should be_true
+            @auditable.http.run
+            i.should == (@auditable.is_a?( Arachni::Form) ? 5 : 4)
+
+            Arachni::Element::Capabilities::Auditable.reset
+            Arachni::Element::Capabilities::Auditable.skip_like do |element|
+                element.altered == 'param'
+            end
+
+            i = 0
+            (@auditable.audit( 'seed' ){ i += 1}).should be_true
+            @auditable.http.run
+            i.should == (@auditable.is_a?( Arachni::Form) ? 1 : 0)
         end
     end
 

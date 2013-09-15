@@ -137,7 +137,7 @@ From a user’s or a component developer’s point of view everything appears si
 and straight-forward all the while providing power, performance and flexibility.
 
 From the simple command-line utility scanner to the intuitive and user-friendly
-Web interface and collaboration platform, Arachni follows the principle of lease
+Web interface and collaboration platform, Arachni follows the principle of least
 surprise and provides you with plenty of feedback and guidance.
 
 #### In simple terms
@@ -299,6 +299,13 @@ Audit modules actively engage the web application via its inputs.
     - SQLite
     - DB2
     - Informix
+    - Firebird
+    - SaP Max DB
+    - Sybase
+    - Frontbase
+    - Ingres
+    - HSQLDB
+    - MS Access
 - Blind SQL injection using rDiff analysis (`sqli_blind_rdiff`).
 - Blind SQL injection using timing attacks (`sqli_blind_timing`).
     - MySQL
@@ -322,6 +329,12 @@ Audit modules actively engage the web application via its inputs.
     - *nix
     - Windows
     - Tomcat
+- File inclusion (`file_inclusion`).
+    - *nix
+    - Windows
+    - Tomcat
+    - PHP
+    - Perl
 - Response splitting (`response_splitting`).
 - OS command injection (`os_cmd_injection`).
     - *nix
@@ -344,6 +357,7 @@ Audit modules actively engage the web application via its inputs.
 - XSS in event attributes of HTML elements (`xss_event`).
 - XSS in HTML tags (`xss_tag`).
 - XSS in HTML 'script' tags  (`xss_script_tag`).
+- Source code disclosure (`source_code_disclosure`)
 
 ##### Recon (Passive)
 
@@ -371,6 +385,9 @@ Recon modules look for the existence of files, folders and signatures.
 - Insecure cookies (`insecure_cookies`).
 - HttpOnly cookies (`http_only_cookies`).
 - Auto-complete for password form fields (`password_autocomplete`).
+- X-Forwarded-For Access Restriction Bypass (`x_forwarded_for_access_restriction_bypass`)
+- Form-based upload (`form_upload`)
+- localstart.asp (`localstart_asp`)
 
 ### Report Management
 
@@ -398,7 +415,7 @@ Recon modules look for the existence of files, folders and signatures.
 #### Available plugins
 
 Plugins add extra functionality to the system in a modular fashion, this way the
-core remains lean and makes it easy for anyone to arbitrary functionality.
+core remains lean and makes it easy for anyone to add arbitrary functionality.
 
 - ReScan  (`rescan`)-- It uses the AFR report of a previous scan to extract the sitemap
     in order to avoid a redundant crawl.
@@ -421,6 +438,7 @@ core remains lean and makes it easy for anyone to arbitrary functionality.
     Useful for unit-testing or a gazillion other things.
 - Script (`script`) -- Loads and runs an external Ruby script under the scope of a plugin,
     used for debugging and general hackery.
+- Uncommon headers (`uncommon_headers`) -- Logs uncommon headers.
 
 #### Defaults
 

@@ -14,7 +14,6 @@
     limitations under the License.
 =end
 
-#
 # Blind SQL injection audit module
 #
 # It uses reverse-diff analysis of HTML code in order to determine successful
@@ -22,29 +21,33 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.3.2
+# @version 0.4
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://capec.mitre.org/data/definitions/7.html
 # @see http://www.owasp.org/index.php/Blind_SQL_Injection
-#
 class Arachni::Modules::BlindrDiffSQLInjection < Arachni::Module::Base
 
     prefer :sqli
 
-    def self.booleans
-        @booleans ||= []
-        if @booleans.empty?
-            read_file( 'payloads.txt' ) do |str|
-                [ '\'', '"', '' ].each { |quote| @booleans << str.gsub( '%q%', quote ) }
-            end
-        end
-        @booleans
+    def self.queries_for_expression( expression )
+        (@templates ||= read_file( 'payloads.txt' )).map do |template|
+            [ '\'', '"', '' ].map{ |quote| template.gsub( '%q%', quote ) + " #{expression}" }
+        end.flatten
     end
 
     # Options holding fault and boolean injection seeds.
     def self.options
-        @opts ||= { faults: [ '\'"`' ], bools:  booleans }
+        return @options if @options
+
+        pairs  = []
+        falses = queries_for_expression( '1=2' )
+
+        queries_for_expression( '1=1' ).each.with_index do |true_expr, i|
+            pairs << { true_expr => falses[i] }
+        end
+
+        @options = { pairs: pairs }
     end
 
     def run
@@ -61,7 +64,7 @@ class Arachni::Modules::BlindrDiffSQLInjection < Arachni::Module::Base
                     If this module returns a positive result you should investigate nonetheless.)},
             elements:    [ Element::LINK, Element::FORM, Element::COOKIE ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.3.2',
+            version:     '0.4',
             references:  {
                 'OWASP'         => 'http://www.owasp.org/index.php/Blind_SQL_Injection',
                 'MITRE - CAPEC' => 'http://capec.mitre.org/data/definitions/7.html'

@@ -399,7 +399,7 @@ module Utilities
     --extend-paths=<filepath>   Add the paths in <file> to the ones discovered by the crawler.
                                   (Can be used multiple times.)
 
-    --interceptor.callict-paths=<filepath> Use the paths in <file> instead of crawling.
+    --restrict-paths=<filepath> Use the paths in <file> instead of crawling.
                                   (Can be used multiple times.)
 
     --https-only                Forces the system to only follow HTTPS URLs.

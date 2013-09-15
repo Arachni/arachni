@@ -52,25 +52,25 @@ module Auditable::RDiff
     # Performs differential analysis and logs an issue should there be one.
     #
     #     opts = {
-    #         :precision => 3,
-    #         :faults    => [ 'fault injections' ],
-    #         :bools     => [ 'boolean injections' ]
+    #         pairs: [
+    #               { 'true expression' => 'false expression' }
+    #         ]
     #     }
     #
     #     element.rdiff_analysis( opts )
     #
     # Here's how it goes:
     #
-    # * let `default` be the default/original response
-    # * let `fault`   be the response of the fault injection
-    # * let `bool`    be the response of the boolean injection
+    # * let `control` be the control/control response
+    # * let `true_response`   be the response of the injection of 'true expression'
+    # * let `false_response`    be the response of the injection of 'false expression'
     #
     # A vulnerability is logged if:
     #
-    #     default == bool AND bool.code == 200 AND fault != bool
+    #     control == true_response AND true_response.code == 200 AND false_response != true_response
     #
     # The `bool` response is also checked in order to determine if it's a custom
-    # 404, if it is it'll be skipped.
+    # 404, if it is then it'll be skipped.
     #
     # If a block has been provided analysis and logging will be delegated to it.
     #
@@ -79,20 +79,11 @@ module Auditable::RDiff
     #   As seen in {Arachni::Element::Capabilities::Mutable::Format}.
     # @option   opts    [Integer]       :precision
     #   Amount of {String#rdiff refinement} iterations to perform.
-    # @option   opts    [Array<String>] :faults
-    #   Array of fault injection strings (these are supposed to force erroneous
-    #   conditions when interpreted).
-    # @option   opts    [Array<String>] :bools
-    #   Array of boolean injection strings (these are supposed to not alter the
-    #   webapp behavior when interpreted).
+    # @option   opts    [Array<Hash>] :pairs
+    #   Pair of strings that should yield different results when interpreted.
+    #   Keys should be the `true` expressions.
     # @param    [Block]     block
-    #   To be used for custom analysis of responses; will be passed the following:
-    #
-    #     * injected string
-    #     * audited element
-    #     * default response body
-    #     * boolean response
-    #     * fault injection response body
+    #   To be used for custom analysis of gathered data.
     #
     # @return   [Bool]
     #   `true` if the audit was scheduled successfully, `false` otherwise (like
@@ -106,128 +97,120 @@ module Auditable::RDiff
 
         opts = self.class::MUTATION_OPTIONS.merge( RDIFF_OPTIONS.merge( opts ) )
 
-        # don't continue if there's a missing value
-        inputs.values.each { |val| return if !val || val.empty? }
+        return false if auditable.empty?
+
+        # Don't continue if there's a missing value.
+        auditable.values.each { |val| return if val.to_s.empty? }
 
         return false if rdiff_audited?
         rdiff_audited
 
-        responses = {
-            # will hold the original, default, response that results from submitting
-            original: nil,
+        responses = {}
+        control  = nil
+        opts[:precision].times do
+            # Get the default response.
+            submit do |res|
+                if control
+                    print_status 'Got default/control response.'
+                end
 
-            # will hold responses of boolean injections
-            good: {},
-
-            # will hold responses of fault injections
-            bad:  {}
-        }
-
-        # submit the element, as is, opts[:precision] amount of times and
-        # rdiff the responses in order to arrive to a refined response without
-        # any superfluous dynamic content
-        opts[:precision].times {
-            # get the default responses
-            audit( '', opts ) do |res|
-                responses[:original] ||= res.body
-                # remove context-irrelevant dynamic content like banners and such
-                responses[:original] = responses[:original].rdiff( res.body )
+                # Remove context-irrelevant dynamic content like banners and such.
+                control = (control ? control.rdiff( res.body ) : res.body)
             end
-        }
+        end
 
-        # perform fault injection opts[:precision] amount of times and
-        # rdiff the responses in order to arrive to a refined response without
-        # any superfluous dynamic content
-        opts[:precision].times {
-            opts[:faults].each do |str|
-                # get mutations of self using the fault seed, which will
-                # cause an internal/silent error when evaluated
-                mutations( str, opts ).each do |elem|
+        opts[:pairs].each do |pair|
+            responses[pair] ||= {}
+            true_expr, false_expr = pair.to_a.first
+
+            opts[:precision].times do
+                mutations( true_expr, opts ).each do |elem|
                     print_status elem.status_string
 
-                    # submit the mutation and store the response
+                    # Submit the mutation and store the response.
                     elem.submit( opts ) do |res|
-                        responses[:bad][elem.altered] ||= res.body.clone
-                        # remove context-irrelevant dynamic content like banners and such
-                        # from the error page
-                        responses[:bad][elem.altered] =
-                            responses[:bad][elem.altered].rdiff( res.body.clone )
+                        if responses[pair][elem.altered][:true]
+                            elem.print_status "Gathering data for '#{elem.altered}' " <<
+                                                  "#{type} input -- Got true  response:" <<
+                                                  " #{true_expr}"
+                        end
+
+                        responses[pair][elem.altered] ||= {}
+                        responses[pair][elem.altered][:mutation] = elem
+
+                        # Keep the latest response for the {Arachni::Issue}.
+                        responses[pair][elem.altered][:response]        = res
+                        responses[pair][elem.altered][:injected_string] = true_expr
+
+                        responses[pair][elem.altered][:true] ||= res.body.clone
+                        # Remove context-irrelevant dynamic content like banners
+                        # and such from the error page.
+                        responses[pair][elem.altered][:true] =
+                            responses[pair][elem.altered][:true].rdiff( res.body.clone )
                     end
                 end
-            end
-        }
 
-        # get injection variations that will not affect the outcome of the query
-        opts[:bools].each do |str|
+                mutations( false_expr, opts ).each do |elem|
+                    responses[pair][elem.altered] ||= {}
 
-            # get mutations of self using the boolean seed, which will not
-            # alter the execution flow
-            mutations( str, opts ).each do |elem|
-                print_status elem.status_string
+                    # Submit the mutation and store the response.
+                    elem.submit( opts ) do |res|
+                        if responses[pair][elem.altered][:false]
+                            elem.print_status "Gathering data for '#{elem.altered}'" <<
+                                                  " #{type} input -- Got false " <<
+                                                  "response: #{false_expr}"
+                        end
 
-                # submit the mutation and store the response
-                elem.submit( opts ) do |res|
-                    responses[:good][elem.altered] ||= []
-                    # save the response and some data for analysis
-                    responses[:good][elem.altered] << {
-                        'str'  => str,
-                        'res'  => res,
-                        'elem' => elem
-                    }
+                        responses[pair][elem.altered][:false] ||= res.body.clone
+
+                        # Remove context-irrelevant dynamic content like banners
+                        # and such from the error page.
+                        responses[pair][elem.altered][:false] =
+                            responses[pair][elem.altered][:false].rdiff( res.body.clone )
+                    end
                 end
             end
         end
 
-        # when this runs the "responses" hash will have been populated and we
-        # can continue with analysis
-        http.after_run {
 
-            responses[:good].keys.each do |key|
-                responses[:good][key].each do |res|
+        # When this runs the "responses" hash will have been populated and we
+        # can continue with analysis.
+        http.after_run do
+            responses.each do |pair, data|
+                if block
+                    exception_jail( false ){ block.call( pair, data ) }
+                    next
+                end
 
-                    # if there's a block passed then delegate analysis to it
-                    if block
-                        exception_jail( false ){
-                            block.call( res['str'], res['elem'], responses[:original],
-                                        res['res'], responses[:bad][key] )
-                        }
+                data.each do |input_name, result|
+                    # if default_response_body == true_response_body AND
+                    #    false_response_body != true_response_code AND
+                    #    true_response_code == 200
+                    if control == result[:true] &&
+                        result[:false] != result[:true] &&
+                        result[:response].code == 200
 
-                    # if default_response_body == bool_response_body AND
-                    #    bool_response_code == 200 AND
-                    #    fault_response_body != bool_response_body
-                    elsif responses[:original] == res['res'].body &&
-                            responses[:bad][key] != res['res'].body &&
-                            res['res'].code == 200
-
-                        # check to see if the current boolean response we're analyzing
-                        # is a custom 404 page
-                        http.custom_404?( res['res'] ) do |bool|
-                            # if this is a custom 404 page bail out
-                            next if bool
-
-                            # if this isn't a custom 404 page then it means that
-                            # the element is vulnerable, so go ahead and log the issue
-
-                            # information for the Metareport report
-                            opts = {
-                                injected_orig: res['str'],
-                                combo:         res['elem'].inputs
-                            }
+                        # Check to see if the `true` response we're analyzing
+                        # is a custom 404 page.
+                        http.custom_404?( result[:response] ) do |custom_404|
+                            # If this is a custom 404 page bail out.
+                            next if custom_404
 
                             @auditor.log({
-                                    var:      key,
-                                    opts:     opts,
-                                    injected: res['str'],
-                                    id:       res['str'],
-                                    elem:     res['elem'].type,
-                                }, res['res']
+                                var:      input_name,
+                                opts:     {
+                                    injected_orig: result[:injected_string],
+                                    combo:         result[:mutation].auditable
+                                },
+                                injected: result[:mutation].altered_value,
+                                elem:     type
+                                }, result[:response]
                             )
                         end
                     end
-
                 end
             end
-        }
+        end
 
         true
     end
@@ -242,7 +225,7 @@ module Auditable::RDiff
     end
 
     def rdiff_audit_id
-        @action + @inputs.keys.to_s
+        @action + @auditable.keys.to_s
     end
 
 end

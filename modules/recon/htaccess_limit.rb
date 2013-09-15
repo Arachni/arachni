@@ -17,13 +17,16 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.4
+# @version 0.1.5
 #
 class Arachni::Modules::Htaccess < Arachni::Module::Base
 
     def run
         return if page.code != 401
-        http.post( page.url ) { |res| check_and_log( res ) }
+
+        [:post, :head, :blah]. each do |m|
+            http.request( page.url, method: m ) { |res| check_and_log( res ) }
+        end
     end
 
     def check_and_log( res )
@@ -39,7 +42,7 @@ class Arachni::Modules::Htaccess < Arachni::Module::Base
                 GET requests but allows POST.},
             elements:    [ Element::SERVER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.4',
+            version:     '0.1.5',
             targets:     %w(Generic),
             references: {
                 'Apache.org' => 'http://httpd.apache.org/docs/2.2/mod/core.html#limit'
