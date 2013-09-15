@@ -97,10 +97,10 @@ module Auditable::RDiff
 
         opts = self.class::MUTATION_OPTIONS.merge( RDIFF_OPTIONS.merge( opts ) )
 
-        return false if auditable.empty?
+        return false if inputs.empty?
 
         # Don't continue if there's a missing value.
-        auditable.values.each { |val| return if val.to_s.empty? }
+        inputs.values.each { |val| return if val.to_s.empty? }
 
         return false if rdiff_audited?
         rdiff_audited
@@ -200,7 +200,7 @@ module Auditable::RDiff
                                 var:      input_name,
                                 opts:     {
                                     injected_orig: result[:injected_string],
-                                    combo:         result[:mutation].auditable
+                                    combo:         result[:mutation].inputs
                                 },
                                 injected: result[:mutation].altered_value,
                                 elem:     type
@@ -225,7 +225,7 @@ module Auditable::RDiff
     end
 
     def rdiff_audit_id
-        @action + @auditable.keys.to_s
+        @action + @inputs.keys.to_s
     end
 
 end

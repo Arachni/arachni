@@ -89,37 +89,35 @@ module Auditable::Taint
         end
 
         opts = self.class::OPTIONS.merge( TAINT_OPTIONS.merge( opts ) )
-        audit( payloads, opts ) { |res, c_opts| get_matches( res, c_opts ) }
+        audit( payloads, opts ) { |response| get_matches( response ) }
     end
 
     private
 
-    #
     # Tries to identify an issue through pattern matching.
     #
     # If a issue is found a message will be printed and the issue will be logged.
     #
-    # @param  [Typhoeus::Response]  res
-    # @param  [Hash]  opts
-    #
-    def get_matches( res, opts )
+    # @param  [HTTP::Response]  response
+    def get_matches( response )
+        opts = response.request.performer.audit_options.dup
         opts[:substring] = opts[:injected_orig] if !opts[:regexp] && !opts[:substring]
 
-        match_patterns( opts[:regexp], method( :match_regexp_and_log ), res, opts.dup )
-        match_patterns( opts[:substring], method( :match_substring_and_log ), res, opts.dup )
+        match_patterns( opts[:regexp], method( :match_regexp_and_log ), response, opts.dup )
+        match_patterns( opts[:substring], method( :match_substring_and_log ), response, opts.dup )
     end
 
-    def match_patterns( patterns, matcher, res, opts )
+    def match_patterns( patterns, matcher, response, opts )
         case patterns
             when Regexp, String, Array
                 [patterns].flatten.compact.
-                    each { |pattern| matcher.call( pattern, res, opts ) }
+                    each { |pattern| matcher.call( pattern, response, opts ) }
 
             when Hash
                 if opts[:platform] && patterns[opts[:platform]]
                     [patterns[opts[:platform]]].flatten.compact.each do |p|
                         [p].flatten.compact.
-                            each { |pattern| matcher.call( pattern, res, opts ) }
+                            each { |pattern| matcher.call( pattern, response, opts ) }
                     end
                 else
                     patterns.each do |platform, p|
@@ -127,7 +125,7 @@ module Auditable::Taint
                         dopts[:platform] = platform
 
                         [p].flatten.compact.
-                            each { |pattern| matcher.call( pattern, res, dopts ) }
+                            each { |pattern| matcher.call( pattern, response, dopts ) }
                     end
                 end
 
@@ -141,7 +139,7 @@ module Auditable::Taint
                         dopts[:platform] = platform
 
                         [p].flatten.compact.
-                            each { |pattern| matcher.call( pattern, res, dopts ) }
+                            each { |pattern| matcher.call( pattern, response, dopts ) }
                     end
         end
     end

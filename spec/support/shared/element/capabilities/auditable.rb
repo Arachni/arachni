@@ -52,10 +52,14 @@ shared_examples_for 'auditable' do |options = {}|
         end
 
         it 'skips element mutations based on the block\'s return value' do
+            expected  = 4
+            expected += 1 if @auditable.is_a?( Arachni::Form )
+            expected -= 2 if !opts[:supports_nulls]
+
             i = 0
             (@auditable.audit( 'seed' ){ i += 1 }).should be_true
             @auditable.http.run
-            i.should == (@auditable.is_a?( Arachni::Form) ? 5 : 4)
+            i.should == expected
 
             Arachni::Element::Capabilities::Auditable.reset
             Arachni::Element::Capabilities::Auditable.skip_like do |element|
@@ -65,7 +69,7 @@ shared_examples_for 'auditable' do |options = {}|
             i = 0
             (@auditable.audit( 'seed' ){ i += 1}).should be_true
             @auditable.http.run
-            i.should == (@auditable.is_a?( Arachni::Form) ? 1 : 0)
+            i.should == (@auditable.is_a?( Arachni::Form ) ? 1 : 0)
         end
     end
 
