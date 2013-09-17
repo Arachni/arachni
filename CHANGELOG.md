@@ -2,6 +2,8 @@
 
 ## _Under development_
 
+- `gemspec`
+    - Added `bundler` as a runtime dependency.
 - Path extractors
     - Removed:
         - `comments` -- Extracts partial paths from HTML comments.
