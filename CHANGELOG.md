@@ -2,6 +2,11 @@
 
 ## _Under development_
 
+- Path extractors
+    - Removed:
+        - `comments` -- Extracts partial paths from HTML comments.
+            - Could cause infinite crawls, pending further research.
+
 ## 0.4.5.1 _(September 14, 2013)_
 
 - `Element::Capabilities::Auditable::Taint`
