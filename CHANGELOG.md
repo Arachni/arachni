@@ -64,7 +64,55 @@
 - Path extractors
     - Added:
         - Extract partial paths from HTML comments (`comments`).
-    - `script` - Extract partial paths from scripts.
+        - `script` - Extract partial paths from scripts.
+
+## 0.4.5.2 _(September 18, 2013)_
+
+- `gemspec`
+    - Added `bundler` as a runtime dependency.
+- Path extractors
+    - Removed:
+        - `comments` -- Extracts partial paths from HTML comments.
+            - Could cause infinite crawls, pending further research.
+
+## 0.4.5.1 _(September 14, 2013)_
+
+- `Element::Capabilities::Auditable::Taint`
+    - Fixed bug appearing when modules don't have per-platform payloads.
+
+## 0.4.5 _(September 12, 2013)_
+
+- `Element::Capabilities::Auditable::Taint`
+    - Patterns can now be per-platform which results in improved fingerprinting
+        during the audit phase and less CPU stress when analyzing responses.
+- Modules
+    - Audit
+        - Path traversal (`path_traversal`)
+            - Updated `/etc/passwd` signatures to be more generic.
+            - Updated MS Windows payloads to include dot truncation.
+            - Detection patterns organized per platform.
+            - Moved non-traversal payloads to the `file_inclusion` module.
+        - SQL Injection (`sqli`)
+            - Added support for:
+                - Firebird
+                - SAP Max DB
+                - Sybase
+                - Frontbase
+                - IngresDB
+                - HSQLDB
+                - MS Access
+        - OS command injection (`os_cmd_injection`)
+            - Detection patterns organized per platform.
+        - Added:
+            - File inclusion (`file_inclusion`) -- Extracted from `path_traversal`.
+                - Uses common server-side files and errors to identify issues.
+    - Recon
+        - Added:
+            - localstart.asp (`localstart_asp`)
+                - Checks if `localstart.asp` is accessible.
+- Plugins
+    - Added:
+        - Uncommon headers (`uncommon_headers`) -- Logs uncommon headers.
 
 ## 0.4.3.2 _(July 16, 2013)_
 

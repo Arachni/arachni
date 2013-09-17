@@ -58,6 +58,8 @@ Gem::Specification.new do |s|
 
     s.rdoc_options      = [ '--charset=UTF-8' ]
 
+    s.add_dependency 'bundler'
+
     # RPC client/server implementation.
     s.add_dependency 'arachni-rpc-em',  '0.2.1dev'
 
@@ -93,7 +95,6 @@ Gem::Specification.new do |s|
 
     s.add_dependency 'watir-webdriver'
 
-    s.add_development_dependency 'bundler'
     s.add_development_dependency 'rake'
     s.add_development_dependency 'rspec'
 
