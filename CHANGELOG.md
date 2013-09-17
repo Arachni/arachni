@@ -1,6 +1,6 @@
 # ChangeLog
 
-## _Under development_
+## 0.4.5.2 _(September 18, 2013)_
 
 - `gemspec`
     - Added `bundler` as a runtime dependency.
