@@ -57,7 +57,7 @@
         - `--http-max-response-size` -- Does not download response bodies larger
             than the specified limit, in bytes.
 - Reports
-    - HTML -- Fixed display of untrusted issues.
+    - Removed `metareport`.
 - Plugins
     - `proxy`
         - Updated to use `HTTP::ProxyServer`.
