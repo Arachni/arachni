@@ -54,7 +54,7 @@ Gem::Specification.new do |s|
 
     s.extra_rdoc_files  = %w(README.md ACKNOWLEDGMENTS.md LICENSE.md
                             AUTHORS.md CHANGELOG.md CONTRIBUTORS.md
-                            EXPLOITATION.md HACKING.md NOTICE)
+                            HACKING.md NOTICE)
 
     s.rdoc_options      = [ '--charset=UTF-8' ]
 
