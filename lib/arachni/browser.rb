@@ -40,6 +40,9 @@ class Browser
         end
     end
 
+    # Let the browser take as long as it needs to complete an operation.
+    WATIR_COM_TIMEOUT = 9999999999
+
     # Events that apply to all elements.
     GLOBAL_EVENTS = [
         :onclick,
@@ -134,6 +137,7 @@ class Browser
     def initialize( options = {} )
         @options      = options.dup
         @shared_token = @options[:shared_token] || Utilities.generate_token
+        @mutex        = Mutex.new
 
         @proxy = HTTP::ProxyServer.new(
             request_handler:  proc do |request, response|
@@ -660,8 +664,15 @@ class Browser
 
     # @return   [Selenium::WebDriver::Driver]   Selenium driver interface.
     def selenium
-        @selenum ||=
-            Selenium::WebDriver.for( :phantomjs, desired_capabilities: capabilities )
+        return @selenium if @selenium
+
+        client = Selenium::WebDriver::Remote::Http::Default.new
+        client.timeout = WATIR_COM_TIMEOUT
+
+        @selenium = Selenium::WebDriver.for( :phantomjs,
+                                             desired_capabilities: capabilities,
+                                             http_client:          client
+        )
     end
 
     def self.info
@@ -980,7 +991,7 @@ class Browser
     end
 
     def synchronize( &block )
-        (@mutex ||= Mutex.new).synchronize( &block )
+        @mutex.synchronize( &block )
     end
 
 
