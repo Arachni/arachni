@@ -13,6 +13,7 @@ describe name_from_filename do
     def text
         <<-HTML
             <!-- Blah blah: /stuff/here.php -->
+            <!-- <style type="text/css"> stuff: here; </style> -->
             Blah blah...
             <!--Pre blah /stuff/here post blah -->
         HTML

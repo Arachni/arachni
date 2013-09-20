@@ -14,8 +14,6 @@
     limitations under the License.
 =end
 
-require 'uri'
-
 # Extract paths from HTML comments.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
@@ -24,7 +22,8 @@ class Arachni::Parser::Extractors::Comments < Arachni::Parser::Extractors::Base
 
     def run( doc )
         doc.xpath( '//comment()' ).map(&:text).join.
-            scan( /[\/a-zA-Z0-9%._-]+/ ).select { |s| s.include? '/' }
+            scan( /\s(\/[\/a-zA-Z0-9%._-]+)/ ).flatten.
+            select { |s| s.include? '/' }
     end
 
 end
