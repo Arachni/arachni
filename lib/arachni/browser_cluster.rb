@@ -84,6 +84,7 @@ class BrowserCluster
         # Holds resources to consume, Arachni::Page objects usually.
         @resources = Queue.new
         @sitemap   = Set.new
+        @mutex     = Mutex.new
 
         initialize_browsers
 
@@ -231,7 +232,7 @@ class BrowserCluster
     end
 
     def synchronize( &block )
-        (@mutex ||= Mutex.new).synchronize( &block )
+        @mutex.synchronize( &block )
     end
 
     def initialize_browsers

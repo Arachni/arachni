@@ -19,6 +19,8 @@ class Hydra
 
     attr_accessor :max_concurrency
 
+    @@mutex = Mutex.new
+
     alias :old_run :run
     def run
         synchronize { old_run }
@@ -30,6 +32,7 @@ class Hydra
     end
 
     private
+
     def locked?
         !!Thread.current[:locked]
     end
@@ -47,7 +50,7 @@ class Hydra
             block.call
         else
             lock
-            (@@mutex ||= Mutex.new).synchronize( &block )
+            @@mutex.synchronize( &block )
             unlock
         end
     end

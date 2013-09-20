@@ -62,6 +62,8 @@ class Base
     attr_reader :options
     attr_reader :framework
 
+    @mutex = Mutex.new
+
     #
     # @param    [Arachni::Framework]    framework
     # @param    [Hash]        options    options passed to the plugin
@@ -188,7 +190,7 @@ class Base
     # Provides plugin-wide synchronization.
     #
     def self.synchronize( &block )
-        (@mutex ||= Mutex.new).synchronize( &block )
+        @mutex.synchronize( &block )
     end
     def synchronize( &block )
         self.class.synchronize( &block )

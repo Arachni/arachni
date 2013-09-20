@@ -57,6 +57,7 @@ class Spider
         @redirects = []
         @paths     = Set.new
         @visited   = Support::LookUp::HashSet.new
+        @mutex     = Mutex.new
 
         @on_each_page_blocks     = []
         @on_each_response_blocks = []
@@ -256,7 +257,7 @@ class Spider
     end
 
     def synchronize( &block )
-        (@mutex ||= Mutex.new).synchronize( &block )
+        @mutex.synchronize( &block )
     end
 
     def distribute( urls )
