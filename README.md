@@ -73,7 +73,7 @@ If you get an error when trying to run Arachni, use `bundle exec` like so:
     </tr>
     <tr>
         <th>License</th>
-        <td><a href="file.LICENSE.html">Apache License Version 2.0</a></td>
+        <td><a href="file.LICENSE.html">All rights reserved.</a></td>
     </tr>
 </table>
 
@@ -527,7 +527,6 @@ need to follow in order to contribute code:
 
 ## License
 
-Arachni is licensed under the Apache License Version 2.0.<br/>
 See the [LICENSE](file.LICENSE.html) file for more information.
 
 ## Disclaimer

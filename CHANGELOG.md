@@ -2,6 +2,8 @@
 
 ## _Under development_
 
+- `Options#load` -- Updated to support serialized `Hash` objects.
+
 ## 0.4.5.2 _(September 18, 2013)_
 
 - `gemspec`
