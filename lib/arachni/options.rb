@@ -1401,6 +1401,7 @@ class Options
     #
     def load( filepath )
         opts = YAML::load( IO.read( filepath ) )
+        opts = self.deep_clone.merge!( opts ) if opts.is_a? Hash
 
         if opts.restrict_paths_filepath
             opts.restrict_paths = paths_from_file( opts.restrict_paths_filepath )

@@ -793,9 +793,26 @@ describe Arachni::Options do
     end
 
     describe '#load' do
-        it 'dumps a serialized version of self to a file (without the directory data)' do
+        it 'loads a serialized version of self' do
             f = 'options'
             @opts.save( f )
+
+            @opts.dir = nil
+            @opts.load( f ).should == @opts
+
+            raised = false
+            begin
+                File.delete( f )
+            rescue
+                raised = true
+            end
+            raised.should be_false
+        end
+
+        it 'supports a serialized Hash' do
+            f = 'options'
+
+            File.open( f, 'w' ) { |file| YAML.dump( @opts.to_hash, file ) }
 
             @opts.dir = nil
             @opts.load( f ).should == @opts
