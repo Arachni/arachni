@@ -1451,7 +1451,7 @@ class Options
         options.to_hash.each_pair do |k, v|
             next if !v
             next if ( v.is_a?( Array ) || v.is_a?( Hash ) ) && v.empty?
-            send( "#{k.to_s}=", v )
+            send( "#{k.to_s}=", v ) rescue NoMethodError
         end
         self
     end
