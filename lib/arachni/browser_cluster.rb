@@ -282,7 +282,7 @@ class BrowserCluster
                 end
             end
         rescue Timeout::Error
-            abort "BrowserCluster never started!"
+            abort 'BrowserCluster never started!'
         end
     end
 
