@@ -277,13 +277,12 @@ class BrowserCluster
                     begin
                         service.alive?
                         break
-                    rescue Exception => e
-                        ap e
+                    rescue ::RPC::Exceptions::ConnectionError
                     end
                 end
             end
         rescue Timeout::Error
-            abort "BrowserCluster (#{socket}) never started!"
+            abort "BrowserCluster never started!"
         end
     end
 
