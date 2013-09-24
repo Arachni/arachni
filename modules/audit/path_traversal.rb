@@ -18,7 +18,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.4
+# @version 0.4.1
 #
 # @see http://cwe.mitre.org/data/definitions/22.html
 # @see http://www.owasp.org/index.php/Path_Traversal
@@ -68,8 +68,8 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
 
         @payloads = {
             unix:    [
-                'proc/self/environ',
-                'etc/passwd'
+                '/proc/self/environ',
+                '/etc/passwd'
             ],
             windows: [
                 'boot.ini',
@@ -107,7 +107,7 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
                 based on the presence of relevant content in the HTML responses.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.4',
+            version:     '0.4.1',
             references:  {
                 'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
                 'WASC'  => 'http://projects.webappsec.org/Path-Traversal'
