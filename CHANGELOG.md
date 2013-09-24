@@ -3,6 +3,9 @@
 ## _Under development_
 
 - `Options#load` -- Updated to support serialized `Hash` objects.
+- Modules
+    - Audit
+        - `path_traversal` -- Updated to use double-slashes for *nix payloads.
 - Plugins
     - `autologin`
         - Changed `print_bad` to `print_error` so that errors are written to the
