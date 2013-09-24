@@ -3,6 +3,11 @@
 ## _Under development_
 
 - `Options#load` -- Updated to support serialized `Hash` objects.
+- Plugins
+    - `autologin`
+        - Changed `print_bad` to `print_error` so that errors are written to the
+            error log.
+        - Scan remains paused and awaits user action upon failure.
 
 ## 0.4.5.2 _(September 18, 2013)_
 
