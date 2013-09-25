@@ -15,6 +15,8 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
                 ]
             }
             @params = { 'rdiff' => 'blah' }
+
+            Arachni::Element::Capabilities::Auditable.reset
             issues.clear
         end
 
@@ -51,6 +53,39 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
             end
         end
 
+        context 'when a request times out' do
+            it 'does not log any issues' do
+                auditable = Arachni::Element::Link.new( @url + '/timeout', @params )
+                auditable.auditor = @auditor
+                auditable.rdiff_analysis( @opts.merge( timeout: 1_000 ) )
+                @auditor.http.run
+                @auditor.http.run
+
+                issues.should be_empty
+
+                Arachni::Element::Capabilities::Auditable.reset
+
+                auditable = Arachni::Element::Link.new( @url + '/timeout', @params )
+                auditable.auditor = @auditor
+                auditable.rdiff_analysis( @opts.merge( timeout: 3_000 ) )
+                @auditor.http.run
+                @auditor.http.run
+
+                issues.should be_any
+            end
+        end
+
+        context 'when a response has an empty body' do
+            it 'does not log any issues' do
+                auditable = Arachni::Element::Link.new( @url + '/empty', @params )
+                auditable.auditor = @auditor
+                auditable.rdiff_analysis( @opts )
+                @auditor.http.run
+                @auditor.http.run
+
+                issues.should be_empty
+            end
+        end
     end
 
 end

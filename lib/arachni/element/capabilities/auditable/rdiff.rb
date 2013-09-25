@@ -18,7 +18,8 @@ module Arachni
 
 module Element::Capabilities
 
-#
+module Auditable
+
 # Performs boolean, fault injection and behavioral analysis (using the rDiff algorithm)
 # in order to determine whether the web application is responding to the injected data and how.
 #
@@ -26,25 +27,22 @@ module Element::Capabilities
 # (like when evaluating injected code) then the element is deemed vulnerable.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-module Auditable::RDiff
-
-    def self.included( mod )
-        # the rdiff attack performs it own redundancy checks so we need this to
-        # keep track of audited elements
-        @@rdiff_audited ||= Support::LookUp::HashSet.new
-    end
+module RDiff
 
     RDIFF_OPTIONS =  {
-        # append our seeds to the default values
-        format:    [Mutable::Format::APPEND],
+        # Append our seeds to the default values.
+        format:         [Mutable::Format::APPEND],
 
-        # allow duplicate requests
-        redundant: true,
+        # Amount of refinement operations to remove context-irrelevant dynamic
+        # content -- like banners etc.
+        precision:      2,
 
-        # amount of rdiff iterations
-        precision: 2,
+        # Ratio of allowed difference between the compared (refined) response bodies.
+        # `0.0` means the bodies should be identical to be considered the same.
+        ratio:          0.18,
 
+        # Override global fuzzing settings and only use the default method of the
+        # element under audit.
         respect_method: true
     }
 
@@ -102,113 +100,39 @@ module Auditable::RDiff
         # Don't continue if there's a missing value.
         auditable.values.each { |val| return if val.to_s.empty? }
 
-        return false if rdiff_audited?
-        rdiff_audited
+        return false if audited? audit_id
+        audited audit_id
 
+        # Holds all the data from the probes.
         responses = {}
-        control  = nil
+
+        corrupted = false
+        control   = nil
+
+        received_requests = 0
         opts[:precision].times do
+
             # Get the default response.
             submit do |res|
+
+                next if corrupted
+                if res.body.to_s.empty?
+                    print_bad 'Server returned empty response body, aborting analysis.'
+                    corrupted = true
+                    next
+                end
+
+                received_requests += 1
+
                 if control
                     print_status 'Got default/control response.'
                 end
 
                 # Remove context-irrelevant dynamic content like banners and such.
                 control = (control ? control.rdiff( res.body ) : res.body)
-            end
-        end
 
-        opts[:pairs].each do |pair|
-            responses[pair] ||= {}
-            true_expr, false_expr = pair.to_a.first
-
-            opts[:precision].times do
-                mutations( true_expr, opts ).each do |elem|
-                    print_status elem.status_string
-
-                    # Submit the mutation and store the response.
-                    elem.submit( opts ) do |res|
-                        if responses[pair][elem.altered][:true]
-                            elem.print_status "Gathering data for '#{elem.altered}' " <<
-                                                  "#{type} input -- Got true  response:" <<
-                                                  " #{true_expr}"
-                        end
-
-                        responses[pair][elem.altered] ||= {}
-                        responses[pair][elem.altered][:mutation] = elem
-
-                        # Keep the latest response for the {Arachni::Issue}.
-                        responses[pair][elem.altered][:response]        = res
-                        responses[pair][elem.altered][:injected_string] = true_expr
-
-                        responses[pair][elem.altered][:true] ||= res.body.clone
-                        # Remove context-irrelevant dynamic content like banners
-                        # and such from the error page.
-                        responses[pair][elem.altered][:true] =
-                            responses[pair][elem.altered][:true].rdiff( res.body.clone )
-                    end
-                end
-
-                mutations( false_expr, opts ).each do |elem|
-                    responses[pair][elem.altered] ||= {}
-
-                    # Submit the mutation and store the response.
-                    elem.submit( opts ) do |res|
-                        if responses[pair][elem.altered][:false]
-                            elem.print_status "Gathering data for '#{elem.altered}'" <<
-                                                  " #{type} input -- Got false " <<
-                                                  "response: #{false_expr}"
-                        end
-
-                        responses[pair][elem.altered][:false] ||= res.body.clone
-
-                        # Remove context-irrelevant dynamic content like banners
-                        # and such from the error page.
-                        responses[pair][elem.altered][:false] =
-                            responses[pair][elem.altered][:false].rdiff( res.body.clone )
-                    end
-                end
-            end
-        end
-
-
-        # When this runs the "responses" hash will have been populated and we
-        # can continue with analysis.
-        http.after_run do
-            responses.each do |pair, data|
-                if block
-                    exception_jail( false ){ block.call( pair, data ) }
-                    next
-                end
-
-                data.each do |input_name, result|
-                    # if default_response_body == true_response_body AND
-                    #    false_response_body != true_response_code AND
-                    #    true_response_code == 200
-                    if control == result[:true] &&
-                        result[:false] != result[:true] &&
-                        result[:response].code == 200
-
-                        # Check to see if the `true` response we're analyzing
-                        # is a custom 404 page.
-                        http.custom_404?( result[:response] ) do |custom_404|
-                            # If this is a custom 404 page bail out.
-                            next if custom_404
-
-                            @auditor.log({
-                                var:      input_name,
-                                opts:     {
-                                    injected_orig: result[:injected_string],
-                                    combo:         result[:mutation].auditable
-                                },
-                                injected: result[:mutation].altered_value,
-                                elem:     type
-                                }, result[:response]
-                            )
-                        end
-                    end
-                end
+                next if received_requests != opts[:precision]
+                rdiff_fire_true_probes( opts, control, responses, &block )
             end
         end
 
@@ -216,18 +140,146 @@ module Auditable::RDiff
     end
 
     private
-    def rdiff_audited
-        @@rdiff_audited << rdiff_audit_id
+
+    def rdiff_fire_true_probes( opts, control, responses, &block )
+        received_responses = 0
+
+        opts[:pairs].each do |pair|
+            responses[pair] ||= {}
+            true_expr = pair.to_a.first[0]
+
+            opts[:precision].times do
+                true_mutations     = mutations( true_expr, opts )
+                expected_responses = true_mutations.size * opts[:precision] * opts[:pairs].size
+
+                true_mutations.each do |elem|
+                    print_status elem.status_string
+
+                    # Submit the mutation and store the response.
+                    elem.submit( opts ) do |res|
+                        responses[pair][elem.altered] ||= {}
+
+                        next if responses[pair][elem.altered][:corrupted]
+                        if res.body.to_s.empty?
+                            elem.print_bad 'Server returned empty response body,' <<
+                                " aborting analysis for: #{elem.altered}"
+                            responses[pair][elem.altered][:corrupted] = true
+                            next
+                        end
+
+                        received_responses +=1
+
+                        if responses[pair][elem.altered][:true]
+                            elem.print_status "Gathering data for '#{elem.altered}' " <<
+                                "#{type} input -- Got true  response: #{true_expr}"
+                        end
+
+                        responses[pair][elem.altered][:mutation] = elem
+
+                        # Keep the latest response for the {Arachni::Issue}.
+                        responses[pair][elem.altered][:response]        = res
+                        responses[pair][elem.altered][:injected_string] = true_expr
+
+                        responses[pair][elem.altered][:true] ||= res.body.dup
+                        # Remove context-irrelevant dynamic content like banners
+                        # and such from the error page.
+                        responses[pair][elem.altered][:true] =
+                            responses[pair][elem.altered][:true].rdiff( res.body.dup )
+
+                        next if expected_responses != received_responses
+                        rdiff_fire_false_probes( opts, control, responses, &block )
+                    end
+                end
+            end
+        end
     end
 
-    def rdiff_audited?
-        @@rdiff_audited.include?( rdiff_audit_id )
+    def rdiff_fire_false_probes( opts, control, responses, &block )
+        received_responses = 0
+
+        opts[:pairs].each do |pair|
+            false_expr = pair.to_a.first[1]
+
+            opts[:precision].times do
+                false_mutations    = mutations( false_expr, opts )
+                expected_responses = false_mutations.size * opts[:precision] * opts[:pairs].size
+
+                false_mutations.each do |elem|
+
+                    # Submit the mutation and store the response.
+                    elem.submit( opts ) do |res|
+
+                        next if responses[pair][elem.altered][:corrupted]
+                        if res.body.to_s.empty?
+                            elem.print_bad 'Server returned empty response body,' <<
+                                " aborting analysis for: #{elem.altered}"
+                            responses[pair][elem.altered][:corrupted] = true
+                            next
+                        end
+
+                        received_responses +=1
+
+                        if responses[pair][elem.altered][:false]
+                            elem.print_status "Gathering data for '#{elem.altered}'" <<
+                                " #{type} input -- Got false response: #{false_expr}"
+                        end
+
+                        responses[pair][elem.altered][:false] ||= res.body.dup
+                        # Remove context-irrelevant dynamic content like banners
+                        # and such from the error page.
+                        responses[pair][elem.altered][:false] =
+                            responses[pair][elem.altered][:false].rdiff( res.body.dup )
+
+                        next if expected_responses != received_responses
+                        rdiff_analyze_data( opts, control, responses, &block )
+                    end
+                end
+            end
+        end
     end
 
-    def rdiff_audit_id
-        @action + @auditable.keys.to_s
+    def rdiff_analyze_data( opts, control, responses, &block )
+        responses.each do |pair, data|
+            if block
+                exception_jail( false ){ block.call( pair, data ) }
+                next
+            end
+
+            data.each do |input_name, result|
+                # if default_response_body == true_response_body AND
+                #    false_response_body != true_response_code AND
+                #    true_response_code == 200
+                if rdiff_similar_bodies( control, result[:true], opts[:ratio] ) &&
+                    !rdiff_similar_bodies( result[:false], result[:true], opts[:ratio] ) &&
+                    result[:response].code == 200
+
+                    # Check to see if the `true` response we're analyzing
+                    # is a custom 404 page.
+                    http.custom_404?( result[:response] ) do |custom_404|
+                        # If this is a custom 404 page bail out.
+                        next if custom_404
+
+                        @auditor.log({
+                                var:      input_name,
+                                opts:     {
+                                    injected_orig: result[:injected_string],
+                                    combo:         result[:mutation].auditable
+                                },
+                                injected: result[:mutation].altered_value,
+                                elem:     type
+                            }, result[:response]
+                        )
+                    end
+                end
+            end
+        end
     end
 
+    def rdiff_similar_bodies( body1, body2, ratio )
+        body1.diff_ratio( body2 ) <= ratio
+    end
+
+end
 end
 end
 end

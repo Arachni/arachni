@@ -2,6 +2,11 @@
 
 ## _Under development_
 
+- `Element::Capabilities::Auditable::RDiff`
+    - Updated the differential analysis algorithm to be more lax.
+    - Added integrity check for the analysis process.
+    - Optimized scheduling of data gathering.
+    - Reduced total amount of performed requests.
 - `Options#load` -- Updated to support serialized `Hash` objects.
 - Modules
     - Audit
