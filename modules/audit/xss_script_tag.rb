@@ -3,18 +3,16 @@
     All rights reserved.
 =end
 
-#
 # XSS in HTML script tag.
 # It injects strings and checks if they appear inside HTML 'script' tags.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.3
+# @version 0.1.4
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
 # @see http://secunia.com/advisories/9716/
-#
 class Arachni::Modules::XSSScriptTag < Arachni::Module::Base
 
     REMARK = 'Arachni cannot inspect the JavaScript runtime in order to' +
@@ -22,11 +20,7 @@ class Arachni::Modules::XSSScriptTag < Arachni::Module::Base
         'this issue to determine its validity.'
 
     def self.strings
-        @strings ||= [
-            "arachni_xss_in_script_tag_#{seed}",
-            "\"arachni_xss_in_script_tag_" + seed + '"',
-            "'arachni_xss_in_script_tag_" + seed + "'"
-        ]
+        @strings ||= [ "'\"()arachni_xss_in_script_tag_#{seed}" ]
     end
 
     def self.opts
@@ -63,7 +57,7 @@ class Arachni::Modules::XSSScriptTag < Arachni::Module::Base
             description: %q{Injects strings and checks if they appear inside HTML 'script' tags.},
             elements:    [Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.1.3',
+            version:     '0.1.4',
             references:  {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/'

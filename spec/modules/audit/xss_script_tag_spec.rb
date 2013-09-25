@@ -12,7 +12,7 @@ describe name_from_filename do
     end
 
     def issue_count
-        3
+        1
     end
 
     easy_test do
