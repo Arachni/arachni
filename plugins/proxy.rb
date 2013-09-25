@@ -60,6 +60,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
              ProxyVia:            false,
              ProxyContentHandler: method( :response_handler ),
              ProxyRequestHandler: method( :request_handler ),
+             DoNotReverseLookup:  true,
              AccessLog:           [],
              Logger:              WEBrick::Log::new( '/dev/null', 7 ),
              Timeout:             options['timeout']
