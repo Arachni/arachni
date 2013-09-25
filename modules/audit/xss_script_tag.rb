@@ -49,17 +49,16 @@ class Arachni::Modules::XSSScriptTag < Arachni::Module::Base
         # context there's no point in parsing the HTML to verify the vulnerability
         return if !res.body || !res.body.include?( injected )
 
-        # see if we managed to inject a working HTML attribute to any
-        # elements
-        if (html_elem = Nokogiri::HTML( res.body ).css( "script" )).empty? ||
-            !html_elem.to_s.include?( injected )
-            return
-        end
+        Nokogiri::HTML( res.body ).css( 'script' ).each do |script|
+            next if !script.to_s.include?( injected )
 
-        opts[:match]        = html_elem.to_s
-        opts[:verification] = true
-        opts[:remarks]      =  { module: [ REMARK ] }
-        log( opts, res )
+            opts[:match]        = script.to_s
+            opts[:verification] = true
+            opts[:remarks]      =  { module: [ REMARK ] }
+            log( opts, res )
+
+            break
+        end
     end
 
     def self.info
