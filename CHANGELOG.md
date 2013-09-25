@@ -11,6 +11,7 @@
 - Modules
     - Audit
         - `path_traversal` -- Updated to use double-slashes for *nix payloads.
+        - `xss_script_tag` -- Updated to check for the existence of encoding operations.
 - Plugins
     - `autologin`
         - Changed `print_bad` to `print_error` so that errors are written to the
