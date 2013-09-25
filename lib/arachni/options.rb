@@ -417,11 +417,14 @@ class Options
     # @return   [String]   Path to the UNIX socket to use.
     attr_accessor :rpc_socket
 
-    # @return   [Integer]   port for the RPC server to listen to
+    # @return   [Integer]   port for the RPC server to listen to.
     attr_accessor :rpc_port
 
-    # @return   [String]   (hostname or IP) address for the RPC server to bind to
+    # @return   [String]   Hostname or IP address for the RPC server to bind to.
     attr_accessor :rpc_address
+
+    # @return   [String]   External (hostname or IP) address for the RPC server to bind to.
+    attr_accessor :rpc_external_address
 
     # @return   [Array<Integer>]
     #   Range of ports to use when spawning instances,
@@ -988,6 +991,7 @@ class Options
             [ '--node-ssl-cert',          GetoptLong::REQUIRED_ARGUMENT ],
             [ '--ssl-ca',                 GetoptLong::REQUIRED_ARGUMENT ],
             [ '--address',                GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--external-address',       GetoptLong::REQUIRED_ARGUMENT ],
             [ '--reroute-to-logfile',     GetoptLong::NO_ARGUMENT ],
             [ '--pool-size',              GetoptLong::REQUIRED_ARGUMENT ],
             [ '--neighbour',              GetoptLong::REQUIRED_ARGUMENT ],
@@ -1233,6 +1237,9 @@ class Options
 
                     when '--address'
                         @rpc_address = arg.to_s
+
+                    when '--external-address'
+                        @rpc_external_address = arg.to_s
 
                     when '--pool-size'
                         @pool_size = arg.to_i

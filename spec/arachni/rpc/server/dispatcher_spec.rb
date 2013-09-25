@@ -47,6 +47,13 @@ describe Arachni::RPC::Server::Dispatcher do
     end
 
     describe '#dispatch' do
+        context 'when Options#rpc_external_address has been set' do
+            it 'advertises that address' do
+                address = '9.9.9.9'
+                dispatcher = dispatcher_light_spawn( rpc_external_address: address )
+                dispatcher.dispatch['url'].should start_with "#{address}:"
+            end
+        end
         context 'when not a Grid member' do
             it 'returns valid Instance info' do
                 info = dispatcher_light_spawn.dispatch
@@ -196,6 +203,14 @@ describe Arachni::RPC::Server::Dispatcher do
 
             stats['node'].delete( 'score' ).should == dispatcher.workload_score
             stats['node'].keys.should == @node_info_keys
+        end
+
+        context 'when Options#rpc_external_address has been set' do
+            it 'advertises that address' do
+                address = '9.9.9.9'
+                dispatcher = dispatcher_light_spawn( rpc_external_address: address )
+                dispatcher.stats['node']['url'].should start_with "#{address}:"
+            end
         end
     end
 

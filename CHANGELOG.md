@@ -2,6 +2,11 @@
 
 ## _Under development_
 
+- Options
+    - Added:
+        - `--external-address` -- The external address of a Dispatcher.
+- `RPC::Server::Dispatcher`
+    - Now supports specifying an external address to support deployments behind NATs.
 - `Element::Capabilities::Auditable::RDiff`
     - Updated the differential analysis algorithm to be more lax.
     - Added integrity check for the analysis process.

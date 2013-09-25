@@ -52,11 +52,13 @@ class Server::Dispatcher::Node
     #
     def initialize( opts, logfile = nil )
         @opts = opts
-        @url  = "#{@opts.rpc_address}:#{@opts.rpc_port.to_s}"
+        @opts.rpc_external_address ||= @opts.rpc_address
+
+        @url = "#{@opts.rpc_external_address}:#{@opts.rpc_port}"
 
         reroute_to_file( logfile ) if logfile
 
-        print_status 'Initing grid node...'
+        print_status 'Initializing grid node...'
 
         @dead_nodes = []
         @neighbours = Set.new
