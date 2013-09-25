@@ -21,7 +21,7 @@ class Arachni::Modules::BlindrDiffSQLInjection < Arachni::Module::Base
 
     def self.queries_for_expression( expression )
         (@templates ||= read_file( 'payloads.txt' )).map do |template|
-            [ '\'', '"', '' ].map{ |quote| template.gsub( '%q%', quote ) + " #{expression}" }
+            [ '\'', '"', '' ].map{ |quote| template.gsub( '%q%', quote ) + "#{expression}" }
         end.flatten
     end
 
