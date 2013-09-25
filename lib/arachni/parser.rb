@@ -123,7 +123,8 @@ class Parser
                 body:             @html,
                 request_headers:  @response.request ? @response.request.headers : {},
                 response_headers: @response_headers,
-                text:             false
+                text:             false,
+                links:            [self_link]
             )
             Platform::Manager.fingerprint( page ) if Options.fingerprint?
             return page
