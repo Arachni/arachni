@@ -5,7 +5,8 @@
 
 module Arachni::Element::Capabilities
 
-#
+module Auditable
+
 # Evaluates whether or not the injection of specific data affects the response
 # time of the web application.
 #
@@ -53,8 +54,7 @@ module Arachni::Element::Capabilities
 # a callback block to {on_timing_attacks}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-module Auditable::Timeout
+module Timeout
 
     def self.included( mod )
         @@parent = mod
@@ -258,7 +258,7 @@ module Auditable::Timeout
         @@deduplicate ||= 't'
     end
 
-    def self.reset
+    def Timeout.reset
         @@timeout_audit_operations_cnt = 0
 
         @@timeout_candidates.clear
@@ -427,5 +427,6 @@ module Auditable::Timeout
         end
     end
 
+end
 end
 end
