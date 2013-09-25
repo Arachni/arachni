@@ -88,6 +88,8 @@ module Auditable
     def self.reset
         @@audited          = Support::LookUp::HashSet.new
         @@skip_like_blocks = []
+
+        Timeout.reset
     end
     reset
 
