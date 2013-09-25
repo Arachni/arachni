@@ -41,7 +41,7 @@ class Browser
     end
 
     # Let the browser take as long as it needs to complete an operation.
-    WATIR_COM_TIMEOUT = 9999999999
+    WATIR_COM_TIMEOUT = 3600 # 1 hour.
 
     # Events that apply to all elements.
     GLOBAL_EVENTS = [
