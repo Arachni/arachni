@@ -54,6 +54,7 @@ class String
     #
     def diff_ratio( other )
         return 0.0 if self == other
+        return 1.0 if empty? || other.empty?
 
         s_words = self.words( true )
         o_words = other.words( true )
@@ -61,7 +62,7 @@ class String
         common = (s_words & o_words).size.to_f
         union  = (s_words | o_words).size.to_f
 
-        (union - common)/union
+        (union - common) / union
     end
 
     #
