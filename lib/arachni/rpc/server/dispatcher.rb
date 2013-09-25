@@ -49,9 +49,10 @@ class Dispatcher
 
         @opts = opts
 
-        @opts.rpc_port    ||= 7331
-        @opts.rpc_address ||= 'localhost'
-        @opts.pool_size   ||= 5
+        @opts.rpc_port             ||= 7331
+        @opts.rpc_address          ||= 'localhost'
+        @opts.rpc_external_address ||= @opts.rpc_address
+        @opts.pool_size            ||= 5
 
         if @opts.help
             print_help
@@ -66,7 +67,7 @@ class Dispatcher
             method.parameters.flatten.include? :block
         end
 
-        @url = "#{@opts.rpc_address}:#{@opts.rpc_port.to_s}"
+        @url = "#{@opts.rpc_external_address}:#{@opts.rpc_port.to_s}"
 
         # let the instances in the pool know who to ask for routing instructions
         # when we're in grid mode.
@@ -294,6 +295,9 @@ class Dispatcher
     --address=<host>            specify address to bind to
                                     (Default: #{@opts.rpc_address})
 
+    --external-address=<host>   specify the external address used to access this Dispatcher
+                                    (Defaults to the value of '--address'.)
+
     --port=<num>                specify port to listen to
                                     (Default: #{@opts.rpc_port})
 
@@ -398,7 +402,7 @@ USAGE
                 'token'     => token,
                 'pid'       => pid,
                 'port'      => port,
-                'url'       => "#{@opts.rpc_address}:#{port}",
+                'url'       => "#{@opts.rpc_external_address}:#{port}",
                 'owner'     => owner,
                 'birthdate' => Time.now
             }
