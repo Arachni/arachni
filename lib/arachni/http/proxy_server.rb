@@ -63,6 +63,7 @@ class ProxyServer < WEBrick::HTTPProxyServer
             BindAddress:         @options[:address],
             Port:                @options[:port],
             ProxyVia:            false,
+            DoNotReverseLookup:  true,
             AccessLog:           [],
             Logger:              WEBrick::Log::new( '/dev/null', 7 ),
             Timeout:             @options[:timeout],
