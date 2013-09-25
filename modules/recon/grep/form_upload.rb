@@ -18,16 +18,14 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1
+# @version 0.2
 class Arachni::Modules::FileUpload < Arachni::Module::Base
 
 
     def run
         page.forms.each do |form|
-            next if form.raw.empty?
-
-            form.raw['input'].each do |input|
-                next if input['type'] != 'file'
+            form.inputs.keys.each do |name|
+                next if form.details_for( name )[:type] != :file
                 log( match: form.to_html, element: Element::FORM )
             end
         end
@@ -40,7 +38,7 @@ class Arachni::Modules::FileUpload < Arachni::Module::Base
             description: description,
             elements:    [ Element::FORM ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1',
+            version:     '0.2',
             targets:     %w(Generic),
             references: {
                 'owasp.org' => 'https://www.owasp.org/index.php/Unrestricted_File_Upload'
