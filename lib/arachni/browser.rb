@@ -461,11 +461,26 @@ class Browser
     # @param    [Integer]  element_index
     # @param    [Symbol]  event
     def trigger_event( page, element_index, event )
-        event       = event.to_sym
-        element     = watir.elements[element_index]
-        opening_tag = element.opening_tag
+        event = event.to_sym
+
+        begin
+            element     = watir.elements[element_index]
+            opening_tag = element.opening_tag
+        rescue Selenium::WebDriver::Error::UnknownError,
+                Watir::Exception::UnknownObjectException => e
+
+            print_error "Element at index '#{element_index}' disappeared while triggering '#{event}'."
+            print_error
+            print_error e
+            print_error_backtrace e
+
+            print_info 'Restoring page.'
+            restore page
+            return
+        end
 
         if !fire_event( element, event )
+            print_info 'Restoring page.'
             restore page
             return
         end
@@ -521,7 +536,6 @@ class Browser
             print_error e
             print_error_backtrace e
 
-            print_info 'Restoring page and aborting.'
             false
         end
     end
