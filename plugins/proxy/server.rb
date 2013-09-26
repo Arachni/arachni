@@ -17,6 +17,8 @@
 require 'webrick/httpproxy'
 require 'webrick/https'
 
+require Arachni::Options.dir['lib'] + 'ruby/webrick'
+
 class Arachni::Plugins::Proxy
 
 #
