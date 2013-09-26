@@ -25,6 +25,7 @@
             error log.
         - Scan remains paused and awaits user action upon failure.
     - `proxy`
+        - Updated request URL encoding to handle malformed URLs.
         - Disabled reverse DNS lookup on requests to increase performance.
 
 ## 0.4.5.2 _(September 18, 2013)_
