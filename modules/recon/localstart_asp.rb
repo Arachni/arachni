@@ -18,11 +18,11 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1
+# @version 0.1.1
 class Arachni::Modules::LocalstartASP < Arachni::Module::Base
 
     def run
-        return if page.platforms.os.any? && !page.platforms.os.include?( :windows )
+        return if page.platforms.os.any? && !page.languages.servers.include?( :asp )
 
         path = get_path( page.url )
         return if audited?( path )
@@ -52,7 +52,7 @@ class Arachni::Modules::LocalstartASP < Arachni::Module::Base
             description: %q{Checks for localstart.asp.},
             elements:    [ Element::SERVER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1',
+            version:     '0.1.1',
             targets:     %w(Generic),
             issue:       {
                 name:            %q{Exposed localstart.asp page},

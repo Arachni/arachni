@@ -17,6 +17,8 @@
     - Audit
         - `path_traversal` -- Updated to use double-slashes for *nix payloads.
         - `xss_script_tag` -- Updated to check for the existence of encoding operations.
+    - Recon
+        - `localstart_asp` -- Check for an ASP platform instead of a Windows one.
 - Plugins
     - `autologin`
         - Changed `print_bad` to `print_error` so that errors are written to the
