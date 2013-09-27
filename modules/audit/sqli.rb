@@ -53,10 +53,11 @@ class Arachni::Modules::SQLInjection < Arachni::Module::Base
 
     def self.options
         @options ||= {
-            format:     [Format::APPEND],
-            regexp:     error_patterns,
-            ignore:     ignore_patterns,
-            param_flip: true
+            format:                    [Format::APPEND],
+            regexp:                    error_patterns,
+            ignore:                    ignore_patterns,
+            param_flip:                true,
+            longest_word_optimization: true
         }
     end
 

@@ -12,12 +12,18 @@
     - Added integrity check for the analysis process.
     - Optimized scheduling of data gathering.
     - Reduced total amount of performed requests.
+- `Element::Capabilities::Auditable::Taint`
+    - Added longest-word-optimization -- Checks if the longest word of a regexp
+        exists in the response body prior to matching the full-blown regexp.
 - `Options#load` -- Updated to support serialized `Hash` objects.
 - Modules
     - Audit
         - `path_traversal` -- Updated to use double-slashes for *nix payloads.
         - `xss_script_tag` -- Updated to check for the existence of encoding operations.
-        - `sqli` -- Updated to cache the compiled regular expressions.
+        - `sqli`
+            - Updated to cache the compiled regular expressions.
+            - Updated to use the longest-word-optimization of the taint analysis
+                implementation for faster analysis.
     - Recon
         - `localstart_asp` -- Check for an ASP platform instead of a Windows one.
 - Plugins
