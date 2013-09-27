@@ -22,7 +22,7 @@
 class Arachni::Modules::LocalstartASP < Arachni::Module::Base
 
     def run
-        return if page.platforms.os.any? && !page.languages.servers.include?( :asp )
+        return if page.platforms.languages.any? && !page.platforms.languages.include?( :asp )
 
         path = get_path( page.url )
         return if audited?( path )
