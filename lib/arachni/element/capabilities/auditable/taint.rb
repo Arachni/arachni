@@ -38,7 +38,15 @@ module Auditable::Taint
         # Useful when needing to narrow down what to log without
         # having to construct overly complex match regexps.
         #
-        ignore:    nil
+        ignore:    nil,
+
+        #
+        # Extract the longest word from each regexp and only proceed to the
+        # full match only if that word is included in the response body.
+        #
+        # The check is case insensitive.
+        #
+        longest_word_optimization: false
     }
 
     REMARK = 'This issue was identified by a pattern but the pattern matched ' <<
@@ -99,6 +107,10 @@ module Auditable::Taint
     end
 
     def match_patterns( patterns, matcher, res, opts )
+        if opts[:longest_word_optimization]
+            opts[:downcased_body] = res.body.downcase
+        end
+
         case patterns
             when Regexp, String, Array
                 [patterns].flatten.compact.
@@ -153,6 +165,10 @@ module Auditable::Taint
         regexp = regexp.is_a?( Regexp ) ? regexp :
             Regexp.new( regexp.to_s, Regexp::IGNORECASE )
 
+        if opts[:downcased_body]
+            return if !opts[:downcased_body].include?( longest_word_for_regexp( regexp ) )
+        end
+
         match_data = res.body.scan( regexp ).flatten.first.to_s
 
         # An annoying encoding exception may be thrown when matching the regexp.
@@ -183,6 +199,12 @@ module Auditable::Taint
             return true if res.body.scan( r ).flatten.first
         end
         false
+    end
+
+    def longest_word_for_regexp( regexp )
+        @@longest_word_for_regex ||= {}
+        @@longest_word_for_regex[regexp.source.hash] ||=
+            regexp.source.longest_word.downcase
     end
 
 end
