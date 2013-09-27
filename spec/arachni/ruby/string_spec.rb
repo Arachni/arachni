@@ -108,4 +108,15 @@ describe String do
         end
     end
 
+    describe '#longest_word' do
+        it 'returns the longest word' do
+            'o tw longest'.longest_word.should == 'longest'
+        end
+    end
+
+    describe '#shortest_word' do
+        it 'returns the longest word' do
+            'o tw longest'.shortest_word.should == 'o'
+        end
+    end
 end
