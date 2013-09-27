@@ -89,6 +89,16 @@ class String
         splits
     end
 
+    # @returns [String] Shortest word.
+    def shortest_word
+        words( true ).sort_by { |w| w.size }.first
+    end
+
+    # @returns [String] Longest word.
+    def longest_word
+        words( true ).sort_by { |w| w.size }.last
+    end
+
     # @return   [Integer]
     #   In integer with the property of:
     #
