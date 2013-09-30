@@ -21,13 +21,6 @@ require Options.dir['mixins'] + 'terminal'
 require Options.dir['mixins'] + 'progress_bar'
 
 module UI
-
-#
-#
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-# @see Arachni::Framework::CLI
-#
 class CLI
 
 module Utilities
@@ -62,14 +55,13 @@ module Utilities
     #
     # Outputs all available modules and their info.
     #
-    def lsplat( platforms )
+    def lsplat( platform_info )
         print_line
         print_line
         print_info 'Available platforms:'
         print_line
 
-        i = 0
-        platforms.each do |type, platforms|
+        platform_info.each do |type, platforms|
             print_status "#{type}"
 
             platforms.each do |shortname, fullname|
@@ -90,7 +82,6 @@ module Utilities
         print_info 'Available modules:'
         print_line
 
-        i = 0
         modules.each do |info|
             print_status "#{info[:mod_name]}:"
             print_line '--------------------'
@@ -129,21 +120,6 @@ module Utilities
             end
 
             print_line "Path:\t#{info[:path]}"
-
-            i += 1
-
-            # pause every 3 modules to give the user time to read
-            # (cheers to aungkhant@yehg.net for suggesting it)
-            if i % 3 == 0 && i != modules.size
-                print_line
-                print_line 'Hit <space> <enter> to continue, any other key to exit. '
-
-                if gets[0] != ' '
-                    print_line
-                    return
-                end
-
-            end
 
             print_line
         end
