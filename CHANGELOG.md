@@ -2,6 +2,8 @@
 
 ## _Under development_
 
+- CLI user interfaces
+    - `--lsmod` option no longer pauses every 3 modules, it lists all of them at once.
 - Options
     - Added:
         - `--external-address` -- The external address of a Dispatcher.
