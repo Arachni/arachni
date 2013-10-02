@@ -89,9 +89,15 @@ class CookieJar
         [cookies].flatten.compact.each do |c|
             self << case c
                         when String
-                            Cookie.from_string( ::Arachni::Options.url.to_s, c )
+                            begin
+                                Cookie.from_string( ::Arachni::Options.url.to_s, c )
+                            rescue
+                                Cookie.from_set_cookie( ::Arachni::Options.url.to_s, c )
+                            end
+
                         when Hash
                             Cookie.new( ::Arachni::Options.url.to_s, c ) if c.any?
+
                         when Cookie
                             c
                     end
