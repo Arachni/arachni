@@ -477,7 +477,7 @@ class Cookie < Arachni::Element::Base
     # @return   [String]    To be used in a `Cookie` HTTP request header.
     #
     def to_s
-        "#{encode( name )}=#{encode( value )}"
+        "#{encode( name, :name )}=#{encode( value )}"
     end
 
     #
@@ -1115,12 +1115,15 @@ class Cookie < Arachni::Element::Base
     #
     # @return   [String]
     #
-    def self.encode( str )
-        URI.encode( str, "+;%=\0" ).recode.gsub( ' ', '+' )
+    def self.encode( str, type = :value )
+        reversed = "+;%\0"
+        reversed << '=' if type == :name
+
+        URI.encode( str, reversed ).recode.gsub( ' ', '+' )
     end
     # @see .encode
-    def encode( str )
-        self.class.encode( str )
+    def encode( *args )
+        self.class.encode( *args )
     end
 
     #
