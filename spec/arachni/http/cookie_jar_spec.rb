@@ -146,7 +146,7 @@ describe Arachni::HTTP::CookieJar do
                         @jar.should be_empty
 
                         Arachni::Options.url = 'http://test.com'
-                        @jar.update( 'some_param=9e4ca2cc0f18a49f7c1881f78bebf7df; path=/; expires=Wed, 02-Oct-2013 23:53:46 GMT; HttpOnly' )
+                        @jar.update( 'some_param=9e4ca2cc0f18a49f7c1881f78bebf7df; path=/; expires=Wed, 02-Oct-2020 23:53:46 GMT; HttpOnly' )
                         @jar.cookies.first.name.should == 'some_param'
                         @jar.cookies.first.value.should == '9e4ca2cc0f18a49f7c1881f78bebf7df'
                     end
