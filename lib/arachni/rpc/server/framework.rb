@@ -322,8 +322,10 @@ class Framework < ::Arachni::Framework
     # @return   [String]  URL of this instance.
     # @private
     def self_url
-        @self_url ||= @opts.rpc_address ?
-            "#{@opts.rpc_address}:#{@opts.rpc_port}" : @opts.rpc_socket
+        @opts.rpc_external_address ||= @opts.rpc_address
+
+        @self_url ||= @opts.rpc_external_address ?
+            "#{@opts.rpc_external_address }:#{@opts.rpc_port}" : @opts.rpc_socket
     end
 
     # @return   [String]  This instance's RPC token.

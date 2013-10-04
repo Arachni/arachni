@@ -57,7 +57,7 @@ module Distributor
             return @instance_connections[instance[:url]]
         end
 
-        @tokens  ||= {}
+        @tokens ||= {}
         @tokens[instance[:url]] = instance[:token] if instance[:token]
         @instance_connections[instance[:url]] =
             RPC::Client::Instance.new( @opts, instance[:url], @tokens[instance[:url]] )
@@ -338,9 +338,10 @@ module Distributor
     def cleaned_up_opts
         opts = @opts.to_h.deep_clone.symbolize_keys
 
-        (%w(spawns rpc_socket grid_mode dir rpc_port rpc_address pipe_id neighbour pool_size) |
-            %w(lsmod lsrep rpc_instance_port_range load_profile delta_time) |
-            %w(start_datetime finish_datetime)).each do |k|
+        (%w(spawns rpc_socket grid_mode dir rpc_port rpc_external_address
+            rpc_address pipe_id neighbour pool_size lsmod lsrep
+            rpc_instance_port_range load_profile delta_time start_datetime
+            finish_datetime)).each do |k|
             opts.delete k.to_sym
         end
 
