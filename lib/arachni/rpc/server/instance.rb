@@ -776,9 +776,10 @@ class Instance
 
                     # All Instances will be on the same host so use UNIX
                     # domain sockets to avoid TCP/IP overhead.
-                    Options.rpc_address = nil
-                    Options.rpc_port    = nil
-                    Options.rpc_socket = "/tmp/arachni-instance-slave-#{Process.pid}"
+                    Options.rpc_address          = nil
+                    Options.rpc_external_address = nil
+                    Options.rpc_port             = nil
+                    Options.rpc_socket           = "/tmp/arachni-instance-slave-#{Process.pid}"
 
                     Server::Instance.new( Options.instance, token )
                 }
