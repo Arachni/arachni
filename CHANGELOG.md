@@ -3,7 +3,9 @@
 ## _Under development_
 
 - CLI user interfaces
-    - `--lsmod` option no longer pauses every 3 modules, it lists all of them at once.
+    - `--lsmod`
+        - Longer pauses every 3 modules, it lists all of them at once.
+        - Updated to show the _Severity_ of the issues the module logs.
 - Options
     - `--cookie-string` -- Updated to also handle cookies in the form of `Set-Cookie` headers.
     - Added:

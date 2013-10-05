@@ -78,6 +78,10 @@ module Utilities
             print_line "Name:\t\t#{info[:name]}"
             print_line "Description:\t#{info[:description]}"
 
+            if info[:issue] && (severity = info[:issue][:severity])
+                print_line "Severity:\t#{severity}"
+            end
+
             if info[:elements] && info[:elements].size > 0
                 print_line "Elements:\t#{info[:elements].join( ', ' ).downcase}"
             end
