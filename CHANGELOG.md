@@ -32,7 +32,9 @@
             - Updated to use the longest-word-optimization of the taint analysis
                 implementation for faster analysis.
     - Recon
-        - `localstart_asp` -- Check for an ASP platform instead of a Windows one.
+        - ``
+            - Check for an ASP platform instead of a Windows one.
+            - Fixed `LocalJumpError`.
 - Plugins
     - `autologin`
         - Changed `print_bad` to `print_error` so that errors are written to the
