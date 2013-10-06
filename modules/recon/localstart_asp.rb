@@ -31,7 +31,7 @@ class Arachni::Modules::LocalstartASP < Arachni::Module::Base
         http.get( "#{path}/#{seed}" ) do |response|
             # If it needs auth by default then don't bother checking because
             # we'll get an FP.
-            return if response.code == 401
+            next if response.code == 401
 
             url = "#{path}/localstart.asp"
 
