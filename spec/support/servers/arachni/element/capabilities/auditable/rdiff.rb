@@ -1,6 +1,5 @@
 require 'sinatra'
 require 'sinatra/contrib'
-set :logging, false
 
 get '/true' do
     out = case params[:rdiff]
@@ -70,6 +69,29 @@ get '/empty' do
 
     <<-EOHTML
     #{rand( 9999999 )}
+    <a href='?rdiff=blah'>Inject here</a>
+    #{out}
+    EOHTML
+end
+
+get '/unstable' do
+    @@calls ||= 0
+    @@calls  += 1
+    empty    = false
+
+    out = case params[:rdiff]
+              when 'blahbad'
+                  'Could not find any results, bugger off!'
+              when 'blahgood', 'blah'
+                  '1 item found: Blah blah blah...' * 100 if @@calls >= 2
+              else
+                  'No idea what you want mate...'
+          end
+
+    next '' if empty
+
+    <<-EOHTML
+#{rand( 9999999 )}
     <a href='?rdiff=blah'>Inject here</a>
     #{out}
     EOHTML
