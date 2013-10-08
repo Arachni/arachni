@@ -62,10 +62,12 @@ module RDiff
     # * let `control` be the control/control response
     # * let `true_response`   be the response of the injection of 'true expression'
     # * let `false_response`    be the response of the injection of 'false expression'
+    # * let `control_verification` be a fresh control/control response
     #
     # A vulnerability is logged if:
     #
-    #     control == true_response AND true_response.code == 200 AND false_response != true_response
+    #     control == control_verification && control == true_response AND
+    #       true_response.code == 200 AND false_response != true_response
     #
     # The `bool` response is also checked in order to determine if it's a custom
     # 404, if it is then it'll be skipped.
@@ -231,9 +233,43 @@ module RDiff
                             responses[pair][elem.altered][:false].rdiff( res.body.dup )
 
                         next if expected_responses != received_responses
-                        rdiff_analyze_data( opts, control, responses, &block )
+                        rdiff_verify_control( opts, control, responses, &block )
                     end
                 end
+            end
+        end
+    end
+
+    def rdiff_verify_control( opts, control, responses, &block )
+        control2          = nil
+        received_requests = 0
+
+        opts[:precision].times do
+
+            # Get the default response.
+            submit do |res|
+                if res.body.to_s.empty?
+                    print_bad 'Server returned empty response body, aborting analysis.'
+                    next
+                end
+
+                received_requests += 1
+
+                if control2
+                    print_status 'Got control verification response.'
+                end
+
+                # Remove context-irrelevant dynamic content like banners and such.
+                control2 = (control2 ? control2.rdiff( res.body ) : res.body)
+
+                next if received_requests != opts[:precision]
+                if !rdiff_similar_bodies( control, control2, opts[:ratio] )
+                    print_bad 'Control baseline too unstable, aborting analysis.'
+                    next
+                end
+
+                print_status 'Control baseline verified, continuing analysis.'
+                rdiff_analyze_data( opts, control, responses, &block )
             end
         end
     end

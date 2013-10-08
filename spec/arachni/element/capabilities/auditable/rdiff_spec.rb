@@ -33,7 +33,6 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
                 auditable.auditor = @auditor
                 auditable.rdiff_analysis( @opts )
                 @auditor.http.run
-                @auditor.http.run
 
                 results = Arachni::Module::Manager.results
                 results.should be_any
@@ -47,7 +46,6 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
                 auditable.auditor = @auditor
                 auditable.rdiff_analysis( @opts )
                 @auditor.http.run
-                @auditor.http.run
 
                 issues.should be_empty
             end
@@ -58,7 +56,6 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
                 auditable = Arachni::Element::Link.new( @url + '/timeout', @params )
                 auditable.auditor = @auditor
                 auditable.rdiff_analysis( @opts.merge( timeout: 1_000 ) )
-                @auditor.http.run
                 @auditor.http.run
 
                 issues.should be_empty
@@ -81,11 +78,22 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
                 auditable.auditor = @auditor
                 auditable.rdiff_analysis( @opts )
                 @auditor.http.run
+
+                issues.should be_empty
+            end
+        end
+
+        context 'when the control responses differ wildly' do
+            it 'does not log any issues' do
+                auditable = Arachni::Element::Link.new( @url + '/unstable', @params )
+                auditable.auditor = @auditor
+                auditable.rdiff_analysis( @opts )
                 @auditor.http.run
 
                 issues.should be_empty
             end
         end
+
     end
 
 end
