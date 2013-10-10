@@ -720,13 +720,16 @@ class Framework
 
         @status = :auditing
 
-        # goes through the URLs discovered by the spider, repeats the request
-        # and parses the responses into page objects
+        # If for some reason we've got pages in the page queue this early,
+        # consume them and get it over with.
+        audit_page_queue
+
+        # Go through the URLs discovered by the spider, repeat the request
+        # and parse the responses into page objects
         #
-        # yes...repeating the request is wasteful but we can't store the
+        # Yes...repeating the request is wasteful but we can't store the
         # responses of the spider to consume them here because there's no way
         # of knowing how big the site will be.
-        #
         while !@url_queue.empty?
             page = Page.from_url( @url_queue.pop, precision: 2 )
 
@@ -747,7 +750,10 @@ class Framework
                 next
             end
 
-            push_to_page_queue Page.from_url( page.url, precision: 2 )
+            audit_page Page.from_url( page.url, precision: 2 )
+
+            # Consume pages somehow triggered by the audit and pushed by the
+            # trainer or plugins or whatever now to avoid keeping them in RAM.
             audit_page_queue
         end
 

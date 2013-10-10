@@ -10,6 +10,9 @@
     - `--cookie-string` -- Updated to also handle cookies in the form of `Set-Cookie` headers.
     - Added:
         - `--external-address` -- The external address of a Dispatcher.
+- `Framework`
+    - Updated page consumption strategy during the audit, in order to be more
+        efficient and avoid storing a lot of data in RAM for extended periods of time.
 - `RPC::Server::Dispatcher`
     - Now supports specifying an external address to allow for deployments behind NATs.
 - `Element::Capabilities::Auditable::RDiff`
