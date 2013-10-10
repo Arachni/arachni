@@ -3,13 +3,11 @@
     All rights reserved.
 =end
 
-#
 # Converts the AuditStore to a Hash which it then dumps in Marshal format into a file.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.1
-#
+# @version 0.1.2
 class Arachni::Reports::Marshal < Arachni::Report::Base
 
     def run
@@ -25,11 +23,12 @@ class Arachni::Reports::Marshal < Arachni::Report::Base
 
     def self.info
         {
-            :name           => 'Marshal',
-            :description    => %q{Exports the audit results as a Marshal (.marshal) file.},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.1',
-            :options        => [ Options.outfile( '.marshal' ) ]
+            name:         'Marshal',
+            description:  %q{Exports the audit results as a Marshal (.marshal) file.},
+            content_type: 'application/x-marshal',
+            author:       'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:      '0.1.1',
+            options:      [Options.outfile('.marshal')]
         }
     end
 

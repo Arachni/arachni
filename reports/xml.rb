@@ -5,13 +5,11 @@
 
 require 'base64'
 
-#
 # Creates an XML report of the audit.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2.4
-#
+# @version 0.2.5
 class Arachni::Reports::XML < Arachni::Report::Base
     load Arachni::Options.dir['reports'] + '/xml/buffer.rb'
 
@@ -122,11 +120,12 @@ class Arachni::Reports::XML < Arachni::Report::Base
 
     def self.info
         {
-            name:        'XML',
-            description: %q{Exports the audit results as an XML (.xml) file.},
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.2.4',
-            options:     [ Options.outfile( '.xml' ), Options.skip_responses ]
+            name:         'XML',
+            description:  %q{Exports the audit results as an XML (.xml) file.},
+            content_type: 'text/xml',
+            author:       'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:      '0.2.4',
+            options:      [ Options.outfile( '.xml' ), Options.skip_responses ]
         }
     end
 
