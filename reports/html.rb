@@ -18,13 +18,11 @@ require 'erb'
 require 'base64'
 require 'cgi'
 
-#
 # Creates an HTML report of the audit.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.3.2
-#
+# @version 0.3.3
 class Arachni::Reports::HTML < Arachni::Report::Base
 
     module Utils
@@ -147,11 +145,12 @@ class Arachni::Reports::HTML < Arachni::Report::Base
 
     def self.info
         {
-            name:        'HTML',
-            description: %q{Exports the audit results as an HTML (.html) file.},
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.3.2',
-            options:     [
+            name:         'HTML',
+            description:  %q{Exports the audit results as an HTML (.html) file.},
+            content_type: 'text/html',
+            author:       'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:      '0.3.2',
+            options:      [
                 Options::Path.new( 'tpl', [false, 'Template to use.', File.dirname( __FILE__ ) + '/html/default.erb'] ),
                 Options.outfile( '.html' ),
                 Options.skip_responses

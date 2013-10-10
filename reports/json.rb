@@ -16,13 +16,11 @@
 
 require 'json'
 
-#
 # Converts the AuditStore to a Hash which it then dumps in JSON format into a file.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.1
-#
+# @version 0.1.2
 class Arachni::Reports::JSON < Arachni::Report::Base
 
     def run
@@ -38,11 +36,12 @@ class Arachni::Reports::JSON < Arachni::Report::Base
 
     def self.info
         {
-            name:        'JSON',
-            description: %q{Exports the audit results as a JSON (.json) file.},
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.1',
-            options:     [ Options.outfile( '.json' ) ]
+            name:         'JSON',
+            description:  %q{Exports the audit results as a JSON (.json) file.},
+            content_type: 'application/json',
+            author:       'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:      '0.1.1',
+            options:      [ Options.outfile( '.json' ) ]
         }
     end
 
