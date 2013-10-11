@@ -127,7 +127,7 @@ class Trainer
             page_data[:code]             = res.code
             page_data[:method]           = res.request.method.to_s.upcase
             page_data[:body]             = res.body
-            page_data[:doc]              = @parser.doc
+            page_data[:document]         = @parser.doc
             page_data[:response_headers] = res.headers_hash
 
             @trainings_per_url[@parser.url] += 1

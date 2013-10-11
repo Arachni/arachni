@@ -135,8 +135,8 @@ class Page
     end
 
     def marshal_dump
-        @document = nil
         instance_variables.inject( {} ) do |h, iv|
+            next h if iv == :@document
             h[iv] = instance_variable_get( iv )
             h
         end
@@ -160,9 +160,8 @@ class Page
     # @return   [Hash]  Converts the page data to a hash.
     def to_h
         instance_variables.reduce({}) do |h, iv|
-            if iv != :@document
-                h[iv.to_s.gsub( '@', '').to_sym] = try_dup( instance_variable_get( iv ) )
-            end
+            next h if iv == :@document
+            h[iv.to_s.gsub( '@', '').to_sym] = try_dup( instance_variable_get( iv ) )
             h
         end
     end

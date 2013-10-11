@@ -11,8 +11,8 @@
     - Added:
         - `--external-address` -- The external address of a Dispatcher.
 - `Framework`
-    - Updated page consumption strategy during the audit, in order to be more
-        efficient and avoid storing a lot of data in RAM for extended periods of time.
+    - Audit
+        - Stored pages are now offloaded to disk to lower RAM consumption.
 - `RPC::Server::Dispatcher`
     - Now supports specifying an external address to allow for deployments behind NATs.
 - `Element::Capabilities::Auditable::RDiff`
