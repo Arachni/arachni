@@ -107,7 +107,6 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
 
                     issues.should be_any
                     issues.first.injected.should == 8000.to_s
-                    #issues.first.verification.should be_true
                 end
             end
         end
@@ -116,7 +115,7 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
             before do
                 @delay_opts = {
                     timeout_divider: 1000,
-                    timeout: 2000
+                    timeout: 4000
                 }.merge( @timeout_opts )
             end
 
