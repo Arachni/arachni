@@ -13,6 +13,9 @@
 - `Framework`
     - Audit
         - Stored pages are now offloaded to disk to lower RAM consumption.
+- `HTTP`
+    - Maximum request-queue size lowered from 5000 to 500, to decrease RAM usage
+        by preventing the storage of large amounts of requests for extended periods of time.
 - `RPC::Server::Dispatcher`
     - Now supports specifying an external address to allow for deployments behind NATs.
 - `Element::Capabilities::Auditable::RDiff`

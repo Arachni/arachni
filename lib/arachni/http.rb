@@ -56,8 +56,8 @@ class HTTP
     REDIRECT_LIMIT  = 20
 
     # Don't let the request queue grow more than this amount, if it does then
-    # run the queued requests to unload it
-    MAX_QUEUE_SIZE  = 5000
+    # run the queued requests to unload it.
+    MAX_QUEUE_SIZE  = 500
 
     HTTP_TIMEOUT    = 50000
 
