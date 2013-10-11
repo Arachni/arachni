@@ -23,6 +23,9 @@
     - Added integrity check for the analysis process.
     - Optimized scheduling of data gathering.
     - Reduced total amount of performed requests.
+- `Element::Capabilities::Auditable::Timeout`
+    - Made analysis corruption checks more stringent to diminish the chances of
+        false positives.
 - `Element::Capabilities::Auditable::Taint`
     - Added longest-word-optimization -- Checks if the longest word of a regexp
         exists in the response body prior to matching the full-blown regexp.

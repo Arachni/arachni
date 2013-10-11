@@ -136,6 +136,7 @@ module Timeout
         #
         def @@parent.timeout_analysis_phase_2( elem )
             opts = elem.opts
+            previous_timeout = opts[:timeout]
             injected_timeout = opts[:timeout] *= 2
 
             str = opts[:timing_string].gsub( '__TIME__',
@@ -145,9 +146,9 @@ module Timeout
 
             elem.auditable = elem.orig
 
-            # this is the control; request the URL of the element to make sure
-            # that the web page is alive i.e won't time-out by default
-            elem.submit do |res|
+            # This is the control; request the URL of the element to make sure
+            # that the web page is responsive i.e won't time-out by default.
+            elem.submit( timeout: previous_timeout ) do |res|
                 self.call_on_timing_blocks( res, elem )
 
                 if res.timed_out?
@@ -156,7 +157,7 @@ module Timeout
                 end
 
                 elem.print_info 'Phase 2: Liveness check was successful, progressing to verification...'
-                elem.audit( str, opts ) do |c_res, c_opts|
+                elem.audit( str, opts ) do |c_res, _|
                     if !c_res.timed_out?
                         elem.print_info 'Phase 2: Verification failed.'
                         next
@@ -170,8 +171,7 @@ module Timeout
                     end
 
                     elem.print_info 'Phase 2: Candidate can progress to Phase 3 --' <<
-                                        " #{elem.type.capitalize} input " +
-                                        "'#{elem.altered}' at #{elem.action}"
+                        " #{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}"
 
                     @@parent.add_timeout_phase3_candidate( elem )
                 end
@@ -333,7 +333,8 @@ module Timeout
             print_info 'Found a candidate for Phase 2 -- ' <<
                     "#{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}"
 
-            @@parent.add_timeout_candidate( elem ) if elem.responsive?
+            next if !responsive?( delay )
+            @@parent.add_timeout_candidate( elem )
         end
 
         true
@@ -344,16 +345,16 @@ module Timeout
     #
     # That is to make sure that responsiveness has been restored before progressing further.
     #
-    # @param    [Float] limit   How much time to afford the server to respond.
+    # @param    [Integer] limit   How many milliseconds to afford the server to respond.
     #
     # @return   [Bool]
     #   `true` if server responds within the given time limit, `false` otherwise.
     #
-    def responsive?( limit = 120.0 )
+    def responsive?( limit = 120_000 )
         d_opts = {
             skip_orig: true,
             redundant: true,
-            timeout:   limit * 1000,
+            timeout:   limit,
             silent:    true,
             async:     false
         }
@@ -361,21 +362,20 @@ module Timeout
         orig_opts = opts
 
         print_info 'Waiting for the effects of the timing attack to wear off.'
-        print_info "Max waiting time: #{limit} seconds."
+        print_info "Max waiting time: #{d_opts[:timeout] / 1000.0} seconds."
 
         @auditable = @orig
         res = submit( d_opts ).response
 
         @opts.merge!( orig_opts )
 
-        if !res.timed_out?
-            print_info 'Server seems responsive again.'
+        if res.timed_out?
+            print_bad 'Max waiting time exceeded.'
+            false
         else
-            print_error 'Max waiting time exceeded, the server may be dead.'
-            return false
+            print_info 'Server seems responsive again.'
+            true
         end
-
-        true
     end
 
     private
