@@ -14,14 +14,12 @@
     limitations under the License.
 =end
 
-#
 # Provides a notice for issues uncovered by timing attacks when the affected audited
 # pages returned unusually high response times to begin with.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.5
-#
+# @version 0.1.6
 class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
 
     is_distributable
@@ -57,7 +55,7 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
             @counter[url] ||= @times[url] ||= 0
 
             # add up all request times for a specific path
-            @times[url] += res.start_transfer_time
+            @times[url] += res.time
 
             # add up all requests for each path
             @counter[url] += 1
@@ -111,7 +109,7 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
                 Pages with high response times usually include heavy-duty processing
                 which makes them prime targets for Denial-of-Service attacks.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.5',
+            version:     '0.1.6',
             tags:        %w(anomaly timing attacks meta)
         }
     end
