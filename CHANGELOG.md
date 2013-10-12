@@ -24,6 +24,8 @@
     - Optimized scheduling of data gathering.
     - Reduced total amount of performed requests.
 - `Element::Capabilities::Auditable::Timeout`
+    - Updated the algorithm to use an approximated web application processing
+        time instead of the HTTP timeout based on the total request-response process.
     - Made analysis corruption checks more stringent to diminish the chances of
         false positives.
     - Fixed bug causing non-vetted inputs to reach the final stages of analysis

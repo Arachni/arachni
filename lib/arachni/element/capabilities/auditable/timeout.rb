@@ -147,13 +147,11 @@ module Timeout
         #
         def @@parent.timeout_analysis_phase_2( elem )
             opts = elem.opts
-            previous_timeout = opts[:timeout]
-            injected_timeout = opts[:timeout] *= 2
+            previous_timeout = opts[:delay]
+            injected_timeout = opts[:delay] *= 2
 
-            str = opts[:timing_string].gsub( '__TIME__',
-                ( opts[:timeout] / opts[:timeout_divider] ).to_s )
-
-            opts[:timeout] *= 0.98
+            str = opts[:timing_string].
+                gsub( '__TIME__', (opts[:delay] / opts[:timeout_divider]).to_s )
 
             elem.auditable = elem.orig
 
@@ -161,6 +159,10 @@ module Timeout
             # that the web page is responsive i.e won't time-out by default.
             elem.submit( timeout: previous_timeout ) do |res|
                 self.call_on_timing_blocks( res, elem )
+
+                # Remove the timeout option set by the liveness check in order
+                # to now affect later requests.
+                elem.opts.delete( :timeout )
 
                 if res.timed_out?
                     elem.print_info 'Phase 2: Liveness check failed, bailing out...'
@@ -170,8 +172,8 @@ module Timeout
                 elem.print_info 'Phase 2: Liveness check was successful, progressing to verification...'
 
                 opts[:skip_like] = proc { |m| m.altered != elem.altered }
-                elem.audit( str, opts ) do |c_res, _, e|
-                    if !c_res.timed_out?
+                elem.audit( str, opts ) do |c_res|
+                    if c_res.app_time <= opts[:delay] / Float(1000)
                         elem.print_info 'Phase 2: Verification failed.'
                         next
                     end
@@ -181,7 +183,7 @@ module Timeout
                         @@timeout_candidate_phase3_ids << elem.audit_id
                     end
 
-                    elem.opts[:timeout] = injected_timeout
+                    elem.opts[:delay] = injected_timeout
 
                     elem.print_info 'Phase 2: Candidate can progress to Phase 3 --' <<
                         " #{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}"
@@ -207,12 +209,10 @@ module Timeout
 
         def @@parent.timeout_analysis_phase_3( elem )
             opts = elem.opts
-            opts[:timeout] *= 2
+            opts[:delay] *= 2
 
             str = opts[:timing_string].
-                gsub( '__TIME__', ( opts[:timeout] / opts[:timeout_divider] ).to_s )
-
-            opts[:timeout] *= 0.98
+                gsub( '__TIME__', (opts[:delay] / opts[:timeout_divider]).to_s )
 
             elem.auditable = elem.orig
 
@@ -230,13 +230,10 @@ module Timeout
 
                 opts[:skip_like] = proc { |m| m.altered != elem.altered }
                 elem.audit( str, opts ) do |c_res, c_opts|
-                    if !c_res.timed_out?
+                    if c_res.app_time <= opts[:delay] / Float(1000)
                         elem.print_info 'Phase 3: Verification failed.'
                         next
                     end
-
-                    # Not sure about this yet...
-                    #c_opts[:verification] = true
 
                     elem.auditor.log( c_opts, c_res )
                     elem.responsive?
@@ -334,9 +331,7 @@ module Timeout
 
         @@timeout_loaded_modules << @auditor.fancy_name
 
-        delay = opts[:timeout]
-
-        audit_timeout_debug_msg( 1, delay )
+        audit_timeout_debug_msg( 1, opts[:timeout] )
         timing_attack( payloads, opts ) do |elem|
             elem.auditor = @auditor
 
@@ -346,9 +341,9 @@ module Timeout
             end
 
             print_info 'Found a candidate for Phase 2 -- ' <<
-                    "#{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}"
+                "#{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}"
 
-            next if !responsive?( delay )
+            next if !responsive?( opts[:timeout] )
             @@parent.add_timeout_candidate( elem )
         end
 
@@ -419,8 +414,8 @@ module Timeout
     #
     def timing_attack( payloads, opts, &block )
         opts = opts.dup
+        opts[:delay] = opts.delete(:timeout)
         opts[:timeout_divider] ||= 1
-        delay = opts[:timeout] / opts[:timeout_divider]
 
         # Intercept each element mutation prior to it being submitted and replace
         # the '__TIME__' placeholder with the actual delay value.
@@ -431,14 +426,17 @@ module Timeout
             # verification phases.
             mutation.opts[:timing_string] = injected
 
-            mutation.altered_value = injected.gsub( '__TIME__', delay.to_s )
+            mutation.altered_value = injected.
+                gsub( '__TIME__', (opts[:delay] / opts[:timeout_divider]).to_s )
         end
 
         opts.merge!( each_mutation: each_mutation, skip_orig: true )
 
         audit( payloads, opts ) do |res, _, elem|
             call_on_timing_blocks( res, elem )
-            block.call( elem ) if block && res.timed_out?
+            next if !block || res.app_time < opts[:delay] / Float(1000)
+
+            block.call( elem )
         end
     end
 

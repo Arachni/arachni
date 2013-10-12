@@ -6,19 +6,19 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
         Arachni::Options.url = @url = web_server_url_for( :timeout )
         @auditor = Auditor.new( nil, Arachni::Framework.new )
 
-        inputs = { 'sleep' => '' }
+        @inputs = { 'sleep' => '' }
 
-        @positive = Arachni::Element::Link.new( @url + '/true', inputs )
+        @positive = Arachni::Element::Link.new( @url + '/true', @inputs )
         @positive.auditor = @auditor
         @positive.disable_deduplication
 
         @positive_high_res = Arachni::Element::Link.new(
             @url + '/high_response_time',
-            inputs
+            @inputs
         )
         @positive_high_res.auditor = @auditor
 
-        @negative = Arachni::Element::Link.new( @url + '/false', inputs )
+        @negative = Arachni::Element::Link.new( @url + '/false', @inputs )
         @negative.auditor = @auditor
         @negative.disable_deduplication
 
@@ -70,7 +70,7 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
                 @positive.timeout_analysis( payloads,
                     @timeout_opts.merge(
                         timeout_divider: 1000,
-                        timeout: 2000
+                        timeout:         2000
                     )
                 )
                 @run.call
@@ -87,26 +87,28 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
                     @positive.timeout_analysis( '__TIME__',
                         @timeout_opts.merge(
                             timeout_divider: 1000,
-                            timeout: 2000
+                            timeout:         2000
                         )
                     )
                     @run.call
 
                     issues.should be_any
                     issues.first.injected.should == '8'
-                    #issues.first.verification.should be_true
                 end
             end
 
             context 'when not set' do
                 it 'does not modify the final timeout value' do
-                    c = @positive.dup
-                    c[:multi] = true
-                    c.timeout_analysis( '__TIME__', @timeout_opts.merge( timeout: 2000 ))
+                    c = Arachni::Element::Link.new( @url + '/true', @inputs.merge( mili: true ) )
+                    c.auditor = @auditor
+                    c.disable_deduplication
+                    c.opts[:skip_like] = proc { |m| m.altered == 'multi' }
+
+                    c.timeout_analysis( '__TIME__', @timeout_opts.merge( timeout: 2000 ) )
                     @run.call
 
                     issues.should be_any
-                    issues.first.injected.should == 8000.to_s
+                    issues.first.injected.should == '8000'
                 end
             end
         end
@@ -115,7 +117,7 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
             before do
                 @delay_opts = {
                     timeout_divider: 1000,
-                    timeout: 4000
+                    timeout:         4000
                 }.merge( @timeout_opts )
             end
 
@@ -135,7 +137,6 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
                 end
             end
         end
-
     end
 
 end
