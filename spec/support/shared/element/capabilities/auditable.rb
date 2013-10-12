@@ -581,11 +581,62 @@ shared_examples_for 'auditable' do |options = {}|
                         injected.sort.should == [ @seed, 'houa!', 'houa2!'].sort
                     end
                 end
+            end
 
+            describe :skip_like do
+                describe Proc do
+                    it 'skips mutations based on the block\'s return value' do
+                        auditable = described_class.new(
+                            @url + '/submit',
+                            'param'  => 'val',
+                            'param2' => 'val2'
+                        )
+                        auditable.auditor = @auditor
+
+                        audited   = []
+                        skip_like = proc { |m| m.altered != 'param' }
+
+                        auditable.audit( @seed, skip_orig: true, skip_like: skip_like ) do |_, _, m|
+                            audited << m.altered
+                        end
+
+                        @auditor.http.run
+
+                        audited.uniq!
+                        audited.size.should == 1
+                        audited.should == ['param']
+                    end
+                end
+
+                describe Array do
+                    it 'skips mutations based on the blocks\' return value' do
+                        auditable = described_class.new(
+                            @url + '/submit',
+                            'param'  => 'val',
+                            'param2' => 'val2',
+                            'param3' => 'val3'
+                        )
+                        auditable.auditor = @auditor
+
+                        audited   = []
+                        skip_like = []
+                        skip_like << proc { |m| m.altered == 'param2' }
+                        skip_like << proc { |m| m.altered == 'param3' }
+
+                        auditable.audit( @seed, skip_orig: true, skip_like: skip_like ) do |_, _, m|
+                            audited << m.altered
+                        end
+
+                        @auditor.http.run
+
+                        audited.uniq!
+                        audited.size.should == 1
+                        audited.should      == ['param']
+                    end
+                end
             end
 
             describe :format do
-
                 describe 'Arachni::Module::Auditor::Format::STRAIGHT' do
                     it 'injects the seed as is' do
                         injected = nil
