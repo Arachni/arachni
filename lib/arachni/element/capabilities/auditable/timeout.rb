@@ -153,7 +153,7 @@ module Timeout
             str = opts[:timing_string].gsub( '__TIME__',
                 ( opts[:timeout] / opts[:timeout_divider] ).to_s )
 
-            opts[:timeout] *= 0.7
+            opts[:timeout] *= 0.98
 
             elem.auditable = elem.orig
 
@@ -168,18 +168,20 @@ module Timeout
                 end
 
                 elem.print_info 'Phase 2: Liveness check was successful, progressing to verification...'
-                elem.audit( str, opts ) do |c_res, _|
+
+                opts[:skip_like] = proc { |m| m.altered != elem.altered }
+                elem.audit( str, opts ) do |c_res, _, e|
                     if !c_res.timed_out?
                         elem.print_info 'Phase 2: Verification failed.'
                         next
                     end
 
-                    elem.opts[:timeout] = injected_timeout
-
                     if deduplicate?
                         next if @@timeout_candidate_phase3_ids.include?( elem.audit_id )
                         @@timeout_candidate_phase3_ids << elem.audit_id
                     end
+
+                    elem.opts[:timeout] = injected_timeout
 
                     elem.print_info 'Phase 2: Candidate can progress to Phase 3 --' <<
                         " #{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}"
@@ -210,7 +212,7 @@ module Timeout
             str = opts[:timing_string].
                 gsub( '__TIME__', ( opts[:timeout] / opts[:timeout_divider] ).to_s )
 
-            opts[:timeout] *= 0.7
+            opts[:timeout] *= 0.98
 
             elem.auditable = elem.orig
 
@@ -225,6 +227,8 @@ module Timeout
                 end
 
                 elem.print_info 'Phase 3: Liveness check was successful, progressing to verification...'
+
+                opts[:skip_like] = proc { |m| m.altered != elem.altered }
                 elem.audit( str, opts ) do |c_res, c_opts|
                     if !c_res.timed_out?
                         elem.print_info 'Phase 3: Verification failed.'

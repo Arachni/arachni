@@ -26,6 +26,8 @@
 - `Element::Capabilities::Auditable::Timeout`
     - Made analysis corruption checks more stringent to diminish the chances of
         false positives.
+    - Fixed bug causing non-vetted inputs to reach the final stages of analysis
+        which sometimes resulted in false positives.
 - `Element::Capabilities::Auditable::Taint`
     - Added longest-word-optimization -- Checks if the longest word of a regexp
         exists in the response body prior to matching the full-blown regexp.
