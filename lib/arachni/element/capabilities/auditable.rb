@@ -71,12 +71,13 @@ module Auditable
         # Make requests asynchronously.
         async:     true,
 
-        #
         # Block to be passed each mutation right before being submitted.
         #
         # Allows for last minute changes.
-        #
-        each_mutation:  nil
+        each_mutation:  nil,
+
+        # Block to be passed each mutation to determine if it should be skipped.
+        skip_like: nil
     }
 
     #
@@ -629,6 +630,10 @@ module Auditable
             return false
         end
 
+        # Options will eventually be serialized so remove non-serializeable
+        # objects.
+        skip_like_option = [opts.delete( :skip_like )].flatten.compact
+
         # Iterate over all fuzz variations and audit each one.
         mutations( injection_str, opts ).each do |elem|
 
@@ -654,6 +659,14 @@ module Auditable
                 next
             end
 
+            if skip_like_option.any?
+                should_skip = false
+                skip_like_option.each do |like|
+                    break should_skip = true if like.call( elem )
+                end
+                next if should_skip
+            end
+
             opts[:altered] = elem.altered.dup
             opts[:element] = type
 
@@ -661,7 +674,7 @@ module Auditable
             print_status( elem.status_string ) if !opts[:silent]
 
             if opts[:each_mutation]
-                if elements = opts[:each_mutation].call( elem )
+                if (elements = opts[:each_mutation].call( elem ))
                     [elements].flatten.compact.each do |e|
                         on_complete( e.submit( opts ), e, &block ) if e.is_a?( self.class )
                     end

@@ -29,6 +29,9 @@
 - `Element::Capabilities::Auditable::Taint`
     - Added longest-word-optimization -- Checks if the longest word of a regexp
         exists in the response body prior to matching the full-blown regexp.
+- `Element::Capabilities::Auditable#audit`
+    - Added option `:skip_like`, accepting blocks used to filter the mutations
+        about to be audited.
 - `Element::Cookie#encode`
     - Allow `=` to remain un-encoded in the cookie value.
 - `Options#load` -- Updated to support serialized `Hash` objects.
