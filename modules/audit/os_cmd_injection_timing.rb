@@ -31,8 +31,9 @@ class Arachni::Modules::OSCmdInjectionTiming < Arachni::Module::Base
     def run
         audit_timeout self.class.payloads,
                        format:          [Format::STRAIGHT],
-                       timeout:         10000,
-                       timeout_divider: 1000
+                       timeout:         4000,
+                       timeout_divider: 1000,
+                       add:             -1000
     end
 
     def self.info

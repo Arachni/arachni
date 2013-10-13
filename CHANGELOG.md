@@ -47,6 +47,7 @@
             - Updated to cache the compiled regular expressions.
             - Updated to use the longest-word-optimization of the taint analysis
                 implementation for faster analysis.
+        - `os_cmd_injection_timing` -- Decreased the time delay.
     - Recon
         - `localstart_asp`
             - Check for an ASP platform instead of a Windows one.

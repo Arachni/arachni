@@ -18,7 +18,8 @@ def exec( platform, str, prefix = nil, postfix = nil )
     time = str.scan( Regexp.new( r ) ).flatten.first
     return if !time
 
-    sleep( Integer( time ) ) if time
+    # ping runtime is -1 second of the injected payload
+    sleep( Integer( time ) - 1) if time
 end
 
 def variations
