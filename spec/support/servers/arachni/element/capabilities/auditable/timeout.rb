@@ -20,6 +20,10 @@ get '/true' do
 EOHTML
 end
 
+get '/add' do
+    sleep( params[:sleep].to_f - 1 ).to_s
+end
+
 get '/high_response_time' do
     sleep( params[:sleep].to_i + 2 )
     <<-EOHTML
