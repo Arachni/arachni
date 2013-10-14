@@ -5,6 +5,7 @@ phpinfo.php
 CVS/Repository
 CVS/Root
 CVS/Entries
+.svn/wc.db
 .git/HEAD
 _mmServerScripts/MMHTTPDB.php
 _mmServerScripts/MMHTTPDB.asp
