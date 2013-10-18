@@ -99,8 +99,10 @@ module RDiff
 
         return false if auditable.empty?
 
+        filled_in_inputs = Arachni::Module::KeyFiller.fill( auditable, '' )
+
         # Don't continue if there's a missing value.
-        auditable.values.each { |val| return if val.to_s.empty? }
+        filled_in_inputs.values.each { |val| return if val.to_s.empty? }
 
         return false if audited? audit_id
         audited audit_id
@@ -115,7 +117,7 @@ module RDiff
         opts[:precision].times do
 
             # Get the default response.
-            submit do |res|
+            dup.update( filled_in_inputs ).submit do |res|
 
                 next if corrupted
                 if res.body.to_s.empty?
@@ -244,10 +246,12 @@ module RDiff
         control2          = nil
         received_requests = 0
 
+        filled_in_inputs = Arachni::Module::KeyFiller.fill( auditable, '' )
+
         opts[:precision].times do
 
             # Get the default response.
-            submit do |res|
+            dup.update( filled_in_inputs ).submit do |res|
                 if res.body.to_s.empty?
                     print_bad 'Server returned empty response body, aborting analysis.'
                     next
