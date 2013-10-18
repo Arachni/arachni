@@ -312,7 +312,8 @@ module RDiff
     end
 
     def rdiff_similar_bodies( body1, body2, ratio )
-        body1.diff_ratio( body2 ) <= ratio
+        #body1.diff_ratio( body2 ) <= ratio
+        body1 == body2
     end
 
 end
