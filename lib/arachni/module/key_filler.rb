@@ -5,7 +5,6 @@
 
 module Arachni::Module
 
-#
 # KeyFiller class
 #
 # Included by {Module::Auditor}
@@ -14,7 +13,6 @@ module Arachni::Module
 # based on their name.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class KeyFiller
 
     # @return [Hash<Regexp, String>]
@@ -34,28 +32,27 @@ class KeyFiller
         }
     end
 
-    #
     # Tries to fill a hash with values of appropriate type based on the key of
     # the parameter.
     #
     # @param  [Hash]  parameters   Parameters hash.
+    # @param  [String]  default   Default value to use if no match was found.
     #
     # @return   [Hash]
-    #
-    def self.fill( parameters )
+    def self.fill( parameters, default = '1' )
         parameters = parameters.dup
         parameters.each do |k, v|
             next if !v.to_s.empty?
             # moronic default value...
             # will figure  out something better in the future...
-            parameters[k] = name_to_value( k, '1' )
+            parameters[k] = name_to_value( k, default )
         end
         parameters
     end
 
     def self.name_to_value( name, default = nil )
         regexps.each { |k, v| return v if name =~ k }
-        default
+        default.to_s
     end
 
 end
