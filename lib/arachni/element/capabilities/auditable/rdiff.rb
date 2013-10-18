@@ -43,7 +43,10 @@ module RDiff
 
         # Override global fuzzing settings and only use the default method of the
         # element under audit.
-        respect_method: true
+        respect_method: true,
+
+        # Don't generate or submit any mutations with default or sample inputs.
+        skip_orig:      true
     }
 
     #
