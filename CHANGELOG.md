@@ -47,6 +47,9 @@
             - Updated to cache the compiled regular expressions.
             - Updated to use the longest-word-optimization of the taint analysis
                 implementation for faster analysis.
+        - `sqli_blind_rdiff`
+            - Updated to also inject error inducing payloads in addition to the
+                boolean `false` ones.
         - `os_cmd_injection_timing` -- Decreased the time delay.
     - Recon
         - `localstart_asp`

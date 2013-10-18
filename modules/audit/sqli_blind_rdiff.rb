@@ -21,7 +21,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.4
+# @version 0.4.1
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://capec.mitre.org/data/definitions/7.html
@@ -45,6 +45,7 @@ class Arachni::Modules::BlindrDiffSQLInjection < Arachni::Module::Base
 
         queries_for_expression( '1=1' ).each.with_index do |true_expr, i|
             pairs << { true_expr => falses[i] }
+            pairs << { true_expr => '\'"`' }
         end
 
         @options = { pairs: pairs }
@@ -64,7 +65,7 @@ class Arachni::Modules::BlindrDiffSQLInjection < Arachni::Module::Base
                     If this module returns a positive result you should investigate nonetheless.)},
             elements:    [ Element::LINK, Element::FORM, Element::COOKIE ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.4',
+            version:     '0.4.1',
             references:  {
                 'OWASP'         => 'http://www.owasp.org/index.php/Blind_SQL_Injection',
                 'MITRE - CAPEC' => 'http://capec.mitre.org/data/definitions/7.html'
