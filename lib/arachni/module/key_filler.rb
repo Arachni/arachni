@@ -28,9 +28,7 @@ class KeyFiller
             /amount/i  => '100',
             /mail/i    => 'arachni@email.gr',
             /account/i => '12',
-            /id/i      => '1',
-            /msg/i     => 'Hey Joe',
-            /message/i => 'Hey Joe'
+            /id/i      => '1'
         }
     end
 
