@@ -14,17 +14,15 @@
     limitations under the License.
 =end
 
-#
 # Blind SQL Injection module using timing attacks.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.3
+# @version 0.3.1
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://capec.mitre.org/data/definitions/7.html
 # @see http://www.owasp.org/index.php/Blind_SQL_Injection
-#
 class Arachni::Modules::BlindTimingSQLInjection < Arachni::Module::Base
 
     prefer :sqli
@@ -39,7 +37,7 @@ class Arachni::Modules::BlindTimingSQLInjection < Arachni::Module::Base
 
     def run
         audit_timeout self.class.payloads,
-            format:          [Format::STRAIGHT, Format::APPEND],
+            format:          [Format::APPEND],
             timeout:         4000,
             timeout_divider: 1000
     end
