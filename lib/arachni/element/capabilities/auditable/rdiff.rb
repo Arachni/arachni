@@ -31,7 +31,7 @@ module RDiff
 
     RDIFF_OPTIONS =  {
         # Append our seeds to the default values.
-        format:         [Mutable::Format::APPEND],
+        format:         [Mutable::Format::STRAIGHT],
 
         # Amount of refinement operations to remove context-irrelevant dynamic
         # content -- like banners etc.
@@ -46,13 +46,23 @@ module RDiff
         respect_method: true,
 
         # Don't generate or submit any mutations with default or sample inputs.
-        skip_orig:      true
+        skip_orig:      true,
+
+        # Allow redundant audits, we need multiple ones for noise-reduction.
+        redundant:      true,
+
+        # Don't let #audit print output, we'll handle that ourselves.
+        silent:         true,
+
+        # Default value for a forceful 'false' response.
+        false:          '-1'
     }
 
     #
     # Performs differential analysis and logs an issue should there be one.
     #
     #     opts = {
+    #         false: 'false resource id',
     #         pairs: [
     #               { 'true expression' => 'false expression' }
     #         ]
@@ -62,14 +72,14 @@ module RDiff
     #
     # Here's how it goes:
     #
-    # * let `control` be the control/control response
-    # * let `true_response`   be the response of the injection of 'true expression'
-    # * let `false_response`    be the response of the injection of 'false expression'
-    # * let `control_verification` be a fresh control/control response
+    # * let `control` be the response of the injection of 'false resource id'
+    # * let `true_response` be the response of the injection of 'true expression'
+    # * let `false_response` be the response of the injection of 'false expression'
+    # * let `control_verification` be a fresh control
     #
     # A vulnerability is logged if:
     #
-    #     control == control_verification && control == true_response AND
+    #     control == control_verification && control == false_response AND
     #       true_response.code == 200 AND false_response != true_response
     #
     # The `bool` response is also checked in order to determine if it's a custom
@@ -85,6 +95,8 @@ module RDiff
     # @option   opts    [Array<Hash>] :pairs
     #   Pair of strings that should yield different results when interpreted.
     #   Keys should be the `true` expressions.
+    # @option   opts    [String]       :false
+    #   A string which would illicit a 'false' response but without any code.
     # @param    [Block]     block
     #   To be used for custom analysis of gathered data.
     #
@@ -100,29 +112,30 @@ module RDiff
 
         opts = self.class::MUTATION_OPTIONS.merge( RDIFF_OPTIONS.merge( opts ) )
 
-        return false if auditable.empty?
-
-        filled_in_inputs = Arachni::Module::KeyFiller.fill( auditable, '' )
-
-        # Don't continue if there's a missing value.
-        filled_in_inputs.values.each { |val| return if val.to_s.empty? }
+        #return false if auditable.empty?
+        #
+        #filled_in_inputs = Arachni::Module::KeyFiller.fill( auditable, '' )
+        #
+        ## Don't continue if there's a missing value.
+        #filled_in_inputs.values.each { |val| return if val.to_s.empty? }
 
         return false if audited? audit_id
         audited audit_id
 
         # Holds all the data from the probes.
-        responses = {}
+        responses = {
+            controls: {}
+        }
 
         corrupted = false
-        control   = nil
 
         received_requests = 0
         opts[:precision].times do
 
             # Get the default response.
-            dup.update( filled_in_inputs ).submit do |res|
-
+            audit( opts[:false], opts ) do |res, _, elem|
                 next if corrupted
+
                 if res.body.to_s.empty?
                     print_bad 'Server returned empty response body, aborting analysis.'
                     corrupted = true
@@ -131,15 +144,18 @@ module RDiff
 
                 received_requests += 1
 
-                if control
-                    print_status 'Got default/control response.'
+                if responses[:controls][elem.altered]
+                    print_status "Got default/control response for #{elem.type} " +
+                        "variable '#{elem.altered}' with action '#{elem.action}'."
                 end
 
                 # Remove context-irrelevant dynamic content like banners and such.
-                control = (control ? control.rdiff( res.body ) : res.body)
+                responses[:controls][elem.altered] =
+                    responses[:controls][elem.altered] ?
+                        responses[:controls][elem.altered].rdiff( res.body ) : res.body
 
                 next if received_requests != opts[:precision]
-                rdiff_fire_true_probes( opts, control, responses, &block )
+                rdiff_fire_true_probes( opts, responses, &block )
             end
         end
 
@@ -148,7 +164,7 @@ module RDiff
 
     private
 
-    def rdiff_fire_true_probes( opts, control, responses, &block )
+    def rdiff_fire_true_probes( opts, responses, &block )
         received_responses = 0
 
         opts[:pairs].each do |pair|
@@ -160,7 +176,6 @@ module RDiff
                 expected_responses = true_mutations.size * opts[:precision] * opts[:pairs].size
 
                 true_mutations.each do |elem|
-                    print_status elem.status_string
 
                     # Submit the mutation and store the response.
                     elem.submit( opts ) do |res|
@@ -168,17 +183,19 @@ module RDiff
 
                         next if responses[pair][elem.altered][:corrupted]
                         if res.body.to_s.empty?
-                            elem.print_bad 'Server returned empty response body,' <<
-                                " aborting analysis for: #{elem.altered}"
+                            print_status 'Server returned empty response body,' <<
+                                " aborting analysis for #{elem.type} variable " <<
+                                "'#{elem.altered}' with action '#{elem.action}'."
                             responses[pair][elem.altered][:corrupted] = true
                             next
                         end
 
-                        received_responses +=1
+                        received_responses += 1
 
                         if responses[pair][elem.altered][:true]
-                            elem.print_status "Gathering data for '#{elem.altered}' " <<
-                                "#{type} input -- Got true  response: #{true_expr}"
+                            elem.print_status "Gathering data for #{elem.type} " <<
+                                "variable '#{elem.altered}' with action '#{elem.action}'" <<
+                                " -- Got true  response: #{true_expr}"
                         end
 
                         responses[pair][elem.altered][:mutation] = elem
@@ -194,14 +211,14 @@ module RDiff
                             responses[pair][elem.altered][:true].rdiff( res.body.dup )
 
                         next if expected_responses != received_responses
-                        rdiff_fire_false_probes( opts, control, responses, &block )
+                        rdiff_fire_false_probes( opts, responses, &block )
                     end
                 end
             end
         end
     end
 
-    def rdiff_fire_false_probes( opts, control, responses, &block )
+    def rdiff_fire_false_probes( opts, responses, &block )
         received_responses = 0
 
         opts[:pairs].each do |pair|
@@ -218,17 +235,19 @@ module RDiff
 
                         next if responses[pair][elem.altered][:corrupted]
                         if res.body.to_s.empty?
-                            elem.print_bad 'Server returned empty response body,' <<
-                                " aborting analysis for: #{elem.altered}"
+                            print_status 'Server returned empty response body,' <<
+                                " aborting analysis for #{elem.type} variable " <<
+                                "'#{elem.altered}' with action '#{elem.action}'."
                             responses[pair][elem.altered][:corrupted] = true
                             next
                         end
 
-                        received_responses +=1
+                        received_responses += 1
 
                         if responses[pair][elem.altered][:false]
-                            elem.print_status "Gathering data for '#{elem.altered}'" <<
-                                " #{type} input -- Got false response: #{false_expr}"
+                            elem.print_status "Gathering data for #{elem.type} " <<
+                                "variable '#{elem.altered}' with action '#{elem.action}'" <<
+                                " -- Got false response: #{false_expr}"
                         end
 
                         responses[pair][elem.altered][:false] ||= res.body.dup
@@ -238,23 +257,21 @@ module RDiff
                             responses[pair][elem.altered][:false].rdiff( res.body.dup )
 
                         next if expected_responses != received_responses
-                        rdiff_verify_control( opts, control, responses, &block )
+                        rdiff_verify_control( opts, responses, &block )
                     end
                 end
             end
         end
     end
 
-    def rdiff_verify_control( opts, control, responses, &block )
+    def rdiff_verify_control( opts, responses, &block )
         control2          = nil
         received_requests = 0
-
-        filled_in_inputs = Arachni::Module::KeyFiller.fill( auditable, '' )
 
         opts[:precision].times do
 
             # Get the default response.
-            dup.update( filled_in_inputs ).submit do |res|
+            audit( opts[:false], opts ) do |res, _, elem|
                 if res.body.to_s.empty?
                     print_bad 'Server returned empty response body, aborting analysis.'
                     next
@@ -270,18 +287,20 @@ module RDiff
                 control2 = (control2 ? control2.rdiff( res.body ) : res.body)
 
                 next if received_requests != opts[:precision]
-                if !rdiff_similar_bodies( control, control2, opts[:ratio] )
+                if !rdiff_similar_bodies( responses[:controls][elem.altered], control2, opts[:ratio] )
                     print_bad 'Control baseline too unstable, aborting analysis.'
                     next
                 end
 
                 print_status 'Control baseline verified, continuing analysis.'
-                rdiff_analyze_data( opts, control, responses, &block )
+                rdiff_analyze_data( opts, responses, &block )
             end
         end
     end
 
-    def rdiff_analyze_data( opts, control, responses, &block )
+    def rdiff_analyze_data( opts, responses, &block )
+        controls = responses.delete( :controls )
+
         responses.each do |pair, data|
             if block
                 exception_jail( false ){ block.call( pair, data ) }
@@ -289,10 +308,11 @@ module RDiff
             end
 
             data.each do |input_name, result|
+
                 # if default_response_body == true_response_body AND
                 #    false_response_body != true_response_code AND
                 #    true_response_code == 200
-                if rdiff_similar_bodies( control, result[:true], opts[:ratio] ) &&
+                if rdiff_similar_bodies( controls[input_name], result[:false], opts[:ratio] ) &&
                     !rdiff_similar_bodies( result[:false], result[:true], opts[:ratio] ) &&
                     result[:response].code == 200
 
@@ -319,7 +339,6 @@ module RDiff
     end
 
     def rdiff_similar_bodies( body1, body2, ratio )
-        #body1.diff_ratio( body2 ) <= ratio
         body1 == body2
     end
 
