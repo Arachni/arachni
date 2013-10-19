@@ -16,11 +16,9 @@
 
 class Arachni::Reports::Stdout
 
-#
 # Stdout formatter for the results of the HealthMap plugin
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class PluginFormatters::HealthMap < Arachni::Plugin::Formatter
 
     def run
@@ -29,7 +27,7 @@ class PluginFormatters::HealthMap < Arachni::Plugin::Formatter
         print_bad 'Has issues'
         print_line
 
-        results[:map].each do |i|
+        results[:map].sort_by { |_, v| v }.each do |i|
             state = i.keys[0]
             url   = i.values[0]
 
