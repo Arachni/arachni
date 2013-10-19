@@ -10,10 +10,12 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
     describe '#rdiff_analysis' do
         before do
             @opts = {
+                false:  'bad',
                 pairs: [
-                    { 'good' => 'bad '}
+                    { 'good' => 'bad' }
                 ]
             }
+
             @params = { 'rdiff' => 'blah' }
 
             Arachni::Element::Capabilities::Auditable.reset

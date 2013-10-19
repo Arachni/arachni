@@ -19,7 +19,7 @@
 - `RPC::Server::Dispatcher`
     - Now supports specifying an external address to allow for deployments behind NATs.
 - `Element::Capabilities::Auditable::RDiff`
-    - Updated the differential analysis algorithm to be more lax.
+    - Updated the algorithm to use a `false` as the control.
     - Added integrity check for the analysis process.
     - Optimized scheduling of data gathering.
     - Reduced total amount of performed requests.
@@ -48,8 +48,7 @@
             - Updated to use the longest-word-optimization of the taint analysis
                 implementation for faster analysis.
         - `sqli_blind_rdiff`
-            - Updated to also inject error inducing payloads in addition to the
-                boolean `false` ones.
+            - Massively reduced injected payloads.
         - `os_cmd_injection_timing` -- Decreased the time delay.
     - Recon
         - `localstart_asp`

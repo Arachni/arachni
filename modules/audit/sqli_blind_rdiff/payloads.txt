@@ -1,5 +1,1 @@
-%q% and %q%
-%q%) and %q%
-%q%)) and %q%
-%q%))) and %q%
-%q%)))) and %q%
+-1%q% or

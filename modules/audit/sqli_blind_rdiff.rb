@@ -21,7 +21,9 @@ class Arachni::Modules::BlindrDiffSQLInjection < Arachni::Module::Base
 
     def self.queries_for_expression( expression )
         (@templates ||= read_file( 'payloads.txt' )).map do |template|
-            [ '\'', '"', '' ].map{ |quote| template.gsub( '%q%', quote ) + "#{expression}" }
+            [ '\'', '"', '' ].map do |quote|
+                template.gsub( '%q%', quote ) + " #{expression.gsub( '%q%', quote )}"
+            end
         end.flatten
     end
 
@@ -30,14 +32,13 @@ class Arachni::Modules::BlindrDiffSQLInjection < Arachni::Module::Base
         return @options if @options
 
         pairs  = []
-        falses = queries_for_expression( '1=2' )
+        falses = queries_for_expression( '1=%q%2' )
 
-        queries_for_expression( '1=1' ).each.with_index do |true_expr, i|
+        queries_for_expression( '1=%q%1' ).each.with_index do |true_expr, i|
             pairs << { true_expr => falses[i] }
-            pairs << { true_expr => '\'"`' }
         end
 
-        @options = { pairs: pairs }
+        @options = { false: '-1', pairs: pairs }
     end
 
     def run

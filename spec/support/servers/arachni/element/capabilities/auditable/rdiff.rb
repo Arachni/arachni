@@ -3,9 +3,9 @@ require 'sinatra/contrib'
 
 get '/true' do
     out = case params[:rdiff]
-        when 'blahbad'
+        when 'bad'
             'Could not find any results, bugger off!'
-        when 'blahgood', 'blah'
+        when 'good', 'blah'
             '1 item found: Blah blah blah...'
         else
             'No idea what you want mate...'
@@ -20,7 +20,7 @@ end
 
 get '/false' do
     out = case params[:rdiff]
-        when 'blahgood', 'blahbad'
+        when 'good', 'bad'
             'Could not find any results, bugger off!'
         when 'blah'
             '1 item found: Blah blah blah...'
@@ -37,9 +37,9 @@ end
 
 get '/timeout' do
     out = case params[:rdiff]
-              when 'blahbad'
+              when 'bad'
                   'Could not find any results, bugger off!'
-              when 'blahgood', 'blah'
+              when 'good', 'blah'
                   sleep 2
                   '1 item found: Blah blah blah...'
               else
@@ -56,12 +56,12 @@ end
 get '/empty' do
     empty = false
     out = case params[:rdiff]
-              when 'blahbad'
+              when 'bad'
                   'Could not find any results, bugger off!'
-              when 'blahgood', 'blah'
+              when 'good', 'blah'
+                  empty = true
                   '1 item found: Blah blah blah...'
               else
-                  empty = true
                   'No idea what you want mate...'
           end
 
@@ -80,10 +80,10 @@ get '/unstable' do
     empty    = false
 
     out = case params[:rdiff]
-              when 'blahbad'
-                  'Could not find any results, bugger off!'
-              when 'blahgood', 'blah'
-                  '1 item found: Blah blah blah...' * 100 if @@calls >= 2
+              when 'bad'
+                  'Could not find any results, bugger off!' * 100 if @@calls >= 2
+              when 'good', 'blah'
+                  '1 item found: Blah blah blah...'
               else
                   'No idea what you want mate...'
           end
