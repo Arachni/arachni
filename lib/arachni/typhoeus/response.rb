@@ -68,7 +68,7 @@ class Response
     # @return   [Float]
     #   Approximated time the web application took to process the request.
     def app_time
-        start_transfer_time - pretransfer_time
+        timed_out? ? time : start_transfer_time - pretransfer_time
     end
 
     # @return    [Hash]   converts self to hash
