@@ -36,6 +36,7 @@
 - `Element::Capabilities::Auditable#audit`
     - Added option `:skip_like`, accepting blocks used to filter the mutations
         about to be audited.
+    - Fixed bug causing audits with constantly changing tokens to fail.
 - `Element::Cookie#encode`
     - Allow `=` to remain un-encoded in the cookie value.
 - `Options#load` -- Updated to support serialized `Hash` objects.

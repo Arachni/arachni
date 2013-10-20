@@ -722,8 +722,8 @@ module Auditable
         elem.opts[:combo]    = elem.auditable
         elem.opts[:action]   = elem.action
 
-        if !elem.opts[:async]
-            after_complete( req.response, elem, &block ) if req && req.response
+        if req.response
+            after_complete( req.response, elem, &block )
             return
         end
 
