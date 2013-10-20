@@ -32,7 +32,7 @@ class Arachni::Modules::BlindTimingSQLInjection < Arachni::Module::Base
             mysql: read_file( 'mysql.txt' ),
             pgsql: read_file( 'pgsql.txt' ),
             mssql: read_file( 'mssql.txt' )
-        }
+        }.inject({}){ |h, (k,v)| h.merge( k => v.map { |s| s.gsub( '[space]', ' ' ) } ) }
     end
 
     def run
