@@ -161,6 +161,8 @@ module Timeout
                 elem.print_info 'Phase 2: Liveness check was successful, progressing to verification...'
 
                 opts[:skip_like] = proc { |m| m.altered != elem.altered }
+                opts[:format]    = [Arachni::Element::Capabilities::Mutable::Format::STRAIGHT]
+
                 elem.audit( str, opts ) do |c_res|
                     if c_res.app_time <= (opts[:delay] + opts[:add]) / 1000.0
                         elem.print_info 'Phase 2: Verification failed.'
@@ -218,6 +220,8 @@ module Timeout
                 elem.print_info 'Phase 3: Liveness check was successful, progressing to verification...'
 
                 opts[:skip_like] = proc { |m| m.altered != elem.altered }
+                opts[:format]    = [Arachni::Element::Capabilities::Mutable::Format::STRAIGHT]
+
                 elem.audit( str, opts ) do |c_res, c_opts|
                     if c_res.app_time <= (opts[:delay] + opts[:add]) / 1000.0
                         elem.print_info 'Phase 3: Verification failed.'
