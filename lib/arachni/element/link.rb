@@ -191,7 +191,7 @@ class Link < Arachni::Element::Base
         return {} if !query || query.empty?
 
         query.to_s.split( '&' ).inject( {} ) do |h, pair|
-            name, value = pair.split( '=' )
+            name, value = pair.split( '=', 2 )
             h[name.to_s] = value.to_s
             h
         end
