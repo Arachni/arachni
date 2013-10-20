@@ -16,11 +16,9 @@
 
 module Arachni::Element::Capabilities
 
-#
 # Looks for specific substrings or patterns in response bodies.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 module Auditable::Taint
 
     TAINT_OPTIONS = {
@@ -63,7 +61,6 @@ module Auditable::Taint
     REMARK = 'This issue was identified by a pattern but the pattern matched ' <<
             'the page\'s response body even before auditing the logged element.'
 
-    #
     # Performs taint analysis and logs an issue should there be one.
     #
     # It logs an issue when:
@@ -89,35 +86,35 @@ module Auditable::Taint
     # @return   [Bool]
     #   `true` if the audit was scheduled successfully, `false` otherwise (like
     #   if the resource is out of scope).
-    #
     def taint_analysis( payloads, opts = { } )
         if skip_path? self.action
             print_debug "Element's action matches skip rule, bailing out."
             return false
         end
 
-        opts = self.class::OPTIONS.merge( TAINT_OPTIONS.merge( opts ) )
-        audit( payloads, opts ) { |res, c_opts| get_matches( res, c_opts ) }
+        submit do |untainted_response|
+            opts = self.class::OPTIONS.merge( TAINT_OPTIONS.merge( opts ) )
+            audit( payloads, opts ) { |res, c_opts| get_matches( res, c_opts, untainted_response ) }
+        end
     end
 
     private
 
-    #
     # Tries to identify an issue through pattern matching.
     #
     # If a issue is found a message will be printed and the issue will be logged.
     #
     # @param  [Typhoeus::Response]  res
     # @param  [Hash]  opts
-    #
-    def get_matches( res, opts )
+    # @param  [Typhoeus::Response]  untainted_response
+    def get_matches( res, opts, untainted_response = nil )
         opts[:substring] = opts[:injected_orig] if !opts[:regexp] && !opts[:substring]
 
-        match_patterns( opts[:regexp], method( :match_regexp_and_log ), res, opts.dup )
-        match_patterns( opts[:substring], method( :match_substring_and_log ), res, opts.dup )
+        match_patterns( opts[:regexp], method( :match_regexp_and_log ), res, opts.dup, untainted_response )
+        match_patterns( opts[:substring], method( :match_substring_and_log ), res, opts.dup, untainted_response )
     end
 
-    def match_patterns( patterns, matcher, res, opts )
+    def match_patterns( patterns, matcher, res, opts, untainted_response = nil )
         if opts[:longest_word_optimization]
             opts[:downcased_body] = res.body.downcase
         end
@@ -125,13 +122,13 @@ module Auditable::Taint
         case patterns
             when Regexp, String, Array
                 [patterns].flatten.compact.
-                    each { |pattern| matcher.call( pattern, res, opts ) }
+                    each { |pattern| matcher.call( pattern, res, opts, untainted_response ) }
 
             when Hash
                 if opts[:platform] && patterns[opts[:platform]]
                     [patterns[opts[:platform]]].flatten.compact.each do |p|
                         [p].flatten.compact.
-                            each { |pattern| matcher.call( pattern, res, opts ) }
+                            each { |pattern| matcher.call( pattern, res, opts, untainted_response ) }
                     end
                 else
                     patterns.each do |platform, p|
@@ -139,7 +136,7 @@ module Auditable::Taint
                         dopts[:platform] = platform
 
                         [p].flatten.compact.
-                            each { |pattern| matcher.call( pattern, res, dopts ) }
+                            each { |pattern| matcher.call( pattern, res, dopts, untainted_response ) }
                     end
                 end
 
@@ -153,16 +150,19 @@ module Auditable::Taint
                         dopts[:platform] = platform
 
                         [p].flatten.compact.
-                            each { |pattern| matcher.call( pattern, res, dopts ) }
+                            each { |pattern| matcher.call( pattern, res, dopts, untainted_response ) }
                     end
         end
     end
 
-    def match_substring_and_log( substring, res, opts )
+    def match_substring_and_log( substring, res, opts, untainted_response = nil )
         return if substring.to_s.empty?
 
-        opts[:verification] = @auditor.page && @auditor.page.body &&
+        opts[:verification]   = @auditor.page && @auditor.page.body &&
             @auditor.page.body.include?( substring )
+
+        opts[:verification] ||= untainted_response && untainted_response.body &&
+            untainted_response.body.include?( substring )
 
         opts[:remarks] = { auditor: [REMARK] } if opts[:verification]
 
@@ -172,7 +172,7 @@ module Auditable::Taint
         end
     end
 
-    def match_regexp_and_log( regexp, res, opts )
+    def match_regexp_and_log( regexp, res, opts, untainted_response = nil )
         regexp = regexp.is_a?( Regexp ) ? regexp :
             Regexp.new( regexp.to_s, Regexp::IGNORECASE )
 
@@ -183,7 +183,11 @@ module Auditable::Taint
         match_data = res.body.scan( regexp ).flatten.first.to_s
 
         # An annoying encoding exception may be thrown when matching the regexp.
-        opts[:verification] = (@auditor.page && @auditor.page.body.to_s =~ regexp) rescue false
+        opts[:verification]   = (@auditor.page && @auditor.page.body &&
+            @auditor.page.body.to_s =~ regexp) rescue false
+
+        opts[:verification] ||= (untainted_response && untainted_response.body &&
+            untainted_response.body.to_s =~ regexp)  rescue false
 
         opts[:remarks] = { auditor: [REMARK] } if opts[:verification]
 
