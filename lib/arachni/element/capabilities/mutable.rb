@@ -142,7 +142,16 @@ module Mutable
         if !opts[:respect_method]
             var_combo |= var_combo.map do |f|
                 c = f.dup
-                c.method = (f.method.to_s.downcase == 'get' ? 'post' : 'get')
+
+                if c.method.to_s.downcase.to_sym == :get
+                    # Strip the query from the action if we're fuzzing a link
+                    # otherwise the GET params might get precedence.
+                    c.action = c.action.split( '?' ).first if c.is_a? Link
+                    c.method = :post
+                else
+                    c.method = :get
+                end
+
                 c
             end
         end
