@@ -3,7 +3,6 @@
     All rights reserved.
 =end
 
-#
 # XSS audit module
 #
 # It doesn't just look for the injected XSS string in the HTML code
@@ -11,12 +10,11 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.3.2
+# @version 0.3.3
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
 # @see http://secunia.com/advisories/9716/
-#
 class Arachni::Modules::XSS < Arachni::Module::Base
 
     def self.tag
@@ -25,18 +23,20 @@ class Arachni::Modules::XSS < Arachni::Module::Base
 
     def self.strings
         @strings ||= [
-            # straight injection
-            '<' + tag + '/>',
-            # go for an error
-            '\'-;<' + tag + '/>',
-            # break out of HTML comments
-            '--> <' + tag + '/> <!--',
+            # Straight injection.
+            "<#{tag}/>",
+
+            # Go for an error.
+            "()\"&%1'-;<#{tag}/>'",
+
+            # Break out of HTML comments.
+            "--><#{tag}/><!--"
         ]
     end
 
     def self.opts
         @opts ||= {
-            format:     [Format::APPEND | Format::STRAIGHT],
+            format:     [Format::APPEND],
             flip_param: true
         }
     end
