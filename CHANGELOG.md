@@ -43,6 +43,7 @@
 - Modules
     - Audit
         - `path_traversal` -- Updated to use double-slashes for *nix payloads.
+        - `file_inclusion` -- Added evasive payloads using '\'.
         - `source_code_disclosure`
             - Increased coverage by following the directory tree of each file one
                 level at a time.
