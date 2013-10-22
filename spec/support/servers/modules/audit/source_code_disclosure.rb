@@ -12,7 +12,6 @@ OUT = {
     asp: 'Response.Write "stuff"'
 }
 
-require 'ap'
 def get_variations( language, str )
     return if !str.to_s.end_with? ".#{language}"
     OUT[language]

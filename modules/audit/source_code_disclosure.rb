@@ -9,7 +9,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1
+# @version 0.2
 #
 # @see http://cwe.mitre.org/data/definitions/540.html
 class Arachni::Modules::SourceCodeDisclosure < Arachni::Module::Base
@@ -66,13 +66,27 @@ class Arachni::Modules::SourceCodeDisclosure < Arachni::Module::Base
         @payload
     end
 
+    def self.payloads
+        return [] if !payload
+
+        parsed_url    = uri_parse( payload )
+        directories   = parsed_url.path.split( '/' )
+        resource_name = directories.pop
+
+        directories.reject!{ |d| d.empty? }
+
+        ["/#{resource_name}"] + directories.reverse.inject([]) do |plds, directory|
+            plds << "#{directory}/#{plds.last}"
+        end.map { |pld| "/#{pld}#{resource_name}" }
+    end
+
     def self.supported_extensions
         @supported_extensions ||=
             Set.new([ 'jsp', 'asp', 'aspx', 'php', 'htm', 'html' ])
     end
 
     def prepare
-        # Let's look for fresh a payload -- i.e. an identifiable server-side page.
+        # Let's look for fresh a payload -- i.e. an identifiable server-side resource.
         page.paths.each do |path|
             parsed_path = uri_parse( path )
             next if !self.class.supported_extensions.include?( parsed_path.resource_extension )
@@ -83,21 +97,11 @@ class Arachni::Modules::SourceCodeDisclosure < Arachni::Module::Base
     end
 
     def run
-        return if !self.class.payload
+        return if self.class.payloads.empty?
 
         candidate_elements.each do |element|
-            payload = calculate_path_to_payload_from( element.action )
-            next if !payload
-
-            element.taint_analysis( payload, self.class.options )
+            element.taint_analysis( self.class.payloads, self.class.options )
         end
-    end
-
-    def calculate_path_to_payload_from( url )
-        return if !(up_to_path = uri_parse( url ).up_to_path)
-
-        Pathname.new( self.class.payload ).
-            relative_path_from( Pathname.new( uri_parse( up_to_path ).path ) ).to_s
     end
 
     def self.info
@@ -107,7 +111,7 @@ class Arachni::Modules::SourceCodeDisclosure < Arachni::Module::Base
                 can be forced to reveal source code.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1',
+            version:     '0.2',
             targets:     %w(PHP ASP JSP),
             references:  {
                 'CWE' => 'http://cwe.mitre.org/data/definitions/540.html'
