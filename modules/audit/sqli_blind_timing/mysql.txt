@@ -7,4 +7,4 @@
 " or (sleep(__TIME__)+1) limit 1 #[space]
 '=sleep(__TIME__)='
 "=sleep(__TIME__)="
-' WHERE sleep(__TIME__) #[space]
+' where sleep(__TIME__) limit 1 #[space]
