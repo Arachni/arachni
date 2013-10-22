@@ -155,27 +155,31 @@ module Distributor
     def build_elem_list( page )
         list = []
 
+        list |= elements_to_ids( page.links )   if @opts.audit_links
+        list |= elements_to_ids( page.forms )   if @opts.audit_forms
+        list |= elements_to_ids( page.cookies ) if @opts.audit_cookies
+
+        list
+    end
+
+    def elements_to_ids( elements )
         # Helps us do some preliminary deduplication on our part to avoid sending
         # over duplicate element IDs.
         @elem_ids_filter ||= Support::LookUp::HashSet.new
 
-        scoppe_list = proc do |elems|
-            elems.map do |e|
-                next if e.auditable.empty?
+        elements.map do |e|
+            next if e.auditable.empty?
 
-                id = e.scope_audit_id
-                next if @elem_ids_filter.include?( id )
-                @elem_ids_filter << id
+            id = e.scope_audit_id
+            next if @elem_ids_filter.include?( id )
+            @elem_ids_filter << id
 
-                id
-            end.compact.uniq
-        end
+            id
+        end.compact.uniq
+    end
 
-        list |= scoppe_list.call( page.links )   if @opts.audit_links
-        list |= scoppe_list.call( page.forms )   if @opts.audit_forms
-        list |= scoppe_list.call( page.cookies ) if @opts.audit_cookies
-
-        list
+    def clear_elem_ids_filter
+        @elem_ids_filter.clear if @elem_ids_filter
     end
 
     # @param    [Block] block
