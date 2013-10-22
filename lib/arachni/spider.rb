@@ -42,6 +42,7 @@ class Spider
     def initialize( opts = Options.instance )
         @opts = opts
 
+        @mutex     = Mutex.new
         @sitemap   = {}
         @redirects = []
         @paths     = Set.new
@@ -92,9 +93,9 @@ class Spider
     # @return [Array<String>]   sitemap
     #
     def run( pass_pages_to_block = true, &block )
-        return if limit_reached? || !@opts.crawl? || running?
+        return if running? || limit_reached? || !@opts.crawl?
 
-        @running = true
+        synchronize { @running = true }
 
         # Options could have changed so reseed.
         seed_paths
@@ -132,7 +133,7 @@ class Spider
             http.run
         end
 
-        @running = false
+        synchronize { @running = false }
 
         call_on_complete_blocks
 
@@ -140,7 +141,7 @@ class Spider
     end
 
     def running?
-        !!@running
+        synchronize { !!@running }
     end
 
     # @param    [Block] block
@@ -245,7 +246,7 @@ class Spider
     end
 
     def synchronize( &block )
-        (@mutex ||= Mutex.new).synchronize( &block )
+        @mutex.synchronize( &block )
     end
 
     def distribute( urls )
