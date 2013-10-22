@@ -43,6 +43,9 @@
 - Modules
     - Audit
         - `path_traversal` -- Updated to use double-slashes for *nix payloads.
+        - `source_code_disclosure`
+            - Increased coverage by following the directory tree of each file one
+                level at a time.
         - `xss_script_tag` -- Updated to check for the existence of encoding operations.
         - `sqli`
             - Updated to cache the compiled regular expressions.
