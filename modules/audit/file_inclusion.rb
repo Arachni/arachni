@@ -18,7 +18,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1
+# @version 0.1.1
 #
 # @see http://cwe.mitre.org/data/definitions/98.html
 # @see https://www.owasp.org/index.php/PHP_File_Inclusion
@@ -84,8 +84,8 @@ class Arachni::Modules::FileInclusion < Arachni::Module::Base
                 '/boot.ini',
                 '/windows/win.ini',
                 '/winnt/win.ini'
-            ].map { |payload| [payload, "c:#{payload}", "#{payload}#{'.'* 700}"] }.flatten,
-            tomcat: [ '/WEB-INF/web.xml' ]
+            ].map { |p| [p, "c:#{p}", "#{p}#{'.'* 700}", p.gsub( '/', '\\' ) ] }.flatten,
+            tomcat: [ '/WEB-INF/web.xml', '\WEB-INF\web.xml' ]
         }.inject({}) do |h, (platform, payloads)|
             h.merge platform => payloads.map { |p| [p, "file://#{p}" ] }.flatten
         end
@@ -103,7 +103,7 @@ class Arachni::Modules::FileInclusion < Arachni::Module::Base
                 based on the presence of relevant content or errors in the HTTP responses.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.1',
+            version:     '0.1.1',
             references:  {
                 'OWASP' => 'https://www.owasp.org/index.php/PHP_File_Inclusion'
             },
