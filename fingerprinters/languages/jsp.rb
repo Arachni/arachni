@@ -6,13 +6,11 @@
 module Arachni
 module Platform::Fingerprinters
 
-#
 # Identifies JSP resources.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1
-#
+# @version 0.1.1
 class JSP < Platform::Fingerprinter
 
     EXTENSION = 'jsp'
@@ -23,7 +21,7 @@ class JSP < Platform::Fingerprinter
             cookies.include?( SESSIONID ) ||
             server_or_powered_by_include?( 'servlet' ) ||
             server_or_powered_by_include?( 'jsp' )
-            platforms << :jsp
+            platforms << :jsp << :tomcat
         end
     end
 
