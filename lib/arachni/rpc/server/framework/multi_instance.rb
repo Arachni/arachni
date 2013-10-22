@@ -248,6 +248,12 @@ module MultiInstance
 
     private
 
+    def audit
+        @spider.clear_distribution_filter
+        clear_elem_ids_filter
+        super
+    end
+
     def multi_run
         if master?
             master_run

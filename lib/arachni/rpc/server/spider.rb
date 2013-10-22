@@ -49,6 +49,10 @@ class Spider < Arachni::Spider
         @on_first_run_blocks   = []
     end
 
+    def clear_distribution_filter
+        @distribution_filter.clear
+    end
+
     # @param    [Block] block
     #   Block to be called after each URL batch has been consumed.
     def after_each_run( &block )
@@ -294,7 +298,6 @@ class Spider < Arachni::Spider
     # @param    [Array<String>]  urls    URLs to distribute.
     #
     def distribute( urls )
-        urls = dedup( urls )
         return false if urls.empty?
 
         @first_run ||= Support::LookUp::HashSet.new
