@@ -10,6 +10,8 @@
     - `--cookie-string` -- Updated to also handle cookies in the form of `Set-Cookie` headers.
     - Added:
         - `--external-address` -- The external address of a Dispatcher.
+- `Spider`
+    - Don't apply scope restrictions to the seed URL.
 - `Framework`
     - Audit
         - Stored pages are now offloaded to disk to lower RAM consumption.

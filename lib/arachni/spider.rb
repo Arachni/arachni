@@ -292,12 +292,18 @@ class Spider
             return true
         end
 
-         if skip_path?( url )
-             print_verbose "Skipping out of scope URL: #{url}"
-             return true
-         end
+        return false if self.url == url
+
+        if skip_path?( url )
+            print_verbose "Skipping out of scope URL: #{url}"
+            return true
+        end
 
         false
+    end
+
+    def skip_response?( response )
+        response.url != self.url && super( response )
     end
 
     #
