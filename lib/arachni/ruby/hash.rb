@@ -59,4 +59,15 @@ class Hash
         end
     end
 
+    # @return   [Array<Symbol>]
+    #   Returns all symbol keys from +self+ and children hashes.
+    def find_symbol_keys_recursively
+        flat = []
+        each do |k, v|
+            flat << k
+            flat |= v.find_symbol_keys_recursively if v.is_a?( Hash ) &&v.any?
+        end
+        flat.reject { |i| !i.is_a? Symbol }
+    end
+
 end

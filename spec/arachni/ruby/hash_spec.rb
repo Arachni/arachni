@@ -67,4 +67,18 @@ describe Hash do
                 { 'stuff' => 'value', 'blah' => 'value 2' }
         end
     end
+
+    describe '#find_symbol_keys_recursively' do
+        it 'returns all symbol keys from self and children hashes' do
+            {
+                stuff: 'VaLue',
+                stuff2: {
+                    stuff3: {
+                        stuff4: 'Blah'
+                    }
+                }
+            }.find_symbol_keys_recursively.sort.should ==
+                [:stuff, :stuff2, :stuff3, :stuff4].sort
+        end
+    end
 end

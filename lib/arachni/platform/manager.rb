@@ -162,6 +162,28 @@ class Manager
         rack:   'Rack'
     }
 
+    def self.find_type( platform )
+        @find_type ||= {}
+
+        if @find_type.empty?
+            TYPES.keys.each do |type|
+
+                platforms = const_get( type.to_s.upcase.to_sym )
+                platforms = platforms.find_symbol_keys_recursively if platforms.is_a?( Hash )
+
+                platforms.each do |p|
+                    @find_type[p] = type
+                end
+            end
+        end
+
+        @find_type[platform]
+    end
+
+    def self.valid
+        @valid ||= Set.new( PLATFORM_NAMES.keys )
+    end
+
     # Sets global platforms fingerprints
     # @private
     def self.set( platforms )
@@ -352,7 +374,7 @@ class Manager
 
     # @return   [Set<Symbol>]   List of valid platforms.
     def valid
-        @valid ||= Set.new( @platforms.map { |_, p| p.valid.to_a }.flatten )
+        self.class.valid
     end
 
     # @param    [Symbol, String]  platform Platform to check.
@@ -421,9 +443,7 @@ class Manager
     #   Platform whose type to find
     # @return   [Symbol]    Platform type.
     def find_type( platform )
-        platform = normalize( platform )
-        @platforms.each { |type, list| return type if list.valid? platform }
-        nil
+        self.class.find_type( platform )
     end
 
     # @param    [String, Symbol]    platform Platform whose list to find.
