@@ -17,12 +17,12 @@ class List
     #   Valid platforms for this list.
     def initialize( valid_platforms )
         @valid_platforms = normalize!( valid_platforms )
-        @platforms       = Set.new
+        @platforms       = []
     end
 
     # @return   [Array<Symbol>] Supported platforms.
     def valid
-        @valid ||= Set.new( hierarchical? ? flat_list : @valid_platforms )
+        hierarchical? ? @valid_platforms.find_symbol_keys_recursively : @valid_platforms
     end
 
     # Selects appropriate data depending on the applicable platforms
@@ -115,38 +115,30 @@ class List
     # @return   [Platform] `self`
     # @raise    [Error::Invalid]  On {#invalid?} platforms.
     def <<( platform )
-        @platforms << normalize( platform )
+        @platforms |= [normalize( platform )]
         self
     end
 
     # @param    [Platform, Enumerable] enum
     #   Enumerable object containing platforms.
-    # @return   [Platform] Updated copy of `self`.
+    #   New {Platform} built by merging `self` and the elements of the
+    #   given enumerable object.
     # @raise    [Error::Invalid]  On {#invalid?} platforms.
     def merge( enum )
         dup.merge!( enum )
     end
+    alias + merge
+    alias | merge
 
     # @param    [Enumerable] enum
     #   Enumerable object containing platforms.
     # @return   [Platform] Updated `self`.
     # @raise    [Error::Invalid]  On {#invalid?} platforms.
     def merge!( enum )
-        @platforms.merge normalize( enum )
+        @platforms |= normalize( enum )
         self
     end
     alias update merge!
-
-    # @param    [Platform, Enumerable] enum
-    #   {Platform} or enumerable object containing platforms.
-    # @return   [Platform]
-    #   New {Platform} built by merging `self` and the elements of the
-    #   given enumerable object.
-    # @raise    [Error::Invalid]  On {#invalid?} platforms.
-    def |( enum )
-        dup.merge( enum )
-    end
-    alias + |
 
     # @param    [Block] block   Block to be passed each platform.
     # @return   [Enumerator, Platform]
@@ -206,20 +198,10 @@ class List
     protected
 
     def platforms=( enum )
-        @platforms = Set.new( enum )
+        @platforms = enum.to_a
     end
 
     private
-
-    # @return   [Array<Symbol>] Flat list of supported {OS operating systems}.
-    def flat_list( hash = @valid_platforms )
-        flat = []
-        hash.each do |k, v|
-            flat << k
-            flat |= flat_list( v ) if v.any?
-        end
-        flat.reject { |i| !i.is_a? Symbol }
-    end
 
     def find_children( platform, hash = @valid_platforms )
         return [] if hash.empty?
@@ -227,7 +209,7 @@ class List
         children = []
         hash.each do |k, v|
             if k == platform
-                children |= flat_list( v )
+                children |= v.find_symbol_keys_recursively
             elsif v.is_a? Hash
                 children |= find_children( platform, v )
             end
