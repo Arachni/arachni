@@ -286,13 +286,7 @@ class HTTP
         username = opts.delete( :username )
         password = opts.delete( :password )
 
-        #
-        # The exception jail function wraps the block passed to it
-        # in exception handling and runs it.
-        #
-        # How cool is Ruby? Seriously....
-        #
-        exception_jail( false ) {
+        exception_jail( false ) do
 
             if !opts[:no_cookiejar]
                 cookies = begin
@@ -308,7 +302,9 @@ class HTTP
             end
 
             headers           = @headers.merge( headers )
-            headers['Cookie'] ||= cookies.map { |k, v| "#{cookie_encode( k )}=#{cookie_encode( v )}" }.join( ';' )
+            headers['Cookie'] ||= cookies.map do |k, v|
+                "#{cookie_encode( k, :name )}=#{cookie_encode( v )}"
+            end.join( ';' )
 
             headers.delete( 'Cookie' ) if headers['Cookie'].empty?
             headers.each { |k, v| headers[k] = Header.encode( v ) if v }
@@ -354,7 +350,7 @@ class HTTP
             req.update_cookies if update_cookies
             queue( req, async, &block )
             req
-        }
+        end
     end
 
     #
