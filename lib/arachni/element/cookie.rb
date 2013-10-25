@@ -1116,10 +1116,10 @@ class Cookie < Arachni::Element::Base
     # @return   [String]
     #
     def self.encode( str, type = :value )
-        reversed = "+;%\0"
-        reversed << '=' if type == :name
+        reserved = "+;%\0"
+        reserved << '=' if type == :name
 
-        URI.encode( str, reversed ).recode.gsub( ' ', '+' )
+        URI.encode( str, reserved ).recode.gsub( ' ', '+' )
     end
     # @see .encode
     def encode( *args )
