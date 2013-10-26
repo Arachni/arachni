@@ -162,17 +162,17 @@ class Manager < Arachni::Component::Manager
         on_register_results_blocks_raw.each { |block| block.call( results ) }
 
         unique = dedup( results )
-        return 0 if unique.empty?
+        return results if unique.empty?
 
         # Don't allow multiple variations of the same audit-type issue,
         # only allow variations for recon modules.
         unique.each { |issue| issue_set << issue.unique_id if issue.audit? }
 
         on_register_results_blocks.each { |block| block.call( unique ) }
-        return 0 if !store?
+        return results if !store?
 
         unique.each { |issue| self.results << issue }
-        unique.size
+        results
     end
     def register_results( results )
         self.class.register_results( results )
