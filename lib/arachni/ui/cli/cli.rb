@@ -179,8 +179,8 @@ class CLI
         print_line( restr, unmute )
     end
 
-    def print_issues( audit_store, unmute = false )
-        super( audit_store.issues, unmute, &method( :restr ) )
+    def print_issues( unmute = false )
+        super( @arachni.modules.issues, unmute, &method( :restr ) )
     end
 
     def kill_interrupt_handler
@@ -235,7 +235,7 @@ class CLI
                 print_info( restr( 'Results thus far:' ), true )
 
                 begin
-                    print_issues( @arachni.audit_store, true )
+                    print_issues( true )
                     print_stats( true, true )
                 rescue Exception => e
                     exception_jail{ raise e }

@@ -6,6 +6,7 @@
     - `--lsmod`
         - Longer pauses every 3 modules, it lists all of them at once.
         - Updated to show the _Severity_ of the issues the module logs.
+    - `Ctrl+C` screen optimized to use less resources when printing scan data.
 - Options
     - `--cookie-string` -- Updated to also handle cookies in the form of `Set-Cookie` headers.
     - Added:
