@@ -106,7 +106,7 @@ class Spider
 
         while !done?
             wait_if_paused
-            while !done? && url = next_url
+            while !done? && (url = next_url)
                 wait_if_paused
 
                 visit( url ) do |res|
