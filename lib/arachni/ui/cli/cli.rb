@@ -180,7 +180,7 @@ class CLI
     end
 
     def print_issues( unmute = false )
-        super( @arachni.modules.issues, unmute, &method( :restr ) )
+        super( AuditStore.sort( @arachni.modules.issues ), unmute, &method( :restr ) )
     end
 
     def kill_interrupt_handler
