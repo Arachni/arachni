@@ -632,6 +632,11 @@ class HTTP
     # @param  [Block]  block  callback
     #
     def forward_request( req, async = true, &block )
+        if emergency_run?
+            print_info 'Request queue reached its maximum size, performing an emergency run.'
+            hydra_run
+        end
+
         req.id = @request_count
 
         @queue_size += 1
@@ -675,11 +680,6 @@ class HTTP
         end
 
         req.on_complete( &block ) if block_given?
-
-        if emergency_run?
-            print_info 'Request queue reached its maximum size, performing an emergency run.'
-            hydra_run
-        end
 
         exception_jail { @hydra_sync.run } if !async
     end
