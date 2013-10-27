@@ -157,10 +157,14 @@ class HTTP
     def run
         exception_jail {
             @burst_runtime = nil
-            hydra_run
 
-            @after_run.each { |block| block.call }
-            @after_run.clear
+            begin
+                hydra_run
+
+                duped_after_run = @after_run.dup
+                @after_run.clear
+                duped_after_run.each { |block| block.call }
+            end while @queue_size > 0
 
             call_after_run_persistent
 
