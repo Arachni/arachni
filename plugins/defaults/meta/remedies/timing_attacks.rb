@@ -8,7 +8,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.6
+# @version 0.1.7
 class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
 
     is_distributable
@@ -36,7 +36,7 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
             # let's hope for a proper and clean parse but be prepared for
             # all hell to break loose too...
             begin
-                url = uri_parse( res.effective_url ).up_to_path
+                url = uri_parse( res.effective_url ).up_to_path.hash
             rescue => e
                 next
             end
@@ -60,7 +60,7 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
         @times.each_pair { |url, time| avg[url] = time / @counter[url] }
 
         inconclusive = framework.modules.issues.map.with_index do |issue, idx|
-            response_time = avg[ uri_parse( issue.url ).up_to_path ]
+            response_time = avg[uri_parse( issue.url ).up_to_path.hash]
 
             next if !issue.tags || !issue.tags.includes_tags?( TAG ) ||
                 !response_time || response_time < TIME_THRESHOLD
@@ -98,7 +98,7 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
                 Pages with high response times usually include heavy-duty processing
                 which makes them prime targets for Denial-of-Service attacks.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.6',
+            version:     '0.1.7',
             tags:        %w(anomaly timing attacks meta)
         }
     end
