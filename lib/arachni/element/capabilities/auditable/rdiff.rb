@@ -133,10 +133,10 @@ module RDiff
         # Populate the baseline/control forced-false responses.
         rdiff_establish_control( opts, responses )
 
-        # Populate the 'true' responses responses.
+        # Populate the 'true' responses.
         rdiff_fire_true_probes( opts, responses )
 
-        # Populate the 'false' responses responses.
+        # Populate the 'false' responses.
         rdiff_fire_false_probes( opts, responses )
 
         http.after_run do
