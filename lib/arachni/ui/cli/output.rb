@@ -3,6 +3,8 @@
     All rights reserved.
 =end
 
+#require 'sys/proctable'
+
 module Arachni
 
 module UI
@@ -334,6 +336,8 @@ module Output
         return if muted? && !unmute
 
         str = intercept_print_message( string )
+        #str = add_resource_usage_statistics( str )
+
         # we may get IO errors...freaky stuff...
         begin
             if out.tty?
@@ -343,6 +347,26 @@ module Output
             end
         rescue
         end
+    end
+
+    def add_resource_usage_statistics( message )
+        "#{ram}\t#{message}"
+    end
+
+    def ram
+        s    = ::Sys::ProcTable.ps( Process.pid )[:rss]
+        @s ||= s
+
+        audited_size = Element::Capabilities::Auditable.audited.size
+
+        sprintf '%10.4f [%.4f] [%7i] [%.4f]', rss_to_bytes(s - @s),
+                rss_to_bytes(s), audited_size, audited_size * 8 / 1024.0 / 1024.0
+    ensure
+        @s = s
+    end
+
+    def rss_to_bytes( rss )
+        rss * 4096.0 / 1024.0 / 1024.0
     end
 
     extend self
