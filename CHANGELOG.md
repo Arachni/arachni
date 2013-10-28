@@ -44,6 +44,8 @@
 - `Element::Cookie#encode`
     - Allow `=` to remain un-encoded in the cookie value.
 - `Options#load` -- Updated to support serialized `Hash` objects.
+- Added `Support::Signature` -- Signature class used to generate and refine signatures
+    from `String` objects.
 - Modules
     - Audit
         - `path_traversal` -- Updated to use double-slashes for *nix payloads.
