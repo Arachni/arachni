@@ -26,6 +26,7 @@
     - Added integrity check for the analysis process.
     - Optimized scheduling of data gathering.
     - Reduced total amount of performed requests.
+    - Massively reduced RAM consumption for data storage and analysis.
 - `Element::Capabilities::Auditable::Timeout`
     - Updated the algorithm to use an approximated web application processing
         time instead of the HTTP timeout based on the total request-response process.
