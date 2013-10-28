@@ -144,6 +144,7 @@ class Trainer
             @trainings_per_url[@parser.url] += 1
 
             page = Page.new( page_data )
+            Platform::Manager.fingerprint( page ) if Options.fingerprint?
 
             @on_new_page_blocks.each { |block| block.call page }
 
