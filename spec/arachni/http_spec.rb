@@ -895,7 +895,6 @@ describe Arachni::HTTP do
         end
     end
 
-
     describe '#custom_404?' do
         before { @custom_404 = @url + '/custom_404/' }
 

@@ -59,9 +59,14 @@ class HTTP
     # run the queued requests to unload it.
     MAX_QUEUE_SIZE  = 500
 
-    HTTP_TIMEOUT    = 50000
+    # Default 1 minute timeout for HTTP requests.
+    HTTP_TIMEOUT    = 60_000
 
+    # Maximum size of the cache that holds 404 signatures.
     CUSTOM_404_CACHE_SIZE = 250
+
+    # Maximum allowed difference (in tokens) when comparing custom 404 signatures.
+    CUSTOM_404_SIGNATURE_THRESHOLD  = 25
 
     # @return   [String]    framework seed/target URL
     attr_reader :url
@@ -531,22 +536,20 @@ class HTTP
                     get( generator.call, follow_location: true ) do |c_res|
                         gathered += 1
 
-                        if gathered == generators.size * precision
+                        if _404_signatures_for_path( path )[i][:body]
+                            _404_signatures_for_path( path )[i][:rdiff] =
+                                _404_signatures_for_path( path )[i][:body].
+                                    refine( c_res.body )
+
+                            next if gathered != generators.size * precision
+
                             path_analyzed_for_custom_404( path )
-
-                            # save the hash of the refined responses, no sense
-                            # in wasting space
-                            _404_signatures_for_path( path ).each { |c404| c404[:rdiff] = c404[:rdiff].hash }
-
                             block.call is_404?( path, body )
                         else
-                            _404_signatures_for_path( path )[i][:body] ||= c_res.body
-
-                            _404_signatures_for_path( path )[i][:rdiff] =
-                                _404_signatures_for_path( path )[i][:body].rdiff( c_res.body )
-
-                            _404_signatures_for_path( path )[i][:rdiff_words] =
-                                _404_signatures_for_path( path )[i][:rdiff].words.map( &:hash )
+                            _404_signatures_for_path( path )[i][:body] =
+                                Support::Signature.new(
+                                    c_res.body, threshold: CUSTOM_404_SIGNATURE_THRESHOLD
+                                )
                         end
                     end
                 }
@@ -584,6 +587,13 @@ class HTTP
             analyzed:   false,
             signatures: []
         }
+    end
+
+    def is_404?( path, body )
+        @_404[path][:signatures].each do |_404|
+            return true if _404[:body].refine( body ) == _404[:rdiff]
+        end
+        false
     end
 
     def _404_signatures_for_path( path )
@@ -690,26 +700,6 @@ class HTTP
 
     def emergency_run?
         @queue_size >= MAX_QUEUE_SIZE && !@running
-    end
-
-    def is_404?( path, body )
-        # give the rDiff algo a shot first hoping that a comparison of
-        # refined responses will be enough to give us a clear-cut positive
-        @_404[path][:signatures].each do |_404|
-            return true if _404[:body].rdiff( body ).hash == _404[:rdiff]
-        end
-
-        # if the comparison of the refinements fails, compare them based on how
-        # many words are different between them
-        @_404[path][:signatures].each do |_404|
-            rdiff_body_words = _404[:body].rdiff( body ).words.map( &:hash )
-            return true if (
-                (_404[:rdiff_words] - rdiff_body_words) -
-                (rdiff_body_words - _404[:rdiff_words])
-            ).size < 25
-        end
-
-        false
     end
 
     def random_string
