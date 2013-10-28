@@ -2,6 +2,13 @@ require 'spec_helper'
 
 describe String do
 
+    describe '#tokens' do
+        it 'converts the string words to integer tokens' do
+            s = 'This is the first test.'
+            s.tokens.should == s.words( true ).map(&:hash)
+        end
+    end
+
     describe '#rdiff' do
         it 'should return the common parts between self and another string' do
             str = <<-END
@@ -16,7 +23,7 @@ describe String do
             END
 
             str.rdiff( str2 ).should == "                This is the  test.\n" +
-                "                Not really sure what else to put here"
+                '                Not really sure what else to put here'
         end
     end
 
