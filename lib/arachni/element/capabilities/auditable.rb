@@ -602,6 +602,10 @@ module Auditable
     def audit_single( injection_str, opts = { }, &block )
         fail ArgumentError, 'Missing block.' if !block_given?
 
+        audit_id = audit_id( injection_str, opts )
+        return false if !opts[:redundant] && audited?( audit_id )
+        audited audit_id
+
         print_debug "About to audit: #{audit_id}"
         print_debug "Payload platform: #{opts[:platform]}" if opts.include?( :platform )
 
@@ -621,9 +625,6 @@ module Auditable
         @auditor ||= opts[:auditor]
         opts[:auditor] ||= @auditor
         use_anonymous_auditor if !@auditor
-
-        audit_id = audit_id( injection_str, opts )
-        return false if !opts[:redundant] && audited?( audit_id )
 
         if matches_skip_like_blocks?
             print_debug 'Element matches one or more skip_like blocks, skipping.'
@@ -687,7 +688,6 @@ module Auditable
             on_complete( elem.submit( opts ), elem, &block )
         end
 
-        audited audit_id
         true
     end
 
