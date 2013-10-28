@@ -673,8 +673,10 @@ module Auditable
             # Inform the user about what we're auditing.
             print_status( elem.status_string ) if !opts[:silent]
 
-            if opts[:each_mutation]
-                if (elements = opts[:each_mutation].call( elem ))
+            # **ALWAYS** delete this, blocks are expensive, they should not be
+            # kept in the options otherwise they won't be GC'ed.
+            if (each_mutation = opts.delete(:each_mutation))
+                if (elements = each_mutation.call( elem ))
                     [elements].flatten.compact.each do |e|
                         on_complete( e.submit( opts ), e, &block ) if e.is_a?( self.class )
                     end
