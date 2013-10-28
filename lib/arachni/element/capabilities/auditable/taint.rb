@@ -84,9 +84,6 @@ module Auditable::Taint
         # We'll have to keep track of logged issues for analysis a bit down the line.
         @logged_issues = []
 
-        # Grab an untainted response.
-        submit { |response| @untainted_response = response }
-
         # Perform the taint analysis.
         opts = self.class::OPTIONS.merge( TAINT_OPTIONS.merge( opts ) )
         audit( payloads, opts ) { |res, c_opts| get_matches( res, c_opts ) }
@@ -94,11 +91,15 @@ module Auditable::Taint
         # Go over the issues and flag them as untrusted if the pattern that
         # caused them to be logged matches the untainted response.
         http.after_run do
-            @logged_issues.each do |issue|
-                next if !@untainted_response.body.include?( issue.match )
+            # Grab an untainted response.
+            submit do |response|
+                @logged_issues.each do |issue|
+                    next if !response.body.include?( issue.match )
 
-                issue.verification = true
-                issue.add_remark :auditor, REMARK
+                    issue.verification = true
+                    issue.add_remark :auditor, REMARK
+                end
+                @logged_issues = nil
             end
         end
     end
