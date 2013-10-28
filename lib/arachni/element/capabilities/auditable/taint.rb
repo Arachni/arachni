@@ -102,6 +102,8 @@ module Auditable::Taint
         # Go over the issues and flag them as untrusted if the pattern that
         # caused them to be logged matches the untainted response.
         http.after_run do
+            next if @logged_issues.empty?
+
             # Grab an untainted response.
             submit do |response|
                 @logged_issues.each do |issue|
@@ -110,7 +112,8 @@ module Auditable::Taint
                     issue.verification = true
                     issue.add_remark :auditor, REMARK
                 end
-                @logged_issues = nil
+
+                @logged_issues = []
             end
         end
     end
