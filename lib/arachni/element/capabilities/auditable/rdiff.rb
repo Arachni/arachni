@@ -104,6 +104,15 @@ module RDiff
 
         opts = self.class::MUTATION_OPTIONS.merge( RDIFF_OPTIONS.merge( opts ) )
 
+        mutations_size = mutations( opts[:false], opts ).size * opts[:precision]
+
+        @data_gathering = {
+            mutations_size:        mutations_size,
+            expected_responses:    mutations_size + (mutations_size * opts[:pairs].size * 2),
+            received_responses:    0,
+            done:                  false
+        }
+
         # Holds all the data from the probes.
         responses = {
             # Control baseline per input.
@@ -113,39 +122,27 @@ module RDiff
             controls_verification: {},
 
             # Corrupted baselines per input.
-            corrupted:             {}
+            corrupted:             {},
 
             # Rest of the data are dynamically populated using input pairs
             # as keys.
         }
 
         # Populate the baseline/control forced-false responses.
-        rdiff_establish_control( opts, responses )
+        rdiff_establish_control( opts, responses, &block )
 
         # Populate the 'true' responses.
-        rdiff_fire_true_probes( opts, responses )
+        rdiff_fire_true_probes( opts, responses, &block )
 
         # Populate the 'false' responses.
-        rdiff_fire_false_probes( opts, responses )
-
-        http.after_run do
-            # Lastly, we need to re-establish a new baseline in order to compare
-            # it with the initial one so as to be sure that server behavior
-            # hasn't suddenly changed in a way that would corrupt our analysis.
-            rdiff_verify_control( opts, responses )
-
-            # Once the new baseline has been established and we've got all the
-            # data we need, crunch them and see if server behavior indicates
-            # a vulnerability.
-            http.after_run { rdiff_analyze_data( responses, &block ) }
-        end
-
+        rdiff_fire_false_probes( opts, responses, &block )
+    
         true
     end
 
     private
 
-    def rdiff_establish_control( opts, responses )
+    def rdiff_establish_control( opts, responses, &block )
         opts[:precision].times do
             audit( opts[:false], opts ) do |res, _, elem|
                 next if responses[:corrupted][elem.altered]
@@ -168,11 +165,14 @@ module RDiff
                     responses[:controls][elem.altered] ?
                         responses[:controls][elem.altered].refine!(res.body) :
                         Support::Signature.new(res.body)
+
+                @data_gathering[:received_responses] += 1
+                finalize_if_done( opts, responses, &block )
             end
         end
     end
 
-    def rdiff_fire_true_probes( opts, responses )
+    def rdiff_fire_true_probes( opts, responses, &block )
         opts[:pairs].each do |pair|
             responses[pair] ||= {}
             true_expr = pair.to_a.first[0]
@@ -212,12 +212,15 @@ module RDiff
                         responses[pair][elem.altered][:true] ?
                             responses[pair][elem.altered][:true].refine!(res.body) :
                             Support::Signature.new(res.body)
+
+                    @data_gathering[:received_responses] += 1
+                    finalize_if_done( opts, responses, &block )
                 end
             end
         end
     end
 
-    def rdiff_fire_false_probes( opts, responses )
+    def rdiff_fire_false_probes( opts, responses, &block )
         opts[:pairs].each do |pair|
             false_expr = pair.to_a.first[1]
 
@@ -250,12 +253,28 @@ module RDiff
                         responses[pair][elem.altered][:false] ?
                             responses[pair][elem.altered][:false].refine!(res.body) :
                             Support::Signature.new(res.body)
+
+                    @data_gathering[:received_responses] += 1
+                    finalize_if_done( opts, responses, &block )
                 end
             end
         end
     end
 
-    def rdiff_verify_control( opts, responses )
+    def finalize_if_done( opts, responses, &block )
+        return if @data_gathering[:done] ||
+            @data_gathering[:expected_responses] != @data_gathering[:received_responses]
+        @data_gathering[:done] = true
+
+        # Lastly, we need to re-establish a new baseline in order to compare
+        # it with the initial one so as to be sure that server behavior
+        # hasn't suddenly changed in a way that would corrupt our analysis.
+        rdiff_verify_control( opts, responses, &block )
+    end
+
+    def rdiff_verify_control( opts, responses, &block )
+        received_responses = 0
+
         opts[:precision].times do
             audit( opts[:false], opts ) do |res, _, elem|
                 next if responses[:corrupted][elem.altered]
@@ -280,6 +299,13 @@ module RDiff
                         responses[:controls_verification][elem.altered].refine!(res.body) :
                         Support::Signature.new(res.body)
 
+                received_responses += 1
+                next if received_responses != @data_gathering[:mutations_size]
+
+                # Once the new baseline has been established and we've got all the
+                # data we need, crunch them and see if server behavior indicates
+                # a vulnerability.
+                rdiff_analyze_data( responses, &block )
             end
         end
     end
