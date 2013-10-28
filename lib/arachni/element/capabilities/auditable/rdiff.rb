@@ -135,7 +135,7 @@ module RDiff
             rdiff_verify_control( opts, responses )
 
             # Once the new baseline has been established and we've got all the
-            # data we need, crunch them and see if server behavior is indicates
+            # data we need, crunch them and see if server behavior indicates
             # a vulnerability.
             http.after_run { rdiff_analyze_data( responses, &block ) }
         end
