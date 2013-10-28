@@ -166,7 +166,7 @@ module RDiff
                 # content such as banners etc.).
                 responses[:controls][elem.altered] =
                     responses[:controls][elem.altered] ?
-                        responses[:controls][elem.altered].refine(res.body) :
+                        responses[:controls][elem.altered].refine!(res.body) :
                         Support::Signature.new(res.body)
             end
         end
@@ -210,7 +210,7 @@ module RDiff
                     # content such as banners etc.).
                     responses[pair][elem.altered][:true] =
                         responses[pair][elem.altered][:true] ?
-                            responses[pair][elem.altered][:true].refine(res.body) :
+                            responses[pair][elem.altered][:true].refine!(res.body) :
                             Support::Signature.new(res.body)
                 end
             end
@@ -248,7 +248,7 @@ module RDiff
                     # content such as banners etc.).
                     responses[pair][elem.altered][:false] =
                         responses[pair][elem.altered][:false] ?
-                            responses[pair][elem.altered][:false].refine(res.body) :
+                            responses[pair][elem.altered][:false].refine!(res.body) :
                             Support::Signature.new(res.body)
                 end
             end
@@ -277,7 +277,7 @@ module RDiff
                 # content such as banners etc.).
                 responses[:controls_verification][elem.altered] =
                     responses[:controls_verification][elem.altered] ?
-                        responses[:controls_verification][elem.altered].refine(res.body) :
+                        responses[:controls_verification][elem.altered].refine!(res.body) :
                         Support::Signature.new(res.body)
 
             end
