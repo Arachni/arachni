@@ -370,8 +370,9 @@ module Output
 
         audited_size = Element::Capabilities::Auditable.audited.size
 
-        sprintf '%10.4f [%.4f] [%7i] [%.4f]', rss_to_bytes(s - @s),
-                rss_to_bytes(s), audited_size, audited_size * 8 / 1024.0 / 1024.0
+        sprintf '%10.4f [%.4f] [%7i] [%.4f] [%4i]', rss_to_bytes(s - @s),
+                rss_to_bytes(s), audited_size, audited_size * 8 / 1024.0 / 1024.0,
+                ::ObjectSpace.each_object( ::Typhoeus::Request ){}
     ensure
         @s = s
     end
