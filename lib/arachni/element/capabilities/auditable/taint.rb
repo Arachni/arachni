@@ -87,24 +87,6 @@ module Auditable::Taint
         # Perform the taint analysis.
         opts = self.class::OPTIONS.merge( TAINT_OPTIONS.merge( opts ) )
         audit( payloads, opts ) { |res, c_opts| get_matches( res, c_opts ) }
-
-        # Go over the issues and flag them as untrusted if the pattern that
-        # caused them to be logged matches the untainted response.
-        http.after_run do
-            next if @logged_issues.empty?
-
-            # Grab an untainted response.
-            submit do |response|
-                @logged_issues.each do |issue|
-                    next if !response.body.include?( issue.match )
-
-                    issue.verification = true
-                    issue.add_remark :auditor, REMARK
-                end
-
-                @logged_issues = []
-            end
-        end
     end
 
     private
@@ -169,6 +151,7 @@ module Auditable::Taint
         if res.body.include?( substring ) && !ignore?( res, opts )
             opts[:regexp] = opts[:id] = opts[:match] = substring.dup
             @logged_issues |= @auditor.log( opts, res )
+            setup_verification_callbacks
         end
     end
 
@@ -192,6 +175,7 @@ module Auditable::Taint
             opts[:regexp] = regexp
 
             @logged_issues |= @auditor.log( opts, res )
+            setup_verification_callbacks
         end
 
     rescue => e
@@ -205,6 +189,29 @@ module Auditable::Taint
             return true if res.body.scan( r ).flatten.first
         end
         false
+    end
+
+    def setup_verification_callbacks
+        return if @setup_verification_callbacks
+        @setup_verification_callbacks = true
+
+        # Go over the issues and flag them as untrusted if the pattern that
+        # caused them to be logged matches the untainted response.
+        http.after_run do
+            @setup_verification_callbacks = false
+
+            # Grab an untainted response.
+            submit do |response|
+                @logged_issues.each do |issue|
+                    next if !response.body.include?( issue.match )
+
+                    issue.verification = true
+                    issue.add_remark :auditor, REMARK
+                end
+
+                @logged_issues = []
+            end
+        end
     end
 
     def longest_word_for_regexp( regexp )
