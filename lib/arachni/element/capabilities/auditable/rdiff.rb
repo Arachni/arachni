@@ -172,10 +172,13 @@ module RDiff
                         "variable '#{elem.altered}' with action '#{elem.action}'."
                 end
 
-                # Remove context-irrelevant dynamic content like banners and such.
+                # Create a signature from the response body and refine it with
+                # subsequent ones to remove noise (like context-irrelevant dynamic
+                # content such as banners etc.).
                 responses[:controls][elem.altered] =
                     responses[:controls][elem.altered] ?
-                        responses[:controls][elem.altered].rdiff( res.body ).hash : res.body
+                        responses[:controls][elem.altered].refine(res.body) :
+                        Support::Signature.new(res.body)
             end
         end
     end
@@ -213,11 +216,13 @@ module RDiff
                     responses[pair][elem.altered][:response]        = res
                     responses[pair][elem.altered][:injected_string] = true_expr
 
-                    # Remove context-irrelevant dynamic content like banners
-                    # and such from the error page.
+                    # Create a signature from the response body and refine it with
+                    # subsequent ones to remove noise (like context-irrelevant dynamic
+                    # content such as banners etc.).
                     responses[pair][elem.altered][:true] =
                         responses[pair][elem.altered][:true] ?
-                            responses[pair][elem.altered][:true].rdiff( res.body.dup ).hash : res.body
+                            responses[pair][elem.altered][:true].refine(res.body) :
+                            Support::Signature.new(res.body)
                 end
             end
         end
@@ -249,11 +254,13 @@ module RDiff
                             " -- Got false response: #{false_expr}"
                     end
 
-                    # Remove context-irrelevant dynamic content like banners
-                    # and such from the error page.
+                    # Create a signature from the response body and refine it with
+                    # subsequent ones to remove noise (like context-irrelevant dynamic
+                    # content such as banners etc.).
                     responses[pair][elem.altered][:false] =
                         responses[pair][elem.altered][:false] ?
-                            responses[pair][elem.altered][:false].rdiff( res.body.dup ).hash : res.body
+                            responses[pair][elem.altered][:false].refine(res.body) :
+                            Support::Signature.new(res.body)
                 end
             end
         end
@@ -276,10 +283,13 @@ module RDiff
                         "for #{elem.type} variable '#{elem.altered}' with action '#{elem.action}'."
                 end
 
-                # Remove context-irrelevant dynamic content like banners and such.
+                # Create a signature from the response body and refine it with
+                # subsequent ones to remove noise (like context-irrelevant dynamic
+                # content such as banners etc.).
                 responses[:controls_verification][elem.altered] =
                     responses[:controls_verification][elem.altered] ?
-                        responses[:controls_verification][elem.altered].rdiff( res.body ).hash : res.body
+                        responses[:controls_verification][elem.altered].refine(res.body) :
+                        Support::Signature.new(res.body)
 
             end
         end

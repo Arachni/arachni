@@ -22,6 +22,7 @@
 - `RPC::Server::Dispatcher`
     - Now supports specifying an external address to allow for deployments behind NATs.
 - `Element::Capabilities::Auditable::RDiff`
+    - Updated to use the new `Support::Signature` class to perform response body comparisons.
     - Updated the algorithm to use a `false` as the control.
     - Added integrity check for the analysis process.
     - Optimized scheduling of data gathering.
