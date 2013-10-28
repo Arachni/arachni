@@ -148,7 +148,7 @@ module RDiff
             # Once the new baseline has been established and we've got all the
             # data we need, crunch them and see if server behavior is indicates
             # a vulnerability.
-            http.after_run { rdiff_analyze_data( opts, responses, &block ) }
+            http.after_run { rdiff_analyze_data( responses, &block ) }
         end
 
         true
@@ -175,7 +175,7 @@ module RDiff
                 # Remove context-irrelevant dynamic content like banners and such.
                 responses[:controls][elem.altered] =
                     responses[:controls][elem.altered] ?
-                        responses[:controls][elem.altered].rdiff( res.body ) : res.body
+                        responses[:controls][elem.altered].rdiff( res.body ).hash : res.body
             end
         end
     end
@@ -213,11 +213,11 @@ module RDiff
                     responses[pair][elem.altered][:response]        = res
                     responses[pair][elem.altered][:injected_string] = true_expr
 
-                    responses[pair][elem.altered][:true] ||= res.body.dup
                     # Remove context-irrelevant dynamic content like banners
                     # and such from the error page.
                     responses[pair][elem.altered][:true] =
-                        responses[pair][elem.altered][:true].rdiff( res.body.dup )
+                        responses[pair][elem.altered][:true] ?
+                            responses[pair][elem.altered][:true].rdiff( res.body.dup ).hash : res.body
                 end
             end
         end
@@ -249,11 +249,11 @@ module RDiff
                             " -- Got false response: #{false_expr}"
                     end
 
-                    responses[pair][elem.altered][:false] ||= res.body.dup
                     # Remove context-irrelevant dynamic content like banners
                     # and such from the error page.
                     responses[pair][elem.altered][:false] =
-                        responses[pair][elem.altered][:false].rdiff( res.body.dup )
+                        responses[pair][elem.altered][:false] ?
+                            responses[pair][elem.altered][:false].rdiff( res.body.dup ).hash : res.body
                 end
             end
         end
@@ -279,13 +279,13 @@ module RDiff
                 # Remove context-irrelevant dynamic content like banners and such.
                 responses[:controls_verification][elem.altered] =
                     responses[:controls_verification][elem.altered] ?
-                        responses[:controls_verification][elem.altered].rdiff( res.body ) : res.body
+                        responses[:controls_verification][elem.altered].rdiff( res.body ).hash : res.body
 
             end
         end
     end
 
-    def rdiff_analyze_data( opts, responses, &block )
+    def rdiff_analyze_data( responses, &block )
         controls              = responses.delete( :controls )
         controls_verification = responses.delete( :controls_verification )
         corrupted             = responses.delete( :corrupted )
@@ -301,46 +301,42 @@ module RDiff
 
                 # If the initial and verification baselines differ, bail out;
                 # server behavior is too unstable.
-                if !rdiff_similar_bodies( controls[input_name],
-                                          controls_verification[input_name],
-                                          opts[:ratio] )
+                if controls[input_name] != controls_verification[input_name]
                     result[:mutation].print_bad 'Control baseline too unstable, ' <<
                         "aborting analysis for #{result[:mutation].type} " <<
-                        "variable '#{result[:mutation].altered}' with action '#{result[:mutation].action}'"
+                        "variable '#{result[:mutation].altered}' with action " <<
+                        "'#{result[:mutation].action}'"
                     next
                 end
 
-                # if force_false_baseline == false_response_body AND
-                #    false_response_body != true_response_code AND
-                #    true_response_code == 200
-                if rdiff_similar_bodies( controls[input_name], result[:false], opts[:ratio] ) &&
-                    !rdiff_similar_bodies( result[:false], result[:true], opts[:ratio] ) &&
-                    result[:response].code == 200
+                # Log if:
+                #
+                #   force_false_baseline == false_response_body AND
+                #   false_response_body != true_response_code AND
+                #   true_response_code == 200
+                next if controls[input_name] != result[:false] ||
+                    result[:false] == result[:true] ||
+                    result[:response].code != 200
 
-                    # Check to see if the `true` response we're analyzing
-                    # is a custom 404 page.
-                    http.custom_404?( result[:response] ) do |custom_404|
-                        # If this is a custom 404 page bail out.
-                        next if custom_404
+                # Check to see if the `true` response we're analyzing
+                # is a custom 404 page.
+                http.custom_404?( result[:response] ) do |is_custom_404|
+                    # If this is a custom 404 page bail out.
+                    next if is_custom_404
 
-                        @auditor.log({
-                                var:      input_name,
-                                opts:     {
-                                    injected_orig: result[:injected_string],
-                                    combo:         result[:mutation].auditable
-                                },
-                                injected: result[:mutation].altered_value,
-                                elem:     type
-                            }, result[:response]
-                        )
-                    end
+                    @auditor.log({
+                            var:      input_name,
+                            opts:     {
+                                injected_orig: result[:injected_string],
+                                combo:         result[:mutation].auditable
+                            },
+                            injected: result[:mutation].altered_value,
+                            elem:     type
+                        }, result[:response]
+                    )
                 end
             end
         end
-    end
-
-    def rdiff_similar_bodies( body1, body2, ratio )
-        body1 == body2
     end
 
 end
