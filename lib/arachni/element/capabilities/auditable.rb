@@ -625,7 +625,7 @@ module Auditable
 
         opts[:injected_orig] = injection_str
 
-        @auditor ||= opts[:auditor]
+        @auditor       ||= opts[:auditor]
         opts[:auditor] ||= @auditor
         use_anonymous_auditor if !@auditor
 
@@ -635,8 +635,10 @@ module Auditable
         end
 
         # Options will eventually be serialized so remove non-serializeable
-        # objects.
-        skip_like_option = [opts.delete( :skip_like )].flatten.compact
+        # objects. Also, blocks are expensive, they should not be kept in the
+        # options otherwise they won't be GC'ed.
+        skip_like_option = [opts.delete(:skip_like)].flatten.compact
+        each_mutation    = opts.delete(:each_mutation)
 
         # Iterate over all fuzz variations and audit each one.
         mutations( injection_str, opts ).each do |elem|
@@ -677,13 +679,12 @@ module Auditable
             # Inform the user about what we're auditing.
             print_status( elem.status_string ) if !opts[:silent]
 
-            # **ALWAYS** delete this, blocks are expensive, they should not be
-            # kept in the options otherwise they won't be GC'ed.
-            if (each_mutation = opts.delete(:each_mutation))
-                if (elements = each_mutation.call( elem ))
-                    [elements].flatten.compact.each do |e|
-                        on_complete( e.submit( opts ), e, &block ) if e.is_a?( self.class )
-                    end
+            # Process each mutation via the supplied block if we have one and
+            # submit new mutations returned by that block, if any.
+            if each_mutation && (elements = each_mutation.call( elem ))
+                [elements].flatten.compact.each do |e|
+                    next if !e.is_a?( self.class )
+                    on_complete( e.submit( opts ), e, &block )
                 end
             end
 
