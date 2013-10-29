@@ -14,8 +14,6 @@
     limitations under the License.
 =end
 
-#require 'sys/proctable'
-
 module Arachni
 
 module UI
@@ -361,6 +359,8 @@ module Output
     end
 
     def add_resource_usage_statistics( message )
+        require 'sys/proctable'
+
         procinfo = ::Sys::ProcTable.ps( Process.pid )
         pctcpu   = procinfo[:pctcpu]
         pctmem   = procinfo[:pctmem]
@@ -368,10 +368,13 @@ module Output
         @rss   ||= rss
 
         # Change in RAM consumption in MB | Total RAM consumption in MB (RAM %) |
-        # CPU usage % | Amount of Typhoeus::Request objects in RAM
-        sprintf( '%7.4f | %8.4f (%5.1f%%) | %5.1f%% | %3i | ',
+        # CPU usage % | Amount of Typhoeus::Request - Typhoeus::Response objects in RAM |
+        # Proc objects in RAM
+        sprintf( '%7.4f | %8.4f (%5.1f%%) | %5.1f%% | %3i - %3i | %5i | ',
                 rss_to_mb(rss - @rss), rss_to_mb(rss), pctmem, pctcpu,
-                ::ObjectSpace.each_object( ::Typhoeus::Request ){} ) + message
+                ::ObjectSpace.each_object( ::Typhoeus::Request ){},
+                ::ObjectSpace.each_object( ::Typhoeus::Response ){},
+                ::ObjectSpace.each_object( ::Proc ){}) + message
     ensure
         @rss = rss
     end
