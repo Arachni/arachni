@@ -361,20 +361,19 @@ module Output
     end
 
     def add_resource_usage_statistics( message )
-        "#{ram}\t#{message}"
-    end
+        procinfo = ::Sys::ProcTable.ps( Process.pid )
+        pctcpu   = procinfo[:pctcpu]
+        pctmem   = procinfo[:pctmem]
+        rss      = procinfo[:rss]
+        @rss   ||= rss
 
-    def ram
-        s    = ::Sys::ProcTable.ps( Process.pid )[:rss]
-        @s ||= s
-
-        audited_size = Element::Capabilities::Auditable.audited.size
-
-        sprintf '%10.4f [%.4f] [%7i] [%.4f] [%4i]', rss_to_bytes(s - @s),
-                rss_to_bytes(s), audited_size, audited_size * 8 / 1024.0 / 1024.0,
+        # Change in RAM consumption | Total RAM consumption (RAM %) |
+        # CPU usage % | Amount of Typhoeus::Request objects in RAM
+        sprintf "%7.4f | %8.4f (%5.1f%%) | %5.1f%% | %3i | #{message}",
+                rss_to_bytes(rss - @rss), rss_to_bytes(rss), pctmem, pctcpu,
                 ::ObjectSpace.each_object( ::Typhoeus::Request ){}
     ensure
-        @s = s
+        @rss = rss
     end
 
     def rss_to_bytes( rss )
