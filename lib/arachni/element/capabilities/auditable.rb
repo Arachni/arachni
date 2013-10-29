@@ -591,6 +591,9 @@ module Auditable
     def audit_single( injection_str, opts = { }, &block )
         fail ArgumentError, 'Missing block.' if !block_given?
 
+        # We'll do stuff to this hash so let's make a copy for ourselves.
+        opts = opts.dup
+
         audit_id = audit_id( injection_str, opts )
         return false if !opts[:redundant] && audited?( audit_id )
         audited audit_id
