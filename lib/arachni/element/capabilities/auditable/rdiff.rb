@@ -188,6 +188,9 @@ module RDiff
             responses[pair] ||= {}
             true_expr = pair.to_a.first[0]
 
+            print_status "Gathering 'true'  data for #{self.type} with " <<
+                "action '#{self.action}' using seed: #{true_expr}"
+
             opts[:precision].times do
                 audit( true_expr, opts ) do |res, _, elem|
                     responses[pair][elem.altered] ||= {}
@@ -205,9 +208,9 @@ module RDiff
                     end
 
                     if responses[pair][elem.altered][:true]
-                        elem.print_status "Gathering data for #{elem.type} " <<
+                        elem.print_status "Got 'true'  response for #{elem.type} " <<
                             "variable '#{elem.altered}' with action '#{elem.action}'" <<
-                            " -- Got true  response: #{true_expr}"
+                            " using seed: #{true_expr}"
                     end
 
                     responses[pair][elem.altered][:mutation] = elem
@@ -235,6 +238,9 @@ module RDiff
         opts[:pairs].each do |pair|
             false_expr = pair.to_a.first[1]
 
+            print_status "Gathering 'false' data for #{self.type} with " <<
+                "action '#{self.action}' using seed: #{false_expr}"
+
             opts[:precision].times do
                 audit( false_expr, opts ) do |res, _, elem|
                     responses[pair][elem.altered] ||= {}
@@ -252,9 +258,9 @@ module RDiff
                     end
 
                     if responses[pair][elem.altered][:false]
-                        elem.print_status "Gathering data for #{elem.type} " <<
+                        elem.print_status "Got 'false' response for #{elem.type} " <<
                             "variable '#{elem.altered}' with action '#{elem.action}'" <<
-                            " -- Got false response: #{false_expr}"
+                            " using seed: #{false_expr}"
                     end
 
                     # Create a signature from the response body and refine it with
