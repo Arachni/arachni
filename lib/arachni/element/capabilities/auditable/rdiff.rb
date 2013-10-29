@@ -105,6 +105,8 @@ module RDiff
     #   if the resource is out of scope or already audited).
     #
     def rdiff_analysis( opts = {}, &block )
+        return if self.auditable.empty?
+
         return false if audited? audit_id
         audited audit_id
 
@@ -118,14 +120,15 @@ module RDiff
         mutations_size = mutations( opts[:false], opts ).size * opts[:precision]
 
         @data_gathering = {
-            mutations_size:        mutations_size,
-            expected_responses:    mutations_size + (mutations_size * opts[:pairs].size * 2),
-            received_responses:    0,
-            done:                  false
+            mutations_size:     mutations_size,
+            expected_responses: mutations_size + (mutations_size * opts[:pairs].size * 2),
+            received_responses: 0,
+            done:               false,
+            controls:           {}
         }
 
         # Holds all the data from the probes.
-        responses = {
+        signatures = {
             # Control baseline per input.
             controls:              {},
 
@@ -139,53 +142,57 @@ module RDiff
             # as keys.
         }
 
-        # Populate the baseline/control forced-false responses.
-        rdiff_establish_control( opts, responses, &block )
+        # Populate the baseline/control forced-false signatures.
+        populate_control_signatures( opts, signatures, &block )
 
-        # Populate the 'true' responses.
-        rdiff_fire_true_probes( opts, responses, &block )
+        # Populate the 'true' signatures.
+        populate_true_signatures( opts, signatures, &block )
 
-        # Populate the 'false' responses.
-        rdiff_fire_false_probes( opts, responses, &block )
-    
+        # Populate the 'false' signatures.
+        populate_false_signatures( opts, signatures, &block )
+
         true
     end
 
     private
 
-    def rdiff_establish_control( opts, responses, &block )
+    # Performs requests using the 'false' control seed and generates/stores
+    # signatures based on the response bodies.
+    def populate_control_signatures( opts, signatures, &block )
         opts[:precision].times do
             audit( opts[:false], opts ) do |res, _, elem|
-                next if responses[:corrupted][elem.altered]
+                next if signatures[:corrupted][elem.altered]
 
-                if res.body.to_s.empty?
-                    print_bad 'Server returned empty response body, aborting analysis.'
-                    responses[:corrupted][elem.altered] = true
-                    next
-                end
+                response_check( res, signatures, elem )
 
-                if responses[:controls][elem.altered]
+                if signatures[:controls][elem.altered]
                     print_status "Got default/control response for #{elem.type} " +
                         "variable '#{elem.altered}' with action '#{elem.action}'."
+
+                    @data_gathering[:controls][elem.altered] = true
                 end
 
                 # Create a signature from the response body and refine it with
                 # subsequent ones to remove noise (like context-irrelevant dynamic
                 # content such as banners etc.).
-                responses[:controls][elem.altered] =
-                    responses[:controls][elem.altered] ?
-                        responses[:controls][elem.altered].refine!(res.body) :
+                signatures[:controls][elem.altered] =
+                    signatures[:controls][elem.altered] ?
+                        signatures[:controls][elem.altered].refine!(res.body) :
                         Support::Signature.new(res.body)
 
                 @data_gathering[:received_responses] += 1
-                finalize_if_done( opts, responses, &block )
+                finalize_if_done( opts, signatures, &block )
             end
         end
     end
 
-    def rdiff_fire_true_probes( opts, responses, &block )
+    # Performs requests using the 'true' seeds and generates/stores signatures
+    # based on the response bodies.
+    def populate_true_signatures( opts, signatures, &block )
         opts[:pairs].each do |pair|
-            responses[pair] ||= {}
+            signatures[pair]      ||= {}
+            @data_gathering[pair] ||= {}
+
             true_expr = pair.to_a.first[0]
 
             print_status "Gathering 'true'  data for #{self.type} with " <<
@@ -193,49 +200,56 @@ module RDiff
 
             opts[:precision].times do
                 audit( true_expr, opts ) do |res, _, elem|
-                    responses[pair][elem.altered] ||= {}
 
-                    next if responses[pair][elem.altered][:corrupted] ||
-                        responses[:corrupted][elem.altered]
+                    signatures[pair][elem.altered]      ||= {}
+                    @data_gathering[pair][elem.altered] ||= {}
 
-                    if res.body.to_s.empty?
-                        print_bad 'Server returned empty response body,' <<
-                            " aborting analysis for #{elem.type} variable " <<
-                            "'#{elem.altered}' with action '#{elem.action}'."
-                        responses[pair][elem.altered][:corrupted] = true
-                        responses[:corrupted][elem.altered]       = true
-                        next
-                    end
+                    next if signatures[pair][elem.altered][:corrupted] ||
+                        signatures[:corrupted][elem.altered]
 
-                    if responses[pair][elem.altered][:true]
+                    response_check( res, signatures, elem, pair )
+
+                    next if signature_sieve( elem.altered, signatures, pair )
+
+                    if signatures[pair][elem.altered][:true]
                         elem.print_status "Got 'true'  response for #{elem.type} " <<
                             "variable '#{elem.altered}' with action '#{elem.action}'" <<
                             " using seed: #{true_expr}"
+                        @data_gathering[pair][elem.altered][:true_probes] = true
                     end
 
-                    responses[pair][elem.altered][:mutation] = elem
+                    # Store the mutation for the {Arachni::Issue}.
+                    signatures[pair][elem.altered][:mutation] = elem
 
                     # Keep the latest response for the {Arachni::Issue}.
-                    responses[pair][elem.altered][:response]        = res
-                    responses[pair][elem.altered][:injected_string] = true_expr
+                    signatures[pair][elem.altered][:response] = res
+
+                    signatures[pair][elem.altered][:injected_string] = true_expr
 
                     # Create a signature from the response body and refine it with
                     # subsequent ones to remove noise (like context-irrelevant dynamic
                     # content such as banners etc.).
-                    responses[pair][elem.altered][:true] =
-                        responses[pair][elem.altered][:true] ?
-                            responses[pair][elem.altered][:true].refine!(res.body) :
+                    signatures[pair][elem.altered][:true] =
+                        signatures[pair][elem.altered][:true] ?
+                            signatures[pair][elem.altered][:true].refine!(res.body) :
                             Support::Signature.new(res.body)
 
+                    signature_sieve( elem.altered, signatures, pair )
+
                     @data_gathering[:received_responses] += 1
-                    finalize_if_done( opts, responses, &block )
+                    finalize_if_done( opts, signatures, &block )
                 end
             end
         end
     end
 
-    def rdiff_fire_false_probes( opts, responses, &block )
+    # Performs requests using the 'false' seeds and generates/stores signatures
+    # based on the response bodies.
+    def populate_false_signatures( opts, signatures, &block )
         opts[:pairs].each do |pair|
+            signatures[pair]       ||= {}
+            @data_gathering[pair] ||= {}
+
             false_expr = pair.to_a.first[1]
 
             print_status "Gathering 'false' data for #{self.type} with " <<
@@ -243,42 +257,45 @@ module RDiff
 
             opts[:precision].times do
                 audit( false_expr, opts ) do |res, _, elem|
-                    responses[pair][elem.altered] ||= {}
 
-                    next if responses[pair][elem.altered][:corrupted] ||
-                        responses[:corrupted][elem.altered]
+                    signatures[pair][elem.altered] ||= {}
+                    @data_gathering[pair][elem.altered] ||= {}
 
-                    if res.body.to_s.empty?
-                        print_status 'Server returned empty response body,' <<
-                            " aborting analysis for #{elem.type} variable " <<
-                            "'#{elem.altered}' with action '#{elem.action}'."
-                        responses[pair][elem.altered][:corrupted] = true
-                        responses[:corrupted][elem.altered]       = true
-                        next
-                    end
+                    next if signatures[pair][elem.altered][:corrupted] ||
+                        signatures[:corrupted][elem.altered]
 
-                    if responses[pair][elem.altered][:false]
+                    response_check( res, signatures, elem, pair )
+
+                    next if signature_sieve( elem.altered, signatures, pair )
+
+                    if signatures[pair][elem.altered][:false]
                         elem.print_status "Got 'false' response for #{elem.type} " <<
                             "variable '#{elem.altered}' with action '#{elem.action}'" <<
                             " using seed: #{false_expr}"
+                        @data_gathering[pair][elem.altered][:false_probes] = true
                     end
 
                     # Create a signature from the response body and refine it with
                     # subsequent ones to remove noise (like context-irrelevant dynamic
                     # content such as banners etc.).
-                    responses[pair][elem.altered][:false] =
-                        responses[pair][elem.altered][:false] ?
-                            responses[pair][elem.altered][:false].refine!(res.body) :
+                    signatures[pair][elem.altered][:false] =
+                        signatures[pair][elem.altered][:false] ?
+                            signatures[pair][elem.altered][:false].refine!(res.body) :
                             Support::Signature.new(res.body)
 
+                    signature_sieve( elem.altered, signatures, pair )
+
                     @data_gathering[:received_responses] += 1
-                    finalize_if_done( opts, responses, &block )
+                    finalize_if_done( opts, signatures, &block )
                 end
             end
         end
     end
 
-    def finalize_if_done( opts, responses, &block )
+    # Check if we're done with data gathering and proceed to establishing a
+    # {#populate_control_verification_signatures verification control baseline}
+    # and {#match_signatures final analysis}.
+    def finalize_if_done( opts, signatures, &block )
         return if @data_gathering[:done] ||
             @data_gathering[:expected_responses] != @data_gathering[:received_responses]
         @data_gathering[:done] = true
@@ -286,34 +303,33 @@ module RDiff
         # Lastly, we need to re-establish a new baseline in order to compare
         # it with the initial one so as to be sure that server behavior
         # hasn't suddenly changed in a way that would corrupt our analysis.
-        rdiff_verify_control( opts, responses, &block )
+        populate_control_verification_signatures( opts, signatures, &block )
     end
 
-    def rdiff_verify_control( opts, responses, &block )
+    # Re-establishes a control baseline at the end of the audit, to make sure
+    # that website behavior has remained stable, otherwise its behavior won't
+    # be trustworthy.
+    def populate_control_verification_signatures( opts, signatures, &block )
         received_responses = 0
 
         opts[:precision].times do
             audit( opts[:false], opts ) do |res, _, elem|
-                next if responses[:corrupted][elem.altered]
+                next if signatures[:corrupted][elem.altered]
 
-                if res.body.to_s.empty?
-                    print_bad 'Server returned empty response body, aborting analysis ' <<
-                        "for #{elem.type} variable '#{elem.altered}' with action '#{elem.action}'."
-                    responses[:corrupted][elem.altered] = true
-                    next
-                end
+                response_check( res, signatures, elem )
 
-                if responses[:controls_verification][elem.altered]
+                if signatures[:controls_verification][elem.altered]
                     print_status 'Got control verification response ' <<
-                        "for #{elem.type} variable '#{elem.altered}' with action '#{elem.action}'."
+                        "for #{elem.type} variable '#{elem.altered}' with" <<
+                        " action '#{elem.action}'."
                 end
 
                 # Create a signature from the response body and refine it with
                 # subsequent ones to remove noise (like context-irrelevant dynamic
                 # content such as banners etc.).
-                responses[:controls_verification][elem.altered] =
-                    responses[:controls_verification][elem.altered] ?
-                        responses[:controls_verification][elem.altered].refine!(res.body) :
+                signatures[:controls_verification][elem.altered] =
+                    signatures[:controls_verification][elem.altered] ?
+                        signatures[:controls_verification][elem.altered].refine!(res.body) :
                         Support::Signature.new(res.body)
 
                 received_responses += 1
@@ -322,17 +338,17 @@ module RDiff
                 # Once the new baseline has been established and we've got all the
                 # data we need, crunch them and see if server behavior indicates
                 # a vulnerability.
-                rdiff_analyze_data( responses, &block )
+                match_signatures( signatures, &block )
             end
         end
     end
 
-    def rdiff_analyze_data( responses, &block )
-        controls              = responses.delete( :controls )
-        controls_verification = responses.delete( :controls_verification )
-        corrupted             = responses.delete( :corrupted )
+    def match_signatures( signatures, &block )
+        controls              = signatures.delete( :controls )
+        controls_verification = signatures.delete( :controls_verification )
+        corrupted             = signatures.delete( :corrupted )
 
-        responses.each do |pair, data|
+        signatures.each do |pair, data|
             if block
                 exception_jail( false ){ block.call( pair, data ) }
                 next
@@ -351,14 +367,11 @@ module RDiff
                     next
                 end
 
-                # Log if:
+                # To have gotten here the following must be true:
                 #
                 #   force_false_baseline == false_response_body AND
                 #   false_response_body != true_response_code AND
                 #   true_response_code == 200
-                next if controls[input_name] != result[:false] ||
-                    result[:false] == result[:true] ||
-                    result[:response].code != 200
 
                 # Check to see if the `true` response we're analyzing
                 # is a custom 404 page.
@@ -379,6 +392,59 @@ module RDiff
                 end
             end
         end
+    end
+
+    def response_check( response, signatures, elem, pair = nil )
+        corrupted = false
+
+        if response.code != 200
+            print_status 'Server returned non 200 status,' <<
+                " aborting analysis for #{elem.type} variable " <<
+                "'#{elem.altered}' with action '#{elem.action}'."
+            corrupted = true
+        end
+
+        if response.body.to_s.empty?
+            print_status 'Server returned empty response body,' <<
+                " aborting analysis for #{elem.type} variable " <<
+                "'#{elem.altered}' with action '#{self.action}'."
+            corrupted = true
+        end
+
+        return if !corrupted
+
+        if pair
+            signatures[pair][elem.altered][:corrupted] = true
+        else
+            signatures[:corrupted][elem.altered] = true
+        end
+    end
+
+    def signature_sieve( input, signatures, pair )
+        gathered  = @data_gathering[pair][input]
+        signature = signatures[pair][input]
+
+        # If data has been corrupted for the given input, remove it.
+        if signature[:corrupted]
+            signatures[pair].delete( input )
+            return true
+        end
+
+        # 1st check: force_false_baseline == false_response_body
+        if (@data_gathering[:controls][input] && gathered[:false_probes]) &&
+            (signatures[:controls][input] != signature[:false])
+            signatures[pair].delete( input )
+            return true
+        end
+
+        # 2nd check: force_false_baseline != true_response_code
+        if (gathered[:false_probes] && gathered[:true_probes]) &&
+            (signature[:false] == signature[:true])
+            signatures[pair].delete( input )
+            return true
+        end
+
+        false
     end
 
 end

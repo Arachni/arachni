@@ -74,9 +74,42 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
             end
         end
 
-        context 'when a response has an empty body' do
+        context 'when a false response has an empty body' do
             it 'does not log any issues' do
-                auditable = Arachni::Element::Link.new( @url + '/empty', @params )
+                auditable = Arachni::Element::Link.new( @url + '/empty_false', @params )
+                auditable.auditor = @auditor
+                auditable.rdiff_analysis( @opts )
+                @auditor.http.run
+
+                issues.should be_empty
+            end
+        end
+
+        context 'when a true response has an empty body' do
+            it 'does not log any issues' do
+                auditable = Arachni::Element::Link.new( @url + '/empty_true', @params )
+                auditable.auditor = @auditor
+                auditable.rdiff_analysis( @opts )
+                @auditor.http.run
+
+                issues.should be_empty
+            end
+        end
+
+        context 'when a true response has non 200 status' do
+            it 'does not log any issues' do
+                auditable = Arachni::Element::Link.new( @url + '/non200_true', @params )
+                auditable.auditor = @auditor
+                auditable.rdiff_analysis( @opts )
+                @auditor.http.run
+
+                issues.should be_empty
+            end
+        end
+
+        context 'when a false response has non 200 status' do
+            it 'does not log any issues' do
+                auditable = Arachni::Element::Link.new( @url + '/non200_false', @params )
                 auditable.auditor = @auditor
                 auditable.rdiff_analysis( @opts )
                 @auditor.http.run
