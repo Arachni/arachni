@@ -150,7 +150,7 @@ module Timeout
             previous_timeout = opts[:delay]
             injected_timeout = opts[:delay] *= 2
 
-            str = opts[:timing_string].
+            str = opts[:injected_orig].
                 gsub( '__TIME__', (opts[:delay] / opts[:timeout_divider]).to_s )
 
             elem.auditable = elem.orig
@@ -213,7 +213,7 @@ module Timeout
             opts          = elem.opts
             opts[:delay] *= 2
 
-            str = opts[:timing_string].
+            str = opts[:injected_orig].
                 gsub( '__TIME__', (opts[:delay] / opts[:timeout_divider]).to_s )
 
             elem.auditable = elem.orig
@@ -429,19 +429,13 @@ module Timeout
         # Intercept each element mutation prior to it being submitted and replace
         # the '__TIME__' placeholder with the actual delay value.
         each_mutation = proc do |mutation|
-            injected = mutation.altered_value
-
-            # Preserve the original because it's going to be needed for the
-            # verification phases.
-            mutation.opts[:timing_string] = injected
-
-            mutation.altered_value = injected.
+            mutation.altered_value = mutation.altered_value.
                 gsub( '__TIME__', (opts[:delay] / opts[:timeout_divider]).to_s )
         end
 
         opts.merge!( each_mutation: each_mutation, skip_orig: true )
 
-        audit( payloads, opts.dup ) do |res, _, elem|
+        audit( payloads, opts ) do |res, _, elem|
             call_on_timing_blocks( res, elem )
             next if !block || res.app_time < (opts[:delay] + opts[:add]) / 1000.0
 
