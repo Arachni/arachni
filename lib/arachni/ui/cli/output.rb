@@ -356,16 +356,16 @@ module Output
         rss      = procinfo[:rss]
         @rss   ||= rss
 
-        # Change in RAM consumption | Total RAM consumption (RAM %) |
+        # Change in RAM consumption in MB | Total RAM consumption in MB (RAM %) |
         # CPU usage % | Amount of Typhoeus::Request objects in RAM
-        sprintf "%7.4f | %8.4f (%5.1f%%) | %5.1f%% | %3i | #{message}",
-                rss_to_bytes(rss - @rss), rss_to_bytes(rss), pctmem, pctcpu,
-                ::ObjectSpace.each_object( ::Typhoeus::Request ){}
+        sprintf( '%7.4f | %8.4f (%5.1f%%) | %5.1f%% | %3i | ',
+                rss_to_mb(rss - @rss), rss_to_mb(rss), pctmem, pctcpu,
+                ::ObjectSpace.each_object( ::Typhoeus::Request ){} ) + message
     ensure
         @rss = rss
     end
 
-    def rss_to_bytes( rss )
+    def rss_to_mb( rss )
         rss * 4096.0 / 1024.0 / 1024.0
     end
 
