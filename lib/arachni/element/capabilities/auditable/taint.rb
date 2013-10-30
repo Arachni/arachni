@@ -87,6 +87,8 @@ module Auditable::Taint
     #   `true` if the audit was scheduled successfully, `false` otherwise (like
     #   if the resource is out of scope).
     def taint_analysis( payloads, opts = { } )
+        return false if self.auditable.empty?
+
         if skip_path? self.action
             print_debug "Element's action matches skip rule, bailing out."
             return false
