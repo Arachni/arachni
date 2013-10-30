@@ -518,7 +518,12 @@ module Auditor
             end
         end
 
-        elements.map { |e| d = e.dup; d.auditor = self; d }
+        elements.map do |e|
+            next if e.auditable.empty?
+            d = e.dup
+            d.auditor = self
+            d
+        end.compact
     end
 
     #
