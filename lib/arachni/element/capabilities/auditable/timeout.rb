@@ -320,6 +320,8 @@ module Timeout
     #   if the resource is out of scope).
     #
     def timeout_analysis( payloads, opts )
+        return false if self.auditable.empty?
+
         if skip_path? self.action
             print_debug "Element's action matches skip rule, bailing out."
             return false

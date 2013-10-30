@@ -416,6 +416,8 @@ module Auditable
     def audit( payloads, opts = { }, &block )
         fail ArgumentError, 'Missing block.' if !block_given?
 
+        return false if self.auditable.empty?
+
         case payloads
             when String
                 audit_single( payloads, opts, &block )
