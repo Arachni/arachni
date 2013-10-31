@@ -647,15 +647,17 @@ class HTTP
 
         @request_count += 1
 
-        print_debug '------------'
-        print_debug 'Queued request.'
-        print_debug "ID#: #{req.id}"
-        print_debug "URL: #{req.url}"
-        print_debug "Method: #{req.method}"
-        print_debug "Params: #{req.params}"
-        print_debug "Headers: #{req.headers}"
-        print_debug "Train?: #{req.train?}"
-        print_debug  '------------'
+        if debug?
+            print_debug '------------'
+            print_debug 'Queued request.'
+            print_debug "ID#: #{req.id}"
+            print_debug "URL: #{req.url}"
+            print_debug "Method: #{req.method}"
+            print_debug "Params: #{req.params}"
+            print_debug "Headers: #{req.headers}"
+            print_debug "Train?: #{req.train?}"
+            print_debug  '------------'
+        end
 
         req.on_complete( true ) do |res|
 
@@ -667,17 +669,19 @@ class HTTP
 
             parse_and_set_cookies( res ) if req.update_cookies?
 
-            print_debug '------------'
-            print_debug "Got response for request ID#: #{res.request.id}"
-            print_debug "Status: #{res.code}"
-            print_debug "Error msg: #{res.curl_error_message}"
-            print_debug "URL: #{res.effective_url}"
-            print_debug "Headers:\n#{res.headers}"
-            print_debug "Parsed headers: #{res.headers_hash}"
-            print_debug '------------'
+            if debug?
+                print_debug '------------'
+                print_debug "Got response for request ID#: #{res.request.id}"
+                print_debug "Status: #{res.code}"
+                print_debug "Error msg: #{res.curl_error_message}"
+                print_debug "URL: #{res.effective_url}"
+                print_debug "Headers:\n#{res.headers}"
+                print_debug "Parsed headers: #{res.headers_hash}"
+                print_debug '------------'
+            end
 
             if res.timed_out?
-                print_bad 'Request timed-out! -- ID# ' + res.request.id.to_s
+                print_bad "Request timed-out! -- ID ##{res.request.id}"
                 @time_out_count += 1
             end
         end
