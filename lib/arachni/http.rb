@@ -487,65 +487,42 @@ class HTTP
     #   To be passed true or false depending on the result.
     #
     def custom_404?( res, &block )
-        precision = 2
+        path = get_path( res.effective_url )
 
-        path  = get_path( res.effective_url )
+        return block.call( is_404?( path, res.body ) ) if has_custom_404_signature?( path )
 
-        uri = uri_parse( res.effective_url )
-        trv_back = File.dirname( uri.path )
-        trv_back_url = uri.scheme + '://' +  uri.host + ':' + uri.port.to_s + trv_back
-        trv_back_url += '/' if trv_back_url[-1] != '/'
+        precision  = 2
+        generators = custom_404_probe_generators( res.effective_url, precision )
 
-        # 404 probes
-        generators = [
-            # get a random path with an extension
-            proc{ path + random_string + '.' + random_string[0..precision] },
+        gathered_responses = 0
+        expected_responses = generators.size * precision
 
-            # get a random path without an extension
-            proc{ path + random_string },
+        generators.each.with_index do |generator, i|
+            _404_signatures_for_path( path )[i] ||= {}
 
-            # move up a dir and get a random file
-            proc{ trv_back_url + random_string },
+            precision.times do
+                get( generator.call, follow_location: true ) do |c_res|
+                    gathered_responses += 1
 
-            # move up a dir and get a random file with an extension
-            proc{ trv_back_url + random_string + '.' + random_string[0..precision] },
+                    if _404_signatures_for_path( path )[i][:body]
+                        _404_signatures_for_path( path )[i][:rdiff] =
+                            _404_signatures_for_path( path )[i][:body].
+                                refine( c_res.body )
 
-            # get a random directory
-            proc{ path + random_string + '/' }
-        ]
+                        next if gathered_responses != expected_responses
 
-        gathered = 0
-        body = res.body
-
-        if !path_analyzed_for_custom_404?( path )
-            generators.each.with_index do |generator, i|
-                _404_signatures_for_path( path )[i] ||= {}
-
-                precision.times {
-                    get( generator.call, follow_location: true ) do |c_res|
-                        gathered += 1
-
-                        if _404_signatures_for_path( path )[i][:body]
-                            _404_signatures_for_path( path )[i][:rdiff] =
-                                _404_signatures_for_path( path )[i][:body].
-                                    refine( c_res.body )
-
-                            next if gathered != generators.size * precision
-
-                            path_analyzed_for_custom_404( path )
-                            block.call is_404?( path, body )
-                        else
-                            _404_signatures_for_path( path )[i][:body] =
-                                Support::Signature.new(
-                                    c_res.body, threshold: CUSTOM_404_SIGNATURE_THRESHOLD
-                                )
-                        end
+                        has_custom_404_signature( path )
+                        block.call is_404?( path, res.body )
+                    else
+                        _404_signatures_for_path( path )[i][:body] =
+                            Support::Signature.new(
+                                c_res.body, threshold: CUSTOM_404_SIGNATURE_THRESHOLD
+                            )
                     end
-                }
+                end
             end
-        else
-            block.call is_404?( path, body )
         end
+
         nil
     end
 
@@ -571,6 +548,34 @@ class HTTP
         end
     end
 
+    # @return  [Array<Proc>]
+    #   Generators for paths which should elicit a 404 response.
+    def custom_404_probe_generators( url, precision )
+        uri  = uri_parse( url )
+        path = uri.up_to_path
+
+        trv_back     = File.dirname( uri.path )
+        trv_back_url = uri.scheme + '://' +  uri.host + ':' + uri.port.to_s + trv_back
+        trv_back_url += '/' if trv_back_url[-1] != '/'
+
+        [
+            # Get a random path with an extension.
+            proc { path + random_string + '.' + random_string[0..precision] },
+
+            # Get a random path without an extension.
+            proc { path + random_string },
+
+            # Move up a dir and get a random file.
+            proc { trv_back_url + random_string },
+
+            # Move up a dir and get a random file with an extension.
+            proc { trv_back_url + random_string + '.' + random_string[0..precision] },
+
+            # Get a random directory.
+            proc { path + random_string + '/' }
+        ]
+    end
+
     def _404_data_for_path( path )
         @_404[path] ||= {
             analyzed:   false,
@@ -589,11 +594,11 @@ class HTTP
         _404_data_for_path( path )[:signatures]
     end
 
-    def path_analyzed_for_custom_404?( path )
+    def has_custom_404_signature?( path )
         _404_data_for_path( path )[:analyzed]
     end
 
-    def path_analyzed_for_custom_404( path )
+    def has_custom_404_signature( path )
         _404_data_for_path( path )[:analyzed] = true
     end
 
