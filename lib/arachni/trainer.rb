@@ -44,20 +44,18 @@ class Trainer
         # get us setup using the page that is being audited as a seed page
         framework.on_audit_page { |page| self.page = page }
 
-        HTTP.add_on_queue do |req, _|
-            next if !req.train?
+        HTTP.add_on_complete do |response|
+            next if !response.request.train?
 
-            req.on_complete( true ) do |res|
-                # handle redirections
-                if res.redirection? && res.location.is_a?( String )
-                    reference_url = @page ? @page.url : framework.opts.url
-                    HTTP.get( to_absolute( res.location, reference_url ) ) do |res2|
-                        push( res2 )
-                    end
-                else
-                    push( res )
+            if response.redirection? && response.location.is_a?( String )
+                reference_url = @page ? @page.url : @framework.opts.url
+                HTTP.get( to_absolute( response.location, reference_url ) ) do |res|
+                    push res
                 end
+                next
             end
+
+            push response
         end
     end
 
