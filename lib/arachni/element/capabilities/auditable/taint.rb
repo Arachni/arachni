@@ -157,7 +157,7 @@ module Auditable::Taint
         end
     end
 
-    def match_regexp_and_log( regexp, res, opts, untainted_response = nil )
+    def match_regexp_and_log( regexp, res, opts )
         regexp = regexp.is_a?( Regexp ) ? regexp :
             Regexp.new( regexp.to_s, Regexp::IGNORECASE )
 
