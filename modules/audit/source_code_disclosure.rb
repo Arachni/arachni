@@ -99,7 +99,7 @@ class Arachni::Modules::SourceCodeDisclosure < Arachni::Module::Base
     def run
         return if self.class.payloads.empty?
 
-        candidate_elements.each do |element|
+        each_candidate_element do |element|
             element.taint_analysis( self.class.payloads, self.class.options )
         end
     end
