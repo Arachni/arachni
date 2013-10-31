@@ -625,16 +625,16 @@ module Auditable
             return false
         end
 
+        if matches_skip_like_blocks?
+            print_debug 'Element matches one or more skip_like blocks, skipping.'
+            return false
+        end
+
         opts[:injected_orig] = injection_str
 
         @auditor       ||= opts[:auditor]
         opts[:auditor] ||= @auditor
         use_anonymous_auditor if !@auditor
-
-        if matches_skip_like_blocks?
-            print_debug 'Element matches one or more skip_like blocks, skipping.'
-            return false
-        end
 
         # Options will eventually be serialized so remove non-serializeable
         # objects. Also, blocks are expensive, they should not be kept in the
@@ -746,7 +746,7 @@ module Auditable
         end
 
         if element.opts && !element.opts[:silent]
-            print_status 'Analyzing response #' + response.request.id.to_s + '...'
+            print_status "Analyzing response ##{response.request.id}..."
         end
 
         exception_jail( false ){ block.call( response, element.opts, element ) }
