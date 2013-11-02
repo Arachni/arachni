@@ -22,27 +22,104 @@ begin
     require 'rspec/core/rake_task'
 
     namespace :spec do
+
+        desc 'Run core library tests.'
         RSpec::Core::RakeTask.new( :core ) do |t|
-            t.pattern = FileList[ "spec/arachni/**/*_spec.rb" ]
+            t.pattern = FileList[ 'spec/arachni/**/*_spec.rb' ]
         end
 
+        desc 'Run module tests.'
         RSpec::Core::RakeTask.new( :modules ) do |t|
-            t.pattern = FileList[ "spec/modules/**/*_spec.rb" ]
+            t.pattern = FileList[ 'spec/modules/**/*_spec.rb' ]
         end
 
+        desc 'Run report tests.'
         RSpec::Core::RakeTask.new( :reports ) do |t|
-            t.pattern = FileList[ "spec/reports/**/*_spec.rb" ]
+            t.pattern = FileList[ 'spec/reports/**/*_spec.rb' ]
         end
 
+        desc 'Run plugin tests.'
         RSpec::Core::RakeTask.new( :plugins ) do |t|
-            t.pattern = FileList[ "spec/plugins/**/*_spec.rb" ]
+            t.pattern = FileList[ 'spec/plugins/**/*_spec.rb' ]
         end
 
+        desc 'Run path-extractor tests.'
         RSpec::Core::RakeTask.new( :path_extractors ) do |t|
-            t.pattern = FileList[ "spec/path_extractors/**/*_spec.rb" ]
+            t.pattern = FileList[ 'spec/path_extractors/**/*_spec.rb' ]
         end
 
-        desc "Generate an AFR report for the report tests"
+        desc 'Run external test suites.'
+        RSpec::Core::RakeTask.new( :external ) do |t|
+            t.pattern = FileList[ 'spec/external/**/*_spec.rb' ]
+        end
+
+        namespace :external do
+
+            desc 'Run the WAVSEP test suite.'
+            RSpec::Core::RakeTask.new( :wavsep ) do |t|
+                t.pattern = FileList[ 'spec/external/wavsep/**/**/*_spec.rb' ]
+            end
+
+            namespace :wavsep do
+
+                desc 'Run the WAVSEP active tests.'
+                RSpec::Core::RakeTask.new( :active ) do |t|
+                    t.pattern = FileList[ 'spec/external/wavsep/active/**/*_spec.rb' ]
+                end
+
+                namespace :active do
+
+                    desc 'Run the WAVSEP XSS tests.'
+                    RSpec::Core::RakeTask.new( :xss ) do |t|
+                        t.pattern = FileList[ 'spec/external/wavsep/active/xss_spec.rb' ]
+                    end
+
+                    desc 'Run the WAVSEP SQL injection tests.'
+                    RSpec::Core::RakeTask.new( :sqli ) do |t|
+                        t.pattern = FileList[ 'spec/external/wavsep/active/sqli_spec.rb' ]
+                    end
+
+                    desc 'Run the WAVSEP LFI tests.'
+                    RSpec::Core::RakeTask.new( :lfi ) do |t|
+                        t.pattern = FileList[ 'spec/external/wavsep/active/lfi_spec.rb' ]
+                    end
+
+                    desc 'Run the WAVSEP RFI tests.'
+                    RSpec::Core::RakeTask.new( :rfi ) do |t|
+                        t.pattern = FileList[ 'spec/external/wavsep/active/rfi_spec.rb' ]
+                    end
+                end
+
+                desc 'Run the WAVSEP false positive tests.'
+                RSpec::Core::RakeTask.new( :false_positives ) do |t|
+                    t.pattern = FileList[ 'spec/external/wavsep/false_positives/**/*_spec.rb' ]
+                end
+
+                namespace :false_positives do
+                    desc 'Run the WAVSEP XSS false positive tests.'
+                    RSpec::Core::RakeTask.new( :xss ) do |t|
+                        t.pattern = FileList[ 'spec/external/wavsep/false_positives/xss_spec.rb' ]
+                    end
+
+                    desc 'Run the WAVSEP SQL injection false positive tests.'
+                    RSpec::Core::RakeTask.new( :sqli ) do |t|
+                        t.pattern = FileList[ 'spec/external/wavsep/false_positives/sqli_spec.rb' ]
+                    end
+
+                    desc 'Run the WAVSEP LFI false positive tests.'
+                    RSpec::Core::RakeTask.new( :lfi ) do |t|
+                        t.pattern = FileList[ 'spec/external/wavsep/false_positives/lfi_spec.rb' ]
+                    end
+
+                    desc 'Run the WAVSEP RFI false positive tests.'
+                    RSpec::Core::RakeTask.new( :rfi ) do |t|
+                        t.pattern = FileList[ 'spec/external/wavsep/false_positives/rfi_spec.rb' ]
+                    end
+                end
+            end
+        end
+
+        desc 'Generate an AFR report for the report tests.'
         namespace :generate do
             task :afr do
 
@@ -78,7 +155,7 @@ begin
                 Arachni::Framework.new.modules.load_all
 
                 Arachni::AuditStore.new( issues: issues.uniq ).
-                    save( 'spec/fixtures/auditstore.afr' )
+                    save( 'spec/support/fixtures/auditstore.afr' )
 
                 Arachni::Options.reset
             end
@@ -91,7 +168,7 @@ rescue LoadError
     puts '  gem install rspec'
 end
 
-desc "Generate docs"
+desc 'Generate docs.'
 task :docs do
 
     outdir = "../arachni-docs"
@@ -103,7 +180,7 @@ task :docs do
     sh "rm -rf .yardoc"
 end
 
-desc "Generate graphics"
+desc 'Generate graphics.'
 task :gfx do
 
     outdir = 'gfx/compiled'
@@ -129,7 +206,7 @@ end
 #
 # [1] https://github.com/tmm1/perftools.rb
 #
-desc "Profile Arachni"
+desc 'Profile Arachni.'
 task :profile do
 
     if !Gem::Specification.find_all_by_name( 'perftools.rb' ).empty?
@@ -144,10 +221,7 @@ task :profile do
 
 end
 
-#
-# Cleans reports and logs
-#
-desc "Cleaning report and log files."
+desc 'Remove report and log files.'
 task :clean do
 
     sh "rm error.log || true"
@@ -163,8 +237,8 @@ end
 
 Bundler::GemHelper.install_tasks
 
-desc "Push a new version to RubyGems"
+desc 'Push a new version to RubyGems'
 task :publish => [ :release ]
 
-desc "Build Arachni and run all the tests."
+desc 'Build Arachni and run all the tests.'
 task :default => [ :build, :spec ]
