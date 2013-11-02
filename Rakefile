@@ -33,6 +33,18 @@ begin
             t.pattern = FileList[ 'spec/modules/**/*_spec.rb' ]
         end
 
+        namespace :modules do
+            desc 'Run tests for the audit modules.'
+            RSpec::Core::RakeTask.new( :audit ) do |t|
+                t.pattern = FileList[ 'spec/modules/audit/**/*_spec.rb' ]
+            end
+
+            desc 'Run tests for the recon modules.'
+            RSpec::Core::RakeTask.new( :recon ) do |t|
+                t.pattern = FileList[ 'spec/modules/recon/**/*_spec.rb' ]
+            end
+        end
+
         desc 'Run report tests.'
         RSpec::Core::RakeTask.new( :reports ) do |t|
             t.pattern = FileList[ 'spec/reports/**/*_spec.rb' ]
