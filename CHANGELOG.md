@@ -36,6 +36,8 @@
         false positives.
     - Fixed bug causing non-vetted inputs to reach the final stages of analysis
         which sometimes resulted in false positives.
+    - Added a cool-off period after Phase 2 to ensure webapp responsiveness post-attack.
+    - Improved status messages.
 - `Element::Capabilities::Auditable::Taint`
     - Added longest-word-optimization -- Checks if the longest word of a regexp
         exists in the response body prior to matching the full-blown regexp.

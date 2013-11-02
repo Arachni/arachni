@@ -120,7 +120,6 @@ module Timeout
             end
         end
 
-        #
         # (Called by {timeout_audit_run}, do *NOT* call manually.)
         #
         # Runs phase 2 of the timing attack auditing an individual element
@@ -133,20 +132,23 @@ module Timeout
         #   * If verification fails it aborts
         #   * If verification succeeds the issue is logged
         # * Stabilize responsiveness: Wait for the effects of the timing attack to wear off
-        #
         def @@parent.timeout_analysis_phase_2( elem )
-            opts             = elem.opts
-            previous_timeout = opts[:delay]
-            injected_timeout = opts[:delay] *= 2
+            opts          = elem.opts
+            opts[:delay] *= 2
 
-            str = opts[:timing_string].
-                gsub( '__TIME__', (opts[:delay] / opts[:timeout_divider]).to_s )
+            str = opts[:timing_string].dup
+            str.gsub!( '__TIME__', (opts[:delay] / opts[:timeout_divider]).to_s )
 
             elem.auditable = elem.orig
 
+            elem.print_status "Phase 2 for #{elem.type} input '#{elem.altered}'" <<
+                                  " with action #{elem.action}"
+
+            elem.print_info '* Performing liveness check.'
+
             # This is the control; request the URL of the element to make sure
             # that the web page is responsive i.e won't time-out by default.
-            elem.submit( timeout: previous_timeout ) do |res|
+            elem.submit( timeout: opts[:delay] ) do |res|
                 self.call_on_timing_blocks( res, elem )
 
                 # Remove the timeout option set by the liveness check in order
@@ -154,32 +156,39 @@ module Timeout
                 elem.opts.delete( :timeout )
 
                 if res.timed_out?
-                    elem.print_info 'Phase 2: Liveness check failed, bailing out...'
+                    elem.print_info '* Liveness check failed, aborting.'
                     next
                 end
 
-                elem.print_info 'Phase 2: Liveness check was successful, progressing to verification...'
+                elem.print_info '* Liveness check was successful, progressing' <<
+                                    ' to verification.'
 
                 opts[:skip_like] = proc { |m| m.altered != elem.altered }
-                opts[:format]    = [Arachni::Element::Capabilities::Mutable::Format::STRAIGHT]
+                opts[:format]    = [Mutable::Format::STRAIGHT]
+                opts[:silent]    = true
 
                 elem.audit( str, opts ) do |c_res|
                     if c_res.app_time <= (opts[:delay] + opts[:add]) / 1000.0
-                        elem.print_info 'Phase 2: Verification failed.'
+                        elem.print_info '* Verification failed.'
                         next
                     end
 
                     if deduplicate?
-                        next if @@timeout_candidate_phase3_ids.include?( elem.audit_id )
+                        if @@timeout_candidate_phase3_ids.include?( elem.audit_id )
+                            elem.print_info '* Duplicate, skipping.'
+                            next
+                        end
+
                         @@timeout_candidate_phase3_ids << elem.audit_id
                     end
 
-                    elem.opts[:delay] = injected_timeout
+                    elem.opts[:delay] = opts[:delay]
 
-                    elem.print_info 'Phase 2: Candidate can progress to Phase 3 --' <<
-                        " #{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}"
+                    elem.print_info '* Verification was successful, ' <<
+                                    'candidate can progress to Phase 3.'
 
                     @@parent.add_timeout_phase3_candidate( elem )
+                    elem.responsive?
                 end
             end
 
@@ -202,36 +211,43 @@ module Timeout
             opts          = elem.opts
             opts[:delay] *= 2
 
-            str = opts[:timing_string].
-                gsub( '__TIME__', (opts[:delay] / opts[:timeout_divider]).to_s )
+            str = opts[:timing_string].dup
+            str.gsub!( '__TIME__', (opts[:delay] / opts[:timeout_divider]).to_s )
 
             elem.auditable = elem.orig
 
-            # this is the control; request the URL of the element to make sure
-            # that the web page is alive i.e won't time-out by default
-            elem.submit do |res|
+            elem.print_status "Phase 3 for #{elem.type} input '#{elem.altered}'" <<
+                                  " with action #{elem.action}"
+
+            elem.print_info '* Performing liveness check.'
+
+            # This is the control; request the URL of the element to make sure
+            # that the web page is alive i.e won't time-out by default.
+            elem.submit( timeout: opts[:delay] ) do |res|
                 self.call_on_timing_blocks( res, elem )
 
                 if res.timed_out?
-                    elem.print_info 'Phase 3: Liveness check failed, bailing out...'
+                    elem.print_info '* Liveness check failed.'
                     next
                 end
 
-                elem.print_info 'Phase 3: Liveness check was successful, progressing to verification...'
+                elem.print_info '* Liveness check was successful, progressing' <<
+                                ' to verification.'
 
                 opts[:skip_like] = proc { |m| m.altered != elem.altered }
-                opts[:format]    = [Arachni::Element::Capabilities::Mutable::Format::STRAIGHT]
+                opts[:format]    = [Mutable::Format::STRAIGHT]
+                opts[:silent]    = true
 
                 elem.audit( str, opts ) do |c_res, c_opts|
                     if c_res.app_time <= (opts[:delay] + opts[:add]) / 1000.0
-                        elem.print_info 'Phase 3: Verification failed.'
+                        elem.print_info '* Verification failed.'
                         next
                     end
 
+                    elem.print_info '* Verification was successful.'
                     elem.auditor.log( c_opts, c_res )
                     elem.responsive?
                 end
-
             end
 
             elem.http.run
@@ -339,8 +355,6 @@ module Timeout
                 @@timeout_candidate_ids << elem.audit_id
             end
 
-            next if !responsive?( delay )
-
             print_info 'Found a candidate for Phase 2 -- ' <<
                 "#{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}"
             @@parent.add_timeout_candidate( elem )
@@ -349,17 +363,16 @@ module Timeout
         true
     end
 
-    #
     # Submits self with a high timeout value and blocks until it gets a response.
+    # This is to make sure that responsiveness has been restored before
+    # progressing further.
     #
-    # That is to make sure that responsiveness has been restored before progressing further.
-    #
-    # @param    [Integer] limit   How many milliseconds to afford the server to respond.
+    # @param    [Integer] limit
+    #   How many milliseconds to afford the server to respond.
     #
     # @return   [Bool]
     #   `true` if server responds within the given time limit, `false` otherwise.
-    #
-    def responsive?( limit = 120_000 )
+    def responsive?( limit = 120_000, prepend = '* ' )
         d_opts = {
             skip_orig: true,
             redundant: true,
@@ -370,8 +383,9 @@ module Timeout
 
         orig_opts = opts
 
-        print_info 'Waiting for the effects of the timing attack to wear off.'
-        print_info "Max waiting time: #{d_opts[:timeout] / 1000.0} seconds."
+        print_info "#{prepend}Waiting for the effects of the timing attack to " <<
+            'wear off, this may take a while (max waiting time is ' <<
+             "#{d_opts[:timeout] / 1000.0} seconds)."
 
         @auditable = @orig
         res = submit( d_opts ).response
@@ -382,7 +396,6 @@ module Timeout
             print_bad 'Max waiting time exceeded.'
             false
         else
-            print_info 'Server seems responsive again.'
             true
         end
     end
