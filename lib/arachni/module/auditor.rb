@@ -402,7 +402,7 @@ module Auditor
         element = opts[:element] || opts[:elem]
 
         msg = "In #{element}"
-        msg << " var '#{var}'" if var
+        msg << " input '#{var}'" if var
         print_ok "#{msg} ( #{url} )"
 
         print_verbose( "Injected string:\t" + opts[:injected] ) if opts[:injected]
