@@ -693,13 +693,14 @@ class HTTP
                 print_debug "URL: #{res.effective_url}"
                 print_debug "Headers:\n#{res.headers}"
                 print_debug "Parsed headers: #{res.headers_hash}"
-                print_debug '------------'
             end
 
             if res.timed_out?
-                print_bad "Request timed-out! -- ID ##{res.request.id}"
+                print_debug "Request timed-out! -- ID ##{res.request.id}"
                 @time_out_count += 1
             end
+
+            print_debug '------------'
         end
 
         req.on_complete( &block ) if block_given?
