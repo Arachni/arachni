@@ -1,16 +1,13 @@
 shared_examples_for 'wavsep' do
 
-    let(:base_url) { "#{ENV['WAVSEP_URL']}/" }
-    let(:url) { "#{base_url}active/" }
+    let(:wavsep_url) { ENV['WAVSEP_URL'] }
+    let(:url) { "#{wavsep_url}/active/" }
 
     before :each do
         Arachni::Options.reset
 
         @framework = Arachni::Framework.new
         @framework.opts.audit :links, :forms
-
-        # WAVSEP chokes easily.
-        @framework.opts.http_req_limit = 1
     end
 
     after :each do
@@ -66,7 +63,9 @@ shared_examples_for 'wavsep' do
                         test_cases( http_method ).each do |description, info|
                             context description do
                                 it "logs #{info[:vulnerable].size} unique resources using #{[info[:modules]].flatten.join( ', ' )}" do
-                                    pending "No 'WAVSEP_URL' env variable has been set." if !ENV['WAVSEP_URL']
+                                    pending "'WAVSEP_URL' env variable has not been set." if !wavsep_url
+
+                                    @framework.modules.issues.should be_empty
 
                                     @framework.opts.url = "#{url}/#{info[:url]}"
                                     @framework.modules.load info[:modules]
