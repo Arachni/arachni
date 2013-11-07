@@ -55,6 +55,7 @@ class Arachni::Plugins::UncommonHeaders < Arachni::Plugin::Base
         http.add_on_complete do |response|
             headers = response.headers_hash.
                 select { |name, _| !COMMON.include?( name.to_s.downcase ) }
+            next if headers.empty?
 
             @headers_per_url[response.effective_url].merge! headers
         end
