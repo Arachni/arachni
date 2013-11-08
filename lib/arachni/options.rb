@@ -199,6 +199,14 @@ class Options
     #
     attr_accessor :http_req_limit
 
+    # Maximum amount of requests to keep in the queue.
+    #
+    # Bigger size means better scheduling and bette performance, smaller means
+    # less RAM consumption.
+    #
+    # @return    [Integer]
+    attr_accessor :http_queue_size
+
     #
     # Should Arachni audit links?
     #
@@ -573,9 +581,10 @@ class Options
         @lsmod  = []
         @lsrep  = []
 
-        @http_req_limit = 20
-        @http_username = nil
-        @http_password = nil
+        @http_req_limit  = 20
+        @http_queue_size = 500
+        @http_username   = nil
+        @http_password   = nil
 
         @mods = []
 
@@ -966,6 +975,7 @@ class Options
             [ '--exclude-vector',          GetoptLong::REQUIRED_ARGUMENT ],
             [ '--include',           '-i', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--http-req-limit',          GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--http-queue-size',         GetoptLong::REQUIRED_ARGUMENT ],
             [ '--http-timeout',            GetoptLong::REQUIRED_ARGUMENT ],
             [ '--follow-subdomains', '-f', GetoptLong::NO_ARGUMENT ],
             [ '--debug',             '-w', GetoptLong::NO_ARGUMENT ],
@@ -1106,6 +1116,9 @@ class Options
 
                     when '--http-req-limit'
                         @http_req_limit = arg.to_i
+
+                    when '--http-queue-size'
+                        @http_queue_size = arg.to_i
 
                     when '--http-timeout'
                         @http_timeout = arg.to_i

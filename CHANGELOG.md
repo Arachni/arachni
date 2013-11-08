@@ -11,6 +11,9 @@
     - `--cookie-string` -- Updated to also handle cookies in the form of `Set-Cookie` headers.
     - Added:
         - `--external-address` -- The external address of a Dispatcher.
+        - `--http-queue-size` -- Maximum amount of requests to keep in the queue,
+            bigger size means better scheduling and better performance, smaller
+            means less RAM consumption.
 - `Spider`
     - Don't apply scope restrictions to the seed URL.
 - `Framework`

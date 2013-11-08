@@ -284,6 +284,11 @@ module Utilities
                                   (Be careful not to kill your server.)
                                   (*NOTE*: If your scan seems unresponsive try lowering the limit.)
 
+    --http-queue-size=<integer> Maximum amount of requests to keep in the queue.
+                                  Bigger size means better scheduling and better performance,
+                                  smaller means less RAM consumption.
+                                  (Default: #{@opts.http_queue_size})
+
     --http-timeout=<integer>    HTTP request timeout in milliseconds.
 
     --cookie-jar=<filepath>     Netscape HTTP cookie file, use curl to create it.
