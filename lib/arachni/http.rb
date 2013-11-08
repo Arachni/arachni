@@ -55,10 +55,6 @@ class HTTP
     # Default maximum redirect limit.
     REDIRECT_LIMIT  = 20
 
-    # Don't let the request queue grow more than this amount, if it does then
-    # run the queued requests to unload it.
-    MAX_QUEUE_SIZE  = 500
-
     # Default 1 minute timeout for HTTP requests.
     HTTP_TIMEOUT    = 60_000
 
@@ -709,7 +705,7 @@ class HTTP
     end
 
     def emergency_run?
-        @queue_size >= MAX_QUEUE_SIZE && !@running
+        @queue_size >= Options.http_queue_size && !@running
     end
 
     def random_string
