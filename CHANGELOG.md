@@ -45,6 +45,11 @@
     - Added option `:skip_like`, accepting blocks used to filter the mutations
         about to be audited.
     - Fixed bug causing audits with constantly changing tokens to fail.
+    - Updated to use `#each_mutation` instead of `#mutations`.
+- `Element::Capabilities::Mutable`
+    - Added `#each_mutation` to generate mutations on the fly instead of relying
+        on `#mutations` to generate an array of mutations.
+    - Updated `#mutations` to delegate to `#each_mutation`.
 - `Element::Cookie#encode`
     - Allow `=` to remain un-encoded in the cookie value.
 - `Options#load` -- Updated to support serialized `Hash` objects.
