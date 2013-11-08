@@ -632,7 +632,7 @@ module Auditable
         each_mutation    = opts.delete(:each_mutation)
 
         # Iterate over all fuzz variations and audit each one.
-        mutations( injection_str, opts ).each do |elem|
+        each_mutation( injection_str, opts ) do |elem|
 
             if Options.exclude_vectors.include?( elem.altered )
                 print_info "Skipping audit of '#{elem.altered}' #{type} vector."

@@ -106,7 +106,9 @@ module RDiff
 
         opts = self.class::MUTATION_OPTIONS.merge( RDIFF_OPTIONS.merge( opts ) )
 
-        mutations_size = mutations( opts[:false], opts ).size * opts[:precision]
+        mutations_size = 0
+        each_mutation( opts[:false], opts ) { mutations_size += 1 }
+        mutations_size *= opts[:precision]
 
         @data_gathering = {
             mutations_size:     mutations_size,

@@ -26,24 +26,30 @@ class Header < Arachni::Element::Base
         @auditable.dup
     end
 
-    def mutations( injection_str, opts = {} )
+    # Overrides {Capabilities::Mutable#each_mutation} to handle header-specific
+    # limitations.
+    #
+    # @param (see Capabilities::Mutable#each_mutation)
+    # @return (see Capabilities::Mutable#each_mutation)
+    # @yield (see Capabilities::Mutable#each_mutation)
+    # @yieldparam (see Capabilities::Mutable#each_mutation)
+    #
+    # @see Capabilities::Mutable#each_mutation
+    def each_mutation( injection_str, opts = {}, &block )
         flip = opts.delete( :param_flip )
-        muts = super( injection_str, opts )
+        super( injection_str, opts, &block )
 
-        if flip
-            elem = self.dup
+        return if !flip
+        elem = self.dup
 
-            # when under HPG mode element auditing is strictly regulated
-            # and when we flip params we essentially create a new element
-            # which won't be on the whitelist
-            elem.override_instance_scope
+        # when under HPG mode element auditing is strictly regulated
+        # and when we flip params we essentially create a new element
+        # which won't be on the whitelist
+        elem.override_instance_scope
 
-            elem.altered = 'Parameter flip'
-            elem.auditable = { injection_str => seed }
-            muts << elem
-        end
-
-        muts
+        elem.altered = 'Parameter flip'
+        elem.auditable = { injection_str => seed }
+        yield elem
     end
 
     # @return   [String]    Header name.

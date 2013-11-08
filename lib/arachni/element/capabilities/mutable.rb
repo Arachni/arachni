@@ -86,6 +86,89 @@ module Mutable
         @immutables ||= Set.new
     end
 
+    # Injects the `injection_str` in self's values according to formatting options
+    # and returns an array of permutations of self.
+    #
+    # Vector names in {#immutables} will be excluded.
+    #
+    # @param    [String]  injection_str  The string to inject.
+    # @param    [Hash]    opts           {MUTATION_OPTIONS}
+    #
+    # @yield       [mutation]  Each generated mutation.
+    # @yieldparam [Mutable]
+    #
+    # @see #immutables
+    def each_mutation( injection_str, opts = {} )
+        return [] if self.auditable.empty?
+
+        opts = MUTATION_OPTIONS.merge( opts )
+        opts[:respect_method] = !Options.fuzz_methods? if opts[:respect_method].nil?
+
+        inputs  = auditable.dup
+        cinputs = inputs.dup
+
+        generated = Support::LookUp::HashSet.new
+
+        inputs.keys.each do |k|
+            # Don't audit parameter flips.
+            next if inputs[k] == seed || immutables.include?( k )
+
+            cinputs = Module::KeyFiller.fill( cinputs )
+            opts[:format].each do |format|
+                str = format_str( injection_str, cinputs[k], format )
+
+                elem           = self.dup
+                elem.altered   = k.dup
+                elem.auditable = cinputs.merge( k => str )
+
+                yield elem if !generated.include?( elem )
+                generated << elem
+
+                next if opts[:respect_method]
+
+                celem = elem.switch_method
+                yield celem if !generated.include?( celem )
+                generated << celem
+            end
+        end
+
+        return if !opts[:param_flip]
+
+        elem = self.dup
+
+        # When under HPG mode element auditing is strictly regulated
+        # and when we flip params we essentially create a new element
+        # which won't be on the whitelist.
+        elem.override_instance_scope
+
+        elem.altered = 'Parameter flip'
+        elem[injection_str] = seed
+
+        yield elem if !generated.include?( elem )
+        generated << elem
+
+        return if opts[:respect_method]
+
+        elem = elem.switch_method
+        yield elem if !generated.include?( elem )
+        generated << elem
+
+        nil
+    end
+
+    def switch_method
+        c = self.dup
+        if c.method.to_s.downcase.to_sym == :get
+            # Strip the query from the action if we're fuzzing a link
+            # otherwise the GET params might get precedence.
+            c.action = c.action.split( '?' ).first if c.is_a? Link
+            c.method = :post
+        else
+            c.method = :get
+        end
+        c
+    end
+
     #
     # Injects the `injection_str` in self's values according to formatting options
     # and returns an array of permutations of self.
@@ -100,64 +183,10 @@ module Mutable
     # @see #immutables
     #
     def mutations( injection_str, opts = {} )
-        opts = MUTATION_OPTIONS.merge( opts )
-        hash = auditable.dup
-
-        var_combo = []
-        return [] if !hash || hash.empty?
-
-        chash = hash.dup
-        hash.keys.each do |k|
-            # don't audit parameter flips
-            next if hash[k] == seed || immutables.include?( k )
-
-            chash = Module::KeyFiller.fill( chash )
-            opts[:format].each do |format|
-                str = format_str( injection_str, chash[k], format )
-
-                elem = self.dup
-                elem.altered = k.dup
-                elem.auditable = chash.merge( { k => str } )
-                var_combo << elem
-            end
-
-        end
-
-        if opts[:param_flip]
-            elem = self.dup
-
-            # when under HPG mode element auditing is strictly regulated
-            # and when we flip params we essentially create a new element
-            # which won't be on the whitelist
-            elem.override_instance_scope
-
-            elem.altered = 'Parameter flip'
-            elem[injection_str] = seed
-            var_combo << elem
-        end
-
-        opts[:respect_method] = !Options.fuzz_methods? if opts[:respect_method].nil?
-
-        # add the same stuff with different methods
-        if !opts[:respect_method]
-            var_combo |= var_combo.map do |f|
-                c = f.dup
-
-                if c.method.to_s.downcase.to_sym == :get
-                    # Strip the query from the action if we're fuzzing a link
-                    # otherwise the GET params might get precedence.
-                    c.action = c.action.split( '?' ).first if c.is_a? Link
-                    c.method = :post
-                else
-                    c.method = :get
-                end
-
-                c
-            end
-        end
-
-        print_debug_injection_set( var_combo, opts )
-        var_combo.uniq
+        combo = []
+        each_mutation( injection_str, opts ) { |m| combo << m }
+        print_debug_injection_set( combo, opts )
+        combo
     end
 
     # Alias for {#mutations}.
