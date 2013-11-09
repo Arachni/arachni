@@ -213,8 +213,8 @@ describe Arachni::Spider do
                 @opts.include = /include-me/i
                 @opts.url = "#{@url}include"
 
-                Arachni::Spider.new.run.should ==
-                    [@opts.url, "#{@url}include-me/1", "#{@url}include-me/2"]
+                Arachni::Spider.new.run.sort.should ==
+                    [@opts.url, "#{@url}include-me/1", "#{@url}include-me/2"].sort
             end
         end
 
