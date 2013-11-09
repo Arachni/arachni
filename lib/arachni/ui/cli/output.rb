@@ -345,7 +345,7 @@ module Output
         return if muted? && !unmute
 
         str = intercept_print_message( string )
-        #str = add_resource_usage_statistics( str )
+        str = add_resource_usage_statistics( str ) if Arachni.profile?
 
         # we may get IO errors...freaky stuff...
         begin
