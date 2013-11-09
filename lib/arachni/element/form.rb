@@ -435,6 +435,8 @@ class Form < Arachni::Element::Base
     end
 
     def mirror_password_fields
+        return if !requires_password?
+
         # if there are two password type fields in the form there's a good
         # chance that it's a 'please retype your password' thing so make sure
         # that we have a variation which has identical password values
@@ -475,8 +477,10 @@ class Form < Arachni::Element::Base
     #   `true` if the form contains passwords fields, `false` otherwise.
     #
     def requires_password?
-        return if !self.raw.is_a?( Hash ) || !self.raw['input'].is_a?( Array )
-        self.raw['input'].select { |i| i['type'] == 'password' }.any?
+        return @requires_password if !@requires_password.nil?
+
+        return @requires_password = false if !self.raw.is_a?( Hash ) || !self.raw['input'].is_a?( Array )
+        @requires_password = self.raw['input'].select { |i| i['type'] == 'password' }.any?
     end
 
     #
@@ -807,7 +811,16 @@ class Form < Arachni::Element::Base
     end
 
     def dup
-        super.tap { |f| f.nonce_name = nonce_name.dup if nonce_name }
+        super.tap do |f|
+            f.nonce_name = nonce_name.dup if nonce_name
+            f.requires_password = requires_password?
+        end
+    end
+
+    protected
+
+    def requires_password=( bool )
+        @requires_password = bool
     end
 
     private
