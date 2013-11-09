@@ -22,6 +22,11 @@ def ap( obj )
 end
 
 module Arachni
+    # @return   [Bool]
+    #   `true` if the `ARACHNI_PROFILE` env variable is set, `false` otherwise.
+    def self.profile?
+        !!ENV['ARACHNI_PROFILER']
+    end
 end
 
 require_relative 'arachni/version'
