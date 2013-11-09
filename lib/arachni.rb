@@ -14,7 +14,7 @@ module Arachni
     # @return   [Bool]
     #   `true` if the `ARACHNI_PROFILE` env variable is set, `false` otherwise.
     def self.profile?
-        !!ENV['ARACHNI_PROFILE']
+        !!ENV['ARACHNI_PROFILER']
     end
 end
 
