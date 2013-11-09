@@ -116,7 +116,7 @@ module Mutable
         opts[:respect_method] = !Options.fuzz_methods? if opts[:respect_method].nil?
 
         inputs  = auditable.dup
-        cinputs = inputs.dup
+        cinputs = Module::KeyFiller.fill( inputs )
 
         generated = Support::LookUp::HashSet.new
 
@@ -124,8 +124,8 @@ module Mutable
             # Don't audit parameter flips.
             next if inputs[k] == seed || immutables.include?( k )
 
-            cinputs = Module::KeyFiller.fill( cinputs )
             opts[:format].each do |format|
+
                 str = format_str( injection_str, cinputs[k], format )
 
                 elem           = self.dup
