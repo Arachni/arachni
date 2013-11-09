@@ -263,18 +263,14 @@ describe Arachni::Element::Form do
 
         context 'when it contains more than 1 password field' do
             it 'includes mutations which have the same values for all of them' do
-                e = Arachni::Element::Form.new( 'http://test.com',
-                    'auditable' => [
-                        {
-                            'type' => 'password',
-                            'name' => 'my_pass'
-                        },
-                        {
-                            'type' => 'password',
-                            'name' => 'my_pass_validation'
-                        }
-                    ]
-                )
+                form = <<-EOHTML
+                    <form>
+                        <input type="password" name="my_pass" />
+                        <input type="password" name="my_pass_validation" />
+                    </form>
+                EOHTML
+
+                e = Arachni::Element::Form.from_document( 'http://test.com', form ).first
 
                 e.mutations( 'seed' ).reject do |m|
                     m.auditable['my_pass'] != m.auditable['my_pass_validation']
