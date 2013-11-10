@@ -32,7 +32,7 @@ class Signature
     #   Sets the maximum allowed difference (in tokens) when performing
     #   {#== comparisons}.
     def initialize( data, options = {} )
-        @tokens  = data.tokens.uniq
+        @tokens  = data.tokens
         @options = options
 
         if @options[:threshold] && !@options[:threshold].is_a?( Numeric )
