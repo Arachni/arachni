@@ -134,15 +134,13 @@ module RDiff
         # Populate the baseline/control forced-false signatures.
         populate_control_signatures( opts, signatures )
 
-        # Sacrifice some control and concurrency in order to force the baseline
-        # requests to be performed first.
-        http.run
+        http.after_run do
+            # Populate the 'true' signatures.
+            populate_true_signatures( opts, signatures )
 
-        # Populate the 'true' signatures.
-        populate_true_signatures( opts, signatures )
-
-        # Populate the 'false' signatures.
-        populate_false_signatures( opts, signatures )
+            # Populate the 'false' signatures.
+            populate_false_signatures( opts, signatures )
+        end
 
         true
     end
