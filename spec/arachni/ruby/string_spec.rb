@@ -3,9 +3,18 @@ require 'spec_helper'
 describe String do
 
     describe '#tokens' do
-        it 'converts the string words to integer tokens' do
-            s = 'This is the first test.'
-            s.tokens.should == s.words( true ).map(&:hash)
+        it 'converts the string words to array of tokens' do
+            s = 'This is the first testtest.'
+            s.tokens.should == ['This', 'is', 'the', 'first', 'testtest'.hash]
+        end
+
+        context 'when 2 strings are equal' do
+            it 'returns the same tokens' do
+                s = 'test this'
+                s.tokens.should == s.tokens
+
+                'test that'.tokens.should_not == s.tokens
+            end
         end
     end
 
