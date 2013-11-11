@@ -4,6 +4,33 @@ shared_examples_for 'refreshable' do
     let( :url ) { @url + 'refreshable' }
 
     describe '#refresh' do
+
+        context 'when the form disappears' do
+            context 'when called without a block' do
+                it 'returns nil' do
+                    Arachni::HTTP.get( url + '_disappear_clear', async: false )
+
+                    res = Arachni::HTTP.get( url + '_disappear', async: false ).response
+                    refreshable.from_response( res ).select do |f|
+                        !!f.auditable['nonce']
+                    end.first.refresh.should be_nil
+                end
+            end
+
+            context 'when called with a block' do
+                it 'passes nil to the block' do
+                    Arachni::HTTP.get( url + '_disappear_clear', async: false )
+
+                    res = Arachni::HTTP.get( url + '_disappear', async: false ).response
+                    refreshable.from_response( res ).select do |f|
+                        !!f.auditable['nonce']
+                    end.first.refresh do |r|
+                        r.should be_nil
+                    end
+                end
+            end
+        end
+
         context 'when called without a block' do
             it 'refreshes the inputs of the form in blocking mode' do
                 res = Arachni::HTTP.get( url, async: false ).response

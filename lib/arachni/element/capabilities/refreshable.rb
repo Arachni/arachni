@@ -24,6 +24,12 @@ module Capabilities::Refreshable
         http.get( url.to_s, http_opts.merge( async: !!block ) ) do |res|
             # find ourselves
             f = self.class.from_response( res ).select { |f| f.id == id_from( :original ) }.first
+
+            if !f
+                block.call if block_given?
+                next
+            end
+
             # get user updates
             updates = changes
             # update the form's inputs with the fresh ones and re-apply the user changes
