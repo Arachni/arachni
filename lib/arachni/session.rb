@@ -180,7 +180,7 @@ class Session
 
     # @return   [Bool]  `true` if there is log-in capability, `false` otherwise.
     def can_login?
-        @login_sequence && @login_check
+        has_login_sequence? && @login_check
     end
 
     # @return   [Bool, nil]
