@@ -266,11 +266,15 @@ class Session
     def login_sequence( &block )
         if @login_form && !block_given?
             @login_sequence = proc do
-                @login_form.refresh( update_cookies: true ).
-                    submit( async: false,
-                            update_cookies: true,
-                            follow_location: false ).
-                    response
+                if !(refreshed = @login_form.refresh( update_cookies: true ))
+                    print_bad 'Login form has disappeared, cannot login.'
+                end
+
+                refreshed.submit(
+                    async:           false,
+                    update_cookies:  true,
+                    follow_location: false
+                ).response
             end
         end
 
