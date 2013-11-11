@@ -36,6 +36,9 @@ class Session
         end
     end
 
+    LOGIN_TRIES      = 5
+    LOGIN_RETRY_WAIT = 5
+
     # @return   [Options]  options
     attr_reader :opts
 
@@ -182,7 +185,12 @@ class Session
         print_bad 'The scanner has been logged out.'
         print_info 'Trying to re-login...'
 
-        login
+        LOGIN_TRIES.times do |i|
+            break if login
+            print_bad "Login attempt #{i+1} failed, retrying after " <<
+                          "#{LOGIN_RETRY_WAIT} seconds..."
+            sleep LOGIN_RETRY_WAIT
+        end
 
         if !logged_in?
             print_bad 'Could not re-login.'
@@ -257,6 +265,7 @@ class Session
             @login_sequence = proc do
                 if !(refreshed = @login_form.refresh( update_cookies: true ))
                     print_bad 'Login form has disappeared, cannot login.'
+                    next
                 end
 
                 refreshed.submit(
