@@ -14,6 +14,8 @@
         - `--http-queue-size` -- Maximum amount of requests to keep in the queue,
             bigger size means better scheduling and better performance, smaller
             means less RAM consumption.
+- `Session`
+    - `#ensure_logged_in` -- Retry on login failure.
 - `Spider`
     - Don't apply scope restrictions to the seed URL.
 - `Framework`

@@ -259,6 +259,45 @@ describe Arachni::Session do
     end
 
     describe '#ensure_logged_in' do
+        context 'when the login is successful' do
+            it 'returns true' do
+                s = new_session
+                s.set_login_check @url + '/with_nonce', 'logged-in user'
+                s.login_form = s.find_login_form( url: @url + '/nonce_login' ).
+                    update( username: 'nonce_john', password: 'nonce_doe' )
+
+                s.logged_in?.should be_false
+                s.ensure_logged_in
+                s.logged_in?.should be_true
+            end
+        end
+
+        context 'when the login fails' do
+            it 'returns false' do
+                s = new_session
+                s.set_login_check @url + '/with_nonce', 'logged-in user'
+                s.login_form = s.find_login_form( url: @url + '/nonce_login' ).
+                    update( username: '1', password: '2' )
+
+                s.logged_in?.should be_false
+                s.ensure_logged_in
+                s.logged_in?.should be_false
+            end
+        end
+
+        context 'when the login attempt fails' do
+            it 'retries 5 times' do
+                s = new_session
+                s.set_login_check @url, 'logged-in user'
+                s.login_form = s.find_login_form( url: @url + '/disappearing_login' ).
+                    update( username: 'john', password: 'doe' )
+
+                s.logged_in?.should be_false
+                s.ensure_logged_in
+                s.logged_in?.should be_true
+            end
+        end
+
         context 'when there is no login capability' do
             it 'returns nil' do
                 s = new_session
