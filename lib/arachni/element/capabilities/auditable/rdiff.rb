@@ -86,14 +86,12 @@ module RDiff
     #   Keys should be the `true` expressions.
     # @option   opts    [String]       :false
     #   A string which would illicit a 'false' response but without any code.
-    # @param    [Block]     block
-    #   To be used for custom analysis of gathered data.
     #
     # @return   [Bool]
     #   `true` if the audit was scheduled successfully, `false` otherwise (like
     #   if the resource is out of scope or already audited).
     #
-    def rdiff_analysis( opts = {}, &block )
+    def rdiff_analysis( opts = {} )
         return if self.auditable.empty?
 
         return false if audited? audit_id
@@ -134,13 +132,13 @@ module RDiff
         }
 
         # Populate the baseline/control forced-false signatures.
-        populate_control_signatures( opts, signatures, &block )
+        populate_control_signatures( opts, signatures )
 
         # Populate the 'true' signatures.
-        populate_true_signatures( opts, signatures, &block )
+        populate_true_signatures( opts, signatures )
 
         # Populate the 'false' signatures.
-        populate_false_signatures( opts, signatures, &block )
+        populate_false_signatures( opts, signatures )
 
         true
     end
@@ -149,40 +147,52 @@ module RDiff
 
     # Performs requests using the 'false' control seed and generates/stores
     # signatures based on the response bodies.
-    def populate_control_signatures( opts, signatures, &block )
+    def populate_control_signatures( opts, signatures )
+        gathered = {}
         opts[:precision].times do
             audit( opts[:false], opts ) do |res, _, elem|
-                next if signatures[:corrupted][elem.altered]
+                altered_hash = elem.altered.hash
+
+                next if signatures[:corrupted][altered_hash]
+
+                gathered[altered_hash] ||= 0
+                gathered[altered_hash]  += 1
 
                 response_check( res, signatures, elem )
 
-                if signatures[:controls][elem.altered]
+                if gathered[altered_hash] == @data_gathering[:mutations_size]
                     print_status "Got default/control response for #{elem.type} " +
                         "variable '#{elem.altered}' with action '#{elem.action}'."
 
-                    @data_gathering[:controls][elem.altered] = true
+                    @data_gathering[:controls][altered_hash] = true
                 end
 
                 # Create a signature from the response body and refine it with
                 # subsequent ones to remove noise (like context-irrelevant dynamic
                 # content such as banners etc.).
-                signatures[:controls][elem.altered] =
-                    signatures[:controls][elem.altered] ?
-                        signatures[:controls][elem.altered].refine!(res.body) :
+                signatures[:controls][altered_hash] =
+                    signatures[:controls][altered_hash] ?
+                        signatures[:controls][altered_hash].refine!(res.body) :
                         Support::Signature.new(res.body)
 
                 @data_gathering[:received_responses] += 1
-                finalize_if_done( opts, signatures, &block )
+
+                finalize_if_done( opts, signatures )
             end
         end
     end
 
     # Performs requests using the 'true' seeds and generates/stores signatures
     # based on the response bodies.
-    def populate_true_signatures( opts, signatures, &block )
+    def populate_true_signatures( opts, signatures )
+        gathered = {}
+
         opts[:pairs].each do |pair|
-            signatures[pair]      ||= {}
-            @data_gathering[pair] ||= {}
+            pair_hash = pair.hash
+
+            signatures[pair_hash]      ||= {}
+            @data_gathering[pair_hash] ||= {}
+            gathered[pair_hash]        ||= {}
 
             true_expr = pair.to_a.first[0]
 
@@ -191,44 +201,48 @@ module RDiff
 
             opts[:precision].times do
                 audit( true_expr, opts ) do |res, _, elem|
+                    altered_hash = elem.altered.hash
 
-                    signatures[pair][elem.altered]      ||= {}
-                    @data_gathering[pair][elem.altered] ||= {}
+                    gathered[pair_hash][altered_hash] ||= 0
+                    gathered[pair_hash][altered_hash] += 1
 
-                    next if signatures[pair][elem.altered][:corrupted] ||
-                        signatures[:corrupted][elem.altered]
+                    signatures[pair_hash][altered_hash]      ||= {}
+                    @data_gathering[pair_hash][altered_hash] ||= {}
 
-                    response_check( res, signatures, elem, pair )
+                    next if signatures[pair_hash][altered_hash][:corrupted] ||
+                        signatures[:corrupted][altered_hash]
 
-                    next if signature_sieve( elem.altered, signatures, pair )
+                    response_check( res, signatures, elem, pair_hash )
 
-                    if signatures[pair][elem.altered][:true]
+                    next if signature_sieve( altered_hash, signatures, pair_hash )
+
+                    if gathered[pair_hash][altered_hash] == opts[:precision]
                         elem.print_status "Got 'true'  response for #{elem.type} " <<
                             "variable '#{elem.altered}' with action '#{elem.action}'" <<
                             " using seed: #{true_expr}"
-                        @data_gathering[pair][elem.altered][:true_probes] = true
+                        @data_gathering[pair_hash][altered_hash][:true_probes] = true
                     end
 
                     # Store the mutation for the {Arachni::Issue}.
-                    signatures[pair][elem.altered][:mutation] = elem
+                    signatures[pair_hash][altered_hash][:mutation] = elem
 
                     # Keep the latest response for the {Arachni::Issue}.
-                    signatures[pair][elem.altered][:response] = res
+                    signatures[pair_hash][altered_hash][:response] = res
 
-                    signatures[pair][elem.altered][:injected_string] = true_expr
+                    signatures[pair_hash][altered_hash][:injected_string] = true_expr
 
                     # Create a signature from the response body and refine it with
                     # subsequent ones to remove noise (like context-irrelevant dynamic
                     # content such as banners etc.).
-                    signatures[pair][elem.altered][:true] =
-                        signatures[pair][elem.altered][:true] ?
-                            signatures[pair][elem.altered][:true].refine!(res.body) :
+                    signatures[pair_hash][altered_hash][:true] =
+                        signatures[pair_hash][altered_hash][:true] ?
+                            signatures[pair_hash][altered_hash][:true].refine!(res.body) :
                             Support::Signature.new(res.body)
 
-                    signature_sieve( elem.altered, signatures, pair )
+                    signature_sieve( altered_hash, signatures, pair_hash )
 
                     @data_gathering[:received_responses] += 1
-                    finalize_if_done( opts, signatures, &block )
+                    finalize_if_done( opts, signatures )
                 end
             end
         end
@@ -236,10 +250,15 @@ module RDiff
 
     # Performs requests using the 'false' seeds and generates/stores signatures
     # based on the response bodies.
-    def populate_false_signatures( opts, signatures, &block )
+    def populate_false_signatures( opts, signatures )
+        gathered = {}
+
         opts[:pairs].each do |pair|
-            signatures[pair]       ||= {}
-            @data_gathering[pair] ||= {}
+            pair_hash = pair.hash
+
+            signatures[pair_hash]      ||= {}
+            @data_gathering[pair_hash] ||= {}
+            gathered[pair_hash]        ||= {}
 
             false_expr = pair.to_a.first[1]
 
@@ -248,36 +267,40 @@ module RDiff
 
             opts[:precision].times do
                 audit( false_expr, opts ) do |res, _, elem|
+                    altered_hash = elem.altered.hash
 
-                    signatures[pair][elem.altered] ||= {}
-                    @data_gathering[pair][elem.altered] ||= {}
+                    gathered[pair_hash][altered_hash] ||= 0
+                    gathered[pair_hash][altered_hash] += 1
 
-                    next if signatures[pair][elem.altered][:corrupted] ||
-                        signatures[:corrupted][elem.altered]
+                    signatures[pair_hash][altered_hash]      ||= {}
+                    @data_gathering[pair_hash][altered_hash] ||= {}
 
-                    response_check( res, signatures, elem, pair )
+                    next if signatures[pair_hash][altered_hash][:corrupted] ||
+                        signatures[:corrupted][altered_hash]
 
-                    next if signature_sieve( elem.altered, signatures, pair )
+                    response_check( res, signatures, elem, pair_hash )
 
-                    if signatures[pair][elem.altered][:false]
+                    next if signature_sieve( altered_hash, signatures, pair_hash )
+
+                    if gathered[pair_hash][altered_hash] == opts[:precision]
                         elem.print_status "Got 'false' response for #{elem.type} " <<
                             "variable '#{elem.altered}' with action '#{elem.action}'" <<
                             " using seed: #{false_expr}"
-                        @data_gathering[pair][elem.altered][:false_probes] = true
+                        @data_gathering[pair_hash][altered_hash][:false_probes] = true
                     end
 
                     # Create a signature from the response body and refine it with
                     # subsequent ones to remove noise (like context-irrelevant dynamic
                     # content such as banners etc.).
-                    signatures[pair][elem.altered][:false] =
-                        signatures[pair][elem.altered][:false] ?
-                            signatures[pair][elem.altered][:false].refine!(res.body) :
+                    signatures[pair_hash][altered_hash][:false] =
+                        signatures[pair_hash][altered_hash][:false] ?
+                            signatures[pair_hash][altered_hash][:false].refine!(res.body) :
                             Support::Signature.new(res.body)
 
-                    signature_sieve( elem.altered, signatures, pair )
+                    signature_sieve( altered_hash, signatures, pair_hash )
 
                     @data_gathering[:received_responses] += 1
-                    finalize_if_done( opts, signatures, &block )
+                    finalize_if_done( opts, signatures )
                 end
             end
         end
@@ -286,7 +309,7 @@ module RDiff
     # Check if we're done with data gathering and proceed to establishing a
     # {#populate_control_verification_signatures verification control baseline}
     # and {#match_signatures final analysis}.
-    def finalize_if_done( opts, signatures, &block )
+    def finalize_if_done( opts, signatures )
         return if @data_gathering[:done] ||
             @data_gathering[:expected_responses] != @data_gathering[:received_responses]
         @data_gathering[:done] = true
@@ -294,22 +317,28 @@ module RDiff
         # Lastly, we need to re-establish a new baseline in order to compare
         # it with the initial one so as to be sure that server behavior
         # hasn't suddenly changed in a way that would corrupt our analysis.
-        populate_control_verification_signatures( opts, signatures, &block )
+        populate_control_verification_signatures( opts, signatures )
     end
 
     # Re-establishes a control baseline at the end of the audit, to make sure
     # that website behavior has remained stable, otherwise its behavior won't
     # be trustworthy.
-    def populate_control_verification_signatures( opts, signatures, &block )
+    def populate_control_verification_signatures( opts, signatures )
         received_responses = 0
+        gathered           = {}
 
         opts[:precision].times do
             audit( opts[:false], opts ) do |res, _, elem|
-                next if signatures[:corrupted][elem.altered]
+                altered_hash = elem.altered.hash
+
+                gathered[altered_hash] ||= 0
+                gathered[altered_hash]  += 1
+
+                next if signatures[:corrupted][altered_hash]
 
                 response_check( res, signatures, elem )
 
-                if signatures[:controls_verification][elem.altered]
+                if gathered[altered_hash] == opts[:precision]
                     print_status 'Got control verification response ' <<
                         "for #{elem.type} variable '#{elem.altered}' with" <<
                         " action '#{elem.action}'."
@@ -318,9 +347,9 @@ module RDiff
                 # Create a signature from the response body and refine it with
                 # subsequent ones to remove noise (like context-irrelevant dynamic
                 # content such as banners etc.).
-                signatures[:controls_verification][elem.altered] =
-                    signatures[:controls_verification][elem.altered] ?
-                        signatures[:controls_verification][elem.altered].refine!(res.body) :
+                signatures[:controls_verification][altered_hash] =
+                    signatures[:controls_verification][altered_hash] ?
+                        signatures[:controls_verification][altered_hash].refine!(res.body) :
                         Support::Signature.new(res.body)
 
                 received_responses += 1
@@ -329,28 +358,23 @@ module RDiff
                 # Once the new baseline has been established and we've got all the
                 # data we need, crunch them and see if server behavior indicates
                 # a vulnerability.
-                match_signatures( signatures, &block )
+                match_signatures( signatures )
             end
         end
     end
 
-    def match_signatures( signatures, &block )
+    def match_signatures( signatures )
         controls              = signatures.delete( :controls )
         controls_verification = signatures.delete( :controls_verification )
         corrupted             = signatures.delete( :corrupted )
 
-        signatures.each do |pair, data|
-            if block
-                exception_jail( false ){ block.call( pair, data ) }
-                next
-            end
-
-            data.each do |input_name, result|
-                next if result[:corrupted] || corrupted[input_name]
+        signatures.each do |_, data|
+            data.each do |input, result|
+                next if result[:corrupted] || corrupted[input]
 
                 # If the initial and verification baselines differ, bail out;
                 # server behavior is too unstable.
-                if controls[input_name] != controls_verification[input_name]
+                if controls[input] != controls_verification[input]
                     result[:mutation].print_bad 'Control baseline too unstable, ' <<
                         "aborting analysis for #{result[:mutation].type} " <<
                         "variable '#{result[:mutation].altered}' with action " <<
@@ -371,7 +395,7 @@ module RDiff
                     next if is_custom_404
 
                     @auditor.log({
-                            var:      input_name,
+                            var:      result[:mutation].altered,
                             opts:     {
                                 injected_orig: result[:injected_string],
                                 combo:         result[:mutation].auditable
@@ -405,9 +429,9 @@ module RDiff
         return if !corrupted
 
         if pair
-            signatures[pair][elem.altered][:corrupted] = true
+            signatures[pair][elem.altered.hash][:corrupted] = true
         else
-            signatures[:corrupted][elem.altered] = true
+            signatures[:corrupted][elem.altered.hash] = true
         end
     end
 
