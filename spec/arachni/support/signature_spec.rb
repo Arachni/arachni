@@ -18,11 +18,6 @@ describe Arachni::Support::Signature do
     let(:signature) { described_class.new( string_with_noise ) }
 
     describe '#initialize' do
-        it 'initializes the signature with seed data' do
-            described_class.new( '' ).tokens.should be_empty
-            described_class.new( string_with_noise ).tokens.should be_any
-        end
-
         describe 'option' do
             describe :threshold do
                 it 'sets the maximum difference in tokens when performing comparisons' do

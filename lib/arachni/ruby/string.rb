@@ -89,13 +89,6 @@ class String
         splits
     end
 
-    # @return [Array<String,Integer>]
-    #   Words as tokens represented by either the words themselves or their
-    #   hashes, depending on which is smaller in size.
-    def tokens
-        words(true).map { |token| (hash = token.hash).size > token.size ? token : hash }
-    end
-
     # @return [String] Shortest word.
     def shortest_word
         words( true ).sort_by { |w| w.size }.first

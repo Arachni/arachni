@@ -22,8 +22,6 @@ module Arachni::Support
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Signature
 
-    attr_reader :tokens
-
     # @note The string will be tokenized based on whitespace.
     # @param    [String, Signature]    data
     #   Seed data to use to initialize the signature.
@@ -32,7 +30,7 @@ class Signature
     #   Sets the maximum allowed difference (in tokens) when performing
     #   {#== comparisons}.
     def initialize( data, options = {} )
-        @tokens  = data.tokens
+        @tokens  = tokenize( data )
         @options = options
 
         if @options[:threshold] && !@options[:threshold].is_a?( Numeric )
@@ -44,7 +42,7 @@ class Signature
     # @param    [String, Signature]    data    Data to use to refine the signature.
     # @return   [Signature] `self`
     def refine!( data )
-        @tokens &= data.tokens
+        @tokens &= tokenize( data )
         self
     end
 
@@ -75,9 +73,25 @@ class Signature
 
     protected
 
+    def tokens
+        @tokens
+    end
+
     def copy( tokens, options )
         @tokens  = tokens.dup
         @options = options.dup
+    end
+
+    private
+
+    # @param    [Signature, String] data
+    #
+    # @return [Array<String,Integer>]
+    #   Words as tokens represented by either the words themselves or their
+    #   hashes, depending on which is smaller in size.
+    def tokenize( data )
+        return data.tokens if data.is_a? self.class
+        data.words(true).map { |token| (hash = token.hash).size > token.size ? token : hash }
     end
 
 end
