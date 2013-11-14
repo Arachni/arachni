@@ -233,7 +233,8 @@ class Manager
     # @return   [Manager]
     # @raise    [Error::Invalid]  On {#invalid?} platforms.
     def self.[]=( uri, platforms )
-        @platforms[make_key( uri )] =
+        return new( platforms ) if !(key = make_key( uri ))
+        @platforms[key] =
             platforms.is_a?( self ) ? platforms : new( platforms )
     end
 
@@ -252,7 +253,8 @@ class Manager
     # @param    [String, URI]   uri
     # @return   [Manager] Platform for the given `uri`
     def self.[]( uri )
-        @platforms[make_key( uri )] ||= new
+        return new if !(key = make_key( uri ))
+        @platforms[key] ||= new
     end
 
     # @return   [Boolean]
@@ -461,7 +463,8 @@ class Manager
     end
 
     def self.make_key( uri )
-        Arachni::URI( uri ).without_query.persistent_hash
+        return if !(parsed = Arachni::URI( uri ))
+        parsed.without_query.persistent_hash
     end
 
 end
