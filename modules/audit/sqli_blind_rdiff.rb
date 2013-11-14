@@ -59,11 +59,9 @@ class Arachni::Modules::BlindrDiffSQLInjection < Arachni::Module::Base
     def self.info
         {
             name:        'Blind SQL Injection (differential analysis)',
-            description: %q{It uses rDiff analysis to decide how different inputs affect
-                the behavior of the the web pages.
-                Using that as a basis it extrapolates about what inputs are vulnerable to blind SQL injection.
-                (Note: This module may get confused by certain types of XSS vulnerabilities.
-                    If this module returns a positive result you should investigate nonetheless.)},
+            description: %q{It uses differential analysis to determine how different inputs affect
+                the behavior of the web application and checks if the displayed behavior is consistent
+                with that of a vulnerable application.},
             elements:    [ Element::LINK, Element::FORM, Element::COOKIE ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.4.1',
