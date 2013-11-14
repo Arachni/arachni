@@ -14,20 +14,16 @@
     limitations under the License.
 =end
 
-#
-# Metareport
-#
 # Creates a file to be used with the Arachni MSF plug-in.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.3
-#
+# @version 0.1.4
 class Arachni::Reports::Metareport < Arachni::Report::Base
 
     def run
         print_line
-        print_status 'Creating file for the Metasploit framework...'
+        print_status 'Processing logged issues...'
 
         msf = []
         auditstore.issues.each do |issue|
@@ -52,8 +48,6 @@ class Arachni::Reports::Metareport < Arachni::Report::Base
                     variation.headers['request']['cookie'] = cookies.dup
                 end
 
-                # ap sub_cookie( variation.headers['request']['cookie'], params )
-
                 uri = URI( url )
                 msf << {
                     host:        uri.host,
@@ -76,6 +70,11 @@ class Arachni::Reports::Metareport < Arachni::Report::Base
             end
         end
 
+        if msf.empty?
+            print_info "Can't generate report, there are no exploitable issues."
+            return
+        end
+
         File.open( outfile, 'w' ) { |f| ::YAML.dump( msf, f ) }
 
         print_status "Saved in '#{outfile}'."
@@ -96,7 +95,7 @@ class Arachni::Reports::Metareport < Arachni::Report::Base
             name:        'Metareport',
             description: %q{Creates a file to be used with the Arachni MSF plug-in.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.3',
+            version:     '0.1.4',
             options:     [ Options.outfile( '.msf' ) ]
 
         }
