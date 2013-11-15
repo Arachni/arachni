@@ -418,13 +418,13 @@ module Auditor
 
         print_verbose( "Injected string:\t" + opts[:injected] ) if opts[:injected]
         print_verbose( "Verified string:\t" + opts[:match].to_s ) if opts[:match]
-        print_verbose( "Matched regular expression: " + opts[:regexp].to_s ) if opts[:regexp]
+        print_verbose( 'Matched regular expression: ' + opts[:regexp].to_s ) if opts[:regexp]
         print_debug( 'Request ID: ' + res.request.id.to_s ) if res
         print_verbose( '---------' ) if only_positives?
 
         # Platform identification by vulnerability.
         platform_type = nil
-        if platform = opts[:platform]
+        if (platform = opts[:platform])
             Platform::Manager[url] << platform if Options.fingerprint?
             platform_type = Platform::Manager[url].find_type( platform )
         end
