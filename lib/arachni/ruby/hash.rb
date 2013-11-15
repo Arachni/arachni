@@ -16,14 +16,12 @@
 
 class Hash
 
-    #
     # Converts the hash keys to strings.
     #
     # @param    [Boolean]    recursively    Go through the Hash recursively?
     #
     # @return [Hash]
     #   Hash with +self+'s keys recursively converted to strings.
-    #
     def stringify_keys( recursively = true )
         stringified = {}
         each do |k, v|
@@ -32,14 +30,12 @@ class Hash
         stringified
     end
 
-    #
     # Converts the hash keys to symbols.
     #
     # @param    [Boolean]    recursively    Go through the Hash recursively?
     #
     # @return [Hash]
     #   Hash with +self+'s keys recursively converted to symbols.
-    #
     def symbolize_keys( recursively = true )
         symbolize = {}
         each do |k, v|
@@ -57,6 +53,21 @@ class Hash
             h[k] = v
             h
         end
+    end
+
+    # Converts the hash's string data to UTF8.
+    #
+    # @param    [Boolean]    recursively    Go through the Hash recursively?
+    #
+    # @return [Hash]
+    #   Copy of `self` with all strings {String#recode recoded} to UTF8.
+    def recode( recursively = true )
+        recoded = {}
+        each do |k, v|
+            recoded[k] = (v.is_a?( String ) || (recursively && v.is_a?( Hash ))) ?
+                v.recode : v
+        end
+        recoded
     end
 
     # @return   [Array<Symbol>]
