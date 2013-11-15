@@ -135,6 +135,9 @@ class Issue
     #   method merged with a `Hash` holding {Issue} attributes.
     #
     def initialize( opts = {} )
+        # Make sure we're dealing with UTF-8 data.
+        opts = opts.recode
+
         @verification = false
         @references   = {}
         @opts         = { regexp: '' }

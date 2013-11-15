@@ -44,7 +44,7 @@ describe Hash do
 
     describe '#symbolize_keys' do
         it 'recursively converts keys to symbols' do
-            with_strings.symbolize_keys.should ==with_symbols
+            with_strings.symbolize_keys.should == with_symbols
         end
 
         context 'when the recursive is set to false' do
@@ -57,6 +57,31 @@ describe Hash do
                         }
                     }
                 }
+            end
+        end
+    end
+
+    describe '#recode' do
+        let(:data) do
+            {
+                blah: "\xE2\x9C\x93",
+                blah2: {
+                    blah3: "\xE2\x9C\x93"
+                }
+            }
+        end
+
+        it 'recursively converts String data to UTF8' do
+            recoded = data.recode
+            recoded[:blah].should == "\u2713"
+            recoded[:blah2][:blah3].should == "\u2713"
+        end
+
+        context 'when the recursive is set to false' do
+            it 'only converts the keys at depth 1' do
+                recoded = data.recode( false )
+                recoded[:blah].should == "\u2713"
+                recoded[:blah2][:blah3].should == data[:blah2][:blah3]
             end
         end
     end
