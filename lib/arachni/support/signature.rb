@@ -22,6 +22,8 @@ module Arachni::Support
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Signature
 
+    attr_reader :tokens
+
     # @note The string will be tokenized based on whitespace.
     # @param    [String, Signature]    data
     #   Seed data to use to initialize the signature.
@@ -73,10 +75,6 @@ class Signature
 
     protected
 
-    def tokens
-        @tokens
-    end
-
     def copy( tokens, options )
         @tokens  = tokens.dup
         @options = options.dup
@@ -91,7 +89,7 @@ class Signature
     #   hashes, depending on which is smaller in size.
     def tokenize( data )
         return data.tokens if data.is_a? self.class
-        data.words(true).map { |token| (hash = token.hash).size > token.size ? token : hash }
+        data.words
     end
 
 end
