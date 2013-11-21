@@ -68,7 +68,7 @@ describe Arachni::Support::Signature do
 
         it 'returns a new signature instance' do
             signature1 = described_class.new( string_with_noise )
-            signature1.refine( string_with_noise ).object_id.should_not == signature1
+            signature1.refine( string_with_noise ).object_id.should_not == signature1.object_id
         end
     end
 
