@@ -135,7 +135,7 @@ class Signature
     #   hashes, depending on which is smaller in size.
     def tokenize( data )
         return data.tokens if data.is_a? self.class
-        data.words
+        data.split /(?![\w])/
     end
 
 end
