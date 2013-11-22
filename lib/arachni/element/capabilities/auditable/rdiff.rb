@@ -20,11 +20,13 @@ module Element::Capabilities
 
 module Auditable
 
-# Performs boolean, fault injection and behavioral analysis (using the rDiff algorithm)
-# in order to determine whether the web application is responding to the injected data and how.
+# Performs boolean injection and behavioral analysis (using differential analysis
+# techniques based on {Signature} comparisons) in order to determine whether the
+# web application is responding to the injected data and how.
 #
-# If the behavior can be manipulated by the injected data in ways that it's not supposed to
-# (like when evaluating injected code) then the element is deemed vulnerable.
+# If the behavior can be manipulated by the injected data in ways that it's not
+# supposed to (like when evaluating injected code) then the element is deemed
+# vulnerable.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 module RDiff
@@ -459,6 +461,10 @@ module RDiff
         end
 
         # 1st check: force_false_baseline == false_response_body
+        #
+        #   * Make sure the necessary data has been gathered.
+        #   * Remove the data if forced-false and boolean-false signatures
+        #       don't match.
         if (@data_gathering[:controls][input] && gathered[:false_probes]) &&
             (signatures[:controls][input] != signature[:false])
             signatures[pair].delete( input )
@@ -466,6 +472,10 @@ module RDiff
         end
 
         # 2nd check: false_response_baseline != true_response_baseline
+        #
+        #   * Make sure the necessary data has been gathered.
+        #   * Remove the data if boolean-false and boolean-true signatures
+        #       are too similar.
         if (gathered[:false_probes] && gathered[:true_probes]) &&
             signature[:false].similar?( signature[:true], 5 )
             signatures[pair].delete( input )
