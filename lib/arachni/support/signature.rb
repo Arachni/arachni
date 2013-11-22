@@ -55,6 +55,8 @@ class Signature
         dup.refine!( data )
     end
 
+    # @note **Very** expensive, use {#differences} when possible.
+    #
     # @param    [Signature] other
     # @param    [Integer]   ins Cost of an `insert` operation.
     # @param    [Integer]   del Cost of a `delete` operation.
@@ -97,7 +99,7 @@ class Signature
 
     # @param    [Signature] other
     # @return   [Integer]   Amount of differences between signatures.
-    def differences_between( other )
+    def differences( other )
         return nil if other.nil?
         return 0   if self == other
 
@@ -106,12 +108,12 @@ class Signature
 
     # @param    [Signature] other
     # @param    [Integer] threshold
-    #   Threshold of {#differences_between differences}.
+    #   Threshold of {#differences differences}.
     #
     # @return   [Bool]
     def similar?( other, threshold = @options[:threshold] )
         fail 'No threshold given.' if !threshold
-        self == other || differences_between( other ) < threshold
+        self == other || differences( other ) < threshold
     end
 
     # @return [Signature]   Copy of `self`.
