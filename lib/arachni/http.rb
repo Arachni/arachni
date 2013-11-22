@@ -584,15 +584,12 @@ class HTTP
     end
 
     def _404_data_for_path( path )
-        @_404[path] ||= {
-            analyzed:   false,
-            signatures: []
-        }
+        @_404[path] ||= { analyzed: false, signatures: [] }
     end
 
     def is_404?( path, body )
         @_404[path][:signatures].each do |_404|
-            return true if _404[:body].refine( body ) == _404[:rdiff]
+            return true if _404[:rdiff].similar? _404[:body].refine( body )
         end
         false
     end

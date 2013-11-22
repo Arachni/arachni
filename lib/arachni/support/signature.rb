@@ -55,6 +55,65 @@ class Signature
         dup.refine!( data )
     end
 
+    # @param    [Signature] other
+    # @param    [Integer]   ins Cost of an `insert` operation.
+    # @param    [Integer]   del Cost of a `delete` operation.
+    # @param    [Integer]   sub Cost of a `substitute` operation.
+    #
+    # @return   [Integer]   Levenshtein distance
+    #
+    # @see http://www.informit.com/articles/article.aspx?p=683059&seqNum=36
+    def distance( other, ins = 2, del = 2, sub = 1 )
+        return nil if other.nil?
+        return 0   if hash == other.hash
+
+        # Distance matrix.
+        dm = []
+
+        # Initialize first row values.
+        dm[0] = (0..tokens.size).collect { |i| i * ins }
+        fill  = [0] * (tokens.size - 1)
+
+        # Initialize first column values.
+        (1..other.tokens.size).each do |i|
+            dm[i] = [i * del, fill.flatten]
+        end
+
+        # Populate matrix.
+        (1..other.tokens.size).each do |i|
+            (1..tokens.size).each do |j|
+                # Critical comparison.
+                dm[i][j] = [
+                    dm[i-1][j-1] + (tokens[j-1] == other.tokens[i-1] ? 0 : sub),
+                    dm[i][j-1] + ins,
+                    dm[i-1][j] + del
+                ].min
+            end
+        end
+
+        # The last value in matrix is the Levenshtein distance.
+        dm.last.last
+    end
+
+    # @param    [Signature] other
+    # @return   [Integer]   Amount of differences between signatures.
+    def differences_between( other )
+        return nil if other.nil?
+        return 0   if self == other
+
+        ((tokens - other.tokens) | (other.tokens - tokens)).size
+    end
+
+    # @param    [Signature] other
+    # @param    [Integer] threshold
+    #   Threshold of {#differences_between differences}.
+    #
+    # @return   [Bool]
+    def similar?( other, threshold = @options[:threshold] )
+        fail 'No threshold given.' if !threshold
+        self == other || differences_between( other ) < threshold
+    end
+
     # @return [Signature]   Copy of `self`.
     def dup
         self.class.new( '' ).tap { |s| s.copy( tokens, @options ) }
@@ -64,13 +123,9 @@ class Signature
         tokens.hash
     end
 
-    # @note Takes into account the `:threshold` {#initialize option}.
     # @param [Signature]    other
     def ==( other )
-        return true  if hash == other.hash
-        return false if !@options[:threshold]
-
-        ((other.tokens - tokens) - (tokens - other.tokens)).size < @options[:threshold]
+        hash == other.hash
     end
 
     protected

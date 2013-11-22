@@ -466,33 +466,13 @@ module RDiff
         end
 
         # 2nd check: false_response_baseline != true_response_baseline
-        #
-        # We are a bit more strict on this though, we only compare words (while
-        # in the checks before symbols were taken into account as well) and
-        # allow a bit of flexibility when calculating their similarity.
         if (gathered[:false_probes] && gathered[:true_probes]) &&
-            too_similar?( signature[:false], signature[:true] )
+            signature[:false].similar?( signature[:true], 5 )
             signatures[pair].delete( input )
             return true
         end
 
         false
-    end
-
-    def too_similar?( signature_1, signature_2 )
-        return true if signature_1 == signature_2
-
-        words_1 = words_from_array( signature_1.tokens )
-        words_2 = words_from_array( signature_2.tokens )
-
-        return true if words_1 == words_2
-
-        ((words_1 - words_2) | (words_2 - words_1)).size < 5
-    end
-
-    def words_from_array( array )
-        array.reject { |w| !(w =~ /\w/) }
-        array
     end
 
 end

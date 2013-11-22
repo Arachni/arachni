@@ -26,19 +26,19 @@ describe Arachni::Support::Signature do
 
                     s  = described_class.new( seed1, threshold: 1 )
                     s1 = described_class.new( seed2 )
-                    s.should_not == s1
+                    s.should_not be_similar s1
 
                     s  = described_class.new( seed1, threshold: 2 )
                     s1 = described_class.new( seed2 )
-                    s.should_not == s1
+                    s.should_not be_similar s1
 
-                    s  = described_class.new( seed1, threshold: 3 )
+                    s  = described_class.new( seed1, threshold: 5 )
                     s1 = described_class.new( seed2 )
-                    s.should == s1
+                    s.should be_similar s1
 
-                    s  = described_class.new( seed1, threshold: 4 )
+                    s  = described_class.new( seed1, threshold: 6 )
                     s1 = described_class.new( seed2 )
-                    s.should == s1
+                    s.should be_similar s1
                 end
 
                 context 'when not a number' do
@@ -91,6 +91,38 @@ describe Arachni::Support::Signature do
         end
     end
 
+    describe '#distance' do
+        it 'returns the Levenshtein distance between signature tokens' do
+            signature1 = described_class.new( string_with_noise )
+            signature2 = described_class.new( string_with_noise )
+            signature3 = described_class.new( different_string_with_noise )
+            signature4 = described_class.new( different_string_with_noise )
+
+            signature1.distance( signature2 ).should == 4
+            signature2.distance( signature2 ).should == 0
+
+            signature3.distance( signature4 ).should == 1
+            signature4.distance( signature4 ).should == 0
+            signature1.distance( signature3 ).should == 44
+        end
+    end
+
+    describe '#differences_between' do
+        it 'returns amount of differences between signature tokens' do
+            signature1 = described_class.new( string_with_noise )
+            signature2 = described_class.new( string_with_noise )
+            signature3 = described_class.new( different_string_with_noise )
+            signature4 = described_class.new( different_string_with_noise )
+
+            signature1.differences_between( signature2 ).should == 8
+            signature2.differences_between( signature2 ).should == 0
+
+            signature3.differences_between( signature4 ).should == 2
+            signature4.differences_between( signature4 ).should == 0
+            signature1.differences_between( signature3 ).should == 18
+        end
+    end
+
     describe '#==' do
         context 'when the signature are identical' do
             it 'returns true' do
@@ -104,8 +136,8 @@ describe Arachni::Support::Signature do
             end
         end
 
-        context 'when the signature are identical' do
-            it 'returns true' do
+        context 'when the signature are not identical' do
+            it 'returns false' do
                 signature1 = described_class.new( string_with_noise )
                 10.times{ signature1.refine!( string_with_noise ) }
 
