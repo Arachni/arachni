@@ -10,8 +10,8 @@ module Element::Capabilities
 module Auditable
 
 # Performs boolean injection and behavioral analysis (using differential analysis
-# techniques based on {Signature} comparisons) in order to determine whether the
-# web application is responding to the injected data and how.
+# techniques based on {Support::Signature} comparisons) in order to determine
+# whether the web application is responding to the injected data and how.
 #
 # If the behavior can be manipulated by the injected data in ways that it's not
 # supposed to (like when evaluating injected code) then the element is deemed
