@@ -103,23 +103,23 @@ describe Arachni::Support::Signature do
 
             signature3.distance( signature4 ).should == 1
             signature4.distance( signature4 ).should == 0
-            signature1.distance( signature3 ).should == 44
+            signature1.distance( signature3 ).should == 93
         end
     end
 
-    describe '#differences_between' do
+    describe '#differences' do
         it 'returns amount of differences between signature tokens' do
             signature1 = described_class.new( string_with_noise )
             signature2 = described_class.new( string_with_noise )
             signature3 = described_class.new( different_string_with_noise )
             signature4 = described_class.new( different_string_with_noise )
 
-            signature1.differences_between( signature2 ).should == 8
-            signature2.differences_between( signature2 ).should == 0
+            signature1.differences( signature2 ).should == 8
+            signature2.differences( signature2 ).should == 0
 
-            signature3.differences_between( signature4 ).should == 2
-            signature4.differences_between( signature4 ).should == 0
-            signature1.differences_between( signature3 ).should == 18
+            signature3.differences( signature4 ).should == 2
+            signature4.differences( signature4 ).should == 0
+            signature1.differences( signature3 ).should == 14
         end
     end
 
