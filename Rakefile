@@ -15,6 +15,7 @@
 =end
 
 require 'bundler'
+require 'fileutils'
 require File.expand_path( File.dirname( __FILE__ ) ) + '/lib/arachni'
 
 begin
@@ -235,17 +236,15 @@ end
 
 desc 'Remove report and log files.'
 task :clean do
+    files = %w(error.log *.afr *.yaml *.json *.marshal *.gem pkg/*.gem logs/*.log
+        spec/support/logs/*.log).map { |file| Dir.glob( file ) }.flatten
 
-    sh "rm error.log || true"
-    sh "rm *.afr || true"
-    sh "rm *.yaml || true"
-    sh "rm *.json || true"
-    sh "rm *.marshal || true"
-    sh "rm *.gem || true"
-    sh "rm logs/*.log || true"
-    sh "rm spec/support/logs/*.log || true"
+    next if files.empty?
+
+    puts 'Removing:'
+    files.each { |file| puts "  * #{file}" }
+    FileUtils.rm files
 end
-
 
 Bundler::GemHelper.install_tasks
 
