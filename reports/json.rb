@@ -17,7 +17,11 @@ class Arachni::Reports::JSON < Arachni::Report::Base
         print_status "Dumping audit results in #{outfile}."
 
         File.open( outfile, 'w' ) do |f|
-            f.write ::JSON::pretty_generate( auditstore.to_hash )
+            begin
+                f.write ::JSON::pretty_generate( auditstore.to_hash )
+            rescue Encoding::UndefinedConversionError
+                f.write ::JSON::pretty_generate( auditstore.to_hash.recode )
+            end
         end
 
         print_status 'Done!'
@@ -29,7 +33,7 @@ class Arachni::Reports::JSON < Arachni::Report::Base
             description:  %q{Exports the audit results as a JSON (.json) file.},
             content_type: 'application/json',
             author:       'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:      '0.1.1',
+            version:      '0.1.2',
             options:      [ Options.outfile( '.json' ) ]
         }
     end
