@@ -44,17 +44,14 @@ class Hash
         end
     end
 
-    # Converts the hash's string data to UTF8.
-    #
-    # @param    [Boolean]    recursively    Go through the Hash recursively?
+    # Recursively converts the hash's string data to UTF8.
     #
     # @return [Hash]
     #   Copy of `self` with all strings {String#recode recoded} to UTF8.
-    def recode( recursively = true )
+    def recode
         recoded = {}
         each do |k, v|
-            recoded[k] = (v.is_a?( String ) || (recursively && v.is_a?( Hash ))) ?
-                v.recode : v
+            recoded[k] = (v.respond_to?( :recode ) ? v.recode : v)
         end
         recoded
     end
