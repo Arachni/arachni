@@ -97,5 +97,12 @@ describe 'WAVSEP SQL Injection' do
         }
     end
 
-    easy_test
+    easy_test do
+        @framework.modules.issues.each do |issue|
+            # Timing attack issues can be marked as untrusted sometimes to
+            # indicate the possibility of a false positive, make sure we've only
+            # got trusted issues.
+            issue.trusted?.should be_true
+        end
+    end
 end
