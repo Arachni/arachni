@@ -32,6 +32,14 @@ class Array
         (self.flatten.compact.map( &:to_s ) & tags).any?
     end
 
+    # Recursively converts the array's string data to UTF8.
+    #
+    # @return [Array]
+    #   Copy of `self` with all strings {String#recode recoded} to UTF8.
+    def recode
+        map { |v| v.respond_to?( :recode ) ? v.recode : v }
+    end
+
     def chunk( pieces = 2 )
         return self if pieces <= 0
 

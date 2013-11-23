@@ -73,6 +73,17 @@ describe Array do
         end
     end
 
+    describe '#recode' do
+        it 'recursively converts String data to UTF8' do
+            recoded = [
+                "\xE2\x9C\x93",
+                [ "\xE2\x9C\x93" ]
+            ].recode
+            recoded.first.should == "\u2713"
+            recoded.last.should == ["\u2713"]
+        end
+    end
+
     describe '#chunk' do
         it 'splits the array into chunks' do
             chunks = @arr.chunk( 5 )
