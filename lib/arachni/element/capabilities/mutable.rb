@@ -1,17 +1,6 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
 =end
 
 module Arachni
@@ -99,6 +88,90 @@ module Mutable
         @immutables ||= Set.new
     end
 
+    # Injects the `injection_str` in self's values according to formatting options
+    # and returns an array of permutations of self.
+    #
+    # Vector names in {#immutables} will be excluded.
+    #
+    # @param    [String]  injection_str  The string to inject.
+    # @param    [Hash]    opts           {MUTATION_OPTIONS}
+    #
+    # @yield       [mutation]  Each generated mutation.
+    # @yieldparam [Mutable]
+    #
+    # @see #immutables
+    def each_mutation( injection_str, opts = {} )
+        return [] if self.inputs.empty?
+
+        opts = MUTATION_OPTIONS.merge( opts )
+        opts[:respect_method] = !Options.fuzz_methods? if opts[:respect_method].nil?
+
+        dinputs = inputs.dup
+        cinputs = Module::KeyFiller.fill( inputs )
+
+        generated = Support::LookUp::HashSet.new
+
+        dinputs.keys.each do |k|
+            # Don't audit parameter flips.
+            next if dinputs[k] == seed || immutables.include?( k )
+
+            opts[:format].each do |format|
+
+                str = format_str( injection_str, cinputs[k], format )
+
+                elem         = self.dup
+                elem.altered = k.dup
+                elem.inputs  = cinputs.merge( k => str )
+                elem.format  = format
+
+                yield elem if !generated.include?( elem )
+                generated << elem
+
+                next if opts[:respect_method]
+
+                celem = elem.switch_method
+                yield celem if !generated.include?( celem )
+                generated << celem
+            end
+        end
+
+        return if !opts[:param_flip]
+
+        elem = self.dup
+
+        # When under HPG mode element auditing is strictly regulated
+        # and when we flip params we essentially create a new element
+        # which won't be on the whitelist.
+        elem.override_instance_scope
+
+        elem.altered = 'Parameter flip'
+        elem[injection_str] = seed
+
+        yield elem if !generated.include?( elem )
+        generated << elem
+
+        return if opts[:respect_method]
+
+        elem = elem.switch_method
+        yield elem if !generated.include?( elem )
+        generated << elem
+
+        nil
+    end
+
+    def switch_method
+        c = self.dup
+        if c.method.to_s.downcase.to_sym == :get
+            # Strip the query from the action if we're fuzzing a link
+            # otherwise the GET params might get precedence.
+            c.action = c.action.split( '?' ).first if c.is_a? Link
+            c.method = 'post'
+        else
+            c.method = 'get'
+        end
+        c
+    end
+
     #
     # Injects the `injection_str` in self's values according to formatting options
     # and returns an array of permutations of self.
@@ -113,56 +186,10 @@ module Mutable
     # @see #immutables
     #
     def mutations( injection_str, opts = {} )
-        opts = MUTATION_OPTIONS.merge( opts )
-        hash = inputs.dup
-
-        var_combo = []
-        return [] if !hash || hash.empty?
-
-        chash = hash.dup
-        hash.keys.each do |k|
-            # don't audit parameter flips
-            next if hash[k] == seed || immutables.include?( k )
-
-            chash = Module::KeyFiller.fill( chash )
-            opts[:format].each do |format|
-                str = format_str( injection_str, chash[k], format )
-
-                elem = self.dup
-                elem.altered = k.dup
-                elem.format  = format
-                elem.inputs = chash.merge( { k => str } )
-                var_combo << elem
-            end
-
-        end
-
-        if opts[:param_flip]
-            elem = self.dup
-
-            # when under HPG mode element auditing is strictly regulated
-            # and when we flip params we essentially create a new element
-            # which won't be on the whitelist
-            elem.override_instance_scope
-
-            elem.altered = 'Parameter flip'
-            elem[injection_str] = seed
-            var_combo << elem
-        end
-
-        opts[:respect_method] = !Options.fuzz_methods? if opts[:respect_method].nil?
-
-        # add the same stuff with different methods
-        if !opts[:respect_method]
-            var_combo |= var_combo.map do |f|
-                c = f.dup
-                c.method = (f.method.to_s.downcase == 'get' ? 'post' : 'get')
-                c
-            end
-        end
-
-        print_debug_injection_set( var_combo, opts )
-        var_combo.uniq
+        combo = []
+        each_mutation( injection_str, opts ) { |m| combo << m }
+        print_debug_injection_set( combo, opts )
+        combo
     end
 
     # Alias for {#mutations}.
@@ -254,7 +281,7 @@ module Mutable
 
           print_debug '|'
           print_debug "|--> Auditing: #{altered}"
-          print_debug "|--> Combo: "
+          print_debug '|--> Combo: '
 
           combo.each { |c_combo| print_debug "|------> #{c_combo}" }
         end

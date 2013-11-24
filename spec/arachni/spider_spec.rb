@@ -191,11 +191,30 @@ describe Arachni::Spider do
         end
 
         context 'Options.exclude_pages' do
-            it 'skips pages which match the configured patterns' do
-                @opts.exclude_pages = /skip me/i
-                @opts.url = @url + '/skip'
+            it 'skips pages which match the configured patterns (but not the seed URL)' do
+                @opts.exclude_pages = /skip-me/i
+                @opts.url = "#{@url}skip"
 
-                Arachni::Spider.new.run.should be_empty
+                Arachni::Spider.new.run.should == [@opts.url, "#{@url}follow-me"]
+            end
+        end
+
+        context 'Options.exclude' do
+            it 'skips paths which match the configured patterns (but not the seed URL)' do
+                @opts.exclude = /skip-me/i
+                @opts.url = "#{@url}skip"
+
+                Arachni::Spider.new.run.should == [@opts.url, "#{@url}follow-me"]
+            end
+        end
+
+        context 'Options.include' do
+            it 'skips paths which do not match the configured patterns (but not the seed URL)' do
+                @opts.include = /include-me/i
+                @opts.url = "#{@url}include"
+
+                Arachni::Spider.new.run.sort.should ==
+                    [@opts.url, "#{@url}include-me/1", "#{@url}include-me/2"].sort
             end
         end
 
@@ -425,16 +444,6 @@ describe Arachni::Spider do
                 end
             end
         end
-
-        #context 'when called after the crawl has finished' do
-        #    it 'should wake the crawler up after pushing the new paths' do
-        #        s = Arachni::Spider.new
-        #        s.run
-        #        s.done?.should be_true
-        #        s.push( '/a_pushed_path' )
-        #        s.done?.should be_false
-        #    end
-        #end
     end
 
     describe '#done?' do

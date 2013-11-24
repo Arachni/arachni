@@ -1,17 +1,6 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
 =end
 
 require_relative 'list'
@@ -162,6 +151,28 @@ class Manager
         rack:   'Rack'
     }
 
+    def self.find_type( platform )
+        @find_type ||= {}
+
+        if @find_type.empty?
+            TYPES.keys.each do |type|
+
+                platforms = const_get( type.to_s.upcase.to_sym )
+                platforms = platforms.find_symbol_keys_recursively if platforms.is_a?( Hash )
+
+                platforms.each do |p|
+                    @find_type[p] = type
+                end
+            end
+        end
+
+        @find_type[platform]
+    end
+
+    def self.valid
+        @valid ||= Set.new( PLATFORM_NAMES.keys )
+    end
+
     # Sets global platforms fingerprints
     # @private
     def self.set( platforms )
@@ -211,7 +222,8 @@ class Manager
     # @return   [Manager]
     # @raise    [Error::Invalid]  On {#invalid?} platforms.
     def self.[]=( uri, platforms )
-        @platforms[make_key( uri )] =
+        return new( platforms ) if !(key = make_key( uri ))
+        @platforms[key] =
             platforms.is_a?( self ) ? platforms : new( platforms )
     end
 
@@ -230,7 +242,8 @@ class Manager
     # @param    [String, URI]   uri
     # @return   [Manager] Platform for the given `uri`
     def self.[]( uri )
-        @platforms[make_key( uri )] ||= new
+        return new if !(key = make_key( uri ))
+        @platforms[key] ||= new
     end
 
     # @return   [Boolean]
@@ -352,7 +365,7 @@ class Manager
 
     # @return   [Set<Symbol>]   List of valid platforms.
     def valid
-        @valid ||= Set.new( @platforms.map { |_, p| p.valid.to_a }.flatten )
+        self.class.valid
     end
 
     # @param    [Symbol, String]  platform Platform to check.
@@ -421,9 +434,7 @@ class Manager
     #   Platform whose type to find
     # @return   [Symbol]    Platform type.
     def find_type( platform )
-        platform = normalize( platform )
-        @platforms.each { |type, list| return type if list.valid? platform }
-        nil
+        self.class.find_type( platform )
     end
 
     # @param    [String, Symbol]    platform Platform whose list to find.
@@ -441,7 +452,8 @@ class Manager
     end
 
     def self.make_key( uri )
-        Arachni::URI( uri ).without_query.persistent_hash
+        return if !(parsed = Arachni::URI( uri ))
+        parsed.without_query.persistent_hash
     end
 
 end

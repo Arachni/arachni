@@ -47,40 +47,49 @@ describe Arachni::RPC::Server::Dispatcher do
     end
 
     describe '#dispatch' do
-        it 'returns valid Instance info' do
-            info = dispatcher_light_spawn.dispatch
-
-            %w(token pid port url owner birthdate starttime helpers).each do |k|
-                info[k].should be_true
+        context 'when Options#rpc_external_address has been set' do
+            it 'advertises that address' do
+                address = '127.0.0.1'
+                dispatcher = dispatcher_light_spawn( rpc_external_address: address )
+                dispatcher.dispatch['url'].should start_with "#{address}:"
             end
-
-            instance = instance_connect( info['url'], info['token'] )
-            instance.service.alive?.should be_true
         end
-        it 'assigns an optional owner' do
-            owner = 'blah'
-            dispatcher_light_spawn.dispatch( owner )['owner'].should == owner
-        end
-        context 'when the pool is empty' do
-            it 'returns false' do
-                dispatcher = dispatcher_light_spawn
-                dispatcher.dispatch.should be_kind_of Hash
-                dispatcher.dispatch.should be_false
-            end
+        context 'when not a Grid member' do
+            it 'returns valid Instance info' do
+                info = dispatcher_light_spawn.dispatch
 
-            it 'replenishes the pool' do
-                dispatcher = dispatcher_light_spawn
-                dispatcher.dispatch.should be_kind_of Hash
-                dispatcher.dispatch.should be_false
-
-                hash = nil
-                Timeout.timeout 10 do
-                    loop do
-                        break if (hash = dispatcher.dispatch).is_a? Hash
-                    end
+                %w(token pid port url owner birthdate starttime helpers).each do |k|
+                    info[k].should be_true
                 end
 
-                hash.should be_kind_of Hash
+                instance = instance_connect( info['url'], info['token'] )
+                instance.service.alive?.should be_true
+            end
+            it 'assigns an optional owner' do
+                owner = 'blah'
+                dispatcher_light_spawn.dispatch( owner )['owner'].should == owner
+            end
+            context 'when the pool is empty' do
+                it 'returns false' do
+                    dispatcher = dispatcher_light_spawn
+                    dispatcher.dispatch.should be_kind_of Hash
+                    dispatcher.dispatch.should be_false
+                end
+
+                it 'replenishes the pool' do
+                    dispatcher = dispatcher_light_spawn
+                    dispatcher.dispatch.should be_kind_of Hash
+                    dispatcher.dispatch.should be_false
+
+                    hash = nil
+                    Timeout.timeout 10 do
+                        loop do
+                            break if (hash = dispatcher.dispatch).is_a? Hash
+                        end
+                    end
+
+                    hash.should be_kind_of Hash
+                end
             end
         end
 
@@ -211,6 +220,14 @@ describe Arachni::RPC::Server::Dispatcher do
 
             stats['node'].delete( 'score' ).should == dispatcher.workload_score
             stats['node'].keys.should == @node_info_keys
+        end
+
+        context 'when Options#rpc_external_address has been set' do
+            it 'advertises that address' do
+                address = '127.0.0.1'
+                dispatcher = dispatcher_light_spawn( rpc_external_address: address )
+                dispatcher.stats['node']['url'].should start_with "#{address}:"
+            end
         end
     end
 

@@ -1,17 +1,6 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
 =end
 
 module Arachni
@@ -47,6 +36,10 @@ class Spider < Arachni::Spider
 
         @after_each_run_blocks = []
         @on_first_run_blocks   = []
+    end
+
+    def clear_distribution_filter
+        @distribution_filter.clear
     end
 
     # @param    [Block] block
@@ -294,7 +287,6 @@ class Spider < Arachni::Spider
     # @param    [Array<String>]  urls    URLs to distribute.
     #
     def distribute( urls )
-        urls = dedup( urls )
         return false if urls.empty?
 
         @first_run ||= Support::LookUp::HashSet.new

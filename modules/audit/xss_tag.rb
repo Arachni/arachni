@@ -1,20 +1,8 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
 =end
 
-#
 # XSS in HTML tag.
 # It injects a string and checks if it appears inside any HTML tags.
 #
@@ -25,7 +13,6 @@
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
 # @see http://secunia.com/advisories/9716/
-#
 class Arachni::Modules::XSSHTMLTag < Arachni::Module::Base
 
     TAG_NAME = 'arachni_xss_in_tag'
@@ -36,10 +23,8 @@ class Arachni::Modules::XSSHTMLTag < Arachni::Module::Base
     end
 
     def run
-        self.class.strings.each do |str|
-            audit( str, format: [ Format::APPEND ] ) do |res, element|
-                check_and_log( res, element.audit_options )
-            end
+        audit( self.class.strings, format: [ Format::APPEND ] ) do |res, opts|
+            check_and_log( res, opts )
         end
     end
 

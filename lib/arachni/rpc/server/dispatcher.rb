@@ -1,17 +1,6 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
 =end
 
 require 'socket'
@@ -60,9 +49,10 @@ class Dispatcher
 
         @opts = opts
 
-        @opts.rpc_port    ||= 7331
-        @opts.rpc_address ||= 'localhost'
-        @opts.pool_size   ||= 5
+        @opts.rpc_port             ||= 7331
+        @opts.rpc_address          ||= 'localhost'
+        @opts.rpc_external_address ||= @opts.rpc_address
+        @opts.pool_size            ||= 5
 
         if @opts.help
             print_help
@@ -77,7 +67,7 @@ class Dispatcher
             method.parameters.flatten.include? :block
         end
 
-        @url = "#{@opts.rpc_address}:#{@opts.rpc_port.to_s}"
+        @url = "#{@opts.rpc_external_address}:#{@opts.rpc_port.to_s}"
 
         # let the instances in the pool know who to ask for routing instructions
         # when we're in grid mode.
@@ -320,6 +310,9 @@ class Dispatcher
     --address=<host>            specify address to bind to
                                     (Default: #{@opts.rpc_address})
 
+    --external-address=<host>   specify the external address used to access this Dispatcher
+                                    (Defaults to the value of '--address'.)
+
     --port=<num>                specify port to listen to
                                     (Default: #{@opts.rpc_port})
 
@@ -424,7 +417,7 @@ USAGE
         print_status "Instance added to pool -- PID: #{pid} - " +
             "Port: #{port} - Owner: #{owner}"
 
-        url = "#{@opts.rpc_address}:#{port}"
+        url = "#{@opts.rpc_external_address}:#{port}"
 
         # Wait until the Instance has booted before adding it to the pool.
         when_instance_ready( url, token ) do

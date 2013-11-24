@@ -1,17 +1,6 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
 =end
 
 module Arachni
@@ -173,17 +162,17 @@ class Manager < Arachni::Component::Manager
         on_register_results_blocks_raw.each { |block| block.call( results ) }
 
         unique = dedup( results )
-        return 0 if unique.empty?
+        return results if unique.empty?
 
         # Don't allow multiple variations of the same audit-type issue,
         # only allow variations for recon modules.
         unique.each { |issue| issue_set << issue.unique_id if issue.audit? }
 
         on_register_results_blocks.each { |block| block.call( unique ) }
-        return 0 if !store?
+        return results if !store?
 
         unique.each { |issue| self.results << issue }
-        unique.size
+        results
     end
     def register_results( results )
         self.class.register_results( results )

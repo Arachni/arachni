@@ -1,17 +1,6 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
 =end
 
 module Arachni
@@ -345,6 +334,8 @@ module Output
         return if muted? && !unmute
 
         str = intercept_print_message( string )
+        str = add_resource_usage_statistics( str ) if Arachni.profile?
+
         # we may get IO errors...freaky stuff...
         begin
             if out.tty?
@@ -354,6 +345,31 @@ module Output
             end
         rescue
         end
+    end
+
+    def add_resource_usage_statistics( message )
+        require 'sys/proctable'
+
+        procinfo = ::Sys::ProcTable.ps( Process.pid )
+        pctcpu   = procinfo[:pctcpu]
+        pctmem   = procinfo[:pctmem]
+        rss      = procinfo[:rss]
+        @rss   ||= rss
+
+        # Change in RAM consumption in MB | Total RAM consumption in MB (RAM %) |
+        # CPU usage % | Amount of Typhoeus::Request - Typhoeus::Response objects in RAM |
+        # Proc objects in RAM
+        sprintf( '%7.4f | %8.4f (%5.1f%%) | %5.1f%% | %3i - %3i | %5i | ',
+                rss_to_mb(rss - @rss), rss_to_mb(rss), pctmem, pctcpu,
+                ::ObjectSpace.each_object( ::Typhoeus::Request ){},
+                ::ObjectSpace.each_object( ::Typhoeus::Response ){},
+                ::ObjectSpace.each_object( ::Proc ){}) + message
+    ensure
+        @rss = rss
+    end
+
+    def rss_to_mb( rss )
+        rss * 4096.0 / 1024.0 / 1024.0
     end
 
     extend self

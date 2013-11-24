@@ -55,3 +55,11 @@ end
 
 get '/train/redirected' do
 end
+
+get '/fingerprint' do
+    redirect '/fingerprint-this.php?stuff=here'
+end
+
+get '/fingerprint-this.php' do
+    'Stuff'
+end

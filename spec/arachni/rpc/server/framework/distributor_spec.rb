@@ -605,7 +605,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                     slave = @distributor.connect_to_instance( slave_info )
                     sleep 0.1 while slave.framework.busy?
 
-                    @master.issues.size.should == 8
+                    @master.issues.size.should == 7
                 end
             end
         end

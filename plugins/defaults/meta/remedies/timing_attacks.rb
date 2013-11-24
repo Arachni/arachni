@@ -1,27 +1,14 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
 =end
 
-#
 # Provides a notice for issues uncovered by timing attacks when the affected audited
 # pages returned unusually high response times to begin with.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.5
-#
+# @version 0.1.7
 class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
 
     is_distributable
@@ -49,7 +36,7 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
             # let's hope for a proper and clean parse but be prepared for
             # all hell to break loose too...
             begin
-                url = uri_parse( res.url ).up_to_path
+                url = uri_parse( res.effective_url ).up_to_path.hash
             rescue => e
                 next
             end
@@ -73,7 +60,7 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
         @times.each_pair { |url, time| avg[url] = time / @counter[url] }
 
         inconclusive = framework.modules.issues.map.with_index do |issue, idx|
-            response_time = avg[ uri_parse( issue.url ).up_to_path ]
+            response_time = avg[uri_parse( issue.url ).up_to_path.hash]
 
             next if !issue.tags || !issue.tags.includes_tags?( TAG ) ||
                 !response_time || response_time < TIME_THRESHOLD
@@ -111,7 +98,7 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
                 Pages with high response times usually include heavy-duty processing
                 which makes them prime targets for Denial-of-Service attacks.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.5',
+            version:     '0.1.7',
             tags:        %w(anomaly timing attacks meta)
         }
     end

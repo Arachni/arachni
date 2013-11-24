@@ -544,8 +544,8 @@ describe 'Arachni::RPC::Server::Instance' do
                         stats2 = instance.framework.progress_data['instances']
 
                         # Average req/s may differ.
-                        stats1.each { |h| h.delete 'avg' }
-                        stats2.each { |h| h.delete 'avg' }
+                        stats1.each { |h| h.delete 'curr_avg'; h.delete 'avg' }
+                        stats2.each { |h| h.delete 'curr_avg'; h.delete 'avg' }
 
                         stats1.size.should == 2
                         stats1.should == stats2

@@ -3,6 +3,11 @@ require 'spec_helper'
 describe Arachni::HTTP::Response do
     it_should_behave_like 'Arachni::HTTP::Message'
 
+    before( :all ) do
+        @http = Arachni::HTTP::Client
+        @url  = web_server_url_for( :client )
+    end
+
     describe '#redirection?' do
         context 'when the response is a redirection' do
             it 'returns true' do
@@ -21,6 +26,18 @@ describe Arachni::HTTP::Response do
             it 'returns false' do
                 described_class.new( 'http://test.com', code: 200 ).redirection?.should be_false
             end
+        end
+    end
+
+    describe '#app_time' do
+        it 'returns the approximated webap pprocessing time' do
+            response = @http.get( @url, mode: :sync )
+            response.app_time.should > 0
+            response.app_time.should < 0.01
+
+            response = @http.get( "#{@url}/sleep", mode: :sync )
+            response.app_time.should > 5
+            response.app_time.should < 5.01
         end
     end
 

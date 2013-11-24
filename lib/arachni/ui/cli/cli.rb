@@ -1,17 +1,6 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
 =end
 
 module Arachni
@@ -179,8 +168,8 @@ class CLI
         print_line( restr, unmute )
     end
 
-    def print_issues( audit_store, unmute = false )
-        super( audit_store.issues, unmute, &method( :restr ) )
+    def print_issues( unmute = false )
+        super( AuditStore.sort( @arachni.modules.issues ), unmute, &method( :restr ) )
     end
 
     def kill_interrupt_handler
@@ -235,7 +224,7 @@ class CLI
                 print_info( restr( 'Results thus far:' ), true )
 
                 begin
-                    print_issues( @arachni.audit_store, true )
+                    print_issues( true )
                     print_stats( true, true )
                 rescue Exception => e
                     exception_jail{ raise e }

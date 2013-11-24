@@ -1,17 +1,6 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
 =end
 
 require 'tmpdir'
@@ -92,7 +81,7 @@ class Base
     def load_and_delete_file( filepath )
         obj = load( filepath )
         delete_file( filepath )
-        return obj
+        obj
     end
 
     def serialize( obj )
@@ -108,12 +97,12 @@ class Base
     end
 
     def get_unique_filename
-        while( File.exist?( path = generate_filename ) );end
-        return path
+        {} while File.exist?( path = generate_filename )
+        path
     end
 
     def generate_filename
-        s = ""
+        s = ''
         10.times { s << ( 65 + rand( 26 ) ) }
         ( Dir.tmpdir + "/#{self.class.name}_" + s ).gsub( '::', '_' )
     end

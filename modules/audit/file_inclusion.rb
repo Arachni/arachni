@@ -1,24 +1,13 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
 =end
 
 # File inclusion audit module.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1
+# @version 0.1.1
 #
 # @see http://cwe.mitre.org/data/definitions/98.html
 # @see https://www.owasp.org/index.php/PHP_File_Inclusion
@@ -84,8 +73,8 @@ class Arachni::Modules::FileInclusion < Arachni::Module::Base
                 '/boot.ini',
                 '/windows/win.ini',
                 '/winnt/win.ini'
-            ].map { |payload| [payload, "c:#{payload}", "#{payload}#{'.'* 700}"] }.flatten,
-            tomcat: [ '/WEB-INF/web.xml' ]
+            ].map { |p| [p, "c:#{p}", "#{p}#{'.'* 700}", p.gsub( '/', '\\' ) ] }.flatten,
+            tomcat: [ '/WEB-INF/web.xml', '\WEB-INF\web.xml' ]
         }.inject({}) do |h, (platform, payloads)|
             h.merge platform => payloads.map { |p| [p, "file://#{p}" ] }.flatten
         end
@@ -103,7 +92,7 @@ class Arachni::Modules::FileInclusion < Arachni::Module::Base
                 based on the presence of relevant content or errors in the HTTP responses.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.1',
+            version:     '0.1.1',
             references:  {
                 'OWASP' => 'https://www.owasp.org/index.php/PHP_File_Inclusion'
             },

@@ -1,17 +1,6 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
 =end
 
 require 'rubygems'
@@ -216,6 +205,14 @@ class Options
     # @return    [Integer]
     #
     attr_accessor :http_req_limit
+
+    # Maximum amount of requests to keep in the queue.
+    #
+    # Bigger size means better scheduling and bette performance, smaller means
+    # less RAM consumption.
+    #
+    # @return    [Integer]
+    attr_accessor :http_queue_size
 
     #
     # Should Arachni audit links?
@@ -424,11 +421,14 @@ class Options
     # @return   [String]   Path to the UNIX socket to use.
     attr_accessor :rpc_socket
 
-    # @return   [Integer]   port for the RPC server to listen to
+    # @return   [Integer]   port for the RPC server to listen to.
     attr_accessor :rpc_port
 
-    # @return   [String]   (hostname or IP) address for the RPC server to bind to
+    # @return   [String]   Hostname or IP address for the RPC server to bind to.
     attr_accessor :rpc_address
+
+    # @return   [String]   External (hostname or IP) address for the RPC server to bind to.
+    attr_accessor :rpc_external_address
 
     # @return   [Array<Integer>]
     #   Range of ports to use when spawning instances,
@@ -592,9 +592,10 @@ class Options
         @lsmod  = []
         @lsrep  = []
 
-        @http_req_limit = 20
-        @http_username = nil
-        @http_password = nil
+        @http_req_limit  = 20
+        @http_queue_size = 500
+        @http_username   = nil
+        @http_password   = nil
 
         @mods = []
 
@@ -1005,6 +1006,7 @@ class Options
             [ '--exclude-vector',          GetoptLong::REQUIRED_ARGUMENT ],
             [ '--include',           '-i', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--http-req-limit',          GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--http-queue-size',         GetoptLong::REQUIRED_ARGUMENT ],
             [ '--http-timeout',            GetoptLong::REQUIRED_ARGUMENT ],
             [ '--http-max-response-size',  GetoptLong::REQUIRED_ARGUMENT ],
             [ '--follow-subdomains', '-f', GetoptLong::NO_ARGUMENT ],
@@ -1020,6 +1022,7 @@ class Options
             [ '--node-ssl-cert',          GetoptLong::REQUIRED_ARGUMENT ],
             [ '--ssl-ca',                 GetoptLong::REQUIRED_ARGUMENT ],
             [ '--address',                GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--external-address',       GetoptLong::REQUIRED_ARGUMENT ],
             [ '--reroute-to-logfile',     GetoptLong::NO_ARGUMENT ],
             [ '--pool-size',              GetoptLong::REQUIRED_ARGUMENT ],
             [ '--neighbour',              GetoptLong::REQUIRED_ARGUMENT ],
@@ -1149,6 +1152,9 @@ class Options
                     when '--http-req-limit'
                         @http_req_limit = arg.to_i
 
+                    when '--http-queue-size'
+                        @http_queue_size = arg.to_i
+
                     when '--http-timeout'
                         @http_timeout = arg.to_i
 
@@ -1271,6 +1277,9 @@ class Options
 
                     when '--address'
                         @rpc_address = arg.to_s
+
+                    when '--external-address'
+                        @rpc_external_address = arg.to_s
 
                     when '--pool-size'
                         @pool_size = arg.to_i
@@ -1439,6 +1448,7 @@ class Options
     #
     def load( filepath )
         opts = YAML::load( IO.read( filepath ) )
+        opts = self.deep_clone.merge!( opts ) if opts.is_a? Hash
 
         if opts.restrict_paths_filepath
             opts.restrict_paths = paths_from_file( opts.restrict_paths_filepath )
@@ -1488,7 +1498,7 @@ class Options
         options.to_hash.each_pair do |k, v|
             next if !v
             next if ( v.is_a?( Array ) || v.is_a?( Hash ) ) && v.empty?
-            send( "#{k.to_s}=", v )
+            send( "#{k.to_s}=", v ) rescue NoMethodError
         end
         self
     end

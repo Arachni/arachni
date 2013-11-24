@@ -327,20 +327,47 @@ describe Arachni::HTTP::Client do
         end
     end
 
+    describe '#after_run' do
+        it 'sets blocks to be called after #run' do
+            called = false
+            @http.after_run { called = true }
+            @http.run
+            called.should be_true
+
+            called = false
+            @http.run
+            called.should be_false
+        end
+
+        context 'when the callback creates new requests and nested callbacks' do
+            it 'run these too' do
+                called = false
+                @http.after_run do
+                    @http.after_run { called = true }
+                end
+                @http.run
+                called.should be_false
+
+                called = false
+                @http.after_run do
+                    @http.get
+                    @http.after_run { called = true }
+                end
+                @http.run
+                called.should be_true
+
+                called = false
+                @http.run
+                called.should be_false
+            end
+        end
+    end
+
     describe '#run' do
         it 'performs the queues requests' do
             @http.run
         end
 
-        it 'calls the after_run callbacks ONCE' do
-            called = false
-            @http.after_run { called = true }
-            @http.run
-            called.should be_true
-            called = false
-            @http.run
-            called.should be_false
-        end
 
         it 'calls the after_run_persistent callbacks EVERY TIME' do
             called = false
@@ -401,8 +428,6 @@ describe Arachni::HTTP::Client do
             burst_response_count.should        > 0
             burst_average_response_time.should > 0
             burst_responses_per_second.should  > 0
-
-            @http.burst_response_count.should == 0
         end
     end
 
@@ -1078,7 +1103,6 @@ describe Arachni::HTTP::Client do
             @opts.cookies.should == cookies
         end
     end
-
 
     describe '#custom_404?' do
         before { @custom_404 = @url + '/custom_404/' }

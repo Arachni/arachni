@@ -22,7 +22,7 @@ class Node < Arachni::RPC::Server::Dispatcher::Node
     end
 
     def url
-        @opts.rpc_address + ':' + @opts.rpc_port.to_s
+        "#{@opts.rpc_address}:#{@opts.rpc_port}"
     end
 
     def shutdown
@@ -56,6 +56,8 @@ describe Arachni::RPC::Server::Dispatcher::Node do
 
         @node = @get_node.call
     end
+
+    before( :each ) { @opts.rpc_external_address = nil }
 
     describe '#grid_member?' do
         context 'when the dispatcher is a grid member' do
@@ -231,6 +233,13 @@ describe Arachni::RPC::Server::Dispatcher::Node do
             info['weight'].should == @opts.weight
             info['nickname'].should == @opts.nickname
             info['cost'].should == @opts.cost
+        end
+
+        context 'when Options#rpc_external_address has been set' do
+            it 'advertises that address' do
+                @opts.rpc_external_address = '9.9.9.9'
+                @get_node.call.info['url'].should start_with @opts.rpc_external_address
+            end
         end
     end
 

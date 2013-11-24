@@ -1,17 +1,6 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
 =end
 
 module Arachni
@@ -64,7 +53,7 @@ module Auditable
     # Default audit options.
     #
     OPTIONS = {
-        # Enable skipping of already audited inputs.
+        # Optionally enable skipping of already audited inputs, disabled by default.
         redundant: false,
 
         # Perform requests asynchronously.
@@ -72,7 +61,10 @@ module Auditable
 
         # Block to be passed each mutation right before being submitted.
         # Allows for last minute changes.
-        each_mutation:  nil
+        each_mutation:  nil,
+
+        # Block to be passed each mutation to determine if it should be skipped.
+        skip_like: nil
     }
 
     #
@@ -84,6 +76,9 @@ module Auditable
     def self.reset
         @@audited          = Support::LookUp::HashSet.new
         @@skip_like_blocks = []
+
+        RDiff.reset
+        Timeout.reset
     end
     reset
 
@@ -412,6 +407,8 @@ module Auditable
     def audit( payloads, opts = { }, &block )
         fail ArgumentError, 'Missing block.' if !block_given?
 
+        return false if self.inputs.empty?
+
         case payloads
             when String
                 audit_single( payloads, opts, &block )
@@ -606,14 +603,22 @@ module Auditable
 
         audit_id = audit_id( injection_str, @audit_options )
         return false if !@audit_options[:redundant] && audited?( audit_id )
+        audited( audit_id )
 
         if matches_skip_like_blocks?
             print_debug 'Element matches one or more skip_like blocks, skipping.'
             return false
         end
 
+        # Options will eventually be serialized so remove non-serializeable
+        # objects. Also, blocks are expensive, they should not be kept in the
+        # options otherwise they won't be GC'ed.
+        skip_like_option = [@audit_options.delete(:skip_like)].flatten.compact
+        each_mutation    = @audit_options.delete(:each_mutation)
+
         # Iterate over all fuzz variations and audit each one.
-        mutations( injection_str, @audit_options ).each do |elem|
+        each_mutation( injection_str, @audit_options ) do |elem|
+
             if Options.exclude_vectors.include?( elem.altered )
                 print_info "Skipping audit of '#{elem.altered}' #{type} vector."
                 next
@@ -639,6 +644,14 @@ module Auditable
             @audit_options[:altered] = elem.altered.dup
             @audit_options[:element] = type
 
+            if skip_like_option.any?
+                should_skip = false
+                skip_like_option.each do |like|
+                    break should_skip = true if like.call( elem )
+                end
+                next if should_skip
+            end
+
             # Inform the user about what we're auditing.
             print_status( elem.status_string ) if !@audit_options[:silent]
 
@@ -648,12 +661,12 @@ module Auditable
                 train:   @audit_options[:train]
             }
 
-            if @audit_options[:each_mutation]
-                if (elements = opts[:each_mutation].call( elem ))
-                    [elements].flatten.compact.each do |e|
-                        next if !e.is_a? self.class
-                        on_complete( e.submit( submit_options ), &block )
-                    end
+            # Process each mutation via the supplied block if we have one and
+            # submit new mutations returned by that block, if any.
+            if each_mutation && (elements = each_mutation.call( elem ))
+                [elements].flatten.compact.each do |e|
+                    next if !e.is_a?( self.class )
+                    on_complete( e.submit( submit_options ), &block )
                 end
             end
 
@@ -661,7 +674,6 @@ module Auditable
             on_complete( elem.submit( submit_options ), &block )
         end
 
-        audited audit_id
         true
     end
 

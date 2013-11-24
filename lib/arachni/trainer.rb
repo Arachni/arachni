@@ -1,17 +1,6 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
 =end
 
 module Arachni
@@ -44,20 +33,18 @@ class Trainer
         # get us setup using the page that is being audited as a seed page
         framework.on_audit_page { |page| self.page = page }
 
-        framework.http.add_on_queue do |req, _|
-            next if !req.train?
+        framework.http.add_on_complete do |response|
+            next if !response.request.train?
 
-            req.on_complete do |res|
-                # handle redirections
-                if res.redirection?
-                    reference_url = @page ? @page.url : framework.opts.url
-                    framework.http.get( to_absolute( res.headers.location, reference_url ) ) do |res2|
-                        push( res2 )
-                    end
-                else
-                    push( res )
-                end
+            if response.redirect?
+                reference_url = @page ? @page.url : @framework.opts.url
+                redirect_url  = to_absolute( response.headers.location, reference_url )
+
+                framework.http.get( redirect_url ) { |res| push res }
+                next
             end
+
+            push response
         end
     end
 
@@ -112,13 +99,11 @@ class Trainer
 
     private
 
-    #
     # Analyzes a response looking for new links, forms and cookies.
     #
-    # @param   [Arachni::HTTP::Response]  res
-    #
-    def analyze( res )
-        print_debug "Started for response with request ID: ##{res.request.id}"
+    # @param   [Arachni::HTTP::Response]  response
+    def analyze( response )
+        print_debug "Started for response with request ID: ##{response.request.id}"
 
         new_elements = {
             cookies: find_new( :cookies )
@@ -126,7 +111,7 @@ class Trainer
 
         # if the response body is the same as the page body and
         # no new cookies have appeared there's no reason to analyze the page
-        if res.body == @page.body && !@updated && @page.url == @parser.url
+        if response.body == @page.body && !@updated && @page.url == @parser.url
             print_debug 'Page hasn\'t changed.'
             return
         end

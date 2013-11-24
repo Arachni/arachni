@@ -1,17 +1,6 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
 =end
 
 require Arachni::Options.dir['lib'] + 'element/base'
@@ -160,11 +149,11 @@ class Form < Arachni::Element::Base
         super( str, opts )
     end
 
-    # Overrides {Arachni::Element::Mutable#mutations} adding support
+    # Overrides {Arachni::Element::Mutable#each_mutation} adding support
     # for mutations with:
     #
-    # * Sample values (filled by {Arachni::Module::KeyFiller.fill})
-    # * Original values
+    # * Sample values (filled by {Arachni::Module::KeyFiller.fill}).
+    # * Original values.
     # * Password fields requiring identical values (in order to pass
     #   server-side validation)
     #
@@ -174,26 +163,42 @@ class Form < Arachni::Element::Base
     #   Whether or not to skip adding a mutation holding original values and
     #   sample values.
     #
-    # @return   [Array<Form>]
+    # @param (see Capabilities::Mutable#each_mutation)
+    # @return (see Capabilities::Mutable#each_mutation)
+    # @yield (see Capabilities::Mutable#each_mutation)
+    # @yieldparam (see Capabilities::Mutable#each_mutation)
     #
-    # @see Capabilities::Mutable#mutations
+    # @see Capabilities::Mutable#each_mutation
     # @see Module::KeyFiller.fill
-    def mutations( seed, opts = {} )
+    def each_mutation( seed, opts = {} )
         opts = MUTATION_OPTIONS.merge( opts )
-        var_combo = super( seed, opts )
 
-        if !opts[:skip_original]
-            # This is the original hash, in case the default values are valid
-            # and present us with new attack vectors.
-            elem = self.dup
-            elem.altered = ORIGINAL_VALUES
-            var_combo << elem
+        generated = Arachni::Support::LookUp::HashSet.new
 
-            elem = self.dup
-            elem.inputs = Arachni::Module::KeyFiller.fill( inputs.dup )
-            elem.altered = SAMPLE_VALUES
-            var_combo << elem
+        super( seed, opts ) do |elem|
+            elem.mirror_password_fields
+            yield elem if !generated.include?( elem )
+            generated << elem
         end
+
+        return if opts[:skip_original]
+
+        # this is the original hash, in case the default values
+        # are valid and present us with new attack vectors
+        elem = self.dup
+        elem.altered = ORIGINAL_VALUES
+        yield elem if !generated.include?( elem )
+        generated << elem
+
+        elem = self.dup
+        elem.inputs = Arachni::Module::KeyFiller.fill( inputs.dup )
+        elem.altered = SAMPLE_VALUES
+        yield elem if !generated.include?( elem )
+        generated << elem
+    end
+
+    def mirror_password_fields
+        return if !requires_password?
 
         # if there are two password type fields in the form there's a good
         # chance that it's a 'please retype your password' thing so make sure
@@ -201,14 +206,11 @@ class Form < Arachni::Element::Base
         password_fields = inputs.keys.
             select { |input| field_type_for( input ) == :password }
 
-        # mirror the password fields
-        if password_fields.size == 2
-            var_combo.each do |f|
-                f[password_fields[0]] = f[password_fields[1]]
-            end.compact
-        end
+        return if password_fields.size != 2
 
-        var_combo.uniq
+        self[password_fields[0]] = self[password_fields[1]]
+
+        nil
     end
 
     # Checks whether or not the form contains 1 or more password fields.
@@ -216,8 +218,9 @@ class Form < Arachni::Element::Base
     # @return   [Bool]
     #   `true` if the form contains passwords fields, `false` otherwise.
     def requires_password?
-        inputs.each { |k, _| return true if field_type_for( k ) == :password }
-        false
+        return @requires_password if !@requires_password.nil?
+        inputs.each { |k, _| return @requires_password = true if field_type_for( k ) == :password }
+        @requires_password = false
     end
 
     # @return   [Bool]  `true` if the form contains a nonce, `false` otherwise.
@@ -279,6 +282,23 @@ class Form < Arachni::Element::Base
     # @return   [String]    'form'
     def type
         Arachni::Element::FORM
+    end
+
+    def marshal_dump
+        instance_variables.inject( {} ) do |h, iv|
+            if iv == :@node
+                h[iv] = instance_variable_get( iv ).to_s
+            else
+                h[iv] = instance_variable_get( iv )
+            end
+
+            h
+        end
+    end
+
+    def marshal_load( h )
+        self.node = Nokogiri::HTML( h.delete(:@node) ).css('form').first
+        h.each { |k, v| instance_variable_set( k, v ) }
     end
 
     # Extracts forms by parsing the body of an HTTP response.
@@ -361,7 +381,16 @@ class Form < Arachni::Element::Base
     end
 
     def dup
-        super.tap { |f| f.nonce_name = nonce_name.dup if nonce_name }
+        super.tap do |f|
+            f.nonce_name = nonce_name.dup if nonce_name
+            f.requires_password = requires_password?
+        end
+    end
+
+    protected
+
+    def requires_password=( bool )
+        @requires_password = bool
     end
 
     private

@@ -1,17 +1,6 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
 =end
 
 require 'webrick'
@@ -196,49 +185,57 @@ class Cookie < Arachni::Element::Base
         end
     end
 
-    # Overrides {Capabilities::Mutable#mutations} to handle cookie-specific
+    # Overrides {Capabilities::Mutable#each_mutation} to handle cookie-specific
     # limitations and the {Arachni::Options#audit_cookies_extensively} option.
     #
-    # @see Capabilities::Mutable#mutations
-    def mutations( injection_str, opts = {} )
+    # @param (see Capabilities::Mutable#each_mutation)
+    # @return (see Capabilities::Mutable#each_mutation)
+    # @yield (see Capabilities::Mutable#each_mutation)
+    # @yieldparam (see Capabilities::Mutable#each_mutation)
+    #
+    # @see Capabilities::Mutable#each_mutation
+    def each_mutation( injection_str, opts = {}, &block )
         flip = opts.delete( :param_flip )
-        muts = super( injection_str, opts )
 
-        if flip
-            elem = self.dup
+        super( injection_str, opts ) do |elem|
+            yield elem
 
-            # when under HPG mode element auditing is strictly regulated
-            # and when we flip params we essentially create a new element
-            # which won't be on the whitelist
-            elem.override_instance_scope
-
-            elem.altered = 'Parameter flip'
-            elem.inputs = { injection_str => seed }
-            muts << elem
+            next if !Arachni::Options.audit_cookies_extensively?
+            elem.each_extensive_mutation( &block )
         end
 
-        if !orphan? && Arachni::Options.audit_cookies_extensively?
-            # submit all links and forms of the page along with our cookie mutations
-            muts << muts.map do |m|
-                (auditor.page.links | auditor.page.forms).map do |e|
-                    next if e.inputs.empty?
-                    c = e.dup
-                    c.altered = "mutation for the '#{m.altered}' cookie"
-                    c.auditor = auditor
-                    c.audit_options[:cookies] = m.inputs.dup
-                    c.inputs = Arachni::Module::KeyFiller.fill( c.inputs.dup )
-                    c
-                end
-            end.flatten.compact
-            muts.flatten!
-        end
+        return if !flip
+        elem = self.dup
 
-        muts
+        # when under HPG mode element auditing is strictly regulated
+        # and when we flip params we essentially create a new element
+        # which won't be on the whitelist
+        elem.override_instance_scope
+
+        elem.altered = 'Parameter flip'
+        elem.inputs = { injection_str => seed }
+        yield elem if block_given?
+    end
+
+    def each_extensive_mutation
+        return if orphan?
+
+        (auditor.page.links | auditor.page.forms).each do |e|
+            next if e.inputs.empty?
+
+            c = e.dup
+            c.altered = "mutation for the '#{name}' cookie"
+            c.auditor = auditor
+            c.audit_options[:cookies] = self.inputs.dup
+            c.inputs = Arachni::Module::KeyFiller.fill( c.inputs.dup )
+
+            yield c
+        end
     end
 
     # Uses the method name as a key to cookie attributes in {DEFAULT}.
     def method_missing( sym, *args, &block )
-        return @data[sym] if respond_to?( sym )
+        return @data[sym] if @data.include? sym
         super( sym, *args, &block )
     end
 
@@ -253,7 +250,7 @@ class Cookie < Arachni::Element::Base
 
     # @return   [String]    To be used in a `Cookie` HTTP request header.
     def to_s
-        "#{encode( name )}=#{encode( value )}"
+        "#{encode( name, :name )}=#{encode( value )}"
     end
 
     # @return   [String]    Converts self to a `Set-Cookie` string.
@@ -432,12 +429,15 @@ class Cookie < Arachni::Element::Base
     #
     # @return   [String]
     #
-    def self.encode( str )
-        URI.encode( str, "+;%=\0" ).recode.gsub( ' ', '+' )
+    def self.encode( str, type = :value )
+        reserved = "+;%\0"
+        reserved << '=' if type == :name
+
+        URI.encode( str, reserved ).recode.gsub( ' ', '+' )
     end
     # @see .encode
-    def encode( str )
-        self.class.encode( str )
+    def encode( *args )
+        self.class.encode( *args )
     end
 
     #

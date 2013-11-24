@@ -1,17 +1,6 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
 =end
 
 # Blind SQL injection audit module
@@ -21,7 +10,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.4
+# @version 0.4.1
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://capec.mitre.org/data/definitions/7.html
@@ -32,7 +21,9 @@ class Arachni::Modules::BlindrDiffSQLInjection < Arachni::Module::Base
 
     def self.queries_for_expression( expression )
         (@templates ||= read_file( 'payloads.txt' )).map do |template|
-            [ '\'', '"', '' ].map{ |quote| template.gsub( '%q%', quote ) + " #{expression}" }
+            [ '\'', '"', '' ].map do |quote|
+                template.gsub( '%q%', quote ) + " #{expression.gsub( '%q%', quote )}"
+            end
         end.flatten
     end
 
@@ -41,13 +32,13 @@ class Arachni::Modules::BlindrDiffSQLInjection < Arachni::Module::Base
         return @options if @options
 
         pairs  = []
-        falses = queries_for_expression( '1=2' )
+        falses = queries_for_expression( '1=%q%2' )
 
-        queries_for_expression( '1=1' ).each.with_index do |true_expr, i|
+        queries_for_expression( '1=%q%1' ).each.with_index do |true_expr, i|
             pairs << { true_expr => falses[i] }
         end
 
-        @options = { pairs: pairs }
+        @options = { false: '-1', pairs: pairs }
     end
 
     def run
@@ -57,14 +48,12 @@ class Arachni::Modules::BlindrDiffSQLInjection < Arachni::Module::Base
     def self.info
         {
             name:        'Blind SQL Injection (differential analysis)',
-            description: %q{It uses rDiff analysis to decide how different inputs affect
-                the behavior of the the web pages.
-                Using that as a basis it extrapolates about what inputs are vulnerable to blind SQL injection.
-                (Note: This module may get confused by certain types of XSS vulnerabilities.
-                    If this module returns a positive result you should investigate nonetheless.)},
+            description: %q{It uses differential analysis to determine how different inputs affect
+                the behavior of the web application and checks if the displayed behavior is consistent
+                with that of a vulnerable application.},
             elements:    [ Element::LINK, Element::FORM, Element::COOKIE ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.4',
+            version:     '0.4.1',
             references:  {
                 'OWASP'         => 'http://www.owasp.org/index.php/Blind_SQL_Injection',
                 'MITRE - CAPEC' => 'http://capec.mitre.org/data/definitions/7.html'

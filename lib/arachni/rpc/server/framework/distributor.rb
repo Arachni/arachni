@@ -1,17 +1,6 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
 =end
 
 module Arachni
@@ -57,7 +46,7 @@ module Distributor
             return @instance_connections[instance[:url]]
         end
 
-        @tokens  ||= {}
+        @tokens ||= {}
         @tokens[instance[:url]] = instance[:token] if instance[:token]
         @instance_connections[instance[:url]] =
             RPC::Client::Instance.new( @opts, instance[:url], @tokens[instance[:url]] )
@@ -166,27 +155,31 @@ module Distributor
     def build_elem_list( page )
         list = []
 
+        list |= elements_to_ids( page.links )   if @opts.audit_links
+        list |= elements_to_ids( page.forms )   if @opts.audit_forms
+        list |= elements_to_ids( page.cookies ) if @opts.audit_cookies
+
+        list
+    end
+
+    def elements_to_ids( elements )
         # Helps us do some preliminary deduplication on our part to avoid sending
         # over duplicate element IDs.
         @elem_ids_filter ||= Support::LookUp::HashSet.new
 
-        scoppe_list = proc do |elems|
-            elems.map do |e|
-                next if e.inputs.empty?
+        elements.map do |e|
+            next if e.inputs.empty?
 
-                id = e.scope_audit_id
-                next if @elem_ids_filter.include?( id )
-                @elem_ids_filter << id
+            id = e.scope_audit_id
+            next if @elem_ids_filter.include?( id )
+            @elem_ids_filter << id
 
-                id
-            end.compact.uniq
-        end
+            id
+        end.compact.uniq
+    end
 
-        list |= scoppe_list.call( page.links )   if @opts.audit_links
-        list |= scoppe_list.call( page.forms )   if @opts.audit_forms
-        list |= scoppe_list.call( page.cookies ) if @opts.audit_cookies
-
-        list
+    def clear_elem_ids_filter
+        @elem_ids_filter.clear if @elem_ids_filter
     end
 
     # @param    [Block] block
@@ -338,9 +331,10 @@ module Distributor
     def cleaned_up_opts
         opts = @opts.to_h.deep_clone.symbolize_keys
 
-        (%w(spawns rpc_socket grid_mode dir rpc_port rpc_address pipe_id neighbour pool_size) |
-            %w(lsmod lsrep rpc_instance_port_range load_profile delta_time) |
-            %w(start_datetime finish_datetime)).each do |k|
+        (%w(spawns rpc_socket grid_mode dir rpc_port rpc_external_address
+            rpc_address pipe_id neighbour pool_size lsmod lsrep
+            rpc_instance_port_range load_profile delta_time start_datetime
+            finish_datetime)).each do |k|
             opts.delete k.to_sym
         end
 

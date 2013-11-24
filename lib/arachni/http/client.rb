@@ -1,17 +1,6 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
 =end
 
 require 'typhoeus'
@@ -68,11 +57,16 @@ class Client
     # Default maximum concurrency for HTTP requests.
     MAX_CONCURRENCY = 20
 
-    # Don't let the request queue grow more than this amount, if it does then
-    # run the queued requests to unload it
-    MAX_QUEUE_SIZE  = 5000
+    MAX_QUEUE_SIZE = 500
 
+    # Default 1 minute timeout for HTTP requests.
+    HTTP_TIMEOUT = 60_000
+
+    # Maximum size of the cache that holds 404 signatures.
     CUSTOM_404_CACHE_SIZE = 250
+
+    # Maximum allowed difference (in tokens) when comparing custom 404 signatures.
+    CUSTOM_404_SIGNATURE_THRESHOLD = 25
 
     # @return   [String]    Framework target URL, used as reference.
     attr_reader :url
@@ -149,22 +143,26 @@ class Client
         self
     end
 
-    # Runs all queued requests.
+    # Runs all queued requests
     def run
         exception_jail {
             @burst_runtime = nil
-            hydra_run
 
-            @after_run.each { |block| block.call }
-            @after_run.clear
+            begin
+                hydra_run
+
+                duped_after_run = @after_run.dup
+                @after_run.clear
+                duped_after_run.each { |block| block.call }
+            end while @queue_size > 0
 
             call_after_run_persistent
 
             # Prune the custom 404 cache after callbacks have been called.
             prune_custom_404_cache
 
-            @burst_response_time_sum = 0
-            @burst_response_count  = 0
+            @curr_res_time = 0
+            @curr_res_cnt = 0
             true
         }
     rescue SystemExit
@@ -439,67 +437,42 @@ class Client
     # @param  [Block]   block
     #   To be passed true or false depending on the result.
     def custom_404?( response, &block )
+        path = get_path( response.url )
+
+        return block.call( is_404?( path, res.body ) ) if has_custom_404_signature?( path )
+
         precision = 2
+        generators = custom_404_probe_generators( response.url, precision )
 
-        path  = get_path( response.url )
+        gathered_responses = 0
+        expected_responses = generators.size * precision
 
-        uri = response.parsed_url
-        trv_back = File.dirname( uri.path )
-        trv_back_url = uri.scheme + '://' +  uri.host + ':' + uri.port.to_s + trv_back
-        trv_back_url += '/' if trv_back_url[-1] != '/'
+        generators.each.with_index do |generator, i|
+            _404_signatures_for_path( path )[i] ||= {}
 
-        # 404 probes
-        generators = [
-            # get a random path with an extension
-            proc{ path + random_string + '.' + random_string[0..precision] },
+            precision.times do
+                get( generator.call, follow_location: true ) do |c_res|
+                    gathered_responses += 1
 
-            # get a random path without an extension
-            proc{ path + random_string },
+                    if _404_signatures_for_path( path )[i][:body]
+                        _404_signatures_for_path( path )[i][:rdiff] =
+                            _404_signatures_for_path( path )[i][:body].
+                                refine( c_res.body )
 
-            # move up a dir and get a random file
-            proc{ trv_back_url + random_string },
+                        next if gathered_responses != expected_responses
 
-            # move up a dir and get a random file with an extension
-            proc{ trv_back_url + random_string + '.' + random_string[0..precision] },
-
-            # get a random directory
-            proc{ path + random_string + '/' }
-        ]
-
-        gathered = 0
-        body = response.body
-
-        if !path_analyzed_for_custom_404?( path )
-            generators.each.with_index do |generator, i|
-                _404_signatures_for_path( path )[i] ||= {}
-
-                precision.times {
-                    get( generator.call, follow_location: true ) do |c_res|
-                        gathered += 1
-
-                        if gathered == generators.size * precision
-                            path_analyzed_for_custom_404( path )
-
-                            # save the hash of the refined responses, no sense
-                            # in wasting space
-                            _404_signatures_for_path( path ).each { |c404| c404[:rdiff] = c404[:rdiff].hash }
-
-                            block.call is_404?( path, body )
-                        else
-                            _404_signatures_for_path( path )[i][:body] ||= c_res.body
-
-                            _404_signatures_for_path( path )[i][:rdiff] =
-                                _404_signatures_for_path( path )[i][:body].rdiff( c_res.body )
-
-                            _404_signatures_for_path( path )[i][:rdiff_words] =
-                                _404_signatures_for_path( path )[i][:rdiff].words.map( &:hash )
-                        end
+                        has_custom_404_signature( path )
+                        block.call is_404?( path, response.body )
+                    else
+                        _404_signatures_for_path( path )[i][:body] =
+                            Support::Signature.new(
+                                c_res.body, threshold: CUSTOM_404_SIGNATURE_THRESHOLD
+                            )
                     end
-                }
+                end
             end
-        else
-            block.call is_404?( path, body )
         end
+
         nil
     end
 
@@ -525,6 +498,34 @@ class Client
         end
     end
 
+    # @return [Array<Proc>]
+    # Generators for paths which should elicit a 404 response.
+    def custom_404_probe_generators( url, precision )
+        uri = uri_parse( url )
+        path = uri.up_to_path
+
+        trv_back = File.dirname( uri.path )
+        trv_back_url = uri.scheme + '://' + uri.host + ':' + uri.port.to_s + trv_back
+        trv_back_url += '/' if trv_back_url[-1] != '/'
+
+        [
+            # Get a random path with an extension.
+            proc { path + random_string + '.' + random_string[0..precision] },
+
+            # Get a random path without an extension.
+            proc { path + random_string },
+
+            # Move up a dir and get a random file.
+            proc { trv_back_url + random_string },
+
+            # Move up a dir and get a random file with an extension.
+            proc { trv_back_url + random_string + '.' + random_string[0..precision] },
+
+            # Get a random directory.
+            proc { path + random_string + '/' }
+        ]
+    end
+
     def _404_data_for_path( path )
         @_404[path] ||= {
             analyzed:   false,
@@ -536,11 +537,11 @@ class Client
         _404_data_for_path( path )[:signatures]
     end
 
-    def path_analyzed_for_custom_404?( path )
+    def has_custom_404_signature?( path )
         _404_data_for_path( path )[:analyzed]
     end
 
-    def path_analyzed_for_custom_404( path )
+    def has_custom_404_signature( path )
         _404_data_for_path( path )[:analyzed] = true
     end
 
@@ -572,16 +573,18 @@ class Client
 
         @request_count += 1
 
-        print_debug '------------'
-        print_debug 'Queued request.'
-        print_debug "ID#: #{request.id}"
-        print_debug "URL: #{request.url}"
-        print_debug "Method: #{request.method}"
-        print_debug "Params: #{request.parameters}"
-        print_debug "Body: #{request.body}"
-        print_debug "Headers: #{request.headers}"
-        print_debug "Train?: #{request.train?}"
-        print_debug  '------------'
+        if debug?
+            print_debug '------------'
+            print_debug 'Queued request.'
+            print_debug "ID#: #{request.id}"
+            print_debug "URL: #{request.url}"
+            print_debug "Method: #{request.method}"
+            print_debug "Params: #{request.parameters}"
+            print_debug "Body: #{request.body}"
+            print_debug "Headers: #{request.headers}"
+            print_debug "Train?: #{request.train?}"
+            print_debug  '------------'
+        end
 
         request.on_complete do |response|
             @response_count          += 1
@@ -593,19 +596,22 @@ class Client
 
             parse_and_set_cookies( response ) if request.update_cookies?
 
-            print_debug '------------'
-            print_debug "Got response for request ID#: #{response.request.id}"
-            print_debug "Status: #{response.code}"
-            print_debug "Error msg: #{response.return_message}"
-            print_debug "URL: #{response.url}"
-            print_debug "Headers:\n#{response.headers_string}"
-            print_debug "Parsed headers: #{response.headers}"
-            print_debug '------------'
+            if debug?
+                print_debug '------------'
+                print_debug "Got response for request ID#: #{response.request.id}"
+                print_debug "Status: #{response.code}"
+                print_debug "Error msg: #{response.return_message}"
+                print_debug "URL: #{response.url}"
+                print_debug "Headers:\n#{response.headers_string}"
+                print_debug "Parsed headers: #{response.headers}"
+            end
 
             if response.timed_out?
-                print_bad "Request timed-out! -- ID# #{response.request.id}"
+                print_debug "Request timed-out! -- ID# #{response.request.id}"
                 @time_out_count += 1
             end
+
+            print_debug '------------'
         end
 
         if emergency_run?
@@ -621,22 +627,9 @@ class Client
     end
 
     def is_404?( path, body )
-        # give the rDiff algo a shot first hoping that a comparison of
-        # refined responses will be enough to give us a clear-cut positive
         @_404[path][:signatures].each do |_404|
-            return true if _404[:body].rdiff( body ).hash == _404[:rdiff]
+            return true if _404[:rdiff].similar? _404[:body].refine( body )
         end
-
-        # if the comparison of the refinements fails, compare them based on how
-        # many words are different between them
-        @_404[path][:signatures].each do |_404|
-            rdiff_body_words = _404[:body].rdiff( body ).words.map( &:hash )
-            return true if (
-                (_404[:rdiff_words] - rdiff_body_words) -
-                (rdiff_body_words - _404[:rdiff_words])
-            ).size < 25
-        end
-
         false
     end
 

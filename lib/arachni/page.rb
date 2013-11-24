@@ -1,17 +1,6 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
 =end
 
 require_relative 'page/dom'
@@ -163,7 +152,8 @@ class Page
     # @return    [Array<Element::Link>]
     # @see Parser#links
     def links
-        @links ||= (!@links && !@parser) ? [] : @parser.links
+        @links ||= (!@links && !@parser) ? [] :
+            @parser.links | [Link.new( action: @url, inputs: query_vars )]
     end
 
     # @param    [Array<Element::Link>]  links
@@ -281,6 +271,16 @@ class Page
     def title
         document.css( 'title' ).first.text rescue nil
     end
+
+    # @return   [Hash]  Converts the page data to a hash.
+    def to_h
+        instance_variables.reduce({}) do |h, iv|
+            next h if iv == :@document
+            h[iv.to_s.gsub( '@', '').to_sym] = try_dup( instance_variable_get( iv ) )
+            h
+        end
+    end
+    alias :to_hash :to_h
 
     def hash
         "#{dom.transitions}:#{@body.hash}:#{elements.map(&:hash).sort}".hash

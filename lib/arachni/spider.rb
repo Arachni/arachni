@@ -1,17 +1,6 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
 =end
 
 module Arachni
@@ -53,6 +42,7 @@ class Spider
     def initialize( opts = Options.instance )
         @opts = opts
 
+        @mutex     = Mutex.new
         @sitemap   = {}
         @redirects = []
         @paths     = Set.new
@@ -104,9 +94,9 @@ class Spider
     # @return [Array<String>]   sitemap
     #
     def run( pass_pages_to_block = true, &block )
-        return if limit_reached? || !@opts.crawl? || running?
+        return if running? || limit_reached? || !@opts.crawl?
 
-        @running = true
+        synchronize { @running = true }
 
         # Options could have changed so reseed.
         seed_paths
@@ -117,7 +107,7 @@ class Spider
 
         while !done?
             wait_if_paused
-            while !done? && url = next_url
+            while !done? && (url = next_url)
                 wait_if_paused
 
                 visit( url ) do |res|
@@ -144,7 +134,7 @@ class Spider
             http.run
         end
 
-        @running = false
+        synchronize { @running = false }
 
         call_on_complete_blocks
 
@@ -152,7 +142,7 @@ class Spider
     end
 
     def running?
-        !!@running
+        synchronize { !!@running }
     end
 
     # @param    [Block] block
@@ -303,12 +293,18 @@ class Spider
             return true
         end
 
-         if skip_path?( url )
-             print_verbose "Skipping out of scope URL: #{url}"
-             return true
-         end
+        return false if self.url == url
+
+        if skip_path?( url )
+            print_verbose "Skipping out of scope URL: #{url}"
+            return true
+        end
 
         false
+    end
+
+    def skip_response?( response )
+        response.url != self.url && super( response )
     end
 
     #
