@@ -548,17 +548,17 @@ class Options
         @dir['root']    = root_path
         @dir['gfx']     = @dir['root'] + 'gfx/'
         @dir['conf']    = @dir['root'] + 'conf/'
+        @dir['components']  = @dir['root'] + 'components/'
 
         @dir['logs']    = ENV['ARACHNI_FRAMEWORK_LOGDIR'] ?
             "#{ENV['ARACHNI_FRAMEWORK_LOGDIR']}/" : @dir['root'] + 'logs/'
 
-        @dir['data']    = @dir['root'] + 'data/'
-        @dir['modules'] = @dir['root'] + 'modules/'
-        @dir['reports'] = @dir['root'] + 'reports/'
-        @dir['plugins'] = @dir['root'] + 'plugins/'
-        @dir['rpcd_handlers']   = @dir['root'] + 'rpcd_handlers/'
-        @dir['path_extractors'] = @dir['root'] + 'path_extractors/'
-        @dir['fingerprinters']  = @dir['root'] + 'fingerprinters/'
+        @dir['modules'] = @dir['components'] + 'modules/'
+        @dir['reports'] = @dir['components'] + 'reports/'
+        @dir['plugins'] = @dir['components'] + 'plugins/'
+        @dir['rpcd_handlers']   = @dir['components'] + 'rpcd_handlers/'
+        @dir['path_extractors'] = @dir['components'] + 'path_extractors/'
+        @dir['fingerprinters']  = @dir['components'] + 'fingerprinters/'
 
         @dir['lib']     = @dir['root'] + 'lib/arachni/'
         @dir['support'] = @dir['lib'] + 'support/'

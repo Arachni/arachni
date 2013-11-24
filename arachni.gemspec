@@ -20,19 +20,11 @@ Gem::Specification.new do |s|
     s.email             = 'tasos.laskos@gmail.com'
     s.authors           = [ 'Tasos Laskos' ]
 
-    s.files            += Dir.glob( 'data/**/**' )
-    s.files            += Dir.glob( 'external/**/**' )
-    s.files            += Dir.glob( 'extras/**/**' )
     s.files            += Dir.glob( 'gfx/**/**' )
     s.files            += Dir.glob( 'lib/**/**' )
     s.files            += Dir.glob( 'logs/**/**' )
-    s.files            += Dir.glob( 'modules/**/**' )
-    s.files            += Dir.glob( 'fingerprinters/**/**' )
-    s.files            += Dir.glob( 'path_extractors/**/**' )
-    s.files            += Dir.glob( 'plugins/**/**' )
+    s.files            += Dir.glob( 'components/**/**' )
     s.files            += Dir.glob( 'profiles/**/**' )
-    s.files            += Dir.glob( 'reports/**/**' )
-    s.files            += Dir.glob( 'rpcd_handlers/**/**' )
     s.files            += Dir.glob( 'spec/**/**' )
     s.files            += %w(Gemfile Rakefile arachni.gemspec)
     s.test_files        = Dir.glob( 'spec/**/**' )

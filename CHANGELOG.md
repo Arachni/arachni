@@ -65,6 +65,8 @@
     - Added:
         - Extract partial paths from HTML comments (`comments`).
         - `script` - Extract partial paths from scripts.
+- Moved all Framework components (`modules`, `plugins`, `reports`, etc.)
+    under `components/`.
 
 ## 0.4.6
 

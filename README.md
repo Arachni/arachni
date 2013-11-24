@@ -481,18 +481,6 @@ Still, this can be an invaluable asset to Fuzzer modules.
 
 ## [Usage](https://github.com/Arachni/arachni/wiki/User-guide)
 
-## Configuration of _extras_
-
-The _extras_ directory holds components that are considered too specialised,
-dangerous or in some way unsuitable for utilising without explicit user interaction.
-
-This directory was mainly added to distribute modules which can be helpful but
-should not be put in the default _modules_ directory to prevent them from
-being automatically loaded.
-
-Should you want to use these extra components simply move them from the
-_extras_ folder to their appropriate system directories.
-
 ## Running the specs
 
 You can run `rake spec` to run **all** specs or you can run them selectively using the following:

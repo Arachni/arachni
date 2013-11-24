@@ -20,34 +20,34 @@ begin
 
         desc 'Run module tests.'
         RSpec::Core::RakeTask.new( :modules ) do |t|
-            t.pattern = FileList[ 'spec/modules/**/*_spec.rb' ]
+            t.pattern = FileList[ 'spec/components/modules/**/*_spec.rb' ]
         end
 
         namespace :modules do
             desc 'Run tests for the audit modules.'
             RSpec::Core::RakeTask.new( :audit ) do |t|
-                t.pattern = FileList[ 'spec/modules/audit/**/*_spec.rb' ]
+                t.pattern = FileList[ 'spec/components/modules/audit/**/*_spec.rb' ]
             end
 
             desc 'Run tests for the recon modules.'
             RSpec::Core::RakeTask.new( :recon ) do |t|
-                t.pattern = FileList[ 'spec/modules/recon/**/*_spec.rb' ]
+                t.pattern = FileList[ 'spec/components/modules/recon/**/*_spec.rb' ]
             end
         end
 
         desc 'Run report tests.'
         RSpec::Core::RakeTask.new( :reports ) do |t|
-            t.pattern = FileList[ 'spec/reports/**/*_spec.rb' ]
+            t.pattern = FileList[ 'spec/components/reports/**/*_spec.rb' ]
         end
 
         desc 'Run plugin tests.'
         RSpec::Core::RakeTask.new( :plugins ) do |t|
-            t.pattern = FileList[ 'spec/plugins/**/*_spec.rb' ]
+            t.pattern = FileList[ 'spec/components/plugins/**/*_spec.rb' ]
         end
 
         desc 'Run path-extractor tests.'
         RSpec::Core::RakeTask.new( :path_extractors ) do |t|
-            t.pattern = FileList[ 'spec/path_extractors/**/*_spec.rb' ]
+            t.pattern = FileList[ 'spec/components/path_extractors/**/*_spec.rb' ]
         end
 
         desc 'Run external test suites.'
