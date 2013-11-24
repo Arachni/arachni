@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::Module::KeyFiller do
+describe Arachni::Support::KeyFiller do
 
     describe '#fill' do
         it 'fills in all inputs with appropriate seed values' do
