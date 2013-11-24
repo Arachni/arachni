@@ -385,8 +385,10 @@ module RDiff
                 # To have gotten here the following must be true:
                 #
                 #   force_false_baseline == false_response_body AND
-                #   false_response_body != true_response_code AND
-                #   true_response_code == 200
+                #   false_response_body != true_response_body AND
+                #   force_false_response_code == 200 AND
+                #   true_response_code == 200 AND
+                #   false_response_code == 200
 
                 # Check to see if the `true` response we're analyzing
                 # is a custom 404 page.
