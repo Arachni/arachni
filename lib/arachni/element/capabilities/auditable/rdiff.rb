@@ -21,9 +21,7 @@ module Auditable
 module RDiff
 
     def RDiff.reset
-        # the rdiff attack performs it own redundancy checks so we need this to
-        # keep track of audited elements
-        @@rdiff_audited = Support::LookUp::HashSet.new
+        # In case we want to reset state of anything...
     end
 
     RDIFF_OPTIONS =  {
@@ -102,8 +100,8 @@ module RDiff
     def rdiff_analysis( opts = {} )
         return if self.inputs.empty?
 
-        return false if rdiff_audited?
-        rdiff_audited
+        return false if audited? audit_id
+        audited audit_id
 
         if skip_path? self.action
             print_debug "Element's action matches skip rule, bailing out."
@@ -478,20 +476,6 @@ module RDiff
         end
 
         false
-    end
-
-    private
-
-    def rdiff_audited
-        @@rdiff_audited << rdiff_audit_id
-    end
-
-    def rdiff_audited?
-        @@rdiff_audited.include?( rdiff_audit_id )
-    end
-
-    def rdiff_audit_id
-        @action + @inputs.keys.to_s
     end
 
 end
