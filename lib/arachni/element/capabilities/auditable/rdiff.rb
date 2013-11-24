@@ -39,10 +39,6 @@ module RDiff
         # content -- like banners etc.
         precision:      2,
 
-        # Ratio of allowed difference between the compared (refined) response bodies.
-        # `0.0` means the bodies should be identical to be considered the same.
-        ratio:          0.18,
-
         # Override global fuzzing settings and only use the default method of the
         # element under audit.
         respect_method: true,
