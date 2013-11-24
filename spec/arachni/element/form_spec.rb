@@ -211,7 +211,7 @@ describe Arachni::Element::Form do
 
                         if m.sample?
                             m.altered.should == Arachni::Element::Form::SAMPLE_VALUES
-                            m.auditable.should == Arachni::Module::KeyFiller.fill( e.auditable )
+                            m.auditable.should == Arachni::Support::KeyFiller.fill( e.auditable )
                             has_sample ||= true
                         end
                     end

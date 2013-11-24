@@ -16,7 +16,6 @@
 
 module Arachni
 require Options.dir['lib'] + 'module/utilities'
-require Options.dir['lib'] + 'module/key_filler'
 
 module Element::Capabilities
 module Mutable
@@ -116,7 +115,7 @@ module Mutable
         opts[:respect_method] = !Options.fuzz_methods? if opts[:respect_method].nil?
 
         inputs  = auditable.dup
-        cinputs = Module::KeyFiller.fill( inputs )
+        cinputs = Support::KeyFiller.fill( inputs )
 
         generated = Support::LookUp::HashSet.new
 
