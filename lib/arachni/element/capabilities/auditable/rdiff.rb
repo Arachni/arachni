@@ -21,7 +21,7 @@ module Auditable
 module RDiff
 
     def RDiff.reset
-        # In case we want to reset state of anything...
+        # In case we want to reset state or something...
     end
 
     RDIFF_OPTIONS =  {
