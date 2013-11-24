@@ -32,10 +32,6 @@ module RDiff
         # content -- like banners etc.
         precision:      2,
 
-        # Ratio of allowed difference between the compared (refined) response bodies.
-        # `0.0` means the bodies should be identical to be considered the same.
-        ratio:          0.18,
-
         # Override global fuzzing settings and only use the default method of the
         # element under audit.
         respect_method: true,
@@ -393,8 +389,10 @@ module RDiff
                 # To have gotten here the following must be true:
                 #
                 #   force_false_baseline == false_response_body AND
-                #   false_response_body != true_response_code AND
-                #   true_response_code == 200
+                #   false_response_body != true_response_body AND
+                #   force_false_response_code == 200 AND
+                #   true_response_code == 200 AND
+                #   false_response_code == 200
 
                 # Check to see if the `true` response we're analyzing
                 # is a custom 404 page.

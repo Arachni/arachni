@@ -227,7 +227,7 @@ class Cookie < Arachni::Element::Base
             c.altered = "mutation for the '#{name}' cookie"
             c.auditor = auditor
             c.audit_options[:cookies] = self.inputs.dup
-            c.inputs = Arachni::Module::KeyFiller.fill( c.inputs.dup )
+            c.inputs = Arachni::Support::KeyFiller.fill( c.inputs.dup )
 
             yield c
         end

@@ -240,7 +240,7 @@ describe Arachni::Element::Form do
 
                         if m.sample?
                             m.altered.should == Arachni::Element::Form::SAMPLE_VALUES
-                            m.inputs.should == Arachni::Module::KeyFiller.fill( e.inputs )
+                            m.inputs.should == Arachni::Support::KeyFiller.fill( e.inputs )
                             has_sample ||= true
                         end
                     end
