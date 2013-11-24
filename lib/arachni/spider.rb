@@ -83,17 +83,12 @@ class Spider
         @sitemap
     end
 
-    #
     # Runs the Spider and passes the requested object to the block.
     #
-    # @param [Bool] pass_pages_to_block
-    #   Decides weather the block should be passed {Arachni::Page}s or
-    #   {HTTP::Response}s.
     # @param [Block] block  To be passed each page as visited.
     #
     # @return [Array<String>]   sitemap
-    #
-    def run( pass_pages_to_block = true, &block )
+    def run( &block )
         return if running? || limit_reached? || !@opts.crawl?
 
         synchronize { @running = true }
@@ -101,33 +96,16 @@ class Spider
         # Options could have changed so reseed.
         seed_paths
 
-        if block_given?
-            pass_pages_to_block ? on_each_page( &block ) : on_each_response( &block )
-        end
+        on_each_page( &block ) if block_given?
 
         while !done?
             wait_if_paused
             while !done? && (url = next_url)
                 wait_if_paused
 
-                visit( url ) do |res|
-                    obj = if pass_pages_to_block
-                        res.to_page
-                    else
-                        Parser.new( res, @opts )
-                    end
-
-                    if @on_each_response_blocks.any?
-                        call_on_each_response_blocks( res )
-                    end
-
-                    if @on_each_page_blocks.any?
-                        call_on_each_page_blocks obj.is_a?( Page ) ?
-                                                     obj :
-                                                     Page.from_response( res, @opts )
-                    end
-
-                    distribute( obj.paths )
+                visit( url ) do |page|
+                    call_on_each_page_blocks page
+                    distribute page.paths
                 end
             end
 
@@ -150,14 +128,6 @@ class Spider
     def on_each_page( &block )
         fail ArgumentError, 'Block is mandatory!' if !block_given?
         @on_each_page_blocks << block
-        self
-    end
-
-    # @param    [Block]     block
-    #   Sets blocks to be called every time a response is received.
-    def on_each_response( &block )
-        fail ArgumentError, 'Block is mandatory!' if !block_given?
-        @on_each_response_blocks << block
         self
     end
 
@@ -263,10 +233,6 @@ class Spider
         @on_each_page_blocks.each { |b| exception_jail( false ) { b.call( obj ) } }
     end
 
-    def call_on_each_response_blocks( obj )
-        @on_each_response_blocks.each { |b| exception_jail( false ) { b.call( obj ) } }
-    end
-
     def call_on_complete_blocks
         @on_complete_blocks.each { |b| exception_jail( false ) { b.call } }
     end
@@ -368,10 +334,10 @@ class Spider
             update_cookies:  true
         }.merge( opts )
 
-        wrap = proc do |res|
-            effective_url = normalize_url( res.url )
+        wrap = proc do |response|
+            effective_url = normalize_url( response.url )
 
-            if res.code == 0
+            if response.code == 0
                 @retries[url.hash] ||= 0
 
                 if @retries[url.hash] >= MAX_TRIES
@@ -379,13 +345,13 @@ class Spider
 
                     print_error "Giving up on: #{effective_url}"
                     print_error "Couldn't get a response after #{MAX_TRIES} tries."
-                    print_error "Because: #{res.return_message}"
+                    print_error "Because: #{response.return_message}"
                 else
                     @retries[url.hash] += 1
                     repush( url )
 
                     print_info "Retrying for: #{effective_url}"
-                    print_bad "Because: #{res.return_message}"
+                    print_bad "Because: #{response.return_message}"
                     print_line
                 end
 
@@ -393,11 +359,11 @@ class Spider
                 next
             end
 
-            print_status "[HTTP: #{res.code}] #{effective_url}"
+            print_status "[HTTP: #{response.code}] #{effective_url}"
 
-            if res.redirection?
-                @redirects << res.request.url
-                location = to_absolute( res.headers.location, res.request.url )
+            if response.redirection?
+                @redirects << response.request.url
+                location = to_absolute( response.headers.location, response.request.url )
                 if hit_redirect_limit? || skip?( location )
                     print_info "Redirect limit reached, skipping: #{location}"
                     decrease_pending
@@ -409,11 +375,11 @@ class Spider
                 push location
             end
 
-            if skip_response?( res )
+            if skip_response?( response )
                 print_info 'Ignoring due to exclusion criteria.'
             else
-                @sitemap[effective_url] = res.code
-                block.call( res )
+                @sitemap[effective_url] = response.code
+                block.call response.to_page
             end
 
             decrease_pending

@@ -26,6 +26,13 @@ describe Arachni::Parser do
         end
     end
 
+    describe '#link' do
+        it 'returns the URL of the response as a Link' do
+            @parser.link.action.should == @url
+            @parser.link.inputs.should == { 'query_var_input' => 'query_var_val' }
+        end
+    end
+
     describe '#body=' do
         it 'overrides the body of the HTTP response for the parsing process' do
             url = 'http://stuff.com/'
@@ -204,8 +211,19 @@ describe Arachni::Parser do
             end
         end
         context 'when the response is not text based' do
+            context 'and the URL has query parameters' do
+                it 'returns the URL parsed as a link' do
+                    res = Arachni::HTTP::Response.new( url: @url, headers: {
+                        'Content-Type' => 'bin/stuff'
+                    })
+                    links = Arachni::Parser.new( res, @opts ).links
+                    links.size.should == 1
+                    links.first.should == @parser.link
+                end
+            end
+
             it 'returns nil' do
-                res = Arachni::HTTP::Response.new( url: @url, headers: {
+                res = Arachni::HTTP::Response.new( url: 'http://stuff', headers: {
                     'Content-Type' => 'bin/stuff'
                 })
                 Arachni::Parser.new( res, @opts ).links.should be_empty

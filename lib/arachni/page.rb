@@ -111,6 +111,8 @@ class Page
         @parser ||= Parser.new( @response ) if @response
         @dom      = DOM.new( (options[:dom] || {}).merge( page: self ) )
 
+        fail ArgumentError, 'No URL given!' if !url
+
         Platform::Manager.fingerprint( self ) if Options.fingerprint?
     end
 
@@ -152,8 +154,7 @@ class Page
     # @return    [Array<Element::Link>]
     # @see Parser#links
     def links
-        @links ||= (!@links && !@parser) ? [] :
-            @parser.links | [Link.new( action: @url, inputs: query_vars )]
+        @links ||= (!@links && !@parser) ? [] : @parser.links
     end
 
     # @param    [Array<Element::Link>]  links

@@ -172,16 +172,18 @@ class Parser
         @forms = f
     end
 
+    # @return [Element::Link]   Link to the page.
+    def link
+        return if link_vars.empty? && !@response.redirection?
+        Link.new( url: @url, inputs: link_vars )
+    end
+
     # @return [Array<Element::Link>] Links in {#document}.
     def links
         return @links.freeze if @links
-        return [] if !text?
+        return @links = [link].compact if !text?
 
-        @links = (if !link_vars.empty? || @response.redirection?
-            [Link.new( url: @url, inputs: link_vars )]
-        else
-            []
-        end | Link.from_document( @url, document ))
+        @links = [link].compact | Link.from_document( @url, document )
     end
 
     # @return   [Hash]    Parameters found in {#url}.

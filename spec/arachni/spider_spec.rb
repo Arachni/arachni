@@ -110,7 +110,7 @@ describe Arachni::Spider do
             end
         end
 
-        context 'when the <extend_paths> option has been set' do
+        context 'when the Options#extend_paths has been set' do
             it 'adds those paths to be followed' do
                 @opts.extend_paths = %w(some_path)
                 s = Arachni::Spider.new
@@ -324,26 +324,13 @@ describe Arachni::Spider do
             spider.run.size.should == 3
         end
 
-        context 'when called with options and a block' do
-            describe :pass_pages_to_block do
-                describe true do
-                    it 'passes the block each page as visited' do
-                        spider = Arachni::Spider.new
-                        pages = []
-                        spider.run( true ) { |page| pages << page }
-                        pages.size.should == spider.sitemap.size
-                        pages.first.is_a?( Arachni::Page ).should be_true
-                    end
-                end
-                describe false do
-                    it 'passes the block each HTTP response as received' do
-                        spider = Arachni::Spider.new
-                        responses = []
-                        spider.run( false ) { |res| responses << res }
-                        responses.size.should == spider.sitemap.size
-                        responses.first.is_a?( Arachni::HTTP::Response ).should be_true
-                    end
-                end
+        context 'when called with a block' do
+            it 'passes the block each page as visited' do
+                spider = Arachni::Spider.new
+                pages = []
+                spider.run { |page| pages << page }
+                pages.size.should == spider.sitemap.size
+                pages.first.is_a?( Arachni::Page ).should be_true
             end
         end
     end
@@ -364,25 +351,6 @@ describe Arachni::Spider do
 
             pages.size.should == s.sitemap.size
             pages.first.is_a?( Arachni::Page ).should be_true
-        end
-    end
-
-    describe '#on_each_response' do
-        it 'is passed each response as received' do
-            responses  = []
-            responses2 = []
-
-            s = Arachni::Spider.new
-
-            s.on_each_response { |response| responses << response }.should == s
-            s.on_each_response { |response| responses2 << response }.should == s
-
-            s.run
-
-            responses.should == responses2
-
-            responses.size.should == s.sitemap.size
-            responses.first.is_a?( Arachni::HTTP::Response ).should be_true
         end
     end
 

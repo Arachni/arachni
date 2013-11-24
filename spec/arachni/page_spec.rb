@@ -97,6 +97,7 @@ describe Arachni::Page do
             describe :dom do
                 it 'uses it to populate the DOM data' do
                     described_class.new(
+                        url:      'http://test/',
                         dom:      {
                             transitions: [
                                 page: :load
@@ -111,6 +112,12 @@ describe Arachni::Page do
         context 'when called without options' do
             it 'raises ArgumentError' do
                 expect{ described_class.new }.to raise_error ArgumentError
+            end
+        end
+
+        context 'when called with empty options' do
+            it 'raises ArgumentError' do
+                expect{ described_class.new({}) }.to raise_error ArgumentError
             end
         end
     end
