@@ -9,7 +9,7 @@
 #
 #   * Element type (link, form, cookie, header)
 #   * Variable/input name
-#   * The module that logged/discovered the issue -- issue type
+#   * The check that logged/discovered the issue -- issue type
 #
 # If the above are all the same for more than 1 page we have a hit.
 #

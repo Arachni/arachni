@@ -34,7 +34,7 @@ class Parser
         # @abstract
         class Base
 
-            # This method must be implemented by all modules and must return an
+            # This method must be implemented by all checks and must return an
             # array of paths as plain strings
             #
             # @param    [Nokogiri]  document   Nokogiri document

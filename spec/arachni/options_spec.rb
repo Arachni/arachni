@@ -4,7 +4,7 @@ describe Arachni::Options do
     before( :each ) do
         ENV['ARACHNI_FRAMEWORK_LOGDIR'] = nil
         @opts = Arachni::Options.instance.reset
-        @utils = Arachni::Module::Utilities
+        @utils = Arachni::Utilities
     end
 
     it 'proxies missing class methods to instance methods' do
@@ -655,25 +655,15 @@ describe Arachni::Options do
         end
     end
 
-    describe '#mods=' do
+    describe '#checks=' do
         it 'converts its param to an array of strings' do
-            mods = %w(my_mods my_other_mods)
+            checks = %w(my_checks my_other_checks)
 
-            @opts.mods = mods.first
-            @opts.mods.should == [mods.first]
+            @opts.checks = checks.first
+            @opts.checks.should == [checks.first]
 
-            @opts.mods = mods
-            @opts.mods.should == mods
-        end
-
-        it 'aliased to #modules=' do
-            mods = %w(my_mods my_other_mods)
-
-            @opts.mods = mods.first
-            @opts.modules.should == [mods.first]
-
-            @opts.modules = mods
-            @opts.mods.should == mods
+            @opts.checks = checks
+            @opts.checks.should == checks
         end
     end
 
@@ -762,18 +752,18 @@ describe Arachni::Options do
     end
 
 
-    describe '#lsmod=' do
+    describe '#lscheck=' do
         it 'converts its param to an array of strings' do
-            lsmod = %w(my_lsmod my_other_lsmod)
+            lscheck = %w(my_lscheck my_other_lscheck)
 
-            @opts.lsmod = /test/
-            @opts.lsmod.should == [/test/]
+            @opts.lscheck = /test/
+            @opts.lscheck.should == [/test/]
 
-            @opts.lsmod = lsmod.first
-            @opts.lsmod.should == [Regexp.new( lsmod.first )]
+            @opts.lscheck = lscheck.first
+            @opts.lscheck.should == [Regexp.new( lscheck.first )]
 
-            @opts.lsmod = lsmod
-            @opts.lsmod.should == lsmod.map { |p| Regexp.new( p ) }
+            @opts.lscheck = lscheck
+            @opts.lscheck.should == lscheck.map { |p| Regexp.new( p ) }
         end
     end
 

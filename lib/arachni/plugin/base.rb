@@ -4,6 +4,9 @@
 =end
 
 module Arachni
+
+require Options.dir['lib'] + 'component/output'
+
 module Plugin
 
 #
@@ -43,8 +46,8 @@ class Base
     include Arachni
 
     # get the output interface
-    include Module::Output
-    include Module::Utilities
+    include Component::Output
+    include Component::Utilities
 
     include Component
 

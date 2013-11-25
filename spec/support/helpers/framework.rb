@@ -4,5 +4,5 @@
 =end
 
 def issues
-    Arachni::Module::Manager.results
+    Arachni::Check::Manager.results
 end

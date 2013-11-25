@@ -169,7 +169,7 @@ class CLI
     end
 
     def print_issues( unmute = false )
-        super( AuditStore.sort( @arachni.modules.issues ), unmute, &method( :restr ) )
+        super( AuditStore.sort( @arachni.checks.issues ), unmute, &method( :restr ) )
     end
 
     def kill_interrupt_handler
@@ -184,8 +184,6 @@ class CLI
     # Once an interrupt has been trapped the system pauses and waits
     # for user input.
     # The user can either continue or exit.
-    #
-    # The interrupt will be handled after a module has finished.
     #
     def handle_interrupt
         return if @interrupt_handler && @interrupt_handler.alive?
@@ -269,14 +267,14 @@ class CLI
     #
     # It parses and processes the user options.
     #
-    # Loads modules, reports, saves/loads profiles etc.
+    # Loads checks, reports, saves/loads profiles etc.
     # It basically prepares the framework before calling {Arachni::Framework#run}.
     #
     def parse_opts
         if !@opts.repload && !@opts.help && !@opts.show_version?
 
             if !@opts.mods || @opts.mods.empty?
-                print_info 'No modules were specified.'
+                print_info 'No checks were specified.'
                 print_info ' -> Will run all mods.'
                 print_line
 
@@ -321,7 +319,7 @@ class CLI
                     lsplat
                     exit 0
 
-                when 'lsmod'
+                when 'lscheck'
                     next if arg.empty?
                     lsmod
                     exit 0
@@ -359,13 +357,13 @@ class CLI
 
                 when 'mods'
                     begin
-                        @opts.mods = @arachni.modules.load( arg )
+                        @opts.mods = @arachni.checks.load( arg )
                     rescue Component::Error::NotFound => e
                         print_error e
-                        print_info 'Available modules are:'
-                        print_info @arachni.modules.available.join( ', ' )
+                        print_info 'Available checks are:'
+                        print_info @arachni.checks.available.join( ', ' )
                         print_line
-                        print_info 'Use the \'--lsmod\' parameter to see a detailed list of all available modules.'
+                        print_info 'Use the \'--lscheck\' parameter to see a detailed list of all available checks.'
                         exit 1
                     end
 
@@ -426,9 +424,9 @@ class CLI
         super @arachni.lsplat
     end
 
-    # Outputs all available modules and their info.
+    # Outputs all available checks and their info.
     def lsmod
-        super @arachni.lsmod
+        super @arachni.lscheck
     end
 
     # Outputs all available reports and their info.

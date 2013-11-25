@@ -6,7 +6,7 @@ describe 'WAVSEP SQL Injection' do
     def self.test_cases( http_method )
         {
             'Erroneous 500 Responses' => {
-                modules:    'sqli',
+                checks:    'sqli',
                 url:        "SInjection-Detection-Evaluation-#{http_method}-500Error/",
                 vulnerable: [
                     'Case01-InjectionInLogin-String-LoginBypass-WithErrors.jsp',
@@ -31,7 +31,7 @@ describe 'WAVSEP SQL Injection' do
                 ]
             },
             'Erroneous 200 Responses'=> {
-                modules: 'sqli',
+                checks: 'sqli',
                 url:     "SInjection-Detection-Evaluation-#{http_method}-200Error/",
                 vulnerable: [
                      'Case01-InjectionInLogin-String-LoginBypass-With200Errors.jsp',
@@ -56,7 +56,7 @@ describe 'WAVSEP SQL Injection' do
                  ]
             },
             '200 Responses With Differentiation' => {
-                modules:    'sqli_blind_*',
+                checks:    'sqli_blind_*',
                 url:        "SInjection-Detection-Evaluation-#{http_method}-200Valid/",
                 vulnerable: [
                     'Case01-InjectionInLogin-String-LoginBypass-WithDifferent200Responses.jsp',
@@ -81,7 +81,7 @@ describe 'WAVSEP SQL Injection' do
                 ]
             },
             'Identical 200 Responses' => {
-                modules: 'sqli_blind_*',
+                checks: 'sqli_blind_*',
                 url:     "SInjection-Detection-Evaluation-#{http_method}-200Identical/",
                 vulnerable: [
                      'Case01-InjectionInView-Numeric-Blind-200ValidResponseWithDefaultOnException.jsp',
@@ -98,7 +98,7 @@ describe 'WAVSEP SQL Injection' do
     end
 
     easy_test do
-        @framework.modules.issues.each do |issue|
+        @framework.checks.issues.each do |issue|
             # Timing attack issues can be marked as untrusted sometimes to
             # indicate the possibility of a false positive, make sure we've only
             # got trusted issues.

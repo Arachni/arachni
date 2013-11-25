@@ -25,7 +25,7 @@ class Issue
     # @return    [String]   The name of the issue.
     attr_accessor :name
 
-    # @return    [String]   The module that detected the issue.
+    # @return    [String]   The check that detected the issue.
     attr_accessor :mod_name
 
     # @return    [Symbol]   Name of the vulnerable platform.
@@ -61,7 +61,7 @@ class Issue
     attr_accessor :regexp_match
 
     # @return    [String]   Type of the vulnerable type.
-    # @see Module::Auditor::OPTIONS
+    # @see Check::Auditor::OPTIONS
     attr_accessor :elem
 
     # @return    [String]   HTTP method used.
@@ -131,7 +131,7 @@ class Issue
     # Sets up the instance attributes.
     #
     # @param    [Hash]    opts
-    #   Configuration hash. The returned data of a module's {Module::Base.info}
+    #   Configuration hash. The returned data of a check's {Check::Base.info}
     #   method merged with a `Hash` holding {Issue} attributes.
     #
     def initialize( opts = {} )

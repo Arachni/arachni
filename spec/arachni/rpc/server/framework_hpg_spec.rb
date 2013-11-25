@@ -3,12 +3,12 @@ require 'spec_helper'
 describe 'Arachni::RPC::Server::Framework' do
     before( :all ) do
         @opts = Arachni::Options.instance
-        @opts.dir['modules'] = fixtures_path + '/taint_module/'
+        @opts.dir['checks'] = fixtures_path + '/taint_check/'
         @opts.audit_links = true
 
         @instance  = instance_grid_spawn
         @framework = @instance.framework
-        @modules   = @instance.modules
+        @checks    = @instance.checks
         @plugins   = @instance.plugins
 
         @instance_clean  = instance_grid_spawn
@@ -48,7 +48,7 @@ describe 'Arachni::RPC::Server::Framework' do
         context 'when the scan is running' do
             it 'returns true' do
                 @instance.opts.url = web_server_url_for( :auditor )
-                @modules.load( 'taint' )
+                @checks.load( 'taint' )
                 @framework.run.should be_true
                 @framework.busy?.should be_true
             end
@@ -106,7 +106,7 @@ describe 'Arachni::RPC::Server::Framework' do
                 instance = instance_grid_spawn
                 instance.opts.url = web_server_url_for( :framework_hpg )
                 instance.opts.restrict_paths = [instance.opts.url]
-                instance.modules.load( 'taint' )
+                instance.checks.load( 'taint' )
 
                 raised = false
                 begin
@@ -121,7 +121,7 @@ describe 'Arachni::RPC::Server::Framework' do
         it 'performs a scan' do
             instance = @instance_clean
             instance.opts.url = web_server_url_for( :framework_hpg )
-            instance.modules.load( 'taint' )
+            instance.checks.load( 'taint' )
             instance.framework.run.should be_true
             sleep( 1 ) while instance.framework.busy?
             instance.framework.issues.size.should == 500
@@ -173,7 +173,7 @@ describe 'Arachni::RPC::Server::Framework' do
         it 'sets the framework state to finished, waits for plugins to finish and merges their results' do
             instance = instance_grid_spawn
             instance.opts.url = web_server_url_for( :framework_hpg )
-            instance.modules.load( 'taint' )
+            instance.checks.load( 'taint' )
             instance.plugins.load( { 'wait' => {}, 'distributable' => {} } )
             instance.framework.run.should be_true
             instance.framework.auditstore.plugins.should be_empty

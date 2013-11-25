@@ -106,7 +106,7 @@ class Cookie < Arachni::Element::Base
 
     # Indicates whether the cookie is to be discarded at the end of the session.
     #
-    # Doesn't play a role during the scan but it can provide useful info to modules and such.
+    # Doesn't play a role during the scan but it can provide useful info to checks and such.
     #
     # @return   [Bool]
     def session?

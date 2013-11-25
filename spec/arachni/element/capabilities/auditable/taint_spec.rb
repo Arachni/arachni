@@ -71,7 +71,7 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                     it 'tries to match the provided pattern' do
                         @positive.taint_analysis( @seed,
                                                   regexp: @seed,
-                                                  format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                                                  format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
                         @auditor.http.run
                         issues.size.should == 1
@@ -84,7 +84,7 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                     it 'tries to match the provided patterns' do
                         @positive.taint_analysis( @seed,
                                                   regexp: [@seed],
-                                                  format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                                                  format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
                         @auditor.http.run
                         issues.size.should == 1
@@ -103,7 +103,7 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                         @positive.taint_analysis(
                             "#{@seed} windows",
                             regexp: regexps.dup,
-                            format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                            format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
 
                         @auditor.http.run
@@ -117,7 +117,7 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                     context 'when the payloads are per platform' do
                         it 'only tries to matches the regexps for that platform' do
                             issues = []
-                            Arachni::Module::Manager.on_register_results_raw do |results|
+                            Arachni::Check::Manager.on_register_results_raw do |results|
                                 issues += results
                             end
 
@@ -139,7 +139,7 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                             @positive.taint_analysis(
                                 payloads.dup,
                                 regexp: regexps.dup,
-                                format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                                format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                             )
 
                             @auditor.http.run
@@ -171,7 +171,7 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                                 @positive.taint_analysis(
                                     payloads.dup,
                                     regexp: regexps.dup,
-                                    format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                                    format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                                 )
 
                                 @auditor.http.run
@@ -192,7 +192,7 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                         @positive.taint_analysis( @seed,
                             regexp: /my_.+d/,
                             match: @seed,
-                            format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                            format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                          )
                         @auditor.http.run
                         issues.size.should == 1
@@ -206,7 +206,7 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                         @positive.taint_analysis( @seed,
                             regexp: @seed,
                             match: 'blah',
-                            format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                            format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                          )
                         @auditor.http.run
                         issues.should be_empty
@@ -219,7 +219,7 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
 
                         @positive.taint_analysis( 'Inject here',
                             regexp: 'Inject he[er]',
-                            format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                            format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
                         @auditor.http.run
                         issues.size.should == 1
@@ -235,7 +235,7 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
 
                         @positive.taint_analysis( 'Inject here',
                                                   regexp: 'Inject he[er]',
-                                                  format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                                                  format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
                         @auditor.http.run
                         issues.size.should == 1
@@ -256,7 +256,7 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                     it 'tries to match the provided pattern' do
                         @positive.taint_analysis( @seed,
                                                   substring: @seed,
-                                                  format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                                                  format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
                         @auditor.http.run
                         issues.size.should == 1
@@ -269,7 +269,7 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                     it 'tries to match the provided patterns' do
                         @positive.taint_analysis( @seed,
                                                   substring: [@seed],
-                                                  format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                                                  format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
                         @auditor.http.run
                         issues.size.should == 1
@@ -288,7 +288,7 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                         @positive.taint_analysis(
                             "#{@seed} windows",
                             substring: substrings.dup,
-                            format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                            format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
 
                         @auditor.http.run
@@ -302,7 +302,7 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                     context 'when the payloads are per platform' do
                         it 'only tries to matches the regexps for that platform' do
                             issues = []
-                            Arachni::Module::Manager.on_register_results_raw do |results|
+                            Arachni::Check::Manager.on_register_results_raw do |results|
                                 issues += results
                             end
 
@@ -324,7 +324,7 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                             @positive.taint_analysis(
                                 payloads.dup,
                                 substring: substrings.dup,
-                                format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                                format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                             )
 
                             @auditor.http.run
@@ -348,7 +348,7 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
 
                         @positive.taint_analysis( 'Inject here',
                             regexp: 'Inject here',
-                            format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                            format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
                         @auditor.http.run
                         issues.size.should == 1
@@ -376,7 +376,7 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                             @positive.taint_analysis(
                                 payloads.dup,
                                 substring: substrings.dup,
-                                format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                                format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                             )
 
                             @auditor.http.run
@@ -397,7 +397,7 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                 it 'ignores matches whose response also matches the ignore patterns' do
                     @positive.taint_analysis( @seed,
                         substring: @seed,
-                        format: [ Arachni::Module::Auditor::Format::STRAIGHT ],
+                        format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
                         ignore: @seed
                     )
                     @auditor.http.run

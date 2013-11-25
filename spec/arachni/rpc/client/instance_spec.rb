@@ -35,7 +35,7 @@ describe Arachni::RPC::Client::Instance do
     describe '#opts' do
         before {
             @rpc_opts = @instance.opts
-            @foo_url = Arachni::Module::Utilities.normalize_url( "http://test.com" )
+            @foo_url = Arachni::Utilities.normalize_url( "http://test.com" )
         }
         context 'when assigning values' do
             it 'uses setters' do
@@ -57,7 +57,7 @@ describe Arachni::RPC::Client::Instance do
         end
 
         it 'retrieves values' do
-            val = Arachni::Module::Utilities.normalize_url( "http://test.com4" )
+            val = Arachni::Utilities.normalize_url( "http://test.com4" )
             @rpc_opts.url = val
             @rpc_opts.url.to_s.should == val
         end
@@ -70,10 +70,10 @@ describe Arachni::RPC::Client::Instance do
         end
     end
 
-    describe '#modules' do
-        before { @modules = @instance.modules }
-        it 'provides access to module manager methods' do
-            @modules.available.should be_true
+    describe '#checks' do
+        before { @checks = @instance.checks }
+        it 'provides access to checks manager methods' do
+            @checks.available.should be_true
         end
     end
 

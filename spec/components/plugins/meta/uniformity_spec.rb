@@ -4,7 +4,7 @@ describe name_from_filename do
     include_examples 'plugin'
 
     before( :all ) do
-        @modname = 'Uber kewl module'
+        @modname = 'Uber kewl check'
         @element = 'form'
         @method  = 'GET'
 
@@ -28,14 +28,14 @@ describe name_from_filename do
                                      elem: 'cookie',
                                      method: 'POST' )
 
-        framework.modules.register_results( @issues | [issues] )
+        framework.checks.register_results( @issues | [issues] )
     end
 
     def results
         YAML.load <<YAML
 ---
 uniformals:
-  Uber kewl module:form:vulnerable_input:
+  Uber kewl check:form:vulnerable_input:
     issue:
       name: my issue
       var: vulnerable_input
@@ -64,7 +64,7 @@ uniformals:
     - adac8a4dae0a6fdff9a12be5ea6a2950d3417ea453571159bbe56c4325bc0ee6
     - 7447cf004d2c11726ef55714195573cd5d3af88529898d458afdb30c0cb31460
 pages:
-  Uber kewl module:form:vulnerable_input:
+  Uber kewl check:form:vulnerable_input:
   - http://test.com/0
   - http://test.com/1
   - http://test.com/2

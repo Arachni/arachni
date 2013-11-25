@@ -5,7 +5,7 @@ describe Arachni::Utilities do
 
     before( :each ) do
         @opts = Arachni::Options.reset
-        @utils = Arachni::Module::Utilities
+        @utils = Arachni::Utilities
     end
 
     describe '#uri_parser' do

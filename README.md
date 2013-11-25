@@ -112,13 +112,13 @@ multi-scan web collaboration platform.
 
 **Note**: Despite the fact that Arachni is mostly targeted towards web application
 security, it can easily be used for  general purpose scraping, data-mining, etc
-with the addition of custom modules.
+with the addition of custom components.
 
 ### Arachni offers:
 
 #### A stable, efficient, high-performance framework
 
-Module, report and plugin writers are allowed to easily and quickly create and
+Check, report and plugin writers are allowed to easily and quickly create and
 deploy their components with the minimum amount of restrictions imposed upon them,
 while provided with the necessary infrastructure to accomplish their goals.
 
@@ -270,23 +270,23 @@ Can extract and analyze:
  - Cookies
  - Headers
 
-###  Module Management
+### Check Management
 
- - Very simple and easy to use module API providing access to multiple levels of complexity.
+ - Very simple and easy to use security check API providing access at multiple levels of complexity.
  - Helper audit methods:
     - For form, link, cookie and header auditing.
     - A wide range of injection strings/input combinations.
     - For taint analysis, timing attacks, differential analysis, server-side
         file/directory detection and more.
-    - Writing RFI, SQL injection, XSS etc modules is a matter of minutes, if not seconds.
+    - Writing RFI, SQL injection, XSS etc checks is a matter of minutes, if not seconds.
 
-#### Available modules (security checks)
+#### Available security checks
 
-Modules are system components which perform security checks and log issues.
+_Checks_ are system components which perform security checks and log issues.
 
 ##### Audit (Active)
 
-Audit modules actively engage the web application via its inputs.
+Audit checks actively engage the web application via its inputs.
 
 - SQL injection (`sqli`) -- Error based vulnerability detection.
     - Oracle
@@ -361,7 +361,7 @@ Audit modules actively engage the web application via its inputs.
 
 ##### Recon (Passive)
 
-Recon modules look for the existence of files, folders and signatures.
+Recon checks look for the existence of files, folders and signatures.
 
 - Allowed HTTP methods (`allowed_methods`).
 - Back-up files (`backup_files`).
@@ -460,7 +460,7 @@ to determine trustworthiness or just add context information or general insights
     when the affected audited pages returned unusually high response times to begin with.
     It also points out the danger of DoS attacks against pages that perform heavy-duty processing.
 - Discovery (`discovery`) -- Performs anomaly detection on issues logged by discovery
-    modules and warns of the possibility of false positives where applicable.
+    checks and warns of the possibility of false positives where applicable.
 - Uniformity (`uniformity`) -- Reports inputs that are uniformly vulnerable across a number
     of pages hinting to the lack of a central point of input sanitization.
 
@@ -469,13 +469,13 @@ to determine trustworthiness or just add context information or general insights
 The Trainer is what enables Arachni to learn from the scan it performs and
 incorporate that knowledge, on the fly, for the duration of the audit.
 
-Modules have the ability to individually force the Framework to learn from the
+Checks have the ability to individually force the Framework to learn from the
 HTTP responses they are going to induce.
 
 However, this is usually not required since Arachni is aware of which requests
 are more likely to uncover new elements or attack vectors and will adapt itself accordingly.
 
-Still, this can be an invaluable asset to Fuzzer modules.
+Still, this can be an invaluable asset to Fuzzer checks.
 
 ## [Installation](https://github.com/Arachni/arachni/wiki/Installation)
 
@@ -486,7 +486,7 @@ Still, this can be an invaluable asset to Fuzzer modules.
 You can run `rake spec` to run **all** specs or you can run them selectively using the following:
 
     rake spec:core            # for the core libraries
-    rake spec:modules         # for the modules
+    rake spec:checks         # for the checks
     rake spec:plugins         # for the plugins
     rake spec:reports         # for the reports
     rake spec:path_extractors # for the path extractors
@@ -494,7 +494,7 @@ You can run `rake spec` to run **all** specs or you can run them selectively usi
 **Please be warned**, the core specs will require a beast of a machine due to the
 necessity to test the Grid/multi-Instance features of the system.
 
-**Note**: _The module specs will take about 90 minutes due to the timing-attack tests._
+**Note**: _The check specs will take about 90 minutes due to the timing-attack tests._
 
 ## Bug reports/Feature requests
 

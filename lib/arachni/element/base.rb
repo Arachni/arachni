@@ -3,12 +3,6 @@
     All rights reserved.
 =end
 
-#
-# Should be extended/implemented by all HTML/HTTP modules.
-#
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-# @abstract
-#
 module Arachni
 module Element
 
@@ -61,11 +55,11 @@ class Base
         {}
     end
 
-    # Should represent a method in {Arachni::Module::HTTP}.
+    # Should represent a method in {Arachni::Check::HTTP}.
     #
     # Ex. get, post, cookie, header
     #
-    # @see Arachni::Module::HTTP
+    # @see Arachni::Check::HTTP
     #
     # @return [Symbol]  HTTP request method for the element.
     def method( *args )

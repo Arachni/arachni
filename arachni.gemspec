@@ -132,7 +132,7 @@ multi-scan web collaboration platform.
 
 **Note**: Despite the fact that Arachni is mostly targeted towards web application
 security, it can easily be used for  general purpose scraping, data-mining, etc
-with the addition of custom modules.
+with the addition of custom components.
 DESCRIPTION
 
 end

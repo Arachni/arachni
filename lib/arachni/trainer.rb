@@ -6,17 +6,15 @@
 module Arachni
 
 require Options.dir['lib'] + 'element_filter'
-require Options.dir['lib'] + 'module/output'
+require Options.dir['lib'] + 'component/output'
 
-#
 # Trainer class
 #
 # Analyzes key HTTP responses looking for new auditable elements.
 #
 # @author Tasos Laskos <tasos.laskos@gmail.com>
-#
 class Trainer
-    include Module::Output
+    include Component::Output
     include ElementFilter
     include Utilities
 

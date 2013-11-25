@@ -494,7 +494,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
     describe '#distribute_and_run' do
         before( :all ) do
-            @opts.dir['modules'] = fixtures_path + 'taint_module/'
+            @opts.dir['checks'] = fixtures_path + 'taint_check/'
 
             @dispatcher_url = dispatcher_light_spawn.url
 
@@ -506,7 +506,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
             @opts.datastore[:token] = @token
             @opts.url               = web_server_url_for( :framework_hpg )
             @url                    = @opts.url
-            @opts.modules           = %w(taint)
+            @opts.checks            = %w(taint)
 
             @get_instance_info = proc do
                 instance = instance_spawn( token: @token, port: nil )
@@ -541,7 +541,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
             it 'restricts the audit to these URLs' do
                 urls = %w(/vulnerable?vulnerable_5=stuff5 /vulnerable?vulnerable_10=stuff10)
 
-                absolute_urls = urls.map { |u| Arachni::Module::Utilities.normalize_url( @url + u ) }
+                absolute_urls = urls.map { |u| Arachni::Utilities.normalize_url( @url + u ) }
 
                 q = Queue.new
                 @distributor.distribute_and_run( @get_instance_info.call, urls: urls ){ |i| q << i }
@@ -583,7 +583,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
                 vuln_urls = @master.issues.map { |i| i.url }.sort.uniq
                 exp_urls = %w(/vulnerable?0_vulnerable_20=stuff20 /vulnerable?9_vulnerable_30=stuff30)
-                vuln_urls.should == exp_urls.map { |u| Arachni::Module::Utilities.normalize_url( @url + u ) }.
+                vuln_urls.should == exp_urls.map { |u| Arachni::Utilities.normalize_url( @url + u ) }.
                     sort.uniq
             end
             context 'and new elements appear via the trainer' do

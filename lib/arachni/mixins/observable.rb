@@ -4,9 +4,6 @@
 =end
 
 module Arachni
-
-require Options.instance.dir['lib'] + 'module/utilities'
-
 module Mixins
 
 #

@@ -29,7 +29,7 @@ class Arachni::Plugins::Profiler < Arachni::Plugin::Base
     #
     # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
     #
-    class Auditor < Module::Base
+    class Auditor < Check::Base
 
         def seed_id
             @seed_id ||= Digest::SHA2.hexdigest( rand( 1000 ).to_s )

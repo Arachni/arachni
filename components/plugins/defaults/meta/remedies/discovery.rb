@@ -5,9 +5,9 @@
 
 #
 # Catches custom 404 or similar server behavior that can confuse discovery
-# modules.
+# checks.
 #
-# This is relatively easy to determine since valid responses to discovery modules
+# This is relatively easy to determine since valid responses to discovery checks
 # should vary wildly while custom 404 responses will have many commonalities
 # every time.
 #
@@ -19,18 +19,18 @@
 #
 class Arachni::Plugins::Discovery < Arachni::Plugin::Base
 
-    # valid responses to discovery modules should vary *wildly*
+    # valid responses to discovery checks should vary *wildly*
     # especially considering the types of directories and files that
-    # these modules look for
+    # these checks look for
     #
     # on the other hand custom 404 or such responses will have many things
     # in common which makes it possible to spot them without much bother
     SIMILARITY_TOLERANCE = 0.25
 
-    REMARK = "This issue was logged by a discovery module but " +
-        "the response for the resource it identified is very similar to responses " +
-        "for other resources of similar type. This is a strong indication that " +
-        "the logged issue is a false positive."
+    REMARK = 'This issue was logged by a discovery check but ' +
+        'the response for the resource it identified is very similar to responses ' +
+        'for other resources of similar type. This is a strong indication that ' +
+        'the logged issue is a false positive.'
 
     def prepare
         wait_while_framework_running
@@ -46,7 +46,7 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
         # URL path => size of responses
         response_size_per_path  = {}
 
-        framework.modules.issues.each_with_index do |issue, idx|
+        framework.checks.issues.each_with_index do |issue, idx|
             next if !issue.tags.includes_tags?( :discovery )
 
             # discovery issues only have 1 variation
@@ -80,7 +80,7 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
             # as these types of responses are pretty much similar to each other
             #
             # on the other hand, valid responses will be dissimilar since the
-            # discovery modules look for different things.
+            # discovery checks look for different things.
             diffs_per_path[path] = if !diffs_per_path[path]
                                        issue['response']
                                     else
@@ -98,7 +98,7 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
         end
 
         issue_digests = issues.map { |i| i['hash'] }
-        framework.modules.issues.each do |issue|
+        framework.checks.issues.each do |issue|
             next if !issue_digests.include?( issue.digest )
 
             issue.add_remark :meta_analysis, REMARK
@@ -112,9 +112,9 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
 
     def self.info
         {
-            name:        'Discovery module response anomalies',
-            description: %q{Analyzes the scan results and identifies issues logged by discovery modules
-                (i.e. modules that look for certain files and folders on the server),
+            name:        'Discovery-check response anomalies',
+            description: %q{Analyzes the scan results and identifies issues logged by discovery checks
+                (i.e. checks that look for certain files and folders on the server),
                 while the server responses were exhibiting an anomalous factor of similarity.
 
                 There's a good chance that these issues are false positives.},

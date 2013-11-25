@@ -3,14 +3,13 @@
     All rights reserved.
 =end
 
-require 'addressable/uri'
 require 'digest/sha2'
 require 'cgi'
 
 module Arachni
 
 #
-# Includes some useful methods for the system, the modules etc.
+# Includes some useful methods for the system.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #

@@ -67,6 +67,7 @@
         - `script` - Extract partial paths from scripts.
 - Moved all Framework components (`modules`, `plugins`, `reports`, etc.)
     under `components/`.
+- Renamed `modules` to `checks`.
 
 ## 0.4.6
 

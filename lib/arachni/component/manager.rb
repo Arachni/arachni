@@ -28,7 +28,7 @@ end
 require Options.dir['lib'] + 'component/options'
 
 #
-# Handles modules, reports, path extractor modules, plug-ins, pretty much
+# Handles checks, reports, path extractor checks, plug-ins, pretty much
 # every modular aspect of the framework.
 #
 # It is usually extended to fill-in for system specific functionality.

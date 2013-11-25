@@ -36,7 +36,7 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
                 auditable.rdiff_analysis( @opts )
                 @auditor.http.run
 
-                results = Arachni::Module::Manager.results
+                results = Arachni::Check::Manager.results
                 results.should be_any
                 results.first.var.should == 'rdiff'
             end

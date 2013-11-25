@@ -27,7 +27,7 @@ class Server
 # * {Instance self} -- mapped to `service`
 # * {Options} -- mapped to `opts`
 # * {Framework} -- mapped to `framework`
-# * {Module::Manager} -- mapped to `modules`
+# * {Check::Manager} -- mapped to `checks`
 # * {Plugin::Manager} -- mapped to `plugins`
 # * {Spider} -- mapped to `spider`
 #
@@ -42,7 +42,7 @@ class Server
 # Provided methods for:
 #
 # * Retrieving available components
-#   * {#list_modules Modules}
+#   * {#list_checks Checks}
 #   * {#list_plugins Plugins}
 #   * {#list_reports Reports}
 # * {#scan Configuring and running a scan}
@@ -71,8 +71,8 @@ class Server
 #    instance.service.scan url: 'http://testfire.net',
 #                          audit_links: true,
 #                          audit_forms: true,
-#                          # load all XSS modules
-#                          modules: 'xss*'
+#                          # load all XSS checks
+#                          checks: 'xss*'
 #
 #    print 'Running.'
 #    while instance.service.busy?
@@ -196,9 +196,9 @@ class Instance
         @framework.list_platforms
     end
 
-    # @return (see Arachni::Framework#list_modules)
-    def list_modules
-        @framework.list_modules
+    # @return (see Arachni::Framework#list_checks)
+    def list_checks
+        @framework.list_checks
     end
 
     # @return (see Arachni::Framework#list_plugins)
@@ -444,13 +444,13 @@ class Instance
     #   Enable auditing of cookie inputs.
     # @option opts [Boolean] :audit_headers (false)
     #   Enable auditing of header inputs.
-    # @option opts [String,Array<String>] :modules ([])
-    #   Modules to load, by name.
+    # @option opts [String,Array<String>] :checks ([])
+    #   Checks to load, by name.
     #
-    #       # To load all modules use the wildcard on its own
+    #       # To load all checks use the wildcard on its own
     #       '*'
     #
-    #       # To load all XSS and SQLi modules:
+    #       # To load all XSS and SQLi checks:
     #       [ 'xss*', 'sqli*' ]
     #
     # @option opts [Hash<Hash>] :plugins ({})
@@ -641,8 +641,8 @@ class Instance
             end
         end
 
-        opts[:modules] ||= opts[:mods]
-        @framework.modules.load opts[:modules] if opts[:modules]
+        opts[:checks] ||= opts[:mods]
+        @framework.checks.load opts[:checks] if opts[:checks]
         @framework.plugins.load opts[:plugins] if opts[:plugins]
 
         # Starts the scan after all necessary options have been set.
@@ -763,7 +763,7 @@ class Instance
 
                 pid = fork {
                     # Make sure we start with a clean env (namepsace, opts, etc).
-                    Framework.reset
+                    @framework.reset
 
                     # All Instances will be on the same host so use UNIX
                     # domain sockets to avoid TCP/IP overhead.
@@ -870,7 +870,7 @@ class Instance
         server.add_handler( 'framework', @framework )
         server.add_handler( 'opts',      @active_options )
         server.add_handler( 'spider',    @framework.spider )
-        server.add_handler( 'modules',   @framework.modules )
+        server.add_handler( 'checks',    @framework.checks )
         server.add_handler( 'plugins',   @framework.plugins )
     end
 

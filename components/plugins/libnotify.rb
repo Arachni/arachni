@@ -16,7 +16,7 @@ class Arachni::Plugins::LibNotify < Arachni::Plugin::Base
     def prepare
         return if !options['for_every_issue']
 
-        Arachni::Module::Manager.on_register_results do |issues|
+        Arachni::Check::Manager.on_register_results do |issues|
             issues.each do |issue|
                 notify(
                     summary: "Found #{issue.name}",

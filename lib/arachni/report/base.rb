@@ -67,7 +67,7 @@ class Base
 
     # get the output interface
     include UI::Output
-    include Module::Utilities
+    include Component::Utilities
 
     include Report
 

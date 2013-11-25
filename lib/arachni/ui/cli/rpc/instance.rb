@@ -113,13 +113,13 @@ class Instance
             exit
         end
 
-        # If the user wants to see the available modules grab them from the
+        # If the user wants to see the available checks grab them from the
         # server, output them, exit and shutdown the server.
         if !opts.lsmod.empty?
-            modules = @instance.framework.lsmod
+            checks = @instance.framework.lscheck
             shutdown
 
-            lsmod modules
+            lscheck checks
             exit
         end
 
@@ -253,7 +253,7 @@ class Instance
 
         @opts.reports['stdout'] = {} if @opts.reports.empty?
 
-        # No modules have been specified, set the mods to '*' (all).
+        # No checks have been specified, set the mods to '*' (all).
         if !@opts.mods || @opts.mods.empty?
             @opts.mods = ['*']
         end
@@ -301,7 +301,7 @@ class Instance
         opts
     end
 
-    # Grabs the report from the RPC server and runs the selected Arachni report module.
+    # Grabs the report from the RPC server and runs the selected Arachni report.
     def report_and_shutdown
         @framework.reports.load @opts.reports.keys
 

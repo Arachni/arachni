@@ -332,7 +332,7 @@ module Distributor
         opts = @opts.to_h.deep_clone.symbolize_keys
 
         (%w(spawns rpc_socket grid_mode dir rpc_port rpc_external_address
-            rpc_address pipe_id neighbour pool_size lsmod lsrep
+            rpc_address pipe_id neighbour pool_size lscheck lsrep
             rpc_instance_port_range load_profile delta_time start_datetime
             finish_datetime)).each do |k|
             opts.delete k.to_sym

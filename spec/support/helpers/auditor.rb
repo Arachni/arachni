@@ -1,5 +1,5 @@
 class Auditor
-    include Arachni::Module::Auditor
+    include Arachni::Check::Auditor
 
     attr_accessor :page
     attr_accessor :framework

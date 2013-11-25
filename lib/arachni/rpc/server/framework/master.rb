@@ -139,7 +139,7 @@ module Master
     #
     def update_issues( issues, token = nil )
         return false if master? && !valid_token?( token )
-        @modules.class.register_results( issues )
+        @checks.class.register_results( issues )
         true
     end
 

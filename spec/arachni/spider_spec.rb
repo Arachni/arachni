@@ -391,8 +391,8 @@ describe Arachni::Spider do
             p = 'some-path blah! %&$'
 
             wp = 'another weird path %"&*[$)'
-            nwp = Arachni::Module::Utilities.to_absolute( wp )
-            np = Arachni::Module::Utilities.to_absolute( p )
+            nwp = Arachni::Utilities.to_absolute( wp )
+            np = Arachni::Utilities.to_absolute( p )
 
             s.push( p ).should be_true
             s.run
@@ -408,7 +408,7 @@ describe Arachni::Spider do
                     spider.run.should == spider.sitemap
                     spider.sitemap.should == [@url]
 
-                    spider.push( Arachni::Module::Utilities.to_absolute( 'test' ) ).should be_false
+                    spider.push( Arachni::Utilities.to_absolute( 'test' ) ).should be_false
                 end
             end
         end

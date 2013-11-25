@@ -42,7 +42,7 @@ module Utilities
     end
 
     #
-    # Outputs all available modules and their info.
+    # Outputs all available checks and their info.
     #
     def lsplat( platform_info )
         print_line
@@ -63,15 +63,15 @@ module Utilities
     end
 
     #
-    # Outputs all available modules and their info.
+    # Outputs all available checks and their info.
     #
-    def lsmod( modules )
+    def lscheck( checks )
         print_line
         print_line
-        print_info 'Available modules:'
+        print_info 'Available checks:'
         print_line
 
-        modules.each do |info|
+        checks.each do |info|
             print_status "#{info[:mod_name]}:"
             print_line '--------------------'
 
@@ -106,10 +106,6 @@ module Utilities
                 else
                     info[:targets].each { |target| print_info( target ) }
                 end
-            end
-
-            if info[:issue] && sploit = info[:issue][:metasploitable]
-                print_line "Metasploitable:\t#{sploit}"
             end
 
             print_line "Path:\t#{info[:path]}"
@@ -327,7 +323,7 @@ module Utilities
     --load-profile=<filepath>   Load a run profile from <filepath>.
                                   (Can be used multiple times.)
                                   (You can complement it with more options, except for:
-                                      * --modules
+                                      * --checks
                                       * --redundant)
 
     --show-profile              Will output the running profile as CLI arguments.
@@ -416,31 +412,30 @@ module Utilities
                                   (Setting it to '0' will skip DOM/JS/AJAX analysis.)
 
     --exclude-binaries          Exclude non text-based pages from the audit.
-                                  (Binary content can confuse recon modules that perform pattern matching.)
+                                  (Binary content can confuse recon checks that perform pattern matching.)
 
-    Modules ------------------------
+    Checks ------------------------
 
-    --lsmod=<regexp>            List available modules based on the provided regular expression.
-                                  (If no regexp is provided all modules will be listed.)
+    --lscheck=<regexp>            List available checks based on the provided regular expression.
+                                  (If no regexp is provided all checks will be listed.)
                                   (Can be used multiple times.)
 
 
-    -m <modname,modname,...>
-    --modules=<modname,modname,...>
+    --checks=<check-name,check-name2,...>
 
-                                Comma separated list of modules to load.
-                                  (Modules are referenced by their filename without the '.rb' extension, use '--lsmod' to list all.
-                                   Use '*' as a module name to deploy all modules or as a wildcard, like so:
-                                      xss*   to load all xss modules
-                                      sqli*  to load all sql injection modules
+                                Comma separated list of checks to load.
+                                  (Checks are referenced by their filename without the '.rb' extension, use '--lscheck' to list all.
+                                   Use '*' as a check name to deploy all checks or as a wildcard, like so:
+                                      xss*   to load all xss checks
+                                      sqli*  to load all sql injection checks
                                       etc.
 
-                                   You can exclude modules by prefixing their name with a minus sign:
-                                      --modules=*,-backup_files,-xss
-                                   The above will load all modules except for the 'backup_files' and 'xss' modules.
+                                   You can exclude checks by prefixing their name with a minus sign:
+                                      --checks=*,-backup_files,-xss
+                                   The above will load all checks except for the 'backup_files' and 'xss' checks.
 
                                    Or mix and match:
-                                      -xss*   to unload all xss modules.)
+                                      -xss*   to unload all xss checks.)
 
 
     Reports ------------------------

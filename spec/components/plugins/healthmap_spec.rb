@@ -6,7 +6,7 @@ describe name_from_filename do
     before ( :all ) do
         options.url = url
         framework.opts.audit :links
-        framework.modules.load :xss
+        framework.checks.load :xss
     end
 
     def results

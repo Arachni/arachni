@@ -7,7 +7,7 @@ describe name_from_filename do
         options.do_not_crawl
         options.url = url
         options.audit :links
-        framework.modules.load :xss
+        framework.checks.load :xss
     end
 
     it 'logs safe and vuln URLs accordingly' do
@@ -18,8 +18,8 @@ describe name_from_filename do
         options.plugins[name_from_filename] = { 'afr' => updated }
 
         run
-        framework.modules.issues.should be_any
-        framework.modules.issues.first.var.should == 'input'
+        framework.checks.issues.should be_any
+        framework.checks.issues.first.var.should == 'input'
 
         File.delete( updated )
     end

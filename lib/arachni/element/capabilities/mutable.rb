@@ -4,8 +4,6 @@
 =end
 
 module Arachni
-require Options.dir['lib'] + 'module/utilities'
-
 module Element::Capabilities
 module Mutable
 
@@ -28,7 +26,7 @@ module Mutable
       # Terminates the injection string with a null character.
       NULL     = 1 << 2
 
-      # Prefix the string with a ';', useful for command injection modules
+      # Prefix the string with a ';', useful for command injection checks
       SEMICOLON = 1 << 3
 
     end

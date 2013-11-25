@@ -10,7 +10,6 @@ module Arachni
 
 lib = Options.dir['lib']
 require lib + 'typhoeus/hydra'
-require lib + 'utilities'
 require lib + 'mixins/observable'
 
 module HTTP
@@ -38,7 +37,7 @@ end
 class Client
 
     include Singleton
-    include Module::Output
+    include Component::Output
     include Utilities
     include Mixins::Observable
 

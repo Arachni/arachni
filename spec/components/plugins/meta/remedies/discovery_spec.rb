@@ -7,7 +7,7 @@ describe name_from_filename do
         options.url = url
         options.audit :forms
 
-        framework.modules.load :common_files
+        framework.checks.load :common_files
     end
 
     it 'marks issues with too similar response bodies as needing manual verification and add remarks' do

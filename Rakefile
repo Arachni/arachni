@@ -18,20 +18,20 @@ begin
             t.pattern = FileList[ 'spec/arachni/**/*_spec.rb' ]
         end
 
-        desc 'Run module tests.'
-        RSpec::Core::RakeTask.new( :modules ) do |t|
-            t.pattern = FileList[ 'spec/components/modules/**/*_spec.rb' ]
+        desc 'Run check tests.'
+        RSpec::Core::RakeTask.new( :checks ) do |t|
+            t.pattern = FileList[ 'spec/components/checks/**/*_spec.rb' ]
         end
 
-        namespace :modules do
-            desc 'Run tests for the audit modules.'
+        namespace :checks do
+            desc 'Run tests for the audit checks.'
             RSpec::Core::RakeTask.new( :audit ) do |t|
-                t.pattern = FileList[ 'spec/components/modules/audit/**/*_spec.rb' ]
+                t.pattern = FileList[ 'spec/components/checks/audit/**/*_spec.rb' ]
             end
 
-            desc 'Run tests for the recon modules.'
+            desc 'Run tests for the recon checks.'
             RSpec::Core::RakeTask.new( :recon ) do |t|
-                t.pattern = FileList[ 'spec/components/modules/recon/**/*_spec.rb' ]
+                t.pattern = FileList[ 'spec/components/checks/recon/**/*_spec.rb' ]
             end
         end
 
@@ -125,10 +125,10 @@ begin
         namespace :generate do
             task :afr do
 
-                # Run the module tests and save all the issues to put them
+                # Run the check tests and save all the issues to put them
                 # in our AFR report.
                 FileUtils.touch( "#{Dir.tmpdir}/save_issues" )
-                Rake::Task['spec:modules'].execute rescue nil
+                Rake::Task['spec:checks'].execute rescue nil
                 FileUtils.rm( "#{Dir.tmpdir}/save_issues" )
 
                 issues = []
@@ -151,10 +151,10 @@ begin
                 Arachni::Options.url = 'http://test.com'
                 Arachni::Options.audit :forms, :links, :cookies, :headers
 
-                # Make all module constants available because the AuditStore
+                # Make all check constants available because the AuditStore
                 # will need them to make the necessary associations between them
                 # and the issues.
-                Arachni::Framework.new.modules.load_all
+                Arachni::Framework.new.checks.load_all
 
                 Arachni::AuditStore.new( issues: issues.uniq ).
                     save( 'spec/support/fixtures/auditstore.afr' )

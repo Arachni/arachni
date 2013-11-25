@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Arachni::Element::Base do
     before( :all ) do
-        @utils=  Arachni::Module::Utilities
+        @utils=  Arachni::Utilities
         @url = @utils.normalize_url( 'http://test.com' )
 
         @options = {

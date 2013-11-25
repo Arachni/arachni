@@ -6,7 +6,6 @@
 module Arachni
 
 lib = Options.dir['lib']
-require lib + 'module/utilities'
 require lib + 'issue'
 require lib + 'element/capabilities/mutable'
 
@@ -33,7 +32,7 @@ module Auditable
     #
     # The auditor provides its output, HTTP and issue logging interfaces.
     #
-    # @return   [Arachni::Module::Auditor]
+    # @return   [Arachni::Check::Auditor]
     #
     attr_accessor :auditor
 
@@ -125,7 +124,7 @@ module Auditable
     #
     def use_anonymous_auditor
         self.auditor = Class.new do
-            include Arachni::Module::Auditor
+            include Arachni::Check::Auditor
 
             def initialize
                 @framework = Arachni::Framework.new
@@ -133,10 +132,10 @@ module Auditable
             #
             # @return   [Array<Issue>]  Unfiltered logged issues.
             #
-            # @see Arachni::Module::Manager.results
+            # @see Arachni::Check::Manager.results
             #
             def raw_issues
-                Arachni::Module::Manager.results
+                Arachni::Check::Manager.results
             end
 
             #
@@ -489,7 +488,7 @@ module Auditable
         str
     end
 
-    # @note Mainly used by {Arachni::Module::Auditor#skip?} to prevent redundant
+    # @note Mainly used by {Arachni::Check::Auditor#skip?} to prevent redundant
     #   audits for elements/issues which have already been logged as vulnerable.
     #
     # @return   [String]

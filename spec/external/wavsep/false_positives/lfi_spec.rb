@@ -11,7 +11,7 @@ describe 'WAVSEP false-positive Local File Inclusion' do
         {
             'Local File Inclusion' => {
                 url:        "LFI-FalsePositives-#{http_method}/",
-                modules:    [ :file_inclusion, :path_traversal, :source_code_disclosure],
+                checks:    [ :file_inclusion, :path_traversal, :source_code_disclosure],
 
                 # I maintain that these should be logged **but** be flagged as
                 # untrusted.
@@ -24,8 +24,8 @@ describe 'WAVSEP false-positive Local File Inclusion' do
     end
 
     easy_test do
-        @framework.modules.issues.each do |issue|
-            issue.trusted?.should be_false
+        @framework.checks.issues.each do |issue|
+            issue.checks.should be_false
             issue.remarks.should include :auditor
         end
     end

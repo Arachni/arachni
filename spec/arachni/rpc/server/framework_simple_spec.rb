@@ -7,7 +7,7 @@ describe 'Arachni::RPC::Server::Framework' do
 
         @instance  = instance_spawn
         @framework = @instance.framework
-        @modules   = @instance.modules
+        @checks   = @instance.checks
         @plugins   = @instance.plugins
 
         @instance_clean  = instance_spawn
@@ -42,7 +42,7 @@ describe 'Arachni::RPC::Server::Framework' do
         context 'when the scan is running' do
             it 'returns true' do
                 @instance.opts.url = web_server_url_for( :auditor ) + '/sleep'
-                @modules.load( 'test' )
+                @checks.load( 'test' )
                 @framework.run.should be_true
                 @framework.busy?.should be_true
             end
@@ -109,12 +109,12 @@ describe 'Arachni::RPC::Server::Framework' do
         end
     end
 
-    describe '#list_modules' do
-        it 'lists all available modules' do
-            @framework_clean.list_modules.should be_any
+    describe '#list_checks' do
+        it 'lists all available checks' do
+            @framework_clean.list_checks.should be_any
         end
-        it 'aliased to #lsmod' do
-            @framework_clean.list_modules.should == @framework_clean.lsmod
+        it 'aliased to #lscheck' do
+            @framework_clean.list_checks.should == @framework_clean.lscheck
         end
     end
 
@@ -128,19 +128,19 @@ describe 'Arachni::RPC::Server::Framework' do
         it 'performs a scan' do
             instance = @instance_clean
             instance.opts.url = web_server_url_for( :framework_simple )
-            instance.modules.load( 'test' )
+            instance.checks.load( 'test' )
             instance.framework.run.should be_true
             sleep( 1 ) while instance.framework.busy?
             instance.framework.issues.should be_any
         end
 
         it 'handles pages with JavaScript code' do
-            @opts.dir['modules'] = fixtures_path + '/taint_module/'
+            @opts.dir['checks'] = fixtures_path + '/taint_check/'
 
             inst = instance_spawn
             inst.opts.url = web_server_url_for( :auditor ) + '/with_javascript'
             inst.opts.audit :links, :forms, :cookies
-            inst.modules.load :taint
+            inst.checks.load :taint
 
             inst.framework.run.should be_true
             sleep 0.1 while inst.framework.busy?
@@ -152,12 +152,12 @@ describe 'Arachni::RPC::Server::Framework' do
         end
 
         it 'handles AJAX' do
-            @opts.dir['modules'] = fixtures_path + '/taint_module/'
+            @opts.dir['checks'] = fixtures_path + '/taint_check/'
 
             inst = instance_spawn
             inst.opts.url = web_server_url_for( :auditor ) + '/with_ajax'
             inst.opts.audit :links, :forms, :cookies
-            inst.modules.load :taint
+            inst.checks.load :taint
 
             inst.framework.run.should be_true
             sleep 0.1 while inst.framework.busy?
@@ -184,7 +184,7 @@ describe 'Arachni::RPC::Server::Framework' do
         it 'returns a hash containing general runtime statistics' do
             instance = @instance_clean
             instance.opts.url = web_server_url_for( :framework_simple )
-            instance.modules.load( 'test' )
+            instance.checks.load( 'test' )
             instance.framework.run.should be_true
 
             stats = instance.framework.stats
@@ -226,7 +226,7 @@ describe 'Arachni::RPC::Server::Framework' do
         before( :all ) do
             @inst = instance_spawn
             @inst.opts.url = web_server_url_for( :framework_simple ) + '/crawl'
-            @inst.modules.load( 'test' )
+            @inst.checks.load( 'test' )
         end
         context 'after initialization' do
             it 'returns "ready"' do
@@ -251,25 +251,25 @@ describe 'Arachni::RPC::Server::Framework' do
         end
         context 'during audit' do
             it 'returns "audit"' do
-                mod_lib = @opts.dir['modules'].dup
-                @opts.dir['modules'] = fixtures_path + '/wait_module/'
+                mod_lib = @opts.dir['checks'].dup
+                @opts.dir['checks'] = fixtures_path + '/wait_check/'
 
                 inst = instance_spawn
                 inst.opts.url = web_server_url_for( :framework_simple )
                 inst.opts.audit_headers = true
-                inst.modules.load( 'wait' )
+                inst.checks.load( 'wait' )
                 inst.framework.run
                 sleep 2
                 inst.framework.status.should == 'auditing'
 
-                @opts.dir['modules'] = mod_lib.dup
+                @opts.dir['checks'] = mod_lib.dup
             end
         end
         context 'once the scan had completed' do
             it 'returns "done"' do
                 inst = instance_spawn
                 inst.opts.url = web_server_url_for( :framework_simple )
-                inst.modules.load( 'test' )
+                inst.checks.load( 'test' )
                 inst.framework.run
                 sleep 2
                 inst.framework.status.should == 'done'
@@ -280,7 +280,7 @@ describe 'Arachni::RPC::Server::Framework' do
         it 'sets the framework state to finished and wait for plugins to finish' do
             instance = instance_spawn
             instance.opts.url = web_server_url_for( :framework_hpg )
-            instance.modules.load( 'test' )
+            instance.checks.load( 'test' )
             instance.plugins.load( { 'wait' => {} } )
             instance.framework.run.should be_true
             instance.framework.busy?.should be_true
@@ -461,12 +461,12 @@ describe 'Arachni::RPC::Server::Framework' do
 
     describe '#restrict_to_elements' do
         it 'restricts the audit to the provided element signatures' do
-            @opts.dir['modules'] = fixtures_path + '/taint_module/'
+            @opts.dir['checks'] = fixtures_path + '/taint_check/'
 
             inst = instance_spawn
             inst.opts.url = web_server_url_for( :framework_simple ) + '/restrict_to_elements'
             inst.opts.audit_links = true
-            inst.modules.load( 'taint' )
+            inst.checks.load( 'taint' )
 
             res = Arachni::HTTP::Client.get( inst.opts.url.to_s, mode: :sync )
 
@@ -483,12 +483,12 @@ describe 'Arachni::RPC::Server::Framework' do
     end
     describe '#update_page_queue' do
         it 'pushes the provided page objects to the page audit queue' do
-            @opts.dir['modules'] = fixtures_path + '/taint_module/'
+            @opts.dir['checks'] = fixtures_path + '/taint_check/'
             url = web_server_url_for( :framework_simple )
             inst = instance_spawn
             inst.opts.url = url
             inst.opts.audit_links = true
-            inst.modules.load( 'taint' )
+            inst.checks.load( 'taint' )
 
             url_to_audit = url +  '/restrict_to_elements'
             res = Arachni::HTTP::Client.get( url_to_audit, mode: :sync )

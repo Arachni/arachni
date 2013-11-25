@@ -47,7 +47,7 @@ class Arachni::Reports::Stdout < Arachni::Report::Base
         print_info '* Cookies'  if auditstore.options['audit_cookies']
         print_info '* Headers'  if auditstore.options['audit_headers']
         print_line
-        print_status 'Modules: ' + auditstore.options['mods'].join( ', ' )
+        print_status 'Checks: ' + auditstore.options['mods'].join( ', ' )
 
         if auditstore.options['exclude'].any? ||
             auditstore.options['include'].any? ||

@@ -5,7 +5,7 @@ describe Arachni::Element::Form do
     it_should_behave_like 'auditable', url: web_server_url_for( :form )
 
     before( :all ) do
-        @utils = Arachni::Module::Utilities
+        @utils = Arachni::Utilities
         @url = @utils.normalize_url( web_server_url_for( :form ) )
 
         @options = {

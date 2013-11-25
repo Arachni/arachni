@@ -19,15 +19,15 @@ lib = Options.dir['lib']
 require lib + 'version'
 require lib + 'ruby'
 require lib + 'error'
-require lib + 'support'
 require lib + 'utilities'
+require lib + 'support'
 require lib + 'uri'
 require lib + 'component/manager'
 require lib + 'platform'
 require lib + 'spider'
 require lib + 'parser'
 require lib + 'issue'
-require lib + 'module'
+require lib + 'check'
 require lib + 'plugin'
 require lib + 'audit_store'
 require lib + 'http'
@@ -42,7 +42,7 @@ require Options.dir['mixins'] + 'progress_bar'
 # The Framework class ties together all the components.
 #
 # It's the brains of the operation, it bosses the rest of the classes around.
-# It runs the audit, loads modules and reports and runs them according to
+# It runs the audit, loads checks and reports and runs them according to
 # user options.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
@@ -83,8 +83,8 @@ class Framework
     # @return   [Arachni::Report::Manager]
     attr_reader :reports
 
-    # @return   [Arachni::Module::Manager]
-    attr_reader :modules
+    # @return   [Arachni::Check::Manager]
+    attr_reader :checks
 
     # @return   [Arachni::Plugin::Manager]
     attr_reader :plugins
@@ -127,7 +127,7 @@ class Framework
 
         @opts = opts
 
-        @modules = Module::Manager.new( self )
+        @checks  = Check::Manager.new( self )
         @reports = Report::Manager.new( @opts )
         @plugins = Plugin::Manager.new( self )
 
@@ -143,7 +143,7 @@ class Framework
         @page_queue_total_size = 0
 
         # will hold paths found by the spider in order to be converted to pages
-        # and ultimately audited by the modules
+        # and ultimately audited by the checks
         @url_queue = Queue.new
         @url_queue_total_size = 0
 
@@ -199,7 +199,7 @@ class Framework
     end
 
     #
-    # Runs loaded modules against a given `page`
+    # Runs loaded checks against a given `page`
     #
     # It will audit just the given page and not use the {Trainer} -- i.e. ignore
     # any new elements that might appear as a result.
@@ -240,18 +240,18 @@ class Framework
 
         perform_browser_analysis( page )
 
-        @modules.schedule.each do |mod|
+        @checks.schedule.each do |check|
             wait_if_paused
-            run_module_against_page( mod, page )
+            check_page( check, page )
         end
 
         harvest_http_responses
 
-        if !Module::Auditor.timeout_candidates.empty?
+        if !Check::Auditor.timeout_candidates.empty?
             print_line
             print_status "Verifying timeout-analysis candidates for: #{page.url}"
             print_info '---------------------------------------'
-            Module::Auditor.timeout_audit_run
+            Check::Auditor.timeout_audit_run
         end
 
         true
@@ -416,14 +416,14 @@ class Framework
 
         # restore the original redundancy rules and their counters
         opts['redundant'] = @orig_redundant
-        opts['mods'] = @modules.keys
+        opts['mods'] = @checks.keys
 
         AuditStore.new(
             version:  version,
             revision: revision,
             options:  opts,
             sitemap:  (auditstore_sitemap || []).sort,
-            issues:   @modules.results,
+            issues:   @checks.results,
             plugins:  @plugins.results
         )
     end
@@ -473,30 +473,30 @@ class Framework
         end
     end
 
-    # @return    [Array<Hash>]  Information about all available modules.
-    def list_modules
-        loaded = @modules.loaded
+    # @return    [Array<Hash>]  Information about all available checks.
+    def list_checks
+        loaded = @checks.loaded
 
         begin
-            @modules.clear
-            @modules.available.map do |name|
-                path = @modules.name_to_path( name )
-                next if !lsmod_match?( path )
+            @checks.clear
+            @checks.available.map do |name|
+                path = @checks.name_to_path( name )
+                next if !lscheck_match?( path )
 
-                @modules[name].info.merge(
+                @checks[name].info.merge(
                     mod_name:  name,
                     shortname: name,
-                    author:    [@modules[name].info[:author]].
+                    author:    [@checks[name].info[:author]].
                                    flatten.map { |a| a.strip },
                     path:      path.strip
                 )
             end.compact
         ensure
-            @modules.clear
-            @modules.load loaded
+            @checks.clear
+            @checks.load loaded
         end
     end
-    alias :lsmod :list_modules
+    alias :lscheck :list_checks
 
     # @return    [Array<Hash>]  Information about all available reports.
     def list_reports
@@ -693,7 +693,7 @@ class Framework
         clear_observers
         reset_trainer
         reset_spider
-        @modules.clear
+        @checks.clear
         @reports.clear
         @plugins.clear
     end
@@ -706,10 +706,10 @@ class Framework
     def self.reset
         UI::Output.reset_output_options
         Platform::Manager.reset
-        Module::Auditor.reset
+        Check::Auditor.reset
         ElementFilter.reset
         Element::Capabilities::Auditable.reset
-        Module::Manager.reset
+        Check::Manager.reset
         Plugin::Manager.reset
         Report::Manager.reset
         HTTP::Client.reset
@@ -772,7 +772,7 @@ class Framework
     # Performs the audit
     #
     # Runs the spider, pushes each page or url to their respective audit queue,
-    # calls {#audit_queues}, runs the timeout attacks ({Arachni::Module::Auditor.timeout_audit_run}) and finally re-runs
+    # calls {#audit_queues}, runs the timeout attacks ({Arachni::Check::Auditor.timeout_audit_run}) and finally re-runs
     # {#audit_queues} in case the timing attacks uncovered a new page.
     #
     def audit
@@ -797,7 +797,7 @@ class Framework
             end
         end
 
-        return if modules.empty?
+        return if checks.empty?
 
         # Keep auditing until there are no more resources in the queues and the
         # browsers have stopped spinning.
@@ -816,7 +816,7 @@ class Framework
     # Audits the URL and Page queues
     #
     def audit_queues
-        return if @audit_queues_done == false || modules.empty? || !has_audit_workload?
+        return if @audit_queues_done == false || checks.empty? || !has_audit_workload?
 
         @status            = :auditing
         @audit_queues_done = false
@@ -908,22 +908,20 @@ class Framework
         session.ensure_logged_in
     end
 
-    #
-    # Passes a page to the module and runs it.
-    # It also handles any exceptions thrown by the module at runtime.
+    # Passes a page to the check and runs it.
+    # It also handles any exceptions thrown by the check at runtime.
     #
     # @see Page
     #
-    # @param    [Arachni::Module::Base]   mod      the module to run
+    # @param    [Arachni::Check::Base]   check  The check to run.
     # @param    [Page]    page
-    #
-    def run_module_against_page( mod, page )
+    def check_page( check, page )
         begin
-            @modules.run_one( mod, page )
+            @checks.run_one( check, page )
         rescue SystemExit
             raise
         rescue => e
-            print_error "Error in #{mod.to_s}: #{e.to_s}"
+            print_error "Error in #{check.to_s}: #{e.to_s}"
             print_error_backtrace e
         end
     end
@@ -932,8 +930,8 @@ class Framework
         regexp_array_match( @opts.lsrep, path )
     end
 
-    def lsmod_match?( path )
-        regexp_array_match( @opts.lsmod, path )
+    def lscheck_match?( path )
+        regexp_array_match( @opts.lscheck, path )
     end
 
     def lsplug_match?( path )

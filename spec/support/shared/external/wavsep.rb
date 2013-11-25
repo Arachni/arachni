@@ -45,7 +45,7 @@ shared_examples_for 'wavsep' do
         {
             'Description' => {
                 url:        'URL to audit',
-                modules:    'modules to load',
+                checks:     'checks to load',
                 vulnerable: [ 'Vulnerable URLs' ]
             }
         }
@@ -62,16 +62,16 @@ shared_examples_for 'wavsep' do
                     context 'and the webapp returns' do
                         test_cases( http_method ).each do |description, info|
                             context description do
-                                it "logs #{info[:vulnerable].size} unique resources using #{[info[:modules]].flatten.join( ', ' )}" do
+                                it "logs #{info[:vulnerable].size} unique resources using #{[info[:checks]].flatten.join( ', ' )}" do
                                     pending "'WAVSEP_URL' env variable has not been set." if !wavsep_url
 
-                                    @framework.modules.issues.should be_empty
+                                    @framework.checks.issues.should be_empty
 
                                     @framework.opts.url = "#{url}/#{info[:url]}"
-                                    @framework.modules.load info[:modules]
+                                    @framework.checks.load info[:checks]
                                     @framework.run
 
-                                    urls      = @framework.modules.issues.map(&:url).uniq.sort
+                                    urls      = @framework.checks.issues.map(&:url).uniq.sort
                                     resources = urls.map { |url| url.split('?').first }.uniq.sort
                                     expected  = info[:vulnerable].map { |resource| @framework.opts.url + resource }
 

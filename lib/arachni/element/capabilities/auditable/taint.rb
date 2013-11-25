@@ -69,7 +69,7 @@ module Auditable::Taint
     #       {Element::Base#platforms applicable platforms} for the
     #       {Base#action resource} to be audited.
     # @param  [Hash]    opts
-    #   Options as described in {Arachni::Module::Auditor::OPTIONS} and
+    #   Options as described in {Arachni::Check::Auditor::OPTIONS} and
     #   {TAINT_OPTIONS}.
     #
     # @return   [Bool]

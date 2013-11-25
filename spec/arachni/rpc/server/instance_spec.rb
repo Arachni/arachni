@@ -3,7 +3,7 @@ require 'spec_helper'
 describe 'Arachni::RPC::Server::Instance' do
     before( :all ) do
         @opts     = Arachni::Options.instance
-        @utils    = Arachni::Module::Utilities
+        @utils    = Arachni::Utilities
         @instance = instance_spawn
     end
 
@@ -67,7 +67,7 @@ describe 'Arachni::RPC::Server::Instance' do
             end
         end
 
-        [:list_platforms, :list_modules, :list_plugins, :list_reports, :busy?, :report].each do |m|
+        [:list_platforms, :list_checks, :list_plugins, :list_reports, :busy?, :report].each do |m|
             describe "##{m}" do
                 it "delegates to Framework##{m}" do
                     @instance.service.send(m).should == @instance.framework.send(m)
@@ -120,7 +120,7 @@ describe 'Arachni::RPC::Server::Instance' do
                     url:         web_server_url_for( :framework_simple ),
                     audit_links: true,
                     audit_forms: true,
-                    modules:     :test,
+                    checks:     :test,
                     slaves:      [{
                         url: slave.url,
                         token: instance_token_for( slave )
@@ -167,7 +167,7 @@ describe 'Arachni::RPC::Server::Instance' do
                         'url'         => web_server_url_for( :framework_simple ),
                         'audit_links '=> true,
                         'audit_forms' => true,
-                        'modules'     => 'test',
+                        'checks'     => 'test',
                         slaves:      [{
                             url: slave.url,
                             token: instance_token_for( slave )
@@ -205,7 +205,7 @@ describe 'Arachni::RPC::Server::Instance' do
                                         url:         web_server_url_for( :framework_simple ),
                                         audit_links: true,
                                         audit_forms: true,
-                                        modules:     :test,
+                                        checks:     :test,
                                         spawns:      4,
                                         grid_mode:   :aggregate
                                     )
@@ -236,7 +236,7 @@ describe 'Arachni::RPC::Server::Instance' do
                                         url:         web_server_url_for( :framework_simple ),
                                         audit_links: true,
                                         audit_forms: true,
-                                        modules:     :test,
+                                        checks:     :test,
                                         spawns:      4,
                                         grid_mode:   :balance
                                     )
@@ -268,7 +268,7 @@ describe 'Arachni::RPC::Server::Instance' do
                                             url:         web_server_url_for( :framework_simple ),
                                             audit_links: true,
                                             audit_forms: true,
-                                            modules:     :test,
+                                            checks:     :test,
                                             spawns:      4,
                                             grid_mode:   :blahblah
                                         )
@@ -287,7 +287,7 @@ describe 'Arachni::RPC::Server::Instance' do
                                         url:         web_server_url_for( :framework_simple ),
                                         audit_links: true,
                                         audit_forms: true,
-                                        modules:     :test,
+                                        checks:     :test,
                                         spawns:      4,
                                         grid:        true
                                     )
@@ -362,7 +362,7 @@ describe 'Arachni::RPC::Server::Instance' do
                             url:         web_server_url_for( :framework_simple ),
                             audit_links: true,
                             audit_forms: true,
-                            modules:     :test,
+                            checks:     :test,
                             spawns:      4
                         )
                         sleep 1 while instance.service.busy?
@@ -383,7 +383,7 @@ describe 'Arachni::RPC::Server::Instance' do
                             url:         web_server_url_for( :framework_simple ),
                             audit_links: true,
                             audit_forms: true,
-                            modules:     :test,
+                            checks:     :test,
                             spawns:      4
                         )
 
@@ -413,7 +413,7 @@ describe 'Arachni::RPC::Server::Instance' do
                             url:         web_server_url_for( :framework_simple ),
                             audit_links: true,
                             audit_forms: true,
-                            modules:     :test,
+                            checks:     :test,
                             spawns:      spawns,
                             link_count_limit: link_count_limit
                         )
@@ -432,7 +432,7 @@ describe 'Arachni::RPC::Server::Instance' do
                             url:         web_server_url_for( :framework_simple ),
                             audit_links: true,
                             audit_forms: true,
-                            modules:     :test,
+                            checks:     :test,
                             spawns:      spawns,
                             http_req_limit: http_req_limit
                         )
@@ -450,7 +450,7 @@ describe 'Arachni::RPC::Server::Instance' do
                     url:         web_server_url_for( :framework_simple ),
                     audit_links: true,
                     audit_forms: true,
-                    modules:     :test,
+                    checks:     :test,
                     spawns:      1
                 )
                 sleep 1 while @progress_instance.service.busy?
@@ -593,14 +593,14 @@ describe 'Arachni::RPC::Server::Instance' do
         end
     end
 
-    describe '#modules' do
-        it 'provides access to the ModuleManager' do
-            @instance.modules.available.sort.should == %w(test test2 test3).sort
+    describe '#checks' do
+        it 'provides access to the checks manager' do
+            @instance.checks.available.sort.should == %w(test test2 test3).sort
         end
     end
 
     describe '#plugins' do
-        it 'provides access to the PluginManager' do
+        it 'provides access to the plugin manager' do
             @instance.plugins.available.sort.should == %w(wait bad distributable loop default with_options spider_hook).sort
         end
     end

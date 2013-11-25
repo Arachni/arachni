@@ -5,11 +5,8 @@
 
 module Arachni
 
-lib = Options.dir['lib']
-
-require lib + 'module/utilities'
 require 'nokogiri'
-require lib + 'nokogiri/xml/node'
+require Options.dir['lib'] + 'nokogiri/xml/node'
 
 #
 # Crawls the target webapp until there are no new paths left.

@@ -7,7 +7,7 @@ describe 'WAVSEP XSS' do
         {
             'Reflected Cross Site Scripting' => {
                 url:        "RXSS-Detection-Evaluation-#{http_method}/",
-                modules:    'xss*',
+                checks:    'xss*',
 
                 # Misses a lot because we haven't got JS/DOM support yet.
                 vulnerable: [

@@ -63,7 +63,7 @@ class AuditStore
     #
     attr_reader :delta_time
 
-    MODULE_NAMESPACE = ::Arachni::Modules
+    MODULE_NAMESPACE = ::Arachni::Checks
 
     ORDER = [
         Severity::HIGH,
@@ -262,7 +262,7 @@ class AuditStore
             issue.headers.delete( :response )
 
             new_issues[__id].internal_modname ||=
-                get_internal_module_name( new_issues[__id].mod_name )
+                get_internal_check_name( new_issues[__id].mod_name )
             new_issues[__id].variations << issue.deep_clone
 
             variation_keys.each do |key|
@@ -286,7 +286,7 @@ class AuditStore
         new_issues
     end
 
-    def get_internal_module_name( modname )
+    def get_internal_check_name( modname )
         MODULE_NAMESPACE.constants.each do |mod|
             klass = MODULE_NAMESPACE.const_get( mod )
             return mod.to_s if klass.info[:name] == modname

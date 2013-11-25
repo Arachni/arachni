@@ -186,11 +186,11 @@ class Options
     attr_accessor :redirect_limit
 
     #
-    # List modules, based on regexps, and exit?
+    # List checks, based on regexps, and exit.
     #
     # @return    [Array<Regexp>]
     #
-    attr_accessor :lsmod
+    attr_accessor :lscheck
 
     #
     # List reports and exit?
@@ -246,11 +246,11 @@ class Options
     attr_accessor :audit_headers
 
     #
-    # Array of modules to load
+    # Array of checks to load
     #
     # @return    [Array]
     #
-    attr_accessor :mods
+    attr_accessor :checks
 
     #
     # Array of reports to load
@@ -553,7 +553,7 @@ class Options
         @dir['logs']    = ENV['ARACHNI_FRAMEWORK_LOGDIR'] ?
             "#{ENV['ARACHNI_FRAMEWORK_LOGDIR']}/" : @dir['root'] + 'logs/'
 
-        @dir['modules'] = @dir['components'] + 'modules/'
+        @dir['checks']  = @dir['components'] + 'checks/'
         @dir['reports'] = @dir['components'] + 'reports/'
         @dir['plugins'] = @dir['components'] + 'plugins/'
         @dir['rpcd_handlers']   = @dir['components'] + 'rpcd_handlers/'
@@ -589,15 +589,15 @@ class Options
         @link_count_limit = nil
         @redirect_limit   = 20
 
-        @lsmod  = []
-        @lsrep  = []
+        @lscheck = []
+        @lsrep   = []
 
         @http_req_limit  = 20
         @http_queue_size = 500
         @http_username   = nil
         @http_password   = nil
 
-        @mods = []
+        @checks = []
 
         @reports    = {}
 
@@ -947,18 +947,16 @@ class Options
     end
 
     # these options need to contain Array<String>
-    [ :exclude_cookies, :exclude_vectors, :mods, :restrict_paths,
+    [ :exclude_cookies, :exclude_vectors, :checks, :restrict_paths,
       :extend_paths ].each do |m|
         define_method( "#{m}=".to_sym ) do |arg|
             arg = [arg].flatten.map { |s| s.to_s }
             instance_variable_set( "@#{m}".to_sym, arg )
         end
     end
-    alias :modules :mods
-    alias :modules= :mods=
 
     # these options need to contain Array<Regexp>
-    [ :exclude_pages, :include, :exclude, :lsmod, :lsplat, :lsrep, :lsplug ].each do |m|
+    [ :exclude_pages, :include, :exclude, :lscheck, :lsplat, :lsrep, :lsplug ].each do |m|
         define_method( "#{m}=".to_sym ) do |arg|
             arg = [arg].flatten.map { |s| s.is_a?( Regexp ) ? s : Regexp.new( s.to_s ) }
             instance_variable_set( "@#{m}".to_sym, arg )
@@ -971,7 +969,7 @@ class Options
             [ '--help',              '-h', GetoptLong::NO_ARGUMENT ],
             [ '--verbosity',         '-v', GetoptLong::NO_ARGUMENT ],
             [ '--only-positives',    '-k', GetoptLong::NO_ARGUMENT ],
-            [ '--lsmod',                   GetoptLong::OPTIONAL_ARGUMENT ],
+            [ '--lscheck',                   GetoptLong::OPTIONAL_ARGUMENT ],
             [ '--lsrep',                   GetoptLong::OPTIONAL_ARGUMENT ],
             [ '--lsplat',                  GetoptLong::NO_ARGUMENT ],
             [ '--audit-links',       '-g', GetoptLong::NO_ARGUMENT ],
@@ -986,8 +984,7 @@ class Options
             [ '--dom-depth',               GetoptLong::REQUIRED_ARGUMENT ],
             [ '--redirect-limit',    '-q', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--link-count',        '-u', GetoptLong::REQUIRED_ARGUMENT ],
-            [ '--mods',              '-m', GetoptLong::REQUIRED_ARGUMENT ],
-            [ '--modules',                 GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--checks',                  GetoptLong::REQUIRED_ARGUMENT ],
             [ '--report',                  GetoptLong::REQUIRED_ARGUMENT ],
             [ '--repload',                 GetoptLong::REQUIRED_ARGUMENT ],
             [ '--authed-by',               GetoptLong::REQUIRED_ARGUMENT ],
@@ -1137,8 +1134,8 @@ class Options
                     when '--redirect-limit'
                         @redirect_limit = arg.to_i
 
-                    when '--lsmod'
-                        @lsmod << Regexp.new( arg.to_s )
+                    when '--lscheck'
+                        @lscheck << Regexp.new( arg.to_s )
 
                     when '--lsplug'
                         @lsplug << Regexp.new( arg.to_s )
@@ -1176,8 +1173,8 @@ class Options
                     when '--audit-headers'
                         @audit_headers = true
 
-                    when '--mods', '--modules'
-                        @mods = arg.to_s.split( ',' )
+                    when '--checks'
+                        @checks = arg.to_s.split( ',' )
 
                     when '--report'
                         report, opt_str = arg.split( ':' )
@@ -1529,7 +1526,7 @@ class Options
 
         case key
 
-            when 'mods'
+            when 'checks'
                 var = var.join( ',' )
 
             when 'restrict-paths'

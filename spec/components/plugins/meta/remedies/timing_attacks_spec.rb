@@ -7,8 +7,8 @@ describe name_from_filename do
         options.url = url
         options.audit :forms
 
-        # this module uses the least amount of seeds, should save us some time
-        framework.modules.load :os_cmd_injection_timing
+        # this check uses the least amount of seeds, should save us some time
+        framework.checks.load :os_cmd_injection_timing
     end
 
     def results

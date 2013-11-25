@@ -162,7 +162,7 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
 
     Example YAML file:
 -
-  # you can pass pages to be audited by grep modules (and JS in the future)
+  # you can pass pages to be audited by grep checks (and JS in the future)
   type: page
   url: http://localhost/
   # response code

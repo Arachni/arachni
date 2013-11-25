@@ -87,10 +87,10 @@ module Slave
         @issue_buffer = []
 
         # Don't store issues locally -- will still filter duplicate issues though.
-        @modules.do_not_store
+        @checks.do_not_store
 
         # Buffer discovered issues...
-        @modules.on_register_results do |issues|
+        @checks.on_register_results do |issues|
             @issue_buffer |= issues
         end
         # ... and flush it on each page audit.

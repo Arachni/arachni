@@ -10,7 +10,7 @@ module Arachni
 lib = Options.dir['lib']
 require lib + 'framework'
 require lib + 'rpc/server/spider'
-require lib + 'rpc/server/module/manager'
+require lib + 'rpc/server/check/manager'
 require lib + 'rpc/server/plugin/manager'
 
 module RPC
@@ -63,7 +63,7 @@ class Framework < ::Arachni::Framework
     end
 
     # Make these inherited methods public again (i.e. accessible over RPC).
-    [ :audit_store, :stats, :paused?, :lsmod, :list_modules, :lsplug,
+    [ :audit_store, :stats, :paused?, :lscheck, :list_checks, :lsplug,
       :list_plugins, :lsrep, :list_reports, :version, :revision, :status,
       :report_as, :lsplat, :list_platforms ].each do |m|
         private m
@@ -76,7 +76,7 @@ class Framework < ::Arachni::Framework
         super
 
         # Override standard framework components with their RPC-server counterparts.
-        @modules = Module::Manager.new( self )
+        @checks  = Check::Manager.new( self )
         @plugins = Plugin::Manager.new( self )
         @spider  = Spider.new( self )
     end

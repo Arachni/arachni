@@ -86,7 +86,7 @@ describe Arachni::HTTP::Client do
                 @http.run
                 code.should == 401
 
-                url = Arachni::Module::Utilities.uri_parse( "#{@opts.url}auth/simple-chars" )
+                url = Arachni::Utilities.uri_parse( "#{@opts.url}auth/simple-chars" )
                 url.user = 'username'
                 url.password = 'password'
                 @opts.url = url.to_s
@@ -276,7 +276,7 @@ describe Arachni::HTTP::Client do
                 @http.reset
                 cookies = @http.cookie_jar.cookies
                 cookies.size.should == 4
-                cookies.should == Arachni::Module::Utilities.cookies_from_file( '', @opts.cookie_jar )
+                cookies.should == Arachni::Utilities.cookies_from_file( '', @opts.cookie_jar )
             end
             context 'but the path is invalid' do
                 it 'raises Arachni::HTTP::CookieJar::Error::CookieJarFileNotFound' do
@@ -289,7 +289,7 @@ describe Arachni::HTTP::Client do
         context 'when the cookies option is set' do
             it 'adds those cookies to the CookieJar' do
                 cookie_jar_file = fixtures_path + 'cookies.txt'
-                @opts.cookies = Arachni::Module::Utilities.cookies_from_file( '', cookie_jar_file )
+                @opts.cookies = Arachni::Utilities.cookies_from_file( '', cookie_jar_file )
                 @http.cookie_jar.cookies.should be_empty
                 @http.reset
                 cookies = @http.cookie_jar.cookies

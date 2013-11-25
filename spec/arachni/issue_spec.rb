@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Arachni::Issue do
     before( :all ) do
         @issue_data = {
-            name: 'Module name',
+            name: 'Check name',
             elem: Arachni::Element::LINK,
             platform: :unix,
             platform_type: :os,
@@ -23,8 +23,8 @@ describe Arachni::Issue do
                 'some' => 'opts',
                 'blah' => "\xE2\x9C\x93"
             },
-            mod_name: 'Module name',
-            internal_modname: 'module_name',
+            mod_name: 'Check name',
+            internal_modname: 'check_name',
             tags: %w(these are a few tags),
             var: 'input name',
             url: 'http://test.com/stuff/test.blah?query=blah',
@@ -142,7 +142,7 @@ describe Arachni::Issue do
             i = Arachni::Issue.new
             url = 'HttP://DomainName.com/stuff here'
             i.url = url
-            i.url.should == Arachni::Module::Utilities.normalize_url( url )
+            i.url.should == Arachni::Utilities.normalize_url( url )
         end
     end
 

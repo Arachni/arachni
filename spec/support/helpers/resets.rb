@@ -9,7 +9,7 @@ def reset_options
     opts.rpc_address = 'localhost'
 
     opts.dir['plugins']        = fixtures_path + 'plugins/'
-    opts.dir['modules']        = fixtures_path + 'modules/'
+    opts.dir['checks']         = fixtures_path + 'checks/'
     opts.dir['fingerprinters'] = fixtures_path + 'fingerprinters/'
     opts.dir['logs']           = spec_path + 'support/logs/'
 

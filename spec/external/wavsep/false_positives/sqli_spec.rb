@@ -11,7 +11,7 @@ describe 'WAVSEP false-positive SQL injection' do
         {
             'SQL Injection' => {
                 url:        "SInjection-FalsePositives-#{http_method}/",
-                modules:    'sqli*',
+                checks:    'sqli*',
 
                 # I maintain that these should be logged **but** be flagged as
                 # untrusted.
@@ -24,7 +24,7 @@ describe 'WAVSEP false-positive SQL injection' do
     end
 
     easy_test do
-        @framework.modules.issues.each do |issue|
+        @framework.checks.issues.each do |issue|
             issue.trusted?.should be_false
             issue.remarks.should include :auditor
         end

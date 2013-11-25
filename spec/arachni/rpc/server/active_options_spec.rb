@@ -16,7 +16,7 @@ end
 
 describe Arachni::RPC::Server::ActiveOptions do
     before( :all ) do
-        @utils = Arachni::Module::Utilities
+        @utils = Arachni::Utilities
         @instance = instance_spawn
     end
 

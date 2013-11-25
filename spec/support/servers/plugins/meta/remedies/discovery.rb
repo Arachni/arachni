@@ -1,7 +1,7 @@
 require 'sinatra'
-require_relative '../../../modules/module_server'
+require_relative '../../../components/checks/check_server'
 
-framework.modules[:common_files].filenames.each do |name|
+framework.checks[:common_files].filenames.each do |name|
     get( "/#{name}" ) { 'stuff' }
 end
 

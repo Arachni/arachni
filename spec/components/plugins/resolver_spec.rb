@@ -5,7 +5,7 @@ describe name_from_filename do
 
     before( :all ) do
         issues = [Arachni::Issue.new( url: 'http://localhost' )]
-        framework.modules.register_results( issues )
+        framework.checks.register_results( issues )
     end
 
     it 'resolves vulnerable hostnames to IP addresses' do

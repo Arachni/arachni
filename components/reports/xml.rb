@@ -43,9 +43,9 @@ class Arachni::Reports::XML < Arachni::Report::Base
         simple_tag( 'element', 'headers' ) if auditstore.options['audit_headers']
         end_tag 'audited_elements'
 
-        start_tag 'modules'
+        start_tag 'checks'
         auditstore.options['mods'].each { |mod| add_mod( mod ) }
-        end_tag 'modules'
+        end_tag 'checks'
 
         start_tag 'filters'
 

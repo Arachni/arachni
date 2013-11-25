@@ -5,7 +5,7 @@ describe 'WAVSEP LFI' do
 
     def self.common
         {
-            modules:    [ :source_code_disclosure, :file_inclusion, :path_traversal],
+            checks:    [ :source_code_disclosure, :file_inclusion, :path_traversal],
             vulnerable: [
                 'Case01-LFI-FileClass-FilenameContext-Unrestricted-OSPath-DefaultFullInput-AnyPathReq-Read.jsp',
                 'Case02-LFI-FileClass-FilenameContext-Unrestricted-FileDirective-DefaultFullInput-AnyPathReq-Read.jsp',

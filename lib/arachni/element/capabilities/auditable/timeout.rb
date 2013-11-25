@@ -60,9 +60,9 @@ module Timeout
         @@parent = mod
 
         # @return   [Set]
-        #   Names of all loaded modules that use timing attacks.
-        def @@parent.timeout_loaded_modules
-            @@timeout_loaded_modules
+        #   Names of all loaded checks that use timing attacks.
+        def @@parent.timeout_loaded_checks
+            @@timeout_loaded_checks
         end
 
         def @@parent.timeout_candidates
@@ -267,10 +267,10 @@ module Timeout
         @@timeout_candidates_phase3    ||= []
         @@timeout_candidate_phase3_ids ||= ::Arachni::Support::LookUp::HashSet.new
 
-        # Modules which have called the timing attack audit method
-        # ({Arachni::Module::Auditor#audit_timeout}) we're interested in the
+        # Checks which have called the timing attack audit method
+        # ({Arachni::Check::Auditor#audit_timeout}) we're interested in the
         # amount, not the names, and is used to determine scan progress.
-        @@timeout_loaded_modules ||= Set.new
+        @@timeout_loaded_checks  ||= Set.new
 
         @@on_timing_attacks      ||= []
 
@@ -288,7 +288,7 @@ module Timeout
         @@timeout_candidates_phase3.clear
         @@timeout_candidate_phase3_ids.clear
 
-        @@timeout_loaded_modules.clear
+        @@timeout_loaded_checks.clear
 
         @@deduplicate = true
     end
@@ -343,7 +343,7 @@ module Timeout
             return false
         end
 
-        @@timeout_loaded_modules << @auditor.fancy_name
+        @@timeout_loaded_checks << @auditor.fancy_name
 
         delay = opts[:timeout]
         audit_timeout_debug_msg( 1, delay )

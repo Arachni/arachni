@@ -12,7 +12,7 @@ module Arachni
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Browser
-    include Module::Output
+    include Component::Output
     include Utilities
 
     # {Browser} error namespace.
