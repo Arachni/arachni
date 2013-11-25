@@ -108,7 +108,7 @@ module Auditable::Taint
 
     def match_patterns( patterns, matcher, response, opts )
         if opts[:longest_word_optimization]
-            opts[:downcased_body] = res.body.downcase
+            opts[:downcased_body] = response.body.downcase
         end
 
         case patterns
