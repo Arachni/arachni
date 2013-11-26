@@ -192,8 +192,6 @@ class Arachni::Reports::HTML < Arachni::Report::Base
         total_elements   = 0
         total_verifications = 0
 
-        crypto_issues = []
-
         filtered_hashes  = []
         anomalous_hashes = []
 
@@ -254,7 +252,6 @@ class Arachni::Reports::HTML < Arachni::Report::Base
             total_severities:       total_severities,
             total_elements:         total_elements,
             total_verifications:    total_verifications,
-            crypto_issues:          crypto_issues,
             filtered_hashes:        filtered_hashes,
             anomalous_hashes:       anomalous_hashes,
             anomalous_meta_results: anomalous_meta_results
