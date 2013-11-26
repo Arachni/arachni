@@ -4,7 +4,7 @@
 =end
 
 #
-# XPath Injection audit check.
+# XPath Injection check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #

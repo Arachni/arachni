@@ -4,7 +4,7 @@
 =end
 
 #
-# XSS in path audit check.
+# XSS in URL path check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #

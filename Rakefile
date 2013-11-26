@@ -24,14 +24,14 @@ begin
         end
 
         namespace :checks do
-            desc 'Run tests for the audit checks.'
-            RSpec::Core::RakeTask.new( :audit ) do |t|
-                t.pattern = FileList[ 'spec/components/checks/audit/**/*_spec.rb' ]
+            desc 'Run tests for the active checks.'
+            RSpec::Core::RakeTask.new( :active ) do |t|
+                t.pattern = FileList[ 'spec/components/checks/active/**/*_spec.rb' ]
             end
 
-            desc 'Run tests for the recon checks.'
-            RSpec::Core::RakeTask.new( :recon ) do |t|
-                t.pattern = FileList[ 'spec/components/checks/recon/**/*_spec.rb' ]
+            desc 'Run tests for the passive checks.'
+            RSpec::Core::RakeTask.new( :passive ) do |t|
+                t.pattern = FileList[ 'spec/components/checks/passive/**/*_spec.rb' ]
             end
         end
 

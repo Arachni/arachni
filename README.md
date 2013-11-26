@@ -284,9 +284,9 @@ Can extract and analyze:
 
 _Checks_ are system components which perform security checks and log issues.
 
-##### Audit (Active)
+##### Active
 
-Audit checks actively engage the web application via its inputs.
+Active checks engage the web application via its inputs.
 
 - SQL injection (`sqli`) -- Error based vulnerability detection.
     - Oracle
@@ -359,9 +359,9 @@ Audit checks actively engage the web application via its inputs.
 - XSS in HTML 'script' tags  (`xss_script_tag`).
 - Source code disclosure (`source_code_disclosure`)
 
-##### Recon (Passive)
+##### Passive
 
-Recon checks look for the existence of files, folders and signatures.
+Passive checks look for the existence of files, folders and signatures.
 
 - Allowed HTTP methods (`allowed_methods`).
 - Back-up files (`backup_files`).

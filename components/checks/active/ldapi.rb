@@ -4,7 +4,7 @@
 =end
 
 #
-# LDAP injection audit check.
+# LDAP injection check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #

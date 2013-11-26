@@ -4,7 +4,7 @@
 =end
 
 #
-# Cross-Site Request Forgery audit check.
+# Cross-Site Request Forgery check.
 #
 # It uses 4-pass reverse-diff analysis to determine which forms affect business logic
 # and audits them for CSRF.

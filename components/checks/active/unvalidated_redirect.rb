@@ -4,7 +4,7 @@
 =end
 
 #
-# Unvalidated redirect audit check.
+# Unvalidated redirect check.
 #
 # It audits links, forms and cookies, injects URLs and checks the `Location`
 # header field to determine whether the attack was successful.

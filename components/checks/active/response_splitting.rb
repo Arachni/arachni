@@ -4,7 +4,7 @@
 =end
 
 #
-# HTTP Response Splitting audit check.
+# HTTP Response Splitting check.
 #
 # It audits links, forms and cookies.
 #

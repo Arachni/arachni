@@ -3,7 +3,7 @@
     All rights reserved.
 =end
 
-# SQL Injection audit check.
+# SQL Injection check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #

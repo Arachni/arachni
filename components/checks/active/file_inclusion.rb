@@ -3,19 +3,15 @@
     All rights reserved.
 =end
 
-# Path Traversal audit check.
+# File inclusion check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.4.1
+# @version 0.1.1
 #
-# @see http://cwe.mitre.org/data/definitions/22.html
-# @see http://www.owasp.org/index.php/Path_Traversal
-# @see http://projects.webappsec.org/Path-Traversal
-class Arachni::Checks::PathTraversal < Arachni::Check::Base
-
-    MINIMUM_TRAVERSALS = 0
-    MAXIMUM_TRAVERSALS = 6
+# @see http://cwe.mitre.org/data/definitions/98.html
+# @see https://www.owasp.org/index.php/PHP_File_Inclusion
+class Arachni::Checks::FileInclusion < Arachni::Check::Base
 
     def self.options
         @options ||= {
@@ -31,6 +27,21 @@ class Arachni::Checks::PathTraversal < Arachni::Check::Base
                 ],
                 tomcat: [
                     /<web\-app/im
+                ],
+
+                # Generic PHP errors.
+                php: [
+                    /An error occurred in script/,
+                    /Failed opening '.*?' for inclusion/,
+                    /Failed opening required/,
+                    /failed to open stream:.*/,
+                    /<b>Warning<\/b>:\s+file/,
+                    /<b>Warning<\/b>:\s+read_file/,
+                    /<b>Warning<\/b>:\s+highlight_file/,
+                    /<b>Warning<\/b>:\s+show_source/
+                ],
+                perl: [
+                    /in .* at .* line d+?\./
                 ]
             },
 
@@ -53,35 +64,20 @@ class Arachni::Checks::PathTraversal < Arachni::Check::Base
     end
 
     def self.payloads
-        return @payloads if @payloads
-
-        @payloads = {
+        @payloads ||= {
             unix:    [
                 '/proc/self/environ',
                 '/etc/passwd'
             ],
             windows: [
-                'boot.ini',
-                'windows/win.ini',
-                'winnt/win.ini'
-            ].map { |payload| [payload, "#{payload}#{'.'* 700}"] }.flatten
+                '/boot.ini',
+                '/windows/win.ini',
+                '/winnt/win.ini'
+            ].map { |p| [p, "c:#{p}", "#{p}#{'.'* 700}", p.gsub( '/', '\\' ) ] }.flatten,
+            tomcat: [ '/WEB-INF/web.xml', '\WEB-INF\web.xml' ]
         }.inject({}) do |h, (platform, payloads)|
-            h[platform] = payloads.map do |payload|
-                trv = '/'
-                (MINIMUM_TRAVERSALS..MAXIMUM_TRAVERSALS).map do
-                    trv << '../'
-                    [ "#{trv}#{payload}", "file://#{trv}#{payload}" ]
-                end
-            end.flatten
-
-            h
+            h.merge platform => payloads.map { |p| [p, "file://#{p}" ] }.flatten
         end
-
-        @payloads[:tomcat] = [ '/../../', '../../', ].map do |trv|
-             [ "#{trv}WEB-INF/web.xml", "file://#{trv}WEB-INF/web.xml" ]
-        end.flatten
-
-        @payloads
     end
 
     def run
@@ -90,31 +86,27 @@ class Arachni::Checks::PathTraversal < Arachni::Check::Base
 
     def self.info
         {
-            name:        'Path Traversal',
+            name:        'File Inclusion',
             description: %q{It injects paths of common files (/etc/passwd and boot.ini)
-                and evaluates the existence of a path traversal vulnerability
-                based on the presence of relevant content in the HTML responses.},
+                and evaluates the existence of a file inclusion vulnerability
+                based on the presence of relevant content or errors in the HTTP responses.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.4.1',
+            version:     '0.1.1',
             references:  {
-                'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
-                'WASC'  => 'http://projects.webappsec.org/Path-Traversal'
+                'OWASP' => 'https://www.owasp.org/index.php/PHP_File_Inclusion'
             },
-            targets:     %w(Unix Windows Tomcat),
+            targets:     %w(Unix Windows Tomcat PHP Perl),
 
             issue:       {
-                name:            %q{Path Traversal},
+                name:            %q{File Inclusion},
                 description:     %q{The web application enforces improper limitation
-    of a pathname to a restricted directory.},
-                tags:            %w(path traversal injection regexp),
-                cwe:             '22',
+                    of a pathname.},
+                tags:            %w(file inclusion error injection regexp),
+                cwe:             '98',
                 severity:        Severity::HIGH,
-                cvssv2:          '4.3',
                 remedy_guidance: %q{User inputs must be validated and filtered
-    before being used as a part of a filesystem path.},
-                remedy_code:     '',
-                metasploitable:  'unix/webapp/arachni_path_traversal'
+                    before being used as a part of a filesystem path.}
             }
 
         }

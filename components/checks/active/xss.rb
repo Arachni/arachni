@@ -3,7 +3,7 @@
     All rights reserved.
 =end
 
-# XSS audit check
+# XSS  check.
 #
 # It doesn't just look for the injected XSS string in the HTML code
 # but actually parses the code and looks for the injected element proper.
