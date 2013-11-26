@@ -10,7 +10,6 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
 
         @positive = Arachni::Element::Link.new( url: @url + '/true', inputs: @inputs )
         @positive.auditor = @auditor
-        @positive.disable_deduplication
 
         @positive_high_res = Arachni::Element::Link.new(
             url: @url + '/high_response_time',
@@ -20,7 +19,6 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
 
         @negative = Arachni::Element::Link.new( url: @url + '/false', inputs: @inputs )
         @negative.auditor = @auditor
-        @negative.disable_deduplication
 
         @run = proc do
             Arachni::HTTP::Client.run
@@ -90,7 +88,6 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
                     inputs: @inputs.merge( mili: true )
                 )
                 c.auditor = @auditor
-                c.disable_deduplication
                 c.audit_options[:skip_like] = proc { |m| m.altered == 'multi' }
 
                 c.timeout_analysis( '__TIME__', @timeout_opts.merge( timeout: 2000 ) )
@@ -120,7 +117,6 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
             it 'adds the given integer to the expected webapp delay' do
                 c = Arachni::Element::Link.new( url: @url + '/add', inputs: @inputs )
                 c.auditor = @auditor
-                c.disable_deduplication
 
                 c.timeout_analysis(
                     '__TIME__',

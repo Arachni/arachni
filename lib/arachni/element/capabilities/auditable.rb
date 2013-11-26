@@ -11,11 +11,9 @@ require lib + 'element/capabilities/mutable'
 
 module Element::Capabilities
 
-#
 # Provides audit functionality to {Arachni::Element::Mutable} elements.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 module Auditable
     include Utilities
     include Mutable
@@ -27,51 +25,41 @@ module Auditable
     include Timeout
     include RDiff
 
-    #
     # Sets the auditor for this element.
     #
     # The auditor provides its output, HTTP and issue logging interfaces.
     #
     # @return   [Arachni::Check::Auditor]
-    #
     attr_accessor :auditor
 
-    #
     # Frozen version of {#inputs}, has all the original name/values.
     #
     # @return   [Hash]
-    #
     attr_reader   :original
 
-    #
     # @return [Hash]    Audit and general options for convenience's sake.
-    #
     attr_accessor   :audit_options
 
-    #
     # Default audit options.
-    #
     OPTIONS = {
         # Optionally enable skipping of already audited inputs, disabled by default.
-        redundant: false,
+        redundant:     false,
 
         # Perform requests asynchronously.
-        mode:      :async,
+        mode:          :async,
 
         # Block to be passed each mutation right before being submitted.
         # Allows for last minute changes.
-        each_mutation:  nil,
+        each_mutation: nil,
 
         # Block to be passed each mutation to determine if it should be skipped.
-        skip_like: nil
+        skip_like:     nil
     }
 
-    #
     # Empties the de-duplication/uniqueness look-up table.
     #
     # Unless you're sure you need this, set the :redundant flag to true
     # when calling audit methods to bypass it.
-    #
     def self.reset
         @@audited          = Support::LookUp::HashSet.new
         @@skip_like_blocks = []
@@ -81,13 +69,16 @@ module Auditable
     end
     reset
 
+    def self.timeout_audit_run
+        Timeout.run
+    end
+
     # Removes workload restrictions and allows all elements to be audited.
     def self.reset_instance_scope
         @@restrict_to_elements = Support::LookUp::HashSet.new( hasher: :to_i )
     end
     reset_instance_scope
 
-    #
     # Restricts the audit to a specific set of elements.
     #
     # *Caution*: Each call overwrites the last.
@@ -96,7 +87,6 @@ module Auditable
     #   Element audit IDs as returned by {#scope_audit_id}.
     #
     # @see scope_audit_id
-    #
     def self.restrict_to_elements( elements )
         self.reset_instance_scope
         elements.each { |elem| @@restrict_to_elements << elem }
@@ -116,7 +106,6 @@ module Auditable
         @audit_options = {}
     end
 
-    #
     # Frozen inputs.
     #
     # If you want to change it you'll either have to use {#update}
@@ -124,32 +113,27 @@ module Auditable
     # will also be frozen.
     #
     # @return   [Hash]
-    #
     def inputs
         @inputs.freeze
     end
 
-    #
     # @param  [Hash]  hash Inputs/params.
     #
     # @note Will convert keys and values to strings.
     #
     # @see #inputs
-    #
     def inputs=( hash )
         @inputs = (hash || {}).inject({}) { |h, (k, v)| h[k.to_s] = v.to_s.freeze; h}
         rehash
         self.inputs
     end
 
-    #
     # Checks whether or not the given inputs match the inputs ones.
     #
     # @param    [Hash, Array, String, Symbol]   args
     #   Names of inputs to check (also accepts var-args).
     #
     # @return   [Bool]
-    #
     def has_inputs?( *args )
         if (h = args.first).is_a?( Hash )
             h.each { |k, v| return false if self[k] != v }
@@ -159,7 +143,6 @@ module Auditable
         end
     end
 
-    #
     # @param    [Hash]  hash
     #   Inputs with which to update the {#inputs} inputs.
     #
@@ -167,7 +150,6 @@ module Auditable
     #
     # @see #inputs
     # @see #inputs=
-    #
     def update( hash )
         self.inputs = self.inputs.merge( hash )
         self
@@ -183,25 +165,21 @@ module Auditable
         end
     end
 
-    #
     # Shorthand {#inputs} reader.
     #
     # @param    [#to_s] k   key
     #
     # @return   [String]
-    #
     def []( k )
         self.inputs[k.to_s]
     end
 
-    #
     # Shorthand {#inputs} writer.
     #
     # @param    [#to_s] k   key
     # @param    [#to_s] v   value
     #
     # @see #update
-    #
     def []=( k, v )
         update( { k => v } )
         self[k]
@@ -216,7 +194,6 @@ module Auditable
         @hash ||= rehash
     end
 
-    #
     # When working in High Performance Grid mode the instances have
     # a very specific list of elements which they are allowed to audit.
     #
@@ -226,7 +203,6 @@ module Auditable
     # no-matter what.
     #
     # This is mainly used on elements discovered during audit-time by the trainer.
-    #
     def override_instance_scope
         @override_instance_scope = true
     end
@@ -235,16 +211,13 @@ module Auditable
         @override_instance_scope = false
     end
 
-    #
     # Does this element override the instance scope?
     #
     # @see override_instance_scope
-    #
     def override_instance_scope?
         @override_instance_scope ||= false
     end
 
-    #
     # Provides a more generalized audit ID which does not take into account
     # the auditor's name nor timeout value of injection string.
     #
@@ -254,7 +227,6 @@ module Auditable
     # @param    [Hash]  opts    {#audit}    opts
     #
     # @return   [Integer]   Hash ID.
-    #
     def scope_audit_id( opts = {} )
         opts = {} if !opts
         audit_id( nil, opts.merge(
@@ -264,7 +236,6 @@ module Auditable
         )).persistent_hash
     end
 
-    #
     # Must be implemented by the including class and perform the appropriate
     # HTTP request (get/post/whatever) for the current element.
     #
@@ -277,7 +248,6 @@ module Auditable
     #
     # @see #submit
     # @abstract
-    #
     def http_request( opts, &block )
     end
 
@@ -319,7 +289,6 @@ module Auditable
         http_request( options, &block )
     end
 
-    #
     # Submits mutations of self and calls the block to handle the responses.
     #
     # @note Requires an {#auditor}.
@@ -356,7 +325,6 @@ module Auditable
     #   On missing `block` or unsupported `payloads` type.
     #
     # @see #submit
-    #
     def audit( payloads, opts = { }, &block )
         fail ArgumentError, 'Missing block.' if !block_given?
 
@@ -417,7 +385,6 @@ module Auditable
         "Auditing #{self.type} variable '#{self.altered}' with action '#{self.action}'."
     end
 
-    #
     # Returns an audit ID string used to identify the audit of `self` by its
     # {#auditor}.
     #
@@ -428,7 +395,6 @@ module Auditable
     # @param  [Hash]    opts
     #
     # @return  [String]
-    #
     def audit_id( injection_str = '', opts = {} )
         vars = inputs.keys.sort.to_s
 
@@ -458,7 +424,7 @@ module Auditable
     #
     # @see .skip_like_blocks
     def matches_skip_like_blocks?
-        Arachni::Element::Capabilities::Auditable.matches_skip_like_blocks?( self )
+        Auditable.matches_skip_like_blocks? self
     end
 
     #
@@ -554,7 +520,7 @@ module Auditable
 
         audit_id = audit_id( injection_str, @audit_options )
         return false if !@audit_options[:redundant] && audited?( audit_id )
-        audited( audit_id )
+        audited audit_id
 
         if matches_skip_like_blocks?
             print_debug 'Element matches one or more skip_like blocks, skipping.'
@@ -569,7 +535,6 @@ module Auditable
 
         # Iterate over all fuzz variations and audit each one.
         each_mutation( injection_str, @audit_options ) do |elem|
-
             if Options.exclude_vectors.include?( elem.altered )
                 print_info "Skipping audit of '#{elem.altered}' #{type} vector."
                 next
@@ -632,12 +597,6 @@ module Auditable
         super || redundant_path?( url )
     end
 
-    # impersonate the auditor to the output methods
-    def info
-        !orphan? ? @auditor.class.info : { name: '' }
-    end
-
-    #
     # Registers a block to be executed as soon as the {Request} has been
     # completed and a {HTTP::Response} is available.
     #
@@ -687,13 +646,11 @@ module Auditable
         @@restrict_to_elements.empty? || @@restrict_to_elements.include?( scope_audit_id )
     end
 
-    #
     # Checks whether or not an audit has been already performed.
     #
     # @param  [String]  elem_audit_id  a string returned by {#audit_id}
     #
     # @see #audited
-    #
     def audited?( elem_audit_id )
         if @@audited.include?( elem_audit_id )
             print_debug 'Skipping, already audited.'
@@ -706,13 +663,11 @@ module Auditable
         end
     end
 
-    #
     # Registers an audited element to avoid duplicate audits.
     #
     # @param  [String]  audit_id  {#audit_id Audit ID}.
     #
     # @see #audited?
-    #
     def audited( audit_id )
         @@audited << audit_id
     end

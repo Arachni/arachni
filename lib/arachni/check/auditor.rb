@@ -37,32 +37,13 @@ module Check
 module Auditor
     def self.reset
         audited.clear
-        Element::Capabilities::Auditable::Timeout.reset
     end
 
-    def self.timeout_audit_blocks
-        Element::Capabilities::Auditable.timeout_audit_blocks
-    end
-    def self.timeout_candidates
-        Element::Capabilities::Auditable.timeout_candidates
-    end
-    def self.timeout_loaded_checks
-        Element::Capabilities::Auditable.timeout_loaded_checks
-    end
-    def self.on_timing_attacks( &block )
-        Element::Capabilities::Auditable.on_timing_attacks( &block )
-    end
-    def self.running_timeout_attacks?
-        Element::Capabilities::Auditable.running_timeout_attacks?
+    def self.has_timeout_candidates?
+        Element::Capabilities::Auditable::Timeout.has_candidates?
     end
     def self.timeout_audit_run
-        Element::Capabilities::Auditable.timeout_audit_run
-    end
-    def self.timeout_audit_operations_cnt
-        Element::Capabilities::Auditable.timeout_audit_operations_cnt
-    end
-    def self.current_timeout_audit_operations_cnt
-        Element::Capabilities::Auditable.current_timeout_audit_operations_cnt
+        Element::Capabilities::Auditable::Timeout.run
     end
 
     #

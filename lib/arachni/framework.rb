@@ -248,7 +248,7 @@ class Framework
 
         harvest_http_responses
 
-        if !Check::Auditor.timeout_candidates.empty?
+        if Check::Auditor.has_timeout_candidates?
             print_line
             print_status "Verifying timeout-analysis candidates for: #{page.url}"
             print_info '---------------------------------------'

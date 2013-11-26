@@ -25,11 +25,16 @@ shared_examples_for "check" do
         Arachni::Check::Manager.on_register_results_raw do |issues|
             issues.each { |i| @issues << i }
         end
+
+        Arachni::Element::Capabilities::Auditable::Timeout.do_not_deduplicate
     end
 
     after( :each ) do
         Arachni::ElementFilter.reset
+
         Arachni::Element::Capabilities::Auditable.reset
+        Arachni::Element::Capabilities::Auditable::Timeout.do_not_deduplicate
+
         Arachni::Check::Manager.results.clear
         Arachni::Check::Manager.do_not_store
 
