@@ -19,7 +19,7 @@
                         <% auditstore.issues.each_with_index do |issue, i|%>
                             <% next if issue.untrusted? %>
 
-                            <%= erb :issue, { :idx => i+1, :issue => issue, :crypto_issues => crypto_issues } %>
+                            <%= erb :issue, { :idx => i+1, :issue => issue } %>
                         <% end %>
                     <% else %>
                         <p class="notice">No trusted issues have been logged.</p>
@@ -41,7 +41,7 @@
                         <% auditstore.issues.each_with_index do |issue, i|%>
                             <% next if issue.trusted? %>
 
-                            <%= erb :issue, { :idx => i+1, :issue => issue, :crypto_issues => crypto_issues } %>
+                            <%= erb :issue, { :idx => i+1, :issue => issue } %>
                         <% end %>
                     <% else %>
                         <p class="notice">No untrusted issues have been logged.</p>
