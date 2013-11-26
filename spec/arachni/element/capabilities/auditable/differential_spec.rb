@@ -1,13 +1,13 @@
 require 'spec_helper'
 
-describe Arachni::Element::Capabilities::Auditable::RDiff do
+describe Arachni::Element::Capabilities::Auditable::Differential do
 
     before :all do
-        Arachni::Options.url = @url = web_server_url_for( :rdiff )
+        Arachni::Options.url = @url = web_server_url_for( :differential )
         @auditor = Auditor.new( nil, Arachni::Framework.new )
     end
 
-    describe '#rdiff_analysis' do
+    describe '#differential_analysis' do
         before do
             @opts = {
                 false:  'bad',
@@ -16,7 +16,7 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
                 ]
             }
 
-            @params = { 'rdiff' => 'blah' }
+            @params = { 'input' => 'blah' }
 
             Arachni::Element::Capabilities::Auditable.reset
             issues.clear
@@ -25,7 +25,7 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
         context 'when the element action matches a skip rule' do
             it 'returns false' do
                 auditable = Arachni::Element::Link.new( url: 'http://stuff.com/', inputs: @params )
-                auditable.rdiff_analysis( @opts ).should be_false
+                auditable.differential_analysis( @opts ).should be_false
             end
         end
 
@@ -33,12 +33,12 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
             it 'logs an issue' do
                 auditable = Arachni::Element::Link.new( url: @url + '/true', inputs: @params )
                 auditable.auditor = @auditor
-                auditable.rdiff_analysis( @opts )
+                auditable.differential_analysis( @opts )
                 @auditor.http.run
 
                 results = Arachni::Check::Manager.results
                 results.should be_any
-                results.first.var.should == 'rdiff'
+                results.first.var.should == 'input'
             end
         end
 
@@ -46,7 +46,7 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
             it 'does not log any issues' do
                 auditable = Arachni::Element::Link.new( url: @url + '/false', inputs: @params )
                 auditable.auditor = @auditor
-                auditable.rdiff_analysis( @opts )
+                auditable.differential_analysis( @opts )
                 @auditor.http.run
 
                 issues.should be_empty
@@ -57,7 +57,7 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
             it 'does not log any issues' do
                 auditable = Arachni::Element::Link.new( url: @url + '/timeout', inputs: @params )
                 auditable.auditor = @auditor
-                auditable.rdiff_analysis( @opts.merge( timeout: 1_000 ) )
+                auditable.differential_analysis( @opts.merge( timeout: 1_000 ) )
                 @auditor.http.run
 
                 issues.should be_empty
@@ -66,7 +66,7 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
 
                 auditable = Arachni::Element::Link.new( url: @url + '/timeout', inputs: @params )
                 auditable.auditor = @auditor
-                auditable.rdiff_analysis( @opts.merge( timeout: 3_000 ) )
+                auditable.differential_analysis( @opts.merge( timeout: 3_000 ) )
                 @auditor.http.run
                 @auditor.http.run
 
@@ -78,7 +78,7 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
             it 'does not log any issues' do
                 auditable = Arachni::Element::Link.new( url: @url + '/empty_false', inputs: @params )
                 auditable.auditor = @auditor
-                auditable.rdiff_analysis( @opts )
+                auditable.differential_analysis( @opts )
                 @auditor.http.run
 
                 issues.should be_empty
@@ -89,7 +89,7 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
             it 'does not log any issues' do
                 auditable = Arachni::Element::Link.new( url: @url + '/empty_true', inputs: @params )
                 auditable.auditor = @auditor
-                auditable.rdiff_analysis( @opts )
+                auditable.differential_analysis( @opts )
                 @auditor.http.run
 
                 issues.should be_empty
@@ -100,7 +100,7 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
             it 'does not log any issues' do
                 auditable = Arachni::Element::Link.new( url: @url + '/non200_true', inputs: @params )
                 auditable.auditor = @auditor
-                auditable.rdiff_analysis( @opts )
+                auditable.differential_analysis( @opts )
                 @auditor.http.run
 
                 issues.should be_empty
@@ -111,7 +111,7 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
             it 'does not log any issues' do
                 auditable = Arachni::Element::Link.new( url: @url + '/non200_false', inputs: @params )
                 auditable.auditor = @auditor
-                auditable.rdiff_analysis( @opts )
+                auditable.differential_analysis( @opts )
                 @auditor.http.run
 
                 issues.should be_empty
@@ -122,7 +122,7 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
             it 'does not log any issues' do
                 auditable = Arachni::Element::Link.new( url: @url + '/unstable', inputs: @params )
                 auditable.auditor = @auditor
-                auditable.rdiff_analysis( @opts )
+                auditable.differential_analysis( @opts )
                 @auditor.http.run
 
                 issues.should be_empty

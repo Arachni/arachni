@@ -5,17 +5,18 @@
 
 # Blind SQL injection check
 #
-# It uses reverse-diff analysis of HTML code in order to determine successful
-# blind SQL injections.
+# It uses differential analysis to determine how different inputs affect the
+# behavior of the web application and checks if the displayed behavior is
+# consistent with that of a vulnerable application
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.4.1
+# @version 0.4.2
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://capec.mitre.org/data/definitions/7.html
 # @see http://www.owasp.org/index.php/Blind_SQL_Injection
-class Arachni::Checks::BlindrDiffSQLInjection < Arachni::Check::Base
+class Arachni::Checks::BlindDifferentialSQLInjection < Arachni::Check::Base
 
     prefer :sqli
 
@@ -42,7 +43,7 @@ class Arachni::Checks::BlindrDiffSQLInjection < Arachni::Check::Base
     end
 
     def run
-        audit_rdiff self.class.options
+        audit_differential self.class.options
     end
 
     def self.info
@@ -53,7 +54,7 @@ class Arachni::Checks::BlindrDiffSQLInjection < Arachni::Check::Base
                 with that of a vulnerable application.},
             elements:    [ Element::LINK, Element::FORM, Element::COOKIE ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.4.1',
+            version:     '0.4.2',
             references:  {
                 'OWASP'         => 'http://www.owasp.org/index.php/Blind_SQL_Injection',
                 'MITRE - CAPEC' => 'http://capec.mitre.org/data/definitions/7.html'
@@ -64,7 +65,7 @@ class Arachni::Checks::BlindrDiffSQLInjection < Arachni::Check::Base
                 name:            %q{Blind SQL Injection (differential analysis)},
                 description:     %q{SQL code can be injected into the web application
     even though it may not be obvious due to suppression of error messages.},
-                tags:            %w(sql blind rdiff injection database),
+                tags:            %w(sql blind differential injection database),
                 cwe:             '89',
                 severity:        Severity::HIGH,
                 cvssv2:          '9.0',

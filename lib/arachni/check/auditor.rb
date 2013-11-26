@@ -13,7 +13,7 @@ module Check
 #
 # * {Arachni::Element::Capabilities::Auditable::Taint Taint analysis} -- {#audit}
 # * {Arachni::Element::Capabilities::Auditable::Timeout Timeout analysis} -- {#audit_timeout}
-# * {Arachni::Element::Capabilities::Auditable::RDiff Differential analysis} -- {#audit_rdiff}
+# * {Arachni::Element::Capabilities::Auditable::Differential Differential analysis} -- {#audit_differential}
 #
 # It should be noted that actual analysis takes place at the element level,
 # and to be more specific, the {Arachni::Element::Capabilities::Auditable} element level.
@@ -516,11 +516,11 @@ module Auditor
     # Uses {#each_candidate_element} to decide which elements to audit.
     #
     # @see OPTIONS
-    # @see Arachni::Element::Capabilities::Auditable::RDiff
+    # @see Arachni::Element::Capabilities::Auditable::Differential
     #
-    def audit_rdiff( opts = {}, &block )
+    def audit_differential( opts = {}, &block )
         opts = OPTIONS.merge( opts )
-        each_candidate_element( opts ) { |e| e.rdiff_analysis( opts, &block ) }
+        each_candidate_element( opts ) { |e| e.differential_analysis( opts, &block ) }
     end
 
     #

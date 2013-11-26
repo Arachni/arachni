@@ -17,6 +17,7 @@
             instead of response, audit options and mutation -- options can now be
             accessed via the element's `#audit_options` attribute.
         - `Timeout` -- General refactoring and code cleanup.
+        - `RDiff` => `Differential`
 - `RPC::Server`
     - `Dispatcher`
         - `#dispatch` -- Returns `false` when the pool is empty as a signal to check

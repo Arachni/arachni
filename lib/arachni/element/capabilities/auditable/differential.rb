@@ -18,13 +18,13 @@ module Auditable
 # vulnerable.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-module RDiff
+module Differential
 
-    def RDiff.reset
+    def Differential.reset
         # In case we want to reset state or something...
     end
 
-    RDIFF_OPTIONS =  {
+    DIFFERENTIAL_OPTIONS =  {
         # Append our seeds to the default values.
         format:         [Mutable::Format::STRAIGHT],
 
@@ -59,7 +59,7 @@ module RDiff
     #         ]
     #     }
     #
-    #     element.rdiff_analysis( opts )
+    #     element.differential_analysis( opts )
     #
     # Here's how it goes:
     #
@@ -82,7 +82,7 @@ module RDiff
     # @option   opts    [Integer]       :format
     #   As seen in {Arachni::Element::Capabilities::Mutable::Format}.
     # @option   opts    [Integer]       :precision
-    #   Amount of {String#rdiff refinement} iterations to perform.
+    #   Amount of refinement iterations to perform for the signatures.
     # @option   opts    [Array<Hash>] :pairs
     #   Pair of strings that should yield different results when interpreted.
     #   Keys should be the `true` expressions.
@@ -93,7 +93,7 @@ module RDiff
     #   `true` if the audit was scheduled successfully, `false` otherwise (like
     #   if the resource is out of scope or already audited).
     #
-    def rdiff_analysis( opts = {} )
+    def differential_analysis( opts = {} )
         return if self.inputs.empty?
 
         return false if audited? audit_id
@@ -104,7 +104,7 @@ module RDiff
             return false
         end
 
-        opts = self.class::MUTATION_OPTIONS.merge( RDIFF_OPTIONS.merge( opts ) )
+        opts = self.class::MUTATION_OPTIONS.merge( DIFFERENTIAL_OPTIONS.merge( opts ) )
 
         mutations_size = 0
         each_mutation( opts[:false], opts ) { mutations_size += 1 }

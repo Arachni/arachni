@@ -2,7 +2,7 @@ require 'sinatra'
 require 'sinatra/contrib'
 
 get '/true' do
-    out = case params[:rdiff]
+    out = case params[:input]
         when 'bad'
             'Could not find any results, bugger off!'
         when 'good', 'blah'
@@ -13,13 +13,13 @@ get '/true' do
 
     <<-EOHTML
     #{rand( 9999999 )}
-    <a href='?rdiff=blah'>Inject here</a>
+    <a href='?input=blah'>Inject here</a>
     #{out}
 EOHTML
 end
 
 get '/false' do
-    out = case params[:rdiff]
+    out = case params[:input]
         when 'good', 'bad'
             'Could not find any results, bugger off!'
         when 'blah'
@@ -30,13 +30,13 @@ get '/false' do
 
     <<-EOHTML
     #{rand( 9999999 )}
-    <a href='?rdiff=blah'>Inject here</a>
+    <a href='?input=blah'>Inject here</a>
     #{out}
 EOHTML
 end
 
 get '/timeout' do
-    out = case params[:rdiff]
+    out = case params[:input]
               when 'bad'
                   'Could not find any results, bugger off!'
               when 'good', 'blah'
@@ -48,14 +48,14 @@ get '/timeout' do
 
     <<-EOHTML
     #{rand( 9999999 )}
-    <a href='?rdiff=blah'>Inject here</a>
+    <a href='?input=blah'>Inject here</a>
     #{out}
     EOHTML
 end
 
 get '/empty_false' do
     empty = false
-    out = case params[:rdiff]
+    out = case params[:input]
               when 'bad'
                   empty = true
                   'Could not find any results, bugger off!'
@@ -69,14 +69,14 @@ get '/empty_false' do
 
     <<-EOHTML
 #{rand( 9999999 )}
-    <a href='?rdiff=blah'>Inject here</a>
+    <a href='?input=blah'>Inject here</a>
     #{out}
     EOHTML
 end
 
 get '/empty_true' do
     empty = false
-    out = case params[:rdiff]
+    out = case params[:input]
               when 'bad'
                   'Could not find any results, bugger off!'
               when 'good', 'blah'
@@ -90,14 +90,14 @@ get '/empty_true' do
 
     <<-EOHTML
     #{rand( 9999999 )}
-    <a href='?rdiff=blah'>Inject here</a>
+    <a href='?input=blah'>Inject here</a>
     #{out}
     EOHTML
 end
 
 get '/non200_true' do
     empty = false
-    out = case params[:rdiff]
+    out = case params[:input]
               when 'bad'
                   'Could not find any results, bugger off!'
               when 'good', 'blah'
@@ -111,14 +111,14 @@ get '/non200_true' do
 
     <<-EOHTML
 #{rand( 9999999 )}
-    <a href='?rdiff=blah'>Inject here</a>
+    <a href='?input=blah'>Inject here</a>
     #{out}
     EOHTML
 end
 
 get '/non200_false' do
     empty = false
-    out = case params[:rdiff]
+    out = case params[:input]
               when 'bad'
                   status 403
                   'Could not find any results, bugger off!'
@@ -132,7 +132,7 @@ get '/non200_false' do
 
     <<-EOHTML
 #{rand( 9999999 )}
-    <a href='?rdiff=blah'>Inject here</a>
+    <a href='?input=blah'>Inject here</a>
     #{out}
     EOHTML
 end
@@ -143,7 +143,7 @@ get '/unstable' do
     @@calls  += 1
     empty    = false
 
-    out = case params[:rdiff]
+    out = case params[:input]
               when 'bad'
                   'Could not find any results, bugger off!' * 100 if @@calls >= 2
               when 'good', 'blah'
@@ -156,7 +156,7 @@ get '/unstable' do
 
     <<-EOHTML
 #{rand( 9999999 )}
-    <a href='?rdiff=blah'>Inject here</a>
+    <a href='?input=blah'>Inject here</a>
     #{out}
     EOHTML
 end

@@ -23,7 +23,7 @@ module Auditable
 
     include Taint
     include Timeout
-    include RDiff
+    include Differential
 
     # Sets the auditor for this element.
     #
@@ -64,7 +64,7 @@ module Auditable
         @@audited          = Support::LookUp::HashSet.new
         @@skip_like_blocks = []
 
-        RDiff.reset
+        Differential.reset
         Timeout.reset
     end
     reset
