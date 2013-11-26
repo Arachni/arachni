@@ -12,8 +12,10 @@ module Arachni
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Browser
-    include Component::Output
+    include UI::Output
     include Utilities
+
+    personalize_output
 
     # {Browser} error namespace.
     #
@@ -676,10 +678,6 @@ class Browser
                                              desired_capabilities: capabilities,
                                              http_client:          client
         )
-    end
-
-    def self.info
-        { name: 'Browser' }
     end
 
     private

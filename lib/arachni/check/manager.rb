@@ -13,15 +13,10 @@ end
 
 module Check
 
-#
 # Holds and manages the checks and their results.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Manager < Arachni::Component::Manager
-    include Utilities
-    extend  Utilities
-
     # Namespace under which all checks reside.
     NAMESPACE = ::Arachni::Checks
 

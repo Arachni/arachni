@@ -17,6 +17,8 @@ class Session
     include UI::Output
     include Utilities
 
+    personalize_output
+
     #
     # {Session} error namespace.
     #

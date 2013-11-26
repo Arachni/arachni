@@ -14,6 +14,20 @@ module UI
 #
 module Output
 
+    def included( base )
+        base.extend ClassMethods
+    end
+
+    module ClassMethods
+        def personalize_output
+            @personalize_output = true
+        end
+
+        def personalize_output?
+            @personalize_output
+        end
+    end
+
     def self.reset_output_options
         # verbosity flag
         #

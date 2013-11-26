@@ -1,7 +1,6 @@
 require 'sinatra'
 require 'sinatra/contrib'
 require 'digest/md5'
-set :logging, false
 
 get '/' do
     'Match this!'

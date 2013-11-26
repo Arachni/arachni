@@ -35,8 +35,6 @@ module Check
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 module Auditor
-    include Component::Output
-
     def self.reset
         audited.clear
         Element::Capabilities::Auditable::Timeout.reset
@@ -423,7 +421,6 @@ module Auditor
         []
     end
 
-    #
     # This is called right before an {Arachni::Element} is audited and is used
     # to determine whether to skip it or not.
     #
@@ -433,16 +430,12 @@ module Auditor
     #
     # @return   [Boolean]
     #   `true` if the element should be skipped, `false` otherwise.
-    #
     def skip?( elem )
-        # Find out our own shortname.
-        @modname ||= framework.checks.map { |k, v| k if v == self.class }.compact.first
-
         # Don't audit elements which have been already logged as vulnerable
         # either by us or preferred checks.
-        (preferred | [@modname]).each do |mod|
+        (preferred | [shortname]).each do |mod|
             next if !framework.checks.include?( mod )
-            issue_id = elem.provisioned_issue_id( framework.checks[mod].info[:name] )
+            issue_id = elem.provisioned_issue_id( framework.checks[mod].name )
             return true if framework.checks.issue_set.include?( issue_id )
         end
 

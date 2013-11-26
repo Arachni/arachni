@@ -234,7 +234,7 @@ describe Arachni::Framework do
             called.should be_true
 
             @f.status.should == 'done'
-            @f.auditstore.issues.size.should == 5
+            @f.auditstore.issues.size.should == 4
 
             @f.auditstore.plugins['wait'][:results].should == { stuff: true }
 

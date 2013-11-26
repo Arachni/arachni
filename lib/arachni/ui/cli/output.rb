@@ -17,6 +17,20 @@ module UI
 #
 module Output
 
+    def self.included( base )
+        base.extend ClassMethods
+    end
+
+    module ClassMethods
+        def personalize_output
+            @personalize_output = true
+        end
+
+        def personalize_output?
+            @personalize_output
+        end
+    end
+
     def self.reset_output_options
         # verbosity flag
         #
@@ -315,7 +329,8 @@ module Output
     private
 
     def intercept_print_message( message )
-        message
+        self.class.personalize_output? ?
+            "#{self.class.name.split('::').last}: #{message}" : message
     end
 
     # Prints a message prefixed with a colored sign.

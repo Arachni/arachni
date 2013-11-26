@@ -343,7 +343,7 @@ module Timeout
             return false
         end
 
-        @@timeout_loaded_checks << @auditor.fancy_name
+        @@timeout_loaded_checks << @auditor.class.name
 
         delay = opts[:timeout]
         audit_timeout_debug_msg( 1, delay )

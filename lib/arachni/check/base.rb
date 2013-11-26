@@ -5,10 +5,7 @@
 
 module Arachni
 
-lib = Arachni::Options.dir['lib']
-require lib + 'component/output'
-require lib + 'component/utilities'
-require lib + 'check/auditor'
+require Options.dir['lib'] + 'check/auditor'
 
 module Check
 
@@ -18,55 +15,40 @@ module Check
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 # @abstract
-class Base
-    # I hate keep typing this all the time...
-    include Arachni
-
-    include Component::Utilities
-    extend  Component::Utilities
-
+class Base < Component::Base
     include Auditor
 
     # @param  [Page]  page
     # @param  [Arachni::Framework]  framework
     def initialize( page, framework )
-        http.update_cookies( page.cookiejar )
-
-        @page       = page
-        @framework  = framework
+        @page      = page
+        @framework = framework
     end
 
-    #
     # OPTIONAL
     #
     # It provides you with a way to setup your check's data and methods.
     #
     # @abstract
-    #
     def prepare
     end
 
-    #
     # REQUIRED
     #
     # This is used to deliver the check's payload whatever it may be.
     #
     # @abstract
-    #
     def run
     end
 
-    #
     # OPTIONAL
     #
     # This is called after {#run} has finished executing,
     #
     # @abstract
-    #
     def clean_up
     end
 
-    #
     # Provides access to the plugin manager
     #
     # You can use it to gain access to the instances of running plugins like so:
@@ -77,24 +59,26 @@ class Base
     #    p plugins.get( 'profiler' )[:instance]
     #    # => #<Arachni::Plugins::Profiler>
     #
-    # @return   [Arachni::PluginManager]
-    #
+    # @return   [Arachni::Plugin::Manager]
     def plugins
         framework.plugins if framework
     end
 
+    # @return   [Arachni::Session]
     def session
         framework.session if framework
     end
 
-    #
+    def preferred
+        self.class.preferred
+    end
+
     # REQUIRED
     #
     # Provides information about the check.
     # Don't take this lightly and don't ommit any of the info.
     #
     # @abstract
-    #
     def self.info
         {
             name:        'Base check abstract class',
@@ -143,25 +127,23 @@ class Base
         }
     end
 
-    # Schedules self to be run *after* the specified checks and prevents
-    # auditing elements that have been previously logged by any of these checks.
-    #
-    # @return   [Array] Check names.
-    def self.prefer( *args )
-        @preferred = args.flatten.compact
-    end
+    class <<self
+        # Schedules self to be run *after* the specified checks and prevents
+        # auditing elements that have been previously logged by any of these checks.
+        #
+        # @return   [Array] Check names.
+        def prefer( *args )
+            @preferred = args.flatten.compact
+        end
 
-    # @return   [Array]
-    #   Names of checks which should be preferred over this one.
-    #
-    # @see #prefer
-    def self.preferred
-        @preferred ||= []
+        # @return   [Array]
+        #   Names of checks which should be preferred over this one.
+        #
+        # @see #prefer
+        def preferred
+            @preferred ||= []
+        end
     end
-    def preferred
-        self.class.preferred
-    end
-
 
 end
 end

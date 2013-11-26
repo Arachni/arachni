@@ -2,12 +2,16 @@ require 'spec_helper'
 
 require Arachni::Options.instance.dir['lib'] + 'rpc/server/output'
 
+class RPCOutput
+    include Arachni::UI::Output
+end
+
 describe Arachni::UI::Output do
     before( :all ) do
         @opts = Arachni::Options.instance
-        @out  = Arachni::UI::Output
+        @out  = RPCOutput.new
         @out.mute
-        @@msg = 'This is a @msg!'
+        @msg = 'This is a msg!'
 
         @logfile = @opts.dir['logs'] + 'output_spec.log'
 
@@ -225,7 +229,7 @@ describe Arachni::UI::Output do
 
     context 'when rerouting messages to a logfile' do
         before( :all ) do
-            @out.reset_output_options
+            Arachni::UI::Output.reset_output_options
             @out.reroute_to_file( @logfile )
         end
 

@@ -35,11 +35,12 @@ end
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Client
-
     include Singleton
-    include Component::Output
+    include UI::Output
     include Utilities
     include Mixins::Observable
+
+    personalize_output
 
     #
     # {Client} error namespace.

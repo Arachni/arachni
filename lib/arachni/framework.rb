@@ -22,7 +22,7 @@ require lib + 'error'
 require lib + 'utilities'
 require lib + 'support'
 require lib + 'uri'
-require lib + 'component/manager'
+require lib + 'component'
 require lib + 'platform'
 require lib + 'spider'
 require lib + 'parser'
@@ -238,6 +238,7 @@ class Framework
 
         @current_url = page.url.to_s
 
+        http.update_cookies( page.cookiejar )
         perform_browser_analysis( page )
 
         @checks.schedule.each do |check|

@@ -47,28 +47,17 @@ end
 
 
 class FormatterManager < Component::Manager
-
     def paths
         Dir.glob( File.join( "#{@lib}", "*.rb" ) ).reject { |path| helper?( path ) }
     end
-
 end
 
-#
 # An abstract class for the reports, all reports must extend this.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 # @abstract
-#
-class Base
-    # I hate keep typing this all the time...
-    include Arachni
-
-    # get the output interface
-    include UI::Output
-    include Component::Utilities
-
+class Base < Component::Base
     include Report
 
     # where to report false positives info about this should be included in all templates
@@ -181,8 +170,7 @@ class Base
     end
 
     def self.outfile_option
-        (info[:options] || {}).
-            select { |opt| opt.name == Options.outfile.name }.first
+        (info[:options] || {}).select { |opt| opt.name == Options.outfile.name }.first
     end
 end
 

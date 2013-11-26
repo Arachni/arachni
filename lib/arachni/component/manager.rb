@@ -86,6 +86,8 @@ require Options.dir['lib'] + 'component/options'
 #
 class Manager < Hash
     include UI::Output
+    include Utilities
+    extend  Utilities
 
     WILDCARD = '*'
     EXCLUDE  = '-'
@@ -103,7 +105,7 @@ class Manager < Hash
     #   Namespace under which all components are directly defined.
     #
     def initialize( lib, namespace )
-        @lib = lib
+        @lib       = lib
         @namespace = namespace
     end
 
@@ -368,7 +370,11 @@ class Manager < Hash
         post = classes
 
         return if pre == post
-        get_obj( (post - pre).first )
+
+        get_obj( (post - pre).first ).tap do |component|
+            next if !component.respond_to?( :shortname= )
+            component.shortname = path_to_name( path )
+        end
     end
 
     def classes

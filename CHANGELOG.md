@@ -9,6 +9,7 @@
     - Cleaned up initializers.
         - Now passed a single Hash argument with configuration options.
     - `Capabilities::Auditable`
+        - Removed `#use_anonymous_auditor`
         - `#auditable` => `#inputs`
         - `#orig` => `#original`
         - `#opts` => `#audit_options`

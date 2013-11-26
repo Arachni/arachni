@@ -21,9 +21,6 @@ module Report
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Manager < Arachni::Component::Manager
-    include Utilities
-    extend  Utilities
-
     NAMESPACE = Arachni::Reports
 
     def initialize( opts )

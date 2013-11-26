@@ -81,16 +81,6 @@ shared_examples_for 'auditable' do |options = {}|
         end
     end
 
-    describe '#use_anonymous_auditor' do
-        it 'uses an anonymous auditor' do
-            elem = auditable.new( @opts )
-            elem.auditor.should be_nil
-            elem.use_anonymous_auditor
-            elem.auditor.should be_true
-            elem.auditor.fancy_name.should be_true
-        end
-    end
-
     describe '#has_inputs?' do
         before do
             @has_inputs = auditable.new(
@@ -369,24 +359,6 @@ shared_examples_for 'auditable' do |options = {}|
 
             @auditor.http.run
             response.request.performer.should == @auditable
-        end
-
-        context 'when it has no auditor' do
-            it 'falls back to using the anonymous auditor' do
-                submitted = nil
-
-                elem = auditable.new( url: @url + '/submit', inputs: { 'param' => 'val' } )
-                elem.auditor.should be_nil
-
-                elem.submit do |res|
-                    submitted = load( res.body )
-                end
-                elem.auditor.should be_true
-
-                elem.http.run
-
-                elem.inputs.should == submitted
-            end
         end
     end
 
@@ -849,33 +821,6 @@ shared_examples_for 'auditable' do |options = {}|
                 @auditable.audit( @seed ) { cnt += 1 }
                 @auditor.http.run
                 cnt.should == (opts[:supports_nulls] ? 4 : 2)
-            end
-        end
-
-        context 'when it has no auditor' do
-            it 'falls back to using the anonymous auditor' do
-                elem = auditable.new( url: @url, inputs: { 'param' => 'val' } )
-                elem.auditor.should be_nil
-
-                elem.taint_analysis( 'test' )
-                elem.auditor.should be_true
-                elem.http.run
-
-                elem.auditor.issues.size.should == 1
-                elem.auditor.raw_issues.size.should == 1
-                issue = elem.auditor.raw_issues.first
-                issue.elem.should == elem.type
-                issue.id.should == 'test'
-                issue.method.to_s.downcase.should == 'get'
-                issue.name.should == 'Anonymous auditor'
-                issue.var.should == 'param'
-
-                elem.auditor.raw_issues.should == Arachni::Check::Manager.results
-                elem.auditor.issues.should == elem.auditor.auditstore.issues
-                elem.auditor.auditstore.should == Arachni::AuditStore.new(
-                    options: Arachni::Options.instance.to_h,
-                    issues: issues
-                )
             end
         end
 

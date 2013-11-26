@@ -24,9 +24,6 @@ end
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Manager < Arachni::Component::Manager
-    include Utilities
-    extend  Utilities
-
     # Namespace under which all plugins reside.
     NAMESPACE = Arachni::Plugins
 

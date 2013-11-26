@@ -144,7 +144,7 @@ class Link < Arachni::Element::Base
         vars = inputs.keys.compact.sort.to_s
 
         str = ''
-        str << "#{@auditor.fancy_name}:" if !opts[:no_auditor] && !orphan?
+        str << "#{@auditor.class.name}:" if !opts[:no_auditor] && !orphan?
 
         str << "#{@audit_id_url}:" + "#{self.type}:#{vars}"
         str << "=#{injection_str.to_s}" if !opts[:no_injection_str]

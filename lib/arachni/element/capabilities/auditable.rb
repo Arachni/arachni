@@ -117,50 +117,6 @@ module Auditable
     end
 
     #
-    # Assigns an anonymous auditor as an {#auditor}.
-    #
-    # Alleviates the need to assign a custom auditor for simple stuff when
-    # scripting.
-    #
-    def use_anonymous_auditor
-        self.auditor = Class.new do
-            include Arachni::Check::Auditor
-
-            def initialize
-                @framework = Arachni::Framework.new
-            end
-            #
-            # @return   [Array<Issue>]  Unfiltered logged issues.
-            #
-            # @see Arachni::Check::Manager.results
-            #
-            def raw_issues
-                Arachni::Check::Manager.results
-            end
-
-            #
-            # @return   [Array<Issue>]  Deduplicated issues.
-            #
-            # @see AuditStore#issues
-            #
-            def issues
-                auditstore.issues
-            end
-
-            # @return   [AuditStore]
-            def auditstore
-                AuditStore.new( options: Options.instance.to_h,
-                                issues:  raw_issues )
-            end
-            alias :audit_store :auditstore
-
-            def self.info
-                { name: 'Anonymous auditor' }
-            end
-        end.new
-    end
-
-    #
     # Frozen inputs.
     #
     # If you want to change it you'll either have to use {#update}
@@ -358,7 +314,6 @@ module Auditable
         options[:follow_location] = true if !options.include?( :follow_location )
 
         @auditor ||= options.delete( :auditor )
-        use_anonymous_auditor if !@auditor
 
         options[:performer] = self
         http_request( options, &block )
@@ -367,8 +322,7 @@ module Auditable
     #
     # Submits mutations of self and calls the block to handle the responses.
     #
-    # @note Requires an {#auditor}, if none has been provided it will fallback
-    #   to an {#use_anonymous_auditor anonymous} one.
+    # @note Requires an {#auditor}.
     #
     # @param  [String, Array<String>, Hash{Symbol => <String, Array<String>>}]  payloads
     #   Payloads to inject, if given:
@@ -479,7 +433,7 @@ module Auditable
         vars = inputs.keys.sort.to_s
 
         str = ''
-        str << "#{@auditor.fancy_name}:" if !opts[:no_auditor] && !orphan?
+        str << "#{@auditor.class.name}:" if !opts[:no_auditor] && !orphan?
 
         str << "#{@action}:#{type}:#{vars}"
         str << "=#{injection_str}" if !opts[:no_injection_str]
@@ -494,8 +448,8 @@ module Auditable
     # @return   [String]
     #   Predicts what the {Issue#unique_id} of an issue would look like,
     #   should `self` be vulnerable.
-    def provisioned_issue_id( auditor_fanxy_name = @auditor.fancy_name )
-        "#{auditor_fanxy_name}::#{type}::#{altered}::#{self.action.split( '?' ).first}"
+    def provisioned_issue_id( auditor_name = @auditor.class.name )
+        "#{auditor_name}::#{type}::#{altered}::#{self.action.split( '?' ).first}"
     end
 
     # @return [Boolean]
@@ -555,8 +509,7 @@ module Auditable
 
     # Submits mutations of self and calls the block to handle the responses.
     #
-    # @note Requires an {#auditor}, if none has been provided it will fallback
-    #   to an {#use_anonymous_auditor anonymous} one.
+    # @note Requires an {#auditor}.
     #
     # @param  [String]  injection_str  The string to be injected.
     # @param  [Hash]    opts             Options as described in {OPTIONS}.
@@ -598,7 +551,6 @@ module Auditable
         @audit_options[:injected_orig] = injection_str
 
         @auditor ||= @audit_options.delete( :auditor )
-        use_anonymous_auditor if !@auditor
 
         audit_id = audit_id( injection_str, @audit_options )
         return false if !@audit_options[:redundant] && audited?( audit_id )

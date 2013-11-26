@@ -6,7 +6,6 @@
 module Arachni
 
 require Options.dir['lib'] + 'element_filter'
-require Options.dir['lib'] + 'component/output'
 
 # Trainer class
 #
@@ -14,9 +13,11 @@ require Options.dir['lib'] + 'component/output'
 #
 # @author Tasos Laskos <tasos.laskos@gmail.com>
 class Trainer
-    include Component::Output
+    include UI::Output
     include ElementFilter
     include Utilities
+
+    personalize_output
 
     MAX_TRAININGS_PER_URL = 25
 
@@ -147,10 +148,6 @@ class Trainer
 
     def prepare_new_elements( elements )
         elements.flatten.map { |elem| elem.override_instance_scope; elem }
-    end
-
-    def self.info
-        { name: 'Trainer' }
     end
 
 end

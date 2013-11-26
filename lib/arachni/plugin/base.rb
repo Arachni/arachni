@@ -4,19 +4,14 @@
 =end
 
 module Arachni
-
-require Options.dir['lib'] + 'component/output'
-
 module Plugin
 
-#
 # Will be extended by plugin formatters which provide plugin data formatting
 # for the reports.
 #
 # Plugin formatters will be in turn ran by [Arachni::Report::Bas#format_plugin_results].
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Formatter
     # get the output interface
     include UI::Output
@@ -34,21 +29,11 @@ class Formatter
 
 end
 
-#
 # An abstract class which all plugins must extend.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 # @abstract
-#
-class Base
-    # I hate keep typing this all the time...
-    include Arachni
-
-    # get the output interface
-    include Component::Output
-    include Component::Utilities
-
+class Base < Component::Base
     include Component
 
     attr_reader :options

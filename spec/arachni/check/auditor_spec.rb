@@ -1,25 +1,20 @@
 require 'spec_helper'
 
-class AuditorTest
+class AuditorTest < Arachni::Component::Base
     include Arachni::Check::Auditor
+
+    shortname = 'auditor_test'
 
     def initialize( framework )
         @framework = framework
         load_page_from @framework.opts.url
         framework.trainer.page = page
-        mute
+
+        http.update_cookies( page.cookiejar )
     end
 
     def reset
         @framework.reset
-    end
-
-    def http
-        @framework.http
-    end
-
-    def framework
-        @framework
     end
 
     def load_page_from( url )
@@ -472,8 +467,8 @@ describe Arachni::Check::Auditor do
                         @framework.trainer.on_new_page { |p| pages << p }
 
                         # audit until no more new elements appear
-                        while page = pages.pop
-                            auditor = Arachni::Check::Base.new( page, @framework )
+                        while (page = pages.pop)
+                            auditor = Auditor.new( page, @framework )
                             auditor.audit( @seed )
                             # run audit requests
                             @framework.http.run
