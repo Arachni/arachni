@@ -4,18 +4,6 @@
                     <a href="#issue_<%=idx%>">[<%=idx%>] <%=escapeHTML(issue.name)%></a>
                 </h3>
 
-                <% if crypto_issues.is_a?( Array ) && crypto_issues[idx-1] %>
-                <p>
-                    <form name="false_positive_<%=j%>" id="false_positive_<%=idx%>">
-                        <input type="hidden" name="module" value="<%=escapeHTML(issue.internal_modname)%>" />
-                        <input type="hidden" name="url" value="<%=escapeHTML(issue.url)%>" />
-                        <input type="hidden" name="issue" value="<%=crypto_issues[idx-1]%>" />
-                        <input onclick="javascript:report_fp( <%=idx%> );" type="button" value="Report false positive" />
-                    </form>
-                </p>
-                <% end %>
-
-
                 <div class="left">
                     <ul>
                     <li><strong>Check name</strong>: <%=escapeHTML(issue.mod_name)%> <br/>
