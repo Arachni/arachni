@@ -273,12 +273,12 @@ class CLI
     def parse_opts
         if !@opts.repload && !@opts.help && !@opts.show_version?
 
-            if !@opts.mods || @opts.mods.empty?
+            if !@opts.checks || @opts.checks.empty?
                 print_info 'No checks were specified.'
                 print_info ' -> Will run all mods.'
                 print_line
 
-                @opts.mods = '*'
+                @opts.checks = '*'
             end
 
             if !@opts.audit_links && !@opts.audit_forms && !@opts.audit_cookies &&
@@ -355,9 +355,9 @@ class CLI
                         exit 1
                     end
 
-                when 'mods'
+                when 'checks'
                     begin
-                        @opts.mods = @arachni.checks.load( arg )
+                        @opts.checks = @arachni.checks.load( arg )
                     rescue Component::Error::NotFound => e
                         print_error e
                         print_info 'Available checks are:'
