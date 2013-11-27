@@ -69,7 +69,7 @@ class Arachni::Modules::XSS < Arachni::Module::Base
         {
             name:        'XSS',
             description: %q{Cross-Site Scripting module.
-                It doesn't just look for the injected XSS string in the HMTL code
+                It doesn't just look for the injected XSS string in the HTML code
                 but actually parses the code and looks for the injected element proper.
             },
             elements:    [Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER],
