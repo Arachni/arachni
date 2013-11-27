@@ -46,36 +46,44 @@ describe Arachni::Browser do
         @browser.load( @url + 'timeout-tracker' )
         @browser.timeouts.should == [
             [
-                "function () {\n            document.cookie = \"timeout=post-1000\";\n        }",
-                1000
+                "function (name, value) {\n            document.cookie = name + \"=post-\" + value;\n        }",
+                1000, 'timeout1', 1000
             ],
             [
-                "function () {\n            document.cookie = \"timeout=post-1500\";\n        }",
-                1500
+                "function (name, value) {\n            document.cookie = name + \"=post-\" + value;\n        }",
+                1500, 'timeout2', 1500
             ],
             [
-                "function () {\n            document.cookie = \"timeout=post-2000\";\n        }",
-                2000
+                "function (name, value) {\n            document.cookie = name + \"=post-\" + value;\n        }",
+                2000, 'timeout3', 2000
             ]
         ]
 
         @browser.load_delay.should == 2000
-        @browser.cookies.size.should == 1
-        @browser.cookies.last.value.should == 'post-2000'
+        @browser.cookies.size.should == 4
+        @browser.cookies.map { |c| c.to_s }.sort.should == [
+            'timeout3=post-2000',
+            'timeout2=post-1500',
+            'timeout1=post-1000',
+            'timeout=pre'
+        ].sort
     end
 
     it 'keeps track of setInterval() timers' do
         @browser.load( @url + 'interval-tracker' )
         @browser.intervals.should == [
             [
-                "function () {\n            document.cookie = \"timeout=post-2000\";\n        }",
-                2000
+                "function (name, value) {\n            document.cookie = name + \"=post-\" + value;\n        }",
+                2000, 'timeout1', 2000
             ]
         ]
 
-        #@browser.load_delay.should == 2000
-        #@browser.cookies.size.should == 1
-        #@browser.cookies.last.value.should == 'post-2000'
+        sleep 2
+        @browser.cookies.size.should == 2
+        @browser.cookies.map { |c| c.to_s }.sort.should == [
+            'timeout1=post-2000',
+            'timeout=pre'
+        ].sort
     end
 
     it 'keeps track of which events are expected by each element' do
