@@ -65,13 +65,6 @@ class AuditStore
 
     MODULE_NAMESPACE = ::Arachni::Checks
 
-    ORDER = [
-        Severity::HIGH,
-        Severity::MEDIUM,
-        Severity::LOW,
-        Severity::INFORMATIONAL
-    ]
-
     def initialize( opts = {} )
         @plugins = {}
         @sitemap = []
@@ -83,7 +76,7 @@ class AuditStore
         opts.each { |k, v| self.instance_variable_set( '@' + k.to_s, v ) }
 
         @options = prepare_options( @options )
-        @issues  = self.class.sort( prepare_variations( @issues.deep_clone ) )
+        @issues  = Issue.sort( prepare_variations( @issues.deep_clone ) )
 
         @start_datetime  =  if @options['start_datetime']
             @options['start_datetime'].asctime
@@ -160,16 +153,6 @@ class AuditStore
 
     def hash
         to_hash.hash
-    end
-
-    def self.sort( issues )
-        sorted = []
-        issues.each do |issue|
-            order = ORDER.rindex( issue.severity ) || ORDER.size
-            sorted[order] ||= []
-            sorted[order] << issue
-        end
-        sorted.flatten.compact
     end
 
     private

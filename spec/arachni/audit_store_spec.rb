@@ -133,7 +133,9 @@ describe Arachni::AuditStore do
                 var: 'varname2'
             )
         ]
-        organized = Arachni::AuditStore.new( @auditstore_opts.merge( issues: issues.deep_clone ) ).issues
+
+        opts = @auditstore_opts.merge( issues: issues.deep_clone )
+        organized = Arachni::AuditStore.new( opts ).issues.reverse
         organized.first.variations.size.should == 3
 
         organized.first.remarks.should be_nil

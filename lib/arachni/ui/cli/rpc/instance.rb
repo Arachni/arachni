@@ -209,7 +209,7 @@ class Instance
         @progress = progress
         @issues  |= @progress['issues']
 
-        @issues = AuditStore.sort( @issues )
+        @issues = Issue.sort( @issues )
 
         # Keep issue digests and error messages in order to ask not to retrieve
         # them on subsequent progress calls in order to save bandwidth.

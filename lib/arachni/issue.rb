@@ -7,20 +7,14 @@ require 'digest/sha2'
 
 module Arachni
 
+require Options.dir['lib'] + 'issue/severity'
+
 #
 # Represents a detected issue.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Issue
-
-    # Holds constants to describe the {Issue#severity} of an Issue.
-    module Severity
-        HIGH          = 'High'
-        MEDIUM        = 'Medium'
-        LOW           = 'Low'
-        INFORMATIONAL = 'Informational'
-    end
 
     # @return    [String]   The name of the issue.
     attr_accessor :name
@@ -126,6 +120,10 @@ class Issue
     #   Remarks about the issue. Key is the name of the entity which
     #   made the remark, value is an `Array` of remarks.
     attr_accessor :remarks
+
+    def self.sort( issues )
+        issues.sort_by { |i| i.severity }.reverse
+    end
 
     #
     # Sets up the instance attributes.
@@ -294,16 +292,18 @@ class Issue
         self.instance_variables.each do |var|
             h[normalize_name( var )] = instance_variable_get( var )
         end
-        h[:digest] = h[:_hash] = digest
-        h[:hash]  = hash
+        h[:digest]    = h[:_hash] = digest
+        h[:hash]      = hash
+        h[:severity]  = severity.to_s
         h[:unique_id] = unique_id
+
         h
     end
     alias :to_hash :to_h
 
     # @return   [String]    A string uniquely identifying this issue.
     def unique_id
-        "#{@mod_name}::#{@elem}::#{@var}::#{@url.split( '?' ).first}"
+        "#{@name}::#{@elem}::#{@var}::#{@url.split( '?' ).first}"
     end
 
     # @return   [String]

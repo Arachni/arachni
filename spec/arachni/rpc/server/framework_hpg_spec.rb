@@ -321,8 +321,8 @@ describe 'Arachni::RPC::Server::Framework' do
     end
     describe '#serialized_report' do
         it 'returns a YAML serialized report hash' do
-            @instance_clean.framework.serialized_report.should ==
-                @instance_clean.framework.report.to_yaml
+            YAML.load( @instance_clean.framework.serialized_report ).should ==
+                @instance_clean.framework.report
         end
     end
     describe '#issues' do

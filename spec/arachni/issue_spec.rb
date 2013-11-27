@@ -48,30 +48,22 @@ describe Arachni::Issue do
         @issue = Arachni::Issue.new( @issue_data.deep_clone )
     end
 
-    describe Arachni::Issue::Severity do
-        describe 'Arachni::Issue::Severity::HIGH' do
-            it 'returns "High"' do
-                Arachni::Issue::Severity::HIGH.should == 'High'
-            end
-        end
-        describe 'Arachni::Issue::Severity::MEDIUM' do
-            it 'returns "Medium"' do
-                Arachni::Issue::Severity::MEDIUM.should == 'Medium'
-            end
-        end
-        describe 'Arachni::Issue::Severity::LOW' do
-            it 'returns "Low"' do
-                Arachni::Issue::Severity::LOW.should == 'Low'
-            end
-        end
-        describe 'Arachni::Issue::Severity::INFORMATIONAL' do
-            it 'returns "Informational"' do
-                Arachni::Issue::Severity::INFORMATIONAL.should == 'Informational'
-            end
-        end
+    describe '.sort'do
+        it 'returns a sorted Array of Issues' do
+            informational = @issue.deep_clone
+            informational.severity = Arachni::Issue::Severity::INFORMATIONAL
 
-        it 'is assigned to Arachni::Severity for easy access' do
-            Arachni::Severity.should == Arachni::Issue::Severity
+            low = @issue.deep_clone
+            low.severity = Arachni::Issue::Severity::LOW
+
+            medium = @issue.deep_clone
+            medium.severity = Arachni::Issue::Severity::MEDIUM
+
+            high = @issue.deep_clone
+            high.severity = Arachni::Issue::Severity::HIGH
+
+            Arachni::Issue.sort([low, informational, high, medium]).should ==
+                [informational, low, medium, high]
         end
     end
 
@@ -419,7 +411,7 @@ describe Arachni::Issue do
                 @issue.eql?( i ).should be_false
 
                 i = @issue.deep_clone
-                i.mod_name = 'http://stuff'
+                i.name = 'Stuff'
                 @issue.eql?( i ).should be_false
 
                 i = @issue.deep_clone
@@ -450,7 +442,7 @@ describe Arachni::Issue do
                 @issue.hash.should_not == i.hash
 
                 i = @issue.deep_clone
-                i.mod_name = 'http://stuff'
+                i.name = 'Stuff'
                 @issue.hash.should_not == i.hash
 
                 i = @issue.deep_clone
