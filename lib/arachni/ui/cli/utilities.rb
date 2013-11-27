@@ -72,7 +72,7 @@ module Utilities
         print_line
 
         checks.each do |info|
-            print_status "#{info[:mod_name]}:"
+            print_status "#{info[:shortname]}:"
             print_line '--------------------'
 
             print_line "Name:\t\t#{info[:name]}"
@@ -125,7 +125,7 @@ module Utilities
         print_line
 
         reports.each do |info|
-            print_status "#{info[:rep_name]}:"
+            print_status "#{info[:shortname]}:"
             print_line '--------------------'
 
             print_line "Name:\t\t#{info[:name]}"
@@ -164,7 +164,7 @@ module Utilities
         print_line
 
         plugins.each do |info|
-            print_status "#{info[:plug_name]}:"
+            print_status "#{info[:shortname]}:"
             print_line '--------------------'
 
             print_line "Name:\t\t#{info[:name]}"

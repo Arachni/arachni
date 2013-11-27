@@ -1170,8 +1170,7 @@ describe Arachni::Framework do
             mods.size.should == 1
             mod = mods.first
             mod[:name].should == info[:name]
-            mod[:mod_name].should == 'taint'
-            mod[:shortname].should == mod[:mod_name]
+            mod[:shortname].should == 'taint'
             mod[:description].should == info[:description]
             mod[:author].should == [info[:author]].flatten
             mod[:version].should == info[:version]
@@ -1200,15 +1199,13 @@ describe Arachni::Framework do
             @f.list_plugins.should == @f.lsplug
 
             @f.list_plugins.map { |r| r.delete( :path ); r }
-                .sort_by { |e| e[:plug_name] }.should == YAML.load( '
+                .sort_by { |e| e[:shortname] }.should == YAML.load( '
 ---
 - :name: \'\'
   :description: \'\'
   :author:
   - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
   :version: \'0.1\'
-  :plug_name: !binary |-
-    YmFk
   :shortname: !binary |-
     YmFk
 - :name: Default
@@ -1223,8 +1220,6 @@ describe Arachni::Framework do
     desc: An integer.
     default: 4
     enums: []
-  :plug_name: !binary |-
-    ZGVmYXVsdA==
   :shortname: !binary |-
     ZGVmYXVsdA==
 - :name: Distributable
@@ -1236,8 +1231,6 @@ describe Arachni::Framework do
     :tags:
     - distributable_string
     - :distributable_sym
-  :plug_name: !binary |-
-    ZGlzdHJpYnV0YWJsZQ==
   :shortname: !binary |-
     ZGlzdHJpYnV0YWJsZQ==
 - :name: \'\'
@@ -1245,8 +1238,6 @@ describe Arachni::Framework do
   :author:
   - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
   :version: \'0.1\'
-  :plug_name: !binary |-
-    bG9vcA==
   :shortname: !binary |-
     bG9vcA==
 - :name: SpiderHook
@@ -1254,8 +1245,6 @@ describe Arachni::Framework do
   :author:
   - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
   :version: \'0.1\'
-  :plug_name: !binary |-
-    c3BpZGVyX2hvb2s=
   :shortname: !binary |-
     c3BpZGVyX2hvb2s=
 - :name: Wait
@@ -1266,8 +1255,6 @@ describe Arachni::Framework do
   :author:
   - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
   :version: \'0.1\'
-  :plug_name: !binary |-
-    d2FpdA==
   :shortname: !binary |-
     d2FpdA==
 - :name: Component
@@ -1294,11 +1281,9 @@ describe Arachni::Framework do
     desc: Option with default value
     default: value
     enums: []
-  :plug_name: !binary |-
-    d2l0aF9vcHRpb25z
   :shortname: !binary |-
     d2l0aF9vcHRpb25z
-' ).sort_by { |e| e[:plug_name] }
+' ).sort_by { |e| e[:shortname] }
             @f.plugins.loaded.should == loaded
         end
 
@@ -1320,7 +1305,7 @@ describe Arachni::Framework do
             loaded = @f.reports.loaded
             @f.list_reports.should == @f.lsrep
             @f.list_reports.map { |r| r[:options] = []; r.delete( :path ); r }
-                .sort_by { |e| e[:rep_name] }.should == YAML.load( '
+                .sort_by { |e| e[:shortname] }.should == YAML.load( '
 ---
 - :name: Report abstract class.
   :options: []
@@ -1329,7 +1314,6 @@ describe Arachni::Framework do
   :author:
   - zapotek
   :version: 0.1.1
-  :rep_name: afr
   :shortname: afr
 - :name: Report abstract class.
   :options: []
@@ -1338,9 +1322,8 @@ describe Arachni::Framework do
   :author:
   - zapotek
   :version: 0.1.1
-  :rep_name: foo
   :shortname: foo
-').sort_by { |e| e[:rep_name] }
+').sort_by { |e| e[:shortname] }
             @f.reports.loaded.should == loaded
         end
 

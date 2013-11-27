@@ -485,7 +485,6 @@ class Framework
                 next if !lscheck_match?( path )
 
                 @checks[name].info.merge(
-                    mod_name:  name,
                     shortname: name,
                     author:    [@checks[name].info[:author]].
                                    flatten.map { |a| a.strip },
@@ -510,7 +509,6 @@ class Framework
                 next if !lsrep_match?( path )
 
                 @reports[report].info.merge(
-                    rep_name:  report,
                     shortname: report,
                     path:      path,
                     author:    [@reports[report].info[:author]].
@@ -535,7 +533,6 @@ class Framework
                 next if !lsplug_match?( path )
 
                 @plugins[plugin].info.merge(
-                    plug_name: plugin,
                     shortname: plugin,
                     path:      path,
                     author:    [@plugins[plugin].info[:author]].

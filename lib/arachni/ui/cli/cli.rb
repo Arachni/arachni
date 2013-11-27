@@ -321,7 +321,7 @@ class CLI
 
                 when 'lscheck'
                     next if arg.empty?
-                    lsmod
+                    lscheck
                     exit 0
 
                 when 'lsplug'
@@ -425,7 +425,7 @@ class CLI
     end
 
     # Outputs all available checks and their info.
-    def lsmod
+    def lscheck
         super @arachni.lscheck
     end
 

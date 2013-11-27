@@ -83,7 +83,7 @@ describe 'Arachni::RPC::Server::Framework' do
             plugin[:author].size.should == 1
             plugin[:author].first.should == 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>'
             plugin[:version].should == '0.1'
-            plugin[:plug_name].should == 'default'
+            plugin[:shortname].should == 'default'
             plugin[:options].size.should== 1
             opt = plugin[:options].first
             opt['name'].should == 'int_opt'
