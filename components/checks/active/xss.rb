@@ -70,7 +70,7 @@ class Arachni::Checks::XSS < Arachni::Check::Base
         {
             name:        'XSS',
             description: %q{Cross-Site Scripting check.
-                It doesn't just look for the injected XSS string in the HMTL code
+                It doesn't just look for the injected XSS string in the HTML code
                 but actually parses the code and looks for the injected element proper.
             },
             elements:    [Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER],
