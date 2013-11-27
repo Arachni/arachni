@@ -624,14 +624,18 @@ class Browser
         watir.html
     end
 
+    def get_override( property )
+        return if !has_js_overrides?
+        watir.execute_script "return _#{js_token}.#{property};"
+    end
+
     def timeouts
-        return [] if !has_js_overrides?
-        watir.execute_script "return _#{js_token}_setTimeouts;"
+        get_override( 'setTimeouts' ) || []
     end
 
     def intervals
         return [] if !has_js_overrides?
-        watir.execute_script "return _#{js_token}_setIntervals;"
+        get_override( 'setIntervals' ) || []
     end
 
     def html?
@@ -692,9 +696,7 @@ class Browser
 
         loop do
             begin
-                if watir.execute_script( "return _#{js_token}_initialized"  ) == true
-                    break
-                end
+                break if watir.execute_script( "return _#{js_token}" )
             rescue
             end
 
@@ -898,7 +900,7 @@ class Browser
     end
 
     def js_overrides
-        @js_overrides ||= JS_OVERRIDES.gsub( '_token_', "_#{js_token}_" )
+        @js_overrides ||= JS_OVERRIDES.gsub( '_token', "_#{js_token}" )
     end
 
     def js_token
