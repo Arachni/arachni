@@ -99,7 +99,7 @@ class Arachni::Modules::DirectoryListing < Arachni::Module::Base
             },
             issue:       {
                 name:        %q{Directory listing},
-                description: %q{In most circumstances enabling directory listings is a bad practise
+                description: %q{In most circumstances enabling directory listings is a bad practice
     as it allows an attacker to better grasp the web application's structure.},
                 tags:        %w(path directory listing index),
                 cwe:         '548',
