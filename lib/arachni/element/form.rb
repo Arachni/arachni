@@ -7,7 +7,7 @@ require Arachni::Options.dir['lib'] + 'element/base'
 
 module Arachni::Element
 
-FORM = 'form'
+FORM = :form
 
 class Form < Arachni::Element::Base
     include Capabilities::Refreshable

@@ -19,7 +19,7 @@ describe Arachni::Element::Link do
 
     describe 'Arachni::Element::LINK' do
         it 'returns "link"' do
-            Arachni::Element::LINK.should == 'link'
+            Arachni::Element::LINK.should == :link
         end
     end
 
@@ -73,7 +73,7 @@ describe Arachni::Element::Link do
 
     describe '#type' do
         it 'should be "link"' do
-            @link.type.should == 'link'
+            @link.type.should == :link
         end
     end
 

@@ -16,7 +16,7 @@ describe Arachni::Element::Cookie do
 
     describe 'Arachni::Element::COOKIE' do
         it 'returns "cookie"' do
-            Arachni::Element::COOKIE.should == 'cookie'
+            Arachni::Element::COOKIE.should == :cookie
         end
     end
 
@@ -89,7 +89,7 @@ describe Arachni::Element::Cookie do
 
     describe '#type' do
         it 'is "cookie"' do
-            @c.type.should == 'cookie'
+            @c.type.should == :cookie
         end
     end
 

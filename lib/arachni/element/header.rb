@@ -7,7 +7,7 @@ require Arachni::Options.dir['lib'] + 'element/base'
 
 module Arachni::Element
 
-HEADER = 'header'
+HEADER = :header
 
 class Header < Arachni::Element::Base
 

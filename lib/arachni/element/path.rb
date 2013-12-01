@@ -4,5 +4,5 @@
 =end
 
 module Arachni::Element
-    PATH = 'path'
+    PATH = :path
 end

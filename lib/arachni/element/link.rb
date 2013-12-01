@@ -7,7 +7,7 @@ require Arachni::Options.dir['lib'] + 'element/base'
 
 module Arachni::Element
 
-LINK = 'link'
+LINK = :link
 
 class Link < Arachni::Element::Base
 

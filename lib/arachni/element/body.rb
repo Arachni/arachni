@@ -4,5 +4,5 @@
 =end
 
 module Arachni::Element
-    BODY = 'body'
+    BODY = :body
 end

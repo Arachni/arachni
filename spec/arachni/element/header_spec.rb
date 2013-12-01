@@ -17,7 +17,7 @@ describe Arachni::Element::Header do
 
     describe 'Arachni::Element::HEADER' do
         it 'returns "header"' do
-            Arachni::Element::HEADER.should == 'header'
+            Arachni::Element::HEADER.should == :header
         end
     end
 
@@ -61,7 +61,7 @@ describe Arachni::Element::Header do
 
     describe '#type' do
         it 'is "header"' do
-            @header.type.should == 'header'
+            @header.type.should == :header
         end
     end
 

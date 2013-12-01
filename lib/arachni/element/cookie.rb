@@ -10,7 +10,7 @@ require Arachni::Options.dir['lib'] + 'element/base'
 
 module Arachni::Element
 
-COOKIE = 'cookie'
+COOKIE = :cookie
 
 #
 # Represents a Cookie object and provides helper class methods for parsing, encoding, etc.

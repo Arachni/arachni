@@ -4,5 +4,5 @@
 =end
 
 module Arachni::Element
-    SERVER = 'server'
+    SERVER = :server
 end

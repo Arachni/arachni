@@ -104,7 +104,7 @@ class Base
 
     # @return [String]  Element type.
     def type
-        self.class.name.split( ':' ).last.downcase
+        self.class.name.split( ':' ).last.downcase.to_sym
     end
 
     def dup

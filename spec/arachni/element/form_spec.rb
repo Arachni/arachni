@@ -34,7 +34,7 @@ describe Arachni::Element::Form do
 
     describe 'Arachni::Element::FORM' do
         it 'returns "form"' do
-            Arachni::Element::FORM.should == 'form'
+            Arachni::Element::FORM.should == :form
         end
     end
 
@@ -437,7 +437,7 @@ describe Arachni::Element::Form do
 
     describe '#type' do
         it 'is "form"' do
-            Arachni::Element::Form.new( @options ).type.should == 'form'
+            Arachni::Element::Form.new( @options ).type.should == :form
         end
     end
 
