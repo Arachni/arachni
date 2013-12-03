@@ -45,7 +45,7 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
         before do
             @timeout_opts = {
                 format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
-                elements: [ Arachni::Element::LINK ]
+                elements: [ Arachni::Element::Link ]
             }
             issues.clear
         end

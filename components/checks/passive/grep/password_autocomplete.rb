@@ -19,7 +19,7 @@ class Arachni::Checks::PasswordAutocomplete < Arachni::Check::Base
             next if form.simple[:autocomplete] == 'off'
             next if has_input_with_autocomplete_off? form
 
-            log( var: form.name_or_id, match: form.to_html, element: Element::FORM )
+            log( var: form.name_or_id, match: form.to_html, element: Element::Form )
         end
     end
 
@@ -35,7 +35,7 @@ class Arachni::Checks::PasswordAutocomplete < Arachni::Check::Base
             name:        'Password field with auto-complete',
             description: %q{Greps pages for forms which have password fields
                 without explicitly disabling auto-complete.},
-            elements:    [ Element::FORM ],
+            elements:    [ Element::Form ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.1',
             targets:     %w(Generic),

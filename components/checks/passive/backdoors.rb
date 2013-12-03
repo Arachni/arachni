@@ -28,7 +28,7 @@ class Arachni::Checks::Backdoors < Arachni::Check::Base
         {
             name:        'Backdoors',
             description: %q{Tries to find common backdoors on the server.},
-            elements:    [Element::PATH],
+            elements:    [Element::Path],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.2.2',
             targets:     %w(Generic),

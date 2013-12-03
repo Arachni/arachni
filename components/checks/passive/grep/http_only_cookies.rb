@@ -25,7 +25,7 @@ class Arachni::Checks::HttpOnlyCookies < Arachni::Check::Base
         {
             name:        'HttpOnly cookies',
             description: %q{Logs cookies that are accessible via JavaScript.},
-            elements:    [ Element::COOKIE ],
+            elements:    [ Element::Cookie ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.1',
             targets:     %w(Generic),

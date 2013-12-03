@@ -109,7 +109,7 @@ class Arachni::Checks::SourceCodeDisclosure < Arachni::Check::Base
             name:        'Source code disclosure',
             description: %q{It tries to identify whether or not the web application
                 can be forced to reveal source code.},
-            elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
+            elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.2',
             targets:     %w(PHP ASP JSP),

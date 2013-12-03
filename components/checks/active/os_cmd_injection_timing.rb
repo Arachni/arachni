@@ -40,7 +40,7 @@ class Arachni::Checks::OSCmdInjectionTiming < Arachni::Check::Base
         {
             name:        'OS command injection (timing)',
             description: %q{Tries to find operating system command injections using timing attacks.},
-            elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
+            elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.3',
             references:  {

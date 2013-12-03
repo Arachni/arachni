@@ -28,7 +28,7 @@ class Arachni::Checks::Cookies < Arachni::Check::Base
             references:  {
                 'Wikipedia' => 'http://en.wikipedia.org/'
             },
-            elements: [ Element::COOKIE ],
+            elements: [ Element::Cookie ],
             targets:     { 'Generic' => 'all' },
             issue:       {
                 name:            %q{Test issue},

@@ -3,6 +3,14 @@
     All rights reserved.
 =end
 
+require Arachni::Options.dir['lib'] + 'element/base'
+
 module Arachni::Element
-    BODY = :body
+class Body < Base
+
+    def initialize( page )
+        super url: page.url, method: page.request.method
+    end
+
+end
 end

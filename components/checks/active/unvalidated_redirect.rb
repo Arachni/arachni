@@ -37,7 +37,7 @@ class Arachni::Checks::UnvalidatedRedirect < Arachni::Check::Base
             name:        'Unvalidated redirect',
             description: %q{Injects URLs and checks the Location header field
                 to determnine whether the attack was successful.},
-            elements:    [Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER],
+            elements:    [Element::Form, Element::Link, Element::Cookie, Element::Header],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.6',
             references:  {

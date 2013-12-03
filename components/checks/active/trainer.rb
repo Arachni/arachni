@@ -29,7 +29,7 @@ class Arachni::Checks::Trainer < Arachni::Check::Base
             description: %q{Pokes and probes all inputs of a given page in order to uncover new input vectors.
                 It also forces Arachni to train itself by analyzing the server responses.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
+            elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             version:     '0.1.2',
             targets:     %w(Generic)
         }

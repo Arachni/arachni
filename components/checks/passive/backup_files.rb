@@ -46,7 +46,7 @@ class Arachni::Checks::BackupFiles < Arachni::Check::Base
         {
             name:        'Backup files',
             description: %q{Tries to find sensitive backup files.},
-            elements:    [ Element::PATH ],
+            elements:    [ Element::Path ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.2.2',
             targets:     %w(Generic),

@@ -52,7 +52,7 @@ class Arachni::Checks::BlindDifferentialSQLInjection < Arachni::Check::Base
             description: %q{It uses differential analysis to determine how different inputs affect
                 the behavior of the web application and checks if the displayed behavior is consistent
                 with that of a vulnerable application.},
-            elements:    [ Element::LINK, Element::FORM, Element::COOKIE ],
+            elements:    [ Element::Link, Element::Form, Element::Cookie ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.4.2',
             references:  {

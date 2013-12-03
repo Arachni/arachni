@@ -23,7 +23,7 @@ class Arachni::Checks::InsecureCookies < Arachni::Check::Base
         {
             name:        'Insecure cookies',
             description: %q{Logs cookies that are served over an unencrypted channel.},
-            elements:    [ Element::COOKIE ],
+            elements:    [ Element::Cookie ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.1',
             targets:     %w(Generic),

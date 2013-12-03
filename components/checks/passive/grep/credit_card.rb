@@ -76,7 +76,7 @@ class Arachni::Checks::CreditCards < Arachni::Check::Base
         {
             name:        'Credit card number disclosure',
             description: %q{Scans pages for credit card numbers.},
-            elements:    [ Element::BODY ],
+            elements:    [ Element::Body ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.2.2',
             references:  {

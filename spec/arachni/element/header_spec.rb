@@ -15,12 +15,6 @@ describe Arachni::Element::Header do
         Arachni::Header.should == Arachni::Element::Header
     end
 
-    describe 'Arachni::Element::HEADER' do
-        it 'returns "header"' do
-            Arachni::Element::HEADER.should == :header
-        end
-    end
-
     it 'retains its assigned inputs' do
         @header.inputs.should == @inputs
     end

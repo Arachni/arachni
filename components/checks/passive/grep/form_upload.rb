@@ -15,7 +15,7 @@ class Arachni::Checks::FileUpload < Arachni::Check::Base
         page.forms.each do |form|
             form.inputs.keys.each do |name|
                 next if form.details_for( name )[:type] != :file
-                log( match: form.to_html, element: Element::FORM )
+                log( match: form.to_html, element: Element::Form )
             end
         end
     end
@@ -25,7 +25,7 @@ class Arachni::Checks::FileUpload < Arachni::Check::Base
         {
             name:        'Form-based File Upload',
             description: description,
-            elements:    [ Element::FORM ],
+            elements:    [ Element::Form ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.2',
             targets:     %w(Generic),

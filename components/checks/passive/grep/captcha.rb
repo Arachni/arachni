@@ -20,7 +20,7 @@ class Arachni::Checks::CAPTCHA < Arachni::Check::Base
         page.document.css( "form" ).each do |form|
             # pretty dumb way to do this but it's a pretty dumb issue anyways...
             if (form_html = form.to_s) =~ CAPTCHA_RX
-                log( regexp: CAPTCHA_RX, match: form_html, element: Element::FORM )
+                log( regexp: CAPTCHA_RX, match: form_html, element: Element::Form )
             end
         end
     end
@@ -29,7 +29,7 @@ class Arachni::Checks::CAPTCHA < Arachni::Check::Base
         {
             name:        'CAPTCHA',
             description: %q{Greps pages for forms with CAPTCHAs.},
-            elements:    [ Element::FORM ],
+            elements:    [ Element::Form ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.1',
             targets:     %w(Generic),

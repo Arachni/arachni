@@ -14,12 +14,6 @@ describe Arachni::Element::Cookie do
         Arachni::Cookie.should == Arachni::Element::Cookie
     end
 
-    describe 'Arachni::Element::COOKIE' do
-        it 'returns "cookie"' do
-            Arachni::Element::COOKIE.should == :cookie
-        end
-    end
-
     context 'when initialized' do
         context 'with hash key/pair' do
             describe '#simple' do

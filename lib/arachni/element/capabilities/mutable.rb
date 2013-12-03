@@ -202,6 +202,13 @@ module Mutable
         permutations( *args )
     end
 
+    def dup
+        new = super
+        new.altered = self.altered.dup if self.altered
+        new.format  = self.format
+        new
+    end
+
     private
 
     #

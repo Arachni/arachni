@@ -37,7 +37,7 @@ class Arachni::Checks::XPathInjection < Arachni::Check::Base
         {
             name:        'XPath Injection',
             description: %q{XPath injection check},
-            elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
+            elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.3',
             references:  {

@@ -112,9 +112,9 @@ module Auditor
         # If no elements have been passed to audit methods, candidates will be
         # determined by {#each_candidate_element}.
         #
-        elements: [Element::LINK, Element::FORM,
-                   Element::COOKIE, Element::HEADER,
-                   Element::BODY],
+        elements: [Element::Link, Element::Form,
+                   Element::Cookie, Element::Header,
+                   Element::Body],
 
         #
         # If set to `true` the HTTP response will be analyzed for new elements.
@@ -264,7 +264,7 @@ module Auditor
             url:      url,
             injected: filename,
             id:       filename,
-            elem:     Element::PATH,
+            elem:     Element::Path.type,
             response: res.body,
             headers:  {
                 request:  res.request.headers,
@@ -318,9 +318,9 @@ module Auditor
                 log(
                     regexp:  regexp,
                     match:   match,
-                    element: Element::BODY
+                    element: Element::Body.type
                 )
-            end if elems.include? Element::BODY
+            end if elems.include? Element::Body
 
             next if string != page.body
 
@@ -335,10 +335,10 @@ module Auditor
                         var:     k,
                         regexp:  regexp,
                         match:   match,
-                        element: Element::HEADER
+                        element: Element::Header
                     )
                 end
-            end if elems.include? Element::HEADER
+            end if elems.include? Element::Header
 
         end
     end
@@ -448,22 +448,23 @@ module Auditor
 
         elements = []
         opts[:elements].each do |elem|
+            elem = elem.type
             next if !Options.audit?( elem )
 
             elements |= case elem
-                when Element::LINK
+                when Element::Link.type
                     page.links
 
-                when Element::FORM
+                when Element::Form.type
                     page.forms
 
-                when Element::COOKIE
+                when Element::Cookie.type
                     page.cookies
 
-                when Element::HEADER
+                when Element::Header.type
                     page.headers
 
-                when Element::BODY
+                when Element::Body.type
                 else
                     fail ArgumentError, "Unknown element: #{elem}"
             end

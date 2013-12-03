@@ -8,7 +8,7 @@ describe name_from_filename do
     end
 
     def self.elements
-        [ Element::SERVER ]
+        [ Element::Server ]
     end
 
     def issue_count

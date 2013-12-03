@@ -12,7 +12,7 @@ describe name_from_filename do
     end
 
     def self.elements
-        [ Element::FORM, Element::LINK ]
+        [ Element::Form, Element::Link ]
     end
 
     def issue_count

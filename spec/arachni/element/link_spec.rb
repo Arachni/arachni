@@ -17,12 +17,6 @@ describe Arachni::Element::Link do
         Arachni::Link.should == Arachni::Element::Link
     end
 
-    describe 'Arachni::Element::LINK' do
-        it 'returns "link"' do
-            Arachni::Element::LINK.should == :link
-        end
-    end
-
     describe '#new' do
         context 'when only a url is provided' do
             it 'is used for both the owner #url and #action and be parsed in order to extract #auditable inputs' do

@@ -45,7 +45,7 @@ class Arachni::Checks::InterestingResponses < Arachni::Check::Base
         audited( path )
         audited( digest )
 
-        log( { id: "Code: #{res.code}", element: Element::SERVER }, res )
+        log( { id: "Code: #{res.code}", element: Element::Server }, res )
         print_ok "Found an interesting response -- Code: #{res.code}."
     end
 
@@ -53,7 +53,7 @@ class Arachni::Checks::InterestingResponses < Arachni::Check::Base
         {
             name:        'Interesting responses',
             description: %q{Logs all non 200 (OK) server responses.},
-            elements:    [ Element::SERVER ],
+            elements:    [ Element::Server ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.4',
             targets:     %w(Generic),

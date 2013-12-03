@@ -16,7 +16,7 @@ class Arachni::Checks::Nil < Arachni::Check::Base
 
     def clean_up
         return if !@ran
-        log_issue( url: 'http://blah', elem: Element::LINK )
+        log_issue( url: 'http://blah', elem: Element::Link )
     end
 
     def self.info

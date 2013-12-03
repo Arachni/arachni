@@ -56,7 +56,7 @@ class Arachni::Checks::XSSScriptTag < Arachni::Check::Base
         {
             name:        'XSS in HTML \'script\' tag',
             description: %q{Injects strings and checks if they appear inside HTML 'script' tags.},
-            elements:    [Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER],
+            elements:    [Element::Form, Element::Link, Element::Cookie, Element::Header],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.1.4',
             references:  {

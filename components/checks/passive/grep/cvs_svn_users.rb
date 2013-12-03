@@ -32,7 +32,7 @@ class Arachni::Checks::CvsSvnUsers < Arachni::Check::Base
         {
             name:        'CVS/SVN users',
             description: %q{Scans every page for CVS/SVN users.},
-            elements:    [ Element::BODY ],
+            elements:    [ Element::Body ],
             author:      'Tasos Laskos <tasos.laskos@gmail.com>',
             version:     '0.3',
             targets:     %w(Generic),

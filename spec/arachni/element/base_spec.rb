@@ -9,19 +9,12 @@ describe Arachni::Element::Base do
             url:    @url,
             inputs: { hash: 'stuff' }
         }
-        @e = Arachni::Element::Base.new( @options )
+        @e = described_class.new( @options )
     end
 
     describe '#url' do
         it 'returns the assigned URL' do
             @e.url.should == @url
-        end
-    end
-
-    describe '#platforms' do
-        it 'returns platforms for the given element' do
-            @e.action = @url
-            @e.platforms.should be_kind_of Arachni::Platform::Manager
         end
     end
 
@@ -31,22 +24,6 @@ describe Arachni::Element::Base do
             url = 'http://test.com/some stuff#frag!'
             e.url = url
             e.url.should == @utils.normalize_url( url )
-        end
-    end
-
-    describe '#action=' do
-        it 'normalizes the passed URL' do
-            e = Arachni::Element::Base.new( @options )
-            url = 'http://test.com/some stuff#frag!'
-            e.action = url
-            e.action.should == @utils.normalize_url( url )
-        end
-
-        it 'converts the passed URL to absolute' do
-            e = Arachni::Element::Base.new( @options )
-            url = 'some stuff#frag!'
-            e.action = url
-            e.action.should == @utils.to_absolute( url, @url )
         end
     end
 
@@ -104,33 +81,6 @@ describe Arachni::Element::Base do
             a = @elem.dup
             a.override_instance_scope
             a.override_instance_scope?.should_not == @elem.override_instance_scope?
-        end
-    end
-
-    describe '#hash' do
-        context 'when the #method is updated' do
-            it 'gets updated' do
-                e = Arachni::Element::Base.new( @options )
-                h = e.hash
-                e.method = 'get'
-                e.hash.should_not == h
-            end
-        end
-        context 'when the #action is updated' do
-            it 'gets updated' do
-                e = Arachni::Element::Base.new( @options )
-                h = e.hash
-                e.action = 'http://stuff.com'
-                e.hash.should_not == h
-            end
-        end
-        context 'when the #auditable is updated' do
-            it 'gets updated' do
-                e = Arachni::Element::Base.new( @options )
-                h = e.hash
-                e.inputs = { 'stuff' => 'blah' }
-                e.hash.should_not == h
-            end
         end
     end
 end

@@ -4,7 +4,7 @@ describe Arachni::Issue do
     before( :all ) do
         @issue_data = {
             name: 'Check name',
-            elem: Arachni::Element::LINK,
+            elem: Arachni::Element::Link,
             platform: :unix,
             platform_type: :os,
             method: 'GET',
@@ -73,11 +73,12 @@ describe Arachni::Issue do
 
     it 'assigns the values in opts to the the instance vars' do
         @issue_data.each do |k, v|
-            next if [ :opts, :regexp ].include?( k )
+            next if [ :opts, :regexp, :elem ].include?( k )
             @issue.instance_variable_get( "@#{k}".to_sym ).should == @issue_data[k]
         end
         @issue.opts.should == { regexp: '' }.merge( @issue_data[:opts] ).recode
         @issue.cwe_url.should == 'http://cwe.mitre.org/data/definitions/1.html'
+        @issue.elem.should == :link
     end
 
     describe '#tags' do
@@ -121,11 +122,12 @@ describe Arachni::Issue do
         it 'assigns its hash contents to instance vars' do
             issue = Arachni::Issue.new( issue: @issue_data )
             @issue_data.each do |k, v|
-                next if [ :opts, :regexp, :mod_name ].include?( k )
+                next if [ :opts, :regexp, :mod_name, :elem ].include?( k )
                 issue.instance_variable_get( "@#{k}".to_sym ).should == @issue_data[k]
             end
             issue.opts.should == { regexp: '' }.merge( @issue_data[:opts] ).recode
             issue.cwe_url.should == 'http://cwe.mitre.org/data/definitions/1.html'
+            issue.elem.should == :link
         end
     end
 

@@ -8,40 +8,40 @@ describe name_from_filename do
     end
 
     def self.elements
-        [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ]
+        [ Element::Form, Element::Link, Element::Cookie, Element::Header ]
     end
 
     def issue_count_per_element_per_target
         {
             unix:    {
-                Element::FORM   => 8,
-                Element::LINK   => 8,
-                Element::COOKIE => 8,
-                Element::HEADER => 4
+                Element::Form   => 8,
+                Element::Link   => 8,
+                Element::Cookie => 8,
+                Element::Header => 4
             },
             windows: {
-                Element::FORM   => 24,
-                Element::LINK   => 24,
-                Element::COOKIE => 24,
-                Element::HEADER => 12
+                Element::Form   => 24,
+                Element::Link   => 24,
+                Element::Cookie => 24,
+                Element::Header => 12
             },
             tomcat:  {
-                Element::FORM   => 4,
-                Element::LINK   => 4,
-                Element::COOKIE => 4,
-                Element::HEADER => 2
+                Element::Form   => 4,
+                Element::Link   => 4,
+                Element::Cookie => 4,
+                Element::Header => 2
             },
             php:  {
-                Element::FORM   => 36,
-                Element::LINK   => 36,
-                Element::COOKIE => 36,
-                Element::HEADER => 18
+                Element::Form   => 36,
+                Element::Link   => 36,
+                Element::Cookie => 36,
+                Element::Header => 18
             },
             perl:  {
-                Element::FORM   => 36,
-                Element::LINK   => 36,
-                Element::COOKIE => 36,
-                Element::HEADER => 18
+                Element::Form   => 36,
+                Element::Link   => 36,
+                Element::Cookie => 36,
+                Element::Header => 18
             }
         }
     end

@@ -13,14 +13,13 @@ end
 lib = File.dirname( __FILE__ ) + '/capabilities/*.rb'
 Dir.glob( lib ).each { |f| require f }
 
-#
 # Base class for all element types.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 # @abstract
 class Base
-    include Capabilities::Auditable
-    extend  Utilities
+    include Utilities
+    extend Utilities
 
     def initialize( options )
         options = options.symbolize_keys( false )
@@ -29,18 +28,9 @@ class Base
             fail 'Needs :url or :action option.'
         end
 
-        super
-
         @initialised_options = options.deep_clone
 
-        self.url    = options[:url]    || options[:action]
-        self.action = options[:action] || self.url
-    end
-
-    # @return   [Platform]
-    #   Applicable platforms for {#action} resource.
-    def platforms
-        Platform::Manager[@action]
+        self.url = options[:url] || options[:action]
     end
 
     # @return  [String] String uniquely identifying self.
@@ -55,40 +45,6 @@ class Base
         {}
     end
 
-    # Should represent a method in {Arachni::Check::HTTP}.
-    #
-    # Ex. get, post, cookie, header
-    #
-    # @see Arachni::Check::HTTP
-    #
-    # @return [Symbol]  HTTP request method for the element.
-    def method( *args )
-        return super( *args ) if args.any?
-        @method.freeze
-    end
-
-    # @see #method
-    def method=( method )
-        @method = method.to_s.downcase.to_sym
-        rehash
-        self.method
-    end
-
-    # @note Ex. 'href' for links, 'action' for forms, etc.
-    #
-    # @return  [String]
-    #   URI to which the element points and should be audited against.
-    def action
-        @action.freeze
-    end
-
-    # @see #action
-    def action=( url )
-        @action = self.url ? to_absolute( url, self.url ) : normalize_url( url )
-        rehash
-        self.action
-    end
-
     # @return  [String]
     #   URL of the page that owns the element.
     def url
@@ -98,23 +54,22 @@ class Base
     # @see #url
     def url=( url )
         @url = normalize_url( url )
-        rehash
-        self.url
     end
 
-    # @return [String]  Element type.
+    # @return [Symbol]  Element type.
     def type
-        self.class.name.split( ':' ).last.downcase.to_sym
+        self.class.type
+    end
+
+    # @return [Symbol]  Element type.
+    def self.type
+        name.split( ':' ).last.downcase.to_sym
     end
 
     def dup
         new = self.class.new( @initialised_options )
         new.override_instance_scope if override_instance_scope?
-        new.auditor = self.auditor
         new.method  = self.method
-        new.altered = self.altered.dup if self.altered
-        new.format  = self.format
-        new.audit_options  = self.audit_options.dup
         new.inputs  = self.inputs.dup
         new
     end

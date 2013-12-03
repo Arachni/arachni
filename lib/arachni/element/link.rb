@@ -7,10 +7,8 @@ require Arachni::Options.dir['lib'] + 'element/base'
 
 module Arachni::Element
 
-LINK = :link
-
-class Link < Arachni::Element::Base
-
+class Link < Base
+    include Capabilities::Auditable
     include Capabilities::Refreshable
 
     # @param    [Hash]    options
@@ -47,22 +45,23 @@ class Link < Arachni::Element::Base
     end
 
     def id_from( type = :inputs )
-        query_vars = self.class.parse_query_vars( self.action )
-        "#{@audit_id_url}::#{self.method}::#{query_vars.merge( self.send( type ) ).keys.compact.sort.to_s}"
+        "#{@audit_id_url}:#{self.method}:" <<
+            "#{@query_vars.merge( self.send( type ) ).keys.compact.sort.to_s}"
+    end
+
+    def action=( url )
+        v = super( url )
+        @query_vars   = parse_url_vars( v )
+        @audit_id_url = v.split( '?' ).first.to_s
+        v
     end
 
     # @return   [String]
     #   Absolute URL with a merged version of {#action} and {#inputs} as a query.
     def to_s
-        query_vars = self.class.parse_query_vars( self.action )
         uri = uri_parse( self.action )
-        uri.query = query_vars.merge( self.inputs ).map { |k, v| "#{k}=#{v}" }.join( '&' )
+        uri.query = @query_vars.merge( self.inputs ).map { |k, v| "#{k}=#{v}" }.join( '&' )
         uri.to_s
-    end
-
-    # @return [String]  'link'
-    def type
-        Arachni::Element::LINK
     end
 
     def self.encode( str )
@@ -131,13 +130,6 @@ class Link < Arachni::Element::Base
             h[name.to_s] = value.to_s
             h
         end
-    end
-
-    # @see Base#action=
-    def action=( url )
-        v = super( url )
-        @audit_id_url = self.action.split( '?' ).first.to_s.split( ';' ).first
-        v
     end
 
     def audit_id( injection_str = '', opts = {} )

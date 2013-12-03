@@ -35,7 +35,7 @@ class Arachni::Checks::CommonDirectories < Arachni::Check::Base
         {
             name:        'Common directories',
             description: %q{Tries to find common directories on the server.},
-            elements:    [ Element::PATH ],
+            elements:    [ Element::Path ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.2.1',
             targets:     %w(Generic),

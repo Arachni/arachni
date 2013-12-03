@@ -26,7 +26,7 @@ class Arachni::Checks::UnencryptedPasswordForms < Arachni::Check::Base
         form.inputs.each do |name, v|
             next if form.field_type_for( name ) != :password || audited?( form.id )
 
-            log( var: name, match: form.to_html, element: Element::FORM )
+            log( var: name, match: form.to_html, element: Element::Form )
 
             print_ok( "Found unprotected password field '#{name}' at #{page.url}" )
             audited form.id
@@ -42,7 +42,7 @@ class Arachni::Checks::UnencryptedPasswordForms < Arachni::Check::Base
             name:        'Unencrypted password forms',
             description: %q{Looks for password inputs that don't submit data
                 over an encrypted channel (HTTPS).},
-            elements:    [ Element::FORM ],
+            elements:    [ Element::Form ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.1.7',
             references:  {

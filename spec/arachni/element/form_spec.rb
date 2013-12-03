@@ -32,12 +32,6 @@ describe Arachni::Element::Form do
         Arachni::Form.should == Arachni::Element::Form
     end
 
-    describe 'Arachni::Element::FORM' do
-        it 'returns "form"' do
-            Arachni::Element::FORM.should == :form
-        end
-    end
-
     describe '#initialize' do
         describe :method do
             it 'defaults to :get' do

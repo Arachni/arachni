@@ -60,7 +60,7 @@ class Arachni::Checks::XSSPath < Arachni::Check::Base
         # see if we managed to successfully inject our element
         return if Nokogiri::HTML( res.body ).css( self.class.tag ).empty?
 
-        log( { element: Element::PATH, injected: str }, res )
+        log( { element: Element::Path, injected: str }, res )
     end
 
 
@@ -68,7 +68,7 @@ class Arachni::Checks::XSSPath < Arachni::Check::Base
         {
             name:        'XSS in path',
             description: %q{Cross-Site Scripting check for path injection},
-            elements:    [ Element::PATH ],
+            elements:    [ Element::Path ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.1.8',
             references:  {

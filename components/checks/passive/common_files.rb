@@ -28,7 +28,7 @@ class Arachni::Checks::CommonFiles < Arachni::Check::Base
         {
             name:        'Common files',
             description: %q{Tries to find common sensitive files on the server.},
-            elements:    [ Element::PATH ],
+            elements:    [ Element::Path ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.2.2',
             targets:     %w(Generic),

@@ -32,14 +32,14 @@ class Arachni::Checks::LocalstartASP < Arachni::Check::Base
     def check_and_log( response )
         return if response.code != 401
 
-        log( { element: Element::SERVER }, response )
+        log( { element: Element::Server }, response )
     end
 
     def self.info
         {
             name:        'localstart.asp',
             description: %q{Checks for localstart.asp.},
-            elements:    [ Element::SERVER ],
+            elements:    [ Element::Server ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.1',
             targets:     %w(Generic),

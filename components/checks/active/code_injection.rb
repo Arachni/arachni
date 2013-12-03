@@ -68,7 +68,7 @@ class Arachni::Checks::CodeInjection < Arachni::Check::Base
             description: %q{It tries to inject code snippets into the
                 web application and assess whether or not the injection
                 was successful.},
-            elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
+            elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.2',
             references:  {

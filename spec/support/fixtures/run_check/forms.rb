@@ -28,7 +28,7 @@ class Arachni::Checks::Forms < Arachni::Check::Base
             references:  {
                 'Wikipedia' => 'http://en.wikipedia.org/'
             },
-            elements: [ Element::FORM ],
+            elements: [ Element::Form ],
             targets:     { 'Generic' => 'all' },
             issue:       {
                 name:            %q{Test issue},

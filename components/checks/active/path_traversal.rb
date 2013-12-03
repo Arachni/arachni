@@ -94,7 +94,7 @@ class Arachni::Checks::PathTraversal < Arachni::Check::Base
             description: %q{It injects paths of common files (/etc/passwd and boot.ini)
                 and evaluates the existence of a path traversal vulnerability
                 based on the presence of relevant content in the HTML responses.},
-            elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
+            elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.4.1',
             references:  {

@@ -10,14 +10,11 @@ require Arachni::Options.dir['lib'] + 'element/base'
 
 module Arachni::Element
 
-COOKIE = :cookie
-
-#
 # Represents a Cookie object and provides helper class methods for parsing, encoding, etc.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-class Cookie < Arachni::Element::Base
+class Cookie < Base
+    include Capabilities::Auditable
 
     # Default cookie values
     DEFAULT = {
@@ -140,12 +137,6 @@ class Cookie < Arachni::Element::Base
     #   `key` and the cookie value as `value`.
     def simple
         self.inputs.dup
-    end
-
-    # @return   [String]    Name of the current element, 'cookie' in this case.
-    # @see Arachni::Element::COOKIE
-    def type
-        Arachni::Element::COOKIE
     end
 
     def to_h

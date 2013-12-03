@@ -160,6 +160,12 @@ shared_examples_for 'auditable' do |options = {}|
         end
     end
 
+    describe '#platforms' do
+        it 'returns platforms for the given element' do
+            @auditable.platforms.should be_kind_of Arachni::Platform::Manager
+        end
+    end
+
     describe '#auditable' do
         it 'returns a frozen hash of auditable inputs' do
             @auditable.inputs.should == { 'param' => 'val' }

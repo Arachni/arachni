@@ -42,7 +42,7 @@ class Arachni::Checks::WebDav < Arachni::Check::Base
         {
             name:        'WebDAV',
             description: %q{Checks for WebDAV enabled directories.},
-            elements:    [ Element::SERVER ],
+            elements:    [ Element::Server ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.4',
             references:  {
@@ -72,7 +72,7 @@ class Arachni::Checks::WebDav < Arachni::Check::Base
 
         self.class.found
 
-        log( { element: Element::SERVER }, res )
+        log( { element: Element::Server }, res )
         print_ok "Enabled for: #{res.url}"
     end
 

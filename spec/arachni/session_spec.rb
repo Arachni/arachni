@@ -124,7 +124,7 @@ describe Arachni::Session do
     end
 
     describe '#find_login_form' do
-        before { @id = "#{@url}/login::post::[\"password\", \"token\", \"username\"]" }
+        before { @id = "#{@url}/login:post:[\"password\", \"token\", \"username\"]" }
         context 'when passed an array of :pages' do
             it 'should go through its forms and locate the login one' do
                 p = Arachni::Page.from_url( @url + '/login' )

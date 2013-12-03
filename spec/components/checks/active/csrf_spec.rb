@@ -8,7 +8,7 @@ describe name_from_filename do
     end
 
     def self.elements
-        [ Element::FORM ]
+        [ Element::Form ]
     end
 
     before( :each ) do

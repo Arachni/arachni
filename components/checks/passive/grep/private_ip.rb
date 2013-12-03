@@ -28,7 +28,7 @@ class Arachni::Checks::PrivateIP < Arachni::Check::Base
             author:      'Tasos Laskos <tasos.laskos@gmail.com>',
             version:     '0.2.1',
             targets:     %w(Generic),
-            elements:    [ Element::BODY, Element::HEADER ],
+            elements:    [ Element::Body, Element::Header ],
             references: {
                 'WebAppSec' => 'http://projects.webappsec.org/w/page/13246936/Information%20Leakage'
             },

@@ -167,6 +167,8 @@ class Issue
 
         @remarks ||= {}
 
+        @elem = @elem.type if @elem.respond_to?( :type )
+
         # remove this block because it won't be able to be serialized
         @opts.delete( :each_mutation )
         @tags ||= []

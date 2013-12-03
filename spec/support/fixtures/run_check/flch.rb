@@ -29,10 +29,10 @@ class Arachni::Checks::FLCH < Arachni::Check::Base
                 'Wikipedia' => 'http://en.wikipedia.org/'
             },
             elements: [
-                Element::FORM,
-                Element::LINK,
-                Element::COOKIE,
-                Element::HEADER
+                Element::Form,
+                Element::Link,
+                Element::Cookie,
+                Element::Header
             ],
             targets:     { 'Generic' => 'all' },
             issue:       {

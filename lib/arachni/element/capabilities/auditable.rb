@@ -11,7 +11,8 @@ require lib + 'element/capabilities/mutable'
 
 module Element::Capabilities
 
-# Provides audit functionality to {Arachni::Element::Mutable} elements.
+# Provides inputs, HTTP submission and audit functionality to
+# {Arachni::Element::Mutable} elements.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 module Auditable
@@ -103,8 +104,59 @@ module Auditable
     end
 
     def initialize( options )
+        super
+
+        self.action = options[:action] || self.url
         @audit_options = {}
     end
+
+    # @return   [Platform]
+    #   Applicable platforms for the {#action} resource.
+    def platforms
+        Platform::Manager[@action]
+    end
+
+    # @see #url
+    def url=( url )
+        super( url )
+        rehash
+        self.url
+    end
+
+    # Should represent a method in {Arachni::Check::HTTP}.
+    #
+    # Ex. get, post, cookie, header
+    #
+    # @see Arachni::Check::HTTP
+    #
+    # @return [Symbol]  HTTP request method for the element.
+    def method( *args )
+        return super( *args ) if args.any?
+        @method.freeze
+    end
+
+    # @see #method
+    def method=( method )
+        @method = method.to_s.downcase.to_sym
+        rehash
+        self.method
+    end
+
+    # @note Ex. 'href' for links, 'action' for forms, etc.
+    #
+    # @return  [String]
+    #   URI to which the element points and should be audited against.
+    def action
+        @action.freeze
+    end
+
+    # @see #action
+    def action=( url )
+        @action = self.url ? to_absolute( url, self.url ) : normalize_url( url )
+        rehash
+        self.action
+    end
+
 
     # Frozen inputs.
     #
@@ -385,6 +437,12 @@ module Auditable
         "Auditing #{self.type} variable '#{self.altered}' with action '#{self.action}'."
     end
 
+    # @return  [String] String uniquely identifying self.
+    # @abstract
+    def id
+        "#{action}:#{method}:#{inputs}"
+    end
+
     # Returns an audit ID string used to identify the audit of `self` by its
     # {#auditor}.
     #
@@ -425,6 +483,14 @@ module Auditable
     # @see .skip_like_blocks
     def matches_skip_like_blocks?
         Auditable.matches_skip_like_blocks? self
+    end
+
+    def dup
+        new = super
+        new.auditor = self.auditor
+        new.audit_options  = self.audit_options.dup
+        new.inputs  = self.inputs.dup
+        new
     end
 
     #
@@ -685,7 +751,7 @@ module Auditable
     end
 
     def rehash
-        @hash = (self.action.to_s + self.method.to_s + self.inputs.to_s).hash
+        @hash = "#{action}:#{method}:#{inputs}}".hash
     end
 
 end

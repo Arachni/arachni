@@ -3,6 +3,14 @@
     All rights reserved.
 =end
 
+require Arachni::Options.dir['lib'] + 'element/base'
+
 module Arachni::Element
-    SERVER = :server
+class Server < Base
+
+    def initialize( page )
+        super url: page.url
+    end
+
+end
 end

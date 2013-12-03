@@ -7,9 +7,8 @@ require Arachni::Options.dir['lib'] + 'element/base'
 
 module Arachni::Element
 
-FORM = :form
-
-class Form < Arachni::Element::Base
+class Form < Base
+    include Capabilities::Auditable
     include Capabilities::Refreshable
 
     #
@@ -90,6 +89,13 @@ class Form < Arachni::Element::Base
         @original = self.inputs.dup.freeze
     end
 
+    def action=( url )
+        v = super( url )
+        @query_vars   = parse_url_vars( v )
+        @audit_id_url = v.split( '?' ).first.to_s
+        v
+    end
+
     def details_for( input )
         @input_details[input.to_s] || {}
     end
@@ -109,9 +115,8 @@ class Form < Arachni::Element::Base
     end
 
     def id_from( type = :inputs )
-        query_vars = parse_url_vars( self.action )
-        "#{self.action.split( '?' ).first.to_s.split( ';' ).first}::" <<
-            "#{self.method}::#{query_vars.merge( self.send( type ) ).keys.compact.sort.to_s}"
+        "#{@audit_id_url}:#{self.method}:" <<
+            "#{@query_vars.merge( self.send( type ) ).keys.compact.sort.to_s}"
     end
 
     # @return   [Hash]
@@ -278,11 +283,6 @@ class Form < Arachni::Element::Base
     # @return   [String]
     def field_type_for( name )
         details_for( name )[:type]
-    end
-
-    # @return   [String]    'form'
-    def type
-        Arachni::Element::FORM
     end
 
     def marshal_dump

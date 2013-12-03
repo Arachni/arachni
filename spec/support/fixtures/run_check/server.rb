@@ -28,7 +28,7 @@ class Arachni::Checks::Server < Arachni::Check::Base
             references:  {
                 'Wikipedia' => 'http://en.wikipedia.org/'
             },
-            elements: [ Element::SERVER ],
+            elements: [ Element::Server ],
             targets:     { 'Generic' => 'all' },
             issue:       {
                 name:            %q{Test issue},

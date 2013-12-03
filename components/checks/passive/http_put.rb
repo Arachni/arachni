@@ -33,7 +33,7 @@ class Arachni::Checks::HTTP_PUT < Arachni::Check::Base
     def check_and_log( res )
         return if !res.body.to_s.include?( self.class.substring )
 
-        log( { element: Element::SERVER }, res )
+        log( { element: Element::Server }, res )
         print_ok 'File has been created: ' + res.url
     end
 
@@ -41,7 +41,7 @@ class Arachni::Checks::HTTP_PUT < Arachni::Check::Base
         {
             name:        'HTTP PUT',
             description: %q{Checks if uploading files is possible using the HTTP PUT method.},
-            elements:    [ Element::SERVER ],
+            elements:    [ Element::Server ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.4',
             targets:     %w(Generic),

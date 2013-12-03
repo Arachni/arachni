@@ -38,7 +38,7 @@ class Arachni::Checks::AllowedMethods < Arachni::Check::Base
         methods = res.headers['Allow']
         return if !methods || methods.empty?
 
-        log( { element: Element::SERVER, match: methods }, res )
+        log( { element: Element::Server, match: methods }, res )
 
         # inform the user that we have a match
         print_ok( methods )
@@ -48,7 +48,7 @@ class Arachni::Checks::AllowedMethods < Arachni::Check::Base
         {
             name:        'Allowed methods',
             description: %q{Checks for supported HTTP methods.},
-            elements:    [Element::SERVER],
+            elements:    [Element::Server],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.4',
             targets:     %w(Generic),

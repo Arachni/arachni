@@ -58,7 +58,7 @@ class Arachni::Checks::SQLInjection < Arachni::Check::Base
         {
             name:        'SQL Injection',
             description: %q{SQL injection check, uses known SQL DB errors to identify vulnerabilities.},
-            elements:    [Element::LINK, Element::FORM, Element::COOKIE, Element::HEADER],
+            elements:    [Element::Link, Element::Form, Element::Cookie, Element::Header],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.2.1',
             references:  {

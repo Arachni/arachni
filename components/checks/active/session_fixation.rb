@@ -57,7 +57,7 @@ class Arachni::Checks::SessionFixation < Arachni::Check::Base
         {
             name:        'Session fixation',
             description: %q{Checks whether or not the session cookie can be set to an arbitrary value.},
-            elements:    [ Element::FORM, Element::LINK ],
+            elements:    [ Element::Form, Element::Link ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.1',
             references:  {

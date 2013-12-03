@@ -68,7 +68,7 @@ class Arachni::Checks::DirectoryListing < Arachni::Check::Base
             return
         end
 
-        log( { element: Element::SERVER }, @harvested[5] )
+        log( { element: Element::Server }, @harvested[5] )
     end
 
     def same_page?( res1, res2 )
@@ -79,7 +79,7 @@ class Arachni::Checks::DirectoryListing < Arachni::Check::Base
         {
             name:        'Directory listing',
             description: %q{Tries to force directory listings.},
-            elements:    [ Element::SERVER ],
+            elements:    [ Element::Server ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.4',
             targets:     %w(Generic),

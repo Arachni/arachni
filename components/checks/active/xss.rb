@@ -73,7 +73,7 @@ class Arachni::Checks::XSS < Arachni::Check::Base
                 It doesn't just look for the injected XSS string in the HTML code
                 but actually parses the code and looks for the injected element proper.
             },
-            elements:    [Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER],
+            elements:    [Element::Form, Element::Link, Element::Cookie, Element::Header],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.3.2',
             references:  {

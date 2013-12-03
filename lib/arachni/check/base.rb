@@ -93,10 +93,10 @@ class Base < Component::Base
             # empty.
             #
             # elements: [
-            #     Element::FORM,
-            #     Element::LINK,
-            #     Element::COOKIE,
-            #     Element::HEADER
+            #     Element::Form,
+            #     Element::Link
+            #     Element::Cookie
+            #     Element::Header
             # ],
             elements:    [],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',

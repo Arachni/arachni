@@ -7,9 +7,8 @@ require Arachni::Options.dir['lib'] + 'element/base'
 
 module Arachni::Element
 
-HEADER = :header
-
-class Header < Arachni::Element::Base
+class Header < Base
+    include Capabilities::Auditable
 
     def initialize( options )
         super( options )
@@ -63,10 +62,6 @@ class Header < Arachni::Element::Base
     # @return   [String]    Header value.
     def value
         @inputs.first.last
-    end
-
-    def type
-        Arachni::Element::HEADER
     end
 
     def self.encode( header )

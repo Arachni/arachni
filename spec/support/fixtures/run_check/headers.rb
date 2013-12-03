@@ -28,7 +28,7 @@ class Arachni::Checks::Headers < Arachni::Check::Base
             references:  {
                 'Wikipedia' => 'http://en.wikipedia.org/'
             },
-            elements: [ Element::HEADER ],
+            elements: [ Element::Header ],
             targets:     { 'Generic' => 'all' },
             issue:       {
                 name:            %q{Test issue},

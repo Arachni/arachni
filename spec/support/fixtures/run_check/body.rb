@@ -28,7 +28,7 @@ class Arachni::Checks::Body < Arachni::Check::Base
             references:  {
                 'Wikipedia' => 'http://en.wikipedia.org/'
             },
-            elements: [ Element::BODY ],
+            elements: [ Element::Body ],
             targets:     { 'Generic' => 'all' },
             issue:       {
                 name:            %q{Test issue},

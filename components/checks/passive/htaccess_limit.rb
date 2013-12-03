@@ -20,7 +20,7 @@ class Arachni::Checks::Htaccess < Arachni::Check::Base
 
     def check_and_log( res )
         return if res.code != 200
-        log( { element: Element::SERVER }, res )
+        log( { element: Element::Server }, res )
         print_ok 'Request was accepted: ' + res.url
     end
 
@@ -29,7 +29,7 @@ class Arachni::Checks::Htaccess < Arachni::Check::Base
             name:        '.htaccess LIMIT misconfiguration',
             description: %q{Checks for misconfiguration in LIMIT directives that blocks
                 GET requests but allows POST.},
-            elements:    [ Element::SERVER ],
+            elements:    [ Element::Server ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.5',
             targets:     %w(Generic),

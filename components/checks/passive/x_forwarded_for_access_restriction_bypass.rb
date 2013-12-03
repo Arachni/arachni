@@ -16,7 +16,7 @@ class Arachni::Checks::XForwardedAccessRestrictionBypass < Arachni::Check::Base
 
     def check_and_log( res )
         return if res.code != 200
-        log( { element: Element::SERVER }, res )
+        log( { element: Element::Server }, res )
         print_ok "Request was accepted: #{res.effective_url}"
     end
 
@@ -26,7 +26,7 @@ class Arachni::Checks::XForwardedAccessRestrictionBypass < Arachni::Check::Base
             description: %q{Retries denied requests with a X-Forwarded-For header
                 to trick the web application into thinking that the request originates
                 from localhost and checks whether the restrictions was bypassed.},
-            elements:    [ Element::SERVER ],
+            elements:    [ Element::Server ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1',
             targets:     %w(Generic),

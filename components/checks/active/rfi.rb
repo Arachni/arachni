@@ -104,7 +104,7 @@ class Arachni::Checks::RFI < Arachni::Check::Base # *always* extend Arachni::Che
             # If you want the check to run no-matter what, leave the array
             # empty or don't define it at all.
             #
-            elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
+            elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.2.1',
             references:  {

@@ -170,13 +170,13 @@ class Arachni::Reports::HTML < Arachni::Report::Base
             trusted_issues:   {},
             untrusted_issues: {},
             elements:         {
-                Element::FORM   => 0,
-                Element::LINK   => 0,
-                Element::COOKIE => 0,
-                Element::HEADER => 0,
-                Element::BODY   => 0,
-                Element::PATH   => 0,
-                Element::SERVER => 0
+                Element::Form.type   => 0,
+                Element::Link.type   => 0,
+                Element::Cookie.type => 0,
+                Element::Header.type => 0,
+                Element::Body.type   => 0,
+                Element::Path.type   => 0,
+                Element::Server.type => 0
             },
             verification:     {
                 'Yes' => 0,
@@ -201,7 +201,6 @@ class Arachni::Reports::HTML < Arachni::Report::Base
         end
 
         auditstore.issues.each.with_index do |issue, i|
-
             graph_data[:severities][issue.severity] += 1
             total_severities += 1
 

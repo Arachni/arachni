@@ -8,15 +8,15 @@ describe name_from_filename do
     end
 
     def self.elements
-        [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ]
+        [ Element::Form, Element::Link, Element::Cookie, Element::Header ]
     end
 
     def issue_count_per_element
         {
-            Element::FORM   => 6,
-            Element::LINK   => 10,
-            Element::COOKIE => 3,
-            Element::HEADER => 3
+            Element::Form   => 6,
+            Element::Link   => 10,
+            Element::Cookie => 3,
+            Element::Header => 3
         }
     end
 

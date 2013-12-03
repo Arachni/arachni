@@ -21,7 +21,7 @@ class Arachni::Checks::SSN < Arachni::Check::Base
         {
             name:        'SSN',
             description: %q{Greps pages for disclosed US Social Security Numbers.},
-            elements:    [ Element::BODY ],
+            elements:    [ Element::Body ],
             author:      [
                 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>', # original
                 'haliphax' # tweaked regexp

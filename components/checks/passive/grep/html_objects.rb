@@ -28,7 +28,7 @@ class Arachni::Checks::HTMLObjects < Arachni::Check::Base
         {
             name:        'HTML objects',
             description: description,
-            elements:    [ Element::BODY ],
+            elements:    [ Element::Body ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.1',
             targets:     %w(Generic),

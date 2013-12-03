@@ -28,7 +28,7 @@ class Arachni::Checks::Links < Arachni::Check::Base
             references:  {
                 'Wikipedia' => 'http://en.wikipedia.org/'
             },
-            elements: [ Element::LINK ],
+            elements: [ Element::Link ],
             targets:     { 'Generic' => 'all' },
             issue:       {
                 name:            %q{Test issue},

@@ -23,7 +23,7 @@ class Arachni::Checks::EMails < Arachni::Check::Base
         {
             name:        'E-mail address',
             description: %q{Greps pages for disclosed e-mail addresses.},
-            elements:    [ Element::BODY ],
+            elements:    [ Element::Body ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.1',
             targets:     %w(Generic),

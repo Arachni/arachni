@@ -28,7 +28,7 @@ class Arachni::Checks::Path < Arachni::Check::Base
             references:  {
                 'Wikipedia' => 'http://en.wikipedia.org/'
             },
-            elements: [ Element::PATH ],
+            elements: [ Element::Path ],
             targets:     { 'Generic' => 'all' },
             issue:       {
                 name:            %q{Test issue},

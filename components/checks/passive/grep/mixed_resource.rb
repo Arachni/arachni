@@ -58,7 +58,7 @@ class Arachni::Checks::MixedResource < Arachni::Check::Base
         {
             name:        'Mixed Resource',
             description: %q{Looks for resources served over HTTP when the HTML code is server over HTTPS.},
-            elements:    [ Element::BODY ],
+            elements:    [ Element::Body ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.1.2',
             references:  {

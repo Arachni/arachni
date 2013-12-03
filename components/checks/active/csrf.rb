@@ -142,7 +142,7 @@ class Arachni::Checks::CSRF < Arachni::Check::Base
 
         audited( "#{url}::#{name}" )
 
-        log( var: name, elem: Element::FORM )
+        log( var: name, elem: Element::Form )
         print_ok "Found unprotected form with name '#{name}' at '#{page.url}'"
     end
 
@@ -152,7 +152,7 @@ class Arachni::Checks::CSRF < Arachni::Check::Base
             description: %q{It uses 2-pass rDiff analysis to determine
                 which forms affect business logic and audits them for CSRF.
                 It requires a logged-in user's cookie-jar.},
-            elements:    [ Element::FORM ],
+            elements:    [ Element::Form ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.3.2',
             references:  {
