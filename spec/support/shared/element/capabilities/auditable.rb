@@ -812,10 +812,9 @@ shared_examples_for 'auditable' do |options = {}|
                 )
 
                 Arachni::Options.exclude_vectors << 'exclude_this'
-                Arachni::Options.exclude_vectors << Arachni::Element::Form::ORIGINAL_VALUES
 
                 audited = []
-                e.audit( @seed ) { |_, elem| audited << elem.altered  }.should be_true
+                e.audit( @seed, skip_original: true ) { |_, elem| audited << elem.altered  }.should be_true
                 e.http.run
 
                 audited.uniq.should == %w(include_this)
@@ -824,7 +823,7 @@ shared_examples_for 'auditable' do |options = {}|
         context 'when called with no opts' do
             it 'uses the defaults' do
                 cnt = 0
-                @auditable.audit( @seed ) { cnt += 1 }
+                @auditable.audit( @seed, skip_original: true  ) { cnt += 1 }
                 @auditor.http.run
                 cnt.should == (opts[:supports_nulls] ? 4 : 2)
             end
