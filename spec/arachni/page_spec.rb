@@ -122,6 +122,18 @@ describe Arachni::Page do
         end
     end
 
+    describe '#response' do
+        it 'returns the HTTP response for that page' do
+            page.response.should == response
+        end
+    end
+
+    describe '#request' do
+        it 'returns the HTTP request for that page' do
+            page.request.should == response.request
+        end
+    end
+
     describe '#links=' do
         it 'sets the page links' do
             page.links.should be_any

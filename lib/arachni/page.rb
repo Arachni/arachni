@@ -122,6 +122,11 @@ class Page
         @parser.response
     end
 
+    # @return    [HTTP::Request]    HTTP request.
+    def request
+        response.request
+    end
+
     # @return    [String]    URL of the page.
     def url
         @url ||= @parser.url
