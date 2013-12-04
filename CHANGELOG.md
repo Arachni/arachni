@@ -89,6 +89,7 @@
         - Disabled reverse DNS lookup on requests to increase performance.
     - `content_types` -- Moved out of `defaults/'.
 - Reports -- Added `content_type` to all reports with `outfile` option in `.info`.
+    - `xml` -- Escaped parameter values in XML report.
 
 ## 0.4.5.2 _(September 18, 2013)_
 

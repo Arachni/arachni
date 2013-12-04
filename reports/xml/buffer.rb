@@ -49,7 +49,7 @@ module Arachni::Reports::XML::Buffer
     end
 
     def add_param( name, value )
-        append "<param name=\"#{name}\" value=\"#{value}\" />"
+        append "<param name=\"#{name}\" value=\"#{escape(value)}\" />"
     end
 
     def add_mod( name )
