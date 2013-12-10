@@ -88,6 +88,9 @@
         - Updated request URL encoding to handle malformed URLs.
         - Disabled reverse DNS lookup on requests to increase performance.
     - `content_types` -- Moved out of `defaults/'.
+    - `cookie_collector`
+        - Added `filter` option used to determine which cookies to log based on
+            a pattern matched against cookie names.
 - Reports -- Added `content_type` to all reports with `outfile` option in `.info`.
     - `xml` -- Escaped parameter values in XML report.
 
