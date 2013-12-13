@@ -4,7 +4,7 @@ describe name_from_filename do
     include_examples 'plugin'
 
     before( :all ) do
-        issues = [Arachni::Issue.new( url: 'http://localhost' )]
+        issues = [Factory[:issue].tap { |i| i.vector.action = 'http://localhost/' }]
         framework.checks.register_results( issues )
     end
 

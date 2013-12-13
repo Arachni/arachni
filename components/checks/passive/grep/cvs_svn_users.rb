@@ -3,14 +3,12 @@
     All rights reserved.
 =end
 
-#
 # CVS/SVN users recon check.
 #
 # Scans every page for CVS/SVN users.
 #
 # @author   Tasos Laskos <tasos.laskos@gmail.com>
 # @version  0.3
-#
 class Arachni::Checks::CvsSvnUsers < Arachni::Check::Base
 
     def self.regexps
@@ -36,13 +34,15 @@ class Arachni::Checks::CvsSvnUsers < Arachni::Check::Base
             author:      'Tasos Laskos <tasos.laskos@gmail.com>',
             version:     '0.3',
             targets:     %w(Generic),
-            references: {
-                'CWE' => 'http://cwe.mitre.org/data/definitions/200.html'
-            },
+
             issue:       {
                 name:            %q{CVS/SVN user disclosure},
                 description:     %q{A CVS or SVN user is disclosed in the body of the HTML page.},
-                cwe:             '200',
+                references: {
+                    'CWE' => 'http://cwe.mitre.org/data/definitions/200.html'
+                },
+
+                cwe:             200,
                 severity:        Severity::LOW,
                 remedy_guidance: %q{Remove all CVS and SVN users from the body of the HTML page.},
             },

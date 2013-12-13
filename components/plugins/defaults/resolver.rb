@@ -3,11 +3,8 @@
     All rights reserved.
 =end
 
-#
 # @author Tasos "Zapotek" Laskos<tasos.laskos@gmail.com>
-#
-# @version 0.1.1
-#
+# @version 0.1.2
 class Arachni::Plugins::Resolver < Arachni::Plugin::Base
 
     def prepare
@@ -19,7 +16,7 @@ class Arachni::Plugins::Resolver < Arachni::Plugin::Base
 
         host_to_ipaddress = {}
         framework.auditstore.issues.each_with_index do |issue|
-            uri = uri_parse( issue.url.dup )
+            uri = uri_parse( issue.vector.action )
             next if !uri
 
             host = uri.host
@@ -42,7 +39,7 @@ class Arachni::Plugins::Resolver < Arachni::Plugin::Base
             description: %q{Resolves vulnerable hostnames to IP addresses.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             tags:        [ 'ip address', 'hostname' ],
-            version:     '0.1.1'
+            version:     '0.1.2'
         }
     end
 

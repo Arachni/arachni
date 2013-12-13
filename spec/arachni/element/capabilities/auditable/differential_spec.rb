@@ -38,7 +38,7 @@ describe Arachni::Element::Capabilities::Auditable::Differential do
 
                 results = Arachni::Check::Manager.results
                 results.should be_any
-                results.first.var.should == 'input'
+                results.first.vector.affected_input_name.should == 'input'
             end
         end
 

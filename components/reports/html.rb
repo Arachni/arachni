@@ -7,31 +7,27 @@ require 'erb'
 require 'base64'
 require 'cgi'
 
-# Creates an HTML report of the audit.
+# Creates an HTML report with scan results.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 # @version 0.3.3
 class Arachni::Reports::HTML < Arachni::Report::Base
 
     module Utils
+
+        def base64_encode( string )
+            Base64.encode64( string ).gsub( /\n/, '' )
+        end
 
         def normalize( str )
             return '' if !str || str.empty?
             str.encode( 'utf-8', 'binary', invalid: :replace, undef: :replace )
         end
 
+        # Carefully escapes HTML and converts to UTF-8 while removing
+        # invalid character sequences.
         def escapeHTML( str )
-            # carefully escapes HTML and converts to UTF-8
-            # while removing invalid character sequences
             CGI.escapeHTML( normalize( str ) )
-        end
-
-        def for_anomalous_metamodules( audit_store, &block )
-            audit_store.plugins.each do |metaname, data|
-                next if !data[:tags] || !data[:tags].include?( 'anomaly' )
-                block.call( metaname, data )
-            end
         end
 
         def erb( tpl, params = {} )
@@ -69,21 +65,8 @@ class Arachni::Reports::HTML < Arachni::Report::Base
             self
         end
 
-        def format_issue( hash )
-            idx, issue = find_issue_by_hash( hash )
-            return if !issue
-            erb :issue, idx: idx, issue: issue
-        end
-
         def prep_description( str )
             Arachni::Reports::HTML.prep_description( str )
-        end
-
-        def find_issue_by_hash( hash )
-            auditstore.issues.each.with_index do |issue, i|
-                return [i+1, issue] if issue.digest == hash
-            end
-            nil
         end
 
         def get_meta_info( name )
@@ -103,9 +86,7 @@ class Arachni::Reports::HTML < Arachni::Report::Base
         end
     end
 
-    #
     # Runs the HTML report.
-    #
     def run
         print_line
         print_status 'Creating HTML report...'
@@ -114,11 +95,7 @@ class Arachni::Reports::HTML < Arachni::Report::Base
         @base_path = File.dirname( options['tpl'] ) + '/' +
             File.basename( options['tpl'], '.erb' ) + '/'
 
-        title_url = auditstore.options['url']
-        begin
-            title_url = uri_parse( auditstore.options['url'] ).host
-        rescue
-        end
+        title_url = uri_parse( auditstore.options['url'] ).host rescue auditstore.options['url']
 
         params = prepare_data.merge(
             title_url:   escapeHTML( title_url ),
@@ -157,14 +134,13 @@ class Arachni::Reports::HTML < Arachni::Report::Base
         cstr.chomp
     end
 
-
     def prepare_data
         graph_data = {
             severities:       {
-                Severity::HIGH          => 0,
-                Severity::MEDIUM        => 0,
-                Severity::LOW           => 0,
-                Severity::INFORMATIONAL => 0
+                Severity::HIGH.to_sym          => 0,
+                Severity::MEDIUM.to_sym        => 0,
+                Severity::LOW.to_sym           => 0,
+                Severity::INFORMATIONAL.to_sym => 0
             },
             issues:           {},
             trusted_issues:   {},
@@ -190,54 +166,32 @@ class Arachni::Reports::HTML < Arachni::Report::Base
 
         total_severities = 0
         total_elements   = 0
-        total_verifications = 0
 
-        filtered_hashes  = []
-        anomalous_hashes = []
-
-        anomalous_meta_results = {}
-        for_anomalous_metamodules( auditstore ) do |metaname, data|
-            anomalous_meta_results[metaname] = data
-        end
+        has_trusted_issues   = false
+        has_untrusted_issues = false
 
         auditstore.issues.each.with_index do |issue, i|
-            graph_data[:severities][issue.severity] += 1
+            graph_data[:severities][issue.severity.to_sym] += 1
             total_severities += 1
 
             graph_data[:issues][issue.name] ||= 0
             graph_data[:issues][issue.name] += 1
 
 
-            graph_data[:elements][issue.elem] += 1
+            graph_data[:elements][issue.vector.type] += 1
             total_elements += 1
 
-            verification = issue.verification ? 'Yes' : 'No'
+            verification = issue.untrusted? ? 'Yes' : 'No'
             graph_data[:verification][verification] += 1
-            total_verifications += 1
-
-            issue.variations.each_with_index do |variation, j|
-                if variation['response'] && !variation['response'].empty?
-                    variation['response'] = normalize( variation['response'] )
-
-                    if skip_responses?
-                        variation['response'] = 'Inclusion of HTTP response bodies has been disabled.'
-                    else
-                        variation['response'] = normalize( variation['response'] )
-                    end
-
-                    auditstore.issues[i].variations[j]['escaped_response'] =
-                        Base64.encode64( variation['response'] ).gsub( /\n/, '' )
-                end
-            end
 
             if issue.trusted?
-                filtered_hashes << issue.digest
+                has_trusted_issues = true
                 graph_data[:trust]['Trusted'] += 1
                 graph_data[:trusted_issues][issue.name]   ||= 0
                 graph_data[:trusted_issues][issue.name]    += 1
                 graph_data[:untrusted_issues][issue.name] ||= 0
             else
-                anomalous_hashes << issue.digest
+                has_untrusted_issues = true
                 graph_data[:trust]['Untrusted'] += 1
                 graph_data[:untrusted_issues][issue.name] ||= 0
                 graph_data[:untrusted_issues][issue.name]  += 1
@@ -247,15 +201,12 @@ class Arachni::Reports::HTML < Arachni::Report::Base
         end
 
         {
-            graph_data:             graph_data,
-            total_severities:       total_severities,
-            total_elements:         total_elements,
-            total_verifications:    total_verifications,
-            filtered_hashes:        filtered_hashes,
-            anomalous_hashes:       anomalous_hashes,
-            anomalous_meta_results: anomalous_meta_results
+            graph_data:           graph_data,
+            total_severities:     total_severities,
+            total_elements:       total_elements,
+            has_trusted_issues:   has_trusted_issues,
+            has_untrusted_issues: has_untrusted_issues
         }
-
     end
 
 end

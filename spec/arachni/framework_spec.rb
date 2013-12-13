@@ -234,7 +234,7 @@ describe Arachni::Framework do
             called.should be_true
 
             @f.status.should == 'done'
-            @f.auditstore.issues.size.should == 4
+            @f.auditstore.issues.size.should == 3
 
             @f.auditstore.plugins['wait'][:results].should == { stuff: true }
 
@@ -266,10 +266,9 @@ describe Arachni::Framework do
                 f.checks.load :taint
                 f.run
 
-                issues = f.auditstore.issues
-                issues.find { |i| i.var == 'link_input' }.should be_true
-                issues.find { |i| i.var == 'form_input' }.should be_true
-                issues.find { |i| i.var == 'cookie_input' }.should be_true
+                f.auditstore.issues.
+                    map { |i| i.variations.first.vector.affected_input_name }.sort.should ==
+                    %w(link_input form_input cookie_input).sort
             end
         end
 
@@ -281,10 +280,9 @@ describe Arachni::Framework do
                 f.checks.load :taint
                 f.run
 
-                issues = f.auditstore.issues
-                issues.find { |i| i.var == 'link_input' }.should be_true
-                issues.find { |i| i.var == 'form_input' }.should be_true
-                issues.find { |i| i.var == 'cookie_taint' }.should be_true
+                f.auditstore.issues.
+                    map { |i| i.variations.first.vector.affected_input_name }.sort.should ==
+                    %w(link_input form_input cookie_taint).sort
             end
         end
 
@@ -1013,7 +1011,8 @@ describe Arachni::Framework do
             @f.page_queue_total_size.should == 0
             @f.push_to_page_queue( page ).should be_true
             @f.run
-            @f.auditstore.issues.size.should == 3
+
+            @f.auditstore.issues.size.should == 2
             @f.page_queue_total_size.should > 0
             @f.checks.clear
         end

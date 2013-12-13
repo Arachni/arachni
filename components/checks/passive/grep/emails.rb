@@ -3,13 +3,10 @@
     All rights reserved.
 =end
 
-#
 # Looks for and logs e-mail addresses.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 # @version 0.1.1
-#
 class Arachni::Checks::EMails < Arachni::Check::Base
 
     def run
@@ -30,7 +27,7 @@ class Arachni::Checks::EMails < Arachni::Check::Base
             issue:       {
                 name:            %q{E-mail address disclosure},
                 description:     %q{An e-mail address is being disclosed.},
-                cwe:             '200',
+                cwe:             200,
                 severity:        Severity::INFORMATIONAL,
                 remedy_guidance: %q{E-mail addresses should be presented in such
                     a way that it is hard to process them automatically.}

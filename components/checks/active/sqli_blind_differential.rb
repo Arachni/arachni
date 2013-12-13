@@ -55,26 +55,23 @@ class Arachni::Checks::BlindDifferentialSQLInjection < Arachni::Check::Base
             elements:    [ Element::Link, Element::Form, Element::Cookie ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.4.2',
-            references:  {
-                'OWASP'         => 'http://www.owasp.org/index.php/Blind_SQL_Injection',
-                'MITRE - CAPEC' => 'http://capec.mitre.org/data/definitions/7.html'
-            },
             targets:     %w(Generic),
 
             issue:       {
                 name:            %q{Blind SQL Injection (differential analysis)},
                 description:     %q{SQL code can be injected into the web application
     even though it may not be obvious due to suppression of error messages.},
+                references:  {
+                    'OWASP'         => 'http://www.owasp.org/index.php/Blind_SQL_Injection',
+                    'MITRE - CAPEC' => 'http://capec.mitre.org/data/definitions/7.html'
+                },
                 tags:            %w(sql blind differential injection database),
-                cwe:             '89',
+                cwe:             89,
                 severity:        Severity::HIGH,
-                cvssv2:          '9.0',
                 remedy_guidance: %q{Suppression of error messages leads to
     security through obscurity which is not a good practise.
     The web application needs to enforce stronger validation
-    on user inputs.},
-                remedy_code:     '',
-                metasploitable:  'unix/webapp/arachni_sqlmap'
+    on user inputs.}
             }
 
         }

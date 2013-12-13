@@ -3,11 +3,9 @@
     All rights reserved.
 =end
 
-#
 # Generates a simple list of safe/unsafe URLs.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Arachni::Plugins::HealthMap < Arachni::Plugin::Base
 
     is_distributable
@@ -20,7 +18,7 @@ class Arachni::Plugins::HealthMap < Arachni::Plugin::Base
         auditstore = framework.auditstore
 
         sitemap  = auditstore.sitemap.map { |url| url.split( '?' ).first }.uniq
-        sitemap |= issue_urls = auditstore.issues.map { |issue| issue.url }.uniq
+        sitemap |= issue_urls = auditstore.issues.map { |issue| issue.vector.action }.uniq
 
         return if sitemap.size == 0
 
@@ -71,7 +69,7 @@ class Arachni::Plugins::HealthMap < Arachni::Plugin::Base
             name:        'Health map',
             description: %q{Generates a simple list of safe/unsafe URLs.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.3'
+            version:     '0.1.4'
         }
     end
 

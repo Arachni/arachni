@@ -3,13 +3,10 @@
     All rights reserved.
 =end
 
-#
 # Looks for HTML "object" tags.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 # @version 0.1.2
-#
 class Arachni::Checks::HTMLObjects < Arachni::Check::Base
 
     def self.regexp
@@ -34,7 +31,7 @@ class Arachni::Checks::HTMLObjects < Arachni::Check::Base
             targets:     %w(Generic),
             issue:       {
                 name:        %q{HTML object},
-                cwe:         '200',
+                cwe:         200,
                 description: description,
                 severity:    Severity::INFORMATIONAL
             },

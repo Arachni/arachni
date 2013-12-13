@@ -1,4 +1,4 @@
-shared_examples_for "check" do
+shared_examples_for 'check' do
     include_examples 'component'
 
     module Format
@@ -15,10 +15,14 @@ shared_examples_for "check" do
 
     before( :all ) do
         options.url = url
+
+        # Disable the Browser for the check tests for now.
+        options.dom_depth_limit = 0
+
         framework.checks.load name
 
         # do not dedup, the check tests need to see everything
-        current_check.instance_eval { define_method( :skip? ) { |elem| false } }
+        current_check.instance_eval { define_method( :skip? ) { |_| false } }
 
         @issues = []
         Arachni::Check::Manager.do_not_store
@@ -41,7 +45,21 @@ shared_examples_for "check" do
         # Leave this here, helps us save every kind of issue in order to test
         # the reports.
         if File.exists?( "#{Dir.tmpdir}/save_issues" )
-            File.open( "#{Dir.tmpdir}/issues.yml", 'a' ){ |f| f.write @issues.to_yaml }
+
+            File.open( "#{Dir.tmpdir}/issues.yaml", 'a' ) do |f|
+                issues = []
+                @issues.each do |issue|
+                    issue.vector.remove_auditor
+                    issue.vector.instance_eval { @page = nil if @page }
+
+                    issue.request.instance_eval { @on_complete.clear } if issue.request
+                    issue.request.performer = nil
+
+                    issues << issue
+                end
+
+                f.write issues.to_yaml
+            end
         end
 
         @issues.clear
@@ -63,12 +81,8 @@ shared_examples_for "check" do
         end
 
         it 'holds the right elements' do
-            if current_check.info[:elements]
-                current_check.info[:elements].sort.should == self.class.elements.sort
-            else
-                current_check.info[:elements].should == self.class.elements
-            end
-
+            current_check.info[:elements].map(&:to_s).sort.should ==
+                self.class.elements.map(&:to_s).sort
         end
     end
 
@@ -76,7 +90,7 @@ shared_examples_for "check" do
         targets  = !self.targets || self.targets.empty? ? %w(Generic) : self.targets
         elements = !self.elements || self.elements.empty? ? %w(Generic) : self.elements
 
-        context "when the target is" do
+        context 'when the target is' do
             targets.each do |target|
                 context target do
                     before( :all ) do
@@ -87,20 +101,21 @@ shared_examples_for "check" do
                     end
 
                     elements.each do |type|
-                        it "logs vulnerable #{type}s" do
+                        it "logs vulnerable #{type.type} elements" do
                             if !issue_count && !issue_count_per_target &&
                                 !issue_count_per_element && !issue_count_per_element_per_target
                                 raise 'No issue count provided via a suitable method.'
                             end
 
-                            audit type.to_sym, run_checks
+                            audit type, run_checks
 
                             if issue_count
                                 issues.size.should == issue_count
                             end
 
                             if issue_count_per_target
-                                issues.size.should == issue_count_per_target[target.downcase.to_sym]
+                                issues.size.should ==
+                                    issue_count_per_target[target.downcase.to_sym]
                             end
 
                             if issue_count_per_element
@@ -108,7 +123,8 @@ shared_examples_for "check" do
                             end
 
                             if issue_count_per_element_per_target
-                                issues.size.should == issue_count_per_element_per_target[target.downcase.to_sym][type]
+                                issues.size.should ==
+                                    issue_count_per_element_per_target[target.downcase.to_sym][type]
                             end
 
                             instance_eval &block if block_given?
@@ -143,6 +159,10 @@ shared_examples_for "check" do
     end
 
     def audit( element_type, logs_issues = true )
+        if !element_type.is_a?( Symbol )
+            element_type = element_type.type
+        end
+
         options.audit element_type
         run
 
@@ -154,9 +174,8 @@ shared_examples_for "check" do
 
         if logs_issues && element_type.to_s.downcase != 'generic'
             # make sure we ONLY got results for the requested element type
-            c = Arachni::Element.const_get( e.upcase.to_sym )
             issues.should be_any
-            issues.map { |i| i.elem }.uniq.should == [c]
+            issues.map { |i| i.vector.type }.uniq.should == [e.to_sym]
 
             if current_check.info[:issue]
                 issues.map { |i| i.severity }.uniq.should ==

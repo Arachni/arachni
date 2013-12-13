@@ -554,7 +554,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
                 @master.issues.size.should == 2
 
-                vuln_urls = @master.issues.map { |i| i.url }.sort.uniq
+                vuln_urls = @master.issues.map { |i| i.vector.action }.sort.uniq
                 vuln_urls.should == absolute_urls.sort.uniq
             end
         end
@@ -581,7 +581,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
                 @master.issues.size.should == 2
 
-                vuln_urls = @master.issues.map { |i| i.url }.sort.uniq
+                vuln_urls = @master.issues.map { |i| i.vector.action }.sort.uniq
                 exp_urls = %w(/vulnerable?0_vulnerable_20=stuff20 /vulnerable?9_vulnerable_30=stuff30)
                 vuln_urls.should == exp_urls.map { |u| Arachni::Utilities.normalize_url( @url + u ) }.
                     sort.uniq
@@ -605,7 +605,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                     slave = @distributor.connect_to_instance( slave_info )
                     sleep 0.1 while slave.framework.busy?
 
-                    @master.issues.size.should == 7
+                    @master.issues.size.should == 4
                 end
             end
         end
@@ -660,7 +660,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
                 @master.issues.size.should == 4
 
-                vuln_urls = @master.issues.map { |i| i.url }.sort.uniq
+                vuln_urls = @master.issues.map { |i| i.vector.action }.sort.uniq
                 vuln_urls.should == exp_urls.sort
             end
         end

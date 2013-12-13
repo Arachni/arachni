@@ -3,15 +3,12 @@
     All rights reserved.
 =end
 
-#
 # Profiler plugin.
 #
 # Examines the behavior of the web application gathering general statistics
 # and performs taint analysis to determine which inputs affect the output.
 #
-#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Arachni::Plugins::Profiler < Arachni::Plugin::Base
 
     is_distributable
@@ -116,19 +113,19 @@ class Arachni::Plugins::Profiler < Arachni::Plugin::Base
     def log( taint, res, landed_elems )
         elem = res.request.performer
 
-        res_hash = res.to_h
+        res_hash = res.to_h.stringify_keys
         res_hash['headers'] = {}.merge( res_hash['headers'] )
 
         result = {
             'taint'       => taint,
             'element'     =>  {
-                'type'      => elem.type,
-                'auditable' => elem.inputs,
-                'name'      => elem.is_a?( Form ) ? elem.name_or_id : nil,
-                'altered'   => elem.altered,
-                'owner'     => elem.url,
-                'action'    => elem.action,
-                'method'    => elem.method ? elem.method.upcase : nil,
+                'type'                => elem.type.to_s,
+                'auditable'           => elem.inputs,
+                'name'                => elem.is_a?( Form ) ? elem.name_or_id : nil,
+                'affected_input_name' => elem.affected_input_name,
+                'owner'               => elem.url,
+                'action'              => elem.action,
+                'method'              => elem.method ? elem.method.upcase : nil,
             },
             'response'      => res_hash,
             'request' => {
@@ -141,9 +138,9 @@ class Arachni::Plugins::Profiler < Arachni::Plugin::Base
 
         result['landed'] = landed_elems.map do |elem|
             {
-                'type'   => elem.type,
-                'method' => elem.method.to_s.upcase,
-                'name'   => elem.is_a?( Form ) ? elem.name_or_id : nil,
+                'type'      => elem.type.to_s,
+                'method'    => elem.method.to_s.upcase,
+                'name'      => elem.is_a?( Form ) ? elem.name_or_id : nil,
                 'auditable' => elem.inputs
             }
         end
@@ -163,7 +160,7 @@ class Arachni::Plugins::Profiler < Arachni::Plugin::Base
 
                 It does not perform any vulnerability assessment nor does it send attack payloads.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.5'
+            version:     '0.1.6'
         }
     end
 

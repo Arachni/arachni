@@ -818,11 +818,9 @@ class Instance
         !!@opts.datastore[:dispatcher_url]
     end
 
-    #
     # Outputs the Arachni banner.
     #
-    # Displays version number, revision number, author details etc.
-    #
+    # Displays version number, author details etc.
     def banner
         puts BANNER
         puts

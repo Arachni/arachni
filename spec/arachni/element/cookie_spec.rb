@@ -70,13 +70,13 @@ describe Arachni::Element::Cookie do
                 c.auditor = a
 
 
-                c.mutations_for( 'seed' ).map { |e| e.type }.uniq.size.should == 1
+                c.mutations( 'seed' ).map { |e| e.type }.uniq.size.should == 1
 
                 Arachni::Options.audit_cookies_extensively = true
-                c.mutations_for( 'seed' ).map { |e| e.type }.uniq.size.should > 1
+                c.mutations( 'seed' ).map { |e| e.type }.uniq.size.should > 1
 
                 Arachni::Options.audit_cookies_extensively = false
-                c.mutations_for( 'seed' ).map { |e| e.type }.uniq.size.should == 1
+                c.mutations( 'seed' ).map { |e| e.type }.uniq.size.should == 1
             end
         end
     end

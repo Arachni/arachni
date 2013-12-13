@@ -28,12 +28,16 @@ module Utilities
 
         issue_cnt = issues.count
         issues.each.with_index do |issue, i|
-            input = issue.var ? " input `#{issue.var}`" : ''
-            meth  = !issue.method.to_s.empty? ? " using #{issue.method}" : ''
-            cnt   = "#{i + 1} |".rjust( issue_cnt.to_s.size + 2 )
+            meth  = input = ''
+            if issue.active?
+                input = " input `#{issue.vector.affected_input_name}`"
+                meth  = " using #{issue.vector.method}"
+            end
 
-            print_ok( interceptor.call(  "#{cnt} #{issue.name} at #{issue.url} in" +
-                                  " #{issue.elem}#{input}#{meth}." ),
+            cnt = "#{i + 1} |".rjust( issue_cnt.to_s.size + 2 )
+
+            print_ok( interceptor.call(  "#{cnt} #{issue.name} at #{issue.vector.action} in" +
+                                  " #{issue.vector.type}#{input}#{meth}." ),
                       unmute
             )
         end
@@ -227,15 +231,10 @@ module Utilities
         print_info @opts.to_args
     end
 
-    #
     # Outputs Arachni banner.
-    # Displays version number, revision number, author details etc.
+    # Displays version number, author details etc.
     #
     # @see VERSION
-    # @see REVISION
-    #
-    # @return [void]
-    #
     def print_banner
         print_line BANNER
         print_line

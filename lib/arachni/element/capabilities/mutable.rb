@@ -7,8 +7,11 @@ module Arachni
 module Element::Capabilities
 module Mutable
 
-    # @return   [String]    Name of the altered/mutated parameter.
-    attr_accessor :altered
+    # @return   [String]    Name of the mutated parameter.
+    attr_accessor :affected_input_name
+
+    # @return   [String]    Original seed used for the {#mutations}.
+    attr_accessor :seed
 
     attr_accessor :format
 
@@ -31,7 +34,7 @@ module Mutable
 
     end
 
-    # Default formatting and permutation options
+    # Default formatting and mutation options.
     MUTATION_OPTIONS = {
         #
         # Formatting of the injection strings.
@@ -42,7 +45,6 @@ module Mutable
         #
         format:     [ Format::STRAIGHT, Format::APPEND,
                      Format::NULL, Format::APPEND | Format::NULL ],
-
 
         # Skip mutation with default/original values
         # (for {Arachni::Element::Form} elements).
@@ -60,24 +62,40 @@ module Mutable
         respect_method: nil
     }
 
-    # @return   [String]    Value of the altered input.
-    def altered_value
-        self[altered].to_s
+    # Resets the inputs to their original format/values.
+    def reset
+        super
+        @affected_input_name = nil
+        @seed                = nil
+        self
     end
 
-    # @param    [String]    value   Sets the value for the altered input.
-    def altered_value=( value )
-        self[altered] = value
+    # @return   [ni, String]
+    #   `nil` if no input has been fuzzed, the `String` value of the fuzzed
+    #   input.
+    def affected_input_value
+        return if !affected_input_name
+        self[affected_input_name].to_s
     end
 
-    # @return   [Bool]  `true` if the element has not been mutated, `false` otherwise.
-    def original?
-        self.altered.nil?
+    # @param    [String]    value   Sets the value for the fuzzed input.
+    def affected_input_value=( value )
+        self[affected_input_name] = value
+    end
+
+    # @param    [String]    value   Sets the name of the fuzzed input.
+    def affected_input_name=( value )
+        @affected_input_name = value.to_s
+    end
+
+    # @param    [String]    value   Sets the value for the fuzzed input.
+    def seed=( value )
+        @seed = value.to_s
     end
 
     # @return   [Bool]  `true` if the element has been mutated, `false` otherwise.
-    def mutated?
-        !original?
+    def mutation?
+        !self.affected_input_name.nil?
     end
 
     # @return   [Set]   Names of input vectors to be excluded from {#mutations}.
@@ -85,8 +103,8 @@ module Mutable
         @immutables ||= Set.new
     end
 
-    # Injects the `injection_str` in self's values according to formatting options
-    # and returns an array of permutations of self.
+    # Injects the `injection_str` in self's values according to formatting
+    # options and returns an array of mutations of self.
     #
     # Vector names in {#immutables} will be excluded.
     #
@@ -113,13 +131,13 @@ module Mutable
             next if dinputs[k] == seed || immutables.include?( k )
 
             opts[:format].each do |format|
-
                 str = format_str( injection_str, cinputs[k], format )
 
-                elem         = self.dup
-                elem.altered = k.dup
-                elem.inputs  = cinputs.merge( k => str )
-                elem.format  = format
+                elem                     = self.dup
+                elem.seed                = injection_str
+                elem.affected_input_name = k.dup
+                elem.inputs              = cinputs.merge( k => str )
+                elem.format              = format
 
                 yield elem if !generated.include?( elem )
                 generated << elem
@@ -141,8 +159,9 @@ module Mutable
         # which won't be on the whitelist.
         elem.override_instance_scope
 
-        elem.altered = 'Parameter flip'
-        elem[injection_str] = seed
+        elem.affected_input_name = 'Parameter flip'
+        elem[injection_str]      = seed
+        elem.seed                = injection_str
 
         yield elem if !generated.include?( elem )
         generated << elem
@@ -169,9 +188,8 @@ module Mutable
         c
     end
 
-    #
-    # Injects the `injection_str` in self's values according to formatting options
-    # and returns an array of permutations of self.
+    # Injects the `injection_str` in self's values according to formatting
+    # options and returns an array of mutations of self.
     #
     # Vector names in {#immutables} will be excluded.
     #
@@ -181,7 +199,6 @@ module Mutable
     # @return    [Array]
     #
     # @see #immutables
-    #
     def mutations( injection_str, opts = {} )
         combo = []
         each_mutation( injection_str, opts ) { |m| combo << m }
@@ -189,22 +206,26 @@ module Mutable
         combo
     end
 
-    # Alias for {#mutations}.
-    def mutations_for( *args )
-        mutations( *args )
-    end
-    # Alias for {#mutations}.
-    def permutations( *args )
-        mutations( *args )
-    end
-    # Alias for {#mutations}.
-    def permutations_for( *args )
-        permutations( *args )
+    def to_h
+        h = super
+
+        if mutation?
+            h[:affected_input_name]  = self.affected_input_name
+            h[:affected_input_value] = self.affected_input_value
+            h[:seed]                 = self.seed
+        end
+
+        h
     end
 
     def dup
         new = super
-        new.altered = self.altered.dup if self.altered
+
+        if self.affected_input_name
+            new.affected_input_name = self.affected_input_name.dup
+        end
+
+        new.seed    = self.seed.dup    if self.seed
         new.format  = self.format
         new
     end
@@ -212,7 +233,7 @@ module Mutable
     private
 
     #
-    # Prepares an injection string following the specified formating options
+    # Prepares an injection string following the specified formatting options
     # as contained in the format bitfield.
     #
     # @see Format
@@ -280,7 +301,7 @@ module Mutable
         print_debug '|'
 
         combos.each do |elem|
-          altered = elem.altered
+          altered = elem.affected_input_name
           combo   = elem.inputs
 
           print_debug '|'

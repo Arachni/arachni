@@ -2,6 +2,7 @@ require 'spec_helper'
 
 describe Arachni::Element::Form do
     it_should_behave_like 'refreshable'
+    it_should_behave_like 'mutable'
     it_should_behave_like 'auditable', url: web_server_url_for( :form )
 
     before( :all ) do
@@ -184,7 +185,7 @@ describe Arachni::Element::Form do
         end
     end
 
-    describe '#original?' do
+    describe '#mutation_with_original_values?' do
         context 'when the mutation' do
             context 'is same as the original element' do
                 it 'returns true' do
@@ -202,8 +203,8 @@ describe Arachni::Element::Form do
                         m.url.should    == e.url
                         m.action.should == e.action
 
-                        if m.original?
-                            m.altered.should == Arachni::Element::Form::ORIGINAL_VALUES
+                        if m.mutation_with_original_values?
+                            m.affected_input_name.should == Arachni::Element::Form::ORIGINAL_VALUES
                             m.inputs.should  == e.inputs
                             has_original ||= true
                         end
@@ -215,7 +216,7 @@ describe Arachni::Element::Form do
         end
     end
 
-    describe '#sample?' do
+    describe '#mutation_with_sample_values?' do
         context 'when the mutation' do
             context 'has been filled-in with sample values' do
                 it 'returns true' do
@@ -232,8 +233,8 @@ describe Arachni::Element::Form do
                         m.url.should    == e.url
                         m.action.should == e.action
 
-                        if m.sample?
-                            m.altered.should == Arachni::Element::Form::SAMPLE_VALUES
+                        if m.mutation_with_sample_values?
+                            m.affected_input_name.should == Arachni::Element::Form::SAMPLE_VALUES
                             m.inputs.should == Arachni::Support::KeyFiller.fill( e.inputs )
                             has_sample ||= true
                         end
@@ -246,7 +247,7 @@ describe Arachni::Element::Form do
     end
 
     describe '#mutations' do
-        it 'fuzzes #inputs inputs' do
+        it 'fuzzes #inputs' do
             inputs = { inputs: { 'param_name' => 'param_value', 'stuff' => nil } }
             e = Arachni::Element::Form.new(
                 url:    'http://test.com',
@@ -255,7 +256,7 @@ describe Arachni::Element::Form do
 
             checked = false
             e.mutations( 'seed' ).each do |m|
-                next if m.original? || m.sample?
+                next if m.mutation_with_original_values? || m.mutation_with_sample_values?
 
                 m.url.should == e.url
                 m.action.should == e.action
@@ -267,7 +268,7 @@ describe Arachni::Element::Form do
             checked.should be_true
         end
 
-        it 'sets #altered to the name of the fuzzed input' do
+        it 'sets #affected_input_name to the name of the fuzzed input' do
             inputs = { inputs: { 'param_name' => 'param_value', 'stuff' => nil } }
             e = Arachni::Element::Form.new(
                 url:    'http://test.com',
@@ -276,13 +277,13 @@ describe Arachni::Element::Form do
 
             checked = false
             e.mutations( 'seed' ).each do |m|
-                next if m.original? || m.sample?
+                next if m.mutation_with_original_values? || m.mutation_with_sample_values?
 
                 m.url.should == e.url
                 m.action.should == e.action
 
-                m.altered.should_not == e.altered
-                m.inputs[m.altered].should include 'seed'
+                m.affected_input_name.should_not == e.affected_input_name
+                m.inputs[m.affected_input_name].should include 'seed'
 
                 checked = true
             end
@@ -312,7 +313,7 @@ describe Arachni::Element::Form do
                 e = Arachni::Element::Form.new( @options )
                 mutations = e.mutations( @seed, skip_original: true )
                 mutations.size.should == 10
-                mutations.select { |m| m.mutated? }.size.should == 10
+                mutations.select { |m| m.mutation? }.size.should == 10
             end
         end
     end
@@ -405,7 +406,7 @@ describe Arachni::Element::Form do
 
                 f.submit { |res| body = res.body }
                 @http.run
-                body.should_not == f.original['nonce']
+                body.should_not == f.default_inputs['nonce']
                 body.to_i.should > 0
             end
         end

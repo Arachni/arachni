@@ -288,10 +288,8 @@ class Dispatcher
         self.class._handlers
     end
 
-    #
-    # Outputs the Arachni banner.<br/>
-    # Displays version number, revision number, author details etc.
-    #
+    # Outputs the Arachni banner.
+    # Displays version number, author details etc.
     def banner
         puts BANNER
         puts

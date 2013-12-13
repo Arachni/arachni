@@ -15,5 +15,5 @@ describe name_from_filename do
         1
     end
 
-    easy_test { issues.first.match.should == 'OPTIONS, TRACE, GET, HEAD' }
+    easy_test { issues.first.proof.should == 'OPTIONS, TRACE, GET, HEAD' }
 end

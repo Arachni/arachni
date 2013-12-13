@@ -3,7 +3,6 @@
     All rights reserved.
 =end
 
-#
 # Session fixation check.
 #
 # It identifies the session cookie by iterating through all cookies in the
@@ -19,7 +18,6 @@
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 # @version 0.1.1
-#
 class Arachni::Checks::SessionFixation < Arachni::Check::Base
 
     def token
@@ -47,7 +45,7 @@ class Arachni::Checks::SessionFixation < Arachni::Check::Base
                         select { |c| c.name == name }.first
                     next if !cookie || !cookie.value.include?( token )
 
-                    log( element.audit_options, response )
+                    log( { vector: element }, response )
                 end
             end
         end
@@ -56,19 +54,22 @@ class Arachni::Checks::SessionFixation < Arachni::Check::Base
     def self.info
         {
             name:        'Session fixation',
-            description: %q{Checks whether or not the session cookie can be set to an arbitrary value.},
+            description: %q{Checks whether or not the session cookie can be set
+    to an arbitrary value.},
             elements:    [ Element::Form, Element::Link ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.1',
-            references:  {
-                 'OWASP - Session fixation' => 'hhttps://www.owasp.org/index.php/Session_fixation'
-             },
             targets:     %w(Generic),
+
             issue:       {
                 name:        %q{Session fixation},
-                description: %q{The web application allows the session ID to be fixed by a 3rd party.},
+                description: %q{The web application allows the session ID to be
+    fixed by a 3rd party.},
+                references:  {
+                    'OWASP - Session fixation' => 'hhttps://www.owasp.org/index.php/Session_fixation'
+                },
                 tags:        %w(session cookie injection fixation hijacking),
-                cwe:         '384',
+                cwe:         384,
                 severity:    Severity::HIGH
             }
         }

@@ -61,24 +61,23 @@ class Arachni::Checks::SQLInjection < Arachni::Check::Base
             elements:    [Element::Link, Element::Form, Element::Cookie, Element::Header],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.2.1',
-            references:  {
-                'UnixWiz'    => 'http://unixwiz.net/techtips/sql-injection.html',
-                'Wikipedia'  => 'http://en.wikipedia.org/wiki/SQL_injection',
-                'SecuriTeam' => 'http://www.securiteam.com/securityreviews/5DP0N1P76E.html',
-                'OWASP'      => 'http://www.owasp.org/index.php/SQL_Injection'
-            },
             targets:     %w(Oracle ColdFusion InterBase PostgreSQL MySQL MSSQL EMC
                             SQLite DB2 Informix Firebird MaxDB Sybase Frontbase Ingres HSQLDB),
+
             issue:       {
                 name:            %q{SQL Injection},
                 description:     %q{SQL code can be injected into the web application.},
+                references:  {
+                    'UnixWiz'    => 'http://unixwiz.net/techtips/sql-injection.html',
+                    'Wikipedia'  => 'http://en.wikipedia.org/wiki/SQL_injection',
+                    'SecuriTeam' => 'http://www.securiteam.com/securityreviews/5DP0N1P76E.html',
+                    'OWASP'      => 'http://www.owasp.org/index.php/SQL_Injection'
+                },
                 tags:            %w(sql injection regexp database error),
-                cwe:             '89',
+                cwe:             89,
                 severity:        Severity::HIGH,
-                cvssv2:          '9.0',
                 remedy_guidance: 'User inputs must be validated and filtered
-    before being included in database queries.',
-                metasploitable:  'auxiliary/arachni_sqlmap'
+    before being included in database queries.'
             }
         }
     end

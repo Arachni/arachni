@@ -30,7 +30,7 @@ class Link < Base
 
         self.method = :get
 
-        @original = self.inputs.dup.freeze
+        @default_inputs = self.inputs.dup.freeze
     end
 
     # @return   [Hash]

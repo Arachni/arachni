@@ -39,7 +39,7 @@ describe Arachni::Parser do
             response = Arachni::HTTP::Response.new(
                 url: url,
                 body: '<a href="/?name=val">Stuff</a>',
-                request: Arachni::HTTP::Request.new( url )
+                request: Arachni::HTTP::Request.new( url: url )
             )
 
             parser = Arachni::Parser.new( response, @opts )
@@ -53,7 +53,7 @@ describe Arachni::Parser do
             response = Arachni::HTTP::Response.new(
                 url: url,
                 body: '<a href="/?name=val">Stuff</a>',
-                request: Arachni::HTTP::Request.new( url )
+                request: Arachni::HTTP::Request.new( url: url )
             )
 
             parser = Arachni::Parser.new( response, @opts )
@@ -92,7 +92,7 @@ describe Arachni::Parser do
             response = Arachni::HTTP::Response.new(
                 url: url,
                 body: '',
-                request: Arachni::HTTP::Request.new( url ),
+                request: Arachni::HTTP::Request.new( url: url ),
                 headers: {
                     'Content-Type' => 'text/html',
                     'Set-Cookie'   => 'cname=cval'

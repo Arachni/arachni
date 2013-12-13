@@ -1011,7 +1011,7 @@ describe Arachni::HTTP::Client do
         it 'queues a request' do
             r = nil
 
-            request = Arachni::HTTP::Request.new( @url )
+            request = Arachni::HTTP::Request.new( url: @url )
             request.on_complete do |response|
                 r = response
             end
@@ -1026,7 +1026,7 @@ describe Arachni::HTTP::Client do
             it 'also performs it' do
                 r = nil
 
-                request = Arachni::HTTP::Request.new( @url, mode: :sync )
+                request = Arachni::HTTP::Request.new( url: @url, mode: :sync )
                 request.on_complete do |response|
                     r = response
                 end

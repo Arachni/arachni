@@ -61,10 +61,9 @@
 
             <section class="tab" id="issues">
                 <%= erb :issues, {
-                        auditstore:             auditstore,
-                        filtered_hashes:        filtered_hashes,
-                        anomalous_hashes:       anomalous_hashes,
-                        anomalous_meta_results: anomalous_meta_results
+                        auditstore:           auditstore,
+                        has_trusted_issues:   has_trusted_issues,
+                        has_untrusted_issues: has_untrusted_issues
                     }
                 %>
             </section>

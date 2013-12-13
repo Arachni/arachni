@@ -16,10 +16,12 @@ class Formatter
     # get the output interface
     include UI::Output
 
+    attr_reader :auditstore
     attr_reader :results
     attr_reader :description
 
-    def initialize( plugin_data )
+    def initialize( auditstore, plugin_data )
+        @auditstore  = auditstore
         @results     = plugin_data[:results]
         @description = plugin_data[:description]
     end
@@ -39,8 +41,6 @@ class Base < Component::Base
     attr_reader :options
     attr_reader :framework
 
-    @mutex = Mutex.new
-
     #
     # @param    [Arachni::Framework]    framework
     # @param    [Hash]        options    options passed to the plugin
@@ -48,6 +48,8 @@ class Base < Component::Base
     def initialize( framework, options )
         @framework = framework
         @options   = options
+
+        self.class.initialize_mutex
     end
 
     #
@@ -171,6 +173,10 @@ class Base < Component::Base
     end
     def synchronize( &block )
         self.class.synchronize( &block )
+    end
+
+    def self.initialize_mutex
+        @mutex ||= Mutex.new
     end
 
     #

@@ -40,11 +40,11 @@ class Arachni::Checks::PathTraversal < Arachni::Check::Base
                 m = mutation.dup
 
                 # Figure out the extension of the default value, if it has one.
-                ext = m.original[m.altered].to_s.split( '.' )
+                ext = m.original[m.affected_input_name].to_s.split( '.' )
                 ext = ext.size > 1 ? ext.last : nil
 
                 # Null-terminate the injected value and append the ext.
-                m.altered_value += "\x00.#{ext}"
+                m.affected_input_value += "\x00.#{ext}"
 
                 # Pass our new element back to be audited.
                 m
@@ -97,24 +97,21 @@ class Arachni::Checks::PathTraversal < Arachni::Check::Base
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.4.1',
-            references:  {
-                'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
-                'WASC'  => 'http://projects.webappsec.org/Path-Traversal'
-            },
             targets:     %w(Unix Windows Tomcat),
 
             issue:       {
                 name:            %q{Path Traversal},
                 description:     %q{The web application enforces improper limitation
     of a pathname to a restricted directory.},
+                references:  {
+                    'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
+                    'WASC'  => 'http://projects.webappsec.org/Path-Traversal'
+                },
                 tags:            %w(path traversal injection regexp),
-                cwe:             '22',
+                cwe:             22,
                 severity:        Severity::HIGH,
-                cvssv2:          '4.3',
                 remedy_guidance: %q{User inputs must be validated and filtered
-    before being used as a part of a filesystem path.},
-                remedy_code:     '',
-                metasploitable:  'unix/webapp/arachni_path_traversal'
+    before being used as a part of a filesystem path.}
             }
 
         }

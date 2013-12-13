@@ -79,16 +79,17 @@ class Arachni::Checks::CreditCards < Arachni::Check::Base
             elements:    [ Element::Body ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.2.2',
-            references:  {
-                'Wikipedia - Bank card number' => 'http://en.wikipedia.org/wiki/Bank_card_number',
-                'Wikipedia - Luhn algorithm'   => 'http://en.wikipedia.org/wiki/Luhn_algorithm',
-                'Luhn Ruby implementation'     => 'https://gist.github.com/1182499'
-            },
             targets:     %w(Generic),
+
             issue:       {
                 name:            %q{Credit card number disclosure},
                 description:     %q{A credit card number is disclosed in the body of the page.},
-                cwe:             '200',
+                references:  {
+                    'Wikipedia - Bank card number' => 'http://en.wikipedia.org/wiki/Bank_card_number',
+                    'Wikipedia - Luhn algorithm'   => 'http://en.wikipedia.org/wiki/Luhn_algorithm',
+                    'Luhn Ruby implementation'     => 'https://gist.github.com/1182499'
+                },
+                cwe:             200,
                 severity:        Severity::MEDIUM,
                 remedy_guidance: %q{Remove credit card numbers from the body of the HTML pages.},
             }

@@ -16,7 +16,7 @@ class Arachni::Checks::Nil < Arachni::Check::Base
 
     def clean_up
         return if !@ran
-        log_issue( url: 'http://blah', elem: Element::Link )
+        log_issue( vector: Factory[:unique_active_vector] )
     end
 
     def self.info
@@ -30,15 +30,13 @@ class Arachni::Checks::Nil < Arachni::Check::Base
             },
             targets:     { 'Generic' => 'all' },
             issue:       {
-                name:            %q{Test issue},
+                name:            "Test issue #{name.to_s}",
                 description:     %q{Test description},
                 tags:            %w(some tag),
                 cwe:             '0',
                 severity:        Severity::HIGH,
-                cvssv2:          '0',
                 remedy_guidance: %q{Watch out!.},
-                remedy_code:     '',
-                metasploitable:  'unix/webapp/blah'
+                remedy_code:     ''
             }
         }
     end

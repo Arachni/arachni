@@ -70,7 +70,7 @@ class Cookie < Base
 
         @data[:domain] ||= ".#{parsed_uri.host}"
 
-        @original = self.inputs.dup.freeze
+        @default_inputs = self.inputs.dup.freeze
     end
 
     #
@@ -139,10 +139,6 @@ class Cookie < Base
         self.inputs.dup
     end
 
-    def to_h
-        @data.dup
-    end
-
     def dup
         super.tap { |d| d.action = self.action }
     end
@@ -203,7 +199,7 @@ class Cookie < Base
         # which won't be on the whitelist
         elem.override_instance_scope
 
-        elem.altered = 'Parameter flip'
+        elem.affected_input_name = 'Parameter flip'
         elem.inputs = { injection_str => seed }
         yield elem if block_given?
     end
@@ -215,7 +211,7 @@ class Cookie < Base
             next if e.inputs.empty?
 
             c = e.dup
-            c.altered = "mutation for the '#{name}' cookie"
+            c.affected_input_name = "mutation for the '#{name}' cookie"
             c.auditor = auditor
             c.audit_options[:cookies] = self.inputs.dup
             c.inputs = Arachni::Support::KeyFiller.fill( c.inputs.dup )
@@ -247,7 +243,7 @@ class Cookie < Base
     # @return   [String]    Converts self to a `Set-Cookie` string.
     def to_set_cookie
         set_cookie = "#{self.to_s}; "
-        set_cookie << to_h.map do |k, v|
+        set_cookie << @data.map do |k, v|
             next if !v || !self.class.keep_for_set_cookie.include?( k )
             "#{k.capitalize}=#{v}"
         end.compact.join( '; ' )

@@ -19,8 +19,6 @@ describe name_from_filename do
         issues.each do |i|
             i.trusted?.should be_false
             i.untrusted?.should be_true
-            i.requires_verification?.should be_true
-            i.verification.should be_true
             i.remarks[:check].should == [current_check::REMARK]
         end
     end

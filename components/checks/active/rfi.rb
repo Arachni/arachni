@@ -3,7 +3,6 @@
     All rights reserved.
 =end
 
-#
 # Simple Remote File Inclusion (and tutorial) check.
 #
 # It audits links, forms and cookies and will give you a good idea
@@ -11,12 +10,11 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2
+# @version 0.3
 #
 # @see http://cwe.mitre.org/data/definitions/94.html
 # @see http://projects.webappsec.org/Remote-File-Inclusion
 # @see http://en.wikipedia.org/wiki/Remote_File_Inclusion
-#
 class Arachni::Checks::RFI < Arachni::Check::Base # *always* extend Arachni::Check::Base
 
     #
@@ -96,21 +94,16 @@ class Arachni::Checks::RFI < Arachni::Check::Base # *always* extend Arachni::Che
             name:        'Remote File Inclusion',
             description: %q{It injects a remote URL in all available
                 inputs and checks for relevant content in the HTTP response body.},
-            #
+
             # Arachni needs to know what elements the check plans to audit
             # before invoking it. If a page doesn't have any of those elements
             # there's no point in running the check.
             #
             # If you want the check to run no-matter what, leave the array
             # empty or don't define it at all.
-            #
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.2.1',
-            references:  {
-                'WASC'      => 'http://projects.webappsec.org/Remote-File-Inclusion',
-                'Wikipedia' => 'http://en.wikipedia.org/wiki/Remote_File_Inclusion'
-            },
+            version:     '0.3',
             targets:     %w(Generic),
 
             issue:       {
@@ -118,22 +111,22 @@ class Arachni::Checks::RFI < Arachni::Check::Base # *always* extend Arachni::Che
                 description: %q{The web application can be forced to include
     3rd party remote content which can often lead to arbitrary code
     execution, amongst other attacks.},
+                references:  {
+                    'WASC'      => 'http://projects.webappsec.org/Remote-File-Inclusion',
+                    'Wikipedia' => 'http://en.wikipedia.org/wiki/Remote_File_Inclusion'
+                },
                 tags:       %w(remote file inclusion injection regexp),
-                cwe:        '94',
-                #
+                cwe:        94,
+
                 # Severity can be:
                 #
                 # Severity::HIGH
                 # Severity::MEDIUM
                 # Severity::LOW
                 # Severity::INFORMATIONAL
-                #
                 severity:        Severity::HIGH,
-                cvssv2:          '7.5',
                 remedy_guidance: %q{Enforce strict validation and filtering
-                    on user inputs.},
-                remedy_code:     '',
-                metasploitable:  'unix/webapp/arachni_php_include'
+                    on user inputs.}
             }
 
         }

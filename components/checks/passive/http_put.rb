@@ -3,13 +3,10 @@
     All rights reserved.
 =end
 
-#
 # HTTP PUT recon check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 # @version 0.1.5
-#
 class Arachni::Checks::HTTP_PUT < Arachni::Check::Base
 
     def self.substring
@@ -30,11 +27,11 @@ class Arachni::Checks::HTTP_PUT < Arachni::Check::Base
         end
     end
 
-    def check_and_log( res )
-        return if !res.body.to_s.include?( self.class.substring )
+    def check_and_log( response )
+        return if !response.body.to_s.include?( self.class.substring )
 
-        log( { element: Element::Server }, res )
-        print_ok 'File has been created: ' + res.url
+        log( { vector: Element::Server.new( response ) }, response )
+        print_ok "File has been created: #{response.url}"
     end
 
     def self.info
@@ -45,16 +42,18 @@ class Arachni::Checks::HTTP_PUT < Arachni::Check::Base
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.4',
             targets:     %w(Generic),
-            references: {
-                'W3' => 'http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html'
-            },
+
             issue:       {
                 name:            %q{Publicly writable directory},
                 description:     %q{3rd parties can upload files to the web-server.},
+                references: {
+                    'W3' => 'http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html'
+                },
                 tags:            %w(http methods put server),
-                cwe:             '650',
+                cwe:             650,
                 severity:        Severity::HIGH,
-                remedy_guidance: %q{Disable the PUT method on the Web Server and/or disable write permissions to the web server directory.}
+                remedy_guidance: %q{Disable the PUT method on the Web Server
+    and/or disable write permissions to the web server directory.}
             }
         }
     end

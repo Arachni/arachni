@@ -3,54 +3,22 @@ require 'spec_helper'
 describe Arachni::Page do
 
     def create_page( options = {} )
-        described_class.new response: Arachni::HTTP::Response.new(
-            request: Arachni::HTTP::Request.new(
-                         'http://a-url.com/',
-                         method: :get,
-                         headers: {
-                             'req-header-name' => 'req header value'
-                         }
-                     ),
-
-            code:    200,
-            url:     'http://a-url.com/?myvar=my%20value',
-            body:    options[:body],
-            headers: options[:headers],
-
-            dom:     {
+        described_class.new(
+            response: Arachni::HTTP::Response.new(
+                request: Factory[:request],
+                code:    200,
+                url:     'http://a-url.com/?myvar=my%20value',
+                body:    options[:body],
+                headers: options[:headers],
+            ),
+            dom: {
                 transitions: [ page: :load ]
             }
         )
     end
 
-    let( :response ) do
-        body = <<-EOHTML
-                <a href="http://a-url.com/path?var1=1">1</a>
-                <a href="http://a-url.com/a/path?var2=2">2</a>
-                <a href="http://a-url.com/another/path/?var3=3">3</a>
-
-                <form> <input name=""/> </form>
-        EOHTML
-
-        Arachni::HTTP::Response.new(
-            request: Arachni::HTTP::Request.new(
-                         'http://a-url.com/',
-                         method: :get,
-                         headers: {
-                             'req-header-name' => 'req header value'
-                         }
-                     ),
-
-            code:    200,
-            url:     'http://a-url.com/?myvar=my%20value',
-            body:    body,
-            headers: {
-                'res-header-name' => 'res header value',
-                'Set-Cookie'      => 'cookiename=cokie+value'
-            }
-        )
-    end
-    let( :page ){ described_class.new( response: response ) }
+    let( :response ) { Factory[:response] }
+    let( :page ) { Factory[:page] }
 
     describe '#initialize' do
         describe 'option' do
@@ -216,29 +184,13 @@ describe Arachni::Page do
     describe '#text?' do
         context 'when the HTTP response is text/html' do
             it 'returns true' do
-                res = Arachni::HTTP::Response.new(
-                    url: 'http://test.com',
-                    body: '',
-                    request: Arachni::HTTP::Request.new( 'http://test.com' ),
-                    headers: {
-                       'Content-Type' => 'text/html',
-                       'Set-Cookie'   => 'cname=cval'
-                   }
-                )
-                Arachni::Parser.new( res ).page.text?.should be_true
+                Arachni::Parser.new( Factory[:html_response] ).page.text?.should be_true
             end
         end
 
         context 'when the response is not text based' do
             it 'returns false' do
-                res = Arachni::HTTP::Response.new(
-                    url:     'http://test.com',
-                    headers: {
-                        'Content-Type' => 'stuff/bin'
-                    },
-                    request: Arachni::HTTP::Request.new( 'http://test.com' )
-                )
-                Arachni::Parser.new( res ).page.text?.should be_false
+                Arachni::Parser.new( Factory[:binary_response] ).page.text?.should be_false
             end
         end
     end

@@ -14,9 +14,11 @@ describe name_from_filename do
     end
 
     elements.each do |element|
-        it "probes #{element}s" do
+        element = element.type
+
+        it "probes #{element} elements" do
             # audit the current element type but don't expect any issues
-            audit element.to_sym, false
+            audit element, false
 
             urls = framework.auditstore.sitemap
             urls.include?( options.url + "#{element}/straight/trained" ).should be_true

@@ -155,7 +155,7 @@ module Differential
         gathered = {}
         opts[:precision].times do
             audit( opts[:false], opts ) do |res, elem|
-                altered_hash = elem.altered.hash
+                altered_hash = elem.affected_input_name.hash
 
                 next if signatures[:corrupted][altered_hash]
 
@@ -166,7 +166,7 @@ module Differential
 
                 if gathered[altered_hash] == @data_gathering[:mutations_size]
                     print_status "Got default/control response for #{elem.type} " +
-                        "variable '#{elem.altered}' with action '#{elem.action}'."
+                        "variable '#{elem.affected_input_name}' with action '#{elem.action}'."
 
                     @data_gathering[:controls][altered_hash] = true
                 end
@@ -205,7 +205,7 @@ module Differential
 
             opts[:precision].times do
                 audit( true_expr, opts ) do |res, elem|
-                    altered_hash = elem.altered.hash
+                    altered_hash = elem.affected_input_name.hash
 
                     gathered[pair_hash][altered_hash] ||= 0
                     gathered[pair_hash][altered_hash] += 1
@@ -222,8 +222,8 @@ module Differential
 
                     if gathered[pair_hash][altered_hash] == opts[:precision]
                         elem.print_status "Got 'true'  response for #{elem.type} " <<
-                            "variable '#{elem.altered}' with action '#{elem.action}'" <<
-                            " using seed: #{true_expr}"
+                            "variable '#{elem.affected_input_name}' with action" <<
+                            " '#{elem.action}' using seed: #{true_expr}"
                         @data_gathering[pair_hash][altered_hash][:true_probes] = true
                     end
 
@@ -271,7 +271,7 @@ module Differential
 
             opts[:precision].times do
                 audit( false_expr, opts ) do |res, elem|
-                    altered_hash = elem.altered.hash
+                    altered_hash = elem.affected_input_name.hash
 
                     gathered[pair_hash][altered_hash] ||= 0
                     gathered[pair_hash][altered_hash] += 1
@@ -288,8 +288,8 @@ module Differential
 
                     if gathered[pair_hash][altered_hash] == opts[:precision]
                         elem.print_status "Got 'false' response for #{elem.type} " <<
-                            "variable '#{elem.altered}' with action '#{elem.action}'" <<
-                            " using seed: #{false_expr}"
+                            "variable '#{elem.affected_input_name}' with action" <<
+                            " '#{elem.action}' using seed: #{false_expr}"
                         @data_gathering[pair_hash][altered_hash][:false_probes] = true
                     end
 
@@ -333,7 +333,7 @@ module Differential
 
         opts[:precision].times do
             audit( opts[:false], opts ) do |res, elem|
-                altered_hash = elem.altered.hash
+                altered_hash = elem.affected_input_name.hash
 
                 gathered[altered_hash] ||= 0
                 gathered[altered_hash]  += 1
@@ -344,7 +344,7 @@ module Differential
 
                 if gathered[altered_hash] == opts[:precision]
                     print_status 'Got control verification response ' <<
-                        "for #{elem.type} variable '#{elem.altered}' with" <<
+                        "for #{elem.type} variable '#{elem.affected_input_name}' with" <<
                         " action '#{elem.action}'."
                 end
 
@@ -381,8 +381,8 @@ module Differential
                 if controls[input] != controls_verification[input]
                     result[:mutation].print_bad 'Control baseline too unstable, ' <<
                         "aborting analysis for #{result[:mutation].type} " <<
-                        "variable '#{result[:mutation].altered}' with action " <<
-                        "'#{result[:mutation].action}'"
+                        "variable '#{result[:mutation].affected_input_name}' " <<
+                        "with action '#{result[:mutation].action}'"
                     next
                 end
 
@@ -399,17 +399,7 @@ module Differential
                 http.custom_404?( result[:response] ) do |is_custom_404|
                     # If this is a custom 404 page bail out.
                     next if is_custom_404
-
-                    @auditor.log({
-                            var:      result[:mutation].altered,
-                            opts:     {
-                                injected_orig: result[:injected_string],
-                                combo:         result[:mutation].inputs
-                            },
-                            injected: result[:mutation].altered_value,
-                            elem:     type
-                        }, result[:response]
-                    )
+                    @auditor.log( {vector: result[:mutation]}, result[:response] )
                 end
             end
         end
@@ -421,23 +411,23 @@ module Differential
         if response.code != 200
             print_status 'Server returned non 200 status,' <<
                 " aborting analysis for #{elem.type} variable " <<
-                "'#{elem.altered}' with action '#{elem.action}'."
+                "'#{elem.affected_input_name}' with action '#{elem.action}'."
             corrupted = true
         end
 
         if response.body.to_s.empty?
             print_status 'Server returned empty response body,' <<
                 " aborting analysis for #{elem.type} variable " <<
-                "'#{elem.altered}' with action '#{self.action}'."
+                "'#{elem.affected_input_name}' with action '#{self.action}'."
             corrupted = true
         end
 
         return if !corrupted
 
         if pair
-            signatures[pair][elem.altered.hash][:corrupted] = true
+            signatures[pair][elem.affected_input_name.hash][:corrupted] = true
         else
-            signatures[:corrupted][elem.altered.hash] = true
+            signatures[:corrupted][elem.affected_input_name.hash] = true
         end
     end
 

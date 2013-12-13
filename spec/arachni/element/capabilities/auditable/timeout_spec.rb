@@ -76,7 +76,7 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
                 @run.call
 
                 issue = issues.first
-                issue.platform.should == :windows
+                issue.platform_name.should == :windows
                 issue.platform_type.should == :os
             end
         end
@@ -88,13 +88,13 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
                     inputs: @inputs.merge( mili: true )
                 )
                 c.auditor = @auditor
-                c.audit_options[:skip_like] = proc { |m| m.altered == 'multi' }
+                c.audit_options[:skip_like] = proc { |m| m.affected_input_name == 'multi' }
 
                 c.timeout_analysis( '__TIME__', @timeout_opts.merge( timeout: 2000 ) )
                 @run.call
 
                 issues.should be_any
-                issues.first.injected.should == '8000'
+                issues.first.vector.seed.should == '8000'
             end
         end
 
@@ -109,7 +109,7 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
                 @run.call
 
                 issues.should be_any
-                issues.first.injected.should == '8'
+                issues.first.vector.seed.should == '8'
             end
         end
 
@@ -125,7 +125,7 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
                 @run.call
 
                 issues.should be_any
-                issues.first.response.should == '11'
+                issues.first.response.body.should == '11'
             end
         end
 

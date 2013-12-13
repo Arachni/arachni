@@ -28,25 +28,28 @@ class Arachni::Checks::XSSScriptTag < Arachni::Check::Base
     end
 
     def run
-        self.class.strings.each do |str|
-            audit( str, self.class.opts ) do |res, element|
-                check_and_log( res, str, element.audit_options )
-            end
+        audit( self.class.strings, self.class.opts ) do |response, element|
+            check_and_log( response, element )
         end
     end
 
-    def check_and_log( res, injected, opts )
+    def check_and_log( response, element )
         # if we have no body or it doesn't contain the injected string under any
         # context there's no point in parsing the HTML to verify the vulnerability
-        return if !res.body || !res.body.include?( injected )
+        return if element.seed.to_s.empty? || !response.body ||
+            !response.body.include?( element.seed )
 
-        Nokogiri::HTML( res.body ).css( 'script' ).each do |script|
-            next if !script.to_s.include?( injected )
+        Nokogiri::HTML( response.body ).css( 'script' ).each do |script|
+            next if !script.to_s.include?( element.seed )
 
-            opts[:match]        = script.to_s
-            opts[:verification] = true
-            opts[:remarks]      = { check: [ REMARK ] }
-            log( opts, res )
+            log({
+                     vector:    element,
+                     trusted:   false,
+                     proof:     script.to_s,
+                     remarks:   { check: [ REMARK ] }
+                 },
+                 response
+            )
 
             break
         end
@@ -59,22 +62,22 @@ class Arachni::Checks::XSSScriptTag < Arachni::Check::Base
             elements:    [Element::Form, Element::Link, Element::Cookie, Element::Header],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.1.4',
-            references:  {
-                'ha.ckers' => 'http://ha.ckers.org/xss.html',
-                'Secunia'  => 'http://secunia.com/advisories/9716/'
-            },
             targets:     %w(Generic),
+
             issue:       {
                 name:            %q{Cross-Site Scripting in HTML \'script\' tag},
                 description:     %q{Unvalidated user input is being embedded inside a <script> element.
     This makes Cross-Site Scripting attacks much easier to mount since user input lands inside
     a trusted script.},
+                references:  {
+                    'ha.ckers' => 'http://ha.ckers.org/xss.html',
+                    'Secunia'  => 'http://secunia.com/advisories/9716/'
+                },
                 tags:            %w(xss script tag regexp dom attribute injection),
-                cwe:             '79',
+                cwe:             79,
                 severity:        Severity::HIGH,
-                cvssv2:          '9.0',
                 remedy_guidance: 'User inputs must be validated and filtered
-    before being included in executable code or not be included at all.',
+    before being included in executable code or not be included at all.'
             }
         }
     end

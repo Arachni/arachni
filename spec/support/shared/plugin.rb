@@ -11,6 +11,7 @@ shared_examples_for "plugin" do
         framework.reset_filters
         framework.reset_spider
         framework.plugins.reset
+        framework.reports.clear
     end
 
     after( :all ) { FileUtils.rm "#{options.dir['checks']}test2.rb" }
@@ -19,7 +20,7 @@ shared_examples_for "plugin" do
     end
 
     def self.easy_test( &block )
-        it "logs the expected results" do
+        it 'logs the expected results' do
             raise 'No results provided via #results, use \':nil\' for \'nil\' results.' if !results
 
             run
@@ -27,6 +28,21 @@ shared_examples_for "plugin" do
 
             instance_eval &block if block_given?
         end
+    end
+
+    def run
+        framework.run
+
+        # Make sure plugin formatters work as well.
+        framework.reports.load_all
+        framework.reports.each do |name, klass|
+            framework.reports.run_one name, framework.auditstore, 'outfile' => outfile
+            File.delete( outfile ) rescue nil
+        end
+    end
+
+    def outfile
+        @outfile ||= "#{Dir.tmpdir}/#{(0..10).map{ rand( 9 ).to_s }.join}"
     end
 
     def actual_results

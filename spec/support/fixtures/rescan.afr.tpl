@@ -131,7 +131,6 @@ plugins:
     :description: Generates a simple list of safe/unsafe URLs.
     :author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
     :version: 0.1.3
-revision: 0.2.6
 sitemap:
 - __URL__
 - __URL__1

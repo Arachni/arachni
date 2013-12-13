@@ -3,7 +3,6 @@
     All rights reserved.
 =end
 
-#
 # XSS in URL path check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
@@ -13,7 +12,6 @@
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
 # @see http://secunia.com/advisories/9716/
-#
 class Arachni::Checks::XSSPath < Arachni::Check::Base
 
     def self.tag
@@ -43,24 +41,25 @@ class Arachni::Checks::XSSPath < Arachni::Check::Base
         return if audited?( path )
         audited( path )
 
-        self.class.requests.each do |str, params|
+        self.class.requests.each do |str, parameters|
             url  = path + str
+            print_status "Checking for: #{url}"
 
-            print_status( "Checking for: #{url}" )
-
-            http.get( url, parameters: params ) { |res| check_and_log( res, str ) }
+            http.get( url, parameters: parameters ) do |response|
+                check_and_log( response )
+            end
         end
     end
 
-    def check_and_log( res, str )
+    def check_and_log( response )
         # check for the existence of the tag name in the response before
         # parsing to verify, no reason to waste resources...
-        return if !res.body || !res.body.include?( self.class.string )
+        return if !response.body || !response.body.include?( self.class.string )
 
         # see if we managed to successfully inject our element
-        return if Nokogiri::HTML( res.body ).css( self.class.tag ).empty?
+        return if Nokogiri::HTML( response.body ).css( self.class.tag ).empty?
 
-        log( { element: Element::Path, injected: str }, res )
+        log( { vector: Element::Path.new( response ), proof: self.class.string }, response )
     end
 
 
@@ -71,19 +70,19 @@ class Arachni::Checks::XSSPath < Arachni::Check::Base
             elements:    [ Element::Path ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.1.8',
-            references:  {
-                'ha.ckers' => 'http://ha.ckers.org/xss.html',
-                'Secunia'  => 'http://secunia.com/advisories/9716/'
-            },
             targets:     %w(Generic),
+
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS) in path},
                 description:     %q{Client-side code, like JavaScript, can
     be injected into the web application.},
+                references:  {
+                    'ha.ckers' => 'http://ha.ckers.org/xss.html',
+                    'Secunia'  => 'http://secunia.com/advisories/9716/'
+                },
                 tags:            %w(xss path injection regexp),
-                cwe:             '79',
+                cwe:             79,
                 severity:        Severity::HIGH,
-                cvssv2:          '9.0',
                 remedy_guidance: %q{Path must be validated and filtered
                     before being returned as part of the HTML code of a page.}
             }

@@ -25,10 +25,8 @@ class Arachni::Checks::Taint < Arachni::Check::Base
                 tags:            %w(some tag),
                 cwe:             '0',
                 severity:        Severity::HIGH,
-                cvssv2:          '0',
                 remedy_guidance: %q{Watch out!.},
-                remedy_code:     '',
-                metasploitable:  'unix/webapp/blah'
+                remedy_code:     ''
             }
 
         }

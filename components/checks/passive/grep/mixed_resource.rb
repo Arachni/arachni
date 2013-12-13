@@ -3,23 +3,20 @@
     All rights reserved.
 =end
 
-#
 # Mixed Resource detection check
 #
 # Looks for resources served over HTTP when the HTML code is server over HTTPS.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 # @version 0.1.3
 #
 # @see http://googleonlinesecurity.blogspot.com/2011/06/trying-to-end-mixed-scripting.html
-#
 class Arachni::Checks::MixedResource < Arachni::Check::Base
 
     def run
-        return if !https?( page.url )
+        return if !https?( page.url ) || !page.document
 
-        print_status( 'Checking...' )
+        print_status 'Checking...'
 
         page.document.css( 'script' ).each do |script|
             url = script.attributes['src'].to_s
@@ -61,16 +58,17 @@ class Arachni::Checks::MixedResource < Arachni::Check::Base
             elements:    [ Element::Body ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.1.2',
-            references:  {
-                'Google Online Security Blog' =>
-                    'http://googleonlinesecurity.blogspot.com/2011/06/trying-to-end-mixed-scripting.html'
-            },
             targets:     %w(Generic),
+
             issue:       {
                 name:            %q{Mixed Resource},
                 description:     %q{Serving resources over an unencrypted channel
     while the HTML code is served over HTTPS can lead to
     Man-In-The-Middle attacks and provide a false sense of security.},
+                references:      {
+                    'Google Online Security Blog' =>
+                        'http://googleonlinesecurity.blogspot.com/2011/06/trying-to-end-mixed-scripting.html'
+                },
                 tags:            %w(unencrypted resource javascript stylesheet),
                 severity:        Severity::MEDIUM,
                 remedy_guidance: %q{Configure the server to serve all resources over the encrypted channel.}

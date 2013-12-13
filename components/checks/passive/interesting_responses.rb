@@ -5,11 +5,9 @@
 
 require 'digest/md5'
 
-#
 # Logs all non 200 (OK) and non 404 server responses.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Arachni::Checks::InterestingResponses < Arachni::Check::Base
 
     IGNORE_CODES = [ 200, 404 ].to_set
@@ -26,27 +24,32 @@ class Arachni::Checks::InterestingResponses < Arachni::Check::Base
         return if self.class.ran?
 
         # tell the HTTP interface to call this block every-time a request completes
-        http.add_on_complete { |res| check_and_log( res ) }
+        http.add_on_complete { |response| check_and_log( response ) }
     end
 
     def clean_up
         self.class.ran
     end
 
-    def check_and_log( res )
-        return if IGNORE_CODES.include?( res.code ) || res.body.to_s.empty? ||
-            issue_limit_reached?
+    def check_and_log( response )
+        return if IGNORE_CODES.include?( response.code ) ||
+            response.body.to_s.empty? || issue_limit_reached?
 
-        digest = Digest::MD5.hexdigest( res.body )
-        path   = uri_parse( res.url ).path
+        digest = Digest::MD5.hexdigest( response.body )
+        path   = uri_parse( response.url ).path
 
         return if audited?( path ) || audited?( digest )
 
         audited( path )
         audited( digest )
 
-        log( { id: "Code: #{res.code}", element: Element::Server }, res )
-        print_ok "Found an interesting response -- Code: #{res.code}."
+        log( {
+                 proof:  response.status_line,
+                 vector: Element::Server.new( response )
+             },
+             response
+        )
+        print_ok "Found an interesting response -- Code: #{response.code}."
     end
 
     def self.info

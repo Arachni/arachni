@@ -1,5 +1,5 @@
 require 'sinatra'
-require_relative '../../../components/checks/check_server'
+require_relative '../../../checks/check_server'
 
 framework.checks[:common_files].filenames.each do |name|
     get( "/#{name}" ) { 'stuff' }

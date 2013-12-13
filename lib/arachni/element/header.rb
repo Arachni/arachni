@@ -16,7 +16,7 @@ class Header < Base
         self.method = :get
         self.inputs = options[:inputs]
 
-        @original = self.inputs.dup.freeze
+        @default_inputs = self.inputs.dup.freeze
     end
 
     def simple
@@ -49,7 +49,7 @@ class Header < Base
         # which won't be on the whitelist
         elem.override_instance_scope
 
-        elem.altered = 'Parameter flip'
+        elem.affected_input_name = 'Parameter flip'
         elem.inputs  = { injection_str => seed }
         yield elem
     end

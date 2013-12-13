@@ -6,37 +6,49 @@
 
                 <div class="left">
                     <ul>
-                    <li><strong>Check name</strong>: <%=escapeHTML(issue.mod_name)%> <br/>
-                    (Internal check name: <strong><%=escapeHTML(issue.internal_modname)%></strong>)</li>
+                        <li>
+                            <strong>Check name</strong>: <%=escapeHTML(issue.check[:shortname])%>
+                        </li>
 
-                    <% if issue.var %>
-                    <li><strong>Affected variable</strong>: <%=escapeHTML(issue.var)%></li>
-                    <%end%>
+                        <% if issue.active? %>
+                        <li>
+                            <strong>Affected input</strong>: <%=escapeHTML(issue.vector.affected_input_name)%>
+                        </li>
+                        <%end%>
 
-                    <li><strong>Affected URL</strong>: <a href="<%=escapeHTML(issue.url)%>"><%=escapeHTML(issue.url)%></a> </li>
-                    <li><strong>HTML Element</strong>: <%=issue.elem%></li>
-                    <li><strong>Requires manual verification?</strong>: <%=issue.verification ? 'Yes' : 'No'%></li>
-                    <hr/>
+                        <li>
+                            <strong>Affected URL</strong>:
+                            <a href="<%=escapeHTML(issue.vector.action)%>"><%=escapeHTML(issue.vector.action)%></a>
+                        </li>
+                        <li>
+                            <strong>Element type</strong>: <%= issue.vector.type %>
+                        </li>
+                        <hr/>
 
-                    <% if issue.cwe %>
-                    <li><strong>CWE</strong>: <%=issue.cwe%><br/>
-                    (<a target="_blank" href="<%=issue.cwe_url%>"><%=issue.cwe_url%></a>)</li>
-                    <%end%>
+                        <% if issue.cwe_url %>
+                        <li>
+                            <strong>CWE</strong>:
+                            <a target="_blank" href="<%=issue.cwe_url%>"><%=issue.cwe%></a>
+                        </li>
+                        <%end%>
 
-                    <li><strong>Severity</strong>: <%=issue.severity%></li>
-                    <li><strong>CVSSV2</strong>: <%=issue.cvssv2%></li>
-
+                        <li>
+                            <strong>Severity</strong>: <%=issue.severity%>
+                        </li>
                     </ul>
 
                     <p>
                         <h3>References</h3>
                         <ul>
-                            <% if issue.references && !issue.references.empty? %>
-                            <% issue.references.each_pair do |source, url| %>
+                            <% if issue.references.any? %>
+                                <% issue.references.each_pair do |source, url| %>
 
-                            <li><%=escapeHTML(source)%> - <a target="_blank" href="<%=url%>"><%=url%></a></li>
+                                    <li>
+                                        <%=escapeHTML(source)%> -
+                                        <a target="_blank" href="<%=url%>"><%=url%></a>
+                                    </li>
 
-                            <%end%>
+                                <%end%>
                             <%else%>
                                 <li>N/A</li>
                             <%end%>
@@ -51,30 +63,19 @@
                         <blockquote><p><%=escapeHTML(issue.description)%></p></blockquote>
                     </p>
 
-                    <% if issue.remedy_guidance && !issue.remedy_guidance.empty? %>
+                    <% if !issue.remedy_guidance.to_s.empty? %>
                     <p>
                         <h3>Remedial guidance</h3>
                         <blockquote><p><%=escapeHTML(issue.remedy_guidance)%></p></blockquote>
                     </p>
                     <%end%>
 
-                    <% if issue.remedy_code && !issue.remedy_code.empty? %>
+                    <% if !issue.remedy_code.to_s.empty? %>
                     <p>
                         <h3>Remedial code</h3>
                         <pre class="code notice"><%=escapeHTML(issue.remedy_code)%></pre>
                     </p>
                     <%end%>
-
-                    <% if (remarks = issue.variations.first.remarks).any? %>
-                        <h3>Remarks</h3>
-                        <% remarks.each do |commenter, remarks| %>
-                            <h4>By <%= commenter %>:</h4>
-                            <% remarks.each do |remark| %>
-                                <blockquote><p><%=escapeHTML( remark )%></p></blockquote>
-                            <% end %>
-                        <% end %>
-                    <% end %>
-
                 </div>
 
                 <div class="clear variations" style="display: block;">
@@ -89,58 +90,51 @@
                     </h5>
 
                     <strong>Affected URL</strong>:
-                    <p class="notice"><a href="<%=escapeHTML(variation['url'])%>"><%=escapeHTML(variation['url'])%></a></p>
+                    <p class="notice"><a href="<%=escapeHTML(variation.vector.action)%>"><%=escapeHTML(variation.vector.action)%></a></p>
 
-                    <% if (variation['response'] && !variation['response'].empty?) && variation['regexp_match'] %>
+                    <% if variation.signature %>
+                        <div class="hidden" id="inspection-dialog_<%=var_idx%>_<%=idx%>"
+                             title="Relevant content is shown in red. (Hit Esc to close)">
+                            <% match = escapeHTML( variation.proof )%>
+                            <pre><%=escapeHTML( variation.response.body ).gsub( match, '<strong style="color: red">' + match + '</strong>' ) %></pre>
+                        </div>
 
-                    <div class="hidden" id="inspection-dialog_<%=var_idx%>_<%=idx%>" title="Relevant content is shown in red. (Hit Esc to close)">
-                        <% match = escapeHTML( variation['regexp_match'] )%>
-                        <pre> <%=escapeHTML( variation['response'] ).gsub( match, '<strong style="color: red">' + match + '</strong>' ) %> </pre>
-                    </div>
+                        <form style="display:inline" action="#">
+                            <input onclick="javascript:inspect( '#inspection-dialog_<%=var_idx%>_<%=idx%>')" type="button" value="Inspect" />
+                        </form>
 
-                    <form style="display:inline" action="#">
-                        <input onclick="javascript:inspect( '#inspection-dialog_<%=var_idx%>_<%=idx%>')" type="button" value="Inspect" />
-                    </form>
-
-                    <%end%>
-
-                    <% if issue.method && (issue.elem.downcase == 'form' || issue.elem.downcase == 'link' ) &&
-                        ( issue.method.downcase == 'get' || issue.method.downcase == 'post' ) %>
-                    <form style="display:inline" action="<%=variation['opts'][:action]%>" target="_blank" method="<%=issue.method.downcase%>">
-                    <% if variation['opts'][:combo]%>
-                    <%variation['opts'][:combo].each_pair do |name, value|%>
-                        <input type="hidden" name="<%=escapeHTML(name)%>" value="<%=escapeHTML( value )%>" />
-                    <%end%>
-                    <%end%>
-                        <input type="submit" value="Replay" />
-                    </form>
                     <%end%>
 
                     <br/><br/>
 
                     <div class="variation" id="var_<%=var_idx%>_<%=idx%>">
 
-                        <% if variation['injected'] %>
-                        <strong>Injected value</strong>:
-                        <pre> <%=escapeHTML( variation['injected'].inspect )%> </pre>
-                        <br/>
+                        <% if (remarks = variation.remarks).any? %>
+                            <h3>Remarks</h3>
+                            <% remarks.each do |commenter, cremarks| %>
+                                <h4>By <%= commenter %>:</h4>
+                                <% cremarks.each do |remark| %>
+                                    <blockquote><p><%=escapeHTML( remark )%></p></blockquote>
+                                <% end %>
+                            <% end %>
+                        <% end %>
+
+                        <% if variation.vector.seed %>
+                            <strong>Injected</strong>:
+                            <pre><%=escapeHTML( variation.vector.seed.inspect )%></pre>
+                            <br/>
                         <%end%>
 
-                        <% if variation['id'] %>
-                        <strong>ID</strong>:
-                        <pre><%=escapeHTML(variation['id'])%></pre>
-                        <br/>
+                        <% if variation.proof %>
+                            <strong>Proof</strong>:
+                            <pre><%=escapeHTML(variation.proof)%></pre>
+                            <br/>
                         <%end%>
 
-                        <% if variation['regexp'] %>
-                        <strong>Regular expression</strong>:
-                        <pre><%=escapeHTML(variation['regexp'])%></pre>
+                        <% if variation.signature %>
+                        <strong>Signature</strong>:
+                        <pre><%=escapeHTML(variation.signature)%></pre>
                         <br/>
-                        <%end%>
-
-                        <% if variation['regexp_match'] %>
-                        <strong>Matched by the regular expression</strong>:
-                        <pre><%=escapeHTML(variation['regexp_match'])%> </pre>
                         <%end%>
 
                         <br/>
@@ -154,17 +148,17 @@
                                 <th colspan="2">Response</th>
                             </tr>
                             <tr>
-                                <%= erb :headers, { headers: variation['headers']['request'] } %>
-                                <%= erb :headers, { headers: variation['headers']['response'] } %>
+                                <%= erb :headers, { headers: variation.request.headers } %>
+                                <%= erb :headers, { headers: variation.response.headers } %>
                             </tr>
                         </table>
 
-                        <% if variation['escaped_response']%>
-                        <form style="display:inline" action="#">
-                            <input onclick="javascript:renderResponse( 'res_<%=var_idx%>_<%=idx%>', 'data:text/html;base64, <%= variation['escaped_response']%>' )"
-                            type="button" value="Render HTML response" />
-                        </form>
-                        <div id="res_<%=var_idx%>_<%=idx%>"></div>
+                        <% if !variation.response.body.empty? %>
+                            <form style="display:inline" action="#">
+                                <input onclick="javascript:renderResponse( 'res_<%=var_idx%>_<%=idx%>', 'data:text/html;base64, <%= base64_encode( variation.response.body ) %>' )"
+                                type="button" value="Render HTML response" />
+                            </form>
+                            <div id="res_<%=var_idx%>_<%=idx%>"></div>
                         <%end%>
 
                     </div>
@@ -175,4 +169,3 @@
                 <p class="clear separator">&nbsp;</p>
 
             </div>
-

@@ -9,8 +9,8 @@
         named '<%=item['element']['name']%>'
         <%end%>
 
-        <%if item['element']['altered']%>
-        using the '<%=item['element']['altered']%>' input
+        <%if item['element']['affected_input_name']%>
+        using the '<%=item['element']['affected_input_name']%>' input
         <%end%>
 
         <%if item['element']['owner']%>
@@ -44,8 +44,8 @@
                 named '<%=elem['name']%>'
                 <%end%>
 
-                <%if elem['altered']%>
-                using the '<%=elem['altered']%>' input
+                <%if elem['affected_input_name']%>
+                using the '<%=elem['affected_input_name']%>' input
                 <%end%>
 
                 <%if elem['auditable']%>

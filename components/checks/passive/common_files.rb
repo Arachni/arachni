@@ -3,13 +3,10 @@
     All rights reserved.
 =end
 
-#
 # Looks for sensitive common files on the server.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 # @version 0.2.2
-#
 class Arachni::Checks::CommonFiles < Arachni::Check::Base
 
     def self.filenames
@@ -28,15 +25,16 @@ class Arachni::Checks::CommonFiles < Arachni::Check::Base
         {
             name:        'Common files',
             description: %q{Tries to find common sensitive files on the server.},
-            elements:    [ Element::Path ],
+            elements:    [ Element::Server ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.2.2',
             targets:     %w(Generic),
-            references: {
-                'Apache.org' => 'http://httpd.apache.org/docs/2.0/mod/mod_access.html'
-            },
+
             issue:       {
                 name:            %q{Common sensitive file},
+                references: {
+                    'Apache.org' => 'http://httpd.apache.org/docs/2.0/mod/mod_access.html'
+                },
                 tags:            %w(common path file discovery),
                 severity:        Severity::LOW,
                 remedy_guidance: %q{Do not expose file and directory information to the user.}

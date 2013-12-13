@@ -3,7 +3,6 @@
     All rights reserved.
 =end
 
-#
 # OS command injection check using timing attacks.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
@@ -12,7 +11,6 @@
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
 # @see http://www.owasp.org/index.php/OS_Command_Injection
-#
 class Arachni::Checks::OSCmdInjectionTiming < Arachni::Check::Base
 
     prefer :os_cmd_injection
@@ -43,9 +41,6 @@ class Arachni::Checks::OSCmdInjectionTiming < Arachni::Check::Base
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.3',
-            references:  {
-                'OWASP' => 'http://www.owasp.org/index.php/OS_Command_Injection'
-            },
             targets:     %w(Windows Unix),
             issue:       {
                 name:            %q{Operating system command injection (timing attack)},
@@ -57,14 +52,14 @@ class Arachni::Checks::OSCmdInjectionTiming < Arachni::Check::Base
     an abnormally long time to respond.
     Either case, these issues will require further investigation
     even if they are false positives.)},
+                references:  {
+                    'OWASP' => 'http://www.owasp.org/index.php/OS_Command_Injection'
+                },
                 tags:            %w(os command code injection timing blind),
-                cwe:             '78',
+                cwe:             78,
                 severity:        Severity::HIGH,
-                cvssv2:          '9.0',
                 remedy_guidance: %q{User inputs must be validated and filtered
-    before being evaluated as OS level commands.},
-                remedy_code:     '',
-                metasploitable:  'unix/webapp/arachni_exec'
+    before being evaluated as OS level commands.}
             }
 
         }

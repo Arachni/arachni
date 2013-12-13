@@ -3,23 +3,21 @@
     All rights reserved.
 =end
 
-#
-# Default report.
-#
-# Outputs the issues to stdout, used with the CLI UI.<br/>
+# Outputs the issues to stdout, used with the CLI UI.
 # All UIs must have a default report.
 #
-#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-# @version 0.2.4
-#
+# @version 0.3
 class Arachni::Reports::Stdout < Arachni::Report::Base
 
     def run
+        # We're going to be printing a lot of stuff, not just simple status
+        # messages, so avoid prefixing every message with the component's name.
+        depersonalize_output
+
         print_line
         print_line
-        print_line "=" * 80
+        print_line '=' * 80
         print_line
         print_line
 
@@ -33,7 +31,6 @@ class Arachni::Reports::Stdout < Arachni::Report::Base
         print_info '---------------'
 
         print_info "Version:  #{auditstore.version}"
-        print_info "Revision: #{auditstore.revision}"
         print_info "Audit started on:  #{auditstore.start_datetime}"
         print_info "Audit finished on: #{auditstore.finish_datetime}"
         print_info "Runtime: #{auditstore.delta_time}"
@@ -47,27 +44,26 @@ class Arachni::Reports::Stdout < Arachni::Report::Base
         print_info '* Cookies'  if auditstore.options['audit_cookies']
         print_info '* Headers'  if auditstore.options['audit_headers']
         print_line
-        print_status 'Checks: ' + auditstore.options['mods'].join( ', ' )
+        print_status "Checks: #{auditstore.options['checks'].join( ', ' )}"
 
-        if auditstore.options['exclude'].any? ||
-            auditstore.options['include'].any? ||
+        if auditstore.options['exclude'].any? || auditstore.options['include'].any? ||
             auditstore.options['redundant'].any?
 
             print_line
             print_status 'Filters: '
 
             if auditstore.options['exclude'] && auditstore.options['exclude'].any?
-                print_info "  Exclude:"
+                print_info '  Exclude:'
                 auditstore.options['exclude'].each { |ex| print_info "    #{ex}" }
             end
 
             if auditstore.options['include'] && auditstore.options['include'].any?
-                print_info "  Include:"
+                print_info '  Include:'
                 auditstore.options['include'].each { |inc| print_info "    #{inc}" }
             end
 
             if auditstore.options['redundant'] && auditstore.options['redundant'].any?
-                print_info "  Redundant:"
+                print_info '  Redundant:'
                 auditstore.options['redundant'].each do |regexp, counter|
                     print_info "    #{regexp}:#{counter}"
                 end
@@ -90,30 +86,30 @@ class Arachni::Reports::Stdout < Arachni::Report::Base
 
         auditstore.issues.each_with_index do |issue, i|
 
-            trusted = issue.verification ? 'Untrusted' : 'Trusted'
+            trusted = issue.trusted? ? 'Trusted' : 'Untrusted'
 
             print_ok "[#{i+1}] #{trusted} -- #{issue.name}"
             print_info '~~~~~~~~~~~~~~~~~~~~'
 
             print_info "ID Hash:  #{issue.digest}"
             print_info "Severity: #{issue.severity}"
-            print_info "URL:      #{issue.url}"
-            print_info "Element:  #{issue.elem}"
-            print_info "Method:   #{issue.method}" if issue.method
+            print_info "URL:      #{issue.vector.action}"
+            print_info "Element:  #{issue.vector.type}"
+
+            if issue.active?
+                print_info "Method:   #{issue.vector.method}"
+                print_info "Variable: #{issue.vector.affected_input_name}"
+            end
+
             print_info 'Tags:     ' + issue.tags.join( ', ' ) if issue.tags.is_a?( Array )
-            print_info "Variable: #{issue.var}" if issue.var
 
             print_info 'Description: '
             print_info issue.description
 
-            if issue.cwe && !issue.cwe.empty?
+            if issue.cwe_url
                 print_line
-                print_info "CWE: http://cwe.mitre.org/data/definitions/#{issue.cwe}.html"
+                print_info issue.cwe_url
             end
-
-            print_line
-            print_info 'Requires manual verification?: ' + issue.verification.to_s
-            print_line
 
             if issue.references
                 print_info 'References:'
@@ -131,8 +127,8 @@ class Arachni::Reports::Stdout < Arachni::Report::Base
         print_info '---------------'
         print_line
 
-        # let the plugin formatters do their thing and print their results
-        # and let our block handle the boring crap
+        # Let the plugin formatters do their thing and print the plugin results
+        # and let our block handle the boring crap.
         format_plugin_results do |results|
             print_line
             print_status results[:name]
@@ -143,15 +139,6 @@ class Arachni::Reports::Stdout < Arachni::Report::Base
         end
     end
 
-    def self.info
-        {
-            name:        'Stdout',
-            description: %q{Prints the results to standard output.},
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.2.4'
-        }
-    end
-
     def print_info_variations( issue )
         print_line
         print_status 'Variations'
@@ -159,11 +146,13 @@ class Arachni::Reports::Stdout < Arachni::Report::Base
 
         issue.variations.each_with_index do |var, i|
             print_info "Variation #{i+1}:"
-            print_info "URL: #{var['url']}"
-            print_info "ID:  #{var['id']}"                          if var['id']
-            print_info "Injected value:     #{var['injected'].inspect}"     if var['injected']
-            print_info "Regular expression: #{var['regexp']}"       if var['regexp']
-            print_info "Matched string:     #{var['regexp_match']}" if var['regexp_match']
+
+            if var.active?
+                print_info "Injected:  #{var.vector.affected_input_value.inspect}"
+            end
+
+            print_info "Signature: #{var.signature}" if var.signature
+            print_info "Proof:     #{var.proof}"
 
             next if var.remarks.empty?
 
@@ -189,4 +178,14 @@ class Arachni::Reports::Stdout < Arachni::Report::Base
                 line.gsub(/(.{1,#{line_width}})(\s+|$)/, "\\1\n").strip : line
         end * "\n"
     end
+
+    def self.info
+        {
+            name:        'Stdout',
+            description: %q{Prints the results to standard output.},
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.3'
+        }
+    end
+
 end

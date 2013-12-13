@@ -59,11 +59,6 @@ describe 'Arachni::RPC::Server::Framework' do
             @framework_clean.version.should == Arachni::VERSION
         end
     end
-    describe '#revision' do
-        it 'returns the framework revision' do
-            @framework_clean.revision.should == Arachni::Framework::REVISION
-        end
-    end
     describe '#master?' do
         it 'returns false' do
             @framework_clean.master?.should be_true
@@ -132,10 +127,6 @@ describe 'Arachni::RPC::Server::Framework' do
             auditstore = @instance_clean.framework.auditstore
             auditstore.is_a?( Arachni::AuditStore ).should be_true
             auditstore.issues.should be_any
-            issue = auditstore.issues.first
-            issue.is_a?( Arachni::Issue ).should be_true
-            issue.variations.should be_any
-            issue.variations.first.is_a?( Arachni::Issue ).should be_true
         end
     end
     describe '#stats' do
@@ -254,7 +245,7 @@ describe 'Arachni::RPC::Server::Framework' do
                         keys = @instance_clean.framework.progress( stats: false ).
                             keys.sort
                         pk = @progress_keys.dup
-                        pk.delete( "stats" )
+                        pk.delete( 'stats' )
                         keys.should == pk
                     end
                 end
@@ -265,7 +256,7 @@ describe 'Arachni::RPC::Server::Framework' do
                         keys = @instance_clean.framework.progress( issues: false ).
                             keys.sort
                         pk = @progress_keys.dup
-                        pk.delete( "issues" )
+                        pk.delete( 'issues' )
                         keys.should == pk
                     end
                 end
@@ -276,7 +267,7 @@ describe 'Arachni::RPC::Server::Framework' do
                         keys = @instance_clean.framework.progress( slaves: false ).
                             keys.sort
                         pk = @progress_keys.dup
-                        pk.delete( "instances" )
+                        pk.delete( 'instances' )
                         keys.should == pk
                     end
                 end
@@ -286,7 +277,7 @@ describe 'Arachni::RPC::Server::Framework' do
                     it 'includes issues as a hash' do
                         @instance_clean.framework
                             .progress( as_hash: true )['issues']
-                        .first.is_a?( Hash ).should be_true
+                            .first.is_a?( Hash ).should be_true
                     end
                 end
             end
@@ -296,12 +287,7 @@ describe 'Arachni::RPC::Server::Framework' do
         it 'returns a hash report of the scan' do
             report = @instance_clean.framework.report
             report.is_a?( Hash ).should be_true
-            report['issues'].should be_any
-
-            issue = report['issues'].first
-            issue.is_a?( Hash ).should be_true
-            issue['variations'].should be_any
-            issue['variations'].first.is_a?( Hash ).should be_true
+            report[:issues].should be_any
         end
 
         it 'aliased to #audit_store_as_hash' do
@@ -311,18 +297,6 @@ describe 'Arachni::RPC::Server::Framework' do
         it 'aliased to #auditstore_as_hash' do
             @instance_clean.framework.report.should ==
                 @instance_clean.framework.auditstore_as_hash
-        end
-    end
-    describe '#serialized_auditstore' do
-        it 'returns a YAML serialized AuditStore' do
-            yaml_str = @instance_clean.framework.serialized_auditstore
-            YAML.load( yaml_str ).is_a?( Arachni::AuditStore ).should be_true
-        end
-    end
-    describe '#serialized_report' do
-        it 'returns a YAML serialized report hash' do
-            YAML.load( @instance_clean.framework.serialized_report ).should ==
-                @instance_clean.framework.report
         end
     end
     describe '#issues' do
@@ -342,7 +316,7 @@ describe 'Arachni::RPC::Server::Framework' do
 
             issue = issues.first
             issue.is_a?( Hash ).should be_true
-            issue['variations'].should be_empty
+            issue[:variations].should be_empty
         end
     end
 

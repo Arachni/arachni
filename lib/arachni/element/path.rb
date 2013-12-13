@@ -8,8 +8,31 @@ require Arachni::Options.dir['lib'] + 'element/base'
 module Arachni::Element
 class Path < Base
 
-    def initialize( page )
-        super url: page.url
+    attr_accessor :auditor
+
+    def initialize( response )
+        @response = response
+        super url: response.url
+    end
+
+    def action
+        url
+    end
+
+    def remove_auditor
+        @auditor = nil
+    end
+
+    def dup
+        self.class.new @response
+    end
+
+    def hash
+        to_h.hash
+    end
+
+    def ==( other )
+        hash == other.hash
     end
 
 end

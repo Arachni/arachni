@@ -19,7 +19,7 @@ describe name_from_filename do
 
         run
         framework.checks.issues.should be_any
-        framework.checks.issues.first.var.should == 'input'
+        framework.checks.issues.first.vector.affected_input_name.should == 'input'
 
         File.delete( updated )
     end

@@ -10,12 +10,11 @@
 # @version 0.2
 class Arachni::Checks::FileUpload < Arachni::Check::Base
 
-
     def run
         page.forms.each do |form|
             form.inputs.keys.each do |name|
                 next if form.details_for( name )[:type] != :file
-                log( match: form.to_html, element: Element::Form )
+                log( proof: form.to_html, vector: form )
             end
         end
     end
@@ -29,20 +28,19 @@ class Arachni::Checks::FileUpload < Arachni::Check::Base
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.2',
             targets:     %w(Generic),
-            references: {
-                'owasp.org' => 'https://www.owasp.org/index.php/Unrestricted_File_Upload'
-            },
 
             issue:       {
                 name:        %q{Form-based File Upload},
-                cwe:         '200',
                 description: description,
+                references:  {
+                    'owasp.org' => 'https://www.owasp.org/index.php/Unrestricted_File_Upload'
+                },
+                cwe:         200,
                 tags:        %w(file upload),
                 severity:    Severity::INFORMATIONAL
             },
             max_issues: 25
         }
     end
-
 
 end

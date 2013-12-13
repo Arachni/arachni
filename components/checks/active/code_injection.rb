@@ -3,7 +3,6 @@
     All rights reserved.
 =end
 
-#
 # It's designed to work with PHP, Perl, Python, Java, ASP and Ruby
 # but still needs some more testing.
 #
@@ -18,7 +17,6 @@
 # @see http://docs.python.org/py3k/library/functions.html#eval
 # @see http://www.aspdev.org/asp/asp-eval-execute/
 # @see http://en.wikipedia.org/wiki/Eval#Ruby
-#
 class Arachni::Checks::CodeInjection < Arachni::Check::Base
 
     def self.rand1
@@ -71,27 +69,25 @@ class Arachni::Checks::CodeInjection < Arachni::Check::Base
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.2',
-            references:  {
-                'PHP'    => 'http://php.net/manual/en/function.eval.php',
-                'Perl'   => 'http://perldoc.perl.org/functions/eval.html',
-                'Python' => 'http://docs.python.org/py3k/library/functions.html#eval',
-                'ASP'    => 'http://www.aspdev.org/asp/asp-eval-execute/',
-            },
             targets:     %w(PHP Perl Python ASP),
+
             issue:       {
                 name:            %q{Code injection},
                 description:     %q{Arbitrary code can be injected into the web application
     which is then executed as part of the system.},
+                references:  {
+                    'PHP'    => 'http://php.net/manual/en/function.eval.php',
+                    'Perl'   => 'http://perldoc.perl.org/functions/eval.html',
+                    'Python' => 'http://docs.python.org/py3k/library/functions.html#eval',
+                    'ASP'    => 'http://www.aspdev.org/asp/asp-eval-execute/',
+                },
                 tags:            %w(code injection regexp),
-                cwe:             '94',
+                cwe:             94,
                 severity:        Severity::HIGH,
-                cvssv2:          '7.5',
                 remedy_guidance: %q{User inputs must be validated and filtered
     before being evaluated as executable code.
     Better yet, the web application should stop evaluating user
     inputs as any part of dynamic code altogether.},
-                remedy_code:     '',
-                metasploitable:  'unix/webapp/arachni_php_eval'
             }
 
         }

@@ -16,11 +16,11 @@ describe name_from_filename do
 
         oks = 0
         results.each do |result|
-            if (result[:res]['url'] == url &&
+            if (result[:res][:url] == url &&
                 result[:cookies] == { 'cookie1' => 'val1' }) ||
-                (result[:res]['url'] == url + 'a_link' &&
+                (result[:res][:url] == url + 'a_link' &&
                 result[:cookies] == { 'link_followed' => 'yay link!' }) ||
-                (result[:res]['url'] == url + 'update_cookie' &&
+                (result[:res][:url] == url + 'update_cookie' &&
                 result[:cookies] == { 'link_followed' => 'updated link!', 'stuff' => 'blah' })
                 oks += 1
             end

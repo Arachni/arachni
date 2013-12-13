@@ -36,7 +36,7 @@ describe Arachni::Element::Header do
         describe :format do
             it 'does not include NULLs' do
                 @header.mutations( 'seed' ).
-                    select { |m| m.altered_value.include? "\0" }.should be_empty
+                    select { |m| m.affected_input_value.include? "\0" }.should be_empty
             end
         end
     end

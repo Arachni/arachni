@@ -22,6 +22,7 @@ module Auditable
     # Load and include all available analysis/audit techniques.
     Dir.glob( File.dirname( __FILE__ ) + '/auditable/*.rb' ).each { |f| require f }
 
+    include Output
     include Taint
     include Timeout
     include Differential
@@ -31,12 +32,12 @@ module Auditable
     # The auditor provides its output, HTTP and issue logging interfaces.
     #
     # @return   [Arachni::Check::Auditor]
-    attr_accessor :auditor
+    attr_accessor   :auditor
 
     # Frozen version of {#inputs}, has all the original name/values.
     #
     # @return   [Hash]
-    attr_reader   :original
+    attr_reader     :default_inputs
 
     # @return [Hash]    Audit and general options for convenience's sake.
     attr_accessor   :audit_options
@@ -209,8 +210,8 @@ module Auditable
 
     # @return   [Hash]  Returns changes make to the {#inputs}'s inputs.
     def changes
-        (self.original.keys | self.inputs.keys).inject( {} ) do |h, k|
-            if self.original[k] != self.inputs[k]
+        (self.default_inputs.keys | self.inputs.keys).inject( {} ) do |h, k|
+            if self.default_inputs[k] != self.inputs[k]
                 h[k] = self.inputs[k]
             end
             h
@@ -235,6 +236,15 @@ module Auditable
     def []=( k, v )
         update( { k => v } )
         self[k]
+    end
+
+    def to_h
+        super.merge(
+            url:            url,
+            action:         action,
+            inputs:         inputs,
+            default_inputs: default_inputs
+        )
     end
 
     def ==( e )
@@ -313,9 +323,11 @@ module Auditable
         !@auditor
     end
 
-    # Resets the inputs inputs to their original format/values.
+    # Resets the inputs to their original format/values.
     def reset
-        self.inputs = @original.dup
+        super
+        self.inputs = @default_inputs.dup
+        self
     end
 
     # Removes the {#auditor} from this element.
@@ -434,13 +446,14 @@ module Auditable
     #   the url and the type of the input (form, link, cookie...).
     #
     def status_string
-        "Auditing #{self.type} variable '#{self.altered}' with action '#{self.action}'."
+        "Auditing #{self.type} variable '#{self.affected_input_name}' with" <<
+            " action '#{self.action}'."
     end
 
     # @return  [String] String uniquely identifying self.
     # @abstract
     def id
-        "#{action}:#{method}:#{inputs}"
+        "#{self.action}:#{self.method}:#{self.inputs}"
     end
 
     # Returns an audit ID string used to identify the audit of `self` by its
@@ -466,16 +479,6 @@ module Auditable
         str
     end
 
-    # @note Mainly used by {Arachni::Check::Auditor#skip?} to prevent redundant
-    #   audits for elements/issues which have already been logged as vulnerable.
-    #
-    # @return   [String]
-    #   Predicts what the {Issue#unique_id} of an issue would look like,
-    #   should `self` be vulnerable.
-    def provisioned_issue_id( auditor_name = @auditor.class.name )
-        "#{auditor_name}::#{type}::#{altered}::#{self.action.split( '?' ).first}"
-    end
-
     # @return [Boolean]
     #   `true` if the element matches one or more {.skip_like_blocks},
     #   `false` otherwise.
@@ -487,54 +490,12 @@ module Auditable
 
     def dup
         new = super
-        new.auditor = self.auditor
-        new.audit_options  = self.audit_options.dup
-        new.inputs  = self.inputs.dup
+        new.override_instance_scope if override_instance_scope?
+        new.method        = self.method
+        new.auditor       = self.auditor
+        new.audit_options = self.audit_options.dup
+        new.inputs        = self.inputs.dup
         new
-    end
-
-    #
-    # Delegate output related methods to the auditor
-    #
-
-    def debug?
-        @auditor.debug? rescue false
-    end
-
-    def print_error( str = '' )
-        @auditor.print_error( str ) if !orphan?
-    end
-
-    def print_status( str = '' )
-        @auditor.print_status( str ) if !orphan?
-    end
-
-    def print_info( str = '' )
-        @auditor.print_info( str ) if !orphan?
-    end
-
-    def print_line( str = '' )
-        @auditor.print_line( str ) if !orphan?
-    end
-
-    def print_ok( str = '' )
-        @auditor.print_ok( str ) if !orphan?
-    end
-
-    def print_bad( str = '' )
-        @auditor.print_bad( str ) if !orphan?
-    end
-
-    def print_debug( str = '' )
-        @auditor.print_debug( str ) if !orphan?
-    end
-
-    def print_debug_backtrace( str = '' )
-        @auditor.print_debug_backtrace( str ) if !orphan?
-    end
-
-    def print_error_backtrace( str = '' )
-        @auditor.print_error_backtrace( str ) if !orphan?
     end
 
     private
@@ -580,8 +541,6 @@ module Auditable
             return false
         end
 
-        @audit_options[:injected_orig] = injection_str
-
         @auditor ||= @audit_options.delete( :auditor )
 
         audit_id = audit_id( injection_str, @audit_options )
@@ -601,8 +560,8 @@ module Auditable
 
         # Iterate over all fuzz variations and audit each one.
         each_mutation( injection_str, @audit_options ) do |elem|
-            if Options.exclude_vectors.include?( elem.altered )
-                print_info "Skipping audit of '#{elem.altered}' #{type} vector."
+            if Options.exclude_vectors.include?( elem.affected_input_name )
+                print_info "Skipping audit of '#{elem.affected_input_name}' #{type} vector."
                 next
             end
 
@@ -622,9 +581,6 @@ module Auditable
                 print_debug "Self's #skip? method returned true for mutation, skipping: #{mid}"
                 next
             end
-
-            @audit_options[:altered] = elem.altered.dup
-            @audit_options[:element] = type
 
             if skip_like_option.any?
                 should_skip = false
@@ -672,15 +628,6 @@ module Auditable
     #   response as soon as it is received.
     def on_complete( request, &block )
         return if !request
-
-        element = request.is_a?( Arachni::HTTP::Response ) ?
-            request.request.performer : request.performer
-
-        element.audit_options[:injected] = element.altered_value
-        element.audit_options[:combo]    = element.inputs
-        element.audit_options[:action]   = element.action
-        element.audit_options[:elem]     = element.type
-        element.audit_options[:var]      = element.altered
 
         # If we're in blocking mode the passed object will be a response not
         # a request.

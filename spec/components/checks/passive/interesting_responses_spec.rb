@@ -23,8 +23,5 @@ describe name_from_filename do
 
         max_issues = current_check.max_issues
         issues.size.should == max_issues
-        issues.map{ |i| i.id.gsub( /\D/, '').to_i }.uniq.sort.should ==
-            (current_check.acceptable - current_check::IGNORE_CODES.to_a).
-                sort[0...max_issues]
     end
 end

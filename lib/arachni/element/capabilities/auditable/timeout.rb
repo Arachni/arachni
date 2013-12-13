@@ -124,9 +124,9 @@ module Timeout
             str = opts[:timing_string].dup
             str.gsub!( '__TIME__', (opts[:delay] / opts[:timeout_divider]).to_s )
 
-            elem.inputs = elem.original
+            elem.inputs = elem.default_inputs
 
-            elem.print_status "Phase 2 for #{elem.type} input '#{elem.altered}'" <<
+            elem.print_status "Phase 2 for #{elem.type} input '#{elem.affected_input_name}'" <<
                                   " with action #{elem.action}"
 
             elem.print_info '* Performing liveness check.'
@@ -146,7 +146,7 @@ module Timeout
                 elem.print_info '* Liveness check was successful, progressing' <<
                                     ' to verification.'
 
-                opts[:skip_like] = proc { |m| m.altered != elem.altered }
+                opts[:skip_like] = proc { |m| m.affected_input_name != elem.affected_input_name }
                 opts[:format]    = [Mutable::Format::STRAIGHT]
                 opts[:silent]    = true
 
@@ -176,9 +176,9 @@ module Timeout
             str = opts[:timing_string].dup
             str.gsub!( '__TIME__', (opts[:delay] / opts[:timeout_divider]).to_s )
 
-            elem.inputs = elem.original
+            elem.inputs = elem.default_inputs
 
-            elem.print_status "Phase 3 for #{elem.type} input '#{elem.altered}'" <<
+            elem.print_status "Phase 3 for #{elem.type} input '#{elem.affected_input_name}'" <<
                                   " with action #{elem.action}"
 
             elem.print_info '* Performing liveness check.'
@@ -194,7 +194,7 @@ module Timeout
                 elem.print_info '* Liveness check was successful, progressing' <<
                                     ' to verification.'
 
-                opts[:skip_like] = proc { |m| m.altered != elem.altered }
+                opts[:skip_like] = proc { |m| m.affected_input_name != elem.affected_input_name }
                 opts[:format]    = [Mutable::Format::STRAIGHT]
                 opts[:silent]    = true
 
@@ -205,7 +205,7 @@ module Timeout
                     end
 
                     elem.print_info '* Verification was successful.'
-                    elem.auditor.log( c_elem.audit_options, c_res )
+                    elem.auditor.log( { vector: c_elem }, c_res )
                     elem.responsive?
                 end
             end
@@ -258,7 +258,7 @@ module Timeout
             next if Timeout.deduplicate? && Timeout.candidates_include?( elem )
 
             print_info 'Found a candidate for Phase 2 -- ' <<
-                "#{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}"
+                "#{elem.type.capitalize} input '#{elem.affected_input_name}' at #{elem.action}"
             Timeout.add_phase_2_candidate( elem )
         end
 
@@ -289,7 +289,7 @@ module Timeout
             'wear off, this may take a while (max waiting time is ' <<
              "#{d_opts[:timeout] / 1000.0} seconds)."
 
-        @auditable = @original.dup
+        @auditable = @default_inputs.dup
         res = submit( d_opts )
 
         @audit_options.merge!( orig_opts )
@@ -333,13 +333,13 @@ module Timeout
         # Intercept each element mutation prior to it being submitted and replace
         # the '__TIME__' placeholder with the actual delay value.
         each_mutation = proc do |mutation|
-            injected = mutation.altered_value
+            injected = mutation.affected_input_value
 
             # Preserve the original because it's going to be needed for the
             # verification phases.
             mutation.audit_options[:timing_string] = injected
 
-            mutation.altered_value = injected.
+            mutation.affected_input_value = injected.
                 gsub( '__TIME__', (opts[:delay] / opts[:timeout_divider]).to_s )
         end
 

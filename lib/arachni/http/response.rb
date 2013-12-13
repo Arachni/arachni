@@ -50,8 +50,8 @@ class Response < Message
     #   Approximate time the web application took to process the {#request}.
     attr_accessor :app_time
 
-    def initialize( *args )
-        super( *args )
+    def initialize( options = {} )
+        super( options )
 
         @body ||= ''
         @body   = @body.recode if text?
@@ -59,6 +59,12 @@ class Response < Message
 
         # Holds the redirection responses that eventually led to this one.
         @redirections ||= []
+    end
+
+    # @return   [String]    First line of the response.
+    def status_line
+        return if !headers_string
+        @status_line ||= headers_string.lines.first.to_s.chomp
     end
 
     # @return [Boolean]
@@ -110,14 +116,16 @@ class Response < Message
     def to_h
         hash = {}
         instance_variables.each do |var|
-            hash[var.to_s.gsub( /@/, '' )] = instance_variable_get( var )
+            hash[var.to_s.gsub( /@/, '' ).to_sym] = instance_variable_get( var )
         end
 
-        hash['headers'] = {}.merge( hash['headers'] )
+        hash[:headers] = {}.merge( hash[:headers] )
 
-        hash.delete( 'parsed_url' )
-        hash.delete( 'redirections' )
-        hash.delete( 'request' )
+        hash.delete( :parsed_url )
+        hash.delete( :redirections )
+        hash.delete( :request )
+        hash.delete( :version )
+
         hash
     end
 
@@ -131,7 +139,7 @@ class Response < Message
 
     def self.from_typhoeus( response )
         redirections = response.redirections.
-            map { |r| new( code: r.code, headers: r.headers ) }
+            map { |r| new( url: r.headers['Location'], code: r.code, headers: r.headers ) }
 
         new(
             url:            response.effective_url,

@@ -3,6 +3,8 @@ source 'http://rubygems.org'
 gem 'yard'
 gem 'redcarpet'
 
+gem 'faker'
+
 gem 'ethon', git: 'https://github.com/typhoeus/ethon.git'
 
 if File.exist?( p = File.dirname( __FILE__ ) + '/../arachni-rpc-em' )

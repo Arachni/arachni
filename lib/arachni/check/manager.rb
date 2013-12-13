@@ -155,7 +155,7 @@ class Manager < Arachni::Component::Manager
 
         # Don't allow multiple variations of the same audit-type issue,
         # only allow variations for recon checks.
-        unique.each { |issue| issue_set << issue.unique_id if issue.audit? }
+        unique.each { |issue| issue_set << issue.unique_id if issue.active? }
 
         on_register_results_blocks.each { |block| block.call( unique ) }
         return results if !store?

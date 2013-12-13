@@ -3,10 +3,7 @@
     All rights reserved.
 =end
 
-# localstart.asp recon check.
-#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 # @version 0.1.1
 class Arachni::Checks::LocalstartASP < Arachni::Check::Base
 
@@ -32,7 +29,7 @@ class Arachni::Checks::LocalstartASP < Arachni::Check::Base
     def check_and_log( response )
         return if response.code != 401
 
-        log( { element: Element::Server }, response )
+        log( { vector: Element::Server.new( response ) }, response )
     end
 
     def self.info
@@ -43,6 +40,7 @@ class Arachni::Checks::LocalstartASP < Arachni::Check::Base
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.1',
             targets:     %w(Generic),
+
             issue:       {
                 name:            %q{Exposed localstart.asp page},
                 description:     %q{The default management ISS page localstart.asp

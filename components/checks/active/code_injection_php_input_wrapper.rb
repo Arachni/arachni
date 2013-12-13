@@ -4,9 +4,7 @@
 =end
 
 # @see OWASP    https://www.owasp.org/index.php/Top_10_2007-Malicious_File_Execution
-#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 # @version 0.1
 class Arachni::Checks::CodeExecutionPHPInputWrapper < Arachni::Check::Base
 
@@ -22,11 +20,11 @@ class Arachni::Checks::CodeExecutionPHPInputWrapper < Arachni::Check::Base
                 m = mutation.dup
 
                 # Figure out the extension of the default value, if it has one.
-                ext = m.original[m.altered].to_s.split( '.' )
+                ext = m.original[m.affected_input_name].to_s.split( '.' )
                 ext = ext.size > 1 ? ext.last : nil
 
                 # Null-terminate the injected value and append the ext.
-                m.altered_value += "\x00.#{ext}"
+                m.affected_input_value += "\x00.#{ext}"
 
                 # Pass our new element back to be audited.
                 m
@@ -46,19 +44,19 @@ class Arachni::Checks::CodeExecutionPHPInputWrapper < Arachni::Check::Base
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.1',
-            references:  {
-                'OWASP'     => 'https://www.owasp.org/index.php/Top_10_2007-Malicious_File_Execution'
-            },
             targets:     %w(PHP),
-            issue:       {
-                name:            %q{Code injection (php://input wrapper)},
-                description:     %q{The web application can be forced to execute
-                    arbitrary code via the php://input wrapper.},
-                tags:            %w(remote injection php code execution),
-                cwe:             '94',
-                severity:        Severity::HIGH
-            }
 
+            issue:       {
+                name:        %q{Code injection (php://input wrapper)},
+                description: %q{The web application can be forced to execute
+                    arbitrary code via the php://input wrapper.},
+                references:  {
+                    'OWASP' => 'https://www.owasp.org/index.php/Top_10_2007-Malicious_File_Execution'
+                },
+                tags:        %w(remote injection php code execution),
+                cwe:         94,
+                severity:    Severity::HIGH
+            }
         }
     end
 

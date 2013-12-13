@@ -54,22 +54,19 @@ class Arachni::Checks::OSCmdInjection < Arachni::Check::Base
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.2.1',
-            references:  {
-                'OWASP' => 'http://www.owasp.org/index.php/OS_Command_Injection'
-            },
             targets:     %w(Windows Unix),
             issue:       {
                 name:            %q{Operating system command injection},
                 description:     %q{The web application allows an attacker to
     execute arbitrary OS commands.},
+                references:  {
+                    'OWASP' => 'http://www.owasp.org/index.php/OS_Command_Injection'
+                },
                 tags:            %w(os command code injection regexp),
-                cwe:             '78',
+                cwe:             78,
                 severity:        Severity::HIGH,
-                cvssv2:          '9.0',
                 remedy_guidance: %q{User inputs must be validated and filtered
-    before being evaluated as OS level commands.},
-                remedy_code:     '',
-                metasploitable:  'unix/webapp/arachni_exec'
+    before being evaluated as OS level commands.}
             }
         }
     end

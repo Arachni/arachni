@@ -43,27 +43,18 @@ class Arachni::Checks::XSS < Arachni::Check::Base
 
     def run
         self.class.strings.each do |str|
-            audit( str, self.class.opts ) { |response| check_and_log( response ) }
+            audit( str, self.class.opts ) { |response, element| check_and_log( response, element ) }
         end
     end
 
-    def check_and_log( response )
+    def check_and_log( response, element )
         # if the body doesn't include the tag name at all bail out early
         return if !response.body || !response.body.include?( self.class.tag )
 
         # see if we managed to successfully inject our element in the doc tree
         return if Nokogiri::HTML( response.body ).css( self.class.tag ).empty?
 
-        # Nokogiri seems to think that an HTML node inside a textarea is a node
-        # and not just text, however I disagree.
-        #
-        # *But*, there's the possibility of being able to break out of the
-        # textarea hence I'll leave this commented and sleep on it.
-        #our_nodes.each { |node| return if !node.ancestors( 'textarea' ).empty? }
-
-        opts = response.request.performer.audit_options
-        opts[:match] = opts[:injected]
-        log( opts, response )
+        log( { vector: element }, response )
     end
 
     def self.info
@@ -76,22 +67,22 @@ class Arachni::Checks::XSS < Arachni::Check::Base
             elements:    [Element::Form, Element::Link, Element::Cookie, Element::Header],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.3.2',
-            references:  {
-                'ha.ckers' => 'http://ha.ckers.org/xss.html',
-                'Secunia'  => 'http://secunia.com/advisories/9716/'
-            },
             targets:     %w(Generic),
+
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS)},
                 description:     %q{Client-side code (like JavaScript) can
     be injected into the web application which is then returned to the user's browser.
     This can lead to a compromise of the client's system or serve as a pivoting point for other attacks.},
+                references:  {
+                    'ha.ckers' => 'http://ha.ckers.org/xss.html',
+                    'Secunia'  => 'http://secunia.com/advisories/9716/'
+                },
                 tags:            %w(xss regexp injection script),
-                cwe:             '79',
+                cwe:             79,
                 severity:        Severity::HIGH,
-                cvssv2:          '9.0',
                 remedy_guidance: 'User inputs must be validated and filtered
-    before being returned as part of the HTML code of a page.',
+    before being returned as part of the HTML code of a page.'
             }
         }
     end

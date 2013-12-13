@@ -3,7 +3,6 @@
     All rights reserved.
 =end
 
-#
 # It injects a string and checks if it appears inside an event attribute of any HTML tag.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
@@ -13,7 +12,6 @@
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
 # @see http://secunia.com/advisories/9716/
-#
 class Arachni::Checks::XSSEvent < Arachni::Check::Base
 
     EVENT_ATTRS = [
@@ -47,22 +45,21 @@ class Arachni::Checks::XSSEvent < Arachni::Check::Base
     end
 
     def run
-        self.class.strings.each do |str|
-            audit( str, format: [ Format::APPEND ] ) do |res, element|
-                check_and_log( res, str, element.audit_options )
-            end
+        audit( self.class.strings, format: [ Format::APPEND ] ) do |response, element|
+            check_and_log( response, element )
         end
     end
 
-    def check_and_log( res, injected, opts )
-        return if !res.body || !res.body.include?( injected )
+    def check_and_log( response, element )
+        return if element.seed.to_s.empty? || !response.body ||
+            !response.body.include?( element.seed )
 
-        doc = Nokogiri::HTML( res.body )
+        doc = Nokogiri::HTML( response.body )
+
         EVENT_ATTRS.each do |attr|
             doc.xpath( "//*[@#{attr}]" ).each do |elem|
-                if elem.attributes[attr].to_s.include?( injected )
-                    log( opts.merge( id: elem.to_s ), res )
-                end
+                next if !elem.attributes[attr].to_s.include?( element.seed )
+                log( { vector: element }, response )
             end
         end
     end
@@ -74,20 +71,21 @@ class Arachni::Checks::XSSEvent < Arachni::Check::Base
             elements:    [Element::Form, Element::Link, Element::Cookie, Element::Header],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.1.4',
-            references:  {
-                'ha.ckers' => 'http://ha.ckers.org/xss.html',
-                'Secunia'  => 'http://secunia.com/advisories/9716/'
-            },
             targets:     %w(Generic),
+
             issue:       {
                 name:            %q{Cross-Site Scripting in event tag of HTML element},
-                description:     %q{Unvalidated user input is being embedded inside an HMTL event element such as "onmouseover".
+                description:     %q{Unvalidated user input is being embedded inside
+    an HMTL event element such as "onmouseover".
     This makes Cross-Site Scripting attacks much easier to mount since the user input
     lands in code waiting to be executed.},
+                references:  {
+                    'ha.ckers' => 'http://ha.ckers.org/xss.html',
+                    'Secunia'  => 'http://secunia.com/advisories/9716/'
+                },
                 tags:            %w(xss event injection regexp dom attribute),
-                cwe:             '79',
+                cwe:             79,
                 severity:        Severity::HIGH,
-                cvssv2:          '9.0',
                 remedy_guidance: 'User inputs must be validated and filtered
     before being included in executable code or not be included at all.',
             }

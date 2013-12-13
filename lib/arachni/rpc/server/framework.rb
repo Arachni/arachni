@@ -64,8 +64,8 @@ class Framework < ::Arachni::Framework
 
     # Make these inherited methods public again (i.e. accessible over RPC).
     [ :audit_store, :stats, :paused?, :lscheck, :list_checks, :lsplug,
-      :list_plugins, :lsrep, :list_reports, :version, :revision, :status,
-      :report_as, :lsplat, :list_platforms ].each do |m|
+      :list_plugins, :lsrep, :list_reports, :version, :status, :report_as,
+      :lsplat, :list_platforms ].each do |m|
         private m
         public  m
     end
@@ -238,20 +238,11 @@ class Framework < ::Arachni::Framework
     alias :audit_store_as_hash :report
     alias :auditstore_as_hash :report
 
-    # @return   [String]    YAML representation of {#report}.
-    def serialized_report
-        report.to_yaml
-    end
-
-    # @return   [String]    YAML representation of {#auditstore}.
-    def serialized_auditstore
-        audit_store.to_yaml
-    end
-
     # @return  [Array<Arachni::Issue>]
-    #   First variations of all discovered issues.
+    #   First variations of all discovered issues with generic info filled in
+    #   from the parent.
     def issues
-        auditstore.issues.map { |issue| issue.variations.first || issue }
+        auditstore.issues.map { |issue| issue.variations.first.to_solo issue }
     end
 
     # @return   [Array<Hash>]   {#issues} as an array of Hashes.

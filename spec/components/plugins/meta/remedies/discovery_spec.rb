@@ -10,11 +10,13 @@ describe name_from_filename do
         framework.checks.load :common_files
     end
 
-    it 'marks issues with too similar response bodies as needing manual verification and add remarks' do
-        run
-        framework.auditstore.issues.each do |issue|
-            issue.variations.map( &:verification ).uniq == [true]
-            issue.variations.first.remarks[:meta_analysis].should be_true
+    context 'when issues have similar response bodies' do
+        it 'marks them as untrusted and adds remarks' do
+            run
+            framework.auditstore.issues.each do |issue|
+                issue.variations.map( &:untrusted? ).uniq == [true]
+                issue.variations.first.remarks[:meta_analysis].should be_true
+            end
         end
     end
 

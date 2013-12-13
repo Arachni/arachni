@@ -44,8 +44,8 @@ shared_examples_for 'refreshable' do
                 f.update updates
 
                 refreshed = f.refresh
-                refreshed.inputs['nonce'].should_not == nonce
-                refreshed.original['nonce'].should      == nonce
+                refreshed.inputs['nonce'].should_not     == nonce
+                refreshed.default_inputs['nonce'].should == nonce
 
                 updates['nonce'] = f.refresh.inputs['nonce']
                 f.inputs.should == updates
@@ -65,8 +65,8 @@ shared_examples_for 'refreshable' do
 
                 ran = false
                 f.refresh do |form|
-                    form.inputs['nonce'].should_not == nonce
-                    form.original['nonce'].should      == nonce
+                    form.inputs['nonce'].should_not     == nonce
+                    form.default_inputs['nonce'].should == nonce
 
                     updates['nonce'] = form.refresh.inputs['nonce']
                     form.inputs.should == updates

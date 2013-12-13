@@ -110,7 +110,7 @@ class Base < Component::Base
                 description:    %q{This issue is a serious issue and you
                     should consider it seriously},
                 # CWE ID number
-                cwe:            '',
+                cwe:            0,
                 #
                 # Severity can be:
                 #
@@ -120,7 +120,6 @@ class Base < Component::Base
                 # Severity::INFORMATIONAL
                 #
                 severity:        Severity::HIGH,
-                cvssv2:          '', # CVSSV2 score
                 remedy_guidance: %q{Paint it blue and throw it in the sea.},
                 remedy_code:     %q{sudo rm -rf /}
             }

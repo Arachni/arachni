@@ -1,20 +1,21 @@
-<% trusted = issue.verification ? 'Untrusted' : 'Trusted' %>
-    <div class="issue">
-        <h4>[<%=i+1%>] <%= issue.name %> (<%= trusted %> &mdash; Severity: <%= issue.severity %>)</h4>
+<% trusted = issue.untrusted? ? 'Untrusted' : 'Trusted' %>
 
-        <p> <em><%= escapeHTML(issue.description) %></em></p>
+<div class="issue">
+    <h4>[<%=i+1%>] <%= issue.name %> (<%= trusted %> &mdash; Severity: <%= issue.severity %>)</h4>
 
-        In <em><%= issue.elem %></em>
+    <p> <em><%= escapeHTML(issue.description) %></em></p>
 
-        <% if issue.var%>
-        input <em><%= issue.var %></em>
-        <%end%>
+    In <em><%= issue.vector.type %></em>
 
-        <% if issue.method %>
-        using <%= issue.method %>
-        <%end%>
+    <% if issue.active? %>
+    input <em><%= issue.vector.affected_input_name %></em>
+    <%end%>
 
-        at <strong><a href="<%= issue.url %>"><%= issue.url %></a></strong>.
+    <% if issue.request && issue.request.method %>
+    using <%= issue.request.method %>
+    <%end%>
 
-        <p>&nbsp;</p>
-    </div>
+    at <strong><a href="<%= issue.vector.action %>"><%= issue.vector.action %></a></strong>.
+
+    <p>&nbsp;</p>
+</div>

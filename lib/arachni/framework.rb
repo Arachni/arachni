@@ -71,9 +71,6 @@ class Framework
     class Error < Arachni::Error
     end
 
-    # The version of this class.
-    REVISION = '0.3'
-
     # How many times to request a page upon failure.
     AUDIT_PAGE_MAX_TRIES = 5
 
@@ -169,9 +166,12 @@ class Framework
         @push_to_page_queue_filter = Support::LookUp::HashSet.new
 
         if block_given?
-            block.call self
-            clean_up
-            reset
+            begin
+                block.call self
+            ensure
+                clean_up
+                reset
+            end
         end
     end
 
@@ -420,8 +420,6 @@ class Framework
         opts['mods'] = @checks.keys
 
         AuditStore.new(
-            version:  version,
-            revision: revision,
             options:  opts,
             sitemap:  (auditstore_sitemap || []).sort,
             issues:   @checks.results,
@@ -603,11 +601,6 @@ class Framework
     # @return    [String]   Returns the version of the framework.
     def version
         Arachni::VERSION
-    end
-
-    # @return    [String]   Returns the revision of the {Framework} (this) class.
-    def revision
-        REVISION
     end
 
     #

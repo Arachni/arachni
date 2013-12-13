@@ -13,8 +13,16 @@ module Component
 module Output
     include UI::Output
 
+    def depersonalize_output
+        @depersonalize_output = true
+    end
+
+    def depersonalize_output?
+        @depersonalize_output
+    end
+
     def intercept_print_message( message )
-        "#{self.class.fullname}: #{message}"
+        depersonalize_output? ? message : "#{self.class.fullname}: #{message}"
     end
 
 end

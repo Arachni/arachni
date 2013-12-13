@@ -8,7 +8,6 @@
                 <div id='configuration_list'>
 
                 <strong>Version</strong>: <%=auditstore.version%><br />
-                <strong>Revision</strong>: <%=auditstore.revision%><br />
                 <strong>Audit started on</strong>: <%=auditstore.start_datetime%><br />
                 <strong>Audit finished on</strong>: <%=auditstore.finish_datetime%><br />
                 <strong>Runtime</strong>: <%=auditstore.delta_time%><br />
@@ -53,7 +52,7 @@
 
                     <td>
                         <ul>
-                        <% auditstore.options['mods'].each do |mod|%>
+                        <% auditstore.options['checks'].each do |mod|%>
                             <li><%=mod%></li>
                         <%end%>
                         </ul>

@@ -226,7 +226,7 @@ describe Arachni::Utilities do
 
         context 'when the body matches an ignore rule' do
             it 'returns true' do
-                res = Arachni::HTTP::Response.new( body: 'ignore me' )
+                res = Arachni::HTTP::Response.new( url: 'http://stuff/', body: 'ignore me' )
                 @utils.skip_response?( res ).should be_true
             end
         end

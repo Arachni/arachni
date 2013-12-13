@@ -3,17 +3,13 @@
     All rights reserved.
 =end
 
-#
 # Backup file discovery check.
 #
 # Appends common backup extentions to the filename of the page under audit<br/>
 # and checks for its existence.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 # @version 0.2.2
-#
-#
 class Arachni::Checks::BackupFiles < Arachni::Check::Base
 
     def self.extensions
@@ -46,21 +42,22 @@ class Arachni::Checks::BackupFiles < Arachni::Check::Base
         {
             name:        'Backup files',
             description: %q{Tries to find sensitive backup files.},
-            elements:    [ Element::Path ],
+            elements:    [ Element::Server ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.2.2',
             targets:     %w(Generic),
-            references: {
-                'WebAppSec' => 'http://www.webappsec.org/projects/threat/classes/information_leakage.shtml'
-            },
+
             issue:       {
                 name:            %q{Backup file},
                 description:     %q{The server response indicates that a file matching
     the name of a common naming scheme for file backups can be publicly accessible.
     A developer has probably forgotten to remove this file after testing.
     This can lead to source code disclosure and privileged information leaks.},
+                references: {
+                    'WebAppSec' => 'http://www.webappsec.org/projects/threat/classes/information_leakage.shtml'
+                },
                 tags:            %w(path backup file discovery),
-                cew:             '530',
+                cwe:             530,
                 severity:        Severity::MEDIUM,
                 remedy_guidance: %q{Do not keep alternative versions of files underneath the virtual web server root.
                     When updating the site, delete or move the files to a directory outside the virtual root, edit them there,

@@ -22,6 +22,7 @@ describe Arachni::HTTP::Request do
     describe '#initialize' do
         it 'sets the instance attributes by the options' do
             options = {
+                url:        url,
                 method:     :get,
                 parameters: { 'test' => 'blah' },
                 timeout:    10_000,
@@ -30,7 +31,7 @@ describe Arachni::HTTP::Request do
                 username:   'user',
                 password:   'pass'
             }
-            r = described_class.new( url, options )
+            r = described_class.new( options )
             r.url.should          == Arachni::Utilities.normalize_url( url )
             r.method.should       == options[:method]
             r.parameters.should   == options[:parameters]
@@ -41,8 +42,8 @@ describe Arachni::HTTP::Request do
         end
 
         it 'uses the setter methods when configuring' do
-            options = { method: 'gEt', parameters: { test: 'blah' } }
-            r = described_class.new( url, options )
+            options = { url: url, method: 'gEt', parameters: { test: 'blah' } }
+            r = described_class.new( options )
             r.method.should == :get
             r.parameters.should == { 'test' => 'blah' }
         end
@@ -62,7 +63,7 @@ describe Arachni::HTTP::Request do
 
     describe '#parameters' do
         it 'defaults to an empty Hash' do
-            described_class.new( url ).parameters.should == {}
+            described_class.new( url: url ).parameters.should == {}
         end
     end
 
@@ -81,7 +82,7 @@ describe Arachni::HTTP::Request do
                 }
             }
 
-            request = described_class.new( url )
+            request = described_class.new( url: url )
             request.parameters = with_symbols
             request.parameters.should == with_strings
         end
@@ -90,19 +91,19 @@ describe Arachni::HTTP::Request do
     describe '#on_complete' do
         context 'when passed a block' do
             it 'adds it as a callback to be passed the response' do
-                request = described_class.new( url )
+                request = described_class.new( url: url )
 
                 passed_response = nil
                 request.on_complete { |res| passed_response = res }
 
-                response = Arachni::HTTP::Response.new( url )
+                response = Arachni::HTTP::Response.new( url: url )
                 request.handle_response( response )
 
                 passed_response.should == response
             end
 
             it 'can add multiple callbacks' do
-                request = described_class.new( url )
+                request = described_class.new( url: url )
 
                 passed_responses = []
 
@@ -110,7 +111,7 @@ describe Arachni::HTTP::Request do
                     request.on_complete { |res| passed_responses << res }
                 end
 
-                response = Arachni::HTTP::Response.new( url )
+                response = Arachni::HTTP::Response.new( url: url )
                 request.handle_response( response )
 
                 passed_responses.size.should == 2
@@ -122,12 +123,12 @@ describe Arachni::HTTP::Request do
 
     describe '#clear_callbacks' do
         it 'clears #on_complete callbacks' do
-            request = described_class.new( url )
+            request = described_class.new( url: url )
 
             passed_response = nil
             request.on_complete { |res| passed_response = res }
 
-            response = Arachni::HTTP::Response.new( url )
+            response = Arachni::HTTP::Response.new( url: url )
             request.clear_callbacks
             request.handle_response( response )
 
@@ -138,7 +139,7 @@ describe Arachni::HTTP::Request do
 
     describe '#handle_response' do
         it 'assigns self as the #request attribute of the response' do
-            request = described_class.new( url )
+            request = described_class.new( url: url )
 
             passed_response = nil
             request.on_complete { |res| passed_response = res }
@@ -151,7 +152,7 @@ describe Arachni::HTTP::Request do
 
         it 'calls #on_complete callbacks' do
             response = Arachni::HTTP::Response.new( url: url, code: 200 )
-            request = described_class.new( url )
+            request = described_class.new( url: url )
 
             passed_response = nil
             request.on_complete { |res| passed_response = res }
@@ -163,19 +164,19 @@ describe Arachni::HTTP::Request do
 
     describe '#parsed_url' do
         it 'returns the configured URL as a parsed object' do
-            described_class.new( url ).parsed_url.should == Arachni::URI( url )
+            described_class.new( url: url ).parsed_url.should == Arachni::URI( url )
         end
     end
 
     describe '#method' do
         it 'defaults to :get' do
-            described_class.new( url ).method.should == :get
+            described_class.new( url: url ).method.should == :get
         end
     end
 
     describe '#method=' do
         it 'normalizes the HTTP method to a downcase symbol' do
-            request = described_class.new( url )
+            request = described_class.new( url: url )
             request.method = 'pOsT'
             request.method.should == :post
         end
@@ -183,14 +184,14 @@ describe Arachni::HTTP::Request do
 
     describe '#mode=' do
         it 'normalizes and sets the given mode' do
-            request = described_class.new( url )
+            request = described_class.new( url: url )
             request.mode = 'aSyNC'
             request.mode.should == :async
         end
 
         context 'when an invalid mode is given' do
             it 'raises ArgumentError' do
-                request = described_class.new( url )
+                request = described_class.new( url: url )
                 expect { request.mode = 'stuff' }.to raise_error ArgumentError
             end
         end
@@ -199,7 +200,7 @@ describe Arachni::HTTP::Request do
     describe '#effective_cookies' do
         it 'returns the given :cookies merged with the cookies in Headers' do
             request = described_class.new(
-                url,
+                url: url,
                 headers: {
                     'Cookie' => 'my_cookie=my_value; cookie2=value2'
                 },
@@ -231,7 +232,7 @@ describe Arachni::HTTP::Request do
 
     describe '#train' do
         it 'sets train? to return true' do
-            req = described_class.new( '' )
+            req = described_class.new( url: url )
             req.train?.should be_false
             req.train
             req.train?.should be_true
@@ -240,7 +241,7 @@ describe Arachni::HTTP::Request do
 
     describe '#update_cookies' do
         it 'sets update_cookies? to return true' do
-            req = described_class.new( '' )
+            req = described_class.new( url: url )
             req.update_cookies?.should be_false
             req.update_cookies
             req.update_cookies?.should be_true

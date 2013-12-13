@@ -8,7 +8,7 @@ if @@errors.empty?
     end
 end
 
-@@ignore ||= IO.read( File.dirname( __FILE__ ) + '/../../../../../components/checks/audit/sqli/regexp_ignore.txt' )
+@@ignore ||= IO.read( File.dirname( __FILE__ ) + '/../../../../../components/checks/active/sqli/regexp_ignore.txt' )
 
 def variations
     @@variations ||= [ '\'`--', ')' ]

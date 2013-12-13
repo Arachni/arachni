@@ -3,14 +3,12 @@
     All rights reserved.
 =end
 
-#
 # Greps pages for forms which have password fields without explicitly
 # disabling auto-complete.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 # @version 0.1.1
-#
 class Arachni::Checks::PasswordAutocomplete < Arachni::Check::Base
 
     def run
@@ -19,7 +17,7 @@ class Arachni::Checks::PasswordAutocomplete < Arachni::Check::Base
             next if form.simple[:autocomplete] == 'off'
             next if has_input_with_autocomplete_off? form
 
-            log( var: form.name_or_id, match: form.to_html, element: Element::Form )
+            log( proof: form.to_html, vector: form )
         end
     end
 

@@ -3,16 +3,14 @@
     All rights reserved.
 =end
 
-#
 # Vector feed plug-in.
 #
-# Can be used to perform extremely specialized/narrow audits
-# on a per vector/element basis.
+# Can be used to perform extremely specialized/narrow audits on a per
+# vector/element basis.
 #
 # Useful for unit-testing or a gazillion other things. :)
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
 
     def prepare
@@ -117,22 +115,22 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
         return if !inputs || inputs.empty?
 
         e = case type
-            when Element::LINK
+            when Element::Link.type.to_s
                 Link.new(
                     url:    owner,
                     action: action,
                     inputs: inputs,
                 )
-            when Element::FORM
+            when Element::Form.type.to_s
                 Form.new(
                     url:    owner,
                     method: method,
                     action: action,
                     inputs: inputs
                 )
-            when Element::COOKIE
+            when Element::Cookie.type.to_s
                 Cookie.new( url: action, inputs: inputs )
-                when Element::HEADER
+            when Element::Header.type.to_s
                 Header.new( url: action, inputs: inputs )
             else
                 Link.new(
@@ -208,7 +206,7 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
 
             },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.5',
+            version:     '0.1.6',
             options:     [
                 Options::Base.new( 'vectors', [false, ' Vector array (for configuration over RPC).'] ),
                 Options::String.new( 'yaml_string', [false, 'A string of YAML serialized vectors (for configuration over RPC).'] ),

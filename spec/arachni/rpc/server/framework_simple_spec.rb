@@ -53,11 +53,6 @@ describe 'Arachni::RPC::Server::Framework' do
             @framework_clean.version.should == Arachni::VERSION
         end
     end
-    describe '#revision' do
-        it 'returns the framework revision' do
-            @framework_clean.revision.should == Arachni::Framework::REVISION
-        end
-    end
     describe '#master?' do
         it 'returns false' do
             @framework_clean.master?.should be_false
@@ -145,10 +140,9 @@ describe 'Arachni::RPC::Server::Framework' do
             inst.framework.run.should be_true
             sleep 0.1 while inst.framework.busy?
 
-            issues = inst.framework.issues
-            issues.find { |i| i.var == 'link_input' }.should be_true
-            issues.find { |i| i.var == 'form_input' }.should be_true
-            issues.find { |i| i.var == 'cookie_input' }.should be_true
+            inst.framework.issues.
+                map { |i| i.vector.affected_input_name }.sort.should ==
+                %w(link_input form_input cookie_input).sort
         end
 
         it 'handles AJAX' do
@@ -162,10 +156,9 @@ describe 'Arachni::RPC::Server::Framework' do
             inst.framework.run.should be_true
             sleep 0.1 while inst.framework.busy?
 
-            issues = inst.framework.issues
-            issues.find { |i| i.var == 'link_input' }.should be_true
-            issues.find { |i| i.var == 'form_input' }.should be_true
-            issues.find { |i| i.var == 'cookie_taint' }.should be_true
+            inst.framework.issues.
+                map { |i| i.vector.affected_input_name }.sort.should ==
+                %w(link_input form_input cookie_taint).sort
         end
 
     end
@@ -174,10 +167,6 @@ describe 'Arachni::RPC::Server::Framework' do
             auditstore = @instance_clean.framework.auditstore
             auditstore.is_a?( Arachni::AuditStore ).should be_true
             auditstore.issues.should be_any
-            issue = auditstore.issues.first
-            issue.is_a?( Arachni::Issue ).should be_true
-            issue.variations.should be_any
-            issue.variations.first.is_a?( Arachni::Issue ).should be_true
         end
     end
     describe '#stats' do
@@ -375,12 +364,7 @@ describe 'Arachni::RPC::Server::Framework' do
         it 'returns a hash report of the scan' do
             report = @instance_clean.framework.report
             report.is_a?( Hash ).should be_true
-            report['issues'].should be_any
-
-            issue = report['issues'].first
-            issue.is_a?( Hash ).should be_true
-            issue['variations'].should be_any
-            issue['variations'].first.is_a?( Hash ).should be_true
+            report[:issues].should be_any
         end
 
         it 'aliased to #audit_store_as_hash' do
@@ -426,18 +410,6 @@ describe 'Arachni::RPC::Server::Framework' do
         end
     end
 
-    describe '#serialized_auditstore' do
-        it 'returns a YAML serialized AuditStore' do
-            yaml_str = @instance_clean.framework.serialized_auditstore
-            YAML.load( yaml_str ).is_a?( Arachni::AuditStore ).should be_true
-        end
-    end
-    describe '#serialized_report' do
-        it 'returns a YAML serialized report hash' do
-            @instance_clean.framework.serialized_report.should ==
-                @instance_clean.framework.report.to_yaml
-        end
-    end
     describe '#issues' do
         it 'returns an array of issues without variations' do
             issues = @instance_clean.framework.issues
@@ -455,7 +427,7 @@ describe 'Arachni::RPC::Server::Framework' do
 
             issue = issues.first
             issue.is_a?( Hash ).should be_true
-            issue['variations'].should be_empty
+            issue[:variations].should be_empty
         end
     end
 
@@ -478,7 +450,7 @@ describe 'Arachni::RPC::Server::Framework' do
 
             issues = inst.framework.issues
             issues.size.should == 1
-            issues.first.var.should == link.inputs.keys.first
+            issues.first.vector.affected_input_name.should == link.inputs.keys.first
         end
     end
     describe '#update_page_queue' do
@@ -508,16 +480,16 @@ describe 'Arachni::RPC::Server::Framework' do
             inst = instance_spawn
             inst.opts.url = url
 
-            issue = Arachni::Issue.new( name: 'stuff', url: url, elem: 'link' )
-            inst.framework.update_issues( [issue] ).should be_true
+            cissue = Factory[:issue]
+            inst.framework.update_issues( [cissue] ).should be_true
 
             issues = inst.framework.issues
             issues.size.should == 1
 
             issue = issues.first
-            issue.name.should == issue.name
-            issue.var.should == issue.var
-            issue.elem.should == issue.elem
+            issue.name.should == cissue.name
+            issue.vector.affected_input_name.should == cissue.vector.affected_input_name
+            issue.vector.should == cissue.vector
         end
     end
 end

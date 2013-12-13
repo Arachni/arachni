@@ -51,11 +51,11 @@ class Arachni::Checks::FileInclusion < Arachni::Check::Base
                 m = mutation.dup
 
                 # Figure out the extension of the default value, if it has one.
-                ext = m.original[m.altered].to_s.split( '.' )
+                ext = m.original[m.affected_input_name].to_s.split( '.' )
                 ext = ext.size > 1 ? ext.last : nil
 
                 # Null-terminate the injected value and append the ext.
-                m.altered_value += "\x00.#{ext}"
+                m.affected_input_value += "\x00.#{ext}"
 
                 # Pass our new element back to be audited.
                 m
@@ -93,17 +93,17 @@ class Arachni::Checks::FileInclusion < Arachni::Check::Base
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.1.1',
-            references:  {
-                'OWASP' => 'https://www.owasp.org/index.php/PHP_File_Inclusion'
-            },
             targets:     %w(Unix Windows Tomcat PHP Perl),
 
             issue:       {
                 name:            %q{File Inclusion},
                 description:     %q{The web application enforces improper limitation
                     of a pathname.},
+                references:  {
+                    'OWASP' => 'https://www.owasp.org/index.php/PHP_File_Inclusion'
+                },
                 tags:            %w(file inclusion error injection regexp),
-                cwe:             '98',
+                cwe:             98,
                 severity:        Severity::HIGH,
                 remedy_guidance: %q{User inputs must be validated and filtered
                     before being used as a part of a filesystem path.}

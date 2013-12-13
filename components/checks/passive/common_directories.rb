@@ -3,17 +3,14 @@
     All rights reserved.
 =end
 
-#
 # Common directories discovery check.
 #
 # Looks for common, possibly sensitive, directories on the server.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 # @version 0.2.2
 #
 # @see http://cwe.mitre.org/data/definitions/538.html
-#
 class Arachni::Checks::CommonDirectories < Arachni::Check::Base
 
     def self.directories
@@ -35,18 +32,19 @@ class Arachni::Checks::CommonDirectories < Arachni::Check::Base
         {
             name:        'Common directories',
             description: %q{Tries to find common directories on the server.},
-            elements:    [ Element::Path ],
+            elements:    [ Element::Server ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.2.1',
             targets:     %w(Generic),
-            references: {
-                'CWE'   => 'http://cwe.mitre.org/data/definitions/538.html',
-                'OWASP' => 'https://www.owasp.org/index.php/Forced_browsing'
-            },
+
             issue:       {
                 name:            %q{Common directory},
+                references: {
+                    'CWE'   => 'http://cwe.mitre.org/data/definitions/538.html',
+                    'OWASP' => 'https://www.owasp.org/index.php/Forced_browsing'
+                },
                 tags:            %w(path directory common discovery),
-                cwe:             '538',
+                cwe:             538,
                 severity:        Severity::MEDIUM,
                 remedy_guidance: %q{Do not expose file and directory information to the user.}
             }

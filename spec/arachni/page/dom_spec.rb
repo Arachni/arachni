@@ -5,7 +5,7 @@ describe Arachni::Page::DOM do
     def create_page( options = {} )
         Arachni::Page.new response: Arachni::HTTP::Response.new(
               request: Arachni::HTTP::Request.new(
-                           'http://a-url.com/',
+                           url:    'http://a-url.com/',
                            method: :get,
                            headers: {
                                'req-header-name' => 'req header value'

@@ -26,16 +26,11 @@ class Message
     #   possible to allow for normalization.
     #
     # @param  [Hash]  options Message options.
+    # @option options [String] :url URL.
     # @option options [Hash] :headers HTTP headers.
     # @option options [String] :body Body.
     # @option options [String] :version (1.1) HTTP version.
-    def initialize( url, options = {} )
-        if url.is_a?( Hash )
-            options = url
-        else
-            options[:url] = url
-        end
-
+    def initialize( options = {} )
         options.each do |k, v|
             v = my_dup( v )
             begin
@@ -44,6 +39,8 @@ class Message
                 instance_variable_set( "@#{k}".to_sym, v )
             end
         end
+
+        fail ArgumentError, 'Missing :url.' if url.to_s.empty?
 
         @headers  = Headers.new( @headers )
         @version ||= '1.1'

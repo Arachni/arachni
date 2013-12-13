@@ -62,8 +62,8 @@ class Request < Message
     # @private
     attr_accessor :root_redirect_id
 
-    # @param  [String]   url    URL to request.
     # @param  [Hash]  options    Request options.
+    # @option options [String] :url URL.
     # @option options [Hash]  :parameters ({})
     #   Request parameters.
     # @option options [String]  :body ({})
@@ -79,12 +79,10 @@ class Request < Message
     #   Extra HTTP request headers.
     # @option options [Hash]  :cookies ({})
     #   Cookies for the request.
-    def initialize( url, options = {} )
-        fail ArgumentError, 'URL must be a String.' if !url.is_a? String
-
+    def initialize( options = {} )
         options[:method] ||= :get
 
-        super( url, options )
+        super( options )
 
         @train           = false if @train.nil?
         @update_cookies  = false if @update_cookies.nil?
@@ -265,6 +263,24 @@ class Request < Message
             handle_response Response.from_typhoeus( typhoeus_response )
         end
         r
+    end
+
+    def to_h
+        {
+            url:        url,
+            parameters: parameters,
+            headers:    headers,
+            body:       body,
+            method:     method
+        }
+    end
+
+    def ==( other )
+        hash == other.hash
+    end
+
+    def hash
+        to_h.hash
     end
 
     def marshal_dump

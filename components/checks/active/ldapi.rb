@@ -3,7 +3,6 @@
     All rights reserved.
 =end
 
-#
 # LDAP injection check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
@@ -13,7 +12,6 @@
 # @see http://cwe.mitre.org/data/definitions/90.html
 # @see http://projects.webappsec.org/w/page/13246947/LDAP-Injection
 # @see http://www.owasp.org/index.php/LDAP_injection
-#
 class Arachni::Checks::LDAPInjection < Arachni::Check::Base
 
     def self.error_strings
@@ -21,8 +19,8 @@ class Arachni::Checks::LDAPInjection < Arachni::Check::Base
     end
 
     def run
-        # This string will hopefully force the webapp to output LDAP error messages
-        audit( "#^($!@$)(()))******",
+        # This string will hopefully force the webapp to output LDAP error messages.
+        audit( '#^($!@$)(()))******',
             format:    [Format::APPEND],
             substring: self.class.error_strings
         )
@@ -37,22 +35,20 @@ class Arachni::Checks::LDAPInjection < Arachni::Check::Base
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.2',
-            references:  {
-                'WASC'  => 'http://projects.webappsec.org/w/page/13246947/LDAP-Injection',
-                'OWASP' => 'http://www.owasp.org/index.php/LDAP_injection'
-            },
             targets:     %w(Generic),
             issue:       {
                 name:            %q{LDAP Injection},
                 description:     %q{LDAP queries can be injected into the web application
     which can be used to disclose sensitive data of affect the execution flow.},
                 tags:            %w(ldap injection regexp),
-                cwe:             '90',
+                references:  {
+                    'WASC'  => 'http://projects.webappsec.org/w/page/13246947/LDAP-Injection',
+                    'OWASP' => 'http://www.owasp.org/index.php/LDAP_injection'
+                },
+                cwe:             90,
                 severity:        Severity::HIGH,
-                cvssv2:          '',
                 remedy_guidance: %q{User inputs must be validated and filtered
-    before being used in an LDAP query.},
-                remedy_code:     ''
+    before being used in an LDAP query.}
             }
 
         }

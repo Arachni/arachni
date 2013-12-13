@@ -11,39 +11,26 @@ module Arachni::Element::Capabilities
 module Auditable::Taint
 
     TAINT_OPTIONS = {
-        #
         # The regular expression to match against the response body.
         #
         # Alternatively, you can use the :substring option.
-        #
         regexp:    nil,
 
-        #
-        # Verify the matched string with this value when using a regexp.
-        #
-        match:     nil,
-
-        #
         # The substring to look for the response body.
         #
         # Alternatively, you can use the :regexp option.
-        #
         substring: nil,
 
-        #
         # Array of patterns to ignore.
         #
         # Useful when needing to narrow down what to log without
         # having to construct overly complex match regexps.
-        #
         ignore:    nil,
 
-        #
         # Extract the longest word from each regexp and only proceed to the
         # full match only if that word is included in the response body.
         #
         # The check is case insensitive.
-        #
         longest_word_optimization: false
     }
 
@@ -99,8 +86,9 @@ module Auditable::Taint
     #
     # @param  [HTTP::Response]  response
     def get_matches( response )
-        opts = response.request.performer.audit_options.dup
-        opts[:substring] = opts[:injected_orig] if !opts[:regexp] && !opts[:substring]
+        vector = response.request.performer
+        opts   = vector.audit_options.dup
+        opts[:substring] = vector.seed if !opts[:regexp] && !opts[:substring]
 
         match_patterns( opts[:regexp], method( :match_regexp_and_log ), response, opts.dup )
         match_patterns( opts[:substring], method( :match_substring_and_log ), response, opts.dup )
@@ -147,17 +135,23 @@ module Auditable::Taint
         end
     end
 
-    def match_substring_and_log( substring, res, opts )
+    def match_substring_and_log( substring, response, opts )
         return if substring.to_s.empty?
+        return if !response.body.include?( substring ) || ignore?( response, opts )
 
-        if res.body.include?( substring ) && !ignore?( res, opts )
-            opts[:regexp] = opts[:id] = opts[:match] = substring.dup
-            @logged_issues |= @auditor.log( opts, res )
-            setup_verification_callbacks
-        end
+        @logged_issues |= @auditor.log(
+            {
+                platform:  opts[:platform],
+                proof:     substring,
+                signature: substring,
+                vector:    response.request.performer
+            },
+            response
+        )
+        setup_verification_callbacks
     end
 
-    def match_regexp_and_log( regexp, res, opts )
+    def match_regexp_and_log( regexp, response, opts )
         regexp = regexp.is_a?( Regexp ) ? regexp :
             Regexp.new( regexp.to_s, Regexp::IGNORECASE )
 
@@ -165,21 +159,19 @@ module Auditable::Taint
             return if !opts[:downcased_body].include?( longest_word_for_regexp( regexp ) )
         end
 
-        match_data = res.body.scan( regexp ).flatten.first.to_s
+        match_data = response.body.scan( regexp ).flatten.first.to_s
+        return if match_data.to_s.empty? || ignore?( response, opts )
 
-        # fairly obscure condition...pardon me...
-        if ( opts[:match] && match_data == opts[:match] ) ||
-           ( !opts[:match] && match_data && match_data.size > 0 )
-
-            return if ignore?( res, opts )
-
-            opts[:id] = opts[:match]  = opts[:match] ? opts[:match] : match_data
-            opts[:regexp] = regexp
-
-            @logged_issues |= @auditor.log( opts, res )
-            setup_verification_callbacks
-        end
-
+        @logged_issues |= @auditor.log(
+            {
+                platform:  opts[:platform],
+                proof:     match_data,
+                signature: regexp,
+                vector:    response.request.performer
+            },
+            response
+        )
+        setup_verification_callbacks
     rescue => e
         ap e
         ap e.backtrace
@@ -205,9 +197,9 @@ module Auditable::Taint
             # Grab an untainted response.
             submit do |response|
                 @logged_issues.each do |issue|
-                    next if !response.body.include?( issue.match )
+                    next if !response.body.include?( issue.proof )
 
-                    issue.verification = true
+                    issue.trusted = false
                     issue.add_remark :auditor, REMARK
                 end
 

@@ -33,6 +33,12 @@ class Base
         self.url = options[:url] || options[:action]
     end
 
+    # @return  [Element::Base] Reset the element to its original state.
+    # @abstract
+    def reset
+        self
+    end
+
     # @return  [String] String uniquely identifying self.
     # @abstract
     def id
@@ -40,9 +46,11 @@ class Base
     end
 
     # @return   [Hash] Simple representation of self.
-    # @abstract
-    def simple
-        {}
+    def to_h
+        {
+            type: type,
+            url:  url
+        }
     end
 
     # @return  [String]
@@ -67,11 +75,7 @@ class Base
     end
 
     def dup
-        new = self.class.new( @initialised_options )
-        new.override_instance_scope if override_instance_scope?
-        new.method  = self.method
-        new.inputs  = self.inputs.dup
-        new
+        self.class.new @initialised_options
     end
 
 end

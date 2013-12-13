@@ -141,7 +141,7 @@ describe 'Arachni::RPC::Server::Instance' do
                 f_report = instance.framework.report
 
                 i_report.should == f_report
-                i_report['issues'].should be_any
+                i_report[:issues].should be_any
             end
 
             context 'with invalid :platforms' do
@@ -188,7 +188,7 @@ describe 'Arachni::RPC::Server::Instance' do
                     f_report = instance.framework.report
 
                     i_report.should == f_report
-                    i_report['issues'].should be_any
+                    i_report[:issues].should be_any
 
                 end
             end
@@ -225,7 +225,7 @@ describe 'Arachni::RPC::Server::Instance' do
                                     f_report = instance.framework.report
 
                                     i_report.should == f_report
-                                    i_report['issues'].should be_any
+                                    i_report[:issues].should be_any
                                 end
                             end
                             context :balance do
@@ -257,7 +257,7 @@ describe 'Arachni::RPC::Server::Instance' do
                                     f_report = instance.framework.report
 
                                     i_report.should == f_report
-                                    i_report['issues'].should be_any
+                                    i_report[:issues].should be_any
                                 end
                             end
 
@@ -308,7 +308,7 @@ describe 'Arachni::RPC::Server::Instance' do
                                     f_report = instance.framework.report
 
                                     i_report.should == f_report
-                                    i_report['issues'].should be_any
+                                    i_report[:issues].should be_any
                                 end
                             end
                         end
@@ -398,7 +398,7 @@ describe 'Arachni::RPC::Server::Instance' do
                         f_report = instance.framework.report
 
                         i_report.should == f_report
-                        i_report['issues'].should be_any
+                        i_report[:issues].should be_any
                     end
                 end
 
@@ -465,7 +465,7 @@ describe 'Arachni::RPC::Server::Instance' do
                 p['stats'].should  be_any
 
                 p['instances'].should be_nil
-                p['issues'].should be_nil
+                p[:issues].should be_nil
             end
 
             describe :without do

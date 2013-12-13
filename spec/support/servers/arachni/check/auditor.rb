@@ -211,8 +211,3 @@ get '/log_remote_file_if_exists/custom_404/combo/*' do
     'This is a custom 404, try to catch it. ;)<br/> Random bit: ' + rand( 999 ).to_s +
     '<br/>You asked for "' + params[:splat].first.to_s + '", which could not be found.'
 end
-
-
-get '/match_and_log' do
-    'Match this!'
-end

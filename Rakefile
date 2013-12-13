@@ -124,42 +124,34 @@ begin
         desc 'Generate an AFR report for the report tests.'
         namespace :generate do
             task :afr do
+                begin
+                    # Run the check tests and save all the issues to put them in our
+                    # AFR report.
+                    FileUtils.touch( "#{Dir.tmpdir}/save_issues" )
+                    Rake::Task['spec:checks'].execute rescue nil
+                    #RSpec::Core::Runner.run(['spec/components/checks/active/xss_spec.rb'])
 
-                # Run the check tests and save all the issues to put them
-                # in our AFR report.
-                FileUtils.touch( "#{Dir.tmpdir}/save_issues" )
-                Rake::Task['spec:checks'].execute rescue nil
-                FileUtils.rm( "#{Dir.tmpdir}/save_issues" )
+                    issues = YAML.load_documents( IO.read( "#{Dir.tmpdir}/issues.yaml" ) ).flatten
 
-                issues = []
-                File.open( "#{Dir.tmpdir}/issues.yml" ) do |f|
-                    issues = YAML.load_documents( f ).flatten
+                    (issues.size / 3).times do |i|
+                        # Add remarks to some issues.
+                        issue = issues[rand( issues.size )]
+                        issue.add_remark( :stuff, 'Blah' )
+                        issue.add_remark( :stuff, 'Blah2' )
+
+                        # Flag some issues as untrusted.
+                        issues[rand( issues.size )].trusted = false
+                    end
+
+                    Arachni::Options.url = 'http://test.com'
+                    Arachni::Options.audit :forms, :links, :cookies, :headers
+
+                    Arachni::AuditStore.new( issues: issues.uniq ).
+                        save( 'spec/support/fixtures/auditstore.afr' )
+                ensure
+                    FileUtils.rm( "#{Dir.tmpdir}/save_issues" )
+                    Arachni::Options.reset
                 end
-
-                200.times do |i|
-                    # Add remarks to some issues.
-                    issue = issues[rand( issues.size )]
-                    issue.add_remark( :stuff, 'Blah' )
-                    issue.add_remark( :stuff, 'Blah2' )
-
-                    # Flag some issues are requiring manual verification.
-                    issues[rand( issues.size )].verification = true
-                end
-
-                FileUtils.rm( "#{Dir.tmpdir}/issues.yml" )
-
-                Arachni::Options.url = 'http://test.com'
-                Arachni::Options.audit :forms, :links, :cookies, :headers
-
-                # Make all check constants available because the AuditStore
-                # will need them to make the necessary associations between them
-                # and the issues.
-                Arachni::Framework.new.checks.load_all
-
-                Arachni::AuditStore.new( issues: issues.uniq ).
-                    save( 'spec/support/fixtures/auditstore.afr' )
-
-                Arachni::Options.reset
             end
         end
     end

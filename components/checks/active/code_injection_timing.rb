@@ -3,7 +3,6 @@
     All rights reserved.
 =end
 
-#
 # Tries to inject code strings which, if executed, will cause an identifiable
 # delay in execution.
 #
@@ -20,7 +19,6 @@
 # @see http://docs.python.org/py3k/library/functions.html#eval
 # @see http://www.aspdev.org/asp/asp-eval-execute/
 # @see http://en.wikipedia.org/wiki/Eval#Ruby
-#
 class Arachni::Checks::CodeInjectionTiming < Arachni::Check::Base
 
     prefer :code_injection
@@ -52,13 +50,6 @@ class Arachni::Checks::CodeInjectionTiming < Arachni::Check::Base
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.3',
-            references:  {
-                'PHP'    => 'http://php.net/manual/en/function.eval.php',
-                'Perl'   => 'http://perldoc.perl.org/functions/eval.html',
-                'Python' => 'http://docs.python.org/py3k/library/functions.html#eval',
-                'ASP'    => 'http://www.aspdev.org/asp/asp-eval-execute/',
-                'Ruby'   => 'http://en.wikipedia.org/wiki/Eval#Ruby'
-            },
             targets:     %w(Java ASP Python PHP Perl Ruby),
 
             issue:       {
@@ -70,16 +61,20 @@ class Arachni::Checks::CodeInjectionTiming < Arachni::Check::Base
     an abnormally long time to respond.
     Either case, these issues will require further investigation
     even if they are false positives.)},
+                references:  {
+                    'PHP'    => 'http://php.net/manual/en/function.eval.php',
+                    'Perl'   => 'http://perldoc.perl.org/functions/eval.html',
+                    'Python' => 'http://docs.python.org/py3k/library/functions.html#eval',
+                    'ASP'    => 'http://www.aspdev.org/asp/asp-eval-execute/',
+                    'Ruby'   => 'http://en.wikipedia.org/wiki/Eval#Ruby'
+                },
                 tags:            %w(code injection timing blind),
-                cwe:             '94',
+                cwe:             94,
                 severity:        Severity::HIGH,
-                cvssv2:          '7.5',
                 remedy_guidance: %q{User inputs must be validated and filtered
     before being evaluated as executable code.
     Better yet, the web application should stop evaluating user
-    inputs as any part of dynamic code altogether.},
-                remedy_code:     '',
-                metasploitable:  'unix/webapp/arachni_php_eval'
+    inputs as any part of dynamic code altogether.}
             }
 
         }

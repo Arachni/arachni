@@ -3,15 +3,12 @@
     All rights reserved.
 =end
 
-#
 # Pokes and probes all inputs of a given page in order to uncover new input vectors.
 #
 # It also forces Arachni to train itself by analyzing the server responses.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 # @version 0.1.2
-#
 class Arachni::Checks::Trainer < Arachni::Check::Base
 
     def run

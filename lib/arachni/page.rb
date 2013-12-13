@@ -76,7 +76,8 @@ class Page
         data[:response][:url]  ||= data.delete( :url )
         data[:response][:body] ||= data.delete( :body ) || ''
 
-        data[:response][:request] ||= {}
+        data[:response][:request]       ||= {}
+        data[:response][:request][:url] ||= data[:response][:url]
 
         data[:links]   ||= []
         data[:forms]   ||= []
@@ -85,10 +86,8 @@ class Page
 
         data[:cookiejar] ||= []
 
-        data[:response][:request] =
-            Arachni::HTTP::Request.new( data[:response][:url], data[:response][:request] )
-
-        data[:response] = Arachni::HTTP::Response.new( data[:response] )
+        data[:response][:request] = Arachni::HTTP::Request.new( data[:response][:request] )
+        data[:response]           = Arachni::HTTP::Response.new( data[:response] )
 
         new data
     end

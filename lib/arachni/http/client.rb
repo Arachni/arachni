@@ -290,7 +290,8 @@ class Client
                 end
             end
 
-            request = Request.new( url, options.merge(
+            request = Request.new( options.merge(
+                url:     url,
                 headers: @headers.merge( options.delete( :headers ) || {} ),
                 cookies: cookies
             ))
@@ -439,7 +440,7 @@ class Client
     def custom_404?( response, &block )
         path = get_path( response.url )
 
-        return block.call( is_404?( path, res.body ) ) if has_custom_404_signature?( path )
+        return block.call( is_404?( path, response.body ) ) if has_custom_404_signature?( path )
 
         precision = 2
         generators = custom_404_probe_generators( response.url, precision )

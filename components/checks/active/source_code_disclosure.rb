@@ -37,20 +37,21 @@ class Arachni::Checks::SourceCodeDisclosure < Arachni::Check::Base
             # of the original value (if that value was a filename) after a null byte.
             each_mutation: proc do |mutation|
                 next if mutation.is_a?( Arachni::Form ) &&
-                    (mutation.original? || mutation.sample?)
+                    (mutation.mutation_with_original_values? ||
+                        mutation.mutation_with_sample_values?)
 
                 m = mutation.dup
 
                 # Figure out the extension of the default value, if it has one.
-                ext = m.original[m.altered].to_s.split( '.' )
+                ext = m.original[m.affected_input_name].to_s.split( '.' )
                 ext = ext.size > 1 ? ext.last : nil
 
                 # If the extension of the default value is the same as of the
                 # payload there's no need to add an extra mutation.
-                next if ext == mutation.altered_value.split( '.' ).last
+                next if ext == mutation.affected_input_value.split( '.' ).last
 
                 # Null-terminate the injected value and append the ext.
-                m.altered_value += "\x00.#{ext}"
+                m.affected_input_value += "\x00.#{ext}"
 
                 # Pass our new element back to be audited.
                 m
@@ -113,14 +114,15 @@ class Arachni::Checks::SourceCodeDisclosure < Arachni::Check::Base
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.2',
             targets:     %w(PHP ASP JSP),
-            references:  {
-                'CWE' => 'http://cwe.mitre.org/data/definitions/540.html'
-            },
+
             issue:       {
                 name:            %q{Source code disclosure},
                 description:     %q{The web application can be forced to reveal source code.},
+                references:  {
+                    'CWE' => 'http://cwe.mitre.org/data/definitions/540.html'
+                },
                 tags:            %w(code source file inclusion disclosure),
-                cwe:             '540',
+                cwe:             540,
                 severity:        Severity::HIGH,
                 remedy_guidance: %q{User inputs must be validated and filtered
                     before being included in a file-system path during file reading operations.},

@@ -101,7 +101,7 @@ class ProxyServer < WEBrick::HTTPProxyServer
     # @see Webrick::HTTPProxyServer#proxy_service
     def do_GET( req, res )
         perform_proxy_request( req, res ) do |url, header|
-            Arachni::HTTP::Client.get( url, http_opts( headers: header ) )
+            Client.get( url, http_opts( headers: header ) )
         end
     end
 
@@ -114,7 +114,7 @@ class ProxyServer < WEBrick::HTTPProxyServer
             # client handle it.
             header.delete 'Content-Length'
 
-            Arachni::HTTP::Client.request(
+            Client.request(
                 url, http_opts( method: :post, body: req.body, headers: header )
             )
         end
@@ -125,7 +125,7 @@ class ProxyServer < WEBrick::HTTPProxyServer
     # @see Webrick::HTTPProxyServer#proxy_service
     def do_PUT( req, res )
         perform_proxy_request( req, res ) do |url, header|
-            Arachni::HTTP::Client.request(
+            Client.request(
                 url, http_opts( method: :put, headers: header )
             )
         end
@@ -136,7 +136,7 @@ class ProxyServer < WEBrick::HTTPProxyServer
     # @see Webrick::HTTPProxyServer#proxy_service
     def do_DELETE( req, res )
         perform_proxy_request( req, res ) do |url, header|
-            Arachni::HTTP::Client.request(
+            Client.request(
                 url, http_opts( method: :delete, headers: header )
             )
         end
@@ -147,7 +147,7 @@ class ProxyServer < WEBrick::HTTPProxyServer
     # @see Webrick::HTTPProxyServer#proxy_service
     def do_HEAD( req, res )
         perform_proxy_request( req, res ) do |url, header|
-            Arachni::HTTP::Client.request(
+            Client.request(
                 url, http_opts( method: :head, headers: header )
             )
         end
@@ -221,7 +221,7 @@ class ProxyServer < WEBrick::HTTPProxyServer
 
         # Provisional empty, response in case the request_handler wants us to
         # skip performing the request.
-        response = Arachni::HTTP::Response.new( req.request_uri.to_s )
+        response = Response.new( url: req.request_uri.to_s )
 
         request.mode = :sync
         request.on_complete { |r| response = r }

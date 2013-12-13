@@ -1,9 +1,7 @@
-shared_examples_for "report" do
+shared_examples_for 'report' do
     include_examples 'component'
 
     before( :all ) { framework.reports.load name }
-    #before( :each ) { framework.reports.reset }
-
     after( :each ) { File.delete( outfile ) rescue nil }
 
     def self.test_with_full_report( &block )
@@ -22,9 +20,6 @@ shared_examples_for "report" do
 
     def run( auditstore, opts = {} )
         opts['outfile'] ||= outfile
-
-        #report_name = File.basename( caller.first.split( ':' ).first, '_spec.rb' )
-
         framework.reports.run_one( name, auditstore, opts )
     end
 
@@ -37,7 +32,7 @@ shared_examples_for "report" do
     end
 
     def outfile
-        @outfile ||= (0..10).map{ rand( 9 ).to_s }.join
+        @outfile ||= "#{Dir.tmpdir}/#{(0..10).map{ rand( 9 ).to_s }.join}"
     end
 
     def reports

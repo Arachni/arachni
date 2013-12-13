@@ -3,7 +3,6 @@
     All rights reserved.
 =end
 
-#
 # Cross-Site Request Forgery check.
 #
 # It uses 4-pass reverse-diff analysis to determine which forms affect business logic
@@ -37,7 +36,6 @@
 # @see http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)
 # @see http://www.cgisecurity.com/csrf-faq.html
 # @see http://cwe.mitre.org/data/definitions/352.html
-#
 class Arachni::Checks::CSRF < Arachni::Check::Base
 
     def run
@@ -142,7 +140,7 @@ class Arachni::Checks::CSRF < Arachni::Check::Base
 
         audited( "#{url}::#{name}" )
 
-        log( var: name, elem: Element::Form )
+        log( vector: form )
         print_ok "Found unprotected form with name '#{name}' at '#{page.url}'"
     end
 
@@ -155,11 +153,6 @@ class Arachni::Checks::CSRF < Arachni::Check::Base
             elements:    [ Element::Form ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.3.2',
-            references:  {
-                'Wikipedia'    => 'http://en.wikipedia.org/wiki/Cross-site_request_forgery',
-                'OWASP'        => 'http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)',
-                'CGI Security' => 'http://www.cgisecurity.com/csrf-faq.html'
-            },
             targets:     %w(Generic),
 
             issue:       {
@@ -169,8 +162,13 @@ class Arachni::Checks::CSRF < Arachni::Check::Base
      request was intentionally provided by the user who submitted the request.
      This is due to a lack of secure anti-CSRF tokens to verify
      the freshness of the submitted data.},
+                references:  {
+                    'Wikipedia'    => 'http://en.wikipedia.org/wiki/Cross-site_request_forgery',
+                    'OWASP'        => 'http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)',
+                    'CGI Security' => 'http://www.cgisecurity.com/csrf-faq.html'
+                },
                 tags:            %w(csrf rdiff form token),
-                cwe:             '352',
+                cwe:             352,
                 severity:        Severity::HIGH,
                 remedy_guidance: %q{A unique token that guaranties freshness of submitted
     data must be added to all web application elements that can affect

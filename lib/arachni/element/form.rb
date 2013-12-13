@@ -33,7 +33,7 @@ class Form < Base
     SAMPLE_VALUES   = '__sample_values__'
 
     # @return [String] the name of the input name that holds the nonce
-    attr_reader :nonce_name
+    attr_reader   :nonce_name
 
     # @return   [String, nil]   Name of the form, if it has one.
     attr_accessor :name
@@ -86,7 +86,7 @@ class Form < Base
                 h
             end
 
-        @original = self.inputs.dup.freeze
+        @default_inputs = self.inputs.dup.freeze
     end
 
     def action=( url )
@@ -127,8 +127,8 @@ class Form < Base
 
     # @return   [Bool]
     #   `true` if the element has not been mutated, `false` otherwise.
-    def original?
-        self.altered == ORIGINAL_VALUES
+    def mutation_with_original_values?
+        self.affected_input_name == ORIGINAL_VALUES
     end
 
     # @return   [Bool]
@@ -136,16 +136,15 @@ class Form < Base
     #   ({Support::KeyFiller}) values, `false` otherwise.
     #
     # @see Arachni::Support::KeyFiller.fill
-    #
-    def sample?
-        self.altered == SAMPLE_VALUES
+    def mutation_with_sample_values?
+        self.affected_input_name == SAMPLE_VALUES
     end
 
     def audit_id( injection_str = '', opts = {} )
-        str = if original?
+        str = if mutation_with_original_values?
                   opts[:no_auditor] = true
                   ORIGINAL_VALUES
-              elsif sample?
+              elsif mutation_with_sample_values?
                   opts[:no_auditor] = true
                   SAMPLE_VALUES
               else
@@ -192,13 +191,13 @@ class Form < Base
         # this is the original hash, in case the default values
         # are valid and present us with new attack vectors
         elem = self.dup
-        elem.altered = ORIGINAL_VALUES
+        elem.affected_input_name = ORIGINAL_VALUES
         yield elem if !generated.include?( elem )
         generated << elem
 
         elem = self.dup
         elem.inputs = Arachni::Support::KeyFiller.fill( inputs.dup )
-        elem.altered = SAMPLE_VALUES
+        elem.affected_input_name = SAMPLE_VALUES
         yield elem if !generated.include?( elem )
         generated << elem
     end
@@ -397,7 +396,7 @@ class Form < Base
     private
 
     def skip?( elem )
-        if elem.original? || elem.sample?
+        if elem.mutation_with_original_values? || elem.mutation_with_sample_values?
             id = elem.audit_id
             return true if audited?( id )
             audited( id )
@@ -459,8 +458,10 @@ class Form < Base
     end
 
     def http_request( options, &block )
-        if (original? || sample?) && options[:train] != false
-            state = original? ? 'original' : 'sample'
+        if (mutation_with_original_values? || mutation_with_sample_values?) &&
+            options[:train] != false
+
+            state = mutation_with_original_values? ? 'original' : 'sample'
             print_debug "Submitting form with #{state} values; overriding trainer option."
             options[:train] = true
             print_debug_trainer( options )

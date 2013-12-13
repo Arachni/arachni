@@ -3,17 +3,11 @@
     All rights reserved.
 =end
 
-#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-# @version 0.1.5
-#
+# @version 0.1.6
 class Arachni::Plugins::FormDicattack < Arachni::Plugin::Base
 
     def prepare
-        # disable crawling and the subsequent audit
-        # framework.opts.link_count_limit = 0
-
         # don't scan the website just yet
         framework.pause
         print_info 'System paused.'
@@ -60,15 +54,14 @@ class Arachni::Plugins::FormDicattack < Arachni::Plugin::Base
                 form.submit( opts ) do |res|
                     next if @found
 
-                    print_status "#{@user_field}: '#{res.request.parameters[@user_field]}'" +
-                        " -- #{@passwd_field}: '#{res.request.parameters[@passwd_field]}'"
+                    print_status "#{@user_field}: '#{user}' -- #{@passwd_field}: '#{pass}'"
 
                     next if !res.body.match( @verifier )
 
                     @found = true
 
-                    print_ok "Found a match -- #{@user_field}: '#{res.request.parameters[@user_field]}'" +
-                        " -- #{@passwd_field}: '#{res.request.parameters[@passwd_field]}'"
+                    print_ok "Found a match -- #{@user_field}: '#{user}'" +
+                        " -- #{@passwd_field}: '#{pass}'"
 
                     # register our findings...
                     register_results( username: user, password: pass )
@@ -96,7 +89,7 @@ class Arachni::Plugins::FormDicattack < Arachni::Plugin::Base
                 framework-wide and used for the duration of the audit.
                 If that's not what you want set the crawler's link-count limit to "0".},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.5',
+            version:     '0.1.6',
             options:     [
                 Options::Path.new( 'username_list', [true, 'File with a list of usernames (newline separated).'] ),
                 Options::Path.new( 'password_list', [true, 'File with a list of passwords (newline separated).'] ),

@@ -40,11 +40,8 @@ class Arachni::Checks::BlindTimingSQLInjection < Arachni::Check::Base
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.3',
-            references:  {
-                'OWASP'         => 'http://www.owasp.org/index.php/Blind_SQL_Injection',
-                'MITRE - CAPEC' => 'http://capec.mitre.org/data/definitions/7.html'
-            },
             targets:     %w(MySQL PostgreSQL MSSQL),
+
             issue:       {
                 name:            %q{Blind SQL Injection (timing attack)},
                 description:     %q{SQL code can be injected into the web application
@@ -54,16 +51,17 @@ class Arachni::Checks::BlindTimingSQLInjection < Arachni::Check::Base
     an abnormally long time to respond.
     Either case, these issues will require further investigation
     even if they are false positives.)},
+                references:  {
+                    'OWASP'         => 'http://www.owasp.org/index.php/Blind_SQL_Injection',
+                    'MITRE - CAPEC' => 'http://capec.mitre.org/data/definitions/7.html'
+                },
                 tags:            %w(sql blind timing injection database),
-                cwe:             '89',
+                cwe:             89,
                 severity:        Severity::HIGH,
-                cvssv2:          '9.0',
                 remedy_guidance: %q{Suppression of error messages leads to
     security through obscurity which is not a good practise.
     The web application needs to enforce stronger validation
-    on user inputs.},
-                remedy_code:     '',
-                metasploitable:  'unix/webapp/arachni_sqlmap'
+    on user inputs.}
             }
 
         }

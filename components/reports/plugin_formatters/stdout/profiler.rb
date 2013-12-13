@@ -23,7 +23,7 @@ class PluginFormatters::Profiler < Arachni::Plugin::Formatter
         results.each do |item|
             output = item['element']['type'].capitalize
             output << " named '#{item['element']['name']}'" if item['element']['name']
-            output << " using the '#{item['element']['altered']}' input" if item['element']['altered']
+            output << " using the '#{item['element']['affected_input_name']}' input" if item['element']['affected_input_name']
             output << " at '#{item['element']['owner']}' pointing to '#{item['element']['action']}'"
             output << " using '#{item['request']['method']}'."
 
@@ -38,7 +38,7 @@ class PluginFormatters::Profiler < Arachni::Plugin::Formatter
 
                 output = elem['type'].capitalize
                 output << " named '#{elem['name']}'" if elem['name']
-                output << " using the '#{elem['altered']}' input" if elem['altered']
+                output << " using the '#{elem['affected_input_name']}' input" if elem['affected_input_name']
                 output << " at '#{elem['owner']}' pointing to '#{elem['action']}'" if elem['action']
 
                 print_info "  * #{output}"

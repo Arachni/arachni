@@ -162,7 +162,7 @@ describe Arachni::Trainer do
                         url: @url,
                         body:    "<a href='?#{rand( 9999 )}=1'>Test</a>",
                         headers: { 'Content-type' => 'text/html' },
-                        request: Arachni::HTTP::Request.new( @url )
+                        request: Arachni::HTTP::Request.new( url: @url )
                     )
                 end
 
@@ -196,7 +196,7 @@ describe Arachni::Trainer do
                         url: 'http://stuff.com/match_this',
                         body:          "<a href='?#{rand( 9999 )}=1'>Test</a>",
                         headers: { 'Content-type' => 'text/html' },
-                        request:      Arachni::HTTP::Request.new( 'http://stuff.com/match_this' )
+                        request:      Arachni::HTTP::Request.new( url: 'http://stuff.com/match_this' )
                     )
                 end
 
@@ -226,7 +226,7 @@ describe Arachni::Trainer do
                     url: "http://stuff.com/#{rand( 9999 )}",
                     body:          "<a href='?#{rand( 9999 )}=1'>Test</a>",
                     headers: { 'Content-type' => 'text/html' },
-                    request:      Arachni::HTTP::Request.new( 'http://stuff.com/match_this' )
+                    request:      Arachni::HTTP::Request.new( url: 'http://stuff.com/match_this' )
                 )
             end
 

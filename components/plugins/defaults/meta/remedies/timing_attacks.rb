@@ -8,16 +8,16 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.7
+# @version 0.2
 class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
 
     is_distributable
 
-    # look for issue by tag name
+    # Look for issue by tag name.
     TAG = 'timing'
 
-    # response times of a page must be greater or equal to this
-    # in order to be considered
+    # Response times of a page must be greater or equal to this
+    # in order to be considered.
     TIME_THRESHOLD = 0.6
 
     REMARK = 'This issue was discovered using a timing-attack but the audited ' +
@@ -28,25 +28,25 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
         @times   = {}
         @counter = {}
 
-        # run for each response as it arrives
-        framework.http.add_on_complete do |res|
-            # we don't care about non OK responses
-            next if res.code != 200
+        # Run for each response as it arrives.
+        framework.http.add_on_complete do |response|
+            # We don't care about non OK responses.
+            next if response.code != 200
 
-            # let's hope for a proper and clean parse but be prepared for
+            # Let's hope for a proper and clean parse but be prepared for
             # all hell to break loose too...
             begin
-                url = uri_parse( res.effective_url ).up_to_path.hash
+                url = uri_parse( response.url ).up_to_path.hash
             rescue => e
                 next
             end
 
             @counter[url] ||= @times[url] ||= 0
 
-            # add up all request times for a specific path
-            @times[url] += res.time
+            # Add up all request times for a specific path.
+            @times[url] += response.time
 
-            # add up all requests for each path
+            # Add up all requests for each path.
             @counter[url] += 1
         end
 
@@ -56,11 +56,11 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
     def run
         avg = {}
 
-        # calculate average request time for each path
+        # Calculate average request time for each path.
         @times.each_pair { |url, time| avg[url] = time / @counter[url] }
 
-        inconclusive = framework.checks.issues.map.with_index do |issue, idx|
-            response_time = avg[uri_parse( issue.url ).up_to_path.hash]
+        framework.checks.issues.each do |issue|
+            response_time = avg[uri_parse( issue.vector.action ).up_to_path.hash]
 
             next if !issue.tags || !issue.tags.includes_tags?( TAG ) ||
                 !response_time || response_time < TIME_THRESHOLD
@@ -68,24 +68,8 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
             issue.add_remark :meta_analysis, REMARK
 
             # Requires manual verification.
-            issue.verification = true
-
-            {
-                'hash'   => issue.digest,
-                'index'  => idx + 1,
-                'url'    => issue.url,
-                'name'   => issue.name,
-                'var'    => issue.var,
-                'elem'   => issue.elem,
-                'method' => issue.method
-            }
-        end.compact
-
-        register_results( inconclusive ) if !inconclusive.empty?
-    end
-
-    def self.merge( results )
-        results.flatten
+            issue.trusted = false
+        end
     end
 
     def self.info
@@ -98,7 +82,7 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
                 Pages with high response times usually include heavy-duty processing
                 which makes them prime targets for Denial-of-Service attacks.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.7',
+            version:     '0.2',
             tags:        %w(anomaly timing attacks meta)
         }
     end

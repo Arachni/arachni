@@ -14,10 +14,10 @@ class Arachni::Checks::XForwardedAccessRestrictionBypass < Arachni::Check::Base
         end
     end
 
-    def check_and_log( res )
-        return if res.code != 200
-        log( { element: Element::Server }, res )
-        print_ok "Request was accepted: #{res.effective_url}"
+    def check_and_log( response )
+        return if response.code != 200
+        log( { vector: Element::Server.new( response ) }, response )
+        print_ok "Request was accepted: #{response.url}"
     end
 
     def self.info
@@ -30,6 +30,7 @@ class Arachni::Checks::XForwardedAccessRestrictionBypass < Arachni::Check::Base
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1',
             targets:     %w(Generic),
+
             issue:       {
                 name:        %q{Access restriction bypass via X-Forwarded-For},
                 description: %q{Access restrictions can be bypassed by tricking

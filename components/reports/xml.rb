@@ -16,6 +16,9 @@ class Arachni::Reports::XML < Arachni::Report::Base
     include Buffer
 
     def run
+        print_info 'Out of service, rewrite pending.'
+        return
+
         print_line
         print_status 'Creating XML report...'
 

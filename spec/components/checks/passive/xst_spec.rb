@@ -15,5 +15,5 @@ describe name_from_filename do
         1
     end
 
-    easy_test { issues.first.url.should == url }
+    easy_test { issues.first.vector.url.should == url }
 end

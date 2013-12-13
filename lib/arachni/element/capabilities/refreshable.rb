@@ -22,7 +22,7 @@ module Capabilities::Refreshable
         updated = nil
         http.get( url.to_s, http_opts.merge( mode: block_given? ? :async : :sync ) ) do |res|
             # find ourselves
-            f = self.class.from_response( res ).select { |f| f.id == id_from( :original ) }.first
+            f = self.class.from_response( res ).select { |f| f.id == id_from( :default_inputs ) }.first
 
             if !f
                 block.call if block_given?

@@ -51,7 +51,7 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                 @auditor.http.run
                 issues.size.should == 1
                 issue = issues.first
-                issue.platform.should == :php
+                issue.platform_name.should == :php
                 issue.platform_type.should == :languages
             end
         end
@@ -75,8 +75,8 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                         )
                         @auditor.http.run
                         issues.size.should == 1
-                        issues.first.injected.should == @seed
-                        issues.first.verification.should be_false
+                        issues.first.vector.seed.should == @seed
+                        issues.first.trusted?.should be_true
                     end
                 end
 
@@ -88,8 +88,8 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                         )
                         @auditor.http.run
                         issues.size.should == 1
-                        issues.first.injected.should == @seed
-                        issues.first.verification.should be_false
+                        issues.first.vector.seed.should == @seed
+                        issues.first.trusted?.should be_true
                     end
                 end
 
@@ -109,9 +109,9 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                         @auditor.http.run
 
                         issues.size.should == 1
-                        issues[0].platform.should == :windows
-                        issues[0].regexp.should == regexps[:windows].to_s
-                        issues[0].verification.should be_false
+                        issues[0].platform_name.should == :windows
+                        issues[0].signature.should == regexps[:windows].to_s
+                        issues[0].should be_trusted
                     end
 
                     context 'when the payloads are per platform' do
@@ -146,12 +146,12 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
 
                             issues.size.should == 3
                             payloads.keys.each do |platform|
-                                issue = issues.find{ |i| i.platform == platform }
+                                issue = issues.find{ |i| i.platform_name == platform }
 
-                                issue.injected.should == payloads[platform]
-                                issue.platform.should == platform
-                                issue.regexp.should == regexps[platform].to_s
-                                issue.verification.should be_false
+                                issue.vector.seed.should == payloads[platform]
+                                issue.platform_name.should == platform
+                                issue.signature.should == regexps[platform].to_s
+                                issue.should be_trusted
                             end
                         end
 
@@ -179,37 +179,11 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                                 issues.size.should == 1
                                 issue = issues.first
 
-                                issue.platform.should == :asp
-                                issue.regexp.should == regexps[:asp].to_s
-                                issue.verification.should be_false
+                                issue.platform_name.should == :asp
+                                issue.signature.should == regexps[:asp].to_s
+                                issue.should be_trusted
                             end
                         end
-                    end
-                end
-
-                context 'with valid :match' do
-                    it 'verifies the matched data with the provided string' do
-                        @positive.taint_analysis( @seed,
-                            regexp: /my_.+d/,
-                            match: @seed,
-                            format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
-                         )
-                        @auditor.http.run
-                        issues.size.should == 1
-                        issues.first.injected.should == @seed
-                        issues.first.verification.should be_false
-                    end
-                end
-
-                context 'with invalid :match' do
-                    it 'does not log an issue' do
-                        @positive.taint_analysis( @seed,
-                            regexp: @seed,
-                            match: 'blah',
-                            format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
-                         )
-                        @auditor.http.run
-                        issues.should be_empty
                     end
                 end
 
@@ -226,8 +200,8 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
 
                         issue = issues.first
 
-                        issue.injected.should == seed
-                        issue.verification.should be_true
+                        issue.vector.seed.should == seed
+                        issue.should be_untrusted
                         issue.remarks[:auditor].should be_any
                     end
                     it 'adds a remark' do
@@ -242,11 +216,10 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
 
                         issue = issues.first
 
-                        issue.injected.should == seed
-                        issue.verification.should be_true
+                        issue.vector.seed.should == seed
+                        issue.should be_untrusted
                         issue.remarks[:auditor].should be_any
                     end
-
                 end
             end
 
@@ -260,8 +233,8 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                         )
                         @auditor.http.run
                         issues.size.should == 1
-                        issues.first.injected.should == @seed
-                        issues.first.verification.should be_false
+                        issues.first.vector.seed.should == @seed
+                        issues.first.should be_trusted
                     end
                 end
 
@@ -273,8 +246,8 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                         )
                         @auditor.http.run
                         issues.size.should == 1
-                        issues.first.injected.should == @seed
-                        issues.first.verification.should be_false
+                        issues.first.vector.seed.should == @seed
+                        issues.first.should be_trusted
                     end
                 end
 
@@ -294,9 +267,9 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                         @auditor.http.run
 
                         issues.size.should == 1
-                        issues[0].platform.should == :windows
-                        issues[0].regexp.should == substrings[:windows].to_s
-                        issues[0].verification.should be_false
+                        issues[0].platform_name.should == :windows
+                        issues[0].signature.should == substrings[:windows].to_s
+                        issues[0].should be_trusted
                     end
 
                     context 'when the payloads are per platform' do
@@ -331,12 +304,12 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
 
                             issues.size.should == 3
                             payloads.keys.each do |platform|
-                                issue = issues.find{ |i| i.platform == platform }
+                                issue = issues.find{ |i| i.platform_name == platform }
 
-                                issue.injected.should == payloads[platform]
-                                issue.platform.should == platform
-                                issue.regexp.should == substrings[platform].to_s
-                                issue.verification.should be_false
+                                issue.vector.seed.should == payloads[platform]
+                                issue.platform_name.should == platform
+                                issue.signature.should == substrings[platform].to_s
+                                issue.should be_trusted
                             end
                         end
                     end
@@ -355,8 +328,8 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
 
                         issue = issues.first
 
-                        issue.injected.should == seed
-                        issue.verification.should be_true
+                        issue.vector.seed.should == seed
+                        issue.should be_untrusted
                         issue.remarks[:auditor].should be_any
                     end
 
@@ -384,9 +357,9 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                             issues.size.should == 1
                             issue = issues.first
 
-                            issue.platform.should == :asp
-                            issue.regexp.should == substrings[:asp].to_s
-                            issue.verification.should be_false
+                            issue.platform_name.should == :asp
+                            issue.signature.should == substrings[:asp].to_s
+                            issue.should be_trusted
                         end
                     end
 

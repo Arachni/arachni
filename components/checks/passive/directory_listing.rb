@@ -3,15 +3,12 @@
     All rights reserved.
 =end
 
-#
 # Tries to force directory listings.
 #
 # Can't take credit for this one, it's Michal's (lcamtuf's) method from Skipfish.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 # @version 0.1.4
-#
 class Arachni::Checks::DirectoryListing < Arachni::Check::Base
 
     # The compared pages must be at least 75% different
@@ -68,7 +65,7 @@ class Arachni::Checks::DirectoryListing < Arachni::Check::Base
             return
         end
 
-        log( { element: Element::Server }, @harvested[5] )
+        log( { vector: Element::Server.new( @harvested[5] ) }, @harvested[5] )
     end
 
     def same_page?( res1, res2 )
@@ -83,15 +80,16 @@ class Arachni::Checks::DirectoryListing < Arachni::Check::Base
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.4',
             targets:     %w(Generic),
-            references: {
-                'CWE' => 'http://cwe.mitre.org/data/definitions/548.html'
-            },
+
             issue:       {
                 name:        %q{Directory listing},
                 description: %q{In most circumstances enabling directory listings is a bad practise
     as it allows an attacker to better grasp the web application's structure.},
+                references: {
+                    'CWE' => 'http://cwe.mitre.org/data/definitions/548.html'
+                },
                 tags:        %w(path directory listing index),
-                cwe:         '548',
+                cwe:         548,
                 severity:    Severity::LOW,
                 remedy_guidance: %q{Restrict access to important directories or files by adopting a need to know requirement for both the document and server root,
                     and turn off features such as Automatic Directory Listings.}

@@ -3,7 +3,7 @@ require 'sinatra/contrib'
 
 def get_variations( str )
     root = File.dirname( __FILE__ ) + '/../../../../../'
-    IO.read( root + 'components/checks/audit/ldapi/errors.txt' ) if str == "#^($!@$)(()))******"
+    IO.read( root + 'components/checks/active/ldapi/errors.txt' ) if str == "#^($!@$)(()))******"
 end
 
 get '/' do

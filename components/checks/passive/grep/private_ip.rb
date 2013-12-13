@@ -3,14 +3,12 @@
     All rights reserved.
 =end
 
-#
 # Private IP address recon check.
 #
 # Scans for private IP addresses.
 #
 # @author   Tasos Laskos <tasos.laskos@gmail.com>
-# @version  0.2.1
-#
+# @version  0.3
 class Arachni::Checks::PrivateIP < Arachni::Check::Base
 
     def self.regexp
@@ -19,6 +17,14 @@ class Arachni::Checks::PrivateIP < Arachni::Check::Base
 
     def run
         match_and_log( self.class.regexp )
+
+        page.response.headers.each do |k, v|
+            next if !(v =~ self.class.regexp)
+            log(
+                vector: Element::Header.new( url: page.url, inputs: { k => v } ),
+                proof:  v
+            )
+        end
     end
 
     def self.info
@@ -29,13 +35,14 @@ class Arachni::Checks::PrivateIP < Arachni::Check::Base
             version:     '0.2.1',
             targets:     %w(Generic),
             elements:    [ Element::Body, Element::Header ],
-            references: {
-                'WebAppSec' => 'http://projects.webappsec.org/w/page/13246936/Information%20Leakage'
-            },
+
             issue:       {
                 name:            %q{Private IP address disclosure},
                 description:     %q{A private IP address is disclosed in the body of the HTML page},
-                cwe:             '200',
+                references: {
+                    'WebAppSec' => 'http://projects.webappsec.org/w/page/13246936/Information%20Leakage'
+                },
+                cwe:             200,
                 severity:        Severity::LOW,
                 remedy_guidance: %q{Remove private IP addresses from the body of the HTML pages.},
             }

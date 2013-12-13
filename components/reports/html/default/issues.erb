@@ -15,7 +15,7 @@
                         These issues are considered trusted and fairly accurate.
                     </blockquote>
 
-                    <% if filtered_hashes.any? %>
+                    <% if has_trusted_issues %>
                         <% auditstore.issues.each_with_index do |issue, i|%>
                             <% next if issue.untrusted? %>
 
@@ -37,7 +37,7 @@
                         The listed issues need verification by a human.
                     </blockquote>
 
-                    <% if anomalous_hashes.any? %>
+                    <% if has_untrusted_issues %>
                         <% auditstore.issues.each_with_index do |issue, i|%>
                             <% next if issue.trusted? %>
 

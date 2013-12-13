@@ -4,15 +4,15 @@ describe Arachni::Check::Manager do
 
     before( :all ) do
         @checks = Arachni::Framework.new.checks
-
         @page  = Arachni::Page.from_url( web_server_url_for( :auditor ) )
-        @issue = Arachni::Issue.new( url: 'http://blah' )
     end
 
     before( :each ) do
         @checks.clear
         @checks.reset
     end
+
+    let(:issue) { Factory[:issue] }
 
     describe '#load' do
         it 'loads all checks' do
@@ -69,14 +69,14 @@ describe Arachni::Check::Manager do
 
     describe '#register_results' do
         it 'registers an array of issues' do
-            @checks.register_results( [ @issue ] )
+            @checks.register_results( [ issue ] )
             @checks.results.any?.should be true
         end
 
         context 'when an issue was discovered by manipulating an input' do
             it 'does not register redundant issues' do
-                i = @issue.deep_clone
-                i.var = 'some input'
+                i = issue.deep_clone
+                i.vector.affected_input_name = 'some input'
                 2.times { @checks.register_results( [ i ] ) }
                 @checks.results.size.should be 1
             end
@@ -84,7 +84,7 @@ describe Arachni::Check::Manager do
 
         context 'when an issue was not discovered by manipulating an input' do
             it 'registers it multiple times' do
-                2.times { @checks.register_results( [ @issue ] ) }
+                2.times { @checks.register_results( [ issue ] ) }
                 @checks.results.size.should be 2
             end
         end
@@ -94,7 +94,7 @@ describe Arachni::Check::Manager do
         it 'registers callbacks to be executed on new results' do
             callback_called = false
             @checks.on_register_results { callback_called = true }
-            @checks.register_results( [ @issue ] )
+            @checks.register_results( [ issue ] )
             callback_called.should be true
         end
     end
@@ -102,7 +102,7 @@ describe Arachni::Check::Manager do
     describe '#do_not_store' do
         it 'does not store results' do
             @checks.do_not_store
-            @checks.register_results( [ @issue ] )
+            @checks.register_results( [ issue ] )
             @checks.results.empty?.should be true
             @checks.store
         end
@@ -110,12 +110,12 @@ describe Arachni::Check::Manager do
 
     describe '#results' do
         it 'returns the registered results' do
-            @checks.register_results( [ @issue ] )
+            @checks.register_results( [ issue ] )
             @checks.results.empty?.should be false
         end
 
         it 'aliased to #issues' do
-            @checks.register_results( [ @issue ] )
+            @checks.register_results( [ issue ] )
             @checks.results.empty?.should be false
             @checks.results.should == @checks.issues
         end
@@ -123,12 +123,12 @@ describe Arachni::Check::Manager do
 
     describe '.results' do
         it 'returns the registered results' do
-            @checks.register_results( [ @issue ] )
+            @checks.register_results( [ issue ] )
             @checks.class.results.empty?.should be false
         end
 
         it 'aliased to #issues' do
-            @checks.register_results( [ @issue ] )
+            @checks.register_results( [ issue ] )
             @checks.class.results.empty?.should be false
             @checks.class.results.should == @checks.class.issues
         end
@@ -136,14 +136,14 @@ describe Arachni::Check::Manager do
 
     describe '#register_results' do
         it 'registers the given issues' do
-            @checks.register_results( [ @issue ] )
+            @checks.register_results( [ issue ] )
             @checks.results.empty?.should be false
         end
     end
 
     describe '.register_results' do
         it 'registers the given issues' do
-            @checks.register_results( [ @issue ] )
+            @checks.register_results( [ issue ] )
             @checks.class.results.empty?.should be false
         end
     end

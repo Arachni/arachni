@@ -11,24 +11,21 @@ describe name_from_filename do
         framework.checks.load :os_cmd_injection_timing
     end
 
-    def results
-        framework.auditstore.issues.map.with_index do |issue, idx|
-            next if issue.var != 'untrusted_input'
+    context 'when issues have high response times' do
+        it 'marks them as untrusted and adds remarks' do
+            run
 
-            issue.variations.map( &:verification ).uniq == [true]
-            issue.variations.first.remarks[:meta_analysis].should be_true
+            checked = 0
+            framework.auditstore.issues.each do |issue|
+                next if issue.vector.affected_input_name != 'untrusted_input'
 
-            {
-                'hash'   => issue.digest,
-                'index'  => idx + 1,
-                'url'    => issue.url,
-                'name'   => issue.name,
-                'var'    => issue.var,
-                'elem'   => issue.elem,
-                'method' => issue.method
-            }
-        end.compact
+                checked += 1
+                issue.should be_untrusted
+                issue.remarks[:meta_analysis].should be_true
+            end
+
+            checked.should > 0
+        end
     end
 
-    easy_test
 end

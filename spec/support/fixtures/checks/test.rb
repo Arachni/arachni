@@ -16,29 +16,27 @@ class Arachni::Checks::Test < Arachni::Check::Base
 
     def clean_up
         return if !@ran
-        log_issue( url: 'http://blah', elem: 'link' )
+        log_issue( vector: Factory.create( :unique_active_vector, :Link ) )
     end
 
     def self.info
         {
-            :name           => 'Test check',
-            :description    => %q{Test description},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1',
-            :references     => {
-                'Wikipedia'  => 'http://en.wikipedia.org/'
+            name:        'Test check',
+            description: %q{Test description},
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+            version:     '0.1',
+            references:  {
+                'Wikipedia' => 'http://en.wikipedia.org/'
             },
-            :targets        => { 'Generic' => 'all' },
-            :issue   => {
-                :name        => %q{Test issue},
-                :description => %q{Test description},
-                :tags        => [ 'some', 'tag' ],
-                :cwe         => '0',
-                :severity    => Issue::Severity::HIGH,
-                :cvssv2      => '0',
-                :remedy_guidance    => %q{Watch out!.},
-                :remedy_code => '',
-                :metasploitable => 'unix/webapp/blah'
+            targets:     { 'Generic' => 'all' },
+            issue:       {
+                name:            %q{Test issue},
+                description:     %q{Test description},
+                tags:            ['some', 'tag'],
+                cwe:             '0',
+                severity:        Issue::Severity::HIGH,
+                remedy_guidance: %q{Watch out!.},
+                remedy_code:     ''
             }
 
         }

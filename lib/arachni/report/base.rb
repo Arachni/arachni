@@ -120,11 +120,9 @@ class Base < Component::Base
             plugin_results = plugins[name]
             next if !plugin_results || plugin_results[:results].empty?
 
-            exception_jail( false ) {
-                cr = plugin_results.clone
-                block.call( cr ) if block_given?
-                formatted[name] = formatter.new( cr ).run
-            }
+            cr = plugin_results.clone
+            block.call( cr ) if block_given?
+            formatted[name] = formatter.new( auditstore, cr ).run
         end
 
         formatted

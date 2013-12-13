@@ -8,6 +8,12 @@ describe Arachni::HTTP::Response do
         @url  = web_server_url_for( :client )
     end
 
+    describe '#status_line' do
+        it 'returns the first line of the response' do
+            @http.get( @url, mode: :sync ).status_line.should == 'HTTP/1.1 200 OK'
+        end
+    end
+
     describe '#redirection?' do
         context 'when the response is a redirection' do
             it 'returns true' do
@@ -24,7 +30,7 @@ describe Arachni::HTTP::Response do
 
         context 'when the response is not a redirection' do
             it 'returns false' do
-                described_class.new( 'http://test.com', code: 200 ).redirection?.should be_false
+                described_class.new( url: 'http://test.com', code: 200 ).redirection?.should be_false
             end
         end
     end
@@ -46,10 +52,11 @@ describe Arachni::HTTP::Response do
             context 'text/*' do
                 it 'returns true' do
                     h = {
+                        url:     'http://test.com',
                         headers: { 'Content-Type' => 'text/stuff' },
                         body:    'stuff'
                     }
-                    described_class.new( 'http://test.com', h ).text?.should be_true
+                    described_class.new( h ).text?.should be_true
                 end
             end
 
@@ -58,20 +65,22 @@ describe Arachni::HTTP::Response do
                     context 'binary' do
                         it 'returns false' do
                             h = {
+                                url:     'http://test.com',
                                 headers: { 'Content-Type' => 'application/stuff' },
                                 body:    "\00\00\00"
                             }
-                            described_class.new( 'http://test.com', h ).text?.should be_false
+                            described_class.new( h ).text?.should be_false
                         end
                     end
 
                     context 'text' do
                         it 'returns true' do
                             h = {
+                                url:     'http://test.com',
                                 headers: { 'Content-Type' => 'application/stuff' },
                                 body:    'stuff'
                             }
-                            described_class.new( 'http://test.com', h ).text?.should be_true
+                            described_class.new( h ).text?.should be_true
                         end
                     end
                 end
@@ -80,10 +89,11 @@ describe Arachni::HTTP::Response do
             context 'other' do
                 it 'returns false' do
                     h = {
+                        url:     'http://test.com',
                         headers: { 'Content-Type' => 'blah/stuff' },
                         body:    'stuff'
                     }
-                    described_class.new( 'http://test.com', h ).text?.should be_false
+                    described_class.new( h ).text?.should be_false
                 end
             end
 
@@ -91,15 +101,21 @@ describe Arachni::HTTP::Response do
                 context 'and the response body is' do
                     context 'binary' do
                         it 'returns false' do
-                            h = { body: "\00\00\00" }
-                            described_class.new( 'http://test.com', h ).text?.should be_false
+                            h = {
+                                url:  'http://test.com',
+                                body: "\00\00\00"
+                            }
+                            described_class.new( h ).text?.should be_false
                         end
                     end
 
                     context 'text' do
                         it 'returns true' do
-                            h = { body: 'stuff' }
-                            described_class.new( 'http://test.com', h ).text?.should be_true
+                            h = {
+                                url:  'http://test.com',
+                                body: 'stuff'
+                            }
+                            described_class.new( h ).text?.should be_true
                         end
                     end
                 end
@@ -117,7 +133,7 @@ describe Arachni::HTTP::Response do
 
             response = described_class.new(
                 request: Arachni::HTTP::Request.new(
-                             'http://a-url.com/',
+                             url:    'http://a-url.com/',
                              method: :get,
                              headers: {
                                  'req-header-name' => 'req header value'
@@ -155,22 +171,22 @@ describe Arachni::HTTP::Response do
         context 'when responses are identical' do
             it 'returns true' do
                 h = {
+                    url:     'http://test.com',
                     headers: { 'Content-Type' => 'application/stuff' },
                     body:    'stuff'
                 }
-                described_class.new( 'http://test.com', h.dup ).should ==
-                    described_class.new( 'http://test.com', h.dup )
+                described_class.new( h.dup ).should == described_class.new( h.dup )
             end
         end
         context 'when responses are not identical' do
             it 'returns false' do
                 described_class.new(
-                    'http://test.com',
+                    url:     'http://test.com',
                     headers: { 'Content-Type' => 'application/stuff' },
                     body:    'stuff'
                 ).should_not ==
                     described_class.new(
-                        'http://test.com',
+                        url:     'http://test.com',
                         headers: { 'Content-Type' => 'application/stuff1' },
                         body:    'stuff'
                     )
@@ -181,7 +197,6 @@ describe Arachni::HTTP::Response do
     describe '#to_h' do
         it 'returns a hash representation of self' do
             h = {
-                version:        '1.1',
                 url:            'http://stuff.com/',
                 code:           200,
                 ip_address:     '10.0.0.1',
@@ -194,7 +209,7 @@ describe Arachni::HTTP::Response do
                 return_message: 'No error'
             }
 
-            described_class.new( h ).to_h.should == h.stringify_keys
+            described_class.new( h ).to_h.should == h
         end
     end
 
