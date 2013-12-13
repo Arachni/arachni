@@ -155,7 +155,7 @@ module Utilities
                     print_info "\t#{option['name']} - #{option['desc']}"
                     print_info "\tType:        #{option['type']}"
                     print_info "\tDefault:     #{option['default']}"
-                    print_info "\tRequired?:   #{option['required?']}"
+                    print_info "\tRequired?:   #{option['required']}"
 
                     print_line
                 end
@@ -194,7 +194,7 @@ module Utilities
                     print_info "\t#{option['name']} - #{option['desc']}"
                     print_info "\tType:        #{option['type']}"
                     print_info "\tDefault:     #{option['default']}"
-                    print_info "\tRequired?:   #{option['required?']}"
+                    print_info "\tRequired?:   #{option['required']}"
 
                     print_line
                 end
