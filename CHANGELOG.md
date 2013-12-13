@@ -21,6 +21,8 @@
 - `Framework`
     - Audit
         - Stored pages are now offloaded to disk to lower RAM consumption.
+- `Trainer`
+    - `#push` -- Prints verbose messages in cases of scope violations.
 - `HTTP`
     - Maximum request-queue size lowered from 5000 to 500, to decrease RAM usage
         by preventing the storage of large amounts of requests for extended periods of time.
