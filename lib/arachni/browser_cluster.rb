@@ -72,7 +72,7 @@ class BrowserCluster
         @skip = Support::LookUp::HashSet.new( hasher: :persistent_hash )
 
         # Holds resources to consume, Arachni::Page objects usually.
-        @resources = Queue.new
+        @resources = Support::Database::Queue.new
         @sitemap   = {}
         @mutex     = Mutex.new
 
@@ -116,6 +116,9 @@ class BrowserCluster
 
         # Kill the resource consumer thread.
         @worker.kill
+
+        # Clear the temp files used to hold the resources to analyze.
+        @resources.clear
 
         # Kill the browsers.
         q = Queue.new
