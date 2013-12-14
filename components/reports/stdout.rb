@@ -91,18 +91,20 @@ class Arachni::Reports::Stdout < Arachni::Report::Base
             print_ok "[#{i+1}] #{trusted} -- #{issue.name}"
             print_info '~~~~~~~~~~~~~~~~~~~~'
 
-            print_info "ID Hash:  #{issue.digest}"
-            print_info "Severity: #{issue.severity}"
-            print_info "URL:      #{issue.vector.action}"
-            print_info "Element:  #{issue.vector.type}"
+            print_info "Digest:     #{issue.digest}"
+            print_info "Severity:   #{issue.severity.to_s.capitalize}"
+            print_line
+            print_info "URL:        #{issue.vector.action}"
+            print_info "Element:    #{issue.vector.type}"
 
             if issue.active?
-                print_info "Method:   #{issue.vector.method}"
-                print_info "Variable: #{issue.vector.affected_input_name}"
+                print_info "Method:     #{issue.vector.method.to_s.upcase}"
+                print_info "Input name: #{issue.affected_input_name}"
             end
 
-            print_info 'Tags:     ' + issue.tags.join( ', ' ) if issue.tags.is_a?( Array )
-
+            print_line
+            print_info "Tags: #{issue.tags.join(', ')}" if issue.tags.is_a?( Array )
+            print_line
             print_info 'Description: '
             print_info issue.description
 
@@ -148,11 +150,12 @@ class Arachni::Reports::Stdout < Arachni::Report::Base
             print_info "Variation #{i+1}:"
 
             if var.active?
+                print_info "Seed:      #{var.vector.seed.inspect}"
                 print_info "Injected:  #{var.vector.affected_input_value.inspect}"
             end
 
-            print_info "Signature: #{var.signature}" if var.signature
-            print_info "Proof:     #{var.proof}"
+            print_info "Signature: #{var.signature}"     if var.signature
+            print_info "Proof:     #{var.proof.inspect}" if var.proof
 
             next if var.remarks.empty?
 
