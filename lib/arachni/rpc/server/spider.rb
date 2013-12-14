@@ -8,12 +8,10 @@ module Arachni
 module RPC
 class Server
 
-#
 # Extends the regular {Arachni::Spider} with high-performance distributed
 # capabilities.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Spider < Arachni::Spider
 
     # Amount of URLs to buffer before distributing.
@@ -191,8 +189,8 @@ class Spider < Arachni::Spider
         end
 
         foreach = proc { |peer, iter| peer.spider.sitemap { |s| iter.return( s ) } }
-        after   = proc do |sitemap|
-            block.call( (sitemap | local_sitemap).flatten.uniq.sort )
+        after   = proc do |sitemaps|
+            block.call( sitemaps.inject({}) { |h, s| h.merge!(s); h}.merge( local_sitemap ) )
         end
 
         map_peers( foreach, after )

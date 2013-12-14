@@ -151,8 +151,8 @@ describe Arachni::Framework do
 
                 f.run
 
-                sitemap = f.auditstore.sitemap.sort.map { |u| u.split( '?' ).first }
-                sitemap.uniq.should == f.opts.restrict_paths.sort
+                sitemap = f.auditstore.sitemap.map { |u, _| u.split( '?' ).first }
+                sitemap.sort.uniq.should == f.opts.restrict_paths.sort
                 f.checks.clear
             end
         end

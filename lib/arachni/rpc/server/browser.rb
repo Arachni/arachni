@@ -99,7 +99,7 @@ class Browser
             end
 
             @browser.on_response do |response|
-                @master.push_to_sitemap( response.url ){}
+                @master.push_to_sitemap( response.url, response.code ){}
             end
 
             @browser.on_new_page do |page|

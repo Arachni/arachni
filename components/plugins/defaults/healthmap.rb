@@ -17,7 +17,7 @@ class Arachni::Plugins::HealthMap < Arachni::Plugin::Base
     def run
         auditstore = framework.auditstore
 
-        sitemap  = auditstore.sitemap.map { |url| url.split( '?' ).first }.uniq
+        sitemap  = auditstore.sitemap.keys.map { |url| url.split( '?' ).first }.uniq
         sitemap |= issue_urls = auditstore.issues.map { |issue| issue.vector.action }.uniq
 
         return if sitemap.size == 0
@@ -69,7 +69,7 @@ class Arachni::Plugins::HealthMap < Arachni::Plugin::Base
             name:        'Health map',
             description: %q{Generates a simple list of safe/unsafe URLs.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.4'
+            version:     '0.1.5'
         }
     end
 

@@ -183,4 +183,8 @@ describe Arachni::BrowserCluster do
         end
     end
 
+    describe '#sitemap' do
+        it 'returns the sitemap as covered by the browsers'
+    end
+
 end

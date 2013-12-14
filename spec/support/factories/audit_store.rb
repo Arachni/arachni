@@ -1,7 +1,7 @@
 Factory.define :audit_store_data do
     {
         options:  Arachni::Options.to_h,
-        sitemap:  [Arachni::Options.url],
+        sitemap:  { Arachni::Options.url => 200 },
         issues:   (0..10).map do |i|
             [
                 Factory[:passive_issue].tap { |issue| issue.vector.action += i.to_s },

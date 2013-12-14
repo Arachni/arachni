@@ -7,8 +7,8 @@
 
                 <div id='sitemap_list'>
                     <h3><%=auditstore.sitemap.size%> pages</h3>
-                    <% auditstore.sitemap.each do |url| %>
-                      <a href="<%=escapeHTML(url)%>"><%=escapeHTML(url)%></a><br/>
+                    <% auditstore.sitemap.each do |url, code| %>
+                      [<%=code%>] <a href="<%=escapeHTML(url)%>"><%=escapeHTML(url)%></a><br/>
                     <%end%>
                 </div>
 

@@ -96,7 +96,7 @@ describe Arachni::AuditStore do
 
     describe '#sitemap' do
         it 'returns the sitemap' do
-            audit_store.sitemap.should == [@opts.url.to_s]
+            audit_store.sitemap.should == {@opts.url.to_s => 200}
         end
     end
 

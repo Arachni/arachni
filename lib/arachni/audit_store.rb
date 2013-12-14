@@ -14,7 +14,8 @@ class AuditStore
     # @return    [Hash]    {Options#to_h}
     attr_reader   :options
 
-    # @return    [Array]   All the urls crawled and audited.
+    # @return   [Hash<String, Integer>]
+    #   List of crawled URLs with their HTTP codes.
     attr_accessor :sitemap
 
     # @return    [Hash]  Plugin results.
@@ -35,7 +36,7 @@ class AuditStore
         options.each { |k, v| send( "#{k}=", v ) }
 
         @plugins     ||= {}
-        @sitemap     ||= []
+        @sitemap     ||= {}
         self.options ||= Options
         @issues      ||= {}
     end

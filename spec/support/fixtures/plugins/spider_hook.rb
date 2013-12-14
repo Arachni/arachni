@@ -9,18 +9,18 @@ class Arachni::Plugins::SpiderHook < Arachni::Plugin::Base
 
     def prepare
         framework.pause
-        @urls = []
+        @sitemap = {}
     end
 
     def run
-        spider.on_each_page { |page| @urls << page.url }
+        spider.on_each_page { |page| @sitemap[page.url] = page.code }
     end
 
     def clean_up
         framework.resume
         wait_while_framework_running
         sleep 1 # emulate some latency to catch race conditions
-        register_results( framework.self_url => @urls )
+        register_results( @sitemap )
     end
 
     def self.merge( results )

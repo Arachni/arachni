@@ -23,7 +23,7 @@ describe Arachni::Spider do
 
     it 'avoids infinite loops' do
         @opts.url = @url + 'loop'
-        sitemap = Arachni::Spider.new.run
+        sitemap = Arachni::Spider.new.run.keys
 
         expected = [ @opts.url, @opts.url + '_back' ]
         (sitemap & expected).sort.should == expected.sort
@@ -31,13 +31,12 @@ describe Arachni::Spider do
 
     it 'preserves cookies' do
         @opts.url = @url + 'with_cookies'
-        Arachni::Spider.new.run.
-            include?( @url + 'with_cookies3' ).should be_true
+        Arachni::Spider.new.run.include?( @url + 'with_cookies3' ).should be_true
     end
 
     it 'ignores redirections to foreign domains' do
         @opts.url = @url + 'foreign_domain'
-        Arachni::Spider.new.run.should == [ @opts.url ]
+        Arachni::Spider.new.run.keys.should == [ @opts.url ]
     end
 
     context 'when unable to get a response for the given URL' do
@@ -156,25 +155,6 @@ describe Arachni::Spider do
         end
     end
 
-    describe '#fancy_sitemap' do
-        context 'when just initialized' do
-            it 'is empty' do
-                spider = Arachni::Spider.new
-                spider.fancy_sitemap.should be_empty
-            end
-        end
-
-        context 'after a crawl' do
-            it 'returns a hash of crawled URLs with their HTTP response codes' do
-                spider = Arachni::Spider.new
-                spider.run
-                spider.fancy_sitemap.include?( @url ).should be_true
-                spider.fancy_sitemap[@url].should == 200
-                spider.fancy_sitemap[@url + 'this_does_not_exist' ].should == 404
-            end
-        end
-    end
-
     describe '#run' do
         it 'performs the crawl' do
             @opts.url = @url + '/lots_of_paths'
@@ -187,7 +167,7 @@ describe Arachni::Spider do
             @opts.url = @url + '/path_params'
 
             spider = Arachni::Spider.new
-            spider.run.select { |url| url.include?( '/something' ) }.size.should == 1
+            spider.run.select { |url, _| url.include?( '/something' ) }.size.should == 1
         end
 
         context 'Options.exclude_pages' do
@@ -195,7 +175,7 @@ describe Arachni::Spider do
                 @opts.exclude_pages = /skip-me/i
                 @opts.url = "#{@url}skip"
 
-                Arachni::Spider.new.run.should == [@opts.url, "#{@url}follow-me"]
+                Arachni::Spider.new.run.keys.should == [@opts.url, "#{@url}follow-me"]
             end
         end
 
@@ -204,7 +184,7 @@ describe Arachni::Spider do
                 @opts.exclude = /skip-me/i
                 @opts.url = "#{@url}skip"
 
-                Arachni::Spider.new.run.should == [@opts.url, "#{@url}follow-me"]
+                Arachni::Spider.new.run.keys.should == [@opts.url, "#{@url}follow-me"]
             end
         end
 
@@ -213,7 +193,7 @@ describe Arachni::Spider do
                 @opts.include = /include-me/i
                 @opts.url = "#{@url}include"
 
-                Arachni::Spider.new.run.sort.should ==
+                Arachni::Spider.new.run.keys.sort.should ==
                     [@opts.url, "#{@url}include-me/1", "#{@url}include-me/2"].sort
             end
         end
@@ -246,7 +226,7 @@ describe Arachni::Spider do
                     @opts.link_count_limit = 1
                     spider = Arachni::Spider.new
                     spider.run.should == spider.sitemap
-                    spider.sitemap.should == [@url]
+                    spider.sitemap.keys.should == [@url]
 
                     spider.run.should be_false
                 end
@@ -256,12 +236,12 @@ describe Arachni::Spider do
                 @opts.link_count_limit = 1
                 spider = Arachni::Spider.new
                 spider.run.should == spider.sitemap
-                spider.sitemap.should == [@url]
+                spider.sitemap.keys.should == [@url]
 
                 @opts.link_count_limit = 2
                 spider = Arachni::Spider.new
                 spider.run.should == spider.sitemap
-                spider.sitemap.size.should == 2
+                spider.sitemap.keys.size.should == 2
             end
         end
         context 'when redundant rules have been set' do
@@ -270,11 +250,11 @@ describe Arachni::Spider do
 
                 @opts.redundant = { 'redundant' => 2 }
                 spider = Arachni::Spider.new
-                spider.run.select { |url| url.include?( 'redundant' ) }.size.should == 2
+                spider.run.select { |url, _| url.include?( 'redundant' ) }.size.should == 2
 
                 @opts.redundant = { 'redundant' => 3 }
                 spider = Arachni::Spider.new
-                spider.run.select { |url| url.include?( 'redundant' ) }.size.should == 3
+                spider.run.select { |url, _| url.include?( 'redundant' ) }.size.should == 3
             end
         end
         context 'when called without parameters' do
@@ -307,14 +287,14 @@ describe Arachni::Spider do
             @opts.redirect_limit = -1
 
             spider = Arachni::Spider.new
-            spider.run.select { |url| url.include?( 'stacked_redirect4' ) }.should be_any
+            spider.run.select { |url, _| url.include?( 'stacked_redirect4' ) }.should be_any
         end
         it 'follows stacked redirects' do
             @opts.url = @url + '/stacked_redirect'
             @opts.redirect_limit = -1
 
             spider = Arachni::Spider.new
-            spider.run.select { |url| url.include?( 'stacked_redirect4' ) }.should be_any
+            spider.run.select { |url, _| url.include?( 'stacked_redirect4' ) }.should be_any
         end
         it 'ignores stacked redirects that exceed the limit' do
             @opts.url = @url + '/stacked_redirect'
@@ -383,7 +363,7 @@ describe Arachni::Spider do
             (s.paths & paths).sort.should == paths.sort
             s.run
             (s.paths & paths).should be_empty
-            (s.sitemap & paths).sort.should == paths.sort
+            (s.sitemap.keys & paths).sort.should == paths.sort
         end
 
         it 'normalizes and follow the pushed paths' do
@@ -396,8 +376,8 @@ describe Arachni::Spider do
 
             s.push( p ).should be_true
             s.run
-            s.fancy_sitemap[np].should == 200
-            s.fancy_sitemap[nwp].should == 200
+            s.sitemap[np].should == 200
+            s.sitemap[nwp].should == 200
         end
 
         context 'when the link-count-limit option has been set' do
@@ -406,7 +386,7 @@ describe Arachni::Spider do
                     @opts.link_count_limit = 1
                     spider = Arachni::Spider.new
                     spider.run.should == spider.sitemap
-                    spider.sitemap.should == [@url]
+                    spider.sitemap.keys.should == [@url]
 
                     spider.push( Arachni::Utilities.to_absolute( 'test' ) ).should be_false
                 end

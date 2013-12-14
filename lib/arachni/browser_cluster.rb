@@ -42,7 +42,8 @@ class BrowserCluster
     # @return   [Integer]   Amount of browser instances in the pool.
     attr_reader :pool_size
 
-    # @return   [Set]
+    # @return   [Hash<String, Integer>]
+    #   List of crawled URLs with their HTTP codes.
     attr_reader :sitemap
 
     # @param    [Hash]  options
@@ -72,7 +73,7 @@ class BrowserCluster
 
         # Holds resources to consume, Arachni::Page objects usually.
         @resources = Queue.new
-        @sitemap   = Set.new
+        @sitemap   = {}
         @mutex     = Mutex.new
 
         initialize_browsers
@@ -154,8 +155,8 @@ class BrowserCluster
         end
     end
 
-    def push_to_sitemap( url )
-        synchronize { @sitemap << url }
+    def push_to_sitemap( url, code )
+        synchronize { @sitemap[url] = code }
     end
 
     def alive?

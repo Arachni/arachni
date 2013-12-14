@@ -48,8 +48,6 @@ shared_examples_for 'mutable' do
             end
         end
 
-        it 'sets #default_something to the original element'
-
         it 'sets #affected_input_name to the name of the fuzzed input' do
             checked = false
             mutable.mutations( seed, skip_original: true ).each do |m|

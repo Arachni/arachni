@@ -30,8 +30,7 @@ describe 'Arachni::RPC::Server::Spider' do
 
                 report = instance.service.report
 
-                plugin_urls = report[:plugins]['spider_hook'][:results].values.flatten
-                plugin_urls.uniq.sort.should == sitemap.sort
+                report[:plugins]['spider_hook'][:results].should == sitemap
             end
         end
 
@@ -59,8 +58,7 @@ describe 'Arachni::RPC::Server::Spider' do
 
                 report = instance.service.report
 
-                plugin_urls = report[:plugins]['spider_hook'][:results].values.flatten
-                plugin_urls.uniq.sort.should == sitemap.sort
+                report[:plugins]['spider_hook'][:results].should == sitemap
             end
         end
     end

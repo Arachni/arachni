@@ -95,7 +95,8 @@ class Framework
     # @return   [Arachni::HTTP]
     attr_reader :http
 
-    # @return   [Array] URLs of all discovered pages.
+    # @return   [Hash<String, Integer>]
+    #   List of crawled URLs with their HTTP codes.
     attr_reader :sitemap
 
     # @return   [Trainer]
@@ -152,8 +153,8 @@ class Framework
         @status  = :ready
         @paused  = []
 
-        @auditmap = []
-        @sitemap  = []
+        @audited_page_count = 0
+        @sitemap = {}
 
         @current_url = ''
 
@@ -214,10 +215,9 @@ class Framework
             return false
         end
 
-        @auditmap << page.url
-        @sitemap |= @auditmap
-        @sitemap |= browser_sitemap
-        @sitemap.uniq!
+        @audited_page_count += 1
+        @sitemap[page.url] = page.code
+        @sitemap.merge!( browser_sitemap )
 
         print_line
         print_status "Auditing: [HTTP: #{page.code}] #{page.url}"
@@ -309,7 +309,7 @@ class Framework
         @opts.start_datetime = Time.now if !@opts.start_datetime
 
         sitemap_sz  = @sitemap.size
-        auditmap_sz = @auditmap.size
+        auditmap_sz = @audited_page_count
 
         if( !refresh_time || auditmap_sz == sitemap_sz ) && !override_refresh
             @opts.delta_time ||= Time.now - @opts.start_datetime
@@ -377,6 +377,8 @@ class Framework
         @page_queue << page
         @page_queue_total_size += 1
 
+        @sitemap[page.url] = page.code
+
         @push_to_page_queue_filter << page
 
         true
@@ -420,10 +422,10 @@ class Framework
         opts['mods'] = @checks.keys
 
         AuditStore.new(
-            options:  opts,
-            sitemap:  (auditstore_sitemap || []).sort,
-            issues:   @checks.results,
-            plugins:  @plugins.results
+            options: opts,
+            sitemap: (auditstore_sitemap || {}),
+            issues:  @checks.results,
+            plugins: @plugins.results
         )
     end
     alias :auditstore :audit_store
@@ -612,7 +614,7 @@ class Framework
     def clean_up
         @status = :cleanup
 
-        @sitemap |= browser_sitemap
+        @sitemap.merge!( browser_sitemap )
 
         close_browser
         @page_queue.clear
@@ -633,19 +635,13 @@ class Framework
         true
     end
 
-    def push_to_sitemap( url )
-        @sitemap << url
-        @sitemap.uniq!
-        @sitemap
-    end
-
     def wait_for_browser?
         @browser && !@browser.done?
     end
 
     def browser_sitemap
-        return [] if !@browser
-        @browser.sitemap.to_a
+        return {} if !@browser
+        @browser.sitemap
     end
 
     def reset_spider
@@ -775,12 +771,11 @@ class Framework
         # the spider.
         if @opts.restrict_paths && !@opts.restrict_paths.empty?
             @opts.restrict_paths = @opts.restrict_paths.map { |p| to_absolute( p ) }
-            @sitemap = @opts.restrict_paths.dup
             @opts.restrict_paths.each { |url| push_to_url_queue( url ) }
         else
             # Initiates the crawl.
             spider.run do |page|
-                @sitemap |= spider.sitemap
+                @sitemap[page.url] = page.code
                 push_to_url_queue page.url
 
                 next if page.platforms.empty?
@@ -863,14 +858,12 @@ class Framework
         audit_page( @page_queue.pop ) while !@page_queue.empty?
     end
 
-    #
     # Special sitemap for the {#auditstore}.
     #
     # Used only under special circumstances, will usually return the {#sitemap}
     # but can be overridden by the {::Arachni::RPC::Framework}.
     #
     # @return   [Array]
-    #
     def auditstore_sitemap
         @sitemap
     end

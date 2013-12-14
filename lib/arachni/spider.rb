@@ -31,11 +31,13 @@ class Spider
     #   Not determined by HTTP status codes, we're talking network failures here.
     attr_reader :failures
 
-    #
+    # @return   [Hash<String, Integer>]
+    #   List of crawled URLs with their HTTP codes.
+    attr_reader :sitemap
+
     # Instantiates Spider class with user options.
     #
     # @param  [Arachni::Options] opts
-    #
     def initialize( opts = Options.instance )
         @opts = opts
 
@@ -68,16 +70,6 @@ class Spider
     #   If you want to add more paths use {#push}.
     def paths
         @paths
-    end
-
-    # @return   [Array<String>] list of crawled URLs
-    def sitemap
-        @sitemap.keys
-    end
-
-    # @return   [Hash<Integer, String>] list of crawled URLs with their HTTP codes
-    def fancy_sitemap
-        @sitemap
     end
 
     # Runs the Spider and passes the requested object to the block.
