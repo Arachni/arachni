@@ -854,7 +854,7 @@ class Form < Arachni::Element::Base
             c_form['attrs']['method'] = c_form['attrs']['method'].downcase
         end
 
-        %w(textarea input select).each do |attr|
+        %w(textarea input select button).each do |attr|
             c_form[attr] ||= []
             form.search( ".//#{attr}" ).each do |elem|
 
@@ -879,7 +879,7 @@ class Form < Arachni::Element::Base
         end
 
         # merge the form elements to make auditing easier
-        c_form['auditable'] = c_form['input'] | c_form['textarea']
+        c_form['auditable'] = c_form['input'] | c_form['textarea'] | c_form['button']
         c_form['auditable'] =
             merge_select_with_input( c_form['auditable'], c_form['select'] )
 
