@@ -59,6 +59,7 @@
     - Updated `#mutations` to delegate to `#each_mutation`.
 - `Element::Cookie#encode`
     - Allow `=` to remain un-encoded in the cookie value.
+- `Element::Form` -- Buttons are now treated as inputs as well.
 - `Options#load` -- Updated to support serialized `Hash` objects.
 - Added `Support::Signature` -- Signature class used to generate and refine signatures
     from `String` objects.
