@@ -26,8 +26,8 @@ class Arachni::Plugins::Uniformity < Arachni::Plugin::Base
             next if issue.passive?
 
             id = "#{issue.check[:shortname]}:#{issue.vector.method}:" <<
-                "#{issue.vector.affected_input_name}".hash
-            (issue_digests[id] ||= []) << issue.digest
+                "#{issue.vector.affected_input_name}"
+            (issue_digests[id.hash] ||= []) << issue.digest
         end
 
         issue_digests.reject! { |_, v| v.size == 1 }
