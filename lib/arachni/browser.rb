@@ -97,8 +97,12 @@ class Browser
 
     NO_EVENTS_FOR_ELEMENTS = Set.new([
         :base, :bdo, :br, :head, :html, :iframe, :meta, :param, :script, :style,
-        :title, :link, :script
+        :title, :link
     ])
+
+    COMMON_ELEMENTS = EVENTS_PER_ELEMENT.keys | NO_EVENTS_FOR_ELEMENTS.to_a | [
+        :p, :li, :ul, :img
+    ]
 
     JS_OVERRIDES =
         IO.read( "#{File.dirname( __FILE__ )}/browser/overrides.js" )
@@ -144,7 +148,7 @@ class Browser
 
         @proxy.start_async
 
-        @watir = ::Watir::Browser.new( selenium )
+        @watir = ::Watir::Browser.new( *phantomjs )
 
         ensure_open_window
 
@@ -501,6 +505,8 @@ class Browser
         opening_tag = element.opening_tag
         tag_name    = element.tag_name
 
+        # TODO: Return if element is invisible.
+
         tries = 0
         begin
             if tag_name == 'form' && event == :submit
@@ -732,8 +738,10 @@ class Browser
                 inject({}) { |h, (k, v)| h[k.gsub( '-' ,'_' ).to_sym] = v.to_s; h }
 
             # Not supported by Watir.
+            # TODO: Find a better way to determine these beforehand.
             attributes.delete( :cellpadding )
             attributes.delete( :cellspacing )
+            attributes.delete( :role )
 
             begin
 
@@ -836,6 +844,24 @@ class Browser
         watir.execute_script( 'window.open()' )
     end
 
+    # PhantomJS driver, the default.
+    def phantomjs
+        [selenium]
+    end
+
+    # Firefox driver, only used for debugging.
+    def firefox
+        profile = Selenium::WebDriver::Firefox::Profile.new
+        profile.proxy = Selenium::WebDriver::Proxy.new http: @proxy.address,
+                                                       ssl: @proxy.address
+        [:firefox, profile: profile]
+    end
+
+    # Chrome driver, only used for debugging.
+    def chrome
+        [ :chrome, switches: [ "--proxy-server=#{@proxy.address}" ] ]
+    end
+
     def capabilities
         Selenium::WebDriver::Remote::Capabilities.phantomjs(
             'phantomjs.page.settings.userAgent'  => Options.user_agent,
@@ -861,8 +887,12 @@ class Browser
     end
 
     def request_handler( request, response )
-        return if !request.url.include?( request_token ) &&
-            ignore_request?( request )
+        if !request.url.include?( request_token ) && ignore_request?( request )
+            # Should probably fake it better using the extension of the resource
+            # to determine the expected type.
+            #response.headers['content-type'] = 'text/html'
+            return
+        end
 
         if !request.url.include?( request_token ) && @add_request_transitions
             @request_transitions << { request.url => :request }
@@ -891,12 +921,24 @@ class Browser
     end
 
     def intercept( response )
-        return if !response.headers.content_type.to_s.start_with?( 'text/html' )
+        return if !intercept?( response )
         return if response.body.include? js_token
 
         response.body = "\n<script>#{js_overrides}</script>\n#{response.body}"
 
         response.headers['content-length'] = response.body.size
+    end
+
+    def intercept?( response )
+        return false if response.body.empty?
+        return false if !response.headers.content_type.to_s.start_with?( 'text/html' )
+
+        body = response.body.downcase
+        COMMON_ELEMENTS.each do |tag|
+            return true if body.include? "<#{tag}".downcase
+        end
+
+        false
     end
 
     def js_overrides
@@ -996,7 +1038,6 @@ class Browser
     def synchronize( &block )
         @mutex.synchronize( &block )
     end
-
 
 end
 end
