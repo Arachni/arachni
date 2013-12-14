@@ -62,6 +62,8 @@
 - Reports
     - Removed `metareport`.
 - Plugins
+    - `resolver` -- Removed as the report now contains that information in the
+        responses associated with each issue.
     - `proxy`
         - Updated to use `HTTP::ProxyServer`.
 - Path extractors
