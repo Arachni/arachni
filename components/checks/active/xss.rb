@@ -17,20 +17,24 @@
 # @see http://secunia.com/advisories/9716/
 class Arachni::Checks::XSS < Arachni::Check::Base
 
+    def self.tag_name
+        "some_dangerous_input_#{seed}"
+    end
+
     def self.tag
-        @tag ||= 'some_dangerous_input_' + seed
+        "<#{tag_name}/>"
     end
 
     def self.strings
         @strings ||= [
             # Straight injection.
-            "<#{tag}/>",
+            tag,
 
             # Go for an error.
-            "()\"&%1'-;<#{tag}/>'",
+            "()\"&%1'-;#{tag}'",
 
             # Break out of HTML comments.
-            "--><#{tag}/><!--"
+            "-->#{tag}<!--"
         ]
     end
 
@@ -52,9 +56,9 @@ class Arachni::Checks::XSS < Arachni::Check::Base
         return if !response.body || !response.body.include?( self.class.tag )
 
         # see if we managed to successfully inject our element in the doc tree
-        return if Nokogiri::HTML( response.body ).css( self.class.tag ).empty?
+        return if Nokogiri::HTML( response.body ).css( self.class.tag_name ).empty?
 
-        log( { vector: element }, response )
+        log( { vector: element, proof: self.class.tag }, response )
     end
 
     def self.info
