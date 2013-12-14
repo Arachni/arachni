@@ -20,7 +20,7 @@ class Arachni::Checks::CodeExecutionPHPInputWrapper < Arachni::Check::Base
                 m = mutation.dup
 
                 # Figure out the extension of the default value, if it has one.
-                ext = m.original[m.affected_input_name].to_s.split( '.' )
+                ext = m.default_inputs[m.affected_input_name].to_s.split( '.' )
                 ext = ext.size > 1 ? ext.last : nil
 
                 # Null-terminate the injected value and append the ext.
