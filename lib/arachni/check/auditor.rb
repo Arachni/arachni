@@ -297,7 +297,11 @@ module Auditor
         # either by us or preferred checks.
         (preferred | [shortname]).each do |mod|
             next if !framework.checks.include?( mod )
-            issue_id = framework.checks[mod].create_issue( vector: elem ).unique_id
+
+            klass = framework.checks[mod]
+            next if !klass.info.include?(:issue)
+
+            issue_id = klass.create_issue( vector: elem ).unique_id
             return true if framework.checks.issue_set.include?( issue_id )
         end
 
