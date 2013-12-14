@@ -63,6 +63,11 @@ describe Arachni::Issue do
                 passive_issue.active?.should be_false
             end
         end
+        context 'when the issue has active variations' do
+            it 'returns true' do
+                issue_with_variations.active?.should be_true
+            end
+        end
     end
 
     describe '#passive?' do
@@ -112,6 +117,24 @@ describe Arachni::Issue do
                 issue.untrusted?.should be_false
             end
         end
+    end
+
+    describe '#affected_input_name' do
+        context 'when the issue is' do
+            context 'active' do
+                it 'returns the name of the affected input' do
+                    active_issue.affected_input_name.should ==
+                        active_issue.vector.affected_input_name
+                end
+            end
+
+            context 'passive' do
+                it 'returns nil' do
+                    passive_issue.affected_input_name.should be_nil
+                end
+            end
+        end
+
     end
 
     describe '#cwe=' do
@@ -294,7 +317,8 @@ describe Arachni::Issue do
                         type:   :form,
                         url:    'http://test.com/',
                         action: 'http://test.com/',
-                        inputs: { 'stuff' => '1' }
+                        default_inputs: { 'stuff' => '1' },
+                        affected_input_name:  'stuff'
                     },
                     cwe_url:         'http://cwe.mitre.org/data/definitions/1.html'
                 }
@@ -303,7 +327,6 @@ describe Arachni::Issue do
                     variation.should == {
                         vector:    {
                             inputs:               { 'stuff' => i.to_s },
-                            affected_input_name:  'stuff',
                             affected_input_value: i.to_s,
                             seed:                 i.to_s
                         },

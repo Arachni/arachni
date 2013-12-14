@@ -134,9 +134,27 @@ class Issue
     #   `true` if the issue was discovered by manipulating an input,
     #   `false` otherwise.
     #
-    # @see recon?
+    # @see #passive?
     def active?
+        if variations && variations.any?
+            return variations.first.active?
+        end
+
         !!(vector.respond_to?( :affected_input_name ) && vector.affected_input_name)
+    end
+
+    # @return   [String, nil]
+    #   The name of the affected input, `nil` if the issue is {#passive?}.
+    #
+    # @see #passive?
+    def affected_input_name
+        return if !active?
+
+        if variations && variations.any?
+            return variations.first.vector.affected_input_name
+        end
+
+        vector.affected_input_name
     end
 
     # @return   [Boolean]
@@ -199,12 +217,15 @@ class Issue
         if solo?
             h.delete( :variation )
         else
-            h[:vector].delete :default_inputs
-
             if variation?
                 h[:vector].delete :type
                 h[:vector].delete :url
                 h[:vector].delete :action
+                h[:vector].delete :default_inputs
+                h[:vector].delete :affected_input_name
+            else
+                h[:vector].delete :inputs
+                h[:vector][:affected_input_name] = affected_input_name
             end
         end
 
