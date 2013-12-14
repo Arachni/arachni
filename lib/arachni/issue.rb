@@ -140,7 +140,7 @@ class Issue
             return variations.first.active?
         end
 
-        !!(vector.respond_to?( :affected_input_name ) && vector.affected_input_name)
+        vector.respond_to?( :affected_input_name ) && vector.affected_input_name
     end
 
     # @return   [String, nil]
