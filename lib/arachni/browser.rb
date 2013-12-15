@@ -101,7 +101,7 @@ class Browser
     ])
 
     COMMON_ELEMENTS = EVENTS_PER_ELEMENT.keys | NO_EVENTS_FOR_ELEMENTS.to_a | [
-        :p, :li, :ul, :img
+        :p, :li, :ul, :img, :a
     ]
 
     JS_OVERRIDES =
@@ -385,15 +385,16 @@ class Browser
         @skip << action
     end
 
-    # Triggers all events on all elements (**once**) and captures
-    # {#page_snapshots page snapshots}.
+    # Iterates over all elements which have events and passes their info to the
+    # given block.
     #
-    # @return   [Browser]   `self`
-    def trigger_events
-        # Filter out irrelevant stuff first because the manipulation that comes
-        # next is expensive, so let's not waste our time with them at all.
-        pending = Set.new
-        tries   = 0
+    # @yield [Hash]
+    #   Hash with information about the index of the element, its tag name and
+    #   its applicable events along with their handlers.
+    #
+    #       { index: 5, tag_name: 'div', events: [[:onclick, 'addForm();']] }
+    def each_element_with_events
+        tries = 0
 
         watir.elements.each.with_index do |element, i|
             begin
@@ -423,7 +424,20 @@ class Browser
                 events.empty?
 
             skip opening_tag
-            pending << { index: i, tag_name: tag_name, events: events }
+            yield( { index: i, tag_name: tag_name, events: events } )
+        end
+
+        self
+    end
+
+    # Triggers all events on all elements (**once**) and captures
+    # {#page_snapshots page snapshots}.
+    #
+    # @return   [Browser]   `self`
+    def trigger_events
+        pending = Set.new
+        each_element_with_events do |info|
+            pending << info
         end
 
         root_page = to_page

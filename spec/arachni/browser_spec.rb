@@ -391,6 +391,22 @@ describe Arachni::Browser do
         end
     end
 
+    describe '#each_element_with_events' do
+        it 'passes each element and event info to the block' do
+            @browser.load( @url + '/trigger_events' ).start_capture
+
+            elements_with_events = []
+            @browser.each_element_with_events do |info|
+                elements_with_events << info
+            end
+
+            elements_with_events.should == [
+                { index: 4, tag_name: 'body', events: [[:onmouseover, 'makePOST();']] },
+                { index: 5, tag_name: 'div', events: [[:onclick, 'addForm();']] }
+            ]
+        end
+    end
+
     describe '#trigger_event' do
         it 'triggers the given event and captures snapshots' do
             @browser.load( @url + '/trigger_events' ).start_capture
