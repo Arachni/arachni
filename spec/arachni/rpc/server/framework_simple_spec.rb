@@ -93,13 +93,13 @@ describe 'Arachni::RPC::Server::Framework' do
         end
     end
     describe '#list_reports' do
-        it 'lists all available plugins' do
+        it 'lists all available reports' do
             reports = @framework_clean.list_reports
             reports.should be_any
             report_with_opts = reports.select{ |r| r[:options].any? }.first
             report_with_opts[:options].first.should be_kind_of( Hash )
         end
-        it 'aliased to #lsplug' do
+        it 'aliased to #lsrep' do
             @framework_clean.list_reports.should == @framework_clean.lsrep
         end
     end
