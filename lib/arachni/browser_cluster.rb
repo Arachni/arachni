@@ -32,8 +32,10 @@ class BrowserCluster
     end
 
     DEFAULT_OPTIONS = {
-        # Amount of Browsers to keep in the pool.
-        pool_size:    10,
+        # Amount of Browsers to keep in the pool and put to work. 6 seems to
+        # be the magic number, although efficiency will obviously depend on the
+        # workload.
+        pool_size:    6,
 
         # Lifetime of each Browser counted in pages.
         time_to_live: 10
