@@ -59,13 +59,11 @@ describe Arachni::BrowserCluster do
                 (browsers[:idle].size + browsers[:busy].size).should == 3
             end
 
-            it 'defaults to 10' do
-                @cluster = described_class.new(
-                    handler: proc {}
-                )
+            it 'defaults to 6' do
+                @cluster = described_class.new( handler: proc {} )
 
                 browsers = @cluster.instance_variable_get( :@browsers )
-                (browsers[:idle].size + browsers[:busy].size).should == 10
+                (browsers[:idle].size + browsers[:busy].size).should == 6
             end
         end
 
