@@ -85,14 +85,41 @@ class Browser
         if @master
 
             # Let the master handle deduplication of operations.
+            #
+            # @see Browser#skip?
             def @browser.skip?( action )
                 @options[:master].skip? action
             end
 
+            # Let the master know that the given operation should be skipped in
+            # the future.
+            #
+            # @see Browser#skip
             def @browser.skip( action )
                 @options[:master].skip action
             end
 
+            # We change the default scheduling to distribute elements and events
+            # to all available browsers ASAP, instead of building a list and then
+            # consuming it, since we're don't have to worry about messing up our
+            # page's state in this setup.
+            #
+            # @see Browser#trigger_events
+            def @browser.trigger_events
+                root_page = to_page
+
+                each_element_with_events do |info|
+                    info[:events].each do |name, _|
+                        distribute_event( root_page, info[:index], name.to_sym )
+                    end
+                end
+
+                true
+            end
+
+            # Direct the distribution to the master and let it take it from there.
+            #
+            # @see Browser#distribute_event
             def @browser.distribute_event( *args )
                 @options[:master].analyze args
                 true
