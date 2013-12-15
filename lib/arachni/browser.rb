@@ -100,9 +100,7 @@ class Browser
         :title, :link
     ])
 
-    COMMON_ELEMENTS = EVENTS_PER_ELEMENT.keys | NO_EVENTS_FOR_ELEMENTS.to_a | [
-        :p, :li, :ul, :img, :a
-    ]
+    HTML_IDENTIFIERS = ['<!doctype html', '<html', '<head', '<body', '<title', '<script']
 
     JS_OVERRIDES =
         IO.read( "#{File.dirname( __FILE__ )}/browser/overrides.js" )
@@ -948,9 +946,7 @@ class Browser
         return false if !response.headers.content_type.to_s.start_with?( 'text/html' )
 
         body = response.body.downcase
-        COMMON_ELEMENTS.each do |tag|
-            return true if body.include? "<#{tag}".downcase
-        end
+        HTML_IDENTIFIERS.each { |tag| return true if body.include? tag.downcase }
 
         false
     end
