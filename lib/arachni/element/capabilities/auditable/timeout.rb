@@ -223,13 +223,13 @@ module Timeout
     #   * {Array} -- Will iterate over all payloads and inject them.
     #   * {Hash} -- Expects {Platform} (as `Symbol`s ) for keys and {Array} of
     #       `payloads` for values. The applicable `payloads` will be
-    #       {Platform#pick picked} from the hash based on
-    #       {Element::Base#platforms applicable platforms} for the
-    #       {Base#action resource} to be audited.
+    #       {Platform::Manager#pick picked} from the hash based on
+    #       {Element::Capabilities::Auditable#platforms applicable platforms}
+    #       for the {Element::Capabilities::Auditable#action resource} to be audited.
     #
     #   Delay placeholder `__TIME__` will be substituted with `timeout / timeout_divider`.
     # @param   [Hash]      opts
-    #   Options as described in {Arachni::Element::Capabilities::Mutable::MUTATION_OPTIONS}
+    #   Options as described in {Element::Capabilities::Mutable::MUTATION_OPTIONS}
     #   with the specified extras.
     # @option   opts    [Integer] :timeout
     #   Milliseconds to wait for the request to complete.

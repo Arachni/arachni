@@ -19,7 +19,7 @@ module Platform
 #
 class Error < Arachni::Error
 
-    # Raised on {Platform#invalid?} platform names.
+    # Raised on {Manager#invalid?} platform names.
     #
     # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
     class Invalid < Error

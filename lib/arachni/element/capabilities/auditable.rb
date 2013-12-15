@@ -362,11 +362,11 @@ module Auditable
     #
     #   * {String} -- Will inject the single payload.
     #   * {Array} -- Will iterate over all payloads and inject them.
-    #   * {Hash} -- Expects {Platform} (as `Symbol`s ) for keys and {Array} of
-    #       `payloads` for values. The applicable `payloads` will be
-    #       {Platform#pick picked} from the hash based on
-    #       {Element::Base#platforms applicable platforms} for the
-    #       {Base#action resource} to be audited.
+    #   * {Hash} -- Expects platform names (as `Symbol`s ) for keys and
+    #       {Array} of `payloads` for values. The applicable `payloads` will be
+    #       {Platform::Manager#pick picked} from the hash based on
+    #       {#platforms applicable platforms} for the {#action resource} to be
+    #       audited.
     # @param  [Hash]    opts             Options as described in {OPTIONS}.
     # @param  [Block]   block
     #   Block to be used for analysis of responses, will be passed each
@@ -377,7 +377,7 @@ module Auditable
     #   * `true` when the audit was successful.
     #   * `false` when:
     #       * There are no {#inputs} inputs.
-    #       * The {Element::Base#action} matches a {#skip_path? skip} rule.
+    #       * The {#action} matches a {#skip_path? skip} rule.
     #       * The element has already been audited and the `:redundant` option
     #          is `false` -- the default.
     #       * The element matches a {.skip_like} block.

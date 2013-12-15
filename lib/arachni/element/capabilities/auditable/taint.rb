@@ -52,9 +52,9 @@ module Auditable::Taint
     #   * {Array} -- Will iterate over all payloads and inject them.
     #   * {Hash} -- Expects {Platform} (as `Symbol`s ) for keys and {Array} of
     #       `payloads` for values. The applicable `payloads` will be
-    #       {Platform#pick picked} from the hash based on
-    #       {Element::Base#platforms applicable platforms} for the
-    #       {Base#action resource} to be audited.
+    #       {Platform::Manager#pick picked} from the hash based on
+    #       {Element::Capabilities::Auditable#platforms applicable platforms}
+    #       for the {Element::Capabilities::Auditable#action resource} to be audited.
     # @param  [Hash]    opts
     #   Options as described in {Arachni::Check::Auditor::OPTIONS} and
     #   {TAINT_OPTIONS}.

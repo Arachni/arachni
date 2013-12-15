@@ -68,7 +68,7 @@ class Manager < Arachni::Component::Manager
 
     # Runs a single check against 'page'.
     #
-    # @param    [::Arachni::Check::Base]   mod    Check to run as a class.
+    # @param    [::Arachni::Check::Base]   check    Check to run as a class.
     # @param    [::Arachni::Page]   page    Page to audit.
     def run_one( check, page )
         return false if !check?( check, page )

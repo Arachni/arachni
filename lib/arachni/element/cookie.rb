@@ -34,14 +34,14 @@ class Cookie < Base
     }
 
     # @param    [Hash]  options
-    #   For options see {#DEFAULT}, with the following extras:
+    #   For options see {DEFAULT}, with the following extras:
     # @option   options [String]    :url
     #   URL of the page which created the cookie -- **required**.
     # @option   options [String]     :action
     #   URL of the page to submit the cookie -- defaults to `:url`.
     # @option   options [Hash]     :inputs
     #   Allows you to pass cookie data as a `name => value` pair instead of the
-    #   more complex {#DEFAULT} structure.
+    #   more complex {DEFAULT} structure.
     def initialize( options )
         @data = {}
         super( options )

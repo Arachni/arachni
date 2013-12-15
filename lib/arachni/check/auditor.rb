@@ -10,18 +10,21 @@ module Check
 #
 # There are 3 main types of audit and analysis techniques available:
 #
-# * {Arachni::Element::Capabilities::Auditable::Taint Taint analysis} -- {#audit}
-# * {Arachni::Element::Capabilities::Auditable::Timeout Timeout analysis} -- {#audit_timeout}
-# * {Arachni::Element::Capabilities::Auditable::Differential Differential analysis} -- {#audit_differential}
+# * {Arachni::Element::Capabilities::Auditable::Taint Taint analysis}
+#   -- {#audit}
+# * {Arachni::Element::Capabilities::Auditable::Timeout Timeout analysis}
+#   -- {#audit_timeout}
+# * {Arachni::Element::Capabilities::Auditable::Differential Differential analysis}
+#   -- {#audit_differential}
 #
 # It should be noted that actual analysis takes place at the element level,
-# and to be more specific, the {Arachni::Element::Capabilities::Auditable} element level.
+# and to be more specific, the {Arachni::Element::Capabilities::Auditable}
+# element level.
 #
 # It also provides:
 #
 # * Discovery helpers for checking and logging the existence of remote files.
 #   * {#log_remote_file}
-#   * {#remote_file_exist?}
 #   * {#log_remote_file_if_exists}
 # * Pattern matching helpers for checking and logging the existence of strings
 #   in responses or in the body of the page that's being audited.
