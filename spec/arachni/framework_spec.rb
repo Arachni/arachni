@@ -153,7 +153,26 @@ describe Arachni::Framework do
 
                 sitemap = f.auditstore.sitemap.map { |u, _| u.split( '?' ).first }
                 sitemap.sort.uniq.should == f.opts.restrict_paths.sort
-                f.checks.clear
+                f.reset
+            end
+        end
+    end
+
+    describe '#sitemap' do
+        it 'returns a hash with covered URLs and HTTP status codes' do
+            Arachni::Framework.new do |f|
+                f.opts.url = "#{@url}/elem_combo"
+                f.opts.audit :links, :forms, :cookies
+                f.checks.load :taint
+
+                f.run
+                f.sitemap.should == {
+                    "#{@url}/elem_combo" => 200,
+                    "#{@url}/elem_combo?link_input=link_blah" => 200,
+                    "#{@url}/elem_combo?link_input=--seed" => 200,
+                    "#{@url}/elem_combo?form_input=--seed" => 200,
+                    "#{@url}/elem_combo?link_input=--seed&form_input=form_blah" => 200
+                }
             end
         end
     end
@@ -845,6 +864,19 @@ describe Arachni::Framework do
             @f.auditstore.issues.size.should == 1
         end
 
+        it 'updates the #sitemap with the DOM URL' do
+            @f.opts.audit :links, :forms, :cookies
+            @f.checks.load :taint
+
+            @f.sitemap.should be_empty
+
+            page = Arachni::Page.from_url( @url + '/link' )
+            page.dom.url = @url + '/link/#/stuff'
+
+            @f.audit_page page
+            @f.sitemap.should include @url + '/link/#/stuff'
+        end
+
         it 'returns true' do
             @f.audit_page( Arachni::Page.from_url( @url + '/link' ) ).should be_true
         end
@@ -1014,7 +1046,19 @@ describe Arachni::Framework do
 
             @f.auditstore.issues.size.should == 2
             @f.page_queue_total_size.should > 0
-            @f.checks.clear
+        end
+
+        it 'updates the #sitemap with the DOM URL' do
+            @f.opts.audit :links, :forms, :cookies
+            @f.checks.load :taint
+
+            @f.sitemap.should be_empty
+
+            page = Arachni::Page.from_url( @url + '/link' )
+            page.dom.url = @url + '/link/#/stuff'
+
+            @f.push_to_page_queue page
+            @f.sitemap.should include @url + '/link/#/stuff'
         end
 
         context 'when the page has already been seen' do

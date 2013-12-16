@@ -573,6 +573,7 @@ class Browser
         page                 = r.deep_clone.to_page
         page.body            = source.dup
         page.cookies        |= cookies.dup
+        page.dom.url         = watir.url
         page.dom.transitions = @transitions.dup
 
         page

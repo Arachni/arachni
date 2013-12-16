@@ -12,19 +12,23 @@ class Page
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class DOM
 
-    IGNORE_FROM_HASH = Set.new([
-        'text', 'p'
-    ])
+    # Ignore these elements when calculating a {#hash}.
+    IGNORE_FROM_HASH = Set.new([ 'text', 'p' ])
 
     # @return   [Array<Hash{Symbol => <Symbol,String>}>]
     #   DOM transitions leading to the current state.
     attr_accessor :transitions
+
+    # @return   [String]
+    #   URL of the page as seen by the user-agent, fragments and all.
+    attr_accessor :url
 
     # @param    [Hash]  options
     # @option   options [Page]  :page
     # @option   options [Array<Hash>]  :transitions
     def initialize( options )
         @page        = options[:page]
+        @url         = options[:url]         || @page.url.dup
         @transitions = options[:transitions] || []
     end
 

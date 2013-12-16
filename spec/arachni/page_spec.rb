@@ -12,6 +12,7 @@ describe Arachni::Page do
                 headers: options[:headers],
             ),
             dom: {
+                url:         'http://a-url.com/#/stuff?myvar=my%20value',
                 transitions: [ page: :load ]
             }
         )
@@ -64,15 +65,18 @@ describe Arachni::Page do
 
             describe :dom do
                 it 'uses it to populate the DOM data' do
-                    described_class.new(
+                    dom = described_class.new(
                         url:      'http://test/',
                         dom:      {
+                            url:    'http://test/#/stuff',
                             transitions: [
                                 page: :load
                             ]
                         }
-                    ).dom.transitions.should == [ page: :load ]
+                    ).dom
 
+                    dom.url.should == 'http://test/#/stuff'
+                    dom.transitions.should == [ page: :load ]
                 end
             end
         end
@@ -336,6 +340,7 @@ describe Arachni::Page do
                 },
 
                 dom:     {
+                    url:         'http://test/#/stuff',
                     transitions: [ page: :load ]
                 }
             }
@@ -358,6 +363,7 @@ describe Arachni::Page do
             page.response.body.should == data[:body]
             page.response.request.url.should == data[:url]
 
+            page.dom.url.should == data[:dom][:url]
             page.dom.transitions.should == data[:dom][:transitions]
         end
 

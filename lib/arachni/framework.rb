@@ -211,16 +211,16 @@ class Framework
         return if !page
 
         if skip_page? page
-            print_info "Ignoring page due to exclusion criteria: #{page.url}"
+            print_info "Ignoring page due to exclusion criteria: #{page.dom.url}"
             return false
         end
 
         @audited_page_count += 1
-        @sitemap[page.url] = page.code
+        add_to_sitemap( page )
         @sitemap.merge!( browser_sitemap )
 
         print_line
-        print_status "Auditing: [HTTP: #{page.code}] #{page.url}"
+        print_status "Auditing: [HTTP: #{page.code}] #{page.dom.url}"
 
         if page.platforms.any?
             print_info "Identified as: #{page.platforms.to_a.join( ', ' )}"
@@ -236,7 +236,7 @@ class Framework
 
         call_on_audit_page( page )
 
-        @current_url = page.url.to_s
+        @current_url = page.dom.url.to_s
 
         http.update_cookies( page.cookiejar )
         perform_browser_analysis( page )
@@ -250,7 +250,7 @@ class Framework
 
         if Check::Auditor.has_timeout_candidates?
             print_line
-            print_status "Verifying timeout-analysis candidates for: #{page.url}"
+            print_status "Verifying timeout-analysis candidates for: #{page.dom.url}"
             print_info '---------------------------------------'
             Check::Auditor.timeout_audit_run
         end
@@ -377,7 +377,7 @@ class Framework
         @page_queue << page
         @page_queue_total_size += 1
 
-        @sitemap[page.url] = page.code
+        add_to_sitemap( page )
 
         @push_to_page_queue_filter << page
 
@@ -705,23 +705,22 @@ class Framework
     private
 
     def handle_browser_pages( page )
-        push_to_page_queue page
+        return if !push_to_page_queue page
 
         pushed_paths = 0
         page.paths.each do |path|
             pushed_paths +=1 if push_to_url_queue( path )
         end
 
-        if page.dom.depth > 1
-            print_info 'Got page via DOM/AJAX analysis with the following transitions:'
-            print_info page.url
-            page.dom.transitions.each do |t|
-                element, event = t.first.to_a
-                print_info "-- '#{event}' on: #{element}"
-            end
+        print_info 'Got page via DOM/AJAX analysis with the following transitions:'
+        print_info page.dom.url
 
-            print_info "-- Analysis resulted in #{pushed_paths} usable paths."
+        page.dom.transitions.each do |t|
+            element, event = t.first.to_a
+            print_info "-- '#{event}' on: #{element}"
         end
+
+        print_info "-- Analysis resulted in #{pushed_paths} usable paths."
 
     end
 
@@ -775,7 +774,7 @@ class Framework
         else
             # Initiates the crawl.
             spider.run do |page|
-                @sitemap[page.url] = page.code
+                add_to_sitemap( page )
                 push_to_url_queue page.url
 
                 next if page.platforms.empty?
@@ -908,6 +907,10 @@ class Framework
             print_error "Error in #{check.to_s}: #{e.to_s}"
             print_error_backtrace e
         end
+    end
+
+    def add_to_sitemap( page )
+        @sitemap[page.dom.url] = page.code
     end
 
     def lsrep_match?( path )

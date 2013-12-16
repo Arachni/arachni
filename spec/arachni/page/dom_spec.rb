@@ -21,6 +21,12 @@ describe Arachni::Page::DOM do
 
     let( :dom ) { create_page.dom }
 
+    describe '#url' do
+        it 'defaults to the page URL' do
+            dom.url.should == create_page.url
+        end
+    end
+
     describe '#transitions' do
         it 'defaults to an empty Array' do
             dom.transitions.should == []

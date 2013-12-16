@@ -7,11 +7,9 @@ require_relative 'page/dom'
 
 module Arachni
 
-#
 # It holds page data like elements, cookies, headers, etc...
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Page
 
     # @param    [String]    url URL to fetch.
@@ -312,7 +310,7 @@ class Page
 
         h[:forms].each { |f| f.node = nil }
 
-        h[:dom] = { transitions: dom.transitions }
+        h[:dom] = { url: dom.url, transitions: dom.transitions }
 
         Marshal.dump( h )
     end
