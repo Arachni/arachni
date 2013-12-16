@@ -33,8 +33,11 @@ class BrowserCluster
 
     DEFAULT_OPTIONS = {
         # Amount of Browsers to keep in the pool and put to work. 6 seems to
-        # be the magic number, although efficiency will obviously depend on the
-        # workload.
+        # be the magic number, 1 to go over all elements and generate the workload
+        # and 5 to pop the work from the queue and get to it.
+        #
+        # It's diminishing returns past that point, even with more workload
+        # generators and more workers.
         pool_size:    6,
 
         # Lifetime of each Browser counted in pages.

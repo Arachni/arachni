@@ -157,7 +157,7 @@ class Browser
     #   Pages which resulted from firing events, clicking JavaScript links
     #   and capturing AJAX requests.
     #
-    # @see Arachni::Browser#explore
+    # @see Arachni::Browser#trigger_events
     def analyze( resource, options = {}, &block )
         HTTP::Client.update_cookies( options[:cookies] || [] )
 
@@ -174,7 +174,7 @@ class Browser
                 # analyzed.
                 else
                     @browser.load resource
-                    @browser.explore
+                    @browser.trigger_events
                 end
             rescue => e
                 print_error e

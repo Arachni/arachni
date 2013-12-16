@@ -321,58 +321,26 @@ class Browser
     # Explores the browser's DOM tree and captures page snapshots for each
     # state change until there are no more available.
     #
-    # @param    [Hash]      strategy
-    #   Strategy to use for traversal and retrieval of pages:
-    # @option  strategy :depth  [Integer]   (nil)
-    #   How deep to go into the DOM tree.
-    # @option  strategy :exploration  [Symbol]
-    #   Exploration strategy, available options are:
-    #
-    #   * {#explore} (Default)
-    #   * {#trigger_events}
-    #
-    # @option  strategy :retrieval  [Symbol]
-    #   Page retrieval strategy, available options are:
-    #
-    #   * {#flush_pages} (Default)
-    #   * {#captured_pages}
-    #   * {#page_snapshots}
-    def explore_deep_and_flush( strategy = { } )
-        strategy = {
-            depth:       nil,
-            exploration: :explore
-        }.merge( strategy )
-
-        pages = [ to_page ]
-
-        done  = false
-        depth = 0
+    # @param    [Integer]   depth How deep to go into the DOM tree.
+    # @return   [Array<Page>]   Page snapshots for each state.
+    def explore_and_flush( depth = nil )
+        pages         = [ to_page ]
+        done          = false
+        current_depth = 0
 
         while !done do
-            bcnt = pages.size
-            pages |= pages.map do |p|
-                load( p ).send( strategy[:exploration] ).flush_pages
-            end.flatten
+            bcnt   = pages.size
+            pages |= pages.map { |p| load( p ).trigger_events.flush_pages }.flatten
 
-            if pages.size == bcnt || (strategy[:depth] && strategy[:depth] >= depth)
+            if pages.size == bcnt || (depth && depth >= current_depth)
                 done = true
                 break
             end
 
-            depth += 1
+            current_depth += 1
         end
 
         pages
-    end
-
-    # {#trigger_events Triggers events} on the current page's DOM depth.
-    #
-    # @return   [Browser]   `self`
-    #
-    # @see #trigger_events
-    def explore
-        trigger_events
-        self
     end
 
     def skip?( action )

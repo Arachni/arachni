@@ -155,7 +155,7 @@ describe Arachni::Browser do
                 it 'stores snapshot pages' do
                     @browser.shutdown
                     @browser = described_class.new( store_pages: true )
-                    @browser.load( @url + '/explore' ).explore.flush_pages.should be_any
+                    @browser.load( @url + '/explore' ).trigger_events.flush_pages.should be_any
                 end
 
                 it 'stores captured pages' do
@@ -170,7 +170,7 @@ describe Arachni::Browser do
                 it 'stores snapshot pages' do
                     @browser.shutdown
                     @browser = described_class.new( store_pages: false )
-                    @browser.load( @url + '/explore' ).explore.flush_pages.should be_empty
+                    @browser.load( @url + '/explore' ).trigger_events.flush_pages.should be_empty
                 end
 
                 it 'stores captured pages' do
@@ -188,7 +188,7 @@ describe Arachni::Browser do
             pages = []
             @browser.on_new_page { |page| pages << page }
 
-            @browser.load( @url + '/explore' ).explore.
+            @browser.load( @url + '/explore' ).trigger_events.
                 page_snapshots.should == pages
         end
 
@@ -245,9 +245,9 @@ describe Arachni::Browser do
         end
     end
 
-    describe '#explore_deep_and_flush' do
+    describe '#explore_and_flush' do
         it 'handles deep DOM/page transitions' do
-            pages = @browser.load( @url + '/deep-dom' ).explore_deep_and_flush
+            pages = @browser.load( @url + '/deep-dom' ).explore_and_flush
 
             pages_should_have_form_with_input pages, 'by-ajax'
 
@@ -288,6 +288,34 @@ describe Arachni::Browser do
                 ]
             ]
         end
+
+        context 'with a depth argument' do
+            it 'does not go past the given DOM depth' do
+                pages = @browser.load( @url + '/deep-dom' ).explore_and_flush(2)
+
+                pages.map(&:dom).map(&:transitions).should == [
+                    [
+                        { :page => :load },
+                        { "#{@url}deep-dom" => :request },
+                        { "#{@url}level2" => :request }
+                    ],
+                    [
+                        { :page => :load },
+                        { "#{@url}deep-dom" => :request },
+                        { "#{@url}level2" => :request },
+                        { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :onmouseover }
+                    ],
+                    [
+                        { :page => :load },
+                        { "#{@url}deep-dom" => :request },
+                        { "#{@url}level2" => :request },
+                        { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :click },
+                        { "#{@url}level4" => :request }
+                    ]
+                ]
+            end
+        end
+
     end
 
     describe '#to_page' do
@@ -312,74 +340,6 @@ describe Arachni::Browser do
                 { page: :load },
                 { @url => :request }
             ]
-        end
-    end
-
-    describe '#explore' do
-        it 'ignores differences in text nodes' do
-            url = @url + '/ever-changing'
-
-            @browser.load( url ).explore
-            @browser.page_snapshots.size.should == 1
-
-            @browser.load( url ).explore
-            @browser.page_snapshots.size.should == 1
-        end
-
-        it 'ignores differences in text nodes performed via JS' do
-            url = @url + '/ever-changing-via-js'
-
-            @browser.load( url ).explore
-            @browser.page_snapshots.size.should == 1
-
-            @browser.load( url ).explore
-            @browser.page_snapshots.size.should == 1
-        end
-
-        it 'triggers all events on all elements and follows all javascript links' do
-            @browser.load( @url + '/explore' ).start_capture.explore
-
-            pages_should_have_form_with_input @browser.page_snapshots, 'by-ajax'
-            pages_should_have_form_with_input @browser.page_snapshots, 'from-post-ajax'
-            pages_should_have_form_with_input @browser.captured_pages, 'ajax-token'
-            pages_should_have_form_with_input @browser.captured_pages, 'href-post-name'
-        end
-
-        it 'captures pages from new windows' do
-            pages = @browser.load( @url + '/explore-new-window' ).
-                start_capture.explore.flush_pages
-
-            pages_should_have_form_with_input pages, 'in-old-window'
-            pages_should_have_form_with_input pages, 'in-new-window'
-        end
-
-        it 'assigns the proper page transitions' do
-            pages = @browser.load( @url + '/explore' ).explore.page_snapshots
-
-            transitions = pages.map(&:dom).map(&:transitions)
-
-            transitions.should == [
-                [
-                    { :page => :load },
-                    { "#{@url}explore" => :request }
-                ],
-                [
-                    { :page => :load },
-                    { "#{@url}explore" => :request },
-                    { "<div id=\"my-div\" onclick=\"addForm();\">" => :onclick },
-                    { "#{@url}post-ajax" => :request },
-                    { "#{@url}get-ajax?ajax-token=my-token" => :request }
-                ],
-                [
-                    { :page => :load },
-                    { "#{@url}explore" => :request },
-                    { "<a href=\"javascript:inHref();\">" => :click }
-                ]
-            ]
-        end
-
-        it 'returns self' do
-            @browser.load( @url + '/explore' ).explore.should == @browser
         end
     end
 
@@ -439,24 +399,69 @@ describe Arachni::Browser do
         end
 
         it 'assigns the proper page transitions' do
-            pages = @browser.load( @url + '/trigger_events' ).trigger_events.page_snapshots
-            pages.map(&:dom).map(&:transitions).should == [
+            pages = @browser.load( @url + '/explore' ).trigger_events.page_snapshots
+
+            transitions = pages.map(&:dom).map(&:transitions)
+
+            transitions.should == [
                 [
                     { :page => :load },
-                    { "#{@url}trigger_events" => :request },
+                    { "#{@url}explore" => :request }
                 ],
                 [
                     { :page => :load },
-                    { "#{@url}trigger_events" => :request },
+                    { "#{@url}explore" => :request },
                     { "<div id=\"my-div\" onclick=\"addForm();\">" => :onclick },
                     { "#{@url}post-ajax" => :request },
                     { "#{@url}get-ajax?ajax-token=my-token" => :request }
+                ],
+                [
+                    { :page => :load },
+                    { "#{@url}explore" => :request },
+                    { "<a href=\"javascript:inHref();\">" => :click }
                 ]
             ]
         end
 
+        it 'ignores differences in text nodes' do
+            url = @url + '/ever-changing'
+
+            @browser.load( url ).trigger_events
+            @browser.page_snapshots.size.should == 1
+
+            @browser.load( url ).trigger_events
+            @browser.page_snapshots.size.should == 1
+        end
+
+        it 'ignores differences in text nodes performed via JS' do
+            url = @url + '/ever-changing-via-js'
+
+            @browser.load( url ).trigger_events
+            @browser.page_snapshots.size.should == 1
+
+            @browser.load( url ).trigger_events
+            @browser.page_snapshots.size.should == 1
+        end
+
+        it 'follows all javascript links' do
+            @browser.load( @url + '/explore' ).start_capture.trigger_events
+
+            pages_should_have_form_with_input @browser.page_snapshots, 'by-ajax'
+            pages_should_have_form_with_input @browser.page_snapshots, 'from-post-ajax'
+            pages_should_have_form_with_input @browser.captured_pages, 'ajax-token'
+            pages_should_have_form_with_input @browser.captured_pages, 'href-post-name'
+        end
+
+        it 'captures pages from new windows' do
+            pages = @browser.load( @url + '/explore-new-window' ).
+                start_capture.trigger_events.flush_pages
+
+            pages_should_have_form_with_input pages, 'in-old-window'
+            pages_should_have_form_with_input pages, 'in-new-window'
+        end
+
         it 'returns self' do
-            @browser.load( @url + '/trigger_events' ).trigger_events.should == @browser
+            @browser.load( @url + '/explore' ).trigger_events.should == @browser
         end
     end
 
@@ -495,7 +500,7 @@ describe Arachni::Browser do
 
         context 'when Options#exclude has bee configured' do
             it 'respects scope restrictions' do
-                pages = @browser.load( @url + '/explore' ).start_capture.explore.page_snapshots
+                pages = @browser.load( @url + '/explore' ).start_capture.trigger_events.page_snapshots
                 pages_should_have_form_with_input pages, 'by-ajax'
 
                 @browser.shutdown
@@ -503,7 +508,7 @@ describe Arachni::Browser do
 
                 Arachni::Options.exclude << /ajax/
 
-                pages = @browser.load( @url + '/explore' ).start_capture.explore.page_snapshots
+                pages = @browser.load( @url + '/explore' ).start_capture.trigger_events.page_snapshots
                 pages_should_not_have_form_with_input pages, 'by-ajax'
             end
         end
