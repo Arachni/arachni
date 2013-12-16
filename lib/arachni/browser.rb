@@ -776,8 +776,11 @@ class Browser
                 end
 
                 call_on_new_page_blocks( page )
-                @page_snapshots[unique_id] = page if store_pages?
-                pages << page
+
+                if store_pages?
+                    @page_snapshots[unique_id] = page
+                    pages << page
+                end
             end
         end
 
