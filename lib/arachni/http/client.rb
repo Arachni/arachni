@@ -566,11 +566,15 @@ class Client
     #
     # @param    [Request]     request
     def forward_request( request )
-        request.id = @request_count
-
+        request.id   = @request_count
         typhoeus_req = request.to_typhoeus
-        @queue_size += 1
-        request.blocking? ? @hydra_sync.queue( typhoeus_req ) : @hydra.queue( typhoeus_req )
+
+        if request.blocking?
+            @hydra_sync.queue( typhoeus_req )
+        else
+            @queue_size += 1
+            @hydra.queue( typhoeus_req )
+        end
 
         @request_count += 1
 
