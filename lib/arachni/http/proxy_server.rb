@@ -166,11 +166,11 @@ class ProxyServer < WEBrick::HTTPProxyServer
     #   Merges the given HTTP options with some default ones.
     def http_opts( options = {} )
         options.merge(
-            # Don't use cookies from our own cookie-jar, let the browser handle
+            # Don't use cookies from our own cookie-jar, let the client handle
             # it.
             no_cookiejar:    true,
 
-            # Don't follow redirects, the browser should handle this.
+            # Don't follow redirects, the client should handle this.
             follow_location: false,
 
             # Set the HTTP request timeout.
