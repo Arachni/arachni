@@ -5,28 +5,23 @@
 
 class Arachni::Reports::Stdout
 
-#
 # Stdout formatter for the results of the Uniformity plugin.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class PluginFormatters::Uniformity < Arachni::Plugin::Formatter
 
     def run
         print_info 'Relevant issues:'
         print_info '--------------------'
 
-        uniformals = results['uniformals']
-        pages      = results['pages']
+        results.each do |digests|
+            issue = auditstore.issue_by_digest( digests.first )
+            print_ok "#{issue.name} in #{issue.vector.type} input" <<
+                " '#{issue.affected_input_name}' using #{issue.vector.method.to_s.upcase}" <<
+                ' at the following pages:'
 
-        uniformals.each_pair do |id, uniformal|
-            issue = uniformal['issue']
-            print_ok "#{issue['name']} in #{issue['elem']} variable" +
-                " '#{issue['var']}' using #{issue['method']} at the following pages:"
-
-            pages[id].each_with_index do |url, i|
-                print_info url + " (Issue \##{uniformal['indices'][i]}" +
-                    " - Hash ID: #{uniformal['hashes'][i]} )"
+            digests.each do |digest|
+                print_info "  * #{auditstore.issue_by_digest( digest ).vector.action}"
             end
 
             print_line
