@@ -138,8 +138,13 @@ class Response < Message
     end
 
     def self.from_typhoeus( response )
-        redirections = response.redirections.
-            map { |r| new( url: r.headers['Location'], code: r.code, headers: r.headers ) }
+        redirections = response.redirections.map do |redirect|
+            new(
+                url:     redirect.headers['Location'] || response.effective_url,
+                code:    redirect.code,
+                headers: redirect.headers
+            )
+        end
 
         new(
             url:            response.effective_url,
