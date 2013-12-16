@@ -460,6 +460,18 @@ describe Arachni::Browser do
             pages_should_have_form_with_input pages, 'in-new-window'
         end
 
+        context 'when submitting forms using an image input' do
+            it 'includes x,y coordinates' do
+                @browser.load "#{@url}form-with-image-button"
+
+                url = @browser.trigger_events.flush_pages.map(&:url).last
+
+                params = Arachni::Utilities.parse_query( url )
+                params.should include 'x'
+                params.should include 'y'
+            end
+        end
+
         it 'returns self' do
             @browser.load( @url + '/explore' ).trigger_events.should == @browser
         end

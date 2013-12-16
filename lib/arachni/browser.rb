@@ -380,6 +380,11 @@ class Browser
                     href = element.attribute_value( :href )
                     events << [ :click, href ] if href.start_with?( 'javascript:' )
 
+                when 'input'
+                    if element.attribute_value( :type ).to_s.downcase == 'image'
+                        events << [ :click, 'image' ]
+                    end
+
                 when 'form'
                     action = element.attribute_value( :action )
                     events << [ :submit, action ] if action.start_with?( 'javascript:' )
@@ -390,6 +395,7 @@ class Browser
                 events.empty?
 
             skip opening_tag
+
             yield( { index: i, tag_name: tag_name, events: events } )
         end
 
@@ -491,6 +497,9 @@ class Browser
         begin
             if tag_name == 'form' && event == :submit
                 element.submit
+            elsif tag_name == 'input' && event == :click &&
+                element.attribute_value(:type) == 'image'
+                watir.button( type: 'image' ).click
             elsif [:keyup, :keypress, :keydown].include? event
                 element.send_keys 'Sample text'
             else

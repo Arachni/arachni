@@ -26,6 +26,18 @@ get '/' do
 HTML
 end
 
+get '/form-with-image-button' do
+    <<HTML
+    <html>
+      #{ '<a href="?test">Test</a>' if params[:stuff] == 'blah'}
+      <form>
+        <input type="text" name="stuff" value="blah">
+        <input type="image" src="/__sinatra__/404.png">
+      </form>
+    </html>
+HTML
+end
+
 get '/timeout-tracker' do
     <<HTML
     <script>
