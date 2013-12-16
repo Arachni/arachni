@@ -825,10 +825,6 @@ class Browser
         ))
     end
 
-    def request_token
-        @request_token ||= generate_token
-    end
-
     # Makes sure we have at least 2 windows open so that we can switch to the
     # last available one in case there's some JS in the page that closes one.
     def ensure_open_window
@@ -890,8 +886,11 @@ class Browser
     end
 
     def request_handler( request, response )
+        return if request.headers['X-Arachni-Browser-Auth'] != auth_token
+        request.headers.delete( 'X-Arachni-Browser-Auth' )
+
         if !request.url.include?( request_token ) && ignore_request?( request )
-            # Should probably fake it better using the extension of the resource
+            # TODO: Should probably fake it better using the extension of the resource
             # to determine the expected type.
             #response.headers['content-type'] = 'text/html'
             return
@@ -917,7 +916,6 @@ class Browser
     end
 
     def response_handler( request, response )
-        return if request.headers['X-Arachni-Browser-Auth'] != auth_token
         return if request.url.include?( request_token )
 
         intercept response
