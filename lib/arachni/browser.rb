@@ -133,6 +133,7 @@ class Browser
         @mutex        = Mutex.new
 
         @proxy = HTTP::ProxyServer.new(
+            address:          '127.0.0.1',
             request_handler:  proc do |request, response|
                 synchronize { request_handler( request, response ) }
             end,
@@ -858,6 +859,7 @@ class Browser
     def capabilities
         Selenium::WebDriver::Remote::Capabilities.phantomjs(
             'phantomjs.page.settings.userAgent'  => Options.user_agent,
+            'phantomjs.page.customHeaders.X-Arachni-Browser-Auth' => auth_token,
             #'phantomjs.page.settings.loadImages' => false,
             'phantomjs.cli.args'                 => [
                 "--proxy=http://#{@proxy.address}/",
@@ -877,6 +879,14 @@ class Browser
         @request_transitions.dup
     ensure
         @request_transitions.clear
+    end
+
+    def request_token
+        @request_token ||= generate_token
+    end
+
+    def auth_token
+        @auth_token ||= generate_token.to_s
     end
 
     def request_handler( request, response )
@@ -907,6 +917,7 @@ class Browser
     end
 
     def response_handler( request, response )
+        return if request.headers['X-Arachni-Browser-Auth'] != auth_token
         return if request.url.include?( request_token )
 
         intercept response
