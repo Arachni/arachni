@@ -461,14 +461,10 @@ describe Arachni::Browser do
         end
 
         context 'when submitting forms using an image input' do
-            it 'includes x,y coordinates' do
-                @browser.load "#{@url}form-with-image-button"
-
-                url = @browser.trigger_events.flush_pages.map(&:url).last
-
-                params = Arachni::Utilities.parse_query( url )
-                params.should include 'x'
-                params.should include 'y'
+            it 'includes x, y coordinates' do
+                @browser.load( "#{@url}form-with-image-button" ).start_capture.trigger_events
+                pages_should_have_form_with_input @browser.captured_pages, 'myImageButton.x'
+                pages_should_have_form_with_input @browser.captured_pages, 'myImageButton.y'
             end
         end
 

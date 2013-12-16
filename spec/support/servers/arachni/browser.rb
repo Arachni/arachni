@@ -29,10 +29,9 @@ end
 get '/form-with-image-button' do
     <<HTML
     <html>
-      #{ '<a href="?test">Test</a>' if params[:stuff] == 'blah'}
       <form>
         <input type="text" name="stuff" value="blah">
-        <input type="image" src="/__sinatra__/404.png">
+        <input type="image" name="myImageButton" src="/__sinatra__/404.png">
       </form>
     </html>
 HTML
