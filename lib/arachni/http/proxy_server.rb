@@ -101,7 +101,7 @@ class ProxyServer < WEBrick::HTTPProxyServer
     # @see Webrick::HTTPProxyServer#proxy_service
     def do_GET( req, res )
         perform_proxy_request( req, res ) do |url, header|
-            Client.get( url, http_opts( headers: header ) )
+            Request.new( http_opts( url: url, headers: header ) )
         end
     end
 
@@ -114,8 +114,12 @@ class ProxyServer < WEBrick::HTTPProxyServer
             # client handle it.
             header.delete 'Content-Length'
 
-            Client.request(
-                url, http_opts( method: :post, body: req.body, headers: header )
+            Request.new( http_opts(
+                             url:     url,
+                             method:  :post,
+                             body:    req.body,
+                             headers: header
+                         )
             )
         end
     end
@@ -125,9 +129,7 @@ class ProxyServer < WEBrick::HTTPProxyServer
     # @see Webrick::HTTPProxyServer#proxy_service
     def do_PUT( req, res )
         perform_proxy_request( req, res ) do |url, header|
-            Client.request(
-                url, http_opts( method: :put, headers: header )
-            )
+            Request.new( http_opts( url: url, method: :put, headers: header ) )
         end
     end
 
@@ -136,9 +138,7 @@ class ProxyServer < WEBrick::HTTPProxyServer
     # @see Webrick::HTTPProxyServer#proxy_service
     def do_DELETE( req, res )
         perform_proxy_request( req, res ) do |url, header|
-            Client.request(
-                url, http_opts( method: :delete, headers: header )
-            )
+            Request.new( http_opts( url: url, method: :delete, headers: header ) )
         end
     end
 
@@ -147,9 +147,7 @@ class ProxyServer < WEBrick::HTTPProxyServer
     # @see Webrick::HTTPProxyServer#proxy_service
     def do_HEAD( req, res )
         perform_proxy_request( req, res ) do |url, header|
-            Client.request(
-                url, http_opts( method: :head, headers: header )
-            )
+            Request.new( http_opts( url: url, method: :head, headers: header ) )
         end
     end
 
@@ -179,7 +177,11 @@ class ProxyServer < WEBrick::HTTPProxyServer
             timeout:         @options[:timeout],
 
             # Update the framework-wide cookie-jar with the transmitted cookies.
-            update_cookies:  true
+            update_cookies:  true,
+
+            # We perform the request in blocking mode, parallelism is up to the
+            # proxy client.
+            mode:            :sync
         )
     end
 
@@ -222,8 +224,6 @@ class ProxyServer < WEBrick::HTTPProxyServer
         # Provisional empty, response in case the request_handler wants us to
         # skip performing the request.
         response = Response.new( url: req.request_uri.to_s )
-
-        request.mode = :sync
         request.on_complete { |r| response = r }
 
         if @options[:request_handler]
