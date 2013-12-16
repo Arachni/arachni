@@ -26,7 +26,7 @@ class PluginFormatters::Uniformity < Arachni::Plugin::Formatter
 
                 <% digests.each do |digest|%>
                     <li>
-                        <%= CGI.escapeHTML( auditstore.issue_by_digest( digests.first ).vector.action ) %>
+                        <%= CGI.escapeHTML( auditstore.issue_by_digest( digest ).vector.action ) %>
                     </li>
                 <%end%>
 
