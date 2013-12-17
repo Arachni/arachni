@@ -131,8 +131,6 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
         print_status "Requesting #{url}"
 
-        ap params
-
         # This is a sign-in request.
         if params['session_token'] == options['session_token']
             # Set us up for the redirection that's coming.
