@@ -141,7 +141,6 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
             # This is the cookie-set request for the domain of the scan target domain...
             if url == sign_in_url && req.method == :post
-                ap 1
 
                 # ...now we need to set the cookie for the proxy control domain
                 # so redirect us to its handler.
@@ -149,7 +148,6 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
             # This is the cookie-set request for the domain of the proxy control domain...
             elsif url.start_with?( url_for( :sign_in ) )
-                ap 2
 
                 # ...time to send the user to the webapp.
                 res.headers['Location'] = framework.opts.url
