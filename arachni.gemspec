@@ -74,6 +74,7 @@ Gem::Specification.new do |s|
     # For CLI interfaces.
     s.add_dependency 'highline'
 
+    # Browser support for DOM/JS/AJAX analysis stuff.
     s.add_dependency 'watir-webdriver'
 
     s.add_development_dependency 'rake'
