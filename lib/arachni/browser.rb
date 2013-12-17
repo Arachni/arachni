@@ -896,12 +896,7 @@ class Browser
         return if request.headers['X-Arachni-Browser-Auth'] != auth_token
         request.headers.delete( 'X-Arachni-Browser-Auth' )
 
-        if !request.url.include?( request_token ) && ignore_request?( request )
-            # TODO: Should probably fake it better using the extension of the resource
-            # to determine the expected type.
-            #response.headers['content-type'] = 'text/html'
-            return
-        end
+        return if !request.url.include?( request_token ) && ignore_request?( request )
 
         if !request.url.include?( request_token ) && @add_request_transitions
             @request_transitions << { request.url => :request }
