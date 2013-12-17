@@ -747,6 +747,19 @@ describe Arachni::Browser do
                     @browser.load( page )
                     @browser.cookies.should == page.cookiejar
                 end
+
+                it 'replays its transitions' do
+                    @browser.load "#{@url}replay-transitions"
+                    page = @browser.explore_and_flush.last
+                    page.body.should include ua
+
+                    @browser.load page
+                    @browser.source.should include ua
+
+                    page.dom.transitions.clear
+                    @browser.load page
+                    @browser.source.should_not include ua
+                end
             end
 
             describe 'other' do

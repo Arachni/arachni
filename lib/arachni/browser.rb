@@ -731,17 +731,18 @@ class Browser
             next if [:request, :load].include? event
 
             tag = element.match( /<(\w+)\b/ )[1]
-            attributes = Nokogiri::HTML( element ).css( tag ).first.attributes.
-                inject({}) { |h, (k, v)| h[k.gsub( '-' ,'_' ).to_sym] = v.to_s; h }
+            valid_attributes = Set.new( Watir.tag_to_class[tag.to_sym].attribute_list )
 
-            # Not supported by Watir.
-            # TODO: Find a better way to determine these beforehand.
-            attributes.delete( :cellpadding )
-            attributes.delete( :cellspacing )
-            attributes.delete( :role )
+            attributes = Nokogiri::HTML( element ).css( tag ).first.attributes.
+                inject({}) do |h, (k, v)|
+                    attribute = k.gsub( '-' ,'_' ).to_sym
+                    next h if !valid_attributes.include? attribute
+
+                    h[attribute] = v.to_s
+                    h
+                end
 
             begin
-
                 # Try to find the relevant element but skip the transition if
                 # it's no longer available.
                 element = nil

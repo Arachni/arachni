@@ -183,7 +183,7 @@ end
 
 get '/transition1' do
     <<HTML
-    <a href="javascript:writeButton();">Click to write button</a>
+    <a blah="stuff" href="javascript:writeButton();">Click to write button</a>
 HTML
 end
 
