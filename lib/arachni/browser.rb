@@ -959,8 +959,8 @@ class Browser
     def ignore_request?( request )
         # Only allow CSS and JS resources to be loaded from out-of-scope domains.
         !['css', 'js'].include?( request.parsed_url.resource_extension ) &&
-            skip_path?( request.url ) || Options.auto_redundant_path?( request.url ) ||
-            Options.redundant?( request.url )
+            skip_path?( request.url ) || Options.redundant?( request.url ) ||
+            Options.auto_redundant_path?( request.url )
     end
 
     def capture( request )
