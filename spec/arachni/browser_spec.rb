@@ -183,6 +183,15 @@ describe Arachni::Browser do
         end
     end
 
+
+    describe '#execute_script' do
+        it 'executes the given script under the browser\'s context' do
+            @browser.load @url
+            Nokogiri::HTML(@browser.source).to_s.should ==
+                Nokogiri::HTML(@browser.execute_script( "return document.documentElement.innerHTML" ) ).to_s
+        end
+    end
+
     describe '#on_new_page' do
         it 'is passed each snapshot' do
             pages = []
@@ -364,6 +373,26 @@ describe Arachni::Browser do
                 { index: 4, tag_name: 'body', events: [[:onmouseover, 'makePOST();']] },
                 { index: 5, tag_name: 'div', events: [[:onclick, 'addForm();']] }
             ]
+        end
+
+        it 'skips invisible elements' do
+            @browser.load( @url + '/skip-invisible-elements' ).start_capture
+
+            elements_with_events = []
+            @browser.each_element_with_events do |info|
+                elements_with_events << info
+            end
+
+            elements_with_events.should be_any
+
+            @browser.execute_script( "document.getElementById('my-button').style.visibility='none'" )
+
+            elements_with_events = []
+            @browser.each_element_with_events do |info|
+                elements_with_events << info
+            end
+
+            elements_with_events.should be_empty
         end
     end
 

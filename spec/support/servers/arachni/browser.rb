@@ -26,6 +26,22 @@ get '/' do
 HTML
 end
 
+get '/skip-invisible-elements' do
+    <<HTML
+    <html>
+      <body>
+        <script type="text/javascript">
+            function doStuff() {
+                document.write( navigator.userAgent );
+            }
+        </script>
+
+        <button id="my-button" onclick="doStuff();">Stuff</button>
+      </body>
+    </html>
+HTML
+end
+
 get '/form-with-image-button' do
     <<HTML
     <html>

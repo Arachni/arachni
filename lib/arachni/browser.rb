@@ -303,7 +303,7 @@ class Browser
         watir.cookies.clear
         clear_responses
 
-        watir.execute_script( 'window.open()' )
+        execute_script( 'window.open()' )
         watir.windows.last.use
 
         watir.windows[0...-1].each { |w| w.close rescue nil }
@@ -352,6 +352,8 @@ class Browser
         @skip << action
     end
 
+    # @note Will skip invisible elements as they can't be manipulated.
+    #
     # Iterates over all elements which have events and passes their info to the
     # given block.
     #
@@ -364,6 +366,8 @@ class Browser
         tries = 0
 
         watir.elements.each.with_index do |element, i|
+            next if !element.visible?
+
             begin
                 tag_name    = element.tag_name
                 opening_tag = element.opening_tag
@@ -492,8 +496,6 @@ class Browser
         opening_tag = element.opening_tag
         tag_name    = element.tag_name
 
-        # TODO: Return if element is invisible.
-
         tries = 0
         begin
             if tag_name == 'form' && event == :submit
@@ -621,9 +623,13 @@ class Browser
         watir.html
     end
 
+    def execute_script( script )
+        watir.execute_script script
+    end
+
     def get_override( property )
         return if !has_js_overrides?
-        watir.execute_script "return _#{js_token}.#{property};"
+        execute_script "return _#{js_token}.#{property};"
     end
 
     def timeouts
@@ -693,7 +699,7 @@ class Browser
 
         loop do
             begin
-                break if watir.execute_script( "return _#{js_token}" )
+                break if execute_script( "return _#{js_token}" )
             rescue
             end
 
@@ -831,7 +837,7 @@ class Browser
         return if watir.windows.size > 1
 
         watir.windows.last.use
-        watir.execute_script( 'window.open()' )
+        execute_script( 'window.open()' )
     end
 
     # PhantomJS driver, the default.
