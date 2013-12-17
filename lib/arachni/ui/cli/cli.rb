@@ -84,8 +84,9 @@ class CLI
         # trap Ctrl+C interrupts
         trap( 'INT' ) { handle_interrupt }
 
-        # trap SIGUSR1 interrupts
+        # trap user signals
         trap ( 'USR1' ) { handle_usr1_interrupt }
+        trap ( 'USR2' ) { handle_usr2_interrupt }
     end
 
     #
@@ -254,13 +255,23 @@ class CLI
     end
 
     #
-    # Handles SIGUSR1 system calls
+    # Handles SIGUSR1 signals
     #
     # It will cause Arachni to create a report and shut down afterwards
     #
     def handle_usr1_interrupt
-        print_status 'Received SIGUSR1!'
+        print_info 'Received SIGUSR1!'
         shutdown
+    end
+
+    #
+    # Handles SIGUSR2 signals
+    #
+    # It will cause Arachni to create a report.
+    #
+    def handle_usr2_interrupt
+        print_info 'Received SIGUSR2!'
+        @arachni.reports.run( @arachni.audit_store )
     end
 
     def shutdown
