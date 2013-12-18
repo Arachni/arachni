@@ -239,12 +239,13 @@ class BrowserCluster
             busy: []
         }
 
-        @shared_token = Utilities.generate_token
+        js_token         = Utilities.generate_token
         booting_browsers = []
+
         pool_size.times do
             booting_browsers << RPC::Server::Browser.spawn(
-                shared_token: @shared_token,
-                master:       ipc_handle
+                js_token: js_token,
+                master:   ipc_handle
             )
         end
 
@@ -264,7 +265,7 @@ class BrowserCluster
                 end
             end
         rescue Timeout::Error
-            abort 'BrowserCluster failed to initialize worker browsers in time.'
+            abort 'BrowserCluster failed to initialize peers in time.'
         end
     end
 

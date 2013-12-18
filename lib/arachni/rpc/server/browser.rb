@@ -8,6 +8,7 @@ module Arachni
 
 lib = Options.dir['lib']
 require lib + 'rpc/server/base'
+require lib + 'rpc/server/browser/peer'
 require lib + 'rpc/client/browser'
 require lib + 'processes'
 require lib + 'framework'
@@ -40,7 +41,7 @@ class Browser
 
         ::EM.fork_reactor do
             Options.rpc_socket = socket
-            new master: options[:master], token: token, shared_token: options[:shared_token]
+            new master: options[:master], token: token, js_token: options[:js_token]
         end
 
         if options[:wait]
@@ -74,65 +75,8 @@ class Browser
             trap( signal, 'IGNORE' ) if Signal.list.has_key?( signal )
         end
 
-        token = options.delete( :token )
-        if (@master = options[:master])
-            options[:store_pages] = false
-        end
-
-        @browser = Arachni::Browser.new( options )
-        @browser.start_capture
-
-        if @master
-
-            # Let the master handle deduplication of operations.
-            #
-            # @see Browser#skip?
-            def @browser.skip?( action )
-                @options[:master].skip? action
-            end
-
-            # Let the master know that the given operation should be skipped in
-            # the future.
-            #
-            # @see Browser#skip
-            def @browser.skip( action )
-                @options[:master].skip action
-            end
-
-            # We change the default scheduling to distribute elements and events
-            # to all available browsers ASAP, instead of building a list and then
-            # consuming it, since we're don't have to worry about messing up our
-            # page's state in this setup.
-            #
-            # @see Browser#trigger_events
-            def @browser.trigger_events
-                root_page = to_page
-
-                each_element_with_events do |info|
-                    info[:events].each do |name, _|
-                        distribute_event( root_page, info[:index], name.to_sym )
-                    end
-                end
-
-                true
-            end
-
-            # Direct the distribution to the master and let it take it from there.
-            #
-            # @see Browser#distribute_event
-            def @browser.distribute_event( *args )
-                @options[:master].analyze args
-                true
-            end
-
-            @browser.on_response do |response|
-                @master.push_to_sitemap( response.url, response.code ){}
-            end
-
-            @browser.on_new_page do |page|
-                @master.handle_page( page ){}
-            end
-        end
+        token    = options.delete( :token )
+        @browser = Peer.new( options )
 
         @server = Base.new( Options.instance, token )
         @server.logger.level = ::Logger::Severity::FATAL
@@ -185,7 +129,7 @@ class Browser
 
             # If there's a master which handles pages as they are captured
             # there's no need to send anything back here.
-            block.call( @master ? nil : @browser.flush_pages )
+            block.call( @browser.master ? nil : @browser.flush_pages )
         end
 
         true

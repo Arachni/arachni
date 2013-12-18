@@ -128,9 +128,8 @@ class Browser
     # @option   options [Bool] :store_pages  (true)
     #   Whether to store pages in addition to just passing them to {#on_new_page}.
     def initialize( options = {} )
-        @options      = options.dup
-        @shared_token = @options[:shared_token] || Utilities.generate_token
-        @mutex        = Mutex.new
+        @options = options.dup
+        @mutex   = Mutex.new
 
         @proxy = HTTP::ProxyServer.new(
             address:          '127.0.0.1',
@@ -892,6 +891,14 @@ class Browser
         @auth_token ||= generate_token.to_s
     end
 
+    def js_token
+        @js_token ||= generate_token.to_s
+    end
+
+    def js_overrides
+        @js_overrides ||= JS_OVERRIDES.gsub( '_token', "_#{js_token}" )
+    end
+
     def request_handler( request, response )
         return if request.headers['X-Arachni-Browser-Auth'] != auth_token
         request.headers.delete( 'X-Arachni-Browser-Auth' )
@@ -941,14 +948,6 @@ class Browser
         HTML_IDENTIFIERS.each { |tag| return true if body.include? tag.downcase }
 
         false
-    end
-
-    def js_overrides
-        @js_overrides ||= JS_OVERRIDES.gsub( '_token', "_#{js_token}" )
-    end
-
-    def js_token
-        @shared_token
     end
 
     def ignore_request?( request )
