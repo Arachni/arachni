@@ -142,7 +142,7 @@ class Browser
 
     # Closes the browser and shuts down the server.
     #
-    # @see Arachni::Browser#close
+    # @see Arachni::Browser#close_windows
     def close
         @browser.shutdown rescue nil
         @server.shutdown rescue nil

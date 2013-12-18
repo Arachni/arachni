@@ -17,12 +17,13 @@ class Server
 
 class Browser
 
-# Provides a remote {Arachni::Browser} worker allowing to off-load the
-# overhead of DOM/JS/AJAX analysis to a separate process.
+# Overrides some {Arachni::Browser} methods to make multiple browsers play well
+# with each other when they're part of a {BrowserCluster}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Peer < Arachni::Browser
 
+    # @return    [RPC::RemoteObjectMapper]    For {BrowserCluster}.
     attr_reader :master
 
     def initialize( options )
