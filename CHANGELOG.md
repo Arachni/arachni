@@ -5,7 +5,7 @@
 - `Framework`
     - `#audit_page` -- Updated to perform DOM/JS/AJAX analysis on the page and
         feed DOM page snapshots and new paths back to the `Framework`.
-- `Arachni::Element`
+- `Element`
     - Cleaned up initializers.
         - Now passed a single Hash argument with configuration options.
     - `Capabilities::Auditable`
@@ -27,7 +27,7 @@
     - `Framework`
         - Removed `#output`.
         - `#progress` -- Removed `:messages`.
-- `Arachni::HTTP` expanded to be a complete wrapper around Typhoeus, providing:
+- `HTTP` expanded to be a complete wrapper around Typhoeus, providing:
     - `Headers`
     - `Message`
     - `Request`
@@ -39,26 +39,20 @@
             - Added `:http_max_response_size`.
     - `ProxyServer` -- Moved the proxy server out of the `Proxy` plugin and
         updated it to work with `Arachni::HTTP` objects.
-- `Arachni::Browser` -- Real browser driver providing DOM/JS/AJAX support.
-- `Arachni::BrowserCluster` -- Maintains a pool of `Arachni::Browser` instances
+- `Browser` -- Real browser driver providing DOM/JS/AJAX support.
+- `BrowserCluster` -- Maintains a pool of `Arachni::Browser` instances
     and distributes the analysis workload of multiple resources.
-- `Arachni::Page`
+- `Page`
     - Cleaned-up attributes.
     - Attributes (`#links`, `#forms`, `#paths` etc.) are lazy-parsed on-demand.
     - Added:
         - `#response` -- Associated `HTTP::Response`.
         - `#dom` -- Associated `Arachni::Page::DOM`.
-- `Arachni::Page::DOM` -- Static DOM snapshot as computed by a real browser.
-- `Arachni::Parser` -- Updated to **only** operate under the context of the
+- `Page::DOM` -- Static DOM snapshot as computed by a real browser.
+- `Parser` -- Updated to **only** operate under the context of the
     `HTTP::Response` with which it was initialized -- no longer supports parsing
     data from external sources.
-- Options
-    - Added:
-        - `--dom-depth` -- How deep to go into the each page's DOM tree.
-        - `--http-username` -- Username for HTTP authentication.
-        - `--http-password` -- Password for HTTP authentication.
-        - `--http-max-response-size` -- Does not download response bodies larger
-            than the specified limit, in bytes.
+- `Options` -- Rewritten with renamed option names and grouped relevant options together.
 - Reports
     - Removed `metareport`.
 - Plugins
