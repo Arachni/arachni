@@ -174,10 +174,10 @@ module Utilities
     #   `true` is the path exceeds the framework limit, `false` otherwise.
     #
     # @see URI.too_deep?
-    # @see Options#depth_limit
+    # @see OptionGroups::Scope#directory_depth_limit
     #
     def path_too_deep?( url )
-        uri_parse( url ).too_deep?( Options.depth_limit )
+        uri_parse( url ).too_deep?( Options.scope.directory_depth_limit )
     end
 
     #
@@ -190,10 +190,10 @@ module Utilities
     #   `true` if self is in the same domain as the `reference` URL, false otherwise.
     #
     # @see URI.in_domain?
-    # @see Options#follow_subdomains
+    # @see OptionGroups::Scope#include_subdomains
     #
     def path_in_domain?( url, reference = Options.url )
-        uri_parse( url ).in_domain?( !Options.follow_subdomains, reference )
+        uri_parse( url ).in_domain?( !Options.scope.include_subdomains, reference )
     end
 
     #
@@ -204,10 +204,10 @@ module Utilities
     # @return   [Bool]
     #
     # @see URI.exclude?
-    # @see Options#exclude
+    # @see OptionGroups::Scope#exclude_path_patterns
     #
     def exclude_path?( url )
-        uri_parse( url ).exclude?( Options.exclude )
+        uri_parse( url ).exclude?( Options.scope.exclude_path_patterns )
     end
 
     #
@@ -221,7 +221,7 @@ module Utilities
     # @see Options#include
     #
     def include_path?( url )
-        uri_parse( url ).include?( Options.include )
+        uri_parse( url ).include?( Options.scope.include_path_patterns )
     end
 
     #
@@ -234,10 +234,10 @@ module Utilities
     #
     # @return   [Bool]    `true` if the `url` is redundant, `false` otherwise.
     #
-    # @see Options#redundant?
+    # @see OptionGroups::Scope#redundant_path_patterns?
     #
     def redundant_path?( url, &block )
-        Options.redundant?( url, &block )
+        Options.scope.redundant?( url, &block )
     end
 
     #
@@ -248,8 +248,8 @@ module Utilities
     #
     # @return   [Bool]
     #
-    # @see Options#https_only
-    # @see Options#https_only?
+    # @see OptionGroups::Scope#https_only
+    # @see OptionGroups::Scope#https_only?
     #
     def follow_protocol?( url, reference = Options.url )
         return true if !reference
@@ -261,7 +261,7 @@ module Utilities
         return true if ref_scheme && ref_scheme != 'https'
         return true if ref_scheme == check_scheme
 
-        !Options.https_only?
+        !Options.scope.https_only?
     end
 
     #
@@ -307,12 +307,12 @@ module Utilities
     #   patterns, `false` otherwise.
     #
     # @see #skip_path?
-    # @see Options#exclude_binaries?
-    # @see Options#exclude_page?
+    # @see OptionGroups::Scope#exclude_binaries?
+    # @see OptionGroups::Scope#exclude_page?
     def skip_response?( response )
-        (Options.exclude_binaries? && !response.text?) ||
+        (Options.audit.exclude_binaries? && !response.text?) ||
             skip_path?( response.url ) ||
-            Options.exclude_page?( response.body )
+            Options.scope.exclude_page?( response.body )
     end
 
     # Determines whether or not the given {Arachni::Page}.
@@ -321,15 +321,15 @@ module Utilities
     #
     # @return   [Bool]
     #   `true` if the `#body` of the given object matches any of the exclusion
-    #   patterns or the  {Options#dom_depth_limit} has been reached, `false`
-    #   otherwise.
+    #   patterns or the  {OptionGroups::Scope#dom_depth_limit} has been reached,
+    #   `false` otherwise.
     #
     # @see #skip_path?
-    # @see Options#exclude_binaries?
-    # @see Options#exclude_page?
-    # @see Options#dom_depth_limit
+    # @see OptionGroups::Audit#exclude_binaries?
+    # @see OptionGroups::Scope#exclude_page?
+    # @see OptionGroups::Scope#dom_depth_limit
     def skip_page?( page )
-        skip_response?( page.response ) || Options.dom_depth_limit_reached?( page )
+        skip_response?( page.response ) || Options.scope.dom_depth_limit_reached?( page )
     end
 
     #
@@ -362,7 +362,7 @@ module Utilities
 
             else
                 if (s = resource.to_s) =~ /[\r\n]/
-                    Options.exclude_page? s
+                    Options.scope.exclude_page? s
                 else
                     skip_path? s
                 end
@@ -376,9 +376,9 @@ module Utilities
     end
 
     # @return   [Integer]   Random port within the user specified range.
-    # @see Options#rpc_instance_port_range
+    # @see OptionGroups::Dispatcher#instance_port_range
     def rand_port
-        first, last = Options.rpc_instance_port_range
+        first, last = Options.dispatcher.instance_port_range
         range = (first..last).to_a
 
         range[ rand( range.last - range.first ) ]

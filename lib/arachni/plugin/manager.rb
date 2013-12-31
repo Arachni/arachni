@@ -32,7 +32,7 @@ class Manager < Arachni::Component::Manager
 
     # @param    [Arachni::Framework]    framework   Framework instance.
     def initialize( framework )
-        super( framework.opts.dir['plugins'], NAMESPACE )
+        super( framework.opts.paths.plugins, NAMESPACE )
         @framework = framework
 
         @jobs = []

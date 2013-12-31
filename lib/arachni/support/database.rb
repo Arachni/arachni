@@ -3,7 +3,7 @@
     All rights reserved.
 =end
 
-lib = Arachni::Options.dir['support'] + '/database/'
+lib = Arachni::Options.paths.support + '/database/'
 require lib + 'base'
 require lib + 'queue'
 require lib + 'hash'

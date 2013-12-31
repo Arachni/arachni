@@ -36,7 +36,8 @@ class Instances
         token ||= @list[url]
         @list[url] ||= token
 
-        @instance_connections[url] ||= RPC::Client::Instance.new( Options.instance, url, token )
+        @instance_connections[url] ||=
+            RPC::Client::Instance.new( Options, url, token )
     end
 
     # @param    [Block] block   Block to pass an RPC client for each Instance.
@@ -60,7 +61,7 @@ class Instances
     #
     # @param    [Hash]  options
     #   To be passed to {Arachni::Options#set}. Allows `address` instead of
-    #   `rpc_address` and `port` instead of `rpc_port`.
+    #   `rpc_server_address` and `port` instead of `rpc_port`.
     #
     # @param    [Block] block
     #   Passed {Arachni::Options} to configure the Dispatcher options.
@@ -68,39 +69,40 @@ class Instances
     # @return   [RPC::Client::Instance]
     #
     def spawn( options = {}, &block )
-        options[:token] ||= generate_token
+        token = options.delete(:token) || generate_token
 
-        options = Options.to_hash.symbolize_keys( false ).merge( options )
-
-        options[:rpc_port]    = options.delete( :port ) if options.include?( :port )
-        options[:rpc_address] = options.delete( :address ) if options.include?( :address )
-        options[:rpc_socket]  = options.delete( :socket ) if options.include?( :socket )
-
-        options[:rpc_port]    ||= available_port
+        options = Options.to_h.merge(
+            spawns: options[:spawns],
+            rpc:    {
+                server_socket:  options[:socket],
+                server_port:    options[:port] || available_port,
+                server_address: options[:address] || 'localhost'
+            }
+        )
 
         url = nil
-        if options[:rpc_socket]
-            url = options[:rpc_socket]
-            options.delete :rpc_address
-            options.delete :rpc_port
+        if options[:rpc][:server_socket]
+            url = options[:rpc][:server_socket]
+            options[:rpc].delete :server_address
+            options[:rpc].delete :server_port
         else
-            url = "#{options[:rpc_address]}:#{options[:rpc_port]}"
+            url = "#{options[:rpc][:server_address]}:#{options[:rpc][:server_port]}"
         end
 
         Manager.fork_em do
             Options.set( options )
             block.call( Options.instance ) if block_given?
 
-            require "#{Arachni::Options.dir['lib']}/rpc/server/instance"
+            require "#{Arachni::Options.paths.lib}/rpc/server/instance"
 
-            RPC::Server::Instance.new( Options.instance, options[:token] )
+            RPC::Server::Instance.new( Options.instance, token )
         end
 
         begin
             Timeout.timeout( 10 ) do
                 while sleep( 0.1 )
                     begin
-                        connect( url, options[:token] ).service.alive?
+                        connect( url, token ).service.alive?
                         break
                     rescue Exception
                     end
@@ -110,18 +112,16 @@ class Instances
             abort "Instance '#{url}' never started!"
         end
 
-        @list[url] = options[:token]
+        @list[url] = token
         connect( url )
     end
 
-    #
     # Starts {RPC::Server::Dispatcher} grid and returns a high-performance Instance.
     #
     # @param    [Hash]  options
-    # @option options [Integer] :grid_size (2)  Amount of Dispatchers to spawn.
+    # @option options [Integer] :grid_size (3)  Amount of Dispatchers to spawn.
     #
     # @return   [RPC::Client::Instance]
-    #
     def grid_spawn( options = {} )
         options[:grid_size] ||= 3
 
@@ -137,7 +137,7 @@ class Instances
 
         instance = connect( info['url'], info['token'] )
         instance.framework.set_as_master
-        instance.opts.grid_mode = :aggregate
+        instance.opts.set( dispatcher: { grid_mode: :aggregate } )
         instance
     end
 

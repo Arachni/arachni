@@ -2,7 +2,7 @@ shared_examples_for "plugin" do
     include_examples 'component'
 
     before( :all ) do
-        FileUtils.cp "#{fixtures_path}checks/test2.rb", options.dir['checks']
+        FileUtils.cp "#{fixtures_path}checks/test2.rb", options.paths.checks
         framework.checks.load :test2
 
         framework.plugins.load name
@@ -14,7 +14,7 @@ shared_examples_for "plugin" do
         framework.reports.clear
     end
 
-    after( :all ) { FileUtils.rm "#{options.dir['checks']}test2.rb" }
+    after( :all ) { FileUtils.rm "#{options.paths.checks}test2.rb" }
 
     def results
     end

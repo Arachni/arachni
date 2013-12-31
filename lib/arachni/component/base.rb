@@ -5,7 +5,7 @@
 
 module Arachni
 
-lib = Options.dir['lib']
+lib = Options.paths.lib
 require lib + 'component/output'
 require lib + 'component/utilities'
 

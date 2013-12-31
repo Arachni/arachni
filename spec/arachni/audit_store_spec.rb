@@ -79,14 +79,8 @@ describe Arachni::AuditStore do
     end
 
     describe '#options' do
-        it 'returns the options as a hash' do
-            h = Arachni::Options.instance.to_h
-            h['url'] = h['url'].to_s
-
-            ah = audit_store.options
-            ah['cookies'] = nil
-            h['cookies'] = nil
-            ah.should == h
+        it 'returns Arachni::Options as a hash' do
+           audit_store.options.should == Arachni::Options.to_h
         end
 
         it 'defaults to Arachni::Options.to_h' do
@@ -114,30 +108,44 @@ describe Arachni::AuditStore do
     end
 
     describe '#start_datetime' do
+        it 'returns a Time object' do
+            audit_store.start_datetime.should be_kind_of Time
+        end
         it 'returns the start datetime of the scan' do
-            Time.parse( audit_store.start_datetime ).is_a?( Time ).should be_true
+            audit_store.start_datetime.to_s.should ==
+                Factory[:audit_store_data][:start_datetime].to_s
         end
         context 'when no start datetime info has been provided' do
             it 'falls-back to Time.now' do
-                Time.parse( audit_store_empty.start_datetime ).is_a?( Time ).should be_true
+                audit_store_empty.start_datetime.should be_kind_of Time
             end
         end
     end
 
     describe '#finish_datetime' do
+        it 'returns a Time object' do
+            audit_store.finish_datetime.should be_kind_of Time
+        end
         it 'returns the start finish of the scan' do
-            Time.parse( audit_store.finish_datetime ).is_a?( Time ).should be_true
+            audit_store.finish_datetime.to_s.should ==
+                Factory[:audit_store_data][:finish_datetime].to_s
         end
         context 'when no start datetime info has been provided' do
             it 'falls-back to Time.now' do
-                Time.parse( audit_store_empty.finish_datetime ).is_a?( Time ).should be_true
+                audit_store_empty.finish_datetime.should be_kind_of Time
             end
         end
     end
 
     describe '#delta_time' do
         it 'returns the time difference between start and finish time' do
-            Time.parse( audit_store.delta_time ).is_a?( Time ).should be_true
+            audit_store.delta_time.should == '02:46:40'
+        end
+        context 'when no #finish_datetime has been provided' do
+            it 'uses Time.now for the calculation' do
+                audit_store_empty.start_datetime = Time.now - 2000
+                audit_store_empty.delta_time.to_s.should == '00:33:19'
+            end
         end
     end
 

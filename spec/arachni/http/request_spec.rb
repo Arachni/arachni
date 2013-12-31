@@ -11,7 +11,7 @@ describe Arachni::HTTP::Request do
 
     before( :each ){
         @opts.reset
-        @opts.audit_links = true
+        @opts.audit.links = true
         @opts.url  = @url
         @http.reset
     }

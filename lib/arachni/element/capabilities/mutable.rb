@@ -56,7 +56,7 @@ module Mutable
         # Array of parameter names remain untouched.
         skip:       [],
 
-        # `nil`:   Use system settings (!Options.fuzz_methods).
+        # `nil`:   Use system settings (!Options.audit.with_both_http_methods).
         # `true`:  Don't create mutations with other methods (GET/POST).
         # `false`: Create mutations with other methods (GET/POST).
         respect_method: nil
@@ -119,7 +119,7 @@ module Mutable
         return [] if self.inputs.empty?
 
         opts = MUTATION_OPTIONS.merge( opts )
-        opts[:respect_method] = !Options.fuzz_methods? if opts[:respect_method].nil?
+        opts[:respect_method] = !Options.audit.with_both_http_methods? if opts[:respect_method].nil?
 
         dinputs = inputs.dup
         cinputs = Support::KeyFiller.fill( inputs )

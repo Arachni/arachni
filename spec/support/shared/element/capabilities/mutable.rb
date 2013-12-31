@@ -153,7 +153,7 @@ shared_examples_for 'mutable' do
                     end
                 end
             end
-            describe 'Options.fuzz_methods' do
+            describe 'Options.audit.with_both_http_methods' do
                 it 'serves as the default value of :respect_method' do
                     e = described_class.new(
                         url: 'http://test.com',
@@ -163,13 +163,13 @@ shared_examples_for 'mutable' do
                         }
                     )
 
-                    Arachni::Options.fuzz_methods = true
+                    Arachni::Options.audit.with_both_http_methods = true
                     no_respect_method = e.mutations( seed )
                     no_respect_method.size.should == 17
 
                     no_respect_method.map{ |m| m.method }.uniq.size.should == 2
 
-                    Arachni::Options.fuzz_methods = false
+                    Arachni::Options.audit.with_both_http_methods = false
                     respect_method = e.mutations( seed )
                     respect_method.size.should == 9
 

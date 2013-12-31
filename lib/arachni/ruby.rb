@@ -3,7 +3,7 @@
     All rights reserved.
 =end
 
-lib = Arachni::Options.dir['lib']
+lib = Arachni::Options.paths.lib
 require lib + 'ruby/object'
 require lib + 'ruby/hash'
 require lib + 'ruby/set'

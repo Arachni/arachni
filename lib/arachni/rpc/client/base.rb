@@ -9,23 +9,19 @@ module Arachni
 module RPC
 class Client
 
-#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Base < ::Arachni::RPC::EM::Client
     attr_reader :url
 
-    #
-    # @param    [Arachni::Options]   opts
+    # @param    [Arachni::Options]   options
     #   Relevant options:
     #
-    #     * `ssl_ca` -- CA file (.pem).
-    #     * `node_ssl_pkey` OR `ssl_pkey` -- Private key file (.pem).
-    #     * `node_ssl_cert` OR `ssl_cert` -- Cert file file (.pem).
+    #     * {OptionGroups::RPC#ssl_ca}
+    #     * {OptionGroups::RPC#client_ssl_private_key}
+    #     * {OptionGroups::RPC#client_ssl_certificate}
     # @param    [String]    url       Server URL in `address:port` format.
     # @param    [String]    token     Optional authentication token.
-    #
-    def initialize( opts, url, token = nil )
+    def initialize( options, url, token = nil )
         @url = url
 
         socket, host, port = nil
@@ -41,10 +37,10 @@ class Base < ::Arachni::RPC::EM::Client
             port:        port,
             socket:      socket,
             token:       token,
-            max_retries: opts.max_retries,
-            ssl_ca:      opts.ssl_ca,
-            ssl_pkey:    opts.node_ssl_pkey || opts.ssl_pkey,
-            ssl_cert:    opts.node_ssl_cert || opts.ssl_cert
+            max_retries: options.rpc.client_max_retries,
+            ssl_ca:      options.rpc.ssl_ca,
+            ssl_pkey:    options.rpc.client_ssl_private_key,
+            ssl_cert:    options.rpc.client_ssl_certificate
         )
     end
 

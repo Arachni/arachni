@@ -5,7 +5,7 @@
 
 module Arachni
 
-require Options.dir['lib'] + 'issue/severity'
+require Options.paths.lib + 'issue/severity'
 
 # Represents a detected issue.
 #

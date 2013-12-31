@@ -87,10 +87,10 @@ class Request < Message
         @train           = false if @train.nil?
         @update_cookies  = false if @update_cookies.nil?
         @follow_location = false if @follow_location.nil?
-        @max_redirects   = (Arachni::Options.redirect_limit || REDIRECT_LIMIT)
+        @max_redirects   = (Arachni::Options.http.request_redirect_limit || REDIRECT_LIMIT)
         @on_complete     = []
 
-        @timeout       ||= Arachni::Options.http_timeout
+        @timeout       ||= Arachni::Options.http.request_timeout
         @mode          ||= :async
         @parameters    ||= {}
         @cookies       ||= {}
@@ -225,8 +225,8 @@ class Request < Message
         headers.delete( 'Cookie' ) if headers['Cookie'].empty?
         headers.each { |k, v| headers[k] = Header.encode( v ) if v }
 
-        if (userpwd = (@username || Arachni::Options.http_username))
-            if (passwd = (@password || Arachni::Options.http_password))
+        if (userpwd = (@username || Arachni::Options.http.authentication_username))
+            if (passwd = (@password || Arachni::Options.http.authentication_password))
                 userpwd += ":#{passwd}"
             end
         end
@@ -244,16 +244,16 @@ class Request < Message
             ssl_verifyhost:  0,
             accept_encoding: 'gzip, deflate',
             nosignal:        true,
-            maxfilesize:     @http_max_response_size || Arachni::Options.http_max_response_size
+            maxfilesize:     @http_response_max_size || Arachni::Options.http.response_max_size
         }
 
         options[:timeout_ms] = timeout if timeout
 
-        if Arachni::Options.proxy_host
+        if Arachni::Options.http.proxy_host
             options.merge!(
-                proxy:        "#{Arachni::Options.proxy_host}:#{Arachni::Options.proxy_port}",
-                proxyuserpwd: "#{Arachni::Options.proxy_username}:#{Arachni::Options.proxy_password}",
-                proxytype:    Arachni::Options.proxy_type
+                http_proxy:        "#{Arachni::Options.http.proxy_host}:#{Arachni::Options.http.proxy_port}",
+                proxyuserpwd: "#{Arachni::Options.http.proxy_username}:#{Arachni::Options.http.proxy_password}",
+                proxytype:    Arachni::Options.http.proxy_type
             )
         end
 

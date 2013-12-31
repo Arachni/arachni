@@ -1,6 +1,6 @@
 require 'spec_helper'
-require Arachni::Options.dir['lib'] + 'rpc/server/base'
-require Arachni::Options.dir['lib'] + 'rpc/server/framework'
+require Arachni::Options.paths.lib + 'rpc/server/base'
+require Arachni::Options.paths.lib + 'rpc/server/framework'
 
 class Distributor
     include Arachni::RPC::Server::Framework::Distributor
@@ -8,9 +8,9 @@ class Distributor
     attr_reader   :instances
     attr_accessor :master_url
 
-    [ :map_slaves, :each_slave, :slave_iterator, :iterator_for,
-        :split_urls, :build_elem_list, :distribute_elements, :preferred_dispatchers,
-        :pick_dispatchers, :distribute_and_run ].each do |sym|
+    [ :map_slaves, :each_slave, :slave_iterator, :iterator_for, :build_elem_list,
+      :distribute_elements, :preferred_dispatchers, :pick_dispatchers,
+      :distribute_and_run, :cleaned_up_opts ].each do |sym|
         private sym
         public sym
     end
@@ -23,7 +23,7 @@ class Distributor
     end
 
     def dispatcher_url=( url )
-        @opts.datastore[:dispatcher_url] = url
+        @opts.datastore.dispatcher_url = url
     end
 
     def <<( instance_h )
@@ -74,14 +74,14 @@ end
 describe Arachni::RPC::Server::Framework::Distributor do
     before( :all ) do
         @opts             = Arachni::Options.instance
-        @opts.audit_links = true
+        @opts.audit.links = true
         @token            = 'secret'
 
         @distributor = Distributor.new( @token )
         2.times {
             instance = instance_spawn
             @distributor <<  {
-                'url' => instance.url,
+                'url'   => instance.url,
                 'token' => instance_token_for( instance.url )
             }
         }
@@ -114,6 +114,44 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
         5.times do |i|
             @urls << url_gen.call( @url2, i )
+        end
+    end
+
+    describe '#cleaned_up_opts' do
+        it 'returns a hash with options suitable for passing to slaves' do
+            @distributor.cleaned_up_opts.should == {
+                http:      {
+                    user_agent:             @opts.http.user_agent,
+                    request_timeout:        50000,
+                    request_redirect_limit: 5,
+                    request_concurrency:    20,
+                    request_queue_size:     500,
+                    request_headers:        {},
+                    cookies:                {}
+                },
+                audit:     {
+                    exclude_vectors: [],
+                    links:           true
+                },
+                login:     {},
+                datastore: {
+                    master_priv_token: 'secret'
+                },
+                output:    {},
+                scope:     {
+                    redundant_path_patterns: {},
+                    dom_depth_limit:         10,
+                    exclude_path_patterns:   [],
+                    exclude_page_patterns:   [],
+                    include_path_patterns:   [],
+                    restrict_paths:          [],
+                    extend_paths:            []
+                },
+                checks:    [],
+                platforms: [],
+                reports:   {},
+                plugins:   {}
+            }
         end
     end
 
@@ -227,37 +265,13 @@ describe Arachni::RPC::Server::Framework::Distributor do
         end
     end
 
-    describe '#split_urls' do
-        it 'evenly splits urls into chunks for each instance' do
-            @opts.min_pages_per_instance = 10
-            splits = @distributor.split_urls( @urls, 4 )
-
-            splits.size.should == 4
-            splits.flatten.uniq.size.should == @urls.uniq.size
-
-            @opts.min_pages_per_instance = 30
-            splits = @distributor.split_urls( @urls, 4 )
-            splits.size.should == 2
-
-            @opts.min_pages_per_instance = 15
-            splits = @distributor.split_urls( @urls, 2 )
-            splits.size.should == 2
-            splits.first.size.should == splits.flatten.size/2
-
-            @opts.min_pages_per_instance = @urls.size
-            splits = @distributor.split_urls( @urls, 2 )
-            splits.size.should == 1
-            splits.first.size.should == splits.flatten.size
-        end
-    end
-
     describe '#build_elem_list' do
         it 'evenly distributes elements across instances' do
             @opts.url = web_server_url_for( :parser )
-            @opts.audit_links   = true
-            @opts.audit_forms   = true
-            @opts.audit_cookies = true
-            @opts.audit_headers = true
+            @opts.audit.links   = true
+            @opts.audit.forms   = true
+            @opts.audit.cookies = true
+            @opts.audit.headers = true
 
             @url = @opts.url.to_s + '/?query_var_input=query_var_val'
             @response = Arachni::HTTP::Client.get( @url, mode: :sync )
@@ -485,8 +499,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
             @distributor.pick_dispatchers( dispatchers ).
                 map { |d| d['node']['score'] }.should == [0, 1, 2, 3]
 
-
-            @opts.max_slaves = 2
+            @opts.spawns = 2
             @distributor.pick_dispatchers( dispatchers ).
                 map { |d| d['node']['score'] }.should == [0, 1]
         end
@@ -494,19 +507,19 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
     describe '#distribute_and_run' do
         before( :all ) do
-            @opts.dir['checks'] = fixtures_path + 'taint_check/'
+            @opts.paths.checks = fixtures_path + 'taint_check/'
 
             @dispatcher_url = dispatcher_light_spawn.url
 
-            @opts.rpc_port          = available_port
+            @opts.rpc.server_port   = available_port
             @master                 = FakeMaster.new( @opts, @token )
-            @distributor.master_url = "#{@opts.rpc_address}:#{@opts.rpc_port}"
+            @distributor.master_url = "#{@opts.rpc.server_address}:#{@opts.rpc.server_port}"
 
             # master's token
-            @opts.datastore[:token] = @token
-            @opts.url               = web_server_url_for( :framework_hpg )
-            @url                    = @opts.url
-            @opts.checks            = %w(taint)
+            @opts.datastore.token = @token
+            @opts.url             = web_server_url_for( :framework_hpg )
+            @url                  = @opts.url
+            @opts.checks          = %w(taint)
 
             @get_instance_info = proc do
                 instance = instance_spawn( token: @token, port: nil )
@@ -549,7 +562,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 slave_info.should be_true
                 slave = @distributor.connect_to_instance( slave_info )
 
-                slave.opts.restrict_paths.should == absolute_urls
+                slave.opts.scope.restrict_paths.should == absolute_urls
                 sleep 0.1 while slave.framework.busy?
 
                 @master.issues.size.should == 2
@@ -565,11 +578,11 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 ids << Arachni::Element::Link.new(
                     url:    @url + '/vulnerable',
                     inputs: { '0_vulnerable_20' => 'stuff20' }
-                ).scope_audit_id
+                ).audit_scope_id
                 ids << Arachni::Element::Link.new(
                     url:    @url + '/vulnerable',
                     inputs: { '9_vulnerable_30' => 'stuff30' }
-                ).scope_audit_id
+                ).audit_scope_id
 
                 q = Queue.new
                 @distributor.distribute_and_run( @get_instance_info.call, elements: ids ){ |i| q << i }
@@ -588,14 +601,14 @@ describe Arachni::RPC::Server::Framework::Distributor do
             end
             context 'and new elements appear via the trainer' do
                 it 'overrides the restrictions' do
-                    @opts.audit_forms = true
+                    @opts.audit.forms = true
                     @opts.url = web_server_url_for( :auditor ) + '/train/default'
                     url = @opts.url.to_s
 
                     id = Arachni::Element::Form.new(
                         url:    url + '?',
                         inputs: { 'step_1' => 'form_blah_step_1' }
-                    ).scope_audit_id
+                    ).audit_scope_id
 
                     q = Queue.new
                     @distributor.distribute_and_run( @get_instance_info.call, elements: [id] ){ |i| q << i }

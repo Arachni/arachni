@@ -6,11 +6,11 @@
 require 'singleton'
 require 'ostruct'
 
-lib = Arachni::Options.dir['lib']
+lib = Arachni::Options.paths.lib
 require lib + 'rpc/client/instance'
 require lib + 'rpc/client/dispatcher'
 
-lib = Arachni::Options.dir['lib'] + 'processes/'
+lib = Arachni::Options.paths.lib + 'processes/'
 require lib + 'manager'
 require lib + 'dispatchers'
 require lib + 'instances'

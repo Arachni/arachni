@@ -5,7 +5,7 @@
 
 module Arachni
 
-lib = Options.dir['lib']
+lib = Options.paths.lib
 require lib + 'issue'
 require lib + 'element/capabilities/mutable'
 
@@ -86,9 +86,9 @@ module Auditable
     # *Caution*: Each call overwrites the last.
     #
     # @param    [Array<String,Integer>]    elements
-    #   Element audit IDs as returned by {#scope_audit_id}.
+    #   Element audit IDs as returned by {#audit_scope_id}.
     #
-    # @see scope_audit_id
+    # @see audit_scope_id
     def self.restrict_to_elements( elements )
         self.reset_instance_scope
         elements.each { |elem| @@restrict_to_elements << elem }
@@ -289,7 +289,7 @@ module Auditable
     # @param    [Hash]  opts    {#audit}    opts
     #
     # @return   [Integer]   Hash ID.
-    def scope_audit_id( opts = {} )
+    def audit_scope_id( opts = {} )
         opts = {} if !opts
         audit_id( nil, opts.merge(
             no_auditor:       true,
@@ -560,7 +560,7 @@ module Auditable
 
         # Iterate over all fuzz variations and audit each one.
         each_mutation( injection_str, @audit_options ) do |elem|
-            if Options.exclude_vectors.include?( elem.affected_input_name )
+            if Options.audit.exclude_vectors.include?( elem.affected_input_name )
                 print_info "Skipping audit of '#{elem.affected_input_name}' #{type} vector."
                 next
             end
@@ -656,7 +656,7 @@ module Auditable
         end
 
         override_instance_scope? || auditor_override_instance_scope ||
-        @@restrict_to_elements.empty? || @@restrict_to_elements.include?( scope_audit_id )
+        @@restrict_to_elements.empty? || @@restrict_to_elements.include?( audit_scope_id )
     end
 
     # Checks whether or not an audit has been already performed.
@@ -669,7 +669,7 @@ module Auditable
             print_debug 'Skipping, already audited.'
             true
         elsif !within_scope?
-            print_debug "Skipping, out of scope (#{scope_audit_id})."
+            print_debug "Skipping, out of scope (#{audit_scope_id})."
             true
         else
             false

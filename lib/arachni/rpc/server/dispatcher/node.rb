@@ -5,7 +5,7 @@
 
 module Arachni
 
-require Options.dir['lib'] + 'rpc/server/output'
+require Options.paths.lib + 'rpc/server/output'
 
 module RPC
 
@@ -41,9 +41,9 @@ class Server::Dispatcher::Node
     #
     def initialize( opts, logfile = nil )
         @opts = opts
-        @opts.rpc_external_address ||= @opts.rpc_address
+        @opts.dispatcher.external_address ||= @opts.rpc.server_address
 
-        @url = "#{@opts.rpc_external_address}:#{@opts.rpc_port}"
+        @url = "#{@opts.dispatcher.external_address}:#{@opts.rpc.server_port}"
 
         reroute_to_file( logfile ) if logfile
 
@@ -53,7 +53,7 @@ class Server::Dispatcher::Node
         @neighbours = Set.new
         @nodes_info_cache = []
 
-        if (neighbour = @opts.neighbour)
+        if (neighbour = @opts.dispatcher.neighbour)
             # add neighbour and announce him to everyone
             add_neighbour( neighbour, true )
 
@@ -69,7 +69,7 @@ class Server::Dispatcher::Node
 
         log_updated_neighbours
 
-        interval = @opts.node_ping_interval || DEFAULT_PING_INTERVAL
+        interval = @opts.dispatcher.node_ping_interval || DEFAULT_PING_INTERVAL
         ::EM.add_periodic_timer( interval ) do
             ping
             check_for_comebacks
@@ -154,10 +154,10 @@ class Server::Dispatcher::Node
     def info
         {
             'url'      => @url,
-            'pipe_id'  => @opts.pipe_id,
-            'weight'   => @opts.weight,
-            'nickname' => @opts.nickname,
-            'cost'     => @opts.cost
+            'pipe_id'  => @opts.dispatcher.node_pipe_id,
+            'weight'   => @opts.dispatcher.node_weight,
+            'nickname' => @opts.dispatcher.node_nickname,
+            'cost'     => @opts.dispatcher.node_cost
         }
     end
 

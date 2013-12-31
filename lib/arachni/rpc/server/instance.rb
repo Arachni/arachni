@@ -6,7 +6,7 @@
 require 'ostruct'
 
 module Arachni
-lib = Options.dir['lib']
+lib = Options.paths.lib
 
 require lib + 'rpc/client/instance'
 require lib + 'rpc/client/dispatcher'
@@ -125,12 +125,10 @@ class Instance
     private :error_logfile
     public  :error_logfile
 
-    #
     # Initializes the RPC interface and the framework.
     #
     # @param    [Options]    opts
     # @param    [String]    token   Authentication token.
-    #
     def initialize( opts, token )
         @opts   = opts
         @token  = token
@@ -139,25 +137,28 @@ class Instance
         @active_options = Server::ActiveOptions.new( @framework )
 
         @server = Base.new( @opts, token )
-        @server.logger.level = @opts.datastore[:log_level] if @opts.datastore[:log_level]
+        @server.logger.level = @opts.datastore.log_level if @opts.datastore.log_level
 
-        @opts.datastore[:token] = token
+        @opts.datastore.token = token
 
-        debug if @opts.debug
+        debug if @opts.output.debug
 
-        if @opts.reroute_to_logfile
-            reroute_to_file "#{@opts.dir['logs']}/Instance - #{Process.pid}-#{@opts.rpc_port}.log"
+        if @opts.output.reroute_to_logfile
+            reroute_to_file "#{@opts.paths.logs}/Instance - #{Process.pid}" <<
+                                "-#{@opts.rpc.server_port}.log"
         else
             reroute_to_file false
         end
 
-        set_error_logfile "#{@opts.dir['logs']}/Instance - #{Process.pid}-#{@opts.rpc_port}.error.log"
+        set_error_logfile "#{@opts.paths.logs}/Instance - #{Process.pid}" <<
+                              "-#{@opts.rpc.server_port}.error.log"
 
         set_handlers( @server )
 
         # trap interrupts and exit cleanly when required
         %w(QUIT INT).each do |signal|
-            trap( signal ){ shutdown if !@opts.datastore[:do_not_trap] } if Signal.list.has_key?( signal )
+            next if !Signal.list.has_key?( signal )
+            trap( signal ){ shutdown if !@opts.datastore.do_not_trap }
         end
 
         @consumed_pids = []
@@ -415,7 +416,6 @@ class Instance
         end
     end
 
-    #
     # Configures and runs a scan.
     #
     # @note If you use this method to start the scan use {#busy?} instead of
@@ -424,26 +424,31 @@ class Instance
     # @note Options marked with an asterisk are required.
     # @note Options which expect patterns will interpret their arguments as
     #   regular expressions regardless of their type.
-    # @note When using more than one Instance, the `http_req_limit` and
-    #   `link_count_limit` options will be divided by the number of Instance to
-    #   be used.
+    # @note When using more than one Instance, the
+    #   {OptionGroups::HTTP#request_concurrency} and
+    #   {OptionGroups::Scope#page_limit} options will be divided by the number
+    #   of Instances to be used.
     #
     # @param  [Hash]  opts
-    #   Scan options to be passed to {Options#set} (along with some extra ones
+    #   Scan options to be passed to {Options#update} (along with some extra ones
     #   to keep configuration in one place).
     #
     #   _The options presented here are the most commonly used ones, in
-    #   actuality, you can use any {Options} attribute._
+    #   actuality, you can use anything supported by {Options#update}._
     # @option opts [String]  *:url
     #   Target URL to audit.
-    # @option opts [Boolean] :audit_links (false)
-    #   Enable auditing of link inputs.
-    # @option opts [Boolean] :audit_forms (false)
-    #   Enable auditing of form inputs.
-    # @option opts [Boolean] :audit_cookies (false)
-    #   Enable auditing of cookie inputs.
-    # @option opts [Boolean] :audit_headers (false)
-    #   Enable auditing of header inputs.
+    # @option opts [String] :authorized_by (nil)
+    #   The e-mail address of the person who authorized the scan.
+    #
+    #       john.doe@bigscanners.com
+    # @option opts [Hash] :audit
+    #   {OptionGroups::Audit Audit} options.
+    # @option opts [Hash] :scope
+    #   {OptionGroups::Scope Scope} options.
+    # @option opts [Hash] :http
+    #   {OptionGroups::HTTP HTTP} options.
+    # @option opts [Hash] :login
+    #   {OptionGroups::Login Login} options.
     # @option opts [String,Array<String>] :checks ([])
     #   Checks to load, by name.
     #
@@ -466,81 +471,16 @@ class Instance
     #       }
     #
     # @option opts [String, Symbol, Array<String, Symbol>] :platforms ([])
-    #   Initialize the fingerprinter with the given platforms. The fingerprinter
-    #   cannot identify database servers so specifying the remote DB backend will
-    #   greatly enhance performance and reduce bandwidth consumption.
+    #   Initialize the fingerprinter with the given platforms.
+    #
+    #   The fingerprinter cannot identify database servers so specifying the
+    #   remote DB backend will greatly enhance performance and reduce bandwidth
+    #   consumption.
     # @option opts [Integer] :no_fingerprinting (false)
     #   Disable platform fingerprinting and include all payloads in the audit.
+    #
     #   Use this option in addition to the `:platforms` one to restrict the
     #   audit payloads to explicitly specified platforms.
-    # @option opts [Integer] :link_count_limit (nil)
-    #   Limit the amount of pages to be crawled and audited.
-    # @option opts [Integer] :depth_limit (nil)
-    #   Directory depth limit.
-    #
-    #   How deep Arachni should go into the website structure.
-    # @option opts [Array<String, Regexp>] :exclude ([])
-    #   URLs that match any of the given patterns will be ignored.
-    #
-    #       [ 'logout', /skip.*.me too/i ]
-    #
-    # @option opts [Array<String, Regexp>] :exclude_pages ([])
-    #   Exclude pages from the crawl and audit processes based on their
-    #   content (i.e. HTTP response bodies).
-    #
-    #       [ /.*forbidden.*/, "I'm a weird 404 and I should be ignored" ]
-    #
-    # @option opts [Array<String>] :exclude_vectors ([])
-    #   Exclude input vectors from the audit, by name.
-    #
-    #       [ 'sessionid', 'please_dont_audit_me' ]
-    #
-    # @option opts [Array<String, Regexp>] :include ([])
-    #   Only URLs that match any of the given patterns will be followed and audited.
-    #
-    #       [ 'only-follow-me', 'follow-me-as-well' ]
-    #
-    # @option opts [Hash<<String, Regexp>,Integer>] :redundant ({})
-    #   Redundancy patterns to limit how many times certain paths should be
-    #   followed.
-    #
-    #       { "follow_me_3_times" => 3, /follow_me_5_times/ => 5 }
-    #
-    #   Useful when scanning pages that create an large number of
-    #   pages like galleries and calendars.
-    #
-    # @option opts [Array<String>] :restrict_paths ([])
-    #   Restrict the audit to the provided paths.
-    #
-    #   The crawl phase gets skipped and these paths are used instead.
-    # @option opts [Array<String>] :extend_paths ([])
-    #   Extend the scope of the crawl and audit with the provided paths.
-    # @option opts [Array<String, Hash, Arachni::Element::Cookie>] :cookies ({})
-    #   Cookies to use for the HTTP requests.
-    #
-    #       [
-    #           'secret=blah',
-    #           {
-    #               'userid' => '1',
-    #           },
-    #           {
-    #               name:      'sessionid',
-    #               value:     'fdfdfDDfsdfszdf',
-    #               http_only: true
-    #           }
-    #       ]
-    #
-    #   _Cookie values will be encoded automatically._
-    #
-    # @option opts [Integer] :http_req_limit (20)
-    #   HTTP request concurrency limit.
-    # @option opts [String] :user_agent ('Arachni/v<version>')
-    #   User agent to use.
-    # @option opts [String] :authed_by (nil)
-    #   The e-mail address of the person who authorized the scan.
-    #
-    #       john.doe@bigscanners.com
-    #
     # @option opts [Array<Hash>]  :slaves
     #   Info of Instances to {Framework::Master#enslave enslave}.
     #
@@ -567,7 +507,7 @@ class Instance
     #       Will only request Instances from Grid members with different Pipe-IDs.
     # @option opts [Integer]  :spawns   (0)
     #   The amount of slaves to spawn. The behavior of this option changes
-    #   depending on the `grid_mode` setting:
+    #   depending on the `dispatcher_grid_mode` setting:
     #
     #   * `nil` -- All slave Instances will be spawned by this Instance directly,
     #       and thus reside in the same machine. This has the added benefit of
@@ -578,7 +518,6 @@ class Instance
     #       Pipe-IDs and the value of this option will be treated as a possible
     #       maximum rather than a hard setting. Actual spawn count will be determined
     #       by Dispatcher availability and the size of the workload.
-    #
     def scan( opts = {}, &block )
         # If the instance isn't clean bail out now.
         if busy? || @called
@@ -589,29 +528,32 @@ class Instance
         # Normalize this sucker to have symbols as keys -- but not recursively.
         opts = opts.symbolize_keys( false )
 
-        slaves      = opts[:slaves] || []
-        spawn_count = opts[:spawns].to_i
+        slaves      = opts.delete(:slaves) || []
+        spawn_count = opts[:spawns]
+        spawn_count = spawn_count.to_i
 
-        if opts[:platforms]
+        if (platforms = opts.delete(:platforms))
             begin
-                Platform::Manager.new( [opts[:platforms]].flatten.compact )
+                Platform::Manager.new( [platforms].flatten.compact )
             rescue => e
                 fail ArgumentError, e.to_s
             end
         end
 
-        if opts[:grid_mode]
-            @framework.opts.grid_mode = opts[:grid_mode]
-        end
+        opts[:dispatcher] ||= {}
+        opts[:scope]      ||= {}
 
-        if (opts[:grid] || opts[:grid_mode]) && spawn_count <= 0
-            fail ArgumentError,
-                 'Option \'spawns\' must be greater than 1 for Grid scans.'
-        end
+        if opts[:grid] || opts[:grid_mode]
+            if spawn_count <= 0
+                fail ArgumentError,
+                     'Option \'spawns\' must be greater than 1 for Grid scans.'
+            end
 
-        if ((opts[:grid] || opts[:grid_mode]) || spawn_count > 0) && [opts[:restrict_paths]].flatten.compact.any?
-            fail ArgumentError,
-                 'Option \'restrict_paths\' is not supported when in multi-Instance mode.'
+            if [opts[:scope][:restrict_paths]].flatten.compact.any?
+                fail ArgumentError,
+                     'Scope option \'restrict_paths\' is not supported when in' <<
+                         ' multi-Instance mode.'
+            end
         end
 
         # There may be follow-up/retry calls by the client in cases of network
@@ -624,6 +566,16 @@ class Instance
             opts[:plugins] = opts[:plugins].inject( {} ) { |h, n| h[n] = {}; h }
         end
 
+        multi = opts.delete(:multi)
+
+        if opts.include?( :grid )
+            @framework.opts.dispatcher.grid = opts.delete(:grid)
+        end
+
+        if opts.include?( :grid_mode )
+            @framework.opts.dispatcher.grid_mode = opts.delete(:grid_mode)
+        end
+
         @active_options.set( opts )
 
         if @framework.opts.url.to_s.empty?
@@ -632,35 +584,31 @@ class Instance
 
         # Undocumented option, used internally to distribute workload and knowledge
         # for multi-Instance scans.
-        if opts[:multi]
-            @framework.update_page_queue( opts[:multi][:pages] || [] )
-            @framework.restrict_to_elements( opts[:multi][:elements] || [] )
+        if multi
+            @framework.update_page_queue( multi[:pages] || [] )
+            @framework.restrict_to_elements( multi[:elements] || [] )
 
             if Options.fingerprint?
-                Platform::Manager.update_light( opts[:multi][:platforms] || {} )
+                Platform::Manager.update_light( multi[:platforms] || {} )
             end
         end
 
-        opts[:checks] ||= opts[:mods]
         @framework.checks.load opts[:checks] if opts[:checks]
         @framework.plugins.load opts[:plugins] if opts[:plugins]
 
         # Starts the scan after all necessary options have been set.
         after = proc { block.call @framework.run; @scan_initializing = false }
 
-        if @framework.opts.grid?
-            # If a Grid scan has been selected then just set us as the master
-            # and set the spawn count as max slaves.
-            #
-            # The Framework will sort out the rest...
+        if @framework.opts.dispatcher.grid?
+            # If a Grid scan has been selected then just set us as the master,
+            # the Framework will sort out the rest.
             @framework.set_as_master
-            @framework.opts.max_slaves = spawn_count
 
             # Rock n' roll!
             after.call
         else
             # Handles each spawn, enslaving it for a multi-Instance scan.
-            each  = proc do |slave, iter|
+            each = proc do |slave, iter|
                 @framework.enslave( slave ){ iter.next }
             end
 
@@ -767,10 +715,10 @@ class Instance
 
                     # All Instances will be on the same host so use UNIX
                     # domain sockets to avoid TCP/IP overhead.
-                    Options.rpc_address          = nil
-                    Options.rpc_external_address = nil
-                    Options.rpc_port             = nil
-                    Options.rpc_socket           = "/tmp/arachni-instance-slave-#{Process.pid}"
+                    Options.rpc.server_address          = nil
+                    Options.dispatcher.external_address = nil
+                    Options.rpc.server_port             = nil
+                    Options.rpc.server_socket           = "/tmp/arachni-instance-slave-#{Process.pid}"
 
                     Server::Instance.new( Options.instance, token )
                 }
@@ -834,12 +782,12 @@ class Instance
     def expose_over_unix_socket( &block )
         # If it's already exposed over a UNIX socket then there's nothing to
         # be done.
-        if Options.rpc_socket
+        if Options.rpc.server_socket
             block.call true
             return
         end
 
-        Options.rpc_socket = "/tmp/arachni-instance-master-#{Process.pid}"
+        Options.rpc.server_socket = "/tmp/arachni-instance-master-#{Process.pid}"
 
         ::EM.defer do
             unix = Base.new( @opts, @token )
@@ -849,7 +797,7 @@ class Instance
                 unix.run
             end
 
-            sleep 0.1 while !File.exist?( Options.rpc_socket )
+            sleep 0.1 while !File.exist?( Options.rpc.server_socket )
             block.call true
         end
 

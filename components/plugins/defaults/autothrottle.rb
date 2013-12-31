@@ -39,7 +39,7 @@ class Arachni::Plugins::AutoThrottle < Arachni::Plugin::Base
 
             if( http.max_concurrency > MIN_CONCURRENCY &&
                 http.burst_average_response_time > THRESHOLD ) ||
-                http.max_concurrency > framework.opts.http_req_limit
+                http.max_concurrency > framework.opts.http.request_concurrency
 
                 step = http.max_concurrency + STEP_DOWN < MIN_CONCURRENCY ?
                     MIN_CONCURRENCY - http.max_concurrency : STEP_DOWN
@@ -48,7 +48,7 @@ class Arachni::Plugins::AutoThrottle < Arachni::Plugin::Base
                 http.max_concurrency = http.max_concurrency + step
 
             elsif http.burst_average_response_time < THRESHOLD &&
-                http.max_concurrency < framework.opts.http_req_limit
+                http.max_concurrency < framework.opts.http.request_concurrency
 
                 print_debug "Stepping up!: +#{STEP_UP}"
                 http.max_concurrency = http.max_concurrency + STEP_UP

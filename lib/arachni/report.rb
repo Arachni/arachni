@@ -3,7 +3,7 @@
     All rights reserved.
 =end
 
-lib = Arachni::Options.dir['lib']
+lib = Arachni::Options.paths.lib
 require lib + 'component/manager'
 require lib + 'report/base'
 require lib + 'report/manager'

@@ -70,7 +70,7 @@ describe Arachni::Utilities do
     describe '#redundant_path?' do
         context "when a URL's counter reaches 0" do
             it 'returns true' do
-                Arachni::Options.redundant = { /match_this/ => 10 }
+                Arachni::Options.scope.redundant_path_patterns = { /match_this/ => 10 }
 
                 url = 'http://stuff.com/match_this'
                 10.times do
@@ -82,7 +82,7 @@ describe Arachni::Utilities do
         end
         context "when a URL's counter has not reached 0" do
             it 'returns false' do
-                Arachni::Options.redundant = { /match_this/ => 11 }
+                Arachni::Options.scope.redundant_path_patterns = { /match_this/ => 11 }
 
                 url = 'http://stuff.com/match_this'
                 10.times do
@@ -111,7 +111,7 @@ describe Arachni::Utilities do
         end
 
         context 'when follow subdomains is disabled' do
-            before { @opts.follow_subdomains = false }
+            before { @opts.scope.include_subdomains = false }
 
             context 'with a URL with a different domain' do
                 it 'returns false' do
@@ -137,7 +137,7 @@ describe Arachni::Utilities do
         end
 
         context 'when follow subdomains is disabled' do
-            before { @opts.follow_subdomains = true }
+            before { @opts.scope.include_subdomains = true }
 
             context 'with a URL with a different domain' do
                 it 'returns false' do
@@ -164,7 +164,7 @@ describe Arachni::Utilities do
     end
 
     describe '#exclude_path?' do
-        before { @opts.exclude << /skip_me/ }
+        before { @opts.scope.exclude_path_patterns << /skip_me/ }
 
         context 'when a path matches an exclude rule' do
             it 'returns true' do
@@ -182,7 +182,7 @@ describe Arachni::Utilities do
     end
 
     describe '#skip_page?' do
-        before { @opts.exclude_pages << /ignore me/ }
+        before { @opts.scope.exclude_page_patterns << /ignore me/ }
 
         context 'when the page DOM depth limit has been exceeded' do
             it 'returns false' do
@@ -198,7 +198,7 @@ describe Arachni::Utilities do
                 )
                 @utils.skip_page?( page ).should be_false
 
-                @opts.dom_depth_limit = 2
+                @opts.scope.dom_depth_limit = 2
                 @utils.skip_page?( page ).should be_true
             end
         end
@@ -222,7 +222,7 @@ describe Arachni::Utilities do
     end
 
     describe '#skip_response?' do
-        before { @opts.exclude_pages << /ignore me/ }
+        before { @opts.scope.exclude_page_patterns << /ignore me/ }
 
         context 'when the body matches an ignore rule' do
             it 'returns true' do
@@ -243,7 +243,7 @@ describe Arachni::Utilities do
     end
 
     describe '#include_path?' do
-        before { @opts.include << /include_me/ }
+        before { @opts.scope.include_path_patterns << /include_me/ }
 
         context 'when a path matches an include rule' do
             it 'returns true' do
@@ -262,8 +262,8 @@ describe Arachni::Utilities do
 
     describe '#skip_resource?' do
         before do
-            @opts.exclude_pages << /ignore\s+me/m
-            @opts.exclude << /ignore/
+            @opts.scope.exclude_page_patterns << /ignore\s+me/m
+            @opts.scope.exclude_path_patterns << /ignore/
         end
 
         context 'when passed a' do
@@ -373,14 +373,14 @@ describe Arachni::Utilities do
                 context 'with a single line' do
                     context 'which matches an exclude rule' do
                         it 'returns true' do
-                            s = "ignore/this/path"
+                            s = 'ignore/this/path'
                             @utils.skip_resource?( s ).should be_true
                         end
                     end
 
                     context 'which does not match an exclude rule' do
                         it 'returns false' do
-                            s = "stuf/here/"
+                            s = 'stuf/here/'
                             @utils.skip_resource?( s ).should be_false
                         end
                     end
@@ -395,7 +395,7 @@ describe Arachni::Utilities do
             context 'HTTP' do
                 it 'returns true' do
                     @opts.url = 'https://test2.com/blah/ha'
-                    @opts.https_only = true
+                    @opts.scope.https_only = true
 
                     url = 'https://test2.com/blah/ha'
 
@@ -406,7 +406,7 @@ describe Arachni::Utilities do
             context 'HTTPS' do
                 it 'returns true' do
                     @opts.url = 'https://test2.com/blah/ha'
-                    @opts.https_only = true
+                    @opts.scope.https_only = true
 
                     url = 'https://test2.com/blah/ha'
 
@@ -417,7 +417,7 @@ describe Arachni::Utilities do
             context 'other' do
                 it 'returns false' do
                     @opts.url = 'http://test2.com/blah/ha'
-                    @opts.https_only = true
+                    @opts.scope.https_only = true
 
                     url = 'stuff://test2.com/blah/ha'
 
@@ -430,11 +430,11 @@ describe Arachni::Utilities do
             context 'HTTPS' do
                 context 'and the checked URL uses' do
                     context 'HTTPS' do
-                        context 'and Options#https_only is' do
+                        context 'and Options#scope_https_only is' do
                             context true do
                                 it 'returns true' do
                                     @opts.url = 'https://test2.com/blah/ha'
-                                    @opts.https_only = true
+                                    @opts.scope.https_only = true
 
                                     url = 'https://test2.com/blah/ha'
 
@@ -446,7 +446,7 @@ describe Arachni::Utilities do
                             context false do
                                 it 'returns true' do
                                     @opts.url = 'https://test2.com/blah/ha'
-                                    @opts.https_only = false
+                                    @opts.scope.https_only = false
 
                                     url = 'https://test2.com/blah/ha'
 
@@ -457,11 +457,11 @@ describe Arachni::Utilities do
                         end
                     end
                     context 'HTTP' do
-                        context 'and Options#https_only is' do
+                        context 'and Options#scope_https_only is' do
                             context true do
                                 it 'returns false' do
                                     @opts.url = 'https://test2.com/blah/ha'
-                                    @opts.https_only = true
+                                    @opts.scope.https_only = true
 
                                     url = 'http://test2.com/blah/ha'
 
@@ -473,7 +473,7 @@ describe Arachni::Utilities do
                             context false do
                                 it 'returns true' do
                                     @opts.url = 'https://test2.com/blah/ha'
-                                    @opts.https_only = false
+                                    @opts.scope.https_only = false
 
                                     url = 'http://test2.com/blah/ha'
 
@@ -489,11 +489,11 @@ describe Arachni::Utilities do
             context 'HTTP' do
                 context 'and the checked URL uses' do
                     context 'HTTPS' do
-                        context 'and Options#https_only is' do
+                        context 'and Options#scope_https_only is' do
                             context true do
                                 it 'returns true' do
                                     @opts.url = 'http://test2.com/blah/ha'
-                                    @opts.https_only = true
+                                    @opts.scope.https_only = true
 
                                     url = 'https://test2.com/blah/ha'
 
@@ -505,7 +505,7 @@ describe Arachni::Utilities do
                             context false do
                                 it 'returns true' do
                                     @opts.url = 'http://test2.com/blah/ha'
-                                    @opts.https_only = false
+                                    @opts.scope.https_only = false
 
                                     url = 'https://test2.com/blah/ha'
 
@@ -516,11 +516,11 @@ describe Arachni::Utilities do
                         end
                     end
                     context 'HTTP' do
-                        context 'and Options#https_only is' do
+                        context 'and Options#scope_https_only is' do
                             context true do
                                 it 'returns true' do
                                     @opts.url = 'http://test2.com/blah/ha'
-                                    @opts.https_only = true
+                                    @opts.scope.https_only = true
 
                                     url = 'http://test2.com/blah/ha'
 
@@ -532,7 +532,7 @@ describe Arachni::Utilities do
                             context false do
                                 it 'returns true' do
                                     @opts.url = 'http://test2.com/blah/ha'
-                                    @opts.https_only = false
+                                    @opts.scope.https_only = false
 
                                     url = 'http://test2.com/blah/ha'
 

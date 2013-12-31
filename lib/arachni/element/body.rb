@@ -3,7 +3,7 @@
     All rights reserved.
 =end
 
-require Arachni::Options.dir['lib'] + 'element/base'
+require Arachni::Options.paths.lib + 'element/base'
 
 module Arachni::Element
 class Body < Base

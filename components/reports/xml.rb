@@ -11,7 +11,7 @@ require 'base64'
 #
 # @version 0.2.5
 class Arachni::Reports::XML < Arachni::Report::Base
-    load Arachni::Options.dir['reports'] + '/xml/buffer.rb'
+    load Arachni::Options.paths.reports + '/xml/buffer.rb'
 
     include Buffer
 
@@ -37,7 +37,7 @@ class Arachni::Reports::XML < Arachni::Report::Base
         simple_tag( 'delta_time', auditstore.delta_time )
 
         simple_tag( 'url', auditstore.options['url'] )
-        simple_tag( 'user_agent', auditstore.options['user_agent'] )
+        simple_tag( 'http_user_agent', auditstore.options['http_user_agent'] )
 
         start_tag 'audited_elements'
         simple_tag( 'element', 'links' ) if auditstore.options['audit_links']
@@ -52,7 +52,7 @@ class Arachni::Reports::XML < Arachni::Report::Base
 
         start_tag 'filters'
 
-        %w(exclude include).each do |type|
+        %w(scope_exclude_path_patterns scope_include_path_patterns).each do |type|
             if auditstore.options[type]
                 start_tag type
                 auditstore.options[type].each { |ex| simple_tag( 'regexp', ex ) }
@@ -60,12 +60,12 @@ class Arachni::Reports::XML < Arachni::Report::Base
             end
         end
 
-        if auditstore.options['redundant']
-            start_tag 'redundant'
-            auditstore.options['redundant'].each do |regexp, counter|
+        if auditstore.options['scope_redundant_path_patterns']
+            start_tag 'scope_redundant_path_patterns'
+            auditstore.options['scope_redundant_path_patterns'].each do |regexp, counter|
                 simple_tag( 'filter', "#{regexp}:#{counter}" )
             end
-            end_tag 'redundant'
+            end_tag 'scope_redundant_path_patterns'
         end
         end_tag 'filters'
 

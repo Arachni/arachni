@@ -5,7 +5,7 @@
 
 module Arachni
 
-require Options.dir['lib'] + 'check/manager'
+require Options.paths.lib + 'check/manager'
 
 module RPC
 class Server

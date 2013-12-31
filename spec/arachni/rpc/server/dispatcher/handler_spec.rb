@@ -1,10 +1,10 @@
 require 'spec_helper'
 
-require "#{Arachni::Options.dir['lib']}/rpc/server/dispatcher"
+require "#{Arachni::Options.paths.lib}/rpc/server/dispatcher"
 
 describe Arachni::RPC::Server::Dispatcher::Handler do
     before( :all ) do
-        Arachni::Options.dir['rpcd_handlers'] = "#{fixtures_path}rpcd_handlers/"
+        Arachni::Options.paths.rpcd_handlers = "#{fixtures_path}rpcd_handlers/"
 
         @dispatcher = dispatcher_spawn
 

@@ -6,7 +6,7 @@
 module Arachni
 
 require 'nokogiri'
-require Options.dir['lib'] + 'nokogiri/xml/node'
+require Options.paths.lib + 'nokogiri/xml/node'
 
 #
 # Crawls the target webapp until there are no new paths left.
@@ -78,7 +78,7 @@ class Spider
     #
     # @return [Array<String>]   sitemap
     def run( &block )
-        return if running? || limit_reached? || !@opts.crawl?
+        return if running? || limit_reached? || !@opts.scope.crawl?
 
         synchronize { @running = true }
 
@@ -215,7 +215,7 @@ class Spider
 
     def seed_paths
         push( url, false )
-        push( @opts.extend_paths, false )
+        push( @opts.scope.extend_paths, false )
     end
 
     def call_on_each_page_blocks( obj )
@@ -273,7 +273,7 @@ class Spider
 
     # @return   [Bool]  true if the link-count-limit has been exceeded, false otherwise
     def limit_reached?
-        @opts.link_count_limit_reached? @visited.size
+        @opts.scope.page_limit_reached? @visited.size
     end
 
     #
@@ -297,7 +297,7 @@ class Spider
     end
 
     def auto_redundant?( url )
-        @opts.auto_redundant_path?( url ) do
+        @opts.scope.auto_redundant_path?( url ) do
             print_verbose "Discarding auto-redundant page: #{url}"
         end
     end
@@ -307,7 +307,8 @@ class Spider
     end
 
     def hit_redirect_limit?
-        @opts.redirect_limit > 0 && @opts.redirect_limit <= @followed_redirects
+        @opts.http.request_redirect_limit > 0 &&
+            @opts.http.request_redirect_limit <= @followed_redirects
     end
 
     def visit( url, opts = {}, &block )
@@ -319,7 +320,7 @@ class Spider
 
         opts = {
             timeout:         nil,
-            follow_location: false,
+            follow_location: true,
             update_cookies:  true
         }.merge( opts )
 
@@ -350,18 +351,8 @@ class Spider
 
             print_status "[HTTP: #{response.code}] #{effective_url}"
 
-            if response.redirection?
-                @redirects << response.request.url
-                location = to_absolute( response.headers.location, response.request.url )
-                if hit_redirect_limit? || skip?( location )
-                    print_info "Redirect limit reached, skipping: #{location}"
-                    decrease_pending
-                    next
-                end
-                @followed_redirects += 1
-
-                print_info "Scheduled to follow: #{location}"
-                push location
+            response.redirections.each do |redirection|
+                @redirects << redirection.url
             end
 
             if skip_response?( response )

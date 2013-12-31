@@ -18,7 +18,7 @@ describe Arachni::Browser do
         clear_hit_count
     end
 
-    let( :ua ) { Arachni::Options.user_agent }
+    let( :ua ) { Arachni::Options.http.user_agent }
 
     def hit_count
         Typhoeus::Request.get( "#{@url}/hit-count" ).body.to_i
@@ -329,7 +329,7 @@ describe Arachni::Browser do
 
     describe '#to_page' do
         it 'converts the working window to an Arachni::Page' do
-            ua = Arachni::Options.user_agent
+            ua = Arachni::Options.http.user_agent
 
             @browser.load( @url )
             page = @browser.to_page
@@ -506,7 +506,7 @@ describe Arachni::Browser do
         it 'returns the evaluated HTML source' do
             @browser.load @url
 
-            ua = Arachni::Options.user_agent
+            ua = Arachni::Options.http.user_agent
             ua.should_not be_empty
 
             @browser.source.should include( ua )
@@ -529,13 +529,13 @@ describe Arachni::Browser do
         it 'loads the given URL' do
             @browser.goto @url
 
-            ua = Arachni::Options.user_agent
+            ua = Arachni::Options.http.user_agent
             ua.should_not be_empty
 
             @browser.source.should include( ua )
         end
 
-        context 'when Options#exclude has bee configured' do
+        context 'when Options#scope_exclude_path_patterns has bee configured' do
             it 'respects scope restrictions' do
                 pages = @browser.load( @url + '/explore' ).start_capture.trigger_events.page_snapshots
                 pages_should_have_form_with_input pages, 'by-ajax'
@@ -543,16 +543,16 @@ describe Arachni::Browser do
                 @browser.shutdown
                 @browser = described_class.new
 
-                Arachni::Options.exclude << /ajax/
+                Arachni::Options.scope.exclude_path_patterns << /ajax/
 
                 pages = @browser.load( @url + '/explore' ).start_capture.trigger_events.page_snapshots
                 pages_should_not_have_form_with_input pages, 'by-ajax'
             end
         end
 
-        context 'when Options#redundant has bee configured' do
+        context 'when Options#scope_redundant_path_patterns has bee configured' do
             it 'respects scope restrictions' do
-                Arachni::Options.redundant = { 'explore' => 3 }
+                Arachni::Options.scope.redundant_path_patterns = { 'explore' => 3 }
 
                 @browser.load( @url + '/explore' ).response.code.should == 200
 
@@ -564,9 +564,9 @@ describe Arachni::Browser do
             end
         end
 
-        context 'when Options#auto_redundant has bee configured' do
+        context 'when Options#scope_auto_redundant_paths has bee configured' do
             it 'respects scope restrictions' do
-                Arachni::Options.auto_redundant = 3
+                Arachni::Options.scope.auto_redundant_paths = 3
 
                 @browser.load( @url + '/explore?test=1&test2=2' ).response.code.should == 200
 

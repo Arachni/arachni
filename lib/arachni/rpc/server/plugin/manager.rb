@@ -5,7 +5,7 @@
 
 module Arachni
 
-require Options.dir['lib'] + 'plugin/manager'
+require Options.paths.lib + 'plugin/manager'
 
 module RPC
 class Server

@@ -30,50 +30,57 @@ class Arachni::Reports::Stdout < Arachni::Report::Base
         print_ok 'System settings:'
         print_info '---------------'
 
-        print_info "Version:  #{auditstore.version}"
+        print_info "Version:           #{auditstore.version}"
         print_info "Audit started on:  #{auditstore.start_datetime}"
         print_info "Audit finished on: #{auditstore.finish_datetime}"
-        print_info "Runtime: #{auditstore.delta_time}"
+        print_info "Runtime:           #{auditstore.delta_time}"
         print_line
-        print_info "URL: #{auditstore.options['url']}"
-        print_info "User agent: #{auditstore.options['user_agent']}"
+        print_info "URL:        #{auditstore.options[:url]}"
+        print_info "User agent: #{auditstore.options[:http][:user_agent]}"
         print_line
         print_status 'Audited elements: '
-        print_info '* Links'    if auditstore.options['audit_links']
-        print_info '* Forms'    if auditstore.options['audit_forms']
-        print_info '* Cookies'  if auditstore.options['audit_cookies']
-        print_info '* Headers'  if auditstore.options['audit_headers']
+        print_info '* Links'    if auditstore.options[:audit][:links]
+        print_info '* Forms'    if auditstore.options[:audit][:forms]
+        print_info '* Cookies'  if auditstore.options[:audit][:cookies]
+        print_info '* Headers'  if auditstore.options[:audit][:headers]
         print_line
-        print_status "Checks: #{auditstore.options['checks'].join( ', ' )}"
+        print_status "Checks: #{auditstore.options[:checks].join( ', ' )}"
 
-        if auditstore.options['exclude'].any? || auditstore.options['include'].any? ||
-            auditstore.options['redundant'].any?
+        if auditstore.options[:scope][:exclude_path_patterns].any? ||
+            auditstore.options[:scope][:include_path_patterns].any? ||
+            auditstore.options[:scope][:redundant_path_patterns].any?
 
             print_line
             print_status 'Filters: '
 
-            if auditstore.options['exclude'] && auditstore.options['exclude'].any?
+            if auditstore.options[:scope][:exclude_path_patterns] &&
+                auditstore.options[:scope][:exclude_path_patterns].any?
+
                 print_info '  Exclude:'
-                auditstore.options['exclude'].each { |ex| print_info "    #{ex}" }
+                auditstore.options[:scope][:exclude_path_patterns].each { |ex| print_info "    #{ex}" }
             end
 
-            if auditstore.options['include'] && auditstore.options['include'].any?
+            if auditstore.options[:scope][:include_path_patterns] &&
+                auditstore.options[:scope][:include_path_patterns].any?
+
                 print_info '  Include:'
-                auditstore.options['include'].each { |inc| print_info "    #{inc}" }
+                auditstore.options[:scope][:include_path_patterns].each { |inc| print_info "    #{inc}" }
             end
 
-            if auditstore.options['redundant'] && auditstore.options['redundant'].any?
+            if auditstore.options[:scope][:redundant_path_patterns] &&
+                auditstore.options[:scope][:redundant_path_patterns].any?
+
                 print_info '  Redundant:'
-                auditstore.options['redundant'].each do |regexp, counter|
+                auditstore.options[:scope][:redundant_path_patterns].each do |regexp, counter|
                     print_info "    #{regexp}:#{counter}"
                 end
             end
         end
 
-        if auditstore.options['cookies'] && auditstore.options['cookies'].any?
+        if auditstore.options[:cookies] && auditstore.options[:cookies].any?
             print_line
             print_status 'Cookies: '
-            auditstore.options['cookies'].each do |cookie|
+            auditstore.options[:cookies].each do |cookie|
                 print_info "  #{cookie[0]} = #{cookie[1]}"
             end
         end

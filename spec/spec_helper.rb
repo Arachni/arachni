@@ -19,7 +19,7 @@ Dir.glob( "#{support_path}/{lib,helpers,shared,factories}/**/*.rb" ).each { |f| 
 Arachni::UI::Output.verbose
 
 # Uncomment to show output from spawned processes.
-#Arachni::Processes::Manager.preserve_output
+Arachni::Processes::Manager.preserve_output
 
 RSpec.configure do |config|
     config.treat_symbols_as_metadata_keys_with_true_values = true

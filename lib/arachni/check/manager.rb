@@ -26,7 +26,7 @@ class Manager < Arachni::Component::Manager
 
         @framework = framework
         @opts = @framework.opts
-        super( @opts.dir['checks'], NAMESPACE )
+        super( @opts.paths.checks, NAMESPACE )
     end
 
     #
@@ -94,10 +94,10 @@ class Manager < Arachni::Component::Manager
         return true if !elements || elements.empty?
 
         elems = {
-            Element::Link   => page.links.any?   && @opts.audit_links,
-            Element::Form   => page.forms.any?   && @opts.audit_forms,
-            Element::Cookie => page.cookies.any? && @opts.audit_cookies,
-            Element::Header => page.headers.any? && @opts.audit_headers,
+            Element::Link   => page.links.any?   && @opts.audit.links,
+            Element::Form   => page.forms.any?   && @opts.audit.forms,
+            Element::Cookie => page.cookies.any? && @opts.audit.cookies,
+            Element::Header => page.headers.any? && @opts.audit.headers,
             Element::Body   => !page.body.empty?,
             Element::Path   => true,
             Element::Server => true

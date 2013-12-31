@@ -7,21 +7,17 @@ require 'highline/system_extensions'
 
 module Arachni
 
-require Options.dir['mixins'] + 'terminal'
-require Options.dir['mixins'] + 'progress_bar'
+require Options.paths.mixins + 'terminal'
+require Options.paths.mixins + 'progress_bar'
+require Options.paths.lib + 'rpc/client/instance'
+require Options.paths.lib + 'utilities'
+require Options.paths.lib + 'ui/cli/utilities'
+require Options.paths.lib + 'framework'
 
-require Options.dir['lib'] + 'rpc/client/instance'
-
-require Options.dir['lib'] + 'utilities'
-require Options.dir['lib'] + 'ui/cli/utilities'
-require Options.dir['lib'] + 'framework'
-
-module UI
-class CLI
-
+module UI::CLI
 module RPC
+module Client
 
-#
 # Provides a command-line RPC client/interface for an {RPC::Server::Instance}.
 #
 # This interface should be your first stop when looking into using/creating your
@@ -36,15 +32,15 @@ module RPC
 # does not warrant the extra complexity of asynchronous calls.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Instance
     include Arachni::UI::Output
-    include CLI::Utilities
+    include UI::CLI::Utilities
 
     include Arachni::Mixins::Terminal
     include Arachni::Mixins::ProgressBar
 
     attr_reader :error_log_file
+    attr_reader :framework
 
     # @param    [Arachni::Options]  opts
     # @param    [RPC::Client::Instance] instance    Instance to control.
@@ -55,81 +51,10 @@ class Instance
         clear_screen
         move_to_home
 
-        print_banner
-
-        # If we have a profile option load it and merge it with the user supplied
-        # options.
-        load_profile( @opts.load_profile ) if @opts.load_profile
-
         # We don't need the framework for much, in this case only for report
         # generation, version number etc.
         @framework = Arachni::Framework.new( @opts )
-
-        # If the user wants to see the available reports, output them and exit.
-        if !opts.lsrep.empty?
-            lsrep @framework.lsrep
-            exit
-        end
-
-        if opts.show_profile
-            print_profile
-            exit 0
-        end
-
-        if opts.save_profile
-            exception_jail{ save_profile( opts.save_profile ) }
-            exit 0
-        end
-
-        if @opts.platforms.any?
-            begin
-                Platform::Manager.new( @opts.platforms )
-            rescue Platform::Error::Invalid => e
-                @opts.platforms.clear
-                print_error e
-                print_info 'Available platforms are:'
-                print_info Platform::Manager.new.valid.to_a.join( ', ' )
-                print_line
-                print_info 'Use the \'--lsplat\' parameter to see a detailed list of all available platforms.'
-                exit 1
-            end
-        end
-
-        if opts.lsplat
-            platforms = @instance.framework.lsplat
-            shutdown
-
-            lsplat platforms
-            exit
-        end
-
-        # If the user wants to see the available plugins grab them from the
-        # server, output them, exit and shutdown the server.
-        if !opts.lsplug.empty?
-            plugins = @instance.framework.lsplug
-            shutdown
-
-            lsplug plugins
-            exit
-        end
-
-        # If the user wants to see the available checks grab them from the
-        # server, output them, exit and shutdown the server.
-        if !opts.lsmod.empty?
-            checks = @instance.framework.lscheck
-            shutdown
-
-            lscheck checks
-            exit
-        end
-
-        # Check for missing url
-        if !@opts.url
-            print_error 'Missing url argument.'
-            exit 1
-        end
-
-        @issues ||= []
+        @issues    = []
     end
 
     def run
@@ -241,61 +166,43 @@ class Instance
     end
 
     def prepare_rpc_options
-        if @opts.grid? && @opts.spawns <= 0
+        if @opts.dispatcher.grid? && @opts.spawns <= 0
             print_error "The 'spawns' option needs to be more than 1 for Grid scans."
             exit 1
         end
 
-        if (@opts.grid? || @opts.spawns > 0) && @opts.restrict_paths.any?
-            print_error "Option 'restrict_paths' is not supported when in High-Performance mode."
+        if (@opts.dispatcher.grid? || @opts.spawns > 0) && @opts.scope.restrict_paths.any?
+            print_error "Option 'scope_restrict_paths' is not supported when in High-Performance mode."
             exit 1
         end
 
         @opts.reports['stdout'] = {} if @opts.reports.empty?
 
         # No checks have been specified, set the mods to '*' (all).
-        if !@opts.mods || @opts.mods.empty?
-            @opts.mods = ['*']
+        if @opts.checks.empty?
+            @opts.checks = ['*']
         end
 
-        # The user hasn't selected any elements to audit, set it to audit links, forms and cookies.
-        if !@opts.audit_links && !@opts.audit_forms && !@opts.audit_cookies &&
-            !@opts.audit_headers
+        if !@opts.audit.links && !@opts.audit.forms &&
+            !@opts.audit.cookies && !@opts.audit.headers
 
-            @opts.audit_links   = true
-            @opts.audit_forms   = true
-            @opts.audit_cookies = true
+            print_info 'No element audit options were specified, will audit ' <<
+                           'links, forms and cookies.'
+            print_line
+
+            @opts.audit.elements :links, :forms, :cookies
         end
 
-        opts = @opts.to_h.dup
+        opts = @opts.to_h.deep_clone
+        %w(paths rpc reports dispatcher datastore).each { |k| opts.delete( k.to_sym ) }
 
-        # do not send these options over the wire
-        [
-            # this is bad, do not override the server's directory structure
-            'dir',
-
-            # this is of no use to the server is a local option for this UI
-            'server',
-
-            # profiles are not to be sent over the wire
-            'load_profile',
-
-            # report options should remain local
-            'repopts',
-            'repsave',
-
-            'rpc_instance_port_range',
-            'datastore',
-            'reports',
-            'cookies'
-        ].each { |k| opts.delete( k ) }
-
-        if opts['cookie_jar']
-            opts['cookies'] = parse_cookie_jar( opts.delete( 'cookie_jar' ) )
+        if opts[:http][:cookie_jar_filepath]
+            opts[:http][:cookies] =
+                parse_cookie_jar( opts[:http].delete( :cookie_jar_filepath ) )
         end
 
         @framework.plugins.default.each do |plugin|
-            opts['plugins'][plugin] ||= {}
+            opts[:plugins][plugin] ||= {}
         end
 
         opts
@@ -373,7 +280,7 @@ class Instance
         print_info "Burst average response time  #{stats['average_res_time']}"
         print_info "Burst average                #{stats['curr_avg']} requests/second"
         print_info "Timed-out requests           #{stats['time_out_count']}"
-        print_info "Original max concurrency     #{@opts.http_req_limit}"
+        print_info "Original max concurrency     #{@opts.http.request_concurrency}"
         print_info "Throttled max concurrency    #{stats['max_concurrency']}"
     end
 

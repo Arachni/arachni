@@ -195,7 +195,7 @@ class Manager
 
     def self.fingerprinters
         @manager ||=
-            Component::Manager.new( Options.dir['fingerprinters'],
+            Component::Manager.new( Options.paths.fingerprinters,
                                     Platform::Fingerprinters )
     end
     fingerprinters.load_all

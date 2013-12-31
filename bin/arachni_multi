@@ -5,8 +5,6 @@
 =end
 
 require_relative '../lib/arachni'
+require Arachni::Options.paths.lib + 'ui/cli/rpc/client/local'
 
-Arachni::Options.parse
-require Arachni::Options.dir['lib'] + 'ui/cli/rpc/local'
-
-Arachni::UI::CLI::RPC::Local.new
+Arachni::UI::CLI::RPC::Client::Local.new

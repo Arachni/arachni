@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'fileutils'
 
-require "#{Arachni::Options.dir['lib']}/rpc/server/dispatcher"
+require "#{Arachni::Options.paths.lib}/rpc/server/dispatcher"
 
 describe Arachni::RPC::Server::Dispatcher do
     before( :all ) do
@@ -41,16 +41,27 @@ describe Arachni::RPC::Server::Dispatcher do
 
     describe '#handlers' do
         it 'returns an array of loaded handlers' do
-            Arachni::Options.dir['rpcd_handlers'] = "#{fixtures_path}rpcd_handlers/"
+            Arachni::Options.paths.rpcd_handlers = "#{fixtures_path}rpcd_handlers/"
             dispatcher_light_spawn.handlers.include?( 'echo' ).should be_true
         end
     end
 
     describe '#dispatch' do
-        context 'when Options#rpc_external_address has been set' do
+        it 'does not leak Instances' do
+            dispatcher = dispatcher_spawn
+
+            times = 20
+            times.times do
+                sleep 0.1 while !dispatcher.dispatch
+            end
+
+            dispatcher.jobs.size.should == times
+        end
+
+        context 'when Options#dispatcher_external_address has been set' do
             it 'advertises that address' do
                 address = '127.0.0.1'
-                dispatcher = dispatcher_light_spawn( rpc_external_address: address )
+                dispatcher = dispatcher_light_spawn( external_address: address )
                 dispatcher.dispatch['url'].should start_with "#{address}:"
             end
         end
@@ -144,7 +155,6 @@ describe Arachni::RPC::Server::Dispatcher do
                         split( ':' ).first.should == '127.0.0.3'
                 end
             end
-
         end
     end
 
@@ -222,10 +232,10 @@ describe Arachni::RPC::Server::Dispatcher do
             stats['node'].keys.should == @node_info_keys
         end
 
-        context 'when Options#rpc_external_address has been set' do
+        context 'when Options#dispatcher_external_address has been set' do
             it 'advertises that address' do
                 address = '127.0.0.1'
-                dispatcher = dispatcher_light_spawn( rpc_external_address: address )
+                dispatcher = dispatcher_light_spawn( external_address: address )
                 dispatcher.stats['node']['url'].should start_with "#{address}:"
             end
         end

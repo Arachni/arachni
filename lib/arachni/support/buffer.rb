@@ -3,6 +3,6 @@
     All rights reserved.
 =end
 
-buffers = Arachni::Options.dir['support'] + 'buffer/'
+buffers = Arachni::Options.paths.support + 'buffer/'
 require buffers + 'base'
 require buffers + 'autoflush'

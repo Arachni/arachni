@@ -134,10 +134,10 @@ class Browser
         @proxy = HTTP::ProxyServer.new(
             address:          '127.0.0.1',
             request_handler:  proc do |request, response|
-                synchronize { request_handler( request, response ) }
+                synchronize { exception_jail { request_handler( request, response ) } }
             end,
             response_handler: proc do |request, response|
-                synchronize { response_handler( request, response ) }
+                synchronize { exception_jail { response_handler( request, response ) } }
             end
         )
 
@@ -860,7 +860,7 @@ class Browser
 
     def capabilities
         Selenium::WebDriver::Remote::Capabilities.phantomjs(
-            'phantomjs.page.settings.userAgent'  => Options.user_agent,
+            'phantomjs.page.settings.userAgent'  => Options.http.user_agent,
             'phantomjs.page.customHeaders.X-Arachni-Browser-Auth' => auth_token,
             #'phantomjs.page.settings.loadImages' => false,
             'phantomjs.cli.args'                 => [
@@ -918,7 +918,7 @@ class Browser
         # analyze and audit.
         capture( request )
 
-        request.headers['user-agent'] = Options.user_agent
+        request.headers['user-agent'] = Options.http.user_agent
 
         # Signal the proxy to continue with its request to the origin server.
         true
@@ -953,8 +953,8 @@ class Browser
     def ignore_request?( request )
         # Only allow CSS and JS resources to be loaded from out-of-scope domains.
         !['css', 'js'].include?( request.parsed_url.resource_extension ) &&
-            skip_path?( request.url ) || Options.redundant?( request.url ) ||
-            Options.auto_redundant_path?( request.url )
+            skip_path?( request.url ) || Options.scope.redundant?( request.url ) ||
+            Options.scope.auto_redundant_path?( request.url )
     end
 
     def capture( request )

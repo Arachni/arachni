@@ -5,7 +5,7 @@
 
 module Arachni
 
-require Options.dir['lib'] + 'rpc/client/base'
+require Options.paths.lib + 'rpc/client/base'
 
 module RPC
 class Client
@@ -16,7 +16,6 @@ class Client
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Instance
-
     attr_reader :opts
     attr_reader :spider
     attr_reader :framework

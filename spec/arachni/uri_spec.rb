@@ -357,7 +357,7 @@ describe Arachni::URI do
                 it 'returns false' do
                     @deep_url.too_deep?( -1 ).should be_false
 
-                    @opts.depth_limit = 100
+                    @opts.scope.directory_depth_limit = 100
                     @deep_url.too_deep?( 100 ).should be_false
                 end
             end
@@ -411,7 +411,7 @@ describe Arachni::URI do
             end
         end
 
-        context 'when self does not match the provided include rules in' do
+        context 'when self does not match the provided scope_include_path_patterns rules in' do
             it 'returns false' do
                 rules = [ /boo/ ]
                 @include_url.include?( rules ).should be_false

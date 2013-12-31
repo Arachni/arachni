@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Arachni::Component::Manager do
     before( :all ) do
         @opts = Arachni::Options.instance
-        @lib = @opts.dir['plugins']
+        @lib = @opts.paths.plugins
         @namespace = Arachni::Plugins
         @components = Arachni::Component::Manager.new( @lib, @namespace )
     end

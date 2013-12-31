@@ -5,7 +5,7 @@
 
 module Arachni
 
-require Options.dir['lib'] + 'issue/severity/base'
+require Options.paths.lib + 'issue/severity/base'
 
 class Issue
 

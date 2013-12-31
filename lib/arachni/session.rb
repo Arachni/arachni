@@ -244,8 +244,8 @@ class Session
     def login_check( &block )
         return @login_check = block if block_given?
 
-        if @opts.login_check_url && @opts.login_check_pattern
-            set_login_check( @opts.login_check_url, @opts.login_check_pattern )
+        if @opts.login.check_url && @opts.login.check_pattern
+            set_login_check( @opts.login.check_url, @opts.login.check_pattern )
         end
 
         @login_check

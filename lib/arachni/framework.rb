@@ -11,11 +11,11 @@ require 'bundler/setup'
 require 'ap'
 require 'pp'
 
-require File.expand_path( File.dirname( __FILE__ ) ) + '/options'
+require_relative 'options'
 
 module Arachni
 
-lib = Options.dir['lib']
+lib = Options.paths.lib
 require lib + 'version'
 require lib + 'ruby'
 require lib + 'error'
@@ -36,7 +36,7 @@ require lib + 'session'
 require lib + 'trainer'
 require lib + 'browser_cluster'
 
-require Options.dir['mixins'] + 'progress_bar'
+require Options.paths.mixins + 'progress_bar'
 
 #
 # The Framework class ties together all the components.
@@ -147,7 +147,7 @@ class Framework
 
         # deep clone the redundancy rules to preserve their counter
         # for the reports
-        @orig_redundant = @opts.redundant.deep_clone
+        @orig_redundant = @opts.scope.redundant_path_patterns.deep_clone
 
         @running = false
         @status  = :ready
@@ -199,14 +199,16 @@ class Framework
         true
     end
 
-    #
     # Runs loaded checks against a given `page`
     #
     # It will audit just the given page and not use the {Trainer} -- i.e. ignore
     # any new elements that might appear as a result.
     #
-    # @param    [Page]    page
+    # It will also pass the `page` to the {BrowserCluster} for analysis if the
+    # {OptionGroups::Scope#dom_depth_limit_reached? DOM depth limit} has not been
+    # reached.
     #
+    # @param    [Page]    page
     def audit_page( page )
         return if !page
 
@@ -227,7 +229,7 @@ class Framework
         end
 
         if host_has_has_browser?
-            dom_depth = "#{page.dom.depth} (Limit: #{@opts.dom_depth_limit})"
+            dom_depth = "#{page.dom.depth} (Limit: #{@opts.scope.dom_depth_limit})"
         else
             dom_depth = 'N/A (Could not find browser).'
         end
@@ -268,10 +270,10 @@ class Framework
     alias :on_run_mods :on_audit_page
 
     # @return   [Bool]
-    #   `true` if the {Options#link_count_limit} has been reached, `false`
+    #   `true` if the {OptionGroups::Scope#page_limit} has been reached, `false`
     #   otherwise.
-    def link_count_limit_reached?
-        @opts.link_count_limit_reached?( @sitemap.size )
+    def page_limit_reached?
+        @opts.scope.page_limit_reached?( @sitemap.size )
     end
 
     def close_browser
@@ -306,27 +308,10 @@ class Framework
     # @return   [Hash]
     #
     def stats( refresh_time = false, override_refresh = false )
-        @opts.start_datetime = Time.now if !@opts.start_datetime
+        @start_datetime = Time.now if !@start_datetime
 
         sitemap_sz  = @sitemap.size
         auditmap_sz = @audited_page_count
-
-        if( !refresh_time || auditmap_sz == sitemap_sz ) && !override_refresh
-            @opts.delta_time ||= Time.now - @opts.start_datetime
-        else
-            @opts.delta_time = Time.now - @opts.start_datetime
-        end
-
-        # We need to remove URLs that lead to redirects from the sitemap
-        # when calculating the progress %.
-        #
-        # This is because even though these URLs are valid webapp paths
-        # they are not actual pages and thus can't be audited;
-        # so the sitemap and auditmap will never match and the progress will
-        # never get to 100% which may confuse users.
-        #
-        sitemap_sz -= spider.redirects.size
-        sitemap_sz = 0 if sitemap_sz < 0
 
         # Progress of audit is calculated as:
         #     amount of audited pages / amount of all discovered pages
@@ -341,7 +326,7 @@ class Framework
         # Make sure to keep weirdness at bay.
         progress = 0.0 if progress < 0.0
 
-        pb = Mixins::ProgressBar.eta( progress, @opts.start_datetime )
+        pb = Mixins::ProgressBar.eta( progress, @start_datetime )
 
         {
             requests:         http.request_count,
@@ -394,7 +379,7 @@ class Framework
     #   exclusion criteria.
     #
     def push_to_url_queue( url )
-        return if link_count_limit_reached?
+        return if page_limit_reached?
 
         url = to_absolute( url ) || url
         return false if @push_to_url_queue_filter.include?( url ) || skip_path?( url )
@@ -418,14 +403,15 @@ class Framework
         opts = @opts.to_hash.deep_clone
 
         # restore the original redundancy rules and their counters
-        opts['redundant'] = @orig_redundant
-        opts['mods'] = @checks.keys
+        opts[:scope][:redundant_path_patterns] = @orig_redundant
 
         AuditStore.new(
             options: opts,
             sitemap: (auditstore_sitemap || {}),
             issues:  @checks.results,
-            plugins: @plugins.results
+            plugins: @plugins.results,
+            start_datetime:  @start_datetime,
+            finish_datetime: @finish_datetime
         )
     end
     alias :auditstore :audit_store
@@ -475,14 +461,14 @@ class Framework
     end
 
     # @return    [Array<Hash>]  Information about all available checks.
-    def list_checks
+    def list_checks( patterns = nil )
         loaded = @checks.loaded
 
         begin
             @checks.clear
             @checks.available.map do |name|
                 path = @checks.name_to_path( name )
-                next if !lscheck_match?( path )
+                next if !list_check?( path, patterns )
 
                 @checks[name].info.merge(
                     shortname: name,
@@ -496,17 +482,16 @@ class Framework
             @checks.load loaded
         end
     end
-    alias :lscheck :list_checks
 
     # @return    [Array<Hash>]  Information about all available reports.
-    def list_reports
+    def list_reports( patterns = nil )
         loaded = @reports.loaded
 
         begin
             @reports.clear
             @reports.available.map do |report|
                 path = @reports.name_to_path( report )
-                next if !lsrep_match?( path )
+                next if !list_report?( path, patterns )
 
                 @reports[report].info.merge(
                     shortname: report,
@@ -520,17 +505,16 @@ class Framework
             @reports.load loaded
         end
     end
-    alias :lsrep :list_reports
 
     # @return    [Array<Hash>]  Information about all available plugins.
-    def list_plugins
+    def list_plugins( patterns = nil )
         loaded = @plugins.loaded
 
         begin
             @plugins.clear
             @plugins.available.map do |plugin|
                 path = @plugins.name_to_path( plugin )
-                next if !lsplug_match?( path )
+                next if !list_plugin?( path, patterns )
 
                 @plugins[plugin].info.merge(
                     shortname: plugin,
@@ -544,7 +528,6 @@ class Framework
             @plugins.load loaded
         end
     end
-    alias :lsplug :list_plugins
 
     # @return    [Array<Hash>]  Information about all available platforms.
     def list_platforms
@@ -556,7 +539,6 @@ class Framework
             h
         end
     end
-    alias :lsplat :list_platforms
 
     # @return   [String]
     #   Status of the instance, possible values are (in order):
@@ -619,10 +601,8 @@ class Framework
         close_browser
         @page_queue.clear
 
-        @opts.finish_datetime  = Time.now
-        @opts.start_datetime ||= Time.now
-
-        @opts.delta_time = @opts.finish_datetime - @opts.start_datetime
+        @finish_datetime  = Time.now
+        @start_datetime ||= Time.now
 
         # make sure this is disabled or it'll break report output
         disable_only_positives
@@ -730,7 +710,7 @@ class Framework
     # @param    [Page]  page
     #   Page to analyze.
     def perform_browser_analysis( page )
-        return if Options.dom_depth_limit.to_i < page.dom.depth + 1 ||
+        return if Options.scope.dom_depth_limit.to_i < page.dom.depth + 1 ||
             !host_has_has_browser? || !page.has_script?
 
         @browser ||= BrowserCluster.new( handler: method( :handle_browser_pages ) )
@@ -748,7 +728,7 @@ class Framework
     def prepare
         @status = :preparing
         @running = true
-        @opts.start_datetime = Time.now
+        @start_datetime = Time.now
 
         # run all plugins
         @plugins.run
@@ -768,9 +748,9 @@ class Framework
 
         # If we're restricted to a given list of paths there's no reason to run
         # the spider.
-        if @opts.restrict_paths && !@opts.restrict_paths.empty?
-            @opts.restrict_paths = @opts.restrict_paths.map { |p| to_absolute( p ) }
-            @opts.restrict_paths.each { |url| push_to_url_queue( url ) }
+        if @opts.scope.restrict_paths && !@opts.scope.restrict_paths.empty?
+            @opts.scope.restrict_paths = @opts.scope.restrict_paths.map { |p| to_absolute( p ) }
+            @opts.scope.restrict_paths.each { |url| push_to_url_queue( url ) }
         else
             # Initiates the crawl.
             spider.run do |page|
@@ -913,19 +893,23 @@ class Framework
         @sitemap[page.dom.url] = page.code
     end
 
-    def lsrep_match?( path )
-        regexp_array_match( @opts.lsrep, path )
+    def list_report?( path, patterns = nil )
+        regexp_array_match( patterns, path )
     end
 
-    def lscheck_match?( path )
-        regexp_array_match( @opts.lscheck, path )
+    def list_check?( path, patterns = nil )
+        regexp_array_match( patterns, path )
     end
 
-    def lsplug_match?( path )
-        regexp_array_match( @opts.lsplug, path )
+    def list_plugin?( path, patterns = nil )
+        regexp_array_match( patterns, path )
     end
 
     def regexp_array_match( regexps, str )
+        regexps = [regexps].flatten.compact.
+            map { |s| s.is_a?( Regexp ) ? s : Regexp.new( s.to_s ) }
+        return true if regexps.empty?
+
         cnt = 0
         regexps.each { |filter| cnt += 1 if str =~ filter }
         cnt == regexps.size

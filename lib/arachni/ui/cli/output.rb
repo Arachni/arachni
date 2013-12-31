@@ -162,7 +162,7 @@ module Output
 
     # Prints a debugging message
     #
-    # Obeys {@@debug}
+    # Obeys {@@output_debug}
     #
     # @see #debug?
     # @see #debug
@@ -178,7 +178,7 @@ module Output
     # Pretty prints an object, used for debugging,
     # needs some improvement but it'll do for now
     #
-    # Obeys {@@debug}
+    # Obeys {@@output_debug}
     #
     # @see #debug?
     # @see #debug
@@ -192,7 +192,7 @@ module Output
 
     # Prints the backtrace of an exception
     #
-    # Obeys {@@debug}
+    # Obeys {@@output_debug}
     #
     # @see #debug?
     # @see #debug
@@ -265,7 +265,7 @@ module Output
         @@verbose
     end
 
-    # Sets the {@@debug} flag to true
+    # Sets the {@@output_debug} flag to true
     #
     # @see #debug?
     #
@@ -280,11 +280,11 @@ module Output
         @@debug = false
     end
 
-    # Returns the {@@debug} flag
+    # Returns the {@@output_debug} flag
     #
     # @see #debug
     #
-    # @return    [Bool]    @@debug
+    # @return    [Bool]    @@output_debug
     #
     def debug?
         @@debug

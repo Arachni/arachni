@@ -21,8 +21,8 @@ class TrainerMockFramework
         @sitemap = []
     end
 
-    def link_count_limit_reached?
-        @opts.link_count_limit_reached? @sitemap.size
+    def page_limit_reached?
+        @opts.scope.page_limit_reached? @sitemap.size
     end
 
     def run
@@ -55,7 +55,7 @@ describe Arachni::Trainer do
 
     before( :all ) do
         @url = web_server_url_for( :trainer )
-        Arachni::Options.audit :links, :forms, :cookies, :headers
+        Arachni::Options.audit.elements :links, :forms, :cookies, :headers
     end
 
     before( :each ) do
@@ -205,7 +205,7 @@ describe Arachni::Trainer do
                 pages = []
                 trainer.on_new_page { |p| pages << p }
 
-                Arachni::Options.redundant = { /match_this/ => 10 }
+                Arachni::Options.scope.redundant_path_patterns = { /match_this/ => 10 }
 
                 100.times { trainer.push( get_response.call ) }
 
@@ -235,7 +235,7 @@ describe Arachni::Trainer do
             pages = []
             trainer.on_new_page { |p| pages << p }
 
-            Arachni::Options.link_count_limit = 10
+            Arachni::Options.scope.page_limit = 10
             100.times { trainer.push( get_response.call ) }
 
             pages.size.should == 10

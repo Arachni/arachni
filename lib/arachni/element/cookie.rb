@@ -6,7 +6,7 @@
 require 'webrick'
 require 'uri'
 
-require Arachni::Options.dir['lib'] + 'element/base'
+require Arachni::Options.paths.lib + 'element/base'
 
 module Arachni::Element
 
@@ -71,20 +71,6 @@ class Cookie < Base
         @data[:domain] ||= ".#{parsed_uri.host}"
 
         @default_inputs = self.inputs.dup.freeze
-    end
-
-    #
-    # Overrides {Capabilities::Auditable#audit} to enforce cookie exclusion
-    # settings from {Arachni::Options#exclude_cookies}.
-    #
-    # @see Capabilities::Auditable#audit
-    #
-    def audit( *args )
-        if Arachni::Options.exclude_cookies.include?( name )
-            auditor.print_info "Skipping audit of '#{name}' cookie."
-            return
-        end
-        super( *args )
     end
 
     # Indicates whether the cookie must be only sent over an encrypted channel.
@@ -187,7 +173,7 @@ class Cookie < Base
         super( injection_str, opts ) do |elem|
             yield elem
 
-            next if !Arachni::Options.audit_cookies_extensively?
+            next if !Arachni::Options.audit.cookies_extensively?
             elem.each_extensive_mutation( &block )
         end
 

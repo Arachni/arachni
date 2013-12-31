@@ -16,7 +16,7 @@
                 <h3>Runtime options</h3>
 
                 <strong>URL:</strong> <%=auditstore.options['url']%><br />
-                <strong>User agent:</strong> <%=escapeHTML( auditstore.options['user_agent'] )%><br />
+                <strong>User agent:</strong> <%=escapeHTML( auditstore.options['http_user_agent'] )%><br />
 
                 <p>&nbsp;</p>
 
@@ -63,8 +63,8 @@
 
                             <li>Exclude:
                                 <ul>
-                                <% if !auditstore.options['exclude'].empty?%>
-                                <% auditstore.options['exclude'].each do |rule|%>
+                                <% if !auditstore.options['scope_exclude_path_patterns'].empty?%>
+                                <% auditstore.options['scope_exclude_path_patterns'].each do |rule|%>
 
                                     <li><%=escapeHTML( rule )%></li>
 
@@ -78,8 +78,8 @@
                             <li>Include:
 
                                 <ul>
-                                <% if !auditstore.options['include'].empty?%>
-                                <% auditstore.options['include'].each do |rule|%>
+                                <% if !auditstore.options['scope_include_path_patterns'].empty?%>
+                                <% auditstore.options['scope_include_path_patterns'].each do |rule|%>
 
                                     <li><%=escapeHTML( rule )%></li>
 
@@ -93,8 +93,8 @@
                             <li>Redundant:
 
                                 <ul>
-                                <% if !auditstore.options['redundant'].empty?%>
-                                <% auditstore.options['redundant'].each do |regexp, counter|%>
+                                <% if !auditstore.options['scope_redundant_path_patterns'].empty?%>
+                                <% auditstore.options['scope_redundant_path_patterns'].each do |regexp, counter|%>
 
                                     <li><%=escapeHTML( regexp )%> - Count: <%=counter%></li>
 

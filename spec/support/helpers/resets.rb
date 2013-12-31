@@ -6,12 +6,12 @@
 def reset_options
     opts = Arachni::Options.instance
     opts.reset
-    opts.rpc_address = 'localhost'
+    opts.rpc.server_address = 'localhost'
 
-    opts.dir['plugins']        = fixtures_path + 'plugins/'
-    opts.dir['checks']         = fixtures_path + 'checks/'
-    opts.dir['fingerprinters'] = fixtures_path + 'fingerprinters/'
-    opts.dir['logs']           = spec_path + 'support/logs/'
+    opts.paths.plugins        = fixtures_path + 'plugins/'
+    opts.paths.checks         = fixtures_path + 'checks/'
+    opts.paths.fingerprinters = fixtures_path + 'fingerprinters/'
+    opts.paths.logs           = spec_path + 'support/logs/'
 
     opts
 end

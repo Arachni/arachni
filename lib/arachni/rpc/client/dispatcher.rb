@@ -5,7 +5,7 @@
 
 module Arachni
 
-require Options.dir['lib'] + 'rpc/client/base'
+require Options.paths.lib + 'rpc/client/base'
 
 module RPC
 class Client
@@ -24,7 +24,7 @@ class Dispatcher
         @node = RemoteObjectMapper.new( @client, 'node' )
 
         # map Dispatcher handlers
-        Dir.glob( "#{Options.dir['rpcd_handlers']}*.rb" ).each do |handler|
+        Dir.glob( "#{Options.paths.rpcd_handlers}*.rb" ).each do |handler|
             name = File.basename( handler, '.rb' )
 
             self.class.send( :attr_reader, name.to_sym )

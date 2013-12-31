@@ -14,7 +14,7 @@
 class Arachni::Plugins::Script < Arachni::Plugin::Base
 
     def run
-        if Arachni::Options.rpc_address
+        if Arachni::Options.rpc_server_address
             print_error 'Cannot be executed while running as an RPC server.'
             return
         end

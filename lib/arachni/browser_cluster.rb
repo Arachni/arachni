@@ -5,7 +5,7 @@
 
 module Arachni
 
-lib = Options.dir['lib']
+lib = Options.paths.lib
 require lib + 'browser'
 require lib + 'rpc/server/browser'
 
@@ -207,7 +207,7 @@ class BrowserCluster
 
         @servers ||= []
 
-        server = RPC::Server::Base.new( { rpc_socket: socket }, token )
+        server = RPC::Server::Base.new( { server_socket: socket }, token )
         @servers << server
 
         server.logger.level = ::Logger::Severity::FATAL

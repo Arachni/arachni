@@ -3,8 +3,8 @@ require 'spec_helper'
 describe 'Arachni::RPC::Server::Framework' do
     before( :all ) do
         @opts = Arachni::Options.instance
-        @opts.dir['checks'] = fixtures_path + '/taint_check/'
-        @opts.audit_links = true
+        @opts.paths.checks = fixtures_path + '/taint_check/'
+        @opts.audit.links = true
 
         @instance  = instance_grid_spawn
         @framework = @instance.framework
@@ -96,20 +96,20 @@ describe 'Arachni::RPC::Server::Framework' do
         end
     end
     describe '#run' do
-        context 'when Options#restrict_to_paths is set' do
+        context 'when Options#scope_restrict_paths is set' do
             it 'fails with exception' do
+                url = web_server_url_for( :framework_hpg )
+
                 instance = instance_grid_spawn
-                instance.opts.url = web_server_url_for( :framework_hpg )
-                instance.opts.restrict_paths = [instance.opts.url]
+                instance.opts.set(
+                    url:   url,
+                    scope: { restrict_paths: [url] }
+                )
                 instance.checks.load( 'taint' )
 
-                raised = false
-                begin
+                expect do
                     instance.framework.run
-                rescue Arachni::RPC::Exceptions::RemoteException
-                    raised = true
-                end
-                raised.should be_true
+                end.to raise_error Arachni::RPC::Exceptions::RemoteException
             end
         end
 

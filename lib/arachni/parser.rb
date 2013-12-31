@@ -5,7 +5,7 @@
 
 module Arachni
 
-lib = Options.dir['lib']
+lib = Options.paths.lib
 
 # Load all available element types.
 Dir.glob( lib + 'element/*.rb' ).each { |f| require f }
@@ -136,8 +136,8 @@ class Parser
                 '/xml;q=0.9,*/*;q=0.8',
             'Accept-Charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
             'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-            'From'            => @options.authed_by  || '',
-            'User-Agent'      => @options.user_agent || '',
+            'From'            => @options.authorized_by  || '',
+            'User-Agent'      => @options.http.user_agent || '',
             'Referer'         => @url,
             'Pragma'          => 'no-cache'
         }.map { |k, v| Header.new( url: @url, inputs: { k => v } ) }.freeze
@@ -237,15 +237,18 @@ class Parser
 
         # If there's a Netscape cookiejar file load cookies from it but only
         # new ones, i.e. only if they weren't already in the response.
-        if @options.cookie_jar.is_a?( String ) && File.exists?( @options.cookie_jar )
-            from_jar |= cookies_from_file( @url, @options.cookie_jar )
-            .reject { |c| cookie_names.include?( c.name ) }
+        if @options.http.cookie_jar_filepath.is_a?( String ) && File.exists?( @options.http.cookie_jar_filepath )
+            from_jar |= cookies_from_file( @url, @options.http.cookie_jar_filepath ).
+                reject { |c| cookie_names.include?( c.name ) }
         end
 
         # If we somehow have runtime configuration cookies load them too, but
         # only if they haven't already been seen.
-        if @options.cookies && !@options.cookies.empty?
-            from_jar |= @options.cookies.reject { |c| cookie_names.include?( c.name ) }
+        if @options.http.cookies && !@options.http.cookies.empty?
+            from_jar |= @options.http.cookies.
+                reject { |k, _| cookie_names.include?( k ) }.map do |cookie|
+                    Cookie.new( url: @url, inputs: Hash[[cookie]] )
+                end
         end
 
         @cookie_jar = (cookies | from_jar)
@@ -284,7 +287,7 @@ class Parser
     end
 
     def self.extractors
-        @manager ||= Component::Manager.new( Options.dir['path_extractors'], Extractors )
+        @manager ||= Component::Manager.new( Options.paths.path_extractors, Extractors )
     end
 
 end

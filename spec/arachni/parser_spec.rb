@@ -5,16 +5,12 @@ describe Arachni::Parser do
         @utils = Arachni::Utilities
         @opts = Arachni::Options.instance
         @opts.url = web_server_url_for( :parser )
-        @opts.audit :links, :forms, :cookies, :headers
 
         @url = @utils.normalize_url( @opts.url + '/?query_var_input=query_var_val' )
 
-        @opts.cookies = [
-            Arachni::Element::Cookie.new(
-                url:    @url,
-                inputs: { 'name_from_cookiejar' => 'val_from_cookiejar' }
-            )
-        ]
+        @opts.http.cookies = {
+            'name_from_cookiejar' => 'val_from_cookiejar'
+        }
 
         @response = Arachni::HTTP::Client.get( @url, mode: :sync )
         @parser   = Arachni::Parser.new( @response, @opts )
@@ -80,11 +76,17 @@ describe Arachni::Parser do
 
             link = Arachni::Element::Link.new( url: @url, inputs: @parser.link_vars )
 
+            options_cookies = Arachni::Options.http.cookies.
+                map { |cookie| Arachni::Element::Cookie.new( url: @url, inputs: Hash[[cookie]] ) }
+
             page.links.should == @parser.links | [link]
             page.forms.should == @parser.forms
-            page.cookies.should == @parser.cookies | @opts.cookies | Arachni::HTTP::Client.cookie_jar.cookies
+            page.cookies.map(&:to_h).should == (@parser.cookies |
+                options_cookies | Arachni::HTTP::Client.cookie_jar.cookies).
+                map(&:to_h)
             page.headers.should == @parser.headers
-            page.cookiejar.should == @parser.cookies | @opts.cookies
+
+            page.cookiejar.map(&:to_h).should eq @parser.cookies.map(&:to_h) | options_cookies.map(&:to_h)
         end
 
         it 'forces page\'s cookies\'s action to the response\'s effective URL' do

@@ -6,7 +6,7 @@
 
 module Arachni
 
-lib = Options.dir['lib']
+lib = Options.paths.lib
 require lib + 'rpc/server/base'
 require lib + 'rpc/client/browser'
 require lib + 'processes'

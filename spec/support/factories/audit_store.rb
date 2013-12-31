@@ -20,7 +20,9 @@ Factory.define :audit_store_data do
                     )
                 ]
             }
-        }
+        },
+        start_datetime:  Time.now - 10_000,
+        finish_datetime: Time.now
     }
 end
 

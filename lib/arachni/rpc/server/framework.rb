@@ -7,7 +7,7 @@ require 'tempfile'
 
 module Arachni
 
-lib = Options.dir['lib']
+lib = Options.paths.lib
 require lib + 'framework'
 require lib + 'rpc/server/spider'
 require lib + 'rpc/server/check/manager'
@@ -30,7 +30,7 @@ class Server
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Framework < ::Arachni::Framework
-    require Options.dir['lib'] + 'rpc/server/framework/multi_instance'
+    require Options.paths.lib + 'rpc/server/framework/multi_instance'
 
     include Utilities
     include MultiInstance
@@ -50,22 +50,20 @@ class Framework < ::Arachni::Framework
     #
     class Error < Arachni::Framework::Error
 
-        #
         # Raised when an option is nor supported for whatever reason.
         #
-        # For example, {Options#restrict_paths} isn't supported when in
-        # HPG mode.
+        # For example, {OptionGroups::Scope#restrict_paths} isn't supported
+        # when in HPG mode.
         #
         # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-        #
         class UnsupportedOption < Error
         end
     end
 
     # Make these inherited methods public again (i.e. accessible over RPC).
-    [ :audit_store, :stats, :paused?, :lscheck, :list_checks, :lsplug,
-      :list_plugins, :lsrep, :list_reports, :version, :status, :report_as,
-      :lsplat, :list_platforms ].each do |m|
+    [ :audit_store, :stats, :paused?, :list_checks, :list_checks, :list_plugins,
+      :list_plugins, :list_reports, :list_reports, :version, :status, :report_as,
+      :list_platforms, :list_platforms ].each do |m|
         private m
         public  m
     end
@@ -90,7 +88,6 @@ class Framework < ::Arachni::Framework
             plugin
         end
     end
-    alias :lsplug :list_plugins
 
     # @return (see Arachni::Framework#list_reports)
     def list_reports
@@ -101,7 +98,6 @@ class Framework < ::Arachni::Framework
             report
         end
     end
-    alias :lsrep :list_reports
 
     # @return   [Bool]
     #   `true` If the system is scanning, `false` if {#run} hasn't been called
@@ -126,9 +122,10 @@ class Framework < ::Arachni::Framework
         # Return if we're already running.
         return false if busy?
 
-        if master? && @opts.restrict_paths.any?
+        if master? && @opts.scope.restrict_paths.any?
             fail Error::UnsupportedOption,
-                 'Option \'restrict_paths\' is not supported when in multi-Instance mode.'
+                 'Scope option \'restrict_paths\' is not supported when in' <<
+                     ' multi-Instance mode.'
         end
 
         @extended_running = true
@@ -254,15 +251,15 @@ class Framework < ::Arachni::Framework
     # @return   [String]  URL of this instance.
     # @private
     def self_url
-        @opts.rpc_external_address ||= @opts.rpc_address
+        @opts.dispatcher.external_address ||= @opts.rpc.server_address
 
-        @self_url ||= @opts.rpc_external_address ?
-            "#{@opts.rpc_external_address }:#{@opts.rpc_port}" : @opts.rpc_socket
+        @self_url ||= @opts.dispatcher.external_address ?
+            "#{@opts.dispatcher.external_address }:#{@opts.rpc.server_port}" : @opts.rpc.server_socket
     end
 
     # @return   [String]  This instance's RPC token.
     def token
-        @opts.datastore[:token]
+        @opts.datastore.token
     end
 
     # @private

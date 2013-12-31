@@ -4,64 +4,45 @@
 =end
 
 require 'terminal-table/import'
+require_relative 'dispatcher_monitor/option_parser'
 
 module Arachni
 
-require Options.dir['lib'] + 'rpc/client/dispatcher'
-require Options.dir['lib'] + 'ui/cli/output'
-require Options.dir['lib'] + 'ui/cli/utilities'
+require Options.paths.lib + 'rpc/client/dispatcher'
+require Options.paths.lib + 'ui/cli/output'
+require Options.paths.lib + 'ui/cli/utilities'
 
-module UI
-class CLI
-module RPC
+module UI::CLI
+module RPC::Client
 
-#
 # Provides an simplistic Dispatcher monitoring user interface.
 #
 # @author Tasos "Zapotek" Laskos<tasos.laskos@gmail.com>
-#
-# @version 0.1.3
-#
 class DispatcherMonitor
-    include Output
+    include UI::Output
     include Utilities
 
-    def initialize( opts = Arachni::Options.instance )
-        @opts = opts
+    def initialize
+        parser = DispatcherMonitor::OptionParser.new
+        parser.ssl
+        parser.parse
 
-        debug if @opts.debug
+        options = parser.options
 
         clear_screen
         move_to_home
 
-        # print banner message
-        print_banner
-
-        # if the user needs help, output it and exit
-        if opts.help
-            usage
-            exit
-        end
-
-        if !@opts.url
-            print_error 'No server specified.'
-            print_line
-            usage
-            exit
-        end
-
         begin
             # start the RPC client
-            @dispatcher = Arachni::RPC::Client::Dispatcher.new( @opts, @opts.url.to_s )
+            @dispatcher = Arachni::RPC::Client::Dispatcher.new( options, options.dispatcher.url )
             @dispatcher.alive?
-        rescue RPC::Exceptions::ConnectionError => e
-            print_error "Could not connect to server '#{@opts.url}'."
+        rescue Arachni::RPC::Exceptions::ConnectionError => e
+            print_error "Could not connect to Dispatcher at '#{options.url}'."
             print_error "Error: #{e.to_s}."
             print_debug_backtrace e
-            exit
+            exit 1
         end
 
-        # trap interupts and exit cleanly when required
         trap( 'HUP' ) { exit }
         trap( 'INT' ) { exit }
 
@@ -73,7 +54,6 @@ class DispatcherMonitor
     def run
         print_line
 
-        # grab the XMLRPC server output while a scan is running
         loop do
             move_to_home
             stats        = @dispatcher.stats
@@ -86,9 +66,7 @@ class DispatcherMonitor
 
             print_job_table( running_jobs )
 
-            # things will get crazy if we don't block a bit I think...
-            # we'll see...
-            ::IO::select( nil, nil, nil, 1 )
+            sleep 1
         end
 
     end
@@ -171,7 +149,6 @@ USAGE
 
 end
 
-end
 end
 end
 end

@@ -18,7 +18,7 @@ end
 # @param (see Arachni::Processes::Instances#dispatcher_spawn)
 # @return (see Arachni::Processes::Instances#dispatcher_spawn)
 def instance_dispatcher_spawn( *args )
-    Arachni::Processes::Instances.dispatcher_spawn( *args )
+    Arachni::Processes::Instances.dispatcher.spawn( *args )
 end
 
 # @param (see Arachni::Processes::Instances#killall)

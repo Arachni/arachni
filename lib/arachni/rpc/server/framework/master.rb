@@ -148,7 +148,7 @@ module Master
     #
     # @param    [Hash]     element_ids_per_url
     #   List of element IDs (as created by
-    #   {Arachni::Element::Capabilities::Auditable#scope_audit_id}) for each
+    #   {Arachni::Element::Capabilities::Auditable#audit_scope_id}) for each
     #   page (by URL).
     #
     # @param    [String]    token
@@ -182,7 +182,7 @@ module Master
     #   `true` if the slave has finished auditing, `false` otherwise.
     # @option data [Hash] :element_ids_per_url
     #   List of element IDs (as created by
-    #   {Arachni::Element::Capabilities::Auditable#scope_audit_id}) for each
+    #   {Arachni::Element::Capabilities::Auditable#audit_scope_id}) for each
     #   page (by URL).
     # @option data [Hash] :platforms
     #   List of platforms (as created by {Platform::Manager.light}).
@@ -237,8 +237,18 @@ module Master
         # need the system to wait for them to finish before moving on.
         sleep( 0.2 ) while paused?
 
+        after = proc do
+            # Some options need to be adjusted when performing multi-Instance
+            # scans for them to be enforced properly.
+            adjust_distributed_options { master_scan_run }
+        end
+
+        # If there is no grid go straight to the scan, don't bother with
+        # Grid-related operations.
+        return after.call if !@opts.dispatcher.grid?
+
         # Prepare a block to process each Dispatcher and request slave instances
-        # from it. If we have any available Dispatchers that is...
+        # from it. If we have any available Dispatchers, that is.
         each = proc do |d_url, iterator|
             d_opts = {
                 'rank'   => 'slave',
@@ -249,49 +259,35 @@ module Master
             print_status "Requesting Instance from Dispatcher: #{d_url}"
             connect_to_dispatcher( d_url ).
                 dispatch( multi_self_url, d_opts, false ) do |instance_hash|
-                    enslave( instance_hash ){ |b| iterator.next }
+                enslave( instance_hash ){ |b| iterator.next }
             end
         end
 
-        after = proc do
-            # Some options need to be adjusted when performing multi-Instance
-            # scans for them to be enforced properly.
-            adjust_distributed_options do
-                master_scan_run
-            end
-        end
+        # Get slaves from Dispatchers with unique Pipe IDs in order to take
+        # advantage of line aggregation if we're in aggregation mode.
+        if @opts.dispatcher.grid_aggregate?
+            print_info 'In Grid line-aggregation mode, will only request' <<
+                        ' Instances from Dispatcher with unique Pipe-IDs.'
 
-        # If there is no grid go straight to the scan, don't bother with
-        # Grid-related operations.
-        if !@opts.grid?
-            after.call
+            preferred_dispatchers do |pref_dispatchers|
+                iterator_for( pref_dispatchers ).each( each, after )
+            end
+
+        # If we're not in aggregation mode then we're in load balancing mode
+        # and that is handled better by our Dispatcher so ask it for slaves.
         else
-            # Get slaves from Dispatchers with unique Pipe IDs in order to take
-            # advantage of line aggregation if we're in aggregation mode.
-            if @opts.grid_aggregate?
-                print_info 'In Grid line-aggregation mode, will only request' <<
-                            ' Instances from Dispatcher with unique Pipe-IDs.'
+            print_info 'In Grid load-balancing mode, letting our Dispatcher' <<
+                        ' sort things out.'
 
-                preferred_dispatchers do |pref_dispatchers|
-                    iterator_for( pref_dispatchers ).each( each, after )
+            q = Queue.new
+            @opts.spawns.times do
+                dispatcher.dispatch( multi_self_url ) do |instance_info|
+                    enslave( instance_info ){ |b| q << true }
                 end
-
-            # If were not in aggregation mode then we're in load balancing mode
-            # and that is handled better by our Dispatcher so ask it for slaves.
-            else
-                print_info 'In Grid load-balancing mode, letting our Dispatcher' <<
-                            ' sort things out.'
-
-                q = Queue.new
-                @opts.max_slaves.times do
-                    dispatcher.dispatch( multi_self_url ) do |instance_info|
-                        enslave( instance_info ){ |b| q << true }
-                    end
-                end
-
-                @opts.max_slaves.times { q.pop }
-                after.call
             end
+
+            @opts.spawns.times { q.pop }
+            after.call
         end
     end
 
@@ -344,7 +340,7 @@ module Master
             print_line
 
             # Split the URLs of the pages in equal chunks.
-            chunks    = split_urls( @element_ids_per_url.keys, @instances.size + 1 )
+            chunks    = @element_ids_per_url.keys.chunk(@instances.size + 1)
             chunk_cnt = chunks.size
 
             # Split the page array into chunks that will be distributed across
@@ -364,7 +360,7 @@ module Master
                 print_info "  * #{chunks.first.size} URLs"
 
                 # Set the URLs to be audited by the local instance.
-                @opts.restrict_paths = chunks.shift
+                @opts.scope.restrict_paths = chunks.shift
 
                 print_info "  * #{elements.first.size} elements"
                 print_line
@@ -416,15 +412,17 @@ module Master
     end
 
     def adjust_distributed_options( &block )
-        updated_opts = {}
-
         options = RPC::Server::ActiveOptions.new( self )
 
-        # Adjust the values of options that require special care
-        # when distributing.
-        %w(link_count_limit http_req_limit).each do |name|
-            next if !(v = options.send( name ))
-            updated_opts[name] = v / (@instances.size + 1)
+        # Adjust the values of options that require special care when distributing.
+        ic = (@instances.size + 1)
+
+        updated_opts = {
+            http: { request_concurrency: options.http.request_concurrency / ic }
+        }
+
+        if options.scope.page_limit
+            updated_opts[:scope] = { page_limit:  options.scope.page_limit / ic }
         end
 
         options.set updated_opts

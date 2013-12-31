@@ -15,7 +15,7 @@ class Arachni::Checks::Trainer < Arachni::Check::Base
         # The whole point of this check is to stir things up and find new
         # stuff, if our page limit has already been reached then we'll just be
         # wasting bandwidth.
-        return if framework.link_count_limit_reached?
+        return if framework.page_limit_reached?
 
         audit( "_arachni_trainer_#{seed}", train: true, param_flip: true ){}
     end

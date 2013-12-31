@@ -18,7 +18,7 @@ class Handler::Echo < Handler
 
     def test_map_instances( &block )
         each = proc do |instance, iterator|
-            instance.opts.datastore { |store| iterator.return [instance.url, store[:token]] }
+            instance.opts.datastore { |store| iterator.return [instance.url, store.token] }
         end
         after = proc { |i| block.call Hash[i] }
 
@@ -39,7 +39,7 @@ class Handler::Echo < Handler
     end
 
     def test_connect_to_dispatcher( &block )
-        connect_to_dispatcher( opts.datastore[:dispatcher_url] ).alive? { |b| block.call b }
+        connect_to_dispatcher( opts.datastore.dispatcher_url ).alive? { |b| block.call b }
     end
 
     def test_connect_to_instance( *args, &block )

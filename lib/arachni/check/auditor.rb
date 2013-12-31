@@ -330,7 +330,9 @@ module Auditor
 
         types.each do |elem|
             elem = elem.type
-            next if !Options.audit?( elem )
+
+            next if elem == Element::Body.type
+            next if !Options.audit.elements?( elem )
 
             case elem
                 when Element::Link.type
@@ -345,7 +347,6 @@ module Auditor
                 when Element::Header.type
                     prepare_each_element( page.headers, &block )
 
-                when Element::Body.type
                 else
                     fail ArgumentError, "Unknown element: #{elem}"
             end

@@ -13,18 +13,15 @@ include Arachni
 include Utilities
 include UI::Output
 
-Options.parse( false )
-
-if Options.help || ARGV.empty?
+if ARGV.empty?
     puts <<EOHELP
 #{BANNER}
 
-
-Usage: #{__FILE__} <script>
+Usage: #{__FILE__} SCRIPT
 
 Pre-loads Arachni's libraries and loads and runs a Ruby script.
 
-(Call the 'mute' method to mute framework output.)
+(Call the 'mute' method to mute system output.)
 EOHELP
     exit
 end

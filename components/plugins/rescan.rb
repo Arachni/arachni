@@ -7,7 +7,7 @@
 # Allows users to skip the crawling phase by extracting paths discovered
 # by a previous scan.
 #
-# It basically sets the 'restrict_paths' framework option to the sitemap of
+# It basically sets the 'scope_restrict_paths' framework option to the sitemap of
 # a previous report.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
@@ -22,8 +22,9 @@ class Arachni::Plugins::ReScan < Arachni::Plugin::Base
     end
 
     def run
-        framework.opts.restrict_paths = Arachni::AuditStore.load( options['afr'] ).sitemap
-        print_status "Found #{framework.opts.restrict_paths.size} paths."
+        framework.opts.scope_restrict_paths =
+            Arachni::AuditStore.load( options['afr'] ).sitemap
+        print_status "Found #{framework.opts.scope_restrict_paths.size} paths."
     end
 
     def clean_up

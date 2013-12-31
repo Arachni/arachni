@@ -1,5 +1,5 @@
 require 'spec_helper'
-require Arachni::Options.dir['lib'] + 'rpc/server/framework'
+require Arachni::Options.paths.lib + 'rpc/server/framework'
 
 describe Arachni::RPC::Server::Check::Manager do
     describe '#available' do

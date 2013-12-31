@@ -5,12 +5,11 @@
 
 module Arachni
 
-require Options.dir['lib']    + 'ui/cli/output'
-require Options.dir['mixins'] + 'terminal'
-require Options.dir['mixins'] + 'progress_bar'
+require Options.paths.lib    + 'ui/cli/output'
+require Options.paths.mixins + 'terminal'
+require Options.paths.mixins + 'progress_bar'
 
-module UI
-class CLI
+module UI::CLI
 
 module Utilities
     include Arachni::Utilities
@@ -31,7 +30,7 @@ module Utilities
             meth  = input = ''
             if issue.active?
                 input = " input `#{issue.vector.affected_input_name}`"
-                meth  = " using #{issue.vector.method}"
+                meth  = " using #{issue.vector.method.to_s.upcase}"
             end
 
             cnt = "#{i + 1} |".rjust( issue_cnt.to_s.size + 2 )
@@ -48,7 +47,7 @@ module Utilities
     #
     # Outputs all available checks and their info.
     #
-    def lsplat( platform_info )
+    def list_platforms( platform_info )
         print_line
         print_line
         print_info 'Available platforms:'
@@ -69,7 +68,7 @@ module Utilities
     #
     # Outputs all available checks and their info.
     #
-    def lscheck( checks )
+    def list_checks( checks )
         print_line
         print_line
         print_info 'Available checks:'
@@ -83,14 +82,14 @@ module Utilities
             print_line "Description:\t#{info[:description]}"
 
             if info[:issue] && (severity = info[:issue][:severity])
-                print_line "Severity:\t#{severity}"
+                print_line "Severity:\t#{severity.to_s.capitalize}"
             end
 
             if info[:elements] && info[:elements].size > 0
-                print_line "Elements:\t#{info[:elements].join( ', ' ).downcase}"
+                print_line "Elements:\t#{info[:elements].map(&:type).join( ', ' )}"
             end
 
-            print_line "Author:\t\t#{info[:author].join( ", " )}"
+            print_line "Author:\t\t#{info[:author].join( ', ' )}"
             print_line "Version:\t#{info[:version]}"
 
             if info[:references]
@@ -122,7 +121,7 @@ module Utilities
     #
     # Outputs all available reports and their info.
     #
-    def lsrep( reports )
+    def list_reports( reports )
         print_line
         print_line
         print_info 'Available reports:'
@@ -161,7 +160,7 @@ module Utilities
     #
     # Outputs all available reports and their info.
     #
-    def lsplug( plugins )
+    def list_plugins( plugins )
         print_line
         print_line
         print_info 'Available plugins:'
@@ -205,7 +204,6 @@ module Utilities
     #
     def load_profile( profiles )
         exception_jail{
-            @opts.load_profile = nil
             profiles.each { |filename| @opts.merge!( @opts.load( filename ) ) }
         }
     end
@@ -226,11 +224,6 @@ module Utilities
         end
     end
 
-    def print_profile
-        print_info 'Running profile:'
-        print_info @opts.to_args
-    end
-
     # Outputs Arachni banner.
     # Displays version number, author details etc.
     #
@@ -240,260 +233,6 @@ module Utilities
         print_line
         print_line
     end
-
-    #
-    # Outputs help/usage information.
-    # Displays supported options and parameters.
-    #
-    # @return [void]
-    #
-    def usage( extra_usage = '' )
-        extra_usage += ' '
-
-        print_line <<USAGE
-  Usage:  #{File.basename( $0 )} #{extra_usage}\[options\] url
-
-  Supported options:
-
-
-    General ----------------------
-
-    -h
-    --help                      Output this.
-
-    --version                   Show version information and exit.
-
-    -v                          Be verbose.
-
-    --debug                     Show what is happening internally.
-                                  (You should give it a shot sometime ;) )
-
-    --only-positives            Echo positive results *only*.
-
-    --http-username=<string>    Username for HTTP authentication.
-
-    --http-password=<string>    Password for HTTP authentication.
-
-    --http-req-limit=<integer>  Concurrent HTTP requests limit.
-                                  (Default: #{@opts.http_req_limit})
-                                  (Be careful not to kill your server.)
-                                  (*NOTE*: If your scan seems unresponsive try lowering the limit.)
-
-    --http-queue-size=<integer> Maximum amount of requests to keep in the queue.
-                                  Bigger size means better scheduling and better performance,
-                                  smaller means less RAM consumption.
-                                  (Default: #{@opts.http_queue_size})
-
-    --http-timeout=<integer>    HTTP request timeout in milliseconds.
-
-    --http-max-response-size=<integer>
-                                Do not download response bodies larger than the specified limit, in bytes.
-                                  (Default: inf)
-
-    --cookie-jar=<filepath>     Netscape HTTP cookie file, use curl to create it.
-
-    --cookie-string='<name>=<value>; <name2>=<value2>'
-
-                                Cookies, as a string, to be sent to the web application.
-
-    --user-agent=<string>       Specify user agent.
-
-    --custom-header='<name>=<value>'
-
-                                Specify custom headers to be included in the HTTP requests.
-                                (Can be used multiple times.)
-
-    --authed-by=<string>        E-mail address of the person who authorized the scan.
-                                  (It'll make it easier on the sys-admins during log reviews.)
-                                  (Will be used as a value for the 'From' HTTP header.)
-
-    --login-check-url=<url>     A URL used to verify that the scanner is still logged in to the web application.
-                                  (Requires 'login-check-pattern'.)
-
-    --login-check-pattern=<regexp>
-
-                                A pattern used against the body of the 'login-check-url' to verify that the scanner is still logged in to the web application.
-                                  (Requires 'login-check-url'.)
-
-    Profiles -----------------------
-
-    --save-profile=<filepath>   Save the current run profile/options to <filepath>.
-
-    --load-profile=<filepath>   Load a run profile from <filepath>.
-                                  (Can be used multiple times.)
-                                  (You can complement it with more options, except for:
-                                      * --checks
-                                      * --redundant)
-
-    --show-profile              Will output the running profile as CLI arguments.
-
-
-    Crawler -----------------------
-
-    -e <regexp>
-    --exclude=<regexp>          Exclude urls matching <regexp>.
-                                  (Can be used multiple times.)
-
-    --exclude-page=<regexp>     Exclude pages whose content matches <regexp>.
-                                  (Can be used multiple times.)
-
-    -i <regexp>
-    --include=<regexp>          Include *only* urls matching <regex>.
-                                  (Can be used multiple times.)
-
-    --redundant=<regexp>:<limit>
-
-                                Limit crawl on redundant pages like galleries or catalogs.
-                                  (URLs matching <regexp> will be crawled <limit> amount of times.)
-                                  (Can be used multiple times.)
-
-    --auto-redundant=<limit>    Only follow <limit> amount of URLs with identical query parameter names.
-                                  (Default: inf)
-                                  (Will default to 10 if no value has been specified.)
-
-    -f
-    --follow-subdomains         Follow links to subdomains.
-                                  (Default: off)
-
-    --depth=<integer>           Directory depth limit.
-                                  (Default: inf)
-                                  (How deep Arachni should go into the site structure.)
-
-    --link-count=<integer>      How many links to follow.
-                                  (Default: inf)
-
-    --redirect-limit=<integer>  How many redirects to follow.
-                                  (Default: #{@opts.redirect_limit})
-
-    --extend-paths=<filepath>   Add the paths in <file> to the ones discovered by the crawler.
-                                  (Can be used multiple times.)
-
-    --restrict-paths=<filepath> Use the paths in <file> instead of crawling.
-                                  (Can be used multiple times.)
-
-    --https-only                Forces the system to only follow HTTPS URLs.
-
-
-    Auditor ------------------------
-
-    -g
-    --audit-links               Audit links.
-
-    -p
-    --audit-forms               Audit forms.
-
-    -c
-    --audit-cookies             Audit cookies.
-
-    --exclude-cookie=<name>     Cookie to exclude from the audit by name.
-                                  (Can be used multiple times.)
-
-    --exclude-vector=<name>     Input vector (parameter) not to audit by name.
-                                  (Can be used multiple times.)
-
-    --audit-headers             Audit HTTP headers.
-                                  (*NOTE*: Header audits use brute force.
-                                   Almost all valid HTTP request headers will be audited
-                                   even if there's no indication that the web app uses them.)
-                                  (*WARNING*: Enabling this option will result in increased requests,
-                                   maybe by an order of magnitude.)
-
-    Coverage -----------------------
-
-    --audit-cookies-extensively Submit all links and forms of the page along with the cookie permutations.
-                                  (*WARNING*: This will severely increase the scan-time.)
-
-    --fuzz-methods              Audit links, forms and cookies using both GET and POST requests.
-                                  (*WARNING*: This will severely increase the scan-time.)
-
-    --dom-depth=<integer>       How deep to go into the DOM tree -- for pages with JavaScript code.
-                                  (Default: 10)
-                                  (Setting it to '0' will skip DOM/JS/AJAX analysis.)
-
-    --exclude-binaries          Exclude non text-based pages from the audit.
-                                  (Binary content can confuse recon checks that perform pattern matching.)
-
-    Checks ------------------------
-
-    --lscheck=<regexp>            List available checks based on the provided regular expression.
-                                  (If no regexp is provided all checks will be listed.)
-                                  (Can be used multiple times.)
-
-
-    --checks=<check-name,check-name2,...>
-
-                                Comma separated list of checks to load.
-                                  (Checks are referenced by their filename without the '.rb' extension, use '--lscheck' to list all.
-                                   Use '*' as a check name to deploy all checks or as a wildcard, like so:
-                                      xss*   to load all xss checks
-                                      sqli*  to load all sql injection checks
-                                      etc.
-
-                                   You can exclude checks by prefixing their name with a minus sign:
-                                      --checks=*,-backup_files,-xss
-                                   The above will load all checks except for the 'backup_files' and 'xss' checks.
-
-                                   Or mix and match:
-                                      -xss*   to unload all xss checks.)
-
-
-    Reports ------------------------
-
-    --lsrep=<regexp>            List available reports based on the provided regular expression.
-                                  (If no regexp is provided all reports will be listed.)
-                                  (Can be used multiple times.)
-
-    --repload=<filepath>        Load audit results from an '.afr' report file.
-                                    (Allows you to create new reports from finished scans.)
-
-    --report='<report>:<optname>=<val>,<optname2>=<val2>,...'
-
-                                <report>: the name of the report as displayed by '--lsrep'
-                                  (Reports are referenced by their filename without the '.rb' extension, use '--lsrep' to list all.)
-                                  (Default: stdout)
-                                  (Can be used multiple times.)
-
-
-    Plugins ------------------------
-
-    --lsplug=<regexp>           List available plugins based on the provided regular expression.
-                                  (If no regexp is provided all plugins will be listed.)
-                                  (Can be used multiple times.)
-
-    --plugin='<plugin>:<optname>=<val>,<optname2>=<val2>,...'
-
-                                <plugin>: the name of the plugin as displayed by '--lsplug'
-                                  (Plugins are referenced by their filename without the '.rb' extension, use '--lsplug' to list all.)
-                                  (Can be used multiple times.)
-
-    Platforms ----------------------
-
-    --lsplat                    List available platforms.
-
-    --no-fingerprinting         Disable platform fingerprinting.
-                                  (By default, the system will try to identify the deployed server-side platforms automatically
-                                   in order to avoid sending irrelevant payloads.)
-
-    --platforms=<platform,platform,...>
-
-                                Comma separated list of platforms (by shortname) to audit.
-                                  (The given platforms will be used *in addition* to fingerprinting. In order to restrict the audit to
-                                   these platforms enable the '--no-fingerprinting' option.)
-
-    Proxy --------------------------
-
-    --proxy=<server:port>       Proxy address to use.
-
-    --proxy-auth=<user:passwd>  Proxy authentication credentials.
-
-    --proxy-type=<type>         Proxy type; can be http, http_1_0, socks4, socks5, socks4a
-                                  (Default: http)
-
-
-USAGE
-    end
-
-end
 
 end
 end

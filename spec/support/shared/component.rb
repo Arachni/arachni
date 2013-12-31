@@ -2,7 +2,7 @@ shared_examples_for "component" do
 
     before( :all ) do
         Arachni::Options.reset
-        options.user_agent = 'arachni_user'
+        options.http.user_agent = 'arachni_user'
     end
     after( :all ) { framework.reset }
 

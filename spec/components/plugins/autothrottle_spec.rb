@@ -30,14 +30,14 @@ describe name_from_filename do
                 http.max_concurrency.should < pre
             end
             context "and then fall bellow threshold" do
-                it 'increases the max concurrency (without exceeding http_req_limit)' do
+                it 'increases the max concurrency (without exceeding http_request_concurrency)' do
                     pre = http.max_concurrency
 
                     (10 * http.max_concurrency).times { http.get( url ) }
                     http.run
 
                     http.max_concurrency.should > pre
-                    http.max_concurrency.should <= options.http_req_limit
+                    http.max_concurrency.should <= options.http.request_concurrency
                 end
             end
         end

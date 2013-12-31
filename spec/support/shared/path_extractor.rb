@@ -41,7 +41,7 @@ shared_examples_for "path_extractor" do
     module Arachni::Parser::Extractors;end
     def extractors
         @path_extractors ||=
-            ::Arachni::Component::Manager.new( options.dir['path_extractors'], Arachni::Parser::Extractors )
+            ::Arachni::Component::Manager.new( options.paths.path_extractors, Arachni::Parser::Extractors )
     end
 
 end

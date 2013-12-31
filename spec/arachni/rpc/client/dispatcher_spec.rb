@@ -3,7 +3,7 @@ require 'fileutils'
 
 describe Arachni::RPC::Client::Dispatcher do
     before( :all ) do
-        @handler_lib = Arachni::Options.dir['rpcd_handlers']
+        @handler_lib = Arachni::Options.paths.rpcd_handlers
         FileUtils.cp( "#{fixtures_path}/rpcd_handlers/echo.rb", @handler_lib )
 
         @dispatcher = dispatcher_light_spawn

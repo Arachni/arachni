@@ -4,10 +4,6 @@
     All rights reserved.
 =end
 
-require_relative '../lib/arachni'
+require_relative '../lib/arachni/ui/cli/framework'
 
-Arachni::Options.parse
-
-require Arachni::Options.dir['lib'] + 'ui/cli/cli'
-
-Arachni::UI::CLI.new( Arachni::Options.instance ).run
+Arachni::UI::CLI::Framework.new

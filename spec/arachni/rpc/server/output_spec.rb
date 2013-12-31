@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-require Arachni::Options.instance.dir['lib'] + 'rpc/server/output'
+require Arachni::Options.instance.paths.lib + 'rpc/server/output'
 
 class RPCOutput
     include Arachni::UI::Output
@@ -13,7 +13,7 @@ describe Arachni::UI::Output do
         @out.mute
         @msg = 'This is a msg!'
 
-        @logfile = @opts.dir['logs'] + 'output_spec.log'
+        @logfile = @opts.paths.logs + 'output_spec.log'
 
         @e = Exception.new( 'Stuff' )
         @e.set_backtrace( [ 'backtrace line1', 'backtrace line2' ] )

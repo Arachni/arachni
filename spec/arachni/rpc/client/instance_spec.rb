@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Arachni::RPC::Client::Instance do
     before( :all ) do
         @opts = Arachni::Options.instance
-        @opts.rpc_port = available_port
+        @opts.rpc.server_port = available_port
 
         @instance = instance_spawn
     end
@@ -18,25 +18,19 @@ describe Arachni::RPC::Client::Instance do
 
             context 'with an invalid token' do
                 it 'should fail to connect' do
-                    inst = Arachni::RPC::Client::Instance.new( @opts, "#{@opts.rpc_address}:#{@opts.rpc_port}", 'blah' )
-
-                    raised = false
-                    begin
-                        inst.service.alive?.should be_true
-                    rescue Arachni::RPC::Exceptions::InvalidToken
-                        raised = true
-                    end
-                    raised.should be_true
+                    expect do
+                        described_class.new( @opts, @instance.url, 'blah' ).service.alive?
+                    end.to raise_error Arachni::RPC::Exceptions::InvalidToken
                 end
             end
         end
     end
 
     describe '#opts' do
-        before {
+        before do
             @rpc_opts = @instance.opts
-            @foo_url = Arachni::Utilities.normalize_url( "http://test.com" )
-        }
+            @foo_url  = Arachni::Utilities.normalize_url( 'http://test.com' )
+        end
         context 'when assigning values' do
             it 'uses setters' do
                 val = @foo_url + '1'
@@ -57,7 +51,7 @@ describe Arachni::RPC::Client::Instance do
         end
 
         it 'retrieves values' do
-            val = Arachni::Utilities.normalize_url( "http://test.com4" )
+            val = Arachni::Utilities.normalize_url( 'http://test.com4' )
             @rpc_opts.url = val
             @rpc_opts.url.to_s.should == val
         end

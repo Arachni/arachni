@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Arachni::Report::Manager do
     before( :all ) do
         opts = Arachni::Options.instance
-        opts.dir['reports'] = fixtures_path + 'reports/manager_spec/'
+        opts.paths.reports = fixtures_path + 'reports/manager_spec/'
 
         @framework = Arachni::Framework.new( Arachni::Options.instance )
         @reports   = @framework.reports

@@ -1,0 +1,96 @@
+=begin
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
+=end
+
+module Arachni
+
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+class OptionGroup
+
+    class <<self
+        # @return   [Hash]  Specified default values for attribute readers.
+        def defaults
+            @defaults ||= {}
+        end
+
+        # Sets default values for attribute readers, when an attribute reader
+        # returns `nil` the default values will be returned instead.
+        #
+        # @param    [Hash]  default_values  Default values for attributes.
+        def set_defaults( default_values )
+            defaults.merge! default_values
+
+            # Set the specified default values as overrides to the attribute
+            # readers.
+            defaults.each do |ivar, value|
+                define_method "#{ivar}=" do |v|
+                    instance_variable_set( "@#{ivar}".to_sym, v.nil? ? value : v)
+                end
+            end
+
+            defaults
+        end
+
+        def inherited( child )
+            Options.register_group child
+        end
+    end
+
+    def initialize
+        defaults.each do |k, v|
+            send "#{k}=", v
+        end
+    end
+
+    # @return   [Hash]
+    #   Values for all attribute accessors which aren't the defaults.
+    def to_h
+        h = {}
+        instance_variables.each do |ivar|
+            method = normalize_ivar( ivar )
+            sym    = method.to_sym
+            value  = instance_variable_get( ivar )
+
+            next if !respond_to?( "#{method}=" )
+
+            h[sym] = value
+        end
+        h
+    end
+    alias :to_hash :to_h
+
+    def ==( other )
+        hash == other.hash
+    end
+
+    def hash
+        to_h.hash
+    end
+
+    # @param    [Hash]  options
+    #   Data to use to update the group's attributes.
+    # @return   [OptionGroup]   `self`
+    def update( options )
+        options.to_hash.each { |k, v| send( "#{k}=", v ) }
+        self
+    end
+
+    # @param    [OptionGroup]  other
+    # @return   [OptionGroup]   `self`
+    def merge( other )
+        update( other.to_h )
+    end
+
+    # @return   (see .defaults)
+    def defaults
+        self.class.defaults
+    end
+
+    private
+
+    def normalize_ivar( ivar )
+        ivar.to_s.gsub( '@', '' )
+    end
+end
+end

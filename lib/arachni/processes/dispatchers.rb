@@ -23,17 +23,25 @@ class Dispatchers
         @dispatcher_connections = {}
     end
 
-    #
     # Connects to a Dispatcher by URL.
     #
     # @param    [String]    url URL of the Dispatcher.
     # @param    [Hash]    options Options for the RPC client.
     #
     # @return   [RPC::Client::Dispatcher]
-    #
     def connect( url, options = { } )
-        opts = OpenStruct.new( options )
-        @dispatcher_connections[url] ||= RPC::Client::Dispatcher.new( opts, url )
+        options[:client_max_retries] = options.delete(:max_retries)
+
+        fresh = options.delete( :fresh )
+
+        opts     = OpenStruct.new
+        opts.rpc = OpenStruct.new( options )
+
+        if fresh
+            @dispatcher_connections[url] = RPC::Client::Dispatcher.new( opts, url )
+        else
+            @dispatcher_connections[url] ||= RPC::Client::Dispatcher.new( opts, url )
+        end
     end
 
     # @param    [Block] block   Block to pass an RPC client for each Dispatcher.
@@ -43,33 +51,37 @@ class Dispatchers
         end
     end
 
-    #
     # Spawns a {RPC::Server::Dispatcher} process.
     #
     # @param    [Hash]  options
     #   To be passed to {Arachni::Options#set}. Allows `address` instead of
-    #   `rpc_address` and `port` instead of `rpc_port`.
+    #   `rpc_server_address` and `port` instead of `rpc_port`.
     #
     # @param    [Block] block
     #   Passed {Arachni::Options} to configure the Dispatcher options.
     #
     # @return   [RPC::Client::Dispatcher]
-    #
     def spawn( options = {}, &block )
-        options = Options.to_hash.symbolize_keys( false ).merge( options )
-
-        options[:rpc_port]    = options.delete( :port ) if options.include?( :port )
-        options[:rpc_address] = options.delete( :address ) if options.include?( :address )
-
-        options[:rpc_port]    ||= available_port
-
-        url = "#{options[:rpc_address]}:#{options[:rpc_port]}"
+        options = Options.to_h.merge(
+            dispatcher: {
+                neighbour:        options[:neighbour],
+                node_pipe_id:     options[:pipe_id],
+                node_weight:      options[:weight],
+                external_address: options[:external_address],
+                pool_size:        options[:pool_size]
+            },
+            rpc: {
+                server_port:    options[:port] || available_port,
+                server_address: options[:address] || 'localhost'
+            }
+        )
+        url = "#{options[:rpc][:server_address]}:#{options[:rpc][:server_port]}"
 
         Manager.fork_em do
             Options.set( options )
             block.call( Options.instance ) if block_given?
 
-            require "#{Arachni::Options.dir['lib']}/rpc/server/dispatcher"
+            require "#{Arachni::Options.paths.lib}/rpc/server/dispatcher"
 
             RPC::Server::Dispatcher.new
         end
@@ -89,7 +101,7 @@ class Dispatchers
         end
 
         @list << url
-        connect( url )
+        connect( url, fresh: true )
     end
 
     # Same as {#spawn} but sets the pool size to `1`.

@@ -4,7 +4,7 @@
 =end
 
 # get some basics from the CLI UI's output interface
-require Arachni::Options.dir['lib'] + 'ui/cli/output'
+require Arachni::Options.paths.lib + 'ui/cli/output'
 
 module Arachni
 

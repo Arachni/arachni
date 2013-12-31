@@ -30,7 +30,7 @@ helpers do
     end
 end
 
-get '/http_max_response_size' do
+get '/http_response_max_size' do
     '1' * 1000000
 end
 

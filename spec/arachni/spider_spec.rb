@@ -17,7 +17,7 @@ describe Arachni::Spider do
         @opts.url = web_server_url_for( :spider_https ).gsub( 'http', 'https' )
         spider = Arachni::Spider.new
 
-        spider.run.size.should == 3
+        spider.run.size.should == 2
         spider.redirects.size.should == 2
     end
 
@@ -109,11 +109,11 @@ describe Arachni::Spider do
             end
         end
 
-        context 'when the Options#extend_paths has been set' do
+        context 'when the OptionGroups::Scope#extend_paths has been set' do
             it 'adds those paths to be followed' do
-                @opts.extend_paths = %w(some_path)
+                @opts.scope.extend_paths = %w(some_path)
                 s = Arachni::Spider.new
-                s.paths.sort.should == ([@url] | [@url + @opts.extend_paths.first]).sort
+                s.paths.sort.should == ([@url] | [@url + @opts.scope.extend_paths.first]).sort
             end
         end
     end
@@ -125,11 +125,11 @@ describe Arachni::Spider do
     end
 
     describe '#redirects' do
-        it 'holds an array of requested URLs that caused a redirect' do
+        it 'holds an array of redirect URLs' do
             @opts.url = @url + 'redirect'
             s = Arachni::Spider.new
             s.run
-            s.redirects.should == [ s.url ]
+            s.redirects.should == [@url]
         end
     end
 
@@ -170,27 +170,27 @@ describe Arachni::Spider do
             spider.run.select { |url, _| url.include?( '/something' ) }.size.should == 1
         end
 
-        context 'Options.exclude_pages' do
+        context 'OptionGroups::Scope#exclude_page_patterns' do
             it 'skips pages which match the configured patterns (but not the seed URL)' do
-                @opts.exclude_pages = /skip-me/i
+                @opts.scope.exclude_page_patterns = /skip-me/i
                 @opts.url = "#{@url}skip"
 
                 Arachni::Spider.new.run.keys.should == [@opts.url, "#{@url}follow-me"]
             end
         end
 
-        context 'Options.exclude' do
+        context 'OptionGroups::Scope#exclude_path_patterns' do
             it 'skips paths which match the configured patterns (but not the seed URL)' do
-                @opts.exclude = /skip-me/i
+                @opts.scope.exclude_path_patterns= /skip-me/i
                 @opts.url = "#{@url}skip"
 
                 Arachni::Spider.new.run.keys.should == [@opts.url, "#{@url}follow-me"]
             end
         end
 
-        context 'Options.include' do
+        context 'OptionGroups::Scope#include_path_patterns' do
             it 'skips paths which do not match the configured patterns (but not the seed URL)' do
-                @opts.include = /include-me/i
+                @opts.scope.include_path_patterns = /include-me/i
                 @opts.url = "#{@url}include"
 
                 Arachni::Spider.new.run.keys.sort.should ==
@@ -198,32 +198,32 @@ describe Arachni::Spider do
             end
         end
 
-        context 'Options.do_not_crawl' do
+        context 'OptionGroups::Scope#do_not_crawl' do
             it 'does not crawl the site' do
-                @opts.do_not_crawl
+                @opts.scope.do_not_crawl
                 Arachni::Spider.new.run.should be_nil
             end
 
             context 'when crawling is then enabled using Options.crawl' do
                 it 'performs a crawl' do
-                    @opts.crawl
+                    @opts.scope.crawl
                     Arachni::Spider.new.run.should be_any
                 end
             end
         end
-        context 'Options.auto_redundant' do
+        context 'OptionGroups::Scope#auto_redundant_paths' do
             describe 5 do
                 it 'only crawls 5 URLs with identical query parameter names' do
-                    @opts.auto_redundant = 5
+                    @opts.scope.auto_redundant_paths = 5
                     @opts.url += 'auto-redundant'
                     Arachni::Spider.new.run.size.should == 11
                 end
             end
         end
-        context 'when the link-count-limit option has been set' do
+        context 'when the OptionGroups::Scope#page_limit option has been set' do
             context 'and the limit has been reached' do
                 it 'immediately returns' do
-                    @opts.link_count_limit = 1
+                    @opts.scope.page_limit = 1
                     spider = Arachni::Spider.new
                     spider.run.should == spider.sitemap
                     spider.sitemap.keys.should == [@url]
@@ -232,27 +232,27 @@ describe Arachni::Spider do
                 end
             end
 
-            it 'follows only a <link-count-limit> amount of paths' do
-                @opts.link_count_limit = 1
+            it 'follows only a OptionGroups::Scope#page_limit amount of paths' do
+                @opts.scope.page_limit = 1
                 spider = Arachni::Spider.new
                 spider.run.should == spider.sitemap
                 spider.sitemap.keys.should == [@url]
 
-                @opts.link_count_limit = 2
+                @opts.scope.page_limit = 2
                 spider = Arachni::Spider.new
                 spider.run.should == spider.sitemap
                 spider.sitemap.keys.size.should == 2
             end
         end
-        context 'when redundant rules have been set' do
+        context 'when OptionGroups::Scope#redundant_path_patterns have been set' do
             it 'follows the matching paths the specified amounts of time' do
                 @opts.url = @url + '/redundant'
 
-                @opts.redundant = { 'redundant' => 2 }
+                @opts.scope.redundant_path_patterns = { 'redundant' => 2 }
                 spider = Arachni::Spider.new
                 spider.run.select { |url, _| url.include?( 'redundant' ) }.size.should == 2
 
-                @opts.redundant = { 'redundant' => 3 }
+                @opts.scope.redundant_path_patterns = { 'redundant' => 3 }
                 spider = Arachni::Spider.new
                 spider.run.select { |url, _| url.include?( 'redundant' ) }.size.should == 3
             end
@@ -279,29 +279,52 @@ describe Arachni::Spider do
 
                 spider = Arachni::Spider.new
                 spider.run.should be_empty
-                spider.redirects.size.should == 1
+                spider.redirects.size.should == 3
             end
         end
         it 'follows relative redirect locations' do
             @opts.url = @url + '/relative_redirect'
-            @opts.redirect_limit = -1
+            @opts.http.request_redirect_limit = -1
 
             spider = Arachni::Spider.new
             spider.run.select { |url, _| url.include?( 'stacked_redirect4' ) }.should be_any
         end
         it 'follows stacked redirects' do
             @opts.url = @url + '/stacked_redirect'
-            @opts.redirect_limit = -1
+            @opts.http.request_redirect_limit = -1
 
             spider = Arachni::Spider.new
             spider.run.select { |url, _| url.include?( 'stacked_redirect4' ) }.should be_any
         end
         it 'ignores stacked redirects that exceed the limit' do
             @opts.url = @url + '/stacked_redirect'
-            @opts.redirect_limit = 3
 
+            @opts.http.request_redirect_limit = 2
             spider = Arachni::Spider.new
-            spider.run.size.should == 3
+            spider.run.should == { "#{@url}stacked_redirect2" => 302 }
+            spider.redirects.should == [
+                "#{@url}stacked_redirect1",
+                "#{@url}stacked_redirect2"
+            ]
+
+            @opts.http.request_redirect_limit = 3
+            spider = Arachni::Spider.new
+            spider.run.should == { "#{@url}stacked_redirect3" => 302 }
+            spider.redirects.should == [
+                "#{@url}stacked_redirect1",
+                "#{@url}stacked_redirect2",
+                "#{@url}stacked_redirect3"
+            ]
+
+            @opts.http.request_redirect_limit = 4
+            spider = Arachni::Spider.new
+            spider.run.should == { "#{@url}stacked_redirect4" => 200 }
+            spider.redirects.should == [
+                "#{@url}stacked_redirect1",
+                "#{@url}stacked_redirect2",
+                "#{@url}stacked_redirect3",
+                "#{@url}stacked_redirect4"
+            ]
         end
 
         context 'when called with a block' do
@@ -383,7 +406,7 @@ describe Arachni::Spider do
         context 'when the link-count-limit option has been set' do
             context 'and the limit has been reached' do
                 it 'immediately returns' do
-                    @opts.link_count_limit = 1
+                    @opts.scope.page_limit = 1
                     spider = Arachni::Spider.new
                     spider.run.should == spider.sitemap
                     spider.sitemap.keys.should == [@url]

@@ -96,7 +96,7 @@ shared_examples_for 'check' do
                     before( :all ) do
                         if target.to_s.downcase != 'generic'
                             options.url = url + target.downcase
-                            options.include = options.url
+                            options.scope.inclusion_patterns = options.url
                         end
                     end
 

@@ -45,7 +45,7 @@ class Arachni::Plugins::LibNotify < Arachni::Plugin::Base
 
     def notify( opts )
         Libnotify.show({
-            icon_path: framework.opts.dir['gfx'] + "spider.png",
+            icon_path: framework.opts.paths.gfx + "spider.png",
             timeout:   2.5,
             append:    true
         }.merge( opts ))

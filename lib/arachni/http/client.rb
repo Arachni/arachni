@@ -8,7 +8,7 @@ require 'singleton'
 
 module Arachni
 
-lib = Options.dir['lib']
+lib = Options.paths.lib
 require lib + 'typhoeus/hydra'
 require lib + 'mixins/observable'
 
@@ -52,12 +52,10 @@ class Client
     class Error < Arachni::HTTP::Error
     end
 
-    require Options.dir['lib'] + 'http/cookie_jar'
+    require Options.paths.lib + 'http/cookie_jar'
 
     # Default maximum concurrency for HTTP requests.
     MAX_CONCURRENCY = 20
-
-    MAX_QUEUE_SIZE = 500
 
     # Default 1 minute timeout for HTTP requests.
     HTTP_TIMEOUT = 60_000
@@ -109,20 +107,20 @@ class Client
         @url = opts.url.to_s
         @url = nil if @url.empty?
 
-        @hydra = Typhoeus::Hydra.new( max_concurrency: opts.http_req_limit || MAX_CONCURRENCY )
+        @hydra = Typhoeus::Hydra.new( max_concurrency: opts.http.request_concurrency || MAX_CONCURRENCY )
         @hydra_sync = Typhoeus::Hydra.new( max_concurrency: 1 )
 
         @headers = {
             'Accept'     => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'User-Agent' => opts.user_agent
+            'User-Agent' => opts.http.user_agent
         }
-        @headers['From'] = opts.authed_by if opts.authed_by
+        @headers['From'] = opts.authorized_by if opts.authorized_by
 
-        @headers.merge!( opts.custom_headers )
+        @headers.merge!( opts.http.request_headers )
 
-        @cookie_jar = CookieJar.new( opts.cookie_jar )
-        update_cookies( opts.cookies ) if opts.cookies
-        update_cookies( opts.cookie_string ) if opts.cookie_string
+        @cookie_jar = CookieJar.new( opts.http.cookie_jar_filepath )
+        update_cookies( opts.http.cookies )
+        update_cookies( opts.http.cookie_string ) if opts.http.cookie_string
 
         @request_count  = 0
         @response_count = 0
@@ -410,9 +408,7 @@ class Client
     #   Updates the cookie-jar with the passed `cookies`.
     def update_cookies( cookies )
         @cookie_jar.update( cookies )
-
-        # Update framework cookies.
-        Arachni::Options.cookies = @cookie_jar.cookies
+        @cookie_jar.cookies
     end
     alias :set_cookies :update_cookies
 
@@ -628,7 +624,7 @@ class Client
     end
 
     def emergency_run?
-        @queue_size >= MAX_QUEUE_SIZE && !@running
+        @queue_size >= Options.http.request_queue_size && !@running
     end
 
     def is_404?( path, body )

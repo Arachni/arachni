@@ -10,7 +10,7 @@ describe Arachni::HTTP::Client do
     end
     before( :each ){
         @opts.reset
-        @opts.audit_links = true
+        @opts.audit.links = true
         @opts.url  = @url
         @http.reset
     }
@@ -33,33 +33,33 @@ describe Arachni::HTTP::Client do
         YAML.load( body ).should == { 'stuff' => "=stuf \00 here==" }
     end
 
-    describe 'Arachni::Options#http_req_limit' do
+    describe 'Arachni::Options#http_request_concurrency' do
         context Integer do
             it 'uses it as a max_concurrency' do
-                @opts.http_req_limit = 34
+                @opts.http.request_concurrency = 34
                 @http.reset
                 @http.max_concurrency.should == 34
             end
         end
         context 'nil' do
             it 'uses a default max concurrency setting' do
-                @opts.http_req_limit = nil
+                @opts.http.request_concurrency = nil
                 @http.reset
                 @http.max_concurrency.should == Arachni::HTTP::Client::MAX_CONCURRENCY
             end
         end
     end
 
-    describe 'Arachni::Options#http_timeout' do
+    describe 'Arachni::Options#http_request_timeout' do
         context Integer do
             it 'uses it as an HTTP timeout' do
-                @opts.http_timeout = 10000000000
+                @opts.http.request_timeout = 10000000000
                 timed_out = false
                 @http.request( @url + '/sleep' ) { |res| timed_out = res.timed_out? }
                 @http.run
                 timed_out.should be_false
 
-                @opts.http_timeout = 1
+                @opts.http.request_timeout = 1
                 @http.reset
                 timed_out = false
                 @http.request( @url + '/sleep' ) { |res| timed_out = res.timed_out? }
@@ -99,10 +99,10 @@ describe Arachni::HTTP::Client do
         end
     end
 
-    describe 'Arachni::Options#http_username and Arachni::Options#http_password' do
+    describe 'Arachni::Options#http_authentication_username and Arachni::Options#http_authentication_password' do
         it 'uses them globally' do
-            Arachni::Options.http_username = 'username1'
-            Arachni::Options.http_password = 'password1'
+            Arachni::Options.http.authentication_username = 'username1'
+            Arachni::Options.http.authentication_password = 'password1'
 
             # first fail to make sure that our test server is actually working properly
             code = 0
@@ -110,8 +110,9 @@ describe Arachni::HTTP::Client do
             @http.run
             code.should == 401
 
-            Arachni::Options.http_username, Arachni::Options.http_password =
-                ['u se rname$@#@#%$3#@%@#', 'p a  :wo\'rd$@#@#%$3#@%@#' ]
+            Arachni::Options.http.authentication_username,
+                Arachni::Options.http.authentication_password =
+                    ['u se rname$@#@#%$3#@%@#', 'p a  :wo\'rd$@#@#%$3#@%@#' ]
 
             response = nil
             @http.get( @opts.url + 'auth/weird-chars' ) { |res| response = res }
@@ -121,19 +122,19 @@ describe Arachni::HTTP::Client do
         end
     end
 
-    describe 'Arachni::Options#user_agent' do
+    describe 'Arachni::Options#http_user_agent' do
         it 'uses the default user-agent setting' do
             body = nil
             @http.get( @opts.url + 'user-agent' ) { |res| body = res.body }
             @http.run
 
-            body.should == @opts.user_agent
-            @opts.user_agent.should == Arachni::Options::USER_AGENT
+            body.should == @opts.http.user_agent
+            @opts.http.user_agent.should == Arachni::OptionGroups::HTTP.defaults[:user_agent]
         end
         context String do
             it 'uses it as a user-agent' do
                 ua = 'my user agent'
-                @opts.user_agent = ua.dup
+                @opts.http.user_agent = ua.dup
                 @http.reset
 
                 body = nil
@@ -142,30 +143,18 @@ describe Arachni::HTTP::Client do
                 body.should == ua
             end
         end
-        context 'nil' do
-            it 'uses an empty user-agent string' do
-                @opts.user_agent = nil
-                @http.reset
-
-                body = nil
-                @http.get( @opts.url + 'user-agent' ) { |res| body = res.body }
-                @http.run
-                body.should be_empty
-                @opts.user_agent.should be_nil
-            end
-        end
     end
 
-    describe 'Arachni::Options#redirect_limit' do
+    describe 'Arachni::Options#http_request_redirect_limit' do
         context Integer do
             it 'should not exceed that amount of redirects' do
-                @opts.redirect_limit = 2
+                @opts.http.request_redirect_limit = 2
                 code = nil
                 @http.get( @opts.url + 'redirect', follow_location: true ) { |res| code = res.code }
                 @http.run
                 code.should == 302
 
-                @opts.redirect_limit = 10
+                @opts.http.request_redirect_limit = 10
                 @http.reset
 
                 body = nil
@@ -240,28 +229,27 @@ describe Arachni::HTTP::Client do
             headers['User-Agent'].should == 'Arachni/v' + Arachni::VERSION
         end
 
-        context 'when provided with custom headers' do
+        context 'when Options#http_request_headers is set' do
             it 'includes them' do
-                @opts.custom_headers = {
+                @opts.http.request_headers = {
                     'User-Agent' => 'My UA',
                     'From'       => 'Some dude',
                 }
                 @http.reset
                 headers = @http.headers
-                headers['From'].should == @opts.custom_headers['From']
+                headers['From'].should == @opts.http.request_headers['From']
                 headers['Accept'].should == 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-                headers['User-Agent'].should == @opts.custom_headers['User-Agent']
+                headers['User-Agent'].should == @opts.http.request_headers['User-Agent']
             end
         end
 
-        context 'when the authed_by option is set' do
+        context 'when the authorized_by option is set' do
             it 'includes it in the From field' do
-                @opts.authed_by = 'The Dude'
+                @opts.authorized_by = 'The Dude'
                 @http.reset
-                @http.headers['From'].should == @opts.authed_by
+                @http.headers['From'].should == @opts.authorized_by
             end
         end
-
     end
 
     describe '#cookie_jar' do
@@ -269,18 +257,18 @@ describe Arachni::HTTP::Client do
             @http.cookie_jar.is_a?( Arachni::HTTP::CookieJar ).should be_true
         end
 
-        context 'when the cookie_jar option is set' do
+        context 'when Options#http_cookie_jar_filepath is set' do
             it 'adds the contained cookies to the CookieJar' do
-                @opts.cookie_jar = fixtures_path + 'cookies.txt'
+                @opts.http.cookie_jar_filepath = fixtures_path + 'cookies.txt'
                 @http.cookie_jar.cookies.should be_empty
                 @http.reset
                 cookies = @http.cookie_jar.cookies
                 cookies.size.should == 4
-                cookies.should == Arachni::Utilities.cookies_from_file( '', @opts.cookie_jar )
+                cookies.should == Arachni::Utilities.cookies_from_file( '', @opts.http.cookie_jar_filepath )
             end
             context 'but the path is invalid' do
                 it 'raises Arachni::HTTP::CookieJar::Error::CookieJarFileNotFound' do
-                    @opts.cookie_jar = fixtures_path + 'cookies.does_not_exist.txt'
+                    @opts.http.cookie_jar_filepath = fixtures_path + 'cookies.does_not_exist.txt'
                     expect{ @http.reset }.to raise_error Arachni::HTTP::CookieJar::Error::CookieJarFileNotFound
                 end
             end
@@ -289,18 +277,18 @@ describe Arachni::HTTP::Client do
         context 'when the cookies option is set' do
             it 'adds those cookies to the CookieJar' do
                 cookie_jar_file = fixtures_path + 'cookies.txt'
-                @opts.cookies = Arachni::Utilities.cookies_from_file( '', cookie_jar_file )
+                @opts.http.cookies = Arachni::Utilities.cookies_from_file( '', cookie_jar_file )
                 @http.cookie_jar.cookies.should be_empty
                 @http.reset
                 cookies = @http.cookie_jar.cookies
                 cookies.size.should == 4
-                cookies.should == @opts.cookies
+                cookies.should == @opts.http.cookies
             end
         end
 
-        context 'when the cookie_string option is set' do
+        context 'when Options#http_cookie_string is set' do
             it 'parses the string and add those cookies to the CookieJar' do
-                @opts.cookie_string = 'my_cookie_name=val1;blah_name=val2; stuff=%25blah; another_name=another_val'
+                @opts.http.cookie_string = 'my_cookie_name=val1;blah_name=val2; stuff=%25blah; another_name=another_val'
                 @http.cookie_jar.cookies.should be_empty
                 @http.reset
                 cookies = @http.cookie_jar.cookies
@@ -319,7 +307,7 @@ describe Arachni::HTTP::Client do
 
     describe '#cookies' do
         it 'returns the current cookies' do
-            @opts.cookie_string = 'my_cookie_name=val1;blah_name=val2; another_name=another_val'
+            @opts.http.cookie_string = 'my_cookie_name=val1;blah_name=val2; another_name=another_val'
             @http.cookie_jar.cookies.should be_empty
             @http.reset
             @http.cookies.size.should == 3
@@ -450,8 +438,8 @@ describe Arachni::HTTP::Client do
         it 'defaults to 20' do
             @http.max_concurrency.should == 20
         end
-        it 'respects the http_req_limit option' do
-            @opts.http_req_limit = 50
+        it 'respects the http_request_concurrency option' do
+            @opts.http.request_concurrency = 50
             @http.reset
             @http.max_concurrency.should == 50
         end
@@ -479,25 +467,25 @@ describe Arachni::HTTP::Client do
         end
 
         describe :maxfilesize do
-            context 'when Options#http_max_response_size is specified' do
+            context 'when Options#http_response_max_size is specified' do
                 it 'ignores bodies of responses which are larger than specified' do
-                    @opts.http_max_response_size = 0
-                    @http.request( @url + '/http_max_response_size',
+                    @opts.http.response_max_size = 0
+                    @http.request( @url + '/http_response_max_size',
                                    mode: :sync
                     ).body.should_not be_empty
 
-                    @opts.http_max_response_size = 1
-                    @http.request( @url + '/http_max_response_size',
+                    @opts.http.response_max_size = 1
+                    @http.request( @url + '/http_response_max_size',
                                    mode: :sync
                     ).body.should be_empty
 
-                    @opts.http_max_response_size = 999999
-                    @http.request( @url + '/http_max_response_size',
+                    @opts.http.response_max_size = 999999
+                    @http.request( @url + '/http_response_max_size',
                                    mode: :sync
                     ).body.should be_empty
 
-                    @opts.http_max_response_size = 1000000
-                    @http.request( @url + '/http_max_response_size',
+                    @opts.http.response_max_size = 1000000
+                    @http.request( @url + '/http_response_max_size',
                                    mode: :sync
                     ).body.should_not be_empty
                 end
@@ -505,31 +493,31 @@ describe Arachni::HTTP::Client do
 
             context 'when specified' do
                 it 'ignores bodies of responses which are larger than specified' do
-                    @http.request( @url + '/http_max_response_size',
+                    @http.request( @url + '/http_response_max_size',
                                    mode: :sync,
-                                   http_max_response_size: 0
+                                   http_response_max_size: 0
                     ).body.should_not be_empty
 
-                    @http.request( @url + '/http_max_response_size',
+                    @http.request( @url + '/http_response_max_size',
                                    mode: :sync,
-                                   http_max_response_size: 1
+                                   http_response_max_size: 1
                     ).body.should be_empty
 
-                    @http.request( @url + '/http_max_response_size',
+                    @http.request( @url + '/http_response_max_size',
                                    mode: :sync,
-                                   http_max_response_size: 999999
+                                   http_response_max_size: 999999
                     ).body.should be_empty
 
-                    @http.request( @url + '/http_max_response_size',
+                    @http.request( @url + '/http_response_max_size',
                                    mode: :sync,
-                                   http_max_response_size: 1000000
+                                   http_response_max_size: 1000000
                     ).body.should_not be_empty
                 end
             end
 
             context 'by default' do
                 it 'does not enforce a limit' do
-                    @http.request( @url + '/http_max_response_size',
+                    @http.request( @url + '/http_response_max_size',
                                    mode: :sync
                     ).body.should_not be_empty
                 end
@@ -547,7 +535,7 @@ describe Arachni::HTTP::Client do
             end
             context false do
                 it 'uses the cookiejar' do
-                    @opts.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
+                    @opts.http.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
                     @http.cookie_jar.cookies.should be_empty
                     @http.reset
 
@@ -563,7 +551,7 @@ describe Arachni::HTTP::Client do
                 end
                 context 'when custom cookies are provided' do
                     it 'merges them with the cookiejar and override it' do
-                        @opts.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
+                        @opts.http.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
                         @http.cookie_jar.cookies.should be_empty
                         @http.reset
 
@@ -584,7 +572,7 @@ describe Arachni::HTTP::Client do
             end
             context 'nil' do
                 it 'defaults to false' do
-                    @opts.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
+                    @opts.http.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
                     @http.cookie_jar.cookies.should be_empty
                     @http.reset
 
@@ -758,7 +746,7 @@ describe Arachni::HTTP::Client do
         describe :cookies do
             describe 'nil' do
                 it 'uses te cookies in the CookieJar' do
-                    @opts.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
+                    @opts.http.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
                     @http.cookie_jar.cookies.should be_empty
                     @http.reset
 
@@ -1050,19 +1038,6 @@ describe Arachni::HTTP::Client do
             @http.update_cookies( cookies )
             @http.cookies.should == cookies
         end
-
-        it 'updates the Arachni::Options.cookies' do
-            Arachni::Options.cookies.should be_nil
-
-            cookies = []
-            cookies << Arachni::Element::Cookie.new(
-                url: @url,
-                inputs: { 'key2' => 'val2' }
-            )
-            @http.update_cookies( cookies )
-
-            Arachni::Options.cookies.should == cookies
-        end
     end
 
     describe '#on_new_cookies' do
@@ -1096,11 +1071,10 @@ describe Arachni::HTTP::Client do
             )
             res = Arachni::HTTP::Response.new( url: @url, headers: { 'Set-Cookie' => 'name=value' } )
 
-            @opts.cookies.should be_nil
+            @opts.http.cookies.should be_empty
             @http.cookies.should be_empty
             @http.parse_and_set_cookies( res )
             @http.cookies.should == cookies
-            @opts.cookies.should == cookies
         end
     end
 

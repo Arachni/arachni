@@ -8,15 +8,15 @@ require 'sys/proctable'
 
 module Arachni
 
-require Options.dir['lib'] + 'rpc/client'
-require Options.dir['lib'] + 'rpc/server/base'
-require Options.dir['lib'] + 'rpc/server/instance'
-require Options.dir['lib'] + 'rpc/server/output'
+lib = Options.paths.lib
+require lib + 'rpc/client'
+require lib + 'rpc/server/base'
+require lib + 'rpc/server/instance'
+require lib + 'rpc/server/output'
 
 module RPC
 class Server
 
-#
 # Dispatches RPC Instances on demand providing a centralized environment
 # for multiple clients and allows for extensive process monitoring.
 #
@@ -33,10 +33,9 @@ class Server
 # otherwise the system will be eaten away by zombie RPC Instance processes.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Dispatcher
-    require Options.dir['lib'] + 'rpc/server/dispatcher/node'
-    require Options.dir['lib'] + 'rpc/server/dispatcher/handler'
+    require Options.paths.lib + 'rpc/server/dispatcher/node'
+    require Options.paths.lib + 'rpc/server/dispatcher/handler'
 
     include Utilities
     include UI::Output
@@ -45,37 +44,27 @@ class Dispatcher
     HANDLER_NAMESPACE = Handler
 
     def initialize( opts = Options.instance )
-        banner
-
         @opts = opts
 
-        @opts.rpc_port             ||= 7331
-        @opts.rpc_address          ||= 'localhost'
-        @opts.rpc_external_address ||= @opts.rpc_address
-        @opts.pool_size            ||= 5
-
-        if @opts.help
-            print_help
-            exit 0
-        end
+        @opts.dispatcher.external_address ||= @opts.rpc.server_address
 
         @server = Base.new( @opts )
-        @server.logger.level = @opts.datastore[:log_level] if @opts.datastore[:log_level]
+        @server.logger.level = @opts.datastore.log_level if @opts.datastore.log_level
 
         @server.add_async_check do |method|
             # methods that expect a block are async
             method.parameters.flatten.include? :block
         end
 
-        @url = "#{@opts.rpc_external_address}:#{@opts.rpc_port.to_s}"
+        @url = "#{@opts.dispatcher.external_address}:#{@opts.rpc.server_port.to_s}"
 
         # let the instances in the pool know who to ask for routing instructions
         # when we're in grid mode.
-        @opts.datastore[:dispatcher_url] = @url.dup
+        @opts.datastore.dispatcher_url = @url.dup
 
         prep_logging
 
-        print_status 'Initing RPC Server...'
+        print_status 'Starting the RPC Server...'
 
         @server.add_handler( 'dispatcher', self )
 
@@ -86,14 +75,13 @@ class Dispatcher
         @consumed_pids = []
         @pool          = ::EM::Queue.new
 
-        if @opts.pool_size > 0
-            print_status 'Warming up the pool...'
-            @opts.pool_size.times { add_instance_to_pool( false ) }
+        if @opts.dispatcher.pool_size > 0
+            @opts.dispatcher.pool_size.times { add_instance_to_pool( false ) }
         end
 
         # Check up on the pool and start the server once it has been filled.
         timer = ::EM::PeriodicTimer.new( 0.1 ) do
-            next if @opts.pool_size != @pool.size
+            next if @opts.dispatcher.pool_size != @pool.size
             timer.cancel
 
             _handlers.each do |name, handler|
@@ -102,8 +90,6 @@ class Dispatcher
 
             @node = Node.new( @opts, @logfile )
             @server.add_handler( 'node', @node )
-
-            print_status 'Initialization complete.'
 
             run
         end
@@ -166,7 +152,7 @@ class Dispatcher
             return
         end
 
-        if @opts.pool_size <= 0
+        if @opts.dispatcher.pool_size <= 0
             block.call nil
             return
         end
@@ -252,7 +238,7 @@ class Dispatcher
         stats_h = {
             'running_jobs'   => running_jobs,
             'finished_jobs'  => finished_jobs,
-            'init_pool_size' => @opts.pool_size,
+            'init_pool_size' => @opts.dispatcher.pool_size,
             'curr_pool_size' => @pool.size,
             'consumed_pids'  => @consumed_pids
         }
@@ -279,7 +265,7 @@ class Dispatcher
         @handlers ||= nil
         return @handlers if @handlers
 
-        @handlers = Component::Manager.new( Options.dir['rpcd_handlers'], HANDLER_NAMESPACE )
+        @handlers = Component::Manager.new( Options.paths.rpcd_handlers, HANDLER_NAMESPACE )
         @handlers.load_all
         @handlers
     end
@@ -287,77 +273,6 @@ class Dispatcher
     def _handlers
         self.class._handlers
     end
-
-    # Outputs the Arachni banner.
-    # Displays version number, author details etc.
-    def banner
-        puts BANNER
-        puts
-        puts
-    end
-
-    def print_help
-        puts <<USAGE
-  Usage:  arachni_rpcd \[options\]
-
-  Supported options:
-
-    -h
-    --help                      output this
-
-    --address=<host>            specify address to bind to
-                                    (Default: #{@opts.rpc_address})
-
-    --external-address=<host>   specify the external address used to access this Dispatcher
-                                    (Defaults to the value of '--address'.)
-
-    --port=<num>                specify port to listen to
-                                    (Default: #{@opts.rpc_port})
-
-    --port-range=<beginning>-<end>
-
-                                specify port range for the RPC instances
-                                    (Make sure to allow for a few hundred ports.)
-                                    (Default: #{@opts.rpc_instance_port_range.join( '-' )})
-
-    --reroute-to-logfile        reroute all output to a logfile under 'logs/'
-
-    --pool-size=<num>           how many server workers/processes should be available
-                                  at any given moment (Default: #{@opts.pool_size})
-
-    --neighbour=<URL>           URL of a neighbouring Dispatcher (used to build a grid)
-
-    --weight=<float>            weight of the Dispatcher
-
-    --pipe-id=<string>          bandwidth pipe identification
-
-    --nickname=<string>         nickname of the Dispatcher
-
-    --debug
-
-
-    SSL --------------------------
-
-    (All SSL options will be honored by the dispatched RPC instances as well.)
-    (Do *not* use encrypted keys!)
-
-    --ssl-pkey   <file>         location of the server SSL private key (.pem)
-                                    (Used to verify the server to the clients.)
-
-    --ssl-cert   <file>         location of the server SSL certificate (.pem)
-                                    (Used to verify the server to the clients.)
-
-    --node-ssl-pkey   <file>    location of the client SSL private key (.pem)
-                                    (Used to verify this node to other servers.)
-
-    --node-ssl-cert   <file>    location of the client SSL certificate (.pem)
-                                    (Used to verify this node to other servers.)
-
-    --ssl-ca     <file>         location of the CA certificate (.pem)
-
-USAGE
-    end
-
 
     def trap_interrupts( &block )
         %w(QUIT INT).each do |signal|
@@ -367,7 +282,7 @@ USAGE
 
     # Starts the dispatcher's server
     def run
-        print_status 'Starting the server...'
+        print_status 'Ready'
         @server.start
     rescue => e
         print_error e.to_s
@@ -404,7 +319,7 @@ USAGE
         token = generate_token
 
         pid = fork do
-            @opts.rpc_port = port
+            @opts.rpc.server_port = port
             Server::Instance.new( @opts, token )
         end
 
@@ -415,7 +330,7 @@ USAGE
         print_status "Instance added to pool -- PID: #{pid} - " +
             "Port: #{port} - Owner: #{owner}"
 
-        url = "#{@opts.rpc_external_address}:#{port}"
+        url = "#{@opts.dispatcher.external_address}:#{port}"
 
         # Wait until the Instance has booted before adding it to the pool.
         when_instance_ready( url, token ) do
@@ -433,8 +348,9 @@ USAGE
     end
 
     def when_instance_ready( url, token, &block )
-        options = OpenStruct.new( @opts.to_h.symbolize_keys( false ) )
-        options.max_retries = 0
+        options     = OpenStruct.new
+        options.rpc = OpenStruct.new( @opts.to_h[:rpc] )
+        options.rpc.max_retries = 0
 
         client = Client::Instance.new( options, url, token )
         timer = ::EM::PeriodicTimer.new( 0.1 ) do
@@ -452,8 +368,8 @@ USAGE
 
     def prep_logging
         # reroute all output to a logfile
-        @logfile ||= reroute_to_file( @opts.dir['logs'] +
-            "/Dispatcher - #{Process.pid}-#{@opts.rpc_port}.log" )
+        @logfile ||= reroute_to_file( @opts.paths.logs +
+            "/Dispatcher - #{Process.pid}-#{@opts.rpc.server_port}.log" )
     end
 
     def proc_hash( pid )

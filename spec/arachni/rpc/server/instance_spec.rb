@@ -1,3 +1,4 @@
+require 'json'
 require 'spec_helper'
 
 describe 'Arachni::RPC::Server::Instance' do
@@ -67,11 +68,25 @@ describe 'Arachni::RPC::Server::Instance' do
             end
         end
 
-        [:list_platforms, :list_checks, :list_plugins, :list_reports, :busy?, :report].each do |m|
+        [:list_platforms, :list_checks, :list_plugins, :list_reports, :busy?].each do |m|
             describe "##{m}" do
                 it "delegates to Framework##{m}" do
                     @instance.service.send(m).should == @instance.framework.send(m)
                 end
+            end
+        end
+
+        describe '#report' do
+            it 'delegates to Framework#report' do
+                instance_report  = @instance.service.report
+                framework_report = @instance.framework.report
+
+                [:start_datetime, :finish_datetime, :delta_time].each do |k|
+                    instance_report.delete k
+                    framework_report.delete k
+                end
+
+                instance_report.should == framework_report
             end
         end
 
@@ -91,13 +106,13 @@ describe 'Arachni::RPC::Server::Instance' do
 
         describe '#abort_and_report_as' do
             it 'cleans-up and delegate to #report_as' do
-                Nokogiri::HTML( @instance.service.abort_and_report_as( :html ) ).title.should be_true
+                JSON.load( @instance.service.abort_and_report_as( :json ) ).should include 'issues'
             end
         end
 
         describe '#report_as' do
             it 'delegates to Framework#report_as' do
-                Nokogiri::HTML( @instance.service.report_as( :html ) ).title.should be_true
+                JSON.load( @instance.service.report_as( :json ) ).should include 'issues'
             end
         end
 
@@ -117,11 +132,10 @@ describe 'Arachni::RPC::Server::Instance' do
                 instance.service.status.should == instance.framework.status
 
                 instance.service.scan(
-                    url:         web_server_url_for( :framework_simple ),
-                    audit_links: true,
-                    audit_forms: true,
-                    checks:     :test,
-                    slaves:      [{
+                    url:    web_server_url_for( :framework_simple ),
+                    audit:  { elements: [:links, :forms] },
+                    checks: :test,
+                    slaves: [{
                         url: slave.url,
                         token: instance_token_for( slave )
                     }]
@@ -164,13 +178,12 @@ describe 'Arachni::RPC::Server::Instance' do
                     instance.service.status.should == instance.framework.status
 
                     instance.service.scan(
-                        'url'         => web_server_url_for( :framework_simple ),
-                        'audit_links '=> true,
-                        'audit_forms' => true,
-                        'checks'     => 'test',
-                        slaves:      [{
-                            url: slave.url,
-                            token: instance_token_for( slave )
+                        'url'    => web_server_url_for( :framework_simple ),
+                        'audit'  =>  { 'elements' => ['links', 'forms'] },
+                        'checks' => 'test',
+                        'slaves' => [{
+                            'url'   => slave.url,
+                            'token' => instance_token_for( slave )
                         }]
                     )
 
@@ -196,18 +209,17 @@ describe 'Arachni::RPC::Server::Instance' do
             describe :spawns do
                 context 'when it has a Dispatcher' do
                     context 'which is a Grid member' do
-                        context 'with grid_mode set to' do
+                        context 'with OptionGroup::Dispatcher#grid_mode set to' do
                             context :aggregate do
                                 it 'requests slaves from grid members with unique Pipe-IDs' do
                                     instance = instance_grid_spawn
 
                                     instance.service.scan(
-                                        url:         web_server_url_for( :framework_simple ),
-                                        audit_links: true,
-                                        audit_forms: true,
+                                        url:        web_server_url_for( :framework_simple ),
+                                        audit:      { elements: [:links, :forms] },
                                         checks:     :test,
-                                        spawns:      4,
-                                        grid_mode:   :aggregate
+                                        spawns:     4,
+                                        grid_mode: :aggregate
                                     )
 
                                     # if a scan in already running it should just bail out early
@@ -233,12 +245,11 @@ describe 'Arachni::RPC::Server::Instance' do
                                     instance = instance_grid_spawn
 
                                     instance.service.scan(
-                                        url:         web_server_url_for( :framework_simple ),
-                                        audit_links: true,
-                                        audit_forms: true,
+                                        url:        web_server_url_for( :framework_simple ),
+                                        audit:      { elements: [:links, :forms] },
                                         checks:     :test,
-                                        spawns:      4,
-                                        grid_mode:   :balance
+                                        spawns:     4,
+                                        grid_mode: :balance
                                     )
 
                                     # if a scan in already running it should just bail out early
@@ -265,12 +276,11 @@ describe 'Arachni::RPC::Server::Instance' do
                                 it 'raises an exception' do
                                     expect {
                                         instance_grid_spawn.service.scan(
-                                            url:         web_server_url_for( :framework_simple ),
-                                            audit_links: true,
-                                            audit_forms: true,
-                                            checks:     :test,
-                                            spawns:      4,
-                                            grid_mode:   :blahblah
+                                            url:       web_server_url_for( :framework_simple ),
+                                            audit:     { elements: [:links, :forms] },
+                                            checks:    :test,
+                                            spawns:     4,
+                                            grid_mode: :blahblah
                                         )
                                     }.to raise_error
                                 end
@@ -284,12 +294,11 @@ describe 'Arachni::RPC::Server::Instance' do
                                     instance = instance_grid_spawn
 
                                     instance.service.scan(
-                                        url:         web_server_url_for( :framework_simple ),
-                                        audit_links: true,
-                                        audit_forms: true,
-                                        checks:     :test,
-                                        spawns:      4,
-                                        grid:        true
+                                        url:    web_server_url_for( :framework_simple ),
+                                        audit:  { elements: [:links, :forms] },
+                                        checks: :test,
+                                        spawns: 4,
+                                        grid:   true
                                     )
 
                                     # if a scan in already running it should just bail out early
@@ -321,7 +330,7 @@ describe 'Arachni::RPC::Server::Instance' do
                                 begin
                                     instance.service.scan(
                                         url:        web_server_url_for( :framework_simple ),
-                                        grid_mode:  :balance
+                                        grid_mode: :balance
                                     )
                                 rescue => e
                                     raised = e.rpc_exception?
@@ -331,7 +340,7 @@ describe 'Arachni::RPC::Server::Instance' do
                             end
                         end
 
-                        context 'when Options#restrict_to_paths is set' do
+                        context 'when OptionGroup::Scope#restrict_to_paths is set' do
                             it 'raises an exception' do
                                 instance = instance_grid_spawn
                                 url      = web_server_url_for( :framework_simple )
@@ -339,10 +348,10 @@ describe 'Arachni::RPC::Server::Instance' do
                                 raised = false
                                 begin
                                     instance.service.scan(
-                                        url:            url,
-                                        grid_mode:      :balance,
-                                        spawns:         4,
-                                        restrict_paths: [url]
+                                        url:       url,
+                                        grid_mode: :balance,
+                                        spawns:    4,
+                                        scope:     { restrict_paths: [url] }
                                     )
                                 rescue => e
                                     raised = e.rpc_exception?
@@ -359,11 +368,10 @@ describe 'Arachni::RPC::Server::Instance' do
                     it 'uses UNIX sockets to communicate with the slaves' do
                         instance = instance_spawn
                         instance.service.scan(
-                            url:         web_server_url_for( :framework_simple ),
-                            audit_links: true,
-                            audit_forms: true,
-                            checks:     :test,
-                            spawns:      4
+                            url:    web_server_url_for( :framework_simple ),
+                            audit:  { elements: [:links, :forms] },
+                            checks: :test,
+                            spawns: 4
                         )
                         sleep 1 while instance.service.busy?
 
@@ -380,11 +388,10 @@ describe 'Arachni::RPC::Server::Instance' do
                         instance = instance_spawn
 
                         instance.service.scan(
-                            url:         web_server_url_for( :framework_simple ),
-                            audit_links: true,
-                            audit_forms: true,
-                            checks:     :test,
-                            spawns:      4
+                            url:    web_server_url_for( :framework_simple ),
+                            audit:  { elements: [:links, :forms] },
+                            checks: :test,
+                            spawns: 4
                         )
 
                         sleep 1 while instance.service.busy?
@@ -402,42 +409,43 @@ describe 'Arachni::RPC::Server::Instance' do
                     end
                 end
 
-                context 'when link_count_limit has been set' do
+                context 'when OptionGroup::Scope#page_limit has been set' do
                     it 'should be divided by the amount of spawns' do
                         instance = instance_spawn
 
-                        link_count_limit = 100
+                        scope_page_limit = 100
                         spawns           = 4
 
                         instance.service.scan(
-                            url:         web_server_url_for( :framework_simple ),
-                            audit_links: true,
-                            audit_forms: true,
-                            checks:     :test,
-                            spawns:      spawns,
-                            link_count_limit: link_count_limit
+                            url:    web_server_url_for( :framework_simple ),
+                            audit:  { elements: [:links, :forms] },
+                            checks: :test,
+                            spawns: spawns,
+                            scope:  { page_limit: scope_page_limit }
                         )
 
-                        instance.opts.link_count_limit.should == link_count_limit / (spawns + 1)
+                        instance.opts.scope.page_limit.should == scope_page_limit / (spawns + 1)
                     end
                 end
-                context 'when http_req_limit has been set' do
+                context 'when OptionGroup::HTTP#request_concurrency has been set' do
                     it 'should be divided by the amount of spawns' do
                         instance = instance_spawn
 
-                        http_req_limit = 100
-                        spawns         = 4
+                        http_request_concurrency = 100
+                        spawns                   = 4
 
                         instance.service.scan(
-                            url:         web_server_url_for( :framework_simple ),
-                            audit_links: true,
-                            audit_forms: true,
-                            checks:     :test,
-                            spawns:      spawns,
-                            http_req_limit: http_req_limit
+                            url:    web_server_url_for( :framework_simple ),
+                            audit:  { elements: [:links, :forms] },
+                            checks: :test,
+                            spawns: spawns,
+                            http:   {
+                                request_concurrency: http_request_concurrency
+                            }
                         )
 
-                        instance.opts.http_req_limit.should == http_req_limit / (spawns + 1)
+                        instance.opts.http.request_concurrency.should ==
+                            http_request_concurrency / (spawns + 1)
                     end
                 end
             end
@@ -447,11 +455,10 @@ describe 'Arachni::RPC::Server::Instance' do
             before( :all ) do
                 @progress_instance = instance_spawn
                 @progress_instance.service.scan(
-                    url:         web_server_url_for( :framework_simple ),
-                    audit_links: true,
-                    audit_forms: true,
-                    checks:     :test,
-                    spawns:      1
+                    url:    web_server_url_for( :framework_simple ),
+                    audit:  { elements: [:links, :forms] },
+                    checks: :test,
+                    spawns: 1
                 )
                 sleep 1 while @progress_instance.service.busy?
             end
@@ -601,7 +608,8 @@ describe 'Arachni::RPC::Server::Instance' do
 
     describe '#plugins' do
         it 'provides access to the plugin manager' do
-            @instance.plugins.available.sort.should == %w(wait bad distributable loop default with_options spider_hook).sort
+            @instance.plugins.available.sort.should == %w(wait bad distributable
+                loop default with_options spider_hook).sort
         end
     end
 end

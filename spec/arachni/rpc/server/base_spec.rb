@@ -3,15 +3,15 @@ require 'spec_helper'
 describe Arachni::RPC::Server::Base do
     before( :all ) do
         opts = Arachni::Options.instance
-        opts.rpc_port = available_port
+        opts.rpc.server_port = available_port
         @server = Arachni::RPC::Server::Base.new( opts )
     end
 
     it 'supports UNIX sockets' do
         opts = Arachni::Options.instance
-        opts.rpc_address = nil
-        opts.rpc_port    = nil
-        opts.rpc_socket  = '/tmp/arachni-base-server'
+        opts.rpc.server_address = nil
+        opts.rpc.server_port    = nil
+        opts.rpc.server_socket  = '/tmp/arachni-base-server'
         server = Arachni::RPC::Server::Base.new( opts )
 
         Thread.new{ server.run }

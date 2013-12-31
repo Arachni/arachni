@@ -861,7 +861,7 @@ shared_examples_for 'auditable' do |options = {}|
             end
         end
 
-        context 'when the exclude_vectors option is set' do
+        context 'when the audit_exclude_vectors option is set' do
             it 'skips those vectors by name' do
                 e = auditable.new(
                     url: @url + '/submit',
@@ -870,7 +870,7 @@ shared_examples_for 'auditable' do |options = {}|
                     }
                 )
 
-                Arachni::Options.exclude_vectors << 'exclude_this'
+                Arachni::Options.audit.exclude_vectors << 'exclude_this'
 
                 audited = []
                 e.audit( @seed, skip_original: true ) { |_, elem| audited << elem.affected_input_name  }.should be_true
@@ -898,14 +898,14 @@ shared_examples_for 'auditable' do |options = {}|
                 Arachni::Element::Capabilities::Auditable.reset
 
                 opts = Arachni::Options.instance
-                opts.exclude << @auditable.action
+                opts.scope.exclude_path_patterns << @auditable.action
 
                 ran = false
                 @auditable.audit( @seed ) { ran = true }
                 @auditor.http.run
                 ran.should be_false
 
-                opts.exclude.clear
+                opts.scope.exclude_path_patterns.clear
 
                 Arachni::Element::Capabilities::Auditable.reset
 
@@ -997,7 +997,7 @@ shared_examples_for 'auditable' do |options = {}|
 
             context 'when set' do
                 it 'restricts the audit to the provided elements' do
-                    scope_id_arr = [ @auditable.scope_audit_id ]
+                    scope_id_arr = [ @auditable.audit_scope_id ]
                     Arachni::Element::Capabilities::Auditable.restrict_to_elements( scope_id_arr )
                     performed = false
                     @sleep.audit( '' ){ performed = true }
@@ -1016,7 +1016,7 @@ shared_examples_for 'auditable' do |options = {}|
 
                     context 'when called' do
                         it 'overrides scope restrictions' do
-                            scope_id_arr = [ @auditable.scope_audit_id ]
+                            scope_id_arr = [ @auditable.audit_scope_id ]
                             Arachni::Element::Capabilities::Auditable.restrict_to_elements( scope_id_arr )
                             performed = false
                             @sleep.audit( '' ){ performed = true }

@@ -4,7 +4,7 @@
 =end
 
 def require_lib( path )
-    require Arachni::Options.dir['lib'] + path
+    require Arachni::Options.paths.lib + path
 end
 
 def require_testee

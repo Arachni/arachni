@@ -28,7 +28,7 @@ describe name_from_filename do
 
     context 'when the link count limit has been reached' do
         it 'does not run' do
-            framework.opts.link_count_limit = 0
+            framework.opts.scope.page_limit = 0
             audit :form, false
             framework.auditstore.sitemap.should be_empty
         end

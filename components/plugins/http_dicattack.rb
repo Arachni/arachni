@@ -12,7 +12,7 @@ class Arachni::Plugins::HTTPDicattack < Arachni::Plugin::Base
 
     def prepare
         # disable spidering and the subsequent audit
-        # @framework.opts.link_count_limit = 0
+        # @framework.opts.scope_page_limit = 0
 
         # don't scan the website just yet
         framework.pause
@@ -53,8 +53,8 @@ class Arachni::Plugins::HTTPDicattack < Arachni::Plugin::Base
                     print_ok "Found a match. Username: '#{user}' -- Password: '#{pass}'"
                     print_info "URL: #{res.url}"
 
-                    framework.opts.http_username = user
-                    framework.opts.http_password = pass
+                    framework.opts.http_authentication_username = user
+                    framework.opts.http_authentication_password = pass
 
                     # register our findings...
                     register_results( username: user, password: pass )

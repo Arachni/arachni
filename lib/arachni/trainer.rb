@@ -5,7 +5,7 @@
 
 module Arachni
 
-require Options.dir['lib'] + 'element_filter'
+require Options.paths.lib + 'element_filter'
 
 # Trainer class
 #
@@ -63,7 +63,7 @@ class Trainer
             return
         end
 
-        if @framework.link_count_limit_reached?
+        if @framework.page_limit_reached?
             print_info 'Link count limit reached, skipping analysis.'
             return
         end

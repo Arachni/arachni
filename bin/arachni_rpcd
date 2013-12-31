@@ -5,9 +5,6 @@
 =end
 
 require_relative '../lib/arachni'
+require Arachni::Options.paths.lib + 'ui/cli/rpc/server/dispatcher'
 
-Arachni::Options.parse
-
-require Arachni::Options.dir['lib'] + 'rpc/server/dispatcher'
-
-::EM.run { Arachni::RPC::Server::Dispatcher.new( Arachni::Options.instance ) }
+Arachni::UI::CLI::RPC::Server::Dispatcher.new

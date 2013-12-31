@@ -21,14 +21,11 @@ class AuditStore
     # @return    [Hash]  Plugin results.
     attr_accessor :plugins
 
-    # @return    [String]    The date and time when the scan started.
-    attr_reader   :start_datetime
+    # @return    [Time]    The date and time when the scan started.
+    attr_accessor :start_datetime
 
-    # @return    [String]    The date and time when the scan finished.
-    attr_reader   :finish_datetime
-
-    # @return    [String]    How long the scan took.
-    attr_reader   :delta_time
+    # @return    [Time]    The date and time when the scan finished.
+    attr_accessor :finish_datetime
 
     def initialize( options = {} )
         @version = Arachni::VERSION
@@ -39,22 +36,23 @@ class AuditStore
         @sitemap     ||= {}
         self.options ||= Options
         @issues      ||= {}
+
+        @start_datetime  ||= Time.now
+        @finish_datetime ||= Time.now
+    end
+
+    # @note If no {#finish_datetime} has been provided, it will use `Time.now`.
+    # @return   [String]
+    #   `{#start_datetime} - {#finish_datetime}` in `00:00:00`
+    #   (`hours:minutes:seconds`) format.
+    def delta_time
+        secs_to_hms( (@finish_datetime || Time.now) - @start_datetime )
     end
 
     # @param    [Options, Hash] options Scan {Options options}.
     # @return   [Hash]
     def options=( options )
         @options = prepare_options( options )
-
-        @start_datetime  =  @options['start_datetime'] ?
-            @options['start_datetime'].asctime : Time.now.asctime
-
-        @finish_datetime = @options['finish_datetime'] ?
-            @options['finish_datetime'].asctime : Time.now.asctime
-
-        @delta_time = secs_to_hms( @options['delta_time'] )
-
-        @options
     end
 
     # @param    [Array<Issue>]  issues  Logged issues.
@@ -113,7 +111,7 @@ class AuditStore
             sitemap:         @sitemap,
             start_datetime:  @start_datetime,
             finish_datetime: @finish_datetime,
-            delta_time:      @delta_time,
+            delta_time:      delta_time,
             issues:          issues.map(&:to_h),
             plugins:         @plugins.deep_clone
         }
@@ -145,31 +143,7 @@ class AuditStore
     # @param    [Hash]  options
     # @return    [Hash]
     def prepare_options( options )
-        new_options = {}
-
-        options.to_hash.each do |key, val|
-            case key
-                when 'redundant'
-                    new_options[key.to_s] = {}
-                    val.each do |regexp, counter|
-                        new_options[key.to_s].merge!( regexp.to_s => counter )
-                    end
-
-                when 'exclude', 'include'
-                    new_options[key.to_s] = []
-                    val.each { |regexp| new_options[key.to_s] << regexp.to_s }
-
-                when 'cookies'
-                    next if !val
-                    new_options[key.to_s] =
-                        val.inject( {} ){ |h, c| h.merge!( c.simple ) }
-
-                else
-                    new_options[key.to_s] = val
-            end
-        end
-
-        new_options
+        options.to_hash.symbolize_keys( false )
     end
 
     # @param    [Array<Issue>]    issues

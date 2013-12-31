@@ -6,38 +6,23 @@
 module Arachni
 class RPC::Server::Framework
 
-#
 # Contains utility methods used to connect to instances and dispatchers and
 # split and distribute the workload.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 module Distributor
 
-    #
     # Maximum concurrency when communicating with instances.
     #
     # Means that you should connect to MAX_CONCURRENCY instances at a time
     # while iterating through them.
-    #
     MAX_CONCURRENCY = 20
 
-    #
-    # Minimum pages per instance.
-    #
-    # Prevents slaves from having fewer than MIN_PAGES_PER_INSTANCE pages each,
-    # the last slave could of course have less than that if the page count
-    # isn't a multiple of MIN_PAGES_PER_INSTANCE.
-    #
-    MIN_PAGES_PER_INSTANCE = 1
-
-    #
     # Connects to a remote Instance.
     #
     # @param    [Hash]  instance
     #   The hash must hold the `'url'` and the `'token'`. In subsequent calls
     #  the `'token'` can be omitted.
-    #
     def connect_to_instance( instance )
         instance = instance.symbolize_keys
         @instance_connections ||= {}
@@ -96,7 +81,7 @@ module Distributor
     #   Chunks of URLs, each chuck corresponds to each slave.
     # @param    [Hash<String,Array>]     element_ids_per_page
     #   Hash with page urls for keys and arrays of element
-    #   {Arachni::Element::Capabilities::Auditable#scope_audit_id scope IDs}
+    #   {Arachni::Element::Capabilities::Auditable#audit_scope_id scope IDs}
     #   for values.
     #
     # @return [Array<Array>]
@@ -150,14 +135,14 @@ module Distributor
     end
 
     # @return   [Array]
-    #   {Arachni::Element::Capabilities::Auditable#scope_audit_id Scope IDs}
+    #   {Arachni::Element::Capabilities::Auditable#audit_scope_id Scope IDs}
     #   of all page elements with auditable inputs.
     def build_elem_list( page )
         list = []
 
-        list |= elements_to_ids( page.links )   if @opts.audit_links
-        list |= elements_to_ids( page.forms )   if @opts.audit_forms
-        list |= elements_to_ids( page.cookies ) if @opts.audit_cookies
+        list |= elements_to_ids( page.links )   if @opts.audit.links
+        list |= elements_to_ids( page.forms )   if @opts.audit.forms
+        list |= elements_to_ids( page.cookies ) if @opts.audit.cookies
 
         list
     end
@@ -170,7 +155,7 @@ module Distributor
         elements.map do |e|
             next if e.inputs.empty?
 
-            id = e.scope_audit_id
+            id = e.audit_scope_id
             next if @elem_ids_filter.include?( id )
             @elem_ids_filter << id
 
@@ -230,54 +215,11 @@ module Distributor
         end
     end
 
-    #
-    # Splits URLs into chunks for each instance while taking into account a
-    # {MIN_PAGES_PER_INSTANCE minimum amount of URLs} per instance.
-    #
-    # @param    [Array<String>]    urls  URLs to split into chunks.
-    # @param    [Integer]    max_chunks  Maximum amount of chunks, must be > 1.
-    #
-    # @return   [Array<Array<String>>]   Array of chunks of URLS.
-    #
-    def split_urls( urls, max_chunks )
-        # Figure out the min amount of pages per chunk.
-        if @opts.min_pages_per_instance > 0
-            min_pages_per_instance = @opts.min_pages_per_instance
-        else
-            min_pages_per_instance = MIN_PAGES_PER_INSTANCE
-        end
-
-        # first try a simplistic approach, just split the the URLs in
-        # equally sized chunks for each instance
-        orig_chunks = urls.chunk( max_chunks )
-
-        # if the first chunk matches the minimum then they all do
-        # (except (possibly) for the last) so return these as is...
-        return orig_chunks if orig_chunks[0].size >= min_pages_per_instance
-
-        chunks = []
-        idx    = 0
-        #
-        # otherwise re-arrange the chunks into larger ones
-        #
-        orig_chunks.each do |chunk|
-            chunk.each do |url|
-                chunks[idx] ||= []
-                if chunks[idx].size < min_pages_per_instance
-                    chunks[idx] << url
-                else
-                    idx += 1
-                end
-            end
-        end
-        chunks
-    end
-
     # Picks the dispatchers to use based on their load balancing metrics and
     # the instructed maximum amount of slaves.
     def pick_dispatchers( dispatchers )
         dispatchers = dispatchers.sort_by { |d| d['node']['score'] }
-        @opts.max_slaves > 0 ? dispatchers[0...@opts.max_slaves] : dispatchers
+        @opts.spawns > 0 ? dispatchers[0...@opts.spawns] : dispatchers
     end
 
     #
@@ -288,10 +230,10 @@ module Distributor
     #   with `:url` and `:token` at least.
     # @param    [Hash]      auditables
     # @option   auditables    [Array<String>] :urls
-    #   URLs to audit -- will be passed as a `restrict_paths` option.
+    #   URLs to audit -- will be passed as a `scope_restrict_paths` option.
     #
     # @option   auditables    [Array<String>] :elements
-    #   {Element::Capabilities::Auditable#scope_audit_id Scope IDs} of
+    #   {Element::Capabilities::Auditable#audit_scope_id Scope IDs} of
     #   elements to audit.
     #
     # @option   auditables    [Array<Arachni::Page>] :pages
@@ -300,7 +242,7 @@ module Distributor
     def distribute_and_run( instance_hash, auditables = {}, &block )
         opts = cleaned_up_opts
 
-        opts[:restrict_paths] = auditables[:urls] || []
+        opts[:scope][:restrict_paths] = auditables[:urls] || []
 
         opts[:multi] = {
             pages:    auditables[:pages]    || [],
@@ -311,8 +253,9 @@ module Distributor
             opts[:multi][:platforms] = Platform::Manager.light
         end
 
-        [:exclude, :include].each do |k|
-            opts[k].each.with_index { |v, i| opts[k][i] = v.source }
+        [:exclude_path_patterns, :include_path_patterns].each do |k|
+            (opts[:scope][k] || {}).
+                each_with_index { |v, i| opts[k][i] = v.source }
         end
 
         connect_to_instance( instance_hash ).service.scan( opts ) do
@@ -329,14 +272,10 @@ module Distributor
     #   Finally, it sets the master's privilege token so that the slave can
     #   report back to us.
     def cleaned_up_opts
-        opts = @opts.to_h.deep_clone.symbolize_keys
+        opts = @opts.to_h.deep_clone
 
-        (%w(spawns rpc_socket grid_mode dir rpc_port rpc_external_address
-            rpc_address pipe_id neighbour pool_size lscheck lsrep
-            rpc_instance_port_range load_profile delta_time start_datetime
-            finish_datetime)).each do |k|
-            opts.delete k.to_sym
-        end
+        %w(instance rpc dispatcher paths spawns).each { |k| opts.delete k.to_sym }
+        opts[:http].delete :cookie_jar_filepath
 
         # Don't let the slaves run plugins that are not meant to be distributed.
         opts[:plugins].reject! { |k, _| !@plugins[k].distributable? } if opts[:plugins]
@@ -398,21 +337,19 @@ module Distributor
                 final_stats[k.to_s] /= Float( stats.size + 1 )
                 final_stats[k.to_s] = Float( sprintf( "%.2f", final_stats[k.to_s] ) )
             end
-        rescue # => e
-            # ap e
-            # ap e.backtrace
+        rescue => e
+            ap e
+            ap e.backtrace
         end
 
         final_stats['url'] = self_url
         final_stats
     end
 
-    #
     # @param    [String]    eta1    In the form of `hours:minutes:seconds`.
     # @param    [String]    eta2    In the form of `hours:minutes:seconds`.
     #
     # @return   [String]    Returns the longest ETA of the two.
-    #
     def max_eta( eta1, eta2 )
         return eta1 if eta1 == eta2
 
@@ -433,8 +370,8 @@ module Distributor
     end
 
     def dispatcher
-        return if !@opts.datastore[:dispatcher_url]
-        connect_to_dispatcher( @opts.datastore[:dispatcher_url] )
+        return if !@opts.datastore.dispatcher_url
+        connect_to_dispatcher( @opts.datastore.dispatcher_url )
     end
 
     def more_than_one_in_sets?( sets, item )

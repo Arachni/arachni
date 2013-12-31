@@ -3,7 +3,7 @@
     All rights reserved.
 =end
 
-lib = Arachni::Options.dir['support'] + 'lookup/'
+lib = Arachni::Options.paths.support + 'lookup/'
 require lib + 'base'
 require lib + 'hash_set'
 require lib + 'moolb'

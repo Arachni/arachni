@@ -3,7 +3,7 @@
     All rights reserved.
 =end
 
-lib = Arachni::Options.dir['support'] + 'cache/'
+lib = Arachni::Options.paths.support + 'cache/'
 require lib + 'base'
 require lib + 'least_recently_used'
 require lib + 'random_replacement'

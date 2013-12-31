@@ -1,5 +1,5 @@
 require 'spec_helper'
-require "#{Arachni::Options.dir['lib']}/rpc/server/dispatcher"
+require "#{Arachni::Options.paths.lib}/rpc/server/dispatcher"
 
 class Node < Arachni::RPC::Server::Dispatcher::Node
 
@@ -22,7 +22,7 @@ class Node < Arachni::RPC::Server::Dispatcher::Node
     end
 
     def url
-        "#{@opts.rpc_address}:#{@opts.rpc_port}"
+        "#{@opts.rpc.server_address}:#{@opts.rpc.server_port}"
     end
 
     def shutdown
@@ -46,27 +46,27 @@ describe Arachni::RPC::Server::Dispatcher::Node do
         @get_node = proc do |c_port|
             opts = @opts
             port = c_port || available_port
-            opts.rpc_port = port
+            opts.rpc.server_port = port
             process_fork_em do
                 Node.new( opts )
             end
             sleep 1
-            Node.connect_to_peer( "#{opts.rpc_address}:#{port}", opts )
+            Node.connect_to_peer( "#{opts.rpc.server_address}:#{port}", opts )
         end
 
         @node = @get_node.call
     end
 
-    before( :each ) { @opts.rpc_external_address = nil }
+    before( :each ) { @opts.dispatcher.external_address = nil }
 
     describe '#grid_member?' do
         context 'when the dispatcher is a grid member' do
             it 'should return true' do
                 n = @get_node.call
 
-                @opts.neighbour = n.url
+                @opts.dispatcher.neighbour = n.url
                 c = @get_node.call
-                @opts.neighbour = nil
+                @opts.dispatcher.neighbour = nil
                 sleep 4
 
                 c.grid_member?.should be_true
@@ -82,11 +82,11 @@ describe Arachni::RPC::Server::Dispatcher::Node do
 
     context 'when a previously unreachable neighbour comes back to life' do
         before( :all ) do
-            @opts.node_ping_interval = 0.5
+            @opts.dispatcher.node_ping_interval = 0.5
         end
 
         after( :all ) do
-            @opts.node_ping_interval = nil
+            @opts.dispatcher.node_ping_interval = nil
         end
 
         it 'gets re-added to the neighbours list' do
@@ -104,17 +104,17 @@ describe Arachni::RPC::Server::Dispatcher::Node do
             n.neighbours.should == [c.url]
             c.neighbours.should == [n.url]
 
-            @opts.neighbour = nil
+            @opts.dispatcher.neighbour = nil
         end
     end
 
     context 'when a neighbour becomes unreachable' do
         before( :all ) do
-            @opts.node_ping_interval = 0.5
+            @opts.dispatcher.node_ping_interval = 0.5
         end
 
         after( :all ) do
-            @opts.node_ping_interval = nil
+            @opts.dispatcher.node_ping_interval = nil
         end
 
         it 'is removed' do
@@ -139,7 +139,7 @@ describe Arachni::RPC::Server::Dispatcher::Node do
         it 'adds that neighbour and reach convergence' do
             n = @get_node.call
 
-            @opts.neighbour = n.url
+            @opts.dispatcher.neighbour = n.url
             c = @get_node.call
             sleep 4
             c.neighbours.should == [n.url]
@@ -151,7 +151,7 @@ describe Arachni::RPC::Server::Dispatcher::Node do
             c.neighbours.sort.should == [n.url, d.url].sort
             n.neighbours.sort.should == [c.url, d.url].sort
 
-            @opts.neighbour = d.url
+            @opts.dispatcher.neighbour = d.url
             e = @get_node.call
             sleep 4
             e.neighbours.sort.should == [n.url, c.url, d.url].sort
@@ -159,7 +159,7 @@ describe Arachni::RPC::Server::Dispatcher::Node do
             c.neighbours.sort.should == [n.url, d.url, e.url].sort
             n.neighbours.sort.should == [c.url, d.url, e.url].sort
 
-            @opts.neighbour = nil
+            @opts.dispatcher.neighbour = nil
         end
     end
 
@@ -220,25 +220,25 @@ describe Arachni::RPC::Server::Dispatcher::Node do
 
     describe '#info' do
         it 'returns node info' do
-            @opts.pipe_id = 'pipe_id'
-            @opts.weight = 10
-            @opts.nickname = 'blah'
-            @opts.cost = 12
+            @opts.dispatcher.node_pipe_id = 'dispatcher_node_pipe_id'
+            @opts.dispatcher.node_weight = 10
+            @opts.dispatcher.node_nickname = 'blah'
+            @opts.dispatcher.node_cost = 12
 
             n = @get_node.call
             info = n.info
 
             info['url'].should == n.url
-            info['pipe_id'].should == @opts.pipe_id
-            info['weight'].should == @opts.weight
-            info['nickname'].should == @opts.nickname
-            info['cost'].should == @opts.cost
+            info['pipe_id'].should == @opts.dispatcher.node_pipe_id
+            info['weight'].should == @opts.dispatcher.node_weight
+            info['nickname'].should == @opts.dispatcher.node_nickname
+            info['cost'].should == @opts.dispatcher.node_cost
         end
 
-        context 'when Options#rpc_external_address has been set' do
+        context 'when Options#dispatcher_external_address has been set' do
             it 'advertises that address' do
-                @opts.rpc_external_address = '9.9.9.9'
-                @get_node.call.info['url'].should start_with @opts.rpc_external_address
+                @opts.dispatcher.external_address = '9.9.9.9'
+                @get_node.call.info['url'].should start_with @opts.dispatcher.external_address
             end
         end
     end

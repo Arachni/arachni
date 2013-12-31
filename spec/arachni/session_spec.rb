@@ -40,8 +40,8 @@ describe Arachni::Session do
                 s.has_login_sequence?.should be_true
 
                 s.has_login_check?.should be_false
-                s.opts.login_check_url     = @url
-                s.opts.login_check_pattern = 'logged-in user'
+                s.opts.login.check_url     = @url
+                s.opts.login.check_pattern = 'logged-in user'
                 s.has_login_check?.should be_true
 
                 s.logged_in?.should be_false

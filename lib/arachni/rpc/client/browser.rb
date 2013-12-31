@@ -5,7 +5,7 @@
 
 module Arachni
 
-require Options.dir['lib'] + 'rpc/client/base'
+require Options.paths.lib + 'rpc/client/base'
 
 module RPC
 class Client

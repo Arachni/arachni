@@ -190,7 +190,7 @@ module MultiInstance
     #
     # @param    [Array<String>]     elements
     #   List of element IDs (as created by
-    #   {Arachni::Element::Capabilities::Auditable#scope_audit_id}).
+    #   {Arachni::Element::Capabilities::Auditable#audit_scope_id}).
     #
     # @param    [String]    token
     #   Privileged token, prevents this method from being called by 3rd parties
@@ -225,7 +225,7 @@ module MultiInstance
     end
 
     def multi_self_url
-        @opts.rpc_socket || self_url
+        @opts.rpc.server_socket || self_url
     end
 
     private

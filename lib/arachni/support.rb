@@ -6,7 +6,7 @@
 module Arachni::Support
 end
 
-lib = Arachni::Options.dir['support']
+lib = Arachni::Options.paths.support
 require lib + 'buffer'
 require lib + 'cache'
 require lib + 'crypto'

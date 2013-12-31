@@ -3,5 +3,5 @@
     All rights reserved.
 =end
 
-lib = Arachni::Options.dir['support'] + 'crypto/'
+lib = Arachni::Options.paths.support + 'crypto/'
 require lib + 'rsa_aes_cbc'

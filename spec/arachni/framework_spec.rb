@@ -11,8 +11,8 @@ describe Arachni::Framework do
 
     before( :each ) do
         reset_options
-        @opts.dir['reports'] = fixtures_path + '/reports/manager_spec/'
-        @opts.dir['checks']  = fixtures_path + '/taint_check/'
+        @opts.paths.reports = fixtures_path + '/reports/manager_spec/'
+        @opts.paths.checks  = fixtures_path + '/taint_check/'
 
         @f = Arachni::Framework.new
     end
@@ -53,7 +53,7 @@ describe Arachni::Framework do
         context 'due to a network error' do
             it 'returns an empty sitemap and have failures' do
                 @opts.url = 'http://blahaha'
-                @opts.do_not_crawl
+                @opts.scope.do_not_crawl
 
                 @f.push_to_url_queue @opts.url
                 @f.checks.load :taint
@@ -65,7 +65,7 @@ describe Arachni::Framework do
         context 'due to a server error' do
             it 'returns an empty sitemap and have failures' do
                 @opts.url = @f_url + '/fail'
-                @opts.do_not_crawl
+                @opts.scope.do_not_crawl
 
                 @f.push_to_url_queue @opts.url
                 @f.checks.load :taint
@@ -76,7 +76,7 @@ describe Arachni::Framework do
 
         it "retries #{Arachni::Framework::AUDIT_PAGE_MAX_TRIES} times" do
             @opts.url = @f_url + '/fail_4_times'
-            @opts.do_not_crawl
+            @opts.scope.do_not_crawl
 
             @f.push_to_url_queue @opts.url
             @f.checks.load :taint
@@ -89,7 +89,7 @@ describe Arachni::Framework do
         context 'when there are no failed requests' do
             it 'returns an empty array' do
                 @opts.url = @f_url
-                @opts.do_not_crawl
+                @opts.scope.do_not_crawl
 
                 @f.push_to_url_queue @opts.url
                 @f.checks.load :taint
@@ -100,7 +100,7 @@ describe Arachni::Framework do
         context 'when there are failed requests' do
             it 'returns an array containing the failed URLs' do
                 @opts.url = @f_url + '/fail'
-                @opts.do_not_crawl
+                @opts.scope.do_not_crawl
 
                 @f.push_to_url_queue @opts.url
                 @f.checks.load :taint
@@ -115,12 +115,12 @@ describe Arachni::Framework do
             @f.opts.is_a?( Arachni::Options ).should be_true
         end
 
-        describe '#exclude_binaries' do
+        describe '#audit_exclude_binaries' do
             it 'excludes binary pages from the audit' do
                 f = Arachni::Framework.new
 
                 f.opts.url = @url + '/binary'
-                f.opts.audit :links, :forms, :cookies
+                f.opts.audit.elements :links, :forms, :cookies
                 f.checks.load :taint
 
                 ok = false
@@ -130,7 +130,7 @@ describe Arachni::Framework do
                 f.reset
 
                 f.opts.url = @url + '/binary'
-                f.opts.exclude_binaries = true
+                f.opts.audit.exclude_binaries = true
                 f.checks.load :taint
 
                 ok = true
@@ -141,18 +141,18 @@ describe Arachni::Framework do
                 ok.should be_true
             end
         end
-        describe '#restrict_paths' do
+        describe '#scope_restrict_paths' do
             it 'serves as a replacement to crawling' do
                 f = Arachni::Framework.new
                 f.opts.url = @url
-                f.opts.restrict_paths = %w(/elem_combo /log_remote_file_if_exists/true)
-                f.opts.audit :links, :forms, :cookies
+                f.opts.scope.restrict_paths = %w(/elem_combo /log_remote_file_if_exists/true)
+                f.opts.audit.elements :links, :forms, :cookies
                 f.checks.load :taint
 
                 f.run
 
                 sitemap = f.auditstore.sitemap.map { |u, _| u.split( '?' ).first }
-                sitemap.sort.uniq.should == f.opts.restrict_paths.sort
+                sitemap.sort.uniq.should == f.opts.scope.restrict_paths.sort
                 f.reset
             end
         end
@@ -162,7 +162,7 @@ describe Arachni::Framework do
         it 'returns a hash with covered URLs and HTTP status codes' do
             Arachni::Framework.new do |f|
                 f.opts.url = "#{@url}/elem_combo"
-                f.opts.audit :links, :forms, :cookies
+                f.opts.audit.elements :links, :forms, :cookies
                 f.checks.load :taint
 
                 f.run
@@ -215,7 +215,7 @@ describe Arachni::Framework do
 
         it 'performs the audit' do
             @f.opts.url = @url + '/elem_combo'
-            @f.opts.audit :links, :forms, :cookies
+            @f.opts.audit.elements :links, :forms, :cookies
             @f.checks.load :taint
             @f.plugins.load :wait
             @f.reports.load :foo
@@ -264,11 +264,11 @@ describe Arachni::Framework do
         end
 
         it 'handles heavy load' do
-            @opts.dir['checks']  = fixtures_path + '/taint_check/'
+            @opts.paths.checks  = fixtures_path + '/taint_check/'
             f = Arachni::Framework.new
 
             f.opts.url = web_server_url_for :framework_hpg
-            f.opts.audit :links
+            f.opts.audit.elements :links
 
             f.checks.load :taint
 
@@ -280,7 +280,7 @@ describe Arachni::Framework do
         it 'handles pages with JavaScript code' do
             Arachni::Framework.new do |f|
                 f.opts.url = @url + '/with_javascript'
-                f.opts.audit :links, :forms, :cookies
+                f.opts.audit.elements :links, :forms, :cookies
 
                 f.checks.load :taint
                 f.run
@@ -294,7 +294,7 @@ describe Arachni::Framework do
         it 'handles AJAX' do
             Arachni::Framework.new do |f|
                 f.opts.url = @url + '/with_ajax'
-                f.opts.audit :links, :forms, :cookies
+                f.opts.audit.elements :links, :forms, :cookies
 
                 f.checks.load :taint
                 f.run
@@ -308,11 +308,11 @@ describe Arachni::Framework do
         context 'when the page has a body which is' do
             context 'not empty' do
                 it 'runs checks that audit the page body' do
-                    @opts.dir['checks']  = fixtures_path + '/run_check/'
+                    @opts.paths.checks  = fixtures_path + '/run_check/'
                     f = Arachni::Framework.new
                     f.opts.url = @url
-                    f.opts.do_not_crawl
-                    f.opts.audit :links
+                    f.opts.scope.do_not_crawl
+                    f.opts.audit.elements :links
                     f.checks.load %w(body)
 
                     p = Arachni::Page.from_data( url: @url, body: 'stuff' )
@@ -325,11 +325,11 @@ describe Arachni::Framework do
             end
             context 'empty' do
                 it 'skips checks that audit the page body' do
-                    @opts.dir['checks']  = fixtures_path + '/run_check/'
+                    @opts.paths.checks  = fixtures_path + '/run_check/'
                     f = Arachni::Framework.new
                     f.opts.url = @url
-                    f.opts.do_not_crawl
-                    f.opts.audit :links
+                    f.opts.scope.do_not_crawl
+                    f.opts.audit.elements :links
                     f.checks.load %w(body)
 
                     p = Arachni::Page.from_data( url: @url, body: '' )
@@ -346,11 +346,11 @@ describe Arachni::Framework do
             context 'enabled' do
                 context 'and the page contains links' do
                     it 'runs checks that audit links' do
-                        @opts.dir['checks']  = fixtures_path + '/run_check/'
+                        @opts.paths.checks  = fixtures_path + '/run_check/'
                         f = Arachni::Framework.new
                         f.opts.url = @url
-                        f.opts.do_not_crawl
-                        f.opts.audit :links
+                        f.opts.scope.do_not_crawl
+                        f.opts.audit.elements :links
                         f.checks.load %w(links forms cookies headers flch)
 
                         link = Arachni::Element::Link.new( url: @url )
@@ -363,11 +363,11 @@ describe Arachni::Framework do
                     end
 
                     it 'runs checks that audit path and server' do
-                        @opts.dir['checks']  = fixtures_path + '/run_check/'
+                        @opts.paths.checks  = fixtures_path + '/run_check/'
                         f = Arachni::Framework.new
                         f.opts.url = @url
-                        f.opts.do_not_crawl
-                        f.opts.audit :links
+                        f.opts.scope.do_not_crawl
+                        f.opts.audit.elements :links
                         f.checks.load %w(path server)
 
                         link = Arachni::Element::Link.new( url: @url )
@@ -380,11 +380,11 @@ describe Arachni::Framework do
                     end
 
                     it 'runs checks that have not specified any elements' do
-                        @opts.dir['checks']  = fixtures_path + '/run_check/'
+                        @opts.paths.checks  = fixtures_path + '/run_check/'
                         f = Arachni::Framework.new
                         f.opts.url = @url
-                        f.opts.do_not_crawl
-                        f.opts.audit :links
+                        f.opts.scope.do_not_crawl
+                        f.opts.audit.elements :links
                         f.checks.load %w(nil empty)
 
                         link = Arachni::Element::Link.new( url: @url )
@@ -401,11 +401,11 @@ describe Arachni::Framework do
             context 'disabled' do
                 context 'and the page contains links' do
                     it 'skips checks that audit links' do
-                        @opts.dir['checks']  = fixtures_path + '/run_check/'
+                        @opts.paths.checks  = fixtures_path + '/run_check/'
                         f = Arachni::Framework.new
                         f.opts.url = @url
-                        f.opts.do_not_crawl
-                        f.opts.dont_audit :links
+                        f.opts.scope.do_not_crawl
+                        f.opts.audit.skip_elements :links
                         f.checks.load %w(links forms cookies headers flch)
 
                         link = Arachni::Element::Link.new( url: @url )
@@ -418,11 +418,11 @@ describe Arachni::Framework do
                     end
 
                     it 'runs checks that audit path and server' do
-                        @opts.dir['checks']  = fixtures_path + '/run_check/'
+                        @opts.paths.checks  = fixtures_path + '/run_check/'
                         f = Arachni::Framework.new
                         f.opts.url = @url
-                        f.opts.do_not_crawl
-                        f.opts.dont_audit :links
+                        f.opts.scope.do_not_crawl
+                        f.opts.audit.skip_elements :links
                         f.checks.load %w(path server)
 
                         link = Arachni::Element::Link.new( url: @url )
@@ -435,11 +435,11 @@ describe Arachni::Framework do
                     end
 
                     it 'runs checks that have not specified any elements' do
-                        @opts.dir['checks']  = fixtures_path + '/run_check/'
+                        @opts.paths.checks  = fixtures_path + '/run_check/'
                         f = Arachni::Framework.new
                         f.opts.url = @url
-                        f.opts.do_not_crawl
-                        f.opts.dont_audit :links
+                        f.opts.scope.do_not_crawl
+                        f.opts.audit.skip_elements :links
                         f.checks.load %w(nil empty)
 
                         link = Arachni::Element::Link.new( url: @url )
@@ -459,11 +459,11 @@ describe Arachni::Framework do
             context 'enabled' do
                 context 'and the page contains forms' do
                     it 'runs checks that audit forms' do
-                        @opts.dir['checks']  = fixtures_path + '/run_check/'
+                        @opts.paths.checks  = fixtures_path + '/run_check/'
                         f = Arachni::Framework.new
                         f.opts.url = @url
-                        f.opts.do_not_crawl
-                        f.opts.audit :forms
+                        f.opts.scope.do_not_crawl
+                        f.opts.audit.elements :forms
                         f.checks.load %w(links forms cookies headers flch)
 
                         form = Arachni::Element::Form.new( url: @url )
@@ -476,11 +476,11 @@ describe Arachni::Framework do
                     end
 
                     it 'runs checks that audit path and server' do
-                        @opts.dir['checks']  = fixtures_path + '/run_check/'
+                        @opts.paths.checks  = fixtures_path + '/run_check/'
                         f = Arachni::Framework.new
                         f.opts.url = @url
-                        f.opts.do_not_crawl
-                        f.opts.audit :forms
+                        f.opts.scope.do_not_crawl
+                        f.opts.audit.elements :forms
                         f.checks.load %w(path server)
 
                         form = Arachni::Element::Form.new( url: @url )
@@ -493,11 +493,11 @@ describe Arachni::Framework do
                     end
 
                     it 'runs checks that have not specified any elements' do
-                        @opts.dir['checks']  = fixtures_path + '/run_check/'
+                        @opts.paths.checks  = fixtures_path + '/run_check/'
                         f = Arachni::Framework.new
                         f.opts.url = @url
-                        f.opts.do_not_crawl
-                        f.opts.audit :forms
+                        f.opts.scope.do_not_crawl
+                        f.opts.audit.elements :forms
                         f.checks.load %w(nil empty)
 
                         form = Arachni::Element::Form.new( url: @url )
@@ -514,11 +514,11 @@ describe Arachni::Framework do
             context 'disabled' do
                 context 'and the page contains forms' do
                     it 'skips checks that audit forms' do
-                        @opts.dir['checks']  = fixtures_path + '/run_check/'
+                        @opts.paths.checks  = fixtures_path + '/run_check/'
                         f = Arachni::Framework.new
                         f.opts.url = @url
-                        f.opts.do_not_crawl
-                        f.opts.dont_audit :forms
+                        f.opts.scope.do_not_crawl
+                        f.opts.audit.skip_elements :forms
                         f.checks.load %w(links forms cookies headers flch)
 
                         form = Arachni::Element::Form.new( url: @url )
@@ -531,11 +531,11 @@ describe Arachni::Framework do
                     end
 
                     it 'runs checks that audit path and server' do
-                        @opts.dir['checks']  = fixtures_path + '/run_check/'
+                        @opts.paths.checks  = fixtures_path + '/run_check/'
                         f = Arachni::Framework.new
                         f.opts.url = @url
-                        f.opts.do_not_crawl
-                        f.opts.dont_audit :forms
+                        f.opts.scope.do_not_crawl
+                        f.opts.audit.skip_elements :forms
                         f.checks.load %w(path server)
 
                         form = Arachni::Element::Form.new( url: @url )
@@ -548,11 +548,11 @@ describe Arachni::Framework do
                     end
 
                     it 'runs checks that have not specified any elements' do
-                        @opts.dir['checks']  = fixtures_path + '/run_check/'
+                        @opts.paths.checks  = fixtures_path + '/run_check/'
                         f = Arachni::Framework.new
                         f.opts.url = @url
-                        f.opts.do_not_crawl
-                        f.opts.dont_audit :forms
+                        f.opts.scope.do_not_crawl
+                        f.opts.audit.skip_elements :forms
                         f.checks.load %w(nil empty)
 
                         form = Arachni::Element::Form.new( url: @url )
@@ -571,11 +571,11 @@ describe Arachni::Framework do
             context 'enabled' do
                 context 'and the page contains cookies' do
                     it 'runs checks that audit cookies' do
-                        @opts.dir['checks']  = fixtures_path + '/run_check/'
+                        @opts.paths.checks  = fixtures_path + '/run_check/'
                         f = Arachni::Framework.new
                         f.opts.url = @url
-                        f.opts.do_not_crawl
-                        f.opts.audit :cookies
+                        f.opts.scope.do_not_crawl
+                        f.opts.audit.elements :cookies
                         f.checks.load %w(links forms cookies headers flch)
 
                         cookie = Arachni::Element::Cookie.new( url: @url )
@@ -588,11 +588,11 @@ describe Arachni::Framework do
                     end
 
                     it 'runs checks that audit path and server' do
-                        @opts.dir['checks']  = fixtures_path + '/run_check/'
+                        @opts.paths.checks  = fixtures_path + '/run_check/'
                         f = Arachni::Framework.new
                         f.opts.url = @url
-                        f.opts.do_not_crawl
-                        f.opts.audit :cookies
+                        f.opts.scope.do_not_crawl
+                        f.opts.audit.elements :cookies
                         f.checks.load %w(path server)
 
                         cookie = Arachni::Element::Form.new( url: @url )
@@ -605,11 +605,11 @@ describe Arachni::Framework do
                     end
 
                     it 'runs checks that have not specified any elements' do
-                        @opts.dir['checks']  = fixtures_path + '/run_check/'
+                        @opts.paths.checks  = fixtures_path + '/run_check/'
                         f = Arachni::Framework.new
                         f.opts.url = @url
-                        f.opts.do_not_crawl
-                        f.opts.audit :cookies
+                        f.opts.scope.do_not_crawl
+                        f.opts.audit.elements :cookies
                         f.checks.load %w(nil empty)
 
                         cookie = Arachni::Element::Form.new( url: @url )
@@ -626,11 +626,11 @@ describe Arachni::Framework do
             context 'disabled' do
                 context 'and the page contains cookies' do
                     it 'skips checks that audit cookies' do
-                        @opts.dir['checks']  = fixtures_path + '/run_check/'
+                        @opts.paths.checks  = fixtures_path + '/run_check/'
                         f = Arachni::Framework.new
                         f.opts.url = @url
-                        f.opts.do_not_crawl
-                        f.opts.dont_audit :cookies
+                        f.opts.scope.do_not_crawl
+                        f.opts.audit.skip_elements :cookies
                         f.checks.load %w(links forms cookies headers flch)
 
                         cookie = Arachni::Element::Form.new( url: @url )
@@ -643,11 +643,11 @@ describe Arachni::Framework do
                     end
 
                     it 'runs checks that audit path and server' do
-                        @opts.dir['checks']  = fixtures_path + '/run_check/'
+                        @opts.paths.checks  = fixtures_path + '/run_check/'
                         f = Arachni::Framework.new
                         f.opts.url = @url
-                        f.opts.do_not_crawl
-                        f.opts.dont_audit :cookies
+                        f.opts.scope.do_not_crawl
+                        f.opts.audit.skip_elements :cookies
                         f.checks.load %w(path server)
 
                         cookie = Arachni::Element::Form.new( url: @url )
@@ -660,11 +660,11 @@ describe Arachni::Framework do
                     end
 
                     it 'runs checks that have not specified any elements' do
-                        @opts.dir['checks']  = fixtures_path + '/run_check/'
+                        @opts.paths.checks  = fixtures_path + '/run_check/'
                         f = Arachni::Framework.new
                         f.opts.url = @url
-                        f.opts.do_not_crawl
-                        f.opts.dont_audit :cookies
+                        f.opts.scope.do_not_crawl
+                        f.opts.audit.skip_elements :cookies
                         f.checks.load %w(nil empty)
 
                         cookie = Arachni::Element::Form.new( url: @url )
@@ -684,11 +684,11 @@ describe Arachni::Framework do
             context 'enabled' do
                 context 'and the page contains headers' do
                     it 'runs checks that audit headers' do
-                        @opts.dir['checks']  = fixtures_path + '/run_check/'
+                        @opts.paths.checks  = fixtures_path + '/run_check/'
                         f = Arachni::Framework.new
                         f.opts.url = @url
-                        f.opts.do_not_crawl
-                        f.opts.audit :headers
+                        f.opts.scope.do_not_crawl
+                        f.opts.audit.elements :headers
                         f.checks.load %w(links forms cookies headers flch)
 
                         header = Arachni::Element::Cookie.new( url: @url )
@@ -701,11 +701,11 @@ describe Arachni::Framework do
                     end
 
                     it 'runs checks that audit path and server' do
-                        @opts.dir['checks']  = fixtures_path + '/run_check/'
+                        @opts.paths.checks  = fixtures_path + '/run_check/'
                         f = Arachni::Framework.new
                         f.opts.url = @url
-                        f.opts.do_not_crawl
-                        f.opts.audit :headers
+                        f.opts.scope.do_not_crawl
+                        f.opts.audit.elements :headers
                         f.checks.load %w(path server)
 
                         header = Arachni::Element::Form.new( url: @url )
@@ -718,11 +718,11 @@ describe Arachni::Framework do
                     end
 
                     it 'runs checks that have not specified any elements' do
-                        @opts.dir['checks']  = fixtures_path + '/run_check/'
+                        @opts.paths.checks  = fixtures_path + '/run_check/'
                         f = Arachni::Framework.new
                         f.opts.url = @url
-                        f.opts.do_not_crawl
-                        f.opts.audit :headers
+                        f.opts.scope.do_not_crawl
+                        f.opts.audit.elements :headers
                         f.checks.load %w(nil empty)
 
                         header = Arachni::Element::Form.new( url: @url )
@@ -739,11 +739,11 @@ describe Arachni::Framework do
             context 'disabled' do
                 context 'and the page contains headers' do
                     it 'skips checks that audit headers' do
-                        @opts.dir['checks']  = fixtures_path + '/run_check/'
+                        @opts.paths.checks  = fixtures_path + '/run_check/'
                         f = Arachni::Framework.new
                         f.opts.url = @url
-                        f.opts.do_not_crawl
-                        f.opts.dont_audit :headers
+                        f.opts.scope.do_not_crawl
+                        f.opts.audit.skip_elements :headers
                         f.checks.load %w(links forms cookies headers flch)
 
                         header = Arachni::Element::Form.new( url: @url )
@@ -756,11 +756,11 @@ describe Arachni::Framework do
                     end
 
                     it 'runs checks that audit path and server' do
-                        @opts.dir['checks']  = fixtures_path + '/run_check/'
+                        @opts.paths.checks  = fixtures_path + '/run_check/'
                         f = Arachni::Framework.new
                         f.opts.url = @url
-                        f.opts.do_not_crawl
-                        f.opts.dont_audit :headers
+                        f.opts.scope.do_not_crawl
+                        f.opts.audit.skip_elements :headers
                         f.checks.load %w(path server)
 
                         header = Arachni::Element::Form.new( url: @url )
@@ -773,11 +773,11 @@ describe Arachni::Framework do
                     end
 
                     it 'runs checks that have not specified any elements' do
-                        @opts.dir['checks']  = fixtures_path + '/run_check/'
+                        @opts.paths.checks  = fixtures_path + '/run_check/'
                         f = Arachni::Framework.new
                         f.opts.url = @url
-                        f.opts.do_not_crawl
-                        f.opts.dont_audit :headers
+                        f.opts.scope.do_not_crawl
+                        f.opts.audit.skip_elements :headers
                         f.checks.load %w(nil empty)
 
                         header = Arachni::Element::Form.new( url: @url )
@@ -799,7 +799,7 @@ describe Arachni::Framework do
                 url = web_server_url_for( :framework ) + '/'
                 f.opts.url = "#{url}/congrats"
 
-                f.opts.audit :links, :forms
+                f.opts.audit.elements :links, :forms
                 f.checks.load_all
 
                 f.session.login_sequence = proc do
@@ -857,7 +857,7 @@ describe Arachni::Framework do
 
     describe '#audit_page' do
         it 'audits it' do
-            @f.opts.audit :links, :forms, :cookies
+            @f.opts.audit.elements :links, :forms, :cookies
             @f.checks.load :taint
 
             @f.audit_page( Arachni::Page.from_url( @url + '/link' ) )
@@ -865,7 +865,7 @@ describe Arachni::Framework do
         end
 
         it 'updates the #sitemap with the DOM URL' do
-            @f.opts.audit :links, :forms, :cookies
+            @f.opts.audit.elements :links, :forms, :cookies
             @f.checks.load :taint
 
             @f.sitemap.should be_empty
@@ -884,7 +884,7 @@ describe Arachni::Framework do
         context 'when the page contains JavaScript code' do
             it 'analyzes the DOM and pushes new pages to the page queue' do
                 Arachni::Framework.new do |f|
-                    f.opts.audit :links, :forms, :cookies
+                    f.opts.audit.elements :links, :forms, :cookies
                     f.checks.load :taint
 
                     f.page_queue_total_size.should == 0
@@ -899,7 +899,7 @@ describe Arachni::Framework do
 
             it 'analyzes the DOM and pushes new paths to the url queue' do
                 Arachni::Framework.new do |f|
-                    f.opts.audit :links, :forms, :cookies
+                    f.opts.audit.elements :links, :forms, :cookies
                     f.checks.load :taint
 
                     f.url_queue_total_size.should == 0
@@ -915,9 +915,9 @@ describe Arachni::Framework do
             context 'when the DOM depth limit has been reached' do
                 it 'does not analyze the DOM' do
                     Arachni::Framework.new do |f|
-                        f.opts.audit :links, :forms, :cookies
+                        f.opts.audit.elements :links, :forms, :cookies
                         f.checks.load :taint
-                        f.opts.dom_depth_limit = 1
+                        f.opts.scope.dom_depth_limit = 1
                         f.url_queue_total_size.should == 0
                         f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) ).should be_true
                         sleep 0.1 while f.wait_for_browser?
@@ -925,9 +925,9 @@ describe Arachni::Framework do
 
                         f.reset
 
-                        f.opts.audit :links, :forms, :cookies
+                        f.opts.audit.elements :links, :forms, :cookies
                         f.checks.load :taint
-                        f.opts.dom_depth_limit = 1
+                        f.opts.scope.dom_depth_limit = 1
                         f.url_queue_total_size.should == 0
 
                         page = Arachni::Page.from_url( @url + '/with_javascript' )
@@ -955,10 +955,10 @@ describe Arachni::Framework do
                 )
 
                 f = Arachni::Framework.new
-                f.opts.dom_depth_limit = 10
+                f.opts.scope.dom_depth_limit = 10
                 f.audit_page( page ).should be_true
 
-                f.opts.dom_depth_limit = 2
+                f.opts.scope.dom_depth_limit = 2
                 f.audit_page( page ).should be_false
 
                 f.clean_up
@@ -968,8 +968,8 @@ describe Arachni::Framework do
 
         context 'when the page matches exclusion criteria' do
             it 'does not audit it' do
-                @f.opts.exclude << /link/
-                @f.opts.audit :links, :forms, :cookies
+                @f.opts.scope.exclude_path_patterns << /link/
+                @f.opts.audit.elements :links, :forms, :cookies
 
                 @f.checks.load :taint
 
@@ -978,24 +978,24 @@ describe Arachni::Framework do
             end
 
             it 'returns false' do
-                @f.opts.exclude << /link/
+                @f.opts.scope.exclude_path_patterns << /link/
                 @f.audit_page( Arachni::Page.from_url( @url + '/link' ) ).should be_false
             end
         end
     end
 
-    describe '#link_count_limit_reached?' do
-        context 'when the Options#link_count_limit has' do
+    describe '#page_limit_reached?' do
+        context 'when the Options#scope_page_limit has' do
             context 'been reached' do
                 it 'returns true' do
                     Arachni::Framework.new do |f|
                         f.opts.url = web_server_url_for :framework_hpg
-                        f.opts.audit :links
-                        f.opts.link_count_limit = 10
+                        f.opts.audit.elements :links
+                        f.opts.scope.page_limit = 10
 
-                        f.link_count_limit_reached?.should be_false
+                        f.page_limit_reached?.should be_false
                         f.run
-                        f.link_count_limit_reached?.should be_true
+                        f.page_limit_reached?.should be_true
                     end
                 end
             end
@@ -1004,14 +1004,14 @@ describe Arachni::Framework do
                 it 'returns false' do
                     Arachni::Framework.new do |f|
                         f.opts.url = web_server_url_for :framework
-                        f.opts.audit :links
-                        f.opts.link_count_limit = 100
+                        f.opts.audit.elements :links
+                        f.opts.scope.page_limit = 100
 
                         f.checks.load :taint
 
-                        f.link_count_limit_reached?.should be_false
+                        f.page_limit_reached?.should be_false
                         f.run
-                        f.link_count_limit_reached?.should be_false
+                        f.page_limit_reached?.should be_false
                     end
                 end
             end
@@ -1020,13 +1020,13 @@ describe Arachni::Framework do
                 it 'returns false' do
                     Arachni::Framework.new do |f|
                         f.opts.url = web_server_url_for :framework
-                        f.opts.audit :links
+                        f.opts.audit.elements :links
 
                         f.checks.load :taint
 
-                        f.link_count_limit_reached?.should be_false
+                        f.page_limit_reached?.should be_false
                         f.run
-                        f.link_count_limit_reached?.should be_false
+                        f.page_limit_reached?.should be_false
                     end
                 end
             end
@@ -1037,7 +1037,7 @@ describe Arachni::Framework do
         it 'pushes it to the page audit queue and returns true' do
             page = Arachni::Page.from_url( @url + '/train/true' )
 
-            @f.opts.audit :links, :forms, :cookies
+            @f.opts.audit.elements :links, :forms, :cookies
             @f.checks.load :taint
 
             @f.page_queue_total_size.should == 0
@@ -1049,7 +1049,7 @@ describe Arachni::Framework do
         end
 
         it 'updates the #sitemap with the DOM URL' do
-            @f.opts.audit :links, :forms, :cookies
+            @f.opts.audit.elements :links, :forms, :cookies
             @f.checks.load :taint
 
             @f.sitemap.should be_empty
@@ -1087,10 +1087,10 @@ describe Arachni::Framework do
             it 'ignores it' do
                 page = Arachni::Page.from_url( @url + '/train/true' )
 
-                @f.opts.audit :links, :forms, :cookies
+                @f.opts.audit.elements :links, :forms, :cookies
                 @f.checks.load :taint
 
-                @f.opts.exclude << /train/
+                @f.opts.scope.exclude_path_patterns << /train/
 
                 @f.page_queue_total_size.should == 0
                 @f.push_to_page_queue( page )
@@ -1102,7 +1102,7 @@ describe Arachni::Framework do
 
             it 'returns false' do
                 page = Arachni::Page.from_url( @url + '/train/true' )
-                @f.opts.exclude << /train/
+                @f.opts.scope.exclude_path_patterns << /train/
                 @f.page_queue_total_size.should == 0
                 @f.push_to_page_queue( page ).should be_false
                 @f.page_queue_total_size.should == 0
@@ -1112,7 +1112,7 @@ describe Arachni::Framework do
 
     describe '#push_to_url_queue' do
         it 'pushes a URL to the URL audit queue' do
-            @f.opts.audit :links, :forms, :cookies
+            @f.opts.audit.elements :links, :forms, :cookies
             @f.checks.load :taint
 
             @f.url_queue_total_size.should == 0
@@ -1200,47 +1200,19 @@ describe Arachni::Framework do
     end
 
     describe '#list_checks' do
-        it 'aliased to #lscheck return info on all checks' do
-            @f.checks.load :taint
-            info = @f.checks.values.first.info
-            loaded = @f.checks.loaded
-
-            mods = @f.list_checks
-            mods.should == @f.lscheck
-
-            @f.checks.loaded.should == loaded
-
-            mods.size.should == 1
-            mod = mods.first
-            mod[:name].should == info[:name]
-            mod[:shortname].should == 'taint'
-            mod[:description].should == info[:description]
-            mod[:author].should == [info[:author]].flatten
-            mod[:version].should == info[:version]
-            mod[:references].should == info[:references]
-            mod[:targets].should == info[:targets]
-            mod[:issue].should == info[:issue]
-        end
-
-        context 'when the #lscheck option is set' do
+        context 'when a pattern is given' do
             it 'uses it to filter out checks that do not match it' do
-                @f.opts.lscheck = 'boo'
-                @f.list_checks.should == @f.lscheck
-                @f.lscheck.size == 0
+                @f.list_checks( 'boo' ).size == 0
 
-                @f.opts.lscheck = 'taint'
-                @f.list_checks.should == @f.lscheck
-                @f.lscheck.size == 1
+                @f.list_checks( 'taint' ).should == @f.list_checks
+                @f.list_checks.size == 1
             end
         end
     end
 
     describe '#list_plugins' do
-        it 'aliased to #lsplug return info on all plugins' do
+        it 'returns info on all plugins' do
             loaded = @f.plugins.loaded
-
-            @f.list_plugins.should == @f.lsplug
-
             @f.list_plugins.map { |r| r.delete( :path ); r }
                 .sort_by { |e| e[:shortname] }.should == YAML.load( '
 ---
@@ -1330,15 +1302,10 @@ describe Arachni::Framework do
             @f.plugins.loaded.should == loaded
         end
 
-        context 'when the #lsplug option is set' do
+        context 'when a pattern is given' do
             it 'uses it to filter out plugins that do not match it' do
-                @f.opts.lsplug = 'bad|foo'
-                @f.list_plugins.should == @f.lsplug
-                @f.lsplug.size == 2
-
-                @f.opts.lsplug = 'boo'
-                @f.list_plugins.should == @f.lsplug
-                @f.lsplug.size == 0
+                @f.list_plugins( 'bad|foo' ).size == 2
+                @f.list_plugins( 'boo' ).size == 0
             end
         end
     end
@@ -1346,7 +1313,6 @@ describe Arachni::Framework do
     describe '#list_reports' do
         it 'returns info on all reports' do
             loaded = @f.reports.loaded
-            @f.list_reports.should == @f.lsrep
             @f.list_reports.map { |r| r[:options] = []; r.delete( :path ); r }
                 .sort_by { |e| e[:shortname] }.should == YAML.load( '
 ---
@@ -1370,15 +1336,10 @@ describe Arachni::Framework do
             @f.reports.loaded.should == loaded
         end
 
-        context 'when the #lsrep option is set' do
+        context 'when a pattern is given' do
             it 'uses it to filter out reports that do not match it' do
-                @f.opts.lsrep = 'foo'
-                @f.list_reports.should == @f.lsrep
-                @f.lsrep.size == 1
-
-                @f.opts.lsrep = 'boo'
-                @f.list_reports.should == @f.lsrep
-                @f.lsrep.size == 0
+                @f.list_reports( 'foo' ).size == 1
+                @f.list_reports( 'boo' ).size == 0
             end
         end
     end

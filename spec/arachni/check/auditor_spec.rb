@@ -47,7 +47,7 @@ describe Arachni::Check::Auditor do
 
     before :all do
         @opts = Arachni::Options.instance
-        @opts.audit :links, :forms, :cookies, :headers
+        @opts.audit.elements :links, :forms, :cookies, :headers
 
         @opts.url = web_server_url_for( :auditor )
         @url      = @opts.url.dup

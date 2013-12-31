@@ -6,7 +6,7 @@
 
 module Arachni
 
-lib = Options.dir['lib']
+lib = Options.paths.lib
 require lib + 'rpc/server/base'
 require lib + 'rpc/server/browser/peer'
 require lib + 'rpc/client/browser'
@@ -40,7 +40,7 @@ class Browser
         token  = Utilities.generate_token
 
         ::EM.fork_reactor do
-            Options.rpc_socket = socket
+            Options.rpc.server_socket = socket
             new master: options[:master], token: token, js_token: options[:js_token]
         end
 

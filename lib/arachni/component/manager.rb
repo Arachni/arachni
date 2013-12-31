@@ -25,7 +25,7 @@ class Error < Arachni::Error
     end
 end
 
-require Options.dir['lib'] + 'component/options'
+require Options.paths.lib + 'component/options'
 
 #
 # Handles checks, reports, path extractor checks, plug-ins, pretty much

@@ -5,7 +5,7 @@
 
 module Arachni
 
-require Options.dir['lib'] + 'check/auditor'
+require Options.paths.lib + 'check/auditor'
 
 module Check
 

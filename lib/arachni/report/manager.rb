@@ -24,7 +24,7 @@ class Manager < Arachni::Component::Manager
     NAMESPACE = Arachni::Reports
 
     def initialize( opts )
-        super( opts.dir['reports'], NAMESPACE )
+        super( opts.paths.reports, NAMESPACE )
         @opts = opts
     end
 
