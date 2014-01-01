@@ -1,6 +1,6 @@
 # coding: utf-8
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -114,7 +114,7 @@ GitHub page        - http://github.com/Arachni/arachni
 Code Documentation - http://rubydoc.info/github/Arachni/arachni
 Author             - Tasos "Zapotek" Laskos (http://twitter.com/Zap0tek)
 Twitter            - http://twitter.com/ArachniScanner
-Copyright          - 2010-2013 Tasos Laskos
+Copyright          - 2010-2014 Tasos Laskos
 License            - Apache License v2
 
 Please do not hesitate to ask for assistance (via the support portal)
