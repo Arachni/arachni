@@ -1,6 +1,6 @@
 # ChangeLog
 
-## _Under development_
+## 0.4.6 _(January 1, 2014)_
 
 - CLI user interfaces
     - `--lsmod`
