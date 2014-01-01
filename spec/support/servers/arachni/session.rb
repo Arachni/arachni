@@ -1,6 +1,5 @@
 require 'sinatra'
 require 'sinatra/contrib'
-set :logging, false
 
 enable :sessions
 
@@ -29,6 +28,23 @@ get '/login' do
             <input name='token' type='hidden' value='secret!' />
         </form>
 
+        <form method='post' name='login_form' action="/login">
+            <input name='username' value='' />
+            <input name='password' type='password' value='' />
+            <input name='token' type='hidden' value='secret!' />
+        </form>
+    HTML
+end
+
+get '/disappearing_login' do
+    @@visited ||= 0
+    @@visited += 1
+
+    next if ![1, 6].include? @@visited
+
+    cookies[:you_need_to] = 'preserve this'
+
+    <<-HTML
         <form method='post' name='login_form' action="/login">
             <input name='username' value='' />
             <input name='password' type='password' value='' />

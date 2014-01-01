@@ -10,11 +10,15 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
     describe '#rdiff_analysis' do
         before do
             @opts = {
+                false:  'bad',
                 pairs: [
-                    { 'good' => 'bad '}
+                    { 'good' => 'bad' }
                 ]
             }
+
             @params = { 'rdiff' => 'blah' }
+
+            Arachni::Element::Capabilities::Auditable.reset
             issues.clear
         end
 
@@ -31,7 +35,6 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
                 auditable.auditor = @auditor
                 auditable.rdiff_analysis( @opts )
                 @auditor.http.run
-                @auditor.http.run
 
                 results = Arachni::Module::Manager.results
                 results.should be_any
@@ -45,6 +48,81 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
                 auditable.auditor = @auditor
                 auditable.rdiff_analysis( @opts )
                 @auditor.http.run
+
+                issues.should be_empty
+            end
+        end
+
+        context 'when a request times out' do
+            it 'does not log any issues' do
+                auditable = Arachni::Element::Link.new( @url + '/timeout', @params )
+                auditable.auditor = @auditor
+                auditable.rdiff_analysis( @opts.merge( timeout: 1_000 ) )
+                @auditor.http.run
+
+                issues.should be_empty
+
+                Arachni::Element::Capabilities::Auditable.reset
+
+                auditable = Arachni::Element::Link.new( @url + '/timeout', @params )
+                auditable.auditor = @auditor
+                auditable.rdiff_analysis( @opts.merge( timeout: 3_000 ) )
+                @auditor.http.run
+                @auditor.http.run
+
+                issues.should be_any
+            end
+        end
+
+        context 'when a false response has an empty body' do
+            it 'does not log any issues' do
+                auditable = Arachni::Element::Link.new( @url + '/empty_false', @params )
+                auditable.auditor = @auditor
+                auditable.rdiff_analysis( @opts )
+                @auditor.http.run
+
+                issues.should be_empty
+            end
+        end
+
+        context 'when a true response has an empty body' do
+            it 'does not log any issues' do
+                auditable = Arachni::Element::Link.new( @url + '/empty_true', @params )
+                auditable.auditor = @auditor
+                auditable.rdiff_analysis( @opts )
+                @auditor.http.run
+
+                issues.should be_empty
+            end
+        end
+
+        context 'when a true response has non 200 status' do
+            it 'does not log any issues' do
+                auditable = Arachni::Element::Link.new( @url + '/non200_true', @params )
+                auditable.auditor = @auditor
+                auditable.rdiff_analysis( @opts )
+                @auditor.http.run
+
+                issues.should be_empty
+            end
+        end
+
+        context 'when a false response has non 200 status' do
+            it 'does not log any issues' do
+                auditable = Arachni::Element::Link.new( @url + '/non200_false', @params )
+                auditable.auditor = @auditor
+                auditable.rdiff_analysis( @opts )
+                @auditor.http.run
+
+                issues.should be_empty
+            end
+        end
+
+        context 'when the control responses differ wildly' do
+            it 'does not log any issues' do
+                auditable = Arachni::Element::Link.new( @url + '/unstable', @params )
+                auditable.auditor = @auditor
+                auditable.rdiff_analysis( @opts )
                 @auditor.http.run
 
                 issues.should be_empty

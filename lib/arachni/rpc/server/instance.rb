@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -787,9 +787,10 @@ class Instance
 
                     # All Instances will be on the same host so use UNIX
                     # domain sockets to avoid TCP/IP overhead.
-                    Options.rpc_address = nil
-                    Options.rpc_port    = nil
-                    Options.rpc_socket = "/tmp/arachni-instance-slave-#{Process.pid}"
+                    Options.rpc_address          = nil
+                    Options.rpc_external_address = nil
+                    Options.rpc_port             = nil
+                    Options.rpc_socket           = "/tmp/arachni-instance-slave-#{Process.pid}"
 
                     Server::Instance.new( Options.instance, token )
                 }

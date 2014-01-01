@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -142,7 +142,7 @@ module Auditor
         # Elements to audit.
         #
         # If no elements have been passed to audit methods, candidates will be
-        # determined by {#candidate_elements}.
+        # determined by {#each_candidate_element}.
         #
         elements: [Element::LINK, Element::FORM,
                    Element::COOKIE, Element::HEADER,
@@ -413,18 +413,18 @@ module Auditor
         element = opts[:element] || opts[:elem]
 
         msg = "In #{element}"
-        msg << " var '#{var}'" if var
+        msg << " input '#{var}'" if var
         print_ok "#{msg} ( #{url} )"
 
         print_verbose( "Injected string:\t" + opts[:injected] ) if opts[:injected]
         print_verbose( "Verified string:\t" + opts[:match].to_s ) if opts[:match]
-        print_verbose( "Matched regular expression: " + opts[:regexp].to_s ) if opts[:regexp]
+        print_verbose( 'Matched regular expression: ' + opts[:regexp].to_s ) if opts[:regexp]
         print_debug( 'Request ID: ' + res.request.id.to_s ) if res
         print_verbose( '---------' ) if only_positives?
 
         # Platform identification by vulnerability.
         platform_type = nil
-        if platform = opts[:platform]
+        if (platform = opts[:platform])
             Platform::Manager[url] << platform if Options.fingerprint?
             platform_type = Platform::Manager[url].find_type( platform )
         end
@@ -484,6 +484,7 @@ module Auditor
         false
     end
 
+    # Passes each element prepared for audit to the block.
     #
     # If no element types have been specified in `opts`, it will use the elements
     # from the module's {Base.info} hash.
@@ -495,9 +496,9 @@ module Auditor
     # @option opts  [Array]  :elements
     #   Element types to audit (see {OPTIONS}`[:elements]`).
     #
-    # @return   [Array<Arachni::Element>]   Prepared elements.
-    #
-    def candidate_elements( opts = {} )
+    # @yield       [element]  Each candidate element.
+    # @yieldparam [Arachni::Element]
+    def each_candidate_element( opts = {} )
         if !opts.include?( :elements) || !opts[:elements] || opts[:elements].empty?
             opts[:elements] = self.class.info[:elements]
         end
@@ -529,14 +530,19 @@ module Auditor
             end
         end
 
-        elements.map { |e| d = e.dup; d.auditor = self; d }
+        while (e = elements.pop)
+            next if e.auditable.empty?
+            d = e.dup
+            d.auditor = self
+            yield d
+        end
     end
 
     #
     # If a block has been provided it calls {Arachni::Element::Capabilities::Auditable#audit}
     # for every element, otherwise, it defaults to {#audit_taint}.
     #
-    # Uses {#candidate_elements} to decide which elements to audit.
+    # Uses {#each_candidate_element} to decide which elements to audit.
     #
     # @see OPTIONS
     # @see Arachni::Element::Capabilities::Auditable#audit
@@ -547,7 +553,7 @@ module Auditor
         if !block_given?
             audit_taint( payloads, opts )
         else
-            candidate_elements( opts ).each { |e| e.audit( payloads, opts, &block ) }
+            each_candidate_element( opts ) { |e| e.audit( payloads, opts, &block ) }
         end
     end
 
@@ -555,40 +561,40 @@ module Auditor
     # Provides easy access to element auditing using simple taint analysis
     # and automatically logs results.
     #
-    # Uses {#candidate_elements} to decide which elements to audit.
+    # Uses {#each_candidate_element} to decide which elements to audit.
     #
     # @see OPTIONS
     # @see Arachni::Element::Capabilities::Auditable::Taint
     #
     def audit_taint( payloads, opts = {} )
         opts = OPTIONS.merge( opts )
-        candidate_elements( opts ).each { |e| e.taint_analysis( payloads, opts ) }
+        each_candidate_element( opts ) { |e| e.taint_analysis( payloads, opts ) }
     end
 
     #
     # Audits elements using differential analysis and automatically logs results.
     #
-    # Uses {#candidate_elements} to decide which elements to audit.
+    # Uses {#each_candidate_element} to decide which elements to audit.
     #
     # @see OPTIONS
     # @see Arachni::Element::Capabilities::Auditable::RDiff
     #
     def audit_rdiff( opts = {}, &block )
         opts = OPTIONS.merge( opts )
-        candidate_elements( opts ).each { |e| e.rdiff_analysis( opts, &block ) }
+        each_candidate_element( opts ) { |e| e.rdiff_analysis( opts, &block ) }
     end
 
     #
     # Audits elements using timing attacks and automatically logs results.
     #
-    # Uses {#candidate_elements} to decide which elements to audit.
+    # Uses {#each_candidate_element} to decide which elements to audit.
     #
     # @see OPTIONS
     # @see Arachni::Element::Capabilities::Auditable::Timeout
     #
     def audit_timeout( payloads, opts = {} )
         opts = OPTIONS.merge( opts )
-        candidate_elements( opts ).each { |e| e.timeout_analysis( payloads, opts ) }
+        each_candidate_element( opts ) { |e| e.timeout_analysis( payloads, opts ) }
     end
 
     private

@@ -2,6 +2,23 @@ require 'spec_helper'
 
 describe Typhoeus::Response do
 
+    before( :all ) do
+        @http = Arachni::HTTP
+        @url  = web_server_url_for( :http )
+    end
+
+    describe '#app_time' do
+        it 'returns the approximated webap pprocessing time' do
+            response = @http.get( @url, async: false ).response
+            response.app_time.should > 0
+            response.app_time.should < 0.01
+
+            response = @http.get( "#{@url}/sleep", async: false ).response
+            response.app_time.should > 5
+            response.app_time.should < 5.01
+        end
+    end
+
     describe '#url' do
         it 'aliased to #effective_url' do
             url = 'http://stuff'

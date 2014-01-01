@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
     limitations under the License.
 =end
 
-#
 # XSS audit module
 #
 # It doesn't just look for the injected XSS string in the HTML code
@@ -22,12 +21,11 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.3.2
+# @version 0.3.3
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
 # @see http://secunia.com/advisories/9716/
-#
 class Arachni::Modules::XSS < Arachni::Module::Base
 
     def self.tag
@@ -36,18 +34,20 @@ class Arachni::Modules::XSS < Arachni::Module::Base
 
     def self.strings
         @strings ||= [
-            # straight injection
-            '<' + tag + '/>',
-            # go for an error
-            '\'-;<' + tag + '/>',
-            # break out of HTML comments
-            '--> <' + tag + '/> <!--',
+            # Straight injection.
+            "<#{tag}/>",
+
+            # Go for an error.
+            "()\"&%1'-;<#{tag}/>'",
+
+            # Break out of HTML comments.
+            "--><#{tag}/><!--"
         ]
     end
 
     def self.opts
         @opts ||= {
-            format:     [Format::APPEND | Format::STRAIGHT],
+            format:     [Format::APPEND],
             flip_param: true
         }
     end
@@ -80,7 +80,7 @@ class Arachni::Modules::XSS < Arachni::Module::Base
         {
             name:        'XSS',
             description: %q{Cross-Site Scripting module.
-                It doesn't just look for the injected XSS string in the HMTL code
+                It doesn't just look for the injected XSS string in the HTML code
                 but actually parses the code and looks for the injected element proper.
             },
             elements:    [Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER],

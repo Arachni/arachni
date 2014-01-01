@@ -189,7 +189,7 @@ describe Arachni::Element::Cookie do
 
     describe '#encode' do
         it 'encodes the string in a way that makes is suitable to be included in a cookie header' do
-            Arachni::Element::Cookie.encode( 'some stuff ;%=' ).should == 'some+stuff+%3B%25%3D'
+            Arachni::Element::Cookie.encode( 'some stuff ;%=' ).should == 'some+stuff+%3B%25='
         end
     end
 

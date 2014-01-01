@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -100,9 +100,15 @@ class CookieJar
         [cookies].flatten.compact.each do |c|
             self << case c
                         when String
-                            Cookie.from_string( ::Arachni::Options.url.to_s, c )
+                            begin
+                                Cookie.from_string( ::Arachni::Options.url.to_s, c )
+                            rescue
+                                Cookie.from_set_cookie( ::Arachni::Options.url.to_s, c )
+                            end
+
                         when Hash
                             Cookie.new( ::Arachni::Options.url.to_s, c ) if c.any?
+
                         when Cookie
                             c
                     end

@@ -24,8 +24,32 @@ get '/fail' do
     0
 end
 
+get '/include' do
+    <<EOHTML
+        <a href='/include-me/1'>Follow 1</a>
+        <a href='/include-me/2'>Follow 2</a>
+        <a href='/skip-me/1'>Skip 1</a>
+EOHTML
+end
+
+
 get '/skip' do
-    'Skip me!'
+    <<EOHTML
+        <a href='/skip-me/1'>Skip 1</a>
+        <a href='/skip-me/2'>Skip 2</a>
+        <a href='/follow-me'>Follow</a>
+EOHTML
+end
+
+get '/skip-me/*' do
+    <<EOHTML
+        <a href='/skip-me/3'>Skip 1</a>
+        <a href='/skip-me/4'>Skip 2</a>
+EOHTML
+end
+
+get '/follow-me' do
+    'You should see this.'
 end
 
 get '/sleep' do

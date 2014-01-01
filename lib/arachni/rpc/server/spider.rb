@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -47,6 +47,10 @@ class Spider < Arachni::Spider
 
         @after_each_run_blocks = []
         @on_first_run_blocks   = []
+    end
+
+    def clear_distribution_filter
+        @distribution_filter.clear
     end
 
     # @param    [Block] block
@@ -294,7 +298,6 @@ class Spider < Arachni::Spider
     # @param    [Array<String>]  urls    URLs to distribute.
     #
     def distribute( urls )
-        urls = dedup( urls )
         return false if urls.empty?
 
         @first_run ||= Support::LookUp::HashSet.new

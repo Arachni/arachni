@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -71,12 +71,13 @@ module Auditable
         # Make requests asynchronously.
         async:     true,
 
-        #
         # Block to be passed each mutation right before being submitted.
         #
         # Allows for last minute changes.
-        #
-        each_mutation:  nil
+        each_mutation:  nil,
+
+        # Block to be passed each mutation to determine if it should be skipped.
+        skip_like: nil
     }
 
     #
@@ -88,6 +89,8 @@ module Auditable
     def self.reset
         @@audited          = Support::LookUp::HashSet.new
         @@skip_like_blocks = []
+
+        Timeout.reset
     end
     reset
 
@@ -424,6 +427,8 @@ module Auditable
     def audit( payloads, opts = { }, &block )
         fail ArgumentError, 'Missing block.' if !block_given?
 
+        return false if self.auditable.empty?
+
         case payloads
             when String
                 audit_single( payloads, opts, &block )
@@ -599,6 +604,13 @@ module Auditable
     def audit_single( injection_str, opts = { }, &block )
         fail ArgumentError, 'Missing block.' if !block_given?
 
+        # We'll do stuff to this hash so let's make a copy for ourselves.
+        opts = opts.dup
+
+        audit_id = audit_id( injection_str, opts )
+        return false if !opts[:redundant] && audited?( audit_id )
+        audited audit_id
+
         print_debug "About to audit: #{audit_id}"
         print_debug "Payload platform: #{opts[:platform]}" if opts.include?( :platform )
 
@@ -613,22 +625,25 @@ module Auditable
             return false
         end
 
-        opts[:injected_orig] = injection_str
-
-        @auditor ||= opts[:auditor]
-        opts[:auditor] ||= @auditor
-        use_anonymous_auditor if !@auditor
-
-        audit_id = audit_id( injection_str, opts )
-        return false if !opts[:redundant] && audited?( audit_id )
-
         if matches_skip_like_blocks?
             print_debug 'Element matches one or more skip_like blocks, skipping.'
             return false
         end
 
+        opts[:injected_orig] = injection_str
+
+        @auditor       ||= opts[:auditor]
+        opts[:auditor] ||= @auditor
+        use_anonymous_auditor if !@auditor
+
+        # Options will eventually be serialized so remove non-serializeable
+        # objects. Also, blocks are expensive, they should not be kept in the
+        # options otherwise they won't be GC'ed.
+        skip_like_option = [opts.delete(:skip_like)].flatten.compact
+        each_mutation    = opts.delete(:each_mutation)
+
         # Iterate over all fuzz variations and audit each one.
-        mutations( injection_str, opts ).each do |elem|
+        each_mutation( injection_str, opts ) do |elem|
 
             if Options.exclude_vectors.include?( elem.altered )
                 print_info "Skipping audit of '#{elem.altered}' #{type} vector."
@@ -652,17 +667,26 @@ module Auditable
                 next
             end
 
+            if skip_like_option.any?
+                should_skip = false
+                skip_like_option.each do |like|
+                    break should_skip = true if like.call( elem )
+                end
+                next if should_skip
+            end
+
             opts[:altered] = elem.altered.dup
             opts[:element] = type
 
             # Inform the user about what we're auditing.
             print_status( elem.status_string ) if !opts[:silent]
 
-            if opts[:each_mutation]
-                if elements = opts[:each_mutation].call( elem )
-                    [elements].flatten.compact.each do |e|
-                        on_complete( e.submit( opts ), e, &block ) if e.is_a?( self.class )
-                    end
+            # Process each mutation via the supplied block if we have one and
+            # submit new mutations returned by that block, if any.
+            if each_mutation && (elements = each_mutation.call( elem ))
+                [elements].flatten.compact.each do |e|
+                    next if !e.is_a?( self.class )
+                    on_complete( e.submit( opts ), e, &block )
                 end
             end
 
@@ -670,7 +694,6 @@ module Auditable
             on_complete( elem.submit( opts ), elem, &block )
         end
 
-        audited audit_id
         true
     end
 
@@ -707,8 +730,8 @@ module Auditable
         elem.opts[:combo]    = elem.auditable
         elem.opts[:action]   = elem.action
 
-        if !elem.opts[:async]
-            after_complete( req.response, elem, &block ) if req && req.response
+        if req.response
+            after_complete( req.response, elem, &block )
             return
         end
 
@@ -723,7 +746,7 @@ module Auditable
         end
 
         if element.opts && !element.opts[:silent]
-            print_status 'Analyzing response #' + response.request.id.to_s + '...'
+            print_status "Analyzing response ##{response.request.id}..."
         end
 
         exception_jail( false ){ block.call( response, element.opts, element ) }

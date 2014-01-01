@@ -16,19 +16,21 @@ describe String do
             END
 
             str.rdiff( str2 ).should == "                This is the  test.\n" +
-                "                Not really sure what else to put here"
+                '                Not really sure what else to put here'
         end
     end
 
     describe '#diff_ratio' do
         context 'when the strings are identical' do
             it 'returns 0.0' do
+                ''.diff_ratio( '' ).should == 0
                 'test'.diff_ratio( 'test' ).should == 0
                 'test this'.diff_ratio( 'test this' ).should == 0
             end
         end
         context 'when the strings completely different' do
             it 'returns 1.0' do
+                ''.diff_ratio( 'toast' ).should == 1
                 'test'.diff_ratio( 'toast' ).should == 1
                 'test this'.diff_ratio( 'toast that' ).should == 1
             end
@@ -106,4 +108,15 @@ describe String do
         end
     end
 
+    describe '#longest_word' do
+        it 'returns the longest word' do
+            'o tw longest'.longest_word.should == 'longest'
+        end
+    end
+
+    describe '#shortest_word' do
+        it 'returns the longest word' do
+            'o tw longest'.shortest_word.should == 'o'
+        end
+    end
 end

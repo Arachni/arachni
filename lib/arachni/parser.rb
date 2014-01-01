@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -134,7 +134,8 @@ class Parser
                 body:             @html,
                 request_headers:  @response.request ? @response.request.headers : {},
                 response_headers: @response_headers,
-                text:             false
+                text:             false,
+                links:            [self_link]
             )
             Platform::Manager.fingerprint( page ) if Options.fingerprint?
             return page

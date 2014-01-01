@@ -19,7 +19,10 @@ describe Arachni::Issue do
             remedy_code: 'Sample code on how to fix the issue',
             verification: false,
             metasploitable: 'exploit/unix/webapp/php_include',
-            opts: { 'some' => 'opts' },
+            opts: {
+                'some' => 'opts',
+                'blah' => "\xE2\x9C\x93"
+            },
             mod_name: 'Module name',
             internal_modname: 'module_name',
             tags: %w(these are a few tags),
@@ -72,12 +75,16 @@ describe Arachni::Issue do
         end
     end
 
+    it 'recodes string data to UTF8' do
+        @issue.opts['blah'].should == "\u2713"
+    end
+
     it 'assigns the values in opts to the the instance vars' do
         @issue_data.each do |k, v|
             next if [ :opts, :regexp ].include?( k )
             @issue.instance_variable_get( "@#{k}".to_sym ).should == @issue_data[k]
         end
-        @issue.opts.should == { regexp: '' }.merge( @issue_data[:opts] )
+        @issue.opts.should == { regexp: '' }.merge( @issue_data[:opts] ).recode
         @issue.cwe_url.should == 'http://cwe.mitre.org/data/definitions/1.html'
     end
 
@@ -125,7 +132,7 @@ describe Arachni::Issue do
                 next if [ :opts, :regexp, :mod_name ].include?( k )
                 issue.instance_variable_get( "@#{k}".to_sym ).should == @issue_data[k]
             end
-            issue.opts.should == { regexp: '' }.merge( @issue_data[:opts] )
+            issue.opts.should == { regexp: '' }.merge( @issue_data[:opts] ).recode
             issue.cwe_url.should == 'http://cwe.mitre.org/data/definitions/1.html'
         end
     end

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -44,20 +44,18 @@ class Trainer
         # get us setup using the page that is being audited as a seed page
         framework.on_audit_page { |page| self.page = page }
 
-        HTTP.add_on_queue do |req, _|
-            next if !req.train?
+        HTTP.add_on_complete do |response|
+            next if !response.request.train?
 
-            req.on_complete( true ) do |res|
-                # handle redirections
-                if res.redirection? && res.location.is_a?( String )
-                    reference_url = @page ? @page.url : framework.opts.url
-                    HTTP.get( to_absolute( res.location, reference_url ) ) do |res2|
-                        push( res2 )
-                    end
-                else
-                    push( res )
+            if response.redirection? && response.location.is_a?( String )
+                reference_url = @page ? @page.url : @framework.opts.url
+                HTTP.get( to_absolute( response.location, reference_url ) ) do |res|
+                    push res
                 end
+                next
             end
+
+            push response
         end
     end
 
@@ -78,15 +76,27 @@ class Trainer
         end
 
         if @framework.link_count_limit_reached?
-            print_info 'Link count limit reached, skipping analysis.'
-            return
+            print_verbose 'Link count limit reached, skipping analysis.'
+            return false
         end
 
         @parser = Parser.new( res )
 
-        return false if !@parser.text? ||
-            @trainings_per_url[@parser.url] >= MAX_TRAININGS_PER_URL ||
-            redundant_path?( @parser.url ) || skip_resource?( res )
+        return false if !@parser.text?
+
+        skip_message = nil
+        if @trainings_per_url[@parser.url] >= MAX_TRAININGS_PER_URL
+            skip_message = "Reached maximum trainings (#{MAX_TRAININGS_PER_URL})"
+        elsif redundant_path?( @parser.url )
+            skip_message = 'Matched redundancy filters'
+        elsif skip_resource?( res )
+            skip_message = 'Matched exclusion criteria'
+        end
+
+        if skip_message
+            print_verbose "#{skip_message}, skipping: #{@parser.url}"
+            return false
+        end
 
         analyze( res )
         true
@@ -138,12 +148,13 @@ class Trainer
             page_data[:code]             = res.code
             page_data[:method]           = res.request.method.to_s.upcase
             page_data[:body]             = res.body
-            page_data[:doc]              = @parser.doc
+            page_data[:document]         = @parser.doc
             page_data[:response_headers] = res.headers_hash
 
             @trainings_per_url[@parser.url] += 1
 
             page = Page.new( page_data )
+            Platform::Manager.fingerprint( page ) if Options.fingerprint?
 
             @on_new_page_blocks.each { |block| block.call page }
 

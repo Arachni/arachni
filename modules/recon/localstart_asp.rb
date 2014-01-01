@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1
+# @version 0.1.1
 class Arachni::Modules::LocalstartASP < Arachni::Module::Base
 
     def run
-        return if page.platforms.os.any? && !page.platforms.os.include?( :windows )
+        return if page.platforms.languages.any? && !page.platforms.languages.include?( :asp )
 
         path = get_path( page.url )
         return if audited?( path )
@@ -31,7 +31,7 @@ class Arachni::Modules::LocalstartASP < Arachni::Module::Base
         http.get( "#{path}/#{seed}" ) do |response|
             # If it needs auth by default then don't bother checking because
             # we'll get an FP.
-            return if response.code == 401
+            next if response.code == 401
 
             url = "#{path}/localstart.asp"
 
@@ -52,7 +52,7 @@ class Arachni::Modules::LocalstartASP < Arachni::Module::Base
             description: %q{Checks for localstart.asp.},
             elements:    [ Element::SERVER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1',
+            version:     '0.1.1',
             targets:     %w(Generic),
             issue:       {
                 name:            %q{Exposed localstart.asp page},

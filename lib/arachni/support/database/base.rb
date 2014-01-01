@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -92,7 +92,7 @@ class Base
     def load_and_delete_file( filepath )
         obj = load( filepath )
         delete_file( filepath )
-        return obj
+        obj
     end
 
     def serialize( obj )
@@ -108,12 +108,12 @@ class Base
     end
 
     def get_unique_filename
-        while( File.exist?( path = generate_filename ) );end
-        return path
+        {} while File.exist?( path = generate_filename )
+        path
     end
 
     def generate_filename
-        s = ""
+        s = ''
         10.times { s << ( 65 + rand( 26 ) ) }
         ( Dir.tmpdir + "/#{self.class.name}_" + s ).gsub( '::', '_' )
     end

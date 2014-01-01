@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ class Response
     def text?
         return if !@body
 
-        if type = content_type
+        if (type = content_type)
             return true if type.start_with?( 'text/' )
 
             # Non "application/" content types will surely not be text-based
@@ -63,6 +63,12 @@ class Response
 
     def redirection?
         (300..399).include?( @code ) || !location.nil?
+    end
+
+    # @return   [Float]
+    #   Approximated time the web application took to process the request.
+    def app_time
+        timed_out? ? time : start_transfer_time - pretransfer_time
     end
 
     # @return    [Hash]   converts self to hash

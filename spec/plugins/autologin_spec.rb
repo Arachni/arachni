@@ -7,7 +7,7 @@ describe name_from_filename do
         options.url = url
     end
 
-    context "when given the right params" do
+    context 'when given the right params' do
         it 'locates the form and login successfully' do
             name = name_from_filename
 
@@ -38,7 +38,7 @@ describe name_from_filename do
         end
     end
 
-    context "when given invalid params" do
+    context 'when given invalid params' do
         it 'complains about not being able to find the form' do
             name = name_from_filename
 
@@ -48,15 +48,32 @@ describe name_from_filename do
                 'check'  => 'Hi there logged-in user'
             }
 
-            run
+            t = Thread.new { run }
+            sleep 0.1 while !(results = results_for( name ))
+            t.kill
 
-            results = results_for( name )
             results[:code].should == 0
             results[:msg].start_with?( framework.plugins[name]::MSG_FAILURE ).should be_true
         end
+
+        it 'does not resume the scan' do
+            name = name_from_filename
+
+            options.plugins[name] = {
+                'url'    => url + '/login',
+                'params' => 'username2=john&password=doe',
+                'check'  => 'Hi there logged-in user'
+            }
+
+            t = Thread.new { run }
+            sleep 0.1 while !results_for( name )
+
+            framework.status.to_s.should == 'paused'
+            t.kill
+        end
     end
 
-    context "when the verifier does not match" do
+    context 'when the verifier does not match' do
         it 'complains about not being able to verify the login' do
             name = name_from_filename
 
@@ -66,9 +83,10 @@ describe name_from_filename do
                 'check'  => 'Hi there Jimbo'
             }
 
-            run
+            t = Thread.new { run }
+            sleep 0.1 while !(results = results_for( name ))
+            t.kill
 
-            results = results_for( name )
             results[:code].should == -2
             results[:msg].start_with?( framework.plugins[name]::MSG_NO_MATCH ).should be_true
         end

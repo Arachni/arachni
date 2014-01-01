@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -46,6 +46,9 @@ class Session
         class NoLoginCheck < Error
         end
     end
+
+    LOGIN_TRIES      = 5
+    LOGIN_RETRY_WAIT = 5
 
     # @return   [Options]  options
     attr_reader :opts
@@ -180,7 +183,7 @@ class Session
 
     # @return   [Bool]  `true` if there is log-in capability, `false` otherwise.
     def can_login?
-        @login_sequence && @login_check
+        has_login_sequence? && @login_check
     end
 
     # @return   [Bool, nil]
@@ -193,7 +196,12 @@ class Session
         print_bad 'The scanner has been logged out.'
         print_info 'Trying to re-login...'
 
-        login
+        LOGIN_TRIES.times do |i|
+            break if login
+            print_bad "Login attempt #{i+1} failed, retrying after " <<
+                          "#{LOGIN_RETRY_WAIT} seconds..."
+            sleep LOGIN_RETRY_WAIT
+        end
 
         if !logged_in?
             print_bad 'Could not re-login.'
@@ -266,11 +274,16 @@ class Session
     def login_sequence( &block )
         if @login_form && !block_given?
             @login_sequence = proc do
-                @login_form.refresh( update_cookies: true ).
-                    submit( async: false,
-                            update_cookies: true,
-                            follow_location: false ).
-                    response
+                if !(refreshed = @login_form.refresh( update_cookies: true ))
+                    print_bad 'Login form has disappeared, cannot login.'
+                    next
+                end
+
+                refreshed.submit(
+                    async:           false,
+                    update_cookies:  true,
+                    follow_location: false
+                ).response
             end
         end
 

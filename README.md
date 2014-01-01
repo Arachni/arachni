@@ -3,7 +3,7 @@
 <table>
     <tr>
         <th>Version</th>
-        <td>0.4.5.2</td>
+        <td>0.4.6</td>
     </tr>
     <tr>
         <th>Homepage</th>
@@ -38,7 +38,7 @@
     </tr>
     <tr>
         <th>Copyright</th>
-        <td>2010-2013 Tasos Laskos</td>
+        <td>2010-2014 Tasos Laskos</td>
     </tr>
     <tr>
         <th>License</th>
@@ -403,6 +403,8 @@ core remains lean and makes it easy for anyone to add arbitrary functionality.
 - Script (`script`) -- Loads and runs an external Ruby script under the scope of a plugin,
     used for debugging and general hackery.
 - Uncommon headers (`uncommon_headers`) -- Logs uncommon headers.
+- Content-types (`content_types`) -- Logs content-types of server responses aiding in the
+    identification of interesting (possibly leaked) files.
 
 #### Defaults
 
@@ -410,8 +412,6 @@ Default plugins will run for every scan and are placed under `/plugins/defaults/
 
 - AutoThrottle (`autothrottle`) -- Dynamically adjusts HTTP throughput during the scan for
     maximum bandwidth utilization.
-- Content-types (`content_types`) -- Logs content-types of server responses aiding in the
-    identification of interesting (possibly leaked) files.
 - Healthmap (`healthmap`) -- Generates sitemap showing the health of each crawled/audited URL
 - Resolver (`resolver`) -- Resolves vulnerable hostnames to IP addresses.
 

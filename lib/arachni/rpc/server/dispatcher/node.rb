@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -52,11 +52,13 @@ class Server::Dispatcher::Node
     #
     def initialize( opts, logfile = nil )
         @opts = opts
-        @url  = "#{@opts.rpc_address}:#{@opts.rpc_port.to_s}"
+        @opts.rpc_external_address ||= @opts.rpc_address
+
+        @url = "#{@opts.rpc_external_address}:#{@opts.rpc_port}"
 
         reroute_to_file( logfile ) if logfile
 
-        print_status 'Initing grid node...'
+        print_status 'Initializing grid node...'
 
         @dead_nodes = []
         @neighbours = Set.new

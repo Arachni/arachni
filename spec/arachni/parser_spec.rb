@@ -198,54 +198,55 @@ describe Arachni::Parser do
             form.url.should == @url
 
             form.auditable.should == {
-                "form_input_1" => "form_val_1",
-                "form_input_2" => "form_val_2"
+                'form_input_1' => 'form_val_1',
+                'form_input_2' => 'form_val_2'
             }
             form.method.should == 'post'
             form.raw.should == {
-                    "attrs" => {
-                    "method" => "post",
-                    "action" => form.action,
-                      "name" => "my_form"
+                    'attrs' => {
+                    'method' => 'post',
+                    'action' => form.action,
+                      'name' => 'my_form'
                 },
-                 "textarea" => [],
-                   "select" => [],
-                    "input" => [
+                 'textarea' => [],
+                   'select' => [],
+                   'button' => [],
+                    'input' => [
                     {
-                         "type" => "text",
-                         "name" => "form_input_1",
-                        "value" => "form_val_1"
+                         'type' => 'text',
+                         'name' => 'form_input_1',
+                        'value' => 'form_val_1'
                     },
                     {
-                         "type" => "text",
-                         "name" => "form_input_2",
-                        "value" => "form_val_2"
+                         'type' => 'text',
+                         'name' => 'form_input_2',
+                        'value' => 'form_val_2'
                     },
                     {
-                        "type" => "submit"
+                        'type' => 'submit'
                     }
                 ],
-                "auditable" => [
+                'auditable' => [
                     {
-                         "type" => "text",
-                         "name" => "form_input_1",
-                        "value" => "form_val_1"
+                         'type' => 'text',
+                         'name' => 'form_input_1',
+                        'value' => 'form_val_1'
                     },
                     {
-                         "type" => "text",
-                         "name" => "form_input_2",
-                        "value" => "form_val_2"
+                         'type' => 'text',
+                         'name' => 'form_input_2',
+                        'value' => 'form_val_2'
                     },
                     {
-                        "type" => "submit"
+                        'type' => 'submit'
                     }
                 ]
             }
 
             form = @parser.forms.last
-            form.action.should == @utils.normalize_url( @opts.url + '/form_2')
+            form.action.should == @utils.normalize_url( @opts.url + '/form_2' )
             form.url.should == @url
-            form.auditable.should == { "form_2_input_1" => "form_2_val_1" }
+            form.auditable.should == { 'form_2_input_1' => 'form_2_val_1' }
         end
 
         context 'when passed secondary responses' do

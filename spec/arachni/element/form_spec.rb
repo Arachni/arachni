@@ -211,7 +211,7 @@ describe Arachni::Element::Form do
 
                         if m.sample?
                             m.altered.should == Arachni::Element::Form::SAMPLE_VALUES
-                            m.auditable.should == Arachni::Module::KeyFiller.fill( e.auditable )
+                            m.auditable.should == Arachni::Support::KeyFiller.fill( e.auditable )
                             has_sample ||= true
                         end
                     end
@@ -263,18 +263,14 @@ describe Arachni::Element::Form do
 
         context 'when it contains more than 1 password field' do
             it 'includes mutations which have the same values for all of them' do
-                e = Arachni::Element::Form.new( 'http://test.com',
-                    'auditable' => [
-                        {
-                            'type' => 'password',
-                            'name' => 'my_pass'
-                        },
-                        {
-                            'type' => 'password',
-                            'name' => 'my_pass_validation'
-                        }
-                    ]
-                )
+                form = <<-EOHTML
+                    <form>
+                        <input type="password" name="my_pass" />
+                        <input type="password" name="my_pass_validation" />
+                    </form>
+                EOHTML
+
+                e = Arachni::Element::Form.from_document( 'http://test.com', form ).first
 
                 e.mutations( 'seed' ).reject do |m|
                     m.auditable['my_pass'] != m.auditable['my_pass_validation']
@@ -481,6 +477,28 @@ describe Arachni::Element::Form do
                         'my_first_input'  => 'my_first_value',
                         'my_second_input' => 'my_second_value'
                     }
+                end
+            end
+
+            context 'with button inputs' do
+                it 'returns an array of forms' do
+                    html = '
+                    <html>
+                        <body>
+                            <form method="get" action="form_action" name="my_form">
+                                <button type=submit name="my_button" value="my_button_value" />
+                            </form>
+
+                        </body>
+                    </html>'
+
+                    form = Arachni::Element::Form.from_document( @url, html ).first
+                    form.action.should == @utils.normalize_url( @url + '/form_action' )
+                    form.name.should == 'my_form'
+                    form.url.should == @url
+                    form.method.should == 'get'
+                    form.field_type_for( 'my_button' ).should == 'submit'
+                    form.auditable.should == { 'my_button'  => 'my_button_value' }
                 end
             end
 

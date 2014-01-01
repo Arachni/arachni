@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -99,7 +99,7 @@ class Arachni::Modules::DirectoryListing < Arachni::Module::Base
             },
             issue:       {
                 name:        %q{Directory listing},
-                description: %q{In most circumstances enabling directory listings is a bad practise
+                description: %q{In most circumstances enabling directory listings is a bad practice
     as it allows an attacker to better grasp the web application's structure.},
                 tags:        %w(path directory listing index),
                 cwe:         '548',

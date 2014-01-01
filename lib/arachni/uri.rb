@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -291,8 +291,7 @@ class URI
                 if c_url.include?( '?' ) && !(query = dupped_url.split( '?', 2 ).last).empty?
                     components[:query] = (query.split( '&', -1 ).map do |pair|
                         Addressable::URI.normalize_component( pair,
-                            Addressable::URI::CharacterClasses::QUERY.sub( '\\&', '' ),
-                            '+'
+                            Addressable::URI::CharacterClasses::QUERY.sub( '\\&', '' )
                         )
                     end).join( '&' )
                 end

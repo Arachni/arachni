@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -30,6 +30,14 @@ class Array
         return false if tags.empty?
 
         (self.flatten.compact.map( &:to_s ) & tags).any?
+    end
+
+    # Recursively converts the array's string data to UTF8.
+    #
+    # @return [Array]
+    #   Copy of `self` with all strings {String#recode recoded} to UTF8.
+    def recode
+        map { |v| v.respond_to?( :recode ) ? v.recode : v }
     end
 
     def chunk( pieces = 2 )

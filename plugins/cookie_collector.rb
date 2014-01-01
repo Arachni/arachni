@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,24 +14,26 @@
     limitations under the License.
 =end
 
-#
 # Simple cookie collector
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-# @version 0.1.5
-#
+# @version 0.1.6
 class Arachni::Plugins::CookieCollector < Arachni::Plugin::Base
 
     is_distributable
 
     def prepare
         @cookies = []
+
+        if options['filter']
+            @filter = Regexp.new( options['filter'] )
+        end
     end
 
     def run
         framework.http.add_on_new_cookies do |cookies, res|
-            update( cookies.inject({}) { |h, c| h.merge!( c.simple ); h }, res )
+            cookies_hash = cookies.inject({}) { |h, c| h.merge!( c.simple ); h }
+            update( filter( cookies_hash ), res )
         end
     end
 
@@ -55,20 +57,28 @@ class Arachni::Plugins::CookieCollector < Arachni::Plugin::Base
         register_results( @cookies )
     end
 
+    def filter( cookies )
+        return cookies if !@filter
+        cookies.select { |name, _| name =~ @filter }
+    end
+
     def self.merge( results )
         results.flatten
     end
 
     def self.info
         {
-            :name => 'Cookie collector',
-            :description => %q{Monitors and collects cookies while establishing a timeline of changes.
+            name:        'Cookie collector',
+            description: %q{Monitors and collects cookies while establishing a timeline of changes.
 
                 WARNING: Highly discouraged when the audit includes cookies.
                     It will log thousands of results leading to a huge report,
-                    highly increased memory and CPU usage.},
-            :author => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version => '0.1.5'
+                    highly increased memory consumption and CPU usage.},
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1.6',
+            options:     [
+                Options::String.new( 'filter', [false, 'Pattern to use to determine which cookies to log, based on cookie name.'] )
+            ]
         }
     end
 

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,23 +14,17 @@
     limitations under the License.
 =end
 
-module Arachni::Module
+module Arachni::Support
 
-#
-# KeyFiller class
-#
-# Included by {Module::Auditor}
-#
-# Tries to fill in input parameters with values of proper type
-# based on their name.
+# Tries to fill in input parameters with values of proper type based on their name.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class KeyFiller
+class <<self
 
     # @return [Hash<Regexp, String>]
     #   Patterns for parameter names and the values to to fill in.
-    def self.regexps
+    def regexps
         @regexps ||= {
             /name/i    => 'arachni_name',
             /user/i    => 'arachni_user',
@@ -45,30 +39,30 @@ class KeyFiller
         }
     end
 
-    #
     # Tries to fill a hash with values of appropriate type based on the key of
     # the parameter.
     #
     # @param  [Hash]  parameters   Parameters hash.
+    # @param  [String]  default   Default value to use if no match was found.
     #
     # @return   [Hash]
-    #
-    def self.fill( parameters )
+    def fill( parameters, default = '1' )
         parameters = parameters.dup
         parameters.each do |k, v|
             next if !v.to_s.empty?
             # moronic default value...
             # will figure  out something better in the future...
-            parameters[k] = name_to_value( k, '1' )
+            parameters[k] = name_to_value( k, default )
         end
         parameters
     end
 
-    def self.name_to_value( name, default = nil )
+    def name_to_value( name, default = nil )
         regexps.each { |k, v| return v if name =~ k }
-        default
+        default.to_s
     end
 
+end
 end
 
 end

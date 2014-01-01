@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2
+# @version 0.2.1
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://unixwiz.net/techtips/sql-injection.html
@@ -33,7 +33,9 @@ class Arachni::Modules::SQLInjection < Arachni::Module::Base
         @error_patterns = {}
         Dir[File.dirname( __FILE__ ) + '/sqli/patterns/*'].each do |file|
             @error_patterns[File.basename( file ).to_sym] =
-                IO.read( file ).split( "\n" )
+                IO.read( file ).split( "\n" ).map do |pattern|
+                    Regexp.new( pattern, Regexp::IGNORECASE )
+                end
         end
 
         @error_patterns
@@ -51,10 +53,11 @@ class Arachni::Modules::SQLInjection < Arachni::Module::Base
 
     def self.options
         @options ||= {
-            format:     [Format::APPEND],
-            regexp:     error_patterns,
-            ignore:     ignore_patterns,
-            param_flip: true
+            format:                    [Format::APPEND],
+            regexp:                    error_patterns,
+            ignore:                    ignore_patterns,
+            param_flip:                true,
+            longest_word_optimization: true
         }
     end
 
@@ -68,7 +71,7 @@ class Arachni::Modules::SQLInjection < Arachni::Module::Base
             description: %q{SQL injection module, uses known SQL DB errors to identify vulnerabilities.},
             elements:    [Element::LINK, Element::FORM, Element::COOKIE, Element::HEADER],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.2',
+            version:     '0.2.1',
             references:  {
                 'UnixWiz'    => 'http://unixwiz.net/techtips/sql-injection.html',
                 'Wikipedia'  => 'http://en.wikipedia.org/wiki/SQL_injection',

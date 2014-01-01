@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,17 +14,15 @@
     limitations under the License.
 =end
 
-#
 # Blind SQL Injection module using timing attacks.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.3
+# @version 0.3.1
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://capec.mitre.org/data/definitions/7.html
 # @see http://www.owasp.org/index.php/Blind_SQL_Injection
-#
 class Arachni::Modules::BlindTimingSQLInjection < Arachni::Module::Base
 
     prefer :sqli
@@ -34,12 +32,12 @@ class Arachni::Modules::BlindTimingSQLInjection < Arachni::Module::Base
             mysql: read_file( 'mysql.txt' ),
             pgsql: read_file( 'pgsql.txt' ),
             mssql: read_file( 'mssql.txt' )
-        }
+        }.inject({}){ |h, (k,v)| h.merge( k => v.map { |s| s.gsub( '[space]', ' ' ) } ) }
     end
 
     def run
         audit_timeout self.class.payloads,
-            format:          [Format::STRAIGHT, Format::APPEND],
+            format:          [Format::APPEND],
             timeout:         4000,
             timeout_divider: 1000
     end

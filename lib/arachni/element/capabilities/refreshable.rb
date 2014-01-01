@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -35,6 +35,12 @@ module Capabilities::Refreshable
         http.get( url.to_s, http_opts.merge( async: !!block ) ) do |res|
             # find ourselves
             f = self.class.from_response( res ).select { |f| f.id == id_from( :original ) }.first
+
+            if !f
+                block.call if block_given?
+                next
+            end
+
             # get user updates
             updates = changes
             # update the form's inputs with the fresh ones and re-apply the user changes

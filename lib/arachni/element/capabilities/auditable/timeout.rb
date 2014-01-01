@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@
 
 module Arachni::Element::Capabilities
 
-#
+module Auditable
+
 # Evaluates whether or not the injection of specific data affects the response
 # time of the web application.
 #
@@ -64,8 +65,7 @@ module Arachni::Element::Capabilities
 # a callback block to {on_timing_attacks}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-module Auditable::Timeout
+module Timeout
 
     def self.included( mod )
         @@parent = mod
@@ -131,7 +131,6 @@ module Auditable::Timeout
             end
         end
 
-        #
         # (Called by {timeout_audit_run}, do *NOT* call manually.)
         #
         # Runs phase 2 of the timing attack auditing an individual element
@@ -144,47 +143,63 @@ module Auditable::Timeout
         #   * If verification fails it aborts
         #   * If verification succeeds the issue is logged
         # * Stabilize responsiveness: Wait for the effects of the timing attack to wear off
-        #
         def @@parent.timeout_analysis_phase_2( elem )
-            opts = elem.opts
-            injected_timeout = opts[:timeout] *= 2
+            opts          = elem.opts
+            opts[:delay] *= 2
 
-            str = opts[:timing_string].gsub( '__TIME__',
-                ( opts[:timeout] / opts[:timeout_divider] ).to_s )
-
-            opts[:timeout] *= 0.7
+            str = opts[:timing_string].dup
+            str.gsub!( '__TIME__', (opts[:delay] / opts[:timeout_divider]).to_s )
 
             elem.auditable = elem.orig
 
-            # this is the control; request the URL of the element to make sure
-            # that the web page is alive i.e won't time-out by default
-            elem.submit do |res|
+            elem.print_status "Phase 2 for #{elem.type} input '#{elem.altered}'" <<
+                                  " with action #{elem.action}"
+
+            elem.print_info '* Performing liveness check.'
+
+            # This is the control; request the URL of the element to make sure
+            # that the web page is responsive i.e won't time-out by default.
+            elem.submit( timeout: opts[:delay] ) do |res|
                 self.call_on_timing_blocks( res, elem )
 
+                # Remove the timeout option set by the liveness check in order
+                # to now affect later requests.
+                elem.opts.delete( :timeout )
+
                 if res.timed_out?
-                    elem.print_info 'Phase 2: Liveness check failed, bailing out...'
+                    elem.print_info '* Liveness check failed, aborting.'
                     next
                 end
 
-                elem.print_info 'Phase 2: Liveness check was successful, progressing to verification...'
-                elem.audit( str, opts ) do |c_res, c_opts|
-                    if !c_res.timed_out?
-                        elem.print_info 'Phase 2: Verification failed.'
+                elem.print_info '* Liveness check was successful, progressing' <<
+                                    ' to verification.'
+
+                opts[:skip_like] = proc { |m| m.altered != elem.altered }
+                opts[:format]    = [Mutable::Format::STRAIGHT]
+                opts[:silent]    = true
+
+                elem.audit( str, opts ) do |c_res|
+                    if c_res.app_time <= (opts[:delay] + opts[:add]) / 1000.0
+                        elem.print_info '* Verification failed.'
                         next
                     end
 
-                    elem.opts[:timeout] = injected_timeout
-
                     if deduplicate?
-                        next if @@timeout_candidate_phase3_ids.include?( elem.audit_id )
+                        if @@timeout_candidate_phase3_ids.include?( elem.audit_id )
+                            elem.print_info '* Duplicate, skipping.'
+                            next
+                        end
+
                         @@timeout_candidate_phase3_ids << elem.audit_id
                     end
 
-                    elem.print_info 'Phase 2: Candidate can progress to Phase 3 --' <<
-                                        " #{elem.type.capitalize} input " +
-                                        "'#{elem.altered}' at #{elem.action}"
+                    elem.opts[:delay] = opts[:delay]
+
+                    elem.print_info '* Verification was successful, ' <<
+                                    'candidate can progress to Phase 3.'
 
                     @@parent.add_timeout_phase3_candidate( elem )
+                    elem.responsive?
                 end
             end
 
@@ -204,40 +219,46 @@ module Auditable::Timeout
         end
 
         def @@parent.timeout_analysis_phase_3( elem )
-            opts = elem.opts
-            opts[:timeout] *= 2
+            opts          = elem.opts
+            opts[:delay] *= 2
 
-            str = opts[:timing_string].
-                gsub( '__TIME__', ( opts[:timeout] / opts[:timeout_divider] ).to_s )
-
-            opts[:timeout] *= 0.7
+            str = opts[:timing_string].dup
+            str.gsub!( '__TIME__', (opts[:delay] / opts[:timeout_divider]).to_s )
 
             elem.auditable = elem.orig
 
-            # this is the control; request the URL of the element to make sure
-            # that the web page is alive i.e won't time-out by default
-            elem.submit do |res|
+            elem.print_status "Phase 3 for #{elem.type} input '#{elem.altered}'" <<
+                                  " with action #{elem.action}"
+
+            elem.print_info '* Performing liveness check.'
+
+            # This is the control; request the URL of the element to make sure
+            # that the web page is alive i.e won't time-out by default.
+            elem.submit( timeout: opts[:delay] ) do |res|
                 self.call_on_timing_blocks( res, elem )
 
                 if res.timed_out?
-                    elem.print_info 'Phase 3: Liveness check failed, bailing out...'
+                    elem.print_info '* Liveness check failed.'
                     next
                 end
 
-                elem.print_info 'Phase 3: Liveness check was successful, progressing to verification...'
+                elem.print_info '* Liveness check was successful, progressing' <<
+                                ' to verification.'
+
+                opts[:skip_like] = proc { |m| m.altered != elem.altered }
+                opts[:format]    = [Mutable::Format::STRAIGHT]
+                opts[:silent]    = true
+
                 elem.audit( str, opts ) do |c_res, c_opts|
-                    if !c_res.timed_out?
-                        elem.print_info 'Phase 3: Verification failed.'
+                    if c_res.app_time <= (opts[:delay] + opts[:add]) / 1000.0
+                        elem.print_info '* Verification failed.'
                         next
                     end
 
-                    # Not sure about this yet...
-                    #c_opts[:verification] = true
-
+                    elem.print_info '* Verification was successful.'
                     elem.auditor.log( c_opts, c_res )
                     elem.responsive?
                 end
-
             end
 
             elem.http.run
@@ -269,7 +290,7 @@ module Auditable::Timeout
         @@deduplicate ||= 't'
     end
 
-    def self.reset
+    def Timeout.reset
         @@timeout_audit_operations_cnt = 0
 
         @@timeout_candidates.clear
@@ -315,14 +336,19 @@ module Auditable::Timeout
     #   with the specified extras.
     # @option   opts    [Integer] :timeout
     #   Milliseconds to wait for the request to complete.
-    # @option   opts    [Integer] :timeout_divider
+    # @option   opts    [Integer] :timeout_divider (1)
     #   `__TIME__ = timeout / timeout_divider`
+    # @option   opts    [Integer] :add (0)
+    #   Add this integer to the expected time the request is supposed to take,
+    #   in milliseconds.
     #
     # @return   [Bool]
     #   `true` if the audit was scheduled successfully, `false` otherwise (like
     #   if the resource is out of scope).
     #
     def timeout_analysis( payloads, opts )
+        return false if self.auditable.empty?
+
         if skip_path? self.action
             print_debug "Element's action matches skip rule, bailing out."
             return false
@@ -331,7 +357,6 @@ module Auditable::Timeout
         @@timeout_loaded_modules << @auditor.fancy_name
 
         delay = opts[:timeout]
-
         audit_timeout_debug_msg( 1, delay )
         timing_attack( payloads, opts ) do |elem|
             elem.auditor = @auditor
@@ -342,51 +367,48 @@ module Auditable::Timeout
             end
 
             print_info 'Found a candidate for Phase 2 -- ' <<
-                    "#{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}"
-
-            @@parent.add_timeout_candidate( elem ) if elem.responsive?
+                "#{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}"
+            @@parent.add_timeout_candidate( elem )
         end
 
         true
     end
 
-    #
     # Submits self with a high timeout value and blocks until it gets a response.
+    # This is to make sure that responsiveness has been restored before
+    # progressing further.
     #
-    # That is to make sure that responsiveness has been restored before progressing further.
-    #
-    # @param    [Float] limit   How much time to afford the server to respond.
+    # @param    [Integer] limit
+    #   How many milliseconds to afford the server to respond.
     #
     # @return   [Bool]
     #   `true` if server responds within the given time limit, `false` otherwise.
-    #
-    def responsive?( limit = 120.0 )
+    def responsive?( limit = 120_000, prepend = '* ' )
         d_opts = {
             skip_orig: true,
             redundant: true,
-            timeout:   limit * 1000,
+            timeout:   limit,
             silent:    true,
             async:     false
         }
 
         orig_opts = opts
 
-        print_info 'Waiting for the effects of the timing attack to wear off.'
-        print_info "Max waiting time: #{limit} seconds."
+        print_info "#{prepend}Waiting for the effects of the timing attack to " <<
+            'wear off, this may take a while (max waiting time is ' <<
+             "#{d_opts[:timeout] / 1000.0} seconds)."
 
         @auditable = @orig
         res = submit( d_opts ).response
 
         @opts.merge!( orig_opts )
 
-        if !res.timed_out?
-            print_info 'Server seems responsive again.'
+        if res.timed_out?
+            print_bad 'Max waiting time exceeded.'
+            false
         else
-            print_error 'Max waiting time exceeded, the server may be dead.'
-            return false
+            true
         end
-
-        true
     end
 
     private
@@ -414,9 +436,10 @@ module Auditable::Timeout
     #   {Typhoeus::Response response} and `opts`.
     #
     def timing_attack( payloads, opts, &block )
-        opts = opts.dup
+        opts                     = opts.dup
+        opts[:delay]             = opts.delete(:timeout)
         opts[:timeout_divider] ||= 1
-        delay = opts[:timeout] / opts[:timeout_divider]
+        opts[:add]             ||= 0
 
         # Intercept each element mutation prior to it being submitted and replace
         # the '__TIME__' placeholder with the actual delay value.
@@ -427,16 +450,20 @@ module Auditable::Timeout
             # verification phases.
             mutation.opts[:timing_string] = injected
 
-            mutation.altered_value = injected.gsub( '__TIME__', delay.to_s )
+            mutation.altered_value = injected.
+                gsub( '__TIME__', (opts[:delay] / opts[:timeout_divider]).to_s )
         end
 
         opts.merge!( each_mutation: each_mutation, skip_orig: true )
 
         audit( payloads, opts ) do |res, _, elem|
             call_on_timing_blocks( res, elem )
-            block.call( elem ) if block && res.timed_out?
+            next if !block || res.app_time < (opts[:delay] + opts[:add]) / 1000.0
+
+            block.call( elem )
         end
     end
 
+end
 end
 end

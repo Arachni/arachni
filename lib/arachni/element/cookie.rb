@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -263,176 +263,52 @@ class Cookie < Arachni::Element::Base
         end
     end
 
-    #
-    # Overrides {Capabilities::Mutable#mutations} to handle cookie-specific
+    # Overrides {Capabilities::Mutable#each_mutation} to handle cookie-specific
     # limitations and the {Arachni::Options#audit_cookies_extensively} option.
     #
-    #     c = Cookie.from_set_cookie( 'http://owner-url.com', 'session=stuffstuffstuff' ).first
+    # @param (see Capabilities::Mutable#each_mutation)
+    # @return (see Capabilities::Mutable#each_mutation)
+    # @yield (see Capabilities::Mutable#each_mutation)
+    # @yieldparam (see Capabilities::Mutable#each_mutation)
     #
-    # @example Default
-    #     p c.mutations 'seed'
-    #     #=> [session=seed, session=stuffstuffstuffseed, session=seed%00, session=stuffstuffstuffseed%00]
-    #
-    # @example With parameter flip
-    #    p c.mutations 'seed', param_flip: true
-    #    #=> [session=seed, session=stuffstuffstuffseed, session=seed%00, session=stuffstuffstuffseed%00, seed=eb987f5d6a6948193f3677ee70eaedf0e1454f1eb715322ec627f0a32848f8bd]
-    #
-    # @example Extensive audit
-    #
-    #    Arachni::Options.audit_cookies_extensively = true
-    #
-    #    # this option presupposes that an auditor (with page) is available
-    #    Auditor = Class.new do
-    #        include Arachni::Module::Auditor
-    #
-    #        def page
-    #            Page.new( links: [Link.new( 'http://owner-url.com', input1: 'value1' )] )
-    #        end
-    #
-    #        def self.info
-    #            { name: 'My custom auditor' }
-    #        end
-    #    end
-    #
-    #    c.auditor = Auditor.new
-    #
-    #    p mutations = c.mutations( 'seed' )
-    #    #=> [session=seed, session=stuffstuffstuffseed, session=seed%00, session=stuffstuffstuffseed%00, http://owner-url.com/?input1=value1, http://owner-url.com/?input1=value1, http://owner-url.com/?input1=value1, http://owner-url.com/?input1=value1]
-    #
-    #    # if we take a closer look at the Link mutations we see that this link will be submitted with various cookie mutations
-    #    ap mutations.select { |m| m.is_a? Link }
-    #    #=> [
-    #    #     [0] #<Arachni::Element::Link:0x02de90e8
-    #    #         @audit_id_url = "http://owner-url.com/",
-    #    #         attr_accessor :action = "http://owner-url.com/",
-    #    #         attr_accessor :altered = "mutation for the 'session' cookie",
-    #    #         attr_accessor :auditable = {
-    #    #             "input1" => "value1"
-    #    #         },
-    #    #         attr_accessor :auditor = #<Auditor:0x000000029e7648>,
-    #    #         attr_accessor :method = "get",
-    #    #         attr_accessor :url = "http://owner-url.com/",
-    #    #         attr_reader :hash = -4537574543719230301,
-    #    #         attr_reader :opts = {
-    #    #             :cookies => {
-    #    #                 "session" => "seed"
-    #    #             }
-    #    #         },
-    #    #         attr_reader :orig = {
-    #    #             "input1" => "value1"
-    #    #         },
-    #    #         attr_reader :raw = {
-    #    #             :input1 => "value1"
-    #    #         }
-    #    #     >,
-    #    #     [1] #<Arachni::Element::Link:0x02df3f98
-    #    #         @audit_id_url = "http://owner-url.com/",
-    #    #         attr_accessor :action = "http://owner-url.com/",
-    #    #         attr_accessor :altered = "mutation for the 'session' cookie",
-    #    #         attr_accessor :auditable = {
-    #    #             "input1" => "value1"
-    #    #         },
-    #    #         attr_accessor :auditor = #<Auditor:0x000000029e7648>,
-    #    #         attr_accessor :method = "get",
-    #    #         attr_accessor :url = "http://owner-url.com/",
-    #    #         attr_reader :hash = -4537574543719230301,
-    #    #         attr_reader :opts = {
-    #    #             :cookies => {
-    #    #                 "session" => "stuffstuffstuffseed"
-    #    #             }
-    #    #         },
-    #    #         attr_reader :orig = {
-    #    #             "input1" => "value1"
-    #    #         },
-    #    #         attr_reader :raw = {
-    #    #             :input1 => "value1"
-    #    #         }
-    #    #     >,
-    #    #     [2] #<Arachni::Element::Link:0x02adcf80
-    #    #         @audit_id_url = "http://owner-url.com/",
-    #    #         attr_accessor :action = "http://owner-url.com/",
-    #    #         attr_accessor :altered = "mutation for the 'session' cookie",
-    #    #         attr_accessor :auditable = {
-    #    #             "input1" => "value1"
-    #    #         },
-    #    #         attr_accessor :auditor = #<Auditor:0x000000029e7648>,
-    #    #         attr_accessor :method = "get",
-    #    #         attr_accessor :url = "http://owner-url.com/",
-    #    #         attr_reader :hash = -4537574543719230301,
-    #    #         attr_reader :opts = {
-    #    #             :cookies => {
-    #    #                 "session" => "seed\x00"
-    #    #             }
-    #    #         },
-    #    #         attr_reader :orig = {
-    #    #             "input1" => "value1"
-    #    #         },
-    #    #         attr_reader :raw = {
-    #    #             :input1 => "value1"
-    #    #         }
-    #    #     >,
-    #    #     [3] #<Arachni::Element::Link:0x02b0c0a0
-    #    #         @audit_id_url = "http://owner-url.com/",
-    #    #         attr_accessor :action = "http://owner-url.com/",
-    #    #         attr_accessor :altered = "mutation for the 'session' cookie",
-    #    #         attr_accessor :auditable = {
-    #    #             "input1" => "value1"
-    #    #         },
-    #    #         attr_accessor :auditor = #<Auditor:0x000000029e7648>,
-    #    #         attr_accessor :method = "get",
-    #    #         attr_accessor :url = "http://owner-url.com/",
-    #    #         attr_reader :hash = -4537574543719230301,
-    #    #         attr_reader :opts = {
-    #    #             :cookies => {
-    #    #                 "session" => "stuffstuffstuffseed\x00"
-    #    #             }
-    #    #         },
-    #    #         attr_reader :orig = {
-    #    #             "input1" => "value1"
-    #    #         },
-    #    #         attr_reader :raw = {
-    #    #             :input1 => "value1"
-    #    #         }
-    #    #     >
-    #    # ]
-    #
-    #
-    # @see Capabilities::Mutable#mutations
-    #
-    def mutations( injection_str, opts = {} )
+    # @see Capabilities::Mutable#each_mutation
+    def each_mutation( injection_str, opts = {}, &block )
         flip = opts.delete( :param_flip )
-        muts = super( injection_str, opts )
 
-        if flip
-            elem = self.dup
+        super( injection_str, opts ) do |elem|
+            yield elem
 
-            # when under HPG mode element auditing is strictly regulated
-            # and when we flip params we essentially create a new element
-            # which won't be on the whitelist
-            elem.override_instance_scope
-
-            elem.altered = 'Parameter flip'
-            elem.auditable = { injection_str => seed }
-            muts << elem
+            next if !Arachni::Options.audit_cookies_extensively?
+            elem.each_extensive_mutation( &block )
         end
 
-        if !orphan? && Arachni::Options.audit_cookies_extensively?
-            # submit all links and forms of the page along with our cookie mutations
-            muts << muts.map do |m|
-                (auditor.page.links | auditor.page.forms).map do |e|
-                    next if e.auditable.empty?
-                    c = e.dup
-                    c.altered = "mutation for the '#{m.altered}' cookie"
-                    c.auditor = auditor
-                    c.opts[:cookies] = m.auditable.dup
-                    c.auditable = Arachni::Module::KeyFiller.fill( c.auditable.dup )
-                    c
-                end
-            end.flatten.compact
-            muts.flatten!
-        end
+        return if !flip
+        elem = self.dup
 
-        muts
+        # when under HPG mode element auditing is strictly regulated
+        # and when we flip params we essentially create a new element
+        # which won't be on the whitelist
+        elem.override_instance_scope
+
+        elem.altered = 'Parameter flip'
+        elem.auditable = { injection_str => seed }
+        yield elem if block_given?
+    end
+
+    def each_extensive_mutation
+        return if orphan?
+
+        (auditor.page.links | auditor.page.forms).each do |e|
+            next if e.auditable.empty?
+
+            c = e.dup
+            c.altered = "mutation for the '#{name}' cookie"
+            c.auditor = auditor
+            c.opts[:cookies] = self.auditable.dup
+            c.auditable = Arachni::Support::KeyFiller.fill( c.auditable.dup )
+
+            yield c
+        end
     end
 
     #
@@ -477,7 +353,7 @@ class Cookie < Arachni::Element::Base
     # @return   [String]    To be used in a `Cookie` HTTP request header.
     #
     def to_s
-        "#{encode( name )}=#{encode( value )}"
+        "#{encode( name, :name )}=#{encode( value )}"
     end
 
     #
@@ -1115,12 +991,15 @@ class Cookie < Arachni::Element::Base
     #
     # @return   [String]
     #
-    def self.encode( str )
-        URI.encode( str, "+;%=\0" ).recode.gsub( ' ', '+' )
+    def self.encode( str, type = :value )
+        reserved = "+;%\0"
+        reserved << '=' if type == :name
+
+        URI.encode( str, reserved ).recode.gsub( ' ', '+' )
     end
     # @see .encode
-    def encode( str )
-        self.class.encode( str )
+    def encode( *args )
+        self.class.encode( *args )
     end
 
     #

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -24,3 +24,5 @@ require lib + 'crypto'
 require lib + 'database'
 require lib + 'lookup'
 require lib + 'queue'
+require lib + 'signature'
+require lib + 'key_filler'

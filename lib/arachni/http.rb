@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -55,13 +55,14 @@ class HTTP
     # Default maximum redirect limit.
     REDIRECT_LIMIT  = 20
 
-    # Don't let the request queue grow more than this amount, if it does then
-    # run the queued requests to unload it
-    MAX_QUEUE_SIZE  = 5000
+    # Default 1 minute timeout for HTTP requests.
+    HTTP_TIMEOUT    = 60_000
 
-    HTTP_TIMEOUT    = 50000
-
+    # Maximum size of the cache that holds 404 signatures.
     CUSTOM_404_CACHE_SIZE = 250
+
+    # Maximum allowed difference (in tokens) when comparing custom 404 signatures.
+    CUSTOM_404_SIGNATURE_THRESHOLD  = 25
 
     # @return   [String]    framework seed/target URL
     attr_reader :url
@@ -168,10 +169,14 @@ class HTTP
     def run
         exception_jail {
             @burst_runtime = nil
-            hydra_run
 
-            @after_run.each { |block| block.call }
-            @after_run.clear
+            begin
+                hydra_run
+
+                duped_after_run = @after_run.dup
+                @after_run.clear
+                duped_after_run.each { |block| block.call }
+            end while @queue_size > 0
 
             call_after_run_persistent
 
@@ -286,13 +291,7 @@ class HTTP
         username = opts.delete( :username )
         password = opts.delete( :password )
 
-        #
-        # The exception jail function wraps the block passed to it
-        # in exception handling and runs it.
-        #
-        # How cool is Ruby? Seriously....
-        #
-        exception_jail( false ) {
+        exception_jail( false ) do
 
             if !opts[:no_cookiejar]
                 cookies = begin
@@ -308,7 +307,9 @@ class HTTP
             end
 
             headers           = @headers.merge( headers )
-            headers['Cookie'] ||= cookies.map { |k, v| "#{cookie_encode( k )}=#{cookie_encode( v )}" }.join( ';' )
+            headers['Cookie'] ||= cookies.map do |k, v|
+                "#{cookie_encode( k, :name )}=#{cookie_encode( v )}"
+            end.join( ';' )
 
             headers.delete( 'Cookie' ) if headers['Cookie'].empty?
             headers.each { |k, v| headers[k] = Header.encode( v ) if v }
@@ -354,7 +355,7 @@ class HTTP
             req.update_cookies if update_cookies
             queue( req, async, &block )
             req
-        }
+        end
     end
 
     #
@@ -493,67 +494,42 @@ class HTTP
     #   To be passed true or false depending on the result.
     #
     def custom_404?( res, &block )
-        precision = 2
+        path = get_path( res.effective_url )
 
-        path  = get_path( res.effective_url )
+        return block.call( is_404?( path, res.body ) ) if has_custom_404_signature?( path )
 
-        uri = uri_parse( res.effective_url )
-        trv_back = File.dirname( uri.path )
-        trv_back_url = uri.scheme + '://' +  uri.host + ':' + uri.port.to_s + trv_back
-        trv_back_url += '/' if trv_back_url[-1] != '/'
+        precision  = 2
+        generators = custom_404_probe_generators( res.effective_url, precision )
 
-        # 404 probes
-        generators = [
-            # get a random path with an extension
-            proc{ path + random_string + '.' + random_string[0..precision] },
+        gathered_responses = 0
+        expected_responses = generators.size * precision
 
-            # get a random path without an extension
-            proc{ path + random_string },
+        generators.each.with_index do |generator, i|
+            _404_signatures_for_path( path )[i] ||= {}
 
-            # move up a dir and get a random file
-            proc{ trv_back_url + random_string },
+            precision.times do
+                get( generator.call, follow_location: true ) do |c_res|
+                    gathered_responses += 1
 
-            # move up a dir and get a random file with an extension
-            proc{ trv_back_url + random_string + '.' + random_string[0..precision] },
+                    if _404_signatures_for_path( path )[i][:body]
+                        _404_signatures_for_path( path )[i][:rdiff] =
+                            _404_signatures_for_path( path )[i][:body].
+                                refine( c_res.body )
 
-            # get a random directory
-            proc{ path + random_string + '/' }
-        ]
+                        next if gathered_responses != expected_responses
 
-        gathered = 0
-        body = res.body
-
-        if !path_analyzed_for_custom_404?( path )
-            generators.each.with_index do |generator, i|
-                _404_signatures_for_path( path )[i] ||= {}
-
-                precision.times {
-                    get( generator.call, follow_location: true ) do |c_res|
-                        gathered += 1
-
-                        if gathered == generators.size * precision
-                            path_analyzed_for_custom_404( path )
-
-                            # save the hash of the refined responses, no sense
-                            # in wasting space
-                            _404_signatures_for_path( path ).each { |c404| c404[:rdiff] = c404[:rdiff].hash }
-
-                            block.call is_404?( path, body )
-                        else
-                            _404_signatures_for_path( path )[i][:body] ||= c_res.body
-
-                            _404_signatures_for_path( path )[i][:rdiff] =
-                                _404_signatures_for_path( path )[i][:body].rdiff( c_res.body )
-
-                            _404_signatures_for_path( path )[i][:rdiff_words] =
-                                _404_signatures_for_path( path )[i][:rdiff].words.map( &:hash )
-                        end
+                        has_custom_404_signature( path )
+                        block.call is_404?( path, res.body )
+                    else
+                        _404_signatures_for_path( path )[i][:body] =
+                            Support::Signature.new(
+                                c_res.body, threshold: CUSTOM_404_SIGNATURE_THRESHOLD
+                            )
                     end
-                }
+                end
             end
-        else
-            block.call is_404?( path, body )
         end
+
         nil
     end
 
@@ -579,22 +555,54 @@ class HTTP
         end
     end
 
+    # @return  [Array<Proc>]
+    #   Generators for paths which should elicit a 404 response.
+    def custom_404_probe_generators( url, precision )
+        uri  = uri_parse( url )
+        path = uri.up_to_path
+
+        trv_back     = File.dirname( uri.path )
+        trv_back_url = uri.scheme + '://' +  uri.host + ':' + uri.port.to_s + trv_back
+        trv_back_url += '/' if trv_back_url[-1] != '/'
+
+        [
+            # Get a random path with an extension.
+            proc { path + random_string + '.' + random_string[0..precision] },
+
+            # Get a random path without an extension.
+            proc { path + random_string },
+
+            # Move up a dir and get a random file.
+            proc { trv_back_url + random_string },
+
+            # Move up a dir and get a random file with an extension.
+            proc { trv_back_url + random_string + '.' + random_string[0..precision] },
+
+            # Get a random directory.
+            proc { path + random_string + '/' }
+        ]
+    end
+
     def _404_data_for_path( path )
-        @_404[path] ||= {
-            analyzed:   false,
-            signatures: []
-        }
+        @_404[path] ||= { analyzed: false, signatures: [] }
+    end
+
+    def is_404?( path, body )
+        @_404[path][:signatures].each do |_404|
+            return true if _404[:rdiff].similar? _404[:body].refine( body )
+        end
+        false
     end
 
     def _404_signatures_for_path( path )
         _404_data_for_path( path )[:signatures]
     end
 
-    def path_analyzed_for_custom_404?( path )
+    def has_custom_404_signature?( path )
         _404_data_for_path( path )[:analyzed]
     end
 
-    def path_analyzed_for_custom_404( path )
+    def has_custom_404_signature( path )
         _404_data_for_path( path )[:analyzed] = true
     end
 
@@ -636,6 +644,11 @@ class HTTP
     # @param  [Block]  block  callback
     #
     def forward_request( req, async = true, &block )
+        if emergency_run?
+            print_info 'Request queue reached its maximum size, performing an emergency run.'
+            hydra_run
+        end
+
         req.id = @request_count
 
         @queue_size += 1
@@ -643,15 +656,17 @@ class HTTP
 
         @request_count += 1
 
-        print_debug '------------'
-        print_debug 'Queued request.'
-        print_debug "ID#: #{req.id}"
-        print_debug "URL: #{req.url}"
-        print_debug "Method: #{req.method}"
-        print_debug "Params: #{req.params}"
-        print_debug "Headers: #{req.headers}"
-        print_debug "Train?: #{req.train?}"
-        print_debug  '------------'
+        if debug?
+            print_debug '------------'
+            print_debug 'Queued request.'
+            print_debug "ID#: #{req.id}"
+            print_debug "URL: #{req.url}"
+            print_debug "Method: #{req.method}"
+            print_debug "Params: #{req.params}"
+            print_debug "Headers: #{req.headers}"
+            print_debug "Train?: #{req.train?}"
+            print_debug  '------------'
+        end
 
         req.on_complete( true ) do |res|
 
@@ -663,53 +678,31 @@ class HTTP
 
             parse_and_set_cookies( res ) if req.update_cookies?
 
-            print_debug '------------'
-            print_debug "Got response for request ID#: #{res.request.id}"
-            print_debug "Status: #{res.code}"
-            print_debug "Error msg: #{res.curl_error_message}"
-            print_debug "URL: #{res.effective_url}"
-            print_debug "Headers:\n#{res.headers}"
-            print_debug "Parsed headers: #{res.headers_hash}"
-            print_debug '------------'
+            if debug?
+                print_debug '------------'
+                print_debug "Got response for request ID#: #{res.request.id}"
+                print_debug "Status: #{res.code}"
+                print_debug "Error msg: #{res.curl_error_message}"
+                print_debug "URL: #{res.effective_url}"
+                print_debug "Headers:\n#{res.headers}"
+                print_debug "Parsed headers: #{res.headers_hash}"
+            end
 
             if res.timed_out?
-                print_bad 'Request timed-out! -- ID# ' + res.request.id.to_s
+                print_debug "Request timed-out! -- ID ##{res.request.id}"
                 @time_out_count += 1
             end
+
+            print_debug '------------'
         end
 
         req.on_complete( &block ) if block_given?
-
-        if emergency_run?
-            print_info 'Request queue reached its maximum size, performing an emergency run.'
-            hydra_run
-        end
 
         exception_jail { @hydra_sync.run } if !async
     end
 
     def emergency_run?
-        @queue_size >= MAX_QUEUE_SIZE && !@running
-    end
-
-    def is_404?( path, body )
-        # give the rDiff algo a shot first hoping that a comparison of
-        # refined responses will be enough to give us a clear-cut positive
-        @_404[path][:signatures].each do |_404|
-            return true if _404[:body].rdiff( body ).hash == _404[:rdiff]
-        end
-
-        # if the comparison of the refinements fails, compare them based on how
-        # many words are different between them
-        @_404[path][:signatures].each do |_404|
-            rdiff_body_words = _404[:body].rdiff( body ).words.map( &:hash )
-            return true if (
-                (_404[:rdiff_words] - rdiff_body_words) -
-                (rdiff_body_words - _404[:rdiff_words])
-            ).size < 25
-        end
-
-        false
+        @queue_size >= Options.http_queue_size && !@running
     end
 
     def random_string

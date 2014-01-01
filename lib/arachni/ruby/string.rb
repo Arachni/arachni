@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -65,6 +65,7 @@ class String
     #
     def diff_ratio( other )
         return 0.0 if self == other
+        return 1.0 if empty? || other.empty?
 
         s_words = self.words( true )
         o_words = other.words( true )
@@ -72,7 +73,7 @@ class String
         common = (s_words & o_words).size.to_f
         union  = (s_words | o_words).size.to_f
 
-        (union - common)/union
+        (union - common) / union
     end
 
     #
@@ -86,6 +87,16 @@ class String
         splits = split( /\b/ )
         splits.reject! { |w| !(w =~ /\w/) } if strict
         splits
+    end
+
+    # @return [String] Shortest word.
+    def shortest_word
+        words( true ).sort_by { |w| w.size }.first
+    end
+
+    # @return [String] Longest word.
+    def longest_word
+        words( true ).sort_by { |w| w.size }.last
     end
 
     # @return   [Integer]

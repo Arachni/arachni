@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -84,8 +84,9 @@ class CLI
         # trap Ctrl+C interrupts
         trap( 'INT' ) { handle_interrupt }
 
-        # trap SIGUSR1 interrupts
+        # trap user signals
         trap ( 'USR1' ) { handle_usr1_interrupt }
+        trap ( 'USR2' ) { handle_usr2_interrupt }
     end
 
     #
@@ -179,8 +180,8 @@ class CLI
         print_line( restr, unmute )
     end
 
-    def print_issues( audit_store, unmute = false )
-        super( audit_store.issues, unmute, &method( :restr ) )
+    def print_issues( unmute = false )
+        super( AuditStore.sort( @arachni.modules.issues ), unmute, &method( :restr ) )
     end
 
     def kill_interrupt_handler
@@ -235,7 +236,7 @@ class CLI
                 print_info( restr( 'Results thus far:' ), true )
 
                 begin
-                    print_issues( @arachni.audit_store, true )
+                    print_issues( true )
                     print_stats( true, true )
                 rescue Exception => e
                     exception_jail{ raise e }
@@ -254,13 +255,23 @@ class CLI
     end
 
     #
-    # Handles SIGUSR1 system calls
+    # Handles SIGUSR1 signals
     #
     # It will cause Arachni to create a report and shut down afterwards
     #
     def handle_usr1_interrupt
-        print_status 'Received SIGUSR1!'
+        print_info 'Received SIGUSR1!'
         shutdown
+    end
+
+    #
+    # Handles SIGUSR2 signals
+    #
+    # It will cause Arachni to create a report.
+    #
+    def handle_usr2_interrupt
+        print_info 'Received SIGUSR2!'
+        @arachni.reports.run( @arachni.audit_store )
     end
 
     def shutdown

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,18 +14,16 @@
     limitations under the License.
 =end
 
-#
 # XSS in HTML tag.
 # It injects a string and checks if it appears inside any HTML tags.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.4
+# @version 0.1.5
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
 # @see http://secunia.com/advisories/9716/
-#
 class Arachni::Modules::XSSHTMLTag < Arachni::Module::Base
 
     TAG_NAME = 'arachni_xss_in_tag'
@@ -36,8 +34,8 @@ class Arachni::Modules::XSSHTMLTag < Arachni::Module::Base
     end
 
     def run
-        self.class.strings.each do |str|
-            audit( str, format: [ Format::APPEND ] ) { |res, opts| check_and_log( res, opts ) }
+        audit( self.class.strings, format: [ Format::APPEND ] ) do |res, opts|
+            check_and_log( res, opts )
         end
     end
 
@@ -69,7 +67,7 @@ class Arachni::Modules::XSSHTMLTag < Arachni::Module::Base
             description: %q{Cross-Site Scripting in HTML tag.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.1.4',
+            version:     '0.1.5',
             references:  {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/'

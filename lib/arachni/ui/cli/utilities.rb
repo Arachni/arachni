@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2013 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -21,13 +21,6 @@ require Options.dir['mixins'] + 'terminal'
 require Options.dir['mixins'] + 'progress_bar'
 
 module UI
-
-#
-#
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-# @see Arachni::Framework::CLI
-#
 class CLI
 
 module Utilities
@@ -62,14 +55,13 @@ module Utilities
     #
     # Outputs all available modules and their info.
     #
-    def lsplat( platforms )
+    def lsplat( platform_info )
         print_line
         print_line
         print_info 'Available platforms:'
         print_line
 
-        i = 0
-        platforms.each do |type, platforms|
+        platform_info.each do |type, platforms|
             print_status "#{type}"
 
             platforms.each do |shortname, fullname|
@@ -90,13 +82,16 @@ module Utilities
         print_info 'Available modules:'
         print_line
 
-        i = 0
         modules.each do |info|
             print_status "#{info[:mod_name]}:"
             print_line '--------------------'
 
             print_line "Name:\t\t#{info[:name]}"
             print_line "Description:\t#{info[:description]}"
+
+            if info[:issue] && (severity = info[:issue][:severity])
+                print_line "Severity:\t#{severity}"
+            end
 
             if info[:elements] && info[:elements].size > 0
                 print_line "Elements:\t#{info[:elements].join( ', ' ).downcase}"
@@ -130,21 +125,6 @@ module Utilities
 
             print_line "Path:\t#{info[:path]}"
 
-            i += 1
-
-            # pause every 3 modules to give the user time to read
-            # (cheers to aungkhant@yehg.net for suggesting it)
-            if i % 3 == 0 && i != modules.size
-                print_line
-                print_line 'Hit <space> <enter> to continue, any other key to exit. '
-
-                if gets[0] != ' '
-                    print_line
-                    return
-                end
-
-            end
-
             print_line
         end
 
@@ -175,7 +155,7 @@ module Utilities
                     print_info "\t#{option['name']} - #{option['desc']}"
                     print_info "\tType:        #{option['type']}"
                     print_info "\tDefault:     #{option['default']}"
-                    print_info "\tRequired?:   #{option['required?']}"
+                    print_info "\tRequired?:   #{option['required']}"
 
                     print_line
                 end
@@ -214,7 +194,7 @@ module Utilities
                     print_info "\t#{option['name']} - #{option['desc']}"
                     print_info "\tType:        #{option['type']}"
                     print_info "\tDefault:     #{option['default']}"
-                    print_info "\tRequired?:   #{option['required?']}"
+                    print_info "\tRequired?:   #{option['required']}"
 
                     print_line
                 end
@@ -314,6 +294,11 @@ module Utilities
                                   (Default: #{@opts.http_req_limit})
                                   (Be careful not to kill your server.)
                                   (*NOTE*: If your scan seems unresponsive try lowering the limit.)
+
+    --http-queue-size=<integer> Maximum amount of requests to keep in the queue.
+                                  Bigger size means better scheduling and better performance,
+                                  smaller means less RAM consumption.
+                                  (Default: #{@opts.http_queue_size})
 
     --http-timeout=<integer>    HTTP request timeout in milliseconds.
 

@@ -71,6 +71,33 @@ get '/refreshable' do
 HTML
 end
 
+get '/refreshable_disappear_clear' do
+    @@visited = 0
+end
+
+get '/refreshable_disappear' do
+    @@visited ||= 0
+    @@visited  += 1
+
+    next '' if @@visited > 1
+
+    <<HTML
+    <form method="post" action="/refreshable" name="my_form">
+        <p>
+            <input type="text" name="param_name" value="param_value">
+        </p>
+    </form>
+
+    <form method="post" action="/refreshable" name="my_form">
+        <p>
+            <input type="text" name="param_name" value="param_value">
+            <input type="hidden" name="nonce" value="#{rand(999)}">
+        </p>
+    </form>
+HTML
+end
+
+
 get '/with_nonce' do
     <<HTML
     <form method="post" action="/form" name="my_form">

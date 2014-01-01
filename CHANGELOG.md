@@ -1,5 +1,102 @@
 # ChangeLog
 
+## 0.4.6 _(January 1, 2014)_
+
+- CLI user interfaces
+    - `--lsmod`
+        - Longer pauses every 3 modules, it lists all of them at once.
+        - Updated to show the _Severity_ of the issues the module logs.
+    - `Ctrl+C` screen optimized to use less resources when printing scan data.
+- Options
+    - `--cookie-string` -- Updated to also handle cookies in the form of `Set-Cookie` headers.
+    - Added:
+        - `--external-address` -- The external address of a Dispatcher.
+        - `--http-queue-size` -- Maximum amount of requests to keep in the queue,
+            bigger size means better scheduling and better performance, smaller
+            means less RAM consumption.
+- `Session`
+    - `#ensure_logged_in` -- Retry on login failure.
+- `Spider`
+    - Don't apply scope restrictions to the seed URL.
+- `Framework`
+    - Audit
+        - Stored pages are now offloaded to disk to lower RAM consumption.
+- `Trainer`
+    - `#push` -- Prints verbose messages in cases of scope violations.
+- `HTTP`
+    - Maximum request-queue size lowered from 5000 to 500, to decrease RAM usage
+        by preventing the storage of large amounts of requests for extended periods of time.
+    - Updated to use the new `Support::Signature` class for custom-404 signatures.
+- `RPC::Server::Dispatcher`
+    - Now supports specifying an external address to allow for deployments behind NATs.
+- `Element::Capabilities::Auditable::RDiff`
+    - Updated to use the new `Support::Signature` class to perform response body comparisons.
+    - Updated the algorithm to use a `false` as the control.
+    - Added integrity check for the analysis process.
+    - Optimized scheduling of data gathering.
+    - Reduced total amount of performed requests.
+    - Massively reduced RAM consumption for data storage and analysis.
+- `Element::Capabilities::Auditable::Timeout`
+    - Updated the algorithm to use an approximated web application processing
+        time instead of the HTTP timeout based on the total request-response process.
+    - Made analysis corruption checks more stringent to diminish the chances of
+        false positives.
+    - Fixed bug causing non-vetted inputs to reach the final stages of analysis
+        which sometimes resulted in false positives.
+    - Added a cool-off period after Phase 2 to ensure webapp responsiveness post-attack.
+    - Improved status messages.
+- `Element::Capabilities::Auditable::Taint`
+    - Added longest-word-optimization -- Checks if the longest word of a regexp
+        exists in the response body prior to matching the full-blown regexp.
+- `Element::Capabilities::Auditable#audit`
+    - Added option `:skip_like`, accepting blocks used to filter the mutations
+        about to be audited.
+    - Fixed bug causing audits with constantly changing tokens to fail.
+    - Updated to use `#each_mutation` instead of `#mutations`.
+- `Element::Capabilities::Mutable`
+    - Added `#each_mutation` to generate mutations on the fly instead of relying
+        on `#mutations` to generate an array of mutations.
+    - Updated `#mutations` to delegate to `#each_mutation`.
+- `Element::Cookie#encode`
+    - Allow `=` to remain un-encoded in the cookie value.
+- `Element::Form` -- Buttons are now treated as inputs as well.
+- `Options#load` -- Updated to support serialized `Hash` objects.
+- Added `Support::Signature` -- Signature class used to generate and refine signatures
+    from `String` objects.
+- Modules
+    - Audit
+        - `path_traversal` -- Updated to use double-slashes for *nix payloads.
+        - `file_inclusion` -- Added evasive payloads using '\'.
+        - `source_code_disclosure`
+            - Increased coverage by following the directory tree of each file one
+                level at a time.
+        - `xss_script_tag` -- Updated to check for the existence of encoding operations.
+        - `sqli`
+            - Updated to cache the compiled regular expressions.
+            - Updated to use the longest-word-optimization of the taint analysis
+                implementation for faster analysis.
+        - `sqli_blind_rdiff`
+            - Massively reduced injected payloads.
+        - `os_cmd_injection_timing` -- Decreased the time delay.
+    - Recon
+        - `localstart_asp`
+            - Check for an ASP platform instead of a Windows one.
+            - Fixed `LocalJumpError`.
+- Plugins
+    - `autologin`
+        - Changed `print_bad` to `print_error` so that errors are written to the
+            error log.
+        - Scan remains paused and awaits user action upon failure.
+    - `proxy`
+        - Updated request URL encoding to handle malformed URLs.
+        - Disabled reverse DNS lookup on requests to increase performance.
+    - `content_types` -- Moved out of `defaults/'.
+    - `cookie_collector`
+        - Added `filter` option used to determine which cookies to log based on
+            a pattern matched against cookie names.
+- Reports -- Added `content_type` to all reports with `outfile` option in `.info`.
+    - `xml` -- Escaped parameter values in XML report.
+
 ## 0.4.5.2 _(September 18, 2013)_
 
 - `gemspec`
