@@ -19,6 +19,9 @@ class DOM
     #   DOM transitions leading to the current state.
     attr_accessor :transitions
 
+    # @return   [Array] JavaScript sink data.
+    attr_accessor :sink
+
     # @return   [String]
     #   URL of the page as seen by the user-agent, fragments and all.
     attr_accessor :url
@@ -30,6 +33,7 @@ class DOM
         @page        = options[:page]
         @url         = options[:url]         || @page.url.dup
         @transitions = options[:transitions] || []
+        @sink        = options[:sink]        || []
     end
 
     # @param    [Hash{Symbol => <Symbol,String>}]    transition

@@ -111,6 +111,15 @@ class Browser
     # @return   [Watir::Browser]   Watir driver interface.
     attr_reader :watir
 
+    # @return   [Array<Page>]
+    #   Same as {#page_snapshots} but it doesn't deduplicate and only contains
+    #   pages with {Page::DOM#sink sink} data as populated by {#flush_sink}.
+    #
+    # @see #flush_sink
+    # @see #sink
+    # @see Page::DOM#sink
+    attr_reader :page_snapshots_with_sinks
+
     # @return   [Bool]
     #   `true` if `phantomjs` is in the OS PATH, `false` otherwise.
     def self.has_executable?
@@ -163,6 +172,10 @@ class Browser
         # clicking of JS links.
         @page_snapshots = {}
 
+        # Same as @page_snapshots but it doesn't deduplicate and only contains
+        # pages with sink (Page::DOM#sink) data as populated by #flush_sink.
+        @page_snapshots_with_sinks = []
+
         # Captures HTTP::Response objects per URL.
         @responses = {}
 
@@ -175,6 +188,7 @@ class Browser
         @add_request_transitions = true
 
         @on_new_page_blocks = []
+        @on_new_page_with_sink_blocks = []
         @on_response_blocks = []
 
         # Last loaded URL.
@@ -184,6 +198,11 @@ class Browser
     def on_new_page( &block )
         fail ArgumentError, 'Missing block.' if !block_given?
         @on_new_page_blocks << block
+    end
+
+    def on_new_page_with_sink( &block )
+        fail ArgumentError, 'Missing block.' if !block_given?
+        @on_new_page_with_sink_blocks << block
     end
 
     def on_response( &block )
@@ -585,9 +604,18 @@ class Browser
         page.body            = source.dup
         page.cookies        |= cookies.dup
         page.dom.url         = watir.url
+        page.dom.sink        = flush_sink
         page.dom.transitions = @transitions.dup
 
         page
+    end
+
+    # @return   [Array<Page>]
+    #   Returns {#page_snapshots_with_sinks} and flushes it.
+    def flush_page_snapshots_with_sinks
+        @page_snapshots_with_sinks.dup
+    ensure
+        @page_snapshots_with_sinks.clear
     end
 
     # @return   [Array<Page>]
@@ -624,6 +652,51 @@ class Browser
 
     def execute_script( script )
         watir.execute_script script
+    end
+
+    def debugging_data
+        prepare_sink_data( get_override( :debugging_data ) )
+    end
+
+    def sink
+        prepare_sink_data( get_override( :sink ) )
+    end
+
+    def flush_sink
+        prepare_sink_data( get_override( 'flush_sink()' ) )
+    end
+
+    def prepare_sink_data( sink_data )
+        return [] if !sink_data
+
+        sink_data.map do |entry|
+            {
+                data:  entry['data'],
+                trace: prepare_js_trace( entry['trace'] )
+            }
+        end
+    end
+
+    def prepare_js_trace( trace )
+        to_string = Set.new(%w(toElement target srcElement currentTarget fromElement))
+
+        formatted = []
+        trace.each do |entry|
+            entry = entry.symbolize_keys( false )
+
+            if entry[:arguments][0].is_a?( Hash ) &&
+                entry[:arguments][0].include?( 'target' )
+
+                entry[:arguments][0].each do |k, v|
+                    entry[:arguments][0][k] =
+                        (v && to_string.include?( k ) ? v.html : v)
+                end
+            end
+
+            formatted << entry
+        end
+
+        formatted
     end
 
     def get_override( property )
@@ -686,6 +759,10 @@ class Browser
         )
     end
 
+    def js_token
+        @js_token ||= generate_token.to_s
+    end
+
     private
 
     def has_js_overrides?
@@ -712,6 +789,10 @@ class Browser
 
     def call_on_new_page_blocks( page )
         @on_new_page_blocks.each { |b| b.call page }
+    end
+
+    def call_on_new_page_with_sink_blocks( page )
+        @on_new_page_with_sink_blocks.each { |b| b.call page }
     end
 
     def call_on_response_blocks( page )
@@ -781,16 +862,18 @@ class Browser
             window.use do
                 next if !(page = to_page)
 
-                unique_id = "#{page.dom.hash}:#{cookies.map(&:name).sort}"
-                next if skip? unique_id
-                skip unique_id
-
                 if pages.empty?
                     transitions.each do |t|
                         @transitions << t
                         page.dom.push_transition t
                     end
                 end
+
+                capture_snapshot_with_sink( page )
+
+                unique_id = "#{page.dom.hash}:#{cookies.map(&:name).sort}"
+                next if skip? unique_id
+                skip unique_id
 
                 call_on_new_page_blocks( page )
 
@@ -802,6 +885,15 @@ class Browser
         end
 
         pages
+    end
+
+    def capture_snapshot_with_sink( page )
+        return if page.dom.sink.empty?
+
+        call_on_new_page_with_sink_blocks( page )
+
+        return if !store_pages?
+        @page_snapshots_with_sinks << page
     end
 
     def wait_for_pending_requests
@@ -865,7 +957,8 @@ class Browser
             #'phantomjs.page.settings.loadImages' => false,
             'phantomjs.cli.args'                 => [
                 "--proxy=http://#{@proxy.address}/",
-                '--ignore-ssl-errors=true'
+                '--ignore-ssl-errors=true',
+                '--web-security=no'
             ]
         )
     end
@@ -889,10 +982,6 @@ class Browser
 
     def auth_token
         @auth_token ||= generate_token.to_s
-    end
-
-    def js_token
-        @js_token ||= generate_token.to_s
     end
 
     def js_overrides
@@ -933,7 +1022,7 @@ class Browser
 
     def intercept( response )
         return if !intercept?( response )
-        return if response.body.include? js_token
+        return if response.body.include? "#{js_token}.override"
 
         response.body = "\n<script>#{js_overrides}</script>\n#{response.body}"
 

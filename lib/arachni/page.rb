@@ -310,7 +310,7 @@ class Page
 
         h[:forms].each { |f| f.node = nil }
 
-        h[:dom] = { url: dom.url, transitions: dom.transitions }
+        h[:dom] = { url: dom.url, transitions: dom.transitions, sink: dom.sink }
 
         Marshal.dump( h )
     end

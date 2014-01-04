@@ -33,6 +33,29 @@ describe Arachni::Page::DOM do
         end
     end
 
+    describe '#sink' do
+        it 'defaults to an empty Array' do
+            dom.sink.should == []
+        end
+    end
+
+    describe '#sink=' do
+        it 'sets #sink' do
+            sink = [
+                data:  ['stuff'],
+                trace: [
+                    [
+                        function:  "function onClick(some, arguments, here) {\n                _16744290dd4cf3a3d72033b82f11df32f785b50239268efb173ce9ac269714e5.send_to_sink(1);\n                return false;\n            }",
+                        arguments: %w(some-arg arguments-arg here-arg)
+                    ]
+                ]
+            ]
+
+            dom.sink = sink
+            dom.sink.should == sink
+        end
+    end
+
     describe '#transitions=' do
         it 'sets #transitions' do
             transitions = [ { element: :stuffed } ]

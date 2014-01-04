@@ -26,6 +26,49 @@ get '/' do
 HTML
 end
 
+get '/debugging_data' do
+    <<-EOHTML
+    <html>
+        <script>
+            function onClick( some, arguments, here ) {
+                #{params[:input]};
+                return false;
+            }
+        </script>
+
+        <form id="my_form" onsubmit="onClick('some-arg', 'arguments-arg', 'here-arg'); return false;">
+        </form>
+    </html>
+    EOHTML
+end
+
+get '/lots_of_sinks' do
+    <<-EOHTML
+    <html>
+        <script>
+            function onClick( some, arguments, here ) {
+                #{params[:input]};
+                onClick3();
+                return false;
+            }
+
+            function onClick2( some, arguments, here ) {
+                onClick( 1, 2 );
+            }
+
+            function onClick3( some, arguments, here ) {
+                #{params[:input]};
+            }
+        </script>
+
+        <a href="#" onmouseover="onClick2('blah1', 'blah2', 'blah3');">Blah</a>
+
+        <form id="my_form" onsubmit="onClick('some-arg', 'arguments-arg', 'here-arg'); return false;">
+        </form>
+    </html>
+    EOHTML
+end
+
 get '/skip-invisible-elements' do
     <<HTML
     <html>
