@@ -45,7 +45,11 @@ describe Arachni::Page::DOM do
                 data:  ['stuff'],
                 trace: [
                     [
-                        function:  "function onClick(some, arguments, here) {\n                _16744290dd4cf3a3d72033b82f11df32f785b50239268efb173ce9ac269714e5.send_to_sink(1);\n                return false;\n            }",
+                        function:  "function onClick(some, arguments, here) " <<
+                                       "{\n                _16744290dd4cf3a3" <<
+                                       "d72033b82f11df32f785b50239268efb173c" <<
+                                       "e9ac269714e5.send_to_sink(1);\n     " <<
+                                       "           return false;\n            }",
                         arguments: %w(some-arg arguments-arg here-arg)
                     ]
                 ]
