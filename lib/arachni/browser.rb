@@ -684,7 +684,7 @@ class Browser
         trace.each do |entry|
             entry = entry.symbolize_keys( false )
 
-            if entry[:arguments][0].is_a?( Hash ) &&
+            if entry[:arguments] && entry[:arguments][0].is_a?( Hash ) &&
                 entry[:arguments][0].include?( 'target' )
 
                 entry[:arguments][0].each do |k, v|

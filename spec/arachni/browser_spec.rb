@@ -194,9 +194,15 @@ describe Arachni::Browser do
 
             first_entry[:data].should == [1]
             first_entry[:trace].size.should == 2
-            first_entry[:trace][0][:function].should start_with 'function onClick'
+
+            first_entry[:trace][0][:function].should == 'onClick'
+            first_entry[:trace][0][:source].should start_with 'function onClick'
+            first_entry[:trace][0][:line].should == 200
             first_entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
-            first_entry[:trace][1][:function].should start_with 'function onsubmit'
+
+            first_entry[:trace][1][:function].should == 'onsubmit'
+            first_entry[:trace][1][:source].should start_with 'function onsubmit'
+            first_entry[:trace][1][:line].should == 205
 
             first_entry[:trace][1][:arguments].size.should == 1
             event = first_entry[:trace][1][:arguments].first
@@ -219,9 +225,14 @@ describe Arachni::Browser do
 
             first_entry[:data].should == [1]
             first_entry[:trace].size.should == 2
-            first_entry[:trace][0][:function].should start_with 'function onClick'
+            first_entry[:trace][0][:function].should  == 'onClick'
+            first_entry[:trace][0][:source].should start_with 'function onClick'
+            first_entry[:trace][0][:line].should == 200
             first_entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
-            first_entry[:trace][1][:function].should start_with 'function onsubmit'
+
+            first_entry[:trace][1][:function].should == 'onsubmit'
+            first_entry[:trace][1][:source].should start_with 'function onsubmit'
+            first_entry[:trace][1][:line].should == 205
 
             first_entry[:trace][1][:arguments].size.should == 1
             event = first_entry[:trace][1][:arguments].first
@@ -244,11 +255,17 @@ describe Arachni::Browser do
 
             first_entry[:data].should == [1]
             first_entry[:trace].size.should == 2
-            first_entry[:trace][0][:function].should start_with 'function onClick'
-            first_entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
-            first_entry[:trace][1][:function].should start_with 'function onsubmit'
 
+            first_entry[:trace][0][:function].should == 'onClick'
+            first_entry[:trace][0][:source].should start_with 'function onClick'
+            first_entry[:trace][0][:line].should == 200
+            first_entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
+
+            first_entry[:trace][1][:function].should == 'onsubmit'
+            first_entry[:trace][1][:source].should start_with 'function onsubmit'
+            first_entry[:trace][1][:line].should == 205
             first_entry[:trace][1][:arguments].size.should == 1
+
             event = first_entry[:trace][1][:arguments].first
 
             form = "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">\n        </form>"
@@ -269,7 +286,9 @@ describe Arachni::Browser do
         it 'returns sink data' do
             @browser.load "#{@url}/lots_of_sinks?input=_#{@browser.js_token}.send_to_sink(1)"
             @browser.explore_and_flush
-            doms = @browser.page_snapshots_with_sinks.map(&:dom)
+
+            pages = @browser.page_snapshots_with_sinks
+            doms  = pages.map(&:dom)
 
             doms.size.should == 2
 
@@ -281,16 +300,26 @@ describe Arachni::Browser do
 
             doms[0].sink.size.should == 2
 
+            pages[0].body.lines.each_with_index do |line, i|
+                puts "#{i+3} - #{line}"
+            end
+
             entry = doms[0].sink[0]
             entry[:data].should == [1]
             entry[:trace].size.should == 3
-            entry[:trace][0][:function].should start_with 'function onClick'
+
+            entry[:trace][0][:function].should == 'onClick'
+            entry[:trace][0][:source].should start_with 'function onClick'
+            entry[:trace][0][:line].should == 200
             entry[:trace][0][:arguments].should == [1, 2]
 
-            entry[:trace][1][:function].should start_with 'function onClick2'
-            entry[:trace][1][:arguments].should == ["blah1", "blah2", "blah3"]
+            entry[:trace][1][:function].should == 'onClick2'
+            entry[:trace][1][:source].should start_with 'function onClick2'
+            entry[:trace][1][:line].should == 206
+            entry[:trace][1][:arguments].should == %w(blah1 blah2 blah3)
 
-            entry[:trace][2][:function].should start_with 'function onmouseover'
+            entry[:trace][2][:function].should == 'onmouseover'
+            entry[:trace][2][:source].should start_with 'function onmouseover'
 
             event = entry[:trace][2][:arguments].first
 
@@ -303,16 +332,23 @@ describe Arachni::Browser do
             entry[:data].should == [1]
             entry[:trace].size.should == 4
 
-            entry[:trace][0][:function].should start_with 'function onClick3'
+            entry[:trace][0][:function].should == 'onClick3'
+            entry[:trace][0][:source].should start_with 'function onClick3'
+            entry[:trace][0][:line].should == 210
             entry[:trace][0][:arguments].should be_empty
 
-            entry[:trace][1][:function].should start_with 'function onClick'
+            entry[:trace][1][:function].should == 'onClick'
+            entry[:trace][1][:source].should start_with 'function onClick'
+            entry[:trace][1][:line].should == 201
             entry[:trace][1][:arguments].should == [1, 2]
 
-            entry[:trace][2][:function].should start_with 'function onClick2'
-            entry[:trace][2][:arguments].should == ["blah1", "blah2", "blah3"]
+            entry[:trace][2][:function].should == 'onClick2'
+            entry[:trace][2][:source].should start_with 'function onClick2'
+            entry[:trace][2][:line].should == 206
+            entry[:trace][2][:arguments].should == %w(blah1 blah2 blah3)
 
-            entry[:trace][3][:function].should start_with 'function onmouseover'
+            entry[:trace][3][:function].should == 'onmouseover'
+            entry[:trace][3][:source].should start_with 'function onmouseover'
 
             event = entry[:trace][3][:arguments].first
 
@@ -332,10 +368,13 @@ describe Arachni::Browser do
             entry = doms[1].sink[0]
             entry[:data].should == [1]
             entry[:trace].size.should == 2
-            entry[:trace][0][:function].should start_with 'function onClick'
+
+            entry[:trace][0][:function].should == 'onClick'
+            entry[:trace][0][:source].should start_with 'function onClick'
             entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
 
-            entry[:trace][1][:function].should start_with 'function onsubmit'
+            entry[:trace][1][:function].should == 'onsubmit'
+            entry[:trace][1][:source].should start_with 'function onsubmit'
 
             event = entry[:trace][1][:arguments].first
 
@@ -347,13 +386,17 @@ describe Arachni::Browser do
             entry = doms[1].sink[1]
             entry[:data].should == [1]
             entry[:trace].size.should == 3
-            entry[:trace][0][:function].should start_with 'function onClick3'
+
+            entry[:trace][0][:function].should == 'onClick3'
+            entry[:trace][0][:source].should start_with 'function onClick3'
             entry[:trace][0][:arguments].should be_empty
 
-            entry[:trace][1][:function].should start_with 'function onClick'
+            entry[:trace][1][:function].should == 'onClick'
+            entry[:trace][1][:source].should start_with 'function onClick'
             entry[:trace][1][:arguments].should == %w(some-arg arguments-arg here-arg)
 
-            entry[:trace][2][:function].should start_with 'function onsubmit'
+            entry[:trace][2][:function].should == 'onsubmit'
+            entry[:trace][2][:source].should start_with 'function onsubmit'
 
             event = entry[:trace][2][:arguments].first
 
@@ -585,11 +628,15 @@ describe Arachni::Browser do
 
             first_entry[:data].should == [1]
             first_entry[:trace].size.should == 2
-            first_entry[:trace][0][:function].should start_with 'function onClick'
-            first_entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
-            first_entry[:trace][1][:function].should start_with 'function onsubmit'
 
+            first_entry[:trace][0][:function].should == 'onClick'
+            first_entry[:trace][0][:source].should start_with 'function onClick'
+            first_entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
+
+            first_entry[:trace][1][:function].should == 'onsubmit'
+            first_entry[:trace][1][:source].should start_with 'function onsubmit'
             first_entry[:trace][1][:arguments].size.should == 1
+
             event = first_entry[:trace][1][:arguments].first
 
             form = "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">\n        </form>"
