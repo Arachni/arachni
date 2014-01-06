@@ -26,6 +26,24 @@ get '/' do
 HTML
 end
 
+get '/data_trace-Document-write' do
+    <<-EOHTML
+    <html>
+
+        <body>
+        </body>
+
+        <script type="text/javascript">
+            function processBody( data ) {
+                document.write( data.my_data + ' Stuff here blah' + data.input + 'more stuff nlahblah...' );
+            }
+
+            processBody({ my_data: 'blah', input: '#{params[:taint]}' });
+        </script>
+    </html>
+    EOHTML
+end
+
 get '/debugging_data' do
     <<-EOHTML
     <html>

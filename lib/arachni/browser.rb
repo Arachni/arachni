@@ -120,6 +120,9 @@ class Browser
     # @see Page::DOM#sink
     attr_reader :page_snapshots_with_sinks
 
+    # @return   [String]    Taint to look for and trace in the JS data flow.
+    attr_accessor :taint
+
     # @return   [Bool]
     #   `true` if `phantomjs` is in the OS PATH, `false` otherwise.
     def self.has_executable?
@@ -1024,7 +1027,16 @@ class Browser
         return if !intercept?( response )
         return if response.body.include? "#{js_token}.override"
 
-        response.body = "\n<script>#{js_overrides}</script>\n#{response.body}"
+        response.body = response.body.gsub(
+             /<script(.*)>/i,
+             # This will let us override and trace all global functions.
+             "<script\\1>\n_#{js_token}.add_trace_to_namespace( window );\n"
+         )
+
+        response.body = "\n<script>
+            #{js_overrides}
+            #{"_#{js_token}.taint = #{@taint.inspect};" if @taint}
+</script>\n#{response.body}"
 
         response.headers['content-length'] = response.body.size
     end
