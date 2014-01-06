@@ -41,6 +41,36 @@ get '/data_trace/global-functions' do
     EOHTML
 end
 
+get '/data_trace/HTMLElement.insertAdjacentHTML' do
+    <<-EOHTML
+    <html>
+        <body>
+            <div id='my-div'></div>
+        </body>
+
+        <script type="text/javascript">
+            element = document.getElementById('my-div');
+            element.insertAdjacentHTML( 'AfterBegin', 'stuff ' + #{params[:taint].inspect} + ' more stuff' );
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/Element.setAttribute' do
+    <<-EOHTML
+    <html>
+        <body>
+            <div id='my-div'></div>
+        </body>
+
+        <script type="text/javascript">
+            element = document.getElementById('my-div');
+            element.setAttribute( 'my-attribute', 'stuff ' + #{params[:taint].inspect} + ' more stuff' );
+        </script>
+    </html>
+    EOHTML
+end
+
 get '/data_trace/String.replace' do
     <<-EOHTML
     <html>
@@ -61,7 +91,17 @@ get '/data_trace/String.concat' do
     EOHTML
 end
 
-get '/data_trace/Document-writeln' do
+get '/data_trace/Document.createTextNode' do
+    <<-EOHTML
+    <html>
+        <script type="text/javascript">
+            document.createTextNode( 'node ' + #{params[:taint].inspect} );
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/HTMLDocument.writeln' do
     <<-EOHTML
     <html>
         <script type="text/javascript">
@@ -71,7 +111,7 @@ get '/data_trace/Document-writeln' do
     EOHTML
 end
 
-get '/data_trace/Document-write' do
+get '/data_trace/HTMLDocument.write' do
     <<-EOHTML
     <html>
         <script type="text/javascript">

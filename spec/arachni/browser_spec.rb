@@ -243,10 +243,6 @@ describe Arachni::Browser do
                         @browser.taint = @browser.generate_token
                         @browser.load "#{@url}/data_trace/String.replace?taint=#{@browser.taint}"
 
-                        @browser.source.split("\n").each.with_index do |line, i|
-                            puts "#{i+2} - #{line}"
-                        end
-
                         pages = @browser.flush_page_snapshots_with_sinks
 
                         pages.size.should == 1
@@ -274,10 +270,6 @@ describe Arachni::Browser do
                         @browser.taint = @browser.generate_token
                         @browser.load "#{@url}/data_trace/String.concat?taint=#{@browser.taint}"
 
-                        @browser.source.split("\n").each.with_index do |line, i|
-                            puts "#{i+2} - #{line}"
-                        end
-
                         pages = @browser.flush_page_snapshots_with_sinks
 
                         pages.size.should == 1
@@ -299,11 +291,96 @@ describe Arachni::Browser do
                 end
             end
 
+            context 'HTMLElement' do
+                context '.insertAdjacentHTML' do
+                    it 'logs it' do
+                        @browser.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/HTMLElement.insertAdjacentHTML?taint=#{@browser.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 1
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['function'].should == 'insertAdjacentHTML'
+                        entry[:data][0]['source'].should start_with 'function insertAdjacentHTML'
+                        entry[:data][0]['arguments'].should == [
+                            'AfterBegin', "stuff #{@browser.taint} more stuff"
+                        ]
+                        entry[:data][0]['tainted'].should == "stuff #{@browser.taint} more stuff"
+                        entry[:data][0]['taint'].should == @browser.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line] - 2].should include 'insertAdjacentHTML('
+                        trace[:url].should == page.url
+                    end
+                end
+            end
+
+            context 'Element' do
+                context '.setAttribute' do
+                    it 'logs it' do
+                        @browser.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/Element.setAttribute?taint=#{@browser.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 1
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['function'].should == 'setAttribute'
+                        entry[:data][0]['source'].should start_with 'function setAttribute'
+                        entry[:data][0]['arguments'].should == [
+                            'my-attribute', "stuff #{@browser.taint} more stuff"
+                        ]
+                        entry[:data][0]['tainted'].should == "stuff #{@browser.taint} more stuff"
+                        entry[:data][0]['taint'].should == @browser.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line] - 2].should include 'setAttribute('
+                        trace[:url].should == page.url
+                    end
+                end
+            end
+
             context 'Document' do
+                context '.createTextNode' do
+                    it 'logs it' do
+                        @browser.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/Document.createTextNode?taint=#{@browser.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 1
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['function'].should == 'createTextNode'
+                        entry[:data][0]['source'].should start_with 'function createTextNode'
+                        entry[:data][0]['arguments'].should == [ "node #{@browser.taint}" ]
+                        entry[:data][0]['tainted'].should == "node #{@browser.taint}"
+                        entry[:data][0]['taint'].should == @browser.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line] - 2].should include 'document.createTextNode('
+                        trace[:url].should == page.url
+                    end
+                end
+            end
+
+            context 'HTMLDocument' do
                 context '.write' do
                     it 'logs it' do
                         @browser.taint = @browser.generate_token
-                        @browser.load "#{@url}/data_trace/Document-write?taint=#{@browser.taint}"
+                        @browser.load "#{@url}/data_trace/HTMLDocument.write?taint=#{@browser.taint}"
 
                         pages = @browser.flush_page_snapshots_with_sinks
 
@@ -331,7 +408,7 @@ describe Arachni::Browser do
                 context '.writeln' do
                     it 'logs it' do
                         @browser.taint = @browser.generate_token
-                        @browser.load "#{@url}/data_trace/Document-writeln?taint=#{@browser.taint}"
+                        @browser.load "#{@url}/data_trace/HTMLDocument.writeln?taint=#{@browser.taint}"
 
                         pages = @browser.flush_page_snapshots_with_sinks
 
