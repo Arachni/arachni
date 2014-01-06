@@ -26,7 +26,7 @@ get '/' do
 HTML
 end
 
-get '/data_trace-Document-write' do
+get '/data_trace/global-functions' do
     <<-EOHTML
     <html>
 
@@ -34,11 +34,18 @@ get '/data_trace-Document-write' do
         </body>
 
         <script type="text/javascript">
-            function processBody( data ) {
-                document.write( data.my_data + ' Stuff here blah' + data.input + 'more stuff nlahblah...' );
-            }
+            function process( data ) {}
+            process({ my_data: 'blah', input: '#{params[:taint]}' });
+        </script>
+    </html>
+    EOHTML
+end
 
-            processBody({ my_data: 'blah', input: '#{params[:taint]}' });
+get '/data_trace/Document-write' do
+    <<-EOHTML
+    <html>
+        <script type="text/javascript">
+            document.write( 'Stuff here blah ' + #{params[:taint].inspect} + ' more stuff nlahblah...' );
         </script>
     </html>
     EOHTML
