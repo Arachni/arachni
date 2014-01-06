@@ -121,6 +121,66 @@ get '/data_trace/HTMLDocument.write' do
     EOHTML
 end
 
+get '/data_trace/Text.replaceWholeText' do
+    <<-EOHTML
+    <html>
+
+        <div id='my-div'>
+        </div>
+
+        <script type="text/javascript">
+            var text = document.createTextNode( "New List Item 1" );
+            text.replaceWholeText( 'Stuff ' + #{params[:taint].inspect} );
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/Text.insertData' do
+    <<-EOHTML
+    <html>
+
+        <div id='my-div'>
+        </div>
+
+        <script type="text/javascript">
+            var text = document.createTextNode( "New List Item 1" );
+            text.insertData( 'Stuff ' + #{params[:taint].inspect} );
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/Text.appendData' do
+    <<-EOHTML
+    <html>
+
+        <div id='my-div'>
+        </div>
+
+        <script type="text/javascript">
+            var text = document.createTextNode( "New List Item 1" );
+            text.appendData( 'Stuff ' + #{params[:taint].inspect} );
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/Text.replaceData' do
+    <<-EOHTML
+    <html>
+
+        <div id='my-div'>
+        </div>
+
+        <script type="text/javascript">
+            var text = document.createTextNode( "New List Item 1" );
+            text.replaceData( 0, 0, 'Stuff ' + #{params[:taint].inspect} );
+        </script>
+    </html>
+    EOHTML
+end
+
 get '/debugging_data' do
     <<-EOHTML
     <html>

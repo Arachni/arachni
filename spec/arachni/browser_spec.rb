@@ -376,6 +376,108 @@ describe Arachni::Browser do
                 end
             end
 
+            context 'Text' do
+                context '.replaceWholeText' do
+                    it 'logs it' do
+                        @browser.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/Text.replaceWholeText?taint=#{@browser.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 1
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['function'].should == 'replaceWholeText'
+                        entry[:data][0]['source'].should start_with 'function replaceWholeText'
+                        entry[:data][0]['arguments'].should == [ "Stuff #{@browser.taint}" ]
+                        entry[:data][0]['tainted'].should == "Stuff #{@browser.taint}"
+                        entry[:data][0]['taint'].should == @browser.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line] - 2].should include 'replaceWholeText('
+                        trace[:url].should == page.url
+                    end
+                end
+
+                context '.insertData' do
+                    it 'logs it' do
+                        @browser.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/Text.insertData?taint=#{@browser.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 1
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['function'].should == 'insertData'
+                        entry[:data][0]['source'].should start_with 'function insertData'
+                        entry[:data][0]['arguments'].should == [ "Stuff #{@browser.taint}" ]
+                        entry[:data][0]['tainted'].should == "Stuff #{@browser.taint}"
+                        entry[:data][0]['taint'].should == @browser.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line] - 2].should include 'insertData('
+                        trace[:url].should == page.url
+                    end
+                end
+
+                context '.appendData' do
+                    it 'logs it' do
+                        @browser.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/Text.appendData?taint=#{@browser.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 1
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['function'].should == 'appendData'
+                        entry[:data][0]['source'].should start_with 'function appendData'
+                        entry[:data][0]['arguments'].should == [ "Stuff #{@browser.taint}" ]
+                        entry[:data][0]['tainted'].should == "Stuff #{@browser.taint}"
+                        entry[:data][0]['taint'].should == @browser.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line] - 2].should include 'appendData('
+                        trace[:url].should == page.url
+                    end
+                end
+
+                context '.replaceData' do
+                    it 'logs it' do
+                        @browser.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/Text.replaceData?taint=#{@browser.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 1
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['function'].should == 'replaceData'
+                        entry[:data][0]['source'].should start_with 'function replaceData'
+                        entry[:data][0]['arguments'].should == [ 0, 0, "Stuff #{@browser.taint}" ]
+                        entry[:data][0]['tainted'].should == "Stuff #{@browser.taint}"
+                        entry[:data][0]['taint'].should == @browser.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line] - 2].should include 'replaceData('
+                        trace[:url].should == page.url
+                    end
+                end
+            end
+
             context 'HTMLDocument' do
                 context '.write' do
                     it 'logs it' do
