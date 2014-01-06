@@ -237,6 +237,68 @@ describe Arachni::Browser do
                 end
             end
 
+            context 'String' do
+                context '.replace' do
+                    it 'logs it' do
+                        @browser.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/String.replace?taint=#{@browser.taint}"
+
+                        @browser.source.split("\n").each.with_index do |line, i|
+                            puts "#{i+2} - #{line}"
+                        end
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 1
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['function'].should == 'replace'
+                        entry[:data][0]['source'].should start_with 'function replace'
+                        entry[:data][0]['arguments'].should == [
+                            'my', @browser.taint
+                        ]
+                        entry[:data][0]['tainted'].should == @browser.taint
+                        entry[:data][0]['taint'].should == @browser.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line] - 2].should include 'replace('
+                        trace[:url].should == page.url
+                    end
+                end
+
+                context '.concat' do
+                    it 'logs it' do
+                        @browser.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/String.concat?taint=#{@browser.taint}"
+
+                        @browser.source.split("\n").each.with_index do |line, i|
+                            puts "#{i+2} - #{line}"
+                        end
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 1
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['function'].should == 'concat'
+                        entry[:data][0]['source'].should start_with 'function concat'
+                        entry[:data][0]['arguments'].should == [ "stuff #{@browser.taint}" ]
+                        entry[:data][0]['tainted'].should == "stuff #{@browser.taint}"
+                        entry[:data][0]['taint'].should == @browser.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line] - 2].should include 'concat('
+                        trace[:url].should == page.url
+                    end
+                end
+            end
+
             context 'Document' do
                 context '.write' do
                     it 'logs it' do

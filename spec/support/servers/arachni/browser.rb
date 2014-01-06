@@ -41,6 +41,26 @@ get '/data_trace/global-functions' do
     EOHTML
 end
 
+get '/data_trace/String.replace' do
+    <<-EOHTML
+    <html>
+        <script type="text/javascript">
+            'my string'.replace( 'my', #{params[:taint].inspect} );
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/String.concat' do
+    <<-EOHTML
+    <html>
+        <script type="text/javascript">
+            'my string'.concat( 'stuff ' + #{params[:taint].inspect} );
+        </script>
+    </html>
+    EOHTML
+end
+
 get '/data_trace/Document-writeln' do
     <<-EOHTML
     <html>
