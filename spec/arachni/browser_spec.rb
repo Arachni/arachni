@@ -265,6 +265,35 @@ describe Arachni::Browser do
                         trace[:url].should == page.url
                     end
                 end
+
+                context '.writeln' do
+                    it 'logs it' do
+                        @browser.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/Document-writeln?taint=#{@browser.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 1
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['function'].should == 'writeln'
+                        entry[:data][0]['source'].should start_with 'function writeln'
+                        entry[:data][0]['arguments'].should == [
+                            "Stuff here blah #{@browser.taint} more stuff nlahblah..."
+                        ]
+                        entry[:data][0]['tainted'].should ==
+                            "Stuff here blah #{@browser.taint} more stuff nlahblah..."
+                        entry[:data][0]['taint'].should == @browser.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line] - 2].should include 'document.writeln('
+                        trace[:url].should == page.url
+                    end
+                end
+
             end
         end
     end

@@ -41,6 +41,16 @@ get '/data_trace/global-functions' do
     EOHTML
 end
 
+get '/data_trace/Document-writeln' do
+    <<-EOHTML
+    <html>
+        <script type="text/javascript">
+            document.writeln( 'Stuff here blah ' + #{params[:taint].inspect} + ' more stuff nlahblah...' );
+        </script>
+    </html>
+    EOHTML
+end
+
 get '/data_trace/Document-write' do
     <<-EOHTML
     <html>
