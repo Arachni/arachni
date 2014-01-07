@@ -191,12 +191,12 @@ describe Arachni::Browser do
 
             first_entry[:trace][0][:function].should == 'onClick'
             first_entry[:trace][0][:source].should start_with 'function onClick'
-            @browser.source.split("\n")[first_entry[:trace][0][:line] - 2].should include 'debug(1)'
+            @browser.source.split("\n")[first_entry[:trace][0][:line]].should include 'debug(1)'
             first_entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
 
             first_entry[:trace][1][:function].should == 'onsubmit'
             first_entry[:trace][1][:source].should start_with 'function onsubmit'
-            @browser.source.split("\n")[first_entry[:trace][1][:line] - 2].should include 'onClick('
+            @browser.source.split("\n")[first_entry[:trace][1][:line]].should include 'onClick('
             first_entry[:trace][1][:arguments].size.should == 1
 
             event = first_entry[:trace][1][:arguments].first
@@ -233,7 +233,7 @@ describe Arachni::Browser do
                     ]
                     entry[:data][0]['tainted'].should == @browser.taint
                     entry[:data][0]['taint'].should == @browser.taint
-                    page.body.split("\n")[entry[:trace][0][:line] - 2].should include 'process('
+                    page.body.split("\n")[entry[:trace][0][:line]].should include 'process('
                 end
             end
 
@@ -260,7 +260,7 @@ describe Arachni::Browser do
                         entry[:data][0]['taint'].should == @browser.taint
 
                         trace = entry[:trace][0]
-                        page.body.split("\n")[trace[:line] - 2].should include 'replace('
+                        page.body.split("\n")[trace[:line]].should include 'replace('
                         trace[:url].should == page.url
                     end
                 end
@@ -285,7 +285,7 @@ describe Arachni::Browser do
                         entry[:data][0]['taint'].should == @browser.taint
 
                         trace = entry[:trace][0]
-                        page.body.split("\n")[trace[:line] - 2].should include 'concat('
+                        page.body.split("\n")[trace[:line]].should include 'concat('
                         trace[:url].should == page.url
                     end
                 end
@@ -314,7 +314,7 @@ describe Arachni::Browser do
                         entry[:data][0]['taint'].should == @browser.taint
 
                         trace = entry[:trace][0]
-                        page.body.split("\n")[trace[:line] - 2].should include 'insertAdjacentHTML('
+                        page.body.split("\n")[trace[:line]].should include 'insertAdjacentHTML('
                         trace[:url].should == page.url
                     end
                 end
@@ -343,7 +343,7 @@ describe Arachni::Browser do
                         entry[:data][0]['taint'].should == @browser.taint
 
                         trace = entry[:trace][0]
-                        page.body.split("\n")[trace[:line] - 2].should include 'setAttribute('
+                        page.body.split("\n")[trace[:line]].should include 'setAttribute('
                         trace[:url].should == page.url
                     end
                 end
@@ -370,7 +370,7 @@ describe Arachni::Browser do
                         entry[:data][0]['taint'].should == @browser.taint
 
                         trace = entry[:trace][0]
-                        page.body.split("\n")[trace[:line] - 2].should include 'document.createTextNode('
+                        page.body.split("\n")[trace[:line]].should include 'document.createTextNode('
                         trace[:url].should == page.url
                     end
                 end
@@ -397,7 +397,7 @@ describe Arachni::Browser do
                         entry[:data][0]['taint'].should == @browser.taint
 
                         trace = entry[:trace][0]
-                        page.body.split("\n")[trace[:line] - 2].should include 'replaceWholeText('
+                        page.body.split("\n")[trace[:line]].should include 'replaceWholeText('
                         trace[:url].should == page.url
                     end
                 end
@@ -422,7 +422,7 @@ describe Arachni::Browser do
                         entry[:data][0]['taint'].should == @browser.taint
 
                         trace = entry[:trace][0]
-                        page.body.split("\n")[trace[:line] - 2].should include 'insertData('
+                        page.body.split("\n")[trace[:line]].should include 'insertData('
                         trace[:url].should == page.url
                     end
                 end
@@ -447,7 +447,7 @@ describe Arachni::Browser do
                         entry[:data][0]['taint'].should == @browser.taint
 
                         trace = entry[:trace][0]
-                        page.body.split("\n")[trace[:line] - 2].should include 'appendData('
+                        page.body.split("\n")[trace[:line]].should include 'appendData('
                         trace[:url].should == page.url
                     end
                 end
@@ -472,7 +472,7 @@ describe Arachni::Browser do
                         entry[:data][0]['taint'].should == @browser.taint
 
                         trace = entry[:trace][0]
-                        page.body.split("\n")[trace[:line] - 2].should include 'replaceData('
+                        page.body.split("\n")[trace[:line]].should include 'replaceData('
                         trace[:url].should == page.url
                     end
                 end
@@ -502,7 +502,7 @@ describe Arachni::Browser do
                         entry[:data][0]['taint'].should == @browser.taint
 
                         trace = entry[:trace][0]
-                        page.body.split("\n")[trace[:line] - 2].should include 'document.write('
+                        page.body.split("\n")[trace[:line]].should include 'document.write('
                         trace[:url].should == page.url
                     end
                 end
@@ -530,7 +530,7 @@ describe Arachni::Browser do
                         entry[:data][0]['taint'].should == @browser.taint
 
                         trace = entry[:trace][0]
-                        page.body.split("\n")[trace[:line] - 2].should include 'document.writeln('
+                        page.body.split("\n")[trace[:line]].should include 'document.writeln('
                         trace[:url].should == page.url
                     end
                 end
@@ -553,12 +553,12 @@ describe Arachni::Browser do
 
             first_entry[:trace][0][:function].should  == 'onClick'
             first_entry[:trace][0][:source].should start_with 'function onClick'
-            @browser.source.split("\n")[first_entry[:trace][0][:line] - 2].should include 'send_to_sink(1)'
+            @browser.source.split("\n")[first_entry[:trace][0][:line]].should include 'send_to_sink(1)'
             first_entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
 
             first_entry[:trace][1][:function].should == 'onsubmit'
             first_entry[:trace][1][:source].should start_with 'function onsubmit'
-            @browser.source.split("\n")[first_entry[:trace][1][:line] - 2].should include 'onsubmit'
+            @browser.source.split("\n")[first_entry[:trace][1][:line]].should include 'onsubmit'
             first_entry[:trace][1][:arguments].size.should == 1
 
             event = first_entry[:trace][1][:arguments].first
@@ -584,12 +584,12 @@ describe Arachni::Browser do
 
             first_entry[:trace][0][:function].should == 'onClick'
             first_entry[:trace][0][:source].should start_with 'function onClick'
-            @browser.source.split("\n")[first_entry[:trace][0][:line] - 2].should include 'send_to_sink(1)'
+            @browser.source.split("\n")[first_entry[:trace][0][:line]].should include 'send_to_sink(1)'
             first_entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
 
             first_entry[:trace][1][:function].should == 'onsubmit'
             first_entry[:trace][1][:source].should start_with 'function onsubmit'
-            @browser.source.split("\n")[first_entry[:trace][1][:line] - 2].should include 'onsubmit'
+            @browser.source.split("\n")[first_entry[:trace][1][:line]].should include 'onsubmit'
             first_entry[:trace][1][:arguments].size.should == 1
 
             event = first_entry[:trace][1][:arguments].first
@@ -632,12 +632,12 @@ describe Arachni::Browser do
 
             entry[:trace][0][:function].should == 'onClick'
             entry[:trace][0][:source].should start_with 'function onClick'
-            @browser.source.split("\n")[entry[:trace][0][:line] - 2].should include 'send_to_sink'
+            @browser.source.split("\n")[entry[:trace][0][:line]].should include 'send_to_sink'
             entry[:trace][0][:arguments].should == [1, 2]
 
             entry[:trace][1][:function].should == 'onClick2'
             entry[:trace][1][:source].should start_with 'function onClick2'
-            @browser.source.split("\n")[entry[:trace][1][:line] - 2].should include 'onClick'
+            @browser.source.split("\n")[entry[:trace][1][:line]].should include 'onClick'
             entry[:trace][1][:arguments].should == %w(blah1 blah2 blah3)
 
             entry[:trace][2][:function].should == 'onmouseover'
@@ -656,17 +656,17 @@ describe Arachni::Browser do
 
             entry[:trace][0][:function].should == 'onClick3'
             entry[:trace][0][:source].should start_with 'function onClick3'
-            @browser.source.split("\n")[entry[:trace][0][:line] - 2].should include 'send_to_sink'
+            @browser.source.split("\n")[entry[:trace][0][:line]].should include 'send_to_sink'
             entry[:trace][0][:arguments].should be_empty
 
             entry[:trace][1][:function].should == 'onClick'
             entry[:trace][1][:source].should start_with 'function onClick'
-            @browser.source.split("\n")[entry[:trace][1][:line] - 2].should include 'onClick3'
+            @browser.source.split("\n")[entry[:trace][1][:line]].should include 'onClick3'
             entry[:trace][1][:arguments].should == [1, 2]
 
             entry[:trace][2][:function].should == 'onClick2'
             entry[:trace][2][:source].should start_with 'function onClick2'
-            @browser.source.split("\n")[entry[:trace][2][:line] - 2].should include 'onClick'
+            @browser.source.split("\n")[entry[:trace][2][:line]].should include 'onClick'
             entry[:trace][2][:arguments].should == %w(blah1 blah2 blah3)
 
             entry[:trace][3][:function].should == 'onmouseover'
@@ -693,12 +693,12 @@ describe Arachni::Browser do
 
             entry[:trace][0][:function].should == 'onClick'
             entry[:trace][0][:source].should start_with 'function onClick'
-            @browser.source.split("\n")[entry[:trace][0][:line] - 2].should include 'send_to_sink(1)'
+            @browser.source.split("\n")[entry[:trace][0][:line]].should include 'send_to_sink(1)'
             entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
 
             entry[:trace][1][:function].should == 'onsubmit'
             entry[:trace][1][:source].should start_with 'function onsubmit'
-            @browser.source.split("\n")[entry[:trace][1][:line] - 2].should include 'onClick'
+            @browser.source.split("\n")[entry[:trace][1][:line]].should include 'onClick'
 
             event = entry[:trace][1][:arguments].first
 
@@ -713,17 +713,17 @@ describe Arachni::Browser do
 
             entry[:trace][0][:function].should == 'onClick3'
             entry[:trace][0][:source].should start_with 'function onClick3'
-            @browser.source.split("\n")[entry[:trace][0][:line] - 2].should include 'send_to_sink(1)'
+            @browser.source.split("\n")[entry[:trace][0][:line]].should include 'send_to_sink(1)'
             entry[:trace][0][:arguments].should be_empty
 
             entry[:trace][1][:function].should == 'onClick'
             entry[:trace][1][:source].should start_with 'function onClick'
-            @browser.source.split("\n")[entry[:trace][1][:line] - 2].should include 'onClick3()'
+            @browser.source.split("\n")[entry[:trace][1][:line]].should include 'onClick3()'
             entry[:trace][1][:arguments].should == %w(some-arg arguments-arg here-arg)
 
             entry[:trace][2][:function].should == 'onsubmit'
             entry[:trace][2][:source].should start_with 'function onsubmit'
-            @browser.source.split("\n")[entry[:trace][2][:line] - 2].should include 'onClick('
+            @browser.source.split("\n")[entry[:trace][2][:line]].should include 'onClick('
 
             event = entry[:trace][2][:arguments].first
 
@@ -957,12 +957,12 @@ describe Arachni::Browser do
 
             first_entry[:trace][0][:function].should == 'onClick'
             first_entry[:trace][0][:source].should start_with 'function onClick'
-            @browser.source.split("\n")[first_entry[:trace][0][:line] - 2].should include 'send_to_sink(1)'
+            @browser.source.split("\n")[first_entry[:trace][0][:line]].should include 'send_to_sink(1)'
             first_entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
 
             first_entry[:trace][1][:function].should == 'onsubmit'
             first_entry[:trace][1][:source].should start_with 'function onsubmit'
-            @browser.source.split("\n")[first_entry[:trace][1][:line] - 2].should include 'onClick('
+            @browser.source.split("\n")[first_entry[:trace][1][:line]].should include 'onClick('
             first_entry[:trace][1][:arguments].size.should == 1
 
             event = first_entry[:trace][1][:arguments].first
