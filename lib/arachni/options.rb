@@ -161,6 +161,9 @@ class Options
         @plugins   = {}
         @spawns    = 0
 
+        @no_fingerprinting = false
+        @authorized_by     = nil
+
         self
     end
 

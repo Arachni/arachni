@@ -150,7 +150,9 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 checks:    [],
                 platforms: [],
                 reports:   {},
-                plugins:   {}
+                plugins:   {},
+                no_fingerprinting: false,
+                authorized_by:     nil
             }
         end
     end
