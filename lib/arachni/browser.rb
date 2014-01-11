@@ -5,6 +5,7 @@
 
 require 'watir-webdriver'
 require_relative 'watir/element'
+require_relative 'browser/javascript'
 
 module Arachni
 
@@ -102,9 +103,6 @@ class Browser
 
     HTML_IDENTIFIERS = ['<!doctype html', '<html', '<head', '<body', '<title', '<script']
 
-    JS_OVERRIDES =
-        IO.read( "#{File.dirname( __FILE__ )}/browser/overrides.js" )
-
     # @return   [Hash]   Preloaded resources, by URL.
     attr_reader :preloads
 
@@ -113,15 +111,18 @@ class Browser
 
     # @return   [Array<Page>]
     #   Same as {#page_snapshots} but it doesn't deduplicate and only contains
-    #   pages with {Page::DOM#sink sink} data as populated by {#flush_sink}.
+    #   pages with {Page::DOM#sink sink} data as populated by {Javascript#flush_sink}.
     #
-    # @see #flush_sink
+    # @see Javascript#flush_sink
     # @see #sink
     # @see Page::DOM#sink
     attr_reader :page_snapshots_with_sinks
 
     # @return   [String]    Taint to look for and trace in the JS data flow.
     attr_accessor :taint
+
+    # @return   [Javascript]
+    attr_reader :javascript
 
     # @return   [Bool]
     #   `true` if `phantomjs` is in the OS PATH, `false` otherwise.
@@ -160,8 +161,6 @@ class Browser
 
         @watir = ::Watir::Browser.new( *phantomjs )
 
-        ensure_open_window
-
         # User-controlled response cache, by URL.
         @cache = Support::Cache::LeastRecentlyUsed.new( 200 )
 
@@ -176,7 +175,7 @@ class Browser
         @page_snapshots = {}
 
         # Same as @page_snapshots but it doesn't deduplicate and only contains
-        # pages with sink (Page::DOM#sink) data as populated by #flush_sink.
+        # pages with sink (Page::DOM#sink) data as populated by Javascript#flush_sink.
         @page_snapshots_with_sinks = []
 
         # Captures HTTP::Response objects per URL.
@@ -196,6 +195,10 @@ class Browser
 
         # Last loaded URL.
         @last_url = nil
+
+        @javascript = Javascript.new( self )
+
+        ensure_open_window
     end
 
     def on_new_page( &block )
@@ -304,7 +307,7 @@ class Browser
 
         watir.goto url
 
-        wait_for_js_overrides
+        @javascript.wait_till_ready
         wait_for_timers
         wait_for_pending_requests
 
@@ -324,7 +327,7 @@ class Browser
         watir.cookies.clear
         clear_responses
 
-        execute_script( 'window.open()' )
+        @javascript.run( 'window.open()' )
         watir.windows.last.use
 
         watir.windows[0...-1].each { |w| w.close rescue nil }
@@ -607,7 +610,7 @@ class Browser
         page.body            = source.dup
         page.cookies        |= cookies.dup
         page.dom.url         = watir.url
-        page.dom.sink        = flush_sink
+        page.dom.sink        = @javascript.flush_sink
         page.dom.transitions = @transitions.dup
 
         page
@@ -653,76 +656,13 @@ class Browser
         watir.html
     end
 
-    def execute_script( script )
-        watir.execute_script script
-    end
-
-    def debugging_data
-        prepare_sink_data( get_override( :debugging_data ) )
-    end
-
-    def sink
-        prepare_sink_data( get_override( :sink ) )
-    end
-
-    def flush_sink
-        prepare_sink_data( get_override( 'flush_sink()' ) )
-    end
-
-    def prepare_sink_data( sink_data )
-        return [] if !sink_data
-
-        sink_data.map do |entry|
-            {
-                data:  entry['data'],
-                trace: prepare_js_trace( entry['trace'] )
-            }
-        end
-    end
-
-    def prepare_js_trace( trace )
-        to_string = Set.new(%w(toElement target srcElement currentTarget fromElement))
-
-        formatted = []
-        trace.each do |entry|
-            entry = entry.symbolize_keys( false )
-
-            if entry[:arguments] && entry[:arguments][0].is_a?( Hash ) &&
-                entry[:arguments][0].include?( 'target' )
-
-                entry[:arguments][0].each do |k, v|
-                    entry[:arguments][0][k] =
-                        (v && to_string.include?( k ) ? v.html : v)
-                end
-            end
-
-            formatted << entry
-        end
-
-        formatted
-    end
-
-    def get_override( property )
-        return if !has_js_overrides?
-        execute_script "return _#{js_token}.#{property};"
-    end
-
-    def timeouts
-        get_override( 'setTimeouts' ) || []
-    end
-
-    def intervals
-        return [] if !has_js_overrides?
-        get_override( 'setIntervals' ) || []
-    end
-
     def html?
         response.headers.content_type.to_s.start_with? 'text/html'
     end
 
     def load_delay
         #(intervals + timeouts).map { |t| t.last }.max
-        timeouts.map { |t| t.last }.max
+        @javascript.timeouts.map { |t| t.last }.max
     end
 
     def wait_for_timers
@@ -762,29 +702,7 @@ class Browser
         )
     end
 
-    def js_token
-        @js_token ||= generate_token.to_s
-    end
-
     private
-
-    def has_js_overrides?
-        return if !(r = response)
-        r.body.include? js_token
-    end
-
-    def wait_for_js_overrides
-        return if !has_js_overrides?
-
-        loop do
-            begin
-                break if execute_script( "return _#{js_token}" )
-            rescue
-            end
-
-            sleep 0.1
-        end
-    end
 
     def store_pages?
         !!@options[:store_pages]
@@ -932,7 +850,7 @@ class Browser
         return if watir.windows.size > 1
 
         watir.windows.last.use
-        execute_script( 'window.open()' )
+        @javascript.run( 'window.open()' )
     end
 
     # PhantomJS driver, the default.
@@ -987,10 +905,6 @@ class Browser
         @auth_token ||= generate_token.to_s
     end
 
-    def js_overrides
-        @js_overrides ||= JS_OVERRIDES.gsub( '_token', "_#{js_token}" )
-    end
-
     def request_handler( request, response )
         return if request.headers['X-Arachni-Browser-Auth'] != auth_token
         request.headers.delete( 'X-Arachni-Browser-Auth' )
@@ -1025,20 +939,7 @@ class Browser
 
     def intercept( response )
         return if !intercept?( response )
-        return if response.body.include? "#{js_token}.override"
-
-        response.body = response.body.gsub(
-             /<script(.*)>/i,
-             # This will let us override and trace all global functions.
-             "<script\\1>\n_#{js_token}.add_trace_to_namespace( window );\n"
-         )
-
-        response.body = "\n<script>
-            #{js_overrides}
-            #{"_#{js_token}.taint = #{@taint.inspect};" if @taint}
-</script>\n#{response.body}"
-
-        response.headers['content-length'] = response.body.size
+        @javascript.install_overrides( response )
     end
 
     def intercept?( response )

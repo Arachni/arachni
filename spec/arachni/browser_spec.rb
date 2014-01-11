@@ -42,50 +42,6 @@ describe Arachni::Browser do
         find_page_with_form_with_input( pages, input_name ).should be_false
     end
 
-    it 'keeps track of setTimeout() timers' do
-        @browser.load( @url + 'timeout-tracker' )
-        @browser.timeouts.should == [
-            [
-                "function (name, value) {\n            document.cookie = name + \"=post-\" + value;\n        }",
-                1000, 'timeout1', 1000
-            ],
-            [
-                "function (name, value) {\n            document.cookie = name + \"=post-\" + value;\n        }",
-                1500, 'timeout2', 1500
-            ],
-            [
-                "function (name, value) {\n            document.cookie = name + \"=post-\" + value;\n        }",
-                2000, 'timeout3', 2000
-            ]
-        ]
-
-        @browser.load_delay.should == 2000
-        @browser.cookies.size.should == 4
-        @browser.cookies.map { |c| c.to_s }.sort.should == [
-            'timeout3=post-2000',
-            'timeout2=post-1500',
-            'timeout1=post-1000',
-            'timeout=pre'
-        ].sort
-    end
-
-    it 'keeps track of setInterval() timers' do
-        @browser.load( @url + 'interval-tracker' )
-        @browser.intervals.should == [
-            [
-                "function (name, value) {\n            document.cookie = name + \"=post-\" + value;\n        }",
-                2000, 'timeout1', 2000
-            ]
-        ]
-
-        sleep 2
-        @browser.cookies.size.should == 2
-        @browser.cookies.map { |c| c.to_s }.sort.should == [
-            'timeout1=post-2000',
-            'timeout=pre'
-        ].sort
-    end
-
     it 'keeps track of which events are expected by each element' do
         @browser.load( @url + 'event-tracker' )
         @browser.watir.buttons.first.events.map { |a| a.first }.should == [
@@ -174,37 +130,6 @@ describe Arachni::Browser do
                     @browser.load( @url + '/with-ajax' ).flush_pages.should be_empty
                 end
             end
-        end
-    end
-
-    describe '#debugging_data' do
-        it 'returns debugging information' do
-            @browser.load "#{@url}/debugging_data?input=_#{@browser.js_token}.debug(1)"
-            @browser.watir.form.submit
-            debugging_data = @browser.debugging_data
-
-            first_entry = debugging_data.first
-            debugging_data.should == [first_entry]
-
-            first_entry[:data].should == [1]
-            first_entry[:trace].size.should == 2
-
-            first_entry[:trace][0][:function].should == 'onClick'
-            first_entry[:trace][0][:source].should start_with 'function onClick'
-            @browser.source.split("\n")[first_entry[:trace][0][:line]].should include 'debug(1)'
-            first_entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
-
-            first_entry[:trace][1][:function].should == 'onsubmit'
-            first_entry[:trace][1][:source].should start_with 'function onsubmit'
-            @browser.source.split("\n")[first_entry[:trace][1][:line]].should include 'onClick('
-            first_entry[:trace][1][:arguments].size.should == 1
-
-            event = first_entry[:trace][1][:arguments].first
-
-            form = "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">\n        </form>"
-            event['target'].should == form
-            event['srcElement'].should == form
-            event['type'].should == 'submit'
         end
     end
 
@@ -539,78 +464,9 @@ describe Arachni::Browser do
         end
     end
 
-    describe '#sink' do
-        it 'returns sink data' do
-            @browser.load "#{@url}/debugging_data?input=_#{@browser.js_token}.send_to_sink(1)"
-            @browser.watir.form.submit
-            sink_data = @browser.sink
-
-            first_entry = sink_data.first
-            sink_data.should == [first_entry]
-
-            first_entry[:data].should == [1]
-            first_entry[:trace].size.should == 2
-
-            first_entry[:trace][0][:function].should  == 'onClick'
-            first_entry[:trace][0][:source].should start_with 'function onClick'
-            @browser.source.split("\n")[first_entry[:trace][0][:line]].should include 'send_to_sink(1)'
-            first_entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
-
-            first_entry[:trace][1][:function].should == 'onsubmit'
-            first_entry[:trace][1][:source].should start_with 'function onsubmit'
-            @browser.source.split("\n")[first_entry[:trace][1][:line]].should include 'onsubmit'
-            first_entry[:trace][1][:arguments].size.should == 1
-
-            event = first_entry[:trace][1][:arguments].first
-
-            form = "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">\n        </form>"
-            event['target'].should == form
-            event['srcElement'].should == form
-            event['type'].should == 'submit'
-        end
-    end
-
-    describe '#flush_sink' do
-        it 'returns sink data' do
-            @browser.load "#{@url}/debugging_data?input=_#{@browser.js_token}.send_to_sink(1)"
-            @browser.watir.form.submit
-            sink_data = @browser.flush_sink
-
-            first_entry = sink_data.first
-            sink_data.should == [first_entry]
-
-            first_entry[:data].should == [1]
-            first_entry[:trace].size.should == 2
-
-            first_entry[:trace][0][:function].should == 'onClick'
-            first_entry[:trace][0][:source].should start_with 'function onClick'
-            @browser.source.split("\n")[first_entry[:trace][0][:line]].should include 'send_to_sink(1)'
-            first_entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
-
-            first_entry[:trace][1][:function].should == 'onsubmit'
-            first_entry[:trace][1][:source].should start_with 'function onsubmit'
-            @browser.source.split("\n")[first_entry[:trace][1][:line]].should include 'onsubmit'
-            first_entry[:trace][1][:arguments].size.should == 1
-
-            event = first_entry[:trace][1][:arguments].first
-
-            form = "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">\n        </form>"
-            event['target'].should == form
-            event['srcElement'].should == form
-            event['type'].should == 'submit'
-        end
-
-        it 'empties the sink' do
-            @browser.load "#{@url}/debugging_data?input=_#{@browser.js_token}.send_to_sink(1)"
-            @browser.watir.form.submit
-            @browser.flush_sink
-            @browser.sink.should be_empty
-        end
-    end
-
     describe '#page_snapshots_with_sinks' do
         it 'returns sink data' do
-            @browser.load "#{@url}/lots_of_sinks?input=_#{@browser.js_token}.send_to_sink(1)"
+            @browser.load "#{@url}/lots_of_sinks?input=_#{@browser.javascript.token}.send_to_sink(1)"
             @browser.explore_and_flush
 
             pages = @browser.page_snapshots_with_sinks
@@ -620,7 +476,7 @@ describe Arachni::Browser do
 
             doms[0].transitions.should == [
                 { page: :load },
-                { "#{@url}lots_of_sinks?input=_#{@browser.js_token}.send_to_sink(1)" => :request },
+                { "#{@url}lots_of_sinks?input=_#{@browser.javascript.token}.send_to_sink(1)" => :request },
                 { "<a href=\"#\" onmouseover=\"onClick2('blah1', 'blah2', 'blah3');\">" => :onmouseover }
             ]
 
@@ -681,7 +537,7 @@ describe Arachni::Browser do
 
             doms[1].transitions.should == [
                 { page: :load },
-                { "#{@url}lots_of_sinks?input=_#{@browser.js_token}.send_to_sink(1)" => :request },
+                { "#{@url}lots_of_sinks?input=_#{@browser.javascript.token}.send_to_sink(1)" => :request },
                 { "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">" => :onsubmit }
             ]
 
@@ -737,7 +593,7 @@ describe Arachni::Browser do
             it 'does not store pages' do
                 @browser.shutdown
                 @browser = described_class.new( store_pages: false )
-                @browser.load "#{@url}/lots_of_sinks?input=_#{@browser.js_token}.send_to_sink(1)"
+                @browser.load "#{@url}/lots_of_sinks?input=_#{@browser.javascript.token}.send_to_sink(1)"
                 @browser.explore_and_flush
                 @browser.page_snapshots_with_sinks.should be_empty
             end
@@ -746,14 +602,14 @@ describe Arachni::Browser do
 
     describe '#flush_page_snapshots_with_sinks' do
         it 'returns sink data' do
-            @browser.load "#{@url}/lots_of_sinks?input=_#{@browser.js_token}.send_to_sink(1)"
+            @browser.load "#{@url}/lots_of_sinks?input=_#{@browser.javascript.token}.send_to_sink(1)"
             @browser.explore_and_flush
             @browser.page_snapshots_with_sinks.map(&:dom).map(&:sink).should ==
                 @browser.flush_page_snapshots_with_sinks.map(&:dom).map(&:sink)
         end
 
         it 'empties the buffer' do
-            @browser.load "#{@url}/lots_of_sinks?input=_#{@browser.js_token}.send_to_sink(1)"
+            @browser.load "#{@url}/lots_of_sinks?input=_#{@browser.javascript.token}.send_to_sink(1)"
             @browser.explore_and_flush
             @browser.flush_page_snapshots_with_sinks.map(&:dom).map(&:sink)
             @browser.page_snapshots_with_sinks.should be_empty
@@ -762,7 +618,7 @@ describe Arachni::Browser do
 
     describe '#on_new_page_with_sink' do
         it 'assigns blocks to handle each page with sink data' do
-            @browser.load "#{@url}/lots_of_sinks?input=_#{@browser.js_token}.send_to_sink(1)"
+            @browser.load "#{@url}/lots_of_sinks?input=_#{@browser.javascript.token}.send_to_sink(1)"
 
             sinks = []
             @browser.on_new_page_with_sink do |page|
@@ -773,14 +629,6 @@ describe Arachni::Browser do
 
             sinks.size.should == 2
             sinks.should == @browser.page_snapshots_with_sinks.map(&:dom).map(&:sink)
-        end
-    end
-
-    describe '#execute_script' do
-        it 'executes the given script under the browser\'s context' do
-            @browser.load @url
-            Nokogiri::HTML(@browser.source).to_s.should ==
-                Nokogiri::HTML(@browser.execute_script( 'return document.documentElement.innerHTML' ) ).to_s
         end
     end
 
@@ -943,7 +791,7 @@ describe Arachni::Browser do
         end
 
         it 'assigns the proper sink data' do
-            @browser.load "#{@url}/debugging_data?input=_#{@browser.js_token}.send_to_sink(1)"
+            @browser.load "#{@url}/debugging_data?input=_#{@browser.javascript.token}.send_to_sink(1)"
             @browser.watir.form.submit
 
             page = @browser.to_page
@@ -1007,7 +855,7 @@ describe Arachni::Browser do
 
             elements_with_events.should be_any
 
-            @browser.execute_script( "document.getElementById('my-button').style.visibility='none'" )
+            @browser.javascript.run( "document.getElementById('my-button').style.visibility='none'" )
 
             elements_with_events = []
             @browser.each_element_with_events do |info|
@@ -1198,45 +1046,6 @@ describe Arachni::Browser do
 
                 @browser.load( @url + '/explore?test=1&test2=2' ).response.code.should == 0
             end
-        end
-
-        it 'uses the system cookies' do
-            url = @url + '/cookie-test'
-            Arachni::HTTP::Client.cookie_jar << Arachni::Cookie.new(
-                url:    @url,
-                inputs: { 'cookie-name' => 'value' }
-            )
-
-            @browser.goto url
-            @browser.watir.div( id: 'cookies' ).text.should ==
-                "{\"cookie-name\"=>\"value\"}"
-        end
-
-        it 'updates the system cookies' do
-            Arachni::HTTP::Client.cookies.
-                find { |cookie| cookie.name == 'update' }.should be_nil
-
-            @browser.goto @url + '/update-cookies'
-
-            Arachni::HTTP::Client.cookies.
-                find { |cookie| cookie.name == 'update' }.should be_true
-        end
-
-        it 'accepts cookies set via JavaScript' do
-            Arachni::HTTP::Client.cookies.
-                find { |cookie| cookie.name == 'js-cookie-name' }.should be_nil
-
-            @browser.goto @url + '/set-javascript-cookie'
-
-            Arachni::HTTP::Client.cookies.
-                find { |cookie| cookie.name == 'js-cookie-name' }.should be_true
-
-            @browser.to_page.cookies.
-                find { |cookie| cookie.name == 'js-cookie-name' }.should be_true
-        end
-
-        it 'returns self' do
-            @browser.goto( @url ).should == @browser
         end
 
         context 'when the take_snapshot argument has been set to' do

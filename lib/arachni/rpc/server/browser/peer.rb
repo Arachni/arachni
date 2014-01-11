@@ -27,12 +27,14 @@ class Peer < Arachni::Browser
     attr_reader :master
 
     def initialize( options )
-        @js_token = options.delete( :js_token )
-        @master   = options.delete( :master )
+        js_token = options.delete( :js_token )
+        @master  = options.delete( :master )
 
         # Don't store pages if there's a master, we'll be sending them to him
         # as soon as they're logged.
         super options.merge( store_pages: @master.nil? )
+
+        @javascript.token = js_token
 
         start_capture
 
