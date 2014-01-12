@@ -96,30 +96,29 @@ describe Arachni::Browser::Javascript do
                 end
 
                 context '.before' do
-                    context 'String' do
-                        it 'logs it' do
-                            @javascript.taint = @browser.generate_token
-                            @browser.load "#{@url}/data_trace/jQuery.before?taint=#{@javascript.taint}"
+                    it 'logs it' do
+                        @javascript.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/jQuery.before?taint=#{@javascript.taint}"
 
-                            pages = @browser.flush_page_snapshots_with_sinks
+                        pages = @browser.flush_page_snapshots_with_sinks
 
-                            pages.size.should == 1
-                            page = pages.first
+                        pages.size.should == 1
+                        page = pages.first
 
-                            page.dom.sink.size.should == 2
+                        page.dom.sink.size.should == 2
 
-                            entry = page.dom.sink[0]
-                            entry[:data][0]['function'].should == 'before'
-                            entry[:data][0]['arguments'].should == ["Stuff #{@javascript.taint}"]
-                            entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
-                            entry[:data][0]['taint'].should == @javascript.taint
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['function'].should == 'before'
+                        entry[:data][0]['arguments'].should == ["Stuff #{@javascript.taint}"]
+                        entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
+                        entry[:data][0]['taint'].should == @javascript.taint
 
-                            trace = entry[:trace][0]
-                            page.body.split("\n")[trace[:line]].should include 'before('
-                            trace[:url].should == page.url
-                        end
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line]].should include 'before('
+                        trace[:url].should == page.url
                     end
                 end
+
             end
 
             context 'String' do
@@ -419,7 +418,6 @@ describe Arachni::Browser::Javascript do
                         trace[:url].should == page.url
                     end
                 end
-
             end
         end
     end
