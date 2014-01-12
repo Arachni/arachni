@@ -24,6 +24,9 @@ class Javascript
     #   JavaScript token used to namespace the {OVERRIDES} and avoid clashes.
     attr_accessor :token
 
+    # @return   [String]    Taint to look for and trace in the JS data flow.
+    attr_accessor :taint
+
     # @param    [Browser]   browser
     def initialize( browser )
         @browser = browser
@@ -36,7 +39,7 @@ class Javascript
     end
 
     # @return [String]
-    #   {OVERRIDES} with `_token` substituted for "_{#token}".
+    #   {OVERRIDES} with `_token` substituted with "_{#token}".
     def overrides
         @overrides ||= OVERRIDES.gsub( '_token', "_#{token}" )
     end
@@ -56,7 +59,7 @@ class Javascript
 
         response.body = "\n<script>
             #{overrides}
-        #{"_#{token}.taint = #{@browser.taint.inspect};" if @browser.taint}
+        #{"_#{token}.taint = #{@taint.inspect};" if @taint}
 </script>\n#{response.body}"
 
         response.headers['content-length'] = response.body.size

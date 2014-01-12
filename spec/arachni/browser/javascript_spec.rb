@@ -17,6 +17,475 @@ describe Arachni::Browser::Javascript do
         @browser.shutdown
     end
 
+    describe '#taint' do
+        context 'when tainted data pass through' do
+            context 'global methods' do
+                it 'logs it' do
+                    @javascript.taint = @browser.generate_token
+                    @browser.load "#{@url}/data_trace/global-functions?taint=#{@javascript.taint}"
+
+                    pages = @browser.flush_page_snapshots_with_sinks
+
+                    pages.size.should == 1
+                    page = pages.first
+
+                    page.dom.sink.size.should == 1
+
+                    entry = page.dom.sink[0]
+                    entry[:data][0]['function'].should == 'process'
+                    entry[:data][0]['source'].should start_with 'function process'
+                    entry[:data][0]['arguments'].should == [
+                        {
+                            'my_data' => 'blah',
+                            'input'   => @javascript.taint
+                        }
+                    ]
+                    entry[:data][0]['tainted'].should == @javascript.taint
+                    entry[:data][0]['taint'].should == @javascript.taint
+                    page.body.split("\n")[entry[:trace][0][:line]].should include 'process('
+                end
+            end
+
+            context 'String' do
+                context '.replace' do
+                    it 'logs it' do
+                        @javascript.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/String.replace?taint=#{@javascript.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 1
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['function'].should == 'replace'
+                        entry[:data][0]['source'].should start_with 'function replace'
+                        entry[:data][0]['arguments'].should == [
+                            'my', @javascript.taint
+                        ]
+                        entry[:data][0]['tainted'].should == @javascript.taint
+                        entry[:data][0]['taint'].should == @javascript.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line]].should include 'replace('
+                        trace[:url].should == page.url
+                    end
+                end
+
+                context '.concat' do
+                    it 'logs it' do
+                        @javascript.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/String.concat?taint=#{@javascript.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 1
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['function'].should == 'concat'
+                        entry[:data][0]['source'].should start_with 'function concat'
+                        entry[:data][0]['arguments'].should == [ "stuff #{@javascript.taint}" ]
+                        entry[:data][0]['tainted'].should == "stuff #{@javascript.taint}"
+                        entry[:data][0]['taint'].should == @javascript.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line]].should include 'concat('
+                        trace[:url].should == page.url
+                    end
+                end
+            end
+
+            context 'HTMLElement' do
+                context '.insertAdjacentHTML' do
+                    it 'logs it' do
+                        @javascript.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/HTMLElement.insertAdjacentHTML?taint=#{@javascript.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 1
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['function'].should == 'insertAdjacentHTML'
+                        entry[:data][0]['source'].should start_with 'function insertAdjacentHTML'
+                        entry[:data][0]['arguments'].should == [
+                            'AfterBegin', "stuff #{@javascript.taint} more stuff"
+                        ]
+                        entry[:data][0]['tainted'].should == "stuff #{@javascript.taint} more stuff"
+                        entry[:data][0]['taint'].should == @javascript.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line]].should include 'insertAdjacentHTML('
+                        trace[:url].should == page.url
+                    end
+                end
+            end
+
+            context 'Element' do
+                context '.setAttribute' do
+                    it 'logs it' do
+                        @javascript.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/Element.setAttribute?taint=#{@javascript.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 1
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['function'].should == 'setAttribute'
+                        entry[:data][0]['source'].should start_with 'function setAttribute'
+                        entry[:data][0]['arguments'].should == [
+                            'my-attribute', "stuff #{@javascript.taint} more stuff"
+                        ]
+                        entry[:data][0]['tainted'].should == "stuff #{@javascript.taint} more stuff"
+                        entry[:data][0]['taint'].should == @javascript.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line]].should include 'setAttribute('
+                        trace[:url].should == page.url
+                    end
+                end
+            end
+
+            context 'Document' do
+                context '.createTextNode' do
+                    it 'logs it' do
+                        @javascript.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/Document.createTextNode?taint=#{@javascript.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 1
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['function'].should == 'createTextNode'
+                        entry[:data][0]['source'].should start_with 'function createTextNode'
+                        entry[:data][0]['arguments'].should == [ "node #{@javascript.taint}" ]
+                        entry[:data][0]['tainted'].should == "node #{@javascript.taint}"
+                        entry[:data][0]['taint'].should == @javascript.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line]].should include 'document.createTextNode('
+                        trace[:url].should == page.url
+                    end
+                end
+            end
+
+            context 'Text' do
+                context '.replaceWholeText' do
+                    it 'logs it' do
+                        @javascript.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/Text.replaceWholeText?taint=#{@javascript.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 1
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['function'].should == 'replaceWholeText'
+                        entry[:data][0]['source'].should start_with 'function replaceWholeText'
+                        entry[:data][0]['arguments'].should == [ "Stuff #{@javascript.taint}" ]
+                        entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
+                        entry[:data][0]['taint'].should == @javascript.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line]].should include 'replaceWholeText('
+                        trace[:url].should == page.url
+                    end
+                end
+
+                context '.insertData' do
+                    it 'logs it' do
+                        @javascript.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/Text.insertData?taint=#{@javascript.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 1
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['function'].should == 'insertData'
+                        entry[:data][0]['source'].should start_with 'function insertData'
+                        entry[:data][0]['arguments'].should == [ "Stuff #{@javascript.taint}" ]
+                        entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
+                        entry[:data][0]['taint'].should == @javascript.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line]].should include 'insertData('
+                        trace[:url].should == page.url
+                    end
+                end
+
+                context '.appendData' do
+                    it 'logs it' do
+                        @javascript.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/Text.appendData?taint=#{@javascript.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 1
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['function'].should == 'appendData'
+                        entry[:data][0]['source'].should start_with 'function appendData'
+                        entry[:data][0]['arguments'].should == [ "Stuff #{@javascript.taint}" ]
+                        entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
+                        entry[:data][0]['taint'].should == @javascript.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line]].should include 'appendData('
+                        trace[:url].should == page.url
+                    end
+                end
+
+                context '.replaceData' do
+                    it 'logs it' do
+                        @javascript.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/Text.replaceData?taint=#{@javascript.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 1
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['function'].should == 'replaceData'
+                        entry[:data][0]['source'].should start_with 'function replaceData'
+                        entry[:data][0]['arguments'].should == [ 0, 0, "Stuff #{@javascript.taint}" ]
+                        entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
+                        entry[:data][0]['taint'].should == @javascript.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line]].should include 'replaceData('
+                        trace[:url].should == page.url
+                    end
+                end
+            end
+
+            context 'HTMLDocument' do
+                context '.write' do
+                    it 'logs it' do
+                        @javascript.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/HTMLDocument.write?taint=#{@javascript.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 1
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['function'].should == 'write'
+                        entry[:data][0]['source'].should start_with 'function write'
+                        entry[:data][0]['arguments'].should == [
+                            "Stuff here blah #{@javascript.taint} more stuff nlahblah..."
+                        ]
+                        entry[:data][0]['tainted'].should ==
+                            "Stuff here blah #{@javascript.taint} more stuff nlahblah..."
+                        entry[:data][0]['taint'].should == @javascript.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line]].should include 'document.write('
+                        trace[:url].should == page.url
+                    end
+                end
+
+                context '.writeln' do
+                    it 'logs it' do
+                        @javascript.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/HTMLDocument.writeln?taint=#{@javascript.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 1
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['function'].should == 'writeln'
+                        entry[:data][0]['source'].should start_with 'function writeln'
+                        entry[:data][0]['arguments'].should == [
+                            "Stuff here blah #{@javascript.taint} more stuff nlahblah..."
+                        ]
+                        entry[:data][0]['tainted'].should ==
+                            "Stuff here blah #{@javascript.taint} more stuff nlahblah..."
+                        entry[:data][0]['taint'].should == @javascript.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line]].should include 'document.writeln('
+                        trace[:url].should == page.url
+                    end
+                end
+
+            end
+        end
+    end
+
+    describe '#page_snapshots_with_sinks' do
+        it 'returns sink data' do
+            @browser.load "#{@url}/lots_of_sinks?input=_#{@browser.javascript.token}.send_to_sink(1)"
+            @browser.explore_and_flush
+
+            pages = @browser.page_snapshots_with_sinks
+            doms  = pages.map(&:dom)
+
+            doms.size.should == 2
+
+            doms[0].transitions.should == [
+                { page: :load },
+                { "#{@url}lots_of_sinks?input=_#{@browser.javascript.token}.send_to_sink(1)" => :request },
+                { "<a href=\"#\" onmouseover=\"onClick2('blah1', 'blah2', 'blah3');\">" => :onmouseover }
+            ]
+
+            doms[0].sink.size.should == 2
+
+            entry = doms[0].sink[0]
+            entry[:data].should == [1]
+            entry[:trace].size.should == 3
+
+            entry[:trace][0][:function].should == 'onClick'
+            entry[:trace][0][:source].should start_with 'function onClick'
+            @browser.source.split("\n")[entry[:trace][0][:line]].should include 'send_to_sink'
+            entry[:trace][0][:arguments].should == [1, 2]
+
+            entry[:trace][1][:function].should == 'onClick2'
+            entry[:trace][1][:source].should start_with 'function onClick2'
+            @browser.source.split("\n")[entry[:trace][1][:line]].should include 'onClick'
+            entry[:trace][1][:arguments].should == %w(blah1 blah2 blah3)
+
+            entry[:trace][2][:function].should == 'onmouseover'
+            entry[:trace][2][:source].should start_with 'function onmouseover'
+
+            event = entry[:trace][2][:arguments].first
+
+            link = "<a href=\"#\" onmouseover=\"onClick2('blah1', 'blah2', 'blah3');\">Blah</a>"
+            event['target'].should == link
+            event['srcElement'].should == link
+            event['type'].should == 'mouseover'
+
+            entry = doms[0].sink[1]
+            entry[:data].should == [1]
+            entry[:trace].size.should == 4
+
+            entry[:trace][0][:function].should == 'onClick3'
+            entry[:trace][0][:source].should start_with 'function onClick3'
+            @browser.source.split("\n")[entry[:trace][0][:line]].should include 'send_to_sink'
+            entry[:trace][0][:arguments].should be_empty
+
+            entry[:trace][1][:function].should == 'onClick'
+            entry[:trace][1][:source].should start_with 'function onClick'
+            @browser.source.split("\n")[entry[:trace][1][:line]].should include 'onClick3'
+            entry[:trace][1][:arguments].should == [1, 2]
+
+            entry[:trace][2][:function].should == 'onClick2'
+            entry[:trace][2][:source].should start_with 'function onClick2'
+            @browser.source.split("\n")[entry[:trace][2][:line]].should include 'onClick'
+            entry[:trace][2][:arguments].should == %w(blah1 blah2 blah3)
+
+            entry[:trace][3][:function].should == 'onmouseover'
+            entry[:trace][3][:source].should start_with 'function onmouseover'
+
+            event = entry[:trace][3][:arguments].first
+
+            link = "<a href=\"#\" onmouseover=\"onClick2('blah1', 'blah2', 'blah3');\">Blah</a>"
+            event['target'].should == link
+            event['srcElement'].should == link
+            event['type'].should == 'mouseover'
+
+            doms[1].transitions.should == [
+                { page: :load },
+                { "#{@url}lots_of_sinks?input=_#{@browser.javascript.token}.send_to_sink(1)" => :request },
+                { "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">" => :onsubmit }
+            ]
+
+            doms[1].sink.size.should == 2
+
+            entry = doms[1].sink[0]
+            entry[:data].should == [1]
+            entry[:trace].size.should == 2
+
+            entry[:trace][0][:function].should == 'onClick'
+            entry[:trace][0][:source].should start_with 'function onClick'
+            @browser.source.split("\n")[entry[:trace][0][:line]].should include 'send_to_sink(1)'
+            entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
+
+            entry[:trace][1][:function].should == 'onsubmit'
+            entry[:trace][1][:source].should start_with 'function onsubmit'
+            @browser.source.split("\n")[entry[:trace][1][:line]].should include 'onClick'
+
+            event = entry[:trace][1][:arguments].first
+
+            form = "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">\n        </form>"
+            event['target'].should == form
+            event['srcElement'].should == form
+            event['type'].should == 'submit'
+
+            entry = doms[1].sink[1]
+            entry[:data].should == [1]
+            entry[:trace].size.should == 3
+
+            entry[:trace][0][:function].should == 'onClick3'
+            entry[:trace][0][:source].should start_with 'function onClick3'
+            @browser.source.split("\n")[entry[:trace][0][:line]].should include 'send_to_sink(1)'
+            entry[:trace][0][:arguments].should be_empty
+
+            entry[:trace][1][:function].should == 'onClick'
+            entry[:trace][1][:source].should start_with 'function onClick'
+            @browser.source.split("\n")[entry[:trace][1][:line]].should include 'onClick3()'
+            entry[:trace][1][:arguments].should == %w(some-arg arguments-arg here-arg)
+
+            entry[:trace][2][:function].should == 'onsubmit'
+            entry[:trace][2][:source].should start_with 'function onsubmit'
+            @browser.source.split("\n")[entry[:trace][2][:line]].should include 'onClick('
+
+            event = entry[:trace][2][:arguments].first
+
+            form = "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">\n        </form>"
+            event['target'].should == form
+            event['srcElement'].should == form
+            event['type'].should == 'submit'
+        end
+
+        describe 'when store_pages: false' do
+            it 'does not store pages' do
+                @browser.shutdown
+                @browser = @browser.class.new( store_pages: false )
+                @javascript = @browser.javascript
+
+                @browser.load "#{@url}/lots_of_sinks?input=_#{@javascript.token}.send_to_sink(1)"
+                @browser.explore_and_flush
+                @browser.page_snapshots_with_sinks.should be_empty
+            end
+        end
+    end
+
     describe '#timeouts' do
         it 'keeps track of setTimeout() timers' do
             @browser.load( @url + 'timeout-tracker' )

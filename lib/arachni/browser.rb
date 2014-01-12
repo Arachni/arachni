@@ -118,9 +118,6 @@ class Browser
     # @see Page::DOM#sink
     attr_reader :page_snapshots_with_sinks
 
-    # @return   [String]    Taint to look for and trace in the JS data flow.
-    attr_accessor :taint
-
     # @return   [Javascript]
     attr_reader :javascript
 
