@@ -38,6 +38,37 @@ get '/data_trace/jQuery.html' do
     EOHTML
 end
 
+get '/data_trace/jQuery.text' do
+    <<-EOHTML
+    <html>
+        <script src="/jquery.js" type="text/javascript"></script>
+
+        <div id='my-div'>
+        </div>
+
+        <script type="text/javascript">
+            $("#my-div").text( 'Stuff ' + #{params[:taint].inspect} );
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/jQuery.val' do
+    <<-EOHTML
+    <html>
+        <script src="/jquery.js" type="text/javascript"></script>
+
+        <div id='my-div'>
+            <input id='my-input' />
+        </div>
+
+        <script type="text/javascript">
+            $("#my-input").val( 'Stuff ' + #{params[:taint].inspect} );
+        </script>
+    </html>
+    EOHTML
+end
+
 get '/data_trace/jQuery.append' do
     <<-EOHTML
     <html>
@@ -63,6 +94,51 @@ get '/data_trace/jQuery.before' do
 
         <script type="text/javascript">
             $("#my-div").before( 'Stuff ' + #{params[:taint].inspect} );
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/jQuery.prepend' do
+    <<-EOHTML
+    <html>
+        <script src="/jquery.js" type="text/javascript"></script>
+
+        <div id='my-div'>
+        </div>
+
+        <script type="text/javascript">
+            $("#my-div").prepend( 'Stuff ' + #{params[:taint].inspect} );
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/jQuery.prop' do
+    <<-EOHTML
+    <html>
+        <script src="/jquery.js" type="text/javascript"></script>
+
+        <div id='my-div'>
+        </div>
+
+        <script type="text/javascript">
+            $("#my-div").prop( 'stuff', 'Stuff ' + #{params[:taint].inspect} );
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/jQuery.replaceWith' do
+    <<-EOHTML
+    <html>
+        <script src="/jquery.js" type="text/javascript"></script>
+
+        <div id='my-div'>
+        </div>
+
+        <script type="text/javascript">
+            $("#my-div").replaceWith( 'Stuff ' + #{params[:taint].inspect} );
         </script>
     </html>
     EOHTML
