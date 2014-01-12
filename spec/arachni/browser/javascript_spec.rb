@@ -625,7 +625,7 @@ describe Arachni::Browser::Javascript do
     describe '#sink' do
         it 'returns sink data' do
             @browser.load "#{@url}/debugging_data?input=_" <<
-                                 "#{@javascript.token}.send_to_sink(1)"
+                                 "#{@javascript.token}.log_sink(1)"
             @browser.watir.form.submit
             sink_data = @javascript.sink
 
@@ -637,7 +637,7 @@ describe Arachni::Browser::Javascript do
 
             first_entry[:trace][0][:function].should  == 'onClick'
             first_entry[:trace][0][:source].should start_with 'function onClick'
-            @browser.source.split("\n")[first_entry[:trace][0][:line]].should include 'send_to_sink(1)'
+            @browser.source.split("\n")[first_entry[:trace][0][:line]].should include 'log_sink(1)'
             first_entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
 
             first_entry[:trace][1][:function].should == 'onsubmit'
@@ -657,7 +657,7 @@ describe Arachni::Browser::Javascript do
     describe '#flush_sink' do
         it 'returns sink data' do
             @browser.load "#{@url}/debugging_data?input=_" <<
-                                         "#{@javascript.token}.send_to_sink(1)"
+                                         "#{@javascript.token}.log_sink(1)"
             @browser.watir.form.submit
             sink_data = @javascript.flush_sink
 
@@ -669,7 +669,7 @@ describe Arachni::Browser::Javascript do
 
             first_entry[:trace][0][:function].should == 'onClick'
             first_entry[:trace][0][:source].should start_with 'function onClick'
-            @browser.source.split("\n")[first_entry[:trace][0][:line]].should include 'send_to_sink(1)'
+            @browser.source.split("\n")[first_entry[:trace][0][:line]].should include 'log_sink(1)'
             first_entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
 
             first_entry[:trace][1][:function].should == 'onsubmit'
@@ -687,7 +687,7 @@ describe Arachni::Browser::Javascript do
 
         it 'empties the sink' do
             @browser.load "#{@url}/debugging_data?input=_" <<
-                                         "#{@javascript.token}.send_to_sink(1)"
+                                         "#{@javascript.token}.log_sink(1)"
             @browser.watir.form.submit
             @javascript.flush_sink
             @javascript.sink.should be_empty
