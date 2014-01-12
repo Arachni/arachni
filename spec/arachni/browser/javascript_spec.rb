@@ -17,6 +17,27 @@ describe Arachni::Browser::Javascript do
         @browser.shutdown
     end
 
+    describe '#log_sink_stub' do
+        it 'returns JS code that calls JS\'s log_sink()' do
+            @javascript.log_sink_stub.should == "_#{@javascript.token}.log_sink()"
+
+            @browser.load "#{@url}/debugging_data?input=#{@javascript.log_sink_stub}"
+            @browser.watir.form.submit
+            @javascript.sink.should be_any
+            @javascript.sink.first[:data].should be_empty
+        end
+
+        context 'when an argument is passed' do
+            it 'converts it to JSON' do
+                [1, true].each do |arg|
+                    @browser.load "#{@url}/debugging_data?input=#{@javascript.log_sink_stub( arg )}"
+                    @browser.watir.form.submit
+                    @javascript.sink.first[:data].should == [arg]
+                end
+            end
+        end
+    end
+
     describe '#taint' do
         context 'when tainted data pass through' do
             context 'global methods' do
@@ -624,8 +645,7 @@ describe Arachni::Browser::Javascript do
 
     describe '#sink' do
         it 'returns sink data' do
-            @browser.load "#{@url}/debugging_data?input=_" <<
-                                 "#{@javascript.token}.log_sink(1)"
+            @browser.load "#{@url}/debugging_data?input=#{@javascript.log_sink_stub(1)}"
             @browser.watir.form.submit
             sink_data = @javascript.sink
 
@@ -656,8 +676,7 @@ describe Arachni::Browser::Javascript do
 
     describe '#flush_sink' do
         it 'returns sink data' do
-            @browser.load "#{@url}/debugging_data?input=_" <<
-                                         "#{@javascript.token}.log_sink(1)"
+            @browser.load "#{@url}/debugging_data?input=#{@javascript.log_sink_stub(1)}"
             @browser.watir.form.submit
             sink_data = @javascript.flush_sink
 
@@ -686,8 +705,7 @@ describe Arachni::Browser::Javascript do
         end
 
         it 'empties the sink' do
-            @browser.load "#{@url}/debugging_data?input=_" <<
-                                         "#{@javascript.token}.log_sink(1)"
+            @browser.load "#{@url}/debugging_data?input=#{@javascript.log_sink_stub}"
             @browser.watir.form.submit
             @javascript.flush_sink
             @javascript.sink.should be_empty

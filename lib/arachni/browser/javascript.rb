@@ -38,6 +38,11 @@ class Javascript
         @token ||= generate_token.to_s
     end
 
+    # @return   [String]    JS code which will call the `log_sink` JS function.
+    def log_sink_stub( data = nil )
+        "_#{token}.log_sink(#{data.to_json if data})"
+    end
+
     # @return [String]
     #   {OVERRIDES} with `_token` substituted with "_{#token}".
     def overrides

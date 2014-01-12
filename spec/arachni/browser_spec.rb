@@ -135,14 +135,14 @@ describe Arachni::Browser do
 
     describe '#flush_page_snapshots_with_sinks' do
         it 'returns sink data' do
-            @browser.load "#{@url}/lots_of_sinks?input=_#{@browser.javascript.token}.log_sink(1)"
+            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_sink_stub(1)}"
             @browser.explore_and_flush
             @browser.page_snapshots_with_sinks.map(&:dom).map(&:sink).should ==
                 @browser.flush_page_snapshots_with_sinks.map(&:dom).map(&:sink)
         end
 
         it 'empties the buffer' do
-            @browser.load "#{@url}/lots_of_sinks?input=_#{@browser.javascript.token}.log_sink(1)"
+            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_sink_stub(1)}"
             @browser.explore_and_flush
             @browser.flush_page_snapshots_with_sinks.map(&:dom).map(&:sink)
             @browser.page_snapshots_with_sinks.should be_empty
@@ -151,7 +151,7 @@ describe Arachni::Browser do
 
     describe '#on_new_page_with_sink' do
         it 'assigns blocks to handle each page with sink data' do
-            @browser.load "#{@url}/lots_of_sinks?input=_#{@browser.javascript.token}.log_sink(1)"
+            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_sink_stub(1)}"
 
             sinks = []
             @browser.on_new_page_with_sink do |page|
@@ -301,7 +301,7 @@ describe Arachni::Browser do
 
     describe '#page_snapshots_with_sinks' do
         it 'returns sink data' do
-            @browser.load "#{@url}/lots_of_sinks?input=_#{@browser.javascript.token}.log_sink(1)"
+            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_sink_stub(1)}"
             @browser.explore_and_flush
 
             pages = @browser.page_snapshots_with_sinks
@@ -311,7 +311,7 @@ describe Arachni::Browser do
 
             doms[0].transitions.should == [
                 { page: :load },
-                { "#{@url}lots_of_sinks?input=_#{@browser.javascript.token}.log_sink(1)" => :request },
+                { "#{@url}lots_of_sinks?input=#{@browser.javascript.log_sink_stub(1)}" => :request },
                 { "<a href=\"#\" onmouseover=\"onClick2('blah1', 'blah2', 'blah3');\">" => :onmouseover }
             ]
 
@@ -372,7 +372,7 @@ describe Arachni::Browser do
 
             doms[1].transitions.should == [
                 { page: :load },
-                { "#{@url}lots_of_sinks?input=_#{@browser.javascript.token}.log_sink(1)" => :request },
+                { "#{@url}lots_of_sinks?input=#{@browser.javascript.log_sink_stub(1)}" => :request },
                 { "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">" => :onsubmit }
             ]
 
@@ -428,9 +428,8 @@ describe Arachni::Browser do
             it 'does not store pages' do
                 @browser.shutdown
                 @browser = @browser.class.new( store_pages: false )
-                @javascript = @browser.javascript
 
-                @browser.load "#{@url}/lots_of_sinks?input=_#{@javascript.token}.log_sink(1)"
+                @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_sink_stub(1)}"
                 @browser.explore_and_flush
                 @browser.page_snapshots_with_sinks.should be_empty
             end
@@ -463,7 +462,7 @@ describe Arachni::Browser do
 
         it 'assigns the proper sink data' do
             @browser.load "#{web_server_url_for( :javascript )}/debugging_data" <<
-                              "?input=_#{@browser.javascript.token}.log_sink(1)"
+                              "?input=#{@browser.javascript.log_sink_stub(1)}"
             @browser.watir.form.submit
 
             page = @browser.to_page
