@@ -52,9 +52,9 @@ class Javascript
         return if response.body.include? "#{token}.override"
 
         response.body = response.body.gsub(
-            /<script(.*)>/i,
+            /<script(.*?)>/i,
             # This will let us override and trace all global functions.
-            "<script\\1>\n_#{token}.add_trace_to_namespace( window );\n"
+            "<script\\1>\n_#{token}.update_tracers();\n"
         )
 
         response.body = "\n<script>

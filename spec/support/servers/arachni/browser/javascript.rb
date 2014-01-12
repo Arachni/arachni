@@ -1,6 +1,13 @@
 require 'sinatra'
 require 'sinatra/contrib'
 
+JS_LIB = "#{File.dirname( __FILE__ )}/javascript/"
+
+get '/jquery.js' do
+    content_type 'text/javascript'
+    IO.read "#{JS_LIB}/jquery-2.0.3.js"
+end
+
 get '/data_trace/global-functions' do
     <<-EOHTML
     <html>
@@ -11,6 +18,51 @@ get '/data_trace/global-functions' do
         <script type="text/javascript">
             function process( data ) {}
             process({ my_data: 'blah', input: '#{params[:taint]}' });
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/jQuery.html' do
+    <<-EOHTML
+    <html>
+        <script src="/jquery.js" type="text/javascript"></script>
+
+        <div id='my-div'>
+        </div>
+
+        <script type="text/javascript">
+            $("#my-div").html( 'Stuff ' + #{params[:taint].inspect} );
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/jQuery.append' do
+    <<-EOHTML
+    <html>
+        <script src="/jquery.js" type="text/javascript"></script>
+
+        <div id='my-div'>
+        </div>
+
+        <script type="text/javascript">
+            $("#my-div").append( 'Stuff ' + #{params[:taint].inspect} );
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/jQuery.before' do
+    <<-EOHTML
+    <html>
+        <script src="/jquery.js" type="text/javascript"></script>
+
+        <div id='my-div'>
+        </div>
+
+        <script type="text/javascript">
+            $("#my-div").before( 'Stuff ' + #{params[:taint].inspect} );
         </script>
     </html>
     EOHTML

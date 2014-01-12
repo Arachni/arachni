@@ -46,6 +46,113 @@ describe Arachni::Browser::Javascript do
                 end
             end
 
+            context 'jQuery' do
+                context '.html' do
+                    it 'logs it' do
+                        @javascript.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/jQuery.html?taint=#{@javascript.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 1
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['function'].should == 'html'
+                        entry[:data][0]['arguments'].should == ["Stuff #{@javascript.taint}"]
+                        entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
+                        entry[:data][0]['taint'].should == @javascript.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line]-1].should include 'html('
+                        trace[:url].should == page.url
+                    end
+                end
+
+                context '.append' do
+                    context 'and the argument is a' do
+                        context 'String' do
+                            it 'logs it' do
+                                @javascript.taint = @browser.generate_token
+                                @browser.load "#{@url}/data_trace/jQuery.append?taint=#{@javascript.taint}"
+
+                                pages = @browser.flush_page_snapshots_with_sinks
+
+                                pages.size.should == 1
+                                page = pages.first
+
+                                page.dom.sink.size.should == 2
+
+                                entry = page.dom.sink[0]
+                                entry[:data][0]['function'].should == 'append'
+                                entry[:data][0]['arguments'].should == ["Stuff #{@javascript.taint}"]
+                                entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
+                                entry[:data][0]['taint'].should == @javascript.taint
+
+                                trace = entry[:trace][0]
+                                page.body.split("\n")[trace[:line]].should include 'append('
+                                trace[:url].should == page.url
+                            end
+                        end
+
+                        context 'Element' do
+                            it 'logs it'
+                        end
+
+                        context 'Array' do
+                            it 'logs it'
+                        end
+
+                        context 'jQuery' do
+                            it 'logs it'
+                        end
+                    end
+                end
+
+                context '.before' do
+                    context 'and the argument is a' do
+                        context 'String' do
+                            it 'logs it' do
+                                @javascript.taint = @browser.generate_token
+                                @browser.load "#{@url}/data_trace/jQuery.before?taint=#{@javascript.taint}"
+
+                                pages = @browser.flush_page_snapshots_with_sinks
+
+                                pages.size.should == 1
+                                page = pages.first
+
+                                page.dom.sink.size.should == 2
+
+                                entry = page.dom.sink[0]
+                                entry[:data][0]['function'].should == 'before'
+                                entry[:data][0]['arguments'].should == ["Stuff #{@javascript.taint}"]
+                                entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
+                                entry[:data][0]['taint'].should == @javascript.taint
+
+                                trace = entry[:trace][0]
+                                page.body.split("\n")[trace[:line]].should include 'before('
+                                trace[:url].should == page.url
+                            end
+                        end
+
+                        context 'Element' do
+                            it 'logs it'
+                        end
+
+                        context 'Array' do
+                            it 'logs it'
+                        end
+
+                        context 'jQuery' do
+                            it 'logs it'
+                        end
+
+                    end
+                end
+            end
+
             context 'String' do
                 context '.replace' do
                     it 'logs it' do
