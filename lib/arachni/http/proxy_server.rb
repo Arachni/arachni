@@ -245,13 +245,14 @@ class ProxyServer < WEBrick::HTTPProxyServer
 
         # Convert Arachni::HTTP::Response to WEBrick::HTTPResponse.
         res.status = response.code.to_i
+
         choose_header( response.headers, res )
 
         # Scrub the existing cookies clean and pass the new ones.
         response.headers.set_cookie.each { |c| res.cookies << c }
         res.header.delete( 'set-cookie' )
 
-        res.header['content-length'] = response.body.size.to_s
+        res.header['content-length'] = response.body.bytesize.to_s
         res.body = response.body
     end
 
