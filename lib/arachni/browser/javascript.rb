@@ -56,7 +56,7 @@ class Javascript
     def install_overrides( response )
         return if response.body.include? "#{token}.override"
 
-        response.body = response.body.gsub(
+        response.body.gsub!(
             /<script(.*?)>/i,
             # This will let us override and trace all global functions.
             "<script\\1>\n_#{token}.update_tracers();\n"
@@ -67,7 +67,15 @@ class Javascript
         #{"_#{token}.taint = #{@taint.inspect};" if @taint}
 </script>\n#{response.body}"
 
-        response.headers['content-length'] = response.body.size
+        #response.body.sub!(
+        #    /<\/script(.*?)>/i,
+        #    "\n<script>
+        #        #{overrides}
+        #        #{"_#{token}.taint = #{@taint.inspect};" if @taint}
+        #    </script>\n</script\\1>"
+        #)
+
+        response.headers['content-length'] = response.body.bytesize
         response
     end
 

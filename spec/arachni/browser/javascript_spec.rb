@@ -53,6 +53,7 @@ describe Arachni::Browser::Javascript do
                     page.dom.sink.size.should == 1
 
                     entry = page.dom.sink[0]
+                    entry[:data][0]['object'].should == 'DOMWindow'
                     entry[:data][0]['function'].should == 'process'
                     entry[:data][0]['source'].should start_with 'function process'
                     entry[:data][0]['arguments'].should == [
@@ -64,6 +65,185 @@ describe Arachni::Browser::Javascript do
                     entry[:data][0]['tainted'].should == @javascript.taint
                     entry[:data][0]['taint'].should == @javascript.taint
                     page.body.split("\n")[entry[:trace][0][:line]].should include 'process('
+                end
+            end
+
+            context 'AngularJS' do
+                context 'jqLite' do
+                    context '.html' do
+                        it 'logs it' do
+                            @javascript.taint = @browser.generate_token
+                            @browser.load "#{@url}/data_trace/AngularJS/jqLite.html?taint=#{@javascript.taint}"
+
+                            pages = @browser.flush_page_snapshots_with_sinks
+
+                            pages.size.should == 1
+                            page = pages.first
+
+                            page.dom.sink.size.should == 2
+
+                            entry = page.dom.sink[1]
+                            entry[:data][0]['object'].should == 'angular.element'
+                            entry[:data][0]['function'].should == 'html'
+                            entry[:data][0]['arguments'].should == ["Stuff #{@javascript.taint}"]
+                            entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
+                            entry[:data][0]['taint'].should == @javascript.taint
+
+                            trace = entry[:trace][0]
+                            page.body.split("\n")[trace[:line]-1].should include 'html('
+                            trace[:url].should == page.url
+                        end
+                    end
+
+                    context '.text' do
+                        it 'logs it' do
+                            @javascript.taint = @browser.generate_token
+                            @browser.load "#{@url}/data_trace/AngularJS/jqLite.text?taint=#{@javascript.taint}"
+
+                            pages = @browser.flush_page_snapshots_with_sinks
+
+                            pages.size.should == 1
+                            page = pages.first
+
+                            page.dom.sink.size.should == 2
+
+                            entry = page.dom.sink[1]
+                            entry[:data][0]['object'].should == 'angular.element'
+                            entry[:data][0]['function'].should == 'text'
+                            entry[:data][0]['arguments'].should == ["Stuff #{@javascript.taint}"]
+                            entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
+                            entry[:data][0]['taint'].should == @javascript.taint
+
+                            trace = entry[:trace][0]
+                            page.body.split("\n")[trace[:line]-1].should include 'text('
+                            trace[:url].should == page.url
+                        end
+                    end
+
+                    context '.append' do
+                        it 'logs it' do
+                            @javascript.taint = @browser.generate_token
+                            @browser.load "#{@url}/data_trace/AngularJS/jqLite.append?taint=#{@javascript.taint}"
+
+                            pages = @browser.flush_page_snapshots_with_sinks
+
+                            pages.size.should == 1
+                            page = pages.first
+
+                            page.dom.sink.size.should == 2
+
+                            entry = page.dom.sink[1]
+                            entry[:data][0]['object'].should == 'angular.element'
+                            entry[:data][0]['function'].should == 'append'
+                            entry[:data][0]['arguments'].should == ["Stuff #{@javascript.taint}"]
+                            entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
+                            entry[:data][0]['taint'].should == @javascript.taint
+
+                            trace = entry[:trace][0]
+                            page.body.split("\n")[trace[:line]].should include 'append('
+                            trace[:url].should == page.url
+                        end
+                    end
+
+                    context '.prepend' do
+                        it 'logs it' do
+                            @javascript.taint = @browser.generate_token
+                            @browser.load "#{@url}/data_trace/AngularJS/jqLite.prepend?taint=#{@javascript.taint}"
+
+                            pages = @browser.flush_page_snapshots_with_sinks
+
+                            pages.size.should == 1
+                            page = pages.first
+
+                            page.dom.sink.size.should == 2
+
+                            entry = page.dom.sink[1]
+                            entry[:data][0]['object'].should == 'angular.element'
+                            entry[:data][0]['function'].should == 'prepend'
+                            entry[:data][0]['arguments'].should == ["Stuff #{@javascript.taint}"]
+                            entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
+                            entry[:data][0]['taint'].should == @javascript.taint
+
+                            trace = entry[:trace][0]
+                            page.body.split("\n")[trace[:line]].should include 'prepend('
+                            trace[:url].should == page.url
+                        end
+                    end
+
+                    context '.prop' do
+                        it 'logs it' do
+                            @javascript.taint = @browser.generate_token
+                            @browser.load "#{@url}/data_trace/AngularJS/jqLite.prop?taint=#{@javascript.taint}"
+
+                            pages = @browser.flush_page_snapshots_with_sinks
+
+                            pages.size.should == 1
+                            page = pages.first
+
+                            page.dom.sink.size.should == 2
+
+                            entry = page.dom.sink[1]
+                            entry[:data][0]['object'].should == 'angular.element'
+                            entry[:data][0]['function'].should == 'prop'
+                            entry[:data][0]['arguments'].should == [ 'stuff', "Stuff #{@javascript.taint}"]
+                            entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
+                            entry[:data][0]['taint'].should == @javascript.taint
+
+                            trace = entry[:trace][0]
+                            page.body.split("\n")[trace[:line]].should include 'prop('
+                            trace[:url].should == page.url
+                        end
+                    end
+
+                    context '.replaceWith' do
+                        it 'logs it' do
+                            @javascript.taint = @browser.generate_token
+                            @browser.load "#{@url}/data_trace/AngularJS/jqLite.replaceWith?taint=#{@javascript.taint}"
+
+                            pages = @browser.flush_page_snapshots_with_sinks
+
+                            pages.size.should == 1
+                            page = pages.first
+
+                            page.dom.sink.size.should == 2
+
+                            entry = page.dom.sink[1]
+                            entry[:data][0]['object'].should == 'angular.element'
+                            entry[:data][0]['function'].should == 'replaceWith'
+                            entry[:data][0]['arguments'].should == [ "Stuff #{@javascript.taint}"]
+                            entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
+                            entry[:data][0]['taint'].should == @javascript.taint
+
+                            trace = entry[:trace][0]
+                            page.body.split("\n")[trace[:line]-1].should include 'replaceWith('
+                            trace[:url].should == page.url
+                        end
+                    end
+
+                    context '.val' do
+                        it 'logs it' do
+                            @javascript.taint = @browser.generate_token
+                            @browser.load "#{@url}/data_trace/AngularJS/jqLite.val?taint=#{@javascript.taint}"
+
+                            pages = @browser.flush_page_snapshots_with_sinks
+
+                            pages.size.should == 1
+                            page = pages.first
+
+                            page.dom.sink.size.should == 2
+
+                            entry = page.dom.sink[1]
+                            entry[:data][0]['object'].should == 'angular.element'
+                            entry[:data][0]['function'].should == 'val'
+                            entry[:data][0]['arguments'].should == [ "Stuff #{@javascript.taint}"]
+                            entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
+                            entry[:data][0]['taint'].should == @javascript.taint
+
+                            trace = entry[:trace][0]
+                            page.body.split("\n")[trace[:line]].should include 'val('
+                            trace[:url].should == page.url
+                        end
+                    end
                 end
             end
 
@@ -81,6 +261,7 @@ describe Arachni::Browser::Javascript do
                         page.dom.sink.size.should == 1
 
                         entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'jQuery'
                         entry[:data][0]['function'].should == 'html'
                         entry[:data][0]['arguments'].should == ["Stuff #{@javascript.taint}"]
                         entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
@@ -105,6 +286,7 @@ describe Arachni::Browser::Javascript do
                         page.dom.sink.size.should == 2
 
                         entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'jQuery'
                         entry[:data][0]['function'].should == 'text'
                         entry[:data][0]['arguments'].should == ["Stuff #{@javascript.taint}"]
                         entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
@@ -129,6 +311,7 @@ describe Arachni::Browser::Javascript do
                         page.dom.sink.size.should == 2
 
                         entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'jQuery'
                         entry[:data][0]['function'].should == 'append'
                         entry[:data][0]['arguments'].should == ["Stuff #{@javascript.taint}"]
                         entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
@@ -153,6 +336,7 @@ describe Arachni::Browser::Javascript do
                         page.dom.sink.size.should == 2
 
                         entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'jQuery'
                         entry[:data][0]['function'].should == 'prepend'
                         entry[:data][0]['arguments'].should == ["Stuff #{@javascript.taint}"]
                         entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
@@ -177,6 +361,7 @@ describe Arachni::Browser::Javascript do
                         page.dom.sink.size.should == 2
 
                         entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'jQuery'
                         entry[:data][0]['function'].should == 'before'
                         entry[:data][0]['arguments'].should == ["Stuff #{@javascript.taint}"]
                         entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
@@ -201,6 +386,7 @@ describe Arachni::Browser::Javascript do
                         page.dom.sink.size.should == 1
 
                         entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'jQuery'
                         entry[:data][0]['function'].should == 'prop'
                         entry[:data][0]['arguments'].should == [ 'stuff', "Stuff #{@javascript.taint}"]
                         entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
@@ -225,6 +411,7 @@ describe Arachni::Browser::Javascript do
                         page.dom.sink.size.should == 2
 
                         entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'jQuery'
                         entry[:data][0]['function'].should == 'replaceWith'
                         entry[:data][0]['arguments'].should == [ "Stuff #{@javascript.taint}"]
                         entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
@@ -249,6 +436,7 @@ describe Arachni::Browser::Javascript do
                         page.dom.sink.size.should == 1
 
                         entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'jQuery'
                         entry[:data][0]['function'].should == 'val'
                         entry[:data][0]['arguments'].should == [ "Stuff #{@javascript.taint}"]
                         entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
@@ -259,7 +447,6 @@ describe Arachni::Browser::Javascript do
                         trace[:url].should == page.url
                     end
                 end
-
             end
 
             context 'String' do
@@ -276,6 +463,7 @@ describe Arachni::Browser::Javascript do
                         page.dom.sink.size.should == 1
 
                         entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'String'
                         entry[:data][0]['function'].should == 'replace'
                         entry[:data][0]['source'].should start_with 'function replace'
                         entry[:data][0]['arguments'].should == [
@@ -303,6 +491,7 @@ describe Arachni::Browser::Javascript do
                         page.dom.sink.size.should == 1
 
                         entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'String'
                         entry[:data][0]['function'].should == 'concat'
                         entry[:data][0]['source'].should start_with 'function concat'
                         entry[:data][0]['arguments'].should == [ "stuff #{@javascript.taint}" ]
@@ -330,6 +519,7 @@ describe Arachni::Browser::Javascript do
                         page.dom.sink.size.should == 1
 
                         entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'HTMLElementPrototype'
                         entry[:data][0]['function'].should == 'insertAdjacentHTML'
                         entry[:data][0]['source'].should start_with 'function insertAdjacentHTML'
                         entry[:data][0]['arguments'].should == [
@@ -359,6 +549,7 @@ describe Arachni::Browser::Javascript do
                         page.dom.sink.size.should == 1
 
                         entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'ElementPrototype'
                         entry[:data][0]['function'].should == 'setAttribute'
                         entry[:data][0]['source'].should start_with 'function setAttribute'
                         entry[:data][0]['arguments'].should == [
@@ -388,6 +579,7 @@ describe Arachni::Browser::Javascript do
                         page.dom.sink.size.should == 1
 
                         entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'DocumentPrototype'
                         entry[:data][0]['function'].should == 'createTextNode'
                         entry[:data][0]['source'].should start_with 'function createTextNode'
                         entry[:data][0]['arguments'].should == [ "node #{@javascript.taint}" ]
@@ -415,6 +607,7 @@ describe Arachni::Browser::Javascript do
                         page.dom.sink.size.should == 1
 
                         entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'TextPrototype'
                         entry[:data][0]['function'].should == 'replaceWholeText'
                         entry[:data][0]['source'].should start_with 'function replaceWholeText'
                         entry[:data][0]['arguments'].should == [ "Stuff #{@javascript.taint}" ]
@@ -440,6 +633,7 @@ describe Arachni::Browser::Javascript do
                         page.dom.sink.size.should == 1
 
                         entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'CharacterDataPrototype'
                         entry[:data][0]['function'].should == 'insertData'
                         entry[:data][0]['source'].should start_with 'function insertData'
                         entry[:data][0]['arguments'].should == [ "Stuff #{@javascript.taint}" ]
@@ -465,6 +659,7 @@ describe Arachni::Browser::Javascript do
                         page.dom.sink.size.should == 1
 
                         entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'CharacterDataPrototype'
                         entry[:data][0]['function'].should == 'appendData'
                         entry[:data][0]['source'].should start_with 'function appendData'
                         entry[:data][0]['arguments'].should == [ "Stuff #{@javascript.taint}" ]
@@ -490,6 +685,7 @@ describe Arachni::Browser::Javascript do
                         page.dom.sink.size.should == 1
 
                         entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'CharacterDataPrototype'
                         entry[:data][0]['function'].should == 'replaceData'
                         entry[:data][0]['source'].should start_with 'function replaceData'
                         entry[:data][0]['arguments'].should == [ 0, 0, "Stuff #{@javascript.taint}" ]
@@ -517,6 +713,7 @@ describe Arachni::Browser::Javascript do
                         page.dom.sink.size.should == 1
 
                         entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'HTMLDocumentPrototype'
                         entry[:data][0]['function'].should == 'write'
                         entry[:data][0]['source'].should start_with 'function write'
                         entry[:data][0]['arguments'].should == [
@@ -545,6 +742,7 @@ describe Arachni::Browser::Javascript do
                         page.dom.sink.size.should == 1
 
                         entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'HTMLDocumentPrototype'
                         entry[:data][0]['function'].should == 'writeln'
                         entry[:data][0]['source'].should start_with 'function writeln'
                         entry[:data][0]['arguments'].should == [

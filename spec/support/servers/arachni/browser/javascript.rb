@@ -8,6 +8,11 @@ get '/jquery.js' do
     IO.read "#{JS_LIB}/jquery-2.0.3.js"
 end
 
+get '/angular.js' do
+    content_type 'text/javascript'
+    IO.read "#{JS_LIB}/angular-1.2.8.js"
+end
+
 get '/data_trace/global-functions' do
     <<-EOHTML
     <html>
@@ -18,6 +23,112 @@ get '/data_trace/global-functions' do
         <script type="text/javascript">
             function process( data ) {}
             process({ my_data: 'blah', input: '#{params[:taint]}' });
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/AngularJS/jqLite.html' do
+    <<-EOHTML
+    <html>
+        <script src="/angular.js" type="text/javascript"></script>
+
+        <div id='my-div'>
+        </div>
+
+        <script type="text/javascript">
+            angular.element(document.getElementById("my-div")).html( 'Stuff ' + #{params[:taint].inspect} );
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/AngularJS/jqLite.text' do
+    <<-EOHTML
+    <html>
+        <script src="/angular.js" type="text/javascript"></script>
+
+        <div id='my-div'>
+        </div>
+
+        <script type="text/javascript">
+            angular.element(document.getElementById("my-div")).text( 'Stuff ' + #{params[:taint].inspect} );
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/AngularJS/jqLite.val' do
+    <<-EOHTML
+    <html>
+        <script src="/angular.js" type="text/javascript"></script>
+
+        <div id='my-div'>
+            <input id='my-input' />
+        </div>
+
+        <script type="text/javascript">
+            angular.element(document.getElementById("my-input")).val( 'Stuff ' + #{params[:taint].inspect} );
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/AngularJS/jqLite.append' do
+    <<-EOHTML
+    <html>
+        <script src="/angular.js" type="text/javascript"></script>
+
+        <div id='my-div'>
+        </div>
+
+        <script type="text/javascript">
+            angular.element(document.getElementById("my-div")).append( 'Stuff ' + #{params[:taint].inspect} );
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/AngularJS/jqLite.prepend' do
+    <<-EOHTML
+    <html>
+        <script src="/angular.js" type="text/javascript"></script>
+
+        <div id='my-div'>
+        </div>
+
+        <script type="text/javascript">
+            angular.element(document.getElementById("my-div")).prepend( 'Stuff ' + #{params[:taint].inspect} );
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/AngularJS/jqLite.prop' do
+    <<-EOHTML
+    <html>
+        <script src="/angular.js" type="text/javascript"></script>
+
+        <div id='my-div'>
+        </div>
+
+        <script type="text/javascript">
+            angular.element(document.getElementById("my-div")).prop( 'stuff', 'Stuff ' + #{params[:taint].inspect} );
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/AngularJS/jqLite.replaceWith' do
+    <<-EOHTML
+    <html>
+        <script src="/angular.js" type="text/javascript"></script>
+
+        <div id='my-div'>
+        </div>
+
+        <script type="text/javascript">
+            angular.element(document.getElementById("my-div")).replaceWith( 'Stuff ' + #{params[:taint].inspect} );
         </script>
     </html>
     EOHTML
