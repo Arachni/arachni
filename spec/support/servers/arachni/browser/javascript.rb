@@ -350,7 +350,7 @@ get '/data_trace/Text.replaceWholeText' do
     EOHTML
 end
 
-get '/data_trace/Text.insertData' do
+get '/data_trace/CharacterData.insertData' do
     <<-EOHTML
     <html>
 
@@ -365,7 +365,7 @@ get '/data_trace/Text.insertData' do
     EOHTML
 end
 
-get '/data_trace/Text.appendData' do
+get '/data_trace/CharacterData.appendData' do
     <<-EOHTML
     <html>
 
@@ -380,7 +380,7 @@ get '/data_trace/Text.appendData' do
     EOHTML
 end
 
-get '/data_trace/Text.replaceData' do
+get '/data_trace/CharacterData.replaceData' do
     <<-EOHTML
     <html>
 

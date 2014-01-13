@@ -593,37 +593,11 @@ describe Arachni::Browser::Javascript do
                 end
             end
 
-            context 'Text' do
-                context '.replaceWholeText' do
-                    it 'logs it' do
-                        @javascript.taint = @browser.generate_token
-                        @browser.load "#{@url}/data_trace/Text.replaceWholeText?taint=#{@javascript.taint}"
-
-                        pages = @browser.flush_page_snapshots_with_sinks
-
-                        pages.size.should == 1
-                        page = pages.first
-
-                        page.dom.sink.size.should == 1
-
-                        entry = page.dom.sink[0]
-                        entry[:data][0]['object'].should == 'TextPrototype'
-                        entry[:data][0]['function'].should == 'replaceWholeText'
-                        entry[:data][0]['source'].should start_with 'function replaceWholeText'
-                        entry[:data][0]['arguments'].should == [ "Stuff #{@javascript.taint}" ]
-                        entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
-                        entry[:data][0]['taint'].should == @javascript.taint
-
-                        trace = entry[:trace][0]
-                        page.body.split("\n")[trace[:line]].should include 'replaceWholeText('
-                        trace[:url].should == page.url
-                    end
-                end
-
+            context 'CharacterData' do
                 context '.insertData' do
                     it 'logs it' do
                         @javascript.taint = @browser.generate_token
-                        @browser.load "#{@url}/data_trace/Text.insertData?taint=#{@javascript.taint}"
+                        @browser.load "#{@url}/data_trace/CharacterData.insertData?taint=#{@javascript.taint}"
 
                         pages = @browser.flush_page_snapshots_with_sinks
 
@@ -649,7 +623,7 @@ describe Arachni::Browser::Javascript do
                 context '.appendData' do
                     it 'logs it' do
                         @javascript.taint = @browser.generate_token
-                        @browser.load "#{@url}/data_trace/Text.appendData?taint=#{@javascript.taint}"
+                        @browser.load "#{@url}/data_trace/CharacterData.appendData?taint=#{@javascript.taint}"
 
                         pages = @browser.flush_page_snapshots_with_sinks
 
@@ -675,7 +649,7 @@ describe Arachni::Browser::Javascript do
                 context '.replaceData' do
                     it 'logs it' do
                         @javascript.taint = @browser.generate_token
-                        @browser.load "#{@url}/data_trace/Text.replaceData?taint=#{@javascript.taint}"
+                        @browser.load "#{@url}/data_trace/CharacterData.replaceData?taint=#{@javascript.taint}"
 
                         pages = @browser.flush_page_snapshots_with_sinks
 
@@ -694,6 +668,34 @@ describe Arachni::Browser::Javascript do
 
                         trace = entry[:trace][0]
                         page.body.split("\n")[trace[:line]].should include 'replaceData('
+                        trace[:url].should == page.url
+                    end
+                end
+            end
+
+            context 'Text' do
+                context '.replaceWholeText' do
+                    it 'logs it' do
+                        @javascript.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/Text.replaceWholeText?taint=#{@javascript.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 1
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'TextPrototype'
+                        entry[:data][0]['function'].should == 'replaceWholeText'
+                        entry[:data][0]['source'].should start_with 'function replaceWholeText'
+                        entry[:data][0]['arguments'].should == [ "Stuff #{@javascript.taint}" ]
+                        entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
+                        entry[:data][0]['taint'].should == @javascript.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line]].should include 'replaceWholeText('
                         trace[:url].should == page.url
                     end
                 end
