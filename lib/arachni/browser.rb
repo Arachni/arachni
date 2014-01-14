@@ -198,6 +198,12 @@ class Browser
         ensure_open_window
     end
 
+    def source_with_line_numbers
+        source.lines.map.with_index do |line, i|
+            "#{i+1} - #{line}"
+        end.join
+    end
+
     def on_new_page( &block )
         fail ArgumentError, 'Missing block.' if !block_given?
         @on_new_page_blocks << block

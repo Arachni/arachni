@@ -327,6 +327,116 @@ describe Arachni::Browser::Javascript do
             end
 
             context 'jQuery' do
+                context '.ajax' do
+                    it 'logs it' do
+                        @javascript.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/jQuery.ajax?taint=#{@javascript.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 2
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'jQuery'
+                        entry[:data][0]['function'].should == 'ajax'
+                        entry[:data][0]['arguments'].should == [
+                            {
+                                'url'  => '/',
+                                'data' => {
+                                    'stuff' => "mystuff #{@javascript.taint}"
+                                }
+                            }
+                        ]
+                        entry[:data][0]['tainted'].should == "mystuff #{@javascript.taint}"
+                        entry[:data][0]['taint'].should == @javascript.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line]].should include 'ajax('
+                        trace[:url].should == page.url
+                    end
+                end
+
+                context '.get' do
+                    it 'logs it' do
+                        @javascript.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/jQuery.get?taint=#{@javascript.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 3
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'jQuery'
+                        entry[:data][0]['function'].should == 'get'
+                        entry[:data][0]['arguments'].should == [
+                            '/',
+                            { 'stuff' => "mystuff #{@javascript.taint}" }
+                        ]
+                        entry[:data][0]['tainted'].should == "mystuff #{@javascript.taint}"
+                        entry[:data][0]['taint'].should == @javascript.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line]].should include 'get('
+                        trace[:url].should == page.url
+                    end
+                end
+
+                context '.post' do
+                    it 'logs it' do
+                        @javascript.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/jQuery.post?taint=#{@javascript.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 3
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'jQuery'
+                        entry[:data][0]['function'].should == 'post'
+                        entry[:data][0]['arguments'].should == [ "/#{@javascript.taint}", ]
+                        entry[:data][0]['tainted'].should == "/#{@javascript.taint}"
+                        entry[:data][0]['taint'].should == @javascript.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line]].should include 'post('
+                        trace[:url].should == page.url
+                    end
+                end
+
+                context '.load' do
+                    it 'logs it' do
+                        @javascript.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/jQuery.load?taint=#{@javascript.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 3
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'jQuery'
+                        entry[:data][0]['function'].should == 'load'
+                        entry[:data][0]['arguments'].should == [ "/#{@javascript.taint}", ]
+                        entry[:data][0]['tainted'].should == "/#{@javascript.taint}"
+                        entry[:data][0]['taint'].should == @javascript.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line]].should include 'load('
+                        trace[:url].should == page.url
+                    end
+                end
+
                 context '.html' do
                     it 'logs it' do
                         @javascript.taint = @browser.generate_token

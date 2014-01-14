@@ -177,6 +177,66 @@ get '/data_trace/AngularJS/jqLite.replaceWith' do
     EOHTML
 end
 
+get '/data_trace/jQuery.ajax' do
+    <<-EOHTML
+    <html>
+        <script src="/jquery.js" type="text/javascript"></script>
+
+        <div id='my-div'>
+        </div>
+
+        <script type="text/javascript">
+            $.ajax( { url: '/' , data: { stuff:  'mystuff '+ #{params[:taint].inspect} } } );
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/jQuery.get' do
+    <<-EOHTML
+    <html>
+        <script src="/jquery.js" type="text/javascript"></script>
+
+        <div id='my-div'>
+        </div>
+
+        <script type="text/javascript">
+            $.get( '/' , { stuff:  'mystuff '+ #{params[:taint].inspect} } );
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/jQuery.post' do
+    <<-EOHTML
+    <html>
+        <script src="/jquery.js" type="text/javascript"></script>
+
+        <div id='my-div'>
+        </div>
+
+        <script type="text/javascript">
+            $.post( '/#{params[:taint]}' );
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/jQuery.load' do
+    <<-EOHTML
+    <html>
+        <script src="/jquery.js" type="text/javascript"></script>
+
+        <div id='my-div'>
+        </div>
+
+        <script type="text/javascript">
+            $('#my-div').load( '/#{params[:taint]}' );
+        </script>
+    </html>
+    EOHTML
+end
+
 get '/data_trace/jQuery.html' do
     <<-EOHTML
     <html>
