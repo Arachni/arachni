@@ -402,7 +402,7 @@ describe Arachni::Browser::Javascript do
                         entry = page.dom.sink[0]
                         entry[:data][0]['object'].should == 'jQuery'
                         entry[:data][0]['function'].should == 'post'
-                        entry[:data][0]['arguments'].should == [ "/#{@javascript.taint}", ]
+                        entry[:data][0]['arguments'].should == [ "/#{@javascript.taint}" ]
                         entry[:data][0]['tainted'].should == "/#{@javascript.taint}"
                         entry[:data][0]['taint'].should == @javascript.taint
 
@@ -427,7 +427,7 @@ describe Arachni::Browser::Javascript do
                         entry = page.dom.sink[0]
                         entry[:data][0]['object'].should == 'jQuery'
                         entry[:data][0]['function'].should == 'load'
-                        entry[:data][0]['arguments'].should == [ "/#{@javascript.taint}", ]
+                        entry[:data][0]['arguments'].should == [ "/#{@javascript.taint}" ]
                         entry[:data][0]['tainted'].should == "/#{@javascript.taint}"
                         entry[:data][0]['taint'].should == @javascript.taint
 
