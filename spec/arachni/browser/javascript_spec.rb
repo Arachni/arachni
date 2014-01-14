@@ -68,6 +68,85 @@ describe Arachni::Browser::Javascript do
                 end
             end
 
+            context 'XMLHttpRequest' do
+                context '.open' do
+                    it 'logs it' do
+                        @javascript.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/XMLHttpRequest.open?taint=#{@javascript.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 1
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'XMLHttpRequestPrototype'
+                        entry[:data][0]['function'].should == 'open'
+                        entry[:data][0]['arguments'].should == [
+                            'GET', "/?taint=#{@javascript.taint}", true
+                        ]
+                        entry[:data][0]['tainted'].should == "/?taint=#{@javascript.taint}"
+                        entry[:data][0]['taint'].should == @javascript.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line]].should include 'open('
+                        trace[:url].should == page.url
+                    end
+                end
+
+                context '.send' do
+                    it 'logs it' do
+                        @javascript.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/XMLHttpRequest.send?taint=#{@javascript.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 1
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'XMLHttpRequestPrototype'
+                        entry[:data][0]['function'].should == 'send'
+                        entry[:data][0]['arguments'].should == [ "taint=#{@javascript.taint}" ]
+                        entry[:data][0]['tainted'].should == "taint=#{@javascript.taint}"
+                        entry[:data][0]['taint'].should == @javascript.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line]].should include 'send('
+                        trace[:url].should == page.url
+                    end
+                end
+
+                context '.setRequestHeader' do
+                    it 'logs it' do
+                        @javascript.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/XMLHttpRequest.setRequestHeader?taint=#{@javascript.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 1
+
+                        entry = page.dom.sink[0]
+                        entry[:data][0]['object'].should == 'XMLHttpRequestPrototype'
+                        entry[:data][0]['function'].should == 'setRequestHeader'
+                        entry[:data][0]['arguments'].should == [ 'X-My-Header', "stuff-#{@javascript.taint}" ]
+                        entry[:data][0]['tainted'].should == "stuff-#{@javascript.taint}"
+                        entry[:data][0]['taint'].should == @javascript.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line]].should include 'setRequestHeader('
+                        trace[:url].should == page.url
+                    end
+                end
+            end
+
             context 'AngularJS' do
                 context 'jqLite' do
                     context '.html' do

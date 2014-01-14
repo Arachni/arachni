@@ -13,6 +13,49 @@ get '/angular.js' do
     IO.read "#{JS_LIB}/angular-1.2.8.js"
 end
 
+get '/data_trace/XMLHttpRequest.open' do
+    <<HTML
+<html>
+    <head>
+        <script>
+            ajax = new XMLHttpRequest();
+            ajax.open( 'GET', "/?taint=#{params[:taint]}", true );
+            ajax.send();
+        </script>
+    <head>
+</html>
+HTML
+end
+
+get '/data_trace/XMLHttpRequest.send' do
+    <<HTML
+<html>
+    <head>
+        <script>
+            ajax = new XMLHttpRequest();
+            ajax.open( 'POST', '/', true );
+            ajax.send( "taint=#{params[:taint]}" );
+        </script>
+    <head>
+</html>
+HTML
+end
+
+get '/data_trace/XMLHttpRequest.setRequestHeader' do
+    <<HTML
+<html>
+    <head>
+        <script>
+            ajax = new XMLHttpRequest();
+            ajax.open( 'POST', '/', true );
+            ajax.setRequestHeader( 'X-My-Header', "stuff-#{params[:taint]}" )
+            ajax.send();
+        </script>
+    <head>
+</html>
+HTML
+end
+
 get '/data_trace/global-functions' do
     <<-EOHTML
     <html>
