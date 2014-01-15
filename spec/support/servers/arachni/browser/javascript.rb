@@ -71,6 +71,34 @@ get '/data_trace/global-functions' do
     EOHTML
 end
 
+get '/data_trace/AngularJS.$http' do
+    <<-EOHTML
+    <html ng-app>
+        <script src="/angular.js" type="text/javascript"></script>
+
+        <body>
+            <div id='my-div'>
+                <label>Name:</label>
+                <input type="text" ng-model="yourName" placeholder="Enter a name here">
+                <hr>
+                <h1>Hello {{yourName}}!</h1>
+            </div>
+        </body>
+
+        <script type="text/javascript">
+            //try {
+//                debug( angular.injector().get( '$http' ));
+//            }catch(e){ debug(e) }
+
+            angular.element(document).ready(function() {
+                var element = angular.element(document.getElementById( 'my-div' ));
+                debug( element.injector().get( '$http' )( {method: 'GET', url: '/#{params[:taint]}'}));
+            });
+        </script>
+    </html>
+    EOHTML
+end
+
 get '/data_trace/AngularJS/jqLite.html' do
     <<-EOHTML
     <html>

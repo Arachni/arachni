@@ -89,7 +89,15 @@ class Javascript
     #   `true` if the page is ready and {OVERRIDES} has been installed, `false`
     #   otherwise.
     def ready?
-        !!run( "return _#{token}" ) rescue false
+        #!!run( "return _#{token}" ) rescue false
+        begin
+            run( "return _#{token}" )
+        rescue => e
+            ap e
+            ap e.backtrace
+            false
+        end
+        true
     end
 
     # @param    [String]    script  JS code to execute.
@@ -157,10 +165,10 @@ class Javascript
             if entry[:arguments] && entry[:arguments][0].is_a?( Hash ) &&
                 entry[:arguments][0].include?( 'target' )
 
-                entry[:arguments][0].each do |k, v|
-                    entry[:arguments][0][k] =
-                        (v && to_string.include?( k ) ? v.html : v)
-                end
+                #entry[:arguments][0].each do |k, v|
+                #    entry[:arguments][0][k] =
+                #        (v && to_string.include?( k ) ? v.html : v)
+                #end
             end
 
             formatted << entry
