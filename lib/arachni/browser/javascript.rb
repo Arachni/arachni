@@ -56,10 +56,18 @@ class Javascript
     def install_overrides( response )
         return if response.body.include? "#{token}.override"
 
+        # Schedule a tracer update at the beginning of each script block in order
+        # to put our hooks into any newly introduced functions.
+        #
+        # The fact that our update call seems to be taking place before any
+        # functions get the chance to be defined doesn't seem to matter.
+        response.body.gsub!( /<script(.*?)>/i, "\\0\n_#{token}.update_tracers();\n" )
+
+        # Also perform an update after each script block, this is for external
+        # scripts.
         response.body.gsub!(
-            /<script(.*?)>/i,
-            # This will let us override and trace all global functions.
-            "<script\\1>\n_#{token}.update_tracers();\n"
+            /<\/script>/i,
+            "\\0<script type=\"text/javascript\">_#{token}.update_tracers();</script>\n"
         )
 
         response.body = "\n<script>
