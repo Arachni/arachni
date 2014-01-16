@@ -13,6 +13,11 @@ get '/angular.js' do
     IO.read "#{JS_LIB}/angular-1.2.8.js"
 end
 
+get '/angular-route.js' do
+    content_type 'text/javascript'
+    IO.read "#{JS_LIB}/angular-route.js"
+end
+
 get '/data_trace/XMLHttpRequest.open' do
     <<HTML
 <html>
@@ -71,29 +76,76 @@ get '/data_trace/global-functions' do
     EOHTML
 end
 
-get '/data_trace/AngularJS.$http' do
+get '/data_trace/AngularJS/application/1' do
     <<-EOHTML
-    <html ng-app>
+<!doctype html>
+<html ng-app>
+    <head>
+        <script src="/angular.js"></script>
+    </head>
+    <body>
+        <div>
+            <label>Name:</label>
+            <input type="text" ng-model="yourName" placeholder="Enter a name here">
+            <hr>
+            <h1>Hello {{yourName}}!</h1>
+        </div>
+    </body>
+</html>
+    EOHTML
+end
+
+get '/data_trace/AngularJS/ngRoute/' do
+    <<-EOHTML
+<!doctype html>
+<html ng-app="project">
+    <head>
+        <script src="/angular.js"></script>
+        <script src="/angular-route.js"></script>
+        <script src="project.js?taint=#{params[:taint]}"></script>
+    </head>
+    <body>
+        <h2>JavaScript Projects</h2>
+        <div ng-view></div>
+    </body>
+</html>
+    EOHTML
+end
+
+get '/data_trace/AngularJS/ngRoute/template.html' do
+    <<-EOHTML
+Blah blah blah #{params[:taint]}
+    EOHTML
+end
+
+get '/data_trace/AngularJS/ngRoute/project.js' do
+    content_type 'text/javascript'
+
+    <<-EOHTML
+angular.module('project', ['ngRoute'])
+
+.config(function($routeProvider) {
+    $routeProvider
+        .when('/', {
+            templateUrl: 'template.html?taint=#{params[:taint]}'
+        })
+        .otherwise({
+            redirectTo:'/'
+        });
+});
+    EOHTML
+end
+
+get '/data_trace/AngularJS.element' do
+    <<-EOHTML
+    <html>
         <script src="/angular.js" type="text/javascript"></script>
 
-        <body>
-            <div id='my-div'>
-                <label>Name:</label>
-                <input type="text" ng-model="yourName" placeholder="Enter a name here">
-                <hr>
-                <h1>Hello {{yourName}}!</h1>
-            </div>
-        </body>
+        <div id='my-div'>
+        </div>
 
         <script type="text/javascript">
-            //try {
-//                debug( angular.injector().get( '$http' ));
-//            }catch(e){ debug(e) }
-
-            angular.element(document).ready(function() {
-                var element = angular.element(document.getElementById( 'my-div' ));
-                debug( element.injector().get( '$http' )( {method: 'GET', url: '/#{params[:taint]}'}));
-            });
+            angular.element( '<div>Stuff ' + #{params[:taint].inspect} + '</div>' );
         </script>
     </html>
     EOHTML

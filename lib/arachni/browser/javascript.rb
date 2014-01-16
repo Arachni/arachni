@@ -67,14 +67,6 @@ class Javascript
         #{"_#{token}.taint = #{@taint.inspect};" if @taint}
 </script>\n#{response.body}"
 
-        #response.body.sub!(
-        #    /<\/script(.*?)>/i,
-        #    "\n<script>
-        #        #{overrides}
-        #        #{"_#{token}.taint = #{@taint.inspect};" if @taint}
-        #    </script>\n</script\\1>"
-        #)
-
         response.headers['content-length'] = response.body.bytesize
         response
     end
@@ -89,15 +81,7 @@ class Javascript
     #   `true` if the page is ready and {OVERRIDES} has been installed, `false`
     #   otherwise.
     def ready?
-        #!!run( "return _#{token}" ) rescue false
-        begin
-            run( "return _#{token}" )
-        rescue => e
-            ap e
-            ap e.backtrace
-            false
-        end
-        true
+        !!run( "return _#{token}" ) rescue false
     end
 
     # @param    [String]    script  JS code to execute.
@@ -150,31 +134,10 @@ class Javascript
         sink_data.map do |entry|
             {
                 data:  entry['data'],
-                trace: prepare_js_trace( entry['trace'] )
+                trace: [entry['trace']].flatten.compact.
+                           map { |h| h.symbolize_keys( false ) }
             }
         end
-    end
-
-    def prepare_js_trace( trace )
-        to_string = Set.new(%w(toElement target srcElement currentTarget fromElement))
-
-        formatted = []
-        trace.each do |entry|
-            entry = entry.symbolize_keys( false )
-
-            if entry[:arguments] && entry[:arguments][0].is_a?( Hash ) &&
-                entry[:arguments][0].include?( 'target' )
-
-                #entry[:arguments][0].each do |k, v|
-                #    entry[:arguments][0][k] =
-                #        (v && to_string.include?( k ) ? v.html : v)
-                #end
-            end
-
-            formatted << entry
-        end
-
-        formatted
     end
 
 end
