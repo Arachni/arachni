@@ -148,6 +148,211 @@ describe Arachni::Browser::Javascript do
             end
 
             context 'AngularJS' do
+                context '$http' do
+                    context '.delete' do
+                        it 'logs it' do
+                            @javascript.taint = @browser.generate_token
+                            @browser.load "#{@url}/data_trace/AngularJS/$http.delete?taint=#{@javascript.taint}"
+
+                            pages = @browser.flush_page_snapshots_with_sinks
+
+                            pages.size.should == 1
+                            page = pages.first
+
+                            page.dom.sink.size.should == 4
+
+                            entry = page.dom.sink[1]
+                            entry[:data][0]['object'].should == 'angular.$http'
+                            entry[:data][0]['function'].should == 'delete'
+                            entry[:data][0]['arguments'].should == [ "/#{@javascript.taint}" ]
+                            entry[:data][0]['tainted'].should == "/#{@javascript.taint}"
+                            entry[:data][0]['taint'].should == @javascript.taint
+                            entry[:trace][0][:url].should == page.url
+
+                            entry = page.dom.sink[3]
+                            entry[:data][0]['object'].should == 'XMLHttpRequestPrototype'
+                            entry[:data][0]['function'].should == 'open'
+                            entry[:data][0]['arguments'].should == [
+                                'DELETE', "/#{@javascript.taint}", true
+                            ]
+                            entry[:data][0]['tainted'].should == "/#{@javascript.taint}"
+                            entry[:data][0]['taint'].should == @javascript.taint
+                            entry[:trace][0][:url].should == "#{@url}angular.js"
+                        end
+                    end
+
+                    context '.head' do
+                        it 'logs it' do
+                            @javascript.taint = @browser.generate_token
+                            @browser.load "#{@url}/data_trace/AngularJS/$http.head?taint=#{@javascript.taint}"
+
+                            pages = @browser.flush_page_snapshots_with_sinks
+
+                            pages.size.should == 1
+                            page = pages.first
+
+                            page.dom.sink.size.should == 4
+
+                            entry = page.dom.sink[1]
+                            entry[:data][0]['object'].should == 'angular.$http'
+                            entry[:data][0]['function'].should == 'head'
+                            entry[:data][0]['arguments'].should == [ "/#{@javascript.taint}" ]
+                            entry[:data][0]['tainted'].should == "/#{@javascript.taint}"
+                            entry[:data][0]['taint'].should == @javascript.taint
+                            entry[:trace][0][:url].should == page.url
+
+                            entry = page.dom.sink[3]
+                            entry[:data][0]['object'].should == 'XMLHttpRequestPrototype'
+                            entry[:data][0]['function'].should == 'open'
+                            entry[:data][0]['arguments'].should == [
+                                'HEAD', "/#{@javascript.taint}", true
+                            ]
+                            entry[:data][0]['tainted'].should == "/#{@javascript.taint}"
+                            entry[:data][0]['taint'].should == @javascript.taint
+                            entry[:trace][0][:url].should == "#{@url}angular.js"
+                        end
+                    end
+
+                    context '.jsonp' do
+                        it 'logs it' do
+                            @javascript.taint = @browser.generate_token
+                            @browser.load "#{@url}/data_trace/AngularJS/$http.jsonp?taint=#{@javascript.taint}"
+
+                            pages = @browser.flush_page_snapshots_with_sinks
+
+                            pages.size.should == 1
+                            page = pages.first
+
+                            page.dom.sink.size.should == 3
+
+                            entry = page.dom.sink[1]
+                            entry[:data][0]['object'].should == 'angular.$http'
+                            entry[:data][0]['function'].should == 'jsonp'
+                            entry[:data][0]['arguments'].should == [ "/jsonp-#{@javascript.taint}" ]
+                            entry[:data][0]['tainted'].should == "/jsonp-#{@javascript.taint}"
+                            entry[:data][0]['taint'].should == @javascript.taint
+                            entry[:trace][0][:url].should == page.url
+
+                            entry = page.dom.sink[2]
+                            entry[:data][0]['object'].should == 'ElementPrototype'
+                            entry[:data][0]['function'].should == 'setAttribute'
+                            entry[:data][0]['arguments'].should == [
+                                'href', "/jsonp-#{@javascript.taint}"
+                            ]
+                            entry[:data][0]['tainted'].should == "/jsonp-#{@javascript.taint}"
+                            entry[:data][0]['taint'].should == @javascript.taint
+                            entry[:trace][0][:url].should == "#{@url}angular.js"
+                        end
+                    end
+
+                    context '.put' do
+                        it 'logs it' do
+                            @javascript.taint = @browser.generate_token
+                            @browser.load "#{@url}/data_trace/AngularJS/$http.put?taint=#{@javascript.taint}"
+
+                            pages = @browser.flush_page_snapshots_with_sinks
+
+                            pages.size.should == 1
+                            page = pages.first
+
+                            page.dom.sink.size.should == 3
+
+                            entry = page.dom.sink[1]
+                            entry[:data][0]['object'].should == 'angular.$http'
+                            entry[:data][0]['function'].should == 'put'
+                            entry[:data][0]['arguments'].should == [
+                                '/', "Stuff #{@javascript.taint}"
+                            ]
+                            entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
+                            entry[:data][0]['taint'].should == @javascript.taint
+                            entry[:trace][0][:url].should == page.url
+
+                            entry = page.dom.sink[2]
+                            entry[:data][0]['object'].should == 'XMLHttpRequestPrototype'
+                            entry[:data][0]['function'].should == 'send'
+                            entry[:data][0]['arguments'].should == [ "Stuff #{@javascript.taint}" ]
+                            entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
+                            entry[:data][0]['taint'].should == @javascript.taint
+                            entry[:trace][0][:url].should == "#{@url}angular.js"
+                        end
+                    end
+
+                    context '.get' do
+                        it 'logs it' do
+                            @javascript.taint = @browser.generate_token
+                            @browser.load "#{@url}/data_trace/AngularJS/$http.get?taint=#{@javascript.taint}"
+
+                            pages = @browser.flush_page_snapshots_with_sinks
+
+                            pages.size.should == 1
+                            page = pages.first
+
+                            page.dom.sink.size.should == 4
+
+                            entry = page.dom.sink[1]
+                            entry[:data][0]['object'].should == 'angular.$http'
+                            entry[:data][0]['function'].should == 'get'
+                            entry[:data][0]['arguments'].should == [ "/#{@javascript.taint}" ]
+                            entry[:data][0]['tainted'].should == "/#{@javascript.taint}"
+                            entry[:data][0]['taint'].should == @javascript.taint
+                            entry[:trace][0][:url].should == page.url
+
+                            entry = page.dom.sink[3]
+                            entry[:data][0]['object'].should == 'XMLHttpRequestPrototype'
+                            entry[:data][0]['function'].should == 'open'
+                            entry[:data][0]['arguments'].should == [
+                                'GET', "/#{@javascript.taint}", true
+                            ]
+                            entry[:data][0]['tainted'].should == "/#{@javascript.taint}"
+                            entry[:data][0]['taint'].should == @javascript.taint
+                            entry[:trace][0][:url].should == "#{@url}angular.js"
+                        end
+                    end
+
+                    context '.post' do
+                        it 'logs it' do
+                            @javascript.taint = @browser.generate_token
+                            @browser.load "#{@url}/data_trace/AngularJS/$http.post?taint=#{@javascript.taint}"
+
+                            pages = @browser.flush_page_snapshots_with_sinks
+
+                            pages.size.should == 1
+                            page = pages.first
+
+                            page.dom.sink.size.should == 3
+
+                            entry = page.dom.sink[1]
+                            entry[:data][0]['object'].should == 'angular.$http'
+                            entry[:data][0]['function'].should == 'post'
+                            entry[:data][0]['arguments'].should == [
+                                '/', '',
+                                {
+                                    'params' => {
+                                        'stuff' => "Stuff #{@javascript.taint}"
+                                    },
+                                    'method' => 'post',
+                                    'url'    => '/',
+                                    'data'   => ''
+                                }
+                            ]
+                            entry[:data][0]['tainted'].should == "Stuff #{@javascript.taint}"
+                            entry[:data][0]['taint'].should == @javascript.taint
+                            entry[:trace][0][:url].should == page.url
+
+                            entry = page.dom.sink[2]
+                            entry[:data][0]['object'].should == 'XMLHttpRequestPrototype'
+                            entry[:data][0]['function'].should == 'open'
+                            entry[:data][0]['arguments'].should == [
+                                'POST', "/?stuff=Stuff+#{@javascript.taint}", true
+                            ]
+                            entry[:data][0]['tainted'].should == "/?stuff=Stuff+#{@javascript.taint}"
+                            entry[:data][0]['taint'].should == @javascript.taint
+                            entry[:trace][0][:url].should == "#{@url}angular.js"
+                        end
+                    end
+
+                end
+
                 context 'ngRoute' do
                     context 'template' do
                         it 'logs it' do

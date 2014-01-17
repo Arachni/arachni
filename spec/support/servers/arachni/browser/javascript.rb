@@ -76,21 +76,92 @@ get '/data_trace/global-functions' do
     EOHTML
 end
 
-get '/data_trace/AngularJS/application/1' do
+get '/data_trace/AngularJS/$http.delete' do
     <<-EOHTML
-<!doctype html>
 <html ng-app>
-    <head>
-        <script src="/angular.js"></script>
-    </head>
-    <body>
-        <div>
-            <label>Name:</label>
-            <input type="text" ng-model="yourName" placeholder="Enter a name here">
-            <hr>
-            <h1>Hello {{yourName}}!</h1>
-        </div>
-    </body>
+    <script src="/angular.js"></script>
+
+    <script>
+        angular.element(document).ready(function() {
+            angular.element(document.querySelectorAll('[ng-app]')[0])
+                .injector().get('$http').delete( '/#{params[:taint]}' );
+        });
+    </script>
+</html>
+    EOHTML
+end
+
+get '/data_trace/AngularJS/$http.head' do
+    <<-EOHTML
+<html ng-app>
+    <script src="/angular.js"></script>
+
+    <script>
+        angular.element(document).ready(function() {
+            angular.element(document.querySelectorAll('[ng-app]')[0])
+                .injector().get('$http').head( '/#{params[:taint]}' );
+        });
+    </script>
+</html>
+    EOHTML
+end
+
+get '/data_trace/AngularJS/$http.jsonp' do
+    <<-EOHTML
+<html ng-app>
+    <script src="/angular.js"></script>
+
+    <script>
+        angular.element(document).ready(function() {
+            angular.element(document.querySelectorAll('[ng-app]')[0])
+                .injector().get('$http').jsonp( '/jsonp-#{params[:taint]}' );
+        });
+    </script>
+</html>
+    EOHTML
+end
+
+get '/data_trace/AngularJS/$http.get' do
+    <<-EOHTML
+<html ng-app>
+    <script src="/angular.js"></script>
+
+    <script>
+        angular.element(document).ready(function() {
+            angular.element(document.querySelectorAll('[ng-app]')[0])
+                .injector().get('$http').get( '/#{params[:taint]}' );
+        });
+    </script>
+</html>
+    EOHTML
+end
+
+get '/data_trace/AngularJS/$http.put' do
+    <<-EOHTML
+<html ng-app>
+    <script src="/angular.js"></script>
+
+    <script>
+        angular.element(document).ready(function() {
+            angular.element(document.querySelectorAll('[ng-app]')[0])
+                .injector().get('$http').put( '/', 'Stuff #{params[:taint]}' );
+        });
+    </script>
+</html>
+    EOHTML
+end
+
+get '/data_trace/AngularJS/$http.post' do
+    <<-EOHTML
+<html ng-app>
+    <script src="/angular.js"></script>
+
+    <script>
+        angular.element(document).ready(function() {
+            angular.element(document.querySelectorAll('[ng-app]')[0])
+                .injector().get('$http').post( '/', '', { params: { stuff: 'Stuff #{params[:taint]}' } } );
+        });
+    </script>
 </html>
     EOHTML
 end
@@ -108,6 +179,14 @@ get '/data_trace/AngularJS/ngRoute/' do
         <h2>JavaScript Projects</h2>
         <div ng-view></div>
     </body>
+
+    <script>
+        angular.element(document).ready(function() {
+            angular.element(document).scope().$apply(function() {
+                console.log( $http )
+            });
+        });
+    </script>
 </html>
     EOHTML
 end
