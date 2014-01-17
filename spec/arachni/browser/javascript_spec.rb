@@ -38,7 +38,18 @@ describe Arachni::Browser::Javascript do
         end
     end
 
-    describe '#taint' do
+    describe '#taint=' do
+        it 'sets the JS taint for the data-flow tracers' do
+            taint = @browser.generate_token
+
+            @javascript.taint = taint
+            @javascript.taint.should == taint
+
+            @browser.load "#{@url}/debugging_data"
+
+            @javascript.get_override( :taint ).should == taint
+        end
+
         context 'when tainted data pass through' do
             context 'global methods' do
                 it 'logs it' do
