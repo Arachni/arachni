@@ -148,38 +148,40 @@ describe Arachni::Browser::Javascript do
             end
 
             context 'AngularJS' do
-                context 'application' do
-                    it 'logs it' do
-                        @javascript.taint = @browser.generate_token
-                        @browser.load "#{@url}/data_trace/AngularJS/ngRoute/?taint=#{@javascript.taint}"
+                context 'ngRoute' do
+                    context 'template' do
+                        it 'logs it' do
+                            @javascript.taint = @browser.generate_token
+                            @browser.load "#{@url}/data_trace/AngularJS/ngRoute/?taint=#{@javascript.taint}"
 
-                        pages = @browser.flush_page_snapshots_with_sinks
+                            pages = @browser.flush_page_snapshots_with_sinks
 
-                        pages.size.should == 1
-                        page = pages.first
+                            pages.size.should == 1
+                            page = pages.first
 
-                        page.dom.sink.size.should == 6
+                            page.dom.sink.size.should == 6
 
-                        # ngRoute module first schedules an HTTP request to grab
-                        # the template from the given 'templateUrl'...
-                        entry = page.dom.sink[4]
-                        entry[:data][0]['object'].should == 'XMLHttpRequestPrototype'
-                        entry[:data][0]['function'].should == 'open'
-                        entry[:data][0]['arguments'].should == [
-                            'GET', "template.html?taint=#{@javascript.taint}", true
-                        ]
-                        entry[:data][0]['tainted'].should == "template.html?taint=#{@javascript.taint}"
-                        entry[:data][0]['taint'].should == @javascript.taint
-                        entry[:trace][0][:url].should == "#{@url}angular.js"
+                            # ngRoute module first schedules an HTTP request to grab
+                            # the template from the given 'templateUrl'...
+                            entry = page.dom.sink[4]
+                            entry[:data][0]['object'].should == 'XMLHttpRequestPrototype'
+                            entry[:data][0]['function'].should == 'open'
+                            entry[:data][0]['arguments'].should == [
+                                'GET', "template.html?taint=#{@javascript.taint}", true
+                            ]
+                            entry[:data][0]['tainted'].should == "template.html?taint=#{@javascript.taint}"
+                            entry[:data][0]['taint'].should == @javascript.taint
+                            entry[:trace][0][:url].should == "#{@url}angular.js"
 
-                        #... and then updates the app with the (tainted) template content.
-                        entry = page.dom.sink[5]
-                        entry[:data][0]['object'].should == 'angular.element'
-                        entry[:data][0]['function'].should == 'html'
-                        entry[:data][0]['arguments'].should == ["Blah blah blah #{@javascript.taint}\n"]
-                        entry[:data][0]['tainted'].should == "Blah blah blah #{@javascript.taint}\n"
-                        entry[:data][0]['taint'].should == @javascript.taint
-                        entry[:trace][0][:url].should == "#{@url}angular-route.js"
+                            #... and then updates the app with the (tainted) template content.
+                            entry = page.dom.sink[5]
+                            entry[:data][0]['object'].should == 'angular.element'
+                            entry[:data][0]['function'].should == 'html'
+                            entry[:data][0]['arguments'].should == ["Blah blah blah #{@javascript.taint}\n"]
+                            entry[:data][0]['tainted'].should == "Blah blah blah #{@javascript.taint}\n"
+                            entry[:data][0]['taint'].should == @javascript.taint
+                            entry[:trace][0][:url].should == "#{@url}angular-route.js"
+                        end
                     end
                 end
 
