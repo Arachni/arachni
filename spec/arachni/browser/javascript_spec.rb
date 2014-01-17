@@ -148,6 +148,31 @@ describe Arachni::Browser::Javascript do
             end
 
             context 'AngularJS' do
+                context '.element' do
+                    it 'logs it' do
+                        @javascript.taint = @browser.generate_token
+                        @browser.load "#{@url}/data_trace/AngularJS.element?taint=#{@javascript.taint}"
+
+                        pages = @browser.flush_page_snapshots_with_sinks
+
+                        pages.size.should == 1
+                        page = pages.first
+
+                        page.dom.sink.size.should == 2
+
+                        entry = page.dom.sink[1]
+                        entry[:data][0]['object'].should == 'angular'
+                        entry[:data][0]['function'].should == 'JQLite'
+                        entry[:data][0]['arguments'].should == ["<div>Stuff #{@javascript.taint}</div>"]
+                        entry[:data][0]['tainted'].should == "<div>Stuff #{@javascript.taint}</div>"
+                        entry[:data][0]['taint'].should == @javascript.taint
+
+                        trace = entry[:trace][0]
+                        page.body.split("\n")[trace[:line]].should include 'angular.element('
+                        trace[:url].should == page.url
+                    end
+                end
+
                 context '$http' do
                     context '.delete' do
                         it 'logs it' do
@@ -387,31 +412,6 @@ describe Arachni::Browser::Javascript do
                             entry[:data][0]['taint'].should == @javascript.taint
                             entry[:trace][0][:url].should == "#{@url}angular-route.js"
                         end
-                    end
-                end
-
-                context '.element' do
-                    it 'logs it' do
-                        @javascript.taint = @browser.generate_token
-                        @browser.load "#{@url}/data_trace/AngularJS.element?taint=#{@javascript.taint}"
-
-                        pages = @browser.flush_page_snapshots_with_sinks
-
-                        pages.size.should == 1
-                        page = pages.first
-
-                        page.dom.sink.size.should == 2
-
-                        entry = page.dom.sink[1]
-                        entry[:data][0]['object'].should == 'angular'
-                        entry[:data][0]['function'].should == 'JQLite'
-                        entry[:data][0]['arguments'].should == ["<div>Stuff #{@javascript.taint}</div>"]
-                        entry[:data][0]['tainted'].should == "<div>Stuff #{@javascript.taint}</div>"
-                        entry[:data][0]['taint'].should == @javascript.taint
-
-                        trace = entry[:trace][0]
-                        page.body.split("\n")[trace[:line]].should include 'angular.element('
-                        trace[:url].should == page.url
                     end
                 end
 
