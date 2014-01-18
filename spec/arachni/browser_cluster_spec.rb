@@ -92,7 +92,7 @@ describe Arachni::BrowserCluster do
                 )
 
                 cluster.shutdown
-                expect { cluster.analyze( page ) }.to raise_error Arachni::BrowserCluster::Error::AlreadyShutdown
+                expect { cluster.analyze( page ) }.to raise_error described_class::Error::AlreadyShutdown
             end
         end
     end
@@ -134,7 +134,7 @@ describe Arachni::BrowserCluster do
                 )
 
                 cluster.shutdown
-                expect { cluster.wait }.to raise_error Arachni::BrowserCluster::Error::AlreadyShutdown
+                expect { cluster.wait }.to raise_error described_class::Error::AlreadyShutdown
             end
         end
     end
@@ -173,7 +173,7 @@ describe Arachni::BrowserCluster do
                 )
 
                 cluster.shutdown
-                expect { cluster.done? }.to raise_error Arachni::BrowserCluster::Error::AlreadyShutdown
+                expect { cluster.done? }.to raise_error described_class::Error::AlreadyShutdown
             end
         end
     end
@@ -190,13 +190,14 @@ describe Arachni::BrowserCluster do
             @cluster.analyze page
             @cluster.wait
 
-            @cluster.sitemap.should == {
-                "#{url}explore" => 200,
-                "#{url}post-ajax" => 404,
-                "#{url}href-ajax" => 200,
-                "#{url}get-ajax?ajax-token=my-token" => 200,
-                Arachni::Browser::Javascript::OVERRIDE_URL => 200
-            }
+            @cluster.sitemap.
+                reject { |k, v| k.start_with? Arachni::Browser::Javascript::SCRIPT_BASE_URL }.
+                should == {
+                    "#{url}explore"   => 200,
+                    "#{url}post-ajax" => 404,
+                    "#{url}href-ajax" => 200,
+                    "#{url}get-ajax?ajax-token=my-token" => 200
+                }
         end
     end
 

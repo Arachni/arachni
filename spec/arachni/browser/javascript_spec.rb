@@ -17,11 +17,20 @@ describe Arachni::Browser::Javascript do
         @browser.shutdown
     end
 
+    describe '#dom_monitor' do
+        it 'provides access to the DOMMonitor javascript interface'
+    end
+
+    describe '#taint_tracer' do
+        it 'provides access to the TaintTracer javascript interface'
+    end
+
     describe '#log_sink_stub' do
         it 'returns JS code that calls JS\'s log_sink()' do
-            @javascript.log_sink_stub.should == "_#{@javascript.token}.log_sink()"
+            @javascript.log_sink_stub.should == "_#{@javascript.token}TaintTracer.log_sink()"
 
             @browser.load "#{@url}/debugging_data?input=#{@javascript.log_sink_stub}"
+
             @browser.watir.form.submit
             @javascript.sink.should be_any
             @javascript.sink.first[:data].should be_empty
@@ -47,7 +56,7 @@ describe Arachni::Browser::Javascript do
 
             @browser.load "#{@url}/debugging_data"
 
-            @javascript.get_override( :taint ).should == taint
+            @javascript.taint_tracer.taint.should == taint
         end
 
         context 'when tainted data pass through' do
@@ -1281,7 +1290,7 @@ describe Arachni::Browser::Javascript do
 
     describe '#debugging_data' do
         it 'returns debugging information' do
-            @browser.load "#{@url}/debugging_data?input=_#{@javascript.token}.debug(1)"
+            @browser.load "#{@url}/debugging_data?input=#{@javascript.debug_stub(1)}"
             @browser.watir.form.submit
             debugging_data = @javascript.debugging_data
 

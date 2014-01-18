@@ -909,13 +909,7 @@ class Browser
     end
 
     def request_handler( request, response )
-        # Serve the Javascript overrides.
-        if request.url == Javascript::OVERRIDE_URL
-            response.code = 200
-            response.body = @javascript.overrides
-            response.headers['content-type'] = 'text/javascript'
-            return
-        end
+        return if @javascript.serve( request, response )
 
         return if request.headers['X-Arachni-Browser-Auth'] != auth_token
         request.headers.delete( 'X-Arachni-Browser-Auth' )

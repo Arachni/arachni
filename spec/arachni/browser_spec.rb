@@ -511,8 +511,8 @@ describe Arachni::Browser do
             end
 
             elements_with_events.should == [
-                { index: 6, tag_name: 'body', events: [[:onmouseover, 'makePOST();']] },
-                { index: 7, tag_name: 'div', events: [[:onclick, 'addForm();']] }
+                { index: 7, tag_name: 'body', events: [[:onmouseover, 'makePOST();']] },
+                { index: 8, tag_name: 'div', events: [[:onclick, 'addForm();']] }
             ]
         end
 
