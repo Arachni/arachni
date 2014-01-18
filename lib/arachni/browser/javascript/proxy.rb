@@ -23,7 +23,29 @@ class Proxy < BasicObject
     #   Name of the JS-side object -- will be prefixed with a generated '_token'.
     def initialize( javascript, object )
         @javascript = javascript
-        @stub = Stub.new( javascript, object )
+        @object     = object
+        @stub       = Stub.new( self, javascript, object )
+        @isFunction = {}
+    end
+
+    # @param    [#to_sym] name  Function name to check.
+    # @return   [Bool]
+    #   `true` if the `name` property of the current object points to a function,
+    #   `false` otherwise.
+    def function?( name )
+        return @isFunction[name.to_sym] if @isFunction.include?( name.to_sym )
+
+        @isFunction[name.to_sym] =
+            @javascript.run(
+                "return Object.prototype.toString.call( #{js_object}." <<
+                    "#{name} ) == '[object Function]'"
+            )
+    end
+
+    # @return   [String]
+    #   Active JS-side object name -- prefixed with the relevant `_token`.
+    def js_object
+        "_#{@javascript.token}#{@object}"
     end
 
     # @param    [Symbol]    function    Javascript property/function.

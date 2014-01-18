@@ -14,14 +14,14 @@ class Browser::Javascript::Proxy
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Stub < BasicObject
 
+    # @param    [Proxy]    proxy    Parent {Proxy}.
     # @param    [Javascript]    javascript  Active {Javascript} interface.
     # @param    [String]    object
     #   Name of the JS-side object -- will be prefixed with the relevant `_token`.
-    def initialize( javascript, object )
+    def initialize( proxy, javascript, object )
+        @proxy      = proxy
         @javascript = javascript
         @object     = object
-
-        @isFunction = {}
     end
 
     # @param    [#to_sym] name    Function name.
@@ -36,7 +36,7 @@ class Stub < BasicObject
     # @param    [#to_sym] name    Function name.
     # @return   [String]    JS code to retrieve the given property.
     def property( name )
-        "#{js_object}.#{name}"
+        "#{@proxy.js_object}.#{name}"
     end
 
     # @param    [#to_sym] name    Function/property name.
@@ -44,32 +44,16 @@ class Stub < BasicObject
     #
     # @return   [String]
     #   JS code to call the given function or retrieve the given property.
-    #   (Type detection is performed by {#function?}.)
+    #   (Type detection is performed by {Proxy#function?}.)
     def write( name, *arguments )
-        function?( name ) ? function( name, *arguments ) : property( name )
+        @proxy.function?( name ) ?
+            function( name, *arguments ) : property( name )
     end
     alias :method_missing :write
 
-    # @param    [#to_sym] name  Function name to check.
-    # @return   [Bool]
-    #   `true` if the `name` property of the current object points to a function,
-    #   `false` otherwise.
-    def function?( name )
-        @isFunction[name.to_sym] ||=
-            @javascript.run(
-                "return Object.prototype.toString.call( #{js_object}." <<
-                    "#{name} ) == '[object Function]'"
-            )
-    end
-
-    # @return   [String]    Object name prefixed with the relevant `_token`.
-    def js_object
-        "_#{@javascript.token}#{@object}"
-    end
-
     # @return   [String]
     def to_s
-        "<#{self.class}##{object_id} #{js_object}>"
+        "<#{self.class}##{object_id} #{@proxy.js_object}>"
     end
 
     # @param    [Symbol]    property
@@ -77,8 +61,11 @@ class Stub < BasicObject
     #   `true` if `self` of the JS object responds to `property`,
     #   `false` otherwise.
     def respond_to?( property )
-        super( property ) || @javascript.run( "return ('#{property}' in #{js_object})" )
+        super( property ) || @javascript.run(
+            "return ('#{property}' in #{@proxy.js_object})"
+        )
     end
+
 end
 
 end
