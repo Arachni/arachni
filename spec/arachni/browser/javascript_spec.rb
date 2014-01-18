@@ -75,7 +75,7 @@ describe Arachni::Browser::Javascript do
                     ]
                     entry[:data][0]['tainted'].should == @javascript.taint
                     entry[:data][0]['taint'].should == @javascript.taint
-                    page.body.split("\n")[entry[:trace][0][:line]].should include 'process('
+                    page.body.split("\n")[entry[:trace][0][:line]-1].should include 'process('
                 end
             end
 

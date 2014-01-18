@@ -194,7 +194,8 @@ describe Arachni::BrowserCluster do
                 "#{url}explore" => 200,
                 "#{url}post-ajax" => 404,
                 "#{url}href-ajax" => 200,
-                "#{url}get-ajax?ajax-token=my-token" => 200
+                "#{url}get-ajax?ajax-token=my-token" => 200,
+                Arachni::Browser::Javascript::OVERRIDE_URL => 200
             }
         end
     end

@@ -20,6 +20,8 @@ class Javascript
     #   with more information for deeper analysis.
     OVERRIDES = IO.read( "#{File.dirname( __FILE__ )}/javascript/overrides.js" )
 
+    OVERRIDE_URL = 'http://javascript.browser.arachni/overrides.js'
+
     # @return   [String]
     #   JavaScript token used to namespace the {OVERRIDES} and avoid clashes.
     attr_accessor :token
@@ -54,26 +56,35 @@ class Javascript
     #   Installs {OVERRIDES} in the given `response`.
     # @return   [HTTP::Response] Updated response.
     def install_overrides( response )
-        return if response.body.include? "#{token}.override"
+        return if response.body.include? "_#{token}.initialize()"
 
         # Schedule a tracer update at the beginning of each script block in order
         # to put our hooks into any newly introduced functions.
         #
         # The fact that our update call seems to be taking place before any
         # functions get the chance to be defined doesn't seem to matter.
-        response.body.gsub!( /<script(.*?)>/i, "\\0\n_#{token}.update_tracers();\n" )
+        response.body.gsub!(
+            /<script(.*?)>/i,
+            "\\0\n_#{token}.update_tracers(); // Injected by #{self.class}\n"
+        )
 
         # Also perform an update after each script block, this is for external
         # scripts.
         response.body.gsub!(
             /<\/script>/i,
-            "\\0<script type=\"text/javascript\">_#{token}.update_tracers();</script>\n"
+            "\\0\n<script type=\"text/javascript\">_#{token}.update_tracers();" <<
+                "</script> <!-- Script injected by #{self.class} -->\n"
         )
 
-        response.body = "\n<script>
-            #{overrides}
-        #{"_#{token}.taint = #{@taint.inspect};" if @taint}
-</script>\n#{response.body}"
+        response.body = <<-EOHTML
+            <script src="#{OVERRIDE_URL}"></script> <!-- Script injected by #{self.class} -->
+            <script>
+                _#{token}.initialize();
+                #{"_#{token}.taint = #{@taint.inspect};" if @taint}
+            </script> <!-- Script injected by #{self.class} -->
+
+            #{response.body}
+        EOHTML
 
         response.headers['content-length'] = response.body.bytesize
         response
