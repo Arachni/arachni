@@ -15,6 +15,7 @@ class Javascript
     include Utilities
 
     require_relative 'javascript/proxy'
+    require_relative 'javascript/taint_tracer'
 
     # @return   [String]    URL to use when requesting our custom JS scripts.
     SCRIPT_BASE_URL = 'http://javascript.browser.arachni/'
@@ -29,18 +30,17 @@ class Javascript
     # @return   [String]    Taint to look for and trace in the JS data flow.
     attr_accessor :taint
 
-    # @return   [Proxy] Proxy for the `DOMMonitor` JS interface.
+    # @return   [Proxy] {Proxy} for the `DOMMonitor` JS interface.
     attr_reader :dom_monitor
 
-    # @return   [Proxy] Proxy for the `TaintTracer` JS interface.
+    # @return   [TaintTracer] {Proxy} for the `TaintTracer` JS interface.
     attr_reader :taint_tracer
 
     # @param    [Browser]   browser
     def initialize( browser )
-        @browser = browser
-
+        @browser      = browser
+        @taint_tracer = TaintTracer.new( self )
         @dom_monitor  = Proxy.new( self, 'DOMMonitor' )
-        @taint_tracer = Proxy.new( self, 'TaintTracer' )
     end
 
     # @return   [Bool]
@@ -84,24 +84,24 @@ class Javascript
     end
 
     # @return   [Array<Object>]
-    #   Data logged by function `_token.debug`.
+    #   Data logged by function `TaintTracer.debug`.
     def debugging_data
         return [] if !supported?
-        prepare_sink_data( taint_tracer.debugging_data )
+        taint_tracer.debugging_data
     end
 
     # @return   [Array<Object>]
-    #   Data logged by function `_token.send_to_sink`.
+    #   Data logged by function `TaintTracer.send_to_sink`.
     def sink
         return [] if !supported?
-        prepare_sink_data( taint_tracer.sink )
+        taint_tracer.sink
     end
 
     # @return   [Array<Object>]
-    #   Returns {#sink} data and empties the `_token.sink`.
+    #   Returns {#sink} data and empties the `TaintTracer.sink`.
     def flush_sink
         return [] if !supported?
-        prepare_sink_data( taint_tracer.flush_sink )
+        taint_tracer.flush_sink
     end
 
     # @return   [Array<Array>] Arguments for JS `setTimeout` calls.
@@ -215,18 +215,6 @@ class Javascript
         end
 
         "#{SCRIPT_BASE_URL}#{filename}.js"
-    end
-
-    def prepare_sink_data( sink_data )
-        return [] if !sink_data
-
-        sink_data.map do |entry|
-            {
-                data:  entry['data'],
-                trace: [entry['trace']].flatten.compact.
-                           map { |h| h.symbolize_keys( false ) }
-            }
-        end
     end
 
 end

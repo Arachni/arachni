@@ -50,9 +50,10 @@ class Proxy < BasicObject
 
     # @param    [Symbol]    function    Javascript property/function.
     # @param    [Array]    arguments
-    def method_missing( function, *arguments )
+    def call( function, *arguments )
         @javascript.run "return #{stub.write( function, *arguments )}"
     end
+    alias :method_missing :call
 
     # @param    [Symbol]    property
     # @return   [Bool]
