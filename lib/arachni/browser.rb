@@ -944,7 +944,7 @@ class Browser
 
     def intercept( response )
         return if !intercept?( response )
-        @javascript.install_overrides( response )
+        @javascript.inject( response )
     end
 
     def intercept?( response )

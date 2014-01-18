@@ -7,7 +7,7 @@ module Arachni
 class Browser
 
 # Provides access to the {Browser}'s JavaScript environment, mainly helps
-# group and organize functionality related to Javascript/DOM overrides.
+# group and organize functionality related to our custom Javascript interfaces.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Javascript
@@ -98,7 +98,7 @@ class Javascript
     end
 
     # @return   [Array<Object>]
-    #   Returns {#sink} data and empties the {OVERRIDES} `_token.sink`.
+    #   Returns {#sink} data and empties the `_token.sink`.
     def flush_sink
         return [] if !supported?
         prepare_sink_data( taint_tracer.flush_sink )
@@ -126,7 +126,7 @@ class Javascript
     # @see SCRIPT_BASE_URL
     # @see SCRIPT_LIBRARY
     def serve( request, response )
-        return if !request.url.start_with?( SCRIPT_BASE_URL ) ||
+        return false if !request.url.start_with?( SCRIPT_BASE_URL ) ||
             !(script = read_script( request.parsed_url.path ))
 
         response.code = 200
@@ -135,13 +135,19 @@ class Javascript
         true
     end
 
-    # @note Will update the `Content-Length`.
+    # @note Will update the `Content-Length` header field.
     # @param    [HTTP::Response]    response
-    #   Installs the JS code in the given `response`.
-    # @return   [HTTP::Response] Updated response.
-    def install_overrides( response )
-        return if response.body.include? js_initialization_signal
+    #   Installs our custom JS interfaces in the given `response`.
+    # @return   [Bool]
+    #   `true` if injection was performed, `false` otherwise (in case our code
+    #   is already present).
+    #
+    # @see SCRIPT_BASE_URL
+    # @see SCRIPT_LIBRARY
+    def inject( response )
+        return false if response.body.include? js_initialization_signal
 
+        # If we've got no taint to trace don't bother...
         if @taint
             # Schedule a tracer update at the beginning of each script block in order
             # to put our hooks into any newly introduced functions.
@@ -176,7 +182,7 @@ class Javascript
         EOHTML
 
         response.headers['content-length'] = response.body.bytesize
-        response
+        true
     end
 
     private
