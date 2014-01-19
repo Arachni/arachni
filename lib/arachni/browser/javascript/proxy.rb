@@ -35,6 +35,13 @@ class Proxy < BasicObject
     def function?( name )
         return @isFunction[name.to_sym] if @isFunction.include?( name.to_sym )
 
+        if name.to_s.end_with? '='
+            name = name.to_s
+            return @isFunction[name.to_sym] = @javascript.run(
+                "return ('#{name[0...-1]}' in #{js_object})"
+            )
+        end
+
         @isFunction[name.to_sym] =
             @javascript.run(
                 "return Object.prototype.toString.call( #{js_object}." <<
