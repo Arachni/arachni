@@ -68,7 +68,7 @@ class Javascript
 
     # Blocks until the browser page is {#ready? ready}.
     def wait_till_ready
-        return if !@browser.response || !@browser.response.body.include?( token )
+        return if !@browser.response || !has_js_initializer?
         sleep 0.1 while !ready?
     end
 
@@ -116,8 +116,17 @@ class Javascript
         dom_monitor.setIntervals
     end
 
-    # @param    [HTTP::Client::Request]     request Request to process.
-    # @param    [HTTP::Client::Response]    response Response to populate.
+    # @param    [HTTP::Response]    response
+    #   Response whose {Response#body} to check.
+    # @return   [Bool]
+    #   `true` if the {HTTP::Response response} {Response#body} contains the
+    #   code for the JS environment.
+    def has_js_initializer?( response = @browser.response )
+        response.body.include? js_initialization_signal
+    end
+
+    # @param    [HTTP::Request]     request Request to process.
+    # @param    [HTTP::Response]    response Response to populate.
     #
     # @return   [Bool]
     #   `true` if the request corresponded to a JS file and was served,
@@ -145,7 +154,7 @@ class Javascript
     # @see SCRIPT_BASE_URL
     # @see SCRIPT_LIBRARY
     def inject( response )
-        return false if response.body.include? js_initialization_signal
+        return false if has_js_initializer?( response )
 
         # If we've got no taint to trace don't bother...
         if @taint
