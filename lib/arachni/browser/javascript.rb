@@ -117,10 +117,10 @@ class Javascript
     end
 
     # @param    [HTTP::Response]    response
-    #   Response whose {Response#body} to check.
+    #   Response whose {HTTP::Response#body} to check.
     # @return   [Bool]
-    #   `true` if the {HTTP::Response response} {Response#body} contains the
-    #   code for the JS environment.
+    #   `true` if the {HTTP::Response response} {HTTP::Response#body} contains
+    #   the code for the JS environment.
     def has_js_initializer?( response = @browser.response )
         response.body.include? js_initialization_signal
     end
