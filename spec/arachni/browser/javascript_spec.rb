@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Arachni::Browser::Javascript do
 
     before( :all ) do
-        @url = Arachni::Utilities.normalize_url( web_server_url_for( :javascript ) )
+        @dom_monitor_url  = Arachni::Utilities.normalize_url( web_server_url_for( :dom_monitor ) )
         @taint_tracer_url = Arachni::Utilities.normalize_url( web_server_url_for( :taint_tracer ) )
     end
 
@@ -72,50 +72,15 @@ describe Arachni::Browser::Javascript do
 
     describe '#timeouts' do
         it 'keeps track of setTimeout() timers' do
-            @browser.load( @url + 'timeout-tracker' )
-
-            @javascript.timeouts.should == [
-                [
-                    "function (name, value) {\n            document.cookie = name + \"=post-\" + value;\n        }",
-                    1000, 'timeout1', 1000
-                ],
-                [
-                    "function (name, value) {\n            document.cookie = name + \"=post-\" + value;\n        }",
-                    1500, 'timeout2', 1500
-                ],
-                [
-                    "function (name, value) {\n            document.cookie = name + \"=post-\" + value;\n        }",
-                    2000, 'timeout3', 2000
-                ]
-            ]
-
-            @browser.load_delay.should == 2000
-            @browser.cookies.size.should == 4
-            @browser.cookies.map { |c| c.to_s }.sort.should == [
-                'timeout3=post-2000',
-                'timeout2=post-1500',
-                'timeout1=post-1000',
-                'timeout=pre'
-            ].sort
+            @browser.load( @dom_monitor_url + 'timeout-tracker' )
+            @javascript.timeouts.should == @javascript.dom_monitor.timeouts
         end
     end
 
     describe '#intervals' do
         it 'keeps track of setInterval() timers' do
-            @browser.load( @url + 'interval-tracker' )
-            @browser.javascript.intervals.should == [
-                [
-                    "function (name, value) {\n            document.cookie = name + \"=post-\" + value;\n        }",
-                    2000, 'timeout1', 2000
-                ]
-            ]
-
-            sleep 2
-            @browser.cookies.size.should == 2
-            @browser.cookies.map { |c| c.to_s }.sort.should == [
-                'timeout1=post-2000',
-                'timeout=pre'
-            ].sort
+            @browser.load( @dom_monitor_url + 'interval-tracker' )
+            @javascript.intervals.should == @javascript.dom_monitor.intervals
         end
     end
 
@@ -214,7 +179,7 @@ describe Arachni::Browser::Javascript do
     end
 
     describe '#inject' do
-        let(:response) { Arachni::HTTP::Response.new( url: @url ) }
+        let(:response) { Arachni::HTTP::Response.new( url: @dom_monitor_url ) }
 
         context 'when the response does not already contain the JS code' do
             it 'injects the system\'s JS interfaces in the response body' do
@@ -284,7 +249,7 @@ _#{@javascript.token}TaintTracer.update_tracers(); // Injected by Arachni::Brows
 
     describe '#run' do
         it 'executes the given script under the browser\'s context' do
-            @browser.load @url
+            @browser.load @dom_monitor_url
             Nokogiri::HTML(@browser.source).to_s.should ==
                 Nokogiri::HTML(@javascript.run( 'return document.documentElement.innerHTML' ) ).to_s
         end

@@ -16,6 +16,7 @@ class Javascript
 
     require_relative 'javascript/proxy'
     require_relative 'javascript/taint_tracer'
+    require_relative 'javascript/dom_monitor'
 
     # @return   [String]    URL to use when requesting our custom JS scripts.
     SCRIPT_BASE_URL = 'http://javascript.browser.arachni/'
@@ -30,7 +31,7 @@ class Javascript
     # @return   [String]    Taint to look for and trace in the JS data flow.
     attr_accessor :taint
 
-    # @return   [Proxy] {Proxy} for the `DOMMonitor` JS interface.
+    # @return   [DOMMonitor] {Proxy} for the `DOMMonitor` JS interface.
     attr_reader :dom_monitor
 
     # @return   [TaintTracer] {Proxy} for the `TaintTracer` JS interface.
@@ -40,7 +41,7 @@ class Javascript
     def initialize( browser )
         @browser      = browser
         @taint_tracer = TaintTracer.new( self )
-        @dom_monitor  = Proxy.new( self, 'DOMMonitor' )
+        @dom_monitor  = DOMMonitor.new( self )
     end
 
     # @return   [Bool]
@@ -118,13 +119,13 @@ class Javascript
     # @return   [Array<Array>] Arguments for JS `setTimeout` calls.
     def timeouts
         return [] if !supported?
-        dom_monitor.setTimeouts
+        dom_monitor.timeouts
     end
 
     # @return   [Array<Array>] Arguments for JS `setInterval` calls.
     def intervals
         return [] if !supported?
-        dom_monitor.setIntervals
+        dom_monitor.intervals
     end
 
     # @param    [HTTP::Request]     request Request to process.
