@@ -30,9 +30,35 @@ describe Arachni::Browser::Javascript::DOMMonitor do
         end
     end
 
+    it 'adds .events property to elements holding the tracked events' do
+        load '/events'
+
+        @browser.watir.button(id: 'my-button').events.should == [
+            [
+                :click,
+                'function (my_button_click) {}'
+            ],
+            [
+                :click,
+                'function (my_button_click2) {}'
+            ],
+            [
+                :onmouseover,
+                'function (my_button_onmouseover) {}'
+            ]
+        ]
+
+        @browser.watir.button(id: 'my-button2').events.should == [
+            [
+                :click,
+                'function (my_button2_click) {}'
+            ]
+        ]
+    end
+
     describe '#timeouts' do
         it 'keeps track of setTimeout() timers' do
-            load '/timeout-tracker'
+            load '/timeouts'
 
             subject.timeouts.should == [
                 [
@@ -62,7 +88,7 @@ describe Arachni::Browser::Javascript::DOMMonitor do
 
     describe '#intervals' do
         it 'keeps track of setInterval() timers' do
-            load '/interval-tracker'
+            load '/intervals'
 
             subject.intervals.should == [
                 [
@@ -79,5 +105,4 @@ describe Arachni::Browser::Javascript::DOMMonitor do
             ].sort
         end
     end
-
 end

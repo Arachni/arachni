@@ -7,17 +7,10 @@ module Watir
     class Element
 
         def events
-            events = []
-
-            browser.execute_script( 'return arguments[0].events();', self ).each do |event|
-                events << [event.first.to_sym, event.last]
-            end
-
-            (::Arachni::Browser.events.flatten.map(&:to_s) & attributes).each do |event|
-                events << [event.to_sym, attribute_value( event )]
-            end
-
-            events
+            (browser.execute_script( 'return arguments[0].events;', self ) || []).
+                    map { |event, fn| [event.to_sym, fn] } |
+            (::Arachni::Browser.events.flatten.map(&:to_s) & attributes).
+                map { |event| [event.to_sym, attribute_value( event )] }
         end
 
         def submit
