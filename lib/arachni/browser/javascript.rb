@@ -142,7 +142,8 @@ class Javascript
 
         response.code = 200
         response.body = script
-        response.headers['content-type'] = 'text/javascript'
+        response.headers['content-type']   = 'text/javascript'
+        response.headers['content-length'] = script.bytesize
         true
     end
 
