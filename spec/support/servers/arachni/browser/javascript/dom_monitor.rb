@@ -43,6 +43,7 @@ get '/events' do
     <<HTML
     <button id="my-button">Click me</button>
     <button id="my-button2">Click me too</button>
+    <button id="my-button3">Don't bother clicking me</button>
 
     <script>
         document.getElementById( "my-button" ).addEventListener( "click", function( my_button_click ){}, false );

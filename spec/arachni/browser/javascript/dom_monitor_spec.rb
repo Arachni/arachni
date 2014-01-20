@@ -54,6 +54,8 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                 'function (my_button2_click) {}'
             ]
         ]
+
+        @browser.watir.button(id: 'my-button3').events.should == []
     end
 
     describe '#timeouts' do
