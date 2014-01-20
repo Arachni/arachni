@@ -160,6 +160,28 @@ describe Arachni::Browser::Javascript do
         end
     end
 
+    describe '#serve' do
+        context 'when the request matches an existing script file' do
+            it 'populates the given response object'
+            it 'returns true'
+        end
+
+        context 'when the request does not match an existing script file' do
+            it 'returns false'
+        end
+    end
+
+    describe '#inject' do
+        context 'when the response does not already contains the JS code' do
+            it 'injects the system\'s JS interfaces in the response body'
+            it 'returns true'
+        end
+
+        context 'when the response already contains the JS code' do
+            it 'returns false'
+        end
+    end
+
     describe '#run' do
         it 'executes the given script under the browser\'s context' do
             @browser.load @url
