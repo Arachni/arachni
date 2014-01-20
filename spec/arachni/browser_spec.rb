@@ -461,7 +461,7 @@ describe Arachni::Browser do
         end
 
         it 'assigns the proper sink data' do
-            @browser.load "#{web_server_url_for( :javascript )}/debugging_data" <<
+            @browser.load "#{web_server_url_for( :taint_tracer )}/debug" <<
                               "?input=#{@browser.javascript.log_sink_stub(1)}"
             @browser.watir.form.submit
 

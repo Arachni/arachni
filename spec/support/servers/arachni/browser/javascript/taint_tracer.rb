@@ -664,7 +664,7 @@ get '/data_trace/CharacterData.replaceData' do
     EOHTML
 end
 
-get '/debugging_data' do
+get '/debug' do
     <<-EOHTML
     <html>
         <script>
@@ -678,4 +678,7 @@ get '/debugging_data' do
         </form>
     </html>
     EOHTML
+end
+
+get '/without_javascript_support' do
 end

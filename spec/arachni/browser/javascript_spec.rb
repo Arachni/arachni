@@ -4,6 +4,7 @@ describe Arachni::Browser::Javascript do
 
     before( :all ) do
         @url = Arachni::Utilities.normalize_url( web_server_url_for( :javascript ) )
+        @taint_tracer_url = Arachni::Utilities.normalize_url( web_server_url_for( :taint_tracer ) )
     end
 
     before( :each ) do
@@ -19,15 +20,31 @@ describe Arachni::Browser::Javascript do
 
     describe '#dom_monitor' do
         it 'provides access to the DOMMonitor javascript interface' do
-            @browser.load "#{@url}/debugging_data"
+            @browser.load "#{@taint_tracer_url}/debug"
             @javascript.dom_monitor.js_object.should end_with 'DOMMonitor'
         end
     end
 
     describe '#taint_tracer' do
         it 'provides access to the TaintTracer javascript interface' do
-            @browser.load "#{@url}/debugging_data"
+            @browser.load "#{@taint_tracer_url}/debug"
             @javascript.taint_tracer.js_object.should end_with 'TaintTracer'
+        end
+    end
+
+    describe '#supported?' do
+        context 'when there is support for the Javascript environment' do
+            it 'returns true' do
+                @browser.load "#{@taint_tracer_url}/debug"
+                @javascript.supported?.should be_true
+            end
+        end
+
+        context 'when there is no support for the Javascript environment' do
+            it 'returns false' do
+                @browser.load "#{@taint_tracer_url}/without_javascript_support"
+                @javascript.supported?.should be_false
+            end
         end
     end
 
@@ -35,7 +52,7 @@ describe Arachni::Browser::Javascript do
         it 'returns JS code that calls JS\'s log_sink()' do
             @javascript.log_sink_stub.should == "_#{@javascript.token}TaintTracer.log_sink()"
 
-            @browser.load "#{@url}/debugging_data?input=#{@javascript.log_sink_stub}"
+            @browser.load "#{@taint_tracer_url}/debug?input=#{@javascript.log_sink_stub}"
 
             @browser.watir.form.submit
             @javascript.sink.should be_any
@@ -45,7 +62,7 @@ describe Arachni::Browser::Javascript do
         context 'when an argument is passed' do
             it 'converts it to JSON' do
                 [1, true].each do |arg|
-                    @browser.load "#{@url}/debugging_data?input=#{@javascript.log_sink_stub( arg )}"
+                    @browser.load "#{@taint_tracer_url}/debug?input=#{@javascript.log_sink_stub( arg )}"
                     @browser.watir.form.submit
                     @javascript.sink.first[:data].should == [arg]
                 end
@@ -104,98 +121,39 @@ describe Arachni::Browser::Javascript do
 
     describe '#debugging_data' do
         it 'returns debugging information' do
-            @browser.load "#{@url}/debugging_data?input=#{@javascript.debug_stub(1)}"
+            @browser.load "#{@taint_tracer_url}/debug?input=#{@javascript.debug_stub(1)}"
             @browser.watir.form.submit
-            debugging_data = @javascript.debugging_data
-
-            first_entry = debugging_data.first
-            debugging_data.should == [first_entry]
-
-            first_entry[:data].should == [1]
-            first_entry[:trace].size.should == 2
-
-            first_entry[:trace][0][:function].should == 'onClick'
-            first_entry[:trace][0][:source].should start_with 'function onClick'
-            @browser.source.split("\n")[first_entry[:trace][0][:line]].should include 'debug(1)'
-            first_entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
-
-            first_entry[:trace][1][:function].should == 'onsubmit'
-            first_entry[:trace][1][:source].should start_with 'function onsubmit'
-            @browser.source.split("\n")[first_entry[:trace][1][:line]].should include 'onClick('
-            first_entry[:trace][1][:arguments].size.should == 1
-
-            event = first_entry[:trace][1][:arguments].first
-
-            form = "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">\n        </form>"
-            event['target'].should == form
-            event['srcElement'].should == form
-            event['type'].should == 'submit'
+            @javascript.debugging_data.should == @javascript.taint_tracer.debugging_data
         end
     end
 
     describe '#sink' do
         it 'returns sink data' do
-            @browser.load "#{@url}/debugging_data?input=#{@javascript.log_sink_stub(1)}"
+            @browser.load "#{@taint_tracer_url}/debug?input=#{@javascript.log_sink_stub(1)}"
             @browser.watir.form.submit
-            sink_data = @javascript.sink
-
-            first_entry = sink_data.first
-            sink_data.should == [first_entry]
-
-            first_entry[:data].should == [1]
-            first_entry[:trace].size.should == 2
-
-            first_entry[:trace][0][:function].should  == 'onClick'
-            first_entry[:trace][0][:source].should start_with 'function onClick'
-            @browser.source.split("\n")[first_entry[:trace][0][:line]].should include 'log_sink(1)'
-            first_entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
-
-            first_entry[:trace][1][:function].should == 'onsubmit'
-            first_entry[:trace][1][:source].should start_with 'function onsubmit'
-            @browser.source.split("\n")[first_entry[:trace][1][:line]].should include 'onsubmit'
-            first_entry[:trace][1][:arguments].size.should == 1
-
-            event = first_entry[:trace][1][:arguments].first
-
-            form = "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">\n        </form>"
-            event['target'].should == form
-            event['srcElement'].should == form
-            event['type'].should == 'submit'
+            @javascript.sink.should == @javascript.taint_tracer.sink
         end
     end
 
     describe '#flush_sink' do
         it 'returns sink data' do
-            @browser.load "#{@url}/debugging_data?input=#{@javascript.log_sink_stub(1)}"
+            @browser.load "#{@taint_tracer_url}/debug?input=#{@javascript.log_sink_stub(1)}"
             @browser.watir.form.submit
-            sink_data = @javascript.flush_sink
 
-            first_entry = sink_data.first
-            sink_data.should == [first_entry]
+            sink = @javascript.flush_sink
+            sink[0][:trace][1][:arguments][0].delete( 'timeStamp' )
 
-            first_entry[:data].should == [1]
-            first_entry[:trace].size.should == 2
+            @browser.load "#{@taint_tracer_url}/debug?input=#{@javascript.log_sink_stub(1)}"
+            @browser.watir.form.submit
 
-            first_entry[:trace][0][:function].should == 'onClick'
-            first_entry[:trace][0][:source].should start_with 'function onClick'
-            @browser.source.split("\n")[first_entry[:trace][0][:line]].should include 'log_sink(1)'
-            first_entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
+            sink2 = @javascript.taint_tracer.sink
+            sink2[0][:trace][1][:arguments][0].delete( 'timeStamp' )
 
-            first_entry[:trace][1][:function].should == 'onsubmit'
-            first_entry[:trace][1][:source].should start_with 'function onsubmit'
-            @browser.source.split("\n")[first_entry[:trace][1][:line]].should include 'onsubmit'
-            first_entry[:trace][1][:arguments].size.should == 1
-
-            event = first_entry[:trace][1][:arguments].first
-
-            form = "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">\n        </form>"
-            event['target'].should == form
-            event['srcElement'].should == form
-            event['type'].should == 'submit'
+            sink.should == sink2
         end
 
         it 'empties the sink' do
-            @browser.load "#{@url}/debugging_data?input=#{@javascript.log_sink_stub}"
+            @browser.load "#{@taint_tracer_url}/debug?input=#{@javascript.log_sink_stub}"
             @browser.watir.form.submit
             @javascript.flush_sink
             @javascript.sink.should be_empty

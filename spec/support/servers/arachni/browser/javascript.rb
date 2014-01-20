@@ -31,19 +31,3 @@ get '/interval-tracker' do
     </script>
 HTML
 end
-
-get '/debugging_data' do
-    <<-EOHTML
-    <html>
-        <script>
-            function onClick( some, arguments, here ) {
-                #{params[:input]};
-                return false;
-            }
-        </script>
-
-        <form id="my_form" onsubmit="onClick('some-arg', 'arguments-arg', 'here-arg'); return false;">
-        </form>
-    </html>
-    EOHTML
-end
