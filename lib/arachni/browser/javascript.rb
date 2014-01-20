@@ -46,8 +46,19 @@ class Javascript
     # @return   [Bool]
     #   `true` if there is support for our JS environment in the current page,
     #   `false` otherwise.
+    #
+    # @see has_js_initializer?
     def supported?
-        @browser.response.body.include? js_initialization_signal
+        has_js_initializer? @browser.response
+    end
+
+    # @param    [HTTP::Response]    response
+    #   Response whose {HTTP::Response#body} to check.
+    # @return   [Bool]
+    #   `true` if the {HTTP::Response response} {HTTP::Response#body} contains
+    #   the code for the JS environment.
+    def has_js_initializer?( response )
+        response.body.include? js_initialization_signal
     end
 
     # @return   [String]
@@ -68,7 +79,7 @@ class Javascript
 
     # Blocks until the browser page is {#ready? ready}.
     def wait_till_ready
-        return if !@browser.response || !has_js_initializer?
+        return if !@browser.response || !supported?
         sleep 0.1 while !ready?
     end
 
@@ -114,15 +125,6 @@ class Javascript
     def intervals
         return [] if !supported?
         dom_monitor.setIntervals
-    end
-
-    # @param    [HTTP::Response]    response
-    #   Response whose {HTTP::Response#body} to check.
-    # @return   [Bool]
-    #   `true` if the {HTTP::Response response} {HTTP::Response#body} contains
-    #   the code for the JS environment.
-    def has_js_initializer?( response = @browser.response )
-        response.body.include? js_initialization_signal
     end
 
     # @param    [HTTP::Request]     request Request to process.
