@@ -18,13 +18,16 @@ class Proxy < BasicObject
     # @return   [Stub]  Stub interface for JS code.
     attr_reader :stub
 
+    # @return   [Javascript]    javascript  Active {Javascript} interface.
+    attr_reader :javascript
+
     # @param    [Javascript]    javascript  Active {Javascript} interface.
     # @param    [String]    object
     #   Name of the JS-side object -- will be prefixed with a generated '_token'.
     def initialize( javascript, object )
         @javascript = javascript
         @object     = object
-        @stub       = Stub.new( self, javascript, object )
+        @stub       = Stub.new( self )
         @isFunction = {}
     end
 

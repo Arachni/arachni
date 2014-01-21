@@ -15,13 +15,8 @@ class Browser::Javascript::Proxy
 class Stub < BasicObject
 
     # @param    [Proxy]    proxy    Parent {Proxy}.
-    # @param    [Javascript]    javascript  Active {Javascript} interface.
-    # @param    [String]    object
-    #   Name of the JS-side object -- will be prefixed with the relevant `_token`.
-    def initialize( proxy, javascript, object )
-        @proxy      = proxy
-        @javascript = javascript
-        @object     = object
+    def initialize( proxy )
+        @proxy = proxy
     end
 
     # @param    [#to_sym] name    Function name.
@@ -30,7 +25,12 @@ class Stub < BasicObject
     # @return   [String]    JS code to call the given function.
     def function( name, *arguments )
         arguments = arguments.map { |arg| arg.to_json }.join( ', ' )
-        "#{property( name )}(#{arguments if !arguments.empty?})"
+
+        if name.to_s.end_with?( '=' )
+            "#{property( name )}#{arguments if !arguments.empty?}"
+        else
+            "#{property( name )}(#{arguments if !arguments.empty?})"
+        end
     end
 
     # @param    [#to_sym] name    Function name.
@@ -64,7 +64,7 @@ class Stub < BasicObject
         property = property.to_s
         property = property[0...-1] if property.end_with? '='
 
-        @javascript.run( "return ('#{property}' in #{@proxy.js_object})" )
+        @proxy.javascript.run( "return ('#{property}' in #{@proxy.js_object})" )
     end
 
 end

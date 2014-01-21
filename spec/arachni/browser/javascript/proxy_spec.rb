@@ -39,6 +39,12 @@ describe Arachni::Browser::Javascript::Proxy do
         end
     end
 
+    describe '#javascript' do
+        it 'returns the Javascript instance' do
+            subject.javascript.should be_kind_of Arachni::Browser::Javascript
+        end
+    end
+
     describe '#js_object' do
         it 'returns the JS-side object of the proxied object' do
             subject.js_object.should == "_#{@javascript.token}ProxyTest"
