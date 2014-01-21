@@ -58,16 +58,6 @@ describe Arachni::Browser::Javascript do
             @javascript.sink.should be_any
             @javascript.sink.first[:data].should be_empty
         end
-
-        context 'when an argument is passed' do
-            it 'converts it to JSON' do
-                [1, true].each do |arg|
-                    @browser.load "#{@taint_tracer_url}/debug?input=#{@javascript.log_sink_stub( arg )}"
-                    @browser.watir.form.submit
-                    @javascript.sink.first[:data].should == [arg]
-                end
-            end
-        end
     end
 
     describe '#timeouts' do

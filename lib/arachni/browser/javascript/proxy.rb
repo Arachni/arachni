@@ -67,7 +67,7 @@ class Proxy < BasicObject
     #   `true` if `self` of the JS object responds to `property`,
     #   `false` otherwise.
     def respond_to?( property )
-        super( property ) || stub.respond_to?( property )
+        stub.respond_to?( property )
     end
 
 end

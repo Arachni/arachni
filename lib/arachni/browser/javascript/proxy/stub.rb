@@ -61,9 +61,10 @@ class Stub < BasicObject
     #   `true` if `self` of the JS object responds to `property`,
     #   `false` otherwise.
     def respond_to?( property )
-        super( property ) || @javascript.run(
-            "return ('#{property}' in #{@proxy.js_object})"
-        )
+        property = property.to_s
+        property = property[0...-1] if property.end_with? '='
+
+        @javascript.run( "return ('#{property}' in #{@proxy.js_object})" )
     end
 
 end
