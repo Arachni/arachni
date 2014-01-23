@@ -196,10 +196,8 @@ class Peer < Arachni::Browser
     end
 
     # Closes the browser and shuts down the server.
-    #
-    # @see Arachni::Browser#close_windows
-    def close
-        shutdown rescue nil
+    def shutdown
+        super
         @server.shutdown rescue nil
         nil
     end
