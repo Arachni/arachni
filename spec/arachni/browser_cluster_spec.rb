@@ -68,8 +68,8 @@ describe Arachni::BrowserCluster do
 
         context 'when no callback has been provided' do
             it 'raises ArgumentError' do
-                cluster = described_class.new
-                expect { cluster.process_request( request ) }.to raise_error ArgumentError
+                @cluster = described_class.new
+                expect { @cluster.process_request( request ) }.to raise_error ArgumentError
             end
         end
 
@@ -131,7 +131,7 @@ describe Arachni::BrowserCluster do
             end
         end
 
-        context 'when the cluster has ben shutdown' do
+        context 'when the cluster has been shutdown' do
             it 'raises Arachni::BrowserCluster::Error::AlreadyShutdown' do
                 cluster = described_class.new
                 cluster.shutdown
