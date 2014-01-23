@@ -42,16 +42,14 @@ class Request
         @resource      = options[:resource]
         @event         = options[:event]
         @element_index = options[:element_index]
-
-        @options = options
     end
 
     # @param    [Hash]  options See {#initialize}.
     # @return   [Request]
-    #   Re-used request (mainly its callback and {#id}), updated with the
-    #   given `options`.
+    #   Re-used request (mainly its {#id} and thus its callback as well),
+    #   configured with the given `options`.
     def forward( options = {} )
-        self.class.new @options.merge(options).merge( id: @id )
+        self.class.new options.merge( id: @id )
     end
 
     # @return   [Bool]
@@ -62,6 +60,7 @@ class Request
     end
 
     # @return   [Integer]
+    #   ID, used by the {BrowserCluster}, to tie requests to callbacks.
     def id
         @id
     end
