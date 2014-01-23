@@ -11,7 +11,8 @@ module RPC
 class Client
 
 class BrowserCluster
-# {RPC::Server::Browser} client.
+
+# {BrowserCluster::Peer} client.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Peer < RemoteObjectMapper

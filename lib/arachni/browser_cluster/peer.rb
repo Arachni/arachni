@@ -23,15 +23,13 @@ class Peer < Arachni::Browser
     # Spawns a {Peer} in it own process and connects to it.
     #
     # @param    [Hash]  options
-    # @option   options  :master [#handle_page]
-    #   Master to be passed each page.
     # @option   options  :wait [Bool]
     #   `true` to wait until the {Browser} has booted, `false` otherwise.
     #
-    # @return   [Array, Client::Browser]
+    # @return   [Array, RPC::Client::BrowserCluster::Peer]
     #
     #   * `[socket, token]` if `:wait` has been set to `false`.
-    #   * {Client::Browser} if `:wait` has been set to `true`.
+    #   * {RPC::Client::BrowserCluster::Peer} if `:wait` has been set to `true`.
     def self.spawn( options = {} )
         socket = "/tmp/arachni-browser-#{Utilities.available_port}"
         token  = Utilities.generate_token
