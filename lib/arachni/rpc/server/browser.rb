@@ -23,51 +23,6 @@ class Server
 class Browser
     include UI::Output
 
-    # Spawns a {Server::Browser} in it own process and connects to it.
-    #
-    # @param    [Hash]  options
-    # @option   options  :master [#handle_page]
-    #   Master to be passed each page.
-    # @option   options  :wait [Bool]
-    #   `true` to wait until the {Browser} has booted, `false` otherwise.
-    #
-    # @return   [Array, Client::Browser]
-    #
-    #   * `[socket, token]` if `:wait` has been set to `false`.
-    #   * {Client::Browser} if `:wait` has been set to `true`.
-    def self.spawn( options = {} )
-        socket = "/tmp/arachni-browser-#{Utilities.available_port}"
-        token  = Utilities.generate_token
-
-        ::EM.fork_reactor do
-            Options.rpc.server_socket = socket
-            new master: options[:master], token: token, js_token: options[:js_token]
-        end
-
-        if options[:wait]
-            sleep 0.1 while !File.exists?( socket )
-
-            client = RPC::Client::Browser.new( socket, token )
-            begin
-                Timeout.timeout( 10 ) do
-                    while sleep( 0.1 )
-                        begin
-                            client.alive?
-                            break
-                        rescue Exception
-                        end
-                    end
-                end
-            rescue Timeout::Error
-                abort "Browser '#{socket}' never started!"
-            end
-
-            return client
-        end
-
-        [socket, token]
-    end
-
     # @param    [Hash]    options
     # @option   [String]    :token  Authentication token for the clients.
     def initialize( options = {} )
@@ -90,8 +45,7 @@ class Browser
         @server.start
     end
 
-    # @param    [Page, String, HTTP::Response]  resource
-    #   Resource to analyze. If `String` is given it will be treated as a URL.
+    # @param    [Browser::Request]  request
     # @param    [Hash]  options
     # @option   options [Array<Cookie>] :cookies
     #   Cookies with which to update the browser's cookie-jar before analyzing
@@ -102,22 +56,18 @@ class Browser
     #   and capturing AJAX requests.
     #
     # @see Arachni::Browser#trigger_events
-    def analyze( resource, options = {}, &block )
+    def process_request( request, options = {}, &block )
         HTTP::Client.update_cookies( options[:cookies] || [] )
 
         ::EM.defer do
             begin
-                # If it's an array it's an event triggering operation that was
-                # distributed across the cluster to make analyzing a single
-                # page faster.
-                if resource.is_a? Array
-                    @browser.load resource.first
-                    @browser.trigger_event *resource
+                @browser.load request.resource
 
-                # Otherwise it's a seed page/url/response that needs to be
-                # analyzed.
+                if request.single_event?
+                    @browser.trigger_event(
+                        request.resource, request.element_index, request.event
+                    )
                 else
-                    @browser.load resource
                     @browser.trigger_events
                 end
             rescue => e

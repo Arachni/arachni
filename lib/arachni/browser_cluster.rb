@@ -7,7 +7,9 @@ module Arachni
 
 lib = Options.paths.lib
 require lib + 'browser'
-require lib + 'rpc/server/browser'
+require lib + 'browser_cluster/peer'
+require lib + 'browser_cluster/request'
+require lib + 'browser_cluster/response'
 
 # Real browser driver providing DOM/JS/AJAX support.
 #
@@ -59,7 +61,7 @@ class BrowserCluster
     #   When that number is exceeded the current process is killed and a new
     #   one is pushed to the pool. Helps prevent memory leak issues.
     # @option   [Proc]  :handler
-    #   `Proc` to handle each page returned by {RPC::Server::Browser#analyze}.
+    #   `Proc` to handle each page returned by {RPC::Server::Browser#process_request}.
     #
     # @raise    ArgumentError   On missing `:handler` option.
     def initialize( options = {} )
@@ -71,13 +73,13 @@ class BrowserCluster
             end
         end
 
-        fail ArgumentError, 'Missing :handler option.' if !@handler
-
         # Used to sync operations between browser workers.
         @skip = Support::LookUp::HashSet.new( hasher: :persistent_hash )
 
+        @request_callbacks = {}
+
         # Holds resources to consume, Arachni::Page objects usually.
-        @resources = Support::Database::Queue.new
+        @requests  = Support::Database::Queue.new
         @sitemap   = {}
         @mutex     = Mutex.new
 
@@ -86,13 +88,30 @@ class BrowserCluster
         start
     end
 
-    # @param    [Page, String, HTTP::Response]  resource
-    #   Resource to analyze, if given a `String` it will treat it as a URL.
-    def analyze( resource )
+    # @param    [Browser::Request]  request
+    def process_request( request, &callback )
         fail_if_shutdown
 
-        @resources << resource
+        @request_callbacks[request.id] = callback if callback
+
+        if !@request_callbacks[request.id]
+            fail ArgumentError, "No callback set for request id #{request.id}."
+        end
+
+        @requests << request
+
         true
+    end
+
+    # @param    [Response]  response
+    def handle_response( response )
+        fail_if_shutdown
+
+        synchronize do
+            exception_jail( false ) do
+                @request_callbacks[response.request.id].call response
+            end
+        end
     end
 
     # @return   [Bool]
@@ -101,7 +120,7 @@ class BrowserCluster
         fail_if_shutdown
 
         synchronize do
-            @resources.empty? && @browsers[:busy].empty?
+            @requests.empty? && @browsers[:busy].empty?
         end
     end
 
@@ -123,7 +142,7 @@ class BrowserCluster
         @worker.kill
 
         # Clear the temp files used to hold the resources to analyze.
-        @resources.clear
+        @requests.clear
 
         # Kill the browsers.
         q = Queue.new
@@ -152,17 +171,6 @@ class BrowserCluster
         synchronize { @skip << action }
     end
 
-    # Passes the `page` to the handler.
-    #
-    # @param    [Page]  page
-    def handle_page( page )
-        fail_if_shutdown
-
-        synchronize do
-            exception_jail( false ){ @handler.call page }
-        end
-    end
-
     def push_to_sitemap( url, code )
         synchronize { @sitemap[url] = code }
     end
@@ -184,7 +192,7 @@ class BrowserCluster
         @worker  = Thread.new do
             while @running do
                 sleep 0.05
-                next if @resources.empty?
+                next if @requests.empty?
 
                 synchronize do
                     next if @browsers[:idle].empty?
@@ -192,8 +200,8 @@ class BrowserCluster
                     browser = @browsers[:idle].pop
                     @browsers[:busy] << browser
 
-                    browser.analyze(
-                        @resources.pop,
+                    browser.process_request(
+                        @requests.pop,
                         cookies: HTTP::Client.cookies
                     ){ move_browser( browser, :busy, :idle ) }
                 end
@@ -243,7 +251,7 @@ class BrowserCluster
         booting_browsers = []
 
         pool_size.times do
-            booting_browsers << RPC::Server::Browser.spawn(
+            booting_browsers << Peer.spawn(
                 js_token: js_token,
                 master:   ipc_handle
             )

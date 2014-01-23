@@ -3,7 +3,11 @@ require 'spec_helper'
 describe Arachni::BrowserCluster do
 
     let(:url) { Arachni::Utilities.normalize_url( web_server_url_for( :browser ) ) }
-    let(:page) { Arachni::HTTP::Client.get( url + 'explore', mode: :sync ).to_page }
+    let(:request) do
+        Arachni::BrowserCluster::Request.new(
+            resource: Arachni::HTTP::Client.get( url + 'explore', mode: :sync )
+        )
+    end
 
     after( :each ) do
         @cluster.shutdown if @cluster
@@ -26,39 +30,16 @@ describe Arachni::BrowserCluster do
     end
 
     describe '#initialize' do
-        describe :handler do
-            it 'sets a proc to handle each page' do
-                pages = []
-                @cluster = described_class.new(
-                    handler: proc do |page|
-                        pages << page
-                    end
-                )
-
-                @cluster.analyze page
-                @cluster.wait
-
-                pages_should_have_form_with_input pages, 'by-ajax'
-                pages_should_have_form_with_input pages, 'from-post-ajax'
-                pages_should_have_form_with_input pages, 'ajax-token'
-                pages_should_have_form_with_input pages, 'href-post-name'
-            end
-        end
-
         describe :pool_size do
             it 'sets the amount of browsers to instantiate' do
-                @cluster = described_class.new(
-                    pool_size: 3,
-                    handler:   proc {}
-                )
+                @cluster = described_class.new( pool_size: 3 )
 
                 browsers = @cluster.instance_variable_get( :@browsers )
                 (browsers[:idle].size + browsers[:busy].size).should == 3
             end
 
             it 'defaults to 6' do
-                @cluster = described_class.new( handler: proc {} )
-
+                @cluster = described_class.new
                 browsers = @cluster.instance_variable_get( :@browsers )
                 (browsers[:idle].size + browsers[:busy].size).should == 6
             end
@@ -69,30 +50,34 @@ describe Arachni::BrowserCluster do
         end
     end
 
-    describe '#analyze' do
-        it 'analyzes the page' do
+    describe '#process_request' do
+        it 'processes the request' do
             pages = []
-            @cluster = described_class.new(
-                handler: proc do |page|
-                    pages << page
-                end
-            )
+            @cluster = described_class.new
 
-            @cluster.analyze( page )
+            @cluster.process_request( request ) do |response|
+                pages << response.page
+            end
             @cluster.wait
-            pages.should be_any
+
+            pages_should_have_form_with_input pages, 'by-ajax'
+            pages_should_have_form_with_input pages, 'from-post-ajax'
+            pages_should_have_form_with_input pages, 'ajax-token'
+            pages_should_have_form_with_input pages, 'href-post-name'
+        end
+
+        context 'when no callback has been provided' do
+            it 'raises ArgumentError' do
+                cluster = described_class.new
+                expect { cluster.process_request( request ) }.to raise_error ArgumentError
+            end
         end
 
         context 'when the cluster has ben shutdown' do
             it 'raises Arachni::BrowserCluster::Error::AlreadyShutdown' do
-                cluster = described_class.new(
-                    handler: proc do |page|
-                        pages << page
-                    end
-                )
-
+                cluster = described_class.new
                 cluster.shutdown
-                expect { cluster.analyze( page ) }.to raise_error described_class::Error::AlreadyShutdown
+                expect { cluster.process_request( request ) }.to raise_error described_class::Error::AlreadyShutdown
             end
         end
     end
@@ -100,13 +85,11 @@ describe Arachni::BrowserCluster do
     describe '#wait' do
         it 'waits until the analysis is complete' do
             pages = []
-            @cluster = described_class.new(
-                handler: proc do |page|
-                    pages << page
-                end
-            )
 
-            @cluster.analyze page
+            @cluster = described_class.new
+            @cluster.process_request( request ) do |response|
+                pages << response.page
+            end
 
             pages.should be_empty
             @cluster.done?.should be_false
@@ -116,23 +99,13 @@ describe Arachni::BrowserCluster do
         end
 
         it 'returns self' do
-            @cluster = described_class.new(
-                handler: proc do |page|
-                    pages << page
-                end
-            )
-
+            @cluster = described_class.new
             @cluster.wait.should == @cluster
         end
 
         context 'when the cluster has ben shutdown' do
             it 'raises Arachni::BrowserCluster::Error::AlreadyShutdown' do
-                cluster = described_class.new(
-                    handler: proc do |page|
-                        pages << page
-                    end
-                )
-
+                cluster = described_class.new
                 cluster.shutdown
                 expect { cluster.wait }.to raise_error described_class::Error::AlreadyShutdown
             end
@@ -142,22 +115,16 @@ describe Arachni::BrowserCluster do
     describe '#done?' do
         context 'while analysis is in progress' do
             it 'returns false' do
-                @cluster = described_class.new(
-                    handler: proc{}
-                )
-
-                @cluster.analyze page
+                @cluster = described_class.new
+                @cluster.process_request( request ) {}
                 @cluster.done?.should be_false
             end
         end
 
         context 'when analysis has completed' do
             it 'returns true' do
-                @cluster = described_class.new(
-                    handler: proc{}
-                )
-
-                @cluster.analyze page
+                @cluster = described_class.new
+                @cluster.process_request( request ) {}
                 @cluster.done?.should be_false
                 @cluster.wait
                 @cluster.done?.should be_true
@@ -166,12 +133,7 @@ describe Arachni::BrowserCluster do
 
         context 'when the cluster has ben shutdown' do
             it 'raises Arachni::BrowserCluster::Error::AlreadyShutdown' do
-                cluster = described_class.new(
-                    handler: proc do |page|
-                        pages << page
-                    end
-                )
-
+                cluster = described_class.new
                 cluster.shutdown
                 expect { cluster.done? }.to raise_error described_class::Error::AlreadyShutdown
             end
@@ -180,14 +142,8 @@ describe Arachni::BrowserCluster do
 
     describe '#sitemap' do
         it 'returns the sitemap as covered by the browser requests' do
-            pages = []
-            @cluster = described_class.new(
-                handler: proc do |page|
-                    pages << page
-                end
-            )
-
-            @cluster.analyze page
+            @cluster = described_class.new
+            @cluster.process_request( request ) {}
             @cluster.wait
 
             @cluster.sitemap.

@@ -684,7 +684,7 @@ class Framework
 
     private
 
-    def handle_browser_pages( page )
+    def handle_browser_page( page )
         return if !push_to_page_queue page
 
         pushed_paths = 0
@@ -704,7 +704,7 @@ class Framework
 
     end
 
-    # Passes the `page` to {RPC::Server::Browser#analyze} and then pushes
+    # Passes the `page` to {BrowserCluster#process_request} and then pushes
     # the resulting pages to {#push_to_page_queue}.
     #
     # @param    [Page]  page
@@ -713,8 +713,17 @@ class Framework
         return if Options.scope.dom_depth_limit.to_i < page.dom.depth + 1 ||
             !host_has_has_browser? || !page.has_script?
 
-        @browser ||= BrowserCluster.new( handler: method( :handle_browser_pages ) )
-        @browser.analyze page
+        @browser ||= BrowserCluster.new
+
+        # Let's recycle the same request over and over since all of them will
+        # have the same callback.
+        @browser_request ||= BrowserCluster::Request.new
+        request = @browser_request.forward( resource: page )
+
+        @browser.process_request( request ) do |response|
+            handle_browser_page response.page
+        end
+
         true
     end
 

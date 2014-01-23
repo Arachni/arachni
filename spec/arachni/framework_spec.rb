@@ -899,6 +899,7 @@ describe Arachni::Framework do
 
             it 'analyzes the DOM and pushes new paths to the url queue' do
                 Arachni::Framework.new do |f|
+                    f.opts.url = @url
                     f.opts.audit.elements :links, :forms, :cookies
                     f.checks.load :taint
 
@@ -908,20 +909,22 @@ describe Arachni::Framework do
 
                     sleep 0.1 while f.wait_for_browser?
 
-                    f.url_queue_total_size.should == 3
+                    f.url_queue_total_size.should == 2
                 end
             end
 
             context 'when the DOM depth limit has been reached' do
                 it 'does not analyze the DOM' do
                     Arachni::Framework.new do |f|
+                        f.opts.url = @url
+
                         f.opts.audit.elements :links, :forms, :cookies
                         f.checks.load :taint
                         f.opts.scope.dom_depth_limit = 1
                         f.url_queue_total_size.should == 0
                         f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) ).should be_true
                         sleep 0.1 while f.wait_for_browser?
-                        f.url_queue_total_size.should == 3
+                        f.url_queue_total_size.should == 2
 
                         f.reset
 
