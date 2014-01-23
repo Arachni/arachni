@@ -10,10 +10,11 @@ require Options.paths.lib + 'rpc/client/base'
 module RPC
 class Client
 
+class BrowserCluster
 # {RPC::Server::Browser} client.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-class Browser < RemoteObjectMapper
+class Peer < RemoteObjectMapper
 
     def initialize( socket, token = nil )
         super( RPC::Client::Base.new( Options.instance, socket, token ), 'browser' )
@@ -21,6 +22,7 @@ class Browser < RemoteObjectMapper
 
 end
 
+end
 end
 end
 end

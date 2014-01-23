@@ -44,7 +44,7 @@ class Peer < Arachni::Browser
         if options[:wait]
             sleep 0.1 while !File.exists?( socket )
 
-            client = RPC::Client::Browser.new( socket, token )
+            client = RPC::Client::BrowserCluster::Peer.new( socket, token )
             begin
                 Timeout.timeout( 10 ) do
                     while sleep( 0.1 )

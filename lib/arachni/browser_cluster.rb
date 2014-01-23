@@ -262,7 +262,7 @@ class BrowserCluster
                 loop do
                     booting_browsers.each do |socket, token|
                         begin
-                            b = RPC::Client::Browser.new( socket, token )
+                            b = RPC::Client::BrowserCluster::Peer.new( socket, token )
                             b.alive?
                             booting_browsers.delete( [socket, token] )
                             @browsers[:idle] << b
