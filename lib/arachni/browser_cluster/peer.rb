@@ -66,6 +66,9 @@ class Peer < Arachni::Browser
     # @return    [RPC::RemoteObjectMapper]    For {BrowserCluster}.
     attr_reader :master
 
+    # @return [Request] Current request.
+    attr_reader :request
+
     def initialize( options )
         %w(QUIT INT).each do |signal|
             trap( signal, 'IGNORE' ) if Signal.list.has_key?( signal )
@@ -88,7 +91,7 @@ class Peer < Arachni::Browser
         end
 
         on_new_page do |page|
-            @master.handle_response( Response.new( page: page, request: @request ) ){}
+            @master.handle_response( Response.new( page: page, request: self.request ) ){}
         end
 
         @server = RPC::Server::Base.new( Options.instance, rpc_auth_token )
