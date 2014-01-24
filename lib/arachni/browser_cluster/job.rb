@@ -49,9 +49,13 @@ class Job
         remove_resources
     end
 
-    # Forwards the {Result resulting} data to the
+    # Forwards the {Result resulting} `data` to the
     # {BrowserCluster#handle_job_result browser cluster} which then forwards
     # it to the entity that {BrowserCluster#queue queued} the job.
+    #
+    # The result type will be the closest {Result} class to the {Job} type.
+    # If the job is of type `MyJob`, `MyJob::Result` will be used, the default
+    # if {Result}.
     #
     # @param    [Hash]  data    Used to initialize the {Result}.
     def save_result( data )
