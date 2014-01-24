@@ -59,6 +59,18 @@ class Job
         remove_resources
     end
 
+    # Forwards the {Result resulting} data to the
+    # {BrowserCluster#handle_job_result browser cluster} which then forwards
+    # it to the entity that {BrowserCluster#queue queued} the job.
+    #
+    # @param    [Hash]  data    Used to initialize the {Result}.
+    def save_result( data )
+        browser.master.handle_job_result(
+            self.class::Result.new( data.merge( job: self.clean_copy ) )
+        ){}
+        nil
+    end
+
     # @return   [Job]
     #   {#dup Copy} of `self` with any resources set by {#configure_and_run}
     #   removed.

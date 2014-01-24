@@ -87,16 +87,6 @@ class Peer < Arachni::Browser
 
         start_capture
 
-        on_response do |response|
-            @master.push_to_sitemap( response.url, response.code ){}
-        end
-
-        on_new_page do |page|
-            @master.handle_job_result(
-                Job::Result.new( page: page, job: self.job.clean_copy )
-            ){}
-        end
-
         @server = RPC::Server::Base.new( Options.instance, rpc_auth_token )
         @server.logger.level = ::Logger::Severity::FATAL
 
@@ -131,10 +121,19 @@ class Peer < Arachni::Browser
             rescue => e
                 print_error e
                 print_error_backtrace e
-            ensure
-                close_windows
             end
 
+            # The jobs may have configured callbacks to capture pages etc.,
+            # remove them.
+            @on_new_page_blocks.clear
+            @on_new_page_with_sink_blocks.clear
+            @on_response_blocks.clear
+
+            # Close open windows to free system resources and have a clean
+            # slate for the later job.
+            close_windows
+
+            @job = nil
             block.call
         end
 
@@ -200,6 +199,14 @@ class Peer < Arachni::Browser
         super
         @server.shutdown rescue nil
         nil
+    end
+
+    private
+
+    def save_response( response )
+        super( response )
+        @master.push_to_sitemap( response.url, response.code ){}
+        response
     end
 
 end

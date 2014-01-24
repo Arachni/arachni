@@ -9,6 +9,7 @@ class Job
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Result
+
     # @return [Page]
     attr_accessor :page
 

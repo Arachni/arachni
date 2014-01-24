@@ -27,6 +27,8 @@ class ResourceExploration < Job
 
     # Loads a {#resource} and {Browser#trigger_events explores} its DOM.
     def run
+        browser.on_new_page { |page| save_result( page: page ) }
+
         browser.load resource
         browser.trigger_events
     end

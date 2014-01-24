@@ -40,6 +40,8 @@ class EventTrigger < ResourceExploration
     # Loads a {#resource} and {Browser#trigger_event triggers} the specified
     # {#event} on the given {#element_index element}.
     def run
+        browser.on_new_page { |page| save_result( page: page ) }
+
         browser.load resource
         browser.trigger_event( resource, element_index, event )
     end

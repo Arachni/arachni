@@ -109,13 +109,13 @@ class BrowserCluster
         true
     end
 
-    # @param    [Response]  response
-    def handle_job_result( response )
+    # @param    [Job::Result]  result
+    def handle_job_result( result )
         fail_if_shutdown
 
         synchronize do
             exception_jail( false ) do
-                @job_callbacks[response.job.id].call response
+                @job_callbacks[result.job.id].call result
             end
         end
     end
