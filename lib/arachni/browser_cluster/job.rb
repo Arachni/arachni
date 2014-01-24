@@ -17,7 +17,7 @@ class Job
 
     # @return   [Peer]
     #   Browser to use in order to perform the relevant {#run task} -- set by
-    #   {BrowserCluster} via {#configure_and_run}.
+    #   {Peer#run_job} via {#configure_and_run}.
     attr_reader :browser
 
     # @param    [Hash]  options
