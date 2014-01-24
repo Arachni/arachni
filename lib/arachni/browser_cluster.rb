@@ -6,10 +6,10 @@
 module Arachni
 
 lib = Options.paths.lib
-require lib + 'browser'
 require lib + 'browser_cluster/peer'
-require lib + 'browser_cluster/request'
-require lib + 'browser_cluster/response'
+require lib + 'browser_cluster/job'
+require lib + 'browser_cluster/jobs/page_analysis'
+require lib + 'browser_cluster/jobs/event_trigger'
 
 # Real browser driver providing DOM/JS/AJAX support.
 #
@@ -31,6 +31,14 @@ class BrowserCluster
         # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
         class AlreadyShutdown < Error
         end
+    end
+
+    # {BrowserCluster} {Job} types.
+    #
+    # @see #process
+    #
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    module Jobs
     end
 
     DEFAULT_OPTIONS = {
@@ -60,8 +68,6 @@ class BrowserCluster
     #   Restricts each browser's lifetime to the given amount of pages.
     #   When that number is exceeded the current process is killed and a new
     #   one is pushed to the pool. Helps prevent memory leak issues.
-    # @option   [Proc]  :handler
-    #   `Proc` to handle each page returned by {RPC::Server::Browser#process_request}.
     #
     # @raise    ArgumentError   On missing `:handler` option.
     def initialize( options = {} )
@@ -76,40 +82,39 @@ class BrowserCluster
         # Used to sync operations between browser workers.
         @skip = Support::LookUp::HashSet.new( hasher: :persistent_hash )
 
-        @request_callbacks = {}
+        @job_callbacks = {}
+        @jobs           = Support::Database::Queue.new
 
-        # Holds resources to consume, Arachni::Page objects usually.
-        @requests  = Support::Database::Queue.new
-        @sitemap   = {}
-        @mutex     = Mutex.new
+        @sitemap = {}
+        @mutex   = Mutex.new
 
         initialize_browsers
 
         start
     end
 
-    # @param    [Browser::Request]  request
-    def process_request( request, &callback )
+    # @param    [BrowserCluster::Job]  job
+    def queue( job, &callback )
         fail_if_shutdown
 
-        @request_callbacks[request.id] = callback if callback
+        @job_callbacks[job.id] = callback if callback
 
-        if !@request_callbacks[request.id]
-            fail ArgumentError, "No callback set for request id #{request.id}."
+        if !@job_callbacks[job.id]
+            fail ArgumentError, "No callback set for job ID #{job.id}."
         end
 
-        @requests << request
+        @jobs << job
 
         true
     end
 
     # @param    [Response]  response
-    def handle_response( response )
+    def handle_job_result( response )
         fail_if_shutdown
 
         synchronize do
             exception_jail( false ) do
-                @request_callbacks[response.request.id].call response
+                @job_callbacks[response.job.id].call response
             end
         end
     end
@@ -120,7 +125,7 @@ class BrowserCluster
         fail_if_shutdown
 
         synchronize do
-            @requests.empty? && @browsers[:busy].empty?
+            @jobs.empty? && @browsers[:busy].empty?
         end
     end
 
@@ -142,7 +147,7 @@ class BrowserCluster
         @worker.kill
 
         # Clear the temp files used to hold the resources to analyze.
-        @requests.clear
+        @jobs.clear
 
         # Kill the browsers.
         q = Queue.new
@@ -192,7 +197,7 @@ class BrowserCluster
         @worker  = Thread.new do
             while @running do
                 sleep 0.05
-                next if @requests.empty?
+                next if @jobs.empty?
 
                 synchronize do
                     next if @browsers[:idle].empty?
@@ -200,8 +205,8 @@ class BrowserCluster
                     browser = @browsers[:idle].pop
                     @browsers[:busy] << browser
 
-                    browser.process_request(
-                        @requests.pop,
+                    browser.run_job(
+                        @jobs.pop,
                         cookies: HTTP::Client.cookies
                     ){ move_browser( browser, :busy, :idle ) }
                 end

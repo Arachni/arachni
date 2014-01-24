@@ -3,8 +3,8 @@ require 'spec_helper'
 describe Arachni::BrowserCluster do
 
     let(:url) { Arachni::Utilities.normalize_url( web_server_url_for( :browser ) ) }
-    let(:request) do
-        Arachni::BrowserCluster::Request.new(
+    let(:job) do
+        Arachni::BrowserCluster::Jobs::PageAnalysis.new(
             resource: Arachni::HTTP::Client.get( url + 'explore', mode: :sync )
         )
     end
@@ -50,12 +50,12 @@ describe Arachni::BrowserCluster do
         end
     end
 
-    describe '#process_request' do
-        it 'processes the request' do
+    describe '#queue' do
+        it 'processes the job' do
             pages = []
             @cluster = described_class.new
 
-            @cluster.process_request( request ) do |response|
+            @cluster.queue( job ) do |response|
                 pages << response.page
             end
             @cluster.wait
@@ -69,7 +69,7 @@ describe Arachni::BrowserCluster do
         context 'when no callback has been provided' do
             it 'raises ArgumentError' do
                 @cluster = described_class.new
-                expect { @cluster.process_request( request ) }.to raise_error ArgumentError
+                expect { @cluster.queue( job ) }.to raise_error ArgumentError
             end
         end
 
@@ -77,7 +77,7 @@ describe Arachni::BrowserCluster do
             it 'raises Arachni::BrowserCluster::Error::AlreadyShutdown' do
                 cluster = described_class.new
                 cluster.shutdown
-                expect { cluster.process_request( request ) }.to raise_error described_class::Error::AlreadyShutdown
+                expect { cluster.queue( job ) }.to raise_error described_class::Error::AlreadyShutdown
             end
         end
     end
@@ -87,7 +87,7 @@ describe Arachni::BrowserCluster do
             pages = []
 
             @cluster = described_class.new
-            @cluster.process_request( request ) do |response|
+            @cluster.queue( job ) do |response|
                 pages << response.page
             end
 
@@ -116,7 +116,7 @@ describe Arachni::BrowserCluster do
         context 'while analysis is in progress' do
             it 'returns false' do
                 @cluster = described_class.new
-                @cluster.process_request( request ) {}
+                @cluster.queue( job ) {}
                 @cluster.done?.should be_false
             end
         end
@@ -124,7 +124,7 @@ describe Arachni::BrowserCluster do
         context 'when analysis has completed' do
             it 'returns true' do
                 @cluster = described_class.new
-                @cluster.process_request( request ) {}
+                @cluster.queue( job ) {}
                 @cluster.done?.should be_false
                 @cluster.wait
                 @cluster.done?.should be_true
@@ -141,9 +141,9 @@ describe Arachni::BrowserCluster do
     end
 
     describe '#sitemap' do
-        it 'returns the sitemap as covered by the browser requests' do
+        it 'returns the sitemap as covered by the browser jobs' do
             @cluster = described_class.new
-            @cluster.process_request( request ) {}
+            @cluster.queue( job ) {}
             @cluster.wait
 
             @cluster.sitemap.

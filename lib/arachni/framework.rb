@@ -704,7 +704,7 @@ class Framework
 
     end
 
-    # Passes the `page` to {BrowserCluster#process_request} and then pushes
+    # Passes the `page` to {BrowserCluster#queue} and then pushes
     # the resulting pages to {#push_to_page_queue}.
     #
     # @param    [Page]  page
@@ -717,10 +717,10 @@ class Framework
 
         # Let's recycle the same request over and over since all of them will
         # have the same callback.
-        @browser_request ||= BrowserCluster::Request.new
+        @browser_request ||= BrowserCluster::Jobs::PageAnalysis.new
         request = @browser_request.forward( resource: page )
 
-        @browser.process_request( request ) do |response|
+        @browser.queue( request ) do |response|
             handle_browser_page response.page
         end
 

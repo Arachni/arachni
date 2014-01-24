@@ -7,6 +7,7 @@
 module Arachni
 
 lib = Options.paths.lib
+require lib + 'browser'
 require lib + 'rpc/server/base'
 require lib + 'rpc/client/browser_cluster/peer'
 require lib + 'processes'
@@ -66,8 +67,8 @@ class Peer < Arachni::Browser
     # @return    [RPC::RemoteObjectMapper]    For {BrowserCluster}.
     attr_reader :master
 
-    # @return [Request] Current request.
-    attr_reader :request
+    # @return [Job] Currently assigned job.
+    attr_reader :job
 
     def initialize( options )
         %w(QUIT INT).each do |signal|
@@ -91,7 +92,7 @@ class Peer < Arachni::Browser
         end
 
         on_new_page do |page|
-            @master.handle_response( Response.new( page: page, request: self.request ) ){}
+            @master.handle_job_result( Job::Result.new( page: page, job: self.job ) ){}
         end
 
         @server = RPC::Server::Base.new( Options.instance, rpc_auth_token )
@@ -106,7 +107,7 @@ class Peer < Arachni::Browser
         @server.start
     end
 
-    # @param    [Browser::Request]  request
+    # @param    [BrowserCluster::Job]  job
     # @param    [Hash]  options
     # @option   options [Array<Cookie>] :cookies
     #   Cookies with which to update the browser's cookie-jar before analyzing
@@ -117,22 +118,14 @@ class Peer < Arachni::Browser
     #   and capturing AJAX requests.
     #
     # @see Arachni::Browser#trigger_events
-    def process_request( request, options = {}, &block )
+    def run_job( job, options = {}, &block )
         HTTP::Client.update_cookies( options[:cookies] || [] )
 
-        @request = request
+        @job = job
 
         ::EM.defer do
             begin
-                load request.resource
-
-                if request.single_event?
-                    trigger_event(
-                        request.resource, request.element_index, request.event
-                    )
-                else
-                    trigger_events
-                end
+                @job.run( self )
             rescue => e
                 print_error e
                 print_error_backtrace e
@@ -183,10 +176,13 @@ class Peer < Arachni::Browser
     #
     # @see Browser#distribute_event
     def distribute_event( page, element_index, event )
-        master.process_request @request.forward(
-            resource:      page,
-            element_index: element_index,
-            event:         event
+        master.queue @job.forward_as(
+            Jobs::EventTrigger,
+            {
+                resource:      page,
+                element_index: element_index,
+                event:         event
+            }
         )
         true
     end

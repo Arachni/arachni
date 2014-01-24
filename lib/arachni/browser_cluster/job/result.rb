@@ -4,28 +4,28 @@
 =end
 
 module Arachni
-
 class BrowserCluster
+class Job
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-class Response
-
+class Result
     # @return [Page]
     attr_accessor :page
 
-    # @return [Request]
-    attr_accessor :request
+    # @return [Job]
+    attr_accessor :job
 
     # @param    [Hash]  options
     # @option   options [Page]   :page
-    #   {#page Page} snapshot that resulted from processing the {#request}.
-    # @option   options [Request]   :request
+    #   {#page Page} snapshot that resulted from running the {#job}.
+    # @option   options [Job]   :job
     def initialize( options = {} )
-        @page    = options[:page]
-        @request = options[:request]
+        @page = options[:page]
+        @job  = options[:job]
     end
 
 end
 
+end
 end
 end
