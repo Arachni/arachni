@@ -46,11 +46,11 @@ class Job
     def run
     end
 
-    # Configures the job with the necessary resources, {#run runs} the payload
+    # Configures the job with the given resources, {#run runs} the payload
     # and then removes the assigned resources.
     #
     # @param    [Peer]  browser
-    #   Browser to use in order to perform the relevant task -- set by
+    #   {#browser Browser} to use in order to perform the relevant task -- set by
     #   {BrowserCluster::Peer#run_job}.
     def configure_and_run( browser )
         set_resources( browser )
