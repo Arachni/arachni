@@ -15,16 +15,6 @@ class BrowserCluster
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Job
 
-    class <<self
-        # Increments the {#id} upon {#initialize initialization}.
-        #
-        # @return   [Integer]
-        def increment_id
-            @@id ||= 0
-            @@id += 1
-        end
-    end
-
     # @return   [Peer]
     #   Browser to use in order to perform the relevant {#run task} -- set by
     #   {BrowserCluster} via {#configure_and_run}.
@@ -33,7 +23,7 @@ class Job
     # @param    [Hash]  options
     def initialize( options = {} )
         @options = options.dup
-        @id      = options.delete(:id) || self.class.increment_id
+        @id      = options.delete(:id) || increment_id
     end
 
     # @note The following resources will be available at the time of execution:
@@ -50,8 +40,8 @@ class Job
     # and then removes the assigned resources.
     #
     # @param    [Peer]  browser
-    #   {#browser Browser} to use in order to perform the relevant task -- set by
-    #   {BrowserCluster::Peer#run_job}.
+    #   {#browser Browser} to use in order to perform the relevant task -- set
+    #   by {BrowserCluster::Peer#run_job}.
     def configure_and_run( browser )
         set_resources( browser )
         run
@@ -120,6 +110,14 @@ class Job
 
     def set_resources( browser )
         @browser = browser
+    end
+
+    # Increments the {#id} upon {#initialize initialization}.
+    #
+    # @return   [Integer]
+    def increment_id
+        @@id ||= 0
+        @@id += 1
     end
 
 end
