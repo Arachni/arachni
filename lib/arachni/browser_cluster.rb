@@ -8,8 +8,9 @@ module Arachni
 lib = Options.paths.lib
 require lib + 'browser_cluster/peer'
 require lib + 'browser_cluster/job'
-require lib + 'browser_cluster/jobs/page_analysis'
-require lib + 'browser_cluster/jobs/event_trigger'
+
+# Load all job types.
+Dir[lib + 'browser_cluster/jobs/*'].each { |j| require j }
 
 # Real browser driver providing DOM/JS/AJAX support.
 #
@@ -33,9 +34,9 @@ class BrowserCluster
         end
     end
 
-    # {BrowserCluster} {Job} types.
+    # Holds {BrowserCluster} {Job} types.
     #
-    # @see #process
+    # @see BrowserCluster#queue
     #
     # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
     module Jobs

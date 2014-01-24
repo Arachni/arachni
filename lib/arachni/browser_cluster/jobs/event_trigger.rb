@@ -3,14 +3,17 @@
     All rights reserved.
 =end
 
-require_relative 'page_analysis'
+require_relative 'resource_exploration'
 
 module Arachni
 class BrowserCluster
 module Jobs
 
+# Loads a {#resource} and {Browser#trigger_event triggers} the specified
+# {#event} on the given {#element_index element}.
+#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-class EventTrigger < PageAnalysis
+class EventTrigger < ResourceExploration
 
     # @return   [Symbol]
     #   Event to trigger on the given {#element_index element}.
@@ -21,7 +24,7 @@ class EventTrigger < PageAnalysis
     #   the given {#event}.
     attr_accessor :element_index
 
-    # @param    [Hash]  options -- In addition to {PageAnalysis} options:
+    # @param    [Hash]  options -- In addition to {ResourceExploration} options:
     # @option   options [Symbol]   :event
     #   Event to trigger on the given {#element_index element}.
     # @option   options [Integer]   :element_index
@@ -34,7 +37,9 @@ class EventTrigger < PageAnalysis
         @element_index = options[:element_index]
     end
 
-    def run( browser )
+    # Loads a {#resource} and {Browser#trigger_event triggers} the specified
+    # {#event} on the given {#element_index element}.
+    def run
         browser.load resource
         browser.trigger_event( resource, element_index, event )
     end

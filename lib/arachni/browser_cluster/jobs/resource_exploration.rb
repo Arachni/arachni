@@ -7,22 +7,26 @@ module Arachni
 class BrowserCluster
 module Jobs
 
+# Loads a {#resource} and {Browser#trigger_events explores} its DOM.
+#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-class PageAnalysis < Job
+class ResourceExploration < Job
 
     # @return [Page, String, HTTP::Response]
-    #   Resource to process, if given a `String` it will be treated it as a URL.
+    #   Resource to explore, if given a `String` it will be treated it as a URL
+    #   and will be loaded.
     attr_accessor :resource
 
     # @param    [Hash]  options
     # @option   options [Page, String, HTTP::Response]   :resource
-    #   Resource to process, if given a `String` it will be treated it as a URL.
+    #   Resource to explore, if given a `String` it will be treated it as a URL.
     def initialize( options = {} )
         super options
         @resource = options[:resource]
     end
 
-    def run( browser )
+    # Loads a {#resource} and {Browser#trigger_events explores} its DOM.
+    def run
         browser.load resource
         browser.trigger_events
     end

@@ -717,7 +717,7 @@ class Framework
 
         # Let's recycle the same request over and over since all of them will
         # have the same callback.
-        @browser_request ||= BrowserCluster::Jobs::PageAnalysis.new
+        @browser_request ||= BrowserCluster::Jobs::ResourceExploration.new
         request = @browser_request.forward( resource: page )
 
         @browser.queue( request ) do |response|

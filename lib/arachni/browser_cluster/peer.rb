@@ -92,7 +92,9 @@ class Peer < Arachni::Browser
         end
 
         on_new_page do |page|
-            @master.handle_job_result( Job::Result.new( page: page, job: self.job ) ){}
+            @master.handle_job_result(
+                Job::Result.new( page: page, job: self.job.clean_copy )
+            ){}
         end
 
         @server = RPC::Server::Base.new( Options.instance, rpc_auth_token )
@@ -125,7 +127,7 @@ class Peer < Arachni::Browser
 
         ::EM.defer do
             begin
-                @job.run( self )
+                @job.configure_and_run( self )
             rescue => e
                 print_error e
                 print_error_backtrace e
@@ -174,7 +176,8 @@ class Peer < Arachni::Browser
 
     # Direct the distribution to the master and let it take it from there.
     #
-    # @see Browser#distribute_event
+    # @see Jobs::EventTrigger
+    # @see BrowserCluster#queue
     def distribute_event( page, element_index, event )
         master.queue @job.forward_as(
             Jobs::EventTrigger,
