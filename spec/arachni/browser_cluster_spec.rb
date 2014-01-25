@@ -1,15 +1,5 @@
 require 'spec_helper'
 
-class MyJob < Arachni::BrowserCluster::Job
-    class Result < Arachni::BrowserCluster::Job::Result
-        attr_accessor :my_data
-    end
-
-    def run
-        save_result my_data: 'Some stuff'
-    end
-end
-
 describe Arachni::BrowserCluster do
 
     let(:url) { Arachni::Utilities.normalize_url( web_server_url_for( :browser ) ) }
@@ -18,6 +8,7 @@ describe Arachni::BrowserCluster do
             resource: Arachni::HTTP::Client.get( url + 'explore', mode: :sync )
         )
     end
+    let(:custom_job) { Factory[:custom_job] }
 
     after( :each ) do
         @cluster.shutdown if @cluster
@@ -79,10 +70,15 @@ describe Arachni::BrowserCluster do
 
         it 'supports custom jobs' do
             results = []
+
+            # We need to introduce the custom Job into the parent namespace
+            # prior to the BrowserCluster initialization, in order for it to be
+            # available in the Peers' namespace.
+            custom_job
+
             @cluster = described_class.new
 
-            job = MyJob.new
-            @cluster.queue( job ) do |result|
+            @cluster.queue( custom_job ) do |result|
                 results << result
             end
             @cluster.wait
@@ -90,7 +86,7 @@ describe Arachni::BrowserCluster do
             results.size.should == 1
             result = results.first
             result.my_data.should == 'Some stuff'
-            result.job.id.should == job.id
+            result.job.id.should == custom_job.id
         end
 
         context 'when no callback has been provided' do
