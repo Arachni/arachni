@@ -179,7 +179,7 @@ class Peer < Arachni::Browser
     # @see BrowserCluster#queue
     def distribute_event( page, element_index, event )
         master.queue @job.forward_as(
-            Jobs::EventTrigger,
+            @job.class::EventTrigger,
             {
                 resource:      page,
                 element_index: element_index,

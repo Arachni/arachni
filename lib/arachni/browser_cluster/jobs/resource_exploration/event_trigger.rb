@@ -3,21 +3,16 @@
     All rights reserved.
 =end
 
-require_relative 'resource_exploration'
-
 module Arachni
 class BrowserCluster
 module Jobs
+class ResourceExploration
 
 # Loads a {#resource} and {Browser#trigger_event triggers} the specified
 # {#event} on the given {#element_index element}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class EventTrigger < ResourceExploration
-
-    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-    class Result < ResourceExploration::Result
-    end
 
     # @return   [Symbol]
     #   Event to trigger on the given {#element_index element}.
@@ -52,6 +47,7 @@ class EventTrigger < ResourceExploration
 
 end
 
+end
 end
 end
 end

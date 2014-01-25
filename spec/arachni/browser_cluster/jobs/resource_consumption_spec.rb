@@ -18,13 +18,21 @@ describe Arachni::BrowserCluster::Jobs::ResourceExploration do
 
     def test( job )
         pages = []
+        has_event_triggers = false
 
         @cluster.queue( job ) do |result|
             result.should be_kind_of described_class::Result
+
+            if result.job.is_a? described_class::EventTrigger
+                has_event_triggers = true
+                result.job.forwarder.should be_kind_of described_class
+            end
+
             pages << result.page
         end
         @cluster.wait
 
+        has_event_triggers.should be_true
         pages_should_have_form_with_input pages, 'by-ajax'
         pages_should_have_form_with_input pages, 'from-post-ajax'
         pages_should_have_form_with_input pages, 'ajax-token'

@@ -20,10 +20,18 @@ class Job
     #   {Peer#run_job} via {#configure_and_run}.
     attr_reader :browser
 
+    # @return   [Job]
+    #   Forwarder [Job] in case `self` is a result of a forward operation.
+    #
+    # @see #forward
+    # @see #forward_as
+    attr_reader :forwarder
+
     # @param    [Hash]  options
     def initialize( options = {} )
-        @options = options.dup
-        @id      = options.delete(:id) || increment_id
+        @options      = options.dup
+        @options[:id] = @id = options.delete(:id) || increment_id
+        @forwarder    = options.delete(:forwarder)
     end
 
     # @note The following resources will be available at the time of execution:
@@ -82,7 +90,7 @@ class Job
     #   Re-used request (mainly its {#id} and thus its callback as well),
     #   configured with the given `options`.
     def forward( options = {} )
-        self.class.new add_id( options )
+        self.class.new forward_options( options )
     end
 
     # @param    [Job]  job_type Job class under {Jobs}.
@@ -91,13 +99,21 @@ class Job
     #   Forwarded request (preserving its {#id} and thus its callback as well),
     #   configured with the given `options`.
     def forward_as( job_type, options = {} )
-        job_type.new add_id( options )
+        job_type.new forward_options( options )
     end
 
     # @return   [Integer]
     #   ID, used by the {BrowserCluster}, to tie requests to callbacks.
     def id
         @id
+    end
+
+    def hash
+        @options.hash
+    end
+
+    def ==( other )
+        hash == other.hash
     end
 
     protected
@@ -107,6 +123,10 @@ class Job
     end
 
     private
+
+    def forward_options( options )
+        add_id( options ).merge( forwarder: self.clean_copy )
+    end
 
     def add_id( options )
         options.merge( id: @id )

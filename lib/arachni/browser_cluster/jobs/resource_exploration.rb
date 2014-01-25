@@ -12,15 +12,8 @@ module Jobs
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class ResourceExploration < Job
 
-    # @param    [Hash]  options
-    # @option   options [Page]   :page
-    #   {#page Page} snapshot that resulted from running the {#job}.
-    #
-    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-    class Result < Job::Result
-        # @return [Page]
-        attr_accessor :page
-    end
+    require_relative 'resource_exploration/result'
+    require_relative 'resource_exploration/event_trigger'
 
     # @return [Page, String, HTTP::Response]
     #   Resource to explore, if given a `String` it will be treated it as a URL

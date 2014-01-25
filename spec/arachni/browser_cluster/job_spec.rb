@@ -147,6 +147,11 @@ describe Arachni::BrowserCluster::Job do
     describe '#forward' do
         subject { JobForwardTest.new( my_data: 'stuff' ) }
 
+        it 'sets the original Job as the #forwarder' do
+            id = subject.id
+            subject.forward.forwarder.should == subject
+        end
+
         it 'creates a new Job with the same #id' do
             id = subject.id
             subject.forward.id.should == id
@@ -165,6 +170,11 @@ describe Arachni::BrowserCluster::Job do
 
     describe '#forward_as' do
         subject { JobForwardTest.new( my_data: 'stuff' ) }
+
+        it 'sets the original Job as the #forwarder' do
+            id = subject.id
+            subject.forward_as( JobForwardAsTest ).forwarder.should == subject
+        end
 
         it 'creates a new Job type with the same #id' do
             subject.should_not be_kind_of JobForwardAsTest
