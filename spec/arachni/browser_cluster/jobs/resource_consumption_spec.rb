@@ -3,8 +3,9 @@ require 'spec_helper'
 describe Arachni::BrowserCluster::Jobs::ResourceExploration do
     before { @cluster = Arachni::BrowserCluster.new }
 
-    let(:url) { Arachni::Utilities.normalize_url( web_server_url_for( :browser ) ) }
-
+    let(:url) do
+        Arachni::Utilities.normalize_url( web_server_url_for( :browser ) ) + 'explore'
+    end
     after do
         @cluster.shutdown if @cluster
         Arachni::Options.reset
@@ -33,23 +34,21 @@ describe Arachni::BrowserCluster::Jobs::ResourceExploration do
     context 'when the resource is a' do
         context String do
             it 'loads the URL and explores the DOM' do
-                test described_class.new( resource: url + 'explore' )
+                test described_class.new( resource: url )
             end
         end
 
         context Arachni::HTTP::Response do
             it 'loads it and explores the DOM' do
                 test described_class.new(
-                    resource: Arachni::HTTP::Client.get( url + 'explore',
-                        mode: :sync
-                    )
+                    resource: Arachni::HTTP::Client.get( url, mode: :sync )
                 )
             end
         end
 
         context Arachni::Page do
             it 'loads it and explores the DOM' do
-                test described_class.new( resource: Arachni::Page.from_url( url + 'explore' ) )
+                test described_class.new( resource: Arachni::Page.from_url( url ) )
             end
         end
     end
