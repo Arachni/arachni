@@ -1,5 +1,15 @@
 require 'spec_helper'
 
+class MyJob < Arachni::BrowserCluster::Job
+    class Result < Arachni::BrowserCluster::Job::Result
+        attr_accessor :my_data
+    end
+
+    def run
+        save_result my_data: 'Some stuff'
+    end
+end
+
 describe Arachni::BrowserCluster do
 
     let(:url) { Arachni::Utilities.normalize_url( web_server_url_for( :browser ) ) }
@@ -55,8 +65,9 @@ describe Arachni::BrowserCluster do
             pages = []
             @cluster = described_class.new
 
-            @cluster.queue( job ) do |response|
-                pages << response.page
+            @cluster.queue( job ) do |result|
+                result.job.id.should == job.id
+                pages << result.page
             end
             @cluster.wait
 
@@ -64,6 +75,22 @@ describe Arachni::BrowserCluster do
             pages_should_have_form_with_input pages, 'from-post-ajax'
             pages_should_have_form_with_input pages, 'ajax-token'
             pages_should_have_form_with_input pages, 'href-post-name'
+        end
+
+        it 'supports custom jobs' do
+            results = []
+            @cluster = described_class.new
+
+            job = MyJob.new
+            @cluster.queue( job ) do |result|
+                results << result
+            end
+            @cluster.wait
+
+            results.size.should == 1
+            result = results.first
+            result.my_data.should == 'Some stuff'
+            result.job.id.should == job.id
         end
 
         context 'when no callback has been provided' do
@@ -87,8 +114,8 @@ describe Arachni::BrowserCluster do
             pages = []
 
             @cluster = described_class.new
-            @cluster.queue( job ) do |response|
-                pages << response.page
+            @cluster.queue( job ) do |result|
+                pages << result.page
             end
 
             pages.should be_empty
