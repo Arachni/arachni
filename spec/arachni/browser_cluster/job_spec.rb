@@ -40,7 +40,11 @@ class JobSaveResultTest < JobTest
     def run
         val = 'stuff'
         save_result my_data: val
-        browser.master.result.my_data.should == val
+
+        result = browser.master.result
+        result.job.id.should == self.id
+        result.my_data.should == val
+
         super
     end
 end
