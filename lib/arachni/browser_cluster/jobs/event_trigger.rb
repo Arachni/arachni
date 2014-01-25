@@ -15,6 +15,10 @@ module Jobs
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class EventTrigger < ResourceExploration
 
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    class Result < ResourceExploration::Result
+    end
+
     # @return   [Symbol]
     #   Event to trigger on the given {#element_index element}.
     attr_accessor :event

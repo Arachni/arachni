@@ -12,6 +12,16 @@ module Jobs
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class ResourceExploration < Job
 
+    # @param    [Hash]  options
+    # @option   options [Page]   :page
+    #   {#page Page} snapshot that resulted from running the {#job}.
+    #
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    class Result < Job::Result
+        # @return [Page]
+        attr_accessor :page
+    end
+
     # @return [Page, String, HTTP::Response]
     #   Resource to explore, if given a `String` it will be treated it as a URL
     #   and will be loaded.

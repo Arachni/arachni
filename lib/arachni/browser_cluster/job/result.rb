@@ -10,19 +10,13 @@ class Job
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Result
 
-    # @return [Page]
-    attr_accessor :page
-
     # @return [Job]
     attr_accessor :job
 
     # @param    [Hash]  options
-    # @option   options [Page]   :page
-    #   {#page Page} snapshot that resulted from running the {#job}.
     # @option   options [Job]   :job
     def initialize( options = {} )
-        @page = options[:page]
-        @job  = options[:job]
+        options.each { |k, v| send( "#{k}=", v ) }
     end
 
 end
