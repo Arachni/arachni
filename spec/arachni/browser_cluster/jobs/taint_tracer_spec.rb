@@ -107,7 +107,6 @@ describe Arachni::BrowserCluster::Jobs::TaintTrace do
         end
 
         context 'and requires a custom taint injector' do
-            let(:taint) { Arachni::Utilities.generate_token }
             let(:injector) { "location.hash = #{taint.inspect}" }
             let(:url) do
                 Arachni::Utilities.normalize_url( web_server_url_for( :taint_tracer ) ) +
