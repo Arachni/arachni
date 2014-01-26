@@ -95,6 +95,9 @@ class Framework
     # @return   [Arachni::HTTP]
     attr_reader :http
 
+    # @return   [BrowserCluster]
+    attr_reader :browser_cluster
+
     # @return   [Hash<String, Integer>]
     #   List of crawled URLs with their HTTP codes.
     attr_reader :sitemap
@@ -277,8 +280,8 @@ class Framework
     end
 
     def close_browser
-        return if !@browser
-        @browser.shutdown
+        return if !browser_cluster
+        browser_cluster.shutdown
     end
 
     #
@@ -616,12 +619,12 @@ class Framework
     end
 
     def wait_for_browser?
-        @browser && !@browser.done?
+        browser_cluster && !browser_cluster.done?
     end
 
     def browser_sitemap
-        return {} if !@browser
-        @browser.sitemap
+        return {} if !browser_cluster
+        browser_cluster.sitemap
     end
 
     def reset_spider
@@ -713,14 +716,15 @@ class Framework
         return if Options.scope.dom_depth_limit.to_i < page.dom.depth + 1 ||
             !host_has_has_browser? || !page.has_script?
 
-        @browser ||= BrowserCluster.new
+        @browser_cluster ||= BrowserCluster.new
 
-        # Let's recycle the same request over and over since all of them will
-        # have the same callback.
-        @browser_request ||= BrowserCluster::Jobs::ResourceExploration.new
-        request = @browser_request.forward( resource: page )
+        # Let's recycle the same job since all of them will have the same
+        # callback. This will force the BrowserCluster to use the same block
+        # for all queued jobs.
+        @browser_job ||= BrowserCluster::Jobs::ResourceExploration.new
+        request = @browser_job.forward( resource: page )
 
-        @browser.queue( request ) do |response|
+        @browser_cluster.queue( request ) do |response|
             handle_browser_page response.page
         end
 
