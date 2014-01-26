@@ -1,0 +1,37 @@
+=begin
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
+=end
+
+require_relative 'resource_exploration'
+
+module Arachni
+class BrowserCluster
+module Jobs
+
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+class TaintTrace < ResourceExploration
+
+    require_relative 'taint_trace/result'
+    require_relative 'taint_trace/event_trigger'
+
+    # @return [String]
+    attr_accessor :taint
+
+    # @return [String]
+    attr_accessor :injector
+
+    def run
+        browser.javascript.taint       = self.taint
+        browser.javascript.custom_code = self.injector
+
+        browser.on_new_page_with_sink { |page| save_result( page: page ) }
+
+        super
+    end
+
+end
+
+end
+end
+end

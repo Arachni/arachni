@@ -680,5 +680,21 @@ get '/debug' do
     EOHTML
 end
 
+get '/needs-injector' do
+    <<-EOHTML
+    <html>
+        <script>
+            function onClick( some, arguments, here ) {
+                #{params[:input]};
+                return false;
+            }
+        </script>
+
+        <form id="my_form" onsubmit="onClick(location.hash); return false;">
+        </form>
+    </html>
+    EOHTML
+end
+
 get '/without_javascript_support' do
 end
