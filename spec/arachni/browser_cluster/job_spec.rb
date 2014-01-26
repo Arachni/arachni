@@ -64,7 +64,7 @@ class JobCleanCopyTest < JobTest
 end
 
 class JobDupTest < JobTest
-    attr_reader :my_data
+    attr_accessor :my_data
 
     def initialize( options )
         super options

@@ -14,6 +14,8 @@ class ResourceExploration
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class EventTrigger < ResourceExploration
 
+    require_relative 'event_trigger/result'
+
     # @return   [Symbol]
     #   Event to trigger on the given {#element_index element}.
     attr_accessor :event
@@ -22,19 +24,6 @@ class EventTrigger < ResourceExploration
     #   Index of the element in the given {#resource} upon which to trigger
     #   the given {#event}.
     attr_accessor :element_index
-
-    # @param    [Hash]  options -- In addition to {ResourceExploration} options:
-    # @option   options [Symbol]   :event
-    #   Event to trigger on the given {#element_index element}.
-    # @option   options [Integer]   :element_index
-    #   Index of the element in the given {#resource} upon which to trigger
-    #   the given {#event}.
-    def initialize( options = {} )
-        super options
-
-        @event         = options[:event]
-        @element_index = options[:element_index]
-    end
 
     # Loads a {#resource} and {Browser#trigger_event triggers} the specified
     # {#event} on the given {#element_index element}.

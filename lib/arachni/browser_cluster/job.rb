@@ -25,13 +25,14 @@ class Job
     #
     # @see #forward
     # @see #forward_as
-    attr_reader :forwarder
+    attr_accessor :forwarder
 
     # @param    [Hash]  options
     def initialize( options = {} )
         @options      = options.dup
         @options[:id] = @id = options.delete(:id) || increment_id
-        @forwarder    = options.delete(:forwarder)
+
+        options.each { |k, v| send( "#{k}=", v ) }
     end
 
     # @note The following resources will be available at the time of execution:
