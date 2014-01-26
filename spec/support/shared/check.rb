@@ -17,7 +17,7 @@ shared_examples_for 'check' do
         options.url = url
 
         # Disable the Browser for the check tests for now.
-        options.dom_depth_limit = 0
+        options.scope.dom_depth_limit = 0
 
         framework.checks.load name
 
@@ -68,7 +68,7 @@ shared_examples_for 'check' do
 
         framework.reset_spider
         framework.reset_filters
-        framework.opts.dont_audit :links, :forms, :cookies, :headers
+        framework.opts.audit.skip_elements :links, :forms, :cookies, :headers
     end
 
     describe '.info' do
@@ -163,7 +163,7 @@ shared_examples_for 'check' do
             element_type = element_type.type
         end
 
-        options.audit element_type
+        options.audit.elements element_type
         run
 
         e = element_type.to_s
