@@ -32,6 +32,14 @@ describe Arachni::Browser::Javascript do
         end
     end
 
+    describe '#custom_code' do
+        it 'injects the given code into the response' do
+            @javascript.custom_code = 'window.has_custom_code = true'
+            @browser.load "#{@taint_tracer_url}/debug"
+            @javascript.run( 'return window.has_custom_code' ).should == true
+        end
+    end
+
     describe '#supported?' do
         context 'when there is support for the Javascript environment' do
             it 'returns true' do

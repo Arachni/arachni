@@ -31,6 +31,11 @@ class Javascript
     # @return   [String]    Taint to look for and trace in the JS data flow.
     attr_accessor :taint
 
+    # @return   [String]
+    #   Inject custom JS code right after the initialization of the custom
+    #   JS interfaces.
+    attr_accessor :custom_code
+
     # @return   [DOMMonitor] {Proxy} for the `DOMMonitor` JS interface.
     attr_reader :dom_monitor
 
@@ -212,6 +217,8 @@ class Javascript
             <script>
                 #{@dom_monitor.stub.function( :initialize )};
                 #{js_initialization_signal};
+
+                #{custom_code}
             </script> <!-- Script injected by #{self.class} -->
 
             #{response.body}
