@@ -613,7 +613,8 @@ class Browser
         page.body            = source.dup
         page.cookies        |= cookies.dup
         page.dom.url         = watir.url
-        page.dom.sink        = @javascript.flush_sink
+        page.dom.execution_flow_sink = @javascript.flush_execution_flow_sink
+        page.dom.data_flow_sink = @javascript.flush_data_flow_sink
         page.dom.transitions = @transitions.dup
 
         page
@@ -812,7 +813,8 @@ class Browser
     end
 
     def capture_snapshot_with_sink( page )
-        return if page.dom.sink.empty?
+        return if page.dom.data_flow_sink.empty? &&
+            page.dom.execution_flow_sink.empty?
 
         call_on_new_page_with_sink_blocks( page )
 

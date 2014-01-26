@@ -47,7 +47,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                 it 'logs it' do
                     load_with_taint '/data_trace/global-functions'
 
-                    sink = subject.sink
+                    sink = subject.data_flow_sink
                     sink.size.should == 1
 
                     entry = sink[0]
@@ -71,7 +71,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/XMLHttpRequest.open'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 1
 
                         entry = sink[0]
@@ -93,7 +93,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/XMLHttpRequest.send'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 1
 
                         entry = sink[0]
@@ -113,7 +113,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/XMLHttpRequest.setRequestHeader'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 1
 
                         entry = sink[0]
@@ -135,7 +135,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/AngularJS.element'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 2
 
                         entry = sink[1]
@@ -156,7 +156,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         it 'logs it' do
                             load_with_taint '/data_trace/AngularJS/$http.delete'
 
-                            sink = subject.sink
+                            sink = subject.data_flow_sink
                             sink.size.should == 4
 
                             entry = sink[1]
@@ -183,7 +183,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         it 'logs it' do
                             load_with_taint '/data_trace/AngularJS/$http.head'
 
-                            sink = subject.sink
+                            sink = subject.data_flow_sink
                             sink.size.should == 4
 
                             entry = sink[1]
@@ -210,7 +210,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         it 'logs it' do
                             load_with_taint '/data_trace/AngularJS/$http.jsonp'
 
-                            sink = subject.sink
+                            sink = subject.data_flow_sink
                             sink.size.should == 3
 
                             entry = sink[1]
@@ -237,7 +237,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         it 'logs it' do
                             load_with_taint '/data_trace/AngularJS/$http.put'
 
-                            sink = subject.sink
+                            sink = subject.data_flow_sink
                             sink.size.should == 3
 
                             entry = sink[1]
@@ -264,7 +264,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         it 'logs it' do
                             load_with_taint '/data_trace/AngularJS/$http.get'
 
-                            sink = subject.sink
+                            sink = subject.data_flow_sink
                             sink.size.should == 4
 
                             entry = sink[1]
@@ -291,7 +291,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         it 'logs it' do
                             load_with_taint '/data_trace/AngularJS/$http.post'
 
-                            sink = subject.sink
+                            sink = subject.data_flow_sink
                             sink.size.should == 3
 
                             entry = sink[1]
@@ -330,7 +330,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         it 'logs it' do
                             load_with_taint '/data_trace/AngularJS/ngRoute/'
 
-                            sink = subject.sink
+                            sink = subject.data_flow_sink
                             sink.size.should == 6
 
                             # ngRoute module first schedules an HTTP request to grab
@@ -362,7 +362,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         it 'logs it' do
                             load_with_taint '/data_trace/AngularJS/jqLite.html'
 
-                            sink = subject.sink
+                            sink = subject.data_flow_sink
                             sink.size.should == 2
 
                             entry = sink[1]
@@ -382,7 +382,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         it 'logs it' do
                             load_with_taint '/data_trace/AngularJS/jqLite.text'
 
-                            sink = subject.sink
+                            sink = subject.data_flow_sink
                             sink.size.should == 2
 
                             entry = sink[1]
@@ -402,7 +402,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         it 'logs it' do
                             load_with_taint '/data_trace/AngularJS/jqLite.append'
 
-                            sink = subject.sink
+                            sink = subject.data_flow_sink
                             sink.size.should == 2
 
                             entry = sink[1]
@@ -422,7 +422,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         it 'logs it' do
                             load_with_taint '/data_trace/AngularJS/jqLite.prepend'
 
-                            sink = subject.sink
+                            sink = subject.data_flow_sink
                             sink.size.should == 2
 
                             entry = sink[1]
@@ -442,7 +442,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         it 'logs it' do
                             load_with_taint '/data_trace/AngularJS/jqLite.prop'
 
-                            sink = subject.sink
+                            sink = subject.data_flow_sink
                             sink.size.should == 2
 
                             entry = sink[1]
@@ -462,7 +462,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         it 'logs it' do
                             load_with_taint '/data_trace/AngularJS/jqLite.replaceWith'
 
-                            sink = subject.sink
+                            sink = subject.data_flow_sink
                             sink.size.should == 2
 
                             entry = sink[1]
@@ -482,7 +482,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         it 'logs it' do
                             load_with_taint '/data_trace/AngularJS/jqLite.val'
 
-                            sink = subject.sink
+                            sink = subject.data_flow_sink
                             sink.size.should == 2
 
                             entry = sink[1]
@@ -505,7 +505,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/jQuery.ajax'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 2
 
                         entry = sink[0]
@@ -532,7 +532,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/jQuery.get'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 3
 
                         entry = sink[0]
@@ -555,7 +555,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/jQuery.post'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 3
 
                         entry = sink[0]
@@ -575,7 +575,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/jQuery.load'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 3
 
                         entry = sink[0]
@@ -595,7 +595,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/jQuery.html'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 1
 
                         entry = sink[0]
@@ -615,7 +615,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/jQuery.text'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 2
 
                         entry = sink[0]
@@ -635,7 +635,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/jQuery.append'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 2
 
                         entry = sink[0]
@@ -655,7 +655,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/jQuery.prepend'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 2
 
                         entry = sink[0]
@@ -675,7 +675,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/jQuery.before'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 2
 
                         entry = sink[0]
@@ -695,7 +695,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/jQuery.prop'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 1
 
                         entry = sink[0]
@@ -715,7 +715,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/jQuery.replaceWith'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 2
 
                         entry = sink[0]
@@ -735,7 +735,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/jQuery.val'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 1
 
                         entry = sink[0]
@@ -757,7 +757,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/String.replace'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 1
 
                         entry = sink[0]
@@ -780,7 +780,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/String.concat'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 1
 
                         entry = sink[0]
@@ -803,7 +803,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/HTMLElement.insertAdjacentHTML'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 1
 
                         entry = sink[0]
@@ -828,7 +828,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/Element.setAttribute'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 1
 
                         entry = sink[0]
@@ -853,7 +853,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/Document.createTextNode'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 1
 
                         entry = sink[0]
@@ -876,7 +876,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/CharacterData.insertData'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 1
 
                         entry = sink[0]
@@ -897,7 +897,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/CharacterData.appendData'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 1
 
                         entry = sink[0]
@@ -918,7 +918,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/CharacterData.replaceData'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 1
 
                         entry = sink[0]
@@ -941,7 +941,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/Text.replaceWholeText'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 1
 
                         entry = sink[0]
@@ -964,7 +964,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/HTMLDocument.write'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 1
 
                         entry = sink[0]
@@ -988,7 +988,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     it 'logs it' do
                         load_with_taint '/data_trace/HTMLDocument.writeln'
 
-                        sink = subject.sink
+                        sink = subject.data_flow_sink
                         sink.size.should == 1
 
                         entry = sink[0]
@@ -1034,25 +1034,39 @@ describe Arachni::Browser::Javascript::TaintTracer do
         end
     end
 
-    describe '#sink' do
+    describe '#execution_flow_sink' do
         it 'returns sink data' do
-            load "/debug?input=#{subject.stub.function(:log_sink)}"
+            load "/debug?input=#{subject.stub.function(:log_execution_flow_sink)}"
             @browser.watir.form.submit
-            subject.sink.should be_any
+            subject.execution_flow_sink.should be_any
         end
 
         context 'by default' do
             it 'returns []' do
-                subject.sink.should == []
+                subject.execution_flow_sink.should == []
             end
         end
     end
 
-    describe '#flush_sink' do
+    describe '#data_flow_sink' do
         it 'returns sink data' do
-            load "/debug?input=#{subject.stub.function(:log_sink, 1)}"
+            load "/debug?input=#{subject.stub.function(:log_data_flow_sink)}"
             @browser.watir.form.submit
-            sink_data = subject.flush_sink
+            subject.data_flow_sink.should be_any
+        end
+
+        context 'by default' do
+            it 'returns []' do
+                subject.data_flow_sink.should == []
+            end
+        end
+    end
+
+    describe '#flush_data_flow_sink' do
+        it 'returns sink data' do
+            load "/debug?input=#{subject.stub.function(:log_data_flow_sink, 1)}"
+            @browser.watir.form.submit
+            sink_data = subject.flush_data_flow_sink
 
             first_entry = sink_data.first
             sink_data.should == [first_entry]
@@ -1062,7 +1076,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
             first_entry[:trace][0][:function].should == 'onClick'
             first_entry[:trace][0][:source].should start_with 'function onClick'
-            @browser.source.split("\n")[first_entry[:trace][0][:line]].should include 'log_sink(1)'
+            @browser.source.split("\n")[first_entry[:trace][0][:line]].should include 'log_data_flow_sink(1)'
             first_entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
 
             first_entry[:trace][1][:function].should == 'onsubmit'
@@ -1079,18 +1093,56 @@ describe Arachni::Browser::Javascript::TaintTracer do
         end
 
         it 'empties the sink' do
-            load "/debug?input=#{subject.stub.function(:log_sink)}"
+            load "/debug?input=#{subject.stub.function(:log_data_flow_sink)}"
             @browser.watir.form.submit
-            subject.flush_sink
-            @javascript.sink.should be_empty
+            subject.flush_data_flow_sink
+            @javascript.flush_data_flow_sink.should be_empty
         end
     end
 
-    describe '#log_sink' do
-        it 'logs a sink' do
-            load "/debug?input=#{subject.stub.function(:log_sink, 1)}"
+    describe '#flush_execution_flow_sink' do
+        it 'returns sink data' do
+            load "/debug?input=#{subject.stub.function(:log_execution_flow_sink, 1)}"
             @browser.watir.form.submit
-            sink_data = subject.sink
+            sink_data = subject.flush_execution_flow_sink
+
+            first_entry = sink_data.first
+            sink_data.should == [first_entry]
+
+            first_entry[:data].should == [1]
+            first_entry[:trace].size.should == 2
+
+            first_entry[:trace][0][:function].should == 'onClick'
+            first_entry[:trace][0][:source].should start_with 'function onClick'
+            @browser.source.split("\n")[first_entry[:trace][0][:line]].should include 'log_execution_flow_sink(1)'
+            first_entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
+
+            first_entry[:trace][1][:function].should == 'onsubmit'
+            first_entry[:trace][1][:source].should start_with 'function onsubmit'
+            @browser.source.split("\n")[first_entry[:trace][1][:line]].should include 'onsubmit'
+            first_entry[:trace][1][:arguments].size.should == 1
+
+            event = first_entry[:trace][1][:arguments].first
+
+            form = "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">\n        </form>"
+            event['target'].should == form
+            event['srcElement'].should == form
+            event['type'].should == 'submit'
+        end
+
+        it 'empties the sink' do
+            load "/debug?input=#{subject.stub.function(:log_data_flow_sink)}"
+            @browser.watir.form.submit
+            subject.flush_execution_flow_sink
+            @javascript.flush_execution_flow_sink.should be_empty
+        end
+    end
+
+    describe '#log_execution_flow_sink' do
+        it 'logs a sink' do
+            load "/debug?input=#{subject.stub.function(:log_execution_flow_sink, 1)}"
+            @browser.watir.form.submit
+            sink_data = subject.execution_flow_sink
 
             first_entry = sink_data.first
             sink_data.should == [first_entry]
@@ -1100,7 +1152,38 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
             first_entry[:trace][0][:function].should  == 'onClick'
             first_entry[:trace][0][:source].should start_with 'function onClick'
-            @browser.source.split("\n")[first_entry[:trace][0][:line]].should include 'log_sink(1)'
+            @browser.source.split("\n")[first_entry[:trace][0][:line]].should include 'log_execution_flow_sink(1)'
+            first_entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
+
+            first_entry[:trace][1][:function].should == 'onsubmit'
+            first_entry[:trace][1][:source].should start_with 'function onsubmit'
+            @browser.source.split("\n")[first_entry[:trace][1][:line]].should include 'onsubmit'
+            first_entry[:trace][1][:arguments].size.should == 1
+
+            event = first_entry[:trace][1][:arguments].first
+
+            form = "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">\n        </form>"
+            event['target'].should == form
+            event['srcElement'].should == form
+            event['type'].should == 'submit'
+        end
+    end
+
+    describe '#log_data_flow_sink' do
+        it 'logs a sink' do
+            load "/debug?input=#{subject.stub.function(:log_data_flow_sink, 1)}"
+            @browser.watir.form.submit
+            sink_data = subject.data_flow_sink
+
+            first_entry = sink_data.first
+            sink_data.should == [first_entry]
+
+            first_entry[:data].should == [1]
+            first_entry[:trace].size.should == 2
+
+            first_entry[:trace][0][:function].should  == 'onClick'
+            first_entry[:trace][0][:source].should start_with 'function onClick'
+            @browser.source.split("\n")[first_entry[:trace][0][:line]].should include 'log_data_flow_sink(1)'
             first_entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
 
             first_entry[:trace][1][:function].should == 'onsubmit'

@@ -28,20 +28,6 @@ describe Arachni::Browser do
         Typhoeus::Request.get( "#{@url}/clear-hit-count" )
     end
 
-    def find_page_with_form_with_input( pages, input_name )
-        pages.find do |page|
-            page.forms.find { |form| form.inputs.include? input_name }
-        end
-    end
-
-    def pages_should_have_form_with_input( pages, input_name )
-        find_page_with_form_with_input( pages, input_name ).should be_true
-    end
-
-    def pages_should_not_have_form_with_input( pages, input_name )
-        find_page_with_form_with_input( pages, input_name ).should be_false
-    end
-
     it 'keeps track of which events are expected by each element' do
         @browser.load( @url + 'event-tracker' )
         @browser.watir.buttons.first.events.map { |a| a.first }.should == [
@@ -134,34 +120,64 @@ describe Arachni::Browser do
     end
 
     describe '#flush_page_snapshots_with_sinks' do
-        it 'returns sink data' do
-            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_sink_stub(1)}"
+        it 'returns pages with data-flow sink data' do
+            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub(1)}"
             @browser.explore_and_flush
-            @browser.page_snapshots_with_sinks.map(&:dom).map(&:sink).should ==
-                @browser.flush_page_snapshots_with_sinks.map(&:dom).map(&:sink)
+            @browser.page_snapshots_with_sinks.map(&:dom).map(&:data_flow_sink).should ==
+                @browser.flush_page_snapshots_with_sinks.map(&:dom).map(&:data_flow_sink)
         end
 
-        it 'empties the buffer' do
-            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_sink_stub(1)}"
+        it 'returns pages with execution-flow sink data' do
+            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}"
             @browser.explore_and_flush
-            @browser.flush_page_snapshots_with_sinks.map(&:dom).map(&:sink)
+            @browser.page_snapshots_with_sinks.map(&:dom).map(&:execution_flow_sink).should ==
+                @browser.flush_page_snapshots_with_sinks.map(&:dom).map(&:execution_flow_sink)
+        end
+
+        it 'empties the data-flow sink page buffer' do
+            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub(1)}"
+            @browser.explore_and_flush
+            @browser.flush_page_snapshots_with_sinks.map(&:dom).map(&:data_flow_sink)
+            @browser.page_snapshots_with_sinks.should be_empty
+        end
+
+        it 'empties the execution-flow sink page buffer' do
+            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}"
+            @browser.explore_and_flush
+            @browser.flush_page_snapshots_with_sinks.map(&:dom).map(&:execution_flow_sink)
             @browser.page_snapshots_with_sinks.should be_empty
         end
     end
 
     describe '#on_new_page_with_sink' do
-        it 'assigns blocks to handle each page with sink data' do
-            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_sink_stub(1)}"
+        it 'assigns blocks to handle each page with execution-flow sink data' do
+            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}"
 
             sinks = []
             @browser.on_new_page_with_sink do |page|
-                sinks << page.dom.sink
+                sinks << page.dom.execution_flow_sink
             end
 
             @browser.explore_and_flush
 
             sinks.size.should == 2
-            sinks.should == @browser.page_snapshots_with_sinks.map(&:dom).map(&:sink)
+            sinks.should == @browser.page_snapshots_with_sinks.map(&:dom).
+                map(&:execution_flow_sink)
+        end
+
+        it 'assigns blocks to handle each page with data-flow sink data' do
+            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub(1)}"
+
+            sinks = []
+            @browser.on_new_page_with_sink do |page|
+                sinks << page.dom.data_flow_sink
+            end
+
+            @browser.explore_and_flush
+
+            sinks.size.should == 2
+            sinks.should == @browser.page_snapshots_with_sinks.map(&:dom).
+                map(&:data_flow_sink)
         end
     end
 
@@ -300,8 +316,8 @@ describe Arachni::Browser do
     end
 
     describe '#page_snapshots_with_sinks' do
-        it 'returns sink data' do
-            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_sink_stub(1)}"
+        it 'returns execution-flow sink data' do
+            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}"
             @browser.explore_and_flush
 
             pages = @browser.page_snapshots_with_sinks
@@ -311,19 +327,19 @@ describe Arachni::Browser do
 
             doms[0].transitions.should == [
                 { page: :load },
-                { "#{@url}lots_of_sinks?input=#{@browser.javascript.log_sink_stub(1)}" => :request },
+                { "#{@url}lots_of_sinks?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}" => :request },
                 { "<a href=\"#\" onmouseover=\"onClick2('blah1', 'blah2', 'blah3');\">" => :onmouseover }
             ]
 
-            doms[0].sink.size.should == 2
+            doms[0].execution_flow_sink.size.should == 2
 
-            entry = doms[0].sink[0]
+            entry = doms[0].execution_flow_sink[0]
             entry[:data].should == [1]
             entry[:trace].size.should == 3
 
             entry[:trace][0][:function].should == 'onClick'
             entry[:trace][0][:source].should start_with 'function onClick'
-            @browser.source.split("\n")[entry[:trace][0][:line]].should include 'log_sink'
+            @browser.source.split("\n")[entry[:trace][0][:line]].should include 'log_execution_flow_sink(1)'
             entry[:trace][0][:arguments].should == [1, 2]
 
             entry[:trace][1][:function].should == 'onClick2'
@@ -341,13 +357,13 @@ describe Arachni::Browser do
             event['srcElement'].should == link
             event['type'].should == 'mouseover'
 
-            entry = doms[0].sink[1]
+            entry = doms[0].execution_flow_sink[1]
             entry[:data].should == [1]
             entry[:trace].size.should == 4
 
             entry[:trace][0][:function].should == 'onClick3'
             entry[:trace][0][:source].should start_with 'function onClick3'
-            @browser.source.split("\n")[entry[:trace][0][:line]].should include 'log_sink'
+            @browser.source.split("\n")[entry[:trace][0][:line]].should include 'log_execution_flow_sink(1)'
             entry[:trace][0][:arguments].should be_empty
 
             entry[:trace][1][:function].should == 'onClick'
@@ -372,19 +388,19 @@ describe Arachni::Browser do
 
             doms[1].transitions.should == [
                 { page: :load },
-                { "#{@url}lots_of_sinks?input=#{@browser.javascript.log_sink_stub(1)}" => :request },
+                { "#{@url}lots_of_sinks?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}" => :request },
                 { "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">" => :onsubmit }
             ]
 
-            doms[1].sink.size.should == 2
+            doms[1].execution_flow_sink.size.should == 2
 
-            entry = doms[1].sink[0]
+            entry = doms[1].execution_flow_sink[0]
             entry[:data].should == [1]
             entry[:trace].size.should == 2
 
             entry[:trace][0][:function].should == 'onClick'
             entry[:trace][0][:source].should start_with 'function onClick'
-            @browser.source.split("\n")[entry[:trace][0][:line]].should include 'log_sink(1)'
+            @browser.source.split("\n")[entry[:trace][0][:line]].should include 'log_execution_flow_sink(1)'
             entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
 
             entry[:trace][1][:function].should == 'onsubmit'
@@ -398,13 +414,137 @@ describe Arachni::Browser do
             event['srcElement'].should == form
             event['type'].should == 'submit'
 
-            entry = doms[1].sink[1]
+            entry = doms[1].execution_flow_sink[1]
             entry[:data].should == [1]
             entry[:trace].size.should == 3
 
             entry[:trace][0][:function].should == 'onClick3'
             entry[:trace][0][:source].should start_with 'function onClick3'
-            @browser.source.split("\n")[entry[:trace][0][:line]].should include 'log_sink(1)'
+            @browser.source.split("\n")[entry[:trace][0][:line]].should include 'log_execution_flow_sink(1)'
+            entry[:trace][0][:arguments].should be_empty
+
+            entry[:trace][1][:function].should == 'onClick'
+            entry[:trace][1][:source].should start_with 'function onClick'
+            @browser.source.split("\n")[entry[:trace][1][:line]].should include 'onClick3()'
+            entry[:trace][1][:arguments].should == %w(some-arg arguments-arg here-arg)
+
+            entry[:trace][2][:function].should == 'onsubmit'
+            entry[:trace][2][:source].should start_with 'function onsubmit'
+            @browser.source.split("\n")[entry[:trace][2][:line]].should include 'onClick('
+
+            event = entry[:trace][2][:arguments].first
+
+            form = "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">\n        </form>"
+            event['target'].should == form
+            event['srcElement'].should == form
+            event['type'].should == 'submit'
+        end
+
+        it 'returns data-flow sink data' do
+            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub(1)}"
+            @browser.explore_and_flush
+
+            pages = @browser.page_snapshots_with_sinks
+            doms  = pages.map(&:dom)
+
+            doms.size.should == 2
+
+            doms[0].transitions.should == [
+                { page: :load },
+                { "#{@url}lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub(1)}" => :request },
+                { "<a href=\"#\" onmouseover=\"onClick2('blah1', 'blah2', 'blah3');\">" => :onmouseover }
+            ]
+
+            doms[0].data_flow_sink.size.should == 2
+
+            entry = doms[0].data_flow_sink[0]
+            entry[:data].should == [1]
+            entry[:trace].size.should == 3
+
+            entry[:trace][0][:function].should == 'onClick'
+            entry[:trace][0][:source].should start_with 'function onClick'
+            @browser.source.split("\n")[entry[:trace][0][:line]].should include 'log_data_flow_sink(1)'
+            entry[:trace][0][:arguments].should == [1, 2]
+
+            entry[:trace][1][:function].should == 'onClick2'
+            entry[:trace][1][:source].should start_with 'function onClick2'
+            @browser.source.split("\n")[entry[:trace][1][:line]].should include 'onClick'
+            entry[:trace][1][:arguments].should == %w(blah1 blah2 blah3)
+
+            entry[:trace][2][:function].should == 'onmouseover'
+            entry[:trace][2][:source].should start_with 'function onmouseover'
+
+            event = entry[:trace][2][:arguments].first
+
+            link = "<a href=\"#\" onmouseover=\"onClick2('blah1', 'blah2', 'blah3');\">Blah</a>"
+            event['target'].should == link
+            event['srcElement'].should == link
+            event['type'].should == 'mouseover'
+
+            entry = doms[0].data_flow_sink[1]
+            entry[:data].should == [1]
+            entry[:trace].size.should == 4
+
+            entry[:trace][0][:function].should == 'onClick3'
+            entry[:trace][0][:source].should start_with 'function onClick3'
+            @browser.source.split("\n")[entry[:trace][0][:line]].should include 'log_data_flow_sink(1)'
+            entry[:trace][0][:arguments].should be_empty
+
+            entry[:trace][1][:function].should == 'onClick'
+            entry[:trace][1][:source].should start_with 'function onClick'
+            @browser.source.split("\n")[entry[:trace][1][:line]].should include 'onClick3'
+            entry[:trace][1][:arguments].should == [1, 2]
+
+            entry[:trace][2][:function].should == 'onClick2'
+            entry[:trace][2][:source].should start_with 'function onClick2'
+            @browser.source.split("\n")[entry[:trace][2][:line]].should include 'onClick'
+            entry[:trace][2][:arguments].should == %w(blah1 blah2 blah3)
+
+            entry[:trace][3][:function].should == 'onmouseover'
+            entry[:trace][3][:source].should start_with 'function onmouseover'
+
+            event = entry[:trace][3][:arguments].first
+
+            link = "<a href=\"#\" onmouseover=\"onClick2('blah1', 'blah2', 'blah3');\">Blah</a>"
+            event['target'].should == link
+            event['srcElement'].should == link
+            event['type'].should == 'mouseover'
+
+            doms[1].transitions.should == [
+                { page: :load },
+                { "#{@url}lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub(1)}" => :request },
+                { "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">" => :onsubmit }
+            ]
+
+            doms[1].data_flow_sink.size.should == 2
+
+            entry = doms[1].data_flow_sink[0]
+            entry[:data].should == [1]
+            entry[:trace].size.should == 2
+
+            entry[:trace][0][:function].should == 'onClick'
+            entry[:trace][0][:source].should start_with 'function onClick'
+            @browser.source.split("\n")[entry[:trace][0][:line]].should include 'log_data_flow_sink(1)'
+            entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
+
+            entry[:trace][1][:function].should == 'onsubmit'
+            entry[:trace][1][:source].should start_with 'function onsubmit'
+            @browser.source.split("\n")[entry[:trace][1][:line]].should include 'onClick'
+
+            event = entry[:trace][1][:arguments].first
+
+            form = "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">\n        </form>"
+            event['target'].should == form
+            event['srcElement'].should == form
+            event['type'].should == 'submit'
+
+            entry = doms[1].data_flow_sink[1]
+            entry[:data].should == [1]
+            entry[:trace].size.should == 3
+
+            entry[:trace][0][:function].should == 'onClick3'
+            entry[:trace][0][:source].should start_with 'function onClick3'
+            @browser.source.split("\n")[entry[:trace][0][:line]].should include 'log_data_flow_sink(1)'
             entry[:trace][0][:arguments].should be_empty
 
             entry[:trace][1][:function].should == 'onClick'
@@ -429,7 +569,7 @@ describe Arachni::Browser do
                 @browser.shutdown
                 @browser = @browser.class.new( store_pages: false )
 
-                @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_sink_stub(1)}"
+                @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}"
                 @browser.explore_and_flush
                 @browser.page_snapshots_with_sinks.should be_empty
             end
@@ -462,11 +602,11 @@ describe Arachni::Browser do
 
         it 'assigns the proper sink data' do
             @browser.load "#{web_server_url_for( :taint_tracer )}/debug" <<
-                              "?input=#{@browser.javascript.log_sink_stub(1)}"
+                              "?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}"
             @browser.watir.form.submit
 
             page = @browser.to_page
-            sink_data = page.dom.sink
+            sink_data = page.dom.execution_flow_sink
 
             first_entry = sink_data.first
             sink_data.should == [first_entry]
@@ -476,7 +616,7 @@ describe Arachni::Browser do
 
             first_entry[:trace][0][:function].should == 'onClick'
             first_entry[:trace][0][:source].should start_with 'function onClick'
-            @browser.source.split("\n")[first_entry[:trace][0][:line]].should include 'log_sink(1)'
+            @browser.source.split("\n")[first_entry[:trace][0][:line]].should include 'log_execution_flow_sink(1)'
             first_entry[:trace][0][:arguments].should == %w(some-arg arguments-arg here-arg)
 
             first_entry[:trace][1][:function].should == 'onsubmit'

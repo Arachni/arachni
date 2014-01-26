@@ -48,15 +48,16 @@ describe Arachni::Browser::Javascript do
         end
     end
 
-    describe '#log_sink_stub' do
-        it 'returns JS code that calls JS\'s log_sink()' do
-            @javascript.log_sink_stub.should == "_#{@javascript.token}TaintTracer.log_sink()"
+    describe '#log_execution_flow_sink_stub' do
+        it 'returns JS code that calls JS\'s log_execution_flow_sink_stub()' do
+            @javascript.log_execution_flow_sink_stub.should ==
+                "_#{@javascript.token}TaintTracer.log_execution_flow_sink()"
 
-            @browser.load "#{@taint_tracer_url}/debug?input=#{@javascript.log_sink_stub}"
+            @browser.load "#{@taint_tracer_url}/debug?input=#{@javascript.log_execution_flow_sink_stub}"
 
             @browser.watir.form.submit
-            @javascript.sink.should be_any
-            @javascript.sink.first[:data].should be_empty
+            @javascript.execution_flow_sink.should be_any
+            @javascript.execution_flow_sink.first[:data].should be_empty
         end
     end
 
@@ -82,36 +83,75 @@ describe Arachni::Browser::Javascript do
         end
     end
 
-    describe '#sink' do
+    describe '#execution_flow_sink' do
         it 'returns sink data' do
-            @browser.load "#{@taint_tracer_url}/debug?input=#{@javascript.log_sink_stub(1)}"
+            @browser.load "#{@taint_tracer_url}/debug?input=#{@javascript.log_execution_flow_sink_stub(1)}"
             @browser.watir.form.submit
-            @javascript.sink.should == @javascript.taint_tracer.sink
+
+            @javascript.execution_flow_sink.should be_any
+            @javascript.execution_flow_sink.should == @javascript.taint_tracer.execution_flow_sink
         end
     end
 
-    describe '#flush_sink' do
+    describe '#data_flow_sink' do
         it 'returns sink data' do
-            @browser.load "#{@taint_tracer_url}/debug?input=#{@javascript.log_sink_stub(1)}"
+            @browser.load "#{@taint_tracer_url}/debug?input=#{@javascript.log_data_flow_sink_stub(1)}"
             @browser.watir.form.submit
 
-            sink = @javascript.flush_sink
+            @javascript.data_flow_sink.should be_any
+            @javascript.data_flow_sink.should == @javascript.taint_tracer.data_flow_sink
+        end
+    end
+
+    describe '#flush_data_flow_sink' do
+        it 'returns sink data' do
+            @browser.load "#{@taint_tracer_url}/debug?input=#{@javascript.log_data_flow_sink_stub(1)}"
+            @browser.watir.form.submit
+
+            sink = @javascript.flush_data_flow_sink
             sink[0][:trace][1][:arguments][0].delete( 'timeStamp' )
 
-            @browser.load "#{@taint_tracer_url}/debug?input=#{@javascript.log_sink_stub(1)}"
+            @browser.load "#{@taint_tracer_url}/debug?input=#{@javascript.log_data_flow_sink_stub(1)}"
             @browser.watir.form.submit
 
-            sink2 = @javascript.taint_tracer.sink
+            sink2 = @javascript.taint_tracer.data_flow_sink
             sink2[0][:trace][1][:arguments][0].delete( 'timeStamp' )
 
             sink.should == sink2
         end
 
         it 'empties the sink' do
-            @browser.load "#{@taint_tracer_url}/debug?input=#{@javascript.log_sink_stub}"
+            @browser.load "#{@taint_tracer_url}/debug?input=#{@javascript.log_data_flow_sink_stub}"
             @browser.watir.form.submit
-            @javascript.flush_sink
-            @javascript.sink.should be_empty
+
+            @javascript.flush_data_flow_sink
+            @javascript.data_flow_sink.should be_empty
+        end
+    end
+
+    describe '#flush_execution_flow_sink' do
+        it 'returns sink data' do
+            @browser.load "#{@taint_tracer_url}/debug?input=#{@javascript.log_execution_flow_sink_stub(1)}"
+            @browser.watir.form.submit
+
+            sink = @javascript.flush_execution_flow_sink
+            sink[0][:trace][1][:arguments][0].delete( 'timeStamp' )
+
+            @browser.load "#{@taint_tracer_url}/debug?input=#{@javascript.log_execution_flow_sink_stub(1)}"
+            @browser.watir.form.submit
+
+            sink2 = @javascript.taint_tracer.execution_flow_sink
+            sink2[0][:trace][1][:arguments][0].delete( 'timeStamp' )
+
+            sink.should == sink2
+        end
+
+        it 'empties the sink' do
+            @browser.load "#{@taint_tracer_url}/debug?input=#{@javascript.log_execution_flow_sink_stub}"
+            @browser.watir.form.submit
+
+            @javascript.flush_execution_flow_sink
+            @javascript.execution_flow_sink.should be_empty
         end
     end
 

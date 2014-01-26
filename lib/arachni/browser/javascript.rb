@@ -68,9 +68,16 @@ class Javascript
         @token ||= generate_token.to_s
     end
 
-    # @return   [String]    JS code which will call the `log_sink` JS function.
-    def log_sink_stub( *args )
-        taint_tracer.stub.function( :log_sink, *args )
+    # @return   [String]
+    #   JS code which will call the `log_execution_flow_sink` JS function.
+    def log_execution_flow_sink_stub( *args )
+        taint_tracer.stub.function( :log_execution_flow_sink, *args )
+    end
+
+    # @return   [String]
+    #   JS code which will call the `data_flow_sink` JS function.
+    def log_data_flow_sink_stub( *args )
+        taint_tracer.stub.function( :log_data_flow_sink, *args )
     end
 
     # @return   [String]    JS code which will call the `debug` JS function.
@@ -103,17 +110,33 @@ class Javascript
     end
 
     # @return   [Array<Object>]
-    #   Data logged by function `TaintTracer.send_to_sink`.
-    def sink
+    #   Data logged by function `TaintTracer.log_execution_flow_sink`.
+    def execution_flow_sink
         return [] if !supported?
-        taint_tracer.sink
+        taint_tracer.execution_flow_sink
     end
 
     # @return   [Array<Object>]
-    #   Returns {#sink} data and empties the `TaintTracer.sink`.
-    def flush_sink
+    #   Data logged by function `TaintTracer.data_flow_sink`.
+    def data_flow_sink
         return [] if !supported?
-        taint_tracer.flush_sink
+        taint_tracer.data_flow_sink
+    end
+
+    # @return   [Array<Object>]
+    #   Returns {#execution_flow_sink} data and empties the
+    #   `TaintTracer.execution_flow_sink`.
+    def flush_execution_flow_sink
+        return [] if !supported?
+        taint_tracer.flush_execution_flow_sink
+    end
+
+    # @return   [Array<Object>]
+    #   Returns {#data_flow_sink} data and empties the
+    #   `TaintTracer.data_flow_sink`.
+    def flush_data_flow_sink
+        return [] if !supported?
+        taint_tracer.flush_data_flow_sink
     end
 
     # @return   [Array<Array>] Arguments for JS `setTimeout` calls.

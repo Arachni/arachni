@@ -19,7 +19,8 @@ class TaintTracer < Proxy
         super javascript, 'TaintTracer'
     end
 
-    %w(debugging_data sink flush_sink).each do |m|
+    %w(debugging_data execution_flow_sink data_flow_sink flush_execution_flow_sink
+        flush_data_flow_sink).each do |m|
         define_method m do
             prepare_sink_data call( m )
         end

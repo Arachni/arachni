@@ -3,7 +3,7 @@ Factory.define :page do
         response: Factory.create(:response),
         dom:      {
             transitions: [page: :load],
-            sink:        [
+            data_flow_sink:        [
                 data:  ['stuff'],
                 trace: [
                     [
@@ -13,6 +13,17 @@ Factory.define :page do
                         arguments: %w(some-arg arguments-arg here-arg)
                     ]
                 ]
+            ],
+            execution_flow_sink:   [
+               data:  ['stuff2'],
+               trace: [
+                   [
+                       function: 'onClick2',
+                       source:   "function onClick2(some, arguments, here) {\n                _16744290dd4cf3a3d72033b82f11df32f785b50239268efb173ce9ac269714e5.send_to_sink(1);\n                return false;\n            }",
+                       line:     203,
+                       arguments: %w(some-arg arguments-arg here-arg)
+                   ]
+               ]
             ]
         }
     )

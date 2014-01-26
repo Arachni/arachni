@@ -19,8 +19,13 @@ class DOM
     #   DOM transitions leading to the current state.
     attr_accessor :transitions
 
-    # @return   [Array] JavaScript sink data.
-    attr_accessor :sink
+    # @return   [Array]
+    #   {JavaScript::TaintTracer#data_flow_sink} data.
+    attr_accessor :data_flow_sink
+
+    # @return   [Array]
+    #   {JavaScript::TaintTracer#execution_flow_sink} data.
+    attr_accessor :execution_flow_sink
 
     # @return   [String]
     #   URL of the page as seen by the user-agent, fragments and all.
@@ -30,10 +35,11 @@ class DOM
     # @option   options [Page]  :page
     # @option   options [Array<Hash>]  :transitions
     def initialize( options )
-        @page        = options[:page]
-        @url         = options[:url]         || @page.url.dup
-        @transitions = options[:transitions] || []
-        @sink        = options[:sink]        || []
+        @page                = options[:page]
+        @url                 = options[:url]                 || @page.url.dup
+        @transitions         = options[:transitions]         || []
+        @data_flow_sink      = options[:data_flow_sink]      || []
+        @execution_flow_sink = options[:execution_flow_sink] || []
     end
 
     # @param    [Hash{Symbol => <Symbol,String>}]    transition

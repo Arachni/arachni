@@ -33,14 +33,14 @@ describe Arachni::Page::DOM do
         end
     end
 
-    describe '#sink' do
+    describe '#data_flow_sink' do
         it 'defaults to an empty Array' do
-            dom.sink.should == []
+            dom.data_flow_sink.should == []
         end
     end
 
-    describe '#sink=' do
-        it 'sets #sink' do
+    describe '#data_flow_sink=' do
+        it 'sets #data_flow_sink' do
             sink = [
                 data:  ['stuff'],
                 trace: [
@@ -55,8 +55,35 @@ describe Arachni::Page::DOM do
                 ]
             ]
 
-            dom.sink = sink
-            dom.sink.should == sink
+            dom.data_flow_sink = sink
+            dom.data_flow_sink.should == sink
+        end
+    end
+
+    describe '#execution_flow_sink' do
+        it 'defaults to an empty Array' do
+            dom.execution_flow_sink.should == []
+        end
+    end
+
+    describe '#execution_flow_sink=' do
+        it 'sets #execution_flow_sink' do
+            sink = [
+                data:  ['stuff'],
+                trace: [
+                           [
+                               function:  "function onClick(some, arguments, here) " <<
+                                              "{\n                _16744290dd4cf3a3" <<
+                                              "d72033b82f11df32f785b50239268efb173c" <<
+                                              "e9ac269714e5.send_to_sink(1);\n     " <<
+                                              "           return false;\n            }",
+                               arguments: %w(some-arg arguments-arg here-arg)
+                           ]
+                       ]
+            ]
+
+            dom.execution_flow_sink = sink
+            dom.execution_flow_sink.should == sink
         end
     end
 
