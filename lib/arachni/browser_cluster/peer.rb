@@ -37,7 +37,11 @@ class Peer < Arachni::Browser
 
         ::EM.fork_reactor do
             Options.rpc.server_socket = socket
-            new master: options[:master], token: token, js_token: options[:js_token]
+            new(
+                master:           options[:master],
+                token:            token,
+                javascript_token: options[:javascript_token]
+            )
         end
 
         if options[:wait]
@@ -75,15 +79,15 @@ class Peer < Arachni::Browser
             trap( signal, 'IGNORE' ) if Signal.list.has_key?( signal )
         end
 
-        rpc_auth_token = options.delete( :token )
-        js_token       = options.delete( :js_token )
-        @master        = options.delete( :master )
+        rpc_auth_token   = options.delete( :token )
+        javascript_token = options.delete( :javascript_token )
+        @master          = options.delete( :master )
 
         # Don't store pages if there's a master, we'll be sending them to him
         # as soon as they're logged.
         super options.merge( store_pages: false )
 
-        @javascript.token = js_token
+        @javascript.token = javascript_token
 
         start_capture
 

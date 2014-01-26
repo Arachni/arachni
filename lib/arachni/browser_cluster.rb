@@ -62,6 +62,8 @@ class BrowserCluster
     #   List of crawled URLs with their HTTP codes.
     attr_reader :sitemap
 
+    attr_reader :javascript_token
+
     # @param    [Hash]  options
     # @option   options [Integer]   :pool_size (5)
     #   Amount of {RPC::Server::Browser browsers} to add to the pool.
@@ -253,13 +255,13 @@ class BrowserCluster
             busy: []
         }
 
-        js_token         = Utilities.generate_token
-        booting_browsers = []
+        @javascript_token ||= Utilities.generate_token
+        booting_browsers    = []
 
         pool_size.times do
             booting_browsers << Peer.spawn(
-                js_token: js_token,
-                master:   ipc_handle
+                javascript_token: @javascript_token,
+                master:           ipc_handle
             )
         end
 

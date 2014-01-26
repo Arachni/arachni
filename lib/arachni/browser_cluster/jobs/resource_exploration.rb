@@ -20,14 +20,6 @@ class ResourceExploration < Job
     #   and will be loaded.
     attr_accessor :resource
 
-    # @param    [Hash]  options
-    # @option   options [Page, String, HTTP::Response]   :resource
-    #   Resource to explore, if given a `String` it will be treated it as a URL.
-    def initialize( options = {} )
-        super options
-        @resource = options[:resource]
-    end
-
     # Loads a {#resource} and {Browser#trigger_events explores} its DOM.
     def run
         browser.on_new_page { |page| save_result( page: page ) }
