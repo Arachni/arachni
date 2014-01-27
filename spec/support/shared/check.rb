@@ -14,34 +14,30 @@ shared_examples_for 'check' do
     end
 
     before( :all ) do
-        options.url = url
+        @issues = []
+        @url    = url
+        @name   = name
+    end
 
-        # Disable the Browser for the check tests for now.
-        options.scope.dom_depth_limit = 0
+    before( :each ) do
+        reset_framework
+        options.url = @url
 
-        framework.checks.load name
+        framework.checks.load @name
 
-        # do not dedup, the check tests need to see everything
+        # Do not deduplicate, the check tests need to see everything.
         current_check.instance_eval { define_method( :skip? ) { |_| false } }
 
-        @issues = []
         Arachni::Check::Manager.do_not_store
         Arachni::Check::Manager.on_register_results_raw do |issues|
             issues.each { |i| @issues << i }
         end
 
         Arachni::Element::Capabilities::Auditable::Timeout.do_not_deduplicate
+        Arachni::Check::Manager.do_not_store
     end
 
     after( :each ) do
-        Arachni::ElementFilter.reset
-
-        Arachni::Element::Capabilities::Auditable.reset
-        Arachni::Element::Capabilities::Auditable::Timeout.do_not_deduplicate
-
-        Arachni::Check::Manager.results.clear
-        Arachni::Check::Manager.do_not_store
-
         # Leave this here, helps us save every kind of issue in order to test
         # the reports.
         if File.exists?( "#{Dir.tmpdir}/save_issues" )
@@ -64,11 +60,12 @@ shared_examples_for 'check' do
 
         @issues.clear
 
-        http.cookie_jar.clear
+        if ::EM.reactor_running?
+            ::EM.stop
+            sleep 0.1 while ::EM.reactor_running?
+        end
 
-        framework.reset_spider
-        framework.reset_filters
-        framework.opts.audit.skip_elements :links, :forms, :cookies, :headers
+        framework.reset
     end
 
     describe '.info' do
@@ -87,17 +84,18 @@ shared_examples_for 'check' do
     end
 
     def self.easy_test( run_checks = true, &block )
-        targets  = !self.targets || self.targets.empty? ? %w(Generic) : self.targets
+        targets  = !self.targets  || self.targets.empty?  ? %w(Generic) : self.targets
         elements = !self.elements || self.elements.empty? ? %w(Generic) : self.elements
 
         context 'when the target is' do
             targets.each do |target|
                 context target do
-                    before( :all ) do
-                        if target.to_s.downcase != 'generic'
-                            options.url = url + target.downcase
-                            options.scope.inclusion_patterns = options.url
-                        end
+
+                    before( :each ) do
+                        next if target.to_s.downcase == 'generic'
+
+                        options.url = url + target.downcase
+                        options.scope.include_path_patterns = options.url
                     end
 
                     elements.each do |type|
@@ -163,6 +161,7 @@ shared_examples_for 'check' do
             element_type = element_type.type
         end
 
+        options.audit.skip_elements :links, :forms, :cookies, :headers
         options.audit.elements element_type
         run
 

@@ -24,6 +24,10 @@ shared_examples_for "component" do
         @f ||= Arachni::Framework.new
     end
 
+    def reset_framework
+        @f = nil
+    end
+
     def session
         framework.session
     end
