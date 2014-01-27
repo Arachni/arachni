@@ -95,9 +95,6 @@ class Framework
     # @return   [Arachni::HTTP]
     attr_reader :http
 
-    # @return   [BrowserCluster]
-    attr_reader :browser_cluster
-
     # @return   [Hash<String, Integer>]
     #   List of crawled URLs with their HTTP codes.
     attr_reader :sitemap
@@ -177,6 +174,17 @@ class Framework
                 reset
             end
         end
+    end
+
+    # @return   [BrowserCluster]
+    def browser_cluster
+        return if !host_has_has_browser?
+
+        # We'll recycle the same job since all of them will have the same
+        # callback. This will force the BrowserCluster to use the same block
+        # for all queued jobs.
+        @browser_job     ||= BrowserCluster::Jobs::ResourceExploration.new
+        @browser_cluster ||= BrowserCluster.new
     end
 
     #
@@ -273,15 +281,18 @@ class Framework
     alias :on_run_mods :on_audit_page
 
     # @return   [Bool]
-    #   `true` if the {OptionGroups::Scope#page_limit} has been reached, `false`
-    #   otherwise.
+    #   `true` if the {OptionGroups::Scope#page_limit} has been reached,
+    #   `false` otherwise.
     def page_limit_reached?
         @opts.scope.page_limit_reached?( @sitemap.size )
     end
 
-    def close_browser
-        return if !browser_cluster
-        browser_cluster.shutdown
+    def shutdown_browser_cluster
+        return if !@browser_cluster
+        @browser_cluster.shutdown
+
+        @browser_cluster = nil
+        @browser_job     = nil
     end
 
     #
@@ -601,7 +612,7 @@ class Framework
 
         @sitemap.merge!( browser_sitemap )
 
-        close_browser
+        shutdown_browser_cluster
         @page_queue.clear
 
         @finish_datetime  = Time.now
@@ -619,12 +630,12 @@ class Framework
     end
 
     def wait_for_browser?
-        browser_cluster && !browser_cluster.done?
+        @browser_cluster && !@browser_cluster.done?
     end
 
     def browser_sitemap
-        return {} if !browser_cluster
-        browser_cluster.sitemap
+        return {} if !@browser_cluster
+        @browser_cluster.sitemap
     end
 
     def reset_spider
@@ -710,25 +721,18 @@ class Framework
     # Passes the `page` to {BrowserCluster#queue} and then pushes
     # the resulting pages to {#push_to_page_queue}.
     #
-    # @param    [Page]  page
-    #   Page to analyze.
+    # @param    [Page]  page    Page to analyze.
     def perform_browser_analysis( page )
         return if Options.scope.dom_depth_limit.to_i < page.dom.depth + 1 ||
             !host_has_has_browser? || !page.has_script?
 
-        @browser_cluster ||= BrowserCluster.new
-
-        # Let's recycle the same job since all of them will have the same
-        # callback. This will force the BrowserCluster to use the same block
-        # for all queued jobs.
-        @browser_job ||= BrowserCluster::Jobs::ResourceExploration.new
-        request = @browser_job.forward( resource: page )
-
-        @browser_cluster.queue( request ) do |response|
+        browser_cluster.queue( @browser_job.forward( resource: page ) ) do |response|
             handle_browser_page response.page
         end
 
         true
+    rescue BrowserCluster::Job::Error::AlreadyDone
+        false
     end
 
     #
@@ -740,6 +744,7 @@ class Framework
     #
     def prepare
         @status = :preparing
+
         @running = true
         @start_datetime = Time.now
 
