@@ -5,13 +5,6 @@
 
 module Arachni
 
-lib = Options.paths.lib
-require lib + 'browser_cluster/peer'
-require lib + 'browser_cluster/job'
-
-# Load all job types.
-Dir[lib + 'browser_cluster/jobs/*'].each { |j| require j }
-
 # Real browser driver providing DOM/JS/AJAX support.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
@@ -33,6 +26,13 @@ class BrowserCluster
         class AlreadyShutdown < Error
         end
     end
+
+    lib = Options.paths.lib
+    require lib + 'browser_cluster/peer'
+    require lib + 'browser_cluster/job'
+
+    # Load all job types.
+    Dir[lib + 'browser_cluster/jobs/*'].each { |j| require j }
 
     # Holds {BrowserCluster} {Job} types.
     #
@@ -82,11 +82,11 @@ class BrowserCluster
             end
         end
 
-        # Used to sync operations between browser workers.
-        @skip = Support::LookUp::HashSet.new( hasher: :persistent_hash )
-
+        # Used to sync operations between browser workers per job.
+        @skip        ||= {}
         @job_callbacks = {}
-        @jobs           = Support::Database::Queue.new
+        @jobs          = Support::Database::Queue.new
+        @done_jobs     = Set.new
 
         @sitemap = {}
         @mutex   = Mutex.new
@@ -96,9 +96,14 @@ class BrowserCluster
         start
     end
 
-    # @param    [BrowserCluster::Job]  job
+    # @param    [Job]  job
+    # @param    [Block]  callback Callback to be passed the {Job::Result}.
+    #
+    # @raise    AlreadyShutdown
+    # @raise    Job::Error::AlreadyDone
     def queue( job, &callback )
         fail_if_shutdown
+        fail_if_job_done job
 
         @job_callbacks[job.id] = callback if callback
 
@@ -108,7 +113,27 @@ class BrowserCluster
 
         @jobs << job
 
-        true
+        nil
+    end
+
+    # @param    [Job]  job
+    #   Job to mark as done. Will remove any callbacks or associated {#skip} state.
+    def job_done( job )
+        synchronize do
+            @skip.delete job.id
+            @job_callbacks.delete job.id
+            @done_jobs << job.id
+        end
+
+        nil
+    end
+
+    # @param    [Job]  job
+    #
+    # @return   [Bool]
+    #   `true` if the `job` has been marked as {#job_done done}, `false` otherwise.
+    def job_done?( job )
+        synchronize { @done_jobs.include? job.id }
     end
 
     # @param    [Job::Result]  result
@@ -165,18 +190,20 @@ class BrowserCluster
 
     # Used to sync operations between browser workers.
     #
+    # @param    [Integer]   job_id  Job ID.
     # @param    [String]    action  Should the given action be skipped?
     # @private
-    def skip?( action )
-        synchronize { @skip.include? action }
+    def skip?( job_id, action )
+        synchronize { skip_lookup_for( job_id ).include? action }
     end
 
     # Used to sync operations between browser workers.
     #
+    # @param    [Integer]   job_id  Job ID.
     # @param    [String]    action  Action to skip in the future.
     # @private
-    def skip( action )
-        synchronize { @skip << action }
+    def skip( job_id, action )
+        synchronize { skip_lookup_for( job_id ) << action }
     end
 
     def push_to_sitemap( url, code )
@@ -189,9 +216,18 @@ class BrowserCluster
 
     private
 
+    def skip_lookup_for( id )
+        @skip[id] ||= Support::LookUp::HashSet.new( hasher: :persistent_hash )
+    end
+
     def fail_if_shutdown
         fail Error::AlreadyShutdown, 'Cluster has been shut down.' if !@running
     end
+
+     def fail_if_job_done( job )
+         return if !job_done?( job )
+         fail Job::Error::AlreadyDone, 'Job has been marked as done.'
+     end
 
     def start
         Thread.abort_on_exception = true

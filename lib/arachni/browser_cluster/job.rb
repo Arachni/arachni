@@ -15,6 +15,20 @@ class BrowserCluster
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Job
 
+    # {Job} error namespace.
+    #
+    # All {Job} errors inherit from and live under it.
+    #
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    class Error < BrowserCluster::Error
+
+        # Raised when a finished {Job} is {BrowserCluster#queue queued}.
+        #
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        class AlreadyDone < Error
+        end
+    end
+
     # @return   [Peer]
     #   Browser to use in order to perform the relevant {#run task} -- set by
     #   {Peer#run_job} via {#configure_and_run}.

@@ -86,11 +86,36 @@ describe Arachni::BrowserCluster do
             end
         end
 
+        context 'when the job has been marked as done' do
+            it 'raises Arachni::BrowserCluster::Job::AlreadyDone' do
+                @cluster = described_class.new
+                @cluster.job_done( job )
+                expect { @cluster.queue( job ) }.to raise_error described_class::Job::Error::AlreadyDone
+            end
+        end
+
         context 'when the cluster has ben shutdown' do
             it 'raises Arachni::BrowserCluster::Error::AlreadyShutdown' do
                 cluster = described_class.new
                 cluster.shutdown
                 expect { cluster.queue( job ) }.to raise_error described_class::Error::AlreadyShutdown
+            end
+        end
+    end
+
+    describe '#job_done?' do
+        context 'when a job has been marked as done' do
+            it 'returns true' do
+                @cluster = described_class.new
+                @cluster.job_done( job )
+                @cluster.job_done?( job ).should == true
+            end
+        end
+
+        context 'when a job has not been marked as done' do
+            it 'returns false' do
+                @cluster = described_class.new
+                @cluster.job_done?( job ).should == false
             end
         end
     end

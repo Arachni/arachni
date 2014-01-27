@@ -147,16 +147,16 @@ class Peer < Arachni::Browser
     # Let the master handle deduplication of operations.
     #
     # @see Browser#skip?
-    def skip?( *args )
-        master.skip? *args
+    def skip?( action )
+        master.skip? job.id, action
     end
 
     # Let the master know that the given operation should be skipped in
     # the future.
     #
     # @see Browser#skip
-    def skip( *args )
-        master.skip *args
+    def skip( action )
+        master.skip job.id, action
     end
 
     # We change the default scheduling to distribute elements and events
@@ -191,6 +191,8 @@ class Peer < Arachni::Browser
             }
         )
         true
+    rescue Job::Error::AlreadyDone
+        false
     end
 
     # @return   [Bool]  `true`
