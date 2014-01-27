@@ -69,6 +69,11 @@ class Base < Component::Base
         framework.session if framework
     end
 
+    # @return   [Arachni::BrowserCluster]
+    def browser_cluster
+        framework.browser_cluster if framework
+    end
+
     def preferred
         self.class.preferred
     end
