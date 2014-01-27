@@ -25,6 +25,12 @@ class BrowserCluster
         # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
         class AlreadyShutdown < Error
         end
+
+        # Raised when a given {Job} could not be found.
+        #
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        class JobNotFound < Error
+        end
     end
 
     lib = Options.paths.lib
@@ -82,11 +88,19 @@ class BrowserCluster
             end
         end
 
-        # Used to sync operations between browser workers per job.
-        @skip        ||= {}
+        # Used to sync operations between peers per Job#id.
+        @skip ||= {}
+
+        # Callbacks for each job per Job#id.
         @job_callbacks = {}
-        @jobs          = Support::Database::Queue.new
-        @done_jobs     = Set.new
+
+        # Keeps track of the amount of pending jobs distributed across the
+        # cluster, by Job#id. Once a job's count reaches 0, it's passed to
+        # #job_done.
+        @pending_jobs = Hash.new(0)
+
+        # Jobs are off-loaded to disk.
+        @jobs = Support::Database::Queue.new
 
         @sitemap = {}
         @mutex   = Mutex.new
@@ -99,19 +113,21 @@ class BrowserCluster
     # @param    [Job]  job
     # @param    [Block]  block Callback to be passed the {Job::Result}.
     #
-    # @raise    AlreadyShutdown
-    # @raise    Job::Error::AlreadyDone
+    # @raise    [AlreadyShutdown]
+    # @raise    [Job::Error::AlreadyDone]
     def queue( job, &block )
         fail_if_shutdown
-        fail_if_job_done job
 
-        @job_callbacks[job.id] = block if block
+        synchronize do
+            @pending_jobs[job.id] += 1
+            @job_callbacks[job.id] = block if block
 
-        if !@job_callbacks[job.id]
-            fail ArgumentError, "No callback set for job ID #{job.id}."
+            if !@job_callbacks[job.id]
+                fail ArgumentError, "No callback set for job ID #{job.id}."
+            end
+
+            @jobs << job
         end
-
-        @jobs << job
 
         nil
     end
@@ -144,23 +160,17 @@ class BrowserCluster
     end
 
     # @param    [Job]  job
-    #   Job to mark as done. Will remove any callbacks or associated {#skip} state.
-    def job_done( job )
-        synchronize do
-            @skip.delete job.id
-            @job_callbacks.delete job.id
-            @done_jobs << job.id
-        end
-
-        nil
-    end
-
-    # @param    [Job]  job
     #
     # @return   [Bool]
-    #   `true` if the `job` has been marked as {#job_done done}, `false` otherwise.
+    #   `true` if the `job` has been marked as finished, `false` otherwise.
+    #
+    # @raise    [Error::JobNotFound]  Raised when `job` could not be found.
     def job_done?( job )
-        synchronize { @done_jobs.include? job.id }
+        synchronize do
+            fail_if_job_not_found job
+            return false if !@pending_jobs.include?( job.id )
+            @pending_jobs[job.id] == 0
+        end
     end
 
     # @param    [Job::Result]  result
@@ -172,6 +182,8 @@ class BrowserCluster
                 @job_callbacks[result.job.id].call result
             end
         end
+
+        nil
     end
 
     # @return   [Bool]
@@ -219,9 +231,14 @@ class BrowserCluster
     #
     # @param    [Integer]   job_id  Job ID.
     # @param    [String]    action  Should the given action be skipped?
+    #
+    # @raise    [Error::JobNotFound]  Raised when `job` could not be found.
+    #
     # @private
     def skip?( job_id, action )
-        synchronize { skip_lookup_for( job_id ).include? action }
+        synchronize do
+            skip_lookup_for( job_id ).include? action
+        end
     end
 
     # Used to sync operations between browser workers.
@@ -243,6 +260,17 @@ class BrowserCluster
 
     private
 
+    # @param    [Job]  job
+    #   Job to mark as done. Will remove any callbacks or associated {#skip} state.
+    def job_done( job )
+        synchronize do
+            @skip.delete job.id
+            @job_callbacks.delete job.id
+        end
+
+        nil
+    end
+
     def skip_lookup_for( id )
         @skip[id] ||= Support::LookUp::HashSet.new( hasher: :persistent_hash )
     end
@@ -251,10 +279,10 @@ class BrowserCluster
         fail Error::AlreadyShutdown, 'Cluster has been shut down.' if !@running
     end
 
-     def fail_if_job_done( job )
-         return if !job_done?( job )
-         fail Job::Error::AlreadyDone, 'Job has been marked as done.'
-     end
+    def fail_if_job_not_found( job )
+        return if @pending_jobs.include?( job.id ) || @job_callbacks.include?( job.id )
+        fail Error::JobNotFound, 'Job could not be found.'
+    end
 
     def start
         Thread.abort_on_exception = true
@@ -271,10 +299,13 @@ class BrowserCluster
                     browser = @browsers[:idle].pop
                     @browsers[:busy] << browser
 
-                    browser.run_job(
-                        @jobs.pop,
-                        cookies: HTTP::Client.cookies
-                    ){ move_browser( browser, :busy, :idle ) }
+                    job = @jobs.pop
+                    browser.run_job( job, cookies: HTTP::Client.cookies ) do
+                        @pending_jobs[job.id] -= 1
+                        job_done( job ) if @pending_jobs[job.id] == 0
+
+                        move_browser( browser, :busy, :idle )
+                    end
                 end
             end
         end

@@ -84,7 +84,7 @@ class Job
     def save_result( data )
         browser.master.handle_job_result(
             self.class::Result.new( data.merge( job: self.clean_copy ) )
-        ){}
+        )
         nil
     end
 
