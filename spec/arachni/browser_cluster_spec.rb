@@ -52,10 +52,7 @@ describe Arachni::BrowserCluster do
             end
             @cluster.wait
 
-            pages_should_have_form_with_input pages, 'by-ajax'
-            pages_should_have_form_with_input pages, 'from-post-ajax'
-            pages_should_have_form_with_input pages, 'ajax-token'
-            pages_should_have_form_with_input pages, 'href-post-name'
+            browser_explore_check_pages pages
         end
 
         it 'supports custom jobs' do
@@ -99,6 +96,205 @@ describe Arachni::BrowserCluster do
                 cluster = described_class.new
                 cluster.shutdown
                 expect { cluster.queue( job ) }.to raise_error described_class::Error::AlreadyShutdown
+            end
+        end
+    end
+
+    describe '#explore' do
+        before(:each) { @cluster = described_class.new }
+        let(:url) do
+            Arachni::Utilities.normalize_url( web_server_url_for( :browser ) ) + 'explore'
+        end
+
+        context 'when the resource is a' do
+            context String do
+                it 'loads the URL and explores the DOM' do
+                    pages = []
+
+                    @cluster.explore( url ) do |result|
+                        pages << result.page
+                    end
+                    @cluster.wait
+
+                    browser_explore_check_pages pages
+                end
+            end
+
+            context Arachni::HTTP::Response do
+                it 'loads it and explores the DOM' do
+                    pages = []
+
+                    @cluster.explore( Arachni::HTTP::Client.get( url, mode: :sync ) ) do |result|
+                        pages << result.page
+                    end
+                    @cluster.wait
+
+                    browser_explore_check_pages pages
+                end
+            end
+
+            context Arachni::Page do
+                it 'loads it and explores the DOM' do
+                    pages = []
+
+                    @cluster.explore( Arachni::Page.from_url( url ) ) do |result|
+                        pages << result.page
+                    end
+                    @cluster.wait
+
+                    browser_explore_check_pages pages
+                end
+            end
+        end
+    end
+
+    describe '#trace_taint' do
+        before(:each) { @cluster = described_class.new }
+
+        context 'when tracing the data-flow' do
+            let(:taint) { Arachni::Utilities.generate_token }
+            let(:url) do
+                Arachni::Utilities.normalize_url( web_server_url_for( :taint_tracer ) ) +
+                    "/data_trace/global-functions?taint=#{taint}"
+            end
+
+            context 'and the resource is a' do
+                context String do
+                    it 'loads the URL and traces the taint' do
+                        pages = []
+                        @cluster.trace_taint( url, taint: taint ) do |result|
+                            pages << result.page
+                        end
+                        @cluster.wait
+
+                        browser_cluster_job_taint_tracer_data_flow_check_pages  pages
+                    end
+                end
+
+                context Arachni::HTTP::Response do
+                    it 'loads it and traces the taint' do
+                        pages = []
+
+                        @cluster.trace_taint( Arachni::HTTP::Client.get( url, mode: :sync ),
+                                              taint: taint ) do |result|
+                            pages << result.page
+                        end
+                        @cluster.wait
+
+                        browser_cluster_job_taint_tracer_data_flow_check_pages  pages
+                    end
+                end
+
+                context Arachni::Page do
+                    it 'loads it and traces the taint' do
+                        pages = []
+
+                        @cluster.trace_taint( Arachni::Page.from_url( url ),
+                                              taint: taint ) do |result|
+                            pages << result.page
+                        end
+                        @cluster.wait
+
+                        browser_cluster_job_taint_tracer_data_flow_check_pages  pages
+                    end
+                end
+            end
+
+            context 'and requires a custom taint injector' do
+                let(:injector) { "location.hash = #{taint.inspect}" }
+                let(:url) do
+                    Arachni::Utilities.normalize_url( web_server_url_for( :taint_tracer ) ) +
+                        'needs-injector'
+                end
+
+                context 'and the resource is a' do
+                    context String do
+                        it 'loads the URL and traces the taint' do
+                            pages = []
+                            @cluster.trace_taint( url,
+                                                  taint: taint,
+                                                  injector: injector ) do |result|
+                                pages << result.page
+                            end
+                            @cluster.wait
+
+                            browser_cluster_job_taint_tracer_data_flow_with_injector_check_pages  pages
+                        end
+                    end
+
+                    context Arachni::HTTP::Response do
+                        it 'loads it and traces the taint' do
+                            pages = []
+                            @cluster.trace_taint( Arachni::HTTP::Client.get( url, mode: :sync ),
+                                                  taint: taint,
+                                                  injector: injector ) do |result|
+                                pages << result.page
+                            end
+                            @cluster.wait
+
+                            browser_cluster_job_taint_tracer_data_flow_with_injector_check_pages  pages
+                        end
+                    end
+
+                    context Arachni::Page do
+                        it 'loads it and traces the taint' do
+                            pages = []
+                            @cluster.trace_taint( Arachni::Page.from_url( url ),
+                                                  taint: taint,
+                                                  injector: injector ) do |result|
+                                pages << result.page
+                            end
+                            @cluster.wait
+
+                            browser_cluster_job_taint_tracer_data_flow_with_injector_check_pages  pages
+                        end
+                    end
+                end
+            end
+        end
+
+        context 'when tracing the execution-flow' do
+            let(:url) do
+                Arachni::Utilities.normalize_url( web_server_url_for( :taint_tracer ) ) +
+                    "debug?input=_#{@cluster.javascript_token}TaintTracer.log_execution_flow_sink()"
+            end
+
+            context 'and the resource is a' do
+                context String do
+                    it 'loads the URL and traces the taint' do
+                        pages = []
+                        @cluster.trace_taint( url ) do |result|
+                            pages << result.page
+                        end
+                        @cluster.wait
+
+                        browser_cluster_job_taint_tracer_execution_flow_check_pages pages
+                    end
+                end
+
+                context Arachni::HTTP::Response do
+                    it 'loads it and traces the taint' do
+                        pages = []
+                        @cluster.trace_taint( Arachni::HTTP::Client.get( url, mode: :sync ) ) do |result|
+                            pages << result.page
+                        end
+                        @cluster.wait
+
+                        browser_cluster_job_taint_tracer_execution_flow_check_pages pages
+                    end
+                end
+
+                context Arachni::Page do
+                    it 'loads it and traces the taint' do
+                        pages = []
+                        @cluster.trace_taint( Arachni::Page.from_url( url ) ) do |result|
+                            pages << result.page
+                        end
+                        @cluster.wait
+
+                        browser_cluster_job_taint_tracer_execution_flow_check_pages pages
+                    end
+                end
             end
         end
     end

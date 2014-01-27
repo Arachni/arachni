@@ -97,15 +97,15 @@ class BrowserCluster
     end
 
     # @param    [Job]  job
-    # @param    [Block]  callback Callback to be passed the {Job::Result}.
+    # @param    [Block]  block Callback to be passed the {Job::Result}.
     #
     # @raise    AlreadyShutdown
     # @raise    Job::Error::AlreadyDone
-    def queue( job, &callback )
+    def queue( job, &block )
         fail_if_shutdown
         fail_if_job_done job
 
-        @job_callbacks[job.id] = callback if callback
+        @job_callbacks[job.id] = block if block
 
         if !@job_callbacks[job.id]
             fail ArgumentError, "No callback set for job ID #{job.id}."
@@ -114,6 +114,33 @@ class BrowserCluster
         @jobs << job
 
         nil
+    end
+
+    # @param    [Page, String, HTTP::Response]  resource
+    #   Resource to explore, if given a `String` it will be treated it as a URL
+    #   and will be loaded.
+    # @param    [Hash]  options See {Jobs::ResourceExploration} accessors.
+    # @param    [Block]  block Callback to be passed the {Job::Result}.
+    #
+    # @see Jobs::ResourceExploration
+    # @see #queue
+    def explore( resource, options = {}, &block )
+        queue(
+            Jobs::ResourceExploration.new( options.merge( resource: resource ) ),
+            &block
+        )
+    end
+
+    # @param    [Page, String, HTTP::Response] resource
+    #   Resource to load and whose environment to trace, if given a `String` it
+    #   will be treated it as a URL and will be loaded.
+    # @param    [Hash]  options See {Jobs::TaintTrace} accessors.
+    # @param    [Block]  block Callback to be passed the {Job::Result}.
+    #
+    # @see Jobs::TaintTrace
+    # @see #queue
+    def trace_taint( resource, options = {}, &block )
+        queue( Jobs::TaintTrace.new( options.merge( resource: resource ) ), &block )
     end
 
     # @param    [Job]  job

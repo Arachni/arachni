@@ -33,10 +33,7 @@ describe Arachni::BrowserCluster::Jobs::ResourceExploration do
         @cluster.wait
 
         has_event_triggers.should be_true
-        pages_should_have_form_with_input pages, 'by-ajax'
-        pages_should_have_form_with_input pages, 'from-post-ajax'
-        pages_should_have_form_with_input pages, 'ajax-token'
-        pages_should_have_form_with_input pages, 'href-post-name'
+        browser_explore_check_pages pages
     end
 
     context 'when the resource is a' do
