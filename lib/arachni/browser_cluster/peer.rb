@@ -191,7 +191,8 @@ class Peer < Arachni::Browser
             }
         )
         true
-    rescue Job::Error::AlreadyDone
+    # Job may have been marked as done...
+    rescue RPC::Exceptions::RemoteException
         false
     end
 

@@ -83,11 +83,20 @@ describe Arachni::BrowserCluster do
             end
         end
 
+        context 'when the job has been marked as done' do
+            it "raises #{described_class::Job::Error::AlreadyDone}" do
+                @cluster = described_class.new
+                @cluster.queue( job ){}
+                @cluster.job_done( job )
+                expect { @cluster.queue( job ){} }.to raise_error described_class::Job::Error::AlreadyDone
+            end
+        end
+
         context 'when the cluster has ben shutdown' do
             it "raises #{described_class::Error::AlreadyShutdown}" do
                 cluster = described_class.new
                 cluster.shutdown
-                expect { cluster.queue( job ) }.to raise_error described_class::Error::AlreadyShutdown
+                expect { cluster.queue( job ){} }.to raise_error described_class::Error::AlreadyShutdown
             end
         end
     end
@@ -291,6 +300,35 @@ describe Arachni::BrowserCluster do
         end
     end
 
+    describe '#job_done' do
+        it 'marks the given job as done' do
+            calls = 0
+            @cluster = described_class.new
+            @cluster.queue( job ) do |result|
+                calls += 1
+            end
+            @cluster.wait
+
+            calls.should > 1
+
+            @cluster.shutdown
+            if ::EM.reactor_running?
+                ::EM.stop
+                sleep 0.1 while ::EM.reactor_running?
+            end
+
+            calls = 0
+            @cluster = described_class.new
+            @cluster.queue( job ) do |result|
+                @cluster.job_done( job )
+                calls += 1
+            end
+            @cluster.wait
+
+            calls.should == 1
+        end
+    end
+
     describe '#job_done?' do
         context 'when a job has finished' do
             it 'returns true' do
@@ -308,6 +346,14 @@ describe Arachni::BrowserCluster do
                 @cluster.queue( job ) { }
 
                 @cluster.job_done?( job ).should == false
+            end
+        end
+
+        context 'when a job has been marked as done' do
+            it 'returns true' do
+                @cluster = described_class.new
+                @cluster.job_done( job )
+                @cluster.job_done?( job ).should == true
             end
         end
 

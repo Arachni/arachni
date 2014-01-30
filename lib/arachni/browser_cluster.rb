@@ -3,6 +3,8 @@
     All rights reserved.
 =end
 
+require 'monitor'
+
 module Arachni
 
 # Real browser driver providing DOM/JS/AJAX support.
@@ -103,7 +105,7 @@ class BrowserCluster
         @jobs = Support::Database::Queue.new
 
         @sitemap = {}
-        @mutex   = Mutex.new
+        @mutex   = Monitor.new
 
         initialize_browsers
 
@@ -117,6 +119,7 @@ class BrowserCluster
     # @raise    [Job::Error::AlreadyDone]
     def queue( job, &block )
         fail_if_shutdown
+        fail_if_job_done job
 
         synchronize do
             @pending_jobs[job.id] += 1
@@ -160,14 +163,26 @@ class BrowserCluster
     end
 
     # @param    [Job]  job
+    #   Job to mark as done. Will remove any callbacks and associated {#skip} state.
+    def job_done( job )
+        synchronize do
+            @skip.delete job.id
+            @job_callbacks.delete job.id
+            @pending_jobs[job.id] = 0
+        end
+
+        nil
+    end
+
+    # @param    [Job]  job
     #
     # @return   [Bool]
     #   `true` if the `job` has been marked as finished, `false` otherwise.
     #
     # @raise    [Error::JobNotFound]  Raised when `job` could not be found.
-    def job_done?( job )
+    def job_done?( job, fail_if_not_found = true )
         synchronize do
-            fail_if_job_not_found job
+            fail_if_job_not_found job if fail_if_not_found
             return false if !@pending_jobs.include?( job.id )
             @pending_jobs[job.id] == 0
         end
@@ -175,6 +190,7 @@ class BrowserCluster
 
     # @param    [Job::Result]  result
     def handle_job_result( result )
+        return if job_done? result.job
         fail_if_shutdown
 
         synchronize do
@@ -260,23 +276,17 @@ class BrowserCluster
 
     private
 
-    # @param    [Job]  job
-    #   Job to mark as done. Will remove any callbacks or associated {#skip} state.
-    def job_done( job )
-        synchronize do
-            @skip.delete job.id
-            @job_callbacks.delete job.id
-        end
-
-        nil
-    end
-
     def skip_lookup_for( id )
         @skip[id] ||= Support::LookUp::HashSet.new( hasher: :persistent_hash )
     end
 
     def fail_if_shutdown
         fail Error::AlreadyShutdown, 'Cluster has been shut down.' if !@running
+    end
+
+    def fail_if_job_done( job )
+        return if !job_done?( job, false )
+        fail Job::Error::AlreadyDone, 'Job has been marked as done.'
     end
 
     def fail_if_job_not_found( job )
@@ -296,10 +306,12 @@ class BrowserCluster
                 synchronize do
                     next if @browsers[:idle].empty?
 
+                    job = @jobs.pop
+                    next if job_done? job
+
                     browser = @browsers[:idle].pop
                     @browsers[:busy] << browser
 
-                    job = @jobs.pop
                     browser.run_job( job, cookies: HTTP::Client.cookies ) do
                         @pending_jobs[job.id] -= 1
                         job_done( job ) if @pending_jobs[job.id] == 0
