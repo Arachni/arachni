@@ -56,6 +56,16 @@ class DOM
         @transitions.select { |t| t.values.first != :request }.size
     end
 
+    # @return   [Hash]
+    def to_h
+        {
+            url:                 @url,
+            transitions:         @transitions,
+            data_flow_sink:      @data_flow_sink,
+            execution_flow_sink: @execution_flow_sink
+        }
+    end
+
     def hash
         @hash ||= rehash
     end

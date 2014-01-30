@@ -125,6 +125,30 @@ describe Arachni::Page::DOM do
         end
     end
 
+    describe '#to_h' do
+        it 'returns a hash with DOM data' do
+            data = {
+                url:         'http://test/dom',
+                transitions: [
+                    { element:  :stuffed },
+                    { element2: :stuffed2 }
+                ],
+                data_flow_sink:      ['stuff'],
+                execution_flow_sink: ['stuff2']
+            }
+
+            dom.url = data[:url]
+            transitions[:transitions].each do |transition|
+                dom.push_transition transition
+            end
+
+            dom.data_flow_sink = data[:data_flow_sink]
+            dom.execution_flow_sink = data[:execution_flow_sink]
+
+            dom.to_h.should == data
+        end
+    end
+
     describe '#hash' do
         it 'calculates a hash based on nodes' do
             body = <<-EOHTML

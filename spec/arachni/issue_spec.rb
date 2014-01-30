@@ -252,7 +252,11 @@ describe Arachni::Issue do
                 name:            "Check name \u2713",
                 description:     'Issue description',
                 vector:          issue.vector.to_h,
-                response:        issue.response.to_h,
+                page:            {
+                    body: issue.page.body,
+                    dom:  issue.page.dom.to_h
+                },
+                response:        Factory[:response].to_h,
                 platform_name:   :unix,
                 platform_type:   :os,
                 references:      { 'Title' => 'http://some/url' },
@@ -329,6 +333,10 @@ describe Arachni::Issue do
                             inputs:               { 'stuff' => i.to_s },
                             affected_input_value: i.to_s,
                             seed:                 i.to_s
+                        },
+                        page:            {
+                            body: issue.page.body,
+                            dom:  issue.page.dom.to_h
                         },
                         response:  issue.response.to_h,
                         remarks:   { the_dude: %w(Hey!) },

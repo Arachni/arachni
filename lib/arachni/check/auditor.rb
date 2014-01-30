@@ -133,7 +133,7 @@ module Auditor
 
     # *REQUIRED*
     #
-    # @return   [Arachni::Page]  Page object you want to audit.
+    # @return   [Arachni::Page]  Page object to be audited.
     # @abstract
     attr_reader :page
 
@@ -176,7 +176,6 @@ module Auditor
     #   * `false` if the request couldn't be fired.
     #   * `true` if everything went fine.
     #
-    # @see Element::Server#log_remote_file_if_exists?
     # @see Element::Server#remote_file_exist?
     def log_remote_file_if_exists( url, silent = false, &block )
         Element::Server.new( page.response ).tap { |s| s.auditor = self }.
@@ -194,20 +193,28 @@ module Auditor
     #
     # @see Element::Body#match_and_log
     def match_and_log( patterns, &block )
-        Element::Body.new( page ).tap { |b| b.auditor = self }.
+        Element::Body.new( self.page ).tap { |b| b.auditor = self }.
             match_and_log( patterns, &block )
     end
 
     # Populates and logs an {Arachni::Issue}.
     #
-    # @param    [Hash]  options
-    #   As passed to blocks by audit methods.
-    # @param    [HTTP::Response]    response
-    #   Optional HTTP response, defaults to page data.
-    def log( options, response = page.response )
+    # @overload log( options, response = self.page.response )
+    #   @param    [Hash]  options
+    #       As passed to blocks by audit methods.
+    #   @param    [Page]    page
+    #       Optional page, defaults to {#page}.
+    # @overload log( options, page = self.page )
+    #   @param    [Hash]  options
+    #       As passed to blocks by audit methods.
+    #   @param    [HTTP::Response]    response
+    #       Optional response, defaults to `page.response`.
+    def log( options, page_or_response = self.page )
         vector        = options[:vector]
         audit_options = vector.respond_to?( :audit_options ) ?
             vector.audit_options : {}
+        page          = page_or_response.is_a?( Page ) ?
+                            page_or_response : page_or_response.to_page
 
         msg = "In #{vector.type}"
 
@@ -222,7 +229,7 @@ module Auditor
         print_verbose( "Injected:\t#{vector.affected_input_value}" ) if active
         print_verbose( "Signature:\t#{options[:signature]}" ) if options[:signature]
         print_verbose( "Proof:\t#{options[:proof]}" )         if options[:proof]
-        print_debug( "Request ID:\t#{response.request.id}" )
+        print_debug( "Request ID:\t#{page.response.request.id}" )
         print_verbose( '---------' )                          if only_positives?
 
         # Platform identification by vulnerability.
@@ -235,25 +242,35 @@ module Auditor
         log_issue(options.merge(
             platform_name: platform,
             platform_type: platform_type,
-            response:      response
+            page:          page
         ))
     end
 
     # Logs the existence of a remote file as an issue.
     #
-    # @param    [HTTP::Response]    response
-    # @param    [Bool]      silent
-    #   If `false`, a message will be printed to stdout containing the status of
-    #   the operation.
+    # @overload log_remote_file( response, silent = false )
+    #   @param    [HTTP::Response]    response
+    #   @param    [Bool]      silent
+    #       If `false`, a message will be printed to stdout containing the status of
+    #       the operation.
+    #
+    # @overload log_remote_file( page, silent = false )
+    #   @param    [Page]    page
+    #   @param    [Bool]    silent
+    #       If `false`, a message will be printed to stdout containing the status of
+    #       the operation.
     #
     # @see #log_issue
-    def log_remote_file( response, silent = false )
+    def log_remote_file( page_or_response, silent = false )
+        page = page_or_response.is_a?( Page ) ?
+            page_or_response : page_or_response.to_page
+
         log_issue(
-            vector:   Element::Server.new( response ),
-            response: response
+            vector: Element::Server.new( page.response ),
+            page:   page
         )
 
-        print_ok( "Found #{response.url}" ) if !silent
+        print_ok( "Found #{page.url}" ) if !silent
     end
     alias :log_remote_directory :log_remote_file
 
@@ -261,8 +278,8 @@ module Auditor
     #
     # @param    [Hash]  options {Issue} options.
     #
-    # @see #issue
-    # @see Arachni::Check::Base#register_results
+    # @see .create_issue
+    # @see #register_results
     def log_issue( options )
         register_results([ self.class.create_issue( options ) ])
     end

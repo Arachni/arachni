@@ -3,7 +3,7 @@ Factory.define :issue_data do
         name:            "Check name \xE2\x9C\x93",
         description:     'Issue description',
         vector:          Factory[:passive_vector],
-        response:        Factory[:response],
+        page:            Factory[:page],
         platform_name:   :unix,
         platform_type:   :os,
         references:      {

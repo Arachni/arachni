@@ -15,7 +15,7 @@ class Issue
     # Attributes removed from a parent issue (i.e. an issues with variations)
     # and solely populating variations.
     VARIATION_ATTRIBUTES = Set.new([
-        :@response, :@proof, :@signature, :@remarks, :@trusted
+        :@page, :@proof, :@signature, :@remarks, :@trusted
     ])
 
     # @return    [String]   The name of the issue.
@@ -58,8 +58,8 @@ class Issue
     #   Instance of the relevant vector if available.
     attr_accessor :vector
 
-    # @return   [HTTP::Response]
-    attr_accessor :response
+    # @return   [Page]
+    attr_accessor :page
 
     # @return   [Hash]  Information regarding the check that logged the issue.
     attr_accessor :check
@@ -105,6 +105,12 @@ class Issue
         @tags       ||= []
         @variations ||= []
         @variation    = nil
+    end
+
+    # @return   [HTTP::Response]
+    def response
+        return if !page
+        page.response
     end
 
     # @return   [HTTP::Request]
@@ -243,6 +249,12 @@ class Issue
         end
 
         if variation? || solo?
+            if page
+                h[:page] = {
+                    body: page.body,
+                    dom:  page.dom.to_h
+                }
+            end
             h[:response] = response.to_h if response
             h[:request]  = request.to_h  if request
         end
