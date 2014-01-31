@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-class AuditorTest < Arachni::Component::Base
+class AuditorTest < Arachni::Check::Base
     include Arachni::Check::Auditor
 
     self.shortname = Factory[:issue_data][:check][:shortname]
@@ -11,10 +11,6 @@ class AuditorTest < Arachni::Component::Base
         framework.trainer.page = page
 
         http.update_cookies( page.cookiejar )
-    end
-
-    def reset
-        @framework.reset
     end
 
     def load_page_from( url )
@@ -45,7 +41,7 @@ end
 
 describe Arachni::Check::Auditor do
 
-    before :all do
+    before :each do
         @opts = Arachni::Options.instance
         @opts.audit.elements :links, :forms, :cookies, :headers
 
@@ -57,7 +53,13 @@ describe Arachni::Check::Auditor do
     end
 
     after :each do
-        @auditor.reset
+        @framework.clean_up
+        @framework.reset
+
+        if ::EM.reactor_running?
+            ::EM.stop
+            sleep 0.1 while ::EM.reactor_running?
+        end
     end
 
     let(:issue) { Factory[:issue] }
@@ -313,4 +315,189 @@ describe Arachni::Check::Auditor do
         end
     end
 
+    describe '#trace_taint' do
+        context 'when tracing the data-flow' do
+            let(:taint) { Arachni::Utilities.generate_token }
+            let(:url) do
+                Arachni::Utilities.normalize_url( web_server_url_for( :taint_tracer ) ) +
+                    "/data_trace/global-functions?taint=#{taint}"
+            end
+
+            context 'and the resource is a' do
+                context String do
+                    it 'loads the URL and traces the taint' do
+                        pages = []
+                        @auditor.trace_taint( url, taint: taint ) do |page|
+                            pages << page
+                            false
+                        end
+                        @auditor.browser_cluster.wait
+
+                        browser_cluster_job_taint_tracer_data_flow_check_pages  pages
+                    end
+                end
+
+                context Arachni::HTTP::Response do
+                    it 'loads it and traces the taint' do
+                        pages = []
+
+                        @auditor.trace_taint( Arachni::HTTP::Client.get( url, mode: :sync ),
+                                              taint: taint ) do |page|
+                            pages << page
+                            false
+                        end
+                        @auditor.browser_cluster.wait
+
+                        browser_cluster_job_taint_tracer_data_flow_check_pages  pages
+                    end
+                end
+
+                context Arachni::Page do
+                    it 'loads it and traces the taint' do
+                        pages = []
+
+                        @auditor.trace_taint( Arachni::Page.from_url( url ),
+                                              taint: taint ) do |page|
+                            pages << page
+                            false
+                        end
+                        @auditor.browser_cluster.wait
+
+                        browser_cluster_job_taint_tracer_data_flow_check_pages  pages
+                    end
+                end
+            end
+
+            context 'and requires a custom taint injector' do
+                let(:injector) { "location.hash = #{taint.inspect}" }
+                let(:url) do
+                    Arachni::Utilities.normalize_url( web_server_url_for( :taint_tracer ) ) +
+                        'needs-injector'
+                end
+
+                context 'and the resource is a' do
+                    context String do
+                        it 'loads the URL and traces the taint' do
+                            pages = []
+                            @auditor.trace_taint( url,
+                                                  taint: taint,
+                                                  injector: injector ) do |page|
+                                pages << page
+                                false
+                            end
+                            @auditor.browser_cluster.wait
+
+                            browser_cluster_job_taint_tracer_data_flow_with_injector_check_pages  pages
+                        end
+                    end
+
+                    context Arachni::HTTP::Response do
+                        it 'loads it and traces the taint' do
+                            pages = []
+                            @auditor.trace_taint( Arachni::HTTP::Client.get( url, mode: :sync ),
+                                                  taint: taint,
+                                                  injector: injector ) do |page|
+                                pages << page
+                                false
+                            end
+                            @auditor.browser_cluster.wait
+
+                            browser_cluster_job_taint_tracer_data_flow_with_injector_check_pages  pages
+                        end
+                    end
+
+                    context Arachni::Page do
+                        it 'loads it and traces the taint' do
+                            pages = []
+                            @auditor.trace_taint( Arachni::Page.from_url( url ),
+                                                  taint: taint,
+                                                  injector: injector ) do |page|
+                                pages << page
+                                false
+                            end
+                            @auditor.browser_cluster.wait
+
+                            browser_cluster_job_taint_tracer_data_flow_with_injector_check_pages  pages
+                        end
+                    end
+                end
+            end
+        end
+
+        context 'when tracing the execution-flow' do
+            let(:url) do
+                Arachni::Utilities.normalize_url( web_server_url_for( :taint_tracer ) ) +
+                    "debug?input=_#{@auditor.browser_cluster.javascript_token}TaintTracer.log_execution_flow_sink()"
+            end
+
+            context 'and the resource is a' do
+                context String do
+                    it 'loads the URL and traces the taint' do
+                        pages = []
+                        @auditor.trace_taint( url ) do |page|
+                            pages << page
+                            false
+                        end
+                        @auditor.browser_cluster.wait
+
+                        browser_cluster_job_taint_tracer_execution_flow_check_pages pages
+                    end
+                end
+
+                context Arachni::HTTP::Response do
+                    it 'loads it and traces the taint' do
+                        pages = []
+                        @auditor.trace_taint( Arachni::HTTP::Client.get( url, mode: :sync ) ) do |page|
+                            pages << page
+                            false
+                        end
+                        @auditor.browser_cluster.wait
+
+                        browser_cluster_job_taint_tracer_execution_flow_check_pages pages
+                    end
+                end
+
+                context Arachni::Page do
+                    it 'loads it and traces the taint' do
+                        pages = []
+                        @auditor.trace_taint( Arachni::Page.from_url( url ) ) do |page|
+                            pages << page
+                            false
+                        end
+                        @auditor.browser_cluster.wait
+
+                        browser_cluster_job_taint_tracer_execution_flow_check_pages pages
+                    end
+                end
+            end
+        end
+
+        context 'when the block returns' do
+            let(:url) { Arachni::Utilities.normalize_url( web_server_url_for( :browser )  ) + 'explore' }
+
+            context true do
+                it 'marks the job as done' do
+                    calls = 0
+                    @auditor.trace_taint( url ) do
+                        calls += 1
+                        true
+                    end
+                    @auditor.browser_cluster.wait
+                    calls.should == 1
+                end
+            end
+
+            context false do
+                it 'allows the job to continue' do
+                    calls = 0
+                    @auditor.trace_taint( url ) do
+                        calls += 1
+                        false
+                    end
+                    @auditor.browser_cluster.wait
+                    calls.should > 1
+                end
+            end
+        end
+    end
 end

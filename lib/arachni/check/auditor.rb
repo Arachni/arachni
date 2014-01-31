@@ -421,6 +421,24 @@ module Auditor
         each_candidate_element( opts[:elements] ) { |e| e.timeout_analysis( payloads, opts ) }
     end
 
+    # Traces the taint in the given `resource` and passes each page to the
+    # `block`.
+    #
+    # @param    [Page, String, HTTP::Response] resource
+    #   Resource to load and whose environment to trace, if given a `String` it
+    #   will be treated it as a URL and will be loaded.
+    # @param    [Hash]  options See {BrowserCluster::Jobs::TaintTrace} accessors.
+    # @param    [Block] block
+    #   Block to handle each page snapshot. If the `block` returns a `true` value,
+    #   further analysis will be aborted.
+    def trace_taint( resource, options = {}, &block )
+        browser_cluster.trace_taint( resource, options ) do |result|
+            # Mark the job as done and abort further analysis if the block
+            # returns true.
+            browser_cluster.job_done( result.job ) if block.call( result.page )
+        end
+    end
+
     private
 
     def prepare_each_element( elements, &block )
