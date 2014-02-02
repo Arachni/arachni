@@ -424,6 +424,7 @@ describe 'Arachni::RPC::Server::Instance' do
                             scope:  { page_limit: scope_page_limit }
                         )
 
+                        sleep 1 while instance.service.busy?
                         instance.opts.scope.page_limit.should == scope_page_limit / (spawns + 1)
                     end
                 end
@@ -444,6 +445,7 @@ describe 'Arachni::RPC::Server::Instance' do
                             }
                         )
 
+                        sleep 1 while instance.service.busy?
                         instance.opts.http.request_concurrency.should ==
                             http_request_concurrency / (spawns + 1)
                     end
