@@ -3,7 +3,9 @@ require 'sinatra/contrib'
 
 def get_variations( str )
     <<-EOHTML
-        <script>#{str}</script>
+        <html>
+            <script>#{str}</script>
+        </html>
     EOHTML
 end
 

@@ -21,6 +21,7 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
 
     def self.strings
         @strings ||= [
+            "1;#{seed}//",
             "';#{seed}//",
             "\";#{seed}//",
             "1;\n#{seed}//",
@@ -29,7 +30,7 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
     end
 
     def self.options
-        @options ||= { format: [ Format::STRAIGHT ] }
+        @options ||= { format: [ Format::STRAIGHT, Format::APPEND ] }
     end
 
     def taints
