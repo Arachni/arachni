@@ -627,6 +627,9 @@ class Instance
 
     # Makes the server go bye-bye...Lights out!
     def shutdown( &block )
+        return block.call if @shutdown
+        @shutdown = true
+
         print_status 'Shutting down...'
 
         # We're shutting down services so we need to use a concurrent way but
