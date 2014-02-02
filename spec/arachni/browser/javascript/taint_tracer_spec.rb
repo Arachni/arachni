@@ -34,6 +34,18 @@ describe Arachni::Browser::Javascript::TaintTracer do
         end
     end
 
+    it 'is aliased to _token_taint_tracer' do
+        load "/debug?input=_#{@javascript.token}_taint_tracer.log_execution_flow_sink()"
+        @browser.watir.form.submit
+        subject.execution_flow_sink.should be_any
+    end
+
+    it 'is aliased to _tokentainttracer' do
+        load "/debug?input=_#{@javascript.token}tainttracer.log_execution_flow_sink()"
+        @browser.watir.form.submit
+        subject.execution_flow_sink.should be_any
+    end
+
     describe '#taint=' do
         it 'sets the taint to be traced' do
             subject.taint = taint
