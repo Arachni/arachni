@@ -138,7 +138,7 @@ describe Arachni::Page::DOM do
             }
 
             dom.url = data[:url]
-            transitions[:transitions].each do |transition|
+            data[:transitions].each do |transition|
                 dom.push_transition transition
             end
 
