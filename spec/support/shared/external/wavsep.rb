@@ -7,12 +7,15 @@ shared_examples_for 'wavsep' do
         Arachni::Options.reset
 
         @framework = Arachni::Framework.new
-        @framework.opts.audit :links, :forms
+        @framework.opts.audit.elements :links, :forms
     end
 
     after :each do
         @framework.reset
-        @framework = Arachni::Framework.new
+        if ::EM.reactor_running?
+            ::EM.stop
+            sleep 0.1 while ::EM.reactor_running?
+        end
     end
 
     def format_error( logged_urls, logged_resources, expected_resources )
@@ -71,7 +74,7 @@ shared_examples_for 'wavsep' do
                                     @framework.checks.load info[:checks]
                                     @framework.run
 
-                                    urls      = @framework.checks.issues.map(&:url).uniq.sort
+                                    urls      = @framework.checks.issues.map { |i| i.vector.action }.uniq.sort
                                     resources = urls.map { |url| url.split('?').first }.uniq.sort
                                     expected  = info[:vulnerable].map { |resource| @framework.opts.url + resource }
 
