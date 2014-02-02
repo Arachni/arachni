@@ -71,6 +71,7 @@
     - _Recon_ checks renamed to _Passive_ checks.
 - Checks
     - Active
+        - `xss` -- Added support for Browser-based taint-analysis.
         - `xss_script_context` -- Added support for Browser-based taint-analysis.
             - Renamed from `xss_script_tag`.
 
