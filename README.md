@@ -356,7 +356,7 @@ Active checks engage the web application via its inputs.
 - Path XSS (`xss_path`).
 - XSS in event attributes of HTML elements (`xss_event`).
 - XSS in HTML tags (`xss_tag`).
-- XSS in HTML 'script' tags  (`xss_script_tag`).
+- XSS in "script" context (`xss_script_context`).
 - Source code disclosure (`source_code_disclosure`)
 
 ##### Passive

@@ -69,6 +69,10 @@
 - Renamed `modules` to `checks`, also:
     - _Audit_ checks renamed to _Active_ checks.
     - _Recon_ checks renamed to _Passive_ checks.
+- Checks
+    - Active
+        - `xss_script_context` -- Added support for Browser-based taint-analysis.
+            - Renamed from `xss_script_tag`.
 
 ## 0.4.6
 
