@@ -24,7 +24,7 @@ class Arachni::Plugins::HealthMap < Arachni::Plugin::Base
 
         issue_cnt = 0
         map = []
-        sitemap.each do |url|
+        sitemap.sort.each do |url|
             next if !url
 
             if issue_urls.include?( url )
