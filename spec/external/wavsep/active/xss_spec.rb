@@ -26,6 +26,7 @@ describe 'WAVSEP XSS' do
                     'Case13-Vbs2DoubleQuoteVbsEventScope.jsp',
                     'Case14-Vbs2SingleQuoteVbsEventScope.jsp',
                     'Case15-Vbs2VbsEventScope.jsp',
+                    'Case16-Js2ScriptSupportingProperty.jsp',
                     'Case17-Js2PropertyJsScopeDoubleQuoteDelimiter.jsp',
                     'Case18-Js2PropertyJsScopeSingleQuoteDelimiter.jsp',
                     'Case19-Js2PropertyJsScope.jsp',
