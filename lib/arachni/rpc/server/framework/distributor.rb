@@ -37,8 +37,6 @@ module Distributor
             RPC::Client::Instance.new( @opts, instance[:url], @tokens[instance[:url]] )
     end
 
-    private
-
     #
     # @param    [Proc]  foreach
     #   Invoked once for each slave instance and an array from the returned values.
@@ -75,6 +73,8 @@ module Distributor
     def iterator_for( arr )
         ::EM::Iterator.new( arr, MAX_CONCURRENCY )
     end
+
+    private
 
     #
     # @param    [Array<Array<String>>]     url_chunks

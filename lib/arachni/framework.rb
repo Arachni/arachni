@@ -228,6 +228,9 @@ class Framework
             return false
         end
 
+        # Initialize the BrowserCluster
+        browser_cluster
+
         @audited_page_count += 1
         add_to_sitemap( page )
         @sitemap.merge!( browser_sitemap )
@@ -289,6 +292,7 @@ class Framework
 
     def shutdown_browser_cluster
         return if !@browser_cluster
+
         @browser_cluster.shutdown
 
         @browser_cluster = nil
@@ -607,12 +611,12 @@ class Framework
     #
     # It stops the clock and waits for the plugins to finish up.
     #
-    def clean_up
+    def clean_up( shutdown_browser_cluster = true )
         @status = :cleanup
 
         @sitemap.merge!( browser_sitemap )
 
-        shutdown_browser_cluster
+        self.shutdown_browser_cluster if shutdown_browser_cluster
         @page_queue.clear
 
         @finish_datetime  = Time.now
@@ -698,6 +702,23 @@ class Framework
 
     private
 
+    # @note Must be called before calling any audit methods.
+    #
+    # Prepares the framework for the audit.
+    #
+    # * Sets the status to ':running'.
+    # * Starts the clock.
+    # * Runs the plugins.
+    def prepare
+        @status = :preparing
+
+        @running = true
+        @start_datetime = Time.now
+
+        # run all plugins
+        @plugins.run
+    end
+
     def handle_browser_page( page )
         return if !push_to_page_queue page
 
@@ -736,23 +757,6 @@ class Framework
     end
 
     #
-    # Prepares the framework for the audit.
-    #
-    # Sets the status to 'running', starts the clock and runs the plugins.
-    #
-    # Must be called just before calling {#audit}.
-    #
-    def prepare
-        @status = :preparing
-
-        @running = true
-        @start_datetime = Time.now
-
-        # run all plugins
-        @plugins.run
-    end
-
-    #
     # Performs the audit
     #
     # Runs the spider, pushes each page or url to their respective audit queue,
@@ -781,6 +785,9 @@ class Framework
         end
 
         return if checks.empty?
+
+        # Initialize the BrowserCluster
+        browser_cluster
 
         # Keep auditing until there are no more resources in the queues and the
         # browsers have stopped spinning.

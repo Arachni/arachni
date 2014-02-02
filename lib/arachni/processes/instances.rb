@@ -163,6 +163,15 @@ class Instances
             end
         end
 
+        each do |instance|
+            begin
+                instance.service.shutdown
+            rescue => e
+                #ap e
+                #ap e.backtrace
+            end
+        end
+
         @list.clear
         @instance_connections.clear
         Manager.kill_many pids

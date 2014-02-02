@@ -629,17 +629,24 @@ class Instance
     def shutdown( &block )
         print_status 'Shutting down...'
 
-        ::EM.defer do
+        # We're shutting down services so we need to use a concurrent way but
+        # without going through EM.
+        Thread.new do
             t = []
+
+            if (bc = browser_cluster)
+                t << Thread.new { browser_cluster.shutdown }
+            end
+
             @framework.instance_eval do
                 next if !has_slaves?
+
                 @instances.each do |instance|
-                    # Don't know why but this works better than EM's stuff
                     t << Thread.new { connect_to_instance( instance ).service.shutdown }
                 end
             end
-            t.join
 
+            t.each(&:join)
             @server.shutdown
 
             block.call true if block_given?
@@ -653,11 +660,32 @@ class Instance
         @framework.error_test( str, &block )
     end
 
-    def consumed_pids
-        @consumed_pids | [Process.pid]
+    # @private
+    def consumed_pids( &block )
+        pids  = ([Process.pid] | @consumed_pids)
+        pids |= browser_cluster.consumed_pids if browser_cluster
+
+        block.call pids if @consumed_pids.size == 1
+
+        foreach = proc do |instance, iter|
+            instance.service.consumed_pids do |slave_pids|
+                iter.return( !slave_pids.rpc_exception? ? slave_pids : [] )
+            end
+        end
+        after = proc do |results|
+            block.call pids | results.flatten
+        end
+
+        @framework.map_slaves( foreach, after )
+
+        true
     end
 
     private
+
+    def browser_cluster
+        @framework.instance_eval { @browser_cluster }
+    end
 
     def parse_progress_opts( options, key )
         parsed = {}

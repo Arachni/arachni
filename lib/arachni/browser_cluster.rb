@@ -70,6 +70,8 @@ class BrowserCluster
     #   List of crawled URLs with their HTTP codes.
     attr_reader :sitemap
 
+    attr_reader :consumed_pids
+
     attr_reader :javascript_token
 
     # @param    [Hash]  options
@@ -106,6 +108,7 @@ class BrowserCluster
 
         @sitemap = {}
         @mutex   = Monitor.new
+        @consumed_pids = []
 
         initialize_browsers
 
@@ -313,10 +316,12 @@ class BrowserCluster
                     @browsers[:busy] << browser
 
                     browser.run_job( job, cookies: HTTP::Client.cookies ) do
-                        @pending_jobs[job.id] -= 1
-                        job_done( job ) if @pending_jobs[job.id] == 0
+                        synchronize do
+                            @pending_jobs[job.id] -= 1
+                            job_done( job ) if @pending_jobs[job.id] <= 0
 
-                        move_browser( browser, :busy, :idle )
+                            move_browser( browser, :busy, :idle )
+                        end
                     end
                 end
             end
@@ -365,10 +370,12 @@ class BrowserCluster
         booting_browsers    = []
 
         pool_size.times do
-            booting_browsers << Peer.spawn(
+            ipc_data = Peer.spawn(
                 javascript_token: @javascript_token,
                 master:           ipc_handle
             )
+            @consumed_pids   << ipc_data.shift
+            booting_browsers << ipc_data
         end
 
         begin
@@ -398,7 +405,7 @@ class BrowserCluster
                     begin
                         service.alive?
                         break
-                    rescue ::RPC::Exceptions::ConnectionError
+                    rescue RPC::Exceptions::ConnectionError
                     end
                 end
             end

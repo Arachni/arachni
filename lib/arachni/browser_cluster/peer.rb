@@ -35,7 +35,7 @@ class Peer < Arachni::Browser
         socket = "/tmp/arachni-browser-#{Utilities.available_port}"
         token  = Utilities.generate_token
 
-        ::EM.fork_reactor do
+        pid = ::EM.fork_reactor do
             Options.rpc.server_socket = socket
             new(
                 master:           options[:master],
@@ -62,10 +62,10 @@ class Peer < Arachni::Browser
                 abort "Browser '#{socket}' never started!"
             end
 
-            return client
+            return [pid, client]
         end
 
-        [socket, token]
+        [pid, socket, token]
     end
 
     # @return    [RPC::RemoteObjectMapper]    For {BrowserCluster}.

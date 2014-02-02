@@ -158,13 +158,15 @@ class Framework < ::Arachni::Framework
     #
     def clean_up( &block )
         if @cleaned_up
+            # Don't shutdown the BrowserCluster here, its termination will be
+            # handled by Instance#shutdown.
             block.call false if block_given?
             return false
         end
 
         @cleaned_up       = true
         @extended_running = false
-        r = super
+        r = super( false )
 
         if !block_given?
             @status = :done
