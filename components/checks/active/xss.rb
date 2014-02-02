@@ -3,14 +3,14 @@
     All rights reserved.
 =end
 
-# XSS  check.
+# Injects an HTML element into page inputs and then parses the HTML markup of
+# tainted responses to look for proof of vulnerability.
 #
-# It doesn't just look for the injected XSS string in the HTML code
-# but actually parses the code and looks for the injected element proper.
+# If this rudimentary check fails, tainted responses are forwarded to the
+# {BrowserCluster} for evaluation and {#trace_taint taint-tracing}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-# @version 0.3.3
+# @version 0.4
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -46,31 +46,51 @@ class Arachni::Checks::XSS < Arachni::Check::Base
     end
 
     def run
-        self.class.strings.each do |str|
-            audit( str, self.class.opts ) { |response, element| check_and_log( response, element ) }
+        audit( self.class.strings, self.class.opts ) do |response, element|
+            check_and_log( response, element )
         end
     end
 
     def check_and_log( response, element )
-        # if the body doesn't include the tag name at all bail out early
+        # if the body doesn't include the tag at all bail out early
         return if !response.body || !response.body.include?( self.class.tag )
 
-        # see if we managed to successfully inject our element in the doc tree
-        return if Nokogiri::HTML( response.body ).css( self.class.tag_name ).empty?
+        print_info 'Response is tainted, looking for proof of vulnerability.'
 
-        log( { vector: element, proof: self.class.tag }, response )
+        # See if we managed to successfully inject our element in the doc tree.
+        if find_proof( response )
+            log( { vector: element, proof: self.class.tag }, response )
+            return
+        end
+
+        print_info 'Progressing to deferred browser evaluation of response.'
+
+        # Pass the response to the BrowserCluster for evaluation and see if the
+        # element appears in the doc tree now.
+        trace_taint( response, taint: self.class.tag ) do |page|
+            print_info 'Checking results of deferred taint analysis.'
+
+            next if !(proof = find_proof( page ))
+            log( { vector: element, proof: proof }, page )
+        end
+    end
+
+    def find_proof( resource )
+        proof = Nokogiri::HTML( resource.body ).css( self.class.tag_name )
+        return if proof.empty?
+        proof.to_s
     end
 
     def self.info
         {
             name:        'XSS',
             description: %q{Cross-Site Scripting check.
-                It doesn't just look for the injected XSS string in the HTML code
-                but actually parses the code and looks for the injected element proper.
+                Injects an HTML element into page inputs and then parses the HTML markup of
+                tainted responses to look for proof of vulnerability.
             },
             elements:    [Element::Form, Element::Link, Element::Cookie, Element::Header],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.3.2',
+            version:     '0.4',
             targets:     %w(Generic),
 
             issue:       {
