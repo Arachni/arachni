@@ -7,7 +7,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.4
+# @version 0.1.5
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -38,21 +38,23 @@ class Arachni::Checks::XSSEvent < Arachni::Check::Base
 
     def self.strings
         @strings ||= [
-            ";arachni_xss_in_element_event=" + seed + '//',
-            "\";arachni_xss_in_element_event=" + seed + '//',
-            "';arachni_xss_in_element_event=" + seed + '//'
+            ";arachni_xss_in_element_event=#{seed}//",
+            "\";arachni_xss_in_element_event=#{seed}//",
+            "';arachni_xss_in_element_event=#{seed}//"
         ]
     end
 
+    def self.options
+        @options ||= { format: [ Format::APPEND ] }
+    end
+
     def run
-        audit( self.class.strings, format: [ Format::APPEND ] ) do |response, element|
-            check_and_log( response, element )
-        end
+        audit self.class.strings, self.class.options, &method(:check_and_log)
     end
 
     def check_and_log( response, element )
-        return if element.seed.to_s.empty? || !response.body ||
-            !response.body.include?( element.seed )
+        return if element.seed.to_s.empty? ||
+            !response.body.to_s.include?( element.seed )
 
         doc = Nokogiri::HTML( response.body )
 
@@ -70,7 +72,7 @@ class Arachni::Checks::XSSEvent < Arachni::Check::Base
             description: %q{Cross-Site Scripting in event tag of HTML element.},
             elements:    [Element::Form, Element::Link, Element::Cookie, Element::Header],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.1.4',
+            version:     '0.1.5',
             targets:     %w(Generic),
 
             issue:       {
@@ -83,7 +85,7 @@ class Arachni::Checks::XSSEvent < Arachni::Check::Base
                     'ha.ckers' => 'http://ha.ckers.org/xss.html',
                     'Secunia'  => 'http://secunia.com/advisories/9716/'
                 },
-                tags:            %w(xss event injection regexp dom attribute),
+                tags:            %w(xss event injection dom attribute),
                 cwe:             79,
                 severity:        Severity::HIGH,
                 remedy_guidance: 'User inputs must be validated and filtered
