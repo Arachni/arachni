@@ -33,7 +33,11 @@ class Arachni::Checks::XSSEvent < Arachni::Check::Base
         'onmousemove',
         'onmouseout',
         'onmouseover',
-        'onmouseup'
+        'onmouseup',
+
+        # Not an event attribute so it gets special treatment by being checked
+        # for a "script:" prefix.
+        'src'
     ]
 
     def self.strings
@@ -41,7 +45,7 @@ class Arachni::Checks::XSSEvent < Arachni::Check::Base
             ";arachni_xss_in_element_event=#{seed}//",
             "\";arachni_xss_in_element_event=#{seed}//",
             "';arachni_xss_in_element_event=#{seed}//"
-        ]
+        ].map { |s| [ "script:#{s}", s ] }.flatten
     end
 
     def self.options
@@ -56,12 +60,25 @@ class Arachni::Checks::XSSEvent < Arachni::Check::Base
         return if element.seed.to_s.empty? ||
             !response.body.to_s.include?( element.seed )
 
-        doc = Nokogiri::HTML( response.body )
+        doc  = Nokogiri::HTML( response.body )
+        seed = element.seed.dup
 
-        EVENT_ATTRS.each do |attr|
-            doc.xpath( "//*[@#{attr}]" ).each do |elem|
-                next if !elem.attributes[attr].to_s.include?( element.seed )
-                log( { vector: element }, response )
+        EVENT_ATTRS.each do |attribute|
+            doc.xpath( "//*[@#{attribute}]" ).each do |elem|
+                value = elem.attributes[attribute].to_s.downcase
+                seed  = seed.split( ':', 2 ).last
+
+                if attribute == 'src'
+                    # Javascript cases can be handled more reliably by the
+                    # xss_Script_context check. However VBScript doesn't have
+                    # full support so we settle.
+                    if value =~ /^(vb|java|)script:/ && value.include?( seed )
+                        puts value
+                        return log( { vector: element }, response )
+                    end
+                elsif value.include?( seed )
+                    return log( { vector: element }, response )
+                end
             end
         end
     end

@@ -9,7 +9,7 @@ describe 'WAVSEP XSS' do
                 url:        "RXSS-Detection-Evaluation-#{http_method}/",
                 checks:    'xss*',
 
-                # Misses a few because there's no VBScript support.
+                # Misses a few because there's no proper VBScript support.
                 vulnerable: [
                     'Case01-Tag2HtmlPageScope.jsp',
                     'Case02-Tag2TagScope.jsp',
@@ -30,6 +30,8 @@ describe 'WAVSEP XSS' do
                     'Case17-Js2PropertyJsScopeDoubleQuoteDelimiter.jsp',
                     'Case18-Js2PropertyJsScopeSingleQuoteDelimiter.jsp',
                     'Case19-Js2PropertyJsScope.jsp',
+                    'Case20-Vbs2PropertyVbsScopeDoubleQuoteDelimiter.jsp',
+                    'Case21-Vbs2PropertyVbsScope.jsp',
                     'Case22-Js2ScriptTagDoubleQuoteDelimiter.jsp',
                     'Case23-Js2ScriptTagSingleQuoteDelimiter.jsp',
                     'Case24-Js2ScriptTag.jsp',
