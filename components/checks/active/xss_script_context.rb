@@ -77,7 +77,8 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
         print_info 'Response is tainted, scheduling a taint-trace.'
 
         # Pass the response to the BrowserCluster for evaluation and see if the
-        # element appears in the doc tree now.
+        # JS payload we injected got executed by inspecting the page's
+        # execution-flow sink.
         trace_taint( response, taint: self.class.seed ) do |page|
             print_info 'Checking results of deferred taint analysis for' <<
                            ' execution-flow sink data.'
