@@ -62,9 +62,7 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
     end
 
     def run
-        audit( taints, self.class.options ) do |response, element|
-            check_and_log( response, element )
-        end
+        audit taints, self.class.options, &method(:check_and_log)
     end
 
     def check_and_log( response, element )
