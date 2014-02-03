@@ -70,9 +70,9 @@ class Arachni::Checks::XSSEvent < Arachni::Check::Base
 
                 if attribute == 'src'
                     # Javascript cases can be handled more reliably by the
-                    # xss_Script_context check. However VBScript doesn't have
+                    # xss_script_context check. However VBScript doesn't have
                     # full support so we settle.
-                    if value =~ /^(vb|java|)script:/ && value.include?( seed )
+                    if value =~ /^(vb|)script:/ && value.include?( seed )
                         return log( { vector: element }, response )
                     end
                 elsif value.include?( seed )
