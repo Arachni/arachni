@@ -68,8 +68,13 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
     end
 
     def check_and_log( response, element )
-        # Check to see if the response is tainted before going any further.
-        return if !tainted?( response, element.seed )
+        # Check to see if the response is tainted before going any further,
+        # this also serves as a rudimentary check for really simple cases.
+        return if !(proof = tainted?( response, element.seed ))
+
+        if proof.is_a? String
+            return log( { vector: element, proof: proof }, response )
+        end
 
         print_info 'Response is tainted, scheduling a taint-trace.'
 
@@ -93,7 +98,15 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
 
         ATTRIBUTES.each do |attribute|
             doc.xpath( "//*[@#{attribute}]" ).each do |elem|
-                return true if elem.attributes[attribute].to_s.include?( seed )
+                value = elem.attributes[attribute].to_s
+
+                if attribute == 'src'
+                    return value if seed.start_with? 'javascript:' && value == seed
+                else
+                    return value if value == seed
+                end
+
+                return true  if value.include?( seed )
             end
         end
 
