@@ -7,14 +7,14 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.3.1
+# @version 0.3.2
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://capec.mitre.org/data/definitions/7.html
 # @see http://www.owasp.org/index.php/Blind_SQL_Injection
 class Arachni::Checks::BlindTimingSQLInjection < Arachni::Check::Base
 
-    prefer :sqli
+    prefer :sqli, :sqli_blind_differential
 
     def self.payloads
         @payloads ||= {
@@ -39,7 +39,7 @@ class Arachni::Checks::BlindTimingSQLInjection < Arachni::Check::Base
                 connection suddenly chokes up this check will probably produce false positives).},
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.3',
+            version:     '0.3.2',
             targets:     %w(MySQL PostgreSQL MSSQL),
 
             issue:       {
