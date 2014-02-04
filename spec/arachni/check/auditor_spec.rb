@@ -83,7 +83,17 @@ describe Arachni::Check::Auditor do
             @auditor.log_issue( issue_data )
 
             logged_issue = @framework.checks.results.first
-            logged_issue.to_h.should == issue.to_h
+            logged_issue.to_h.should == issue.to_h.merge( referring_page: {
+                body: @auditor.page.body,
+                dom:  @auditor.page.dom.to_h
+            })
+        end
+
+        it 'assigns a #referring_page' do
+            @auditor.log_issue( issue_data )
+
+            logged_issue = @framework.checks.results.first
+            logged_issue.referring_page.should == @auditor.page
         end
     end
 

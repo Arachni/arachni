@@ -279,7 +279,9 @@ module Auditor
     # @see .create_issue
     # @see #register_results
     def log_issue( options )
-        register_results([ self.class.create_issue( options ) ])
+        register_results([
+            self.class.create_issue( options.merge( referring_page: self.page ) )
+        ])
     end
 
     # Just a delegator, logs an array of issues.

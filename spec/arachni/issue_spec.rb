@@ -248,10 +248,19 @@ describe Arachni::Issue do
 
     describe '#to_h' do
         it 'converts self to a Hash' do
+            page = Factory[:page].dup
+            page.body << 'stuff'
+
+            issue.referring_page = page
+
             issue.to_h.should == {
                 name:            "Check name \u2713",
                 description:     'Issue description',
                 vector:          issue.vector.to_h,
+                referring_page:  {
+                    body: issue.referring_page.body,
+                    dom:  issue.referring_page.dom.to_h
+                },
                 page:            {
                     body: issue.page.body,
                     dom:  issue.page.dom.to_h
@@ -289,6 +298,11 @@ describe Arachni::Issue do
 
         context 'when the issue has variations' do
             it 'includes those variations' do
+                page = Factory[:page].dup
+                page.body << 'stuff'
+
+                issue_with_variations.variations.each { |v| v.referring_page = page }
+
                 issue_h    = issue_with_variations.to_h
                 variations = issue_h.delete( :variations )
 
@@ -333,6 +347,10 @@ describe Arachni::Issue do
                             inputs:               { 'stuff' => i.to_s },
                             affected_input_value: i.to_s,
                             seed:                 i.to_s
+                        },
+                        referring_page:  {
+                            body: page.body,
+                            dom:  page.dom.to_h
                         },
                         page:            {
                             body: issue.page.body,

@@ -15,7 +15,7 @@ class Issue
     # Attributes removed from a parent issue (i.e. an issues with variations)
     # and solely populating variations.
     VARIATION_ATTRIBUTES = Set.new([
-        :@page, :@proof, :@signature, :@remarks, :@trusted
+        :@page, :@referring_page, :@proof, :@signature, :@remarks, :@trusted
     ])
 
     # @return    [String]   The name of the issue.
@@ -54,11 +54,16 @@ class Issue
     # @see Platform::Manager
     attr_accessor :platform_type
 
-    # @return    [Element::Base, Page, nil]
+    # @return    [Element::Base, nil]
     #   Instance of the relevant vector if available.
     attr_accessor :vector
 
     # @return   [Page]
+    #   Page containing the {#vector} and whose audit resulted in the discovery
+    #   of the vulnerability.
+    attr_accessor :referring_page
+
+    # @return   [Page]  Vulnerable page.
     attr_accessor :page
 
     # @return   [Hash]  Information regarding the check that logged the issue.
@@ -255,6 +260,14 @@ class Issue
                     dom:  page.dom.to_h
                 }
             end
+
+            if referring_page
+                h[:referring_page] = {
+                    body: referring_page.body,
+                    dom:  referring_page.dom.to_h
+                }
+            end
+
             h[:response] = response.to_h if response
             h[:request]  = request.to_h  if request
         end
