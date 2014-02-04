@@ -70,9 +70,21 @@ class Trainer
 
         @parser = Parser.new( response )
 
-        return false if !@parser.text? ||
-            @trainings_per_url[@parser.url] >= MAX_TRAININGS_PER_URL ||
-            redundant_path?( @parser.url ) || skip_resource?( response )
+        return false if !@parser.text?
+
+        skip_message = nil
+        if @trainings_per_url[@parser.url] >= MAX_TRAININGS_PER_URL
+            skip_message = "Reached maximum trainings (#{MAX_TRAININGS_PER_URL})"
+        elsif redundant_path?( @parser.url )
+            skip_message = 'Matched redundancy filters'
+        elsif skip_resource?( response )
+            skip_message = 'Matched exclusion criteria'
+        end
+
+        if skip_message
+            print_verbose "#{skip_message}, skipping: #{@parser.url}"
+            return false
+        end
 
         analyze response
         true

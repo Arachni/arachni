@@ -83,7 +83,7 @@ class Arachni::Checks::DirectoryListing < Arachni::Check::Base
 
             issue:       {
                 name:        %q{Directory listing},
-                description: %q{In most circumstances enabling directory listings is a bad practise
+                description: %q{In most circumstances enabling directory listings is a bad practice
     as it allows an attacker to better grasp the web application's structure.},
                 references: {
                     'CWE' => 'http://cwe.mitre.org/data/definitions/548.html'

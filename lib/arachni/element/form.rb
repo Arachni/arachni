@@ -409,7 +409,8 @@ class Form < Base
         c_form[:action] = to_absolute( c_form[:action], url )
         c_form[:inputs] = {}
 
-        %w(textarea input select).each do |attr|
+        %w(textarea input select button).each do |attr|
+            c_form[attr] ||= []
             form.search( ".//#{attr}" ).each do |elem|
                 elem_attrs = attributes_to_hash( elem.attributes )
                 elem_attrs[:type] = elem_attrs[:type].to_sym if elem_attrs[:type]

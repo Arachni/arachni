@@ -248,7 +248,7 @@ describe Arachni::Parser do
             form.method.should == :post
 
             form = @parser.forms.last
-            form.action.should == @utils.normalize_url( @opts.url + '/form_2')
+            form.action.should == @utils.normalize_url( @opts.url + '/form_2' )
             form.url.should == @url
             form.inputs.should == { "form_2_input_1" => "form_2_val_1" }
         end

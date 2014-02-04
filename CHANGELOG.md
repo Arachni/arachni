@@ -75,7 +75,7 @@
         - `xss_script_context` -- Added support for Browser-based taint-analysis.
             - Renamed from `xss_script_tag`.
 
-## 0.4.6
+## 0.4.6 _(January 1, 2014)_
 
 - CLI user interfaces
     - `--lsmod`
@@ -96,6 +96,8 @@
 - `Framework`
     - Audit
         - Stored pages are now offloaded to disk to lower RAM consumption.
+- `Trainer`
+    - `#push` -- Prints verbose messages in cases of scope violations.
 - `HTTP`
     - Maximum request-queue size lowered from 5000 to 500, to decrease RAM usage
         by preventing the storage of large amounts of requests for extended periods of time.
@@ -132,6 +134,7 @@
     - Updated `#mutations` to delegate to `#each_mutation`.
 - `Element::Cookie#encode`
     - Allow `=` to remain un-encoded in the cookie value.
+- `Element::Form` -- Buttons are now treated as inputs as well.
 - `Options#load` -- Updated to support serialized `Hash` objects.
 - Added `Support::Signature` -- Signature class used to generate and refine signatures
     from `String` objects.
@@ -163,7 +166,11 @@
         - Updated request URL encoding to handle malformed URLs.
         - Disabled reverse DNS lookup on requests to increase performance.
     - `content_types` -- Moved out of `defaults/'.
+    - `cookie_collector`
+        - Added `filter` option used to determine which cookies to log based on
+            a pattern matched against cookie names.
 - Reports -- Added `content_type` to all reports with `outfile` option in `.info`.
+    - `xml` -- Escaped parameter values in XML report.
 
 ## 0.4.5.2 _(September 18, 2013)_
 
@@ -212,6 +219,51 @@
 - Plugins
     - Added:
         - Uncommon headers (`uncommon_headers`) -- Logs uncommon headers.
+- Path extractors
+    - Added:
+        - Extract partial paths from HTML comments (`comments`).
+
+## 0.4.4 _(August 10, 2013)_
+
+- Options
+    - Added:
+        - `--http-username` -- Username for HTTP authentication.
+        - `--http-password` -- Password for HTTP authentication.
+- `Element::Capabilities::Auditable::RDiff` -- Optimized and improved accuracy
+    of analysis.
+- Reports
+    - HTML -- Fixed display of untrusted issues.
+- Modules
+    - Recon
+        - Added:
+            - X-Forwarded-For Access Restriction Bypass (`x_forwarded_for_access_restriction_bypass`)
+                - Retries denied requests with a `X-Forwarded-For` header
+                  to try and trick the web application into thinking that the
+                  request originates from `localhost` and checks whether the
+                  restrictions were bypassed.
+            - Form-based upload (`form_upload`)
+                - Flags file-upload forms as they require manual testing.
+        - .htaccess LIMIT misconfiguration (`htaccess_limit`)
+            - Updated to use verb tampering as well.
+    - Audit
+        - Added:
+            - Source code disclosure (`source_code_disclosure`)
+                - Checks whether or not the web application can be forced to
+                    reveal source code.
+            - Code execution via the php://input wrapper (`code_execution_php_input_wrapper`)
+                - It injects PHP code into the HTTP request body and uses the
+                php://input wrapper to try and load it
+        - Blind SQL Injection (Boolean/Differential analysis) (`sqli_blind_rdiff`)
+            - Improved accuracy of results.
+        - Path traversal (`path_traversal`)
+            - Severity set to "High".
+            - Updated to start with `/` and go all the way up to
+                `/../../../../../../`.
+            - Added fingerprints for `/proc/self/environ`.
+            - Improved coverage for MS Windows.
+        - Remote file inclusion (`rfi`)
+            - Updated to handle cases where the web application appends its own
+                extension to the injected string.
 
 ## 0.4.3.2 _(July 16, 2013)_
 

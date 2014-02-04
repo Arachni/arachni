@@ -527,6 +527,28 @@ describe Arachni::Element::Form do
                 end
             end
 
+            context 'with button inputs' do
+                it 'returns an array of forms' do
+                    html = '
+                    <html>
+                        <body>
+                            <form method="get" action="form_action" name="my_form">
+                                <button type=submit name="my_button" value="my_button_value" />
+                            </form>
+
+                        </body>
+                    </html>'
+
+                    form = Arachni::Element::Form.from_document( @url, html ).first
+                    form.action.should == @utils.normalize_url( @url + '/form_action' )
+                    form.name.should == 'my_form'
+                    form.url.should == @url
+                    form.method.should == :get
+                    form.field_type_for( 'my_button' ).should == :submit
+                    form.inputs.should == { 'my_button'  => 'my_button_value' }
+                end
+            end
+
             context 'with selects' do
                 context 'with values' do
                     it 'returns an array of forms' do
