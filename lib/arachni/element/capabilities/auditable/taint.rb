@@ -140,13 +140,11 @@ module Auditable::Taint
         return if !response.body.include?( substring ) || ignore?( response, opts )
 
         @logged_issues |= @auditor.log(
-            {
-                platform:  opts[:platform],
-                proof:     substring,
-                signature: substring,
-                vector:    response.request.performer
-            },
-            response
+            response:  response,
+            platform:  opts[:platform],
+            proof:     substring,
+            signature: substring,
+            vector:    response.request.performer
         )
         setup_verification_callbacks
     end
@@ -163,13 +161,11 @@ module Auditable::Taint
         return if match_data.to_s.empty? || ignore?( response, opts )
 
         @logged_issues |= @auditor.log(
-            {
-                platform:  opts[:platform],
-                proof:     match_data,
-                signature: regexp,
-                vector:    response.request.performer
-            },
-            response
+            response:  response,
+            platform:  opts[:platform],
+            proof:     match_data,
+            signature: regexp,
+            vector:    response.request.performer
         )
         setup_verification_callbacks
     rescue => e

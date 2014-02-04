@@ -24,7 +24,7 @@ class Arachni::Checks::UnvalidatedRedirect < Arachni::Check::Base
     def run
         audit( self.class.payloads ) do |response, element|
             next if !self.class.payloads.include?( response.headers.location )
-            log( { vector: element }, response )
+            log vector: element, response: response
         end
     end
 

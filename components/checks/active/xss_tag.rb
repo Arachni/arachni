@@ -39,7 +39,7 @@ class Arachni::Checks::XSSHTMLTag < Arachni::Check::Base
             next if node[TAG_NAME] != seed
 
             proof = (payload = find_included_payload( response.body )) ? payload : node.to_s
-            log( { vector: element, proof: proof }, response )
+            log vector: element, proof: proof, response: response
         end
     end
 

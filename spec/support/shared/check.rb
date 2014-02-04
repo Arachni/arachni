@@ -162,7 +162,7 @@ shared_examples_for 'check' do
         end
 
         options.audit.skip_elements :links, :forms, :cookies, :headers
-        options.audit.elements element_type
+        options.audit.elements element_type rescue NoMethodError
         run
 
         e = element_type.to_s

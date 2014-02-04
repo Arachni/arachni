@@ -88,45 +88,42 @@ describe Arachni::Check::Auditor do
     end
 
     describe '#log' do
-        context 'when given a response' do
+        it 'preserves the given remarks' do
+            @auditor.log( issue_data )
+
+            logged_issue = @framework.checks.results.first
+            logged_issue.remarks.first.should be_any
+        end
+
+        context 'when given a page' do
             after { @framework.http.run }
 
-            it 'preserves the given remarks' do
+            it 'includes response data' do
                 @auditor.log( issue_data )
-
-                logged_issue = @framework.checks.results.first
-                logged_issue.remarks.first.should be_any
+                @framework.checks.results.first.response.should ==
+                    issue_data[:page].response
             end
 
-            it 'populates and logs an issue with response data' do
-                res = @framework.http.get( @opts.url.to_s, mode: :sync )
-                @auditor.log( issue_data, res )
-
-                @framework.checks.results.first.response.should == res
-            end
-
-            it 'populates and logs an issue with request data' do
-                res = @framework.http.get( @opts.url.to_s, mode: :sync )
-                @auditor.log( issue_data, res )
-
-                @framework.checks.results.first.request.should == res.request
+            it 'includes request data' do
+                @auditor.log( issue_data )
+                @framework.checks.results.first.request.should ==
+                    issue_data[:page].request
             end
         end
 
-        context 'when it defaults to current page' do
-            it 'populates and logs an issue with page response data' do
+        context 'when not given a page' do
+            it 'uses the current page' do
+                issue_data.delete(:page)
                 @auditor.log( issue_data )
+
+                @framework.checks.results.first.page.body.should ==
+                    @auditor.page.body
                 @framework.checks.results.first.response.should ==
                     @auditor.page.response
-            end
-
-            it 'populates and logs an issue with page request data' do
-                @auditor.log( issue_data )
                 @framework.checks.results.first.request.should ==
                     @auditor.page.request
             end
         end
-
     end
 
     describe '#audit' do

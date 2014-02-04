@@ -21,7 +21,7 @@
 class Arachni::Checks::SessionFixation < Arachni::Check::Base
 
     def token
-        '_arachni_sf_' + seed
+        "_arachni_sf_#{seed}"
     end
 
     def run
@@ -45,7 +45,7 @@ class Arachni::Checks::SessionFixation < Arachni::Check::Base
                         select { |c| c.name == name }.first
                     next if !cookie || !cookie.value.include?( token )
 
-                    log( { vector: element }, response )
+                    log vector: element, response: response
                 end
             end
         end

@@ -71,7 +71,7 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
         return if !(proof = tainted?( response, element.seed ))
 
         if proof.is_a? String
-            return log( { vector: element, proof: proof }, response )
+            return log vector: element, proof: element.seed, response: response
         end
 
         print_info 'Response is tainted, scheduling a taint-trace.'
@@ -85,7 +85,7 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
 
             next if page.dom.execution_flow_sink.empty?
 
-            log( { vector: element, proof: element.seed }, page )
+            log vector: element, proof: element.seed, page: page
         end
     end
 

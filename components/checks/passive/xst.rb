@@ -32,7 +32,7 @@ class Arachni::Checks::XST < Arachni::Check::Base
         http.trace( page.url ) do |response|
             next if response.code != 200 || response.body.to_s.empty?
 
-            log( { vector: Element::Server.new( response ) }, response )
+            log vector: Element::Server.new( response ), response: response
             print_ok 'TRACE is enabled.'
         end
     end

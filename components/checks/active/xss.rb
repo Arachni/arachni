@@ -59,7 +59,7 @@ class Arachni::Checks::XSS < Arachni::Check::Base
 
         # See if we managed to successfully inject our element in the doc tree.
         if find_proof( response )
-            log( { vector: element, proof: self.class.tag }, response )
+            log vector: element, proof: self.class.tag, response: response
             return
         end
 
@@ -71,7 +71,7 @@ class Arachni::Checks::XSS < Arachni::Check::Base
             print_info 'Checking results of deferred taint analysis.'
 
             next if !(proof = find_proof( page ))
-            log( { vector: element, proof: proof }, page )
+            log vector: element, proof: proof, page: page
         end
     end
 

@@ -43,11 +43,10 @@ class Arachni::Checks::InterestingResponses < Arachni::Check::Base
         audited( path )
         audited( digest )
 
-        log( {
-                 proof:  response.status_line,
-                 vector: Element::Server.new( response )
-             },
-             response
+        log(
+             proof:    response.status_line,
+             vector:   Element::Server.new( response ),
+             response: response
         )
         print_ok "Found an interesting response -- Code: #{response.code}."
     end

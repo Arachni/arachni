@@ -199,22 +199,20 @@ module Auditor
 
     # Populates and logs an {Arachni::Issue}.
     #
-    # @overload log( options, response = self.page.response )
-    #   @param    [Hash]  options
-    #       As passed to blocks by audit methods.
-    #   @param    [Page]    page
-    #       Optional page, defaults to {#page}.
-    # @overload log( options, page = self.page )
-    #   @param    [Hash]  options
-    #       As passed to blocks by audit methods.
-    #   @param    [HTTP::Response]    response
-    #       Optional response, defaults to `page.response`.
-    def log( options, page_or_response = self.page )
+    # @param    [Hash]  options {Arachni::Issue} initialization options.
+    def log( options )
+        options       = options.dup
         vector        = options[:vector]
         audit_options = vector.respond_to?( :audit_options ) ?
             vector.audit_options : {}
-        page          = page_or_response.is_a?( Page ) ?
-                            page_or_response : page_or_response.to_page
+
+        if options[:response]
+            page = options.delete(:response).to_page
+        elsif options[:page]
+            page = options.delete(:page)
+        else
+            page = self.page
+        end
 
         msg = "In #{vector.type}"
 

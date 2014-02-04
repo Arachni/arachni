@@ -36,7 +36,8 @@ class Arachni::Checks::AllowedMethods < Arachni::Check::Base
         methods = response.headers['Allow']
         return if !methods || methods.empty?
 
-        log( { vector: Element::Server.new( response ), proof: methods }, response )
+        log vector: Element::Server.new( response ), proof: methods,
+            response: response
 
         # inform the user that we have a match
         print_ok( methods )

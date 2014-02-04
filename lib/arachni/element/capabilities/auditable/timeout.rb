@@ -205,7 +205,7 @@ module Timeout
                     end
 
                     elem.print_info '* Verification was successful.'
-                    elem.auditor.log( { vector: c_elem }, c_res )
+                    elem.auditor.log vector: c_elem, response: c_res
                     elem.responsive?
                 end
             end

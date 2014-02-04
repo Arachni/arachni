@@ -399,7 +399,8 @@ module Differential
                 http.custom_404?( result[:response] ) do |is_custom_404|
                     # If this is a custom 404 page bail out.
                     next if is_custom_404
-                    @auditor.log( {vector: result[:mutation]}, result[:response] )
+                    @auditor.log vector: result[:mutation],
+                                 response: result[:response]
                 end
             end
         end

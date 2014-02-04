@@ -46,10 +46,10 @@ class Arachni::Checks::WebDav < Arachni::Check::Base
 
         self.class.found
 
-        log( {
-                 proof:  response.headers['Allow'],
-                 vector: Element::Server.new( response ) },
-             response
+        log(
+             proof:    response.headers['Allow'],
+             vector:   Element::Server.new( response ),
+             response: response
         )
         print_ok "Enabled for: #{response.url}"
     end

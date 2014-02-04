@@ -59,7 +59,8 @@ class Arachni::Checks::XSSPath < Arachni::Check::Base
         # see if we managed to successfully inject our element
         return if Nokogiri::HTML( response.body ).css( self.class.tag ).empty?
 
-        log( { vector: Element::Path.new( response ), proof: self.class.string }, response )
+        log vector: Element::Path.new( response ),
+            proof: self.class.string, response: response
     end
 
 
