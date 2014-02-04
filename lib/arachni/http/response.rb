@@ -42,8 +42,8 @@ class Response < Message
     attr_accessor :total_time
 
     # @return   [Float]
-    #   Time, in seconds, it took from the start until the first byte was
-    #   received
+    #   Time, in seconds, it took from the start until the full response was
+    #   received.
     attr_accessor :time
 
     # @return   [Float]
@@ -154,9 +154,8 @@ class Response < Message
             headers_string: response.response_headers,
             body:           response.body,
             redirections:   redirections,
-            time:           response.starttransfer_time,
-            app_time:       response.timed_out? ?
-                                response.starttransfer_time :
+            time:           response.time,
+            app_time:       response.timed_out? ? response.time :
                                 response.start_transfer_time - response.pretransfer_time,
             total_time:     response.total_time,
             return_code:    response.return_code,
