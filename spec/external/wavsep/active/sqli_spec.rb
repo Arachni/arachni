@@ -81,7 +81,7 @@ describe 'WAVSEP SQL Injection' do
                 ]
             },
             'Identical 200 Responses' => {
-                checks: 'sqli_blind_*',
+                checks: 'sqli_blind_timing',
                 url:     "SInjection-Detection-Evaluation-#{http_method}-200Identical/",
                 vulnerable: [
                      'Case01-InjectionInView-Numeric-Blind-200ValidResponseWithDefaultOnException.jsp',
