@@ -151,7 +151,7 @@ module Timeout
                 opts[:silent]    = true
 
                 elem.audit( str, opts ) do |c_res|
-                    if c_res.app_time <= (opts[:delay] + opts[:add]) / 1000.0
+                    if c_res.app_time.round < (opts[:delay] + opts[:add]) / 1000.0
                         elem.print_info '* Verification failed.'
                         next
                     end
@@ -199,7 +199,7 @@ module Timeout
                 opts[:silent]    = true
 
                 elem.audit( str, opts ) do |c_res, c_elem|
-                    if c_res.app_time <= (opts[:delay] + opts[:add]) / 1000.0
+                    if c_res.app_time.round < (opts[:delay] + opts[:add]) / 1000.0
                         elem.print_info '* Verification failed.'
                         next
                     end
