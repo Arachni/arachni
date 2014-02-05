@@ -4,6 +4,10 @@
 =end
 
 module Arachni
+
+require 'nokogiri'
+require Options.paths.lib + 'nokogiri/xml/node'
+
 module Element
 
 module Capabilities

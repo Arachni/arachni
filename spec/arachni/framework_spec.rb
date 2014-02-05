@@ -15,6 +15,7 @@ describe Arachni::Framework do
         @opts.paths.checks  = fixtures_path + '/taint_check/'
 
         @f = Arachni::Framework.new
+        @f.opts.url = @url
     end
     after( :each ) do
         @f.clean_up
@@ -115,45 +116,46 @@ describe Arachni::Framework do
             @f.opts.is_a?( Arachni::Options ).should be_true
         end
 
-        describe '#audit_exclude_binaries' do
+        describe '#audit.exclude_binaries' do
             it 'excludes binary pages from the audit' do
-                f = Arachni::Framework.new
-
-                f.opts.url = @url + '/binary'
-                f.opts.audit.elements :links, :forms, :cookies
-                f.checks.load :taint
-
                 ok = false
-                f.on_audit_page { ok = true }
-                f.run
-                ok.should be_true
-                f.reset
+                Arachni::Framework.new do |f|
+                    f.opts.url = @url + '/binary'
+                    f.opts.audit.elements :links, :forms, :cookies
+                    f.checks.load :taint
 
-                f.opts.url = @url + '/binary'
-                f.opts.audit.exclude_binaries = true
-                f.checks.load :taint
+                    f.on_audit_page { ok = true }
+                    f.run
+                end
+                ok.should be_true
 
                 ok = true
-                f.on_audit_page { ok = false }
+                Arachni::Framework.new do |f|
+                    f.opts.url = @url + '/binary'
+                    f.opts.audit.exclude_binaries = true
+                    f.checks.load :taint
 
-                f.run
-                f.reset
+                    f.on_audit_page { ok = false }
+                    f.run
+                end
                 ok.should be_true
             end
         end
-        describe '#scope_restrict_paths' do
+
+        describe '#scope.restrict_paths' do
             it 'serves as a replacement to crawling' do
-                f = Arachni::Framework.new
-                f.opts.url = @url
-                f.opts.scope.restrict_paths = %w(/elem_combo /log_remote_file_if_exists/true)
-                f.opts.audit.elements :links, :forms, :cookies
-                f.checks.load :taint
+                Arachni::Framework.new do |f|
+                    f.opts.url = @url
+                    f.opts.scope.restrict_paths = %w(/elem_combo /log_remote_file_if_exists/true)
+                    f.opts.audit.elements :links, :forms, :cookies
+                    f.checks.load :taint
 
-                f.run
+                    f.run
 
-                sitemap = f.auditstore.sitemap.map { |u, _| u.split( '?' ).first }
-                sitemap.sort.uniq.should == f.opts.scope.restrict_paths.sort
-                f.reset
+                    sitemap = f.auditstore.sitemap.map { |u, _| u.split( '?' ).first }
+                    sitemap.sort.uniq.should ==
+                        f.opts.scope.restrict_paths.map { |p| f.to_absolute( p ) }.sort
+                end
             end
         end
     end
@@ -205,14 +207,7 @@ describe Arachni::Framework do
         end
     end
 
-    describe '#spider' do
-        it 'provides access to the Spider' do
-            @f.spider.is_a?( Arachni::Spider ).should be_true
-        end
-    end
-
     describe '#run' do
-
         it 'performs the audit' do
             @f.opts.url = @url + '/elem_combo'
             @f.opts.audit.elements :links, :forms, :cookies
@@ -305,494 +300,6 @@ describe Arachni::Framework do
             end
         end
 
-        context 'when the page has a body which is' do
-            context 'not empty' do
-                it 'runs checks that audit the page body' do
-                    @opts.paths.checks  = fixtures_path + '/run_check/'
-                    f = Arachni::Framework.new
-                    f.opts.url = @url
-                    f.opts.scope.do_not_crawl
-                    f.opts.audit.elements :links
-                    f.checks.load %w(body)
-
-                    p = Arachni::Page.from_data( url: @url, body: 'stuff' )
-                    f.push_to_page_queue( p )
-
-                    f.run
-                    f.auditstore.issues.size.should == 1
-                    f.checks.clear
-                end
-            end
-            context 'empty' do
-                it 'skips checks that audit the page body' do
-                    @opts.paths.checks  = fixtures_path + '/run_check/'
-                    f = Arachni::Framework.new
-                    f.opts.url = @url
-                    f.opts.scope.do_not_crawl
-                    f.opts.audit.elements :links
-                    f.checks.load %w(body)
-
-                    p = Arachni::Page.from_data( url: @url, body: '' )
-                    f.push_to_page_queue( p )
-
-                    f.run
-                    f.auditstore.issues.size.should == 0
-                    f.checks.clear
-                end
-            end
-        end
-
-        context 'when auditing links is' do
-            context 'enabled' do
-                context 'and the page contains links' do
-                    it 'runs checks that audit links' do
-                        @opts.paths.checks  = fixtures_path + '/run_check/'
-                        f = Arachni::Framework.new
-                        f.opts.url = @url
-                        f.opts.scope.do_not_crawl
-                        f.opts.audit.elements :links
-                        f.checks.load %w(links forms cookies headers flch)
-
-                        link = Arachni::Element::Link.new( url: @url )
-                        p = Arachni::Page.from_data( url: @url, links: [link] )
-                        f.push_to_page_queue( p )
-
-                        f.run
-                        f.auditstore.issues.size.should == 2
-                        f.checks.clear
-                    end
-
-                    it 'runs checks that audit path and server' do
-                        @opts.paths.checks  = fixtures_path + '/run_check/'
-                        f = Arachni::Framework.new
-                        f.opts.url = @url
-                        f.opts.scope.do_not_crawl
-                        f.opts.audit.elements :links
-                        f.checks.load %w(path server)
-
-                        link = Arachni::Element::Link.new( url: @url )
-                        p = Arachni::Page.from_data( url: @url, links: [link] )
-                        f.push_to_page_queue( p )
-
-                        f.run
-                        f.auditstore.issues.size.should == 2
-                        f.checks.clear
-                    end
-
-                    it 'runs checks that have not specified any elements' do
-                        @opts.paths.checks  = fixtures_path + '/run_check/'
-                        f = Arachni::Framework.new
-                        f.opts.url = @url
-                        f.opts.scope.do_not_crawl
-                        f.opts.audit.elements :links
-                        f.checks.load %w(nil empty)
-
-                        link = Arachni::Element::Link.new( url: @url )
-                        p = Arachni::Page.from_data( url: @url, links: [link] )
-                        f.push_to_page_queue( p )
-
-                        f.run
-                        f.auditstore.issues.size.should == 1
-                        f.checks.clear
-                    end
-                end
-            end
-
-            context 'disabled' do
-                context 'and the page contains links' do
-                    it 'skips checks that audit links' do
-                        @opts.paths.checks  = fixtures_path + '/run_check/'
-                        f = Arachni::Framework.new
-                        f.opts.url = @url
-                        f.opts.scope.do_not_crawl
-                        f.opts.audit.skip_elements :links
-                        f.checks.load %w(links forms cookies headers flch)
-
-                        link = Arachni::Element::Link.new( url: @url )
-                        p = Arachni::Page.from_data( url: @url, links: [link] )
-                        f.push_to_page_queue( p )
-
-                        f.run
-                        f.auditstore.issues.size.should == 0
-                        f.checks.clear
-                    end
-
-                    it 'runs checks that audit path and server' do
-                        @opts.paths.checks  = fixtures_path + '/run_check/'
-                        f = Arachni::Framework.new
-                        f.opts.url = @url
-                        f.opts.scope.do_not_crawl
-                        f.opts.audit.skip_elements :links
-                        f.checks.load %w(path server)
-
-                        link = Arachni::Element::Link.new( url: @url )
-                        p = Arachni::Page.from_data( url: @url, links: [link] )
-                        f.push_to_page_queue( p )
-
-                        f.run
-                        f.auditstore.issues.size.should == 2
-                        f.checks.clear
-                    end
-
-                    it 'runs checks that have not specified any elements' do
-                        @opts.paths.checks  = fixtures_path + '/run_check/'
-                        f = Arachni::Framework.new
-                        f.opts.url = @url
-                        f.opts.scope.do_not_crawl
-                        f.opts.audit.skip_elements :links
-                        f.checks.load %w(nil empty)
-
-                        link = Arachni::Element::Link.new( url: @url )
-                        p = Arachni::Page.from_data( url: @url, links: [link] )
-                        f.push_to_page_queue( p )
-
-                        f.run
-                        f.auditstore.issues.size.should == 1
-                        f.checks.clear
-                    end
-                end
-            end
-
-        end
-
-        context 'when auditing forms is' do
-            context 'enabled' do
-                context 'and the page contains forms' do
-                    it 'runs checks that audit forms' do
-                        @opts.paths.checks  = fixtures_path + '/run_check/'
-                        f = Arachni::Framework.new
-                        f.opts.url = @url
-                        f.opts.scope.do_not_crawl
-                        f.opts.audit.elements :forms
-                        f.checks.load %w(links forms cookies headers flch)
-
-                        form = Arachni::Element::Form.new( url: @url )
-                        p = Arachni::Page.from_data( url: @url, forms: [form] )
-                        f.push_to_page_queue( p )
-
-                        f.run
-                        f.auditstore.issues.size.should == 2
-                        f.checks.clear
-                    end
-
-                    it 'runs checks that audit path and server' do
-                        @opts.paths.checks  = fixtures_path + '/run_check/'
-                        f = Arachni::Framework.new
-                        f.opts.url = @url
-                        f.opts.scope.do_not_crawl
-                        f.opts.audit.elements :forms
-                        f.checks.load %w(path server)
-
-                        form = Arachni::Element::Form.new( url: @url )
-                        p = Arachni::Page.from_data( url: @url, forms: [form] )
-                        f.push_to_page_queue( p )
-
-                        f.run
-                        f.auditstore.issues.size.should == 2
-                        f.checks.clear
-                    end
-
-                    it 'runs checks that have not specified any elements' do
-                        @opts.paths.checks  = fixtures_path + '/run_check/'
-                        f = Arachni::Framework.new
-                        f.opts.url = @url
-                        f.opts.scope.do_not_crawl
-                        f.opts.audit.elements :forms
-                        f.checks.load %w(nil empty)
-
-                        form = Arachni::Element::Form.new( url: @url )
-                        p = Arachni::Page.from_data( url: @url, forms: [form] )
-                        f.push_to_page_queue( p )
-
-                        f.run
-                        f.auditstore.issues.size.should == 1
-                        f.checks.clear
-                    end
-                end
-            end
-
-            context 'disabled' do
-                context 'and the page contains forms' do
-                    it 'skips checks that audit forms' do
-                        @opts.paths.checks  = fixtures_path + '/run_check/'
-                        f = Arachni::Framework.new
-                        f.opts.url = @url
-                        f.opts.scope.do_not_crawl
-                        f.opts.audit.skip_elements :forms
-                        f.checks.load %w(links forms cookies headers flch)
-
-                        form = Arachni::Element::Form.new( url: @url )
-                        p = Arachni::Page.from_data( url: @url, forms: [form] )
-                        f.push_to_page_queue( p )
-
-                        f.run
-                        f.auditstore.issues.size.should == 0
-                        f.checks.clear
-                    end
-
-                    it 'runs checks that audit path and server' do
-                        @opts.paths.checks  = fixtures_path + '/run_check/'
-                        f = Arachni::Framework.new
-                        f.opts.url = @url
-                        f.opts.scope.do_not_crawl
-                        f.opts.audit.skip_elements :forms
-                        f.checks.load %w(path server)
-
-                        form = Arachni::Element::Form.new( url: @url )
-                        p = Arachni::Page.from_data( url: @url, forms: [form] )
-                        f.push_to_page_queue( p )
-
-                        f.run
-                        f.auditstore.issues.size.should == 2
-                        f.checks.clear
-                    end
-
-                    it 'runs checks that have not specified any elements' do
-                        @opts.paths.checks  = fixtures_path + '/run_check/'
-                        f = Arachni::Framework.new
-                        f.opts.url = @url
-                        f.opts.scope.do_not_crawl
-                        f.opts.audit.skip_elements :forms
-                        f.checks.load %w(nil empty)
-
-                        form = Arachni::Element::Form.new( url: @url )
-                        p = Arachni::Page.from_data( url: @url, forms: [form] )
-                        f.push_to_page_queue( p )
-
-                        f.run
-                        f.auditstore.issues.size.should == 1
-                        f.checks.clear
-                    end
-                end
-            end
-        end
-
-        context 'when auditing cookies is' do
-            context 'enabled' do
-                context 'and the page contains cookies' do
-                    it 'runs checks that audit cookies' do
-                        @opts.paths.checks  = fixtures_path + '/run_check/'
-                        f = Arachni::Framework.new
-                        f.opts.url = @url
-                        f.opts.scope.do_not_crawl
-                        f.opts.audit.elements :cookies
-                        f.checks.load %w(links forms cookies headers flch)
-
-                        cookie = Arachni::Element::Cookie.new( url: @url )
-                        p = Arachni::Page.from_data( url: @url, cookies: [cookie] )
-                        f.push_to_page_queue( p )
-
-                        f.run
-                        f.auditstore.issues.size.should == 2
-                        f.checks.clear
-                    end
-
-                    it 'runs checks that audit path and server' do
-                        @opts.paths.checks  = fixtures_path + '/run_check/'
-                        f = Arachni::Framework.new
-                        f.opts.url = @url
-                        f.opts.scope.do_not_crawl
-                        f.opts.audit.elements :cookies
-                        f.checks.load %w(path server)
-
-                        cookie = Arachni::Element::Form.new( url: @url )
-                        p = Arachni::Page.from_data( url: @url, cookies: [cookie] )
-                        f.push_to_page_queue( p )
-
-                        f.run
-                        f.auditstore.issues.size.should == 2
-                        f.checks.clear
-                    end
-
-                    it 'runs checks that have not specified any elements' do
-                        @opts.paths.checks  = fixtures_path + '/run_check/'
-                        f = Arachni::Framework.new
-                        f.opts.url = @url
-                        f.opts.scope.do_not_crawl
-                        f.opts.audit.elements :cookies
-                        f.checks.load %w(nil empty)
-
-                        cookie = Arachni::Element::Form.new( url: @url )
-                        p = Arachni::Page.from_data( url: @url, cookies: [cookie] )
-                        f.push_to_page_queue( p )
-
-                        f.run
-                        f.auditstore.issues.size.should == 1
-                        f.checks.clear
-                    end
-                end
-            end
-
-            context 'disabled' do
-                context 'and the page contains cookies' do
-                    it 'skips checks that audit cookies' do
-                        @opts.paths.checks  = fixtures_path + '/run_check/'
-                        f = Arachni::Framework.new
-                        f.opts.url = @url
-                        f.opts.scope.do_not_crawl
-                        f.opts.audit.skip_elements :cookies
-                        f.checks.load %w(links forms cookies headers flch)
-
-                        cookie = Arachni::Element::Form.new( url: @url )
-                        p = Arachni::Page.from_data( url: @url, cookies: [cookie] )
-                        f.push_to_page_queue( p )
-
-                        f.run
-                        f.auditstore.issues.size.should == 0
-                        f.checks.clear
-                    end
-
-                    it 'runs checks that audit path and server' do
-                        @opts.paths.checks  = fixtures_path + '/run_check/'
-                        f = Arachni::Framework.new
-                        f.opts.url = @url
-                        f.opts.scope.do_not_crawl
-                        f.opts.audit.skip_elements :cookies
-                        f.checks.load %w(path server)
-
-                        cookie = Arachni::Element::Form.new( url: @url )
-                        p = Arachni::Page.from_data( url: @url, cookies: [cookie] )
-                        f.push_to_page_queue( p )
-
-                        f.run
-                        f.auditstore.issues.size.should == 2
-                        f.checks.clear
-                    end
-
-                    it 'runs checks that have not specified any elements' do
-                        @opts.paths.checks  = fixtures_path + '/run_check/'
-                        f = Arachni::Framework.new
-                        f.opts.url = @url
-                        f.opts.scope.do_not_crawl
-                        f.opts.audit.skip_elements :cookies
-                        f.checks.load %w(nil empty)
-
-                        cookie = Arachni::Element::Form.new( url: @url )
-                        p = Arachni::Page.from_data( url: @url, cookies: [cookie] )
-                        f.push_to_page_queue( p )
-
-                        f.run
-                        f.auditstore.issues.size.should == 1
-                        f.checks.clear
-                    end
-                end
-            end
-
-        end
-
-        context 'when auditing headers is' do
-            context 'enabled' do
-                context 'and the page contains headers' do
-                    it 'runs checks that audit headers' do
-                        @opts.paths.checks  = fixtures_path + '/run_check/'
-                        f = Arachni::Framework.new
-                        f.opts.url = @url
-                        f.opts.scope.do_not_crawl
-                        f.opts.audit.elements :headers
-                        f.checks.load %w(links forms cookies headers flch)
-
-                        header = Arachni::Element::Cookie.new( url: @url )
-                        p = Arachni::Page.from_data( url: @url, headers: [header] )
-                        f.push_to_page_queue( p )
-
-                        f.run
-                        f.auditstore.issues.size.should == 2
-                        f.checks.clear
-                    end
-
-                    it 'runs checks that audit path and server' do
-                        @opts.paths.checks  = fixtures_path + '/run_check/'
-                        f = Arachni::Framework.new
-                        f.opts.url = @url
-                        f.opts.scope.do_not_crawl
-                        f.opts.audit.elements :headers
-                        f.checks.load %w(path server)
-
-                        header = Arachni::Element::Form.new( url: @url )
-                        p = Arachni::Page.from_data( url: @url, headers: [header] )
-                        f.push_to_page_queue( p )
-
-                        f.run
-                        f.auditstore.issues.size.should == 2
-                        f.checks.clear
-                    end
-
-                    it 'runs checks that have not specified any elements' do
-                        @opts.paths.checks  = fixtures_path + '/run_check/'
-                        f = Arachni::Framework.new
-                        f.opts.url = @url
-                        f.opts.scope.do_not_crawl
-                        f.opts.audit.elements :headers
-                        f.checks.load %w(nil empty)
-
-                        header = Arachni::Element::Form.new( url: @url )
-                        p = Arachni::Page.from_data( url: @url, headers: [header] )
-                        f.push_to_page_queue( p )
-
-                        f.run
-                        f.auditstore.issues.size.should == 1
-                        f.checks.clear
-                    end
-                end
-            end
-
-            context 'disabled' do
-                context 'and the page contains headers' do
-                    it 'skips checks that audit headers' do
-                        @opts.paths.checks  = fixtures_path + '/run_check/'
-                        f = Arachni::Framework.new
-                        f.opts.url = @url
-                        f.opts.scope.do_not_crawl
-                        f.opts.audit.skip_elements :headers
-                        f.checks.load %w(links forms cookies headers flch)
-
-                        header = Arachni::Element::Form.new( url: @url )
-                        p = Arachni::Page.from_data( url: @url, headers: [header] )
-                        f.push_to_page_queue( p )
-
-                        f.run
-                        f.auditstore.issues.size.should == 0
-                        f.checks.clear
-                    end
-
-                    it 'runs checks that audit path and server' do
-                        @opts.paths.checks  = fixtures_path + '/run_check/'
-                        f = Arachni::Framework.new
-                        f.opts.url = @url
-                        f.opts.scope.do_not_crawl
-                        f.opts.audit.skip_elements :headers
-                        f.checks.load %w(path server)
-
-                        header = Arachni::Element::Form.new( url: @url )
-                        p = Arachni::Page.from_data( url: @url, headers: [header] )
-                        f.push_to_page_queue( p )
-
-                        f.run
-                        f.auditstore.issues.size.should == 2
-                        f.checks.clear
-                    end
-
-                    it 'runs checks that have not specified any elements' do
-                        @opts.paths.checks  = fixtures_path + '/run_check/'
-                        f = Arachni::Framework.new
-                        f.opts.url = @url
-                        f.opts.scope.do_not_crawl
-                        f.opts.audit.skip_elements :headers
-                        f.checks.load %w(nil empty)
-
-                        header = Arachni::Element::Form.new( url: @url )
-                        p = Arachni::Page.from_data( url: @url, headers: [header] )
-                        f.push_to_page_queue( p )
-
-                        f.run
-                        f.auditstore.issues.size.should == 1
-                        f.checks.clear
-                    end
-                end
-            end
-
-        end
-
         context 'when it has log-in capabilities and gets logged out' do
             it 'logs-in again before continuing with the audit' do
                 f = Arachni::Framework.new
@@ -856,14 +363,6 @@ describe Arachni::Framework do
     end
 
     describe '#audit_page' do
-        it 'audits it' do
-            @f.opts.audit.elements :links, :forms, :cookies
-            @f.checks.load :taint
-
-            @f.audit_page( Arachni::Page.from_url( @url + '/link' ) )
-            @f.auditstore.issues.size.should == 1
-        end
-
         it 'updates the #sitemap with the DOM URL' do
             @f.opts.audit.elements :links, :forms, :cookies
             @f.checks.load :taint
@@ -879,6 +378,392 @@ describe Arachni::Framework do
 
         it 'returns true' do
             @f.audit_page( Arachni::Page.from_url( @url + '/link' ) ).should be_true
+        end
+
+        context 'when auditing' do
+            before { @opts.paths.checks = fixtures_path + '/run_check/' }
+
+            context 'a page with a body which is' do
+                context 'not empty' do
+                    it 'runs checks that audit the page body' do
+                        Arachni::Framework.new do |f|
+                            f.opts.url = @url
+                            f.opts.audit.elements :links
+                            f.checks.load %w(body)
+
+                            p = Arachni::Page.from_data( url: @url, body: 'stuff' )
+                            f.audit_page( p )
+                            f.auditstore.issues.size.should == 1
+                        end
+                    end
+                end
+                context 'empty' do
+                    it 'skips checks that audit the page body' do
+                        Arachni::Framework.new do |f|
+                            f.opts.url = @url
+                            f.opts.audit.elements :links
+                            f.checks.load %w(body)
+
+                            p = Arachni::Page.from_data( url: @url, body: '' )
+                            f.audit_page( p )
+                            f.auditstore.issues.size.should == 0
+                        end
+                    end
+                end
+            end
+
+            context 'links is' do
+                context 'enabled' do
+                    context 'and the page contains links' do
+                        it 'runs checks that audit links' do
+                            Arachni::Framework.new do |f|
+                                f.opts.url = @url
+                                f.opts.audit.elements :links
+                                f.checks.load %w(links forms cookies headers flch)
+
+                                link = Arachni::Element::Link.new( url: @url )
+                                p = Arachni::Page.from_data( url: @url, links: [link] )
+                                f.audit_page( p )
+                                f.auditstore.issues.size.should == 2
+                            end
+                        end
+
+                        it 'runs checks that audit path and server' do
+                            Arachni::Framework.new do |f|
+                                f.opts.url = @url
+                                f.opts.audit.elements :links
+                                f.checks.load %w(path server)
+
+                                link = Arachni::Element::Link.new( url: @url )
+                                p = Arachni::Page.from_data( url: @url, links: [link] )
+                                f.audit_page( p )
+                                f.auditstore.issues.size.should == 2
+                            end
+                        end
+
+                        it 'runs checks that have not specified any elements' do
+                            Arachni::Framework.new do |f|
+                                f.opts.url = @url
+                                f.opts.audit.elements :links
+                                f.checks.load %w(nil empty)
+
+                                link = Arachni::Element::Link.new( url: @url )
+                                p = Arachni::Page.from_data( url: @url, links: [link] )
+                                f.audit_page( p )
+                                f.auditstore.issues.size.should == 1
+                            end
+                        end
+                    end
+                end
+
+                context 'disabled' do
+                    context 'and the page contains links' do
+                        it 'skips checks that audit links' do
+                            Arachni::Framework.new do |f|
+                                f.opts.url = @url
+                                f.opts.audit.skip_elements :links
+                                f.checks.load %w(links forms cookies headers flch)
+
+                                link = Arachni::Element::Link.new( url: @url )
+                                p = Arachni::Page.from_data( url: @url, links: [link] )
+                                f.audit_page( p )
+                                f.auditstore.issues.size.should == 0
+                            end
+                        end
+
+                        it 'runs checks that audit path and server' do
+                            Arachni::Framework.new do |f|
+                                f.opts.url = @url
+                                f.opts.audit.skip_elements :links
+                                f.checks.load %w(path server)
+
+                                link = Arachni::Element::Link.new( url: @url )
+                                p = Arachni::Page.from_data( url: @url, links: [link] )
+                                f.audit_page( p )
+                                f.auditstore.issues.size.should == 2
+                            end
+                        end
+
+                        it 'runs checks that have not specified any elements' do
+                            Arachni::Framework.new do |f|
+                                f.opts.url = @url
+                                f.opts.audit.skip_elements :links
+                                f.checks.load %w(nil empty)
+
+                                link = Arachni::Element::Link.new( url: @url )
+                                p = Arachni::Page.from_data( url: @url, links: [link] )
+                                f.audit_page( p )
+                                f.auditstore.issues.size.should == 1
+                            end
+                        end
+                    end
+                end
+            end
+
+            context 'forms is' do
+                context 'enabled' do
+                    context 'and the page contains forms' do
+                        it 'runs checks that audit forms' do
+                            Arachni::Framework.new do |f|
+                                f.opts.url = @url
+                                f.opts.audit.elements :forms
+                                f.checks.load %w(links forms cookies headers flch)
+
+                                form = Arachni::Element::Form.new( url: @url )
+                                p = Arachni::Page.from_data( url: @url, forms: [form] )
+                                f.audit_page( p )
+                                f.auditstore.issues.size.should == 2
+                            end
+                        end
+
+                        it 'runs checks that audit path and server' do
+                            Arachni::Framework.new do |f|
+                                f.opts.url = @url
+                                f.opts.audit.elements :forms
+                                f.checks.load %w(path server)
+
+                                form = Arachni::Element::Form.new( url: @url )
+                                p = Arachni::Page.from_data( url: @url, forms: [form] )
+                                f.audit_page( p )
+                                f.auditstore.issues.size.should == 2
+                            end
+                        end
+
+                        it 'runs checks that have not specified any elements' do
+                            Arachni::Framework.new do |f|
+                                f.opts.url = @url
+                                f.opts.audit.elements :forms
+                                f.checks.load %w(nil empty)
+
+                                form = Arachni::Element::Form.new( url: @url )
+                                p = Arachni::Page.from_data( url: @url, forms: [form] )
+                                f.audit_page( p )
+                                f.auditstore.issues.size.should == 1
+                            end
+                        end
+                    end
+                end
+
+                context 'disabled' do
+                    context 'and the page contains forms' do
+                        it 'skips checks that audit forms' do
+                            Arachni::Framework.new do |f|
+                                f.opts.url = @url
+                                f.opts.audit.skip_elements :forms
+                                f.checks.load %w(links forms cookies headers flch)
+
+                                form = Arachni::Element::Form.new( url: @url )
+                                p = Arachni::Page.from_data( url: @url, forms: [form] )
+                                f.audit_page( p )
+                                f.auditstore.issues.size.should == 0
+                            end
+                        end
+
+                        it 'runs checks that audit path and server' do
+                            Arachni::Framework.new do |f|
+                                f.opts.url = @url
+                                f.opts.audit.skip_elements :forms
+                                f.checks.load %w(path server)
+
+                                form = Arachni::Element::Form.new( url: @url )
+                                p = Arachni::Page.from_data( url: @url, forms: [form] )
+                                f.audit_page( p )
+                                f.auditstore.issues.size.should == 2
+                            end
+                        end
+
+                        it 'runs checks that have not specified any elements' do
+                            Arachni::Framework.new do |f|
+                                f.opts.url = @url
+                                f.opts.audit.skip_elements :forms
+                                f.checks.load %w(nil empty)
+
+                                form = Arachni::Element::Form.new( url: @url )
+                                p = Arachni::Page.from_data( url: @url, forms: [form] )
+                                f.audit_page( p )
+                                f.auditstore.issues.size.should == 1
+                            end
+                        end
+                    end
+                end
+            end
+
+            context 'cookies is' do
+                context 'enabled' do
+                    context 'and the page contains cookies' do
+                        it 'runs checks that audit cookies' do
+                            Arachni::Framework.new do |f|
+                                f.opts.url = @url
+                                f.opts.audit.elements :cookies
+                                f.checks.load %w(links forms cookies headers flch)
+
+                                cookie = Arachni::Element::Cookie.new( url: @url )
+                                p = Arachni::Page.from_data( url: @url, cookies: [cookie] )
+                                f.audit_page( p )
+                                f.auditstore.issues.size.should == 2
+                            end
+                        end
+
+                        it 'runs checks that audit path and server' do
+                            Arachni::Framework.new do |f|
+                                f.opts.url = @url
+                                f.opts.audit.elements :cookies
+                                f.checks.load %w(path server)
+
+                                cookie = Arachni::Element::Form.new( url: @url )
+                                p = Arachni::Page.from_data( url: @url, cookies: [cookie] )
+                                f.audit_page( p )
+                                f.auditstore.issues.size.should == 2
+                            end
+                        end
+
+                        it 'runs checks that have not specified any elements' do
+                            Arachni::Framework.new do |f|
+                                f.opts.url = @url
+                                f.opts.audit.elements :cookies
+                                f.checks.load %w(nil empty)
+
+                                cookie = Arachni::Element::Form.new( url: @url )
+                                p = Arachni::Page.from_data( url: @url, cookies: [cookie] )
+                                f.audit_page( p )
+                                f.auditstore.issues.size.should == 1
+                            end
+                        end
+                    end
+                end
+
+                context 'disabled' do
+                    context 'and the page contains cookies' do
+                        it 'skips checks that audit cookies' do
+                            Arachni::Framework.new do |f|
+                                f.opts.url = @url
+                                f.opts.audit.skip_elements :cookies
+                                f.checks.load %w(links forms cookies headers flch)
+
+                                cookie = Arachni::Element::Form.new( url: @url )
+                                p = Arachni::Page.from_data( url: @url, cookies: [cookie] )
+                                f.audit_page( p )
+                                f.auditstore.issues.size.should == 0
+                            end
+                        end
+
+                        it 'runs checks that audit path and server' do
+                            Arachni::Framework.new do |f|
+                                f.opts.url = @url
+                                f.opts.audit.skip_elements :cookies
+                                f.checks.load %w(path server)
+
+                                cookie = Arachni::Element::Form.new( url: @url )
+                                p = Arachni::Page.from_data( url: @url, cookies: [cookie] )
+                                f.audit_page( p )
+                                f.auditstore.issues.size.should == 2
+                            end
+                        end
+
+                        it 'runs checks that have not specified any elements' do
+                            Arachni::Framework.new do |f|
+                                f.opts.url = @url
+                                f.opts.audit.skip_elements :cookies
+                                f.checks.load %w(nil empty)
+
+                                cookie = Arachni::Element::Form.new( url: @url )
+                                p = Arachni::Page.from_data( url: @url, cookies: [cookie] )
+                                f.audit_page( p )
+                                f.auditstore.issues.size.should == 1
+                            end
+                        end
+                    end
+                end
+
+            end
+
+            context 'headers is' do
+                context 'enabled' do
+                    context 'and the page contains headers' do
+                        it 'runs checks that audit headers' do
+                            Arachni::Framework.new do |f|
+                                f.opts.url = @url
+                                f.opts.audit.elements :headers
+                                f.checks.load %w(links forms cookies headers flch)
+
+                                header = Arachni::Element::Cookie.new( url: @url )
+                                p = Arachni::Page.from_data( url: @url, headers: [header] )
+                                f.audit_page( p )
+                                f.auditstore.issues.size.should == 2
+                            end
+                        end
+
+                        it 'runs checks that audit path and server' do
+                            Arachni::Framework.new do |f|
+                                f.opts.url = @url
+                                f.opts.audit.elements :headers
+                                f.checks.load %w(path server)
+
+                                header = Arachni::Element::Form.new( url: @url )
+                                p = Arachni::Page.from_data( url: @url, headers: [header] )
+                                f.audit_page( p )
+                                f.auditstore.issues.size.should == 2
+                            end
+                        end
+
+                        it 'runs checks that have not specified any elements' do
+                            Arachni::Framework.new do |f|
+                                f.opts.url = @url
+                                f.opts.audit.elements :headers
+                                f.checks.load %w(nil empty)
+
+                                header = Arachni::Element::Form.new( url: @url )
+                                p = Arachni::Page.from_data( url: @url, headers: [header] )
+                                f.audit_page( p )
+                                f.auditstore.issues.size.should == 1
+                            end
+                        end
+                    end
+                end
+
+                context 'disabled' do
+                    context 'and the page contains headers' do
+                        it 'skips checks that audit headers' do
+                            Arachni::Framework.new do |f|
+                                f.opts.url = @url
+                                f.opts.audit.skip_elements :headers
+                                f.checks.load %w(links forms cookies headers flch)
+
+                                header = Arachni::Element::Form.new( url: @url )
+                                p = Arachni::Page.from_data( url: @url, headers: [header] )
+                                f.audit_page( p )
+                                f.auditstore.issues.size.should == 0
+                            end
+                        end
+
+                        it 'runs checks that audit path and server' do
+                            Arachni::Framework.new do |f|
+                                f.opts.url = @url
+                                f.opts.audit.skip_elements :headers
+                                f.checks.load %w(path server)
+
+                                header = Arachni::Element::Form.new( url: @url )
+                                p = Arachni::Page.from_data( url: @url, headers: [header] )
+                                f.audit_page( p )
+                                f.auditstore.issues.size.should == 2
+                            end
+                        end
+
+                        it 'runs checks that have not specified any elements' do
+                            Arachni::Framework.new do |f|
+                                f.opts.url = @url
+                                f.opts.audit.skip_elements :headers
+                                f.checks.load %w(nil empty)
+
+                                header = Arachni::Element::Form.new( url: @url )
+                                p = Arachni::Page.from_data( url: @url, headers: [header] )
+                                f.audit_page( p )
+                                f.auditstore.issues.size.should == 1
+                            end
+                        end
+                    end
+                end
+            end
         end
 
         context 'when the page contains JavaScript code' do
@@ -999,6 +884,8 @@ describe Arachni::Framework do
                         f.page_limit_reached?.should be_false
                         f.run
                         f.page_limit_reached?.should be_true
+
+                        f.sitemap.size.should == 10
                     end
                 end
             end
@@ -1121,8 +1008,9 @@ describe Arachni::Framework do
             @f.url_queue_total_size.should == 0
             @f.push_to_url_queue(  @url + '/link' ).should be_true
             @f.run
+
             @f.auditstore.issues.size.should == 1
-            @f.url_queue_total_size.should == 1
+            @f.url_queue_total_size.should == 3
         end
 
         context 'when the URL has already been seen' do
