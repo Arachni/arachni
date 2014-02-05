@@ -286,7 +286,6 @@ class Framework
     def on_audit_page( &block )
         add_on_audit_page( &block )
     end
-    alias :on_run_mods :on_audit_page
 
     # @return   [Bool]
     #   `true` if the {OptionGroups::Scope#page_limit} has been reached,
