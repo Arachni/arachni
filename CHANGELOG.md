@@ -5,6 +5,9 @@
 - `Framework`
     - `#audit_page` -- Updated to perform DOM/JS/AJAX analysis on the page and
         feed DOM page snapshots and new paths back to the `Framework`.
+- Removed the `Spider`.
+    - The Framework has grown to encompass a process providing the same
+        functionality as a result of `Browser` analysis.
 - `Element`
     - Cleaned up initializers.
         - Now passed a single Hash argument with configuration options.

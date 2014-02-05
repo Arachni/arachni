@@ -76,97 +76,6 @@ module Distributor
 
     private
 
-    #
-    # @param    [Array<Array<String>>]     url_chunks
-    #   Chunks of URLs, each chuck corresponds to each slave.
-    # @param    [Hash<String,Array>]     element_ids_per_page
-    #   Hash with page urls for keys and arrays of element
-    #   {Arachni::Element::Capabilities::Auditable#audit_scope_id scope IDs}
-    #   for values.
-    #
-    # @return [Array<Array>]
-    #   Unique and evenly distributed elements/chunk for each instance.
-    #
-    def distribute_elements( url_chunks, element_ids_per_page )
-        # Convert chunks of URLs to chunks of elements for these URLs.
-        elements_per_chunk = []
-        url_chunks.each_with_index do |chunk, i|
-            elements_per_chunk[i] ||= Set.new
-            chunk.each do |url|
-                elements_per_chunk[i] |= element_ids_per_page[url]
-            end
-        end
-
-        # Remove elements from each chunk which are also included in other
-        # chunks.
-        #
-        # This will leave us with the same grouping as before but without
-        # duplicate elements across the chunks, albeit with an non-optimal
-        # distribution.
-        unique_elements_per_chunk = elements_per_chunk.map.with_index do |elements, i|
-            elements.reject do |element|
-                more_than_one_in_sets?( elements_per_chunk[i..-1], element )
-            end
-        end
-
-        # Get them into proper order to be ready for proping up.
-        elements_per_chunk.reverse!
-        unique_elements_per_chunk.reverse!
-
-        # Evenly distribute elements across chunks using the previously
-        # duplicate elements as possible placements.
-        #
-        # In order for elements to be moved between chunks they need to have
-        # been available in the destination to begin with since we can't assign
-        # an element to an instance which won't have a page containing that
-        # element.
-        unique_elements_per_chunk.each.with_index do |elements, i|
-            elements.each do |item|
-                next if !(next_c = unique_elements_per_chunk[i+1]) ||
-                    next_c.size >= elements.size ||
-                    !elements_per_chunk[i+1].include?( item )
-
-                next_c << unique_elements_per_chunk[i].delete( item )
-            end
-        end
-
-        # Set them in the same order as the original 'chunks' group.
-        unique_elements_per_chunk.reverse
-    end
-
-    # @return   [Array]
-    #   {Arachni::Element::Capabilities::Auditable#audit_scope_id Scope IDs}
-    #   of all page elements with auditable inputs.
-    def build_elem_list( page )
-        list = []
-
-        list |= elements_to_ids( page.links )   if @opts.audit.links
-        list |= elements_to_ids( page.forms )   if @opts.audit.forms
-        list |= elements_to_ids( page.cookies ) if @opts.audit.cookies
-
-        list
-    end
-
-    def elements_to_ids( elements )
-        # Helps us do some preliminary deduplication on our part to avoid sending
-        # over duplicate element IDs.
-        @elem_ids_filter ||= Support::LookUp::HashSet.new
-
-        elements.map do |e|
-            next if e.inputs.empty?
-
-            id = e.audit_scope_id
-            next if @elem_ids_filter.include?( id )
-            @elem_ids_filter << id
-
-            id
-        end.compact.uniq
-    end
-
-    def clear_elem_ids_filter
-        @elem_ids_filter.clear if @elem_ids_filter
-    end
-
     # @param    [Block] block
     #   Block to be passed the Dispatchers that have different Pipe IDs -- i.e
     #   can be setup in HPG mode; pretty simple at this point.
@@ -222,36 +131,19 @@ module Distributor
         @opts.spawns > 0 ? dispatchers[0...@opts.spawns] : dispatchers
     end
 
-    #
     # Spawns, configures and runs a remote Instance.
     #
     # @param    [Hash]      instance_hash
     #   Instance info as returned by {RPC::Server::Dispatcher#dispatch} --
     #   with `:url` and `:token` at least.
-    # @param    [Hash]      auditables
-    # @option   auditables    [Array<String>] :urls
-    #   URLs to audit -- will be passed as a `scope_restrict_paths` option.
-    #
-    # @option   auditables    [Array<String>] :elements
-    #   {Element::Capabilities::Auditable#audit_scope_id Scope IDs} of
-    #   elements to audit.
-    #
-    # @option   auditables    [Array<Arachni::Page>] :pages
-    #   Pages to audit.
-    #
-    def distribute_and_run( instance_hash, auditables = {}, &block )
+    # @param    [Hash]      options
+    def distribute_and_run( instance_hash, options = {}, &block )
         opts = cleaned_up_opts
 
-        opts[:scope][:restrict_paths] = auditables[:urls] || []
-
         opts[:multi] = {
-            pages:    auditables[:pages]    || [],
-            elements: auditables[:elements] || []
+            routing_id:      options[:routing_id],
+            total_instances: options[:total_instances]
         }
-
-        if Options.fingerprint?
-            opts[:multi][:platforms] = Platform::Manager.light
-        end
 
         [:exclude_path_patterns, :include_path_patterns].each do |k|
             (opts[:scope][k] || {}).
@@ -372,15 +264,6 @@ module Distributor
     def dispatcher
         return if !@opts.datastore.dispatcher_url
         connect_to_dispatcher( @opts.datastore.dispatcher_url )
-    end
-
-    def more_than_one_in_sets?( sets, item )
-        occurrences = 0
-        sets.each do |set|
-            occurrences += 1 if set.include?( item )
-            return true if occurrences > 1
-        end
-        false
     end
 
 end

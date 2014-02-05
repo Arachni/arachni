@@ -611,7 +611,7 @@ describe 'Arachni::RPC::Server::Instance' do
     describe '#plugins' do
         it 'provides access to the plugin manager' do
             @instance.plugins.available.sort.should == %w(wait bad distributable
-                loop default with_options spider_hook).sort
+                loop default with_options).sort
         end
     end
 end

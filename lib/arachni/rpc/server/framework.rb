@@ -9,7 +9,6 @@ module Arachni
 
 lib = Options.paths.lib
 require lib + 'framework'
-require lib + 'rpc/server/spider'
 require lib + 'rpc/server/check/manager'
 require lib + 'rpc/server/plugin/manager'
 
@@ -76,7 +75,6 @@ class Framework < ::Arachni::Framework
         # Override standard framework components with their RPC-server counterparts.
         @checks  = Check::Manager.new( self )
         @plugins = Plugin::Manager.new( self )
-        @spider  = Spider.new( self )
     end
 
     # @return (see Arachni::Framework#list_plugins)
@@ -220,13 +218,6 @@ class Framework < ::Arachni::Framework
 
         each = proc { |instance, iter| instance.framework.resume { iter.next } }
         each_slave( each, proc { block.call true } )
-    end
-
-    # @see Arachni::Framework#stats
-    def stats( *args )
-        ss = super( *args )
-        ss.tap { |s| s[:sitemap_size] = spider.local_sitemap.size } if !solo?
-        ss
     end
 
     # @return   [Hash]  Audit results as a {AuditStore#to_h hash}.

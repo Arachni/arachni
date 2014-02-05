@@ -186,28 +186,6 @@ module MultiInstance
     alias :progress_data :progress
 
     #
-    # Restricts the scope of the audit to individual elements.
-    #
-    # @param    [Array<String>]     elements
-    #   List of element IDs (as created by
-    #   {Arachni::Element::Capabilities::Auditable#audit_scope_id}).
-    #
-    # @param    [String]    token
-    #   Privileged token, prevents this method from being called by 3rd parties
-    #   when this instance is a master. If this instance is not a master one
-    #   the token needn't be provided.
-    #
-    # @return   [Bool]  `true` on success, `false` on invalid `token`.
-    #
-    # @private
-    #
-    def restrict_to_elements( elements, token = nil )
-        return false if master? && !valid_token?( token )
-        Element::Capabilities::Auditable.restrict_to_elements( elements )
-        true
-    end
-
-    #
     # Updates the page queue with the provided pages.
     #
     # @param    [Array<Arachni::Page>]     pages   List of pages.
@@ -230,17 +208,18 @@ module MultiInstance
 
     private
 
-    def audit
-        @spider.clear_distribution_filter
-        clear_elem_ids_filter
-        super
-    end
-
     def multi_run
         if master?
             master_run
         elsif slave?
             slave_run
+        end
+    end
+
+    def install_element_scope_restrictions( total_instances, routing_id )
+        Element::Capabilities::Auditable.skip_like do |element|
+            next false if element.override_instance_scope?
+            element.audit_scope_id.modulo( total_instances ) != routing_id
         end
     end
 

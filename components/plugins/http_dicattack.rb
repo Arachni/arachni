@@ -11,9 +11,6 @@
 class Arachni::Plugins::HTTPDicattack < Arachni::Plugin::Base
 
     def prepare
-        # disable spidering and the subsequent audit
-        # @framework.opts.scope_page_limit = 0
-
         # don't scan the website just yet
         framework.pause
         print_info "System paused."

@@ -319,12 +319,6 @@ describe 'Arachni::RPC::Server::Framework' do
             issue[:variations].should be_empty
         end
     end
-
-    describe '#restrict_to_elements' do
-        it 'returns false' do
-            @instance_clean.framework.restrict_to_elements( [] ).should be_false
-        end
-    end
     describe '#update_page_queue' do
         it 'returns false' do
             @instance_clean.framework.update_page_queue( [] ).should be_false

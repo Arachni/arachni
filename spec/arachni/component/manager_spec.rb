@@ -25,7 +25,7 @@ describe Arachni::Component::Manager do
     describe '#available' do
         it 'returns all available components' do
             @components.available.sort.should ==
-                %w(wait bad distributable loop default with_options spider_hook).sort
+                %w(wait bad distributable loop default with_options).sort
         end
     end
 
@@ -423,14 +423,14 @@ describe Arachni::Component::Manager do
 
     describe '#available' do
         it 'returns all available components' do
-            @components.available.sort.should == %w(wait bad with_options distributable loop default spider_hook).sort
+            @components.available.sort.should == %w(wait bad with_options distributable loop default).sort
         end
     end
 
     describe '#loaded' do
         it 'returns all loaded components' do
             @components.load( '*' )
-            @components.loaded.sort.should == %w(wait bad with_options distributable loop default spider_hook).sort
+            @components.loaded.sort.should == %w(wait bad with_options distributable loop default).sort
         end
     end
 

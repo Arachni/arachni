@@ -29,7 +29,6 @@ class Server
 # * {Framework} -- mapped to `framework`
 # * {Check::Manager} -- mapped to `checks`
 # * {Plugin::Manager} -- mapped to `plugins`
-# * {Spider} -- mapped to `spider`
 #
 # # Convenience methods
 #
@@ -585,12 +584,8 @@ class Instance
         # Undocumented option, used internally to distribute workload and knowledge
         # for multi-Instance scans.
         if multi
-            @framework.update_page_queue( multi[:pages] || [] )
-            @framework.restrict_to_elements( multi[:elements] || [] )
-
-            if Options.fingerprint?
-                Platform::Manager.update_light( multi[:platforms] || {} )
-            end
+            @framework.opts.datastore.total_instances = multi[:total_instances]
+            @framework.opts.datastore.routing_id      = multi[:routing_id]
         end
 
         @framework.checks.load opts[:checks] if opts[:checks]
@@ -846,7 +841,6 @@ class Instance
         server.add_handler( 'service',   self )
         server.add_handler( 'framework', @framework )
         server.add_handler( 'opts',      @active_options )
-        server.add_handler( 'spider',    @framework.spider )
         server.add_handler( 'checks',    @framework.checks )
         server.add_handler( 'plugins',   @framework.plugins )
     end

@@ -217,35 +217,10 @@ describe 'Arachni::RPC::Server::Framework' do
             end
         end
         context 'after "run" has been called' do
-            context 'and the scanner is crawling' do
-                it 'returns "crawling"' do
-                    @inst.framework.run.should be_true
-                    sleep 2
-                    @inst.framework.status.should == 'crawling'
-                end
-            end
-            context 'and the scanner is paused' do
-                it 'returns "paused"' do
-                    @inst.framework.pause
-                    @inst.framework.status.should == 'paused'
-                    @inst.framework.resume
-                end
-            end
-        end
-        context 'during audit' do
-            it 'returns "audit"' do
-                mod_lib = @opts.paths.checks.dup
-                @opts.paths.checks = fixtures_path + '/wait_check/'
-
-                inst = instance_spawn
-                inst.opts.url = web_server_url_for( :framework_simple )
-                inst.opts.set audit: { elements: [:headers] }
-                inst.checks.load( 'wait' )
-                inst.framework.run
+            it 'returns "scanning"' do
+                @inst.framework.run.should be_true
                 sleep 2
-                inst.framework.status.should == 'auditing'
-
-                @opts.paths.checks = mod_lib.dup
+                @inst.framework.status.should == 'scanning'
             end
         end
         context 'once the scan had completed' do
@@ -422,50 +397,6 @@ describe 'Arachni::RPC::Server::Framework' do
             issue = issues.first
             issue.is_a?( Hash ).should be_true
             issue[:variations].should be_empty
-        end
-    end
-
-    describe '#restrict_to_elements' do
-        it 'restricts the audit to the provided element signatures' do
-            @opts.paths.checks = fixtures_path + '/taint_check/'
-
-            inst = instance_spawn
-            inst.opts.url = web_server_url_for( :framework_simple ) + '/restrict_to_elements'
-            inst.opts.set audit: { elements: [:links] }
-            inst.checks.load( 'taint' )
-
-            res = Arachni::HTTP::Client.get( inst.opts.url.to_s, mode: :sync )
-
-            link = Arachni::Element::Link.from_response( res ).pop
-            inst.framework.restrict_to_elements(  [ link.audit_scope_id ] ).should be_true
-
-            inst.framework.run.should be_true
-            sleep 0.1 while inst.framework.busy?
-
-            issues = inst.framework.issues
-            issues.size.should == 1
-            issues.first.vector.affected_input_name.should == link.inputs.keys.first
-        end
-    end
-    describe '#update_page_queue' do
-        it 'pushes the provided page objects to the page audit queue' do
-            @opts.paths.checks = fixtures_path + '/taint_check/'
-            url = web_server_url_for( :framework_simple )
-            inst = instance_spawn
-            inst.opts.url = url
-            inst.opts.set audit: { elements: [:links] }
-            inst.checks.load( 'taint' )
-
-            url_to_audit = url +  '/restrict_to_elements'
-            res = Arachni::HTTP::Client.get( url_to_audit, mode: :sync )
-
-            page = Arachni::Page.from_response( res )
-            inst.framework.update_page_queue( [ page ] ).should be_true
-
-            inst.framework.run.should be_true
-            sleep 0.1 while inst.framework.busy?
-
-            inst.framework.issues.size.should == 2
         end
     end
     describe '#update_issues' do

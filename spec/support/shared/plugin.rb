@@ -9,7 +9,6 @@ shared_examples_for "plugin" do
     end
     before( :each ) do
         framework.reset_filters
-        framework.reset_spider
         framework.plugins.reset
         framework.reports.clear
     end

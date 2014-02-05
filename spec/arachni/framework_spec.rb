@@ -197,7 +197,7 @@ describe Arachni::Framework do
         it 'provides access to the plugin manager' do
             @f.plugins.is_a?( Arachni::Plugin::Manager ).should be_true
             @f.plugins.available.sort.should ==
-                %w(wait bad with_options distributable loop default spider_hook).sort
+                %w(wait bad with_options distributable loop default).sort
         end
     end
 
