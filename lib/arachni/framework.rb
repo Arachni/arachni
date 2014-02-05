@@ -303,7 +303,6 @@ class Framework
         @browser_job     = nil
     end
 
-    #
     # Returns the following framework stats:
     #
     # *  `:requests`         -- HTTP request count
@@ -322,14 +321,8 @@ class Framework
     # *  `:current_page`     -- URL of the currently audited page
     # *  `:eta`              -- Estimated time of arrival i.e. estimated remaining time
     #
-    # @param    [Bool]  refresh_time    updates the running time of the audit
-    #                                       (usefully when you want stats while paused without messing with the clocks)
-    #
-    # @param    [Bool]  override_refresh
-    #
     # @return   [Hash]
-    #
-    def stats( refresh_time = false, override_refresh = false )
+    def stats
         @start_datetime = Time.now if !@start_datetime
 
         sitemap_sz  = @sitemap.size

@@ -112,7 +112,7 @@ module MultiInstance
 
         stats = []
         stat_hash = {}
-        stats( true, true ).each { |k, v| stat_hash[k.to_s] = v } if include_stats
+        self.stats.each { |k, v| stat_hash[k.to_s] = v } if include_stats
 
         if master? && include_slaves
             data['instances'][self_url] = stat_hash.dup
