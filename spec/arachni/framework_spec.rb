@@ -1146,13 +1146,6 @@ describe Arachni::Framework do
   :version: \'0.1\'
   :shortname: !binary |-
     bG9vcA==
-- :name: SpiderHook
-  :description: \'\'
-  :author:
-  - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-  :version: \'0.1\'
-  :shortname: !binary |-
-    c3BpZGVyX2hvb2s=
 - :name: Wait
   :description: \'\'
   :tags:
