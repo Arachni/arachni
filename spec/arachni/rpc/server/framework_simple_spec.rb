@@ -71,7 +71,7 @@ describe 'Arachni::RPC::Server::Framework' do
     describe '#list_plugins' do
         it 'lists all available plugins' do
             plugins = @framework_clean.list_plugins
-            plugins.size.should == 7
+            plugins.size.should == 6
             plugin = plugins.select { |i| i[:name] =~ /default/i }.first
             plugin[:name].should == 'Default'
             plugin[:description].should == 'Some description'
