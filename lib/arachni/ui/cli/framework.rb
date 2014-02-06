@@ -97,8 +97,8 @@ class Framework
         end
     end
 
-    def print_stats( refresh_time = false, unmute = false )
-        stats = @framework.stats( refresh_time )
+    def print_stats( unmute = false )
+        stats = @framework.stats
         mapped  = stats[:sitemap_size]
 
         print_line( restr, unmute )
@@ -199,7 +199,7 @@ class Framework
 
                 begin
                     print_issues( true )
-                    print_stats( true, true )
+                    print_stats( true )
                 rescue Exception => e
                     exception_jail{ raise e }
                     raise e
