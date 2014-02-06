@@ -810,7 +810,8 @@ class Browser
                 end
             end
         rescue => e
-            print_error 'Could not capture snapshots.'
+            element, event = transition.first
+            print_error "Could not capture snapshot for transition: #{event} on #{element}"
             print_error
             print_error e
             print_error_backtrace e
