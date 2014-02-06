@@ -782,31 +782,38 @@ class Browser
         request_transitions = flush_request_transitions
         transitions = ([transition] + request_transitions).flatten.compact
 
-        # Skip about:blank windows.
-        watir.windows( url: /^http/ ).each do |window|
-            window.use do
-                next if !(page = to_page)
+        begin
+            # Skip about:blank windows.
+            watir.windows( url: /^http/ ).each do |window|
+                window.use do
+                    next if !(page = to_page)
 
-                if pages.empty?
-                    transitions.each do |t|
-                        @transitions << t
-                        page.dom.push_transition t
+                    if pages.empty?
+                        transitions.each do |t|
+                            @transitions << t
+                            page.dom.push_transition t
+                        end
+                    end
+
+                    capture_snapshot_with_sink( page )
+
+                    unique_id = "#{page.dom.hash}:#{cookies.map(&:name).sort}"
+                    next if skip? unique_id
+                    skip unique_id
+
+                    call_on_new_page_blocks( page )
+
+                    if store_pages?
+                        @page_snapshots[unique_id] = page
+                        pages << page
                     end
                 end
-
-                capture_snapshot_with_sink( page )
-
-                unique_id = "#{page.dom.hash}:#{cookies.map(&:name).sort}"
-                next if skip? unique_id
-                skip unique_id
-
-                call_on_new_page_blocks( page )
-
-                if store_pages?
-                    @page_snapshots[unique_id] = page
-                    pages << page
-                end
             end
+        rescue => e
+            print_error 'Could not capture snapshots.'
+            print_error
+            print_error e
+            print_error_backtrace e
         end
 
         pages
