@@ -5,10 +5,6 @@ describe name_from_filename do
 
     before( :each ){ framework.sitemap.clear }
 
-    def self.targets
-        %w(Generic)
-    end
-
     def self.elements
         [ Element::Form, Element::Link, Element::Cookie, Element::Header ]
     end
@@ -21,16 +17,19 @@ describe name_from_filename do
             audit element, false
 
             urls = framework.auditstore.sitemap
-            urls.include?( options.url + "#{element}/straight/trained" ).should be_true
-            urls.include?( options.url + "#{element}/append/trained" ).should be_true
+            urls.should include  options.url + "#{element}/straight/trained"
+            urls.should include  options.url + "#{element}/append/trained"
         end
     end
 
     context 'when the link count limit has been reached' do
         it 'does not run' do
-            framework.opts.scope.page_limit = 0
+            framework.opts.scope.page_limit = 4
             audit :form, false
-            framework.auditstore.sitemap.should be_empty
+
+            urls = framework.auditstore.sitemap
+            urls.should_not include  "#{options.url}form/straight/trained"
+            urls.should_not include  "#{options.url}form/append/trained"
         end
     end
 

@@ -59,7 +59,6 @@ class Arachni::Checks::SessionFixation < Arachni::Check::Base
             elements:    [ Element::Form, Element::Link ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.1',
-            targets:     %w(Generic),
 
             issue:       {
                 name:        %q{Session fixation},

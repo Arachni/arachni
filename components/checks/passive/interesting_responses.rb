@@ -58,13 +58,13 @@ class Arachni::Checks::InterestingResponses < Arachni::Check::Base
             elements:    [ Element::Server ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.4',
-            targets:     %w(Generic),
-            references:  {
-                'w3.org' => 'http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html'
-            },
+
             issue:       {
                 name:        %q{Interesting response},
                 description: %q{The server responded with a non 200 (OK) code. },
+                references:  {
+                    'w3.org' => 'http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html'
+                },
                 tags:        %w(interesting response server),
                 severity:    Severity::INFORMATIONAL
             },

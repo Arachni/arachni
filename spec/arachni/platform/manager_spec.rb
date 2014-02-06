@@ -149,6 +149,33 @@ describe Arachni::Platform::Manager do
         end
     end
 
+    describe '.valid' do
+        it 'returns all platforms' do
+            described_class.valid.to_a.should == described_class::PLATFORM_NAMES.keys
+        end
+    end
+
+    describe '.valid?' do
+        context 'when the given platforms are' do
+            context 'valid' do
+                it 'returns true' do
+                    described_class.valid.each do |platform|
+                        described_class.valid?( platform ).should be_true
+                    end
+
+                    described_class.valid?( described_class.valid.to_a ).should be_true
+                end
+            end
+
+            context 'invalid' do
+                it 'returns false' do
+                    described_class.valid?( :stuff ).should be_false
+                    described_class.valid?( described_class.valid.to_a + [:stuff] ).should be_false
+                end
+            end
+        end
+    end
+
     describe '#initialize' do
         it 'initializes the manager with the given platforms' do
             platforms = [:unix, :jsp, :mysql].sort

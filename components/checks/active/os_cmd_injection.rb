@@ -54,7 +54,8 @@ class Arachni::Checks::OSCmdInjection < Arachni::Check::Base
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.2.1',
-            targets:     %w(Windows Unix),
+            platforms:   payloads.keys,
+
             issue:       {
                 name:            %q{Operating system command injection},
                 description:     %q{The web application allows an attacker to

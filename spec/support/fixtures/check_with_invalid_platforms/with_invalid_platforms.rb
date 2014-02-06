@@ -3,16 +3,17 @@
     All rights reserved.
 =end
 
-class Arachni::Checks::Test3 < Arachni::Check::Base
+class Arachni::Checks::WithInvalidPlatforms < Arachni::Check::Base
 
-    prefer :test2
+    prefer :test
 
     def self.info
         {
-            name:        'Test3 check',
+            name:        'with_invalid_platforms ',
             description: %q{Test description},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.1',
+            platforms:  [:blah],
 
             issue:       {
                 name:            %q{Test issue},
@@ -24,8 +25,7 @@ class Arachni::Checks::Test3 < Arachni::Check::Base
                 cwe:             '0',
                 severity:        Issue::Severity::HIGH,
                 remedy_guidance: %q{Watch out!.},
-                remedy_code:     '',
-                metasploitable:  'unix/webapp/blah'
+                remedy_code:     ''
             }
 
         }

@@ -58,7 +58,6 @@ class Arachni::Checks::MixedResource < Arachni::Check::Base
             elements:    [ Element::Body ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.1.2',
-            targets:     %w(Generic),
 
             issue:       {
                 name:            %q{Mixed Resource},

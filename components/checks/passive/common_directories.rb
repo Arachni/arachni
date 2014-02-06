@@ -35,7 +35,6 @@ class Arachni::Checks::CommonDirectories < Arachni::Check::Base
             elements:    [ Element::Server ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.2.1',
-            targets:     %w(Generic),
 
             issue:       {
                 name:            %q{Common directory},

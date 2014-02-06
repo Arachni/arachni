@@ -37,7 +37,7 @@ class Arachni::Checks::XPathInjection < Arachni::Check::Base
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.3',
-            targets:     %w(General PHP Java dotNET libXML2),
+
             issue:       {
                 name:            %q{XPath Injection},
                 description:     %q{XPath queries can be injected into the web application.},

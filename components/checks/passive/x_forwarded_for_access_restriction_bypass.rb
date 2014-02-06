@@ -29,7 +29,6 @@ class Arachni::Checks::XForwardedAccessRestrictionBypass < Arachni::Check::Base
             elements:    [ Element::Server ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1',
-            targets:     %w(Generic),
 
             issue:       {
                 name:        %q{Access restriction bypass via X-Forwarded-For},

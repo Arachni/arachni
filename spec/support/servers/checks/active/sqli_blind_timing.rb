@@ -2,9 +2,9 @@ require 'sinatra'
 require 'sinatra/contrib'
 
 REGEXP = {
-    mysql:      'sleep\(\s?(\d+)\s?\)',
-    postgresql: 'pg_sleep\(\s?(\d+)\s?\)',
-    mssql:      'waitfor\sdelay\s\'0:0:(\d+)\'',
+    mysql: 'sleep\(\s?(\d+)\s?\)',
+    pgsql: 'pg_sleep\(\s?(\d+)\s?\)',
+    mssql: 'waitfor\sdelay\s\'0:0:(\d+)\'',
 }
 
 def get_variations( platform, str )

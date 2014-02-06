@@ -120,7 +120,6 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
             elements:    [Element::Form, Element::Link, Element::Cookie, Element::Header],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.2',
-            targets:     %w(Generic),
 
             issue:       {
                 name:            %q{Cross-Site Scripting in HTML \'script\' tag},

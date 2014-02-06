@@ -173,6 +173,11 @@ class Manager
         @valid ||= Set.new( PLATFORM_NAMES.keys )
     end
 
+    def self.valid?( platforms )
+        platforms = [platforms].flatten.compact
+        (valid & platforms).to_a == platforms
+    end
+
     # Sets global platforms fingerprints
     # @private
     def self.set( platforms )

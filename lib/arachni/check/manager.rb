@@ -20,6 +20,19 @@ class Manager < Arachni::Component::Manager
     # Namespace under which all checks reside.
     NAMESPACE = ::Arachni::Checks
 
+    # {Manager} error namespace.
+    #
+    # All {Manager} errors inherit from and live under it.
+    #
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    class Error < Error
+
+        # Raised when a loaded check targets invalid platforms.
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        class InvalidPlatforms < Error
+        end
+    end
+
     # @param    [Arachni::Framework]  framework
     def initialize( framework )
         self.class.reset
@@ -29,13 +42,23 @@ class Manager < Arachni::Component::Manager
         super( @opts.paths.checks, NAMESPACE )
     end
 
-    #
     # Runs all checks against 'page'.
     #
-    # @param    [::Arachni::Page]   page    Page to audit.
-    #
+    # @param    [Arachni::Page]   page    Page to audit.
     def run( page )
         schedule.each { |mod| exception_jail( false ){ run_one( mod, page ) } }
+    end
+
+    def []( name )
+        check = super( name )
+
+        if !Platform::Manager.valid?( check.platforms )
+            unload name
+            fail Error::InvalidPlatforms,
+                 "Check #{name} contains invalid platforms: #{check.platforms.join(', ')}"
+        end
+
+        check
     end
 
     # @return   [Array] Checks in proper running order.
@@ -64,6 +87,16 @@ class Manager < Arachni::Component::Manager
         schedule |= preferred_over.keys.map { |n| self[n] }
 
         schedule.to_a
+    end
+
+    # @return   [Hash]  Checks which target specific platforms.
+    def with_platforms
+        select { |k, v| v.has_platforms? }
+    end
+
+    # @return   [Hash]  Checks which don't target specific platforms.
+    def without_platforms
+        select { |k, v| !v.has_platforms? }
     end
 
     # Runs a single check against 'page'.

@@ -50,7 +50,7 @@ class Arachni::Checks::CodeInjectionTiming < Arachni::Check::Base
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.3',
-            targets:     %w(Java ASP Python PHP Perl Ruby),
+            platforms:   payloads.keys,
 
             issue:       {
                 name:            %q{Code injection (timing attack)},

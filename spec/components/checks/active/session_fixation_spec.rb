@@ -7,10 +7,6 @@ describe name_from_filename do
         session.set_login_check( url, /dear user/ )
     end
 
-    def self.targets
-        %w(Generic)
-    end
-
     def self.elements
         [ Element::Form, Element::Link ]
     end

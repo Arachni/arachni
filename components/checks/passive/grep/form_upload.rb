@@ -27,7 +27,6 @@ class Arachni::Checks::FileUpload < Arachni::Check::Base
             elements:    [ Element::Form ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.2',
-            targets:     %w(Generic),
 
             issue:       {
                 name:        %q{Form-based File Upload},

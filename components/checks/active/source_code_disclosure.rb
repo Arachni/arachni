@@ -113,7 +113,7 @@ class Arachni::Checks::SourceCodeDisclosure < Arachni::Check::Base
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.2',
-            targets:     %w(PHP ASP JSP),
+            platforms:   options[:regexp].keys,
 
             issue:       {
                 name:            %q{Source code disclosure},

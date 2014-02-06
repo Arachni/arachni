@@ -36,7 +36,7 @@ class Arachni::Checks::PasswordAutocomplete < Arachni::Check::Base
             elements:    [ Element::Form ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.1',
-            targets:     %w(Generic),
+
             issue:       {
                 name:        %q{Password field with auto-complete},
                 description: %q{Some browsers automatically fill-in forms with

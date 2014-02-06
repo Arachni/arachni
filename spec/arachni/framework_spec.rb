@@ -376,8 +376,19 @@ describe Arachni::Framework do
             @f.sitemap.should include @url + '/link/#/stuff'
         end
 
-        it 'returns true' do
-            @f.audit_page( Arachni::Page.from_url( @url + '/link' ) ).should be_true
+        context 'when checks were' do
+            context 'ran against the page' do
+                it 'returns true' do
+                    @f.checks.load :taint
+                    @f.audit_page( Arachni::Page.from_url( @url + '/link' ) ).should be_true
+                end
+            end
+
+            context 'not ran against the page' do
+                it 'returns false' do
+                    @f.audit_page( Arachni::Page.from_url( @url + '/link' ) ).should be_false
+                end
+            end
         end
 
         context 'when auditing' do
@@ -842,15 +853,15 @@ describe Arachni::Framework do
                     }
                 )
 
-                f = Arachni::Framework.new
-                f.opts.scope.dom_depth_limit = 10
-                f.audit_page( page ).should be_true
+                Arachni::Framework.new do |f|
+                    f.checks.load :taint
 
-                f.opts.scope.dom_depth_limit = 2
-                f.audit_page( page ).should be_false
+                    f.opts.scope.dom_depth_limit = 10
+                    f.audit_page( page ).should be_true
 
-                f.clean_up
-                f.reset
+                    f.opts.scope.dom_depth_limit = 2
+                    f.audit_page( page ).should be_false
+                end
             end
         end
 
@@ -873,7 +884,7 @@ describe Arachni::Framework do
     end
 
     describe '#page_limit_reached?' do
-        context 'when the Options#scope_page_limit has' do
+        context 'when the Options#scope.page_limit has' do
             context 'been reached' do
                 it 'returns true' do
                     Arachni::Framework.new do |f|

@@ -13,13 +13,14 @@ class Arachni::Checks::Test2 < Arachni::Check::Base
             description: %q{Test description},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.1',
-            references:  {
-                'Wikipedia' => 'http://en.wikipedia.org/'
-            },
-            targets:     { 'Generic' => 'all' },
+            platforms:  [:php],
+
             issue:       {
                 name:            %q{Test issue},
                 description:     %q{Test description},
+                references:  {
+                    'Wikipedia' => 'http://en.wikipedia.org/'
+                },
                 tags:            ['some', 'tag'],
                 cwe:             '0',
                 severity:        Issue::Severity::HIGH,

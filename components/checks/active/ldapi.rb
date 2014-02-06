@@ -35,7 +35,7 @@ class Arachni::Checks::LDAPInjection < Arachni::Check::Base
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.2',
-            targets:     %w(Generic),
+
             issue:       {
                 name:            %q{LDAP Injection},
                 description:     %q{LDAP queries can be injected into the web application

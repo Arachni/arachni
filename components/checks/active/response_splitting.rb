@@ -43,7 +43,6 @@ class Arachni::Checks::ResponseSplitting < Arachni::Check::Base
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.1.8',
-            targets:     %w(Generic),
 
             issue:       {
                 name:            %q{Response Splitting},

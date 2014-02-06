@@ -258,21 +258,44 @@ class Framework
         http.update_cookies( page.cookiejar )
         perform_browser_analysis( page )
 
-        @checks.schedule.each do |check|
+        # Append the request for the retrieval of the next page to the audit
+        # request of the current page to provide a SMOOTH experience.
+
+        # Run checks which **don't** benefit from fingerprinting first, so that
+        # we can use the responses of their HTTP requests to fingerprint the
+        # webapp platforms, so that the checks which **do** benefit from knowing
+        # the remote platforms can run more efficiently.
+
+        ran = false
+        @checks.without_platforms.values.each do |check|
+            ran = true
             wait_if_paused
             check_page( check, page )
         end
+        harvest_http_responses if ran
 
-        harvest_http_responses
+        run_http = ran
+
+        ran = false
+        @checks.schedule.each do |check|
+            next if !check.has_platforms?
+            ran = true
+            wait_if_paused
+            check_page( check, page )
+        end
+        harvest_http_responses if ran
+
+        run_http ||= ran
 
         if Check::Auditor.has_timeout_candidates?
             print_line
             print_status "Verifying timeout-analysis candidates for: #{page.dom.url}"
             print_info '---------------------------------------'
             Check::Auditor.timeout_audit_run
+            run_http = true
         end
 
-        true
+        run_http
     end
 
     def push_paths_from_page( page )
@@ -489,7 +512,9 @@ class Framework
                     shortname: name,
                     author:    [@checks[name].info[:author]].
                                    flatten.map { |a| a.strip },
-                    path:      path.strip
+                    path:      path.strip,
+                    platforms: @checks[name].platforms,
+                    elements:  @checks[name].elements
                 )
             end.compact
         ensure
@@ -717,7 +742,7 @@ class Framework
             pushed_paths = push_paths_from_page( page ).size
         end
 
-        print_info 'Got page via DOM/AJAX analysis with the following transitions:'
+        print_info 'Got page from browser with the following transitions:'
         print_info page.dom.url
 
         page.dom.transitions.each do |t|
@@ -769,7 +794,18 @@ class Framework
         # Keep auditing until there are no more resources in the queues and the
         # browsers have stopped spinning.
         loop do
-            sleep 0.1 while wait_for_browser? && !has_audit_workload?
+
+            show_workload_msg = true
+            while wait_for_browser? && !has_audit_workload?
+                if show_workload_msg
+                    print_line
+                    print_status 'Audit workload exhausted, waiting for new ' <<
+                                'pages from the browser...'
+                end
+                show_workload_msg = false
+                sleep 0.1
+            end
+
             audit_queues
 
             break if page_limit_reached?
@@ -794,30 +830,31 @@ class Framework
         # consume them and get it over with.
         audit_page_queue
 
-        while !@url_queue.empty? && !page_limit_reached?
-            page = Page.from_url( @url_queue.pop, precision: 2 )
+        next_page = nil
+        while !page_limit_reached? && (page = next_page || pop_page_from_url_queue)
+            next_page = nil
 
-            @retries[page.url.hash] ||= 0
+            # TODO:
+            # Perform lookahead by grabbing lots of pages, depending on the
+            # amount of slaves we have available and then distribute the pages
+            # and a whitelist of element IDs to each slave, while keeping score
+            # of how much workload each has received and adjusting accordingly.
+            #
+            # Or, keep the workload in a queue and have the slaves pop from it,
+            # or better yet work in a similar fashion to the BrowserCluster
+            # and push pages to free slaves etc.
 
-            if page.code == 0
-                if @retries[page.url.hash] >= AUDIT_PAGE_MAX_TRIES
-                    @failures << page.url
+            # Schedule the next page to be grabbed along with the audit requests
+            # for the current page to avoid blocking.
+            pop_page_from_url_queue { |p| next_page = p }
 
-                    print_error "Giving up trying to audit: #{page.url}"
-                    print_error "Couldn't get a response after #{AUDIT_PAGE_MAX_TRIES} tries."
-                else
-                    print_bad "Retrying for: #{page.url}"
-                    @retries[page.url.hash] += 1
-                    @url_queue << page.url
-                end
-
-                next
-            end
-
-            audit_page Page.from_url( page.url, precision: 2 )
+            # We're counting on piggybacking the next page retrieval with the
+            # page audit, however if there wasn't an audit we need to force an
+            # HTTP run.
+            audit_page( page ) or http.run
 
             # Consume pages somehow triggered by the audit and pushed by the
-            # trainer or plugins or whatever now to avoid keeping them in RAM.
+            # trainer or plugins or whatever.
             audit_page_queue
         end
 
@@ -827,12 +864,43 @@ class Framework
         true
     end
 
+    def pop_page_from_url_queue( &block )
+        return if @url_queue.empty?
+
+        grabbed_page = nil
+        Page.from_url( @url_queue.pop, precision: 2 ) do |page|
+            @retries[page.url.hash] ||= 0
+
+            if page.code != 0
+                grabbed_page = page
+                block.call grabbed_page if block_given?
+                next
+            end
+
+            if @retries[page.url.hash] >= AUDIT_PAGE_MAX_TRIES
+                @failures << page.url
+
+                print_error "Giving up trying to audit: #{page.url}"
+                print_error "Couldn't get a response after #{AUDIT_PAGE_MAX_TRIES} tries."
+            else
+                print_bad "Retrying for: #{page.url}"
+                @retries[page.url.hash] += 1
+                @url_queue << page.url
+            end
+
+            grabbed_page = nil
+            block.call grabbed_page if block_given?
+        end
+        http.run if !block_given?
+        grabbed_page
+    end
+
     #
     # Audits the page queue
     #
     def audit_page_queue
         # this will run until no new elements appear for the given page
-        audit_page( @page_queue.pop ) while !@page_queue.empty?
+        audit_page( @page_queue.pop ) while !@page_queue.empty? && !page_limit_reached?
     end
 
     # Special sitemap for the {#auditstore}.

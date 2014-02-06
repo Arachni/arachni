@@ -41,7 +41,8 @@ class Arachni::Checks::OSCmdInjectionTiming < Arachni::Check::Base
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.3',
-            targets:     %w(Windows Unix),
+            platforms:   payloads.keys,
+
             issue:       {
                 name:            %q{Operating system command injection (timing attack)},
                 description:     %q{The web application allows an attacker to

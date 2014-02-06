@@ -61,8 +61,7 @@ class Arachni::Checks::SQLInjection < Arachni::Check::Base
             elements:    [Element::Link, Element::Form, Element::Cookie, Element::Header],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.2.1',
-            targets:     %w(Oracle ColdFusion InterBase PostgreSQL MySQL MSSQL EMC
-                            SQLite DB2 Informix Firebird MaxDB Sybase Frontbase Ingres HSQLDB),
+            platforms:   options[:regexp].keys,
 
             issue:       {
                 name:            %q{SQL Injection},

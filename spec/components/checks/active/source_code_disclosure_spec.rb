@@ -3,8 +3,8 @@ require 'spec_helper'
 describe name_from_filename do
     include_examples 'check'
 
-    def self.targets
-        %w(PHP JSP ASP)
+    def self.platforms
+        [:php, :asp, :jsp]
     end
 
     def self.elements

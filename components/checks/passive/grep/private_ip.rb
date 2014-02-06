@@ -33,7 +33,6 @@ class Arachni::Checks::PrivateIP < Arachni::Check::Base
             description: %q{Scans pages for private IP addresses.},
             author:      'Tasos Laskos <tasos.laskos@gmail.com>',
             version:     '0.2.1',
-            targets:     %w(Generic),
             elements:    [ Element::Body, Element::Header ],
 
             issue:       {

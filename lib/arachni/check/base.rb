@@ -109,7 +109,7 @@ class Base < Component::Base
             references:  {
                 'Title' => 'http://ref.url'
             },
-            targets:     %W(Generic),
+
             issue:       {
                 name:           %q{Serious issue},
                 description:    %q{This issue is a serious issue and you
@@ -132,6 +132,27 @@ class Base < Component::Base
     end
 
     class <<self
+
+        # @return   [Bool]
+        #   `true` if the check can benefit from knowing the platform beforehand,
+        #   `false` otherwise.
+        # @see .platforms
+        def has_platforms?
+            platforms.any?
+        end
+
+        # @return   [Array<Symbol>] Targeted platforms.
+        # @see .info
+        def platforms
+            [info[:platforms]].flatten.compact
+        end
+
+        # @return   [Array<Symbol>] Targeted element types.
+        # @see .info
+        def elements
+            [info[:elements]].flatten.compact
+        end
+
         # Schedules self to be run *after* the specified checks and prevents
         # auditing elements that have been previously logged by any of these checks.
         #

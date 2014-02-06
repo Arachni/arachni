@@ -97,7 +97,7 @@ class Arachni::Checks::PathTraversal < Arachni::Check::Base
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.4.1',
-            targets:     %w(Unix Windows Tomcat),
+            platforms:   payloads.keys,
 
             issue:       {
                 name:            %q{Path Traversal},

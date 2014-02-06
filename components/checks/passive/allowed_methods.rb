@@ -50,7 +50,6 @@ class Arachni::Checks::AllowedMethods < Arachni::Check::Base
             elements:    [Element::Server],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.4',
-            targets:     %w(Generic),
 
             issue:       {
                 name:            %q{Allowed HTTP methods},

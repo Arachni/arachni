@@ -3,10 +3,6 @@ require 'spec_helper'
 describe name_from_filename do
     include_examples 'check'
 
-    def self.targets
-        %w(Generic)
-    end
-
     def self.elements
         [ Element::Form, Element::Link, Element::Cookie, Element::Header ]
     end
@@ -15,8 +11,8 @@ describe name_from_filename do
         {
             Element::Form   => 12,
             Element::Link   => 12,
-            Element::Cookie => 6,
-            Element::Header => 3
+            Element::Cookie => 12,
+            Element::Header => 6
         }
     end
 

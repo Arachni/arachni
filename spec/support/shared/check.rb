@@ -69,12 +69,8 @@ shared_examples_for 'check' do
     end
 
     describe '.info' do
-        it 'holds the right targets' do
-            if current_check.info[:targets]
-                current_check.info[:targets].sort.should == self.class.targets.sort
-            else
-                current_check.info[:targets].should == self.class.targets
-            end
+        it 'holds the right platforms' do
+            current_check.platforms.sort.should == self.class.platforms.sort
         end
 
         it 'holds the right elements' do
@@ -84,54 +80,63 @@ shared_examples_for 'check' do
     end
 
     def self.easy_test( run_checks = true, &block )
-        targets  = !self.targets  || self.targets.empty?  ? %w(Generic) : self.targets
-        elements = !self.elements || self.elements.empty? ? %w(Generic) : self.elements
-
-        context 'when the target is' do
-            targets.each do |target|
-                context target do
-
-                    before( :each ) do
-                        next if target.to_s.downcase == 'generic'
-
-                        options.url = url + target.downcase
-                        options.scope.include_path_patterns = options.url
-                    end
-
-                    elements.each do |type|
-                        it "logs vulnerable #{type.type} elements" do
-                            if !issue_count && !issue_count_per_target &&
-                                !issue_count_per_element && !issue_count_per_element_per_target
-                                raise 'No issue count provided via a suitable method.'
-                            end
-
-                            audit type, run_checks
-
-                            if issue_count
-                                issues.size.should == issue_count
-                            end
-
-                            if issue_count_per_target
-                                issues.size.should ==
-                                    issue_count_per_target[target.downcase.to_sym]
-                            end
-
-                            if issue_count_per_element
-                                issues.size.should == issue_count_per_element[type]
-                            end
-
-                            if issue_count_per_element_per_target
-                                issues.size.should ==
-                                    issue_count_per_element_per_target[target.downcase.to_sym][type]
-                            end
-
-                            instance_eval &block if block_given?
-                        end
-                    end
-
+        if self.platforms.any?
+            context 'when the platform is' do
+                platforms.each do |platform|
+                    test_platform( platform, run_checks, &block )
                 end
             end
+        else
+            elements.each do |element|
+                test_element( element, nil, run_checks, &block )
+            end
         end
+    end
+
+    def self.test_platform( platform, run_checks, &block )
+        context platform do
+            elements.each do |element|
+                test_element( element, platform, run_checks, &block )
+            end
+        end
+    end
+
+    def self.test_element( element, platform, run_checks, &block )
+        it "logs vulnerable #{element.type} elements" do
+            run_test element, platform, run_checks, &block
+        end
+    end
+
+    def run_test( element, platform, run_checks, &block )
+        if !issue_count && !issue_count_per_platform &&
+            !issue_count_per_element && !issue_count_per_element_per_platform
+            raise 'No issue count provided via a suitable method.'
+        end
+
+        options.url = url + platform.to_s
+        options.scope.include_path_patterns = options.url
+
+        audit element, run_checks
+
+        if issue_count
+            issues.size.should == issue_count
+        end
+
+        if issue_count_per_platform
+            issues.size.should ==
+                issue_count_per_platform[platform]
+        end
+
+        if issue_count_per_element
+            issues.size.should == issue_count_per_element[element]
+        end
+
+        if issue_count_per_element_per_platform
+            issues.size.should ==
+                issue_count_per_element_per_platform[platform][element]
+        end
+
+        instance_eval &block if block_given?
     end
 
     def issues
@@ -141,16 +146,17 @@ shared_examples_for 'check' do
     def issue_count
     end
 
-    def issue_count_per_target
+    def issue_count_per_platform
     end
 
     def issue_count_per_element
     end
 
-    def issue_count_per_element_per_target
+    def issue_count_per_element_per_platform
     end
 
-    def self.targets
+    def self.platforms
+        []
     end
 
     def self.elements
@@ -171,7 +177,7 @@ shared_examples_for 'check' do
         e = element_type.to_s
         e = e[0...-1] if element_type.to_s[-1] == 's'
 
-        if logs_issues && element_type.to_s.downcase != 'generic'
+        if logs_issues
             # make sure we ONLY got results for the requested element type
             issues.should be_any
             issues.map { |i| i.vector.type }.uniq.should == [e.to_sym]

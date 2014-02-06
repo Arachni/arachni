@@ -3,8 +3,8 @@ require 'spec_helper'
 describe name_from_filename do
     include_examples 'check'
 
-    def self.targets
-        %w(Unix Windows)
+    def self.platforms
+        [:unix, :windows]
     end
 
     def self.elements

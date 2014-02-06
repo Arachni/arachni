@@ -12,100 +12,95 @@ def variations
     @@variations ||= %w('" ]]]]]]]]] <!--)
 end
 
-def get_variations( platform, str )
-    @@errors[platform] if variations.include?( str )
+def get_variations( str )
+    @@errors.to_s if variations.include?( str )
 end
 
-@@errors.keys.each do |platform|
-    platform_str = platform.to_s
+get '/'do
+    <<-EOHTML
+        <a href="/link">Link</a>
+        <a href="/form">Form</a>
+        <a href="/cookie">Cookie</a>
+        <a href="/header">Header</a>
+    EOHTML
+end
 
-    get '/' + platform_str do
-        <<-EOHTML
-            <a href="/#{platform_str}/link">Link</a>
-            <a href="/#{platform_str}/form">Form</a>
-            <a href="/#{platform_str}/cookie">Cookie</a>
-            <a href="/#{platform_str}/header">Header</a>
-        EOHTML
-    end
+get "/link" do
+    <<-EOHTML
+        <a href="/link/flip?input=default">Link</a>
+        <a href="/link/append?input=default">Link</a>
+    EOHTML
+end
 
-    get "/#{platform_str}/link" do
-        <<-EOHTML
-            <a href="/#{platform_str}/link/flip?input=default">Link</a>
-            <a href="/#{platform_str}/link/append?input=default">Link</a>
-        EOHTML
-    end
+get "/link/flip" do
+    params.keys.map { |k| get_variations( k ) }.to_s
+end
 
-    get "/#{platform_str}/link/flip" do
-        params.keys.map { |k| get_variations( platform, k ) }.to_s
-    end
+get "/link/append" do
+    default = 'default'
+    return if !params['input'].start_with?( default )
 
-    get "/#{platform_str}/link/append" do
-        default = 'default'
-        return if !params['input'].start_with?( default )
+    get_variations( params['input'].split( default ).last )
+end
 
-        get_variations( platform, params['input'].split( default ).last )
-    end
+get "/form" do
+    <<-EOHTML
+        <form action="/form/flip">
+            <input name='input' value='default' />
+        </form>
 
-    get "/#{platform_str}/form" do
-        <<-EOHTML
-            <form action="/#{platform_str}/form/flip">
-                <input name='input' value='default' />
-            </form>
+        <form action="/form/append">
+            <input name='input' value='default' />
+        </form>
+    EOHTML
+end
 
-            <form action="/#{platform_str}/form/append">
-                <input name='input' value='default' />
-            </form>
-        EOHTML
-    end
+get "/form/flip" do
+    params.keys.map { |k| get_variations( k ) }.to_s
+end
 
-    get "/#{platform_str}/form/flip" do
-        params.keys.map { |k| get_variations( platform, k ) }.to_s
-    end
+get "/form/append" do
+    default = 'default'
+    return if !params['input'] || !params['input'].start_with?( default )
 
-    get "/#{platform_str}/form/append" do
-        default = 'default'
-        return if !params['input'] || !params['input'].start_with?( default )
+    get_variations( params['input'].split( default ).last )
+end
 
-        get_variations( platform, params['input'].split( default ).last )
-    end
+get "/cookie" do
+    <<-EOHTML
+        <a href="/cookie/flip">Cookie</a>
+        <a href="/cookie/append">Cookie</a>
+    EOHTML
+end
 
-    get "/#{platform_str}/cookie" do
-        <<-EOHTML
-            <a href="/#{platform_str}/cookie/flip">Cookie</a>
-            <a href="/#{platform_str}/cookie/append">Cookie</a>
-        EOHTML
-    end
+get "/cookie/flip" do
+    cookies.keys.map { |k| get_variations( k ) }.to_s
+end
 
-    get "/#{platform_str}/cookie/flip" do
-        cookies.keys.map { |k| get_variations( platform, k ) }.to_s
-    end
+get "/cookie/append" do
+    default = 'cookie value'
+    cookies['cookie2'] ||= default
+    return if !cookies['cookie2'].start_with?( default )
 
-    get "/#{platform_str}/cookie/append" do
-        default = 'cookie value'
-        cookies['cookie2'] ||= default
-        return if !cookies['cookie2'].start_with?( default )
+    get_variations( cookies['cookie2'].split( default ).last )
+end
 
-        get_variations( platform, cookies['cookie2'].split( default ).last )
-    end
+get "/header" do
+    <<-EOHTML
+        <a href="/header/flip">Header</a>
+        <a href="/header/append">Header</a>
+    EOHTML
+end
 
-    get "/#{platform_str}/header" do
-        <<-EOHTML
-            <a href="/#{platform_str}/header/flip">Header</a>
-            <a href="/#{platform_str}/header/append">Header</a>
-        EOHTML
-    end
+get "/header/flip" do
+    env.keys.map do |k|
+        get_variations( k.gsub( 'HTTP_', '' ).gsub( '_', '-' ) )
+    end.to_s
+end
 
-    get "/#{platform_str}/header/flip" do
-        env.keys.map do |k|
-            get_variations( platform, k.gsub( 'HTTP_', '' ).gsub( '_', '-' ) )
-        end.to_s
-    end
+get "/header/append" do
+    default = 'arachni_user'
+    return if !env['HTTP_USER_AGENT'] || !env['HTTP_USER_AGENT'].start_with?( default )
 
-    get "/#{platform_str}/header/append" do
-        default = 'arachni_user'
-        return if !env['HTTP_USER_AGENT'] || !env['HTTP_USER_AGENT'].start_with?( default )
-
-        get_variations( platform, env['HTTP_USER_AGENT'].split( default ).last )
-    end
-
+    get_variations( env['HTTP_USER_AGENT'].split( default ).last )
 end

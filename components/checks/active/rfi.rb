@@ -104,7 +104,6 @@ class Arachni::Checks::RFI < Arachni::Check::Base # *always* extend Arachni::Che
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.3',
-            targets:     %w(Generic),
 
             issue:       {
                 name:        %q{Remote File Inclusion},

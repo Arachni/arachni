@@ -13,11 +13,12 @@
 class Arachni::Checks::Trainer < Arachni::Check::Base
 
     def run
-        audit( "_arachni_trainer_#{seed}", train: true, param_flip: true ) do |response, _|
-            # Forces the response to be fingerprinted as all pages automatically
-            # get fingerprinted if that option has been enabled.
-            response.to_page
-        end
+        # The whole point of this check is to stir things up and find new
+        # stuff, if our page limit has already been reached then we'll just be
+        # wasting bandwidth.
+        return if framework.page_limit_reached?
+
+        audit( "_arachni_trainer_#{seed}", train: true, param_flip: true ){}
     end
 
     def self.info
@@ -27,8 +28,7 @@ class Arachni::Checks::Trainer < Arachni::Check::Base
                 It also forces Arachni to train itself by analyzing the server responses.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
-            version:     '0.1.3',
-            targets:     %w(Generic)
+            version:     '0.1.3'
         }
     end
 

@@ -57,7 +57,6 @@ class Arachni::Checks::XSSHTMLTag < Arachni::Check::Base
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.1.5',
-            targets:     %w(Generic),
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS) in HTML tag},

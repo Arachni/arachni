@@ -39,7 +39,6 @@ class Arachni::Checks::LocalstartASP < Arachni::Check::Base
             elements:    [ Element::Server ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.1',
-            targets:     %w(Generic),
 
             issue:       {
                 name:            %q{Exposed localstart.asp page},

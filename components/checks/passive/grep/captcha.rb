@@ -32,7 +32,7 @@ class Arachni::Checks::CAPTCHA < Arachni::Check::Base
             elements:    [ Element::Form ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.2',
-            targets:     %w(Generic),
+
             issue:       {
                 name:        %q{CAPTCHA protected form},
                 description: %q{Arachni can't audit CAPTCHA protected forms, consider auditing manually.},

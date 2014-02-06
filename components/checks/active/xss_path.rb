@@ -71,7 +71,6 @@ class Arachni::Checks::XSSPath < Arachni::Check::Base
             elements:    [ Element::Path ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.1.8',
-            targets:     %w(Generic),
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS) in path},

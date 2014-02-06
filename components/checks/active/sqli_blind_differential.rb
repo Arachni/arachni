@@ -55,7 +55,6 @@ class Arachni::Checks::BlindDifferentialSQLInjection < Arachni::Check::Base
             elements:    [ Element::Link, Element::Form, Element::Cookie ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.4.2',
-            targets:     %w(Generic),
 
             issue:       {
                 name:            %q{Blind SQL Injection (differential analysis)},

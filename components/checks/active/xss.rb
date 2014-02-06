@@ -91,7 +91,6 @@ class Arachni::Checks::XSS < Arachni::Check::Base
             elements:    [Element::Form, Element::Link, Element::Cookie, Element::Header],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.4',
-            targets:     %w(Generic),
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS)},

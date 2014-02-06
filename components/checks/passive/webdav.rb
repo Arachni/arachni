@@ -62,7 +62,6 @@ class Arachni::Checks::WebDav < Arachni::Check::Base
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.4',
 
-            targets:     %w(Generic),
             issue:       {
                 name:            %q{WebDAV},
                 description:     %q{WebDAV is enabled on the server.

@@ -28,7 +28,6 @@ class Arachni::Checks::Backdoors < Arachni::Check::Base
             elements:    [Element::Server],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.2.2',
-            targets:     %w(Generic),
 
             issue:       {
                 name:            %q{A backdoor file exists on the server},

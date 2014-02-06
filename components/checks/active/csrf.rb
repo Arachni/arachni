@@ -153,7 +153,6 @@ class Arachni::Checks::CSRF < Arachni::Check::Base
             elements:    [ Element::Form ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.3.2',
-            targets:     %w(Generic),
 
             issue:       {
                 name:            %q{Cross-Site Request Forgery},

@@ -23,7 +23,7 @@ class Arachni::Checks::EMails < Arachni::Check::Base
             elements:    [ Element::Body ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.1',
-            targets:     %w(Generic),
+
             issue:       {
                 name:            %q{E-mail address disclosure},
                 description:     %q{An e-mail address is being disclosed.},

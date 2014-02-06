@@ -25,7 +25,6 @@ class Arachni::Checks::HttpOnlyCookies < Arachni::Check::Base
             elements:    [ Element::Cookie ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.1',
-            targets:     %w(Generic),
 
             issue:       {
                 name:            %q{HttpOnly cookie},

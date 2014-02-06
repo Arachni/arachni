@@ -69,7 +69,7 @@ class Arachni::Checks::CodeInjection < Arachni::Check::Base
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.2',
-            targets:     %w(PHP Perl Python ASP),
+            platforms:   payloads.keys,
 
             issue:       {
                 name:            %q{Code injection},

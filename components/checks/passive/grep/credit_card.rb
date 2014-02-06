@@ -79,7 +79,6 @@ class Arachni::Checks::CreditCards < Arachni::Check::Base
             elements:    [ Element::Body ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.2.2',
-            targets:     %w(Generic),
 
             issue:       {
                 name:            %q{Credit card number disclosure},

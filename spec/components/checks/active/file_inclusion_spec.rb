@@ -3,27 +3,27 @@ require 'spec_helper'
 describe name_from_filename do
     include_examples 'check'
 
-    def self.targets
-        %w(Unix Windows Tomcat PHP Perl)
+    def self.platforms
+        [:unix, :windows, :tomcat, :php, :perl]
     end
 
     def self.elements
         [ Element::Form, Element::Link, Element::Cookie, Element::Header ]
     end
 
-    def issue_count_per_element_per_target
+    def issue_count_per_element_per_platform
         {
             unix:    {
-                Element::Form   => 8,
-                Element::Link   => 8,
-                Element::Cookie => 8,
-                Element::Header => 4
+                Element::Form   => 16,
+                Element::Link   => 16,
+                Element::Cookie => 16,
+                Element::Header => 8
             },
             windows: {
-                Element::Form   => 24,
-                Element::Link   => 24,
-                Element::Cookie => 24,
-                Element::Header => 12
+                Element::Form   => 48,
+                Element::Link   => 48,
+                Element::Cookie => 48,
+                Element::Header => 24
             },
             tomcat:  {
                 Element::Form   => 4,
@@ -32,16 +32,16 @@ describe name_from_filename do
                 Element::Header => 2
             },
             php:  {
-                Element::Form   => 36,
-                Element::Link   => 36,
-                Element::Cookie => 36,
-                Element::Header => 18
+                Element::Form   => 68,
+                Element::Link   => 68,
+                Element::Cookie => 68,
+                Element::Header => 34
             },
             perl:  {
-                Element::Form   => 36,
-                Element::Link   => 36,
-                Element::Cookie => 36,
-                Element::Header => 18
+                Element::Form   => 68,
+                Element::Link   => 68,
+                Element::Cookie => 68,
+                Element::Header => 34
             }
         }
     end

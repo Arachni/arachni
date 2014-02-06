@@ -40,7 +40,7 @@ class Arachni::Checks::BlindTimingSQLInjection < Arachni::Check::Base
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.3.2',
-            targets:     %w(MySQL PostgreSQL MSSQL),
+            platforms:   payloads.keys,
 
             issue:       {
                 name:            %q{Blind SQL Injection (timing attack)},

@@ -25,7 +25,6 @@ class Arachni::Checks::SSN < Arachni::Check::Base
                 'haliphax' # tweaked regexp
             ],
             version:     '0.1.2',
-            targets:     %w(Generic),
 
             issue:       {
                 name:            %q{Disclosed US Social Security Number (SSN)},

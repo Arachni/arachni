@@ -22,6 +22,21 @@ describe Arachni::Check::Manager do
         end
     end
 
+    describe '#[]' do
+        context 'when the check contains invalid platforms' do
+            it "raises #{described_class::Error::InvalidPlatforms}" do
+                @checks.clear
+                @checks.reset
+
+                Arachni::Options.paths.checks = fixtures_path + 'check_with_invalid_platforms/'
+                @checks = Arachni::Framework.new.checks
+
+                expect { @checks[:with_invalid_platforms] }.to raise_error described_class::Error::InvalidPlatforms
+                @checks.include?(:with_invalid_platforms).should be_false
+            end
+        end
+    end
+
     describe '#schedule' do
         it 'uses each check\'s #preferred return value to sort the checks in proper running order' do
             # load them in the wrong order
@@ -44,6 +59,20 @@ describe Arachni::Check::Manager do
 
             @checks.load :test, :test3
             @checks.schedule.should == [@checks[:test], @checks[:test3]]
+        end
+    end
+
+    describe '#with_platforms' do
+        it 'returns checks which target specific platforms' do
+            @checks.load_all
+            @checks.with_platforms.keys.should == ['test2']
+        end
+    end
+
+    describe '#without_platforms' do
+        it 'returns checks which do not target specific platforms' do
+            @checks.load_all
+            @checks.without_platforms.keys.sort.should == %w(test test3).sort
         end
     end
 

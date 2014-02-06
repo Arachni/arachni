@@ -33,7 +33,6 @@ class Arachni::Checks::CvsSvnUsers < Arachni::Check::Base
             elements:    [ Element::Body ],
             author:      'Tasos Laskos <tasos.laskos@gmail.com>',
             version:     '0.3',
-            targets:     %w(Generic),
 
             issue:       {
                 name:            %q{CVS/SVN user disclosure},

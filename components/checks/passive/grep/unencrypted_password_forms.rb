@@ -44,7 +44,6 @@ class Arachni::Checks::UnencryptedPasswordForms < Arachni::Check::Base
             elements:    [ Element::Form ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.2',
-            targets:     %w(Generic),
 
             issue:       {
                 name:            %q{Unencrypted password form},
