@@ -30,6 +30,9 @@ helpers do
     end
 end
 
+get '/fingerprint.php' do
+end
+
 get '/http_response_max_size' do
     '1' * 1000000
 end

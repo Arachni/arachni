@@ -35,6 +35,12 @@ describe Arachni::HTTP::Response do
         end
     end
 
+    describe '#platforms' do
+        it 'returns the platform manager for the resource' do
+            Factory[:response].platforms.should be_kind_of Arachni::Platform::Manager
+        end
+    end
+
     describe '#app_time' do
         it 'returns the approximated webap pprocessing time' do
             response = @http.get( @url, mode: :sync )

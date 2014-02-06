@@ -593,6 +593,11 @@ class Client
             @burst_response_time_sum += response.time
             @total_response_time_sum += response.time
 
+            if Options.fingerprint? && response.platforms.empty?
+                # Force a fingerprint by converting the Response to a Page object.
+                response.to_page
+            end
+
             call_on_complete( response )
 
             parse_and_set_cookies( response ) if request.update_cookies?

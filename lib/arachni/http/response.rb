@@ -61,6 +61,11 @@ class Response < Message
         @redirections ||= []
     end
 
+    # @return   [Platform] Applicable platforms for the page.
+    def platforms
+        Platform::Manager[url]
+    end
+
     # @return   [String]    First line of the response.
     def status_line
         return if !headers_string
