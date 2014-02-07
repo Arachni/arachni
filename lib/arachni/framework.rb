@@ -241,10 +241,9 @@ class Framework
         if host_has_has_browser?
             print_info "DOM depth: #{page.dom.depth} (Limit: #{@opts.scope.dom_depth_limit})"
 
-            print_info 'Transitions:'
-            page.dom.transitions.each do |transition|
-                element, event = transition.first
-                print_info "-- '#{event}' on: #{element}"
+            if page.dom.transitions.any?
+                print_info '  Transitions:'
+                print_page_transitions( page, '    ' )
             end
         end
 
@@ -714,6 +713,21 @@ class Framework
 
     private
 
+    def print_page_transitions( page, indent = '' )
+        longest_event_size = 0
+        page.dom.transitions.each do |t|
+            _, event = t.first.to_a
+            longest_event_size = [event.to_s.size, longest_event_size].max
+        end
+
+        page.dom.transitions.each do |t|
+            element, event = t.first.to_a
+
+            padding = longest_event_size - event.to_s.size + 1
+            print_info "#{indent}-- #{event}#{' ' * padding} => #{element}"
+        end
+    end
+
     # @note Must be called before calling any audit methods.
     #
     # Prepares the framework for the audit.
@@ -739,16 +753,14 @@ class Framework
             pushed_paths = push_paths_from_page( page ).size
         end
 
-        print_status 'Got page from browser with the following transitions:'
+        print_status 'Got new page from the browser-cluster with the ' <<
+                         'following transitions:'
         print_info page.dom.url
 
-        page.dom.transitions.each do |t|
-            element, event = t.first.to_a
-            print_info "-- '#{event}' on: #{element}"
-        end
+        print_page_transitions( page, '  ' )
 
         if pushed_paths
-            print_info "-- Analysis resulted in #{pushed_paths} usable paths."
+            print_info "  -- Analysis resulted in #{pushed_paths} usable paths."
         end
     end
 
@@ -810,8 +822,8 @@ class Framework
             while wait_for_browser? && !has_audit_workload?
                 if show_workload_msg
                     print_line
-                    print_status 'Audit workload exhausted, waiting for new ' <<
-                                'pages from the browser...'
+                    print_status 'Workload exhausted, waiting for new pages' <<
+                                ' from the browser-cluster...'
                 end
                 show_workload_msg = false
                 sleep 0.1
