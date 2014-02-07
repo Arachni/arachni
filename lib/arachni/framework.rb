@@ -175,11 +175,6 @@ class Framework
     # @return   [BrowserCluster]
     def browser_cluster
         return if !host_has_has_browser?
-
-        # We'll recycle the same job since all of them will have the same
-        # callback. This will force the BrowserCluster to use the same block
-        # for all queued jobs.
-        @browser_job     ||= BrowserCluster::Jobs::ResourceExploration.new
         @browser_cluster ||= BrowserCluster.new
     end
 
@@ -232,24 +227,26 @@ class Framework
         @sitemap.merge!( browser_sitemap )
 
         print_line
-        print_status "Auditing: [HTTP: #{page.code}] #{page.dom.url}"
+        print_status "[HTTP: #{page.code}] #{page.dom.url}"
+
+        if page.platforms.any?
+            print_info "Identified as: #{page.platforms.to_a.join( ', ' )}"
+        end
 
         if crawl?
             pushed = push_paths_from_page( page )
             print_info "Analysis resulted in #{pushed.size} usable paths."
         end
 
-        if page.platforms.any?
-            print_info "Identified as: #{page.platforms.to_a.join( ', ' )}"
-        end
-
         if host_has_has_browser?
-            dom_depth = "#{page.dom.depth} (Limit: #{@opts.scope.dom_depth_limit})"
-        else
-            dom_depth = 'N/A (Could not find browser).'
-        end
+            print_info "DOM depth: #{page.dom.depth} (Limit: #{@opts.scope.dom_depth_limit})"
 
-        print_info "DOM depth: #{dom_depth}"
+            print_info 'Transitions:'
+            page.dom.transitions.each do |transition|
+                element, event = transition.first
+                print_info "-- '#{event}' on: #{element}"
+            end
+        end
 
         call_on_audit_page( page )
 
@@ -742,7 +739,7 @@ class Framework
             pushed_paths = push_paths_from_page( page ).size
         end
 
-        print_info 'Got page from browser with the following transitions:'
+        print_status 'Got page from browser with the following transitions:'
         print_info page.dom.url
 
         page.dom.transitions.each do |t|
@@ -767,13 +764,27 @@ class Framework
         return if Options.scope.dom_depth_limit.to_i < page.dom.depth + 1 ||
             !host_has_has_browser? || !page.has_script?
 
-        browser_cluster.queue( @browser_job.forward( resource: page ) ) do |response|
+
+        browser_cluster.queue( browser_job.forward( resource: page ) ) do |response|
             handle_browser_page response.page
         end
 
         true
-    rescue BrowserCluster::Job::Error::AlreadyDone
-        false
+    rescue BrowserCluster::Job::Error::AlreadyDone => e
+        refresh_browser_job
+        retry
+    end
+
+    def browser_job
+        # We'll recycle the same job since all of them will have the same
+        # callback. This will force the BrowserCluster to use the same block
+        # for all queued jobs.
+        @browser_job ||= BrowserCluster::Jobs::ResourceExploration.new
+    end
+
+    def refresh_browser_job
+        @browser_job = nil
+        browser_job
     end
 
     # Performs the audit.
