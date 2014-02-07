@@ -129,6 +129,9 @@ module Timeout
             elem.print_status "Phase 2 for #{elem.type} input '#{elem.affected_input_name}'" <<
                                   " with action #{elem.action}"
 
+            # Make sure we're starting off with a clean slate.
+            elem.responsive?
+
             elem.print_info '* Performing liveness check.'
 
             # This is the control; request the URL of the element to make sure
@@ -180,6 +183,9 @@ module Timeout
 
             elem.print_status "Phase 3 for #{elem.type} input '#{elem.affected_input_name}'" <<
                                   " with action #{elem.action}"
+
+            # Make sure we're starting off with a clean slate.
+            elem.responsive?
 
             elem.print_info '* Performing liveness check.'
 
@@ -295,7 +301,7 @@ module Timeout
         @audit_options.merge!( orig_opts )
 
         if res.timed_out?
-            print_bad 'Max waiting time exceeded.'
+            print_bad "#{prepend}Max waiting time exceeded."
             false
         else
             true
