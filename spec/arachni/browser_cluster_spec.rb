@@ -41,6 +41,20 @@ describe Arachni::BrowserCluster do
         end
     end
 
+    describe '#javascript_token' do
+        it 'returns the Javascript token used to namespace the custom JS environment' do
+            pages = []
+            @cluster = described_class.new
+
+            @cluster.queue( job ) do |result|
+                pages << result.page
+            end
+            @cluster.wait
+
+            pages.first.body.should include "window._#{@cluster.javascript_token}"
+        end
+    end
+
     describe '#queue' do
         it 'processes the job' do
             pages = []

@@ -72,6 +72,8 @@ class BrowserCluster
 
     attr_reader :consumed_pids
 
+    # @return   [String]
+    #   Javascript token used to namespace the custom JS environment.
     attr_reader :javascript_token
 
     # @param    [Hash]  options
