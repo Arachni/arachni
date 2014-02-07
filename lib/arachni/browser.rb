@@ -487,12 +487,20 @@ class Browser
             print_error e
             print_error_backtrace e
 
+            print_info 'Could not trigger event because the page has changed' <<
+                           ', capturing a new snapshot.'
+            capture_snapshot
+
             print_info 'Restoring page.'
             restore page
             return
         end
 
         if !fire_event( element, event )
+            print_info 'Could not trigger event because the page has changed' <<
+                             ', capturing a new snapshot.'
+            capture_snapshot
+
             print_info 'Restoring page.'
             restore page
             return
@@ -612,10 +620,11 @@ class Browser
         page                 = r.deep_clone.to_page
         page.body            = source.dup
         page.cookies        |= cookies.dup
-        page.dom.url         = watir.url
+
+        page.dom.url                 = watir.url
         page.dom.execution_flow_sink = @javascript.flush_execution_flow_sink
-        page.dom.data_flow_sink = @javascript.flush_data_flow_sink
-        page.dom.transitions = @transitions.dup
+        page.dom.data_flow_sink      = @javascript.flush_data_flow_sink
+        page.dom.transitions         = @transitions.dup
 
         page
     end
