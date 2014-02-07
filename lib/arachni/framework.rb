@@ -732,7 +732,7 @@ class Framework
     #
     # Prepares the framework for the audit.
     #
-    # * Sets the status to ':running'.
+    # * Sets the status to ':preparing'.
     # * Starts the clock.
     # * Runs the plugins.
     def prepare
