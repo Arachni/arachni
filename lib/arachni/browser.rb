@@ -990,6 +990,7 @@ class Browser
 
     def capture( request )
         return if !capture?
+        return if !@last_url
 
         page = Page.from_data( url: @last_url )
         page.response.request = request
