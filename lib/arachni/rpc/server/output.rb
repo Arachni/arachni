@@ -182,7 +182,6 @@ module Output
             File.open( file, 'a+' ) do |f|
                 type = msg.keys[0]
                 str  = msg.values[0]
-                next if str.empty?
 
                 f.write( "[#{Time.now.asctime}] [#{type}]  #{str}\n" )
             end
