@@ -14,6 +14,8 @@ class BrowserCluster
     include UI::Output
     include Utilities
 
+    personalize_output
+
     # {BrowserCluster} error namespace.
     #
     # All {BrowserCluster} errors inherit from and live under it.
@@ -355,7 +357,7 @@ class BrowserCluster
     end
 
     def move_browser( browser, from_state, to_state )
-        synchronize { @browsers[to_state] << @browsers[from_state].delete( browser ) }
+        @browsers[to_state] << @browsers[from_state].delete( browser )
     end
 
     def synchronize( &block )
@@ -363,6 +365,8 @@ class BrowserCluster
     end
 
     def initialize_browsers
+        print_status 'Initializing browsers, please wait...'
+
         @browsers  = {
             idle: [],
             busy: []
@@ -381,23 +385,48 @@ class BrowserCluster
         end
 
         begin
-            Timeout.timeout( 10 ) do
+            Timeout.timeout( 20 * pool_size ) do
                 loop do
-                    booting_browsers.each do |socket, token|
+                    booting_browsers.dup.each do |socket, token|
                         begin
                             b = RPC::Client::BrowserCluster::Peer.new( socket, token )
-                            b.alive?
+
+                            if !Options.url
+                                b.alive?
+                                @browsers[:idle] << b
+                                booting_browsers.delete( [socket, token] )
+                                next
+                            end
+
+                            # Make sure that the browser is operational and if
+                            # not spawn a replacement.
+                            if b.operational? Options.url
+                                @browsers[:idle] << b
+                            else
+                                b.shutdown
+                                booting_browsers.delete( [socket, token] )
+
+                                ipc_data = Peer.spawn(
+                                    javascript_token: @javascript_token,
+                                    master:           ipc_handle
+                                )
+                                @consumed_pids   << ipc_data.shift
+                                booting_browsers << ipc_data
+                            end
+
                             booting_browsers.delete( [socket, token] )
-                            @browsers[:idle] << b
                         rescue
                         end
                     end
+
                     break if booting_browsers.empty?
                 end
             end
         rescue Timeout::Error
             abort 'BrowserCluster failed to initialize peers in time.'
         end
+
+        print_status 'Browser initialization complete.'
     end
 
     def wait_till_service_ready( service )
