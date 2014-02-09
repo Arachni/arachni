@@ -36,7 +36,10 @@ class Peer < Arachni::Browser
         token  = Utilities.generate_token
 
         pid = ::EM.fork_reactor do
-            Options.rpc.server_socket = socket
+            Options.rpc.server_address = nil
+            Options.rpc.server_port    = nil
+            Options.rpc.server_socket  = socket
+
             new(
                 master:           options[:master],
                 token:            token,
@@ -67,6 +70,8 @@ class Peer < Arachni::Browser
 
         [pid, socket, token]
     end
+
+    JOB_TIMEOUT = 60
 
     # @return    [RPC::RemoteObjectMapper]    For {BrowserCluster}.
     attr_reader :master
@@ -119,12 +124,18 @@ class Peer < Arachni::Browser
 
         @job = job
 
-        ::EM.defer do
+        Thread.new do
             begin
-                @job.configure_and_run( self )
-            rescue => e
-                print_error e
-                print_error_backtrace e
+                Timeout.timeout( JOB_TIMEOUT ) do
+                    begin
+                        @job.configure_and_run( self )
+                    rescue => e
+                        print_error e
+                        print_error_backtrace e
+                    end
+                end
+            rescue TimeoutError
+                print_error "Job timed-out after #{JOB_TIMEOUT} seconds: #{job}"
             end
 
             # The jobs may have configured callbacks to capture pages etc.,
@@ -194,6 +205,15 @@ class Peer < Arachni::Browser
     # Job may have been marked as done...
     rescue RPC::Exceptions::RemoteException
         false
+    end
+
+    # @private
+    def operational?( url, &block )
+        Thread.new do
+            watir.goto url
+            block.call !!(response rescue false)
+        end
+        nil
     end
 
     # @return   [Bool]  `true`
