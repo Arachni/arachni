@@ -120,7 +120,8 @@ describe Arachni::Framework do
             it 'excludes binary pages from the audit' do
                 ok = false
                 Arachni::Framework.new do |f|
-                    f.opts.url = @url + '/binary'
+                    f.opts.url = @url
+                    f.opts.scope.restrict_paths << @url + '/binary'
                     f.opts.audit.elements :links, :forms, :cookies
                     f.checks.load :taint
 
@@ -131,7 +132,8 @@ describe Arachni::Framework do
 
                 ok = true
                 Arachni::Framework.new do |f|
-                    f.opts.url = @url + '/binary'
+                    f.opts.url = @url
+                    f.opts.scope.restrict_paths << @url + '/binary'
                     f.opts.audit.exclude_binaries = true
                     f.checks.load :taint
 
@@ -145,8 +147,8 @@ describe Arachni::Framework do
         describe '#scope.restrict_paths' do
             it 'serves as a replacement to crawling' do
                 Arachni::Framework.new do |f|
-                    f.opts.url = @url
-                    f.opts.scope.restrict_paths = %w(/elem_combo /log_remote_file_if_exists/true)
+                    f.opts.url = "#{@url}/elem_combo"
+                    f.opts.scope.restrict_paths = %w(/log_remote_file_if_exists/true)
                     f.opts.audit.elements :links, :forms, :cookies
                     f.checks.load :taint
 
@@ -154,7 +156,8 @@ describe Arachni::Framework do
 
                     sitemap = f.auditstore.sitemap.map { |u, _| u.split( '?' ).first }
                     sitemap.sort.uniq.should ==
-                        f.opts.scope.restrict_paths.map { |p| f.to_absolute( p ) }.sort
+                        [f.opts.url] + f.opts.scope.restrict_paths.
+                            map { |p| f.to_absolute( p ) }.sort
                 end
             end
         end
