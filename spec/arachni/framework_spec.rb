@@ -28,6 +28,38 @@ describe Arachni::Framework do
         @f.reset
     end
 
+    describe '#browser_cluster' do
+        it 'returns Arachni::BrowserCluster' do
+            @f.browser_cluster.should be_kind_of Arachni::BrowserCluster
+        end
+    end
+
+    describe '#on_audit_page' do
+        it 'calls the given block before each page is audited' do
+            ok = false
+            Arachni::Framework.new do |f|
+                f.opts.url = @url
+                f.on_audit_page { ok = true }
+
+                f.audit_page Arachni::Page.from_url( @url + '/link' )
+            end
+            ok.should be_true
+        end
+    end
+
+    describe '#after_page_audit' do
+        it 'calls the given block before each page is audited' do
+            ok = false
+            Arachni::Framework.new do |f|
+                f.opts.url = @url
+                f.after_page_audit { ok = true }
+
+                f.audit_page Arachni::Page.from_url( @url + '/link' )
+            end
+            ok.should be_true
+        end
+    end
+
     context 'when passed a block' do
         it 'executes it' do
             ran = false

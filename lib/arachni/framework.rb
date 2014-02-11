@@ -6,6 +6,7 @@
 =end
 
 require 'rubygems'
+require 'monitor'
 require 'bundler/setup'
 
 require 'ap'
@@ -160,6 +161,9 @@ class Framework
         @push_to_url_queue_filter  = Support::LookUp::HashSet.new
         @push_to_page_queue_filter = Support::LookUp::HashSet.new
 
+        @after_page_audit_blocks = []
+        @mutex = Monitor.new
+
         if block_given?
             begin
                 block.call self
@@ -175,7 +179,7 @@ class Framework
     # @return   [BrowserCluster]
     def browser_cluster
         return if !host_has_has_browser?
-        @browser_cluster ||= BrowserCluster.new
+        synchronize { @browser_cluster ||= BrowserCluster.new }
     end
 
     #
@@ -291,7 +295,14 @@ class Framework
             run_http = true
         end
 
+        call_after_page_audit_blocks( page )
         run_http
+    end
+
+    def after_page_audit( &block )
+        fail ArgumentError, 'Missing block.' if !block_given?
+        @after_page_audit_blocks << block
+        nil
     end
 
     def push_paths_from_page( page )
@@ -316,7 +327,7 @@ class Framework
     def shutdown_browser_cluster
         return if !@browser_cluster
 
-        @browser_cluster.shutdown
+        browser_cluster.shutdown
 
         @browser_cluster = nil
         @browser_job     = nil
@@ -650,12 +661,12 @@ class Framework
     end
 
     def wait_for_browser?
-        @browser_cluster && !@browser_cluster.done?
+        @browser_cluster && !browser_cluster.done?
     end
 
     def browser_sitemap
         return {} if !@browser_cluster
-        @browser_cluster.sitemap
+        browser_cluster.sitemap
     end
 
     def reset_trainer
@@ -712,6 +723,10 @@ class Framework
     end
 
     private
+
+    def call_after_page_audit_blocks( page )
+        @after_page_audit_blocks.each { |c| c.call page }
+    end
 
     def print_page_transitions( page, indent = '' )
         longest_event_size = 0
@@ -856,16 +871,6 @@ class Framework
         while !page_limit_reached? && (page = next_page || pop_page_from_url_queue)
             next_page = nil
 
-            # TODO:
-            # Perform lookahead by grabbing lots of pages, depending on the
-            # amount of slaves we have available and then distribute the pages
-            # and a whitelist of element IDs to each slave, while keeping score
-            # of how much workload each has received and adjusting accordingly.
-            #
-            # Or, keep the workload in a queue and have the slaves pop from it,
-            # or better yet work in a similar fashion to the BrowserCluster
-            # and push pages to free slaves etc.
-
             # Schedule the next page to be grabbed along with the audit requests
             # for the current page to avoid blocking.
             pop_page_from_url_queue { |p| next_page = p }
@@ -1001,6 +1006,10 @@ class Framework
         cnt = 0
         regexps.each { |filter| cnt += 1 if str =~ filter }
         cnt == regexps.size
+    end
+
+    def synchronize( &block )
+        @mutex.synchronize( &block )
     end
 
 end
