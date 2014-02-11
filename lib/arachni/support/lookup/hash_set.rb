@@ -30,12 +30,6 @@ class HashSet < Base
         self
     end
 
-    protected
-
-    def collection
-        @collection
-    end
-
 end
 
 end

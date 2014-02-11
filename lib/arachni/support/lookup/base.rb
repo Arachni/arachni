@@ -14,6 +14,8 @@ module Support::LookUp
 # @abstract
 class Base
 
+    attr_reader :collection
+
     DEFAULT_OPTIONS = {
         hasher: :hash
     }
