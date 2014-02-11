@@ -94,6 +94,10 @@ module Auditable
         elements.each { |elem| @@restrict_to_elements << elem }
     end
 
+    def self.update_element_restrictions( elements )
+        elements.each { |elem| @@restrict_to_elements << elem }
+    end
+
     # @param    [Block] block
     #   Block to decide whether an element should be skipped or not.
     #
