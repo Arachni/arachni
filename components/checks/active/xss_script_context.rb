@@ -62,6 +62,7 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
     end
 
     def run
+        return if !browser_cluster
         audit taints, self.class.options, &method(:check_and_log)
     end
 
