@@ -27,11 +27,15 @@ module Slave
         # If we're already a member of a multi-Instance operation bail out.
         return false if !solo?
 
+        @opts.scope.do_not_crawl
+
         # Make sure the desired plugins are loaded before #prepare runs them.
         plugins.load @opts.plugins if @opts.plugins
 
         # Start the clock and run the plugins.
         prepare
+
+        Thread.new { browser_cluster }
 
         @master = connect_to_instance( url: url, token: token )
 
@@ -46,8 +50,11 @@ module Slave
             @issue_buffer |= issues
         end
         # ... and flush it on each page audit.
-        on_audit_page do
-            sitrep( issues: @issue_buffer.dup )
+        after_page_audit do
+            sitrep(
+                issues: @issue_buffer.dup,
+                browser_cluster_skip_lookup: browser_cluster.skip_lookup_for( browser_job.id ).collection
+            )
             @issue_buffer.clear
         end
 
@@ -56,36 +63,40 @@ module Slave
         true
     end
 
+    def update_browser_cluster_lookup( lookups )
+        browser_cluster.update_skip_lookup_for( browser_job.id, lookups )
+        nil
+    end
+
     # @return   [Bool]  `true` if this instance is a slave, `false` otherwise.
     def slave?
         # If we don't have a connection to the master then we're not a slave.
         !!@master
     end
 
-    private
+    def process_page( page, element_scope_ids, &block )
+        Element::Capabilities::Auditable.update_element_restrictions( element_scope_ids )
 
-    # Runs {Framework#audit} and takes care of slave duties like the need to
-    # flush out the issue buffer after the audit and let the master know when
-    # we're done.
-    def slave_run
-        install_element_scope_restrictions(
-            @opts.datastore.total_instances,
-            @opts.datastore.routing_id
-        )
-
-        audit
-
-        print_status 'Done auditing.'
-
-        sitrep( issues: @issue_buffer.dup, audit_done: true ) do
-            @extended_running = false
-            @status = :done
-
-            print_info 'Master informed that we\'re done.'
+        if @audit_page_running
+            push_to_page_queue page
+            return block.call
         end
 
-        @issue_buffer.clear
+        block.call
+
+        @audit_page_running = true
+        Thread.new do
+            audit_page page
+            audit
+
+            sitrep( audit_done: true )
+            @audit_page_running = false
+        end
+
+        nil
     end
+
+    private
 
     def sitrep( data, &block )
         block ||= proc{}

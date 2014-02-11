@@ -212,14 +212,15 @@ module MultiInstance
         if master?
             master_run
         elsif slave?
-            slave_run
+            # NOP
         end
     end
 
-    def install_element_scope_restrictions( total_instances, routing_id )
-        Element::Capabilities::Auditable.skip_like do |element|
-            next false if element.override_instance_scope?
-            element.audit_scope_id.modulo( total_instances ) != routing_id
+    def audit_queues
+        if master?
+            master_audit_queues
+        else
+            super
         end
     end
 

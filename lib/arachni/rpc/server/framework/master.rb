@@ -45,6 +45,15 @@ module Master
         # allow slaves to update our runtime data.
         @local_token = Utilities.generate_token
 
+        after_page_audit do
+            @instances.each do |instance|
+                connect_to_instance( instance ).framework.
+                    update_browser_cluster_lookup(
+                        browser_cluster.skip_lookup_for( browser_job.id ).collection
+                    ){}
+            end
+        end
+
         print_status 'Became master.'
 
         true
@@ -174,6 +183,10 @@ module Master
     def slave_sitrep( data, url, token = nil )
         return false if master? && !valid_token?( token )
 
+        if data[:browser_cluster_skip_lookup]
+            browser_cluster.update_skip_lookup_for( browser_job.id, data[:browser_cluster_skip_lookup] )
+        end
+
         update_issues( data[:issues] || [], token )
 
         Platform::Manager.update_light( data[:platforms] || {} ) if Options.fingerprint?
@@ -265,9 +278,6 @@ module Master
         Thread.abort_on_exception = true
         Thread.new do
 
-            install_element_scope_restrictions( @instances.size + 1,
-                                                @instances.size )
-
             # Assign element routing IDs to all instances to be used to
             # statically determine which elements each instance should audit.
             @instances.each_with_index do |instance_info, i|
@@ -279,6 +289,7 @@ module Master
 
             # Start the master/local Instance's audit.
             audit
+            clear_elem_ids_filter
 
             @finished_auditing = true
 
@@ -297,6 +308,51 @@ module Master
         end
     end
 
+    def master_audit_queues
+        return if @audit_queues_done == false || !has_audit_workload? ||
+            page_limit_reached?
+
+        @audit_queues_done = false
+
+        # If for some reason we've got pages in the page queue this early,
+        # consume them and get it over with.
+        audit_page_queue
+
+        next_page = nil
+        while !page_limit_reached? && (page = next_page || pop_page_from_url_queue)
+            next_page = nil
+
+            Element::Capabilities::Auditable.
+                update_element_restrictions( build_elem_list( page ) )
+
+            @instances.each do |instance|
+                pop_page_from_url_queue do |p|
+                    push_paths_from_page p
+                    @done_slaves.delete instance[:url]
+
+                    connect_to_instance( instance ).
+                        framework.process_page( p, build_elem_list( p ) ){}
+                end
+            end
+
+            pop_page_from_url_queue { |p| next_page = p }
+
+            # We're counting on piggybacking the next page retrieval with the
+            # page audit, however if there wasn't an audit we need to force an
+            # HTTP run.
+            audit_page( page ) or http.run
+
+            # Consume pages somehow triggered by the audit and pushed by the
+            # trainer or plugins or whatever.
+            audit_page_queue
+        end
+
+        audit_page_queue
+
+        @audit_queues_done = true
+        true
+    end
+
     def adjust_distributed_options( &block )
         options = RPC::Server::ActiveOptions.new( self )
 
@@ -306,10 +362,6 @@ module Master
         updated_opts = {
             http: { request_concurrency: options.http.request_concurrency / ic }
         }
-
-        if options.scope.page_limit
-            updated_opts[:scope] = { page_limit:  options.scope.page_limit / ic }
-        end
 
         options.set updated_opts
 

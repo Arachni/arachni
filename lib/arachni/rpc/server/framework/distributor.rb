@@ -76,6 +76,39 @@ module Distributor
 
     private
 
+    # @return   [Array]
+    #   {Arachni::Element::Capabilities::Auditable#audit_scope_id Scope IDs}
+    #   of all page elements with auditable inputs.
+    def build_elem_list( page )
+        list = []
+
+        list |= elements_to_ids( page.links )   if @opts.audit.links
+        list |= elements_to_ids( page.forms )   if @opts.audit.forms
+        list |= elements_to_ids( page.cookies ) if @opts.audit.cookies
+
+        list
+    end
+
+    def elements_to_ids( elements )
+        # Helps us do some preliminary deduplication on our part to avoid sending
+        # over duplicate element IDs.
+        @elem_ids_filter ||= Support::LookUp::HashSet.new
+
+        elements.map do |e|
+            next if e.inputs.empty?
+
+            id = e.audit_scope_id
+            next if @elem_ids_filter.include?( id )
+            @elem_ids_filter << id
+
+            id
+        end.compact.uniq
+    end
+
+    def clear_elem_ids_filter
+        @elem_ids_filter.clear if @elem_ids_filter
+    end
+
     # @param    [Block] block
     #   Block to be passed the Dispatchers that have different Pipe IDs -- i.e
     #   can be setup in HPG mode; pretty simple at this point.
@@ -139,11 +172,6 @@ module Distributor
     # @param    [Hash]      options
     def distribute_and_run( instance_hash, options = {}, &block )
         opts = cleaned_up_opts
-
-        opts[:multi] = {
-            routing_id:      options[:routing_id],
-            total_instances: options[:total_instances]
-        }
 
         [:exclude_path_patterns, :include_path_patterns].each do |k|
             (opts[:scope][k] || {}).

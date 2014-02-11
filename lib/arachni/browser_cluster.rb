@@ -281,11 +281,17 @@ class BrowserCluster
         true
     end
 
-    private
+    def update_skip_lookup_for( id, lookups )
+        synchronize {
+            skip_lookup_for( id ).collection.merge lookups
+        }
+    end
 
     def skip_lookup_for( id )
         @skip[id] ||= Support::LookUp::HashSet.new( hasher: :persistent_hash )
     end
+
+    private
 
     def fail_if_shutdown
         fail Error::AlreadyShutdown, 'Cluster has been shut down.' if !@running
@@ -367,7 +373,7 @@ class BrowserCluster
     def initialize_browsers
         print_status 'Initializing browsers, please wait...'
 
-        @browsers  = {
+        @browsers = {
             idle: [],
             busy: []
         }

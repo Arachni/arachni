@@ -581,13 +581,6 @@ class Instance
             fail ArgumentError, 'Option \'url\' is mandatory.'
         end
 
-        # Undocumented option, used internally to distribute workload and knowledge
-        # for multi-Instance scans.
-        if multi
-            @framework.opts.datastore.total_instances = multi[:total_instances]
-            @framework.opts.datastore.routing_id      = multi[:routing_id]
-        end
-
         @framework.checks.load opts[:checks] if opts[:checks]
         @framework.plugins.load opts[:plugins] if opts[:plugins]
 
