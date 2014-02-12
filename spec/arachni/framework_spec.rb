@@ -150,29 +150,29 @@ describe Arachni::Framework do
 
         describe '#audit.exclude_binaries' do
             it 'excludes binary pages from the audit' do
-                ok = false
+                audited = []
                 Arachni::Framework.new do |f|
                     f.opts.url = @url
                     f.opts.scope.restrict_paths << @url + '/binary'
                     f.opts.audit.elements :links, :forms, :cookies
                     f.checks.load :taint
 
-                    f.on_audit_page { ok = true }
+                    f.on_audit_page { |p| audited << p.url }
                     f.run
                 end
-                ok.should be_true
+                audited.sort.should == ["#{@url}/", @url + '/binary'].sort
 
-                ok = true
+                audited = []
                 Arachni::Framework.new do |f|
                     f.opts.url = @url
                     f.opts.scope.restrict_paths << @url + '/binary'
                     f.opts.audit.exclude_binaries = true
                     f.checks.load :taint
 
-                    f.on_audit_page { ok = false }
+                    f.on_audit_page { |p| audited << p.url }
                     f.run
                 end
-                ok.should be_true
+                audited.should == ["#{@url}/"]
             end
         end
 

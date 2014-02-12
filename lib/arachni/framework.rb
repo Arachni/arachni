@@ -819,10 +819,10 @@ class Framework
 
         @status = :scanning
 
+        push_to_url_queue( @opts.url )
+
         if @opts.scope.restrict_paths.any?
             @opts.scope.restrict_paths.each { |url| push_to_url_queue( url ) }
-        else
-            push_to_url_queue( @opts.url )
         end
 
         # Initialize the BrowserCluster
