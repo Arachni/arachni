@@ -745,10 +745,12 @@ class Instance
                 Process.detach pid
                 @consumed_pids << pid
 
-                instance_info = { 'url' => "/tmp/arachni-instance-slave-#{pid}",
-                                  'token' => token }
+                instance_info = {
+                    url:   "/tmp/arachni-instance-slave-#{pid}",
+                    token: token
+                }
 
-                wait_till_alive( instance_info['url'] ) { q << instance_info }
+                wait_till_alive( instance_info[:url] ) { q << instance_info }
             end
         end
 
