@@ -338,6 +338,15 @@ class Browser
 
     def shutdown
         watir.close
+
+        loop do
+            begin
+                Process.kill( 'KILL', @phantomjs_pid )
+            rescue Errno::ESRCH
+                break
+            end
+        end
+
         @proxy.shutdown
     end
 
@@ -709,13 +718,41 @@ class Browser
         client = Selenium::WebDriver::Remote::Http::Default.new
         client.timeout = WATIR_COM_TIMEOUT
 
-        @selenium = Selenium::WebDriver.for( :phantomjs,
-                                             desired_capabilities: capabilities,
-                                             http_client:          client
+        @selenium = Selenium::WebDriver.for(
+            :remote,
+
+            # We need to spawn our own PhantomJS process because Selenium's
+            # way sometimes gives us zombies.
+            url:                  spawn_phantomjs,
+            desired_capabilities: capabilities,
+            http_client:          client
         )
     end
 
     private
+
+    def spawn_phantomjs
+        return @phantomjs_url if @phantomjs_url
+
+        port = available_port
+        io = IO.popen([ 'phantomjs',
+                        "--webdriver=#{port}",
+                        "--proxy=http://#{@proxy.address}/",
+                        '--ignore-ssl-errors=true',
+                        err: [:child, :out]]
+        )
+
+        Timeout.timeout( @options[:timeout])  do
+            while (buff ||= '') << io.gets.to_s
+                break if buff.include? 'GhostDriver - Main - running on port'
+            end
+        end
+
+        @phantomjs_pid = io.pid
+        Process.detach @phantomjs_pid
+
+        @phantomjs_url = "http://localhost:#{port}"
+    end
 
     def store_pages?
         !!@options[:store_pages]
@@ -903,11 +940,6 @@ class Browser
             'phantomjs.page.settings.userAgent'  => Options.http.user_agent,
             'phantomjs.page.customHeaders.X-Arachni-Browser-Auth' => auth_token,
             #'phantomjs.page.settings.loadImages' => false,
-            'phantomjs.cli.args'                 => [
-                "--proxy=http://#{@proxy.address}/",
-                '--ignore-ssl-errors=true',
-                '--web-security=no'
-            ]
         )
     end
 

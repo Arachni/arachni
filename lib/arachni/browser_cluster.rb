@@ -349,7 +349,7 @@ class BrowserCluster
             busy: []
         }
 
-        @javascript_token ||= Utilities.generate_token
+        @javascript_token = Utilities.generate_token
 
         pool_size.times do
             @browsers[:idle] << Peer.new(
@@ -358,25 +358,7 @@ class BrowserCluster
             )
         end
 
-        # Make sure that the browsers are operational and if not spawn a
-        # replacement.
-        loop do
-            @browsers[:idle].dup.each do |browser|
-                next if browser.operational?
-
-                browser.shutdown rescue nil
-                @browsers[:idle].delete browser
-
-                @browsers[:idle] << Peer.new(
-                    javascript_token: @javascript_token,
-                    master:           self
-                )
-            end
-
-            break if @browsers[:idle].size == pool_size
-        end
-
-        print_status 'Initialization complete.'
+        print_status "Initialization complete, #{pool_size} browsers are in the pool."
     end
 
 end
