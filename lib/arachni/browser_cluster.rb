@@ -240,12 +240,7 @@ class BrowserCluster
         @jobs.clear
 
         # Kill the browsers.
-        q = Queue.new
-        (@browsers[:idle] | @browsers[:busy]).each { |b| b.shutdown { q << nil } }
-        pool_size.times { q.pop }
-
-        # Kill our IPC RPC server.
-        @servers.map( &:shutdown )
+        (@browsers[:idle] | @browsers[:busy]).each(&:shutdown)
 
         true
     end
@@ -338,30 +333,6 @@ class BrowserCluster
         end
     end
 
-    def ipc_handle
-        socket = "/tmp/arachni-browser-cluster-#{Utilities.available_port}"
-        token = Utilities.generate_token
-
-        @servers ||= []
-
-        server = RPC::Server::Base.new( { server_socket: socket }, token )
-        @servers << server
-
-        server.logger.level = ::Logger::Severity::FATAL
-        server.add_handler( 'cluster', self )
-
-        RPC::EM.schedule { server.start }
-        sleep 0.1 while !File.exists?( socket )
-
-        handler = RPC::RemoteObjectMapper.new(
-            RPC::Client::Base.new( Options.instance, socket, token ),
-            'cluster'
-        )
-
-        wait_till_service_ready handler
-        handler
-    end
-
     def move_browser( browser, from_state, to_state )
         @browsers[to_state] << @browsers[from_state].delete( browser )
     end
@@ -371,7 +342,7 @@ class BrowserCluster
     end
 
     def initialize_browsers
-        print_status 'Initializing browsers, please wait...'
+        print_status 'Initializing browsers...'
 
         @browsers = {
             idle: [],
@@ -379,76 +350,33 @@ class BrowserCluster
         }
 
         @javascript_token ||= Utilities.generate_token
-        booting_browsers    = []
 
         pool_size.times do
-            ipc_data = Peer.spawn(
+            @browsers[:idle] << Peer.new(
                 javascript_token: @javascript_token,
-                master:           ipc_handle
+                master:           self
             )
-            @consumed_pids   << ipc_data.shift
-            booting_browsers << ipc_data
         end
 
-        begin
-            Timeout.timeout( 20 * pool_size ) do
-                loop do
-                    booting_browsers.dup.each do |socket, token|
-                        begin
-                            b = RPC::Client::BrowserCluster::Peer.new( socket, token )
+        # Make sure that the browsers are operational and if not spawn a
+        # replacement.
+        loop do
+            @browsers[:idle].dup.each do |browser|
+                next if browser.operational?
 
-                            if !Options.url
-                                b.alive?
-                                @browsers[:idle] << b
-                                booting_browsers.delete( [socket, token] )
-                                next
-                            end
+                browser.shutdown rescue nil
+                @browsers[:idle].delete browser
 
-                            # Make sure that the browser is operational and if
-                            # not spawn a replacement.
-                            if b.operational? Options.url
-                                @browsers[:idle] << b
-                            else
-                                b.shutdown
-                                booting_browsers.delete( [socket, token] )
-
-                                ipc_data = Peer.spawn(
-                                    javascript_token: @javascript_token,
-                                    master:           ipc_handle
-                                )
-                                @consumed_pids   << ipc_data.shift
-                                booting_browsers << ipc_data
-                            end
-
-                            booting_browsers.delete( [socket, token] )
-                        rescue
-                        end
-                    end
-
-                    break if booting_browsers.empty?
-                end
+                @browsers[:idle] << Peer.new(
+                    javascript_token: @javascript_token,
+                    master:           self
+                )
             end
-        rescue Timeout::Error
-            abort 'BrowserCluster failed to initialize peers in time.'
+
+            break if @browsers[:idle].size == pool_size
         end
 
-        print_status 'Browser initialization complete.'
-    end
-
-    def wait_till_service_ready( service )
-        begin
-            Timeout.timeout( 10 ) do
-                while sleep( 0.1 )
-                    begin
-                        service.alive?
-                        break
-                    rescue RPC::Exceptions::ConnectionError
-                    end
-                end
-            end
-        rescue Timeout::Error
-            abort 'BrowserCluster never started!'
-        end
+        print_status 'Initialization complete.'
     end
 
 end

@@ -21,59 +21,9 @@ class BrowserCluster
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Peer < Arachni::Browser
 
-    # Spawns a {Peer} in it own process and connects to it.
-    #
-    # @param    [Hash]  options
-    # @option   options  :wait [Bool]
-    #   `true` to wait until the {Browser} has booted, `false` otherwise.
-    #
-    # @return   [Array, RPC::Client::BrowserCluster::Peer]
-    #
-    #   * `[socket, token]` if `:wait` has been set to `false`.
-    #   * {RPC::Client::BrowserCluster::Peer} if `:wait` has been set to `true`.
-    def self.spawn( options = {} )
-        socket = "/tmp/arachni-browser-#{Utilities.available_port}"
-        token  = Utilities.generate_token
-
-        pid = ::EM.fork_reactor do
-            Options.rpc.server_address = nil
-            Options.rpc.server_port    = nil
-            Options.rpc.server_socket  = socket
-
-            new(
-                master:           options[:master],
-                token:            token,
-                javascript_token: options[:javascript_token]
-            )
-        end
-
-        if options[:wait]
-            sleep 0.1 while !File.exists?( socket )
-
-            client = RPC::Client::BrowserCluster::Peer.new( socket, token )
-            begin
-                Timeout.timeout( 10 ) do
-                    while sleep( 0.1 )
-                        begin
-                            client.alive?
-                            break
-                        rescue Exception
-                        end
-                    end
-                end
-            rescue Timeout::Error
-                abort "Browser '#{socket}' never started!"
-            end
-
-            return [pid, client]
-        end
-
-        [pid, socket, token]
-    end
-
     JOB_TIMEOUT = 60
 
-    # @return    [RPC::RemoteObjectMapper]    For {BrowserCluster}.
+    # @return    [BrowserCluster]
     attr_reader :master
 
     # @return [Job] Currently assigned job.
@@ -95,17 +45,6 @@ class Peer < Arachni::Browser
         @javascript.token = javascript_token
 
         start_capture
-
-        @server = RPC::Server::Base.new( Options.instance, rpc_auth_token )
-        @server.logger.level = ::Logger::Severity::FATAL
-
-        @server.add_async_check do |method|
-            # Methods that expect a block are async.
-            method.parameters.flatten.include? :block
-        end
-
-        @server.add_handler( 'browser', self )
-        @server.start
     end
 
     # @param    [BrowserCluster::Job]  job
@@ -208,24 +147,17 @@ class Peer < Arachni::Browser
     end
 
     # @private
-    def operational?( url, &block )
-        Thread.new do
-            watir.goto url
-            block.call !!(response rescue false)
-        end
-        nil
+    def operational?
+        random_token = generate_token
+        load Page.from_data( code: 200, url: 'http://test/', body: random_token ), false
+        source.include?( random_token )
+    rescue
+        false
     end
 
     # @return   [Bool]  `true`
     def alive?
         true
-    end
-
-    # Closes the browser and shuts down the server.
-    def shutdown
-        super
-        @server.shutdown rescue nil
-        nil
     end
 
     private

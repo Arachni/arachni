@@ -13,11 +13,6 @@ describe Arachni::BrowserCluster do
     after( :each ) do
         @cluster.shutdown if @cluster
         Arachni::Options.reset
-
-        if ::EM.reactor_running?
-            ::EM.stop
-            sleep 0.1 while ::EM.reactor_running?
-        end
     end
 
     describe '#initialize' do
