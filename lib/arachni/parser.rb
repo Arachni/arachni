@@ -333,7 +333,7 @@ class Parser
                     exception_jail( false ){ self.class.extractors[name].new.run( doc ) }
                 end.flatten.uniq.compact.
                 map { |path| to_absolute( path ) }.compact.uniq.
-                reject { |path| skip?( path ) }
+                reject { |path| path.to_s.empty? || skip?( path ) }
         rescue ::Exception => e
             print_error e.to_s
             print_error_backtrace e
