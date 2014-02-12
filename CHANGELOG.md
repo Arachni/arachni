@@ -2,6 +2,8 @@
 
 ## _Under development_
 
+- `Element::Form`
+    - Updated to handle empty base-href values.
 - Plugins
     - `autologin` -- Updated to handle stacked post-login redirects.
 
