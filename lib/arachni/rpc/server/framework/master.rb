@@ -281,6 +281,9 @@ module Master
             # Assign element routing IDs to all instances to be used to
             # statically determine which elements each instance should audit.
             @instances.each_with_index do |instance_info, i|
+                # Initially mark slaves as done.
+                @done_slaves << instance_info[:url]
+
                 distribute_and_run( instance_info,
                                     routing_id:      i,
                                     total_instances: @instances.size + 1
@@ -322,14 +325,22 @@ module Master
         while !page_limit_reached? && (page = next_page || pop_page_from_url_queue)
             next_page = nil
 
+            # Call dibs on any elements that appear in our page and avoid
+            # auditing elements that have been previously assigned to slaves.
             Element::Capabilities::Auditable.
                 update_element_restrictions( build_elem_list( page ) )
 
             @instances.each do |instance|
                 pop_page_from_url_queue do |p|
+
+                    # Push any new resources to the audit queue.
                     push_paths_from_page p
+
+                    # Slave got workload, remove it from the 'done' list.
                     @done_slaves.delete instance[:url]
 
+                    # Assign the page to the slave and automatically calculate
+                    # and assign per-element audit restrictions.
                     connect_to_instance( instance ).
                         framework.process_page( p, build_elem_list( p ) ){}
                 end
