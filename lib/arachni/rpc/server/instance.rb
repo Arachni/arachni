@@ -654,7 +654,6 @@ class Instance
     # @private
     def consumed_pids( &block )
         pids  = ([Process.pid] | @consumed_pids)
-        pids |= browser_cluster.consumed_pids if browser_cluster
 
         block.call pids if @consumed_pids.size == 1
 
