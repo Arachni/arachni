@@ -2,6 +2,12 @@
 
 ## _Under development_
 
+- Plugins
+    - `autologin` -- Updated to handle stacked post-login redirects.
+
+[Closes #426]
+
+
 ## 0.4.6 _(January 1, 2014)_
 
 - CLI user interfaces
