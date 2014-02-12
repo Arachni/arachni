@@ -409,25 +409,6 @@ describe 'Arachni::RPC::Server::Instance' do
                     end
                 end
 
-                context 'when OptionGroup::Scope#page_limit has been set' do
-                    it 'should be divided by the amount of spawns' do
-                        instance = instance_spawn
-
-                        scope_page_limit = 100
-                        spawns           = 4
-
-                        instance.service.scan(
-                            url:    web_server_url_for( :framework_simple ),
-                            audit:  { elements: [:links, :forms] },
-                            checks: :test,
-                            spawns: spawns,
-                            scope:  { page_limit: scope_page_limit }
-                        )
-
-                        sleep 1 while instance.service.busy?
-                        instance.opts.scope.page_limit.should == scope_page_limit / (spawns + 1)
-                    end
-                end
                 context 'when OptionGroup::HTTP#request_concurrency has been set' do
                     it 'should be divided by the amount of spawns' do
                         instance = instance_spawn
