@@ -19,12 +19,6 @@ describe Arachni::Framework do
     end
     after( :each ) do
         @f.clean_up
-
-        if ::EM.reactor_running?
-            ::EM.stop
-            sleep 0.1 while ::EM.reactor_running?
-        end
-
         @f.reset
     end
 

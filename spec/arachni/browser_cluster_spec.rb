@@ -318,10 +318,6 @@ describe Arachni::BrowserCluster do
             calls.should > 1
 
             @cluster.shutdown
-            if ::EM.reactor_running?
-                ::EM.stop
-                sleep 0.1 while ::EM.reactor_running?
-            end
 
             calls = 0
             @cluster = described_class.new
