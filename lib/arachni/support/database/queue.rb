@@ -20,20 +20,19 @@ class Queue < Base
     # @see Arachni::Database::Base#initialize
     def initialize( *args )
         super( *args )
-        @q     = ::Queue.new
-        @mutex = Mutex.new
+        @q = ::Queue.new
     end
 
     # @param    [Object]    obj Object to add to the queue.
     def <<( obj )
-        synchronize { @q << dump( obj ) }
+        @q << dump( obj )
     end
     alias :push :<<
     alias :enq :<<
 
     # @return   [Object] Removes an object from the queue and returns it.
     def pop
-        synchronize { load_and_delete_file @q.pop }
+        load_and_delete_file @q.pop
     end
     alias :deq :pop
     alias :shift :pop
@@ -57,12 +56,6 @@ class Queue < Base
             next if !path
             delete_file path
         end
-    end
-
-    private
-
-    def synchronize( &block )
-        @mutex.synchronize( &block )
     end
 
 end
