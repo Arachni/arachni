@@ -111,10 +111,6 @@ describe Arachni::AuditStore do
         it 'returns a Time object' do
             audit_store.start_datetime.should be_kind_of Time
         end
-        it 'returns the start datetime of the scan' do
-            audit_store.start_datetime.to_s.should ==
-                Factory[:audit_store_data][:start_datetime].to_s
-        end
         context 'when no start datetime info has been provided' do
             it 'falls-back to Time.now' do
                 audit_store_empty.start_datetime.should be_kind_of Time
