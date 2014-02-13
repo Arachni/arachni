@@ -327,8 +327,9 @@ module Master
 
             # Call dibs on any elements that appear in our page and avoid
             # auditing elements that have been previously assigned to slaves.
-            Element::Capabilities::Auditable.
-                update_element_restrictions( build_elem_list( page ) )
+            Element::Capabilities::Auditable.update_element_restrictions(
+                filter_elements( page )
+            )
 
             @instances.each do |instance|
                 pop_page_from_url_queue do |p|
@@ -341,8 +342,9 @@ module Master
 
                     # Assign the page to the slave and automatically calculate
                     # and assign per-element audit restrictions.
-                    connect_to_instance( instance ).
-                        framework.process_page( p, build_elem_list( p ) ){}
+                    connect_to_instance( instance ).framework.process_page(
+                        p, filter_elements( p )
+                    ){}
                 end
             end
 

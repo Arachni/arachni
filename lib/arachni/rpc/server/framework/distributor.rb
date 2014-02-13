@@ -79,7 +79,7 @@ module Distributor
     # @return   [Array]
     #   {Arachni::Element::Capabilities::Auditable#audit_scope_id Scope IDs}
     #   of all page elements with auditable inputs.
-    def build_elem_list( page )
+    def filter_elements( page )
         list = []
 
         list |= elements_to_ids( page.links )   if @opts.audit.links
