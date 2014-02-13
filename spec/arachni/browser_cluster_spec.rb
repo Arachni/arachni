@@ -96,6 +96,29 @@ describe Arachni::BrowserCluster do
                 @cluster.job_done( job )
                 expect { @cluster.queue( job ){} }.to raise_error described_class::Job::Error::AlreadyDone
             end
+
+            context 'and the job is marked as #never_ending' do
+                it 'preserves the analysis state between calls' do
+                    pages = []
+                    @cluster = described_class.new
+
+                    job.never_ending = true
+                    @cluster.queue( job ) do |result|
+                        result.job.never_ending?.should be_true
+                        pages << result.page
+                    end
+                    @cluster.wait
+                    browser_explore_check_pages pages
+
+                    pages = []
+                    @cluster.queue( job ) do |result|
+                        result.job.never_ending?.should be_true
+                        pages << result.page
+                    end
+                    @cluster.wait
+                    pages.should be_empty
+                end
+            end
         end
 
         context 'when the cluster has ben shutdown' do
@@ -329,6 +352,18 @@ describe Arachni::BrowserCluster do
 
             calls.should == 1
         end
+
+        it 'returns true' do
+            return_val = nil
+
+            @cluster = described_class.new
+            @cluster.queue( job ) do
+                return_val = @cluster.job_done( job )
+            end
+            @cluster.wait
+
+            return_val.should == true
+        end
     end
 
     describe '#job_done?' do
@@ -346,6 +381,18 @@ describe Arachni::BrowserCluster do
             it 'returns false' do
                 @cluster = described_class.new
                 @cluster.queue( job ) { }
+
+                @cluster.job_done?( job ).should == false
+            end
+        end
+
+        context 'when a job has been marked as #never_ending' do
+            it 'returns false' do
+                @cluster = described_class.new
+
+                job.never_ending = true
+                @cluster.queue( job ) {}
+                @cluster.wait
 
                 @cluster.job_done?( job ).should == false
             end

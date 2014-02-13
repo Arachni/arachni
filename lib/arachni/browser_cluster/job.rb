@@ -59,6 +59,18 @@ class Job
     def run
     end
 
+    # @return   [Bool]  `true` if this job never ends, `false` otherwise.
+    # @see #never_ending
+    def never_ending?
+        !!@never_ending
+    end
+
+    # @return   [Bool]  `true` if this job never ends, `false` otherwise.
+    def never_ending=( bool )
+        @options[:never_ending] = bool
+        @never_ending = bool
+    end
+
     # Configures the job with the given resources, {#run runs} the payload
     # and then removes the assigned resources.
     #
@@ -140,7 +152,10 @@ class Job
     private
 
     def forward_options( options )
-        add_id( options ).merge( forwarder: self.clean_copy )
+        add_id( options ).merge(
+            never_ending: never_ending?,
+            forwarder:    self.clean_copy
+        )
     end
 
     def add_id( options )

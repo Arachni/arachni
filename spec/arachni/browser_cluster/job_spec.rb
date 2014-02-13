@@ -94,6 +94,32 @@ describe Arachni::BrowserCluster::Job do
         end
     end
 
+    describe '#never_ending?' do
+        subject { JobTest.new }
+
+        context 'when #never_ending is' do
+            context true do
+                it 'returns true' do
+                    subject.never_ending = true
+                    subject.never_ending?.should be_true
+                end
+            end
+
+            context false do
+                it 'returns false' do
+                    subject.never_ending = false
+                    subject.never_ending?.should be_false
+                end
+            end
+
+            context nil do
+                it 'returns false' do
+                    subject.never_ending?.should be_false
+                end
+            end
+        end
+    end
+
     describe '#configure_and_run' do
         subject { JobConfigureAndRunTest.new }
 
@@ -136,11 +162,14 @@ describe Arachni::BrowserCluster::Job do
     end
 
     describe '#dup' do
-        subject { JobDupTest.new( my_data: 'stuff' ) }
+        subject { JobDupTest.new( never_ending: true, my_data: 'stuff' ) }
 
         it 'copies the Job' do
             subject.my_data.should == 'stuff'
-            subject.dup.my_data.should == 'stuff'
+
+            dup = subject.dup
+            dup.my_data.should == 'stuff'
+            dup.never_ending?.should == true
         end
     end
 
@@ -155,6 +184,18 @@ describe Arachni::BrowserCluster::Job do
         it 'creates a new Job with the same #id' do
             id = subject.id
             subject.forward.id.should == id
+        end
+
+        it 'creates a new Job with the same #never_ending' do
+            subject.forward.never_ending?.should be_false
+
+            job = JobForwardTest.new( never_ending: true, my_data: 'stuff' )
+            job.never_ending?.should be_true
+            job.forward.never_ending?.should be_true
+
+            job = JobForwardTest.new( never_ending: false, my_data: 'stuff' )
+            job.never_ending?.should be_false
+            job.forward.never_ending?.should be_false
         end
 
         it 'does not preserve any existing data' do
@@ -185,6 +226,18 @@ describe Arachni::BrowserCluster::Job do
 
             forwarded.id.should == id
             forwarded.should be_kind_of JobForwardAsTest
+        end
+
+        it 'creates a new Job with the same #never_ending' do
+            subject.forward_as( JobForwardAsTest ).never_ending?.should be_false
+
+            job = JobForwardTest.new( never_ending: true, my_data: 'stuff' )
+            job.never_ending?.should be_true
+            job.forward_as( JobForwardAsTest ).never_ending?.should be_true
+
+            job = JobForwardTest.new( never_ending: false, my_data: 'stuff' )
+            job.never_ending?.should be_false
+            job.forward_as( JobForwardAsTest ).never_ending?.should be_false
         end
 
         it 'does not preserve any existing data' do

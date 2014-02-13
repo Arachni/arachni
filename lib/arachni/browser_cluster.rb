@@ -185,12 +185,15 @@ class BrowserCluster
     #   Job to mark as done. Will remove any callbacks and associated {#skip} state.
     def job_done( job )
         synchronize do
-            @skip.delete job.id
-            @job_callbacks.delete job.id
+            if !job.never_ending?
+                @skip.delete job.id
+                @job_callbacks.delete job.id
+            end
+
             @pending_jobs[job.id] = 0
         end
 
-        nil
+        true
     end
 
     # @param    [Job]  job
@@ -200,6 +203,8 @@ class BrowserCluster
     #
     # @raise    [Error::JobNotFound]  Raised when `job` could not be found.
     def job_done?( job, fail_if_not_found = true )
+        return false if job.never_ending?
+
         synchronize do
             fail_if_job_not_found job if fail_if_not_found
             return false if !@pending_jobs.include?( job.id )
@@ -318,7 +323,7 @@ class BrowserCluster
     end
 
     def initialize_workers
-        print_status 'Initializing browsers...'
+        print_status "Initializing #{pool_size} browsers..."
 
         pool_size.times do
             @workers << Worker.new(
@@ -327,7 +332,7 @@ class BrowserCluster
             )
         end
 
-        print_status "Initialization complete, #{pool_size} browsers are in the pool."
+        print_status "Initialization complete with #{@workers.size} browsers in the pool."
     end
 
 end

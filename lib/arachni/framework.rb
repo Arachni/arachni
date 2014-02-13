@@ -796,21 +796,18 @@ class Framework
         end
 
         true
-    rescue BrowserCluster::Job::Error::AlreadyDone => e
-        refresh_browser_job
-        retry
     end
 
     def browser_job
         # We'll recycle the same job since all of them will have the same
         # callback. This will force the BrowserCluster to use the same block
         # for all queued jobs.
-        @browser_job ||= BrowserCluster::Jobs::ResourceExploration.new
-    end
-
-    def refresh_browser_job
-        @browser_job = nil
-        browser_job
+        #
+        # Also, this job should never end so that all analysis operations
+        # share the same state.
+        @browser_job ||= BrowserCluster::Jobs::ResourceExploration.new(
+            never_ending: true
+        )
     end
 
     # Performs the audit.
