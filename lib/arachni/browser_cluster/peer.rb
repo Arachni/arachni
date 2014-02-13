@@ -157,7 +157,7 @@ class Peer < Arachni::Browser
 
     def save_response( response )
         super( response )
-        @master.push_to_sitemap( response.url, response.code ){}
+        master.push_to_sitemap( response.url, response.code )
         response
     end
 
