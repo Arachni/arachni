@@ -310,7 +310,7 @@ describe Arachni::BrowserCluster do
         it 'marks the given job as done' do
             calls = 0
             @cluster = described_class.new
-            @cluster.queue( job ) do |result|
+            @cluster.queue( job ) do
                 calls += 1
             end
             @cluster.wait
@@ -325,7 +325,7 @@ describe Arachni::BrowserCluster do
 
             calls = 0
             @cluster = described_class.new
-            @cluster.queue( job ) do |result|
+            @cluster.queue( job ) do
                 @cluster.job_done( job )
                 calls += 1
             end
