@@ -686,6 +686,7 @@ class Framework
     # Prefer this if you already have an instance.
     #
     def reset
+        @browser_job           = nil
         @page_queue_total_size = 0
         @url_queue_total_size  = 0
         reset_filters
@@ -830,7 +831,8 @@ class Framework
         loop do
 
             show_workload_msg = true
-            while wait_for_browser? && !has_audit_workload?
+            # Bad idea? Hogging the BrowserCluster mutex?
+            while !has_audit_workload? && wait_for_browser?
                 if show_workload_msg
                     print_line
                     print_status 'Workload exhausted, waiting for new pages' <<
@@ -843,7 +845,7 @@ class Framework
             audit_queues
 
             break if page_limit_reached?
-            break if !wait_for_browser? && !has_audit_workload?
+            break if !has_audit_workload? && !wait_for_browser?
         end
     end
 
