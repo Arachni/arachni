@@ -60,6 +60,21 @@ describe Arachni::Check::Auditor do
     let(:issue) { Factory[:issue] }
     let(:issue_data) { Factory[:issue_data].tap { |d| d.delete :check } }
 
+    describe '#with_browser_cluster' do
+        context 'when a browser cluster is' do
+            context 'available' do
+                it 'passes it to the given block' do
+                    called = false
+                    @auditor.with_browser_cluster do |cluster|
+                        cluster.should == @framework.browser_cluster
+                        called = true
+                    end.should be_true
+                    called.should be_true
+                end
+            end
+        end
+    end
+
     describe '#register_results' do
         it 'registers issues with the framework' do
             @auditor.register_results( [ Factory[:issue] ] )

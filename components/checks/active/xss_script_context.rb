@@ -57,13 +57,14 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
         @options ||= { format: [ Format::STRAIGHT, Format::APPEND ] }
     end
 
-    def taints
+    def taints( browser_cluster )
         self.class.strings.map { |taint| taint % browser_cluster.javascript_token }
     end
 
     def run
-        return if !browser_cluster
-        audit taints, self.class.options, &method(:check_and_log)
+        with_browser_cluster do |cluster|
+            audit taints( cluster ), self.class.options, &method(:check_and_log)
+        end
     end
 
     def check_and_log( response, element )

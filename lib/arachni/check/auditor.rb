@@ -432,12 +432,20 @@ module Auditor
     #   Block to handle each page snapshot. If the `block` returns a `true` value,
     #   further analysis will be aborted.
     def trace_taint( resource, options = {}, &block )
-        return if !browser_cluster
-        browser_cluster.trace_taint( resource, options ) do |result|
-            # Mark the job as done and abort further analysis if the block
-            # returns true.
-            browser_cluster.job_done( result.job ) if block.call( result.page )
+        with_browser_cluster do |cluster|
+            cluster.trace_taint( resource, options ) do |result|
+                # Mark the job as done and abort further analysis if the block
+                # returns true.
+                cluster.job_done( result.job ) if block.call( result.page )
+            end
         end
+    end
+
+    # @param    [Block] block
+    #   Block to be called and passed a {BrowserCluster}, if one is available.
+    def with_browser_cluster( &block )
+        return if !browser_cluster
+        block.call browser_cluster
     end
 
     private

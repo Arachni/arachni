@@ -63,15 +63,17 @@ class Arachni::Checks::XSS < Arachni::Check::Base
             return
         end
 
-        print_info 'Progressing to deferred browser evaluation of response.'
+        with_browser_cluster do
+            print_info 'Progressing to deferred browser evaluation of response.'
 
-        # Pass the response to the BrowserCluster for evaluation and see if the
-        # element appears in the doc tree now.
-        trace_taint( response, taint: self.class.tag ) do |page|
-            print_info 'Checking results of deferred taint analysis.'
+            # Pass the response to the BrowserCluster for evaluation and see if the
+            # element appears in the doc tree now.
+            trace_taint( response, taint: self.class.tag ) do |page|
+                print_info 'Checking results of deferred taint analysis.'
 
-            next if !(proof = find_proof( page ))
-            log vector: element, proof: proof, page: page
+                next if !(proof = find_proof( page ))
+                log vector: element, proof: proof, page: page
+            end
         end
     end
 
