@@ -112,11 +112,16 @@ class BrowserCluster
 
         @sitemap = {}
         @mutex   = Monitor.new
-        @consumed_pids = []
 
         initialize_browsers
+    end
 
-        start
+    # @return    [Job]  Pops a job from the queue.
+    # @see #queue
+    def pop
+        job = @jobs.pop
+        job = pop if job_done? job
+        job
     end
 
     # @param    [Job]  job
@@ -229,18 +234,13 @@ class BrowserCluster
 
     # Shuts the cluster down.
     def shutdown
-        return false if !@running
-
-        @running = false
-
-        # Kill the resource consumer thread.
-        @worker.kill
-
-        # Clear the temp files used to hold the resources to analyze.
-        @jobs.clear
+        @shutdown = true
 
         # Kill the browsers.
         (@browsers[:idle] | @browsers[:busy]).each(&:shutdown)
+
+        # Clear the temp files used to hold the jobs.
+        @jobs.clear
 
         true
     end
@@ -272,10 +272,6 @@ class BrowserCluster
         synchronize { @sitemap[url] = code }
     end
 
-    def alive?
-        true
-    end
-
     def update_skip_lookup_for( id, lookups )
         synchronize {
             skip_lookup_for( id ).collection.merge lookups
@@ -286,10 +282,20 @@ class BrowserCluster
         @skip[id] ||= Support::LookUp::HashSet.new( hasher: :persistent_hash )
     end
 
+    def move_browser( browser, from_state, to_state, job = nil )
+        synchronize do
+            @browsers[to_state] << @browsers[from_state].delete( browser )
+
+            next if !job
+            @pending_jobs[job.id] -= 1
+            job_done( job ) if @pending_jobs[job.id] <= 0
+        end
+    end
+
     private
 
     def fail_if_shutdown
-        fail Error::AlreadyShutdown, 'Cluster has been shut down.' if !@running
+        fail Error::AlreadyShutdown, 'Cluster has been shut down.' if @shutdown
     end
 
     def fail_if_job_done( job )
@@ -300,41 +306,6 @@ class BrowserCluster
     def fail_if_job_not_found( job )
         return if @pending_jobs.include?( job.id ) || @job_callbacks.include?( job.id )
         fail Error::JobNotFound, 'Job could not be found.'
-    end
-
-    def start
-        Thread.abort_on_exception = true
-
-        @running = true
-        @worker  = Thread.new do
-            while @running do
-                sleep 0.05
-                next if @jobs.empty?
-
-                synchronize do
-                    next if @browsers[:idle].empty?
-
-                    job = @jobs.pop
-                    next if job_done? job
-
-                    browser = @browsers[:idle].pop
-                    @browsers[:busy] << browser
-
-                    browser.run_job( job, cookies: HTTP::Client.cookies ) do
-                        synchronize do
-                            @pending_jobs[job.id] -= 1
-                            job_done( job ) if @pending_jobs[job.id] <= 0
-
-                            move_browser( browser, :busy, :idle )
-                        end
-                    end
-                end
-            end
-        end
-    end
-
-    def move_browser( browser, from_state, to_state )
-        @browsers[to_state] << @browsers[from_state].delete( browser )
     end
 
     def synchronize( &block )

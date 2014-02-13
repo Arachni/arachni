@@ -34,7 +34,6 @@ class Peer < Arachni::Browser
             trap( signal, 'IGNORE' ) if Signal.list.has_key?( signal )
         end
 
-        rpc_auth_token   = options.delete( :token )
         javascript_token = options.delete( :javascript_token )
         @master          = options.delete( :master )
 
@@ -45,51 +44,44 @@ class Peer < Arachni::Browser
         @javascript.token = javascript_token
 
         start_capture
+
+        start
     end
 
     # @param    [BrowserCluster::Job]  job
-    # @param    [Hash]  options
-    # @option   options [Array<Cookie>] :cookies
-    #   Cookies with which to update the browser's cookie-jar before analyzing
-    #   the given resource.
     #
     # @return   [Array<Page>]
     #   Pages which resulted from firing events, clicking JavaScript links
     #   and capturing AJAX requests.
     #
     # @see Arachni::Browser#trigger_events
-    def run_job( job, options = {}, &block )
-        HTTP::Client.update_cookies( options[:cookies] || [] )
-
+    def run_job( job )
         @job = job
 
-        Thread.new do
-            begin
-                Timeout.timeout( JOB_TIMEOUT ) do
-                    begin
-                        @job.configure_and_run( self )
-                    rescue => e
-                        print_error e
-                        print_error_backtrace e
-                    end
+        begin
+            Timeout.timeout( JOB_TIMEOUT ) do
+                begin
+                    @job.configure_and_run( self )
+                rescue => e
+                    print_error e
+                    print_error_backtrace e
                 end
-            rescue TimeoutError
-                print_error "Job timed-out after #{JOB_TIMEOUT} seconds: #{job}"
             end
-
-            # The jobs may have configured callbacks to capture pages etc.,
-            # remove them.
-            @on_new_page_blocks.clear
-            @on_new_page_with_sink_blocks.clear
-            @on_response_blocks.clear
-
-            # Close open windows to free system resources and have a clean
-            # slate for the later job.
-            close_windows
-
-            @job = nil
-            block.call
+        rescue TimeoutError
+            print_error "Job timed-out after #{JOB_TIMEOUT} seconds: #{job}"
         end
+
+        # The jobs may have configured callbacks to capture pages etc.,
+        # remove them.
+        @on_new_page_blocks.clear
+        @on_new_page_with_sink_blocks.clear
+        @on_response_blocks.clear
+
+        # Close open windows to free system resources and have a clean
+        # slate for the later job.
+        close_windows
+
+        @job = nil
 
         true
     end
@@ -146,21 +138,22 @@ class Peer < Arachni::Browser
         false
     end
 
-    # @private
-    def operational?
-        random_token = generate_token
-        load Page.from_data( code: 200, url: 'http://test/', body: random_token ), false
-        source.include?( random_token )
-    rescue
-        false
-    end
-
-    # @return   [Bool]  `true`
-    def alive?
-        true
+    def shutdown
+        @consumer.kill
+        super
     end
 
     private
+
+    def start
+        @consumer ||= Thread.new do
+            while job = master.pop
+                master.move_browser( self, :idle, :busy )
+                run_job job
+                master.move_browser( self, :busy, :idle, job )
+            end
+        end
+    end
 
     def save_response( response )
         super( response )
