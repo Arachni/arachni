@@ -109,14 +109,15 @@ class BrowserCluster
         # cluster, by Job#id. Once a job's count reaches 0, it's passed to
         # #job_done.
         @pending_jobs = Hash.new(0)
+        @pending_job_counter = 0
 
         # Jobs are off-loaded to disk.
         @jobs = Support::Database::Queue.new
 
-        @sitemap = {}
-        @mutex   = Monitor.new
-
-        @workers = []
+        @sitemap     = {}
+        @mutex       = Monitor.new
+        @done_signal = Queue.new
+        @workers     = []
 
         @javascript_token = Utilities.generate_token
 
@@ -140,7 +141,10 @@ class BrowserCluster
         fail_if_shutdown
         fail_if_job_done job
 
+        @done_signal.clear
+
         synchronize do
+            @pending_job_counter  += 1
             @pending_jobs[job.id] += 1
             @job_callbacks[job.id] = block if block
 
@@ -190,6 +194,13 @@ class BrowserCluster
                 @job_callbacks.delete job.id
             end
 
+            @pending_job_counter -= @pending_jobs[job.id]
+
+            if @pending_job_counter <= 0
+                @pending_job_counter = 0
+                @done_signal << nil
+            end
+
             @pending_jobs[job.id] = 0
         end
 
@@ -230,18 +241,13 @@ class BrowserCluster
     #   `true` if there are no resources to analyze and no running workers.
     def done?
         fail_if_shutdown
-
-        synchronize do
-            return true if @pending_jobs.empty?
-            @pending_jobs.values.max == 0
-        end
+        synchronize { @pending_job_counter == 0 }
     end
 
     # Blocks until all resources have been analyzed.
     def wait
         fail_if_shutdown
-
-        sleep 0.1 while !done?
+        @done_signal.pop if !done?
         self
     end
 
@@ -297,6 +303,7 @@ class BrowserCluster
 
     def decrease_pending_job( job )
         synchronize do
+            @pending_job_counter  -= 1
             @pending_jobs[job.id] -= 1
             job_done( job ) if @pending_jobs[job.id] <= 0
         end
