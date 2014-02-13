@@ -179,6 +179,9 @@ class Framework
     # @return   [BrowserCluster]
     def browser_cluster
         return if !host_has_has_browser?
+
+        # Initialization may take a while so since we lazy load this make sure
+        # that only one thread gets to this code at a time.
         synchronize { @browser_cluster ||= BrowserCluster.new }
     end
 
@@ -223,7 +226,7 @@ class Framework
             return false
         end
 
-        # Initialize the BrowserCluster
+        # Initialize the BrowserCluster.
         browser_cluster
 
         @audited_page_count += 1
@@ -818,12 +821,9 @@ class Framework
         @status = :scanning
 
         push_to_url_queue( @opts.url )
+        @opts.scope.restrict_paths.each { |url| push_to_url_queue( url ) }
 
-        if @opts.scope.restrict_paths.any?
-            @opts.scope.restrict_paths.each { |url| push_to_url_queue( url ) }
-        end
-
-        # Initialize the BrowserCluster
+        # Initialize the BrowserCluster.
         browser_cluster
 
         # Keep auditing until there are no more resources in the queues and the
