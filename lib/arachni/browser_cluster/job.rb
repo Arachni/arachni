@@ -29,9 +29,9 @@ class Job
         end
     end
 
-    # @return   [Peer]
+    # @return   [Worker]
     #   Browser to use in order to perform the relevant {#run task} -- set by
-    #   {Peer#run_job} via {#configure_and_run}.
+    #   {Worker#run_job} via {#configure_and_run}.
     attr_reader :browser
 
     # @return   [Job]
@@ -62,9 +62,9 @@ class Job
     # Configures the job with the given resources, {#run runs} the payload
     # and then removes the assigned resources.
     #
-    # @param    [Peer]  browser
+    # @param    [Worker]  browser
     #   {#browser Browser} to use in order to perform the relevant task -- set
-    #   by {BrowserCluster::Peer#run_job}.
+    #   by {BrowserCluster::Worker#run_job}.
     def configure_and_run( browser )
         set_resources( browser )
         run

@@ -19,15 +19,12 @@ describe Arachni::BrowserCluster do
         describe :pool_size do
             it 'sets the amount of browsers to instantiate' do
                 @cluster = described_class.new( pool_size: 3 )
-
-                browsers = @cluster.instance_variable_get( :@browsers )
-                (browsers[:idle].size + browsers[:busy].size).should == 3
+                @cluster.workers.size.should == 3
             end
 
             it 'defaults to 6' do
                 @cluster = described_class.new
-                browsers = @cluster.instance_variable_get( :@browsers )
-                (browsers[:idle].size + browsers[:busy].size).should == 6
+                @cluster.workers.size.should == 6
             end
         end
 

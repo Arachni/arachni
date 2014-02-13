@@ -38,7 +38,7 @@ class BrowserCluster
     end
 
     lib = Options.paths.lib
-    require lib + 'browser_cluster/peer'
+    require lib + 'browser_cluster/worker'
     require lib + 'browser_cluster/job'
 
     # Load all job types.
@@ -78,6 +78,9 @@ class BrowserCluster
     #   Javascript token used to namespace the custom JS environment.
     attr_reader :javascript_token
 
+    # @return   [Array<Worker>]
+    attr_reader :workers
+
     # @param    [Hash]  options
     # @option   options [Integer]   :pool_size (5)
     #   Amount of {RPC::Server::Browser browsers} to add to the pool.
@@ -96,7 +99,7 @@ class BrowserCluster
             end
         end
 
-        # Used to sync operations between peers per Job#id.
+        # Used to sync operations between workers per Job#id.
         @skip ||= {}
 
         # Callbacks for each job per Job#id.
@@ -113,7 +116,11 @@ class BrowserCluster
         @sitemap = {}
         @mutex   = Monitor.new
 
-        initialize_browsers
+        @workers = []
+
+        @javascript_token = Utilities.generate_token
+
+        initialize_workers
     end
 
     # @return    [Job]  Pops a job from the queue.
@@ -220,7 +227,8 @@ class BrowserCluster
         fail_if_shutdown
 
         synchronize do
-            @jobs.empty? && @browsers[:busy].empty?
+            return true if @pending_jobs.empty?
+            @pending_jobs.values.max == 0
         end
     end
 
@@ -237,7 +245,7 @@ class BrowserCluster
         @shutdown = true
 
         # Kill the browsers.
-        (@browsers[:idle] | @browsers[:busy]).each(&:shutdown)
+        @workers.each(&:shutdown)
 
         # Clear the temp files used to hold the jobs.
         @jobs.clear
@@ -282,11 +290,8 @@ class BrowserCluster
         @skip[id] ||= Support::LookUp::HashSet.new( hasher: :persistent_hash )
     end
 
-    def move_browser( browser, from_state, to_state, job = nil )
+    def decrease_pending_job( job )
         synchronize do
-            @browsers[to_state] << @browsers[from_state].delete( browser )
-
-            next if !job
             @pending_jobs[job.id] -= 1
             job_done( job ) if @pending_jobs[job.id] <= 0
         end
@@ -312,18 +317,11 @@ class BrowserCluster
         @mutex.synchronize( &block )
     end
 
-    def initialize_browsers
+    def initialize_workers
         print_status 'Initializing browsers...'
 
-        @browsers = {
-            idle: [],
-            busy: []
-        }
-
-        @javascript_token = Utilities.generate_token
-
         pool_size.times do
-            @browsers[:idle] << Peer.new(
+            @workers << Worker.new(
                 javascript_token: @javascript_token,
                 master:           self
             )

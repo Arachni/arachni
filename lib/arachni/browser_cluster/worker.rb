@@ -9,7 +9,6 @@ module Arachni
 lib = Options.paths.lib
 require lib + 'browser'
 require lib + 'rpc/server/base'
-require lib + 'rpc/client/browser_cluster/peer'
 require lib + 'processes'
 require lib + 'framework'
 
@@ -19,7 +18,7 @@ class BrowserCluster
 # with each other when they're part of a {BrowserCluster}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-class Peer < Arachni::Browser
+class Worker < Arachni::Browser
 
     JOB_TIMEOUT = 60
 
@@ -148,9 +147,8 @@ class Peer < Arachni::Browser
     def start
         @consumer ||= Thread.new do
             while job = master.pop
-                master.move_browser( self, :idle, :busy )
                 run_job job
-                master.move_browser( self, :busy, :idle, job )
+                master.decrease_pending_job( job )
             end
         end
     end

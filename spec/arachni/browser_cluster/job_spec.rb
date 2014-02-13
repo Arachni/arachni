@@ -8,7 +8,7 @@ class MockBrowserCluster
     end
 end
 
-class MockPeer
+class MockWorker
     def master
         @master ||= MockBrowserCluster.new
     end
@@ -20,14 +20,14 @@ class JobTest < Arachni::BrowserCluster::Job
     end
 
     def run
-        browser.class.should == MockPeer
+        browser.class.should == MockWorker
         @ran = true
     end
 end
 
 class JobConfigureAndRunTest < JobTest
     def run
-        browser.class.should == MockPeer
+        browser.class.should == MockWorker
         super
     end
 end
@@ -51,13 +51,13 @@ end
 
 class JobCleanCopyTest < JobTest
     def run
-        browser.class.should == MockPeer
+        browser.class.should == MockWorker
 
         copy = self.clean_copy
         copy.browser.should == nil
         copy.id.should == self.id
 
-        browser.class.should == MockPeer
+        browser.class.should == MockWorker
 
         super
     end
@@ -80,7 +80,7 @@ end
 
 describe Arachni::BrowserCluster::Job do
     let(:browser_cluster) { MockBrowserCluster.new }
-    let(:peer) { MockPeer.new }
+    let(:worker) { MockWorker.new }
 
     describe '#id' do
         it 'gets incremented with each initialization' do
@@ -98,18 +98,18 @@ describe Arachni::BrowserCluster::Job do
         subject { JobConfigureAndRunTest.new }
 
         it 'sets #browser' do
-            subject.configure_and_run( peer )
+            subject.configure_and_run( worker )
         end
 
         it 'calls #run' do
             subject.ran?.should be_false
-            subject.configure_and_run( peer )
+            subject.configure_and_run( worker )
             subject.ran?.should be_true
         end
 
         it 'removes #browser' do
             subject.ran?.should be_false
-            subject.configure_and_run( peer )
+            subject.configure_and_run( worker )
             subject.browser.should be_nil
             subject.ran?.should be_true
         end
@@ -120,7 +120,7 @@ describe Arachni::BrowserCluster::Job do
 
         it 'forwards the result to the BrowserCluster' do
             subject.ran?.should be_false
-            subject.configure_and_run( peer )
+            subject.configure_and_run( worker )
             subject.ran?.should be_true
         end
     end
@@ -130,7 +130,7 @@ describe Arachni::BrowserCluster::Job do
 
         it 'copies the Job without the resources set by #configure_and_run' do
             subject.ran?.should be_false
-            subject.configure_and_run( peer )
+            subject.configure_and_run( worker )
             subject.ran?.should be_true
         end
     end
