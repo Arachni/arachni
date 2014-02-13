@@ -338,15 +338,7 @@ class Browser
 
     def shutdown
         watir.close
-
-        loop do
-            begin
-                Process.kill( 'KILL', @phantomjs_pid )
-            rescue Errno::ESRCH
-                break
-            end
-        end
-
+        kill_phantomjs
         @proxy.shutdown
     end
 
@@ -734,24 +726,44 @@ class Browser
     def spawn_phantomjs
         return @phantomjs_url if @phantomjs_url
 
-        port = available_port
-        io = IO.popen([ 'phantomjs',
-                        "--webdriver=#{port}",
-                        "--proxy=http://#{@proxy.address}/",
-                        '--ignore-ssl-errors=true',
-                        err: [:child, :out]]
-        )
+        port = nil
+        10.times do
+            port = available_port
+            io = IO.popen([ 'phantomjs',
+                            "--webdriver=#{port}",
+                            "--proxy=http://#{@proxy.address}/",
+                            '--ignore-ssl-errors=true',
+                            err: [:child, :out]]
+            )
 
-        Timeout.timeout( @options[:timeout])  do
-            while (buff ||= '') << io.gets.to_s
-                break if buff.include? 'GhostDriver - Main - running on port'
+            @phantomjs_pid = io.pid
+
+            begin
+                Timeout.timeout( @options[:timeout] ) do
+                    buff = ''
+                    while buff << io.gets.to_s
+                        break if buff.include? 'GhostDriver - Main - running on port'
+                    end
+                end
+                break
+            rescue Timeout::Error
+                kill_phantomjs
             end
         end
 
-        @phantomjs_pid = io.pid
+        @phantomjs_url = "http://localhost:#{port}"
+    end
+
+    def kill_phantomjs
         Process.detach @phantomjs_pid
 
-        @phantomjs_url = "http://localhost:#{port}"
+        loop do
+            begin
+                Process.kill( 'KILL', @phantomjs_pid )
+            rescue Errno::ESRCH
+                break
+            end
+        end
     end
 
     def store_pages?
