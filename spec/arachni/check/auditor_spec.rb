@@ -55,11 +55,6 @@ describe Arachni::Check::Auditor do
     after :each do
         @framework.clean_up
         @framework.reset
-
-        if ::EM.reactor_running?
-            ::EM.stop
-            sleep 0.1 while ::EM.reactor_running?
-        end
     end
 
     let(:issue) { Factory[:issue] }
