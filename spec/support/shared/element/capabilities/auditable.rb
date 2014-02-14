@@ -15,7 +15,7 @@ shared_examples_for 'auditable' do |options = {}|
 
     before :all do
         @url     = options[:url]
-        @auditor = Auditor.new( nil, Arachni::Framework.new )
+        @auditor = Auditor.new( Arachni::Page.from_url( @url ), Arachni::Framework.new )
 
         @opts = {
             url:    @url,

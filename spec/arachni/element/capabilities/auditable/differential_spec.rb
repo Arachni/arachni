@@ -4,7 +4,7 @@ describe Arachni::Element::Capabilities::Auditable::Differential do
 
     before :all do
         Arachni::Options.url = @url = web_server_url_for( :differential )
-        @auditor = Auditor.new( nil, Arachni::Framework.new )
+        @auditor = Auditor.new( Arachni::Page.from_url( @url ), Arachni::Framework.new )
     end
 
     describe '#differential_analysis' do
