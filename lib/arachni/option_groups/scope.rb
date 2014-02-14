@@ -15,7 +15,6 @@ class Scope < Arachni::OptionGroup
     # @return    [Integer]  How deep to go into the site's directory tree.
     #
     # @see Utilities#skip_resource?
-    # @see Spider#push
     # @see Trainer#push
     # @see Framework#push_to_page_queue
     # @see Framework#push_to_url_queue
@@ -35,14 +34,13 @@ class Scope < Arachni::OptionGroup
     # @note `nil` is infinite -- default is `nil`.
     # @return    [Integer]  How many pages to consider (crawl/audit)?
     #
-    # @see Spider#push
     # @see Framework#push_to_page_queue
     # @see Framework#push_to_url_queue
     # @see Framework#audit_page
     # @see Trainer#push
     attr_accessor :page_limit
 
-    # @return   [Array<String>] Paths to use instead of {Spider crawling}.
+    # @return   [Array<String>] Paths to use instead of crawling.
     #
     # @see Framework#push_to_url_queue
     # @see Framework#audit
@@ -51,9 +49,8 @@ class Scope < Arachni::OptionGroup
     # @return   [String]    Path to file containing {#restrict_paths}.
     attr_accessor :restrict_paths_filepath
 
-    # @return   [Array<String>] Paths to use in addition to {Spider crawling}.
+    # @return   [Array<String>] Paths to use in addition to crawling.
     #
-    # @see Spider#push
     # @see Framework#push_to_page_queue
     # @see Framework#push_to_url_queue
     attr_accessor :extend_paths
@@ -71,7 +68,6 @@ class Scope < Arachni::OptionGroup
     #
     # @see #redundant?
     # @see Utilities#redundant_path?
-    # @see Spider#push
     # @see Trainer#push
     # @see Browser
     attr_accessor :redundant_path_patterns
@@ -82,7 +78,6 @@ class Scope < Arachni::OptionGroup
     #   entries in calendars and catalogs.
     #
     # @see #auto_redundant_path?
-    # @see Spider#push
     # @see Trainer#push
     # @see Browser
     attr_accessor :auto_redundant_paths
@@ -92,7 +87,6 @@ class Scope < Arachni::OptionGroup
     #   patterns will be considered.
     #
     # @see Utilities#include_path?
-    # @see Spider#push
     # @see Trainer#push
     # @see Browser
     attr_accessor :include_path_patterns
@@ -102,7 +96,6 @@ class Scope < Arachni::OptionGroup
     #   patterns will not be considered.
     #
     # @see Utilities#exclude_path?
-    # @see Spider#push
     # @see Trainer#push
     # @see Browser
     attr_accessor :exclude_path_patterns
