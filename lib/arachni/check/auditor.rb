@@ -308,11 +308,15 @@ module Auditor
     #
     # Running checks can override this as they wish *but* at their own peril.
     #
-    # @param    [Arachni::Element]  elem
+    # @param    [Arachni::Element]  element
     #
     # @return   [Boolean]
     #   `true` if the element should be skipped, `false` otherwise.
-    def skip?( elem )
+    #
+    # @see  Page#audit?
+    def skip?( element )
+        return true if !page.audit?( element )
+
         # Don't audit elements which have been already logged as vulnerable
         # either by us or preferred checks.
         (preferred | [shortname]).each do |mod|
@@ -321,7 +325,7 @@ module Auditor
             klass = framework.checks[mod]
             next if !klass.info.include?(:issue)
 
-            issue_id = klass.create_issue( vector: elem ).unique_id
+            issue_id = klass.create_issue( vector: element ).unique_id
             return true if framework.checks.issue_set.include?( issue_id )
         end
 

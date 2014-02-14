@@ -90,7 +90,16 @@ class Page
         new data
     end
 
+    # @return   [DOM]   DOM snapshot.
     attr_reader :dom
+
+    # @return   [Set<Integer>]
+    #   Audit whitelist based on {Element::Capabilities::Auditable#audit_scope_id}.
+    #
+    # @see  #update_audit_whitelist
+    # @see  #audit?
+    # @see  Check::Auditor#skip?
+    attr_reader :audit_whitelist
 
     # Needs either a `:parser` or a `:response` or user provided data.
     #
@@ -111,6 +120,36 @@ class Page
         fail ArgumentError, 'No URL given!' if !url
 
         Platform::Manager.fingerprint( self ) if Options.fingerprint?
+
+        @audit_whitelist ||= []
+        @audit_whitelist   = Set.new( @audit_whitelist )
+    end
+
+    # @param    [Array<Element::Capabilities::Auditable, Integer>]    list
+    #   Audit whitelist based on {Element::Capabilities::Auditable elements} or
+    #   {Element::Capabilities::Auditable#audit_scope_id}s.
+    # @return   [Set]   {#audit_whitelist}
+    #
+    # @see  #audit_whitelist
+    # @see  Check::Auditor#skip?
+    def update_audit_whitelist( list )
+        [list].flatten.each do |e|
+            @audit_whitelist << (e.is_a?( Integer ) ? e : e.audit_scope_id )
+        end
+    end
+
+    # @param    [Element::Capabilities::Auditable, Integer]    element
+    #   Element or {Element::Capabilities::Auditable#audit_scope_id}.
+    # @return   [Bool]
+    #   `true` if the element should be audited, `false` otherwise.
+    #
+    # @see  #audit_whitelist
+    # @see  Check::Auditor#skip?
+    def audit?( element )
+        return true if @audit_whitelist.empty?
+        @audit_whitelist.include?(
+            element.is_a?( Integer ) ? element : element.audit_scope_id
+        )
     end
 
     # @return    [HTTP::Response]    HTTP response.
@@ -304,7 +343,7 @@ class Page
     def _dump( _ )
         h = {}
         [:response, :body, :links, :forms, :cookies, :headers, :cookiejar,
-         :paths].each do |m|
+         :paths, :audit_whitelist].each do |m|
             h[m] = send( m )
         end
 

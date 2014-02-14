@@ -20,6 +20,7 @@ describe Arachni::Page do
 
     let( :response ) { Factory[:response] }
     let( :page ) { Factory[:page] }
+    subject { page }
 
     describe '#initialize' do
         describe 'option' do
@@ -94,6 +95,97 @@ describe Arachni::Page do
         end
     end
 
+    describe '#audit_whitelist' do
+        describe 'by default' do
+            it 'returns an empty Set' do
+                subject.audit_whitelist.should be_empty
+                subject.audit_whitelist.should be_kind_of Set
+            end
+        end
+    end
+
+    describe '#update_audit_whitelist' do
+        context 'when passed a' do
+            context Arachni::Element::Capabilities::Auditable do
+                it 'updates the #audit_whitelist' do
+                    subject.update_audit_whitelist subject.elements.first
+                    subject.audit_whitelist.should include subject.elements.first.audit_scope_id
+                end
+            end
+
+            context Integer do
+                it 'updates the #audit_whitelist' do
+                    subject.update_audit_whitelist subject.elements.first.audit_scope_id
+                    subject.audit_whitelist.should include subject.elements.first.audit_scope_id
+                end
+            end
+
+            context Array do
+                context Arachni::Element::Capabilities::Auditable do
+                    it 'updates the #audit_whitelist' do
+                        subject.update_audit_whitelist [subject.elements[0],subject.elements[1]]
+                        subject.audit_whitelist.should include subject.elements[0].audit_scope_id
+                        subject.audit_whitelist.should include subject.elements[1].audit_scope_id
+                    end
+                end
+
+                context Integer do
+                    it 'updates the #audit_whitelist' do
+                        subject.update_audit_whitelist [subject.elements[0].audit_scope_id, subject.elements[1].audit_scope_id]
+                        subject.audit_whitelist.should include subject.elements[0].audit_scope_id
+                        subject.audit_whitelist.should include subject.elements[1].audit_scope_id
+                    end
+                end
+            end
+        end
+    end
+
+    describe '#audit?' do
+        context 'when there is no #audit_whitelist' do
+            it 'returns true' do
+                subject.audit_whitelist.should be_empty
+                subject.audit?( subject.elements.first ).should be_true
+            end
+        end
+
+        context 'when there is an #audit_whitelist' do
+            context 'and the element is in it' do
+                context 'represented by' do
+                    context Integer do
+                        it 'returns true' do
+                            subject.update_audit_whitelist subject.elements.first
+                            subject.audit?( subject.elements.first.audit_scope_id ).should be_true
+                        end
+                    end
+
+                    context Arachni::Element::Capabilities::Auditable do
+                        it 'returns true' do
+                            subject.update_audit_whitelist subject.elements.first
+                            subject.audit?( subject.elements.first ).should be_true
+                        end
+                    end
+                end
+            end
+            context 'and the element is not in it' do
+                context 'represented by' do
+                    context Integer do
+                        it 'returns false' do
+                            subject.update_audit_whitelist subject.elements.first
+                            subject.audit?( subject.elements.last.audit_scope_id ).should be_false
+                        end
+                    end
+
+                    context Arachni::Element::Capabilities::Auditable do
+                        it 'returns false' do
+                            subject.update_audit_whitelist subject.elements.first
+                            subject.audit?( subject.elements.last ).should be_false
+                        end
+                    end
+                end
+            end
+        end
+    end
+
     describe '#response' do
         it 'returns the HTTP response for that page' do
             page.response.should == response
@@ -145,42 +237,43 @@ describe Arachni::Page do
     end
 
     describe '#has_script?' do
-        context 'when the page has <script>' do
-            it 'returns true' do
-                create_page(
-                    body:    '<Script>var i = '';</script>',
-                    headers: { 'content-type' => 'text/html' }
-                ).has_script?.should be_true
+        context 'when the page has' do
+            context '<script>' do
+                it 'returns true' do
+                    create_page(
+                        body:    '<Script>var i = '';</script>',
+                        headers: { 'content-type' => 'text/html' }
+                    ).has_script?.should be_true
+                end
             end
-        end
-        context 'when the page has elements with event attributes' do
-            it 'returns true' do
-                create_page(
-                    body:    '<a onmouseover="doStuff();">Stuff</a>',
-                    headers: { 'content-type' => 'text/html' }
-                ).has_script?.should be_true
+            context 'elements with event attributes' do
+                it 'returns true' do
+                    create_page(
+                        body:    '<a onmouseover="doStuff();">Stuff</a>',
+                        headers: { 'content-type' => 'text/html' }
+                    ).has_script?.should be_true
+                end
             end
-        end
-        context 'when the page has anchors with javacript: in href' do
-            it 'returns true' do
-                create_page(
-                    body:    '<a href="javascript:doStuff();">Stuff</a>',
-                    headers: { 'content-type' => 'text/html' }
-                ).has_script?.should be_true
+            context 'anchors with javacript: in href' do
+                it 'returns true' do
+                    create_page(
+                        body:    '<a href="javascript:doStuff();">Stuff</a>',
+                        headers: { 'content-type' => 'text/html' }
+                    ).has_script?.should be_true
+                end
             end
-        end
-        context 'when the page has forms with javacript: in action' do
-            it 'returns true' do
-                create_page(
-                    body:    '<form action="javascript:doStuff();"></form>',
-                    headers: { 'content-type' => 'text/html' }
-                ).has_script?.should be_true
+            context 'forms with javacript: in action' do
+                it 'returns true' do
+                    create_page(
+                        body:    '<form action="javascript:doStuff();"></form>',
+                        headers: { 'content-type' => 'text/html' }
+                    ).has_script?.should be_true
+                end
             end
-        end
-        context 'when the page does not have client-side code' do
-            it 'returns false' do
-                create_page( body: 'stuff' ).
-                    has_script?.should be_false
+            context 'no client-side code' do
+                it 'returns false' do
+                    create_page( body: 'stuff' ).has_script?.should be_false
+                end
             end
         end
     end
@@ -313,6 +406,41 @@ describe Arachni::Page do
     describe '#elements' do
         it 'returns all page elemenrs' do
             page.elements.should == (page.links | page.forms | page.cookies | page.headers)
+        end
+    end
+
+    describe '#dup' do
+        it 'returns a copy of the page' do
+            subject.update_audit_whitelist subject.elements.first
+
+            dupped = subject.dup
+            dupped.should == subject
+
+            dupped.audit_whitelist.should include subject.elements.first.audit_scope_id
+
+            [:response, :body, :links, :forms, :cookies, :headers, :cookiejar,
+             :paths, :audit_whitelist].each do |m|
+
+                # Make sure we're not comparing nils.
+                subject.send( m ).should be_true
+
+                # Make sure we're not comparing empty stuff.
+                if (enumerable = dupped.send( m )).is_a? Enumerable
+                    enumerable.should be_any
+                end
+
+                dupped.send( m ).should == subject.send( m )
+            end
+
+            [:url, :transitions, :data_flow_sink, :execution_flow_sink].each do |m|
+                dupped.dom.send( m ).should be_true
+                dupped.dom.send( m ).should == subject.dom.send( m )
+            end
+        end
+
+        it 'removes Arachni::Element::Form#node from #forms' do
+            subject.forms.first.node.should be_true
+            subject.dup.forms.first.node.should be_nil
         end
     end
 

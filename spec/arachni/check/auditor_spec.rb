@@ -75,6 +75,31 @@ describe Arachni::Check::Auditor do
         end
     end
 
+    describe '#skip?' do
+        context 'when there is no Arachni::Page#audit_whitelist' do
+            it 'returns false' do
+                @auditor.page.audit_whitelist.should be_empty
+                @auditor.skip?( @auditor.page.elements.first ).should be_false
+            end
+        end
+
+        context 'when there is Arachni::Page#audit_whitelist' do
+            context 'and the element is in it' do
+                it 'returns false' do
+                    @auditor.page.update_audit_whitelist @auditor.page.elements.first
+                    @auditor.skip?( @auditor.page.elements.first ).should be_false
+                end
+            end
+
+            context 'and the element is not in it' do
+                it 'returns true' do
+                    @auditor.page.update_audit_whitelist @auditor.page.elements.first
+                    @auditor.skip?( @auditor.page.elements.last ).should be_true
+                end
+            end
+        end
+    end
+
     describe '#register_results' do
         it 'registers issues with the framework' do
             @auditor.register_results( [ Factory[:issue] ] )
