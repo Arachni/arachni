@@ -111,11 +111,13 @@ class Browser
 
     # @return   [Array<Page>]
     #   Same as {#page_snapshots} but it doesn't deduplicate and only contains
-    #   pages with {Page::DOM#sink sink} data as populated by {Javascript#flush_sink}.
+    #   pages with sink ({Page::DOM#data_flow_sink} or {Page::DOM#execution_flow_sink})
+    #   data as populated by {Javascript#data_flow_sink} and {Javascript#execution_flow_sink}.
     #
-    # @see Javascript#flush_sink
-    # @see #sink
-    # @see Page::DOM#sink
+    # @see Javascript#data_flow_sink
+    # @see Javascript#execution_flow_sink
+    # @see Page::DOM#data_flow_sink
+    # @see Page::DOM#execution_flow_sink
     attr_reader :page_snapshots_with_sinks
 
     # @return   [Javascript]
