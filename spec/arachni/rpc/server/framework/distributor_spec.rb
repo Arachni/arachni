@@ -9,7 +9,7 @@ class Distributor
     attr_accessor :master_url
 
     [ :map_slaves, :each_slave, :slave_iterator, :iterator_for, :preferred_dispatchers,
-      :pick_dispatchers, :distribute_and_run, :cleaned_up_opts ].each do |sym|
+      :pick_dispatchers, :distribute_and_run, :cleaned_up_opts, :split_page_workload ].each do |sym|
         private sym
         public sym
     end
@@ -113,6 +113,101 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
         5.times do |i|
             @urls << url_gen.call( @url2, i )
+        end
+    end
+
+    describe '#split_page_workload' do
+        it 'does stuff' do
+            pages = []
+
+            url = "#{@url}/1"
+            pages << Arachni::Page.from_data(
+                url: url,
+                forms: [
+                    Arachni::Form.new( url: url, inputs: { test: 1 } ),
+                    Arachni::Form.new(
+                        url: url,
+                        action: "#{url}/my-action",
+                        inputs: { test: 1 }
+                    )
+                ]
+            )
+
+            url = "#{@url}/2"
+            pages << Arachni::Page.from_data(
+                url: url,
+                forms: [
+                    Arachni::Form.new( url: "#{@url}/1", inputs: { test: 1 } ),
+                    Arachni::Form.new(
+                        url: url,
+                        action: "#{url}/my-action2",
+                        inputs: { test: 1 }
+                    )
+                ]
+            )
+
+            url = "#{@url}/3"
+            pages << Arachni::Page.from_data(
+                url: url,
+                forms: [
+                    Arachni::Form.new( url: "#{@url}/2", inputs: { test: 1 } ),
+                    Arachni::Form.new(
+                        url: url,
+                        action: "#{url}/my-action2",
+                        inputs: { test: 1 }
+                    )
+                ]
+            )
+
+            url = "#{@url}/4"
+            pages << Arachni::Page.from_data(
+                url: url,
+                forms: [
+                    Arachni::Form.new( url: url, inputs: { test: 1 } ),
+                    Arachni::Form.new(
+                        url: url,
+                        action: "#{url}/my-action",
+                        inputs: { test: 1 }
+                    )
+                ]
+            )
+
+            url = "#{@url}/5"
+            pages << Arachni::Page.from_data(
+                url: url,
+                forms: [
+                    Arachni::Form.new(
+                        url: url,
+                        action: "#{url}/my-action",
+                        inputs: { test: 1 }
+                    )
+                ]
+            )
+
+            distributed = []
+            @distributor.split_page_workload( pages ).map do |page_chunks|
+                distributed << Hash[page_chunks.map { |p| [p.url, p.audit_whitelist.to_a] }]
+            end
+            distributed.should == [
+                {
+                    "#{@url}1" => [2720541242, 3706493238],
+                    "#{@url}2" => [2299786370]
+                },
+                {
+                    "#{@url}2" => [3008708675],
+                    "#{@url}3" => [1846432277],
+                    "#{@url}4" => [2444203185] },
+                {
+                     "#{@url}4" => [2195342275],
+                     "#{@url}5" => [659674061]
+                }
+            ]
+
+            distributed = []
+            @distributor.split_page_workload( pages ).map do |page_chunks|
+                distributed << Hash[page_chunks.map { |p| [p.url, p.audit_whitelist.to_a] }]
+            end
+            distributed.should == [{}, {}, {}]
         end
     end
 
@@ -375,20 +470,6 @@ describe Arachni::RPC::Server::Framework::Distributor do
         #after do
         #    @master.issues.clear
         #end
-
-        context 'when called with auditable URL restrictions' do
-            it 'restricts the audit to these URLs'
-        end
-        context 'when called with auditable element restrictions' do
-            it 'restricts the audit to these elements'
-            context 'and new elements appear via the trainer' do
-                it 'overrides the restrictions'
-            end
-        end
-
-        context 'when called with extra pages' do
-            it 'includes them in the audit'
-        end
     end
 
 end

@@ -53,7 +53,8 @@ module Slave
         after_page_audit do
             sitrep(
                 issues: @issue_buffer.dup,
-                browser_cluster_skip_lookup: browser_cluster.skip_lookup_for( browser_job.id ).collection
+                browser_cluster_skip_lookup: browser_cluster.
+                            skip_lookup_for( browser_job.id ).collection
             )
             @issue_buffer.clear
         end
@@ -63,6 +64,12 @@ module Slave
         true
     end
 
+    # @param    [Array<Integer>]    lookups
+    #   Hashes representing browser actions that have already been performed
+    #   and thus should be skipped.
+    #
+    # @see BrowserCluster#update_skip_lookup_for
+    # @see BrowserCluster#skip_lookup_for
     def update_browser_cluster_lookup( lookups )
         browser_cluster.update_skip_lookup_for( browser_job.id, lookups )
         nil
@@ -74,19 +81,17 @@ module Slave
         !!@master
     end
 
-    def process_page( page, element_scope_ids, &block )
-        Element::Capabilities::Auditable.update_element_restrictions( element_scope_ids )
+    # @param    [Array<Page>]   pages
+    #   Pages to audit. If an audit is in progress the pages will be
+    #   {#push_to_page_queue pushed to the page queue}, if not the audit
+    #   will start right away.
+    def process_pages( pages )
+        pages.each { |page| push_to_page_queue page }
 
-        if @audit_page_running
-            push_to_page_queue page
-            return block.call
-        end
-
-        block.call
-
+        return if @audit_page_running
         @audit_page_running = true
+
         Thread.new do
-            audit_page page
             audit
 
             sitrep( audit_done: true )

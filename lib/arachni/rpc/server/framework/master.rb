@@ -77,7 +77,7 @@ module Master
     #   `true` on success, `false` is this instance is a slave (slaves can't
     #   have slaves of their own).
     #
-    def enslave( instance_info, opts = {}, &block )
+    def enslave( instance_info, options = {}, &block )
         # Slaves can't have slaves of their own.
         if slave?
             block.call false
@@ -292,7 +292,6 @@ module Master
 
             # Start the master/local Instance's audit.
             audit
-            clear_elem_ids_filter
 
             @finished_auditing = true
 
@@ -321,34 +320,50 @@ module Master
         # consume them and get it over with.
         audit_page_queue
 
+        first_run = true
         next_page = nil
         while !page_limit_reached? && (page = next_page || pop_page_from_url_queue)
             next_page = nil
 
-            # Call dibs on any elements that appear in our page and avoid
-            # auditing elements that have been previously assigned to slaves.
-            Element::Capabilities::Auditable.update_element_restrictions(
-                filter_elements( page )
-            )
+            # We don't care about the results, we just want to pass the seed
+            # page's elements through the filters to be marked as seen.
+            split_page_workload( [page] ) if first_run
+            first_run = false
 
-            @instances.each do |instance|
+            #page_lookahead = [10 * (@instances.size + 1), @url_queue.size].min
+            page_lookahead = [(@instances.size + 1), @url_queue.size].min
+
+            pages = []
+            page_lookahead.times do
                 pop_page_from_url_queue do |p|
+                    pages << p
 
                     # Push any new resources to the audit queue.
-                    push_paths_from_page p
+                    push_paths_from_page( p ) if p
 
-                    # Slave got workload, remove it from the 'done' list.
-                    @done_slaves.delete instance[:url]
+                    next if pages.size != page_lookahead
 
-                    # Assign the page to the slave and automatically calculate
-                    # and assign per-element audit restrictions.
-                    connect_to_instance( instance ).framework.process_page(
-                        p, filter_elements( p )
-                    ){}
+                    page_chunks = split_page_workload( pages.compact )
+
+                    # Grab our chunk of the pages...
+                    self_chunk = page_chunks.pop
+                    # ... and preload the next page from it...
+                    next_page  = self_chunk.pop
+                    # ...and just push the rest to be audited next.
+                    self_chunk.each { |sp| push_to_page_queue sp }
+
+                    page_chunks.each.with_index do |chunk, i|
+                        next if chunk.empty?
+
+                        # Slave got workload, remove it from the 'done' list.
+                        @done_slaves.delete @instances[i][:url]
+
+                        # Assign the page to the slave and automatically calculate
+                        # and assign per-element audit restrictions.
+                        connect_to_instance( @instances[i] ).framework.process_pages( chunk ){}
+                    end
                 end
             end
-
-            pop_page_from_url_queue { |p| next_page = p }
 
             # We're counting on piggybacking the next page retrieval with the
             # page audit, however if there wasn't an audit we need to force an

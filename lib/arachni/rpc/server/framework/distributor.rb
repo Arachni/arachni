@@ -76,37 +76,39 @@ module Distributor
 
     private
 
-    # @return   [Array]
-    #   {Arachni::Element::Capabilities::Auditable#audit_scope_id Scope IDs}
-    #   of all page elements with auditable inputs.
-    def filter_elements( page )
-        list = []
+    def split_page_workload( pages )
+        @element_filter ||= Support::LookUp::HashSet.new
 
-        list |= elements_to_ids( page.links )   if @opts.audit.links
-        list |= elements_to_ids( page.forms )   if @opts.audit.forms
-        list |= elements_to_ids( page.cookies ) if @opts.audit.cookies
+        # Page lookup, per URL, to make our lives easier.
+        pages_per_url = {}
+        pages.each { |page| pages_per_url[page.url] = page }
 
-        list
-    end
+        # Get a list of all unique elements, which have not been seen before,
+        # to distribute.
+        elements = pages.map(&:elements).flatten.uniq.
+            reject { |e| @element_filter.include? e.audit_scope_id }
 
-    def elements_to_ids( elements )
-        # Helps us do some preliminary deduplication on our part to avoid sending
-        # over duplicate element IDs.
-        @elem_ids_filter ||= Support::LookUp::HashSet.new
+        # Split elements in chunks for each instance and setup audit restrictions
+        # for the relevant pages.
+        #
+        # The pages should contain all their original elements to maintain their
+        # integrity, with the elements which should be audited explicitly white-listed.
+        split_pages = []
+        elements.chunk( @instances.size + 1 ).each_with_index do |chunk, i|
+            split_pages[i] ||= {}
 
-        elements.map do |e|
-            next if e.inputs.empty?
+            chunk.each do |element|
+                # Mark element as seen.
+                @element_filter << element.audit_scope_id
 
-            id = e.audit_scope_id
-            next if @elem_ids_filter.include?( id )
-            @elem_ids_filter << id
+                split_pages[i][element.url] ||= pages_per_url[element.url].deep_clone
+                split_pages[i][element.url].update_audit_whitelist element.audit_scope_id
+            end
 
-            id
-        end.compact.uniq
-    end
+            split_pages[i] = split_pages[i].values
+        end
 
-    def clear_elem_ids_filter
-        @elem_ids_filter.clear if @elem_ids_filter
+        split_pages
     end
 
     # @param    [Block] block
@@ -164,12 +166,15 @@ module Distributor
         @opts.spawns > 0 ? dispatchers[0...@opts.spawns] : dispatchers
     end
 
-    # Spawns, configures and runs a remote Instance.
+    # Configures and runs a slave Instance (well not really, slaves'
+    # {#multi_run} code is a NOP).
     #
     # @param    [Hash]      instance_hash
     #   Instance info as returned by {RPC::Server::Dispatcher#dispatch} --
     #   with `:url` and `:token` at least.
     # @param    [Hash]      options
+    # @param    [Block] block
+    #   Block to be called once the Instance is configured and running.
     def distribute_and_run( instance_hash, options = {}, &block )
         opts = cleaned_up_opts
 
