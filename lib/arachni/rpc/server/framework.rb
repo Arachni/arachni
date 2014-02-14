@@ -120,12 +120,6 @@ class Framework < ::Arachni::Framework
         # Return if we're already running.
         return false if busy?
 
-        if master? && @opts.scope.restrict_paths.any?
-            fail Error::UnsupportedOption,
-                 'Scope option \'restrict_paths\' is not supported when in' <<
-                     ' multi-Instance mode.'
-        end
-
         @extended_running = true
 
         # Prepare the local instance (runs plugins and starts the timer).

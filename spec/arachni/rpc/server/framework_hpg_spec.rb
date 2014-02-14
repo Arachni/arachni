@@ -96,23 +96,6 @@ describe 'Arachni::RPC::Server::Framework' do
         end
     end
     describe '#run' do
-        context 'when Options#scope_restrict_paths is set' do
-            it 'fails with exception' do
-                url = web_server_url_for( :framework_hpg )
-
-                instance = instance_grid_spawn
-                instance.opts.set(
-                    url:   url,
-                    scope: { restrict_paths: [url] }
-                )
-                instance.checks.load( 'taint' )
-
-                expect do
-                    instance.framework.run
-                end.to raise_error Arachni::RPC::Exceptions::RemoteException
-            end
-        end
-
         it 'performs a scan' do
             instance = @instance_clean
             instance.opts.url = web_server_url_for( :framework_hpg )
