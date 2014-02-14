@@ -20,6 +20,7 @@ class BrowserCluster
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Worker < Arachni::Browser
 
+    # Maximum allowed time for jobs.
     JOB_TIMEOUT = 60
 
     # @return    [BrowserCluster]
@@ -42,8 +43,10 @@ class Worker < Arachni::Browser
 
         @javascript.token = javascript_token
 
-        start_capture
+        @stop_signal = Queue.new
+        @done_signal = Queue.new
 
+        start_capture
         start
     end
 
@@ -132,13 +135,26 @@ class Worker < Arachni::Browser
             }
         )
         true
-    # Job may have been marked as done...
-    rescue RPC::Exceptions::RemoteException
+    # Job may have been marked as done or the cluster may have been shut down.
+    rescue BrowserCluster::Job::Error::AlreadyDone,
+        BrowserCluster::Error::AlreadyShutdown
         false
     end
 
+    # @note If there is a running job it will wait for it to finish.
+    #
+    # Shuts down the worker.
     def shutdown
-        @consumer.kill
+        return if @shutdown
+        @shutdown = true
+
+        # If we've got a job running wait for it to finish before closing
+        # the browser otherwise we'll get Selenium errors and zombie processes.
+        if @job
+            @stop_signal << nil
+            @done_signal.pop
+        end
+
         super
     end
 
@@ -146,10 +162,12 @@ class Worker < Arachni::Browser
 
     def start
         @consumer ||= Thread.new do
-            while job = master.pop
+            while @stop_signal.empty?
+                job = master.pop
                 run_job job
                 master.decrease_pending_job( job )
             end
+            @done_signal << nil
         end
     end
 
