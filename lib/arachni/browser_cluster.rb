@@ -195,13 +195,12 @@ class BrowserCluster
             end
 
             @pending_job_counter -= @pending_jobs[job.id]
+            @pending_jobs[job.id] = 0
 
             if @pending_job_counter <= 0
                 @pending_job_counter = 0
                 @done_signal << nil
             end
-
-            @pending_jobs[job.id] = 0
         end
 
         true
