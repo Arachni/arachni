@@ -1047,25 +1047,23 @@ class Browser
                 inputs = parse_url_vars( request.url )
                 return if inputs.empty?
 
-                page.forms << Form.new(
+                page.forms |= [Form.new(
                     url:    @last_url,
                     action: request.url,
                     method: request.method,
                     inputs: inputs
-                ).tap(&:override_instance_scope)
-                page.forms.uniq!
+                ).tap(&:override_instance_scope)]
 
             when :post
                 inputs = form_parse_request_body( request.body )
                 return if inputs.empty?
 
-                page.forms << Form.new(
+                page.forms |= [Form.new(
                     url:    @last_url,
                     action: request.url,
                     method: request.method,
                     inputs: inputs
-                ).tap(&:override_instance_scope)
-                page.forms.uniq!
+                ).tap(&:override_instance_scope)]
         end
 
         @captured_pages << page if store_pages?

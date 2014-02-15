@@ -112,7 +112,14 @@ class Page
     def initialize( options )
         fail ArgumentError, 'Options cannot be empty.' if options.empty?
 
-        options.each { |k, v| instance_variable_set( "@#{k}".to_sym, try_dup( v ) ) }
+        options.each do |k, v|
+            dupped = try_dup( v )
+            begin
+                send( "#{k}=", dupped )
+            rescue NoMethodError
+                instance_variable_set( "@#{k}".to_sym, dupped )
+            end
+        end
 
         @parser ||= Parser.new( @response ) if @response
         @dom      = DOM.new( (options[:dom] || {}).merge( page: self ) )
@@ -195,48 +202,54 @@ class Page
     # @return    [Array<Element::Link>]
     # @see Parser#links
     def links
-        @links ||= (!@links && !@parser) ? [] : @parser.links
+        @links ||=
+            assign_page_to_elements( (!@links && !@parser) ? [] : @parser.links )
     end
 
     # @param    [Array<Element::Link>]  links
     # @see Parser#links
     def links=( links )
-        @links = links.freeze
+        @links = assign_page_to_elements( links )
     end
 
     # @return    [Array<Element::Form>]
     # @see Parser#forms
     def forms
-        @forms ||= (!@forms && !@parser) ? [] : @parser.forms
+        @forms ||=
+            assign_page_to_elements( (!@forms && !@parser) ? [] : @parser.forms )
     end
 
     # @param    [Array<Element::Form>]  forms
     # @see Parser#forms
     def forms=( forms )
-        @forms = forms.freeze
+        @forms = assign_page_to_elements( forms )
     end
 
     # @return    [Array<Element::Cookie>]
     # @see Parser#cookies
     def cookies
-        @cookies ||= (!@cookies && !@parser) ? [] : @parser.cookies_to_be_audited
+        @cookies ||=
+            assign_page_to_elements(
+                (!@cookies && !@parser) ? [] : @parser.cookies_to_be_audited
+            )
     end
 
     # @param    [Array<Element::Cookies>]  cookies
     # @see Parser#cookies
     def cookies=( cookies )
-        @cookies = cookies.freeze
+        @cookies = assign_page_to_elements( cookies )
     end
 
     # @return    [Array<Element::Header>]   HTTP request headers.
     def headers
-        @headers ||= (!@headers && !@parser) ? [] : @parser.headers
+        @headers ||=
+            assign_page_to_elements( (!@headers && !@parser) ? [] : @parser.headers )
     end
 
     # @param    [Array<Element::Headers>]  headers
     # @see Parser#headers
     def headers=( headers )
-        @headers = headers.freeze
+        @headers = assign_page_to_elements( headers )
     end
 
     # @return    [Array<Element::Cookie>]
@@ -347,6 +360,12 @@ class Page
             h[m] = send( m )
         end
 
+        # Dup the elements, this will also remove #page associations, however
+        # the associations will be restored by #new via ._load.
+        [:links, :forms, :cookies, :headers] .each do |m|
+            h[m] = h[m].map(&:dup)
+        end
+
         h[:forms].each { |f| f.node = nil }
 
         h[:dom] = {
@@ -364,6 +383,10 @@ class Page
     end
 
     private
+
+    def assign_page_to_elements( list )
+        list.map { |e| e.page = self; e }.freeze
+    end
 
     def try_dup( v )
         v.dup rescue v

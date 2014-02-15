@@ -25,6 +25,9 @@ class Base
     include Utilities
     extend Utilities
 
+    # @return   [Page]  Page this element belongs to.
+    attr_accessor :page
+
     def initialize( options )
         options = options.symbolize_keys( false )
 

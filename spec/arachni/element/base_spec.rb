@@ -38,6 +38,24 @@ describe Arachni::Element::Base do
         end
     end
 
+    describe '#page=' do
+        it 'sets the associated page' do
+            subject.page = Factory[:page]
+            subject.page.should == Factory[:page]
+        end
+    end
+
+    describe '#dup' do
+        it 'returns a copy of self' do
+            subject.dup.to_h.should == subject.to_h
+        end
+
+        it 'removed the associated #page' do
+            subject.page = Factory[:page]
+            subject.dup.page.should be_nil
+        end
+    end
+
     describe '#to_h' do
         it 'returns a hash representation of self' do
             subject.to_h.should == {

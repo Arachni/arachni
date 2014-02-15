@@ -198,35 +198,46 @@ describe Arachni::Page do
         end
     end
 
-    describe '#links=' do
-        it 'sets the page links' do
-            page.links.should be_any
-            page.links = []
-            page.links.should be_empty
-        end
-    end
+    [:links, :forms, :cookies, :headers].each do |element|
+        describe "##{element}" do
+            context 'when lazy loaded' do
+                it 'sets the correct #page association' do
+                    subject.instance_variable_get( "@#{element}" ).should be_nil
 
-    describe '#forms=' do
-        it 'sets the page forms' do
-            page.forms.should be_any
-            page.forms = []
-            page.forms.should be_empty
-        end
-    end
+                    subject.send(element).should be_any
+                    subject.instance_variable_get( "@#{element}" ).should be_any
 
-    describe '#cookies=' do
-        it 'sets the page cookies' do
-            page.cookies.should be_any
-            page.cookies = []
-            page.cookies.should be_empty
-        end
-    end
+                    subject.send(element).each { |e| e.page.should == subject }
+                end
 
-    describe '#headers=' do
-        it 'sets the page links' do
-            page.headers.should be_any
-            page.headers = []
-            page.headers.should be_empty
+                it 'returns a frozen list' do
+                    subject.instance_variable_get( "@#{element}" ).should be_nil
+                    subject.send(element).should be_frozen
+                end
+            end
+        end
+
+        describe "##{element}=" do
+            element_klass = Arachni::Element.const_get( element.to_s[0...-1].capitalize )
+            let(:klass) { element_klass }
+            let(:list) { [element_klass.new( url: subject.url, inputs: { test: 1 } )] }
+
+            it "sets the page ##{element}" do
+                subject.send(element).should be_any
+                subject.send("#{element}=", [])
+                subject.send(element).should be_empty
+                subject.send("#{element}=", list)
+                subject.send(element).should == list
+            end
+
+            it "sets the #page association on the #{element_klass} elements" do
+                subject.send( "#{element}=", list )
+                subject.send(element).first.page.should == subject
+            end
+
+            it 'freezes the list' do
+                subject.send(element).should be_frozen
+            end
         end
     end
 
@@ -296,21 +307,21 @@ describe Arachni::Page do
         context 'when the pages are different' do
             it 'returns false' do
                 p = create_page( body: 'stuff here' )
-                p.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
-                p.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
-                p.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
+                p.links |= [Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )]
+                p.forms |= [Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )]
+                p.cookies |= [Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )]
                 p.dom.push_transition "<a href='#' id='stuff'>" => :onclick
 
                 c = p.dup
-                c.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                c.links |= [Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )]
                 c.should_not == p
 
                 c = p.dup
-                c.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                c.forms |= [Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )]
                 c.should_not == p
 
                 c = p.dup
-                c.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                c.cookies |= [Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )]
                 c.should_not == p
 
                 c = p.dup
@@ -321,21 +332,21 @@ describe Arachni::Page do
         context 'when the pages are identical' do
             it 'returns true' do
                 p = create_page( body: 'stuff here')
-                p.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
-                p.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
-                p.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
+                p.links |= [Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )]
+                p.forms |= [Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )]
+                p.cookies |= [Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )]
 
                 c = p.dup
                 c.should == p
 
-                p.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
-                p.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
-                p.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                p.links |= [Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )]
+                p.forms |= [Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )]
+                p.cookies |= [Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )]
                 p.dom.push_transition "<a href='#' id='stuff'>" => :onhover
 
-                c.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
-                c.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
-                c.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                c.links |= [Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )]
+                c.forms |= [Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )]
+                c.cookies |= [Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )]
                 c.dom.push_transition "<a href='#' id='stuff'>" => :onhover
 
                 c.should == p
@@ -347,41 +358,41 @@ describe Arachni::Page do
         context 'when the pages are different' do
             it 'returns false' do
                 p = create_page( body: 'stuff here')
-                p.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
-                p.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
-                p.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
+                p.links |= [Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )]
+                p.forms |= [Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )]
+                p.cookies |= [Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )]
 
                 c = p.dup
-                c.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                c.links |= [Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )]
                 c.should_not eql p
 
                 c = p.dup
-                c.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                c.forms |= [Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )]
                 c.should_not eql p
 
                 c = p.dup
-                c.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                c.cookies |= [Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )]
                 c.should_not eql p
             end
         end
         context 'when the pages are identical' do
             it 'returns true' do
                 p = create_page( body: 'stuff here')
-                p.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
-                p.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
-                p.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )
+                p.links |= [Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )]
+                p.forms |= [Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )]
+                p.cookies |= [Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )]
 
                 c = p.dup
                 c.should eql p
 
                 c = p.dup
-                p.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
-                p.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
-                p.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                p.links |= [Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )]
+                p.forms |= [Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )]
+                p.cookies |= [Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )]
 
-                c.links << Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
-                c.forms << Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
-                c.cookies << Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )
+                c.links |= [Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )]
+                c.forms |= [Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )]
+                c.cookies |= [Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )]
                 c.should eql p
             end
         end
@@ -404,7 +415,7 @@ describe Arachni::Page do
     end
 
     describe '#elements' do
-        it 'returns all page elemenrs' do
+        it 'returns all page elements' do
             page.elements.should == (page.links | page.forms | page.cookies | page.headers)
         end
     end
@@ -441,6 +452,12 @@ describe Arachni::Page do
         it 'removes Arachni::Element::Form#node from #forms' do
             subject.forms.first.node.should be_true
             subject.dup.forms.first.node.should be_nil
+        end
+
+        it 'preserves #page associations for #elements' do
+            dup = subject.dup
+            dup.elements.should be_any
+            dup.elements.each { |e| e.page.should == subject }
         end
     end
 
