@@ -76,17 +76,34 @@ module Distributor
 
     private
 
-    def split_page_workload( pages )
-        @element_filter ||= Support::LookUp::HashSet.new
+    def distribute_page_workload( pages, &block )
+        page_chunks = split_page_workload( pages.compact )
 
+        # Grab our chunk of the pages...
+        self_chunk = page_chunks.pop
+
+        # ... and allow us to preload the next page from it...
+        block.call self_chunk.pop if block_given?
+
+        # ...and just push the rest to be audited next.
+        self_chunk.each { |sp| push_to_distributed_page_queue( sp ) }
+
+        page_chunks.each.with_index do |chunk, i|
+            next if chunk.empty?
+
+            # Slave got workload, remove it from the 'done' list.
+            @done_slaves.delete @instances[i][:url]
+
+            # Assign the page to the slave and automatically calculate
+            # and assign per-element audit restrictions.
+            connect_to_instance( @instances[i] ).framework.process_pages( chunk ){}
+        end
+    end
+
+    def split_page_workload( pages )
         # Page lookup, per URL, to make our lives easier.
         pages_per_url = {}
         pages.each { |page| pages_per_url[page.url] = page }
-
-        # Get a list of all unique elements, which have not been seen before,
-        # to distribute.
-        elements = pages.map(&:elements).flatten.uniq.
-            reject { |e| @element_filter.include? e.audit_scope_id }
 
         # Split elements in chunks for each instance and setup audit restrictions
         # for the relevant pages.
@@ -94,21 +111,76 @@ module Distributor
         # The pages should contain all their original elements to maintain their
         # integrity, with the elements which should be audited explicitly white-listed.
         split_pages = []
-        elements.chunk( @instances.size + 1 ).each_with_index do |chunk, i|
-            split_pages[i] ||= {}
+        select_elements_to_distribute(pages).chunk( @instances.size + 1 ).
+            each_with_index do |chunk, i|
+                split_pages[i] ||= {}
 
-            chunk.each do |element|
-                # Mark element as seen.
-                @element_filter << element.audit_scope_id
+                chunk.each do |element|
+                    # TODO: Fix this, too generic, doesn't handle the issue.
+                    if !pages_per_url[element.url]
+                        next
+                    end
 
-                split_pages[i][element.url] ||= pages_per_url[element.url].deep_clone
-                split_pages[i][element.url].update_audit_whitelist element.audit_scope_id
+                    split_pages[i][element.url] ||= pages_per_url[element.url].deep_clone
+                    split_pages[i][element.url].update_audit_whitelist element.audit_scope_id
+                end
+
+                split_pages[i] = split_pages[i].values
             end
 
-            split_pages[i] = split_pages[i].values
+        #dump_workload_to_console( split_pages )
+        split_pages
+    end
+
+    def dump_workload_to_console( workload )
+        find_by_id = proc do |page, id|
+            page.elements.find { |e| e.audit_scope_id == id }
         end
 
-        split_pages
+        distributed = []
+        workload.map do |page_chunks|
+            c = page_chunks.map do |p|
+                elements = p.audit_whitelist.to_a.map do |id|
+                    e = find_by_id.call( p, id )
+                    { id => (e.id if e) }
+                end
+
+                [p.url, elements]
+            end
+            distributed << Hash[c]
+        end
+
+        ap distributed
+    end
+
+    def select_elements_to_distribute( pages )
+        pages.map { |page| build_element_list( page ) }.flatten
+    end
+
+    def build_element_list( page )
+        [:links, :forms, :cookies, :headers].map do |type|
+            filter_elements( page.send(type) ) if @opts.audit.element? type
+        end.flatten.compact
+    end
+
+    def filter_elements( elements )
+        # Helps us do some preliminary deduplication on our part to avoid sending
+        # over duplicate element IDs.
+        @element_filter ||= Support::LookUp::HashSet.new
+
+        elements.map do |e|
+            next if e.inputs.empty?
+
+            id = e.audit_scope_id
+            next if @element_filter.include?( id )
+            @element_filter << id
+
+            e
+        end.compact.uniq
+    end
+
+    def clear_element_filter
+        @element_filter.clear if @element_filter
     end
 
     # @param    [Block] block

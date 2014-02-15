@@ -921,12 +921,19 @@ class Framework
         grabbed_page
     end
 
+    # Audits the page queue.
     #
-    # Audits the page queue
-    #
+    # @see #pop_page_from_queue
     def audit_page_queue
-        # this will run until no new elements appear for the given page
-        audit_page( @page_queue.pop ) while !@page_queue.empty? && !page_limit_reached?
+        while !page_limit_reached? && (page = pop_page_from_queue)
+            audit_page( page )
+        end
+    end
+
+    # @return   [Page]
+    def pop_page_from_queue
+        return if @page_queue.empty?
+        @page_queue.pop
     end
 
     # Special sitemap for the {#auditstore}.

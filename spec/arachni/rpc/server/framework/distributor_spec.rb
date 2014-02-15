@@ -74,6 +74,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
     before( :all ) do
         @opts             = Arachni::Options.instance
         @opts.audit.links = true
+        @opts.audit.forms = true
         @token            = 'secret'
 
         @distributor = Distributor.new( @token )
@@ -225,7 +226,8 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 },
                 audit:     {
                     exclude_vectors: [],
-                    links:           true
+                    links:           true,
+                    forms:           true
                 },
                 login:     {},
                 datastore: {

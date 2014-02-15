@@ -94,7 +94,8 @@ module Slave
         Thread.new do
             audit
 
-            sitrep( audit_done: true )
+            sitrep( issues: @issue_buffer.dup, audit_done: true )
+            @issue_buffer.clear
             @audit_page_running = false
         end
 

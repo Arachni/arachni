@@ -36,6 +36,8 @@ module Master
         # the audit workload that will need to be distributed.
         @element_ids_per_url = {}
 
+        @distributed_page_queue = Support::Database::Queue.new
+
         # Some methods need to be accessible over RPC for instance management,
         # restricting elements, adding more pages etc.
         #
@@ -293,6 +295,8 @@ module Master
             # Start the master/local Instance's audit.
             audit
 
+            clear_element_filter
+
             @finished_auditing = true
 
             # Don't ring our own bell unless there are no other instances
@@ -320,20 +324,19 @@ module Master
         # consume them and get it over with.
         audit_page_queue
 
-        first_run = true
+        @first_run = true if @first_run.nil?
         next_page = nil
         while !page_limit_reached? && (page = next_page || pop_page_from_url_queue)
             next_page = nil
 
             # We don't care about the results, we just want to pass the seed
             # page's elements through the filters to be marked as seen.
-            split_page_workload( [page] ) if first_run
-            first_run = false
+            split_page_workload( [page] ) if @first_run
+            @first_run = false
 
-            #page_lookahead = [10 * (@instances.size + 1), @url_queue.size].min
-            page_lookahead = [(@instances.size + 1), @url_queue.size].min
-
+            # Distribute workload from path resources -- from the URL queue.
             pages = []
+            page_lookahead = [10 * (@instances.size + 1), @url_queue.size].min
             page_lookahead.times do
                 pop_page_from_url_queue do |p|
                     pages << p
@@ -343,35 +346,22 @@ module Master
 
                     next if pages.size != page_lookahead
 
-                    page_chunks = split_page_workload( pages.compact )
-
-                    # Grab our chunk of the pages...
-                    self_chunk = page_chunks.pop
-                    # ... and preload the next page from it...
-                    next_page  = self_chunk.pop
-                    # ...and just push the rest to be audited next.
-                    self_chunk.each { |sp| push_to_page_queue sp }
-
-                    page_chunks.each.with_index do |chunk, i|
-                        next if chunk.empty?
-
-                        # Slave got workload, remove it from the 'done' list.
-                        @done_slaves.delete @instances[i][:url]
-
-                        # Assign the page to the slave and automatically calculate
-                        # and assign per-element audit restrictions.
-                        connect_to_instance( @instances[i] ).framework.process_pages( chunk ){}
-                    end
+                    distribute_page_workload( pages ) { |np| next_page = np }
                 end
             end
 
-            # We're counting on piggybacking the next page retrieval with the
-            # page audit, however if there wasn't an audit we need to force an
-            # HTTP run.
+            # We're counting on piggybacking the next page retrieval and the
+            # workload gathering and distribution with the page audit, however
+            # if there wasn't an audit we need to force an HTTP run.
             audit_page( page ) or http.run
 
-            # Consume pages somehow triggered by the audit and pushed by the
-            # trainer or plugins or whatever.
+            # Distribute workload from page resources -- from the page queue.
+            pages = []
+            [10 * (@instances.size + 1), @page_queue.size].min.times do
+                pages << @page_queue.pop
+            end
+            distribute_page_workload( pages )
+
             audit_page_queue
         end
 
@@ -379,6 +369,25 @@ module Master
 
         @audit_queues_done = true
         true
+    end
+
+    def pop_page_from_queue
+        if @distributed_page_queue && !@distributed_page_queue.empty?
+            return @distributed_page_queue.pop
+        end
+
+        super
+    end
+
+    def push_to_distributed_page_queue( page )
+        return false if skip_page?( page )
+        @distributed_page_queue << page
+        true
+    end
+
+    def clear_distributed_page_queue
+        return if !@distributed_page_queue
+        @distributed_page_queue.clear
     end
 
     def adjust_distributed_options( &block )
