@@ -254,11 +254,12 @@ class BrowserCluster
     def shutdown
         @shutdown = true
 
+        # Clear the jobs -- don't forget this, it also remove the disk files for
+        # the contained items.
+        @jobs.clear
+
         # Kill the browsers.
         @workers.each(&:shutdown)
-
-        # Clear the temp files used to hold the jobs.
-        @jobs.clear
 
         true
     end
