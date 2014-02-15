@@ -6,31 +6,27 @@
 module Arachni
 class RPC::Server::Framework
 
-#
 # Holds methods for master Instances, both for remote management and utility ones.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 module Master
 
-    #
     # Sets this instance as the master.
     #
     # @return   [Bool]
     #   `true` on success, `false` if this instance is not a {#solo? solo} one.
-    #
     def set_as_master
         return false if !solo?
         return true if master?
 
         # Holds info for our slave Instances -- if we have any.
-        @instances        = []
+        @instances      = []
 
         # Instances which have been distributed some scan workload.
-        @running_slaves   = Set.new
+        @running_slaves = Set.new
 
         # Instances which have completed their scan.
-        @done_slaves      = Set.new
+        @done_slaves    = Set.new
 
         # Holds element IDs for each page, to be used as a representation of the
         # the audit workload that will need to be distributed.
@@ -69,7 +65,6 @@ module Master
         !!@local_token
     end
 
-    #
     # Enslaves another instance and subsequently becomes the master of the group.
     #
     # @param    [Hash]  instance_info
@@ -78,7 +73,6 @@ module Master
     # @return   [Bool]
     #   `true` on success, `false` is this instance is a slave (slaves can't
     #   have slaves of their own).
-    #
     def enslave( instance_info, options = {}, &block )
         # Slaves can't have slaves of their own.
         if slave?
@@ -109,7 +103,6 @@ module Master
         true
     end
 
-    #
     # Signals that a slave has finished auditing -- each slave must call this
     # when it finishes its job.
     #
@@ -122,10 +115,9 @@ module Master
     # @return   [Bool]  `true` on success, `false` on invalid `token`.
     #
     # @private
-    #
     def slave_done( slave_url, token = nil )
         return false if master? && !valid_token?( token )
-        @done_slaves << slave_url
+        mark_slave_as_done slave_url
 
         print_status "Slave done: #{slave_url}"
 
@@ -133,7 +125,6 @@ module Master
         true
     end
 
-    #
     # Registers an array holding {Arachni::Issue} objects with the local instance.
     #
     # Used by slaves to register the issues they find.
@@ -147,14 +138,12 @@ module Master
     # @return   [Bool]  `true` on success, `false` on invalid `token`.
     #
     # @private
-    #
     def update_issues( issues, token = nil )
         return false if master? && !valid_token?( token )
         @checks.class.register_results( issues )
         true
     end
 
-    #
     # Used by slaves to impart the knowledge they've gained during the scan to
     # the master as well as for signaling.
     #
@@ -181,7 +170,6 @@ module Master
     # @return   [Bool]  `true` on success, `false` on invalid `token`.
     #
     # @private
-    #
     def slave_sitrep( data, url, token = nil )
         return false if master? && !valid_token?( token )
 
@@ -200,7 +188,6 @@ module Master
 
     private
 
-    #
     # @note Should previously unseen elements dynamically appear during the
     #   audit they will override audit restrictions and each instance will audit
     #   them at will.
@@ -216,7 +203,6 @@ module Master
     # exist on most pages of the site and since each instance is assigned a set
     # of URLs/pages to audit they will end up with common elements so we have to
     # prevent instances from performing identical checks.
-    #
     def master_run
         # We need to take our cues from the local framework as some plug-ins may
         # need the system to wait for them to finish before moving on.
@@ -284,7 +270,7 @@ module Master
             # statically determine which elements each instance should audit.
             @instances.each_with_index do |instance_info, i|
                 # Initially mark slaves as done.
-                @done_slaves << instance_info[:url]
+                mark_slave_as_done instance_info[:url]
 
                 distribute_and_run( instance_info,
                                     routing_id:      i,
@@ -334,9 +320,9 @@ module Master
             split_page_workload( [page] ) if @first_run
             @first_run = false
 
-            # Distribute workload from path resources -- from the URL queue.
+            # Distribute workload from the URL queue.
             pages = []
-            page_lookahead = [10 * (@instances.size + 1), @url_queue.size].min
+            page_lookahead = calculate_workload_size( @url_queue.size )
             page_lookahead.times do
                 pop_page_from_url_queue do |p|
                     pages << p
@@ -355,9 +341,9 @@ module Master
             # if there wasn't an audit we need to force an HTTP run.
             audit_page( page ) or http.run
 
-            # Distribute workload from page resources -- from the page queue.
+            # Distribute workload from the page queue.
             pages = []
-            [10 * (@instances.size + 1), @page_queue.size].min.times do
+            calculate_workload_size( @page_queue.size ).times do
                 pages << @page_queue.pop
             end
             distribute_page_workload( pages )
@@ -411,7 +397,7 @@ module Master
 
     # Cleans up the system if all Instances have finished.
     def cleanup_if_all_done
-        return if !@finished_auditing || @running_slaves != @done_slaves
+        return if !@finished_auditing || !slaves_done?
 
         # We pass a block because we want to perform a grid cleanup, not just a
         # local one.

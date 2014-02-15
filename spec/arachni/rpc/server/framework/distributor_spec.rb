@@ -6,10 +6,13 @@ class Distributor
     include Arachni::RPC::Server::Framework::Distributor
 
     attr_reader   :instances
+    attr_reader   :done_slaves
     attr_accessor :master_url
 
-    [ :map_slaves, :each_slave, :slave_iterator, :iterator_for, :preferred_dispatchers,
-      :pick_dispatchers, :distribute_and_run, :cleaned_up_opts, :split_page_workload ].each do |sym|
+    [ :map_slaves, :each_slave, :slave_iterator, :iterator_for,
+      :preferred_dispatchers, :pick_dispatchers, :distribute_and_run,
+      :cleaned_up_opts, :split_page_workload, :calculate_workload_size
+    ].each do |sym|
         private sym
         public sym
     end
@@ -19,6 +22,11 @@ class Distributor
         @local_token    = token
         @instances      = []
         @running_slaves = Set.new
+        @done_slaves    = Set.new
+    end
+
+    def slave_done?( url )
+        @done_slaves.include? url
     end
 
     def dispatcher_url=( url )
@@ -71,132 +79,132 @@ class FakeMaster
 end
 
 describe Arachni::RPC::Server::Framework::Distributor do
+
+    def get_distributor
+        distributor = Distributor.new( @token )
+        2.times {
+            instance = instance_spawn
+            distributor <<  {
+                'url'   => instance.url,
+                'token' => instance_token_for( instance.url )
+            }
+        }
+        distributor
+    end
+
     before( :all ) do
         @opts             = Arachni::Options.instance
         @opts.audit.links = true
         @opts.audit.forms = true
         @token            = 'secret'
 
-        @distributor = Distributor.new( @token )
-        2.times {
-            instance = instance_spawn
-            @distributor <<  {
-                'url'   => instance.url,
-                'token' => instance_token_for( instance.url )
-            }
-        }
+        @distributor = get_distributor
 
-        @url  = 'http://test.com/'
-        @url2 = 'http://test.com/test/'
-        @urls = []
+        @url = 'http://test.com/'
+    end
 
-        url_gen = proc { |u, i| "#{u}?input_#{i}=val_#{i}" }
-
-        10.times do |i|
-            @urls << url_gen.call( @url, i )
+    describe '#calculate_workload_size' do
+        it 'returns the amount of workload to gather for distribution' do
+            @distributor.calculate_workload_size( 99999 ).should == 30
         end
 
-        4.times do |i|
-            @urls << url_gen.call( @url2, i )
+        it 'bases it on the amount of idle instances' do
+            distributor = get_distributor
+            distributor.done_slaves << distributor.instances.first['url']
+            distributor.calculate_workload_size( 99999 ).should == 20
         end
 
-        5.times do |i|
-            @urls << url_gen.call( @url, i )
-        end
-
-        14.times do |i|
-            @urls << url_gen.call( @url2, i )
-        end
-
-        20.times do |i|
-            @urls << url_gen.call( @url, i )
-        end
-
-        5.times do |i|
-            @urls << url_gen.call( @url2, i )
+        context 'when the calculated size exceeds the maximum' do
+            it 'returns the maximum' do
+                @distributor.calculate_workload_size( 20 ).should == 20
+            end
         end
     end
 
     describe '#split_page_workload' do
-        it 'does stuff' do
+        let(:pages) do
             pages = []
 
             url = "#{@url}/1"
             pages << Arachni::Page.from_data(
                 url: url,
                 forms: [
-                    Arachni::Form.new( url: url, inputs: { test: 1 } ),
-                    Arachni::Form.new(
-                        url: url,
-                        action: "#{url}/my-action",
-                        inputs: { test: 1 }
-                    )
-                ]
+                         Arachni::Form.new( url: url, inputs: { test: 1 } ),
+                         Arachni::Form.new(
+                             url: url,
+                             action: "#{url}/my-action",
+                             inputs: { test: 1 }
+                         )
+                     ]
             )
 
             url = "#{@url}/2"
             pages << Arachni::Page.from_data(
                 url: url,
                 forms: [
-                    Arachni::Form.new( url: "#{@url}/1", inputs: { test: 1 } ),
-                    Arachni::Form.new(
-                        url: url,
-                        action: "#{url}/my-action2",
-                        inputs: { test: 1 }
-                    )
-                ]
+                         Arachni::Form.new( url: "#{@url}/1", inputs: { test: 1 } ),
+                         Arachni::Form.new(
+                             url: url,
+                             action: "#{url}/my-action2",
+                             inputs: { test: 1 }
+                         )
+                     ]
             )
 
             url = "#{@url}/3"
             pages << Arachni::Page.from_data(
                 url: url,
                 forms: [
-                    Arachni::Form.new( url: "#{@url}/2", inputs: { test: 1 } ),
-                    Arachni::Form.new(
-                        url: url,
-                        action: "#{url}/my-action2",
-                        inputs: { test: 1 }
-                    )
-                ]
+                         Arachni::Form.new( url: "#{@url}/2", inputs: { test: 1 } ),
+                         Arachni::Form.new(
+                             url: url,
+                             action: "#{url}/my-action2",
+                             inputs: { test: 1 }
+                         )
+                     ]
             )
 
             url = "#{@url}/4"
             pages << Arachni::Page.from_data(
                 url: url,
                 forms: [
-                    Arachni::Form.new( url: url, inputs: { test: 1 } ),
-                    Arachni::Form.new(
-                        url: url,
-                        action: "#{url}/my-action",
-                        inputs: { test: 1 }
-                    )
-                ]
+                         Arachni::Form.new( url: url, inputs: { test: 1 } ),
+                         Arachni::Form.new(
+                             url: url,
+                             action: "#{url}/my-action",
+                             inputs: { test: 1 }
+                         )
+                     ]
             )
 
             url = "#{@url}/5"
             pages << Arachni::Page.from_data(
                 url: url,
                 forms: [
-                    Arachni::Form.new(
-                        url: url,
-                        action: "#{url}/my-action",
-                        inputs: { test: 1 }
-                    )
-                ]
+                         Arachni::Form.new(
+                             url: url,
+                             action: "#{url}/my-action",
+                             inputs: { test: 1 }
+                         )
+                     ]
             )
+            pages
+        end
 
-            distributed = []
-            @distributor.split_page_workload( pages ).map do |page_chunks|
-                distributed << Hash[page_chunks.map { |p| [p.url, p.audit_whitelist.to_a] }]
+        it 'splits the page workload for the available instances' do
+            distributor = get_distributor
+
+            workload = []
+            distributor.split_page_workload( pages ).map do |page_chunks|
+                workload << Hash[page_chunks.map { |p| [p.url, p.audit_whitelist.to_a] }]
             end
-            distributed.should == [
+            workload.should == [
                 {
                     "#{@url}1" => [2720541242, 3706493238],
                     "#{@url}2" => [2299786370]
                 },
                 {
-                    "#{@url}2" => [3008708675],
-                    "#{@url}3" => [1846432277],
+                    "#{@url}3" => [3008708675, 1846432277],
                     "#{@url}4" => [2444203185] },
                 {
                      "#{@url}4" => [2195342275],
@@ -204,11 +212,63 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 }
             ]
 
-            distributed = []
-            @distributor.split_page_workload( pages ).map do |page_chunks|
-                distributed << Hash[page_chunks.map { |p| [p.url, p.audit_whitelist.to_a] }]
+            distributor = get_distributor
+            # Mark one of the instances as done.
+            distributor.done_slaves << distributor.instances.first['url']
+
+            workload = []
+            distributor.split_page_workload( pages ).map do |page_chunks|
+                workload << Hash[page_chunks.map { |p| [p.url, p.audit_whitelist.to_a] }]
             end
-            distributed.should == [{}, {}, {}]
+            workload.should == [
+                {
+                    'http://test.com/1' => [2720541242, 3706493238],
+                    'http://test.com/2' => [2299786370],
+                    'http://test.com/3' => [3008708675]
+                },
+                {
+                    'http://test.com/3' => [1846432277],
+                    'http://test.com/4' => [2444203185, 2195342275],
+                    'http://test.com/5' => [659674061]
+                }
+            ]
+        end
+
+        it 'skips seen elements' do
+            distributor = get_distributor
+            distributor.split_page_workload( pages )
+
+            pages.first.forms |= [
+                Arachni::Form.new(
+                    url:    pages.first.url,
+                    action: "#{pages.first.url}/my-action",
+                    inputs: { tes2: 1 }
+                )
+            ]
+
+            pages.last.forms |= [
+                Arachni::Form.new(
+                    url:    pages.last.url,
+                    action: "#{pages.last.url}/my-action",
+                    inputs: { tes2: 1 }
+                )
+            ]
+
+            workload = []
+            distributor.split_page_workload( pages ).map do |page_chunks|
+                workload << Hash[page_chunks.map { |p| [p.url, p.audit_whitelist.to_a] }]
+            end
+
+            workload.should == [
+                { 'http://test.com/1' => [2835048516] },
+                { 'http://test.com/5' => [1397105343] }
+            ]
+
+            workload = []
+            distributor.split_page_workload( pages ).map do |page_chunks|
+                workload << Hash[page_chunks.map { |p| [p.url, p.audit_whitelist.to_a] }]
+            end
+            workload.should == []
         end
     end
 

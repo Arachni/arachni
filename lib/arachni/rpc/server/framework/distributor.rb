@@ -76,60 +76,60 @@ module Distributor
 
     private
 
+    def calculate_workload_size( maximum )
+        [10 * (preferred_instances.size + 1), maximum].min
+    end
+
     def distribute_page_workload( pages, &block )
-        page_chunks = split_page_workload( pages.compact )
+        workloads = split_page_workload( pages.compact )
+        return if workloads.empty?
 
         # Grab our chunk of the pages...
-        self_chunk = page_chunks.pop
+        self_workload = workloads.pop
 
         # ... and allow us to preload the next page from it...
-        block.call self_chunk.pop if block_given?
+        block.call self_workload.pop if block_given?
 
-        # ...and just push the rest to be audited next.
-        self_chunk.each { |sp| push_to_distributed_page_queue( sp ) }
+        # ...and just push the rest to be audited ASAP.
+        self_workload.each { |page| push_to_distributed_page_queue( page ) }
 
-        page_chunks.each.with_index do |chunk, i|
-            next if chunk.empty?
+        instances = preferred_instances
 
-            # Slave got workload, remove it from the 'done' list.
-            @done_slaves.delete @instances[i][:url]
-
-            # Assign the page to the slave and automatically calculate
-            # and assign per-element audit restrictions.
-            connect_to_instance( @instances[i] ).framework.process_pages( chunk ){}
+        # Assign the workload amongst the slaves.
+        workloads.each.with_index do |workload, i|
+            # Assign the workload to the slave.
+            connect_to_instance( instances[i] ).
+                framework.process_pages( workload ) do
+                    # Slave got workload, remove it from the 'done' list.
+                    mark_slave_as_not_done instances[i][:url]
+                end
         end
     end
 
     def split_page_workload( pages )
-        # Page lookup, per URL, to make our lives easier.
-        pages_per_url = {}
-        pages.each { |page| pages_per_url[page.url] = page }
-
         # Split elements in chunks for each instance and setup audit restrictions
         # for the relevant pages.
         #
         # The pages should contain all their original elements to maintain their
         # integrity, with the elements which should be audited explicitly white-listed.
-        split_pages = []
-        select_elements_to_distribute(pages).chunk( @instances.size + 1 ).
-            each_with_index do |chunk, i|
-                split_pages[i] ||= {}
+        workload = []
 
-                chunk.each do |element|
-                    # TODO: Fix this, too generic, doesn't handle the issue.
-                    if !pages_per_url[element.url]
-                        next
-                    end
+        select_elements_to_distribute(pages).chunk( preferred_instances.size + 1 ).
+            each_with_index do |elements, i|
+                workload[i] ||= {}
 
-                    split_pages[i][element.url] ||= pages_per_url[element.url].deep_clone
-                    split_pages[i][element.url].update_audit_whitelist element.audit_scope_id
+                elements.each do |element|
+                    workload[i][element.page] ||= element.page.dup
+                    workload[i][element.page].update_audit_whitelist element
                 end
 
-                split_pages[i] = split_pages[i].values
+                workload[i] = workload[i].values
             end
 
-        #dump_workload_to_console( split_pages )
-        split_pages
+        workload.reject!(&:empty?)
+
+        #dump_workload_to_console( workload )
+        workload
     end
 
     def dump_workload_to_console( workload )
@@ -151,6 +151,27 @@ module Distributor
         end
 
         ap distributed
+    end
+
+    def slaves_done?
+        synchronize { @running_slaves == @done_slaves }
+    end
+
+    def slave_done?( url )
+        synchronize { @done_slaves.include? url }
+    end
+
+    def mark_slave_as_done( url )
+        synchronize { @done_slaves << url }
+    end
+
+    def mark_slave_as_not_done( url )
+        synchronize { @done_slaves.delete url }
+    end
+
+    def preferred_instances
+        instances = @instances.select { |info| slave_done? info['url'] }
+        instances.any? ? instances : @instances
     end
 
     def select_elements_to_distribute( pages )
