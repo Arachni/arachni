@@ -96,10 +96,10 @@ class Page
     # @return   [Set<Integer>]
     #   Audit whitelist based on {Element::Capabilities::Auditable#audit_scope_id}.
     #
-    # @see  #update_audit_whitelist
-    # @see  #audit?
+    # @see  #update_element_audit_whitelist
+    # @see  #audit_element?
     # @see  Check::Auditor#skip?
-    attr_reader :audit_whitelist
+    attr_reader :element_audit_whitelist
 
     # Needs either a `:parser` or a `:response` or user provided data.
     #
@@ -128,20 +128,20 @@ class Page
 
         Platform::Manager.fingerprint( self ) if Options.fingerprint?
 
-        @audit_whitelist ||= []
-        @audit_whitelist   = Set.new( @audit_whitelist )
+        @element_audit_whitelist ||= []
+        @element_audit_whitelist   = Set.new( @element_audit_whitelist )
     end
 
     # @param    [Array<Element::Capabilities::Auditable, Integer>]    list
     #   Audit whitelist based on {Element::Capabilities::Auditable elements} or
     #   {Element::Capabilities::Auditable#audit_scope_id}s.
-    # @return   [Set]   {#audit_whitelist}
+    # @return   [Set]   {#element_audit_whitelist}
     #
-    # @see  #audit_whitelist
+    # @see  #element_audit_whitelist
     # @see  Check::Auditor#skip?
-    def update_audit_whitelist( list )
+    def update_element_audit_whitelist( list )
         [list].flatten.each do |e|
-            @audit_whitelist << (e.is_a?( Integer ) ? e : e.audit_scope_id )
+            @element_audit_whitelist << (e.is_a?( Integer ) ? e : e.audit_scope_id )
         end
     end
 
@@ -150,13 +150,19 @@ class Page
     # @return   [Bool]
     #   `true` if the element should be audited, `false` otherwise.
     #
-    # @see  #audit_whitelist
+    # @see  #element_audit_whitelist
     # @see  Check::Auditor#skip?
-    def audit?( element )
-        return true if @audit_whitelist.empty?
-        @audit_whitelist.include?(
+    def audit_element?( element )
+        return if @do_not_audit_elements
+        return true if @element_audit_whitelist.empty?
+        @element_audit_whitelist.include?(
             element.is_a?( Integer ) ? element : element.audit_scope_id
         )
+    end
+
+    # It forces {#audit_element?} to always returns false.
+    def do_not_audit_elements
+        @do_not_audit_elements = true
     end
 
     # @return    [HTTP::Response]    HTTP response.
@@ -338,7 +344,7 @@ class Page
     alias :to_hash :to_h
 
     def hash
-        "#{dom.transitions}:#{@body.hash}:#{elements.map(&:hash).sort}".hash
+        "#{dom.transitions}:#{body.hash}:#{elements.map(&:hash).sort}".hash
     end
 
     def ==( other )
@@ -356,7 +362,7 @@ class Page
     def _dump( _ )
         h = {}
         [:response, :body, :links, :forms, :cookies, :headers, :cookiejar,
-         :paths, :audit_whitelist].each do |m|
+         :paths, :element_audit_whitelist].each do |m|
             h[m] = send( m )
         end
 

@@ -315,7 +315,7 @@ module Auditor
     #
     # @see  Page#audit?
     def skip?( element )
-        return true if !page.audit?( element )
+        return true if !page.audit_element?( element )
 
         # Don't audit elements which have been already logged as vulnerable
         # either by us or preferred checks.

@@ -95,73 +95,84 @@ describe Arachni::Page do
         end
     end
 
-    describe '#audit_whitelist' do
+    describe '#element_audit_whitelist' do
         describe 'by default' do
             it 'returns an empty Set' do
-                subject.audit_whitelist.should be_empty
-                subject.audit_whitelist.should be_kind_of Set
+                subject.element_audit_whitelist.should be_empty
+                subject.element_audit_whitelist.should be_kind_of Set
             end
         end
     end
 
-    describe '#update_audit_whitelist' do
+    describe '#update_element_audit_whitelist' do
         context 'when passed a' do
             context Arachni::Element::Capabilities::Auditable do
-                it 'updates the #audit_whitelist' do
-                    subject.update_audit_whitelist subject.elements.first
-                    subject.audit_whitelist.should include subject.elements.first.audit_scope_id
+                it 'updates the #element_audit_whitelist' do
+                    subject.update_element_audit_whitelist subject.elements.first
+                    subject.element_audit_whitelist.should include subject.elements.first.audit_scope_id
                 end
             end
 
             context Integer do
-                it 'updates the #audit_whitelist' do
-                    subject.update_audit_whitelist subject.elements.first.audit_scope_id
-                    subject.audit_whitelist.should include subject.elements.first.audit_scope_id
+                it 'updates the #element_audit_whitelist' do
+                    subject.update_element_audit_whitelist subject.elements.first.audit_scope_id
+                    subject.element_audit_whitelist.should include subject.elements.first.audit_scope_id
                 end
             end
 
             context Array do
                 context Arachni::Element::Capabilities::Auditable do
-                    it 'updates the #audit_whitelist' do
-                        subject.update_audit_whitelist [subject.elements[0],subject.elements[1]]
-                        subject.audit_whitelist.should include subject.elements[0].audit_scope_id
-                        subject.audit_whitelist.should include subject.elements[1].audit_scope_id
+                    it 'updates the #element_audit_whitelist' do
+                        subject.update_element_audit_whitelist [subject.elements[0],subject.elements[1]]
+                        subject.element_audit_whitelist.should include subject.elements[0].audit_scope_id
+                        subject.element_audit_whitelist.should include subject.elements[1].audit_scope_id
                     end
                 end
 
                 context Integer do
-                    it 'updates the #audit_whitelist' do
-                        subject.update_audit_whitelist [subject.elements[0].audit_scope_id, subject.elements[1].audit_scope_id]
-                        subject.audit_whitelist.should include subject.elements[0].audit_scope_id
-                        subject.audit_whitelist.should include subject.elements[1].audit_scope_id
+                    it 'updates the #element_audit_whitelist' do
+                        subject.update_element_audit_whitelist [subject.elements[0].audit_scope_id, subject.elements[1].audit_scope_id]
+                        subject.element_audit_whitelist.should include subject.elements[0].audit_scope_id
+                        subject.element_audit_whitelist.should include subject.elements[1].audit_scope_id
                     end
                 end
             end
         end
     end
 
-    describe '#audit?' do
-        context 'when there is no #audit_whitelist' do
+    describe '#do_not_audit_elements' do
+        it 'forces #audit_element? to always return false' do
+            subject.do_not_audit_elements
+            subject.element_audit_whitelist.should be_empty
+            subject.audit_element?( subject.elements.first ).should be_false
+
+            subject.update_element_audit_whitelist subject.elements.first
+            subject.audit_element?( subject.elements.first ).should be_false
+        end
+    end
+
+    describe '#audit_element?' do
+        context 'when there is no #element_audit_whitelist' do
             it 'returns true' do
-                subject.audit_whitelist.should be_empty
-                subject.audit?( subject.elements.first ).should be_true
+                subject.element_audit_whitelist.should be_empty
+                subject.audit_element?( subject.elements.first ).should be_true
             end
         end
 
-        context 'when there is an #audit_whitelist' do
+        context 'when there is an #element_audit_whitelist' do
             context 'and the element is in it' do
                 context 'represented by' do
                     context Integer do
                         it 'returns true' do
-                            subject.update_audit_whitelist subject.elements.first
-                            subject.audit?( subject.elements.first.audit_scope_id ).should be_true
+                            subject.update_element_audit_whitelist subject.elements.first
+                            subject.audit_element?( subject.elements.first.audit_scope_id ).should be_true
                         end
                     end
 
                     context Arachni::Element::Capabilities::Auditable do
                         it 'returns true' do
-                            subject.update_audit_whitelist subject.elements.first
-                            subject.audit?( subject.elements.first ).should be_true
+                            subject.update_element_audit_whitelist subject.elements.first
+                            subject.audit_element?( subject.elements.first ).should be_true
                         end
                     end
                 end
@@ -170,15 +181,15 @@ describe Arachni::Page do
                 context 'represented by' do
                     context Integer do
                         it 'returns false' do
-                            subject.update_audit_whitelist subject.elements.first
-                            subject.audit?( subject.elements.last.audit_scope_id ).should be_false
+                            subject.update_element_audit_whitelist subject.elements.first
+                            subject.audit_element?( subject.elements.last.audit_scope_id ).should be_false
                         end
                     end
 
                     context Arachni::Element::Capabilities::Auditable do
                         it 'returns false' do
-                            subject.update_audit_whitelist subject.elements.first
-                            subject.audit?( subject.elements.last ).should be_false
+                            subject.update_element_audit_whitelist subject.elements.first
+                            subject.audit_element?( subject.elements.last ).should be_false
                         end
                     end
                 end
@@ -422,15 +433,15 @@ describe Arachni::Page do
 
     describe '#dup' do
         it 'returns a copy of the page' do
-            subject.update_audit_whitelist subject.elements.first
+            subject.update_element_audit_whitelist subject.elements.first
 
             dupped = subject.dup
             dupped.should == subject
 
-            dupped.audit_whitelist.should include subject.elements.first.audit_scope_id
+            dupped.element_audit_whitelist.should include subject.elements.first.audit_scope_id
 
             [:response, :body, :links, :forms, :cookies, :headers, :cookiejar,
-             :paths, :audit_whitelist].each do |m|
+             :paths, :element_audit_whitelist].each do |m|
 
                 # Make sure we're not comparing nils.
                 subject.send( m ).should be_true
