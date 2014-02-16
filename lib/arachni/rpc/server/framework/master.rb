@@ -22,9 +22,6 @@ module Master
         # Holds info for our slave Instances -- if we have any.
         @instances      = []
 
-        # Instances which have been distributed some scan workload.
-        @running_slaves = Set.new
-
         # Instances which have completed their scan.
         @done_slaves    = Set.new
 
@@ -68,7 +65,7 @@ module Master
     # Enslaves another instance and subsequently becomes the master of the group.
     #
     # @param    [Hash]  instance_info
-    #   `{ 'url' => '<host>:<port>', 'token' => 's3cr3t' }`
+    #   `{ url: '<host>:<port>', token: 's3cr3t' }`
     #
     # @return   [Bool]
     #   `true` on success, `false` is this instance is a slave (slaves can't
@@ -273,8 +270,6 @@ module Master
                 # Start the master/local Instance's audit.
                 audit
 
-                clear_element_filter
-
                 @finished_auditing = true
 
                 cleanup_if_all_done
@@ -325,13 +320,6 @@ module Master
             # if there wasn't an audit we need to force an HTTP run.
             audit_page( page ) or http.run
 
-            # Distribute workload from the page queue.
-            pages = []
-            calculate_workload_size( @page_queue.size ).times do
-                pages << @page_queue.pop
-            end
-            distribute_page_workload( pages )
-
             audit_page_queue
         end
 
@@ -339,6 +327,25 @@ module Master
 
         @audit_queues_done = true
         true
+    end
+
+    def master_audit_page_queue
+        while !page_limit_reached? && (page = pop_page_from_queue)
+
+            # Only distribute the page queue workload if we have idle slaves,
+            # the queue isn't going anywhere so there's no rush and we shouldn't
+            # risk a situation where a slave gets too much work, leaving other
+            # Instances with nothing to do.
+            if has_idle_slaves?
+                pages = []
+                calculate_workload_size( @page_queue.size ).times do
+                    pages << @page_queue.pop
+                end
+                distribute_page_workload( pages )
+            end
+
+            audit_page( page )
+        end
     end
 
     def pop_page_from_queue
@@ -382,6 +389,9 @@ module Master
     # Cleans up the system if all Instances have finished.
     def cleanup_if_all_done
         return if !@finished_auditing || !slaves_done?
+
+        clear_filters
+        clear_distributed_page_queue
 
         # We pass a block because we want to perform a grid cleanup, not just a
         # local one.

@@ -76,10 +76,23 @@ module Distributor
 
     private
 
+    # @param    [Integer]   maximum
+    #   Maximum allowed workload, to be returned in case the calculation (based
+    #   on the amount of {#preferred_slaves}) exceeds it.
+    #
+    # @see #preferred_slaves
+    # @see #split_page_workload
+    # @se #distribute_page_workload
     def calculate_workload_size( maximum )
-        [10 * (preferred_instances.size + 1), maximum].min
+        [10 * (preferred_slaves.size + 1), maximum].min
     end
 
+    # @param    [Array<Page>]   pages
+    #   Page workload to be {#split_page_workload split} and distributed to
+    #   the master (`self`) and the {#preferred_slaves}.
+    # @param    [Block] block
+    #   Block to be called with the next page for the master (`self`), giving
+    #   us a chance to preload it for a smoother audit.
     def distribute_page_workload( pages, &block )
         workloads = split_page_workload( pages.compact )
         return if workloads.empty?
@@ -93,7 +106,7 @@ module Distributor
         # ...and just push the rest to be audited ASAP.
         self_workload.each { |page| push_to_distributed_page_queue( page ) }
 
-        instances = preferred_instances
+        instances = preferred_slaves
 
         # Assign the workload amongst the slaves.
         workloads.each.with_index do |workload, i|
@@ -106,24 +119,53 @@ module Distributor
         end
     end
 
+    # @param    [Array<Page>]   pages
+    #   Page workload to be split for {#distribute_page_workload distribution}
+    #   based on the amount of {#preferred_slaves}.
+    #
+    # @return   [Array<Array<Page>>]
+    #   Chunks of pages (with {#Page#audit_whitelist} configured) for each
+    #   instance.
+    #
+    #   Distribution is per-element and not per-page, that is, the focus is placed
+    #   on each chunk having an equal amount of element workload. Thus, if a page
+    #   needs to be split up, it will be.
+    #
+    #   If there are new pages without unseen elements, they will be equally
+    #   distributed but their elements will {#Page#do_not_audit_elements not be audited}.
+    #   This is because we still need passive checks and browser analysis to
+    #   seem them.
     def split_page_workload( pages )
+        @seen_pages ||= Support::LookUp::HashSet.new
+
         # Split elements in chunks for each instance and setup audit restrictions
         # for the relevant pages.
         #
         # The pages should contain all their original elements to maintain their
         # integrity, with the elements which should be audited explicitly white-listed.
-        workload = []
-
-        select_elements_to_distribute(pages).chunk( preferred_instances.size + 1 ).
+        workload      = []
+        filter_elements_from_pages(pages).chunk( preferred_slaves.size + 1 ).
             each_with_index do |elements, i|
                 workload[i] ||= {}
 
                 elements.each do |element|
                     workload[i][element.page] ||= element.page.dup
-                    workload[i][element.page].update_audit_whitelist element
+                    workload[i][element.page].update_element_audit_whitelist element
+                    @seen_pages << element.page
                 end
 
                 workload[i] = workload[i].values
+            end
+
+        missed_pages = pages.select { |page| !@seen_pages.include? page }
+
+        # Some pages may not have any elements but they still need to be seen in
+        # order to be passed to passive checks and be analyzed by the browser
+        # cluster.
+        missed_pages.chunk( preferred_slaves.size + 1 ).
+            each_with_index do |page_chunks, i|
+                workload[i] ||= []
+                workload[i] |= page_chunks.each(&:do_not_audit_elements)
             end
 
         workload.reject!(&:empty?)
@@ -153,35 +195,69 @@ module Distributor
         ap distributed
     end
 
+    # @return   [Bool]
+    #   `true` if all slaves have reported that they've finished their assigned
+    #   workload, `false` otherwise.
     def slaves_done?
-        synchronize { @running_slaves == @done_slaves }
+        synchronize { slave_urls.sort == @done_slaves.to_a.sort }
     end
 
+    # @return   [Bool]
+    #   `true` if there are slaves that have finished their assigned workload,
+    #   `false` otherwise.
+    def has_idle_slaves?
+        synchronize { @done_slaves.any? }
+    end
+
+    # @param    [String]    url
+    #   Slave RPC URL.
+    #
+    # @return   [Bool]
+    #   `true` if the slave has finished its assigned workload, `false` otherwise.
     def slave_done?( url )
         synchronize { @done_slaves.include? url }
     end
 
+    # @param    [String]    url
+    #   Slave to mark as done, by RPC URL.
     def mark_slave_as_done( url )
         synchronize { @done_slaves << url }
     end
 
+    # @param    [String]    url
+    #   Slave to mark as not done, by RPC URL.
     def mark_slave_as_not_done( url )
         synchronize { @done_slaves.delete url }
     end
 
-    def mark_slave_as_running( url )
-        synchronize { @running_slaves << url }
+    # @return   [Array<String>]
+    #   Slave RPC URLs.
+    def slave_urls
+        @instances.map { |info| info[:url] }
     end
 
-    def preferred_instances
-        instances = @instances.select { |info| slave_done? info['url'] }
+    # @note Check with {#has_idle_slaves?} first, if you only want to get
+    #   slaves which are idle. This method assumes that the workload needs
+    #   somewhere to go immediately.
+    #
+    # @return   [Array<Hash>]
+    #   Connection info for the currently {#slave_done? done slaves}.
+    #   If all slaves are busy, all are returned.
+    def preferred_slaves
+        instances = @instances.select { |info| slave_done? info[:url] }
         instances.any? ? instances : @instances
     end
 
-    def select_elements_to_distribute( pages )
+    # @param    [Array<Pages>]  pages
+    # @return   [Array<Element::Capabilities::Auditable>]
+    #   Flat list of all unique and previously un-seen elements from the given
+    #   `pages`.
+    def filter_elements_from_pages( pages )
         pages.map { |page| build_element_list( page ) }.flatten
     end
 
+    # TODO: Replace this with Page#elements_within_scope to also take
+    #   into account all scope restrictions.
     def build_element_list( page )
         [:links, :forms, :cookies, :headers].map do |type|
             filter_elements( page.send(type) ) if @opts.audit.element? type
@@ -204,8 +280,9 @@ module Distributor
         end.compact.uniq
     end
 
-    def clear_element_filter
+    def clear_filters
         @element_filter.clear if @element_filter
+        @seen_pages.clear if @element_filter
     end
 
     # @param    [Block] block
@@ -278,11 +355,8 @@ module Distributor
         end
 
         instance.service.scan( opts ) do
-            # Instance has been taken over and is running.
-            mark_slave_as_running instance.url
-
             # Workload will actually be distributed later on so mark it as
-            # done, i.e. available for work.
+            # done by default, i.e. available for work.
             mark_slave_as_done instance.url
 
             block.call( instance ) if block_given?

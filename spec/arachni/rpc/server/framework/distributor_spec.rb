@@ -21,7 +21,6 @@ class Distributor
         @opts           = Arachni::Options.instance
         @local_token    = token
         @instances      = []
-        @running_slaves = Set.new
         @done_slaves    = Set.new
     end
 
@@ -57,8 +56,8 @@ class FakeMaster
 
     def enslave( instance_hash )
         instance = Arachni::RPC::Client::Instance.new( @opts,
-                                                       instance_hash['url'],
-                                                       instance_hash['token'])
+                                                       instance_hash[:url],
+                                                       instance_hash[:token])
 
         instance.framework.
             set_master( "#{@server.opts[:host]}:#{@server.opts[:port]}", @token )
@@ -85,8 +84,8 @@ describe Arachni::RPC::Server::Framework::Distributor do
         2.times {
             instance = instance_spawn
             distributor <<  {
-                'url'   => instance.url,
-                'token' => instance_token_for( instance.url )
+                url:   instance.url,
+                token: instance_token_for( instance.url )
             }
         }
         distributor
@@ -110,7 +109,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
         it 'bases it on the amount of idle instances' do
             distributor = get_distributor
-            distributor.done_slaves << distributor.instances.first['url']
+            distributor.done_slaves << distributor.instances.first[:url]
             distributor.calculate_workload_size( 99999 ).should == 20
         end
 
@@ -191,84 +190,185 @@ describe Arachni::RPC::Server::Framework::Distributor do
             pages
         end
 
-        it 'splits the page workload for the available instances' do
-            distributor = get_distributor
+        context 'when there are new pages' do
+            context 'with new elements' do
+                it 'splits the workload for the available instances' do
+                    distributor = get_distributor
 
-            workload = []
-            distributor.split_page_workload( pages ).map do |page_chunks|
-                workload << Hash[page_chunks.map { |p| [p.url, p.audit_whitelist.to_a] }]
+                    workload = []
+                    distributor.split_page_workload( pages ).map do |page_chunks|
+                        workload << Hash[page_chunks.map { |p| [p.url, p.element_audit_whitelist.to_a] }]
+                    end
+                    workload.should == [
+                        {
+                            "#{@url}1" => [2720541242, 3706493238],
+                            "#{@url}2" => [2299786370]
+                        },
+                        {
+                            "#{@url}3" => [3008708675, 1846432277],
+                            "#{@url}4" => [2444203185] },
+                        {
+                            "#{@url}4" => [2195342275],
+                            "#{@url}5" => [659674061]
+                        }
+                    ]
+
+                    distributor = get_distributor
+                    # Mark one of the instances as done.
+                    distributor.done_slaves << distributor.instances.first[:url]
+
+                    workload = []
+                    distributor.split_page_workload( pages ).map do |page_chunks|
+                        workload << Hash[page_chunks.map { |p| [p.url, p.element_audit_whitelist.to_a] }]
+                    end
+                    workload.should == [
+                        {
+                            'http://test.com/1' => [2720541242, 3706493238],
+                            'http://test.com/2' => [2299786370],
+                            'http://test.com/3' => [3008708675]
+                        },
+                        {
+                            'http://test.com/3' => [1846432277],
+                            'http://test.com/4' => [2444203185, 2195342275],
+                            'http://test.com/5' => [659674061]
+                        }
+                    ]
+                end
             end
-            workload.should == [
-                {
-                    "#{@url}1" => [2720541242, 3706493238],
-                    "#{@url}2" => [2299786370]
-                },
-                {
-                    "#{@url}3" => [3008708675, 1846432277],
-                    "#{@url}4" => [2444203185] },
-                {
-                     "#{@url}4" => [2195342275],
-                     "#{@url}5" => [659674061]
-                }
-            ]
 
-            distributor = get_distributor
-            # Mark one of the instances as done.
-            distributor.done_slaves << distributor.instances.first['url']
+            context 'with seen elements' do
+                it 'distributes them as is' do
+                    distributor = get_distributor
+                    distributor.split_page_workload( pages )
 
-            workload = []
-            distributor.split_page_workload( pages ).map do |page_chunks|
-                workload << Hash[page_chunks.map { |p| [p.url, p.audit_whitelist.to_a] }]
+                    pages.each do |page|
+                        page.body << 'stuff'
+                    end
+
+                    workload = []
+                    distributor.split_page_workload( pages ).map do |page_chunks|
+                        workload << page_chunks.map(&:url)
+                    end
+                    workload.should == [
+                        ['http://test.com/1', 'http://test.com/2'],
+                        ['http://test.com/3', 'http://test.com/4'],
+                        ['http://test.com/5']
+                    ]
+                end
+
+                it 'does not audit them' do
+                    distributor = get_distributor
+                    distributor.split_page_workload( pages )
+
+                    pages.each do |page|
+                        page.body << 'stuff'
+                    end
+
+                    workload = []
+                    distributor.split_page_workload( pages ).map do |page_chunks|
+                        workload << page_chunks
+                    end
+                    workload.flatten!
+                    workload.size.should == 5
+
+                    workload.each do |page|
+                        page.elements.should be_any
+                        page.elements.each { |e| page.audit_element?(e).should be_false }
+                    end
+                end
             end
-            workload.should == [
-                {
-                    'http://test.com/1' => [2720541242, 3706493238],
-                    'http://test.com/2' => [2299786370],
-                    'http://test.com/3' => [3008708675]
-                },
-                {
-                    'http://test.com/3' => [1846432277],
-                    'http://test.com/4' => [2444203185, 2195342275],
-                    'http://test.com/5' => [659674061]
-                }
-            ]
+
+            context 'without any elements' do
+                it 'distributes them as is' do
+                    pages = []
+
+                    20.times do |i|
+                        pages << Arachni::Page.from_data( url: "#{@url}/#{i}", body: i.to_s )
+                    end
+
+                    workload = []
+                    get_distributor.split_page_workload( pages ).map do |page_chunks|
+                        workload << page_chunks.map(&:url)
+                    end
+                    workload.should == [
+                        [
+                            'http://test.com/0',
+                            'http://test.com/1',
+                            'http://test.com/2',
+                            'http://test.com/3',
+                            'http://test.com/4',
+                            'http://test.com/5',
+                            'http://test.com/6'
+                        ],
+                        [
+                            'http://test.com/7',
+                            'http://test.com/8',
+                            'http://test.com/9',
+                            'http://test.com/10',
+                            'http://test.com/11',
+                            'http://test.com/12',
+                            'http://test.com/13'
+                        ],
+                        [
+                            'http://test.com/14',
+                            'http://test.com/15',
+                            'http://test.com/16',
+                            'http://test.com/17',
+                            'http://test.com/18',
+                            'http://test.com/19'
+                        ]
+                    ]
+                end
+            end
         end
 
-        it 'skips seen elements' do
-            distributor = get_distributor
-            distributor.split_page_workload( pages )
+        context 'when there are seen pages' do
+            context 'with new elements' do
+                it 'only distributes new elements' do
+                    distributor = get_distributor
+                    distributor.split_page_workload( pages )
 
-            pages.first.forms |= [
-                Arachni::Form.new(
-                    url:    pages.first.url,
-                    action: "#{pages.first.url}/my-action",
-                    inputs: { tes2: 1 }
-                )
-            ]
+                    pages.first.forms |= [
+                        Arachni::Form.new(
+                            url:    pages.first.url,
+                            action: "#{pages.first.url}/my-action",
+                            inputs: { tes2: 1 }
+                        )
+                    ]
 
-            pages.last.forms |= [
-                Arachni::Form.new(
-                    url:    pages.last.url,
-                    action: "#{pages.last.url}/my-action",
-                    inputs: { tes2: 1 }
-                )
-            ]
+                    pages.last.forms |= [
+                        Arachni::Form.new(
+                            url:    pages.last.url,
+                            action: "#{pages.last.url}/my-action",
+                            inputs: { tes2: 1 }
+                        )
+                    ]
 
-            workload = []
-            distributor.split_page_workload( pages ).map do |page_chunks|
-                workload << Hash[page_chunks.map { |p| [p.url, p.audit_whitelist.to_a] }]
+                    workload = []
+                    distributor.split_page_workload( pages ).map do |page_chunks|
+                        workload << Hash[page_chunks.map { |p| [p.url, p.element_audit_whitelist.to_a] }]
+                    end
+
+                    workload.should == [
+                        { 'http://test.com/1' => [2835048516] },
+                        { 'http://test.com/5' => [1397105343] }
+                    ]
+                end
             end
 
-            workload.should == [
-                { 'http://test.com/1' => [2835048516] },
-                { 'http://test.com/5' => [1397105343] }
-            ]
+            context 'with seen elements' do
+                it 'return an empty array' do
+                    distributor = get_distributor
 
-            workload = []
-            distributor.split_page_workload( pages ).map do |page_chunks|
-                workload << Hash[page_chunks.map { |p| [p.url, p.audit_whitelist.to_a] }]
+                    distributor.split_page_workload( pages )
+
+                    workload = []
+                    distributor.split_page_workload( pages ).map do |page_chunks|
+                        workload << Hash[page_chunks.map { |p| [p.url, p.audit_whitelist.to_a] }]
+                    end
+                    workload.should == []
+                end
             end
-            workload.should == []
         end
     end
 

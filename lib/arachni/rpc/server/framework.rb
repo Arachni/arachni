@@ -159,8 +159,6 @@ class Framework < ::Arachni::Framework
         @cleaned_up       = true
         @extended_running = false
 
-        clear_distributed_page_queue
-
         r = super( false )
 
         if !block_given?
