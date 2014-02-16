@@ -5,14 +5,13 @@ require Arachni::Options.paths.lib + 'rpc/server/framework'
 class Distributor
     include Arachni::RPC::Server::Framework::Distributor
 
-    attr_reader   :instances
+    attr_reader   :slaves
     attr_reader   :done_slaves
     attr_accessor :master_url
 
     [ :map_slaves, :each_slave, :slave_iterator, :iterator_for,
-      :preferred_dispatchers, :pick_dispatchers, :distribute_and_run,
-      :cleaned_up_opts, :split_page_workload, :calculate_workload_size
-    ].each do |sym|
+      :preferred_dispatchers, :pick_dispatchers, :prepare_slave_options,
+      :split_page_workload, :calculate_workload_size ].each do |sym|
         private sym
         public sym
     end
@@ -20,7 +19,7 @@ class Distributor
     def initialize( token )
         @opts           = Arachni::Options.instance
         @local_token    = token
-        @instances      = []
+        @slaves      = []
         @done_slaves    = Set.new
     end
 
@@ -33,7 +32,7 @@ class Distributor
     end
 
     def <<( instance_h )
-        @instances << instance_h
+        @slaves << instance_h
     end
 end
 
@@ -109,7 +108,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
         it 'bases it on the amount of idle instances' do
             distributor = get_distributor
-            distributor.done_slaves << distributor.instances.first[:url]
+            distributor.done_slaves << distributor.slaves.first[:url]
             distributor.calculate_workload_size( 99999 ).should == 20
         end
 
@@ -215,7 +214,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
                     distributor = get_distributor
                     # Mark one of the instances as done.
-                    distributor.done_slaves << distributor.instances.first[:url]
+                    distributor.done_slaves << distributor.slaves.first[:url]
 
                     workload = []
                     distributor.split_page_workload( pages ).map do |page_chunks|
@@ -372,9 +371,9 @@ describe Arachni::RPC::Server::Framework::Distributor do
         end
     end
 
-    describe '#cleaned_up_opts' do
+    describe '#prepare_slave_options' do
         it 'returns a hash with options suitable for passing to slaves' do
-            @distributor.cleaned_up_opts.should == {
+            @distributor.prepare_slave_options.should == {
                 http:      {
                     user_agent:             @opts.http.user_agent,
                     request_timeout:        50000,
@@ -489,7 +488,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
             end
             @distributor.slave_iterator.each( &foreach )
 
-            urls = @distributor.instances.map { |i| i['url'] }.sort
+            urls = @distributor.slaves.map { |i| i['url'] }.sort
 
             raised = false
             begin
@@ -509,9 +508,9 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 q << instance['url']
                 iter.next
             end
-            @distributor.iterator_for( @distributor.instances ).each( &foreach )
+            @distributor.iterator_for( @distributor.slaves ).each( &foreach )
 
-            urls = @distributor.instances.map { |i| i['url'] }.sort
+            urls = @distributor.slaves.map { |i| i['url'] }.sort
 
             raised = false
             begin
@@ -602,7 +601,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
         end
     end
 
-    describe '#distribute_and_run' do
+    describe '#initialize_slaves' do
         #before( :all ) do
         #    @opts.paths.checks = fixtures_path + 'taint_check/'
         #

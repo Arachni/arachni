@@ -20,7 +20,7 @@ module Master
         return true if master?
 
         # Holds info for our slave Instances -- if we have any.
-        @instances      = []
+        @slaves      = []
 
         # Instances which have completed their scan.
         @done_slaves    = Set.new
@@ -69,7 +69,7 @@ module Master
     # @return   [Bool]
     #   `true` on success, `false` is this instance is a slave (slaves can't
     #   have slaves of their own).
-    def enslave( instance_info, options = {}, &block )
+    def enslave( instance_info, &block )
         # Slaves can't have slaves of their own.
         if slave?
             block.call false
@@ -86,9 +86,9 @@ module Master
 
         # Take charge of the Instance we were given.
         instance = connect_to_instance( instance_info )
-        instance.opts.set( cleaned_up_opts ) do
+        instance.opts.set( prepare_slave_options ) do
             instance.framework.set_master( multi_self_url, token ) do
-                @instances << instance_info
+                @slaves << instance_info
 
                 print_status "Enslaved: #{instance_info[:url]}"
 
@@ -184,35 +184,13 @@ module Master
 
     private
 
-    # @note Should previously unseen elements dynamically appear during the
-    #   audit they will override audit restrictions and each instance will audit
-    #   them at will.
-    #
-    # If we're the master we'll need to analyze the pages prior to assigning
-    # them to each instance at the element level so as to gain more granular
-    # control over the assigned workload.
-    #
-    # Put simply, we'll need to perform some magic in order to prevent different
-    # instances from auditing the same elements and wasting bandwidth.
-    #
-    # For example: Search forms, logout links and the like will most likely
-    # exist on most pages of the site and since each instance is assigned a set
-    # of URLs/pages to audit they will end up with common elements so we have to
-    # prevent instances from performing identical checks.
     def master_run
         # We need to take our cues from the local framework as some plug-ins may
         # need the system to wait for them to finish before moving on.
         sleep( 0.2 ) while paused?
 
-        after = proc do
-            # Some options need to be adjusted when performing multi-Instance
-            # scans for them to be enforced properly.
-            adjust_distributed_options { master_scan_run }
-        end
-
-        # If there is no grid go straight to the scan, don't bother with
         # Grid-related operations.
-        return after.call if !@opts.dispatcher.grid?
+        return master_scan_run if !@opts.dispatcher.grid?
 
         # Prepare a block to process each Dispatcher and request slave instances
         # from it. If we have any available Dispatchers, that is.
@@ -237,7 +215,7 @@ module Master
                         ' Instances from Dispatcher with unique Pipe-IDs.'
 
             preferred_dispatchers do |pref_dispatchers|
-                iterator_for( pref_dispatchers ).each( each, after )
+                iterator_for( pref_dispatchers ).each( each, proc { master_scan_run } )
             end
 
         # If we're not in aggregation mode then we're in load balancing mode
@@ -254,17 +232,12 @@ module Master
             end
 
             @opts.spawns.times { q.pop }
-            after.call
+            master_scan_run
         end
     end
 
     def master_scan_run
-        Thread.abort_on_exception = true
-
-        foreach = proc do |instance, iterator|
-            distribute_and_run( instance ){ iterator.next }
-        end
-        after = proc do
+        initialize_slaves do
             Thread.new do
                 # Start the master/local Instance's audit.
                 audit
@@ -274,8 +247,6 @@ module Master
                 cleanup_if_all_done
             end
         end
-
-        each_slave( foreach, after )
     end
 
     def master_audit_queues
@@ -366,25 +337,6 @@ module Master
         @distributed_page_queue.clear
     end
 
-    def adjust_distributed_options( &block )
-        options = RPC::Server::ActiveOptions.new( self )
-
-        # Adjust the values of options that require special care when distributing.
-        ic = (@instances.size + 1)
-
-        updated_opts = {
-            http: { request_concurrency: options.http.request_concurrency / ic }
-        }
-
-        options.set updated_opts
-
-        each = proc do |instance, iterator|
-            instance.opts.set( updated_opts ) { iterator.next }
-        end
-
-        each_slave( each, block )
-    end
-
     # Cleans up the system if all Instances have finished.
     def cleanup_if_all_done
         return if !@finished_auditing || !slaves_done?
@@ -398,7 +350,7 @@ module Master
     end
 
     def has_slaves?
-        @instances && @instances.any?
+        @slaves && @slaves.any?
     end
 
 end

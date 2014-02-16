@@ -62,7 +62,7 @@ module Distributor
 
     # @return   <::EM::Iterator>  Iterator for all slave instances.
     def slave_iterator
-        iterator_for( @instances )
+        iterator_for( @slaves )
     end
 
     #
@@ -233,7 +233,7 @@ module Distributor
     # @return   [Array<String>]
     #   Slave RPC URLs.
     def slave_urls
-        @instances.map { |info| info[:url] }
+        @slaves.map { |info| info[:url] }
     end
 
     # @note Check with {#has_idle_slaves?} first, if you only want to get
@@ -244,8 +244,8 @@ module Distributor
     #   Connection info for the currently {#slave_done? done slaves}.
     #   If all slaves are busy, all are returned.
     def preferred_slaves
-        instances = @instances.select { |info| slave_done? info[:url] }
-        instances.any? ? instances : @instances
+        instances = @slaves.select { |info| slave_done? info[:url] }
+        instances.any? ? instances : @slaves
     end
 
     # @param    [Array<Pages>]  pages
@@ -340,51 +340,56 @@ module Distributor
         @opts.spawns > 0 ? dispatchers[0...@opts.spawns] : dispatchers
     end
 
-    # Configures and runs a slave Instance (well not really, slaves'
-    # {#multi_run} code is a NOP).
+    # Configures and initializes slave instances.
     #
-    # @param    [RPC::Client::Instance]      instance
     # @param    [Block] block
-    #   Block to be called once the Instance is configured and running.
-    def distribute_and_run( instance, &block )
-        opts = cleaned_up_opts
+    #   Block to be called once the slaves are ready to receive workload.
+    def initialize_slaves( &block )
+        # Adjust the max HTTP concurrency setting for the multi-Instance scan.
+        @opts.http.request_concurrency /= slave_urls.size + 1
+        http.max_concurrency = @opts.http.request_concurrency
+
+        slave_options = prepare_slave_options
 
         [:exclude_path_patterns, :include_path_patterns].each do |k|
-            (opts[:scope][k] || {}).
-                each_with_index { |v, i| opts[k][i] = v.source }
+            (slave_options[:scope][k] || {}).
+                each_with_index { |v, i| slave_options[k][i] = v.source }
         end
 
-        instance.service.scan( opts ) do
-            # Workload will actually be distributed later on so mark it as
-            # done by default, i.e. available for work.
-            mark_slave_as_done instance.url
-
-            block.call( instance ) if block_given?
+        foreach = proc do |slave, iterator|
+            slave.service.scan( slave_options ) do
+                # Workload will actually be distributed later on so mark it as
+                # done by default, i.e. available for work.
+                mark_slave_as_done slave.url
+                iterator.next
+            end
         end
+
+        each_slave( foreach, block )
     end
 
     # @return   [Hash]
-    #   Options suitable to be passed as a configuration to other Instances.
+    #   Options suitable to be passed as a configuration to slaves.
     #
-    #   Removes options that shouldn't be set for slaves like `spawns`, etc.
+    #   Removes options that shouldn't be set like `spawns`, etc.
     #
     #   Finally, it sets the master's privilege token so that the slave can
     #   report back to us.
-    def cleaned_up_opts
-        opts = @opts.to_h.deep_clone
+    def prepare_slave_options
+        options = @opts.to_h.deep_clone
 
-        %w(instance rpc dispatcher paths spawns).each { |k| opts.delete k.to_sym }
-        opts[:http].delete :cookie_jar_filepath
+        %w(instance rpc dispatcher paths spawns).each { |k| options.delete k.to_sym }
+        options[:http].delete :cookie_jar_filepath
 
         # Don't let the slaves run plugins that are not meant to be distributed.
-        opts[:plugins].reject! { |k, _| !@plugins[k].distributable? } if opts[:plugins]
+        options[:plugins].reject! { |k, _| !@plugins[k].distributable? } if options[:plugins]
 
-        opts[:datastore].delete( :dispatcher_url )
-        opts[:datastore].delete( :token )
+        options[:datastore].delete( :dispatcher_url )
+        options[:datastore].delete( :token )
 
-        opts[:datastore][:master_priv_token] = @local_token
+        options[:datastore][:master_priv_token] = @local_token
 
-        opts
+        options
     end
 
     # @param    [Array<Hash>]   stats   Array of {Framework.stats} to merge.

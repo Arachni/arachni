@@ -632,7 +632,7 @@ class Instance
             @framework.instance_eval do
                 next if !has_slaves?
 
-                @instances.each do |instance|
+                @slaves.each do |instance|
                     t << Thread.new { connect_to_instance( instance ).service.shutdown }
                 end
             end
