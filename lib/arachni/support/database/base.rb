@@ -23,7 +23,8 @@ class Base
     # @param    [Object]    serializer
     #   Any object that responds to 'dump' and 'load'.
     def initialize( serializer = Marshal )
-        @serializer = serializer
+        @serializer       = serializer
+        @filename_counter = 0
     end
 
     private
@@ -39,16 +40,14 @@ class Base
     # @return   [String]    filepath
     #
     def dump( obj, &block )
-        f = File.open( get_unique_filename, 'w' )
+        File.open( get_unique_filename, 'w' ) do |f|
+            serialized = serialize( obj )
+            f.write( serialized )
 
-        serialized = serialize( obj )
-        f.write( serialized )
+            block.call( serialized ) if block_given?
 
-        block.call( serialized ) if block_given?
-
-        f.path
-    ensure
-        f.close
+            f.path
+        end
     end
 
     #
@@ -102,9 +101,10 @@ class Base
     end
 
     def generate_filename
-        s = ''
-        10.times { s << ( 65 + rand( 26 ) ) }
-        ( Dir.tmpdir + "/#{self.class.name}_" + s ).gsub( '::', '_' )
+        # Should be unique enough...
+        "#{Dir.tmpdir}/#{self.class.name}_#{Process.pid}_#{object_id}_#{@filename_counter}".gsub( '::', '_' )
+    ensure
+        @filename_counter += 1
     end
 
 end
