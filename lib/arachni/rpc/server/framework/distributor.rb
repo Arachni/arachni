@@ -169,6 +169,10 @@ module Distributor
         synchronize { @done_slaves.delete url }
     end
 
+    def mark_slave_as_running( url )
+        synchronize { @running_slaves << url }
+    end
+
     def preferred_instances
         instances = @instances.select { |info| slave_done? info['url'] }
         instances.any? ? instances : @instances
@@ -262,13 +266,10 @@ module Distributor
     # Configures and runs a slave Instance (well not really, slaves'
     # {#multi_run} code is a NOP).
     #
-    # @param    [Hash]      instance_hash
-    #   Instance info as returned by {RPC::Server::Dispatcher#dispatch} --
-    #   with `:url` and `:token` at least.
-    # @param    [Hash]      options
+    # @param    [RPC::Client::Instance]      instance
     # @param    [Block] block
     #   Block to be called once the Instance is configured and running.
-    def distribute_and_run( instance_hash, options = {}, &block )
+    def distribute_and_run( instance, &block )
         opts = cleaned_up_opts
 
         [:exclude_path_patterns, :include_path_patterns].each do |k|
@@ -276,9 +277,15 @@ module Distributor
                 each_with_index { |v, i| opts[k][i] = v.source }
         end
 
-        connect_to_instance( instance_hash ).service.scan( opts ) do
-            @running_slaves << instance_hash[:url]
-            block.call( instance_hash ) if block_given?
+        instance.service.scan( opts ) do
+            # Instance has been taken over and is running.
+            mark_slave_as_running instance.url
+
+            # Workload will actually be distributed later on so mark it as
+            # done, i.e. available for work.
+            mark_slave_as_done instance.url
+
+            block.call( instance ) if block_given?
         end
     end
 

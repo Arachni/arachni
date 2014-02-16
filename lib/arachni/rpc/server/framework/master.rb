@@ -264,40 +264,24 @@ module Master
 
     def master_scan_run
         Thread.abort_on_exception = true
-        Thread.new do
 
-            # Assign element routing IDs to all instances to be used to
-            # statically determine which elements each instance should audit.
-            @instances.each_with_index do |instance_info, i|
-                # Initially mark slaves as done.
-                mark_slave_as_done instance_info[:url]
-
-                distribute_and_run( instance_info,
-                                    routing_id:      i,
-                                    total_instances: @instances.size + 1
-                )
-            end
-
-            # Start the master/local Instance's audit.
-            audit
-
-            clear_element_filter
-
-            @finished_auditing = true
-
-            # Don't ring our own bell unless there are no other instances
-            # set to scan or we have slaves running.
-            #
-            # If the local audit finishes super-fast the slaves might
-            # not have been added to the local list yet, which will result
-            # in us prematurely cleaning up and setting the status to
-            # 'done' even though the slaves won't have yet finished
-            #
-            # However, if the workload chunk is 1 then no slaves will
-            # have been started in the first place and since it's just us
-            # we can go ahead and clean-up.
-            cleanup_if_all_done if @running_slaves.any?
+        foreach = proc do |instance, iterator|
+            distribute_and_run( instance ){ iterator.next }
         end
+        after = proc do
+            Thread.new do
+                # Start the master/local Instance's audit.
+                audit
+
+                clear_element_filter
+
+                @finished_auditing = true
+
+                cleanup_if_all_done
+            end
+        end
+
+        each_slave( foreach, after )
     end
 
     def master_audit_queues

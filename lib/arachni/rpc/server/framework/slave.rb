@@ -91,8 +91,9 @@ module Slave
         return if @audit_page_running
         @audit_page_running = true
 
+        Thread.abort_on_exception = true
         Thread.new do
-            audit
+            exception_jail { audit }
 
             sitrep( issues: @issue_buffer.dup, audit_done: true )
             @issue_buffer.clear
