@@ -78,7 +78,7 @@ describe Arachni::Check::Auditor do
     describe '#skip?' do
         context 'when there is no Arachni::Page#element_audit_whitelist' do
             it 'returns false' do
-                @auditor.page.audit_whitelist.should be_empty
+                @auditor.page.element_audit_whitelist.should be_empty
                 @auditor.skip?( @auditor.page.elements.first ).should be_false
             end
         end
