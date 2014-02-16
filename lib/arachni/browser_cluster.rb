@@ -72,8 +72,6 @@ class BrowserCluster
     #   List of crawled URLs with their HTTP codes.
     attr_reader :sitemap
 
-    attr_reader :consumed_pids
-
     # @return   [String]
     #   Javascript token used to namespace the custom JS environment.
     attr_reader :javascript_token
@@ -100,9 +98,11 @@ class BrowserCluster
         end
 
         # Used to sync operations between workers per Job#id.
-        @skip ||= {}
+        @skip = {}
 
-        # Callbacks for each job per Job#id.
+        # Callbacks for each job per Job#id. We need to keep track of this
+        # here because jobs are serialized and offloaded to disk and thus can't
+        # contain callbacks.
         @job_callbacks = {}
 
         # Keeps track of the amount of pending jobs distributed across the
@@ -124,12 +124,12 @@ class BrowserCluster
         initialize_workers
     end
 
-    # @return    [Job]  Pops a job from the queue.
-    # @see #queue
-    def pop
-        job = @jobs.pop
-        job = pop if job_done? job
-        job
+    # @note Operates in non-blocking mode.
+    #
+    # @param    [Block] block
+    #   Block to which to pass a {Worker} as soon as one is available.
+    def with_browser( &block )
+        queue( Jobs::BrowserProvider.new, &block )
     end
 
     # @param    [Job]  job
@@ -223,6 +223,8 @@ class BrowserCluster
     end
 
     # @param    [Job::Result]  result
+    #
+    # @private
     def handle_job_result( result )
         return if job_done? result.job
         fail_if_shutdown
@@ -264,6 +266,16 @@ class BrowserCluster
         true
     end
 
+    # @return    [Job]  Pops a job from the queue.
+    # @see #queue
+    #
+    # @private
+    def pop
+        job = @jobs.pop
+        job = pop if job_done? job
+        job
+    end
+
     # Used to sync operations between browser workers.
     #
     # @param    [Integer]   job_id  Job ID.
@@ -282,31 +294,41 @@ class BrowserCluster
     #
     # @param    [Integer]   job_id  Job ID.
     # @param    [String]    action  Action to skip in the future.
+    #
     # @private
     def skip( job_id, action )
         synchronize { skip_lookup_for( job_id ) << action }
     end
 
+    # @private
     def push_to_sitemap( url, code )
         synchronize { @sitemap[url] = code }
     end
 
+    # @private
     def update_skip_lookup_for( id, lookups )
         synchronize {
             skip_lookup_for( id ).collection.merge lookups
         }
     end
 
+    # @private
     def skip_lookup_for( id )
         @skip[id] ||= Support::LookUp::HashSet.new( hasher: :persistent_hash )
     end
 
+    # @private
     def decrease_pending_job( job )
         synchronize do
             @pending_job_counter  -= 1
             @pending_jobs[job.id] -= 1
             job_done( job ) if @pending_jobs[job.id] <= 0
         end
+    end
+
+    # @private
+    def callback_for( job )
+        @job_callbacks[job.id]
     end
 
     private

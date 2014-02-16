@@ -15,6 +15,20 @@ describe Arachni::BrowserCluster do
         Arachni::Options.reset
     end
 
+    describe '#with_browser' do
+        it 'provides a worker to the block' do
+            worker = nil
+
+            @cluster = described_class.new
+            @cluster.with_browser do |browser|
+                worker = browser
+            end
+            @cluster.wait
+
+            worker.should be_kind_of described_class::Worker
+        end
+    end
+
     describe '#initialize' do
         describe :pool_size do
             it 'sets the amount of browsers to instantiate' do
