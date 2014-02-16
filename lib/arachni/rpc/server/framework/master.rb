@@ -41,11 +41,10 @@ module Master
         @local_token = Utilities.generate_token
 
         after_page_audit do
-            @instances.each do |instance|
-                connect_to_instance( instance ).framework.
-                    update_browser_cluster_lookup(
-                        browser_cluster.skip_lookup_for( browser_job.id ).collection
-                    ){}
+            each_slave do |slave|
+                slave.framework.update_browser_cluster_lookup(
+                    browser_cluster.skip_lookup_for( browser_job.id ).collection
+                ){}
             end
         end
 
