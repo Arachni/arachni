@@ -64,12 +64,30 @@ describe Arachni::Check::Auditor do
         context 'when a browser cluster is' do
             context 'available' do
                 it 'passes it to the given block' do
-                    called = false
+                    worker = nil
+
                     @auditor.with_browser_cluster do |cluster|
-                        cluster.should == @framework.browser_cluster
-                        called = true
+                        worker = cluster
                     end.should be_true
-                    called.should be_true
+
+                    worker.should == @framework.browser_cluster
+                end
+            end
+        end
+    end
+
+    describe '#with_browser' do
+        context 'when a browser cluster is' do
+            context 'available' do
+                it 'passes a BrowserCluster::Worker to the given block' do
+                    worker = nil
+
+                    @auditor.with_browser do |browser|
+                        worker = browser
+                    end.should be_true
+                    @framework.browser_cluster.wait
+
+                    worker.should be_kind_of Arachni::BrowserCluster::Worker
                 end
             end
         end

@@ -446,10 +446,22 @@ module Auditor
     end
 
     # @param    [Block] block
-    #   Block to be called and passed a {BrowserCluster}, if one is available.
+    #   Block to passed a {BrowserCluster}, if one is available.
     def with_browser_cluster( &block )
         return if !browser_cluster
         block.call browser_cluster
+        true
+    end
+
+    # @note Operates in non-blocking mode.
+    #
+    # @param    [Block] block
+    #   Block to passed a {BrowserCluster::Worker}, if/when one is available.
+    #
+    # @see BrowserCluster::Worker#with_browser
+    def with_browser( &block )
+        with_browser_cluster { |cluster| cluster.with_browser( &block ) }
+        true
     end
 
     private
