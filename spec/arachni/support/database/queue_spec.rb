@@ -45,6 +45,19 @@ describe Arachni::Support::Database::Queue do
         @queue.size.should == @seed_q.size
     end
 
+    describe '#pop' do
+        it 'blocks until an entry is available' do
+            val = nil
+
+            t = Thread.new { val = @queue.pop }
+            sleep 1
+            Thread.new { @queue << :stuff }
+            t.join
+
+            val.should == :stuff
+        end
+    end
+
     after :all do
         @queue.clear
     end
