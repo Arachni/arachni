@@ -123,6 +123,12 @@ class Browser
     # @return   [Javascript]
     attr_reader :javascript
 
+    # @return   [Support::LookUp::HashSet]
+    #
+    # @see #skip
+    # @see #skip?
+    attr_reader :skip_states
+
     # @return   [Bool]
     #   `true` if `phantomjs` is in the OS PATH, `false` otherwise.
     def self.has_executable?
@@ -182,7 +188,7 @@ class Browser
 
         # Keeps track of resources which should be skipped -- like already fired
         # events and clicked links etc.
-        @skip = Support::LookUp::HashSet.new( hasher: :persistent_hash )
+        @skip_states = Support::LookUp::HashSet.new( hasher: :persistent_hash )
 
         @transitions = []
         @request_transitions = []
@@ -238,6 +244,7 @@ class Browser
                 HTTP::Client.update_cookies resource.cookiejar
 
                 @transitions = resource.dom.transitions.dup
+                skip_states.merge resource.dom.skip_states
 
                 @add_request_transitions = false if @transitions.any?
 
@@ -375,11 +382,11 @@ class Browser
     end
 
     def skip?( action )
-        @skip.include? action
+        skip_states.include? action
     end
 
     def skip( action )
-        @skip << action
+        skip_states << action
     end
 
     # @note Will skip invisible elements as they can't be manipulated.
@@ -628,6 +635,7 @@ class Browser
         page.dom.execution_flow_sink = @javascript.flush_execution_flow_sink
         page.dom.data_flow_sink      = @javascript.flush_data_flow_sink
         page.dom.transitions         = @transitions.dup
+        page.dom.skip_states         = @skip_states.dup
 
         page
     end

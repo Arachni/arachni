@@ -40,14 +40,6 @@ module Master
         # allow slaves to update our runtime data.
         @local_token = Utilities.generate_token
 
-        after_page_audit do
-            each_slave do |slave|
-                slave.framework.update_browser_cluster_lookup(
-                    browser_cluster.skip_lookup_for( browser_job.id ).collection
-                ){}
-            end
-        end
-
         print_status 'Became master.'
 
         true
@@ -170,7 +162,9 @@ module Master
         return false if master? && !valid_token?( token )
 
         if data[:browser_cluster_skip_lookup]
-            browser_cluster.update_skip_lookup_for( browser_job.id, data[:browser_cluster_skip_lookup] )
+            browser_cluster.update_skip_lookup_for(
+                browser_job.id, data[:browser_cluster_skip_lookup]
+            )
         end
 
         update_issues( data[:issues] || [], token )

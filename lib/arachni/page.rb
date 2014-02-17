@@ -374,12 +374,7 @@ class Page
 
         h[:forms].each { |f| f.node = nil }
 
-        h[:dom] = {
-            url:                 dom.url,
-            transitions:         dom.transitions,
-            data_flow_sink:      dom.data_flow_sink,
-            execution_flow_sink: dom.execution_flow_sink
-        }
+        h[:dom] = dom.to_h
 
         Marshal.dump( h )
     end

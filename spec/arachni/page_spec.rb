@@ -454,7 +454,7 @@ describe Arachni::Page do
                 dupped.send( m ).should == subject.send( m )
             end
 
-            [:url, :transitions, :data_flow_sink, :execution_flow_sink].each do |m|
+            [:url, :skip_states, :transitions, :data_flow_sink, :execution_flow_sink].each do |m|
                 dupped.dom.send( m ).should be_true
                 dupped.dom.send( m ).should == subject.dom.send( m )
             end

@@ -51,11 +51,7 @@ module Slave
         end
         # ... and flush it on each page audit.
         after_page_audit do
-            sitrep(
-                issues: @issue_buffer.dup,
-                browser_cluster_skip_lookup: browser_cluster.
-                            skip_lookup_for( browser_job.id ).collection
-            )
+            sitrep( issues: @issue_buffer.dup )
             @issue_buffer.clear
         end
 

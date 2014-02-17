@@ -15,6 +15,9 @@ class DOM
     # Ignore these elements when calculating a {#hash}.
     IGNORE_FROM_HASH = Set.new([ 'text', 'p' ])
 
+    # @return   [Support::LookUp::HashSet]
+    attr_accessor :skip_states
+
     # @return   [Array<Hash{Symbol => <Symbol,String>}>]
     #   DOM transitions leading to the current state.
     attr_accessor :transitions
@@ -40,6 +43,8 @@ class DOM
         @transitions         = options[:transitions]         || []
         @data_flow_sink      = options[:data_flow_sink]      || []
         @execution_flow_sink = options[:execution_flow_sink] || []
+        @skip_states         = options[:skip_states]         ||
+            Support::LookUp::HashSet.new( hasher: :persistent_hash )
     end
 
     # @param    [Hash{Symbol => <Symbol,String>}]    transition
@@ -61,6 +66,7 @@ class DOM
         {
             url:                 @url,
             transitions:         @transitions,
+            skip_states:         @skip_states,
             data_flow_sink:      @data_flow_sink,
             execution_flow_sink: @execution_flow_sink
         }

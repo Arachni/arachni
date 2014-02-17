@@ -307,14 +307,14 @@ class BrowserCluster
 
     # @private
     def update_skip_lookup_for( id, lookups )
-        synchronize {
-            skip_lookup_for( id ).collection.merge lookups
-        }
+        synchronize { skip_lookup_for( id ).merge lookups }
     end
 
     # @private
     def skip_lookup_for( id )
-        @skip[id] ||= Support::LookUp::HashSet.new( hasher: :persistent_hash )
+        synchronize do
+            @skip[id] ||= Support::LookUp::HashSet.new( hasher: :persistent_hash )
+        end
     end
 
     # @private

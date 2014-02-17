@@ -2,6 +2,7 @@ Factory.define :page do
     Arachni::Page.new(
         response: Factory.create(:response),
         dom:      {
+            skip_states: Arachni::Support::LookUp::HashSet.new.tap { |h| h << 0 },
             transitions: [page: :load],
             data_flow_sink:        [
                 data:  ['stuff'],

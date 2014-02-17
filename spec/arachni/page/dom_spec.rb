@@ -96,6 +96,15 @@ describe Arachni::Page::DOM do
         end
     end
 
+    describe '#skip_states=' do
+        it 'sets #skip_states' do
+            skip_states = Arachni::Support::LookUp::HashSet.new.tap { |h| h << 0 }
+
+            dom.skip_states = skip_states
+            dom.skip_states.should == skip_states
+        end
+    end
+
     describe '#depth' do
         it 'returns the amount of DOM transitions' do
             dom.depth.should == 0
@@ -129,6 +138,7 @@ describe Arachni::Page::DOM do
         it 'returns a hash with DOM data' do
             data = {
                 url:         'http://test/dom',
+                skip_states: Arachni::Support::LookUp::HashSet.new.tap { |h| h << 0 },
                 transitions: [
                     { element:  :stuffed },
                     { element2: :stuffed2 }
@@ -142,6 +152,7 @@ describe Arachni::Page::DOM do
                 dom.push_transition transition
             end
 
+            dom.skip_states = data[:skip_states]
             dom.data_flow_sink = data[:data_flow_sink]
             dom.execution_flow_sink = data[:execution_flow_sink]
 

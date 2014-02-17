@@ -590,7 +590,7 @@ describe Arachni::Browser do
             page.body.should include( ua )
         end
 
-        it 'assigns the proper page transitions' do
+        it 'assigns the proper DOM#transitions' do
             @browser.load( @url )
             page = @browser.to_page
 
@@ -598,6 +598,15 @@ describe Arachni::Browser do
                 { page: :load },
                 { @url => :request }
             ]
+        end
+
+        it 'assigns the DOM#skip_states' do
+            @browser.load( @url )
+            pages = @browser.load( @url + '/explore' ).trigger_events.
+                page_snapshots
+
+            page = pages.last
+            page.dom.skip_states.should be_subset @browser.skip_states
         end
 
         it 'assigns the proper sink data' do
@@ -631,6 +640,7 @@ describe Arachni::Browser do
             event['srcElement'].should == form
             event['type'].should == 'submit'
         end
+
     end
 
     describe '#fire_event' do
@@ -990,7 +1000,7 @@ describe Arachni::Browser do
                     @browser.cookies.should == page.cookiejar
                 end
 
-                it 'replays its transitions' do
+                it 'replays its DOM#transitions' do
                     @browser.load "#{@url}replay-transitions"
                     page = @browser.explore_and_flush.last
                     page.body.should include ua
@@ -1002,6 +1012,24 @@ describe Arachni::Browser do
                     @browser.load page
                     @browser.source.should_not include ua
                 end
+
+                it 'loads its DOM#skip_states' do
+                    @browser.load( @url )
+                    pages = @browser.load( @url + '/explore' ).trigger_events.
+                        page_snapshots
+
+                    page = pages.last
+                    page.dom.skip_states.should be_subset @browser.skip_states
+
+                    token = @browser.generate_token
+
+                    dpage = page.dup
+                    dpage.dom.skip_states << token
+
+                    @browser.load dpage
+                    @browser.skip_states.should include token
+                end
+
             end
 
             describe 'other' do
