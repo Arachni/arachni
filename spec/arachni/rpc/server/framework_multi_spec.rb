@@ -98,7 +98,7 @@ describe 'Arachni::RPC::Server::Framework' do
     describe '#run' do
         it 'performs a scan' do
             instance = @instance_clean
-            instance.opts.url = web_server_url_for( :framework_hpg )
+            instance.opts.url = web_server_url_for( :framework_multi )
             instance.checks.load( 'taint' )
             instance.framework.run.should be_true
             sleep( 1 ) while instance.framework.busy?
@@ -172,7 +172,7 @@ describe 'Arachni::RPC::Server::Framework' do
     describe '#clean_up' do
         it 'sets the framework state to finished, waits for plugins to finish and merges their results' do
             instance = instance_grid_spawn
-            instance.opts.url = web_server_url_for( :framework_hpg )
+            instance.opts.url = web_server_url_for( :framework_multi )
             instance.checks.load( 'taint' )
             instance.plugins.load( { 'wait' => {}, 'distributable' => {} } )
             instance.framework.run.should be_true

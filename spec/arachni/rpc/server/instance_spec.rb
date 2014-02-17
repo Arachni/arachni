@@ -132,7 +132,7 @@ describe 'Arachni::RPC::Server::Instance' do
                 instance.service.status.should == instance.framework.status
 
                 instance.service.scan(
-                    url:    web_server_url_for( :framework_simple ),
+                    url:    web_server_url_for( :framework ),
                     audit:  { elements: [:links, :forms] },
                     checks: :test,
                     slaves: [{
@@ -162,7 +162,7 @@ describe 'Arachni::RPC::Server::Instance' do
                 it 'raises ArgumentError' do
                     expect {
                         instance_spawn.service.scan(
-                            url:         web_server_url_for( :framework_simple ),
+                            url:         web_server_url_for( :framework ),
                             platforms:   [ :stuff ]
                         )
                     }.to raise_error
@@ -178,7 +178,7 @@ describe 'Arachni::RPC::Server::Instance' do
                     instance.service.status.should == instance.framework.status
 
                     instance.service.scan(
-                        'url'    => web_server_url_for( :framework_simple ),
+                        'url'    => web_server_url_for( :framework ),
                         'audit'  =>  { 'elements' => ['links', 'forms'] },
                         'checks' => 'test',
                         'slaves' => [{
@@ -215,7 +215,7 @@ describe 'Arachni::RPC::Server::Instance' do
                                     instance = instance_grid_spawn
 
                                     instance.service.scan(
-                                        url:        web_server_url_for( :framework_simple ),
+                                        url:        web_server_url_for( :framework ),
                                         audit:      { elements: [:links, :forms] },
                                         checks:     :test,
                                         spawns:     4,
@@ -245,7 +245,7 @@ describe 'Arachni::RPC::Server::Instance' do
                                     instance = instance_grid_spawn
 
                                     instance.service.scan(
-                                        url:        web_server_url_for( :framework_simple ),
+                                        url:        web_server_url_for( :framework ),
                                         audit:      { elements: [:links, :forms] },
                                         checks:     :test,
                                         spawns:     4,
@@ -276,7 +276,7 @@ describe 'Arachni::RPC::Server::Instance' do
                                 it 'raises an exception' do
                                     expect {
                                         instance_grid_spawn.service.scan(
-                                            url:       web_server_url_for( :framework_simple ),
+                                            url:       web_server_url_for( :framework ),
                                             audit:     { elements: [:links, :forms] },
                                             checks:    :test,
                                             spawns:     4,
@@ -294,7 +294,7 @@ describe 'Arachni::RPC::Server::Instance' do
                                     instance = instance_grid_spawn
 
                                     instance.service.scan(
-                                        url:    web_server_url_for( :framework_simple ),
+                                        url:    web_server_url_for( :framework ),
                                         audit:  { elements: [:links, :forms] },
                                         checks: :test,
                                         spawns: 4,
@@ -329,7 +329,7 @@ describe 'Arachni::RPC::Server::Instance' do
                                 raised = false
                                 begin
                                     instance.service.scan(
-                                        url:        web_server_url_for( :framework_simple ),
+                                        url:        web_server_url_for( :framework ),
                                         grid_mode: :balance
                                     )
                                 rescue => e
@@ -343,7 +343,7 @@ describe 'Arachni::RPC::Server::Instance' do
                         context 'when OptionGroup::Scope#restrict_to_paths is set' do
                             it 'raises an exception' do
                                 instance = instance_grid_spawn
-                                url      = web_server_url_for( :framework_simple )
+                                url      = web_server_url_for( :framework )
 
                                 raised = false
                                 begin
@@ -368,7 +368,7 @@ describe 'Arachni::RPC::Server::Instance' do
                     it 'uses UNIX sockets to communicate with the slaves' do
                         instance = instance_spawn
                         instance.service.scan(
-                            url:    web_server_url_for( :framework_simple ),
+                            url:    web_server_url_for( :framework ),
                             audit:  { elements: [:links, :forms] },
                             checks: :test,
                             spawns: 4
@@ -388,7 +388,7 @@ describe 'Arachni::RPC::Server::Instance' do
                         instance = instance_spawn
 
                         instance.service.scan(
-                            url:    web_server_url_for( :framework_simple ),
+                            url:    web_server_url_for( :framework ),
                             audit:  { elements: [:links, :forms] },
                             checks: :test,
                             spawns: 4
@@ -417,7 +417,7 @@ describe 'Arachni::RPC::Server::Instance' do
                         spawns                   = 4
 
                         instance.service.scan(
-                            url:    web_server_url_for( :framework_simple ),
+                            url:    web_server_url_for( :framework ),
                             audit:  { elements: [:links, :forms] },
                             checks: :test,
                             spawns: spawns,
@@ -438,7 +438,7 @@ describe 'Arachni::RPC::Server::Instance' do
             before( :all ) do
                 @progress_instance = instance_spawn
                 @progress_instance.service.scan(
-                    url:    web_server_url_for( :framework_simple ),
+                    url:    web_server_url_for( :framework ),
                     audit:  { elements: [:links, :forms] },
                     checks: :test,
                     spawns: 1

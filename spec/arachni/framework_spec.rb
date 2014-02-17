@@ -289,16 +289,16 @@ describe Arachni::Framework do
 
         it 'handles heavy load' do
             @opts.paths.checks  = fixtures_path + '/taint_check/'
-            f = Arachni::Framework.new
 
-            f.opts.url = web_server_url_for :framework_hpg
-            f.opts.audit.elements :links
+            Arachni::Framework.new do |f|
+                f.opts.url = web_server_url_for :framework_multi
+                f.opts.audit.elements :links
 
-            f.checks.load :taint
+                f.checks.load :taint
 
-            f.run
-            f.auditstore.issues.size.should == 500
-            f.checks.clear
+                f.run
+                f.auditstore.issues.size.should == 500
+            end
         end
 
         it 'handles pages with JavaScript code' do
@@ -917,7 +917,7 @@ describe Arachni::Framework do
             context 'been reached' do
                 it 'returns true' do
                     Arachni::Framework.new do |f|
-                        f.opts.url = web_server_url_for :framework_hpg
+                        f.opts.url = web_server_url_for :framework_multi
                         f.opts.audit.elements :links
                         f.opts.scope.page_limit = 10
 

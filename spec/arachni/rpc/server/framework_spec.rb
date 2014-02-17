@@ -116,7 +116,7 @@ describe 'Arachni::RPC::Server::Framework' do
     describe '#run' do
         it 'performs a scan' do
             instance = @instance_clean
-            instance.opts.url = web_server_url_for( :framework_simple )
+            instance.opts.url = web_server_url_for( :framework )
             instance.checks.load( 'test' )
             instance.framework.run.should be_true
             sleep( 1 ) while instance.framework.busy?
@@ -166,7 +166,7 @@ describe 'Arachni::RPC::Server::Framework' do
     describe '#stats' do
         it 'returns a hash containing general runtime statistics' do
             instance = @instance_clean
-            instance.opts.url = web_server_url_for( :framework_simple )
+            instance.opts.url = web_server_url_for( :framework )
             instance.checks.load( 'test' )
             instance.framework.run.should be_true
 
@@ -208,7 +208,7 @@ describe 'Arachni::RPC::Server::Framework' do
     describe '#status' do
         before( :all ) do
             @inst = instance_spawn
-            @inst.opts.url = web_server_url_for( :framework_simple ) + '/crawl'
+            @inst.opts.url = web_server_url_for( :framework ) + '/crawl'
             @inst.checks.load( 'test' )
         end
         context 'after initialization' do
@@ -226,7 +226,7 @@ describe 'Arachni::RPC::Server::Framework' do
         context 'once the scan had completed' do
             it 'returns "done"' do
                 inst = instance_spawn
-                inst.opts.url = web_server_url_for( :framework_simple )
+                inst.opts.url = web_server_url_for( :framework )
                 inst.checks.load( 'test' )
                 inst.framework.run
                 sleep 2
@@ -237,7 +237,7 @@ describe 'Arachni::RPC::Server::Framework' do
     describe '#clean_up' do
         it 'sets the framework state to finished and wait for plugins to finish' do
             instance = instance_spawn
-            instance.opts.url = web_server_url_for( :framework_hpg )
+            instance.opts.url = web_server_url_for( :framework )
             instance.checks.load( 'test' )
             instance.plugins.load( { 'wait' => {} } )
             instance.framework.run.should be_true
@@ -401,7 +401,7 @@ describe 'Arachni::RPC::Server::Framework' do
     end
     describe '#update_issues' do
         it 'registers an issue with the instance' do
-            url = web_server_url_for( :framework_simple )
+            url = web_server_url_for( :framework )
             inst = instance_spawn
             inst.opts.url = url
 
