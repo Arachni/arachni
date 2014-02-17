@@ -4,7 +4,7 @@ describe 'Arachni::RPC::Server::Framework' do
     before( :all ) do
         @opts = Arachni::Options.instance
         @opts.paths.checks = fixtures_path + '/taint_check/'
-        @opts.audit.links = true
+        @opts.audit.elements :links, :forms, :cookies
 
         @instance  = instance_grid_spawn
         @framework = @instance.framework
@@ -103,6 +103,32 @@ describe 'Arachni::RPC::Server::Framework' do
             instance.framework.run.should be_true
             sleep( 1 ) while instance.framework.busy?
             instance.framework.issues.size.should == 500
+        end
+
+        it 'handles pages with JavaScript code' do
+            instance = instance_grid_spawn
+            instance.opts.url = web_server_url_for( :auditor ) + '/with_javascript'
+            instance.checks.load :taint
+
+            instance.framework.run.should be_true
+            sleep 0.1 while instance.framework.busy?
+
+            instance.framework.issues.
+                map { |i| i.vector.affected_input_name }.should be
+                    %w(link_input form_input cookie_input)
+        end
+
+        it 'handles AJAX' do
+            instance = instance_grid_spawn
+            instance.opts.url = web_server_url_for( :auditor ) + '/with_ajax'
+            instance.checks.load :taint
+
+            instance.framework.run.should be_true
+            sleep 0.1 while instance.framework.busy?
+
+            instance.framework.issues.
+                map { |i| i.vector.affected_input_name }.should be
+                    %w(link_input form_input cookie_taint)
         end
     end
     describe '#auditstore' do
