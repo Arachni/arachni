@@ -79,4 +79,64 @@ shared_examples_for 'lookup' do
         end
     end
 
+    describe '#==' do
+        context 'when 2 lists are equal' do
+            it 'returns true' do
+                new = described_class.new
+
+                subject << 'test'
+                new     << 'test'
+
+                subject.should == new
+            end
+        end
+
+        context 'when 2 lists are not equal' do
+            it 'returns false' do
+                new = described_class.new
+
+                subject << 'test'
+                new     << 'test2'
+
+                subject.should_not == new
+            end
+        end
+    end
+
+    describe '#hash' do
+        context 'when 2 lists are equal' do
+            it 'returns the same value' do
+                new = described_class.new
+
+                subject << 'test'
+                new     << 'test'
+
+                subject.hash.should == new.hash
+            end
+        end
+
+        context 'when 2 lists are not equal' do
+            it 'returns different values' do
+                new = described_class.new
+
+                subject << 'test'
+                new     << 'test2'
+
+                subject.hash.should_not == new.hash
+            end
+        end
+    end
+
+    describe '#dup' do
+        it 'returns a copy' do
+            subject << 'test'
+            copy = subject.dup
+
+            copy.should == subject
+
+            copy << 'test2'
+
+            copy.should_not == subject
+        end
+    end
 end

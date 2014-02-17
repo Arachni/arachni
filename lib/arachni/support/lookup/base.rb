@@ -8,8 +8,6 @@ require 'set'
 module Arachni
 module Support::LookUp
 
-#
-#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 # @abstract
 class Base
@@ -68,6 +66,18 @@ class Base
 
     def clear
         @collection.clear
+    end
+
+    def ==( other )
+        hash == other.hash
+    end
+
+    def hash
+        @collection.hash
+    end
+
+    def dup
+        deep_clone
     end
 
     private
