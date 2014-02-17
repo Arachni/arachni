@@ -162,7 +162,7 @@ module Master
         return false if master? && !valid_token?( token )
 
         if data[:browser_cluster_skip_lookup]
-            browser_cluster.update_skip_lookup_for(
+            browser_cluster.update_skip_states_for(
                 browser_job.id, data[:browser_cluster_skip_lookup]
             )
         end

@@ -124,9 +124,10 @@ class Browser
     attr_reader :javascript
 
     # @return   [Support::LookUp::HashSet]
+    #   States that have been visited and should be skipped.
     #
-    # @see #skip
-    # @see #skip?
+    # @see #skip_state
+    # @see #skip_state?
     attr_reader :skip_states
 
     # @return   [Bool]
@@ -381,12 +382,12 @@ class Browser
         pages
     end
 
-    def skip?( action )
-        skip_states.include? action
+    def skip_state?( state )
+        skip_states.include? state
     end
 
-    def skip( action )
-        skip_states << action
+    def skip_state( state )
+        skip_states << state
     end
 
     # @note Will skip invisible elements as they can't be manipulated.
@@ -432,11 +433,11 @@ class Browser
                     events << [ :submit, action ] if action.start_with?( 'javascript:' )
             end
 
-            next if skip?( opening_tag ) ||
+            next if skip_state?( opening_tag ) ||
                 NO_EVENTS_FOR_ELEMENTS.include?( tag_name.to_sym ) ||
                 events.empty?
 
-            skip opening_tag
+            skip_state opening_tag
 
             yield( { index: i, tag_name: tag_name, events: events } )
         end
@@ -866,8 +867,8 @@ class Browser
                     capture_snapshot_with_sink( page )
 
                     unique_id = "#{page.dom.hash}:#{cookies.map(&:name).sort}"
-                    next if skip? unique_id
-                    skip unique_id
+                    next if skip_state? unique_id
+                    skip_state unique_id
 
                     call_on_new_page_blocks( page )
 

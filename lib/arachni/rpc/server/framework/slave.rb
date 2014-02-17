@@ -64,10 +64,10 @@ module Slave
     #   Hashes representing browser actions that have already been performed
     #   and thus should be skipped.
     #
-    # @see BrowserCluster#update_skip_lookup_for
-    # @see BrowserCluster#skip_lookup_for
+    # @see BrowserCluster#update_skip_states_for
+    # @see BrowserCluster#skip_states_for
     def update_browser_cluster_lookup( lookups )
-        browser_cluster.update_skip_lookup_for( browser_job.id, lookups )
+        browser_cluster.update_skip_states_for( browser_job.id, lookups )
         nil
     end
 

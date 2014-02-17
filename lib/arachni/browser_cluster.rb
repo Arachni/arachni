@@ -77,6 +77,7 @@ class BrowserCluster
     attr_reader :javascript_token
 
     # @return   [Array<Worker>]
+    #   Worker pool.
     attr_reader :workers
 
     # @param    [Hash]  options
@@ -98,11 +99,11 @@ class BrowserCluster
         end
 
         # Used to sync operations between workers per Job#id.
-        @skip = {}
+        @skip_states_per_job = {}
 
         # Callbacks for each job per Job#id. We need to keep track of this
-        # here because jobs are serialized and offloaded to disk and thus can't
-        # contain callbacks.
+        # here because jobs are serialized and off-loaded to disk and thus can't
+        # contain Block or Proc objects.
         @job_callbacks = {}
 
         # Keeps track of the amount of pending jobs distributed across the
@@ -114,11 +115,15 @@ class BrowserCluster
         # Jobs are off-loaded to disk.
         @jobs = Support::Database::Queue.new
 
+        # Worker pool holding BrowserCluster::Worker instances.
+        @workers     = []
+
+        # Stores visited resources from all workers.
         @sitemap     = {}
         @mutex       = Monitor.new
         @done_signal = Queue.new
-        @workers     = []
 
+        # Javascript token to share across all workers.
         @javascript_token = Utilities.generate_token
 
         initialize_workers
@@ -186,11 +191,12 @@ class BrowserCluster
     end
 
     # @param    [Job]  job
-    #   Job to mark as done. Will remove any callbacks and associated {#skip} state.
+    #   Job to mark as done. Will remove any callbacks and associated
+    #   {Worker} states.
     def job_done( job )
         synchronize do
             if !job.never_ending?
-                @skip.delete job.id
+                @skip_states_per_job.delete job.id
                 @job_callbacks.delete job.id
             end
 
@@ -279,25 +285,25 @@ class BrowserCluster
     # Used to sync operations between browser workers.
     #
     # @param    [Integer]   job_id  Job ID.
-    # @param    [String]    action  Should the given action be skipped?
+    # @param    [String]    state  Should the given state be skipped?
     #
     # @raise    [Error::JobNotFound]  Raised when `job` could not be found.
     #
     # @private
-    def skip?( job_id, action )
+    def skip_state?( job_id, state )
         synchronize do
-            skip_lookup_for( job_id ).include? action
+            skip_states_for( job_id ).include? state
         end
     end
 
     # Used to sync operations between browser workers.
     #
     # @param    [Integer]   job_id  Job ID.
-    # @param    [String]    action  Action to skip in the future.
+    # @param    [String]    state  State to skip in the future.
     #
     # @private
-    def skip( job_id, action )
-        synchronize { skip_lookup_for( job_id ) << action }
+    def skip_state( job_id, state )
+        synchronize { skip_states_for( job_id ) << state }
     end
 
     # @private
@@ -306,14 +312,15 @@ class BrowserCluster
     end
 
     # @private
-    def update_skip_lookup_for( id, lookups )
-        synchronize { skip_lookup_for( id ).merge lookups }
+    def update_skip_states_for( id, lookups )
+        synchronize { skip_states_for( id ).merge lookups }
     end
 
     # @private
-    def skip_lookup_for( id )
+    def skip_states_for( id )
         synchronize do
-            @skip[id] ||= Support::LookUp::HashSet.new( hasher: :persistent_hash )
+            @skip_states_per_job[id] ||=
+                Support::LookUp::HashSet.new( hasher: :persistent_hash )
         end
     end
 

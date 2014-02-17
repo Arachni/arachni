@@ -88,8 +88,14 @@ class Worker < Arachni::Browser
         true
     end
 
+    # @return   [Support::LookUp::HashSet]
+    #   States that have been visited and should be skipped, for the given
+    #   {#job}.
+    #
+    # @see #skip_state
+    # @see #skip_state?
     def skip_states
-        master.skip_lookup_for( job.id )
+        master.skip_states_for( job.id )
     end
 
     # We change the default scheduling to distribute elements and events
