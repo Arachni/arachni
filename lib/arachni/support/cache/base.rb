@@ -137,6 +137,18 @@ class Base
         cache.clear
     end
 
+    def ==( other )
+        hash == other.hash
+    end
+
+    def hash
+        cache.hash
+    end
+
+    def dup
+        deep_clone
+    end
+
     private
 
     def cache

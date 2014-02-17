@@ -1,8 +1,7 @@
 require 'spec_helper'
 
-describe Arachni::Support::Cache::Base do
-
-    before { @cache = described_class.new }
+shared_examples_for 'cache' do
+    subject { described_class.new }
 
     describe '#new' do
         describe 'max_size' do
@@ -22,37 +21,37 @@ describe Arachni::Support::Cache::Base do
     describe '#max_size' do
         context 'when just initialized' do
             it 'returns nil (unlimited)' do
-                @cache.max_size.should be_nil
+                subject.max_size.should be_nil
             end
         end
         context 'when set' do
             it 'returns the set value' do
-                (@cache.max_size = 50).should == 50
-                @cache.max_size.should == 50
+                (subject.max_size = 50).should == 50
+                subject.max_size.should == 50
             end
         end
     end
 
     describe '#uncap' do
         it 'removes the size limit' do
-            @cache.max_size = 1
-            @cache.uncap
-            @cache.max_size = nil
+            subject.max_size = 1
+            subject.uncap
+            subject.max_size = nil
         end
     end
 
     describe '#capped?' do
         context 'when the cache has no size limit' do
             it 'returns false' do
-                @cache.uncap
-                @cache.capped?.should be_false
-                @cache.max_size.should be_nil
+                subject.uncap
+                subject.capped?.should be_false
+                subject.max_size.should be_nil
             end
         end
         context 'when the cache has a size limit' do
             it 'returns true' do
-                @cache.max_size = 1
-                @cache.capped?.should be_true
+                subject.max_size = 1
+                subject.capped?.should be_true
             end
         end
     end
@@ -60,43 +59,43 @@ describe Arachni::Support::Cache::Base do
     describe '#uncapped?' do
         context 'when the cache has no size limit' do
             it 'returns true' do
-                @cache.uncap
-                @cache.uncapped?.should be_true
-                @cache.max_size.should be_nil
+                subject.uncap
+                subject.uncapped?.should be_true
+                subject.max_size.should be_nil
             end
         end
         context 'when the cache has a size limit' do
             it 'returns false' do
-                @cache.max_size = 1
-                @cache.max_size.should == 1
-                @cache.uncapped?.should be_false
+                subject.max_size = 1
+                subject.max_size.should == 1
+                subject.uncapped?.should be_false
             end
         end
     end
 
     describe '#uncap' do
         it 'removes the size limit' do
-            @cache.max_size = 1
-            @cache.uncapped?.should be_false
-            @cache.max_size.should == 1
+            subject.max_size = 1
+            subject.uncapped?.should be_false
+            subject.max_size.should == 1
 
-            @cache.uncap
-            @cache.uncapped?.should be_true
-            @cache.max_size.should be_nil
+            subject.uncap
+            subject.uncapped?.should be_true
+            subject.max_size.should be_nil
         end
     end
 
     describe '#max_size=' do
         it 'sets the maximum size for the cache' do
-            (@cache.max_size = 100).should == 100
-            @cache.max_size.should == 100
+            (subject.max_size = 100).should == 100
+            subject.max_size.should == 100
         end
 
         context 'when passed < 0' do
             it 'throwes an exception' do
                 raised = false
                 begin
-                    @cache.max_size = 0
+                    subject.max_size = 0
                 rescue
                     raised = true
                 end
@@ -108,14 +107,14 @@ describe Arachni::Support::Cache::Base do
     describe '#size' do
         context 'when the cache is empty' do
             it 'returns 0' do
-                @cache.size.should == 0
+                subject.size.should == 0
             end
         end
 
         context 'when the cache is not empty' do
             it 'returns a value > 0' do
-                @cache['stuff'] = [ 'ff ' ]
-                @cache.size.should > 0
+                subject['stuff'] = [ 'ff ' ]
+                subject.size.should > 0
             end
         end
     end
@@ -123,13 +122,13 @@ describe Arachni::Support::Cache::Base do
     describe '#empty?' do
         context 'when the cache is empty' do
             it 'returns true' do
-                @cache.empty?.should be_true
+                subject.empty?.should be_true
             end
         end
         context 'when the cache is not empty' do
             it 'returns false' do
-                @cache['stuff2'] = 'ff'
-                @cache.empty?.should be_false
+                subject['stuff2'] = 'ff'
+                subject.empty?.should be_false
             end
         end
     end
@@ -137,13 +136,13 @@ describe Arachni::Support::Cache::Base do
     describe '#any?' do
         context 'when the cache is empty' do
             it 'returns true' do
-                @cache.any?.should be_false
+                subject.any?.should be_false
             end
         end
         context 'when the cache is not empty' do
             it 'returns false' do
-                @cache['stuff3'] = [ 'ff ' ]
-                @cache.any?.should be_true
+                subject['stuff3'] = [ 'ff ' ]
+                subject.any?.should be_true
             end
         end
     end
@@ -151,27 +150,27 @@ describe Arachni::Support::Cache::Base do
     describe '#[]=' do
         it 'stores an object' do
             v = 'val'
-            (@cache[:key] = v).should == v
-            @cache[:key].should == v
+            (subject[:key] = v).should == v
+            subject[:key].should == v
         end
         it 'is alias of #store' do
             v = 'val2'
-            @cache.store( :key2, v ).should == v
-            @cache[:key2].should == v
+            subject.store( :key2, v ).should == v
+            subject[:key2].should == v
         end
     end
 
     describe '#[]' do
         it 'retrieves an object by key' do
             v = 'val2'
-            @cache[:key] = v
-            @cache[:key].should == v
-            @cache.empty?.should be_false
+            subject[:key] = v
+            subject[:key].should == v
+            subject.empty?.should be_false
         end
 
         context 'when the key does not exist' do
             it 'returns nil' do
-                @cache[:some_key].should be_nil
+                subject[:some_key].should be_nil
             end
         end
     end
@@ -204,13 +203,13 @@ describe Arachni::Support::Cache::Base do
     describe '#include?' do
         context 'when the key exists' do
             it 'returns true' do
-                @cache[:key1] = 'v'
-                @cache.include?( :key1 ).should be_true
+                subject[:key1] = 'v'
+                subject.include?( :key1 ).should be_true
             end
         end
         context 'when the key does not exist' do
             it 'returns false' do
-                @cache.include?( :key2 ).should be_false
+                subject.include?( :key2 ).should be_false
             end
         end
     end
@@ -219,22 +218,22 @@ describe Arachni::Support::Cache::Base do
         context 'when the key exists' do
             it 'deletes a key' do
                 v = 'my_val'
-                @cache[:my_key] = v
-                @cache.delete( :my_key ).should == v
-                @cache[:my_key].should be_nil
-                @cache.include?( :my_key ).should be_false
+                subject[:my_key] = v
+                subject.delete( :my_key ).should == v
+                subject[:my_key].should be_nil
+                subject.include?( :my_key ).should be_false
             end
             it 'returns its value' do
                 v = 'my_val'
-                @cache[:my_key] = v
-                @cache.delete( :my_key ).should == v
-                @cache[:my_key].should be_nil
-                @cache.include?( :my_key ).should be_false
+                subject[:my_key] = v
+                subject.delete( :my_key ).should == v
+                subject[:my_key].should be_nil
+                subject.include?( :my_key ).should be_false
             end
         end
         context 'when the key does not exist' do
             it 'should return nil' do
-                @cache.delete( :my_key2 ).should be_nil
+                subject.delete( :my_key2 ).should be_nil
             end
         end
     end
@@ -242,13 +241,13 @@ describe Arachni::Support::Cache::Base do
     describe '#empty?' do
         context 'when cache is empty' do
             it 'returns true' do
-                @cache.empty?.should be_true
+                subject.empty?.should be_true
             end
         end
         context 'when cache is not empty' do
             it 'returns false' do
-                @cache['ee'] = 'rr'
-                @cache.empty?.should be_false
+                subject['ee'] = 'rr'
+                subject.empty?.should be_false
             end
         end
     end
@@ -256,27 +255,87 @@ describe Arachni::Support::Cache::Base do
     describe '#any?' do
         context 'when cache is empty' do
             it 'returns false' do
-                @cache.any?.should be_false
+                subject.any?.should be_false
             end
         end
         context 'when cache is not empty' do
             it 'returns true' do
-                @cache['ee'] = 'rr'
-                @cache.any?.should be_true
+                subject['ee'] = 'rr'
+                subject.any?.should be_true
             end
         end
     end
 
     describe '#clear' do
         it 'empties the cache' do
-            @cache[:my_key2] = 'v'
-            @cache.size.should > 0
-            @cache.empty?.should be_false
-            @cache.clear
+            subject[:my_key2] = 'v'
+            subject.size.should > 0
+            subject.empty?.should be_false
+            subject.clear
 
-            @cache.size.should == 0
-            @cache.empty?.should be_true
+            subject.size.should == 0
+            subject.empty?.should be_true
         end
     end
 
+    describe '#==' do
+        context 'when 2 lists are equal' do
+            it 'returns true' do
+                new = described_class.new
+
+                subject[:test_key] = 'test_val'
+                new[:test_key]     = 'test_val'
+
+                subject.should == new
+            end
+        end
+
+        context 'when 2 lists are not equal' do
+            it 'returns false' do
+                new = described_class.new
+
+                subject[:test_key] = 'test_val'
+                new[:test_key]     = 'test_val2'
+
+                subject.should_not == new
+            end
+        end
+    end
+
+    describe '#hash' do
+        context 'when 2 lists are equal' do
+            it 'returns the same value' do
+                new = described_class.new
+
+                subject[:test_key] = 'test_val'
+                new[:test_key]     = 'test_val'
+
+                subject.hash.should == new.hash
+            end
+        end
+
+        context 'when 2 lists are not equal' do
+            it 'returns different values' do
+                new = described_class.new
+
+                subject[:test_key] = 'test_val'
+                new[:test_key]     = 'test_val2'
+
+                subject.hash.should_not == new.hash
+            end
+        end
+    end
+
+    describe '#dup' do
+        it 'returns a copy' do
+            subject[:test_key] = 'test_val'
+            copy = subject.dup
+
+            copy.should == subject
+
+            copy[:test_key] = 'test_val2'
+
+            copy.should_not == subject
+        end
+    end
 end
