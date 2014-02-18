@@ -2,13 +2,12 @@
 
 ## _Under development_
 
+- `HTTP`
+    - `disable_ssl_host_verification` set to `true`.
 - `Element::Form`
     - Updated to handle empty base-href values.
 - Plugins
     - `autologin` -- Updated to handle stacked post-login redirects.
-
-[Closes #426]
-
 
 ## 0.4.6 _(January 1, 2014)_
 
