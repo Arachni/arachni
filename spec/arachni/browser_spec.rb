@@ -265,7 +265,7 @@ describe Arachni::Browser do
                     { :page => :load },
                     { "#{@url}deep-dom" => :request },
                     { "#{@url}level2" => :request },
-                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :click },
+                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :onclick },
                     { "#{@url}level4" => :request }
                 ],
                 [
@@ -279,7 +279,7 @@ describe Arachni::Browser do
                     { :page => :load },
                     { "#{@url}deep-dom" => :request },
                     { "#{@url}level2" => :request },
-                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :click },
+                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :onclick },
                     { "#{@url}level4" => :request },
                     { "<div onclick=\"level6();\" id=\"level5\">" => :onclick },
                     { "#{@url}level6" => :request }
@@ -307,7 +307,7 @@ describe Arachni::Browser do
                         { :page => :load },
                         { "#{@url}deep-dom" => :request },
                         { "#{@url}level2" => :request },
-                        { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :click },
+                        { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :onclick },
                         { "#{@url}level4" => :request }
                     ]
                 ]
@@ -640,7 +640,6 @@ describe Arachni::Browser do
             event['srcElement'].should == form
             event['type'].should == 'submit'
         end
-
     end
 
     describe '#fire_event' do
@@ -648,6 +647,61 @@ describe Arachni::Browser do
             @browser.load( @url + '/trigger_events' ).start_capture
             @browser.fire_event @browser.watir.div( id: 'my-div' ), :onclick
             pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
+        end
+
+        context 'form' do
+            context :onsubmit do
+                it 'fills in its inputs with sample values' do
+                    @browser.load( "#{@url}/fire_event/form/onsubmit" )
+                    @browser.fire_event @browser.watir.form, :onsubmit
+
+                    @browser.watir.div( id: 'container-name' ).text.should ==
+                        Arachni::Support::KeyFiller.name_to_value( 'name' )
+
+                    @browser.watir.div( id: 'container-email' ).text.should ==
+                        Arachni::Support::KeyFiller.name_to_value( 'email' )
+                end
+            end
+
+            context 'image button' do
+                context :onclick do
+                    it 'submits the form with x, y coordinates' do
+                        @browser.load( "#{@url}fire_event/form/image-input" ).start_capture
+                        @browser.fire_event @browser.watir.input( type: 'image'), :onclick
+
+                        pages_should_have_form_with_input @browser.captured_pages, 'myImageButton.x'
+                        pages_should_have_form_with_input @browser.captured_pages, 'myImageButton.y'
+                    end
+                end
+            end
+        end
+
+        context 'input' do
+            [:onkeypress, :onkeydown].each do |event|
+                context event do
+                    it 'fills in a sample value' do
+                        @browser.load( "#{@url}/fire_event/input/#{event}" )
+                        @browser.fire_event @browser.watir.input, event
+
+                        @browser.watir.div( id: 'container' ).text.should ==
+                            Arachni::Support::KeyFiller.name_to_value( 'name' )[0...-1]
+                    end
+                end
+            end
+
+            [:onkeyup, :onchange].each do |event|
+                context event do
+                    context 'input' do
+                        it 'fills in a sample value' do
+                            @browser.load( "#{@url}/fire_event/input/#{event}" )
+                            @browser.fire_event @browser.watir.input, event
+
+                            @browser.watir.div( id: 'container' ).text.should ==
+                                Arachni::Support::KeyFiller.name_to_value( 'name' )
+                        end
+                    end
+                end
+            end
         end
     end
 
@@ -693,7 +747,11 @@ describe Arachni::Browser do
 
             @browser.watir.elements.each.with_index do |_, index|
                 described_class.events.each do |e|
-                    @browser.trigger_event @browser.to_page, index, e
+                    begin
+                        @browser.trigger_event @browser.to_page, index, e
+                    rescue
+                        next
+                    end
                 end
             end
 
@@ -738,7 +796,7 @@ describe Arachni::Browser do
                 [
                     { :page => :load },
                     { "#{@url}explore" => :request },
-                    { "<a href=\"javascript:inHref();\">" => :click }
+                    { "<a href=\"javascript:inHref();\">" => :onclick }
                 ]
             ]
         end

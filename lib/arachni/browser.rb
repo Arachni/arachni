@@ -103,6 +103,10 @@ class Browser
 
     HTML_IDENTIFIERS = ['<!doctype html', '<html', '<head', '<body', '<title', '<script']
 
+    # @return   [String]
+    #   Value to use when filling in inputs and no {Javascript#taint} is set.
+    SAMPLE_VALUE = 'Sample text'
+
     # @return   [Hash]   Preloaded resources, by URL.
     attr_reader :preloads
 
@@ -404,9 +408,9 @@ class Browser
         tries = 0
 
         watir.elements.each.with_index do |element, i|
-            next if !element.visible?
-
             begin
+                next if !element.visible?
+
                 tag_name    = element.tag_name
                 opening_tag = element.opening_tag
                 events      = element.events
@@ -421,16 +425,16 @@ class Browser
             case tag_name
                 when 'a'
                     href = element.attribute_value( :href )
-                    events << [ :click, href ] if href.start_with?( 'javascript:' )
+                    events << [ :onclick, href ] if href.start_with?( 'javascript:' )
 
                 when 'input'
                     if element.attribute_value( :type ).to_s.downcase == 'image'
-                        events << [ :click, 'image' ]
+                        events << [ :onclick, 'image' ]
                     end
 
                 when 'form'
                     action = element.attribute_value( :action )
-                    events << [ :submit, action ] if action.start_with?( 'javascript:' )
+                    events << [ :onsubmit, action ] if action.start_with?( 'javascript:' )
             end
 
             next if skip_state?( opening_tag ) ||
@@ -544,16 +548,27 @@ class Browser
 
         tries = 0
         begin
-            if tag_name == 'form' && event == :submit
-                element.submit
-            elsif tag_name == 'input' && event == :click &&
-                element.attribute_value(:type) == 'image'
+            had_special_trigger = false
+
+            if tag_name == 'form'
+                element.text_fields.each do |input|
+                    input.send_keys( value_for( input ) )
+                end
+            elsif tag_name == 'input' && event == :onclick &&
+                    element.attribute_value(:type) == 'image'
+
+                had_special_trigger = true
                 watir.button( type: 'image' ).click
-            elsif [:keyup, :keypress, :keydown].include? event
-                element.send_keys 'Sample text'
-            else
-                element.fire_event( event )
+
+            elsif [:onkeyup, :onkeypress, :onkeydown, :onchange].include? event
+
+                # 'onchange' needs an explicit event trigger.
+                had_special_trigger = true if event != :onchange
+
+                element.send_keys( value_for( element ) )
             end
+
+            element.fire_event( event ) if !had_special_trigger
 
             wait_for_pending_requests
 
@@ -573,6 +588,13 @@ class Browser
 
             false
         end
+    end
+
+    def events_for( tag_name )
+        tag_name = tag_name.to_sym
+        return [] if NO_EVENTS_FOR_ELEMENTS.include?( tag_name )
+
+        (EVENTS_PER_ELEMENT[tag_name] || []) + GLOBAL_EVENTS
     end
 
     # Starts capturing requests and parses them into elements of pages,
@@ -639,6 +661,55 @@ class Browser
         page.dom.skip_states         = @skip_states.dup
 
         page
+    end
+
+    def capture_snapshot( transition = nil )
+        pages = []
+
+        request_transitions = flush_request_transitions
+        transitions = ([transition] + request_transitions).flatten.compact
+
+        begin
+            # Skip about:blank windows.
+            watir.windows( url: /^http/ ).each do |window|
+                window.use do
+                    next if !(page = to_page)
+
+                    if pages.empty?
+                        transitions.each do |t|
+                            @transitions << t
+                            page.dom.push_transition t
+                        end
+                    end
+
+                    capture_snapshot_with_sink( page )
+
+                    unique_id = "#{page.dom.hash}:#{cookies.map(&:name).sort}"
+                    next if skip_state? unique_id
+                    skip_state unique_id
+
+                    call_on_new_page_blocks( page )
+
+                    if store_pages?
+                        @page_snapshots[unique_id] = page
+                        pages << page
+                    end
+                end
+            end
+        rescue => e
+            print_error "Could not capture snapshot for: #{@last_url}"
+
+            if transition
+                element, event = transition.first
+                print_error "-- '#{event}' on: #{element}"
+            end
+
+            print_error
+            print_error e
+            print_error_backtrace e
+        end
+
+        pages
     end
 
     # @return   [Array<Page>]
@@ -733,6 +804,25 @@ class Browser
     end
 
     private
+
+    def name_or_id_for( element )
+        name = element.attribute_value(:name)
+        return name if !name.empty?
+
+        id = element.attribute_value(:id)
+        return id if !id.empty?
+
+        nil
+    end
+
+    # @param    [Watir::HTMLElement]    element
+    # @return   [String]
+    #   Value to use to fill-in the input.
+    #
+    # @see Support::KeyFiller.name_to_value
+    def value_for( element )
+        Support::KeyFiller.name_to_value( name_or_id_for( element ), '1' )
+    end
 
     def spawn_phantomjs
         return @phantomjs_url if @phantomjs_url
@@ -845,55 +935,6 @@ class Browser
         wait_for_pending_requests
     end
 
-    def capture_snapshot( transition = nil )
-        pages = []
-
-        request_transitions = flush_request_transitions
-        transitions = ([transition] + request_transitions).flatten.compact
-
-        begin
-            # Skip about:blank windows.
-            watir.windows( url: /^http/ ).each do |window|
-                window.use do
-                    next if !(page = to_page)
-
-                    if pages.empty?
-                        transitions.each do |t|
-                            @transitions << t
-                            page.dom.push_transition t
-                        end
-                    end
-
-                    capture_snapshot_with_sink( page )
-
-                    unique_id = "#{page.dom.hash}:#{cookies.map(&:name).sort}"
-                    next if skip_state? unique_id
-                    skip_state unique_id
-
-                    call_on_new_page_blocks( page )
-
-                    if store_pages?
-                        @page_snapshots[unique_id] = page
-                        pages << page
-                    end
-                end
-            end
-        rescue => e
-            print_error "Could not capture snapshot for: #{@last_url}"
-
-            if transition
-                element, event = transition.first
-                print_error "-- '#{event}' on: #{element}"
-            end
-
-            print_error
-            print_error e
-            print_error_backtrace e
-        end
-
-        pages
-    end
-
     def capture_snapshot_with_sink( page )
         return if page.dom.data_flow_sink.empty? &&
             page.dom.execution_flow_sink.empty?
@@ -964,13 +1005,6 @@ class Browser
             'phantomjs.page.customHeaders.X-Arachni-Browser-Auth' => auth_token,
             #'phantomjs.page.settings.loadImages' => false,
         )
-    end
-
-    def events_for( tag_name )
-        tag_name = tag_name.to_sym
-        return [] if NO_EVENTS_FOR_ELEMENTS.include?( tag_name )
-
-        (EVENTS_PER_ELEMENT[tag_name] || []) + GLOBAL_EVENTS
     end
 
     def flush_request_transitions

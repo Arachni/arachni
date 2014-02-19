@@ -26,6 +26,69 @@ get '/' do
 HTML
 end
 
+get '/fire_event/form/onsubmit' do
+    <<-EOHTML
+<html>
+    <script>
+        function submitForm() {
+            document.getElementById("container-name").innerHTML =
+                document.getElementsByName("name")[0].value;
+
+            document.getElementById("container-email").innerHTML =
+                document.getElementById("email").value;
+        }
+    </script>
+
+    <body>
+        <form onsubmit="submitForm();return false;">
+            <textarea name="name" ></textarea>
+            <input id="email"/>
+            <input/>
+        </fom>
+
+        <div id="container-name">
+        </div>
+        <div id="container-email">
+        </div>
+    </body>
+</html>
+    EOHTML
+end
+
+get '/fire_event/form/image-input' do
+    <<HTML
+    <html>
+      <form>
+        <input type="text" name="stuff" value="blah">
+        <input type="image" name="myImageButton" src="/__sinatra__/404.png">
+      </form>
+    </html>
+HTML
+end
+
+[:onkeyup, :onkeypress, :onkeydown, :onchange].each do |event|
+    get "/fire_event/input/#{event}" do
+        <<-EOHTML
+<html>
+    <script>
+        function call_#{event}() {
+            document.getElementById("container").innerHTML =
+                document.getElementById("name").value;
+        }
+    </script>
+
+    <body>
+        <input #{event}="call_#{event}();" id="name" />
+
+        <div id="container">
+        </div>
+    </body>
+</html>
+        EOHTML
+    end
+
+end
+
 get '/lots_of_sinks' do
     <<-EOHTML
     <html>
