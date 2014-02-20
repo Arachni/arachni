@@ -209,7 +209,7 @@ class Transition
             return
         end
 
-        browser.fire_event candidate_elements.first, event
+        browser.fire_event candidate_elements.first, event, options
     end
 
     # @return   [Bool]

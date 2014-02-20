@@ -103,10 +103,6 @@ class Browser
 
     HTML_IDENTIFIERS = ['<!doctype html', '<html', '<head', '<body', '<title', '<script']
 
-    # @return   [String]
-    #   Value to use when filling in inputs and no {Javascript#taint} is set.
-    SAMPLE_VALUE = 'Sample text'
-
     # @return   [Hash]   Preloaded resources, by URL.
     attr_reader :preloads
 
@@ -538,22 +534,33 @@ class Browser
     #
     # @param    [Watir::Element]  element
     # @param    [Symbol]  event
+    # @param    [Hash]  options
+    # @option options [Hash<Symbol,String=>String>]  :inputs
+    #   Values to use to fill-in inputs. Keys should be input names or ids.
+    #
+    #   Defaults to using {Support::KeyFiller} if not specified.
     #
     # @return   [Page::DOM::Transition, false]
     #   Transition if the operation was successful, `nil` otherwise.
-    def fire_event( element, event )
+    def fire_event( element, event, options = {} )
         event       = event.to_sym
         opening_tag = element.opening_tag
         tag_name    = element.tag_name
 
+        options[:inputs] = options[:inputs].stringify if options[:inputs]
+
         tries = 0
         begin
-            Page::DOM::Transition.new opening_tag => event do
+            Page::DOM::Transition.new( { opening_tag => event }, options ) do
                 had_special_trigger = false
 
                 if tag_name == 'form'
                     element.text_fields.each do |input|
-                        input.send_keys( value_for( input ) )
+                        value = options[:inputs] ?
+                            options[:inputs][name_or_id_for( input )] :
+                            value_for( input )
+
+                        input.send_keys( value.to_s )
                     end
                 elsif tag_name == 'input' && event == :onclick &&
                         element.attribute_value(:type) == 'image'
@@ -566,7 +573,11 @@ class Browser
                     # 'onchange' needs an explicit event trigger.
                     had_special_trigger = true if event != :onchange
 
-                    element.send_keys( value_for( element ) )
+                    value = options[:inputs] ?
+                        options[:inputs][name_or_id_for( element )] :
+                        value_for( element )
+
+                    element.send_keys( value.to_s )
                 end
 
                 element.fire_event( event ) if !had_special_trigger

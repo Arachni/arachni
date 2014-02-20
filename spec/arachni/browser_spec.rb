@@ -643,61 +643,269 @@ describe Arachni::Browser do
     end
 
     describe '#fire_event' do
+        let(:url) { "#{@url}/trigger_events" }
+        before(:each) do
+            @browser.load url
+        end
+
         it 'fires the given event' do
-            @browser.load( @url + '/trigger_events' ).start_capture
             @browser.fire_event @browser.watir.div( id: 'my-div' ), :onclick
+            pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
+        end
+
+        it 'returns a replayable transition' do
+            transition = @browser.fire_event @browser.watir.div( id: 'my-div' ), :onclick
+            pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
+
+            @browser.load( url ).start_capture
+            pages_should_not_have_form_with_input [@browser.to_page], 'by-ajax'
+
+            transition.replay @browser
             pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
         end
 
         context 'form' do
             context :onsubmit do
-                it 'fills in its inputs with sample values' do
-                    @browser.load( "#{@url}/fire_event/form/onsubmit" )
-                    @browser.fire_event @browser.watir.form, :onsubmit
+                let(:url) { "#{@url}/fire_event/form/onsubmit" }
 
-                    @browser.watir.div( id: 'container-name' ).text.should ==
-                        Arachni::Support::KeyFiller.name_to_value( 'name' )
+                context 'when option' do
+                    describe :inputs do
+                        context 'is given' do
+                            let(:inputs) do
+                                {
+                                    name:  'The Dude',
+                                    email: 'the.dude@abides.com'
+                                }
+                            end
 
-                    @browser.watir.div( id: 'container-email' ).text.should ==
-                        Arachni::Support::KeyFiller.name_to_value( 'email' )
+                            before(:each) do
+                                @browser.fire_event @browser.watir.form, :onsubmit, inputs: inputs
+                            end
+
+                            it 'fills in its inputs with the given values' do
+                                @browser.watir.div( id: 'container-name' ).text.should ==
+                                    inputs[:name]
+                                @browser.watir.div( id: 'container-email' ).text.should ==
+                                    inputs[:email]
+                            end
+
+                            it 'returns a replayable transition' do
+                                @browser.load url
+
+                                transition = @browser.fire_event @browser.watir.form, :onsubmit, inputs: inputs
+
+                                @browser.load url
+
+                                @browser.watir.div( id: 'container-name' ).text.should be_empty
+                                @browser.watir.div( id: 'container-email' ).text.should be_empty
+
+                                transition.replay @browser
+
+                                @browser.watir.div( id: 'container-name' ).text.should ==
+                                    inputs[:name]
+                                @browser.watir.div( id: 'container-email' ).text.should ==
+                                    inputs[:email]
+                            end
+
+                            context 'but has missing values' do
+                                let(:inputs) do
+                                    { name:  'The Dude' }
+                                end
+
+                                it 'leaves those empty' do
+                                    @browser.watir.div( id: 'container-name' ).text.should ==
+                                        inputs[:name]
+                                    @browser.watir.div( id: 'container-email' ).text.should be_empty
+                                end
+
+                                it 'returns a replayable transition' do
+                                    @browser.load url
+                                    transition = @browser.fire_event @browser.watir.form, :onsubmit, inputs: inputs
+
+                                    @browser.load url
+
+                                    @browser.watir.div( id: 'container-name' ).text.should be_empty
+                                    @browser.watir.div( id: 'container-email' ).text.should be_empty
+
+                                    transition.replay @browser
+
+                                    @browser.watir.div( id: 'container-name' ).text.should ==
+                                        inputs[:name]
+                                    @browser.watir.div( id: 'container-email' ).text.should be_empty
+                                end
+                            end
+
+                            context 'and is empty' do
+                                let(:inputs) do
+                                    {}
+                                end
+
+                                it 'fills in empty values' do
+                                    @browser.watir.div( id: 'container-name' ).text.should be_empty
+                                    @browser.watir.div( id: 'container-email' ).text.should be_empty
+                                end
+
+                                it 'returns a replayable transition' do
+                                    @browser.load url
+                                    transition = @browser.fire_event @browser.watir.form, :onsubmit, inputs: inputs
+
+                                    @browser.load url
+
+                                    @browser.watir.div( id: 'container-name' ).text.should be_empty
+                                    @browser.watir.div( id: 'container-email' ).text.should be_empty
+
+                                    transition.replay @browser
+
+                                    @browser.watir.div( id: 'container-name' ).text.should be_empty
+                                    @browser.watir.div( id: 'container-email' ).text.should be_empty
+                                end
+                            end
+                        end
+                        context 'is not given' do
+                            it 'fills in its inputs with sample values' do
+                                @browser.load url
+                                @browser.fire_event @browser.watir.form, :onsubmit
+
+                                @browser.watir.div( id: 'container-name' ).text.should ==
+                                    Arachni::Support::KeyFiller.name_to_value( 'name' )
+                                @browser.watir.div( id: 'container-email' ).text.should ==
+                                    Arachni::Support::KeyFiller.name_to_value( 'email' )
+                            end
+
+                            it 'returns a replayable transition' do
+                                @browser.load url
+                                transition = @browser.fire_event @browser.watir.form, :onsubmit
+
+                                @browser.load url
+
+                                @browser.watir.div( id: 'container-name' ).text.should be_empty
+                                @browser.watir.div( id: 'container-email' ).text.should be_empty
+
+                                transition.replay @browser
+
+                                @browser.watir.div( id: 'container-name' ).text.should ==
+                                    Arachni::Support::KeyFiller.name_to_value( 'name' )
+                                @browser.watir.div( id: 'container-email' ).text.should ==
+                                    Arachni::Support::KeyFiller.name_to_value( 'email' )
+                            end
+                        end
+                    end
                 end
             end
 
             context 'image button' do
                 context :onclick do
+                    before( :each ) { @browser.start_capture }
+                    let(:url) { "#{@url}fire_event/form/image-input" }
+
                     it 'submits the form with x, y coordinates' do
-                        @browser.load( "#{@url}fire_event/form/image-input" ).start_capture
+                        @browser.load( url )
                         @browser.fire_event @browser.watir.input( type: 'image'), :onclick
 
                         pages_should_have_form_with_input @browser.captured_pages, 'myImageButton.x'
                         pages_should_have_form_with_input @browser.captured_pages, 'myImageButton.y'
+                    end
+
+                    it 'returns a replayable transition' do
+                        @browser.load( url )
+                        transition = @browser.fire_event @browser.watir.input( type: 'image'), :onclick
+
+                        captured_pages = @browser.flush_pages
+                        pages_should_have_form_with_input captured_pages, 'myImageButton.x'
+                        pages_should_have_form_with_input captured_pages, 'myImageButton.y'
+
+                        @browser.load( url )
+                        @browser.flush_pages.should be_empty
+
+                        transition.replay @browser
+                        captured_pages = @browser.flush_pages
+                        pages_should_have_form_with_input captured_pages, 'myImageButton.x'
+                        pages_should_have_form_with_input captured_pages, 'myImageButton.y'
                     end
                 end
             end
         end
 
         context 'input' do
-            [:onkeypress, :onkeydown].each do |event|
-                context event do
-                    it 'fills in a sample value' do
-                        @browser.load( "#{@url}/fire_event/input/#{event}" )
-                        @browser.fire_event @browser.watir.input, event
-
-                        @browser.watir.div( id: 'container' ).text.should ==
-                            Arachni::Support::KeyFiller.name_to_value( 'name' )[0...-1]
-                    end
+            [:onkeypress, :onkeydown, :onkeyup, :onchange].each do |event|
+                calculate_expectation = proc do |string|
+                    [:onkeypress, :onkeydown].include?( event ) ?
+                        string[0...-1] : string
                 end
-            end
 
-            [:onkeyup, :onchange].each do |event|
                 context event do
-                    context 'input' do
-                        it 'fills in a sample value' do
-                            @browser.load( "#{@url}/fire_event/input/#{event}" )
-                            @browser.fire_event @browser.watir.input, event
+                    let( :url ) { "#{@url}/fire_event/input/#{event}" }
 
-                            @browser.watir.div( id: 'container' ).text.should ==
-                                Arachni::Support::KeyFiller.name_to_value( 'name' )
+                    context 'when option' do
+                        describe :inputs do
+                            context 'is given' do
+                                let(:inputs) do
+                                    { name: 'The Dude' }
+                                end
+
+                                before(:each) do
+                                    @browser.fire_event @browser.watir.input, event, inputs: inputs
+                                end
+
+                                it 'fills in its inputs with the given values' do
+                                    @browser.watir.div( id: 'container' ).text.should ==
+                                        calculate_expectation.call( inputs[:name] )
+                                end
+
+                                it 'returns a replayable transition' do
+                                    @browser.load url
+                                    transition = @browser.fire_event @browser.watir.input, event, inputs: inputs
+
+                                    @browser.load url
+                                    @browser.watir.div( id: 'container' ).text.should be_empty
+
+                                    transition.replay @browser
+                                    @browser.watir.div( id: 'container' ).text.should ==
+                                        calculate_expectation.call( inputs[:name] )
+                                end
+
+                                context 'and is empty' do
+                                    let(:inputs) do
+                                        {}
+                                    end
+
+                                    it 'fills in empty values' do
+                                        @browser.watir.div( id: 'container' ).text.should be_empty
+                                    end
+
+                                    it 'returns a replayable transition' do
+                                        @browser.load url
+                                        transition = @browser.fire_event @browser.watir.input, event, inputs: inputs
+
+                                        @browser.load url
+                                        @browser.watir.div( id: 'container' ).text.should be_empty
+
+                                        transition.replay @browser
+                                        @browser.watir.div( id: 'container' ).text.should be_empty
+                                    end
+                                end
+                            end
+
+                            context 'is not given' do
+                                it 'fills in a sample value' do
+                                    @browser.fire_event @browser.watir.input, event
+
+                                    @browser.watir.div( id: 'container' ).text.should ==
+                                        calculate_expectation.call( Arachni::Support::KeyFiller.name_to_value( 'name' ) )
+                                end
+
+                                it 'returns a replayable transition' do
+                                    @browser.load url
+                                    transition = @browser.fire_event @browser.watir.input, event
+
+                                    @browser.load url
+                                    @browser.watir.div( id: 'container' ).text.should be_empty
+
+                                    transition.replay @browser
+                                    @browser.watir.div( id: 'container' ).text.should ==
+                                        calculate_expectation.call( Arachni::Support::KeyFiller.name_to_value( 'name' ) )
+                                end
+                            end
                         end
                     end
                 end
