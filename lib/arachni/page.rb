@@ -3,14 +3,17 @@
     All rights reserved.
 =end
 
-require_relative 'page/dom'
-
 module Arachni
 
 # It holds page data like elements, cookies, headers, etc...
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Page
+
+    class Error < Arachni::Error
+    end
+
+    require_relative 'page/dom'
 
     # @param    [String]    url URL to fetch.
     # @param    [Hash]  opts

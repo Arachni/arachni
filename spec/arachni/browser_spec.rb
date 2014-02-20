@@ -284,7 +284,7 @@ describe Arachni::Browser do
                     { "<div onclick=\"level6();\" id=\"level5\">" => :onclick },
                     { "#{@url}level6" => :request }
                 ]
-            ]
+            ].map { |transitions| transitions.map { |t| Arachni::Page::DOM::Transition.new t } }
         end
 
         context 'with a depth argument' do
@@ -310,7 +310,7 @@ describe Arachni::Browser do
                         { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :onclick },
                         { "#{@url}level4" => :request }
                     ]
-                ]
+                ].map { |transitions| transitions.map { |t| Arachni::Page::DOM::Transition.new t } }
             end
         end
     end
@@ -329,7 +329,7 @@ describe Arachni::Browser do
                 { page: :load },
                 { "#{@url}lots_of_sinks?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}" => :request },
                 { "<a href=\"#\" onmouseover=\"onClick2('blah1', 'blah2', 'blah3');\">" => :onmouseover }
-            ]
+            ].map { |t| Arachni::Page::DOM::Transition.new t }
 
             doms[0].execution_flow_sink.size.should == 2
 
@@ -390,7 +390,7 @@ describe Arachni::Browser do
                 { page: :load },
                 { "#{@url}lots_of_sinks?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}" => :request },
                 { "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">" => :onsubmit }
-            ]
+            ].map { |t| Arachni::Page::DOM::Transition.new t }
 
             doms[1].execution_flow_sink.size.should == 2
 
@@ -453,7 +453,7 @@ describe Arachni::Browser do
                 { page: :load },
                 { "#{@url}lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub(1)}" => :request },
                 { "<a href=\"#\" onmouseover=\"onClick2('blah1', 'blah2', 'blah3');\">" => :onmouseover }
-            ]
+            ].map { |t| Arachni::Page::DOM::Transition.new t }
 
             doms[0].data_flow_sink.size.should == 2
 
@@ -514,7 +514,7 @@ describe Arachni::Browser do
                 { page: :load },
                 { "#{@url}lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub(1)}" => :request },
                 { "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">" => :onsubmit }
-            ]
+            ].map { |t| Arachni::Page::DOM::Transition.new t }
 
             doms[1].data_flow_sink.size.should == 2
 
@@ -597,7 +597,7 @@ describe Arachni::Browser do
             page.dom.transitions.should == [
                 { page: :load },
                 { @url => :request }
-            ]
+            ].map { |t| Arachni::Page::DOM::Transition.new t }
         end
 
         it 'assigns the DOM#skip_states' do
@@ -798,7 +798,7 @@ describe Arachni::Browser do
                     { "#{@url}explore" => :request },
                     { "<a href=\"javascript:inHref();\">" => :onclick }
                 ]
-            ]
+            ].map { |transitions| transitions.map { |t| Arachni::Page::DOM::Transition.new t } }
         end
 
         it 'ignores differences in text nodes' do
@@ -937,7 +937,7 @@ describe Arachni::Browser do
                     pages.first.dom.transitions.should == [
                         { page: :load },
                         { @url => :request }
-                    ]
+                    ].map { |t| Arachni::Page::DOM::Transition.new t }
                 end
             end
 
@@ -957,7 +957,7 @@ describe Arachni::Browser do
                     pages.first.dom.transitions.should == [
                         { page: :load },
                         { @url => :request }
-                    ]
+                    ].map { |t| Arachni::Page::DOM::Transition.new t }
                 end
             end
         end
@@ -978,7 +978,7 @@ describe Arachni::Browser do
                     pages.first.dom.transitions.should == [
                         { page: :load },
                         { @url => :request }
-                    ]
+                    ].map { |t| Arachni::Page::DOM::Transition.new t }
                 end
             end
 
@@ -998,7 +998,7 @@ describe Arachni::Browser do
                     pages.first.dom.transitions.should == [
                         { page: :load },
                         { @url => :request }
-                    ]
+                    ].map { |t| Arachni::Page::DOM::Transition.new t }
                 end
             end
         end

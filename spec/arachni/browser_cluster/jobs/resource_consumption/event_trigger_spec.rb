@@ -38,7 +38,7 @@ describe Arachni::BrowserCluster::Jobs::ResourceExploration::EventTrigger do
         pages.size.should == 2
 
         page = pages.last
-        page.dom.transitions.last.values.first.should == event
+        page.dom.transitions.last.event.should == event
         Nokogiri::HTML( page.body ).xpath("//div[@id='my-div']").first.to_s.should ==
             '<div id="my-div"><a href="#3">My link</a></div>'
     end

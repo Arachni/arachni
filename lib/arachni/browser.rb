@@ -322,17 +322,21 @@ class Browser
 
         load_cookies url
 
-        watir.goto url
+        load_code = proc do
+            watir.goto url
 
-        @javascript.wait_till_ready
-        wait_for_timers
-        wait_for_pending_requests
-
-        HTTP::Client.update_cookies cookies
+            @javascript.wait_till_ready
+            wait_for_timers
+            wait_for_pending_requests
+        end
 
         if @add_request_transitions
-            @transitions << { page: :load }
+            @transitions << Page::DOM::Transition.new( page: :load, &load_code )
+        else
+            load_code.call
         end
+
+        HTTP::Client.update_cookies cookies
 
         # Capture the page at its initial state.
         capture_snapshot if take_snapshot
@@ -511,7 +515,7 @@ class Browser
             return
         end
 
-        if !fire_event( element, event )
+        if !(transition = fire_event( element, event ))
             print_info 'Could not trigger event because the page has changed' <<
                              ', capturing a new snapshot.'
             capture_snapshot
@@ -521,14 +525,10 @@ class Browser
             return
         end
 
-        capture_snapshot( opening_tag => event.to_sym ).each do |snapshot|
+        capture_snapshot( transition ).each do |snapshot|
             print_debug "Found new page variation by triggering '#{event}' on: #{opening_tag}"
-
             print_debug 'Page transitions:'
-            snapshot.dom.transitions.each do |t|
-                el, ev = t.first.to_a
-                print_debug "-- '#{ev}' on: #{el}"
-            end
+            snapshot.dom.transitions.each { |t| print_debug "-- #{t}" }
         end
 
         restore page
@@ -539,8 +539,8 @@ class Browser
     # @param    [Watir::Element]  element
     # @param    [Symbol]  event
     #
-    # @return   [Bool]
-    #   `true` if the event was fired successfully, `false` otherwise.
+    # @return   [Page::DOM::Transition, false]
+    #   Transition if the operation was successful, `nil` otherwise.
     def fire_event( element, event )
         event       = event.to_sym
         opening_tag = element.opening_tag
@@ -548,31 +548,31 @@ class Browser
 
         tries = 0
         begin
-            had_special_trigger = false
+            Page::DOM::Transition.new opening_tag => event do
+                had_special_trigger = false
 
-            if tag_name == 'form'
-                element.text_fields.each do |input|
-                    input.send_keys( value_for( input ) )
+                if tag_name == 'form'
+                    element.text_fields.each do |input|
+                        input.send_keys( value_for( input ) )
+                    end
+                elsif tag_name == 'input' && event == :onclick &&
+                        element.attribute_value(:type) == 'image'
+
+                    had_special_trigger = true
+                    watir.button( type: 'image' ).click
+
+                elsif [:onkeyup, :onkeypress, :onkeydown, :onchange].include? event
+
+                    # 'onchange' needs an explicit event trigger.
+                    had_special_trigger = true if event != :onchange
+
+                    element.send_keys( value_for( element ) )
                 end
-            elsif tag_name == 'input' && event == :onclick &&
-                    element.attribute_value(:type) == 'image'
 
-                had_special_trigger = true
-                watir.button( type: 'image' ).click
+                element.fire_event( event ) if !had_special_trigger
 
-            elsif [:onkeyup, :onkeypress, :onkeydown, :onchange].include? event
-
-                # 'onchange' needs an explicit event trigger.
-                had_special_trigger = true if event != :onchange
-
-                element.send_keys( value_for( element ) )
+                wait_for_pending_requests
             end
-
-            element.fire_event( event ) if !had_special_trigger
-
-            wait_for_pending_requests
-
-            true
         rescue Selenium::WebDriver::Error::UnknownError,
             Watir::Exception::UnknownObjectException => e
 
@@ -586,7 +586,7 @@ class Browser
             print_error e
             print_error_backtrace e
 
-            false
+            nil
         end
     end
 
@@ -700,8 +700,7 @@ class Browser
             print_error "Could not capture snapshot for: #{@last_url}"
 
             if transition
-                element, event = transition.first
-                print_error "-- '#{event}' on: #{element}"
+                print_error "-- #{transition}"
             end
 
             print_error
@@ -891,41 +890,16 @@ class Browser
 
     def replay_transitions
         @transitions.each do |transition|
-            element, event = transition.to_a.first
-            next if [:request, :load].include? event
-
-            tag = element.match( /<(\w+)\b/ )[1]
-            valid_attributes = Set.new( Watir.tag_to_class[tag.to_sym].attribute_list )
-
-            attributes = Nokogiri::HTML( element ).css( tag ).first.attributes.
-                inject({}) do |h, (k, v)|
-                    attribute = k.gsub( '-' ,'_' ).to_sym
-                    next h if !valid_attributes.include? attribute
-
-                    h[attribute] = v.to_s
-                    h
-                end
-
             begin
-                # Try to find the relevant element but skip the transition if
-                # it's no longer available.
-                element = nil
-                begin
-                    element = watir.send( "#{tag}s", attributes ).first
-                rescue Selenium::WebDriver::Error::UnknownError
-                    next
-                end
-
-                fire_event element, event
+                transition.replay self
             rescue => e
                 print_error "Error when replying transition for: #{url}"
                 @transitions.each do |t|
-                    el, ev = t.to_a.first
-                    print_error "-#{t == transition ? '>' : '-'} '#{ev}' on: #{el}"
+                    print_error "-#{t == transition ? '>' : '-'} #{transition}"
                 end
 
                 print_error
-                print_error "    #{tag} => #{attributes}"
+                print_error "    #{transition.element_tag_name} => #{transition.element_attributes}"
                 print_error
                 print_error e
                 print_error_backtrace e
@@ -1030,7 +1004,7 @@ class Browser
         return if !request.url.include?( request_token ) && ignore_request?( request )
 
         if !request.url.include?( request_token ) && @add_request_transitions
-            @request_transitions << { request.url => :request }
+            @request_transitions << Page::DOM::Transition.new( request.url => :request )
         end
 
         # Signal the proxy to not actually perform the request if we have a
@@ -1083,7 +1057,7 @@ class Browser
 
         page = Page.from_data( url: @last_url )
         page.response.request = request
-        page.dom.push_transition request.url => :request
+        page.dom.push_transition Page::DOM::Transition.new( request.url => :request )
 
         case request.method
             when :get
