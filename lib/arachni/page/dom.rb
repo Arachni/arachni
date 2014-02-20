@@ -4,7 +4,6 @@
 =end
 
 module Arachni
-
 class Page
 
 # Static DOM snapshot as computed by a real browser.
@@ -12,14 +11,20 @@ class Page
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class DOM
 
+    class Error < Page::Error
+    end
+
+    require_relative 'dom/transition'
+
     # Ignore these elements when calculating a {#hash}.
     IGNORE_FROM_HASH = Set.new([ 'text', 'p' ])
 
     # @return   [Support::LookUp::HashSet]
     attr_accessor :skip_states
 
-    # @return   [Array<Hash{Symbol => <Symbol,String>}>]
-    #   DOM transitions leading to the current state.
+    # @return   [Array<Transition>]
+    #   Transitions representing the steps required to convert a {DOM}
+    #   snapshot to a live {Browser} page.
     attr_accessor :transitions
 
     # @return   [Array]
@@ -47,18 +52,17 @@ class DOM
             Support::LookUp::HashSet.new( hasher: :persistent_hash )
     end
 
-    # @param    [Hash{Symbol => <Symbol,String>}]    transition
-    #   Push the given transition to the DOM with element at key and the event
-    #   as value.
+    # @param    [Transition]    transition
+    #   Push the given transition to the {#transitions}.
     def push_transition( transition )
         @transitions << transition
     end
 
     # @return   [Integer]
-    #   Depth of the current DOM -- amount of events that had to be triggered
-    #   to reach the current state.
+    #   Depth of the current DOM -- sum of {#transitions} {Transition#depth}s
+    #   that had to be triggered to reach the current state.
     def depth
-        @transitions.select { |t| t.values.first != :request }.size
+        @transitions.map { |t| t.depth }.inject(&:+).to_i
     end
 
     # @return   [Hash]

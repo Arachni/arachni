@@ -82,7 +82,7 @@ class BrowserCluster
 
     # @param    [Hash]  options
     # @option   options [Integer]   :pool_size (5)
-    #   Amount of {RPC::Server::Browser browsers} to add to the pool.
+    #   Amount of {Worker browsers} to add to the pool.
     # @option   options [Integer]   :time_to_live (10)
     #   Restricts each browser's lifetime to the given amount of pages.
     #   When that number is exceeded the current process is killed and a new

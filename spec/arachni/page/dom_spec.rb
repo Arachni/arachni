@@ -19,7 +19,8 @@ describe Arachni::Page::DOM do
           )
     end
 
-    let( :dom ) { create_page.dom }
+    let( :dom ) { Factory[:dom] }
+    let( :empty_dom ) { create_page.dom }
 
     describe '#url' do
         it 'defaults to the page URL' do
@@ -29,13 +30,13 @@ describe Arachni::Page::DOM do
 
     describe '#transitions' do
         it 'defaults to an empty Array' do
-            dom.transitions.should == []
+            empty_dom.transitions.should == []
         end
     end
 
     describe '#data_flow_sink' do
         it 'defaults to an empty Array' do
-            dom.data_flow_sink.should == []
+            empty_dom.data_flow_sink.should == []
         end
     end
 
@@ -62,7 +63,7 @@ describe Arachni::Page::DOM do
 
     describe '#execution_flow_sink' do
         it 'defaults to an empty Array' do
-            dom.execution_flow_sink.should == []
+            empty_dom.execution_flow_sink.should == []
         end
     end
 
@@ -107,15 +108,13 @@ describe Arachni::Page::DOM do
 
     describe '#depth' do
         it 'returns the amount of DOM transitions' do
-            dom.depth.should == 0
-
             dom.transitions = [
                 { "http://test.com/"                 => :request },
                 { :page                              => :load },
                 { "<body onload='loadStuff();'>"     => :onload },
                 { "http://test.com/ajax"             => :request },
                 { "<a href='javascript:clickMe();'>" => :click },
-            ]
+            ].map { |t| described_class::Transition.new t }
 
             dom.depth.should == 3
         end
@@ -127,14 +126,14 @@ describe Arachni::Page::DOM do
                 { element: :stuffed },
                 { element2: :stuffed2 }
             ].each do |transition|
-                dom.push_transition transition
+                empty_dom.push_transition described_class::Transition.new( transition )
             end
 
-            dom.transitions.should == transitions
+            empty_dom.transitions.should == transitions.map { |t| described_class::Transition.new t }
         end
     end
 
-    describe '#to_h' do
+    describe '#to_hash' do
         it 'returns a hash with DOM data' do
             data = {
                 url:         'http://test/dom',
@@ -142,21 +141,23 @@ describe Arachni::Page::DOM do
                 transitions: [
                     { element:  :stuffed },
                     { element2: :stuffed2 }
-                ],
+                ].map { |t| described_class::Transition.new t },
                 data_flow_sink:      ['stuff'],
                 execution_flow_sink: ['stuff2']
             }
 
-            dom.url = data[:url]
-            data[:transitions].each do |transition|
-                dom.push_transition transition
+            empty_dom.url = data[:url]
+            data[:transitions].each do |t|
+                empty_dom.push_transition t
             end
+            empty_dom.skip_states = data[:skip_states]
+            empty_dom.data_flow_sink = data[:data_flow_sink]
+            empty_dom.execution_flow_sink = data[:execution_flow_sink]
 
-            dom.skip_states = data[:skip_states]
-            dom.data_flow_sink = data[:data_flow_sink]
-            dom.execution_flow_sink = data[:execution_flow_sink]
-
-            dom.to_h.should == data
+            empty_dom.to_h.should == data
+        end
+        it 'is aliased to #to_h' do
+            empty_dom.to_h.should == empty_dom.to_h
         end
     end
 

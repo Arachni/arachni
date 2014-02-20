@@ -82,7 +82,7 @@ module Distributor
     #
     # @see #preferred_slaves
     # @see #split_page_workload
-    # @se #distribute_page_workload
+    # @see #distribute_page_workload
     def calculate_workload_size( maximum )
         [10 * (preferred_slaves.size + 1), maximum].min
     end

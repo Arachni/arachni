@@ -735,15 +735,12 @@ class Framework
     def print_page_transitions( page, indent = '' )
         longest_event_size = 0
         page.dom.transitions.each do |t|
-            _, event = t.first.to_a
-            longest_event_size = [event.to_s.size, longest_event_size].max
+            longest_event_size = [t.event.to_s.size, longest_event_size].max
         end
 
         page.dom.transitions.each do |t|
-            element, event = t.first.to_a
-
-            padding = longest_event_size - event.to_s.size + 1
-            print_info "#{indent}-- #{event}#{' ' * padding} => #{element}"
+            padding = longest_event_size - t.event.to_s.size + 1
+            print_info "#{indent}-- #{t.event}#{' ' * padding} => #{t.element}"
         end
     end
 
