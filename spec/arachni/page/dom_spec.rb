@@ -133,7 +133,7 @@ describe Arachni::Page::DOM do
         end
     end
 
-    describe '#to_h' do
+    describe '#to_hash' do
         it 'returns a hash with DOM data' do
             data = {
                 url:         'http://test/dom',
@@ -155,6 +155,9 @@ describe Arachni::Page::DOM do
             empty_dom.execution_flow_sink = data[:execution_flow_sink]
 
             empty_dom.to_h.should == data
+        end
+        it 'is aliased to #to_h' do
+            empty_dom.to_h.should == empty_dom.to_h
         end
     end
 
