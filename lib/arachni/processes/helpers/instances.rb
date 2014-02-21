@@ -15,10 +15,18 @@ def instance_grid_spawn( *args )
     Arachni::Processes::Instances.grid_spawn( *args )
 end
 
+def instance_light_grid_spawn( *args )
+    Arachni::Processes::Instances.light_grid_spawn( *args )
+end
+
 # @param (see Arachni::Processes::Instances#dispatcher_spawn)
 # @return (see Arachni::Processes::Instances#dispatcher_spawn)
 def instance_dispatcher_spawn( *args )
     Arachni::Processes::Instances.dispatcher.spawn( *args )
+end
+
+def instance_kill( url )
+    Arachni::Processes::Instances.kill url
 end
 
 # @param (see Arachni::Processes::Instances#killall)

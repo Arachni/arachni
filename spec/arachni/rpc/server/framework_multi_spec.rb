@@ -6,12 +6,12 @@ describe 'Arachni::RPC::Server::Framework' do
         @opts.paths.checks = fixtures_path + '/taint_check/'
         @opts.audit.elements :links, :forms, :cookies
 
-        @instance  = instance_grid_spawn
+        @instance  = instance_light_grid_spawn
         @framework = @instance.framework
         @checks    = @instance.checks
         @plugins   = @instance.plugins
 
-        @instance_clean  = instance_grid_spawn
+        @instance_clean  = instance_light_grid_spawn
         @framework_clean = @instance_clean.framework
 
         @stat_keys = [
@@ -80,6 +80,8 @@ describe 'Arachni::RPC::Server::Framework' do
             instance.framework.master?.should be_false
             instance.framework.set_as_master
             instance.framework.master?.should be_true
+
+            instance_kill instance.url
         end
     end
     describe '#enslave' do
@@ -93,6 +95,8 @@ describe 'Arachni::RPC::Server::Framework' do
                 'token' => instance_token_for( slave )
             )
             master.framework.master?.should be_true
+
+            instance_kill master.url
         end
     end
     describe '#run' do
@@ -106,7 +110,7 @@ describe 'Arachni::RPC::Server::Framework' do
         end
 
         it 'handles pages with JavaScript code' do
-            instance = instance_grid_spawn
+            instance = instance_light_grid_spawn
             instance.opts.url = web_server_url_for( :auditor ) + '/with_javascript'
             instance.checks.load :taint
 
@@ -116,10 +120,12 @@ describe 'Arachni::RPC::Server::Framework' do
             instance.framework.issues.
                 map { |i| i.vector.affected_input_name }.should be
                     %w(link_input form_input cookie_input)
+
+            dispatcher_kill_by_instance instance
         end
 
         it 'handles AJAX' do
-            instance = instance_grid_spawn
+            instance = instance_light_grid_spawn
             instance.opts.url = web_server_url_for( :auditor ) + '/with_ajax'
             instance.checks.load :taint
 
@@ -129,6 +135,8 @@ describe 'Arachni::RPC::Server::Framework' do
             instance.framework.issues.
                 map { |i| i.vector.affected_input_name }.should be
                     %w(link_input form_input cookie_taint)
+
+            dispatcher_kill_by_instance instance
         end
     end
     describe '#auditstore' do
@@ -171,7 +179,7 @@ describe 'Arachni::RPC::Server::Framework' do
     end
     describe '#clean_up' do
         it 'sets the framework state to finished, waits for plugins to finish and merges their results' do
-            instance = instance_grid_spawn
+            instance = instance_light_grid_spawn
             instance.opts.url = web_server_url_for( :framework_multi )
             instance.checks.load( 'taint' )
             instance.plugins.load( { 'wait' => {}, 'distributable' => {} } )
@@ -189,6 +197,8 @@ describe 'Arachni::RPC::Server::Framework' do
             results['wait'].should be_any
             results['wait'][:results].should == { stuff: true }
             results['distributable'][:results].should == { stuff: instance_count }
+
+            dispatcher_kill_by_instance instance
         end
     end
     describe '#progress' do
@@ -228,23 +238,27 @@ describe 'Arachni::RPC::Server::Framework' do
             describe :errors do
                 context 'when set to true' do
                     it 'includes all error messages' do
-                        instance = instance_grid_spawn
+                        instance = instance_light_grid_spawn
                         instance.framework.progress( errors: true )['errors'].should be_empty
 
                         test = 'Test'
                         instance.framework.error_test test
 
                         instance.framework.progress( errors: true )['errors'].last.should end_with test
+
+                        dispatcher_kill_by_instance instance
                     end
                 end
                 context 'when set to an Integer' do
                     it 'returns all logged errors after that line per Instance' do
-                        instance = instance_grid_spawn
+                        instance = instance_light_grid_spawn
 
                         100.times { instance.framework.error_test 'test' }
 
                         (instance.framework.progress( errors: true )['errors'].size -
                             instance.framework.progress( errors: 10 )['errors'].size).should == 10
+
+                        dispatcher_kill_by_instance instance
                     end
                 end
             end

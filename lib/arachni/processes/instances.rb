@@ -141,6 +141,31 @@ class Instances
         instance
     end
 
+    # Starts {RPC::Server::Dispatcher} grid and returns a high-performance Instance.
+    #
+    # @param    [Hash]  options
+    # @option options [Integer] :grid_size (3)  Amount of Dispatchers to spawn.
+    #
+    # @return   [RPC::Client::Instance]
+    def light_grid_spawn( options = {} )
+        options[:grid_size] ||= 3
+
+        last_member = nil
+        options[:grid_size].times do |i|
+            last_member = Dispatchers.light_spawn(
+                neighbour: last_member ? last_member.url : last_member,
+                pipe_id:   available_port.to_s + available_port.to_s
+            )
+        end
+
+        info = last_member.dispatch
+
+        instance = connect( info['url'], info['token'] )
+        instance.framework.set_as_master
+        instance.opts.set( dispatcher: { grid_mode: :aggregate } )
+        instance
+    end
+
     #
     # Starts {RPC::Server::Dispatcher} and returns an Instance.
     #
@@ -149,6 +174,11 @@ class Instances
     def dispatcher_spawn
         info = Dispatchers.light_spawn.dispatch
         connect( info['url'], info['token'] )
+    end
+
+    def kill( url )
+        Manager.kill_many connect( url ).service.consumed_pids
+        @list.delete url
     end
 
     # Kills all {Instances #list}.

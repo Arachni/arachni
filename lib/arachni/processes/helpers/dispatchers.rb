@@ -21,6 +21,10 @@ def dispatcher_kill( *args )
     Arachni::Processes::Dispatchers.kill( *args )
 end
 
+def dispatcher_kill_by_instance( instance )
+    dispatcher_kill instance.opts.datastore.dispatcher_url
+end
+
 # @param (see Arachni::Processes::Dispatchers#killall)
 # @return (see Arachni::Processes::Dispatchers#killall)
 def dispatcher_killall
