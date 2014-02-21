@@ -19,13 +19,20 @@ module Auditable
     include Utilities
     include Mutable
 
+    # Namepace under which all analysis techniques reside.
+    #
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    module Analysis
+    end
+
     # Load and include all available analysis/audit techniques.
-    Dir.glob( File.dirname( __FILE__ ) + '/auditable/*.rb' ).each { |f| require f }
+    Dir.glob( File.dirname( __FILE__ ) + '/auditable/**/*.rb' ).each { |f| require f }
 
     include Output
-    include Taint
-    include Timeout
-    include Differential
+
+    include Analysis::Taint
+    include Analysis::Timeout
+    include Analysis::Differential
 
     # Sets the auditor for this element.
     #
@@ -66,13 +73,17 @@ module Auditable
         @@audited          = Support::LookUp::HashSet.new
         @@skip_like_blocks = []
 
-        Differential.reset
-        Timeout.reset
+        Analysis::Differential.reset
+        Analysis::Timeout.reset
     end
     reset
 
+    def self.has_timeout_candidates?
+        Analysis::Timeout.has_candidates?
+    end
+
     def self.timeout_audit_run
-        Timeout.run
+        Analysis::Timeout.run
     end
 
     # Removes workload restrictions and allows all elements to be audited.
@@ -635,7 +646,7 @@ module Auditable
 
         # If we're in blocking mode the passed object will be a response not
         # a request.
-        if request.is_a? Arachni::HTTP::Response
+        if request.is_a? HTTP::Response
             after_complete( request, &block )
             return
         end

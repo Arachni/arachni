@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::Element::Capabilities::Auditable::Differential do
+describe Arachni::Element::Capabilities::Auditable::Analysis::Differential do
 
     before :all do
         Arachni::Options.url = @url = web_server_url_for( :differential )

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::Element::Capabilities::Auditable::Taint do
+describe Arachni::Element::Capabilities::Auditable::Analysis::Taint do
 
     before :all do
         Arachni::Options.url = @url = web_server_url_for( :taint )

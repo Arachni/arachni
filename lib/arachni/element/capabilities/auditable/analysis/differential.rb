@@ -4,10 +4,8 @@
 =end
 
 module Arachni
-
 module Element::Capabilities
-
-module Auditable
+module Auditable::Analysis
 
 # Performs boolean injection and behavioral analysis (using differential analysis
 # techniques based on {Support::Signature} comparisons) in order to determine
@@ -20,8 +18,10 @@ module Auditable
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 module Differential
 
-    def Differential.reset
-        # In case we want to reset state or something...
+    class <<self
+        def reset
+            # In case we want to reset state or something...
+        end
     end
 
     DIFFERENTIAL_OPTIONS =  {

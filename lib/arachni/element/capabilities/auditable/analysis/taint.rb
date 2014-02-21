@@ -3,12 +3,14 @@
     All rights reserved.
 =end
 
-module Arachni::Element::Capabilities
+module Arachni
+module Element::Capabilities
+module Auditable::Analysis
 
 # Looks for specific substrings or patterns in response bodies.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-module Auditable::Taint
+module Taint
 
     TAINT_OPTIONS = {
         # The regular expression to match against the response body.
@@ -210,5 +212,7 @@ module Auditable::Taint
             regexp.source.longest_word.downcase
     end
 
+end
+end
 end
 end

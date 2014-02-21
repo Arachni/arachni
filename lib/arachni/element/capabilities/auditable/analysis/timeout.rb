@@ -3,9 +3,9 @@
     All rights reserved.
 =end
 
-module Arachni::Element::Capabilities
-
-module Auditable
+module Arachni
+module Element::Capabilities
+module Auditable::Analysis
 
 # Evaluates whether or not the injection of specific data affects the response
 # time of the web application.
@@ -56,10 +56,10 @@ module Timeout
     class <<self
         def reset
             @candidates_phase_2    = []
-            @phase_2_candidate_ids = ::Arachni::Support::LookUp::HashSet.new
+            @phase_2_candidate_ids = Support::LookUp::HashSet.new
 
             @candidates_phase_3    = []
-            @phase_3_candidate_ids = ::Arachni::Support::LookUp::HashSet.new
+            @phase_3_candidate_ids = Support::LookUp::HashSet.new
 
             deduplicate
         end
@@ -358,6 +358,7 @@ module Timeout
         end
     end
 
+end
 end
 end
 end

@@ -10,11 +10,11 @@ module Check
 #
 # There are 3 main types of audit and analysis techniques available:
 #
-# * {Arachni::Element::Capabilities::Auditable::Taint Taint analysis}
+# * {Arachni::Element::Capabilities::Auditable::Analysis::Taint Taint analysis}
 #   -- {#audit}
-# * {Arachni::Element::Capabilities::Auditable::Timeout Timeout analysis}
+# * {Arachni::Element::Capabilities::Auditable::Analysis::Timeout Timeout analysis}
 #   -- {#audit_timeout}
-# * {Arachni::Element::Capabilities::Auditable::Differential Differential analysis}
+# * {Arachni::Element::Capabilities::Auditable::Analysis::Differential Differential analysis}
 #   -- {#audit_differential}
 #
 # It should be noted that actual analysis takes place at the element level,
@@ -41,10 +41,10 @@ module Auditor
     end
 
     def self.has_timeout_candidates?
-        Element::Capabilities::Auditable::Timeout.has_candidates?
+        Element::Capabilities::Auditable.has_timeout_candidates?
     end
     def self.timeout_audit_run
-        Element::Capabilities::Auditable::Timeout.run
+        Element::Capabilities::Auditable.timeout_audit_run
     end
 
     # @param    [#to_s]  id  Identifier of the object to be marked as audited.
@@ -397,7 +397,7 @@ module Auditor
     # Uses {#each_candidate_element} to decide which elements to audit.
     #
     # @see OPTIONS
-    # @see Arachni::Element::Capabilities::Auditable::Taint
+    # @see Arachni::Element::Capabilities::Auditable::Analysis::Taint
     def audit_taint( payloads, opts = {} )
         opts = OPTIONS.merge( opts )
         each_candidate_element( opts[:elements] ) { |e| e.taint_analysis( payloads, opts ) }
@@ -408,7 +408,7 @@ module Auditor
     # Uses {#each_candidate_element} to decide which elements to audit.
     #
     # @see OPTIONS
-    # @see Arachni::Element::Capabilities::Auditable::Differential
+    # @see Arachni::Element::Capabilities::Auditable::Analysis::Differential
     def audit_differential( opts = {}, &block )
         opts = OPTIONS.merge( opts )
         each_candidate_element( opts[:elements] ) { |e| e.differential_analysis( opts, &block ) }
@@ -419,7 +419,7 @@ module Auditor
     # Uses {#each_candidate_element} to decide which elements to audit.
     #
     # @see OPTIONS
-    # @see Arachni::Element::Capabilities::Auditable::Timeout
+    # @see Arachni::Element::Capabilities::Auditable::Analysis::Timeout
     def audit_timeout( payloads, opts = {} )
         opts = OPTIONS.merge( opts )
         each_candidate_element( opts[:elements] ) { |e| e.timeout_analysis( payloads, opts ) }
