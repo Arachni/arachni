@@ -3,7 +3,7 @@
     All rights reserved.
 =end
 
-require Arachni::Options.paths.lib + 'element/base'
+require_relative 'base'
 
 module Arachni::Element
 
