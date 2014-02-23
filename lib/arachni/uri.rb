@@ -190,7 +190,8 @@ class URI
 
         cache = CACHE[__method__]
 
-        url   = url.to_s.dup
+        # Remove the fragment if there is one.
+        url   = url.split( '#', 2 )[0...-1].join if url.include?( '#' )
         c_url = url.to_s.dup
 
         components = {
@@ -218,10 +219,6 @@ class URI
             end
 
             url = url.encode( 'UTF-8', undef: :replace, invalid: :replace )
-
-            # remove the fragment if there is one
-            url = url.split( '#', 2 )[0...-1].join if url.include?( '#' )
-
             url = html_decode( url )
 
             dupped_url = url.dup
@@ -616,6 +613,7 @@ class URI
 
     # @return   [String]    URL
     def to_s
+        self.query = nil if query.to_s.empty?
         @parsed_url.to_s
     end
 
