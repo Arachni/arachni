@@ -14,6 +14,9 @@
     - `Form`
         - Added `#dom` pointing to a `Auditable::DOM` object handling browser-based
             form submissions/audits.
+    - `Link`
+        - Added `#dom` pointing to a `Auditable::DOM` object handling browser-based
+            form submissions/audits.
     - `Capabilities::Auditable`
         - Removed `#use_anonymous_auditor`
         - `#auditable` => `#inputs`

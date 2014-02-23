@@ -3,13 +3,21 @@
     All rights reserved.
 =end
 
-require Arachni::Options.paths.lib + 'element/base'
+require_relative 'base'
 
 module Arachni::Element
 
 class Link < Base
     include Capabilities::Analyzable
     include Capabilities::Refreshable
+
+    require_relative 'link/dom'
+
+    # @return   [Nokogiri::XML::Element]
+    attr_accessor :node
+
+    # @return   [DOM]
+    attr_reader   :dom
 
     # @param    [Hash]    options
     # @option   options [String]    :url
@@ -20,6 +28,8 @@ class Link < Base
     #   Query parameters as `name => value` pairs. If none have been provided
     #   they will automatically be extracted from {#action}.
     def initialize( options )
+        @node = options.delete(:node)
+
         super( options )
 
         if options[:inputs]
@@ -31,6 +41,8 @@ class Link < Base
         self.method = :get
 
         @default_inputs = self.inputs.dup.freeze
+
+        @dom = DOM.new( self )
     end
 
     # @return   [Hash]
@@ -113,7 +125,12 @@ class Link < Base
             href = to_absolute( link['href'], base_url )
             next if !href
 
-            new( url: url, action: href, inputs: parse_query_vars( href ) )
+            new(
+                url:    url,
+                action: href,
+                inputs: parse_query_vars( href ),
+                node:   Nokogiri::HTML.fragment( link.to_html ).css( 'a' ).first
+            )
         end.compact
     end
 
@@ -138,6 +155,23 @@ class Link < Base
             h[name.to_s] = value.to_s
             h
         end
+    end
+
+    def marshal_dump
+        instance_variables.inject( {} ) do |h, iv|
+            if iv == :@node
+                h[iv] = instance_variable_get( iv ).to_s
+            else
+                h[iv] = instance_variable_get( iv )
+            end
+
+            h
+        end
+    end
+
+    def marshal_load( h )
+        self.node = Nokogiri::HTML( h.delete(:@node) ).css('a').first
+        h.each { |k, v| instance_variable_set( k, v ) }
     end
 
     def audit_id( injection_str = '', opts = {} )
