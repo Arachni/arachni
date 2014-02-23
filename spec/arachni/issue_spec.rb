@@ -332,6 +332,7 @@ describe Arachni::Issue do
                     variation:       false,
                     trusted:         true,
                     vector:          {
+                        method: :get,
                         type:   :form,
                         url:    'http://test.com/',
                         action: 'http://test.com/',
@@ -344,6 +345,7 @@ describe Arachni::Issue do
                 variations.each_with_index do |variation, i|
                     variation.should == {
                         vector:    {
+                            method:               :get,
                             inputs:               { 'stuff' => i.to_s },
                             affected_input_value: i.to_s,
                             seed:                 i.to_s
