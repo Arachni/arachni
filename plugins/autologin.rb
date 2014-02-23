@@ -84,6 +84,8 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
         if !body.match( @verifier )
             register_results( code: -2, msg: MSG_NO_MATCH )
             print_error MSG_NO_MATCH
+            print_debug @verifier.inspect
+            print_debug body
             @errored = true
             return
         end

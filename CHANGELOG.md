@@ -7,7 +7,9 @@
 - `Element::Form`
     - Updated to handle empty base-href values.
 - Plugins
-    - `autologin` -- Updated to handle stacked post-login redirects.
+    - `autologin`
+        - Updated to handle stacked post-login redirects.
+        - Added debugging information for failed logins.
 
 ## 0.4.6 _(January 1, 2014)_
 
