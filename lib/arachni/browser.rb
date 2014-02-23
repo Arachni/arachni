@@ -312,7 +312,8 @@ class Browser
     #
     # @return   [Browser]   `self`
     def goto( url, take_snapshot = true )
-        @last_url = url = normalize_url( url )
+        #@last_url = url = normalize_url( url )
+        @last_url = url
 
         ensure_open_window
 
@@ -945,6 +946,7 @@ class Browser
         # First clears the browser's cookies and then tricks it into accepting
         # the system cookies for its cookie-jar.
 
+        url = normalize_url( url )
         watir.cookies.clear
 
         url = "#{url}/set-cookies-#{request_token}"
