@@ -6,6 +6,10 @@ describe Arachni::Page::DOM::Transition do
     let(:running_transition) { Factory[:running_transition] }
     let(:completed_transition) { Factory[:completed_transition] }
 
+    after :each do
+        @browser.shutdown if @browser
+    end
+    
     describe '#initialize' do
         context 'when given options' do
             it 'uses them to configure the attributes' do
@@ -292,67 +296,52 @@ describe Arachni::Page::DOM::Transition do
     end
 
     describe '#replay' do
+        let(:url) do
+            Arachni::Utilities.normalize_url( web_server_url_for( :browser ) ) + 'trigger_events'
+        end
+
+        before :each do
+            @browser = Arachni::Browser.new
+            @browser.load( url ).start_capture
+        end
+
         context 'when the transition is replayable' do
             it 'replays it' do
-                url = Arachni::Utilities.normalize_url( web_server_url_for( :browser ) )
-
-                browser = Arachni::Browser.new
-                browser.load( "#{url}/trigger_events" ).start_capture
-
-                pages_should_not_have_form_with_input [browser.to_page], 'by-ajax'
+                pages_should_not_have_form_with_input [@browser.to_page], 'by-ajax'
 
                 transition = described_class.new( '<div id="my-div" onclick="addForm();">' => :onclick )
-                transition.complete.replay( browser ).should == transition
+                transition.complete.replay( @browser ).should == transition
 
-                pages_should_have_form_with_input [browser.to_page], 'by-ajax'
-
-                browser.shutdown
+                pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
             end
 
             it 'returns the new transition' do
                 url = Arachni::Utilities.normalize_url( web_server_url_for( :browser ) )
 
-                browser = Arachni::Browser.new
-                browser.load( "#{url}/trigger_events" ).start_capture
+                @browser.load( "#{url}/trigger_events" ).start_capture
 
-                pages_should_not_have_form_with_input [browser.to_page], 'by-ajax'
+                pages_should_not_have_form_with_input [@browser.to_page], 'by-ajax'
 
                 transition = described_class.new( '<div id="my-div">' => :onclick )
-                transition.complete.replay( browser ).should ==
+                transition.complete.replay( @browser ).should ==
                     described_class.new( '<div id="my-div" onclick="addForm();">' => :onclick )
 
-                pages_should_have_form_with_input [browser.to_page], 'by-ajax'
-
-                browser.shutdown
+                pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
             end
         end
 
         context 'when the transition could not be replayed' do
             it 'returns nil' do
-                url = Arachni::Utilities.normalize_url( web_server_url_for( :browser ) )
-
-                browser = Arachni::Browser.new
-                browser.load( "#{url}/trigger_events" ).start_capture
-
                 described_class.new( '<div id="my-diva">' => :onclick ).
-                    complete.replay( browser ).should be_nil
-
-                browser.shutdown
+                    complete.replay( @browser ).should be_nil
             end
         end
 
         context 'when the transition is not replayable' do
             it 'returns nil' do
-                url = Arachni::Utilities.normalize_url( web_server_url_for( :browser ) )
-
-                browser = Arachni::Browser.new
-                browser.load( "#{url}/trigger_events" ).start_capture
-
                 transition = described_class.new( '<div id="my-div">' => :load )
                 transition.replayable?.should be_false
-                transition.complete.replay( browser ).should be_nil
-
-                browser.shutdown
+                transition.complete.replay( @browser ).should be_nil
             end
         end
     end

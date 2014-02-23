@@ -4,15 +4,17 @@ describe Arachni::Element::Form::DOM do
     it_should_behave_like 'element_dom'
 
     before :each do
-        page    = Arachni::Page.from_url( "#{url}/fire_event/form/onsubmit" )
-        auditor = Auditor.new( page, Arachni::Framework.new )
+        @framework = Arachni::Framework.new
+        page       = Arachni::Page.from_url( "#{url}/fire_event/form/onsubmit" )
+        auditor    = Auditor.new( page, @framework )
 
         @form = page.forms.first
         @form.auditor = auditor
     end
 
     after :each do
-        Arachni::Framework.reset
+        @framework.clean_up
+        @framework.reset
     end
 
     subject { @form.dom }

@@ -4,15 +4,17 @@ describe Arachni::Element::Link::DOM do
     it_should_behave_like 'element_dom'
 
     before :each do
-        page    = Arachni::Page.from_url( url )
-        auditor = Auditor.new( page, Arachni::Framework.new )
+        @framework = Arachni::Framework.new
+        page       = Arachni::Page.from_url( url )
+        auditor    = Auditor.new( page, @framework )
 
         @link = page.links.first
         @link.auditor = auditor
     end
 
     after :each do
-        Arachni::Framework.reset
+        @framework.clean_up
+        @framework.reset
     end
 
     subject { @link.dom }
