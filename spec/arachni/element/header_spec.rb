@@ -1,41 +1,38 @@
 require 'spec_helper'
 
 describe Arachni::Element::Header do
-    it_should_behave_like 'auditable', url: web_server_url_for( :header ),
-                          single_input: true, supports_nulls: false
+    it_should_behave_like 'auditable', single_input: true, supports_nulls: false
 
-    before( :all ) do
-        @url = web_server_url_for( :header )
-
-        @inputs = { 'My-header' => 'header_value' }
-        @header = Arachni::Element::Header.new( url: @url, inputs: @inputs )
-    end
+    subject { described_class.new( url: url, inputs: inputs ) }
+    let(:inputs) { { 'input1' => 'value1' } }
+    let(:url) { utilities.normalize_url( web_server_url_for( :header ) ) }
+    let(:utilities) { Arachni::Utilities }
 
     it 'is be assigned to Arachni::Header for easy access' do
-        Arachni::Header.should == Arachni::Element::Header
+        Arachni::Header.should == described_class
     end
 
     it 'retains its assigned inputs' do
-        @header.inputs.should == @inputs
+        subject.inputs.should == inputs
     end
 
     describe '#simple' do
         it 'returns the inputs as is' do
-            @header.simple.should == @inputs
+            subject.simple.should == inputs
         end
     end
 
     describe '#mutations' do
         describe :param_flip do
             it 'creates a new header' do
-                @header.mutations( 'seed', param_flip: true ).last.
+                subject.mutations( 'seed', param_flip: true ).last.
                     inputs.keys.should == %w(seed)
             end
         end
 
         describe :format do
             it 'does not include NULLs' do
-                @header.mutations( 'seed' ).
+                subject.mutations( 'seed' ).
                     select { |m| m.affected_input_value.include? "\0" }.should be_empty
             end
         end
@@ -43,19 +40,19 @@ describe Arachni::Element::Header do
 
     describe '#name' do
         it 'returns the header name' do
-            @header.name.should == 'My-header'
+            subject.name.should == inputs.first.to_a.first
         end
     end
 
     describe '#value' do
         it 'returns the header value' do
-            @header.value.should == 'header_value'
+            subject.value.should == inputs.first.to_a.last
         end
     end
 
     describe '#type' do
         it 'is "header"' do
-            @header.type.should == :header
+            subject.type.should == :header
         end
     end
 

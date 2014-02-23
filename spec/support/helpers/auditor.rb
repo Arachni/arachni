@@ -1,4 +1,4 @@
-class Auditor < Arachni::Component::Base
+class Auditor < Arachni::Check::Base
     include Arachni::Check::Auditor
 
     attr_accessor :page

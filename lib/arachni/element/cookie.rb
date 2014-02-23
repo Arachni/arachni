@@ -14,7 +14,7 @@ module Arachni::Element
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Cookie < Base
-    include Capabilities::Auditable
+    include Capabilities::Analyzable
 
     # Default cookie values
     DEFAULT = {

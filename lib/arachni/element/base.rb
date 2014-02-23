@@ -28,6 +28,8 @@ class Base
     # @return   [Page]  Page this element belongs to.
     attr_accessor :page
 
+    attr_reader   :initialized_options
+
     def initialize( options )
         options = options.symbolize_keys( false )
 
@@ -35,7 +37,7 @@ class Base
             fail 'Needs :url or :action option.'
         end
 
-        @initialised_options = options.deep_clone
+        @initialized_options = options.deep_clone
 
         self.url = options[:url] || options[:action]
     end
@@ -82,7 +84,7 @@ class Base
     end
 
     def dup
-        self.class.new @initialised_options
+        self.class.new @initialized_options
     end
 
 end

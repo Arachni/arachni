@@ -5,7 +5,7 @@
 
 module Arachni
 module Element::Capabilities
-module Auditable::Analysis
+module Analyzable
 
 # Evaluates whether or not the injection of specific data affects the response
 # time of the web application.

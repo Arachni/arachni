@@ -8,7 +8,7 @@ require Arachni::Options.paths.lib + 'element/base'
 module Arachni::Element
 
 class Header < Base
-    include Capabilities::Auditable
+    include Capabilities::Analyzable
 
     def initialize( options )
         super( options )

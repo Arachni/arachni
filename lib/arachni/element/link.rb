@@ -8,7 +8,7 @@ require Arachni::Options.paths.lib + 'element/base'
 module Arachni::Element
 
 class Link < Base
-    include Capabilities::Auditable
+    include Capabilities::Analyzable
     include Capabilities::Refreshable
 
     # @param    [Hash]    options
@@ -64,8 +64,16 @@ class Link < Base
         uri.to_s
     end
 
+    def encode( *args )
+        self.class.encode( *args )
+    end
+
     def self.encode( str )
         URI.encode( str )
+    end
+
+    def decode( *args )
+        self.class.decode( *args )
     end
 
     def self.decode( str )

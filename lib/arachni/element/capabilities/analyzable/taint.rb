@@ -5,7 +5,7 @@
 
 module Arachni
 module Element::Capabilities
-module Auditable::Analysis
+module Analyzable
 
 # Looks for specific substrings or patterns in response bodies.
 #

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::Element::Capabilities::Auditable::Analysis::Differential do
+describe Arachni::Element::Capabilities::Analyzable::Differential do
 
     before :all do
         Arachni::Options.url = @url = web_server_url_for( :differential )
@@ -18,7 +18,7 @@ describe Arachni::Element::Capabilities::Auditable::Analysis::Differential do
 
             @params = { 'input' => 'blah' }
 
-            Arachni::Element::Capabilities::Auditable.reset
+            Arachni::Element::Capabilities::Analyzable.reset
             issues.clear
         end
 

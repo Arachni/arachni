@@ -720,6 +720,7 @@ class Framework
         Check::Auditor.reset
         ElementFilter.reset
         Element::Capabilities::Auditable.reset
+        Element::Capabilities::Analyzable.reset
         Check::Manager.reset
         Plugin::Manager.reset
         Report::Manager.reset

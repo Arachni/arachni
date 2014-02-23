@@ -5,7 +5,7 @@
 
 module Arachni
 module Element::Capabilities
-module Auditable::Analysis
+module Analyzable
 
 # Performs boolean injection and behavioral analysis (using differential analysis
 # techniques based on {Support::Signature} comparisons) in order to determine

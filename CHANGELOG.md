@@ -14,16 +14,21 @@
     - `Capabilities::Auditable`
         - Removed `#use_anonymous_auditor`
         - `#auditable` => `#inputs`
-        - `#orig` => `#original`
+        - `#orig` => `#default_inputs`
         - `#opts` => `#audit_options`
         - `#audit` - Callback now get passed the HTTP response and element mutation
             instead of response, audit options and mutation -- options can now be
             accessed via the element's `#audit_options` attribute.
-        - Moved analysis techniques under the `Analysis` namespace.
-            - `Timeout`
-                - General refactoring and code cleanup.
-                - Updated the algorithm to ensure server responsiveness before each phase.
-            - `RDiff` => `Differential`
+        - Added `DOM` -- To handle DOM submission/auditing of elements.
+        - Split into the following `Capabilities`:
+            - `Analyzable`
+                - `Timeout`
+                    - General refactoring and code cleanup.
+                    - Updated the algorithm to ensure server responsiveness before each phase.
+                - `RDiff` => `Differential`
+                - `Taint`
+            - `Submitable`
+            - `Inputable`
 - `RPC::Server`
     - `Dispatcher`
         - `#dispatch` -- Returns `false` when the pool is empty as a signal to check

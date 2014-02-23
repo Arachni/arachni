@@ -41,10 +41,10 @@ module Auditor
     end
 
     def self.has_timeout_candidates?
-        Element::Capabilities::Auditable.has_timeout_candidates?
+        Element::Capabilities::Analyzable.has_timeout_candidates?
     end
     def self.timeout_audit_run
-        Element::Capabilities::Auditable.timeout_audit_run
+        Element::Capabilities::Analyzable.timeout_audit_run
     end
 
     # @param    [#to_s]  id  Identifier of the object to be marked as audited.

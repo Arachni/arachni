@@ -135,6 +135,10 @@ class Page
         @element_audit_whitelist   = Set.new( @element_audit_whitelist )
     end
 
+    def performer
+        request.performer
+    end
+
     # @param    [Array<Element::Capabilities::Auditable, Integer>]    list
     #   Audit whitelist based on {Element::Capabilities::Auditable elements} or
     #   {Element::Capabilities::Auditable#audit_scope_id}s.

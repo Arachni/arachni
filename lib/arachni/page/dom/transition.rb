@@ -269,11 +269,15 @@ class Transition
         hash == other.hash
     end
 
+    def self.valid_element_attributes_for( tagname )
+        Watir.tag_to_class[tagname].attribute_list
+    end
+
     private
 
     def valid_element_attributes
         @valid_element_attributes ||=
-            Set.new( Watir.tag_to_class[element_tag_name.to_sym].attribute_list )
+            Set.new( self.class.valid_element_attributes_for( element_tag_name.to_sym ) )
     end
 
 end

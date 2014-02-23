@@ -8,23 +8,21 @@ require Arachni::Options.paths.lib + 'element/base'
 module Arachni::Element
 
 class Form < Base
-    include Capabilities::Auditable
+    include Capabilities::Analyzable
     include Capabilities::Refreshable
 
-    #
+    require_relative 'form/dom'
+
     # {Form} error namespace.
     #
     # All {Form} errors inherit from and live under it.
     #
     # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-    #
     class Error < Arachni::Error
 
-        #
         # Raised when a specified form field could not be found/does not exist.
         #
         # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-        #
         class FieldNotFound < Error
         end
     end
@@ -33,13 +31,16 @@ class Form < Base
     SAMPLE_VALUES   = '__sample_values__'
 
     # @return [String] the name of the input name that holds the nonce
-    attr_reader   :nonce_name
+    attr_reader     :nonce_name
 
     # @return   [String, nil]   Name of the form, if it has one.
-    attr_accessor :name
+    attr_accessor   :name
 
     # @return [Nokogiri::XML::Element]
-    attr_accessor :node
+    attr_accessor   :node
+
+    # @return   [DOM]
+    attr_reader     :dom
 
     # @param    [Hash]    options
     # @option   options [String]    :name
@@ -87,6 +88,8 @@ class Form < Base
             end
 
         @default_inputs = self.inputs.dup.freeze
+
+        @dom = DOM.new( self )
     end
 
     def action=( url )
@@ -122,7 +125,7 @@ class Form < Base
     # @return   [Hash]
     #   A simple representation of self including attributes and inputs.
     def simple
-        @initialised_options.merge( url: url, action: action, inputs: inputs )
+        @initialized_options.merge( url: url, action: action, inputs: inputs )
     end
 
     # @return   [Bool]
@@ -415,7 +418,8 @@ class Form < Base
                 elem_attrs = attributes_to_hash( elem.attributes )
                 elem_attrs[:type] = elem_attrs[:type].to_sym if elem_attrs[:type]
 
-                next if !(name = elem_attrs.delete( :name ))
+                name = elem_attrs[:name] || elem_attrs[:id]
+                next if !name
 
                 # Handle the easy stuff first...
                 if elem.name != 'select'

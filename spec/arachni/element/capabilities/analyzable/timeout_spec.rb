@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::Element::Capabilities::Auditable::Analysis::Timeout do
+describe Arachni::Element::Capabilities::Analyzable::Timeout do
 
     before :all do
         Arachni::Options.url = @url = web_server_url_for( :timeout )
@@ -22,7 +22,7 @@ describe Arachni::Element::Capabilities::Auditable::Analysis::Timeout do
 
         @run = proc do
             Arachni::HTTP::Client.run
-            Arachni::Element::Capabilities::Auditable.timeout_audit_run
+            Arachni::Element::Capabilities::Analyzable.timeout_audit_run
         end
     end
 
