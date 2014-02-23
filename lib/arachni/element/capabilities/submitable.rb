@@ -60,7 +60,6 @@ module Capabilities::Submitable
     end
 
     # @return  [String] String uniquely identifying self.
-    # @abstract
     def id
         "#{self.action}:#{self.method}:#{self.inputs}"
     end
@@ -96,6 +95,7 @@ module Capabilities::Submitable
     # @see #submit
     # @abstract
     def http_request( opts, &block )
+        fail NotImplementedError
     end
 
     # @return   [Arachni::HTTP]

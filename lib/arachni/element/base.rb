@@ -49,7 +49,6 @@ class Base
     end
 
     # @return  [String] String uniquely identifying self.
-    # @abstract
     def id
         "#{action}:#{method}:#{inputs}"
     end

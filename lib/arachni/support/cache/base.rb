@@ -169,6 +169,7 @@ class Base
     # @abstract
     #
     def prune
+        fail NotImplementedError
     end
 
 end

@@ -80,12 +80,14 @@ class DOM
     #
     # @abstract
     def locate
+        fail NotImplementedError
     end
 
     # Triggers the event on the subject {#element}.
     #
     # @abstract
     def trigger
+        fail NotImplementedError
     end
 
     private
