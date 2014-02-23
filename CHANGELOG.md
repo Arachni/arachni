@@ -2,6 +2,8 @@
 
 ## _Under development_
 
+- `Spider`
+    - Fixed mixed up status messages upon out-of-scope redirections.
 - `HTTP`
     - `disable_ssl_host_verification` set to `true`.
 - `Element::Form`

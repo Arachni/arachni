@@ -417,8 +417,20 @@ class Spider
             if res.redirection? && res.location
                 @redirects << res.request.url
                 location = to_absolute( res.location, res.request.url )
-                if hit_redirect_limit? || skip?( location )
-                    print_info "Redirect limit reached, skipping: #{location}"
+
+                skipped     = false
+                redir_limit = false
+
+                if (redir_limit = hit_redirect_limit?) || (skipped = skip?( location ))
+
+                    if skipped
+                        print_info "Ignoring redirection due to exclusion criteria: #{location}"
+                    end
+
+                    if redir_limit
+                        print_info "Redirect limit reached, skipping: #{location}"
+                    end
+
                     decrease_pending
                     next
                 end
