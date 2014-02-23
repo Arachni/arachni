@@ -12,7 +12,7 @@
     - Cleaned up initializers.
         - Now passed a single Hash argument with configuration options.
     - `Form`
-        - Added `#dom` pointing to a `Form::DOM` object handling browser-based
+        - Added `#dom` pointing to a `Auditable::DOM` object handling browser-based
             form submissions/audits.
     - `Capabilities::Auditable`
         - Removed `#use_anonymous_auditor`
