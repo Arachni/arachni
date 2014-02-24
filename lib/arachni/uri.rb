@@ -145,6 +145,8 @@ class URI
     #
     def self.ruby_parse( url )
         return url if url.to_s.empty? || url.is_a?( ::URI )
+        return if url.start_with? 'javascript:'
+
         CACHE[__method__][url] ||= begin
             ::URI::Generic.build( cheap_parse( url ) )
         rescue
@@ -187,8 +189,11 @@ class URI
     #
     def self.cheap_parse( url )
         return if !url || url.empty?
+        return if url.start_with? 'javascript:'
 
         cache = CACHE[__method__]
+
+        url = url.to_s.dup
 
         # Remove the fragment if there is one.
         url   = url.split( '#', 2 )[0...-1].join if url.include?( '#' )
@@ -465,14 +470,18 @@ class URI
                               ::URI::Generic.build( url )
 
                           when Arachni::URI
-                              self.parsed_url = url.parsed_url.dup
+                              self.parsed_url = url.parsed_url
 
                           else
                               to_string = url.to_s rescue ''
-                              msg = "Argument must either be String, URI or Hash"
+                              msg = 'Argument must either be String, URI or Hash'
                               msg << " -- #{url.class.name} '#{to_string}' passed."
                               fail TypeError.new( msg )
                       end
+
+        # We probably got it from the cache, dup it to avoid corrupting the cache
+        # entries.
+        @parsed_url = @parsed_url.dup
 
         fail Error, 'Failed to parse URL.' if !@parsed_url
     end
@@ -611,10 +620,19 @@ class URI
         scheme == 'mailto'
     end
 
+    def query=( q )
+        return if q.to_s.empty?
+        @parsed_url.query = q
+    end
+
     # @return   [String]    URL
     def to_s
-        self.query = nil if query.to_s.empty?
         @parsed_url.to_s
+    end
+
+    def dup
+        return if to_s.empty?
+        self.class.new( to_s )
     end
 
     def _dump( _ )
