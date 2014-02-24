@@ -80,16 +80,16 @@ class Link < Base
         self.class.encode( *args )
     end
 
-    def self.encode( str )
-        URI.encode( str )
+    def self.encode( *args )
+        URI.encode( *args )
     end
 
     def decode( *args )
         self.class.decode( *args )
     end
 
-    def self.decode( str )
-        URI.decode( str )
+    def self.decode( *args )
+        URI.decode( *args )
     end
 
     #
