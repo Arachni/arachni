@@ -97,6 +97,10 @@ class DOM
         inputs.hash
     end
 
+    def ==( other )
+        hash == other.hash
+    end
+
     private
 
     def prepare_browser( browser, options )

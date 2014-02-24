@@ -150,4 +150,14 @@ shared_examples_for 'element_dom' do
             subject.auditor.should be_kind_of Arachni::Check::Auditor
         end
     end
+
+    describe '#dup' do
+        it 'returns a copy' do
+            dup = subject.dup
+            dup.should == subject
+
+            dup[:stuff] = 'blah'
+            dup.should_not == subject
+        end
+    end
 end
