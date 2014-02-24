@@ -9,13 +9,19 @@ module Arachni
 module Element::Capabilities
 module Auditable
 
+# Provides access to DOM operations for {Element elements}.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class DOM
     include Auditable::Output
     include Auditable
 
     extend Forwardable
 
+    # @return   [Element::Base]
     attr_reader   :parent
+
+    # @return   [Browser]
     attr_accessor :browser
 
     # @!method with_browser_cluster( &block )
@@ -44,6 +50,7 @@ class DOM
         @audit_options = {}
     end
 
+    # @return   [Watir::HTMLElement]
     def element
         @element ||= locate
     end

@@ -6,6 +6,8 @@
 module Arachni::Element
 class Link
 
+# Provides access to DOM operations for {Link links}.
+#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class DOM < Capabilities::Auditable::DOM
 
