@@ -5,18 +5,19 @@ describe 'Arachni::RPC::Server::Instance' do
     before( :all ) do
         @opts     = Arachni::Options.instance
         @utils    = Arachni::Utilities
-        @instance = instance_spawn
+        @shared_instance = instance_spawn
     end
 
     after :each do
+        @instance.service.shutdown if @instance
         dispatcher_killall
     end
 
     it 'supports UNIX sockets' do
         socket = '/tmp/arachni-instance'
-        instance = instance_spawn( socket: socket )
-        instance.framework.multi_self_url.should == socket
-        instance.service.alive?.should be_true
+        @instance = instance_spawn( socket: socket )
+        @instance.framework.multi_self_url.should == socket
+        @instance.service.alive?.should be_true
     end
 
     describe '#service' do
@@ -24,14 +25,14 @@ describe 'Arachni::RPC::Server::Instance' do
             context 'when no argument has been provided' do
                 it 'returns all logged errors' do
                     test = 'Test'
-                    @instance.service.error_test test
-                    @instance.service.errors.last.should end_with test
+                    @shared_instance.service.error_test test
+                    @shared_instance.service.errors.last.should end_with test
                 end
             end
             context 'when a start line-range has been provided' do
                 it 'returns all logged errors after that line' do
-                    initial_errors = @instance.service.errors
-                    errors = @instance.service.errors( 10 )
+                    initial_errors = @shared_instance.service.errors
+                    errors = @shared_instance.service.errors( 10 )
 
                     initial_errors[10..-1].should == errors
                 end
@@ -40,50 +41,50 @@ describe 'Arachni::RPC::Server::Instance' do
 
         describe '#error_logfile' do
             it 'returns the path to the error logfile' do
-                errors = IO.read( @instance.service.error_logfile ).split( "\n" )
-                errors.should == @instance.service.errors
+                errors = IO.read( @shared_instance.service.error_logfile ).split( "\n" )
+                errors.should == @shared_instance.service.errors
             end
         end
         describe '#alive?' do
             it 'returns true' do
-                @instance.service.alive?.should == true
+                @shared_instance.service.alive?.should == true
             end
         end
 
         describe '#paused?' do
             context 'when not paused' do
                 it 'returns false' do
-                    @instance.framework.paused?.should be_false
+                    @shared_instance.framework.paused?.should be_false
                 end
             end
             context 'when paused' do
                 it 'returns true' do
-                    @instance.framework.pause
-                    @instance.framework.paused?.should be_true
+                    @shared_instance.framework.pause
+                    @shared_instance.framework.paused?.should be_true
                 end
             end
         end
         describe '#resume' do
             it 'resumes the scan' do
-                @instance.framework.pause
-                @instance.framework.paused?.should be_true
-                @instance.framework.resume.should be_true
-                @instance.framework.paused?.should be_false
+                @shared_instance.framework.pause
+                @shared_instance.framework.paused?.should be_true
+                @shared_instance.framework.resume.should be_true
+                @shared_instance.framework.paused?.should be_false
             end
         end
 
         [:list_platforms, :list_checks, :list_plugins, :list_reports, :busy?].each do |m|
             describe "##{m}" do
                 it "delegates to Framework##{m}" do
-                    @instance.service.send(m).should == @instance.framework.send(m)
+                    @shared_instance.service.send(m).should == @shared_instance.framework.send(m)
                 end
             end
         end
 
         describe '#report' do
             it 'delegates to Framework#report' do
-                instance_report  = @instance.service.report
-                framework_report = @instance.framework.report
+                instance_report  = @shared_instance.service.report
+                framework_report = @shared_instance.framework.report
 
                 [:start_datetime, :finish_datetime, :delta_time].each do |k|
                     instance_report.delete k
@@ -97,38 +98,38 @@ describe 'Arachni::RPC::Server::Instance' do
         describe '#abort_and_report' do
             describe 'nil' do
                 it 'cleans-up and returns the report as a Hash' do
-                    @instance.service.abort_and_report.should == @instance.framework.report
+                    @shared_instance.service.abort_and_report.should == @shared_instance.framework.report
                 end
             end
 
             describe :auditstore do
                 it 'delegates to Framework#auditstore' do
-                    @instance.service.abort_and_report( :auditstore ).should == @instance.framework.auditstore
+                    @shared_instance.service.abort_and_report( :auditstore ).should == @shared_instance.framework.auditstore
                 end
             end
         end
 
         describe '#abort_and_report_as' do
             it 'cleans-up and delegate to #report_as' do
-                JSON.load( @instance.service.abort_and_report_as( :json ) ).should include 'issues'
+                JSON.load( @shared_instance.service.abort_and_report_as( :json ) ).should include 'issues'
             end
         end
 
         describe '#report_as' do
             it 'delegates to Framework#report_as' do
-                JSON.load( @instance.service.report_as( :json ) ).should include 'issues'
+                JSON.load( @shared_instance.service.report_as( :json ) ).should include 'issues'
             end
         end
 
         describe '#status' do
             it 'delegate to Framework#status' do
-                @instance.service.status.should == @instance.framework.status
+                @shared_instance.service.status.should == @shared_instance.framework.status
             end
         end
 
         describe '#scan' do
             it 'configures and starts a scan' do
-                instance = instance_spawn
+                @instance = instance = instance_spawn
 
                 slave = instance_spawn
 
@@ -164,8 +165,9 @@ describe 'Arachni::RPC::Server::Instance' do
 
             context 'with invalid :platforms' do
                 it 'raises ArgumentError' do
+                    @instance = instance_spawn
                     expect {
-                        instance_spawn.service.scan(
+                        @instance.service.scan(
                             url:         web_server_url_for( :framework ),
                             platforms:   [ :stuff ]
                         )
@@ -175,7 +177,7 @@ describe 'Arachni::RPC::Server::Instance' do
 
             context 'when the options Hash uses Strings instead of Symbols' do
                 it 'makes no difference' do
-                    instance = instance_spawn
+                    @instance = instance = instance_spawn
                     slave    = instance_spawn
 
                     instance.service.busy?.should  == instance.framework.busy?
@@ -216,7 +218,7 @@ describe 'Arachni::RPC::Server::Instance' do
                         context 'with OptionGroup::Dispatcher#grid_mode set to' do
                             context :aggregate do
                                 it 'requests slaves from grid members with unique Pipe-IDs' do
-                                    instance = instance_grid_spawn
+                                    @instance = instance = instance_grid_spawn
 
                                     instance.service.scan(
                                         url:        web_server_url_for( :framework ),
@@ -246,7 +248,7 @@ describe 'Arachni::RPC::Server::Instance' do
                             end
                             context :balance do
                                 it 'requests its slaves from it' do
-                                    instance = instance_grid_spawn
+                                    @instance = instance = instance_grid_spawn
 
                                     instance.service.scan(
                                         url:        web_server_url_for( :framework ),
@@ -278,8 +280,9 @@ describe 'Arachni::RPC::Server::Instance' do
 
                             context 'unknown option' do
                                 it 'raises an exception' do
+                                    @instance = instance_grid_spawn
                                     expect {
-                                        instance_grid_spawn.service.scan(
+                                        @instance.service.scan(
                                             url:       web_server_url_for( :framework ),
                                             audit:     { elements: [:links, :forms] },
                                             checks:    :test,
@@ -295,7 +298,7 @@ describe 'Arachni::RPC::Server::Instance' do
                         context 'with :grid set to' do
                             context true do
                                 it 'it a shorthand for grid_mode: :balance' do
-                                    instance = instance_grid_spawn
+                                    @instance = instance = instance_grid_spawn
 
                                     instance.service.scan(
                                         url:    web_server_url_for( :framework ),
@@ -328,7 +331,7 @@ describe 'Arachni::RPC::Server::Instance' do
 
                         context 'when it is less than 1' do
                             it 'raises an exception' do
-                                instance = instance_grid_spawn
+                                @instance = instance = instance_grid_spawn
 
                                 raised = false
                                 begin
@@ -346,7 +349,7 @@ describe 'Arachni::RPC::Server::Instance' do
 
                         context 'when OptionGroup::Scope#restrict_to_paths is set' do
                             it 'raises an exception' do
-                                instance = instance_grid_spawn
+                                @instance = instance = instance_grid_spawn
                                 url      = web_server_url_for( :framework )
 
                                 raised = false
@@ -370,7 +373,7 @@ describe 'Arachni::RPC::Server::Instance' do
 
                 context 'when it does not have a Dispatcher' do
                     it 'uses UNIX sockets to communicate with the slaves' do
-                        instance = instance_spawn
+                        @instance = instance = instance_spawn
                         instance.service.scan(
                             url:    web_server_url_for( :framework ),
                             audit:  { elements: [:links, :forms] },
@@ -389,7 +392,7 @@ describe 'Arachni::RPC::Server::Instance' do
                     end
 
                     it 'spawns a number of slaves' do
-                        instance = instance_spawn
+                        @instance = instance = instance_spawn
 
                         instance.service.scan(
                             url:    web_server_url_for( :framework ),
@@ -415,7 +418,7 @@ describe 'Arachni::RPC::Server::Instance' do
 
                 context 'when OptionGroup::HTTP#request_concurrency has been set' do
                     it 'should be divided by the amount of spawns' do
-                        instance = instance_spawn
+                        @instance = instance = instance_spawn
 
                         http_request_concurrency = 100
                         spawns                   = 4
@@ -448,6 +451,9 @@ describe 'Arachni::RPC::Server::Instance' do
                     spawns: 1
                 )
                 sleep 1 while @progress_instance.service.busy?
+            end
+            after :all do
+                @progress_instance.service.shutdown
             end
 
             it 'returns progress information' do
@@ -575,27 +581,27 @@ describe 'Arachni::RPC::Server::Instance' do
 
     describe '#framework' do
         it 'provides access to the Framework' do
-            @instance.framework.busy?.should be_false
+            @shared_instance.framework.busy?.should be_false
         end
     end
 
     describe '#opts' do
         it 'provides access to the Options' do
             url = 'http://blah.com'
-            @instance.opts.url = url
-            @instance.opts.url.to_s.should == @utils.normalize_url( url )
+            @shared_instance.opts.url = url
+            @shared_instance.opts.url.to_s.should == @utils.normalize_url( url )
         end
     end
 
     describe '#checks' do
         it 'provides access to the checks manager' do
-            @instance.checks.available.sort.should == %w(test test2 test3).sort
+            @shared_instance.checks.available.sort.should == %w(test test2 test3).sort
         end
     end
 
     describe '#plugins' do
         it 'provides access to the plugin manager' do
-            @instance.plugins.available.sort.should == %w(wait bad distributable
+            @shared_instance.plugins.available.sort.should == %w(wait bad distributable
                 loop default with_options).sort
         end
     end
