@@ -390,6 +390,10 @@ class Form < Base
         end
     end
 
+    def hash
+        "#{action}:#{method}:#{inputs.hash}}:#{@dom.hash}".hash
+    end
+
     protected
 
     def requires_password=( bool )

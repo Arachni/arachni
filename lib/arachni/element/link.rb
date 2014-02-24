@@ -63,17 +63,22 @@ class Link < Base
 
     def action=( url )
         v = super( url )
-        @query_vars   = parse_url_vars( v )
+        @query_vars = parse_url_vars( v )
         @audit_id_url = v.split( '?' ).first.to_s
-        v
     end
 
     # @return   [String]
     #   Absolute URL with a merged version of {#action} and {#inputs} as a query.
     def to_s
-        uri = uri_parse( self.action )
-        uri.query = @query_vars.merge( self.inputs ).map { |k, v| "#{k}=#{v}" }.join( '&' )
+        uri = uri_parse( self.action ).dup
+        uri.query = @query_vars.merge( self.inputs ).
+            map { |k, v| "#{encode_query_params(k)}=#{encode_query_params(v)}" }.
+            join( '&' )
         uri.to_s
+    end
+
+    def encode_query_params( param )
+        encode( encode( param ), '=' )
     end
 
     def encode( *args )
@@ -187,7 +192,12 @@ class Link < Base
         str
     end
 
+    def hash
+        "#{action}:#{method}:#{inputs.hash}}:#{@dom.hash}".hash
+    end
+
     private
+
     def http_request( opts, &block )
         self.method.downcase.to_s != 'get' ?
             http.post( self.action, opts, &block ) : http.get( self.action, opts, &block )

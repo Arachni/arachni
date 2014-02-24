@@ -18,13 +18,6 @@ module Capabilities::Submitable
         Platform::Manager[@action]
     end
 
-    # @see #url
-    def url=( url )
-        super( url )
-        rehash
-        self.url
-    end
-
     # Should represent a method in {Arachni::Check::HTTP}.
     #
     # Ex. get, post, cookie, header
@@ -40,8 +33,6 @@ module Capabilities::Submitable
     # @see #method
     def method=( method )
         @method = method.to_s.downcase.to_sym
-        rehash
-        self.method
     end
 
     # @note Ex. 'href' for links, 'action' for forms, etc.
@@ -55,8 +46,6 @@ module Capabilities::Submitable
     # @see #action
     def action=( url )
         @action = self.url ? to_absolute( url, self.url ) : normalize_url( url )
-        rehash
-        self.action
     end
 
     # @return  [String] String uniquely identifying self.
@@ -109,7 +98,7 @@ module Capabilities::Submitable
     alias :eql? :==
 
     def hash
-        @hash ||= rehash
+        "#{action}:#{method}:#{inputs}}".hash
     end
 
     def dup
@@ -124,12 +113,6 @@ module Capabilities::Submitable
             action: action,
             method: method
         )
-    end
-
-    private
-
-    def rehash
-        @hash = "#{action}:#{method}:#{inputs}}".hash
     end
 
 end

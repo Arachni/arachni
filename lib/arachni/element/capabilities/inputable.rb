@@ -31,8 +31,6 @@ module Capabilities::Inputable
     # @see #inputs
     def inputs=( hash )
         @inputs = (hash || {}).inject({}) { |h, (k, v)| h[k.to_s] = v.to_s.freeze; h}
-        rehash
-        self.inputs
     end
 
     # Checks whether or not the given inputs match the inputs ones.
