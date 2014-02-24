@@ -34,7 +34,7 @@ class DOM < Capabilities::Auditable::DOM
         super
 
         if node
-            @fragment      = valid_attributes[:href].split( '#', 2 ).last
+            @fragment = valid_attributes[:href].split( '#', 2 ).last
             @fragment_path, @fragment_query = @fragment.split( '?', 2 )
         end
 
@@ -55,7 +55,12 @@ class DOM < Capabilities::Auditable::DOM
     # @return   [String]    URL including the DOM {#inputs}.
     def to_s
         "#{parent}##{fragment_path}?" << inputs.
-            map { |k, v| "#{parent.encode(k)}=#{parent.encode(v)}" }.join( '&' )
+            map { |k, v| "#{parent.encode_query_params(k)}=#{parent.encode_query_params(v)}" }.
+            join( '&' )
+    end
+
+    def hash
+        to_s.hash
     end
 
     private

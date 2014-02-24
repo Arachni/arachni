@@ -36,6 +36,9 @@ class DOM
     # @!method type
     def_delegator :parent,  :type
 
+    # @!method ==
+    def_delegator :parent,  :==
+
     def initialize( parent )
         @parent        = parent
         @audit_options = {}
@@ -88,6 +91,10 @@ class DOM
     # @abstract
     def trigger
         fail NotImplementedError
+    end
+
+    def hash
+        inputs.hash
     end
 
     private
