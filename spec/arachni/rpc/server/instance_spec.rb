@@ -8,13 +8,16 @@ describe 'Arachni::RPC::Server::Instance' do
         @shared_instance = instance_spawn
     end
 
+    before :each do
+        @instance = nil
+    end
     after :each do
         @instance.service.shutdown if @instance
         dispatcher_killall
     end
 
     it 'supports UNIX sockets' do
-        socket = '/tmp/arachni-instance'
+        socket = "/tmp/arachni-instance-#{@utils.generate_token}"
         @instance = instance_spawn( socket: socket )
         @instance.framework.multi_self_url.should == socket
         @instance.service.alive?.should be_true
