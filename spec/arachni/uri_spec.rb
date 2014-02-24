@@ -148,6 +148,10 @@ describe Arachni::URI do
             parsed_uri.path.should == path
             parsed_uri.query.should == query
         end
+
+        it 'ignores javascript: URLs' do
+            @uri.parse( 'javascript:stuff()' ).should be_nil
+        end
     end
 
     describe '.ruby_parse' do
@@ -155,6 +159,10 @@ describe Arachni::URI do
             @urls.each do |url|
                 @uri.ruby_parse( url ).to_s.should == @ref_normalizer.call( url )
             end
+        end
+
+        it 'ignores javascript: URLs' do
+            @uri.ruby_parse( 'javascript:stuff()' ).should be_nil
         end
     end
 
@@ -191,6 +199,10 @@ describe Arachni::URI do
 
             expect { h[:stuff] = 0 }.to raise_error
             expect { h[:path] << '/' }.to raise_error
+        end
+
+        it 'ignores javascript: URLs' do
+            @uri.cheap_parse( 'javascript:stuff()' ).should be_nil
         end
     end
 
