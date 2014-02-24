@@ -670,8 +670,8 @@ class Browser
         page.cookies        |= cookies.dup
 
         page.dom.url                 = watir.url
-        page.dom.execution_flow_sink = @javascript.flush_execution_flow_sink
-        page.dom.data_flow_sink      = @javascript.flush_data_flow_sink
+        page.dom.execution_flow_sink = @javascript.execution_flow_sink.dup
+        page.dom.data_flow_sink      = @javascript.data_flow_sink.dup
         page.dom.transitions         = @transitions.dup
         page.dom.skip_states         = @skip_states.dup
 
