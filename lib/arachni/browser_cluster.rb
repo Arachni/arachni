@@ -80,6 +80,8 @@ class BrowserCluster
     #   Worker pool.
     attr_reader :workers
 
+    attr_reader :consumed_pids
+
     # @param    [Hash]  options
     # @option   options [Integer]   :pool_size (5)
     #   Amount of {Worker browsers} to add to the pool.
@@ -126,6 +128,7 @@ class BrowserCluster
         # Javascript token to share across all workers.
         @javascript_token = Utilities.generate_token
 
+        @consumed_pids = []
         initialize_workers
     end
 
@@ -365,7 +368,7 @@ class BrowserCluster
             @workers << Worker.new(
                 javascript_token: @javascript_token,
                 master:           self
-            )
+            ).tap { |b| @consumed_pids << b.phantomjs_pid }
         end
 
         print_status "Initialization complete with #{@workers.size} browsers in the pool."

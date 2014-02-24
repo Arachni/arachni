@@ -130,6 +130,9 @@ class Browser
     # @see #skip_state?
     attr_reader :skip_states
 
+    # @return   [Integer]
+    attr_reader :phantomjs_pid
+
     # @return   [Bool]
     #   `true` if `phantomjs` is in the OS PATH, `false` otherwise.
     def self.has_executable?
