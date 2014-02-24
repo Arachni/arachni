@@ -3,14 +3,17 @@ require 'spec_helper'
 describe Arachni::Element::Cookie do
     it_should_behave_like 'auditable', single_input: true
 
+    def auditable_extract_parameters( resource )
+        YAML.load( resource.body )
+    end
+
     let(:url) { utilities.normalize_url( web_server_url_for( :cookie ) ) }
     let(:http) { Arachni::HTTP::Client }
     let(:utilities) { Arachni::Utilities }
-
     let(:inputs) do
         { 'mycookie' => 'myvalue' }
     end
-    subject { described_class.new( url: url, inputs: inputs ) }
+    subject { described_class.new( url: "#{url}/submit", inputs: inputs ) }
 
     it 'should be assigned to Arachni::Cookie for easy access' do
         Arachni::Cookie.should == described_class

@@ -4,24 +4,22 @@ describe Arachni::Element::Form do
     it_should_behave_like 'refreshable'
     it_should_behave_like 'auditable'
 
+    def auditable_extract_parameters( resource )
+        YAML.load( resource.body )
+    end
+
+    subject { described_class.new( options ) }
     let(:url) { utilities.normalize_url( web_server_url_for( :form ) ) }
     let(:http) { Arachni::HTTP::Client }
     let(:utilities) { Arachni::Utilities }
     let(:options) do
         {
             name:   'login-form',
-            url:    url,
+            url:    "#{url}submit",
             inputs: {
-                'user'          => 'joe',
-                'hidden_field'  => {
-                    type:  :hidden,
-                    value: 'hidden-value'
-                },
-                'password'      => {
-                    id:    'my-password',
-                    type:  :password,
-                    value: 's3cr3t'
-                }
+                'user'         => 'joe',
+                'hidden_field' => 'hidden-value',
+                'password'     => 's3cr3t'
             }
         }
     end
@@ -43,8 +41,7 @@ describe Arachni::Element::Form do
         end
         context 'when passed options without inputs or any other expected option' do
             it 'uses the contents of the opts hash as inputs inputs' do
-                e = described_class.new( options )
-                e.inputs.should eq( 'user' => 'joe', 'password' => 's3cr3t', 'hidden_field' => 'hidden-value' )
+                subject.inputs.should eq( 'user' => 'joe', 'password' => 's3cr3t', 'hidden_field' => 'hidden-value' )
             end
         end
     end
@@ -52,8 +49,19 @@ describe Arachni::Element::Form do
     describe '#details_for' do
         context 'when input details are given during initialization' do
             it 'returns that data ' do
-                described_class.new( options ).
-                    details_for( :password ).should == options[:inputs]['password']
+                options = {
+                    url:    url,
+                    inputs: {
+                        'password' => {
+                            id:    'my-password',
+                            type:  :password,
+                            value: 's3cr3t'
+                        }
+                    }
+                }
+
+                described_class.new( options ).details_for( :password ).should ==
+                    options[:inputs]['password']
             end
         end
         describe 'when no data is available' do
@@ -94,6 +102,23 @@ describe Arachni::Element::Form do
     
     describe '#field_type_for' do
         it 'returns a field\'s type' do
+            options =         {
+                name:   'login-form',
+                url:    "#{url}submit",
+                inputs: {
+                    'user'          => 'joe',
+                    'hidden_field'  => {
+                        type:  :hidden,
+                        value: 'hidden-value'
+                    },
+                    'password'      => {
+                        id:    'my-password',
+                        type:  :password,
+                        value: 's3cr3t'
+                    }
+                }
+            }
+
             e = described_class.new( options )
             e.field_type_for( 'password' ).should     == :password
             e.field_type_for( 'hidden_field' ).should == :hidden

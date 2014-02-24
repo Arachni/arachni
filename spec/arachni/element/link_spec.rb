@@ -4,7 +4,11 @@ describe Arachni::Element::Link do
     it_should_behave_like 'refreshable'
     it_should_behave_like 'auditable'
 
-    subject { described_class.new( url: url, inputs: inputs ) }
+    def auditable_extract_parameters( resource )
+        YAML.load( resource.body )
+    end
+
+    subject { described_class.new( url: "#{url}submit", inputs: inputs ) }
     let(:inputs) { { 'name1' => 'value1', 'name2' => 'value2' } }
     let(:url) { utilities.normalize_url( web_server_url_for( :link ) ) }
     let(:utilities) { Arachni::Utilities }

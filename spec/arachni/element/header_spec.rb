@@ -3,7 +3,11 @@ require 'spec_helper'
 describe Arachni::Element::Header do
     it_should_behave_like 'auditable', single_input: true, supports_nulls: false
 
-    subject { described_class.new( url: url, inputs: inputs ) }
+    def auditable_extract_parameters( resource )
+        YAML.load( resource.body )
+    end
+
+    subject { described_class.new( url: "#{url}/submit", inputs: inputs ) }
     let(:inputs) { { 'input1' => 'value1' } }
     let(:url) { utilities.normalize_url( web_server_url_for( :header ) ) }
     let(:utilities) { Arachni::Utilities }
