@@ -3,13 +3,17 @@ require 'spec_helper'
 describe Arachni::Element::Link::DOM do
     it_should_behave_like 'element_dom'
 
+    def auditable_extract_parameters( page )
+        { 'param' => page.document.css('#container').text }
+    end
+
     before :each do
         @framework = Arachni::Framework.new
-        page       = Arachni::Page.from_url( url )
+        page       = Arachni::Page.from_url( "#{url}/link" )
         auditor    = Auditor.new( page, @framework )
 
         @link = page.links.first
-        @link.auditor = auditor
+        @link.dom.auditor = auditor
     end
 
     after :each do
@@ -23,16 +27,13 @@ describe Arachni::Element::Link::DOM do
 
     describe '#inputs' do
         it 'parses query-style inputs from URL fragments' do
-            subject.inputs.should == {
-                'name'  => 'some-name',
-                'email' => 'some@email.com'
-            }
+            subject.inputs.should == { 'param' => 'some-name' }
         end
     end
 
     describe '#fragment' do
         it 'returns the URL fragment' do
-            subject.fragment.should == '/test/?name=some-name&email=some@email.com'
+            subject.fragment.should == '/test/?param=some-name'
         end
     end
 
@@ -44,7 +45,7 @@ describe Arachni::Element::Link::DOM do
 
     describe '#fragment_query' do
         it 'returns the query from the URL fragment' do
-            subject.fragment_query.should == 'name=some-name&email=some@email.com'
+            subject.fragment_query.should == 'param=some-name'
         end
     end
 
@@ -69,10 +70,7 @@ describe Arachni::Element::Link::DOM do
 
     describe '#trigger' do
         it 'triggers the event required to submit the element' do
-            inputs = {
-                'name'  => 'The Dude',
-                'email' => 'the.dude@abides.com'
-            }
+            inputs = { 'param' => 'The.Dude' }
             subject.update inputs
 
             called = false
@@ -81,12 +79,7 @@ describe Arachni::Element::Link::DOM do
 
                 subject.trigger
 
-                page = browser.to_page
-
-                subject.inputs.should == {
-                    'name'  => page.document.css('#container-name').text,
-                    'email' => page.document.css('#container-email').text
-                }
+                subject.inputs.should == auditable_extract_parameters( browser.to_page )
                 called = true
             end
 

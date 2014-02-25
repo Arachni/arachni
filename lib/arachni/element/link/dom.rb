@@ -55,11 +55,12 @@ class DOM < Capabilities::Auditable::DOM
     end
 
     # @return   [String]    URL including the DOM {#inputs}.
-    def to_s
+    def action
         "#{parent}##{fragment_path}?" << inputs.
             map { |k, v| "#{parent.encode_query_params(k)}=#{parent.encode_query_params(v)}" }.
             join( '&' )
     end
+    alias :to_s :action
 
     def hash
         to_s.hash

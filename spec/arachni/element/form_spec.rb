@@ -8,6 +8,10 @@ describe Arachni::Element::Form do
         YAML.load( resource.body )
     end
 
+    def run
+        http.run
+    end
+
     subject { described_class.new( options ) }
     let(:url) { utilities.normalize_url( web_server_url_for( :form ) ) }
     let(:http) { Arachni::HTTP::Client }

@@ -1,4 +1,9 @@
 shared_examples_for 'element_dom' do
+    #it_should_behave_like 'auditable', supports_nulls: false
+
+    def run
+        auditor.browser_cluster.wait
+    end
 
     describe '#with_browser_cluster' do
         context 'when a browser cluster is' do
@@ -35,18 +40,12 @@ shared_examples_for 'element_dom' do
 
     describe '#submit' do
         it 'submits the element' do
-            inputs = {
-                'name'  => 'The Dude',
-                'email' => 'the.dude@abides.com'
-            }
-            subject.update inputs
+            inputs = { 'param' => 'stuff' }
+            subject.inputs = inputs
 
             called = false
             subject.submit do |page|
-                inputs.should == {
-                    'name'  => page.document.css('#container-name').text,
-                    'email' => page.document.css('#container-email').text
-                }
+                inputs.should == auditable_extract_parameters( page )
                 called = true
             end
 
@@ -109,10 +108,7 @@ shared_examples_for 'element_dom' do
         it 'submits all element mutations' do
             called = false
             subject.audit 'seed' do |page, element|
-                element.inputs.should == {
-                    'name'  => page.document.css('#container-name').text,
-                    'email' => page.document.css('#container-email').text
-                }
+                element.inputs.should == auditable_extract_parameters( page )
                 called = true
             end
 

@@ -72,7 +72,7 @@ module Capabilities::Inputable
 
     # Resets the inputs to their original format/values.
     def reset
-        super
+        super if defined?( super )
         self.inputs = @default_inputs.dup
         self
     end
@@ -104,7 +104,7 @@ module Capabilities::Inputable
     end
 
     def to_h
-        super.merge(
+        (defined?( super ) ? super : {}).merge(
             inputs:         inputs,
             default_inputs: default_inputs
         )

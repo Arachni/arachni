@@ -566,6 +566,12 @@ class Browser
 
                         input.send_keys( value.to_s )
                     end
+
+                    if event == :onsubmit
+                        had_special_trigger = true
+                        element.submit
+                    end
+
                 elsif tag_name == 'input' && event == :onclick &&
                         element.attribute_value(:type) == 'image'
 

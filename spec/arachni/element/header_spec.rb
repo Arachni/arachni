@@ -7,9 +7,14 @@ describe Arachni::Element::Header do
         YAML.load( resource.body )
     end
 
+    def run
+        http.run
+    end
+
     subject { described_class.new( url: "#{url}/submit", inputs: inputs ) }
     let(:inputs) { { 'input1' => 'value1' } }
     let(:url) { utilities.normalize_url( web_server_url_for( :header ) ) }
+    let(:http) { Arachni::HTTP::Client }
     let(:utilities) { Arachni::Utilities }
 
     it 'is be assigned to Arachni::Header for easy access' do

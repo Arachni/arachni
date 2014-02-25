@@ -3,13 +3,17 @@ require 'spec_helper'
 describe Arachni::Element::Form::DOM do
     it_should_behave_like 'element_dom'
 
+    def auditable_extract_parameters( page )
+        YAML.load( page.document.css( 'body' ).text )
+    end
+
     before :each do
         @framework = Arachni::Framework.new
-        page       = Arachni::Page.from_url( "#{url}/fire_event/form/onsubmit" )
+        page       = Arachni::Page.from_url( "#{url}/form" )
         auditor    = Auditor.new( page, @framework )
 
         @form = page.forms.first
-        @form.auditor = auditor
+        @form.dom.auditor = auditor
     end
 
     after :each do
@@ -19,7 +23,7 @@ describe Arachni::Element::Form::DOM do
 
     subject { @form.dom }
     let(:parent) { @form }
-    let(:url) { web_server_url_for( :browser ) }
+    let(:url) { web_server_url_for( :form_dom ) }
 
     describe '#inputs' do
         it 'uses the parent\'s inputs' do
@@ -48,10 +52,7 @@ describe Arachni::Element::Form::DOM do
 
     describe '#trigger' do
         it 'triggers the event required to submit the element' do
-            inputs = {
-                'name'  => 'The Dude',
-                'email' => 'the.dude@abides.com'
-            }
+            inputs = { 'param'  => 'The.Dude' }
             subject.update inputs
 
             called = false
@@ -63,10 +64,7 @@ describe Arachni::Element::Form::DOM do
 
                 page = browser.to_page
 
-                subject.inputs.should == {
-                    'name'  => page.document.css('#container-name').text,
-                    'email' => page.document.css('#container-email').text
-                }
+                subject.inputs.should == auditable_extract_parameters( page )
                 called = true
             end
 

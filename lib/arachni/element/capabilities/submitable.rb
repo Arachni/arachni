@@ -108,7 +108,7 @@ module Capabilities::Submitable
     end
 
     def to_h
-        super.merge(
+        (defined?( super ) ? super : {}).merge(
             url:    url,
             action: action,
             method: method

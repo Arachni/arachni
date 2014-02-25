@@ -30,14 +30,26 @@ class DOM
     # @!method with_browser( &block )
     def_delegator :auditor, :with_browser
 
-    # @!method auditor
-    def_delegator :parent,  :auditor
+    # @!method url
+    def_delegator :parent,  :url
+
+    # @!method action
+    def_delegator :parent,  :action
 
     # @!method page
     def_delegator :parent,  :page
 
     # @!method node
     def_delegator :parent,  :node
+
+    # @!method platforms
+    def_delegator :parent,  :platforms
+
+    # @!method encode
+    def_delegator :parent,  :encode
+
+    # @!method decode
+    def_delegator :parent,  :decode
 
     # @!method type
     def_delegator :parent,  :type

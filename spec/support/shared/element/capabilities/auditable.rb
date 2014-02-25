@@ -19,6 +19,7 @@ shared_examples_for 'auditable' do |options = {}|
     after :each do
         @framework.clean_up
         @framework.reset
+        reset_options
     end
 
     let(:auditor) { @auditor }
@@ -27,53 +28,60 @@ shared_examples_for 'auditable' do |options = {}|
 
     let(:auditable) do
         subject.auditor = auditor
-        subject.inputs = { 'param' => 'val' }
+        subject.inputs = { 'param' => default_input_value }
         subject
     end
     let(:other) do
         new = auditable.dup
-        new.inputs = { stuff: 'blah'}
+        new.inputs = { stuff: 'blah' }
         new
     end
     let(:orphan) { subject }
+
+    def has_parameter_extractor?
+        begin
+            auditable_extract_parameters
+        rescue NoMethodError
+            return false
+        rescue
+        end
+
+        true
+    end
 
     describe '.skip_like' do
         it 'skips elements based on the block\'s return value' do
             audited = false
             auditable.audit( 'seed' ){ audited = true }
-            auditable.http.run
+            run
             audited.should be_true
 
             Arachni::Element::Capabilities::Auditable.reset
-            Arachni::Element::Capabilities::Auditable.skip_like do |element|
-                element.action.end_with? '/submit'
+            Arachni::Element::Capabilities::Auditable.skip_like do
+                true
             end
 
             audited = false
             auditable.audit( 'seed' ){ audited = true }
-            auditable.http.run
+            run
             audited.should be_false
         end
 
         it 'skips element mutations based on the block\'s return value' do
-            expected  = 4
-            expected += 1 if auditable.is_a?( Arachni::Form )
-            expected -= 2 if !opts[:supports_nulls]
-
-            i = 0
-            (auditable.audit( 'seed' ){ i += 1 }).should be_true
-            auditable.http.run
-            i.should == expected
+            called = false
+            auditable.audit( 'seed' ){ called = true }
+            run
+            called.should be_true
 
             Arachni::Element::Capabilities::Auditable.reset
             Arachni::Element::Capabilities::Auditable.skip_like do |element|
-                element.affected_input_name == 'param'
+                !!element.affected_input_name
             end
 
             i = 0
-            (auditable.audit( 'seed' ){ i += 1}).should be_true
-            auditable.http.run
-            i.should == (auditable.is_a?( Arachni::Form ) ? 1 : 0)
+            auditable.audit( 'seed' ){ i += 1 }
+            run
+            i.should == 0
         end
     end
 
@@ -119,7 +127,7 @@ shared_examples_for 'auditable' do |options = {}|
                         injected = element.affected_input_value
                     end
 
-                    auditor.http.run
+                    run
                     injected.should == payload
                 end
             end
@@ -135,7 +143,7 @@ shared_examples_for 'auditable' do |options = {}|
                         injected << element.affected_input_value
                     end
 
-                    auditor.http.run
+                    run
                     injected.uniq.sort.should == payloads.sort
                 end
 
@@ -149,7 +157,7 @@ shared_examples_for 'auditable' do |options = {}|
                             injected << element.affected_input_value
                         end.should be_nil
 
-                        auditor.http.run
+                        run
                         injected.should be_empty
                     end
                 end
@@ -175,7 +183,7 @@ shared_examples_for 'auditable' do |options = {}|
                         injected << element.affected_input_value
                     end.should be_true
 
-                    auditor.http.run
+                    run
 
                     payloads.delete( :windows )
                     payloads.delete( :aspx )
@@ -191,7 +199,7 @@ shared_examples_for 'auditable' do |options = {}|
                             injected << element.affected_input_value
                         end.should be_nil
 
-                        auditor.http.run
+                        run
                         injected.should be_empty
                     end
                 end
@@ -217,7 +225,7 @@ shared_examples_for 'auditable' do |options = {}|
                             injected << element.affected_input_value
                         end.should be_true
 
-                        auditor.http.run
+                        run
 
                         injected.uniq.sort.should == payloads.values.flatten.sort
                     end
@@ -238,7 +246,7 @@ shared_examples_for 'auditable' do |options = {}|
                             injected << element.affected_input_value
                         end.should be_nil
 
-                        auditor.http.run
+                        run
 
                         payloads.delete( :windows )
                         payloads.delete( :aspx )
@@ -263,6 +271,8 @@ shared_examples_for 'auditable' do |options = {}|
         context 'when called with option' do
             describe :each_mutation do
                 it 'is passed each generated mutation' do
+                    pending if !has_parameter_extractor?
+
                     submitted = nil
                     cnt = 0
 
@@ -274,12 +284,14 @@ shared_examples_for 'auditable' do |options = {}|
                         submitted = auditable_extract_parameters( res )
                     end
 
-                    auditor.http.run
+                    run
                     cnt.should == 1
                     auditable.inputs == submitted
                 end
 
                 it 'is able to modify mutations on the fly' do
+                    pending if !has_parameter_extractor?
+
                     submitted = nil
 
                     modified_seed = 'houa!'
@@ -293,12 +305,14 @@ shared_examples_for 'auditable' do |options = {}|
                         submitted = auditable_extract_parameters( res )
                     end
 
-                    auditor.http.run
+                    run
                     submitted.values.first.should == modified_seed
                 end
 
                 context 'when it returns one or more elements of the same type' do
                     it 'audits those elements too' do
+                        pending if !has_parameter_extractor?
+
                         injected = []
                         cnt = 0
 
@@ -315,11 +329,11 @@ shared_examples_for 'auditable' do |options = {}|
                         auditable.audit( seed, each_mutation: each_mutation,
                                           skip_original: true,
                                           format: [ Arachni::Check::Auditor::Format::STRAIGHT ] ) do |res, _|
-                            injected << auditable_extract_parameters( res ) .values.first
+                            injected << auditable_extract_parameters( res ).values.first
                             cnt += 1
                         end
 
-                        auditor.http.run
+                        run
                         cnt.should == 3
                         injected.sort.should == [ seed, 'houa!', 'houa2!'].sort
                     end
@@ -336,7 +350,7 @@ shared_examples_for 'auditable' do |options = {}|
                             audited << m.affected_input_name
                         end
 
-                        auditor.http.run
+                        run
 
                         audited.uniq!
                         audited.size.should == 1
@@ -355,7 +369,7 @@ shared_examples_for 'auditable' do |options = {}|
                             audited << m.affected_input_name
                         end
 
-                        auditor.http.run
+                        run
 
                         audited.uniq!
                         audited.size.should == 1
@@ -367,17 +381,19 @@ shared_examples_for 'auditable' do |options = {}|
             describe :format do
                 describe 'Arachni::Check::Auditor::Format::STRAIGHT' do
                     it 'injects the seed as is' do
+                        pending if !has_parameter_extractor?
+
                         injected = nil
                         cnt = 0
 
                         auditable.audit( seed,
                                           skip_original: true,
                                           format: [ Arachni::Check::Auditor::Format::STRAIGHT ] ) do |res, e|
-                            injected = auditable_extract_parameters( res ) [e.affected_input_name]
+                            injected = auditable_extract_parameters( res )[e.affected_input_name]
                             cnt += 1
                         end
 
-                        auditor.http.run
+                        run
                         cnt.should == 1
                         injected.should == seed
                     end
@@ -385,17 +401,19 @@ shared_examples_for 'auditable' do |options = {}|
 
                 describe 'Arachni::Check::Auditor::Format::APPEND' do
                     it 'appends the seed to the existing value of the input' do
+                        pending if !has_parameter_extractor?
+
                         injected = nil
                         cnt = 0
 
                         auditable.audit( seed,
                                           skip_original: true,
                                           format: [ Arachni::Check::Auditor::Format::APPEND ] ) do |res, e|
-                            injected = auditable_extract_parameters( res ) [e.affected_input_name]
+                            injected = auditable_extract_parameters( res )[e.affected_input_name]
                             cnt += 1
                         end
 
-                        auditor.http.run
+                        run
                         cnt.should == 1
                         injected.should == default_input_value + seed
                     end
@@ -403,18 +421,20 @@ shared_examples_for 'auditable' do |options = {}|
 
                 describe 'Arachni::Check::Auditor::Format::NULL' do
                     it 'terminates the seed with a null character',
-                       if: described_class != Arachni::Element::Header  do
+                       if: described_class != Arachni::Element::Header &&
+                               described_class.is_a?( Arachni::Element::Capabilities::Auditable::DOM ) do
+                        pending if !has_parameter_extractor?
 
                         injected = nil
                         cnt = 0
                         auditable.audit( seed,
                                           skip_original: true,
                                           format: [ Arachni::Check::Auditor::Format::NULL ] ) do |res, e|
-                            injected = auditable_extract_parameters( res ) [e.affected_input_name]
+                            injected = auditable_extract_parameters( res )[e.affected_input_name]
                             cnt += 1
                         end
 
-                        auditor.http.run
+                        run
                         cnt.should == 1
                         auditable.decode( injected ).should == seed + "\0"
                     end
@@ -422,15 +442,17 @@ shared_examples_for 'auditable' do |options = {}|
 
                 describe 'Arachni::Check::Auditor::Format::SEMICOLON' do
                     it 'prepends the seed with a semicolon' do
+                        pending if !has_parameter_extractor?
+
                         injected = nil
                         cnt = 0
 
                         format = [ Arachni::Check::Auditor::Format::SEMICOLON ]
                         auditable.audit( seed, skip_original: true, format: format ) do |res, e|
-                            injected = auditable_extract_parameters( res ) [e.affected_input_name]
+                            injected = auditable_extract_parameters( res )[e.affected_input_name]
                             cnt += 1
                         end
-                        auditor.http.run
+                        run
                         cnt.should == 1
 
                         auditable.decode( injected ).should == ";" + seed
@@ -452,7 +474,7 @@ shared_examples_for 'auditable' do |options = {}|
                         5.times do |i|
                             auditable.audit( seed, @audit_opts.merge( redundant: true )){ cnt += 1 }
                         end
-                        auditor.http.run
+                        run
                         cnt.should == 5
                     end
                 end
@@ -463,7 +485,7 @@ shared_examples_for 'auditable' do |options = {}|
                         5.times do |i|
                             auditable.audit( seed, @audit_opts.merge( redundant: false )){ cnt += 1 }
                         end
-                        auditor.http.run
+                        run
                         cnt.should == 1
                     end
                 end
@@ -474,7 +496,7 @@ shared_examples_for 'auditable' do |options = {}|
                         5.times do |i|
                             auditable.audit( seed, @audit_opts ){ cnt += 1 }
                         end
-                        auditor.http.run
+                        run
                         cnt.should == 1
                     end
                 end
@@ -483,28 +505,15 @@ shared_examples_for 'auditable' do |options = {}|
 
         context 'when the audit_exclude_vectors option is set' do
             it 'skips those vectors by name' do
-                e = described_class.new(
-                    url: url + '/submit',
-                    inputs: {
-                        'include_this' => 'param', 'exclude_this' => 'param'
-                    }
-                )
-
-                Arachni::Options.audit.exclude_vectors << 'exclude_this'
+                Arachni::Options.audit.exclude_vectors |= auditable.inputs.keys
 
                 audited = []
-                e.audit( seed, skip_original: true ) { |_, elem| audited << elem.affected_input_name  }.should be_true
-                e.http.run
+                auditable.audit( seed, skip_original: true ) do |_, elem|
+                    audited << elem.affected_input_name
+                end.should be_true
 
-                audited.uniq.should == %w(include_this)
-            end
-        end
-        context 'when called with no opts' do
-            it 'uses the defaults' do
-                cnt = 0
-                auditable.audit( seed, skip_original: true  ) { cnt += 1 }
-                auditable.auditor.http.run
-                cnt.should == (opts[:supports_nulls] ? 4 : 2)
+                run
+                audited.should be_empty
             end
         end
 
@@ -512,7 +521,7 @@ shared_examples_for 'auditable' do |options = {}|
             it 'returns immediately' do
                 ran = false
                 auditable.audit( seed ) { ran = true }
-                auditor.http.run
+                run
                 ran.should be_true
 
                 Arachni::Element::Capabilities::Auditable.reset
@@ -522,7 +531,7 @@ shared_examples_for 'auditable' do |options = {}|
 
                 ran = false
                 auditable.audit( seed ) { ran = true }
-                auditor.http.run
+                run
                 ran.should be_false
 
                 opts.scope.exclude_path_patterns.clear
@@ -531,18 +540,17 @@ shared_examples_for 'auditable' do |options = {}|
 
                 ran = false
                 auditable.audit( seed ) { ran = true }
-                auditor.http.run
+                run
                 ran.should be_true
             end
         end
 
         context 'when the element has no auditable inputs' do
             it 'returns immediately' do
-                e = described_class.new( url: url + '/submit' )
-
                 ran = false
-                e.audit( seed ) { ran = true }.should be_false
-                e.http.run
+                auditable.inputs = {}
+                auditable.audit( seed ) { ran = true }.should be_false
+                run
 
                 ran.should be_false
             end
@@ -553,7 +561,7 @@ shared_examples_for 'auditable' do |options = {}|
 
                 ran = false
                 auditable.audit( seed ) { ran = true }.should be_true
-                auditor.http.run
+                run
                 ran.should be_true
 
                 Arachni::Element::Capabilities::Auditable.reset
@@ -564,7 +572,7 @@ shared_examples_for 'auditable' do |options = {}|
 
                 ran = false
                 auditable.audit( seed ) { ran = true }.should be_true
-                auditor.http.run
+                run
                 ran.should be_false
 
                 Arachni::Element::Capabilities::Auditable.reset
@@ -575,17 +583,16 @@ shared_examples_for 'auditable' do |options = {}|
 
                 ran = false
                 auditable.audit( seed ) { ran = true }.should be_true
-                auditor.http.run
+                run
                 ran.should be_true
             end
         end
 
         context 'when the element\'s #skip? method returns true for a mutation' do
             it 'is skipped' do
-
                 ran = false
                 auditable.audit( seed ) { ran = true }.should be_true
-                auditor.http.run
+                run
                 ran.should be_true
 
                 Arachni::Element::Capabilities::Auditable.reset
@@ -596,7 +603,7 @@ shared_examples_for 'auditable' do |options = {}|
 
                 ran = false
                 auditable.audit( seed ) { ran = true }.should be_true
-                auditor.http.run
+                run
                 ran.should be_false
 
                 Arachni::Element::Capabilities::Auditable.reset
@@ -607,7 +614,7 @@ shared_examples_for 'auditable' do |options = {}|
 
                 ran = false
                 auditable.audit( seed ) { ran = true }.should be_true
-                auditor.http.run
+                run
                 ran.should be_true
             end
         end
@@ -621,12 +628,12 @@ shared_examples_for 'auditable' do |options = {}|
                     Arachni::Element::Capabilities::Auditable.restrict_to_elements( scope_id_arr )
                     performed = false
                     other.audit( '' ){ performed = true }
-                    other.http.run
+                    run
                     performed.should be_false
 
                     performed = false
                     auditable.audit( '' ){ performed = true }
-                    auditable.http.run
+                    run
                     performed.should be_true
                 end
 
@@ -639,13 +646,13 @@ shared_examples_for 'auditable' do |options = {}|
                             Arachni::Element::Capabilities::Auditable.restrict_to_elements( scope_id_arr )
                             performed = false
                             other.audit( '' ){ performed = true }
-                            other.http.run
+                            run
                             performed.should be_false
 
                             other.override_instance_scope
                             performed = false
                             other.audit( '' ){ performed = true }
-                            other.http.run
+                            run
                             performed.should be_true
                         end
 
@@ -671,12 +678,12 @@ shared_examples_for 'auditable' do |options = {}|
                 it 'does not impose audit restrictions' do
                     performed = false
                     other.audit( '' ){ performed = true }
-                    other.http.run
+                    run
                     performed.should be_true
 
                     performed = false
                     auditable.audit( '' ){ performed = true }
-                    auditable.http.run
+                    run
                     performed.should be_true
                 end
             end

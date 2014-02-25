@@ -31,39 +31,41 @@ shared_examples_for 'inputable' do |options = {}|
         non_existent_keys.map(&:to_sym)
     end
 
-    subject do
-        described_class.new url: url, inputs: inputs
+    let(:inputable) do
+        subject.inputs = inputs
+        subject.instance_variable_set(:@default_inputs, inputs)
+        subject
     end
 
     describe '#has_inputs?' do
         describe '#reset' do
             it 'returns the element to its original state' do
-                orig = subject.dup
+                orig = inputable.dup
 
                 k, v = orig.inputs.keys.first, 'value'
 
-                subject.update( k => v )
-                subject.affected_input_name = k
-                subject.affected_input_value = v
-                subject.seed = v
+                inputable.update( k => v )
+                inputable.affected_input_name = k
+                inputable.affected_input_value = v
+                inputable.seed = v
 
-                subject.inputs.should_not == orig.inputs
-                subject.affected_input_name.should_not == orig.affected_input_name
-                subject.affected_input_value.should_not == orig.affected_input_value
-                subject.seed.should_not == orig.seed
+                inputable.inputs.should_not == orig.inputs
+                inputable.affected_input_name.should_not == orig.affected_input_name
+                inputable.affected_input_value.should_not == orig.affected_input_value
+                inputable.seed.should_not == orig.seed
 
-                subject.reset
+                inputable.reset
 
-                subject.inputs.should == orig.inputs
+                inputable.inputs.should == orig.inputs
 
-                subject.affected_input_name.should == orig.affected_input_name
-                subject.affected_input_name.should be_nil
+                inputable.affected_input_name.should == orig.affected_input_name
+                inputable.affected_input_name.should be_nil
 
-                subject.affected_input_value.should == orig.affected_input_value
-                subject.affected_input_value.should be_nil
+                inputable.affected_input_value.should == orig.affected_input_value
+                inputable.affected_input_value.should be_nil
 
-                subject.seed.should == orig.seed
-                subject.seed.should be_nil
+                inputable.seed.should == orig.seed
+                inputable.seed.should be_nil
             end
         end
 
@@ -72,20 +74,20 @@ shared_examples_for 'inputable' do |options = {}|
                 context 'when it has the given inputs' do
                     it 'returns true' do
                         keys.each do |k|
-                            subject.has_inputs?( k.to_s.to_sym ).should be_true
-                            subject.has_inputs?( k.to_s ).should be_true
+                            inputable.has_inputs?( k.to_s.to_sym ).should be_true
+                            inputable.has_inputs?( k.to_s ).should be_true
                         end
 
-                        subject.has_inputs?( *sym_keys ).should be_true
-                        subject.has_inputs?( *keys ).should be_true
+                        inputable.has_inputs?( *sym_keys ).should be_true
+                        inputable.has_inputs?( *keys ).should be_true
                     end
                 end
                 context 'when it does not have the given inputs' do
                     it 'returns false' do
-                        subject.has_inputs?( *non_existent_sym_keys ).should be_false
-                        subject.has_inputs?( *non_existent_keys ).should be_false
+                        inputable.has_inputs?( *non_existent_sym_keys ).should be_false
+                        inputable.has_inputs?( *non_existent_keys ).should be_false
 
-                        subject.has_inputs?( non_existent_keys.first ).should be_false
+                        inputable.has_inputs?( non_existent_keys.first ).should be_false
                     end
                 end
             end
@@ -93,14 +95,14 @@ shared_examples_for 'inputable' do |options = {}|
             context Array do
                 context 'when it has the given inputs' do
                     it 'returns true' do
-                        subject.has_inputs?( sym_keys ).should be_true
-                        subject.has_inputs?( keys ).should be_true
+                        inputable.has_inputs?( sym_keys ).should be_true
+                        inputable.has_inputs?( keys ).should be_true
                     end
                 end
                 context 'when it does not have the given inputs' do
                     it 'returns false' do
-                        subject.has_inputs?( non_existent_sym_keys ).should be_false
-                        subject.has_inputs?( non_existent_keys ).should be_false
+                        inputable.has_inputs?( non_existent_sym_keys ).should be_false
+                        inputable.has_inputs?( non_existent_keys ).should be_false
                     end
                 end
             end
@@ -108,26 +110,26 @@ shared_examples_for 'inputable' do |options = {}|
             context Hash do
                 context 'when it has the given inputs (names and values)' do
                     it 'returns true' do
-                        hash     = subject.inputs.
+                        hash     = inputable.inputs.
                             inject( {} ) { |h, (k, v)| h[k] = v; h}
 
-                        hash_sym = subject.inputs.
+                        hash_sym = inputable.inputs.
                             inject( {} ) { |h, (k, v)| h[k.to_sym] = v; h}
 
-                        subject.has_inputs?( hash_sym ).should be_true
-                        subject.has_inputs?( hash ).should be_true
+                        inputable.has_inputs?( hash_sym ).should be_true
+                        inputable.has_inputs?( hash ).should be_true
                     end
                 end
                 context 'when it does not have the given inputs' do
                     it 'returns false' do
-                        hash     = subject.inputs.
+                        hash     = inputable.inputs.
                             inject( {} ) { |h, (k, v)| h[k] = "#{v}1"; h}
 
-                        hash_sym = subject.inputs.
+                        hash_sym = inputable.inputs.
                             inject( {} ) { |h, (k, v)| h[k.to_sym] = "#{v}1"; h}
 
-                        subject.has_inputs?( hash_sym ).should be_false
-                        subject.has_inputs?( hash ).should be_false
+                        inputable.has_inputs?( hash_sym ).should be_false
+                        inputable.has_inputs?( hash ).should be_false
                     end
                 end
             end
@@ -136,27 +138,27 @@ shared_examples_for 'inputable' do |options = {}|
 
     describe '#inputs' do
         it 'returns a frozen hash of auditable inputs' do
-            subject.inputs.should be_frozen
+            inputable.inputs.should be_frozen
         end
     end
 
     describe '#inputs=' do
         it 'assigns a hash of auditable inputs' do
-            a = subject.dup
+            a = inputable.dup
             a.inputs = { 'param1' => 'val1' }
             a.inputs.should == { 'param1' => 'val1' }
-            a.should_not == subject
+            a.should_not == inputable
         end
 
         it 'converts all inputs to strings' do
-            e = described_class.new( url: url, inputs: { 'key' => nil } )
-            e.inputs.should == { 'key' => '' }
+            inputable.inputs = { key: nil }
+            inputable.inputs.should == { 'key' => '' }
         end
     end
 
     describe '#update' do
         it 'updates the auditable inputs using the given hash' do
-            a = subject.dup
+            a = inputable.dup
 
             updates =   if opts[:single_input]
                             { 'input1' => 'val1' }
@@ -176,13 +178,13 @@ shared_examples_for 'inputable' do |options = {}|
         end
 
         it 'converts all inputs to strings' do
-            e = described_class.new( url: url, inputs: { 'key' => 'stuff' } )
-            e.update( { 'key' => nil } )
-            e.inputs.should == { 'key' => '' }
+            inputable.inputs = { 'key' => 'stuff' }
+            inputable.update( { 'key' => nil } )
+            inputable.inputs.should == { 'key' => '' }
         end
 
         it 'returns self' do
-            subject.update({}).should == subject
+            inputable.update({}).should == inputable
         end
     end
 
@@ -216,15 +218,15 @@ shared_examples_for 'inputable' do |options = {}|
 
     describe '#[]' do
         it ' serves as a reader to the #auditable hash' do
-            subject['input1'].should == subject.inputs['input1']
+            inputable['input1'].should == inputable.inputs['input1']
         end
     end
 
     describe '#[]=' do
         it 'serves as a writer to the #inputs hash' do
-            subject['input1'] = 'val1'
-            subject['input1'].should == 'val1'
-            subject['input1'].should == subject.inputs['input1']
+            inputable['input1'] = 'val1'
+            inputable['input1'].should == 'val1'
+            inputable['input1'].should == inputable.inputs['input1']
         end
     end
 
@@ -251,9 +253,9 @@ shared_examples_for 'inputable' do |options = {}|
 
     describe '#to_h' do
         it 'returns a hash representation of self' do
-            hash = subject.to_h
-            hash[:inputs].should         == subject.inputs
-            hash[:default_inputs].should == subject.default_inputs
+            hash = inputable.to_h
+            hash[:inputs].should         == inputable.inputs
+            hash[:default_inputs].should == inputable.default_inputs
         end
     end
 

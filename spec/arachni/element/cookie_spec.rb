@@ -7,6 +7,10 @@ describe Arachni::Element::Cookie do
         YAML.load( resource.body )
     end
 
+    def run
+        http.run
+    end
+
     let(:url) { utilities.normalize_url( web_server_url_for( :cookie ) ) }
     let(:http) { Arachni::HTTP::Client }
     let(:utilities) { Arachni::Utilities }

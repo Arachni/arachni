@@ -8,9 +8,14 @@ describe Arachni::Element::Link do
         YAML.load( resource.body )
     end
 
+    def run
+        http.run
+    end
+
     subject { described_class.new( url: "#{url}submit", inputs: inputs ) }
     let(:inputs) { { 'name1' => 'value1', 'name2' => 'value2' } }
     let(:url) { utilities.normalize_url( web_server_url_for( :link ) ) }
+    let(:http) { Arachni::HTTP::Client }
     let(:utilities) { Arachni::Utilities }
 
     it 'is assigned to Arachni::Link for easy access' do
