@@ -9,10 +9,10 @@ describe Arachni::Element::Form::DOM do
 
     before :each do
         @framework = Arachni::Framework.new
-        page       = Arachni::Page.from_url( "#{url}/form" )
-        auditor    = Auditor.new( page, @framework )
+        @page      = Arachni::Page.from_url( "#{url}/form" )
+        @auditor   = Auditor.new( @page, @framework )
 
-        @form = page.forms.first
+        @form = @page.forms.first
         @form.dom.auditor = auditor
     end
 
@@ -24,7 +24,7 @@ describe Arachni::Element::Form::DOM do
     subject { @form.dom }
     let(:parent) { @form }
     let(:url) { web_server_url_for( :form_dom ) }
-
+    let(:auditor) { @auditor }
     let(:inputable) do
         f = Arachni::Page.from_url( "#{url}/form/inputable" ).forms.first
         f.dom.auditor = auditor

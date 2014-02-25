@@ -12,6 +12,16 @@ get '/link' do
     EOHTML
 end
 
+get '/link/inputable' do
+    <<-EOHTML
+    <html>
+        <body>
+            <a href='/dom/#/test/?input1=value1&input2=value2'>DOM link</a>
+        </body>
+    </html>
+    EOHTML
+end
+
 get '/dom/' do
     <<-EOHTML
     <html>

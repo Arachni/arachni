@@ -9,11 +9,11 @@ describe Arachni::Element::Link::DOM do
 
     before :each do
         @framework = Arachni::Framework.new
-        page       = Arachni::Page.from_url( "#{url}/link" )
-        auditor    = Auditor.new( page, @framework )
+        @page      = Arachni::Page.from_url( "#{url}/link" )
+        @auditor   = Auditor.new( @page, @framework )
 
-        @link = page.links.first
-        @link.dom.auditor = auditor
+        @link = @page.links.first
+        @link.dom.auditor = @auditor
     end
 
     after :each do
@@ -24,11 +24,11 @@ describe Arachni::Element::Link::DOM do
     subject { @link.dom }
     let(:parent) { @link }
     let(:url) { web_server_url_for( :link_dom ) }
-
+    let(:auditor) { @auditor }
     let(:inputable) do
-        f = Arachni::Page.from_url( "#{url}/link/inputable" ).forms.first
-        f.dom.auditor = auditor
-        f
+        l = Arachni::Page.from_url( "#{url}/link/inputable" ).links.first
+        l.dom.auditor = auditor
+        l
     end
 
     describe '#inputs' do

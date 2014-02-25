@@ -281,14 +281,17 @@ module Auditable
     end
 
     def dup
-        new = super
-        new.override_instance_scope if override_instance_scope?
-        new.auditor       = self.auditor
-        new.audit_options = self.audit_options.dup
-        new
+        copy_auditable( super )
     end
 
     private
+
+    def copy_auditable( other )
+        other.override_instance_scope if override_instance_scope?
+        other.auditor       = self.auditor
+        other.audit_options = self.audit_options.dup
+        other
+    end
 
     # Submits mutations of self and calls the block to handle the responses.
     #

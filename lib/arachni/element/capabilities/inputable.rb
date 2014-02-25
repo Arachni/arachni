@@ -42,6 +42,7 @@ module Capabilities::Inputable
     def has_inputs?( *args )
         if (h = args.first).is_a?( Hash )
             h.each { |k, v| return false if self[k] != v }
+            true
         else
             keys = args.flatten.compact.map { |a| [a].map( &:to_s ) }.flatten
             (self.inputs.keys & keys).size == keys.size
@@ -98,9 +99,7 @@ module Capabilities::Inputable
     end
 
     def dup
-        new = super
-        new.inputs = self.inputs.dup
-        new
+        copy_inputable( super )
     end
 
     def to_h
@@ -108,6 +107,13 @@ module Capabilities::Inputable
             inputs:         inputs,
             default_inputs: default_inputs
         )
+    end
+
+    private
+
+    def copy_inputable( other )
+        other.inputs = self.inputs.dup
+        other
     end
 
 end

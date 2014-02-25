@@ -20,8 +20,9 @@ shared_examples_for 'mutable' do |options = {}|
 
     let(:seed) { 'my_seed' }
     let(:mutable) do
-        subject.inputs = inputs
-        subject
+        s = subject.dup
+        s.inputs = inputs
+        s
     end
 
     describe '#mutation?' do

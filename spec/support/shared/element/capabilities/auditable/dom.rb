@@ -151,9 +151,25 @@ shared_examples_for 'element_dom' do
         it 'returns a copy' do
             dup = subject.dup
             dup.should == subject
+        end
+
+        it 'preserves the #inputs' do
+            dup = subject.dup
+            dup.inputs.should == subject.inputs
 
             dup[:stuff] = 'blah'
+            subject.inputs.should_not include :stuff
             dup.should_not == subject
+
+            dup.dup[:stuff].should == 'blah'
+        end
+
+        it 'preserves the #auditor' do
+            dup = subject.dup
+            dup.auditor.should == subject.auditor
+
+            subject.remove_auditor
+            dup.auditor.should be_true
         end
     end
 end

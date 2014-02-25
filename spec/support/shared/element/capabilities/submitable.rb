@@ -1,8 +1,9 @@
 shared_examples_for 'submitable' do
 
     let(:submitable) do
-        subject.auditor = auditor
-        subject
+        s = subject.dup
+        s.auditor = auditor
+        s
     end
 
     describe '#platforms' do

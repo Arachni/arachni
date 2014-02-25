@@ -219,18 +219,20 @@ module Mutable
     end
 
     def dup
-        new = super
-
-        if self.affected_input_name
-            new.affected_input_name = self.affected_input_name.dup
-        end
-
-        new.seed    = self.seed.dup    if self.seed
-        new.format  = self.format
-        new
+        copy_mutable( super )
     end
 
     private
+
+    def copy_mutable( other )
+        if self.affected_input_name
+            other.affected_input_name = self.affected_input_name.dup
+        end
+
+        other.seed    = self.seed.dup if self.seed
+        other.format  = self.format
+        other
+    end
 
     #
     # Prepares an injection string following the specified formatting options

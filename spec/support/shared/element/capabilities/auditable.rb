@@ -27,16 +27,17 @@ shared_examples_for 'auditable' do |options = {}|
     let(:seed) { 'my_seed' }
 
     let(:auditable) do
-        subject.auditor = auditor
-        subject.inputs = { 'param' => default_input_value }
-        subject
+        s = subject.dup
+        s.auditor = auditor
+        s.inputs = { 'param' => default_input_value }
+        s
     end
     let(:other) do
         new = auditable.dup
         new.inputs = { stuff: 'blah' }
         new
     end
-    let(:orphan) { subject.tap { |e| e.auditor = nil } }
+    let(:orphan) { subject.dup.tap { |e| e.auditor = nil } }
 
     def has_parameter_extractor?
         begin

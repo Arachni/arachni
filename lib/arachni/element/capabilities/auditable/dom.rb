@@ -118,6 +118,10 @@ class DOM
         fail NotImplementedError
     end
 
+    def dup
+        copy_auditable( copy_mutable( copy_inputable( parent.dup.dom ) ) )
+    end
+
     def hash
         inputs.hash
     end
