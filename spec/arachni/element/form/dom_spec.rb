@@ -39,7 +39,7 @@ describe Arachni::Element::Form::DOM do
                 browser.load subject.page
 
                 element = subject.locate
-                element.should be_kind_of Watir::HTMLElement
+                element.should be_kind_of Watir::Form
 
                 parent.class.from_document(parent.url, Nokogiri::HTML(element.html)).first.should == parent
                 called = true

@@ -57,7 +57,7 @@ describe Arachni::Element::Link::DOM do
                 browser.load subject.page
 
                 element = subject.locate
-                element.should be_kind_of Watir::HTMLElement
+                element.should be_kind_of Watir::Anchor
 
                 parent.class.from_document(parent.url, Nokogiri::HTML(element.html)).first.should == parent
                 called = true
