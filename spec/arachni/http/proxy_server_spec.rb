@@ -66,12 +66,39 @@ describe Arachni::HTTP::ProxyServer do
         end
 
         describe :request_handler do
-            it 'sets a block to handle each HTTP response and request before the request is forwarded to the origin server' do
+            it 'sets a block to handle each HTTP request before the request is forwarded to the origin server' do
                 called = false
                 proxy = described_class.new(
-                    request_handler: proc do |request, response|
+                    request_handler: proc do |request, _|
                         request.should be_kind_of Arachni::HTTP::Request
+                        called = true
+                    end
+                )
+                proxy.start_async
+                test_proxy proxy
+
+                called.should be_true
+            end
+
+            it 'sets a block to handle each HTTP response before the request is forwarded to the origin server' do
+                called = false
+                proxy = described_class.new(
+                    request_handler: proc do |_, response|
                         response.should be_kind_of Arachni::HTTP::Response
+                        called = true
+                    end
+                )
+                proxy.start_async
+                test_proxy proxy
+
+                called.should be_true
+            end
+
+            it 'assigns the request to the response' do
+                called = false
+                proxy = described_class.new(
+                    request_handler: proc do |_, response|
+                        response.request.should be_kind_of Arachni::HTTP::Request
                         called = true
                     end
                 )
@@ -106,17 +133,45 @@ describe Arachni::HTTP::ProxyServer do
         end
 
         describe :response_handler do
-            it 'sets a block to handle each HTTP response and request before once the origin server has responded' do
+            it 'sets a block to handle each HTTP request once the origin server has responded' do
                 called = false
                 proxy = described_class.new(
-                    response_handler: proc do |request, response|
+                    response_handler: proc do |request, _|
                         request.should be_kind_of Arachni::HTTP::Request
+                        called = true
+                    end
+                )
+                proxy.start_async
+
+                test_proxy proxy
+
+                called.should be_true
+            end
+
+            it 'sets a block to handle each HTTP response once the origin server has responded' do
+                called = false
+                proxy = described_class.new(
+                    response_handler: proc do |_, response|
                         response.should be_kind_of Arachni::HTTP::Response
                         called = true
                     end
                 )
                 proxy.start_async
 
+                test_proxy proxy
+
+                called.should be_true
+            end
+
+            it 'assigns the request to the response' do
+                called = false
+                proxy = described_class.new(
+                    response_handler: proc do |_, response|
+                        response.request.should be_kind_of Arachni::HTTP::Request
+                        called = true
+                    end
+                )
+                proxy.start_async
                 test_proxy proxy
 
                 called.should be_true

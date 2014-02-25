@@ -224,6 +224,7 @@ class ProxyServer < WEBrick::HTTPProxyServer
         # Provisional empty, response in case the request_handler wants us to
         # skip performing the request.
         response = Response.new( url: req.request_uri.to_s )
+        response.request = request
         request.on_complete { |r| response = r }
 
         if @options[:request_handler]
