@@ -18,6 +18,17 @@ describe Arachni::Element::Link do
     let(:http) { Arachni::HTTP::Client }
     let(:utilities) { Arachni::Utilities }
 
+    let(:html) do
+        '<html>
+            <body>
+                <a href="/stuff">Bla</a>
+            </body>
+        </html>'
+    end
+    let(:with_node) do
+        described_class.from_document( url, html ).first
+    end
+
     it 'is assigned to Arachni::Link for easy access' do
         Arachni::Link.should == described_class
     end
@@ -41,6 +52,26 @@ describe Arachni::Element::Link do
                 e.action.should == url + action
                 e.inputs.should == { 'one' => '2', 'three' => '4' }
             end
+        end
+    end
+
+    describe '#dom' do
+        context 'when a #node has been assigned' do
+            it "returns #{described_class::DOM}" do
+                with_node.dom.should be_kind_of described_class::DOM
+            end
+        end
+
+        context 'when a #node has not been assigned' do
+            it 'returns nil' do
+                subject.dom.should be_nil
+            end
+        end
+    end
+
+    describe '#node' do
+        it 'returns the original Nokogiri node' do
+            with_node.node.is_a?( Nokogiri::XML::Element ).should be_true
         end
     end
 

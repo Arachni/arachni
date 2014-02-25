@@ -27,6 +27,20 @@ describe Arachni::Element::Form do
             }
         }
     end
+    let(:html) do
+        '<html>
+            <body>
+                <form method="get" action="form_action" name="my_form">
+                    <input type=password name="my_first_input" value="my_first_value"" />
+                    <input type=radio name="my_second_input" value="my_second_value"" />
+                </form>
+
+            </body>
+        </html>'
+    end
+    let(:with_node) do
+        described_class.from_document( url, html ).first
+    end
 
     it 'assigned to Arachni::Form for easy access' do
         Arachni::Form.should == described_class
@@ -46,6 +60,20 @@ describe Arachni::Element::Form do
         context 'when passed options without inputs or any other expected option' do
             it 'uses the contents of the opts hash as inputs inputs' do
                 subject.inputs.should eq( 'user' => 'joe', 'password' => 's3cr3t', 'hidden_field' => 'hidden-value' )
+            end
+        end
+    end
+
+    describe '#dom' do
+        context 'when a #node has been assigned' do
+            it "returns #{described_class::DOM}" do
+                with_node.dom.should be_kind_of described_class::DOM
+            end
+        end
+
+        context 'when a #node has not been assigned' do
+            it 'returns nil' do
+                subject.dom.should be_nil
             end
         end
     end
@@ -131,46 +159,23 @@ describe Arachni::Element::Form do
     
     describe '#node' do
         it 'returns the original Nokogiri node' do
-            html = '
-                    <html>
-                        <body>
-                            <form method="get" action="form_action" name="my_form">
-                                <input type=password name="my_first_input" value="my_first_value"" />
-                                <input type=radio name="my_second_input" value="my_second_value"" />
-                            </form>
-    
-                        </body>
-                    </html>'
-    
-            node = described_class.from_document( url, html ).first.node
+            node = with_node.node
             node.is_a?( Nokogiri::XML::Element ).should be_true
             node.css( 'input' ).first['name'].should == 'my_first_input'
         end
     end
-    
+
     describe '#to_html' do
         context 'when there is a node' do
             it 'returns the original form as HTML' do
-                html = '
-                    <html>
-                        <body>
-                            <form method="get" action="form_action" name="my_form">
-                                <input type=password name="my_first_input" value="my_first_value"" />
-                                <input type=radio name="my_second_input" value="my_second_value"" />
-                            </form>
-    
-                        </body>
-                    </html>'
-    
-                f1 = described_class.from_document( url, html ).first
-                f2 = described_class.from_document( url, f1.to_html ).first
-                f2.should == f1
+                f2 = described_class.from_document( url, with_node.to_html ).first
+                f2.should == with_node
             end
         end
     
         context 'when there is no node' do
             it 'returns nil' do
-                described_class.new( options ).to_html.should be_nil
+                subject.to_html.should be_nil
             end
         end
     end
