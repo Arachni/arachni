@@ -36,7 +36,7 @@ shared_examples_for 'auditable' do |options = {}|
         new.inputs = { stuff: 'blah' }
         new
     end
-    let(:orphan) { subject }
+    let(:orphan) { subject.tap { |e| e.auditor = nil } }
 
     def has_parameter_extractor?
         begin
@@ -527,7 +527,7 @@ shared_examples_for 'auditable' do |options = {}|
                 Arachni::Element::Capabilities::Auditable.reset
 
                 opts = Arachni::Options.instance
-                opts.scope.exclude_path_patterns << auditable.action
+                opts.scope.exclude_path_patterns << /./
 
                 ran = false
                 auditable.audit( seed ) { ran = true }

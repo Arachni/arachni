@@ -25,6 +25,12 @@ describe Arachni::Element::Form::DOM do
     let(:parent) { @form }
     let(:url) { web_server_url_for( :form_dom ) }
 
+    let(:inputable) do
+        f = Arachni::Page.from_url( "#{url}/form/inputable" ).forms.first
+        f.dom.auditor = auditor
+        f
+    end
+
     describe '#inputs' do
         it 'uses the parent\'s inputs' do
             subject.inputs.should == parent.inputs

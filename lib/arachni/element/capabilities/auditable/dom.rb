@@ -42,6 +42,12 @@ class DOM
     # @!method node
     def_delegator :parent,  :node
 
+    # @!method auditor
+    def_delegator :parent,  :auditor
+
+    # @!method auditor=
+    def_delegator :parent,  :auditor=
+
     # @!method platforms
     def_delegator :parent,  :platforms
 

@@ -1,5 +1,5 @@
 shared_examples_for 'element_dom' do
-    #it_should_behave_like 'auditable', supports_nulls: false
+    it_should_behave_like 'auditable', supports_nulls: false
 
     def run
         auditor.browser_cluster.wait

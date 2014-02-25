@@ -148,7 +148,7 @@ module Auditable
 
     # Removes the {#auditor} from this element.
     def remove_auditor
-        @auditor = nil
+        self.auditor = nil
     end
 
     # Submits mutations of self and calls the block to handle the responses.
@@ -331,7 +331,7 @@ module Auditable
             return false
         end
 
-        @auditor ||= @audit_options.delete( :auditor )
+        self.auditor ||= @audit_options.delete( :auditor )
 
         audit_id = audit_id( injection_str, @audit_options )
         return false if !@audit_options[:redundant] && audited?( audit_id )

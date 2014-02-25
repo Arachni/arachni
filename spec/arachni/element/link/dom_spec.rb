@@ -25,6 +25,12 @@ describe Arachni::Element::Link::DOM do
     let(:parent) { @link }
     let(:url) { web_server_url_for( :link_dom ) }
 
+    let(:inputable) do
+        f = Arachni::Page.from_url( "#{url}/link/inputable" ).forms.first
+        f.dom.auditor = auditor
+        f
+    end
+
     describe '#inputs' do
         it 'parses query-style inputs from URL fragments' do
             subject.inputs.should == { 'param' => 'some-name' }

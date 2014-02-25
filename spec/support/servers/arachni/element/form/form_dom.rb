@@ -37,3 +37,16 @@ get '/form' do
 </html>
     EOHTML
 end
+
+get '/form/inputable' do
+    <<-EOHTML
+<html>
+    <body>
+        <form action="/submit">
+            <input name="input1"/>
+            <input name="input2"/>
+        </fom>
+    </body>
+</html>
+    EOHTML
+end

@@ -373,13 +373,9 @@ class Page
             h[m] = send( m )
         end
 
-        # Dup the elements, this will also remove #page associations, however
-        # the associations will be restored by #new via ._load.
         [:links, :forms, :cookies, :headers] .each do |m|
-            h[m] = h[m].map(&:dup)
+            h[m] = h[m].map(&:dup).each { |e| e.page = nil }
         end
-
-        h[:forms].each { |f| f.node = nil }
 
         h[:dom] = dom.to_h
 

@@ -60,7 +60,7 @@ shared_examples_for 'mutable' do |options = {}|
     end
 
     describe '#mutations' do
-        it 'mutates #auditable' do
+        it 'mutates #inputs' do
             mutable.mutations( seed, skip_original: true ).each do |m|
                 mutable.url.should == m.url
                 mutable.action.should == m.action

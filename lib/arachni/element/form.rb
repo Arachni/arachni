@@ -40,7 +40,7 @@ class Form < Base
     attr_accessor   :node
 
     # @return   [DOM]
-    attr_reader     :dom
+    attr_accessor   :dom
 
     # @param    [Hash]    options
     # @option   options [String]    :name
@@ -64,6 +64,8 @@ class Form < Base
     #           }
     #       }
     def initialize( options )
+        @node = options.delete(:node)
+
         options = options.dup
         super( options )
 
@@ -89,7 +91,7 @@ class Form < Base
 
         @default_inputs = self.inputs.dup.freeze
 
-        @dom = DOM.new( self )
+        @dom = DOM.new( self ) if @node
     end
 
     def action=( url )
@@ -289,6 +291,8 @@ class Form < Base
 
     def marshal_dump
         instance_variables.inject( {} ) do |h, iv|
+            next h if iv == :@dom
+
             if iv == :@node
                 h[iv] = instance_variable_get( iv ).to_s
             else
@@ -302,6 +306,7 @@ class Form < Base
     def marshal_load( h )
         self.node = Nokogiri::HTML( h.delete(:@node) ).css('form').first
         h.each { |k, v| instance_variable_set( k, v ) }
+        self.dom = DOM.new( self )
     end
 
     # Extracts forms by parsing the body of an HTTP response.
@@ -331,10 +336,6 @@ class Form < Base
         document.search( '//form' ).map do |cform|
             next if !(form = form_from_element( base_url, cform ))
             form.url = url
-
-            # We do it this way to remove references to parents etc.
-            form.node = Nokogiri::HTML.fragment( cform.to_html ).css( 'form' ).first
-
             form
         end.compact
     end
@@ -387,6 +388,9 @@ class Form < Base
         super.tap do |f|
             f.nonce_name = nonce_name.dup if nonce_name
             f.requires_password = requires_password?
+            f.page = page
+            f.node = node.dup if node
+            f.dom  = DOM.new( f ) if dom
         end
     end
 
@@ -415,6 +419,7 @@ class Form < Base
         c_form          = attributes_to_hash( form.attributes )
         c_form[:action] = to_absolute( c_form[:action], url )
         c_form[:inputs] = {}
+        c_form[:node]   = Nokogiri::HTML.fragment( form.to_html ).css( 'form' ).first
 
         %w(textarea input select button).each do |attr|
             c_form[attr] ||= []

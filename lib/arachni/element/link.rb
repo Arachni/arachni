@@ -17,7 +17,7 @@ class Link < Base
     attr_accessor :node
 
     # @return   [DOM]
-    attr_reader   :dom
+    attr_accessor :dom
 
     # @param    [Hash]    options
     # @option   options [String]    :url
@@ -42,7 +42,7 @@ class Link < Base
 
         @default_inputs = self.inputs.dup.freeze
 
-        @dom = DOM.new( self )
+        @dom = DOM.new( self ) if @node
     end
 
     # @return   [Hash]
@@ -164,6 +164,8 @@ class Link < Base
 
     def marshal_dump
         instance_variables.inject( {} ) do |h, iv|
+            next h if iv == :@dom
+
             if iv == :@node
                 h[iv] = instance_variable_get( iv ).to_s
             else
@@ -177,6 +179,7 @@ class Link < Base
     def marshal_load( h )
         self.node = Nokogiri::HTML( h.delete(:@node) ).css('a').first
         h.each { |k, v| instance_variable_set( k, v ) }
+        self.dom = DOM.new( self )
     end
 
     def audit_id( injection_str = '', opts = {} )
@@ -190,6 +193,14 @@ class Link < Base
         str << ":timeout=#{opts[:timeout]}" if !opts[:no_timeout]
 
         str
+    end
+
+    def dup
+        new = super
+        new.node = node.dup if node
+        new.page = page
+        new.dom  = DOM.new( new ) if dom
+        new
     end
 
     def hash
