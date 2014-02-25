@@ -30,10 +30,6 @@ class Worker < Arachni::Browser
     attr_reader :job
 
     def initialize( options )
-        %w(QUIT INT).each do |signal|
-            trap( signal, 'IGNORE' ) if Signal.list.has_key?( signal )
-        end
-
         javascript_token = options.delete( :javascript_token )
         @master          = options.delete( :master )
 
