@@ -19,10 +19,18 @@ class DOM
     extend Forwardable
 
     # @return   [Element::Base]
-    attr_reader   :parent
+    attr_accessor :parent
 
     # @return   [Browser]
     attr_accessor :browser
+
+    attr_reader   :url
+
+    attr_reader   :action
+
+    attr_accessor :page
+
+    attr_accessor :node
 
     # @!method with_browser_cluster( &block )
     def_delegator :auditor, :with_browser_cluster
@@ -30,42 +38,35 @@ class DOM
     # @!method with_browser( &block )
     def_delegator :auditor, :with_browser
 
-    # @!method url
-    def_delegator :parent,  :url
+    def initialize( options )
+        options = options.dup
+        @parent = options.delete(:parent)
 
-    # @!method action
-    def_delegator :parent,  :action
+        if parent
+            @url    = parent.url.dup    if parent.url
+            @action = parent.action.dup if parent.action
+            @page   = parent.page       if parent.page
+            @node   = parent.node.dup   if parent.node
+        else
+            @url    = options[:url]
+            @action = options[:action]
+            @page   = options[:page]
+            @node   = options[:node]
+        end
 
-    # @!method page
-    def_delegator :parent,  :page
-
-    # @!method node
-    def_delegator :parent,  :node
-
-    # @!method auditor
-    def_delegator :parent,  :auditor
-
-    # @!method auditor=
-    def_delegator :parent,  :auditor=
-
-    # @!method platforms
-    def_delegator :parent,  :platforms
-
-    # @!method encode
-    def_delegator :parent,  :encode
-
-    # @!method decode
-    def_delegator :parent,  :decode
-
-    # @!method type
-    def_delegator :parent,  :type
-
-    # @!method ==
-    def_delegator :parent,  :==
-
-    def initialize( parent )
-        @parent        = parent
         @audit_options = {}
+    end
+
+    def url=(*)
+        fail NotImplementedError
+    end
+
+    def action=(*)
+        fail NotImplementedError
+    end
+
+    def page
+        @page ||= parent.page
     end
 
     # @return   [Watir::HTMLElement]
@@ -119,7 +120,26 @@ class DOM
     end
 
     def dup
-        copy_auditable( copy_mutable( copy_inputable( parent.dup.dom ) ) )
+        new = self.class.new( dup_options )
+        new.parent = parent
+        copy_auditable( copy_mutable( copy_inputable( new ) ) )
+    end
+
+    def marshal_dump
+        instance_variables.inject( {} ) do |h, iv|
+            if iv == :@node
+                h[iv] = self.class.serialize_node( @node )
+            else
+                h[iv] = instance_variable_get( iv )
+            end
+
+            h
+        end
+    end
+
+    def marshal_load( h )
+        self.node = self.class.unserialize_node( h.delete(:@node) )
+        h.each { |k, v| instance_variable_set( k, v ) }
     end
 
     def hash
@@ -130,7 +150,20 @@ class DOM
         hash == other.hash
     end
 
+    def self.serialize_node( *args )
+        Element::Base.serialize_node( *args )
+    end
+
     private
+
+    def dup_options
+        options = {}
+        options[:url]    = url.dup     if @url
+        options[:action] = @action.dup if @action
+        options[:page]   = page        if page
+        options[:node]   = node.dup    if @node
+        options
+    end
 
     def prepare_browser( browser, options )
         @browser = browser
@@ -141,7 +174,7 @@ class DOM
 
     def all_valid_attributes
         @all_valid_attributes ||=
-            Set.new( Arachni::Page::DOM::Transition.valid_element_attributes_for( type ) )
+            Set.new( Arachni::Page::DOM::Transition.valid_element_attributes_for( watir_type ) )
     end
 
     def valid_attributes

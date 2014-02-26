@@ -11,10 +11,10 @@ class Form
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class DOM < Capabilities::Auditable::DOM
 
-    def initialize(*)
+    def initialize( options )
         super
 
-        self.inputs     = self.parent.inputs.dup
+        self.inputs     = (options[:inputs] || self.parent.inputs).dup
         @default_inputs = self.inputs.dup.freeze
     end
 
@@ -27,6 +27,35 @@ class DOM < Capabilities::Auditable::DOM
     # Submits the form using the configured {#inputs}.
     def trigger
         browser.fire_event element, :onsubmit, inputs: inputs.dup
+    end
+
+    def encode( *args )
+        Form.encode( *args )
+    end
+
+    def decode( *args )
+        Form.decode( *args )
+    end
+
+    def type
+        self.class.type
+    end
+    def self.type
+        :form_dom
+    end
+
+    def watir_type
+        self.class.watir_type
+    end
+
+    def self.watir_type
+        :form
+    end
+
+    private
+
+    def dup_options
+        super.merge( inputs: inputs.dup )
     end
 
 end

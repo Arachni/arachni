@@ -37,7 +37,10 @@ class Base
             fail 'Needs :url or :action option.'
         end
 
+        n = options.delete(:node)
         @initialized_options = options.deep_clone
+        options[:node] = n
+        @initialized_options[:node] = n.dup if n
 
         self.url = options[:url] || options[:action]
     end
@@ -84,6 +87,36 @@ class Base
 
     def dup
         self.class.new @initialized_options
+    end
+
+    def marshal_dump
+        instance_variables.inject( {} ) do |h, iv|
+            next h if iv == :@dom
+
+            if iv == :@node
+                h[iv] = self.class.serialize_node( instance_variable_get( iv ) )
+            else
+                h[iv] = instance_variable_get( iv )
+
+                if iv == :@initialized_options
+                    h[iv][:node] = self.class.serialize_node( @initialized_options[:node] )
+                end
+            end
+
+            h
+        end
+    end
+
+    def marshal_load( h )
+        if (n = h.delete(:@node))
+            self.node = self.class.unserialize_node( h.delete(:@node) )
+        end
+
+        h.each { |k, v| instance_variable_set( k, v ) }
+    end
+
+    def self.serialize_node( node )
+        node.to_s
     end
 
 end

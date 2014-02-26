@@ -64,15 +64,10 @@ class Form < Base
     #           }
     #       }
     def initialize( options )
-        @node = options.delete(:node)
-
-        options = options.dup
         super( options )
 
         @name = options[:name]
         @id   = options[:id]
-
-        self.method = options[:method] || :get
 
         @input_details = {}
 
@@ -89,9 +84,15 @@ class Form < Base
                 h
             end
 
-        @default_inputs = self.inputs.dup.freeze
+        self.method = options[:method] || :get
+        self.node   = options[:node]
+        self.dom    = DOM.new( parent: self ) if @node
 
-        @dom = DOM.new( self ) if @node
+        @default_inputs = self.inputs.dup.freeze
+    end
+
+    def node=( n )
+        @node = n.is_a?(String) ? self.class.unserialize_node( n ) : n
     end
 
     def action=( url )
@@ -357,6 +358,10 @@ class Form < Base
         self.class.parse_request_body( body )
     end
 
+    def self.unserialize_node( serialized_node )
+        Nokogiri::HTML(serialized_node).css('form').first
+    end
+
     # Encodes a {String}'s reserved characters in order to prepare it
     # to be included in a request body.
     #
@@ -390,12 +395,12 @@ class Form < Base
             f.requires_password = requires_password?
             f.page = page
             f.node = node.dup if node
-            f.dom  = DOM.new( f ) if dom
+            f.dom  = dom.dup.tap { |d| d.parent = f } if @dom
         end
     end
 
     def hash
-        "#{action}:#{method}:#{inputs.hash}}:#{@dom.hash}".hash
+        "#{action}:#{method}:#{inputs.hash}#{dom.hash}".hash
     end
 
     protected

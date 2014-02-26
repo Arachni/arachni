@@ -31,6 +31,24 @@ describe Arachni::Element::Form::DOM do
         f
     end
 
+    describe '#type' do
+        it 'returns :form_dom' do
+            subject.type.should == :form_dom
+        end
+    end
+
+    describe '.type' do
+        it 'returns :form_dom' do
+            described_class.type.should == :form_dom
+        end
+    end
+
+    describe '#parent' do
+        it 'returns the parent element' do
+            subject.parent.should be_kind_of Arachni::Element::Form
+        end
+    end
+
     describe '#inputs' do
         it 'uses the parent\'s inputs' do
             subject.inputs.should == parent.inputs

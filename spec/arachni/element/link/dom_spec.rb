@@ -31,6 +31,24 @@ describe Arachni::Element::Link::DOM do
         l
     end
 
+    describe '#type' do
+        it 'returns :link_dom' do
+            subject.type.should == :link_dom
+        end
+    end
+
+    describe '.type' do
+        it 'returns :link_dom' do
+            described_class.type.should == :link_dom
+        end
+    end
+
+    describe '#parent' do
+        it 'returns the parent element' do
+            subject.parent.should be_kind_of Arachni::Element::Link
+        end
+    end
+
     describe '#inputs' do
         it 'parses query-style inputs from URL fragments' do
             subject.inputs.should == { 'param' => 'some-name' }

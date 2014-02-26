@@ -117,27 +117,15 @@ shared_examples_for 'element_dom' do
         end
     end
 
-    describe '#parent' do
-        it 'returns the parent element' do
-            subject.parent.should be_kind_of Arachni::Element::Base
-        end
-    end
-
     describe '#page' do
-        it 'returns the parent element' do
-            subject.page.should == parent.page
+        it 'returns the page containing the element' do
+            subject.page.should be_kind_of Arachni::Page
         end
     end
 
     describe '#node' do
-        it 'delegates to #parent' do
-            subject.node.should == parent.node
-        end
-    end
-
-    describe '#type' do
-        it 'delegates to #parent' do
-            subject.type.should == parent.type
+        it 'returns the Nokogiri node of the element' do
+            subject.node.is_a?( Nokogiri::XML::Element ).should be_true
         end
     end
 

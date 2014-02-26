@@ -28,8 +28,6 @@ class Link < Base
     #   Query parameters as `name => value` pairs. If none have been provided
     #   they will automatically be extracted from {#action}.
     def initialize( options )
-        @node = options.delete(:node)
-
         super( options )
 
         if options[:inputs]
@@ -39,10 +37,14 @@ class Link < Base
         end
 
         self.method = :get
+        self.node   = options[:node]
+        self.dom    = DOM.new( parent: self ) if @node
 
         @default_inputs = self.inputs.dup.freeze
+    end
 
-        @dom = DOM.new( self ) if @node
+    def node=( n )
+        @node = n.is_a?(String) ? self.class.unserialize_node( n ) : n
     end
 
     # @return   [Hash]
@@ -77,7 +79,11 @@ class Link < Base
         uri.to_s
     end
 
-    def encode_query_params( param )
+    def encode_query_params( *args )
+        self.class.encode_query_params( *args )
+    end
+
+    def self.encode_query_params( param )
         encode( encode( param ), '=' )
     end
 
@@ -162,24 +168,8 @@ class Link < Base
         end
     end
 
-    def marshal_dump
-        instance_variables.inject( {} ) do |h, iv|
-            next h if iv == :@dom
-
-            if iv == :@node
-                h[iv] = instance_variable_get( iv ).to_s
-            else
-                h[iv] = instance_variable_get( iv )
-            end
-
-            h
-        end
-    end
-
-    def marshal_load( h )
-        self.node = Nokogiri::HTML( h.delete(:@node) ).css('a').first
-        h.each { |k, v| instance_variable_set( k, v ) }
-        self.dom = DOM.new( self )
+    def self.unserialize_node( serialized_node )
+        Nokogiri::HTML(serialized_node).css('a').first
     end
 
     def audit_id( injection_str = '', opts = {} )
@@ -199,12 +189,12 @@ class Link < Base
         new = super
         new.node = node.dup if node
         new.page = page
-        new.dom  = DOM.new( new ) if dom
+        new.dom  = dom.dup.tap { |d| d.parent = new } if @dom
         new
     end
 
     def hash
-        "#{action}:#{method}:#{inputs.hash}}:#{@dom.hash}".hash
+        "#{action}:#{method}:#{inputs.hash}}#{dom.hash}".hash
     end
 
     private

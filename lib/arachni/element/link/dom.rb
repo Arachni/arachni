@@ -35,13 +35,13 @@ class DOM < Capabilities::Auditable::DOM
     def initialize(*)
         super
 
-        if node
-            @fragment = valid_attributes[:href].split( '#', 2 ).last
-            @fragment_path, @fragment_query = @fragment.split( '?', 2 )
-        end
+        @fragment = valid_attributes[:href].split( '#', 2 ).last
+        @fragment_path, @fragment_query = @fragment.split( '?', 2 )
 
-        self.inputs     = parent.parse_query( "?#{fragment_query}" )
+        self.inputs     = parse_query( "?#{fragment_query}" )
+
         @default_inputs = self.inputs.dup.freeze
+        @method         = :get
     end
 
     # @return   [Watir::Anchor]
@@ -56,13 +56,45 @@ class DOM < Capabilities::Auditable::DOM
 
     # @return   [String]    URL including the DOM {#inputs}.
     def to_s
-        "#{parent}##{fragment_path}?" << inputs.
-            map { |k, v| "#{parent.encode_query_params(k)}=#{parent.encode_query_params(v)}" }.
+        "#{@action}##{fragment_path}?" << inputs.
+            map { |k, v| "#{encode_query_params(k)}=#{encode_query_params(v)}" }.
             join( '&' )
     end
 
     def action
-        "#{parent}##{fragment}"
+        "#{@action}##{fragment}"
+    end
+
+    def parse_query( *args )
+        Link.parse_query( *args )
+    end
+
+    def encode_query_params( *args )
+        Link.encode_query_params( *args )
+    end
+
+    def encode( *args )
+        Link.encode( *args )
+    end
+
+    def decode( *args )
+        Link.decode( *args )
+    end
+
+    def type
+        self.class.type
+    end
+
+    def self.type
+        :link_dom
+    end
+
+    def watir_type
+        self.class.watir_type
+    end
+
+    def self.watir_type
+        :a
     end
 
     def hash
@@ -70,6 +102,10 @@ class DOM < Capabilities::Auditable::DOM
     end
 
     private
+
+    def self.unserialize_node( *args )
+        Link.unserialize_node( *args )
+    end
 
     def all_valid_attributes
         @all_valid_attributes ||=
