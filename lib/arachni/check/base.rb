@@ -18,11 +18,10 @@ module Check
 class Base < Component::Base
     include Auditor
 
-    # @param  [Page]  page
-    # @param  [Arachni::Framework]  framework
+    # @param  [Page]        page
+    # @param  [Framework]  framework
     def initialize( page, framework )
-        @page      = page
-        @framework = framework
+        super
     end
 
     # OPTIONAL

@@ -131,17 +131,18 @@ module Auditor
         train:    nil
     }
 
-    # *REQUIRED*
-    #
     # @return   [Arachni::Page]  Page object to be audited.
-    # @abstract
     attr_reader :page
 
-    # *REQUIRED*
-    #
     # @return   [Arachni::Framework]
-    # @abstract
     attr_reader :framework
+
+    # @param  [Page]        page
+    # @param  [Framework]  framework
+    def initialize( page, framework )
+        @page      = page
+        @framework = framework
+    end
 
     # *OPTIONAL*
     #
@@ -374,6 +375,48 @@ module Auditor
         end
     end
 
+    # Passes each element prepared for audit to the block.
+    #
+    # If no element types have been specified in `opts`, it will use the elements
+    # from the check's {Base.info} hash.
+    #
+    # If no elements have been specified in `opts` or {Base.info}, it will use the
+    # elements in {OPTIONS}.
+    #
+    # @param  [Array]    types
+    #   Element types to audit (see {OPTIONS}`[:elements]`).
+    #
+    # @yield       [element]  Each candidate element.
+    # @yieldparam [Arachni::Element]
+    def each_candidate_dom_element( types = [], &block )
+        types = self.class.info[:elements] if types.empty?
+        types = OPTIONS[:elements]         if types.empty?
+
+        types.each do |elem|
+            elem = elem.type
+
+            next if elem == Element::Body.type
+            next if !Options.audit.elements?( elem )
+
+            case elem
+                when Element::Link.type
+                    prepare_each_dom_element( page.links, &block )
+
+                when Element::Form.type
+                    prepare_each_dom_element( page.forms, &block )
+
+                when Element::Cookie.type
+                    prepare_each_dom_element( page.cookies, &block )
+
+                when Element::Header.type
+                    prepare_each_dom_element( page.headers, &block )
+
+                else
+                    fail ArgumentError, "Unknown element: #{elem}"
+            end
+        end
+    end
+
     # If a block has been provided it calls {Arachni::Element::Capabilities::Auditable#audit}
     # for every element, otherwise, it defaults to {#audit_taint}.
     #
@@ -475,6 +518,17 @@ module Auditor
             block.call d
         end
     end
+
+    def prepare_each_dom_element( elements, &block )
+        elements.each do |e|
+            next if !e.dom || e.dom.inputs.empty?
+
+            d = e.dup
+            d.dom.auditor = self
+            block.call d
+        end
+    end
+
 
     # Helper `Set` for checks which want to keep track of what they've audited
     # by themselves.
