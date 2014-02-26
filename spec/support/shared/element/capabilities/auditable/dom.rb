@@ -5,6 +5,16 @@ shared_examples_for 'element_dom' do
         auditor.browser_cluster.wait
     end
 
+    describe '#url=' do
+        it 'raises NotImplementedError'
+    end
+
+    describe '#action=' do
+        it 'raises NotImplementedError'
+    end
+
+    it 'supports Marshal serialization'
+
     describe '#with_browser_cluster' do
         context 'when a browser cluster is' do
             context 'available' do
@@ -141,23 +151,6 @@ shared_examples_for 'element_dom' do
             dup.should == subject
         end
 
-        it 'preserves the #inputs' do
-            dup = subject.dup
-            dup.inputs.should == subject.inputs
-
-            dup[:stuff] = 'blah'
-            subject.inputs.should_not include :stuff
-            dup.should_not == subject
-
-            dup.dup[:stuff].should == 'blah'
-        end
-
-        it 'preserves the #auditor' do
-            dup = subject.dup
-            dup.auditor.should == subject.auditor
-
-            subject.remove_auditor
-            dup.auditor.should be_true
-        end
+        it 'preserves the #parent'
     end
 end

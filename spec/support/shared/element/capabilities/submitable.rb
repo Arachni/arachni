@@ -33,6 +33,11 @@ shared_examples_for 'submitable' do
         end
     end
 
+    describe '#dup' do
+        it 'preserves #method'
+        it 'preserves #action'
+    end
+
     describe '#to_h' do
         it 'returns a hash representation of self' do
             hash = submitable.to_h

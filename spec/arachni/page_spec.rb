@@ -22,6 +22,8 @@ describe Arachni::Page do
     let( :page ) { Factory[:page] }
     subject { page }
 
+    it 'supports Marshal serialization'
+
     describe '#initialize' do
         describe 'option' do
             describe :response do

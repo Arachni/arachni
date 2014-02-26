@@ -24,6 +24,8 @@ describe Arachni::Element::Base do
         described_class.new options
     end
 
+    it 'supports Marshal serialization'
+
     describe '#url' do
         it 'returns the assigned URL' do
             subject.url.should == normalized_url

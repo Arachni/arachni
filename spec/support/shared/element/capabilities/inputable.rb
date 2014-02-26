@@ -241,6 +241,27 @@ shared_examples_for 'inputable' do |options = {}|
         end
     end
 
+    describe '#dup' do
+        it 'preserves #inputs' do
+            dup = subject.dup
+            dup.inputs.should == subject.inputs
+
+            if opts[:single_input]
+                dup[:input1] = 'blah'
+                subject.inputs['input1'].should_not == 'blah'
+                dup.should_not == subject
+
+                dup.dup[:input1].should == 'blah'
+            else
+                dup[:stuff] = 'blah'
+                subject.inputs.should_not include :stuff
+                dup.should_not == subject
+
+                dup.dup[:stuff].should == 'blah'
+            end
+        end
+    end
+
     describe '#to_h' do
         it 'returns a hash representation of self' do
             hash = subject.to_h

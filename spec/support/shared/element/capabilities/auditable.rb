@@ -50,6 +50,18 @@ shared_examples_for 'auditable' do |options = {}|
         true
     end
 
+    describe '#dup' do
+        it 'preserves #override_instance_scope'
+        it 'preserves #audit_options'
+        it 'preserves the #auditor' do
+            dup = auditable.dup
+            dup.auditor.should == auditable.auditor
+
+            subject.remove_auditor
+            dup.auditor.should be_true
+        end
+    end
+
     describe '.skip_like' do
         it 'skips elements based on the block\'s return value' do
             audited = false

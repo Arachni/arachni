@@ -245,6 +245,12 @@ shared_examples_for 'mutable' do |options = {}|
         end
     end
 
+    describe '#dup' do
+        it 'preserves #seed'
+        it 'preserves #affected_input_name'
+        it 'preserves #format'
+    end
+
     describe '#to_h' do
         it 'returns a hash representation of self' do
             mutation = mutable.mutations( seed ).find { |m| m.mutation? }
