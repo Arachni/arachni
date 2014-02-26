@@ -103,6 +103,7 @@ module Capabilities::Submitable
 
     def dup
         new = super
+        new.action = self.action
         new.method = self.method
         new
     end
