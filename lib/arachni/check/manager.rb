@@ -141,14 +141,18 @@ class Manager < Arachni::Component::Manager
     end
 
     def self.on_register_results( &block )
-        on_register_results_blocks << block
+        synchronize do
+            on_register_results_blocks << block
+        end
     end
     def on_register_results( &block )
         self.class.on_register_results( &block )
     end
 
     def self.on_register_results_raw( &block )
-        on_register_results_blocks_raw << block
+        synchronize do
+            on_register_results_blocks_raw << block
+        end
     end
     def on_register_results_raw( &block )
         self.class.on_register_results_raw( &block )
@@ -181,20 +185,22 @@ class Manager < Arachni::Component::Manager
     #
     # @return   [Integer]   amount of (unique) issues registered
     def self.register_results( results )
-        on_register_results_blocks_raw.each { |block| block.call( results ) }
+        synchronize do
+            on_register_results_blocks_raw.each { |block| block.call( results ) }
 
-        unique = dedup( results )
-        return results if unique.empty?
+            unique = dedup( results )
+            return results if unique.empty?
 
-        # Don't allow multiple variations of the same audit-type issue,
-        # only allow variations for recon checks.
-        unique.each { |issue| issue_set << issue.unique_id if issue.active? }
+            # Don't allow multiple variations of the same audit-type issue,
+            # only allow variations for recon checks.
+            unique.each { |issue| issue_set << issue.unique_id if issue.active? }
 
-        on_register_results_blocks.each { |block| block.call( unique ) }
-        return results if !store?
+            on_register_results_blocks.each { |block| block.call( unique ) }
+            return results if !store?
 
-        unique.each { |issue| self.results << issue }
-        results
+            unique.each { |issue| self.results << issue }
+            results
+        end
     end
     def register_results( results )
         self.class.register_results( results )
@@ -231,10 +237,19 @@ class Manager < Arachni::Component::Manager
         # Blocks to call for logged issues without deduplication taking place.
         @on_register_results_blocks_raw = []
 
+        @mutex = Mutex.new
+
         remove_constants( NAMESPACE )
     end
     def reset
         self.class.reset
+    end
+
+    def synchronize( &block )
+        self.class.synchronize( &block )
+    end
+    def self.synchronize( &block )
+        @mutex.synchronize( &block )
     end
 
     private
