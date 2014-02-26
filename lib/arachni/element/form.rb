@@ -290,26 +290,6 @@ class Form < Base
         details_for( name )[:type]
     end
 
-    def marshal_dump
-        instance_variables.inject( {} ) do |h, iv|
-            next h if iv == :@dom
-
-            if iv == :@node
-                h[iv] = instance_variable_get( iv ).to_s
-            else
-                h[iv] = instance_variable_get( iv )
-            end
-
-            h
-        end
-    end
-
-    def marshal_load( h )
-        self.node = Nokogiri::HTML( h.delete(:@node) ).css('form').first
-        h.each { |k, v| instance_variable_set( k, v ) }
-        self.dom = DOM.new( self )
-    end
-
     # Extracts forms by parsing the body of an HTTP response.
     #
     # @param   [Arachni::HTTP::Response]    response
