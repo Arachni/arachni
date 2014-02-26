@@ -829,7 +829,6 @@ class Framework
         loop do
 
             show_workload_msg = true
-            # Bad idea? Hogging the BrowserCluster mutex?
             while !has_audit_workload? && wait_for_browser?
                 if show_workload_msg
                     print_line

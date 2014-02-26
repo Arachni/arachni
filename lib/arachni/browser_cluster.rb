@@ -251,7 +251,7 @@ class BrowserCluster
     #   `true` if there are no resources to analyze and no running workers.
     def done?
         fail_if_shutdown
-        synchronize { @pending_job_counter == 0 }
+        @pending_job_counter == 0
     end
 
     # Blocks until all resources have been analyzed.
