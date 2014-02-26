@@ -94,7 +94,7 @@ module Capabilities::Inputable
     #
     # @see #update
     def []=( k, v )
-        update( { k => v } )
+        update( { k.to_s => v } )
         self[k]
     end
 
