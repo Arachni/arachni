@@ -127,13 +127,15 @@ class Manager < Arachni::Component::Manager
         return true if !elements || elements.empty?
 
         elems = {
-            Element::Link   => page.links.any?   && @opts.audit.links,
-            Element::Form   => page.forms.any?   && @opts.audit.forms,
-            Element::Cookie => page.cookies.any? && @opts.audit.cookies,
-            Element::Header => page.headers.any? && @opts.audit.headers,
-            Element::Body   => !page.body.empty?,
-            Element::Path   => true,
-            Element::Server => true
+            Element::Link      => page.links.any?   && @opts.audit.links,
+            Element::Link::DOM => page.links.any?   && @opts.audit.links,
+            Element::Form      => page.forms.any?   && @opts.audit.forms,
+            Element::Form::DOM => page.forms.any?   && @opts.audit.forms,
+            Element::Cookie    => page.cookies.any? && @opts.audit.cookies,
+            Element::Header    => page.headers.any? && @opts.audit.headers,
+            Element::Body      => !page.body.empty?,
+            Element::Path      => true,
+            Element::Server    => true
         }
 
         elems.each_pair { |elem, expr| return true if elements.include?( elem ) && expr }

@@ -390,29 +390,21 @@ module Auditor
     # @yieldparam [Arachni::Element]
     def each_candidate_dom_element( types = [], &block )
         types = self.class.info[:elements] if types.empty?
-        types = OPTIONS[:elements]         if types.empty?
 
         types.each do |elem|
             elem = elem.type
 
-            next if elem == Element::Body.type
-            next if !Options.audit.elements?( elem )
+            next if !Options.audit.elements?( elem.to_s.gsub( '_dom', '' ) )
 
             case elem
-                when Element::Link.type
+                when Element::Link::DOM.type
                     prepare_each_dom_element( page.links, &block )
 
-                when Element::Form.type
+                when Element::Form::DOM.type
                     prepare_each_dom_element( page.forms, &block )
 
-                when Element::Cookie.type
-                    prepare_each_dom_element( page.cookies, &block )
-
-                when Element::Header.type
-                    prepare_each_dom_element( page.headers, &block )
-
                 else
-                    fail ArgumentError, "Unknown element: #{elem}"
+                    fail ArgumentError, "Unknown DOM element: #{elem}"
             end
         end
     end

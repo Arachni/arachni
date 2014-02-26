@@ -22,6 +22,16 @@ describe Arachni::Check::Manager do
         end
     end
 
+    describe '#check?' do
+        context 'when the page has elements that the component can check' do
+            it 'returns true'
+        end
+
+        context 'when the page has no elements that the component can check' do
+            it 'returns false'
+        end
+    end
+
     describe '#[]' do
         context 'when the check contains invalid platforms' do
             it "raises #{described_class::Error::InvalidPlatforms}" do

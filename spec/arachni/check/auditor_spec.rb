@@ -60,6 +60,34 @@ describe Arachni::Check::Auditor do
     let(:issue) { Factory[:issue] }
     let(:issue_data) { Factory[:issue_data].tap { |d| d.delete :check } }
 
+    describe '#each_candidate_element' do
+        context 'when types have been provided' do
+            it 'returns those types of elements'
+        end
+        context 'when types have not been provided' do
+            it 'returns the types of elements specified by the check'
+
+            context 'and no types are specified by the check' do
+                it 'returns all types of elements'
+            end
+        end
+        it 'passes each element applicable for audit with the auditor set'
+    end
+
+    describe '#each_candidate_dom_element' do
+        context 'when types have been provided' do
+            it 'returns those types of elements'
+        end
+        context 'when types have not been provided' do
+            it 'returns the types of elements specified by the check'
+
+            context 'and no types are specified by the check' do
+                it 'returns all types of elements'
+            end
+        end
+        it 'passes each DOM element applicable for audit with the auditor set'
+    end
+
     describe '#with_browser_cluster' do
         context 'when a browser cluster is' do
             context 'available' do
