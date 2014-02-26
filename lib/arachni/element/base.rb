@@ -91,8 +91,6 @@ class Base
 
     def marshal_dump
         instance_variables.inject( {} ) do |h, iv|
-            next h if iv == :@dom
-
             if iv == :@node
                 h[iv] = self.class.serialize_node( instance_variable_get( iv ) )
             else

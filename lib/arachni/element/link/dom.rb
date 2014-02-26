@@ -35,11 +35,12 @@ class DOM < Capabilities::Auditable::DOM
     def initialize(*)
         super
 
-        @fragment = valid_attributes[:href].split( '#', 2 ).last
-        @fragment_path, @fragment_query = @fragment.split( '?', 2 )
+        if valid_attributes[:href].include? '#'
+            @fragment = valid_attributes[:href].split( '#', 2 ).last
+            @fragment_path, @fragment_query = @fragment.split( '?', 2 )
+        end
 
         self.inputs     = parse_query( "?#{fragment_query}" )
-
         @default_inputs = self.inputs.dup.freeze
         @method         = :get
     end
@@ -97,15 +98,15 @@ class DOM < Capabilities::Auditable::DOM
         :a
     end
 
+    def self.unserialize_node( *args )
+        Link.unserialize_node( *args )
+    end
+
     def hash
         to_s.hash
     end
 
     private
-
-    def self.unserialize_node( *args )
-        Link.unserialize_node( *args )
-    end
 
     def all_valid_attributes
         @all_valid_attributes ||=

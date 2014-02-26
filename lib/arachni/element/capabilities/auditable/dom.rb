@@ -66,7 +66,8 @@ class DOM
     end
 
     def page
-        @page ||= parent.page
+        return @page if @page
+        @page = parent.page if parent
     end
 
     # @return   [Watir::HTMLElement]
@@ -127,6 +128,8 @@ class DOM
 
     def marshal_dump
         instance_variables.inject( {} ) do |h, iv|
+            next h if [:@parent, :@page].include? iv
+
             if iv == :@node
                 h[iv] = self.class.serialize_node( @node )
             else

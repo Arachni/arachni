@@ -52,6 +52,10 @@ class DOM < Capabilities::Auditable::DOM
         :form
     end
 
+    def self.unserialize_node( *args )
+        Form.unserialize_node( *args )
+    end
+
     private
 
     def dup_options
