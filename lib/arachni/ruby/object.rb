@@ -16,11 +16,7 @@ class Object
     # @return   [Object]    Duplicate of self.
     #
     def deep_clone
-        begin
-            Marshal.load( Marshal.dump( self ) )
-        rescue => e
-            self
-        end
+        Marshal.load( Marshal.dump( self ) )
     end
 
     #
