@@ -11,9 +11,9 @@ shared_examples_for 'auditable' do |options = {}|
     end
 
     before :each do
-        @framework = Arachni::Framework.new
-        page       = Arachni::Page.from_url( url )
-        @auditor   = Auditor.new( page, @framework )
+        @framework ||= Arachni::Framework.new
+        @page      = Arachni::Page.from_url( url )
+        @auditor   = Auditor.new( @page, @framework )
     end
 
     after :each do
