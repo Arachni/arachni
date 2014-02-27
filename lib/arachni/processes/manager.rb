@@ -41,7 +41,7 @@ class Manager
     def kill( pid )
         loop do
             begin
-                Process.kill( 'KILL', pid )
+                Process.kill( 'INT', pid )
             rescue Errno::ESRCH
                 @pids.delete pid
                 return
