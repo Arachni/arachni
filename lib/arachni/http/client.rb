@@ -138,6 +138,7 @@ class Client
         @after_run = []
 
         @_404 = Hash.new
+        @mutex = Monitor.new
         self
     end
 
@@ -566,13 +567,15 @@ class Client
         typhoeus_req = request.to_typhoeus
 
         if request.blocking?
-            @hydra_sync.queue( typhoeus_req )
+            synchronize do
+                @hydra_sync.queue( typhoeus_req )
+                @request_count += 1
+            end
         else
-            @queue_size += 1
             @hydra.queue( typhoeus_req )
+            @queue_size    += 1
+            @request_count += 1
         end
-
-        @request_count += 1
 
         if debug?
             print_debug '------------'
@@ -620,12 +623,14 @@ class Client
             print_debug '------------'
         end
 
-        if emergency_run?
-            print_info 'Request queue reached its maximum size, performing an emergency run.'
-            hydra_run
+        if request.blocking?
+            exception_jail { @hydra_sync.run }
+        else
+            if emergency_run?
+                print_info 'Request queue reached its maximum size, performing an emergency run.'
+                hydra_run
+            end
         end
-
-        exception_jail { @hydra_sync.run } if request.blocking?
     end
 
     def emergency_run?
@@ -642,6 +647,11 @@ class Client
     def random_string
         Digest::SHA1.hexdigest( rand( 9999999 ).to_s )
     end
+
+    def synchronize( &block )
+        @mutex.synchronize( &block )
+    end
+
 
     def self.info
         { name: 'HTTP' }
