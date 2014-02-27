@@ -880,7 +880,7 @@ class Browser
 
         loop do
             begin
-                Process.kill( 'KILL', @phantomjs_pid )
+                Process.kill( 'INT', @phantomjs_pid )
             rescue Errno::ESRCH
                 break
             end
