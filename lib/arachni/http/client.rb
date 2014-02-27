@@ -568,7 +568,7 @@ class Client
         if request.blocking?
             hydra_sync = Typhoeus::Hydra.new( max_concurrency: 1 )
             hydra_sync.queue( typhoeus_req )
-            @request_count += 1
+            synchronize { @request_count += 1 }
         else
             @hydra.queue( typhoeus_req )
             @queue_size    += 1
@@ -589,36 +589,38 @@ class Client
         end
 
         request.on_complete do |response|
-            @response_count          += 1
-            @burst_response_count    += 1
-            @burst_response_time_sum += response.time
-            @total_response_time_sum += response.time
+            synchronize do
+                @response_count          += 1
+                @burst_response_count    += 1
+                @burst_response_time_sum += response.time
+                @total_response_time_sum += response.time
 
-            if Options.fingerprint? && response.platforms.empty?
-                # Force a fingerprint by converting the Response to a Page object.
-                response.to_page
-            end
+                if Options.fingerprint? && response.platforms.empty?
+                    # Force a fingerprint by converting the Response to a Page object.
+                    response.to_page
+                end
 
-            call_on_complete( response )
+                call_on_complete( response )
 
-            parse_and_set_cookies( response ) if request.update_cookies?
+                parse_and_set_cookies( response ) if request.update_cookies?
 
-            if debug?
+                if debug?
+                    print_debug '------------'
+                    print_debug "Got response for request ID#: #{response.request.id}"
+                    print_debug "Status: #{response.code}"
+                    print_debug "Error msg: #{response.return_message}"
+                    print_debug "URL: #{response.url}"
+                    print_debug "Headers:\n#{response.headers_string}"
+                    print_debug "Parsed headers: #{response.headers}"
+                end
+
+                if response.timed_out?
+                    print_debug "Request timed-out! -- ID# #{response.request.id}"
+                    @time_out_count += 1
+                end
+
                 print_debug '------------'
-                print_debug "Got response for request ID#: #{response.request.id}"
-                print_debug "Status: #{response.code}"
-                print_debug "Error msg: #{response.return_message}"
-                print_debug "URL: #{response.url}"
-                print_debug "Headers:\n#{response.headers_string}"
-                print_debug "Parsed headers: #{response.headers}"
             end
-
-            if response.timed_out?
-                print_debug "Request timed-out! -- ID# #{response.request.id}"
-                @time_out_count += 1
-            end
-
-            print_debug '------------'
         end
 
         if request.blocking?
