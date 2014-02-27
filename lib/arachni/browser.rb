@@ -850,19 +850,19 @@ class Browser
         port = nil
         10.times do
             port = available_port
-            io = IO.popen([ 'phantomjs',
+            @phantomjs_io = IO.popen([ 'phantomjs',
                             "--webdriver=#{port}",
                             "--proxy=http://#{@proxy.address}/",
                             '--ignore-ssl-errors=true',
                             err: [:child, :out]]
             )
 
-            @phantomjs_pid = io.pid
+            @phantomjs_pid = @phantomjs_io.pid
 
             begin
                 Timeout.timeout( @options[:timeout] ) do
                     buff = ''
-                    while buff << io.gets.to_s
+                    while buff << @phantomjs_io.gets.to_s
                         break if buff.include? 'GhostDriver - Main - running on port'
                     end
                 end
@@ -885,6 +885,8 @@ class Browser
                 break
             end
         end
+        @phantomjs_io.close
+        @phantomjs_url = nil
     end
 
     def store_pages?
