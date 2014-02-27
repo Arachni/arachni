@@ -20,8 +20,10 @@ class BrowserCluster
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Worker < Arachni::Browser
 
-    # Maximum allowed time for jobs.
-    JOB_TIMEOUT = 60
+    # Maximum allowed time for jobs in seconds. One hour is pretty close to
+    # not having a timeout at all but it's good to at least have the option
+    # for future use.
+    JOB_TIMEOUT = 3600
 
     # @return    [BrowserCluster]
     attr_reader :master
