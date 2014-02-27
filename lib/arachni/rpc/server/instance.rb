@@ -615,7 +615,10 @@ class Instance
 
     # Makes the server go bye-bye...Lights out!
     def shutdown( &block )
-        return block.call if @shutdown
+        if @shutdown
+            block.call if block_given?
+            return
+        end
         @shutdown = true
 
         print_status 'Shutting down...'
