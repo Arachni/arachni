@@ -1001,7 +1001,7 @@ class Browser
         Selenium::WebDriver::Remote::Capabilities.phantomjs(
             'phantomjs.page.settings.userAgent'  => Options.http.user_agent,
             'phantomjs.page.customHeaders.X-Arachni-Browser-Auth' => auth_token,
-            #'phantomjs.page.settings.loadImages' => false,
+            #'phantomjs.page.settings.loadImages' => false
         )
     end
 
