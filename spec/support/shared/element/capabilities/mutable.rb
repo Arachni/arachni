@@ -24,6 +24,9 @@ shared_examples_for 'mutable' do |options = {}|
         s.inputs = inputs
         s
     end
+    let(:mutation) do
+        mutable.mutations( seed ).find { |m| m.mutation? }
+    end
 
     describe '#mutation?' do
         context 'when the element has not been mutated' do
@@ -246,16 +249,22 @@ shared_examples_for 'mutable' do |options = {}|
     end
 
     describe '#dup' do
-        it 'preserves #seed'
-        it 'preserves #affected_input_name'
-        it 'preserves #format'
+        let(:dupped) { mutation.dup }
+
+        it 'preserves #seed' do
+            dupped.seed.should == mutation.seed
+        end
+        it 'preserves #affected_input_name' do
+            dupped.affected_input_name.should == mutation.affected_input_name
+        end
+        it 'preserves #format' do
+            dupped.format.should == mutation.format
+        end
     end
 
     describe '#to_h' do
         it 'returns a hash representation of self' do
-            mutation = mutable.mutations( seed ).find { |m| m.mutation? }
             hash = mutation.to_h
-
             hash[:affected_input_name].should == mutation.affected_input_name
             hash[:affected_input_value].should == mutation.affected_input_value
             hash[:seed].should == mutation.seed

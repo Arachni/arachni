@@ -51,11 +51,34 @@ shared_examples_for 'auditable' do |options = {}|
     end
 
     describe '#dup' do
-        it 'preserves #override_instance_scope'
-        it 'preserves #audit_options'
+        let(:dupped) { auditable.dup }
+
+        it 'preserves #override_instance_scope' do
+            auditable.override_instance_scope?.should be_false
+            dupped.override_instance_scope?.should == auditable.override_instance_scope?
+
+            dupped.override_instance_scope
+            dupped.override_instance_scope?.should_not == auditable.override_instance_scope?
+            dupped.dup.override_instance_scope?.should == dupped.override_instance_scope?
+        end
+
+        it 'preserves #audit_options' do
+            audited = nil
+            dupped.audit( seed ) { |_, m| audited = m }
+            run
+
+            audited.audit_options.should be_any
+            dupped = audited.dup
+            dupped.audit_options.should == audited.audit_options
+
+            dupped2 = dupped.dup
+            dupped.audit_options.clear
+
+            dupped2.audit_options.should == audited.audit_options
+        end
+
         it 'preserves the #auditor' do
-            dup = auditable.dup
-            dup.auditor.should == auditable.auditor
+            dupped.auditor.should == auditable.auditor
 
             subject.remove_auditor
             dup.auditor.should be_true

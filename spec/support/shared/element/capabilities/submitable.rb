@@ -34,8 +34,14 @@ shared_examples_for 'submitable' do
     end
 
     describe '#dup' do
-        it 'preserves #method'
-        it 'preserves #action'
+        let(:dupped) { submitable.dup }
+
+        it 'preserves #method' do
+            dupped.method.should == submitable.method
+        end
+        it 'preserves #action' do
+            dupped.action.should == submitable.action
+        end
     end
 
     describe '#to_h' do
