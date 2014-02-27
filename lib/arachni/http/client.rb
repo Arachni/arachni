@@ -108,7 +108,6 @@ class Client
         @url = nil if @url.empty?
 
         @hydra = Typhoeus::Hydra.new( max_concurrency: opts.http.request_concurrency || MAX_CONCURRENCY )
-        @hydra_sync = Typhoeus::Hydra.new( max_concurrency: 1 )
 
         @headers = {
             'Accept'     => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -567,10 +566,9 @@ class Client
         typhoeus_req = request.to_typhoeus
 
         if request.blocking?
-            synchronize do
-                @hydra_sync.queue( typhoeus_req )
-                @request_count += 1
-            end
+            hydra_sync = Typhoeus::Hydra.new( max_concurrency: 1 )
+            hydra_sync.queue( typhoeus_req )
+            @request_count += 1
         else
             @hydra.queue( typhoeus_req )
             @queue_size    += 1
@@ -624,7 +622,7 @@ class Client
         end
 
         if request.blocking?
-            exception_jail { @hydra_sync.run }
+            exception_jail { hydra_sync.run }
         else
             if emergency_run?
                 print_info 'Request queue reached its maximum size, performing an emergency run.'
