@@ -78,8 +78,12 @@ class Worker < Arachni::Browser
         @on_response_blocks.clear
 
         # Close open windows to free system resources and have a clean
-        # slate for the later job.
-        close_windows
+        # slate for the next job.
+        #
+        # WARNING: This somehow leads to freezes, after a few jobs when
+        # triggering events, put it on the back burner and uncomment when I
+        # figure it out.
+        #close_windows
 
         @job = nil
 
