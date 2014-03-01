@@ -976,6 +976,8 @@ class Browser
         return if watir.windows.size > 1
 
         watir.windows.last.use
+        watir.window.resize_to( 1600, 1200 )
+
         @javascript.run( 'window.open()' )
     end
 
