@@ -19,7 +19,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.5
+# @version 0.1.6
 #
 class Arachni::Modules::HTTP_PUT < Arachni::Module::Base
 
@@ -54,18 +54,43 @@ class Arachni::Modules::HTTP_PUT < Arachni::Module::Base
             description: %q{Checks if uploading files is possible using the HTTP PUT method.},
             elements:    [ Element::SERVER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.4',
+            version:     '0.1.6',
             targets:     %w(Generic),
             references: {
                 'W3' => 'http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html'
             },
             issue:       {
                 name:            %q{Publicly writable directory},
-                description:     %q{3rd parties can upload files to the web-server.},
+                description:     %q{There are various methods in which a file or 
+                    files may be uploaded to a webserver. One method that can be 
+                    used is the HTTP PUT method. The PUT method is mainly used 
+                    during development of applications, and allows developers to 
+                    upload (or put) files on the server within the web root. By 
+                    nature of the design, the PUT method typically does not 
+                    provide any filtering and therefor allows sever side 
+                    executable code (PHP, ASP, etc) to be uploaded to the 
+                    server. Cyber-criminals will search for servers supporting 
+                    the PUT method with the intention of modifying existing 
+                    pages, or uploading web shells to take control of the 
+                    server. Arachni has discovered that the affected path allows 
+                    clients to use the PUT method. During this test, Arachni has 
+                    PUT a file on the server within the web root, and 
+                    successfully performed a GET request to its location and 
+                    matched the contents.},
                 tags:            %w(http methods put server),
                 cwe:             '650',
                 severity:        Severity::HIGH,
-                remedy_guidance: %q{Disable the PUT method on the Web Server and/or disable write permissions to the web server directory.}
+                remedy_guidance: %q{Where possible the HTTP PUT method should be 
+                    globally disabled. This can typically be done with a simple 
+                    configuration change on the server. The steps to disable the 
+                    PUT method will differ depending on the type of server being 
+                    used (IIS, Apache, etc.). For cases where the PUT method is 
+                    required to meet application functionality, such as REST 
+                    style web services, then strict limitations should be 
+                    implemented to ensure that only secure (SSL/TLS enabled), 
+                    and authorised clients are permitted to use the PUT method. 
+                    Additionally, the servers file system permissions should 
+                    also enforce strict limitations.}
             }
         }
     end
