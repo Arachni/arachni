@@ -13,7 +13,7 @@ describe Arachni::Page do
             ),
             dom: {
                 url:         'http://a-url.com/#/stuff?myvar=my%20value',
-                transitions: [ page: :load ]
+                transitions: [ described_class::DOM::Transition.new( page: :load )]
             }
         )
     end
@@ -323,7 +323,7 @@ describe Arachni::Page do
                 p.links |= [Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )]
                 p.forms |= [Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )]
                 p.cookies |= [Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff' } )]
-                p.dom.push_transition "<a href='#' id='stuff'>" => :onclick
+                p.dom.push_transition described_class::DOM::Transition.new( "<a href='#' id='stuff'>" => :onclick )
 
                 c = p.dup
                 c.links |= [Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )]
@@ -338,7 +338,7 @@ describe Arachni::Page do
                 c.should_not == p
 
                 c = p.dup
-                c.dom.push_transition "<a href='#' id='stuff'>" => :onhover
+                c.dom.push_transition described_class::DOM::Transition.new( "<a href='#' id='stuff'>" => :onhover )
                 c.should_not == p
             end
         end
@@ -355,12 +355,12 @@ describe Arachni::Page do
                 p.links |= [Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )]
                 p.forms |= [Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )]
                 p.cookies |= [Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )]
-                p.dom.push_transition "<a href='#' id='stuff'>" => :onhover
+                p.dom.push_transition described_class::DOM::Transition.new( "<a href='#' id='stuff'>" => :onhover )
 
                 c.links |= [Arachni::Element::Link.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )]
                 c.forms |= [Arachni::Element::Form.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )]
                 c.cookies |= [Arachni::Element::Cookie.new( url: 'http://test.com', inputs: { 'test' => 'stuff2' } )]
-                c.dom.push_transition "<a href='#' id='stuff'>" => :onhover
+                c.dom.push_transition described_class::DOM::Transition.new( "<a href='#' id='stuff'>" => :onhover )
 
                 c.should == p
             end
