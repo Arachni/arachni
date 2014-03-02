@@ -9,6 +9,8 @@ require_relative 'browser/javascript'
 
 module Arachni
 
+# @note Depends on PhantomJS 1.9.2.
+#
 # Real browser driver providing DOM/JS/AJAX support.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
