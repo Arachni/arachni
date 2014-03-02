@@ -467,10 +467,13 @@ class Browser
             case tag_name
                 when 'a'
                     href = element.attribute_value( :href )
-                    if href.start_with?( 'javascript:' )
-                        events << [ :onclick, href ]
-                    else
-                        next if skip_path?( href )
+
+                    if !href.empty?
+                        if href.start_with?( 'javascript:' )
+                            events << [ :onclick, href ]
+                        else
+                            next if skip_path?( href )
+                        end
                     end
 
                 when 'input'
@@ -480,10 +483,13 @@ class Browser
 
                 when 'form'
                     action = element.attribute_value( :action )
-                    if action.start_with?( 'javascript:' )
-                        events << [ :onsubmit, action ]
-                    else
-                        next if skip_path?( action )
+
+                    if !action.empty?
+                        if action.start_with?( 'javascript:' )
+                            events << [ :onsubmit, action ]
+                        else
+                            next if skip_path?( action )
+                        end
                     end
             end
 
