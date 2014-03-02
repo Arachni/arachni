@@ -351,7 +351,7 @@ class Page
     alias :to_hash :to_h
 
     def hash
-        "#{dom.transitions}:#{body.hash}:#{elements.map(&:hash).sort}".hash
+        "#{dom.replayable_transitions.hash}:#{body.hash}:#{elements.map(&:hash).sort}".hash
     end
 
     def ==( other )
