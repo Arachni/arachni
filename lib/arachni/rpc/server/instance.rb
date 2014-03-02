@@ -817,7 +817,8 @@ class Instance
             unix = Base.new( @opts, @token )
             set_handlers( unix )
 
-            ::EM.defer do
+            # Don't change this to ::EM.defer because we'll get a thread error.
+            Thread.new do
                 unix.run
             end
 
