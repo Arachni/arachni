@@ -53,12 +53,15 @@ class BrowserCluster
     end
 
     DEFAULT_OPTIONS = {
-        # Amount of Browsers to keep in the pool and put to work. 6 seems to
-        # be the magic number, 1 to go over all elements and generate the workload
-        # and 5 to pop the work from the queue and get to it.
+        # Amount of Browsers to keep in the pool and put to work.
         #
-        # It's diminishing returns past that point, even with more workload
-        # generators and more workers.
+        # 6 seems to be the magic number, more than that usually makes Arachni
+        # hit the max-open-files ulimit and crash. This is because even though
+        # the PhantomJS browsers run in their own process, their HTTP connections
+        # run through the local HTTP::Client via their respective proxies.
+        #
+        # Let the users know to increase their limit when I make this option
+        # configurable or implement some sort of throttling for browser connections.
         pool_size:    6,
 
         # Lifetime of each Browser counted in pages.
@@ -371,7 +374,7 @@ class BrowserCluster
             ).tap { |b| @consumed_pids << b.phantomjs_pid }
         end
 
-        print_status "Initialization complete with #{@workers.size} browsers in the pool."
+        print_status "Initialization completed with #{@workers.size} browsers in the pool."
     end
 
 end
