@@ -31,6 +31,8 @@ class ProxyServer < WEBrick::HTTPProxyServer
     #   Port number to listen on -- defaults to a random port.
     # @option options   [Integer]    :timeout
     #   HTTP time-out for each request in milliseconds.
+    # @option options   [Integer]    :concurrency   (OptionGroups::HTTP#request_concurrency)
+    #   Maximum number of concurrent connections.
     # @option options   [Block]    :response_handler
     #   Block to be called to handle each response as it arrives -- will be
     #   passed the request and response.
@@ -55,6 +57,7 @@ class ProxyServer < WEBrick::HTTPProxyServer
         super(
             BindAddress:         @options[:address],
             Port:                @options[:port],
+            MaxClients:          @options[:concurrency] || Options.http.request_concurrency,
             ProxyVia:            false,
             DoNotReverseLookup:  true,
             AccessLog:           [],
