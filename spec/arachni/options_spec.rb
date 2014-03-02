@@ -191,6 +191,7 @@ describe Arachni::Options do
     describe '#to_hash' do
         it 'converts self to a hash' do
             subject.scope.restrict_paths = 'test'
+            subject.checks << 'stuff'
             subject.datastore.stuff      = 'test2'
 
             h = subject.to_hash
@@ -198,7 +199,18 @@ describe Arachni::Options do
 
             h.each do |k, v|
                 next if k == :instance
-                (v.respond_to?( :to_h ) ? v.to_h : v).should == v
+                subject_value = subject.send(k)
+
+                case v
+                    when nil
+                        v.should be_nil
+
+                    when Array
+                        subject_value.should == v
+
+                    else
+                        (subject_value.respond_to?( :to_h ) ? subject_value.to_h : v).should == v
+                end
             end
         end
     end
