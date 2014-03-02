@@ -20,7 +20,7 @@
 # Scans page for credit card numbers.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-# @version 0.2.2
+# @version 0.2.3
 #
 # @see http://en.wikipedia.org/wiki/Bank_card_number
 # @see http://en.wikipedia.org/wiki/Luhn_algorithm
@@ -89,7 +89,7 @@ class Arachni::Modules::CreditCards < Arachni::Module::Base
             description: %q{Scans pages for credit card numbers.},
             elements:    [ Element::BODY ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.2.2',
+            version:     '0.2.3',
             references:  {
                 'Wikipedia - Bank card number' => 'http://en.wikipedia.org/wiki/Bank_card_number',
                 'Wikipedia - Luhn algorithm'   => 'http://en.wikipedia.org/wiki/Luhn_algorithm',
@@ -98,10 +98,30 @@ class Arachni::Modules::CreditCards < Arachni::Module::Base
             targets:     %w(Generic),
             issue:       {
                 name:            %q{Credit card number disclosure},
-                description:     %q{A credit card number is disclosed in the body of the page.},
+                description:     %q{Credit card numbers are used in applications 
+                    where a user is able to purchase good and/or services. A 
+                    credit card number is a sensitive piece of information and 
+                    should be handled as such. Cyber-criminals will use various 
+                    methods to attempt to compromise credit card information 
+                    that can then be used for fraudulent purposes. Through the 
+                    use regular expressions, Arachni was able to discover a 
+                    credit card number located within the affected page.},
                 cwe:             '200',
                 severity:        Severity::MEDIUM,
-                remedy_guidance: %q{Remove credit card numbers from the body of the HTML pages.},
+                remedy_guidance: %q{Initially, the credit card number within the 
+                    response should be checked to ensure its validity, as it is 
+                    possible that the regular expression has matched on a 
+                    similar number with no relation to a real credit card. If 
+                    the response does contain a valid credit card number, then 
+                    all efforts should be taken to remove of further protect 
+                    this information. This can be achieved by removing the 
+                    credit card number all together, or by masking the number so 
+                    that only the last few digits are present within the 
+                    response. eg. **********123. Additionally, credit card 
+                    numbers should not be stored by the application, unless the 
+                    organisation also complies with other security controls as 
+                    outlined in the Payment Card Industry Data Security Standard 
+                    (PCI DSS).},
             }
         }
     end
