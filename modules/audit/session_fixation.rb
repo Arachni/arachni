@@ -29,7 +29,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1
+# @version 0.2
 #
 class Arachni::Modules::SessionFixation < Arachni::Module::Base
 
@@ -68,17 +68,51 @@ class Arachni::Modules::SessionFixation < Arachni::Module::Base
             description: %q{Checks whether or not the session cookie can be set to an arbitrary value.},
             elements:    [ Element::FORM, Element::LINK ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1',
+            version:     '0.2',
             references:  {
-                 'OWASP - Session fixation' => 'hhttps://www.owasp.org/index.php/Session_fixation'
+                 'OWASP' => 'https://www.owasp.org/index.php/Session_fixation',
+                 'WASC'  => 'http://projects.webappsec.org/w/page/13246960/Session%20Fixation'
              },
             targets:     %w(Generic),
             issue:       {
                 name:        %q{Session fixation},
-                description: %q{The web application allows the session ID to be fixed by a 3rd party.},
+                description: %q{HTTP by itself is a stateless protocol. Therefor 
+                    the server is unable to determine which requests are 
+                    performed by which client, and which clients are 
+                    authenticated or unauthenticated. The use of HTTP cookies 
+                    within the headers, allows a web server to identify each 
+                    individual client, and can therefor determine which clients 
+                    hold valid authentication from those that do not. These are 
+                    known as session cookies or session tokens. To prevent 
+                    clients from being able to guess each other's session token, 
+                    each assigned session token should be entirely random, and 
+                    be different whenever a session is established with the 
+                    server. Session fixation occurs when the client is able to 
+                    specify their own session token value, and the value of the 
+                    session cookie is not changed by the server after successful 
+                    authentication. Occasionally the session token will also 
+                    remain unchanged for the user independent of how many times 
+                    they have authenticated. Cyber-criminals will abuse this 
+                    functionality by sending crafted URL links with a 
+                    predetermined session token within the link. The cyber-
+                    criminal will then wait for the victim to login and become 
+                    authenticated. If successful the cyber-criminal will know a 
+                    valid session ID, and therfor have access to the victim's 
+                    session. Arachni has discovered that it is able to set its 
+                    own session token, and during the login process remains 
+                    unchanged. Some further attack scenarios are here: 
+                    'www.owasp.org/index.php/Session_fixation'.},
                 tags:        %w(session cookie injection fixation hijacking),
                 cwe:         '384',
-                severity:    Severity::HIGH
+                severity:    Severity::HIGH,
+                remedy_guidance: %q{The most important remediation action is to 
+                    prevent the server accepting client supplied tokens through 
+                    either a GET or POST request. Additionally, the clients 
+                    session token should be changed at specific key stages of 
+                    the application flow, such as during authentication. This 
+                    will ensure that even if clients are able to set their own 
+                    cookie, it will not persist into an authenticated session. 
+                },
             }
         }
     end
