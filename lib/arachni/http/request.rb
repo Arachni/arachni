@@ -244,7 +244,11 @@ class Request < Message
             ssl_verifyhost:  0,
             accept_encoding: 'gzip, deflate',
             nosignal:        true,
-            maxfilesize:     @http_response_max_size || Arachni::Options.http.response_max_size
+            maxfilesize:     @http_response_max_size || Arachni::Options.http.response_max_size,
+
+            # Don't keep the socket alive if this is a blocking request because
+            # it's going to be performed by an one-off Hydra.
+            forbid_reuse:    blocking?
         }
 
         options[:timeout_ms] = timeout if timeout

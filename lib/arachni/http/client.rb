@@ -566,6 +566,10 @@ class Client
         typhoeus_req = request.to_typhoeus
 
         if request.blocking?
+            # The Typhoeus (Request#to_typhoeus) request **must** have the
+            # :forbid_reuse option set to true otherwise the socket will
+            # remain in the kernel's FD table even after our one-off Hydra will
+            # have been GC'ed.
             hydra_sync = Typhoeus::Hydra.new( max_concurrency: 1 )
             hydra_sync.queue( typhoeus_req )
             synchronize { @request_count += 1 }
