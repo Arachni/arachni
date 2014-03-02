@@ -21,6 +21,7 @@ require 'digest/md5'
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
+# @version 0.1.5
 class Arachni::Modules::InterestingResponses < Arachni::Module::Base
 
     IGNORE_CODES = [ 200, 404 ].to_set
@@ -66,16 +67,34 @@ class Arachni::Modules::InterestingResponses < Arachni::Module::Base
             description: %q{Logs all non 200 (OK) server responses.},
             elements:    [ Element::SERVER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.4',
+            version:     '0.1.5',
             targets:     %w(Generic),
             references:  {
                 'w3.org' => 'http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html'
             },
             issue:       {
                 name:        %q{Interesting response},
-                description: %q{The server responded with a non 200 (OK) code. },
+                description: %q{During scanning Arachni trains itself by 
+                    learning from the HTTP responses it receives during the 
+                    audit process. It is able to perform meta-analysis using a 
+                    number of factors in order to correctly assess the 
+                    trustworthiness of results and intelligently identify false-
+                    positives. Because of this, Arachni is also able to identify 
+                when a web application responds in an unpredictable manner. 
+                    Unpredictable meaning the server responded with a status 
+                    code (eg, 500) when Arachni was expecting another (eg. 200). 
+                    Arachni has flagged a non 200 response not as a 
+                    vulnerability, but as a prompt for the penetration tester to 
+                    conduct further manual testing on the identified page, as 
+                    its unpredictable response may lead to identifying 
+                    additional vulnerabilities in the web application or server 
+                    deployment. Note: 404 status codes are ignored.},
                 tags:        %w(interesting response server),
-                severity:    Severity::INFORMATIONAL
+                severity:    Severity::INFORMATIONAL,
+                remedy_guidance: %q{Conduct further manual testing to ensure 
+                    that the web application and/or server are responding as 
+                    expected and that potential application and/or sever 
+                    misconfigurations cannot be abused.}
             },
             max_issues: 25
         }

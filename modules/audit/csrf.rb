@@ -42,7 +42,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.3.1
+# @version 0.3.2
 #
 # @see http://en.wikipedia.org/wiki/Cross-site_request_forgery
 # @see http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)
@@ -167,27 +167,57 @@ class Arachni::Modules::CSRF < Arachni::Module::Base
                 It requires a logged-in user's cookie-jar.},
             elements:    [ Element::FORM ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.3.1',
+            version:     '0.3.2',
             references:  {
                 'Wikipedia'    => 'http://en.wikipedia.org/wiki/Cross-site_request_forgery',
                 'OWASP'        => 'http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)',
-                'CGI Security' => 'http://www.cgisecurity.com/csrf-faq.html'
+                'CGI Security' => 'http://www.cgisecurity.com/csrf-faq.html',
+                'WASC'         => 'http://projects.webappsec.org/w/page/13246919/Cross%20Site%20Request%20Forgery'
             },
             targets:     %w(Generic),
 
             issue:       {
                 name:            %q{Cross-Site Request Forgery},
-                description:     %q{The web application does not, or can not,
-     sufficiently verify whether a well-formed, valid, consistent
-     request was intentionally provided by the user who submitted the request.
-     This is due to a lack of secure anti-CSRF tokens to verify
-     the freshness of the submitted data.},
+                description:     %q{In the majority of today's web applications, 
+                    clients are required to submit forms. When these forms are 
+                    submitted that contents within the form are typically 
+                    processed by the server. An example of such a form is when 
+                    an administrator wishes to create a new user for the 
+                    application. In the simplest form the administrator would 
+                    submit a form with the users Name, Password, and Role (level 
+                    of access). Cross Site Request Forgery (CSRF) is where an 
+                    administrator could be tricked into clicking on a link that 
+                    if logged into the application would automatically submit 
+                    the form without any further interaction. Cyber-criminals 
+                    will look for sites where sensitive functions are performed 
+                    in this vulnerable manner, and then craft malicious requests 
+                    that will be used against clients in a social engineering 
+                    attack. There are 3 things that are required for a CSRF 
+                    attack to occur. 1. The form must perform a sensitive action 
+                    2. The victim (admin the example above) must have an active 
+                    session 3. Most importantly, all parameter values must be 
+                    known or guessable. Arachni discovered that all parameters 
+                    within the form were known or predictable, and therefore 
+                    could be vulnerable to CSRF. Manual verification may be 
+                    required to check whether the submission will then perform a 
+                    sensitive action such as reset a password, modify user 
+                    profiles, post content for a forum, etc.},
                 tags:            %w(csrf rdiff form token),
                 cwe:             '352',
                 severity:        Severity::HIGH,
-                remedy_guidance: %q{A unique token that guaranties freshness of submitted
-    data must be added to all web application elements that can affect
-    business logic.}
+                remedy_guidance: %q{Based on the risk determined by manual 
+                    verification of whether the submission will then perform a 
+                    sensitive action, it is recommended that the server utilise 
+                    CSRF tokens. These can be configured in such a way that each 
+                    session generates a new CSRF token or such that each 
+                    individual request requires a new token. CSRF tokens are 
+                    passed to the server as a normal parameter and not as a 
+                    cookie value. It is equally important that the server track 
+                    and maintain the status of each token, this will enable a 
+                    server to reject any request that does not contain a valid 
+                    token, and therefor prevent any cyber-criminal from knowing 
+                    or guessing all parameter values. For examples of framework 
+                    specific remediation, refer to the references.}
             }
         }
     end

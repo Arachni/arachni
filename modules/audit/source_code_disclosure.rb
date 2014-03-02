@@ -129,12 +129,48 @@ class Arachni::Modules::SourceCodeDisclosure < Arachni::Module::Base
             },
             issue:       {
                 name:            %q{Source code disclosure},
-                description:     %q{The web application can be forced to reveal source code.},
+                description:     %q{A modern web application will be reliant on 
+                    several different programming languages. These languages can 
+                    be broken up into two flavours. These are client side 
+                    languages such as those that run in the browser eg. 
+                    JavaScript and HTML, and server side languages that are 
+                    executed by the server (ASP, PHP, JSP, etc) to form the 
+                    dynamic pages (client side code) that are then sent to the 
+                    client. Because all server side code should be executed by 
+                    the server, it should never be seen by the client. However 
+                    in some scenarios, it is possible that 1. The server side 
+                    code has syntax error and therefor is not executed to by the 
+                    server and is instead sent to the client, or 2. Using 
+                    crafted requests it is possible to force the server into 
+                    displaying the source code of the application without 
+                    executing it. As the server side source code often contains 
+                    sensitive information such as database connection strings or 
+                    details into the application workflow this can be extremely 
+                    risky. Cyber-criminals will attempt to discover pages that 
+                    either accidently or forcefully allow the server side source 
+                    code to be disclosed, to assist in discovering further 
+                    vulnerabilities or sensitive information. Arachni has 
+                    detected server side source code within the server's 
+                    response. Note: false positives may occur when requesting 
+                    image files such as .JPG or .PNG and may require manual 
+                    verification.},
                 tags:            %w(code source file inclusion disclosure),
                 cwe:             '540',
                 severity:        Severity::HIGH,
-                remedy_guidance: %q{User inputs must be validated and filtered
-                    before being included in a file-system path during file reading operations.},
+                remedy_guidance: %q{If confirmation reveals the leakage of 
+                    server side source code, then the following remediation 
+                    actions should be applied. Determine the context in which 
+                    the source code is disclosed. ie. Caused through coding 
+                    errors, or abusing existing functionality. If due to errors 
+                    in the server side code, then the code causing the 
+                    disclosure should be rewritten. If it is through the abuse 
+                    of existing functionality then it is important that, input 
+                    sanitisation be conducted to prevent application files (ASP, 
+                    JSP, PHP or config files) cannot be called. It is also 
+                    important that the file system permissions are correctly 
+                    configured, and that all unused files are removed from the 
+                    web root. If these are not an option, then the vulnerable 
+                    file should be removed from the server.},
             }
 
         }

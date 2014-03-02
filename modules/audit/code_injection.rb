@@ -21,7 +21,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2
+# @version 0.3
 #
 # @see http://cwe.mitre.org/data/definitions/94.html
 # @see http://php.net/manual/en/function.eval.php
@@ -91,16 +91,44 @@ class Arachni::Modules::CodeInjection < Arachni::Module::Base
             targets:     %w(PHP Perl Python ASP),
             issue:       {
                 name:            %q{Code injection},
-                description:     %q{Arbitrary code can be injected into the web application
-    which is then executed as part of the system.},
+                description:     %q{A modern web application will be reliant on 
+                    several different programming languages. These languages can 
+                    be broken up into two flavours. These are client side 
+                    languages such as those that run in the browser eg. 
+                    JavaScript and HTML, and server side languages that are 
+                    executed by the server (ASP, PHP, JSP, etc) to form the 
+                    dynamic pages (client side code) that are then sent to the 
+                    client. Because all server side code should be executed by 
+                    the server, it should only ever come from a trusted source. 
+                    Code injection occurs when the server takes untrusted server 
+                    side code (ie. From the client) and executes the code as if 
+                    it were on the server. Cyber-criminals will abuse this 
+                    weakness to execute their own arbitrary code on the server, 
+                    and could result in complete compromise of the server. 
+                    Arachni was able to inject specific server side code and 
+                    have the executed output from the code contained within the 
+                    server response. This indicates that proper input 
+                    sanitisation is not occurring.},
                 tags:            %w(code injection regexp),
                 cwe:             '94',
                 severity:        Severity::HIGH,
                 cvssv2:          '7.5',
-                remedy_guidance: %q{User inputs must be validated and filtered
-    before being evaluated as executable code.
-    Better yet, the web application should stop evaluating user
-    inputs as any part of dynamic code altogether.},
+                remedy_guidance: %q{ It is recommended that untrusted or 
+                    invalidated data is never stored where it may then be 
+                    executed as server side code. To validate data, the 
+                    application should ensure that the supplied value contains 
+                    only the characters that are required to perform the 
+                    required action. For example, where a username is required, 
+                    then no non-alpha characters should be accepted. 
+                    Additionally, within PHP, the "eval" and "preg_replace" 
+                    functions should be avoided as these functions can easily be 
+                    used to execute untrusted data. If these functions are used 
+                    within the application then these parts should be rewritten. 
+                    The exact way to rewrite the code depends on what the code 
+                    in question does, so there is no general pattern for doing 
+                    so. Once the code has been rewritten the eval() function 
+                    should be disabled. This can be achieved by adding eval to 
+                    disable_funcions within the php.ini file.},
                 remedy_code:     '',
                 metasploitable:  'unix/webapp/arachni_php_eval'
             }

@@ -22,7 +22,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.4
+# @version 0.1.5
 #
 # @see http://en.wikipedia.org/wiki/WebDAV
 # @see http://www.webdav.org/specs/rfc4918.html
@@ -55,7 +55,7 @@ class Arachni::Modules::WebDav < Arachni::Module::Base
             description: %q{Checks for WebDAV enabled directories.},
             elements:    [ Element::SERVER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.4',
+            version:     '0.1.5',
             references:  {
                 'WebDAV.org' => 'http://www.webdav.org/specs/rfc4918.html',
                 'Wikipedia'  => 'http://en.wikipedia.org/wiki/WebDAV',
@@ -63,11 +63,29 @@ class Arachni::Modules::WebDav < Arachni::Module::Base
             targets:     %w(Generic),
             issue:       {
                 name:            %q{WebDAV},
-                description:     %q{WebDAV is enabled on the server.
-    Consider auditing further using a specialised tool.},
+                description:     %q{Web Distributed Authoring and Versioning 
+                    (WebDAV) is a facility that enables basic file management 
+                    (reading and writing) to a web server. It essentially allows 
+                    the webserver to be mounted by the client as a traditional 
+                    file system allowing users a very simplistic means to access 
+                    it as they would any other medium or network share. If 
+                    discovered, attackers will attempt to harvest information 
+                    from the WebDAV enabled directories, or even upload 
+                    malicious files that could then be used to compromise the 
+                    server. Arachni discovered the affected page allows WebDAV 
+                    access. This was discovered as the server allowed several 
+                    specific methods that are specific to WebDAV (PROPFIND, 
+                    PROPPATCH, etc.) however further testing should be conducted 
+                    on the WebDAV component specifically as Arachni does support 
+                    this feature.},
                 tags:            %w(webdav options methods server),
                 severity:        Severity::INFORMATIONAL,
-                remedy_guidance: %q{Disable WebDAV if not required. If it is required, perform an audit using specialized tools.}
+                remedy_guidance: %q{Identification of the requirement to run a 
+                    WebDAV server should be considered. If it is not required 
+                    then it should be disabled. However if it is required to 
+                    meet the application functionality, then it should be 
+                    protected by SSL/TLS as well as the implementation of a 
+                    strong authentication mechanism.}
             }
 
         }

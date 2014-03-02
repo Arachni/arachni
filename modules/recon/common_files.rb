@@ -19,7 +19,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2.2
+# @version 0.2.3
 #
 class Arachni::Modules::CommonFiles < Arachni::Module::Base
 
@@ -41,16 +41,40 @@ class Arachni::Modules::CommonFiles < Arachni::Module::Base
             description: %q{Tries to find common sensitive files on the server.},
             elements:    [ Element::PATH ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.2.2',
+            version:     '0.2.3',
             targets:     %w(Generic),
             references: {
-                'Apache.org' => 'http://httpd.apache.org/docs/2.0/mod/mod_access.html'
+                'Apache.org' => 'http://httpd.apache.org/docs/2.0/mod/mod_access.html',
+                'WASC' => 'http://projects.webappsec.org/w/page/13246953/Predictable%20Resource%20Location'
             },
             issue:       {
                 name:            %q{Common sensitive file},
+                description:     %q{Web applications are often made up of 
+                    multiple files and directories, however it is possible that 
+                    over time some files may become unreferenced (used) by the 
+                    web application and forgotten about by the 
+                    administrator/developer. Because web applications are built 
+                    using common frameworks, they contain common files that can 
+                    be discovered (independent of server). During initial recon 
+                    stages of an attack cyber-criminals will attempt to locate 
+                    unreferenced files in the hope that the file will assist in 
+                    further compromise of the web application. To achieve this 
+                    they will make thousands of requests using word lists 
+                    containing common filenames. The response headers from the 
+                    server will then indicate if the file exists. Arachni also 
+                    contains a list of common file names which it will attempt 
+                    to access. Based off the server response the affected file 
+                    was discovered.},
                 tags:            %w(common path file discovery),
                 severity:        Severity::LOW,
-                remedy_guidance: %q{Do not expose file and directory information to the user.}
+                remedy_guidance: %q{If files are unreferenced then they should 
+                    be removed from the web root, and/or the application 
+                    directory. Preventing access without authentication may also 
+                    be an option and stop a client being able to view the 
+                    contents of a file however it is still likely that the 
+                    filenames will be able to be discovered. Using obscure 
+                    filenames is only implementing security through obscurity 
+                    and is not a recommended option.}
             }
         }
     end
