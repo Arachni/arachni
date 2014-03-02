@@ -34,6 +34,23 @@ describe Arachni::Page::DOM do
         end
     end
 
+    describe '#replayable_transitions' do
+        it 'returns replayable transitions' do
+            dom.transitions = [
+                { :page                              => :load },
+                { "http://test.com/"                 => :request },
+                { "<body onload='loadStuff();'>"     => :onload },
+                { "http://test.com/ajax"             => :request },
+                { "<a href='javascript:clickMe();'>" => :click },
+            ].map { |t| described_class::Transition.new t }
+
+            dom.replayable_transitions.should ==  [
+                { "<body onload='loadStuff();'>"     => :onload },
+                { "<a href='javascript:clickMe();'>" => :click },
+            ].map { |t| described_class::Transition.new t }
+        end
+    end
+
     describe '#data_flow_sink' do
         it 'defaults to an empty Array' do
             empty_dom.data_flow_sink.should == []
