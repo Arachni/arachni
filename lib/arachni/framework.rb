@@ -763,21 +763,23 @@ class Framework
     end
 
     def handle_browser_page( page )
-        return if !push_to_page_queue page
+        synchronize do
+            return if !push_to_page_queue page
 
-        pushed_paths = nil
-        if crawl?
-            pushed_paths = push_paths_from_page( page ).size
-        end
+            pushed_paths = nil
+            if crawl?
+                pushed_paths = push_paths_from_page( page ).size
+            end
 
-        print_status 'Got new page from the browser-cluster with the ' <<
-                         'following transitions:'
-        print_info page.dom.url
+            print_status 'Got new page from the browser-cluster with the ' <<
+                             'following transitions:'
+            print_info page.dom.url
 
-        print_page_transitions( page, '  ' )
+            print_page_transitions( page, '  ' )
 
-        if pushed_paths
-            print_info "  -- Analysis resulted in #{pushed_paths} usable paths."
+            if pushed_paths
+                print_info "  -- Analysis resulted in #{pushed_paths} usable paths."
+            end
         end
     end
 
