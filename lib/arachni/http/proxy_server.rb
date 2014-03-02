@@ -48,7 +48,9 @@ class ProxyServer < WEBrick::HTTPProxyServer
             ssl_certificate_name: [ [ 'CN', 'Arachni' ] ]
         }.merge( options )
 
-        @logger = WEBrick::Log::new( '/dev/null', 7 )
+        @logger = WEBrick::Log.new( '/dev/null', 7 )
+        # Will force the proxy to stfu.
+        @logger.close
 
         super(
             BindAddress:         @options[:address],
@@ -72,11 +74,6 @@ class ProxyServer < WEBrick::HTTPProxyServer
         Thread.new { start }
         sleep 0.1 while !running?
         nil
-    end
-
-    def shutdown
-        super
-        @logger.close
     end
 
     # @return   [Bool]
