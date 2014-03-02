@@ -22,7 +22,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.5
+# @version 0.1.6
 #
 # @see http://www.owasp.org/index.php/Top_10_2010-A10-Unvalidated_Redirects_and_Forwards
 #
@@ -50,20 +50,43 @@ class Arachni::Modules::UnvalidatedRedirect < Arachni::Module::Base
                 to determnine whether the attack was successful.},
             elements:    [Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.5',
+            version:     '0.1.6',
             references:  {
-                'OWASP Top 10 2010' => 'http://www.owasp.org/index.php/Top_10_2010-A10-Unvalidated_Redirects_and_Forwards'
+                'OWASP' => 'http://www.owasp.org/index.php/Top_10_2010-A10-Unvalidated_Redirects_and_Forwards',
+                'WASC' => 'http://projects.webappsec.org/w/page/13246981/URL%20Redirector%20Abuse'
             },
             targets:     %w(Generic),
 
             issue:       {
                 name:            %q{Unvalidated redirect},
-                description:     %q{The web application redirects users to unvalidated URLs.},
+                description:     %q{Web applications occasionally use a 
+                    parameters values to store the address of the page that will 
+                    the client will be redirected to. As an example, this is 
+                    often seen in error pages where the error page is the page 
+                    to be displayed. For example 
+                    'yoursite.com/page.asp?redirect=www.yoursite.com/404.asp'. 
+                    An invalidated redirect occurs when the client is able to 
+                    modify the affected parameter value in the request and have 
+                    a redirect response to the new value sent by the server. 
+                    Therefor redirecting the client to that site. For example 
+                    the performing the following request 
+                    'yoursite.com/page.asp?redirect=www.anothersite.com' will 
+                    redirect to anothersite.com. Cyber-criminals will abuse 
+                    these vulnerabilities in social engineering attacks to get 
+                    users to unknowingly visit a malicious site hosted by the 
+                    cyber-criminal. Arachni has discovered that the server does 
+                    not validate the parameter value prior to redirecting the 
+                    client to the injected value.},
                 tags: %w(unvalidated redirect injection header location),
                 cwe:             '819',
                 severity:        Severity::MEDIUM,
-                remedy_guidance: %q{Server side verification should be employed
-                    to ensure that the redirect destination is the one intended.}
+                remedy_guidance: %q{The application should ensure that the 
+                    supplied value for a redirect is permitted. This can be 
+                    achieved by performing whitelisting on the parameter value. 
+                    The whitelist should contain a list of pages or sites that 
+                    the application is permitted to redirect users to. If the 
+                    supplied value does not match any value in the whitelist 
+                    then the server should redirect to a standard error page.}
             }
         }
     end
