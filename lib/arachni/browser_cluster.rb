@@ -54,14 +54,6 @@ class BrowserCluster
 
     DEFAULT_OPTIONS = {
         # Amount of Browsers to keep in the pool and put to work.
-        #
-        # 6 seems to be the magic number, more than that usually makes Arachni
-        # hit the max-open-files ulimit and crash. This is because even though
-        # the PhantomJS browsers run in their own process, their HTTP connections
-        # run through the local HTTP::Client via their respective proxies.
-        #
-        # Let the users know to increase their limit when I make this option
-        # configurable or implement some sort of throttling for browser connections.
         pool_size:    6,
 
         # Lifetime of each Browser counted in pages.
@@ -367,10 +359,20 @@ class BrowserCluster
     def initialize_workers
         print_status "Initializing #{pool_size} browsers..."
 
+        # Calculate maximum HTTP connection concurrency for each worker based on
+        # the HTTP request concurrency setting of the framework.
+        #
+        # Ideally, we'd throttle the collective connections of all browsers
+        # for optimal concurrency, but that would require all browsers sharing
+        # the same proxy which would make things **really** dirty and complicated
+        # so let's avoid that for as long as possible.
+        #concurrency = [(Options.http.request_concurrency / pool_size).to_i, 1].max
+
         pool_size.times do
             @workers << Worker.new(
                 javascript_token: @javascript_token,
                 master:           self
+                #concurrency:      concurrency
             ).tap { |b| @consumed_pids << b.phantomjs_pid }
         end
 
