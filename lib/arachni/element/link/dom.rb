@@ -35,19 +35,15 @@ class DOM < Capabilities::Auditable::DOM
     def initialize(*)
         super
 
-        if valid_attributes[:href].include? '#'
-            @fragment = valid_attributes[:href].split( '#', 2 ).last
+        href = node.attributes['href'].to_s
+        if href.include? '#'
+            @fragment = href.split( '#', 2 ).last
             @fragment_path, @fragment_query = @fragment.split( '?', 2 )
         end
 
         self.inputs     = parse_query( "?#{fragment_query}" )
         @default_inputs = self.inputs.dup.freeze
         @method         = :get
-    end
-
-    # @return   [Watir::Anchor]
-    def locate
-        browser.watir.a( valid_attributes )
     end
 
     # Loads the page with the {#inputs} in the {#fragment}.
@@ -107,11 +103,6 @@ class DOM < Capabilities::Auditable::DOM
     end
 
     private
-
-    def all_valid_attributes
-        @all_valid_attributes ||=
-            Set.new( Arachni::Page::DOM::Transition.valid_element_attributes_for( :a ) )
-    end
 
     def prepare_browser( browser, options )
         @browser = browser

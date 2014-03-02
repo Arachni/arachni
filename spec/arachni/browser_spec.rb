@@ -923,8 +923,8 @@ describe Arachni::Browser do
             end
 
             elements_with_events.should == [
-                { index: 7, tag_name: 'body', events: [[:onmouseover, 'makePOST();']] },
-                { index: 8, tag_name: 'div', events: [[:onclick, 'addForm();']] }
+                { tag: '<body onmouseover="makePOST();">', events: [[:onmouseover, 'makePOST();']] },
+                { tag: '<div id="my-div" onclick="addForm();">',  events: [[:onclick, 'addForm();']] }
             ]
         end
 
@@ -950,13 +950,18 @@ describe Arachni::Browser do
     end
 
     describe '#trigger_event' do
-        it 'triggers the given event and captures snapshots' do
+        it 'triggers the given event on the given tag and captures snapshots' do
             @browser.load( @url + '/trigger_events' ).start_capture
 
-            @browser.watir.elements.each.with_index do |_, index|
+            tags = []
+            @browser.watir.elements.each do |element|
+                tags << element.opening_tag
+            end
+
+            tags.each do |tag|
                 described_class.events.each do |e|
                     begin
-                        @browser.trigger_event @browser.to_page, index, e
+                        @browser.trigger_event @browser.to_page, tag, e
                     rescue
                         next
                     end

@@ -107,10 +107,8 @@ class DOM
     end
 
     # Locates the element in the page.
-    #
-    # @abstract
     def locate
-        fail NotImplementedError
+        browser.locate_element( node.to_s )
     end
 
     # Triggers the event on the subject {#element}.
@@ -173,21 +171,6 @@ class DOM
         browser.javascript.custom_code = options[:custom_code]
 
         browser.load page
-    end
-
-    def all_valid_attributes
-        @all_valid_attributes ||=
-            Set.new( Arachni::Page::DOM::Transition.valid_element_attributes_for( watir_type ) )
-    end
-
-    def valid_attributes
-        node.attributes.inject({}) do |h, (k, v)|
-            attribute = k.gsub( '-' ,'_' ).to_sym
-            next h if !all_valid_attributes.include? attribute
-
-            h[attribute] = v.to_s
-            h
-        end
     end
 
     def on_complete( page, &block )

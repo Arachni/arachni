@@ -20,18 +20,16 @@ class EventTrigger < ResourceExploration
     #   Event to trigger on the given {#element_index element}.
     attr_accessor :event
 
-    # @return   [Integer]
-    #   Index of the element in the given {#resource} upon which to trigger
-    #   the given {#event}.
-    attr_accessor :element_index
+    # @return   [String]
+    attr_accessor :tag
 
     # Loads a {#resource} and {Browser#trigger_event triggers} the specified
-    # {#event} on the given {#element_index element}.
+    # {#event} on the given {#tag element}.
     def run
         browser.on_new_page { |page| save_result( page: page ) }
 
         browser.load resource
-        browser.trigger_event( resource, element_index, event )
+        browser.trigger_event( resource, tag, event )
     end
 
 end

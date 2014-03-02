@@ -140,6 +140,42 @@ class Browser
         @has_executable = !!Selenium::WebDriver::PhantomJS.path
     end
 
+    # @param    [String]  tag_name
+    #   Opening HTML tag of the element.
+    # @return   [Set<Symbol>]
+    #   List of attributes supported by Watir.
+    def self.supported_element_attributes_for( tag_name )
+        @supported_element_attributes_for ||= {}
+        @supported_element_attributes_for[tag_name.to_sym] ||=
+            Set.new( Watir.tag_to_class[tag_name.to_sym].attribute_list )
+    end
+
+    # @param    [String]  tag
+    #   Opening HTML tag of the element.
+    # @return   [Hash]
+    #   Hash with attributes supported by Watir.
+    def self.supported_element_attributes_from( tag )
+        return {} if !tag.is_a?( String )
+
+        tag_name = extract_tag_name( tag )
+
+        Nokogiri::HTML( tag ).css( tag_name ).first.attributes.
+            inject({}) do |h, (k, v)|
+            attribute = k.gsub( '-' ,'_' ).to_sym
+            next h if !supported_element_attributes_for( tag_name ).include?( attribute )
+
+            h[attribute] = v.to_s
+            h
+        end
+    end
+
+    # @param    [String]  tag   Opening HTML tag of the element.
+    # @return   [String] Tag name.
+    def self.extract_tag_name( tag )
+        return if !tag.is_a?( String )
+        tag.match( /<(\w+)\b/ )[1]
+    end
+
     def self.events
         Browser::GLOBAL_EVENTS | Browser::EVENTS_PER_ELEMENT.values.flatten.uniq
     end
@@ -163,7 +199,7 @@ class Browser
             end
         )
 
-        @options[:timeout]     ||= 5
+        @options[:timeout]     ||= 10
         @options[:store_pages]   = true if !@options.include?( :store_pages )
 
         @proxy.start_async
@@ -407,17 +443,17 @@ class Browser
     #   Hash with information about the index of the element, its tag name and
     #   its applicable events along with their handlers.
     #
-    #       { index: 5, tag_name: 'div', events: [[:onclick, 'addForm();']] }
+    #       { tag: '<button id="stuff">', events: [[:onclick, 'addForm();']] }
     def each_element_with_events
         tries = 0
 
-        watir.elements.each.with_index do |element, i|
+        watir.elements.each do |element|
             begin
                 next if !element.visible?
 
-                tag_name    = element.tag_name
-                opening_tag = element.opening_tag
-                events      = element.events
+                tag_name = element.tag_name
+                tag      = element.opening_tag
+                events   = element.events
             rescue => e
                 tries += 1
                 next if tries > 5
@@ -429,7 +465,11 @@ class Browser
             case tag_name
                 when 'a'
                     href = element.attribute_value( :href )
-                    events << [ :onclick, href ] if href.start_with?( 'javascript:' )
+                    if href.start_with?( 'javascript:' )
+                        events << [ :onclick, href ]
+                    else
+                        next if skip_path?( href )
+                    end
 
                 when 'input'
                     if element.attribute_value( :type ).to_s.downcase == 'image'
@@ -438,16 +478,19 @@ class Browser
 
                 when 'form'
                     action = element.attribute_value( :action )
-                    events << [ :onsubmit, action ] if action.start_with?( 'javascript:' )
+                    if action.start_with?( 'javascript:' )
+                        events << [ :onsubmit, action ]
+                    else
+                        next if skip_path?( action )
+                    end
             end
 
-            next if skip_state?( opening_tag ) ||
-                NO_EVENTS_FOR_ELEMENTS.include?( tag_name.to_sym ) ||
-                events.empty?
+            next if skip_state?( tag ) || events.empty? ||
+                NO_EVENTS_FOR_ELEMENTS.include?( tag_name.to_sym )
 
-            skip_state opening_tag
+            skip_state tag
 
-            yield( { index: i, tag_name: tag_name, events: events } )
+            yield( { tag: tag, events: events } )
         end
 
         self
@@ -467,7 +510,7 @@ class Browser
 
         while (info = pending.shift) do
             info[:events].each do |name, _|
-                distribute_event( root_page, info[:index], name.to_sym )
+                distribute_event( root_page, info[:tag], name.to_sym )
             end
         end
 
@@ -480,28 +523,29 @@ class Browser
     # Distributes the triggering of `event` on the element at `element_index`
     # on `page`.
     #
-    # @param    [Page]  page
-    # @param    [Integer]  element_index
+    # @param    [Page]    page
+    # @param    [String]  tag
     # @param    [Symbol]  event
-    def distribute_event( page, element_index, event )
-        trigger_event( page, element_index, event )
+    def distribute_event( page, tag, event )
+        trigger_event( page, tag, event )
     end
 
-    # Triggers `event` on the element at `element_index` on `page`.
+    # @note Captures page {#page_snapshots}.
     #
-    # @param    [Page]  page
-    # @param    [Integer]  element_index
-    # @param    [Symbol]  event
-    def trigger_event( page, element_index, event )
+    # Triggers `event` on the element described by `tag` on `page`.
+    #
+    # @param    [Page]    page  Page containing the element's `tag`.
+    # @param    [String]  tag   Opening HTML tag of the element.
+    # @param    [Symbol]  event Event to trigger.
+    def trigger_event( page, tag, event )
         event = event.to_sym
 
         begin
-            element     = watir.elements[element_index]
-            opening_tag = element.opening_tag
+            element = locate_element( tag )
         rescue Selenium::WebDriver::Error::UnknownError,
                 Watir::Exception::UnknownObjectException => e
 
-            print_error "Element at index '#{element_index}' disappeared while triggering '#{event}'."
+            print_error "Element '#{tag}' disappeared while triggering '#{event}'."
             print_error
             print_error e
             print_error_backtrace e
@@ -526,12 +570,22 @@ class Browser
         end
 
         capture_snapshot( transition ).each do |snapshot|
-            print_debug "Found new page variation by triggering '#{event}' on: #{opening_tag}"
+            print_debug "Found new page variation by triggering '#{event}' on: #{tag}"
             print_debug 'Page transitions:'
             snapshot.dom.transitions.each { |t| print_debug "-- #{t}" }
         end
 
         restore page
+    end
+
+    # @param    [String]  tag
+    #   Opening HTML tag of the element.
+    # @return   [Watir::HTMLElement]
+    def locate_element( tag )
+        watir.send(
+            self.class.extract_tag_name( tag ),
+            self.class.supported_element_attributes_from( tag )
+        )
     end
 
     # Triggers `event` on `element`.
@@ -547,11 +601,28 @@ class Browser
     # @return   [Page::DOM::Transition, false]
     #   Transition if the operation was successful, `nil` otherwise.
     def fire_event( element, event, options = {} )
-        event       = event.to_sym
-        opening_tag = element.opening_tag
-        tag_name    = element.tag_name
+        event = event.to_sym
 
         options[:inputs] = options[:inputs].stringify if options[:inputs]
+
+        # The page may need a bit to settle and the element is lazily located
+        # by Watir so give it a few tries.
+        begin
+            Timeout.timeout @options[:timeout] do
+                sleep 0.1 while !element.exists?
+            end
+        rescue Timeout::Error
+            #ap 'TIMEOUT'
+            #ap element.instance_variable_get(:@selector)
+            #puts source_with_line_numbers
+            #ap @transitions
+            return
+        end
+
+        return if !element.visible?
+
+        opening_tag = element.opening_tag
+        tag_name    = element.tag_name
 
         tries = 0
         begin
@@ -596,6 +667,8 @@ class Browser
             end
         rescue Selenium::WebDriver::Error::UnknownError,
             Watir::Exception::UnknownObjectException => e
+
+            sleep 0.1
 
             tries += 1
             retry if tries < 5
@@ -826,10 +899,10 @@ class Browser
     private
 
     def name_or_id_for( element )
-        name = element.attribute_value(:name)
+        name = element.attribute_value(:name).to_s
         return name if !name.empty?
 
-        id = element.attribute_value(:id)
+        id = element.attribute_value(:id).to_s
         return id if !id.empty?
 
         nil

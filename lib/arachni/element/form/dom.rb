@@ -18,12 +18,6 @@ class DOM < Capabilities::Auditable::DOM
         @default_inputs = self.inputs.dup.freeze
     end
 
-    # @return   [Watir::Form]
-    def locate
-        # TODO: Also use input names to be sure.
-        browser.watir.form( valid_attributes )
-    end
-
     # Submits the form using the configured {#inputs}.
     def trigger
         browser.fire_event element, :onsubmit, inputs: inputs.dup

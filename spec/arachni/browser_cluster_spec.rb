@@ -12,7 +12,6 @@ describe Arachni::BrowserCluster do
 
     after( :each ) do
         @cluster.shutdown if @cluster
-        Arachni::Options.reset
     end
 
     describe '#with_browser' do

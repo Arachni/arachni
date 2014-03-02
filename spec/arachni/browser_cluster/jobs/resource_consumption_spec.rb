@@ -7,13 +7,7 @@ describe Arachni::BrowserCluster::Jobs::ResourceExploration do
         Arachni::Utilities.normalize_url( web_server_url_for( :browser ) ) + 'explore'
     end
     after do
-        @cluster.shutdown if @cluster
-        Arachni::Options.reset
-
-        if ::EM.reactor_running?
-            ::EM.stop
-            sleep 0.1 while ::EM.reactor_running?
-        end
+        @cluster.shutdown
     end
 
     def test( job )

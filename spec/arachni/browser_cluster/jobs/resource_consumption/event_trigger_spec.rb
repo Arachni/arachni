@@ -7,23 +7,18 @@ describe Arachni::BrowserCluster::Jobs::ResourceExploration::EventTrigger do
         browser = Arachni::Browser.new
         browser.load url
 
-        browser.each_element_with_events { |data| @element_index = data[:index] }
+        browser.each_element_with_events { |data| @tag = data[:tag] }
+        browser.shutdown
     end
 
     let(:url) do
         Arachni::Utilities.normalize_url( web_server_url_for( :event_trigger ) )
     end
     let(:event) { :click }
-    let(:element_index) { @element_index }
+    let(:tag) { @tag }
 
     after do
-        @cluster.shutdown if @cluster
-        Arachni::Options.reset
-
-        if ::EM.reactor_running?
-            ::EM.stop
-            sleep 0.1 while ::EM.reactor_running?
-        end
+        @cluster.shutdown
     end
 
     def test( job )
@@ -46,16 +41,16 @@ describe Arachni::BrowserCluster::Jobs::ResourceExploration::EventTrigger do
     context 'when the resource is a' do
         context String do
             it 'loads the URL and triggers the given event on the given element' do
-                test described_class.new( resource: url, event: event, element_index: element_index )
+                test described_class.new( resource: url, event: event, tag: tag )
             end
         end
 
         context Arachni::HTTP::Response do
             it 'loads it and triggers the given event on the given element' do
                 test described_class.new(
-                         resource:      Arachni::HTTP::Client.get( url, mode: :sync ),
-                         event:         event,
-                         element_index: element_index
+                         resource: Arachni::HTTP::Client.get( url, mode: :sync ),
+                         event:    event,
+                         tag:      tag
                      )
             end
         end
@@ -63,9 +58,9 @@ describe Arachni::BrowserCluster::Jobs::ResourceExploration::EventTrigger do
         context Arachni::Page do
             it 'loads it and triggers the given event on the given element' do
                 test described_class.new(
-                    resource:      Arachni::Page.from_url( url ),
-                    event:         event,
-                    element_index: element_index
+                    resource: Arachni::Page.from_url( url ),
+                    event:    event,
+                    tag:      tag
                 )
             end
         end

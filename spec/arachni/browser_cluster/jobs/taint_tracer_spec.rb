@@ -3,13 +3,7 @@ require 'spec_helper'
 describe Arachni::BrowserCluster::Jobs::TaintTrace do
     before(:each) { @cluster = Arachni::BrowserCluster.new }
     after(:each) do
-        @cluster.shutdown if @cluster
-        Arachni::Options.reset
-
-        if ::EM.reactor_running?
-            ::EM.stop
-            sleep 0.1 while ::EM.reactor_running?
-        end
+        @cluster.shutdown
     end
 
     def test_execution_flow( job )

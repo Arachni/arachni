@@ -168,28 +168,6 @@ class Transition
         ZERO_DEPTH.include?( event ) ? 0 : 1
     end
 
-    # @return   [String]    {#element}'s tag name.
-    def element_tag_name
-        return element if element.is_a? Symbol
-        return if !element.is_a?( String )
-
-        element.match( /<(\w+)\b/ )[1]
-    end
-
-    # @return   [Hash]  {#element}'s HTML attributes.
-    def element_attributes
-        return {} if !element.is_a?( String )
-
-        Nokogiri::HTML( element ).css( element_tag_name ).first.attributes.
-            inject({}) do |h, (k, v)|
-                attribute = k.gsub( '-' ,'_' ).to_sym
-                next h if !valid_element_attributes.include? attribute
-
-                h[attribute] = v.to_s
-                h
-            end
-    end
-
     # @param    [Browser]   browser
     #   Browser to use to replay the transition.
     #
@@ -198,18 +176,7 @@ class Transition
     #   successful.
     def replay( browser )
         return if !replayable?
-
-        # Try to find the relevant element but skip the transition if
-        # it's no longer available.
-        begin
-            candidate_elements =
-                browser.watir.send( "#{element_tag_name}s", element_attributes )
-            return if candidate_elements.size == 0
-        rescue Selenium::WebDriver::Error::UnknownError
-            return
-        end
-
-        browser.fire_event candidate_elements.first, event, options
+        browser.fire_event browser.locate_element( element ), event, options
     end
 
     # @return   [Bool]
@@ -267,17 +234,6 @@ class Transition
 
     def ==( other )
         hash == other.hash
-    end
-
-    def self.valid_element_attributes_for( tagname )
-        Watir.tag_to_class[tagname].attribute_list
-    end
-
-    private
-
-    def valid_element_attributes
-        @valid_element_attributes ||=
-            Set.new( self.class.valid_element_attributes_for( element_tag_name.to_sym ) )
     end
 
 end

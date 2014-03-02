@@ -199,44 +199,6 @@ describe Arachni::Page::DOM::Transition do
         end
     end
 
-    describe '#element_tag_name' do
-        context 'when the #element is a' do
-            context Symbol do
-                it 'returns it' do
-                    empty_transition.start( page: :load ).element_tag_name.should == :page
-                end
-            end
-
-            context String do
-                it 'extracts the tag name' do
-                    empty_transition.start( '<button attribute="blah">' => :onclick ).element_tag_name.should == 'button'
-                end
-            end
-        end
-    end
-
-    describe '#element_attributes' do
-        context 'when the #element is a' do
-            context String do
-                it 'extracts supported attributes' do
-                    arg = {
-                        '<button onmouseover="onMouseOver()"; onclick="onClick()" attribute="blah">' => :onclick
-                    }
-                    empty_transition.start( arg ).element_attributes.should == {
-                        onmouseover: 'onMouseOver()',
-                        onclick:     'onClick()'
-                    }
-                end
-            end
-
-            context 'other' do
-                it 'returns an empty hash' do
-                    empty_transition.start( page: :load ).element_tag_name.should == :page
-                end
-            end
-        end
-    end
-
     describe '#element' do
         it 'returns the element associated with the transition' do
             subject.element.should == :page
