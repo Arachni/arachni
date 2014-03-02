@@ -683,8 +683,8 @@ class URI
         end
     end
 
-    def respond_to?( sym )
-        super || @parsed_url.respond_to?( sym )
+    def respond_to?( *args )
+        super || @parsed_url.respond_to?( *args )
     end
 
 end

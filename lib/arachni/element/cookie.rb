@@ -217,8 +217,8 @@ class Cookie < Base
     #
     # @return   [Bool]
     #
-    def respond_to?( sym )
-        (@data && @data.include?( sym )) || super( sym )
+    def respond_to?( *args )
+        (@data && @data.include?( args.first )) || super
     end
 
     # @return   [String]    To be used in a `Cookie` HTTP request header.

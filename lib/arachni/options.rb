@@ -50,8 +50,8 @@ class Options
             end
         end
 
-        def respond_to?( m )
-            super( m ) || instance.respond_to?( m )
+        def respond_to?( *args )
+            super || instance.respond_to?( *args )
         end
 
         # Ruby 2.0 or YAML doesn't like my class-level method_missing for some
@@ -299,7 +299,7 @@ class Options
     end
 
     # @return    [Hash] `self` converted to a Hash.
-    def to_h
+    def to_hash
         hash = {}
         instance_variables.each do |var|
             val = instance_variable_get( var )
@@ -318,7 +318,7 @@ class Options
 
         hash
     end
-    alias :to_hash :to_h
+    alias :to_h :to_hash
 
     private
 
