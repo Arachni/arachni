@@ -71,6 +71,10 @@ describe Arachni::Browser do
     end
 
     describe '#initialize' do
+        describe :concurrency do
+            it 'sets the HTTP request concurrency'
+        end
+
         describe :store_pages do
             describe 'default' do
                 it 'stores snapshot pages' do

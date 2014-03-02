@@ -185,6 +185,8 @@ class Browser
     # @param    [Hash]  options
     # @option   options [Integer] :timeout  (5)
     #   Max time to wait for the page to settle (for pending AJAX requests etc).
+    # @option options   [Integer]    :concurrency
+    #   Maximum number of concurrent connections.
     # @option   options [Bool] :store_pages  (true)
     #   Whether to store pages in addition to just passing them to {#on_new_page}.
     def initialize( options = {} )
@@ -192,6 +194,7 @@ class Browser
         @mutex   = Mutex.new
 
         @proxy = HTTP::ProxyServer.new(
+            concurrency:      @options[:concurrency],
             address:          '127.0.0.1',
             request_handler:  proc do |request, response|
                 synchronize { exception_jail { request_handler( request, response ) } }
