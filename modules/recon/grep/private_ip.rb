@@ -14,14 +14,12 @@
     limitations under the License.
 =end
 
-#
 # Private IP address recon module.
 #
 # Scans for private IP addresses.
 #
 # @author   Tasos Laskos <tasos.laskos@gmail.com>
 # @version  0.2.2
-#
 class Arachni::Modules::PrivateIP < Arachni::Module::Base
 
     def self.regexp
@@ -45,7 +43,7 @@ class Arachni::Modules::PrivateIP < Arachni::Module::Base
             },
             issue:       {
                 name:            %q{Private IP address disclosure},
-                description:     %q{Private IP's, or non-routable IP address' 
+                description:     %q{Private, or non-routable, IP addresses
                     are generally used within a home or company network, and are 
                     typically unknown to anyone outside of that network. 
                     Cyber-criminals will attempt to identify the private IP 
@@ -53,17 +51,17 @@ class Arachni::Modules::PrivateIP < Arachni::Module::Base
                     further information collection that could then lead to 
                     possible compromise. Arachni discovered that the affected 
                     page returned a RFC 1918 compliant private IP address, and 
-                    therefor could be revealing sensitive information. This 
+                    therefore could be revealing sensitive information. This
                     finding typically requires manual verification to ensure the 
                     context of this finding is correct. As any private IP 
                     address within the HTML body will trigger this finding},
                 cwe:             '200',
                 severity:        Severity::LOW,
                 remedy_guidance: %q{Identifying the context in which the 
-                    identified page displays a Private IP is required. If the 
-                    page is publically accessible, and displaying the Private IP 
-                    of the affected server (or supporting infrastructure) then 
-                    measures should be put in place to ensure that the IP is 
+                    identified page displays a Private IP address is required.
+                    If the page is publicly accessible, and displaying the
+                    Private IP of the affected server (or supporting infrastructure),
+                    then measures should be put in place to ensure that the IP is
                     removed from any response.},
             }
         }
