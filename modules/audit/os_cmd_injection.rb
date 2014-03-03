@@ -73,17 +73,17 @@ class Arachni::Modules::OSCmdInjection < Arachni::Module::Base
             issue:       {
                 name:            %q{Operating system command injection},
                 description:     %q{To perform specific actions from within a 
-                    web application, it is occasionally required to fun 
-                    operating commands (Linux or Windows) and have the output of 
+                    web application, it is occasionally required to run
+                    Operating System commands (Linux or Windows) and have the output of
                     these commands captured by the web application and returned 
-                    o the client. OS command injection occurs when user supplied 
+                    to the client. OS command injection occurs when user supplied
                     input is inserted into one of these commands without proper 
                     sanitisation and executed by the server. Cyber criminals 
                     will abuse this weakness to perform their own arbitrary 
                     commands on the server. This can include everything from 
                     simple ping commands to map the internal network, to 
                     obtaining full control of the server. Arachni was able to 
-                    inject specific operating commands and have the output from 
+                    inject specific Operating System commands and have the output from
                     that command contained within the server response. This 
                     indicates that proper input sanitisation is not occurring.},
                 tags:            %w(os command code injection regexp),
@@ -91,7 +91,7 @@ class Arachni::Modules::OSCmdInjection < Arachni::Module::Base
                 severity:        Severity::HIGH,
                 cvssv2:          '9.0',
                 remedy_guidance: %q{It is recommended that untrusted or 
-                    invalidated data is never used to form a command to be 
+                    non-validated data is never used to form a command to be
                     executed on the server. To validate data, the application 
                     should ensure that the supplied value contains only the 
                     characters that are required to perform the required action. 
