@@ -14,13 +14,11 @@
     limitations under the License.
 =end
 
-#
 # Logs cookies that are accessible via JavaScript.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 # @version 0.1.2
-#
 class Arachni::Modules::HttpOnlyCookies < Arachni::Module::Base
 
     def run
@@ -53,20 +51,19 @@ class Arachni::Modules::HttpOnlyCookies < Arachni::Module::Base
                     individual client, and can therefor determine which clients 
                     hold valid authentication from those that do not.  These are 
                     known as session cookies. When a cookie is set by the server 
-                    (send the header of response) there are several flags that 
-                    can be set to determine the properties of the cookie, and 
-                    how it is handled by the browser. The HttpOnly flag assists 
-                    in the prevention of client side scripts (such as 
-                    JavaScript) accessing, and using the cookie. This can help 
-                    preventing XSS attacks targeting the cookies holding the 
-                    clients session token (Setting the HttpOnly flag does not 
-                    prevent, or remediate against XSS vulnerabilities 
-                    themselves). },
+                    there are several flags that can be set to configure the
+                    properties of the cookie, and how it is handled by the browser.
+                    The HttpOnly flag assists in the prevention of client side
+                    scripts (such as JavaScript) accessing, and using the cookie.
+                    This can help preventing XSS attacks targeting the cookies
+                    holding the clients session token (Setting the HttpOnly flag
+                    does not prevent, or remediate against XSS vulnerabilities
+                    themselves).},
                 cwe:             '200',
                 severity:        Severity::INFORMATIONAL,
-                remedy_guidance: %q{The initial steps to remediate this should 
+                remedy_guidance: %q{The initial steps to remedy this should
                     be determined on whether any client side scripts (such as 
-                    JavaScript) are required to access to cookie. If this cannot 
+                    JavaScript) are required to access the cookie. If this cannot
                     be determined, then it is likely not required by the scripts 
                     and should therefor have the HttpOnly flag as per the 
                     following remediation actions. The server should ensure that 
@@ -74,11 +71,10 @@ class Arachni::Modules::HttpOnlyCookies < Arachni::Module::Base
                     as a server header is 'Set-Cookie: NAME=VALUE; HttpOnly'. 
                     Depending on the framework and server in use by the affected 
                     page, the technical remediation actions will differ. 
-                    Instructions on specific framework remediation are available 
-                    at 'www.owasp.org/index.php/HttpOnly'. Additionally, it 
-                    should be noted that some older browsers are not compatible 
-                    with the HttpOnly flag, and therefor setting this flag will 
-                    not protect those clients against this form of attack.},
+                    Additionally, it should be noted that some older browsers are
+                    not compatible with the HttpOnly flag, and therefore setting
+                    this flag will not protect those clients against this form
+                    of attack.},
             }
         }
     end
