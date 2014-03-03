@@ -39,13 +39,6 @@ class Manager
 
     # @param    [Integer]   pid PID of the process to kill.
     def kill( pid )
-        # Avoid accidentally killing our own process.
-        if pid == Process.pid
-            warn 'Cannot kill self.'
-            caller.each { |l| warn l }
-            return
-        end
-
         while sleep 0.1 do
             begin
                 # I'd rather this be an INT but WEBrick's INT traps write to the
