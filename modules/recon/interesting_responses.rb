@@ -14,14 +14,9 @@
     limitations under the License.
 =end
 
-require 'digest/md5'
-
-#
 # Logs all non 200 (OK) and non 404 server responses.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-# @version 0.1.5
 class Arachni::Modules::InterestingResponses < Arachni::Module::Base
 
     IGNORE_CODES = [ 200, 404 ].to_set
@@ -49,13 +44,12 @@ class Arachni::Modules::InterestingResponses < Arachni::Module::Base
         return if IGNORE_CODES.include?( res.code ) || res.body.to_s.empty? ||
             issue_limit_reached?
 
-        digest = Digest::MD5.hexdigest( res.body )
-        path   = uri_parse( res.effective_url ).path
+        path = uri_parse( res.effective_url ).path
 
-        return if audited?( path ) || audited?( digest )
+        return if audited?( path ) || audited?( res.body )
 
         audited( path )
-        audited( digest )
+        audited( res.body )
 
         log( { id: "Code: #{res.code}", element: Element::SERVER }, res )
         print_ok "Found an interesting response -- Code: #{res.code}."
@@ -74,27 +68,12 @@ class Arachni::Modules::InterestingResponses < Arachni::Module::Base
             },
             issue:       {
                 name:        %q{Interesting response},
-                description: %q{During scanning Arachni trains itself by 
-                    learning from the HTTP responses it receives during the 
-                    audit process. It is able to perform meta-analysis using a 
-                    number of factors in order to correctly assess the 
-                    trustworthiness of results and intelligently identify false-
-                    positives. Because of this, Arachni is also able to identify 
-                when a web application responds in an unpredictable manner. 
-                    Unpredictable meaning the server responded with a status 
-                    code (eg, 500) when Arachni was expecting another (eg. 200). 
-                    Arachni has flagged a non 200 response not as a 
-                    vulnerability, but as a prompt for the penetration tester to 
-                    conduct further manual testing on the identified page, as 
-                    its unpredictable response may lead to identifying 
-                    additional vulnerabilities in the web application or server 
-                    deployment. Note: 404 status codes are ignored.},
+                description: %q{The server responded with a non 200 (OK) nor 404
+                (Not Found) status code. This is a non-issue, however exotic HTTP
+                response status codes can provide useful insights into the behavior
+                of the web application and assist with the penetration test.},
                 tags:        %w(interesting response server),
-                severity:    Severity::INFORMATIONAL,
-                remedy_guidance: %q{Conduct further manual testing to ensure 
-                    that the web application and/or server are responding as 
-                    expected and that potential application and/or sever 
-                    misconfigurations cannot be abused.}
+                severity:    Severity::INFORMATIONAL
             },
             max_issues: 25
         }
