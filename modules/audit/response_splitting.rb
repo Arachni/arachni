@@ -14,7 +14,6 @@
     limitations under the License.
 =end
 
-#
 # HTTP Response Splitting audit module.
 #
 # It audits links, forms and cookies.
@@ -27,7 +26,6 @@
 # @see http://cwe.mitre.org/data/definitions/20.html
 # @see http://www.owasp.org/index.php/HTTP_Response_Splitting
 # @see http://www.securiteam.com/securityreviews/5WP0E2KFGK.html
-#
 class Arachni::Modules::ResponseSplitting < Arachni::Module::Base
 
     def run
@@ -85,7 +83,7 @@ class Arachni::Modules::ResponseSplitting < Arachni::Module::Base
                 severity:        Severity::MEDIUM,
                 cvssv2:          '5.0',
                 remedy_guidance: %q{It is recommended that untrusted or 
-                    invalidated data is never used to form the contents of the 
+                    non-validated data is never used to form the contents of the
                     response header. Where any untrusted source is required to 
                     be used in the response headers, it is important to ensure 
                     that any hazardous characters (%0d, %0a, /r, /n, and 
