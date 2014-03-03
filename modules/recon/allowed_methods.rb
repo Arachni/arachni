@@ -82,10 +82,10 @@ class Arachni::Modules::AllowedMethods < Arachni::Module::Base
                 tags:            %w(http methods options),
                 severity:        Severity::INFORMATIONAL,
                 remedy_guidance: %q{It is recommended that a whitelisting 
-                    approach be taken to permit HTTP methods required by the 
-                    application. Therefor blocking all unrequired methods. 
+                    approach be taken to explicitly permit the HTTP methods required
+                    by the application and block all others.
                     Typically the only HTTP methods required for most 
-                    applications are the GET, and POST methods. All other 
+                    applications are the GET and POST . All other
                     methods perform actions that are rarely required, or perform 
                     actions that are inherently risky. These risky methods (such 
                     as PUT, DELETE, etc) should be protected by strict 
