@@ -14,13 +14,10 @@
     limitations under the License.
 =end
 
-#
 # HTTP PUT recon module.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 # @version 0.1.6
-#
 class Arachni::Modules::HTTP_PUT < Arachni::Module::Base
 
     def self.substring
@@ -61,20 +58,20 @@ class Arachni::Modules::HTTP_PUT < Arachni::Module::Base
             },
             issue:       {
                 name:            %q{Publicly writable directory},
-                description:     %q{There are various methods in which a file or 
-                    files may be uploaded to a webserver. One method that can be 
+                description:     %q{There are various methods in which a file (or
+                    files) may be uploaded to a webserver. One method that can be
                     used is the HTTP PUT method. The PUT method is mainly used 
-                    during development of applications, and allows developers to 
+                    during development of applications and allows developers to
                     upload (or put) files on the server within the web root. By 
                     nature of the design, the PUT method typically does not 
-                    provide any filtering and therefor allows sever side 
+                    provide any filtering and therefore allows sever side
                     executable code (PHP, ASP, etc) to be uploaded to the 
                     server. Cyber-criminals will search for servers supporting 
                     the PUT method with the intention of modifying existing 
                     pages, or uploading web shells to take control of the 
                     server. Arachni has discovered that the affected path allows 
                     clients to use the PUT method. During this test, Arachni has 
-                    PUT a file on the server within the web root, and 
+                    PUT a file on the server within the web root and
                     successfully performed a GET request to its location and 
                     matched the contents.},
                 tags:            %w(http methods put server),
@@ -86,10 +83,10 @@ class Arachni::Modules::HTTP_PUT < Arachni::Module::Base
                     PUT method will differ depending on the type of server being 
                     used (IIS, Apache, etc.). For cases where the PUT method is 
                     required to meet application functionality, such as REST 
-                    style web services, then strict limitations should be 
+                    style web services, strict limitations should be
                     implemented to ensure that only secure (SSL/TLS enabled), 
                     and authorised clients are permitted to use the PUT method. 
-                    Additionally, the servers file system permissions should 
+                    Additionally, the server's file system permissions should
                     also enforce strict limitations.}
             }
         }
