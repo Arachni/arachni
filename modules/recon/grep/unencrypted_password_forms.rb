@@ -14,17 +14,13 @@
     limitations under the License.
 =end
 
-#
 # Unencrypted password form
 #
 # Looks for password inputs that don't submit data over an encrypted channel (HTTPS).
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 # @version 0.1.7
-#
 # @see http://www.owasp.org/index.php/Top_10_2010-A9-Insufficient_Transport_Layer_Protection
-#
 class Arachni::Modules::UnencryptedPasswordForms < Arachni::Module::Base
 
     def determine_name( input )
@@ -76,17 +72,17 @@ class Arachni::Modules::UnencryptedPasswordForms < Arachni::Module::Base
                 description:     %q{The HTTP protocol by itself is clear text, 
                     meaning that any data that is transmitted via HTTP can be 
                     captured and the contents viewed. To keep data private, and 
-                    prevent it from being intercepted HTTP is often tunnelled 
+                    prevent it from being intercepted, HTTP is often tunnelled
                     through either Secure Sockets Layer (SSL), or Transport 
                     Layer Security (TLS). When either of these encryption 
                     standards are used it is referred to as HTTPS. Cyber-
                     criminals will often attempt to compromise credentials 
                     passed from the client to the server using HTTP. This can be 
-                    conducted via various different Man in The Middle (MiTM) 
+                    conducted via various different Man-in-The-Middle (MiTM)
                     attacks or through network packet captures. Arachni 
                     discovered that the affected page contains a 'password' 
                     input, however the value of the field is not sent to the 
-                    server utilising HTTPS. Therefor it is possible that any 
+                    server utilising HTTPS. Therefore it is possible that any
                     submitted credential may become compromised.},
                 tags:            %w(unencrypted password form),
                 cwe:             '319',
@@ -98,9 +94,7 @@ class Arachni::Modules::UnencryptedPasswordForms < Arachni::Module::Base
                     all browsers will support this encryption method. Therefor 
                     the more common SSL is included. Older protocols such as SSL 
                     version 2, and weak ciphers (< 128 bit) should also be 
-                    disabled. References for framework specific remediation and 
-                    best practices can be obtained from 
-                    'www.owasp.org/index.php/Transport_Layer_Protection_Cheat_Sheet'}
+                    disabled.}
             }
 
         }
