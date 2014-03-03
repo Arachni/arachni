@@ -111,8 +111,8 @@ class Arachni::Modules::FileInclusion < Arachni::Module::Base
 
             issue:       {
                 name:            %q{File Inclusion},
-                description:     %q{Web applications occasionally use a 
-                    parameters values to store the value of a file required by 
+                description:     %q{Web applications occasionally use
+                    parameter values to store the location of a file required by
                     the server. An example of this is often seen in error pages 
                     where the actual file path for the error page is called the 
                     parameter value. For example 
@@ -121,7 +121,7 @@ class Arachni::Modules::FileInclusion < Arachni::Module::Base
                     called by the server) can be substituted with the path of 
                     another resource on the same server, and the server then 
                     displays that resource as text without processing it. 
-                    Therefor revealing the server side source code. Cyber-
+                    Therefore revealing the server side source code. Cyber-
                     criminals will abuse this vulnerability to view restricted 
                     files or the source code of various files on the server. 
                     Arachni discovered that it was possible to substitute a 
