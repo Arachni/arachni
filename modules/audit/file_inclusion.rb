@@ -18,7 +18,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.1
+# @version 0.1.2
 #
 # @see http://cwe.mitre.org/data/definitions/98.html
 # @see https://www.owasp.org/index.php/PHP_File_Inclusion
@@ -103,7 +103,7 @@ class Arachni::Modules::FileInclusion < Arachni::Module::Base
                 based on the presence of relevant content or errors in the HTTP responses.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.1.1',
+            version:     '0.1.2',
             references:  {
                 'OWASP' => 'https://www.owasp.org/index.php/PHP_File_Inclusion'
             },
@@ -111,13 +111,43 @@ class Arachni::Modules::FileInclusion < Arachni::Module::Base
 
             issue:       {
                 name:            %q{File Inclusion},
-                description:     %q{The web application enforces improper limitation
-                    of a pathname.},
+                description:     %q{Web applications occasionally use
+                    parameter values to store the location of a file required by
+                    the server. An example of this is often seen in error pages 
+                    where the actual file path for the error page is called the 
+                    parameter value. For example 
+                    'yoursite.com/error.php?page=404.php'. A file inclusion 
+                    occurs when the parameter value (ie. path to file being 
+                    called by the server) can be substituted with the path of 
+                    another resource on the same server, and the server then 
+                    displays that resource as text without processing it. 
+                    Therefore revealing the server side source code. Cyber-
+                    criminals will abuse this vulnerability to view restricted 
+                    files or the source code of various files on the server. 
+                    Arachni discovered that it was possible to substitute a 
+                    parameter value with another resource and have the server 
+                    return the contents of the resource to the client within 
+                    the response. },
                 tags:            %w(file inclusion error injection regexp),
                 cwe:             '98',
                 severity:        Severity::HIGH,
-                remedy_guidance: %q{User inputs must be validated and filtered
-                    before being used as a part of a filesystem path.}
+                remedy_guidance: %q{ It is recommended that untrusted or 
+                    invalidated data is never used to form a literal file 
+                    include request. To validate data, the application should 
+                    ensure that the supplied value for a file is permitted. This 
+                    can be achieved by performing whitelisting on the parameter 
+                    value. The whitelist should contain a list of pages that the 
+                    application is permitted to fetch resources from. If the 
+                    supplied value does not match any value in the whitelist 
+                    then the server should redirect to a standard error page. 
+                    In some scenarios where dynamic content is being requested 
+                    it may not be possible to perform validation of a list of 
+                    trusted resources, therefor the list must also become 
+                    dynamic (update as the files change), or perform filtering 
+                    to remove any unrequired user input such as semicolons or 
+                    periods etc. and only permit a-z0-9. It is also advised that 
+                    sensitive file are not stored within the web root, and that 
+                    the user permissions enforced by the directory are correct.}
             }
 
         }

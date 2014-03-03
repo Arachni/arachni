@@ -14,17 +14,15 @@
     limitations under the License.
 =end
 
-#
 # Mixed Resource detection module
 #
 # Looks for resources served over HTTP when the HTML code is server over HTTPS.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.3
+# @version 0.1.4
 #
 # @see http://googleonlinesecurity.blogspot.com/2011/06/trying-to-end-mixed-scripting.html
-#
 class Arachni::Modules::MixedResource < Arachni::Module::Base
 
     def run
@@ -71,20 +69,42 @@ class Arachni::Modules::MixedResource < Arachni::Module::Base
             description: %q{Looks for resources served over HTTP when the HTML code is server over HTTPS.},
             elements:    [ Element::BODY ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.1.2',
+            version:     '0.1.4',
             references:  {
                 'Google Online Security Blog' =>
-                    'http://googleonlinesecurity.blogspot.com/2011/06/trying-to-end-mixed-scripting.html'
+                    'http://googleonlinesecurity.blogspot.com/2011/06/trying-to-end-mixed-scripting.html',
+                'WASC' => 'http://projects.webappsec.org/w/page/13246945/Insufficient%20Transport%20Layer%20Protection',
+                'OWASP' => 'www.owasp.org/index.php/Transport_Layer_Protection_Cheat_Sheet'
             },
             targets:     %w(Generic),
             issue:       {
                 name:            %q{Mixed Resource},
-                description:     %q{Serving resources over an unencrypted channel
-    while the HTML code is served over HTTPS can lead to
-    Man-In-The-Middle attacks and provide a false sense of security.},
+                description:     %q{The HTTP protocol by itself is clear text, 
+                    meaning that any data that is transmitted via HTTP can be 
+                    captured and the contents viewed. To keep data private, and 
+                    prevent it from being intercepted, HTTP is often tunnelled
+                    through either a Secure Sockets Layer (SSL), or Transport
+                    Layer Security (TLS) connection. When either of these encryption
+                    standards are used, it is referred to as HTTPS. Cyber-
+                    criminals will often attempt to compromise sensitive 
+                    information passed from the client to the server using HTTP. 
+                    This can be conducted via various different Man-in-The-Middle
+                    (MiTM) attacks or through network packet captures.
+                    Arachni discovered that the affected site is utilising both 
+                    HTTP and HTTPS. While the HTML code is served over HTTPS, 
+                    the server is also serving resources over an unencrypted 
+                    channel which can lead to the compromise of data, while 
+                    providing a false sense of security to the user. },
                 tags:            %w(unencrypted resource javascript stylesheet),
                 severity:        Severity::MEDIUM,
-                remedy_guidance: %q{Configure the server to serve all resources over the encrypted channel.}
+                remedy_guidance: %q{All pages and/or resources on the affected 
+                    site should be secured equally, utilising the latest and 
+                    most secure encryption protocols. These include SSL version 
+                    3.0 and TLS version 1.2. While TLS 1.2 is the latest and the 
+                    most preferred protocol, not all browsers will support this 
+                    encryption method. Therefore the more common SSL is included.
+                    Older protocols such as SSL version 2, and weak ciphers 
+                    (< 128 bit) should also be disabled.}
             }
 
         }

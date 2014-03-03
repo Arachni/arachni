@@ -14,13 +14,10 @@
     limitations under the License.
 =end
 
-#
 # Looks for and logs e-mail addresses.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-# @version 0.1.1
-#
+# @version 0.1.2
 class Arachni::Modules::EMails < Arachni::Module::Base
 
     def run
@@ -36,15 +33,38 @@ class Arachni::Modules::EMails < Arachni::Module::Base
             description: %q{Greps pages for disclosed e-mail addresses.},
             elements:    [ Element::BODY ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.1',
+            version:     '0.1.2',
             targets:     %w(Generic),
             issue:       {
                 name:            %q{E-mail address disclosure},
-                description:     %q{An e-mail address is being disclosed.},
+                description:     %q{Email addresses are typically found on 
+                    'Contact us' pages, however they can also be found within
+                    scripts or code comments of the application. They are used to
+                    provide a legitimate means of contacting an organisation. As 
+                    one of the initial steps in information gathering, cyber-
+                    criminals will spider a website and using automated methods 
+                    collect as many email addresses as possible, that they may 
+                    then use in a social engineering attack against that user. 
+                    Using the same automated methods, Arachni was able to detect 
+                    one or more email addresses that were stored within the 
+                    affected page.},
                 cwe:             '200',
                 severity:        Severity::INFORMATIONAL,
-                remedy_guidance: %q{E-mail addresses should be presented in such
-                    a way that it is hard to process them automatically.}
+                remedy_guidance: %q{As a general rule, email addresses should be 
+                    presented in such a way that it is hard for scripts to 
+                    process them automatically. For example, 
+                    'test@arachni-scanner.com' may become 
+                    'test[at]yourdomain[dot]com'. Although this will force extra 
+                    user interaction when utilising the address (changing [dot] 
+                    to . etc) it will reduce the likelihood that these emails 
+                    will be discovered by an automated process. To provide 
+                    further protection against manual discovery, generic email 
+                    addresses should be used. For example on a 'contact us' page 
+                    'contactus@arachni-scanner.com' should be utilised instead 
+                    of an individual's email address such as 
+                    'john.doe@arachni-scanner.com'. Performing this extra step 
+                    may reduce the likelihood of username enumeration for the 
+                    domain.}
             },
             max_issues: 25
         }

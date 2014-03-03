@@ -18,7 +18,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2.1
+# @version 0.2.2
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
 # @see http://www.owasp.org/index.php/OS_Command_Injection
@@ -64,21 +64,42 @@ class Arachni::Modules::OSCmdInjection < Arachni::Module::Base
             description: %q{Tries to find operating system command injections.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.2.1',
+            version:     '0.2.2',
             references:  {
-                'OWASP' => 'http://www.owasp.org/index.php/OS_Command_Injection'
+                'OWASP' => 'http://www.owasp.org/index.php/OS_Command_Injection',
+                'WASC'  => 'http://projects.webappsec.org/w/page/13246950/OS%20Commanding'
             },
             targets:     %w(Windows Unix),
             issue:       {
                 name:            %q{Operating system command injection},
-                description:     %q{The web application allows an attacker to
-    execute arbitrary OS commands.},
+                description:     %q{To perform specific actions from within a 
+                    web application, it is occasionally required to run
+                    Operating System commands (Linux or Windows) and have the output of
+                    these commands captured by the web application and returned 
+                    to the client. OS command injection occurs when user supplied
+                    input is inserted into one of these commands without proper 
+                    sanitisation and executed by the server. Cyber criminals 
+                    will abuse this weakness to perform their own arbitrary 
+                    commands on the server. This can include everything from 
+                    simple ping commands to map the internal network, to 
+                    obtaining full control of the server. Arachni was able to 
+                    inject specific Operating System commands and have the output from
+                    that command contained within the server response. This 
+                    indicates that proper input sanitisation is not occurring.},
                 tags:            %w(os command code injection regexp),
                 cwe:             '78',
                 severity:        Severity::HIGH,
                 cvssv2:          '9.0',
-                remedy_guidance: %q{User inputs must be validated and filtered
-    before being evaluated as OS level commands.},
+                remedy_guidance: %q{It is recommended that untrusted or 
+                    non-validated data is never used to form a command to be
+                    executed on the server. To validate data, the application 
+                    should ensure that the supplied value contains only the 
+                    characters that are required to perform the required action. 
+                    For example, where the form field expects an IP address, 
+                    only numbers and full stops should be accepted. Additionally 
+                    all control operators (&, &&, |, ||, $, \, #) should be 
+                    explicitly denied, and never accepted by as input by the 
+                    server.},
                 remedy_code:     '',
                 metasploitable:  'unix/webapp/arachni_exec'
             }

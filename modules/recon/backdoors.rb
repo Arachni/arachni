@@ -14,13 +14,10 @@
     limitations under the License.
 =end
 
-#
 # Looks for common backdoors on the server.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-# @version 0.2.2
-#
+# @version 0.2.3
 class Arachni::Modules::Backdoors < Arachni::Module::Base
 
     def self.filenames
@@ -41,21 +38,42 @@ class Arachni::Modules::Backdoors < Arachni::Module::Base
             description: %q{Tries to find common backdoors on the server.},
             elements:    [Element::PATH],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.2.2',
+            version:     '0.2.3',
             targets:     %w(Generic),
             references:  {
                 'Blackhat' => 'https://www.blackhat.com/presentations/bh-usa-07/Wysopal_and_Eng/Presentation/bh-usa-07-wysopal_and_eng.pdf'
             },
             issue:       {
                 name:            %q{A backdoor file exists on the server},
-                description:     %q{ The server response indicates that a file matching
-    the name of a common backdoor is publicly accessible.
-    This indicates that the server has been compromised and can
-    (to some extent) be remotely controled by unauthorised users.},
+                description:     %q{If a server has been previously compromised, 
+                    there is a high probability that the cyber-criminal has
+                    installed a backdoor so that they can easily return to the
+                    server if required. One method of achieving this is to place 
+                    a web backdoor or web shell within the web root of the web 
+                    server. This will then enable the cyber-criminal to access 
+                    the server through a HTTP/S session. Although extremely bad 
+                    practice, it is possible that the web backdoor or web shell 
+                    has been placed there by an administrator so they can 
+                    perform administration activities remotely. During the 
+                    initial recon stages of an attack cyber-criminals will 
+                    attempt to locate these web backdoors or shells by
+                    requesting the names of the most common and well known 
+                    backdoors. By analysing the response headers from the server 
+                    they are able to determine if a web backdoor or web shell 
+                    exists. These web backdoors or web shells can then provide 
+                    an easy path for further compromise of the server. By 
+                    utilising the same methods as the cyber-criminals, Arachni 
+                    was able to discover a possible web backdoor or web shell.},
                 tags:            %w(path backdoor file discovery),
                 severity:        Severity::HIGH,
-                remedy_guidance: %q{Perform a source code and deployment audit to eliminate any
-                    unwanted files/resources and lines of code. Preferably perform a fresh deployment.}
+                remedy_guidance: %q{If manual confirmation reveals that a web 
+                    backdoor or web shell does exist on the server then it 
+                    should be removed. It is also recommended that an incident 
+                    response investigation be conducted on the server to 
+                    establish how the web backdoor or web shell came to end up 
+                    on the server. Depending on the environment, investigation 
+                    into the compromise of any other services or servers should 
+                    be conducted.}
             }
 
         }

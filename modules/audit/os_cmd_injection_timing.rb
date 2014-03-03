@@ -14,16 +14,14 @@
     limitations under the License.
 =end
 
-#
 # OS command injection module using timing attacks.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.3
+# @version 0.3.1
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
 # @see http://www.owasp.org/index.php/OS_Command_Injection
-#
 class Arachni::Modules::OSCmdInjectionTiming < Arachni::Module::Base
 
     prefer :os_cmd_injection
@@ -53,27 +51,43 @@ class Arachni::Modules::OSCmdInjectionTiming < Arachni::Module::Base
             description: %q{Tries to find operating system command injections using timing attacks.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.3',
+            version:     '0.3.1',
             references:  {
-                'OWASP' => 'http://www.owasp.org/index.php/OS_Command_Injection'
+                'OWASP' => 'http://www.owasp.org/index.php/OS_Command_Injection',
+                'WASC'  => 'http://projects.webappsec.org/w/page/13246950/OS%20Commanding'
             },
             targets:     %w(Windows Unix),
             issue:       {
                 name:            %q{Operating system command injection (timing attack)},
-                description:     %q{The web application allows an attacker to
-    execute arbitrary OS commands even though it does not return
-    the command output in the HTML body.
-    (This issue was discovered using a timing attack; timing attacks
-    can result in false positives in cases where the server takes
-    an abnormally long time to respond.
-    Either case, these issues will require further investigation
-    even if they are false positives.)},
+                description:     %q{To perform specific actions from within a 
+                    web application, it is occasionally required to run
+                    Operating System commands (Linux or Windows) and have the output of
+                    these commands captured by the web application and returned 
+                    to the client. OS command injection occurs when user supplied
+                    input is inserted into one of these commands without proper 
+                    sanitisation and executed by the server. Cyber criminals 
+                    will abuse this weakness to perform their own arbitrary 
+                    commands on the server. This can include everything from 
+                    simple ping commands to map the internal network, to 
+                    obtaining full control of the server. By injecting OS 
+                    commands that take a specific amount of time to execute, 
+                    Arachni was able to detect time based OS command injection.
+                    This indicates that proper input sanitisation is not 
+                    occurring.},
                 tags:            %w(os command code injection timing blind),
                 cwe:             '78',
                 severity:        Severity::HIGH,
                 cvssv2:          '9.0',
-                remedy_guidance: %q{User inputs must be validated and filtered
-    before being evaluated as OS level commands.},
+                remedy_guidance: %q{It is recommended that untrusted or 
+                    non-validated data is never used to form a command to be
+                    executed on the server. To validate data, the application 
+                    should ensure that the supplied value contains only the 
+                    characters that are required to perform the required action. 
+                    For example, where the form field expects an IP address, 
+                    only numbers and full stops should be accepted. Additionally 
+                    all control operators (&, &&, |, ||, $, \, #) should be 
+                    explicitly denied, and never accepted by as input by the 
+                    server.},
                 remedy_code:     '',
                 metasploitable:  'unix/webapp/arachni_exec'
             }

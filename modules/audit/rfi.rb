@@ -14,7 +14,6 @@
     limitations under the License.
 =end
 
-#
 # Simple Remote File Inclusion (and tutorial) module.
 #
 # It audits links, forms and cookies and will give you a good idea
@@ -22,12 +21,11 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2
+# @version 0.2.2
 #
 # @see http://cwe.mitre.org/data/definitions/94.html
 # @see http://projects.webappsec.org/Remote-File-Inclusion
 # @see http://en.wikipedia.org/wiki/Remote_File_Inclusion
-#
 class Arachni::Modules::RFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
 
     #
@@ -117,7 +115,7 @@ class Arachni::Modules::RFI < Arachni::Module::Base # *always* extend Arachni::M
             #
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.2.1',
+            version:     '0.2.2',
             references:  {
                 'WASC'      => 'http://projects.webappsec.org/Remote-File-Inclusion',
                 'Wikipedia' => 'http://en.wikipedia.org/wiki/Remote_File_Inclusion'
@@ -126,9 +124,26 @@ class Arachni::Modules::RFI < Arachni::Module::Base # *always* extend Arachni::M
 
             issue:       {
                 name:        %q{Remote File Inclusion},
-                description: %q{The web application can be forced to include
-    3rd party remote content which can often lead to arbitrary code
-    execution, amongst other attacks.},
+                description: %q{Web applications occasionally use parameter
+                    values to store the location of a file required by the server.
+                    An example of this is often seen in error pages where the 
+                    actual file path for the error page is called the parameter 
+                    value. For example 'yoursite.com/error.php?page=404.php'. A 
+                    remote file inclusion occurs when the parameter value (ie. 
+                    path to file being called by the server) can be substituted 
+                    with the address of an external host, and the server then 
+                    performs a request to the external host and fetches the 
+                    resource. Taking the simple example above this would become 
+                    'yoursite.com/error.asp?page=http://anothersite.com/somethingBad.php'. 
+                    In most circumstances the server will process the fetched 
+                    resource. Therefore if the resource matches that of the
+                    framework being used (ASP, PHP, JSP, etc.) it is probable 
+                    that the resource will be executed on the vulnerable server. 
+                    Cyber-criminals will abuse this vulnerability to execute 
+                    arbitrary code on the server. Arachni discovered that it was 
+                    possible to substitute a parameter value with an external 
+                    resource and have the server fetch the resource and have it 
+                    returned to the client within the response. },
                 tags:       %w(remote file inclusion injection regexp),
                 cwe:        '94',
                 #
@@ -141,8 +156,21 @@ class Arachni::Modules::RFI < Arachni::Module::Base # *always* extend Arachni::M
                 #
                 severity:        Severity::HIGH,
                 cvssv2:          '7.5',
-                remedy_guidance: %q{Enforce strict validation and filtering
-                    on user inputs.},
+                remedy_guidance: %q{It is recommended that untrusted or 
+                    non-validated data is never used to form a literal file
+                    include request. To validate data, the application should 
+                    ensure that the supplied value for a file is permitted. This 
+                    can be achieved by performing whitelisting on the parameter 
+                    value. The whitelist should contain a list of pages (or 
+                    sites) that the application is permitted to fetch resources 
+                    from. If the supplied value does not match any value in the 
+                    whitelist then the server should redirect to a standard 
+                    error page. In some scenarios where dynamic content is being 
+                    requested it may not be possible to perform validation of a 
+                    list of trusted resources, therefor the list must also 
+                    become dynamic (update as the files change), or perform 
+                    filtering to remove any unrequired user input such as 
+                    semicolons or periods etc. and only permit a-z0-9.},
                 remedy_code:     '',
                 metasploitable:  'unix/webapp/arachni_php_include'
             }
