@@ -14,7 +14,6 @@
     limitations under the License.
 =end
 
-#
 # It injects a string and checks if it appears inside an event attribute of any HTML tag.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
@@ -24,7 +23,6 @@
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
 # @see http://secunia.com/advisories/9716/
-#
 class Arachni::Modules::XSSEvent < Arachni::Module::Base
 
     EVENT_ATTRS = [

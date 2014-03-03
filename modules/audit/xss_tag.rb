@@ -125,9 +125,7 @@ class Arachni::Modules::XSSHTMLTag < Arachni::Module::Base
                     common attributes, JavaScript data values, JSON values, HTML 
                     style property values, or HTML URL parameter values it must 
                     be filtered. Each of these locations have their own form of 
-                    escaping and filtering. For further information into 
-                    specific escaping methods and detailed remediation actions 
-                    see: 'www.owasp.org/index.php/XSS_%28Cross_Site_Scripting%29_Prevention_Cheat_Sheet'. 
+                    escaping and filtering.
                     Because many browsers attempt to implement XSS protection, 
                     any manual verification of this finding should be conducted 
                     utilising multiple different browsers and browser versions.},
