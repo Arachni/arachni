@@ -14,10 +14,8 @@
     limitations under the License.
 =end
 
-#
 # @author   Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>, haliphax
 # @version  0.1.3
-#
 class Arachni::Modules::SSN < Arachni::Module::Base
 
     def self.regexp
@@ -48,17 +46,17 @@ class Arachni::Modules::SSN < Arachni::Module::Base
                     personally identifiable number that is issued to its 
                     citizens. A stolen or leaked SSN can lead to a compromise, 
                     and/or the theft of the affected individual's identity. 
-                    Through the use regular expressions, Arachni has discovered 
+                    Through the use of regular expressions, Arachni has discovered
                     a SSN located within the response of the affected page.},
                 cwe:             '200',
                 severity:        Severity::HIGH,
                 remedy_guidance: %q{Initially, the SSN within the response 
                     should be checked to ensure its validity, as it is possible 
-                    that the regular expression has matched on a similar number 
+                    that the regular expression has matched a similar number
                     with no relation to a real SSN. If the response does contain 
-                    a valid SSN, then all efforts should be taken to remove of 
+                    a valid SSN, then all efforts should be taken to remove or
                     further protect this information. This can be achieved by 
-                    removing the SSN all together, or by masking the number so 
+                    removing the SSN all together or by masking the number so
                     that only the last few digits are present within the 
                     response. eg. **********123.},
             }
