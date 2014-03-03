@@ -14,7 +14,6 @@
     limitations under the License.
 =end
 
-#
 # Credit Card Number recon module.
 #
 # Scans page for credit card numbers.
@@ -24,7 +23,6 @@
 #
 # @see http://en.wikipedia.org/wiki/Bank_card_number
 # @see http://en.wikipedia.org/wiki/Luhn_algorithm
-#
 class Arachni::Modules::CreditCards < Arachni::Module::Base
 
     def self.cc_regexp
@@ -99,13 +97,14 @@ class Arachni::Modules::CreditCards < Arachni::Module::Base
             issue:       {
                 name:            %q{Credit card number disclosure},
                 description:     %q{Credit card numbers are used in applications 
-                    where a user is able to purchase good and/or services. A 
+                    where a user is able to purchase goods and/or services. A
                     credit card number is a sensitive piece of information and 
                     should be handled as such. Cyber-criminals will use various 
                     methods to attempt to compromise credit card information 
                     that can then be used for fraudulent purposes. Through the 
-                    use regular expressions, Arachni was able to discover a 
-                    credit card number located within the affected page.},
+                    use of regular expressions and CC number format validation,
+                    Arachni was able to discover a credit card number located
+                    within the affected page.},
                 cwe:             '200',
                 severity:        Severity::MEDIUM,
                 remedy_guidance: %q{Initially, the credit card number within the 
@@ -113,7 +112,7 @@ class Arachni::Modules::CreditCards < Arachni::Module::Base
                     possible that the regular expression has matched on a 
                     similar number with no relation to a real credit card. If 
                     the response does contain a valid credit card number, then 
-                    all efforts should be taken to remove of further protect 
+                    all efforts should be taken to remove or further protect
                     this information. This can be achieved by removing the 
                     credit card number all together, or by masking the number so 
                     that only the last few digits are present within the 
