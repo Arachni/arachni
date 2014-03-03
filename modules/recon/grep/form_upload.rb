@@ -53,14 +53,12 @@ class Arachni::Modules::FileUpload < Arachni::Module::Base
                     processed by the receiving web server. Arachni has flagged 
                     this not as a vulnerability, but as a prompt for the 
                     penetration tester to conduct further manual testing on the 
-                    file upload function. An insecure form based file upload 
+                    file upload function. An insecure form-based file upload
                     could allow a cyber-criminal a means to abuse and 
                     successfully exploit the server directly, and/or any third 
                     party that may later access the file. This can occur through 
                     uploading a file containing server side code (such as PHP) 
-                    that is then executed when requested by the client. For more 
-                    information on possible methods of compromise refer to 
-                    'www.owasp.org/index.php/Unrestricted_File_Upload'},
+                    that is then executed when requested by the client.},
                 tags:        %w(file upload),
                 severity:    Severity::INFORMATIONAL,
                 remedy_guidance: %q{The identified page should at a minimum: 1. 
@@ -75,7 +73,7 @@ class Arachni::Modules::FileUpload < Arachni::Module::Base
                     any execute permission, and that all files within that 
                     directory inherit the same permissions. 5. Scan (if 
                     possible) with an up-to-date virus scanner before being 
-                    stored. 6. Ensure that the applications handles files as per 
+                    stored. 6. Ensure that the application handles files as per
                     the host operating system. For example the length of the 
                     file name is appropriate, there is adequate space to store 
                     the file, protection against overwriting other files etc.},
