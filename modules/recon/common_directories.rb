@@ -14,17 +14,13 @@
     limitations under the License.
 =end
 
-#
 # Common directories discovery module.
 #
 # Looks for common, possibly sensitive, directories on the server.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 # @version 0.2.3
-#
 # @see http://cwe.mitre.org/data/definitions/538.html
-#
 class Arachni::Modules::CommonDirectories < Arachni::Module::Base
 
     def self.directories
@@ -59,31 +55,30 @@ class Arachni::Modules::CommonDirectories < Arachni::Module::Base
                 name:            %q{Common directory},
                 description:     %q{Web applications are often made up of 
                     multiple files and directories. It is possible that over 
-                    time some directories may become unreferenced (used) by the 
+                    time some directories may become unreferenced (unused) by the
                     web application and forgotten about by the 
                     administrator/developer. Because web applications are built 
                     using common frameworks, they contain common directories 
                     that can be discovered (independent of server). During the 
-                    initial recon stages of an attack cyber-criminals will 
+                    initial recon stages of an attack, cyber-criminals will
                     attempt to locate unreferenced directories in the hope that 
                     the file will assist in further compromise of the web 
                     application. To achieve this they will make thousands of 
                     requests using word lists containing common filenames. The 
                     response headers from the server will then indicate if the 
                     file exists. Arachni also contains a list of common file 
-                    names which it will attempt to access. Based off the server 
-                    response the affected file was discovered.},
+                    names which it will attempt to access.},
                 tags:            %w(path directory common discovery),
                 cwe:             '538',
                 severity:        Severity::MEDIUM,
                 remedy_guidance: %q{If directories are unreferenced then they 
                     should be removed from the web root, and/or the application 
                     directory. Preventing access without authentication may also 
-                    be an option and stop a client being able to view the 
-                    contents of a file however it is still likely that the 
+                    be an option and can stop a client from being able to view the
+                    contents of a file, however it is still likely that the
                     directory structure will be able to be discovered. Using 
-                    obscure directory names is only implementing security 
-                    through obscurity and is not a recommended option.}
+                    obscure directory names is implementing security through
+                    obscurity and is not a recommended option.}
             }
 
         }
