@@ -14,7 +14,6 @@
     limitations under the License.
 =end
 
-#
 # Session fixation module.
 #
 # It identifies the session cookie by iterating through all cookies in the
@@ -29,8 +28,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2
-#
+# @version 0.1.1
 class Arachni::Modules::SessionFixation < Arachni::Module::Base
 
     def token
@@ -68,7 +66,7 @@ class Arachni::Modules::SessionFixation < Arachni::Module::Base
             description: %q{Checks whether or not the session cookie can be set to an arbitrary value.},
             elements:    [ Element::FORM, Element::LINK ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.2',
+            version:     '0.1.1',
             references:  {
                  'OWASP' => 'https://www.owasp.org/index.php/Session_fixation',
                  'WASC'  => 'http://projects.webappsec.org/w/page/13246960/Session%20Fixation'
@@ -76,12 +74,12 @@ class Arachni::Modules::SessionFixation < Arachni::Module::Base
             targets:     %w(Generic),
             issue:       {
                 name:        %q{Session fixation},
-                description: %q{HTTP by itself is a stateless protocol. Therefor 
+                description: %q{HTTP by itself is a stateless protocol. Therefore
                     the server is unable to determine which requests are 
                     performed by which client, and which clients are 
                     authenticated or unauthenticated. The use of HTTP cookies 
                     within the headers, allows a web server to identify each 
-                    individual client, and can therefor determine which clients 
+                    individual client, and can therefore determine which clients
                     hold valid authentication from those that do not. These are 
                     known as session cookies or session tokens. To prevent 
                     clients from being able to guess each other's session token, 
@@ -91,23 +89,22 @@ class Arachni::Modules::SessionFixation < Arachni::Module::Base
                     specify their own session token value, and the value of the 
                     session cookie is not changed by the server after successful 
                     authentication. Occasionally the session token will also 
-                    remain unchanged for the user independent of how many times 
+                    remain unchanged for the user independently of how many times
                     they have authenticated. Cyber-criminals will abuse this 
                     functionality by sending crafted URL links with a 
                     predetermined session token within the link. The cyber-
                     criminal will then wait for the victim to login and become 
                     authenticated. If successful the cyber-criminal will know a 
-                    valid session ID, and therfor have access to the victim's 
+                    valid session ID, and therefore have access to the victim's
                     session. Arachni has discovered that it is able to set its 
                     own session token, and during the login process remains 
-                    unchanged. Some further attack scenarios are here: 
-                    'www.owasp.org/index.php/Session_fixation'.},
+                    unchanged.},
                 tags:        %w(session cookie injection fixation hijacking),
                 cwe:         '384',
                 severity:    Severity::HIGH,
                 remedy_guidance: %q{The most important remediation action is to 
                     prevent the server accepting client supplied tokens through 
-                    either a GET or POST request. Additionally, the clients 
+                    either a GET or POST request. Additionally, the client's
                     session token should be changed at specific key stages of 
                     the application flow, such as during authentication. This 
                     will ensure that even if clients are able to set their own 
