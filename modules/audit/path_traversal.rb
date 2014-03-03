@@ -116,8 +116,8 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
 
             issue:       {
                 name:            %q{Path Traversal},
-                description:     %q{Web applications occasionally use a 
-                    parameters values to store the value of a file required by 
+                description:     %q{Web applications occasionally use
+                    parameter values to store the location of a file required by
                     the server. An example of this is often seen in error pages 
                     where the actual file path for the error page is called the 
                     parameter value. For example 
@@ -130,7 +130,7 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
                     client. Cyber-criminals will abuse this vulnerability to 
                     view files that should otherwise not be accessible. A very 
                     common example of this on a *nix server is where the cyber-
-                    riminal will access the /etc/passwd file to retrieve a list 
+                    criminal will access the /etc/passwd file to retrieve a list
                     of users on the server. This attack would look similar to 
                     'yoursite.com/error.php?page=../../../../etc/passwd'. As 
                     path traversal is based on the relative path, the payload 
@@ -144,9 +144,9 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
                 severity:        Severity::HIGH,
                 cvssv2:          '4.3',
                 remedy_guidance: %q{It is recommended that untrusted or 
-                    invalidated data is never used to form a literal file 
+                    non-validated data is never used to form a literal file
                     include request. To validate data, the application should 
-                ensure that the supplied value for a file is permitted. This can 
+                    ensure that the supplied value for a file is permitted. This can
                     be achieved by performing whitelisting on the parameter 
                     value. The whitelist should contain a list of pages that 
                     the application is permitted to fetch resources from. If the 
