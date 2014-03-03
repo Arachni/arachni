@@ -81,12 +81,12 @@ describe 'WAVSEP LFI' do
 
     def self.test_cases( http_method )
         {
-            'Erroneous 500 Responses'                  => "LFI-Detection-Evaluation-#{http_method}-500Error/",
-            'Erroneous 404 Responses'                  => "LFI-Detection-Evaluation-#{http_method}-404Error/",
-            'Erroneous 200 Responses'                  => "LFI-Detection-Evaluation-#{http_method}-200Error/",
-            '302 Redirection Responses'                => "LFI-Detection-Evaluation-#{http_method}-302Redirect/",
-            '200 Responses With Differentiation'       => "LFI-Detection-Evaluation-#{http_method}-200Valid/",
-            '200 Responses with Default File on Error' => "LFI-Detection-Evaluation-#{http_method}-200Identical/"
+            'Erroneous 500 Responses'                  => "LFI/LFI-Detection-Evaluation-#{http_method}-500Error/",
+            'Erroneous 404 Responses'                  => "LFI/LFI-Detection-Evaluation-#{http_method}-404Error/",
+            'Erroneous 200 Responses'                  => "LFI/LFI-Detection-Evaluation-#{http_method}-200Error/",
+            '302 Redirection Responses'                => "LFI/LFI-Detection-Evaluation-#{http_method}-302Redirect/",
+            '200 Responses With Differentiation'       => "LFI/LFI-Detection-Evaluation-#{http_method}-200Valid/",
+            '200 Responses with Default File on Error' => "LFI/LFI-Detection-Evaluation-#{http_method}-200Identical/"
         }.inject({}){ |h, (k, v)| h.merge( k => { url: v }.merge( common )) }
     end
 

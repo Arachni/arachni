@@ -6,7 +6,7 @@ describe 'WAVSEP XSS' do
     def self.test_cases( http_method )
         {
             'Reflected Cross Site Scripting' => {
-                url:        "RXSS-Detection-Evaluation-#{http_method}/",
+                url:        "Reflected-XSS/RXSS-Detection-Evaluation-#{http_method}/",
                 modules:    'xss*',
 
                 # Misses a lot because we haven't got JS/DOM support yet.
