@@ -14,14 +14,12 @@
     limitations under the License.
 =end
 
-#
 # CVS/SVN users recon module.
 #
 # Scans every page for CVS/SVN users.
 #
 # @author   Tasos Laskos <tasos.laskos@gmail.com>
-# @version  0.4
-#
+# @version  0.3.1
 class Arachni::Modules::CvsSvnUsers < Arachni::Module::Base
 
     def self.regexps
@@ -45,7 +43,7 @@ class Arachni::Modules::CvsSvnUsers < Arachni::Module::Base
             description: %q{Scans every page for CVS/SVN users.},
             elements:    [ Element::BODY ],
             author:      'Tasos Laskos <tasos.laskos@gmail.com>',
-            version:     '0.4',
+            version:     '0.3.1',
             targets:     %w(Generic),
             references: {
                 'CWE' => 'http://cwe.mitre.org/data/definitions/200.html'
@@ -57,7 +55,7 @@ class Arachni::Modules::CvsSvnUsers < Arachni::Module::Base
                     to control different versions of their code. Occasionally, 
                     the developer's version or user information can be stored 
                     incorrectly within the code and may be visible to the end 
-                    user (Either in the HTML or code comments). As one of the 
+                    user (either in the HTML or code comments). As one of the
                     initial steps in information gathering, cyber-criminals will 
                     spider a website and using automated methods attempt to 
                     discover any CVS/SVN information that may be present in the 
