@@ -14,11 +14,8 @@
     limitations under the License.
 =end
 
-#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 # @version 0.1.2
-#
 class Arachni::Modules::InsecureCookies < Arachni::Module::Base
 
     def run
@@ -44,11 +41,11 @@ class Arachni::Modules::InsecureCookies < Arachni::Module::Base
             issue:       {
                 name:            %q{Insecure cookie},
                 description:     %q{HTTP by itself is a stateless protocol. 
-                    Therefor the server is unable to determine which requests 
+                    Therefore the server is unable to determine which requests
                     are performed by which client, and which clients are 
                     authenticated or unauthenticated. The use of HTTP cookies 
                     within the headers, allows a web server to identify each 
-                    individual client, and can therefor determine which clients 
+                    individual client, and can therefore determine which clients
                     hold valid authentication from those that do not. These are 
                     known as session cookies. Because these cookies are used to 
                     store a client's session (authenticated or unauthenticated), 
@@ -63,7 +60,7 @@ class Arachni::Modules::InsecureCookies < Arachni::Module::Base
                     an encrypted channel is used (HTTPS). Arachni discovered 
                     that a cookie, and possible session token was set by the 
                     server without the secure flag being set. Although the 
-                    initial setting of this cookie was via a HTTPS connection, 
+                    initial setting of this cookie was via an HTTPS connection,
                     any HTTP link to the same server will result in the cookie 
                     being send in clear text.},
                 cwe:             '200',
@@ -74,12 +71,10 @@ class Arachni::Modules::InsecureCookies < Arachni::Module::Base
                     contain any sensitive information then the risk of this 
                     vulnerability is reduced, however if the cookie does contain 
                     sensitive information, then the server should ensure that 
-                    the cookie has its secure flag set. An example of this is as 
-                    a server header is 'Set-Cookie: NAME=VALUE; secure'. 
+                    the cookie has its secure flag set. An example of this as
+                    a response header is 'Set-Cookie: NAME=VALUE; secure'.
                     Depending on the framework and server in use by the affected 
-                    page, the technical remediation actions will differ. 
-                    Instructions on specific framework remediation are available 
-                    at 'www.owasp.org/index.php/SecureFlag'},
+                    page, the technical remediation actions will differ.},
             }
         }
     end
