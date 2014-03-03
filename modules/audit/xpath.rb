@@ -14,7 +14,6 @@
     limitations under the License.
 =end
 
-#
 # XPath Injection audit module.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
@@ -24,7 +23,6 @@
 # @see http://cwe.mitre.org/data/definitions/91.html
 # @see http://www.owasp.org/index.php/XPATH_Injection
 # @see http://www.owasp.org/index.php/Testing_for_XPath_Injection_%28OWASP-DV-010%29
-#
 class Arachni::Modules::XPathInjection < Arachni::Module::Base
 
     def self.error_strings
@@ -69,29 +67,29 @@ class Arachni::Modules::XPathInjection < Arachni::Module::Base
                     XPath injection occurs where untrusted data is used to build 
                     the XPath query. Cyber-criminals may abuse this injection 
                     vulnerability to bypass authentication, query other user's 
-                    information, or if the XML document contains privileged user 
-                    credentials may allow the cyber-criminal to escalate their 
-                    privileges. Arachni injected XPath queries into the page, 
-                    and based off the responses from the server has discovered 
+                    information, or, if the XML document contains privileged user
+                    credentials, allow the cyber-criminal to escalate their
+                    privileges. Arachni injected XPath queries into the page,
+                    and based on the responses from the server, has discovered
                     the page is vulnerable to XPath injection.},
                 tags:            %w(xpath database error injection regexp),
                 cwe:             '91',
                 severity:        Severity::HIGH,
                 remedy_guidance: %q{The preferred way to protect against XPath 
-                    injection is to utilise parametized (also known as prepared) 
+                    injection is to utilise parameterized (also known as prepared)
                     XPath queries. When utilising this method of querying the 
                     XML document any value supplied by the client will be 
                     handled as a string rather than part of the XPath query. An 
-                    alternative to parametized queries it to use precompiled 
+                    alternative to parameterized queries it to use precompiled
                     XPath queries. Precompiled XPath queries are not generated 
                     dynamically and will therefor never process user supplied 
                     input as XPath. Depending on the framework being used, 
-                    implementation of parametized queries or precompiled queries 
+                    implementation of parameterized queries or precompiled queries
                     will differ. Depending on the framework being used by the 
-                    application parametized queries and/or precompiled queries 
+                    application parameterized queries and/or precompiled queries
                     may not be possible. In this case, input filtering on all 
                     untrusted input should occur to ensure that it is not 
-                    included as part of the query.},
+                    included as part of the query.}
             }
         }
     end
