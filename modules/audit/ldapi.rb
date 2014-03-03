@@ -62,7 +62,7 @@ class Arachni::Modules::LDAPInjection < Arachni::Module::Base
                     clients to authenticate with a web site without any 
                     interaction (assuming their credentials have been validated 
                     by another service). LDAP injection occurs when untrusted 
-                    data is used by the web application ti queries the LDAP 
+                    data is used by the web application to query the LDAP
                     directory without prior sanitisation. This is a serious 
                     security risk, as it could allow cyber-criminals the ability 
                     to query, modify, or remove anything from the LDAP tree. It 
