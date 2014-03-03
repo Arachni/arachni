@@ -14,7 +14,6 @@
     limitations under the License.
 =end
 
-#
 # Simple Remote File Inclusion (and tutorial) module.
 #
 # It audits links, forms and cookies and will give you a good idea
@@ -27,7 +26,6 @@
 # @see http://cwe.mitre.org/data/definitions/94.html
 # @see http://projects.webappsec.org/Remote-File-Inclusion
 # @see http://en.wikipedia.org/wiki/Remote_File_Inclusion
-#
 class Arachni::Modules::RFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
 
     #
@@ -126,8 +124,8 @@ class Arachni::Modules::RFI < Arachni::Module::Base # *always* extend Arachni::M
 
             issue:       {
                 name:        %q{Remote File Inclusion},
-                description: %q{: Web applications occasionally use a parameters 
-                    values to store the value of a file required by the server. 
+                description: %q{Web applications occasionally use parameter
+                    values to store the location of a file required by the server.
                     An example of this is often seen in error pages where the 
                     actual file path for the error page is called the parameter 
                     value. For example 'yoursite.com/error.php?page=404.php'. A 
@@ -138,7 +136,7 @@ class Arachni::Modules::RFI < Arachni::Module::Base # *always* extend Arachni::M
                     resource. Taking the simple example above this would become 
                     'yoursite.com/error.asp?page=http://anothersite.com/somethingBad.php'. 
                     In most circumstances the server will process the fetched 
-                    resource. Therefor if the resource matches that of the 
+                    resource. Therefore if the resource matches that of the
                     framework being used (ASP, PHP, JSP, etc.) it is probable 
                     that the resource will be executed on the vulnerable server. 
                     Cyber-criminals will abuse this vulnerability to execute 
@@ -159,7 +157,7 @@ class Arachni::Modules::RFI < Arachni::Module::Base # *always* extend Arachni::M
                 severity:        Severity::HIGH,
                 cvssv2:          '7.5',
                 remedy_guidance: %q{It is recommended that untrusted or 
-                    invalidated data is never used to form a literal file 
+                    non-validated data is never used to form a literal file
                     include request. To validate data, the application should 
                     ensure that the supplied value for a file is permitted. This 
                     can be achieved by performing whitelisting on the parameter 
