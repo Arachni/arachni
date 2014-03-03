@@ -215,7 +215,7 @@ class Arachni::Modules::CSRF < Arachni::Module::Base
                     cookie value. It is equally important that the server track 
                     and maintain the status of each token, this will enable a 
                     server to reject any request that does not contain a valid 
-                    token, and therefor prevent any cyber-criminal from knowing 
+                    token, and therefore prevent any cyber-criminal from knowing
                     or guessing all parameter values. For examples of framework 
                     specific remediation, refer to the references.}
             }
