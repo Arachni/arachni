@@ -14,7 +14,6 @@
     limitations under the License.
 =end
 
-#
 # Unvalidated redirect audit module.
 #
 # It audits links, forms and cookies, injects URLs and checks the `Location`
@@ -25,7 +24,6 @@
 # @version 0.1.6
 #
 # @see http://www.owasp.org/index.php/Top_10_2010-A10-Unvalidated_Redirects_and_Forwards
-#
 class Arachni::Modules::UnvalidatedRedirect < Arachni::Module::Base
 
     def self.payloads
@@ -59,25 +57,24 @@ class Arachni::Modules::UnvalidatedRedirect < Arachni::Module::Base
 
             issue:       {
                 name:            %q{Unvalidated redirect},
-                description:     %q{Web applications occasionally use a 
-                    parameters values to store the address of the page that will 
-                    the client will be redirected to. As an example, this is 
+                description:     %q{Web applications occasionally use
+                    parameter values to store the address of the page to which
+                    the client will be redirected. As an example, this is
                     often seen in error pages where the error page is the page 
                     to be displayed. For example 
                     'yoursite.com/page.asp?redirect=www.yoursite.com/404.asp'. 
-                    An invalidated redirect occurs when the client is able to 
+                    An unvalidated redirect occurs when the client is able to
                     modify the affected parameter value in the request and have 
                     a redirect response to the new value sent by the server. 
-                    Therefor redirecting the client to that site. For example 
-                    the performing the following request 
-                    'yoursite.com/page.asp?redirect=www.anothersite.com' will 
-                    redirect to anothersite.com. Cyber-criminals will abuse 
+                    Therefore, redirecting the client to that site. For example,
+                    the following request 'yoursite.com/page.asp?redirect=www.anothersite.com'
+                    will redirect to 'anothersite.com'. Cyber-criminals will abuse
                     these vulnerabilities in social engineering attacks to get 
                     users to unknowingly visit a malicious site hosted by the 
                     cyber-criminal. Arachni has discovered that the server does 
                     not validate the parameter value prior to redirecting the 
                     client to the injected value.},
-                tags: %w(unvalidated redirect injection header location),
+                tags:            %w(unvalidated redirect injection header location),
                 cwe:             '819',
                 severity:        Severity::MEDIUM,
                 remedy_guidance: %q{The application should ensure that the 
