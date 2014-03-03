@@ -424,10 +424,8 @@ class Form < Base
                 end
 
                 # If the select has options figure out which to use.
-                if elem.children.any?
-                    elem.children.each do |child|
-                        next if child.name != 'option'
-
+                if elem.children.css('option').any?
+                    elem.children.css('option').each do |child|
                         h = attributes_to_hash( child.attributes )
                         h[:type] = :select
 
