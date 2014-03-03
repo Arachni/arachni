@@ -14,14 +14,13 @@
     limitations under the License.
 =end
 
-#
 # It's designed to work with PHP, Perl, Python, Java, ASP and Ruby
 # but still needs some more testing.
 #
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.3
+# @version 0.2.1
 #
 # @see http://cwe.mitre.org/data/definitions/94.html
 # @see http://php.net/manual/en/function.eval.php
@@ -29,7 +28,6 @@
 # @see http://docs.python.org/py3k/library/functions.html#eval
 # @see http://www.aspdev.org/asp/asp-eval-execute/
 # @see http://en.wikipedia.org/wiki/Eval#Ruby
-#
 class Arachni::Modules::CodeInjection < Arachni::Module::Base
 
     def self.rand1
@@ -81,7 +79,7 @@ class Arachni::Modules::CodeInjection < Arachni::Module::Base
                 was successful.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.2',
+            version:     '0.2.1',
             references:  {
                 'PHP'    => 'http://php.net/manual/en/function.eval.php',
                 'Perl'   => 'http://perldoc.perl.org/functions/eval.html',
