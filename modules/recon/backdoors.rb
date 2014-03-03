@@ -14,13 +14,10 @@
     limitations under the License.
 =end
 
-#
 # Looks for common backdoors on the server.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 # @version 0.2.3
-#
 class Arachni::Modules::Backdoors < Arachni::Module::Base
 
     def self.filenames
@@ -49,8 +46,8 @@ class Arachni::Modules::Backdoors < Arachni::Module::Base
             issue:       {
                 name:            %q{A backdoor file exists on the server},
                 description:     %q{If a server has been previously compromised, 
-                    there is a high possibility that the cyber-criminal has 
-                    implemented a backdoor so that they can easily return to the 
+                    there is a high probability that the cyber-criminal has
+                    installed a backdoor so that they can easily return to the
                     server if required. One method of achieving this is to place 
                     a web backdoor or web shell within the web root of the web 
                     server. This will then enable the cyber-criminal to access 
@@ -59,7 +56,7 @@ class Arachni::Modules::Backdoors < Arachni::Module::Base
                     has been placed there by an administrator so they can 
                     perform administration activities remotely. During the 
                     initial recon stages of an attack cyber-criminals will 
-                    attempt to locate these web backdoors or web shell by 
+                    attempt to locate these web backdoors or shells by
                     requesting the names of the most common and well known 
                     backdoors. By analysing the response headers from the server 
                     they are able to determine if a web backdoor or web shell 
