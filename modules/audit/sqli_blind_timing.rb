@@ -68,7 +68,7 @@ class Arachni::Modules::BlindTimingSQLInjection < Arachni::Module::Base
                     data from the database by using a Structured Query Language 
                     (SQL) query. To meet demands of many developers, database 
                     servers (such as MSSQL, MySQL, Oracle etc.) have 
-                    additionally built in functionality that can allow extensive 
+                    additional built-in functionality that can allow extensive
                     control of the database and interaction with the host 
                     operating system itself. An SQL injection occurs when a 
                     value originating from the clients request is used within an 
@@ -100,28 +100,23 @@ class Arachni::Modules::BlindTimingSQLInjection < Arachni::Module::Base
                 cvssv2:          '9.0',
                 remedy_guidance: %q{The only proven method to prevent against 
                     SQL injection attacks while still maintaining full 
-                    application functionality is to use parametized queries 
+                    application functionality is to use parameterized queries
                     (also known as prepared statements). When utilising this 
                     method of querying the database any value supplied by the 
                     client will be handled as a string value rather than part of 
-                    the SQL query. Additionally, when utilising parametized 
+                    the SQL query. Additionally, when utilising parameterized
                     queries, the database engine will automatically check to 
                     make sure the sting being used matches that of the column. 
                     For example the database engine will check the user supplied 
                     input is an integer if the database column is also an 
                     integer. Depending on the framework being used, 
-                    implementation of parametized queries will differ. For 
-                    framework specific examples see: 
-                    'www.w3schools.com/sql/sql_injection.asp'. Other methods to 
+                    implementation of parameterized queries will differ. Other methods to
                     help protect against SQL injection vulnerabilities exist 
                     however are not as effective and may either limit web 
-                    application functionality, or remain vulnerable. For further 
-                    information on these methods see: 
-                    'www.owasp.org/index.php/SQL_Injection_Prevention_Cheat_Sheet'. 
+                    application functionality, or remain vulnerable.
                     Additional remediation activities such as configuring strict 
                     database permissions to limit queries that can be executed 
                     will further reduce the risk.},
-                remedy_code:     '',
                 metasploitable:  'unix/webapp/arachni_sqlmap'
             }
 
