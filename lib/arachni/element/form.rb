@@ -426,6 +426,8 @@ class Form < Base
                 # If the select has options figure out which to use.
                 if elem.children.any?
                     elem.children.each do |child|
+                        next if child.name != 'option'
+
                         h = attributes_to_hash( child.attributes )
                         h[:type] = :select
 
