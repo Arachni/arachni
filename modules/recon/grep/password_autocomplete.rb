@@ -46,7 +46,7 @@ class Arachni::Modules::PasswordAutocomplete < Arachni::Module::Base
             targets:     %w(Generic),
             issue:       {
                 name:        %q{Password field with auto-complete},
-                description: %q{In typical form based web applications, it is 
+                description: %q{In typical form-based web applications, it is
                     common practice for developers to allow autocomplete within 
                     the HTML form to improve the usability of the page. With 
                     autocomplete enabled (default) it allows the browser to 
@@ -63,7 +63,7 @@ class Arachni::Modules::PasswordAutocomplete < Arachni::Module::Base
                     disabled autocomplete.},
                 severity:    Severity::LOW,
                 remedy_guidance: %q{The autocomplete value can be configured in 
-                    two different locations. The first location and most secure 
+                    two different locations. The first, and most secure, location
                     is to disable autocomplete attribute on the <FORM> HTML tag. 
                     This will therefor disable autocomplete for all inputs 
                     within that form. An example of disabling autocomplete 
