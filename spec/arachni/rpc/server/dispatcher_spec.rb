@@ -215,7 +215,7 @@ describe Arachni::RPC::Server::Dispatcher do
 
             dispatcher.dispatch
             jobs = dispatcher.jobs
-            Process.kill( 'KILL', jobs.first['pid'] )
+            Arachni::Processes::Manager.kill( jobs.first['pid'] )
 
             stats = dispatcher.stats
 
