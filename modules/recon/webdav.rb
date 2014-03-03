@@ -14,7 +14,6 @@
     limitations under the License.
 =end
 
-#
 # WebDAV detection recon module.
 #
 # It doesn't check for a functional DAV implementation but uses the
@@ -26,7 +25,6 @@
 #
 # @see http://en.wikipedia.org/wiki/WebDAV
 # @see http://www.webdav.org/specs/rfc4918.html
-#
 class Arachni::Modules::WebDav < Arachni::Module::Base
 
     def self.dav_method
@@ -72,7 +70,7 @@ class Arachni::Modules::WebDav < Arachni::Module::Base
                     discovered, attackers will attempt to harvest information 
                     from the WebDAV enabled directories, or even upload 
                     malicious files that could then be used to compromise the 
-                    server. Arachni discovered the affected page allows WebDAV 
+                    server. Arachni discovered tha the affected page allows WebDAV
                     access. This was discovered as the server allowed several 
                     specific methods that are specific to WebDAV (PROPFIND, 
                     PROPPATCH, etc.) however further testing should be conducted 
@@ -82,7 +80,7 @@ class Arachni::Modules::WebDav < Arachni::Module::Base
                 severity:        Severity::INFORMATIONAL,
                 remedy_guidance: %q{Identification of the requirement to run a 
                     WebDAV server should be considered. If it is not required 
-                    then it should be disabled. However if it is required to 
+                    then it should be disabled. However, if it is required to
                     meet the application functionality, then it should be 
                     protected by SSL/TLS as well as the implementation of a 
                     strong authentication mechanism.}
