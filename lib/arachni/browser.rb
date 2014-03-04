@@ -428,7 +428,7 @@ class Browser
             current_depth += 1
         end
 
-        pages
+        pages.compact
     end
 
     def skip_state?( state )
@@ -874,6 +874,8 @@ class Browser
     def response
         u = url
 
+        return if skip_path?( u )
+
         begin
             Timeout.timeout( @options[:timeout] ) do
                 while !(r = get_response( u )) do
@@ -1133,7 +1135,7 @@ class Browser
     end
 
     def response_handler( request, response )
-        return if request.url.include?( request_token )
+        return if request.url.include?( request_token ) || skip_path?( response.url )
 
         intercept response
         save_response response
