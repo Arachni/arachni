@@ -771,11 +771,11 @@ class Framework
                 pushed_paths = push_paths_from_page( page ).size
             end
 
-            print_status 'Got new page from the browser-cluster with the ' <<
-                             'following transitions:'
-            print_info page.dom.url
+            print_status "Got new page from the browser-cluster: #{page.dom.url}"
+            print_info "DOM depth: #{page.dom.depth} (Limit: #{@opts.scope.dom_depth_limit})"
 
-            print_page_transitions( page, '  ' )
+            print_info '  Transitions:'
+            print_page_transitions( page, '    ' )
 
             if pushed_paths
                 print_info "  -- Analysis resulted in #{pushed_paths} usable paths."
