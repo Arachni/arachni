@@ -71,6 +71,8 @@ class Worker < Arachni::Browser
             print_error "Job timed-out after #{JOB_TIMEOUT} seconds: #{job}"
         end
 
+        @responses.clear
+
         # The jobs may have configured callbacks to capture pages etc.,
         # remove them.
         @on_new_page_blocks.clear
