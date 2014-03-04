@@ -102,7 +102,7 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
                 value = elem.attributes[attribute].to_s
 
                 if attribute == 'src'
-                    return value if seed.start_with? 'javascript:' && value == seed
+                    return value if seed.start_with?( 'javascript:' ) && value == seed
                 else
                     return value if value == seed
                 end
