@@ -6,7 +6,7 @@ describe 'WAVSEP XSS' do
     def self.test_cases( http_method )
         {
             'Reflected Cross Site Scripting' => {
-                url:        "RXSS-Detection-Evaluation-#{http_method}/",
+                url:        "Reflected-XSS/RXSS-Detection-Evaluation-#{http_method}/",
                 checks:    'xss*',
 
                 # Misses a few because there's no proper VBScript support.

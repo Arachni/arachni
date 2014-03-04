@@ -7,7 +7,7 @@ describe 'WAVSEP SQL Injection' do
         {
             'Erroneous 500 Responses' => {
                 checks:    'sqli',
-                url:        "SInjection-Detection-Evaluation-#{http_method}-500Error/",
+                url:        "SQL-Injection/SInjection-Detection-Evaluation-#{http_method}-500Error/",
                 vulnerable: [
                     'Case01-InjectionInLogin-String-LoginBypass-WithErrors.jsp',
                     'Case02-InjectionInSearch-String-UnionExploit-WithErrors.jsp',
@@ -32,7 +32,7 @@ describe 'WAVSEP SQL Injection' do
             },
             'Erroneous 200 Responses'=> {
                 checks: 'sqli',
-                url:     "SInjection-Detection-Evaluation-#{http_method}-200Error/",
+                url:     "SQL-Injection/SInjection-Detection-Evaluation-#{http_method}-200Error/",
                 vulnerable: [
                      'Case01-InjectionInLogin-String-LoginBypass-With200Errors.jsp',
                      'Case02-InjectionInSearch-String-UnionExploit-With200Errors.jsp',

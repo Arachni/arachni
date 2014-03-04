@@ -22,12 +22,12 @@ describe 'WAVSEP RFI' do
 
     def self.test_cases( http_method )
         {
-            'Erroneous 500 Responses'                  => "RFI-Detection-Evaluation-#{http_method}-500Error/",
-            'Erroneous 404 Responses'                  => "RFI-Detection-Evaluation-#{http_method}-404Error/",
-            'Erroneous 200 Responses'                  => "RFI-Detection-Evaluation-#{http_method}-200Error/",
-            '302 Redirection Responses'                => "RFI-Detection-Evaluation-#{http_method}-302Redirect/",
-            '200 Responses With Differentiation'       => "RFI-Detection-Evaluation-#{http_method}-200Valid/",
-            '200 Responses with Default File on Error' => "RFI-Detection-Evaluation-#{http_method}-200Identical/"
+            'Erroneous 500 Responses'                  => "RFI/RFI-Detection-Evaluation-#{http_method}-500Error/",
+            'Erroneous 404 Responses'                  => "RFI/RFI-Detection-Evaluation-#{http_method}-404Error/",
+            'Erroneous 200 Responses'                  => "RFI/RFI-Detection-Evaluation-#{http_method}-200Error/",
+            '302 Redirection Responses'                => "RFI/RFI-Detection-Evaluation-#{http_method}-302Redirect/",
+            '200 Responses With Differentiation'       => "RFI/RFI-Detection-Evaluation-#{http_method}-200Valid/",
+            '200 Responses with Default File on Error' => "RFI/RFI-Detection-Evaluation-#{http_method}-200Identical/"
         }.inject({}){ |h, (k, v)| h.merge( k => { url: v }.merge( common )) }
     end
 
