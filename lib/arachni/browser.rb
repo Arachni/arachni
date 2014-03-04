@@ -34,6 +34,9 @@ class Browser
         end
     end
 
+    # How much time to wait for the PhantomJS process to spawn before respawning.
+    PHANTOMJS_SPAWN_TIMEOUT = 4
+
     # Let the browser take as long as it needs to complete an operation.
     WATIR_COM_TIMEOUT = 3600 # 1 hour.
 
@@ -104,6 +107,9 @@ class Browser
     ])
 
     HTML_IDENTIFIERS = ['<!doctype html', '<html', '<head', '<body', '<title', '<script']
+
+    # @return   [Array<Page::DOM::Transition>]
+    attr_reader :transitions
 
     # @return   [Hash]   Preloaded resources, by URL.
     attr_reader :preloads
@@ -204,7 +210,10 @@ class Browser
             end
         )
 
-        @options[:timeout]     ||= 10
+        # This isn't used for HTTP requests but generic operations, however, from
+        # a user's perspective it's the analysis time that matters and when
+        # we're talking about the browser this means events instead of requests.
+        @options[:timeout]     ||= Options.http.request_timeout
         @options[:store_pages]   = true if !@options.include?( :store_pages )
 
         @proxy.start_async
@@ -619,7 +628,7 @@ class Browser
         # The page may need a bit to settle and the element is lazily located
         # by Watir so give it a few tries.
         begin
-            Timeout.timeout @options[:timeout] do
+            with_timeout do
                 sleep 0.1 while !element.exists?
             end
         rescue Timeout::Error
@@ -877,7 +886,7 @@ class Browser
         return if skip_path?( u )
 
         begin
-            Timeout.timeout( @options[:timeout] ) do
+            with_timeout do
                 while !(r = get_response( u )) do
                     sleep 0.1
                 end
@@ -921,6 +930,12 @@ class Browser
         nil
     end
 
+    def with_timeout( timeout = @options[:timeout], &block )
+        Timeout.timeout( timeout ) do
+            block.call
+        end
+    end
+
     # @param    [Watir::HTMLElement]    element
     # @return   [String]
     #   Value to use to fill-in the input.
@@ -946,7 +961,7 @@ class Browser
             @phantomjs_pid = @phantomjs_io.pid
 
             begin
-                Timeout.timeout( @options[:timeout] ) do
+                with_timeout PHANTOMJS_SPAWN_TIMEOUT do
                     buff = ''
                     while buff << @phantomjs_io.gets.to_s
                         break if buff.include? 'GhostDriver - Main - running on port'
@@ -1030,12 +1045,14 @@ class Browser
 
     def wait_for_pending_requests
         # Wait for pending requests to complete.
-        Timeout.timeout( @options[:timeout] ) do
-            sleep 0.1 while @proxy.has_connections?
-        end
+        #with_timeout do
+        sleep 0.1 while @proxy.has_connections?
+        #end
 
         true
     rescue Timeout::Error
+        #ap 'PENDING REQUESTS TIMEOUT'
+        #ap caller
         false
     end
 
@@ -1089,6 +1106,7 @@ class Browser
         Selenium::WebDriver::Remote::Capabilities.phantomjs(
             'phantomjs.page.settings.userAgent'  => Options.http.user_agent,
             'phantomjs.page.customHeaders.X-Arachni-Browser-Auth' => auth_token,
+            'phantomjs.page.settings.resourceTimeout' => Options.http.request_timeout,
             #'phantomjs.page.settings.loadImages' => false
         )
     end
