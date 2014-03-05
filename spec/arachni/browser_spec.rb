@@ -580,6 +580,38 @@ describe Arachni::Browser do
         end
     end
 
+    describe '#response' do
+        it "returns the #{Arachni::HTTP::Response} for the loaded page" do
+            @browser.load @url
+
+            browser_response = @browser.response
+            browser_request  = browser_response.request
+            raw_response     = Arachni::HTTP::Client.get( @url, mode: :sync )
+            raw_request      = raw_response.request
+
+            browser_response.url.should == raw_response.url
+
+            browser_sanitized_body =
+                Nokogiri::HTML(browser_response.body).css('body').to_s.gsub("\n", '')
+            raw_response_sanitized_body =
+                Nokogiri::HTML(raw_response.body).css('body').to_s.gsub("\n", '')
+
+            browser_sanitized_body.should == raw_response_sanitized_body
+
+            [:url, :method].each do |attribute|
+                browser_request.send(attribute).should == raw_request.send(attribute)
+            end
+        end
+
+        context 'when the resource is out-of-scope' do
+            it 'returns nil' do
+                Arachni::Options.url = @url
+                @browser.load 'http://google.com/'
+                @browser.response.should be_nil
+            end
+        end
+    end
+
     describe '#to_page' do
         it 'converts the working window to an Arachni::Page' do
             ua = Arachni::Options.http.user_agent
@@ -643,6 +675,14 @@ describe Arachni::Browser do
             event['target'].should == form
             event['srcElement'].should == form
             event['type'].should == 'submit'
+        end
+
+        context 'when the resource is out-of-scope' do
+            it 'returns nil' do
+                Arachni::Options.url = @url
+                @browser.load 'http://google.com/'
+                @browser.to_page.should be_nil
+            end
         end
     end
 

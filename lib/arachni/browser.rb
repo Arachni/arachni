@@ -213,7 +213,7 @@ class Browser
         # This isn't used for HTTP requests but generic operations, however, from
         # a user's perspective it's the analysis time that matters and when
         # we're talking about the browser this means events instead of requests.
-        @options[:timeout]     ||= Options.http.request_timeout
+        @options[:timeout]     ||= Options.http.request_timeout / 1_000
         @options[:store_pages]   = true if !@options.include?( :store_pages )
 
         @proxy.start_async
@@ -1045,9 +1045,9 @@ class Browser
 
     def wait_for_pending_requests
         # Wait for pending requests to complete.
-        #with_timeout do
-        sleep 0.1 while @proxy.has_connections?
-        #end
+        with_timeout do
+            sleep 0.1 while @proxy.has_connections?
+        end
 
         true
     rescue Timeout::Error
