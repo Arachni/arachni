@@ -457,8 +457,6 @@ class URI
     #   (for `URI::Generic.build`). Also accepts {Arachni::URI} for convenience.
     #
     def initialize( url )
-        @arachni_opts = Options.instance
-
         @parsed_url = case url
                           when String
                               self.class.ruby_parse( url )
