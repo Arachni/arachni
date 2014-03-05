@@ -53,9 +53,12 @@ class Javascript
     #   `true` if there is support for our JS environment in the current page,
     #   `false` otherwise.
     #
-    # @see has_js_initializer?
+    # @see #has_js_initializer?
     def supported?
-        has_js_initializer? @browser.response
+        # We won't have a response if the browser was steered towards an
+        # out-of-scope resource.
+        response = @browser.response
+        response && has_js_initializer?( @browser.response )
     end
 
     # @param    [HTTP::Response]    response

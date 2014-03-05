@@ -54,6 +54,14 @@ describe Arachni::Browser::Javascript do
                 @javascript.supported?.should be_false
             end
         end
+
+        context 'when the resource is out-of-scope' do
+            it 'returns false' do
+                Arachni::Options.url = @taint_tracer_url
+                @browser.load 'http://google.com/'
+                @javascript.supported?.should be_false
+            end
+        end
     end
 
     describe '#log_execution_flow_sink_stub' do
