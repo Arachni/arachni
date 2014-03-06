@@ -1033,7 +1033,7 @@ class Browser
     def replay_transitions
         @transitions.each do |transition|
             begin
-                transition.replay self
+                transition.play self
             rescue => e
                 print_error "Error when replying transition for: #{url}"
                 @transitions.each do |t|
@@ -1041,7 +1041,8 @@ class Browser
                 end
 
                 print_error
-                print_error "    #{transition.element_tag_name} => #{transition.element_attributes}"
+                print_error "    #{transition.element_tag_name} => " <<
+                                transition.element_attributes.to_s
                 print_error
                 print_error e
                 print_error_backtrace e

@@ -65,8 +65,8 @@ class DOM
         @transitions.map { |t| t.depth }.inject(&:+).to_i
     end
 
-    def replayable_transitions
-        transitions.select { |t| t.replayable? }
+    def playable_transitions
+        transitions.select { |t| t.playable? }
     end
 
     # @return   [Hash]

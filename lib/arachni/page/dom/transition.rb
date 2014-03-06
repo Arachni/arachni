@@ -56,8 +56,8 @@ class Transition
         end
     end
 
-    # Non-replayable events.
-    NON_REPLAYABLE = Set.new([:request, :load])
+    # Non-playable events.
+    NON_PLAYABLE = Set.new([:request, :load])
 
     # Events without a DOM depth.
     ZERO_DEPTH     = Set.new([:request])
@@ -169,13 +169,13 @@ class Transition
     end
 
     # @param    [Browser]   browser
-    #   Browser to use to replay the transition.
+    #   Browser to use to play the transition.
     #
     # @return   [Transition, nil]
-    #   New transition as a result of the replay, `nil` if the replay wasn't
+    #   New transition as a result of the play, `nil` if the play wasn't
     #   successful.
-    def replay( browser )
-        return if !replayable?
+    def play( browser )
+        return if !playable?
         browser.fire_event browser.locate_element( element ), event, options
     end
 
@@ -200,12 +200,12 @@ class Transition
     end
 
     # @return   [Bool]
-    #   `true` if the transition is for an event that can be replayed, `false`
+    #   `true` if the transition is for an event that can be played, `false`
     #   otherwise.
     #
-    # @see NON_REPLAYABLE
-    def replayable?
-        !NON_REPLAYABLE.include?( event )
+    # @see NON_PLAYABLE
+    def playable?
+        !NON_PLAYABLE.include?( event )
     end
 
     # @return   [String]

@@ -257,7 +257,7 @@ describe Arachni::Page::DOM::Transition do
         end
     end
 
-    describe '#replay' do
+    describe '#play' do
         let(:url) do
             Arachni::Utilities.normalize_url( web_server_url_for( :browser ) ) + 'trigger_events'
         end
@@ -267,12 +267,12 @@ describe Arachni::Page::DOM::Transition do
             @browser.load( url ).start_capture
         end
 
-        context 'when the transition is replayable' do
-            it 'replays it' do
+        context 'when the transition is playable' do
+            it 'plays it' do
                 pages_should_not_have_form_with_input [@browser.to_page], 'by-ajax'
 
-                transition = described_class.new( '<div id="my-div" onclick="addForm();">' => :onclick )
-                transition.complete.replay( @browser ).should == transition
+                transition = described_class.new( '<div id="my-div" onclick="addForm();">' => :click )
+                transition.complete.play( @browser ).should == transition
 
                 pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
             end
@@ -285,25 +285,25 @@ describe Arachni::Page::DOM::Transition do
                 pages_should_not_have_form_with_input [@browser.to_page], 'by-ajax'
 
                 transition = described_class.new( '<div id="my-div">' => :onclick )
-                transition.complete.replay( @browser ).should ==
-                    described_class.new( '<div id="my-div" onclick="addForm();">' => :onclick )
+                transition.complete.play( @browser ).should ==
+                    described_class.new( '<div id="my-div" onclick="addForm();">' => :click )
 
                 pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
             end
         end
 
-        context 'when the transition could not be replayed' do
+        context 'when the transition could not be played' do
             it 'returns nil' do
-                described_class.new( '<div id="my-diva">' => :onclick ).
-                    complete.replay( @browser ).should be_nil
+                described_class.new( '<div id="my-diva">' => :click ).
+                    complete.play( @browser ).should be_nil
             end
         end
 
-        context 'when the transition is not replayable' do
+        context 'when the transition is not playable' do
             it 'returns nil' do
                 transition = described_class.new( '<div id="my-div">' => :load )
-                transition.replayable?.should be_false
-                transition.complete.replay( @browser ).should be_nil
+                transition.playable?.should be_false
+                transition.complete.play( @browser ).should be_nil
             end
         end
     end

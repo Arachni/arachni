@@ -707,14 +707,14 @@ describe Arachni::Browser do
             pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
         end
 
-        it 'returns a replayable transition' do
+        it 'returns a playable transition' do
             transition = @browser.fire_event @browser.watir.div( id: 'my-div' ), :click
             pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
 
             @browser.load( url ).start_capture
             pages_should_not_have_form_with_input [@browser.to_page], 'by-ajax'
 
-            transition.replay @browser
+            transition.play @browser
             pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
         end
 
@@ -743,7 +743,7 @@ describe Arachni::Browser do
                                     inputs[:email]
                             end
 
-                            it 'returns a replayable transition' do
+                            it 'returns a playable transition' do
                                 @browser.load url
 
                                 transition = @browser.fire_event @browser.watir.form, :submit, inputs: inputs
@@ -753,7 +753,7 @@ describe Arachni::Browser do
                                 @browser.watir.div( id: 'container-name' ).text.should be_empty
                                 @browser.watir.div( id: 'container-email' ).text.should be_empty
 
-                                transition.replay @browser
+                                transition.play @browser
 
                                 @browser.watir.div( id: 'container-name' ).text.should ==
                                     inputs[:name]
@@ -772,7 +772,7 @@ describe Arachni::Browser do
                                     @browser.watir.div( id: 'container-email' ).text.should be_empty
                                 end
 
-                                it 'returns a replayable transition' do
+                                it 'returns a playable transition' do
                                     @browser.load url
                                     transition = @browser.fire_event @browser.watir.form, :submit, inputs: inputs
 
@@ -781,7 +781,7 @@ describe Arachni::Browser do
                                     @browser.watir.div( id: 'container-name' ).text.should be_empty
                                     @browser.watir.div( id: 'container-email' ).text.should be_empty
 
-                                    transition.replay @browser
+                                    transition.play @browser
 
                                     @browser.watir.div( id: 'container-name' ).text.should ==
                                         inputs[:name]
@@ -799,7 +799,7 @@ describe Arachni::Browser do
                                     @browser.watir.div( id: 'container-email' ).text.should be_empty
                                 end
 
-                                it 'returns a replayable transition' do
+                                it 'returns a playable transition' do
                                     @browser.load url
                                     transition = @browser.fire_event @browser.watir.form, :submit, inputs: inputs
 
@@ -808,7 +808,7 @@ describe Arachni::Browser do
                                     @browser.watir.div( id: 'container-name' ).text.should be_empty
                                     @browser.watir.div( id: 'container-email' ).text.should be_empty
 
-                                    transition.replay @browser
+                                    transition.play @browser
 
                                     @browser.watir.div( id: 'container-name' ).text.should be_empty
                                     @browser.watir.div( id: 'container-email' ).text.should be_empty
@@ -826,7 +826,7 @@ describe Arachni::Browser do
                                     Arachni::Support::KeyFiller.name_to_value( 'email' )
                             end
 
-                            it 'returns a replayable transition' do
+                            it 'returns a playable transition' do
                                 @browser.load url
                                 transition = @browser.fire_event @browser.watir.form, :submit
 
@@ -835,7 +835,7 @@ describe Arachni::Browser do
                                 @browser.watir.div( id: 'container-name' ).text.should be_empty
                                 @browser.watir.div( id: 'container-email' ).text.should be_empty
 
-                                transition.replay @browser
+                                transition.play @browser
 
                                 @browser.watir.div( id: 'container-name' ).text.should ==
                                     Arachni::Support::KeyFiller.name_to_value( 'name' )
@@ -860,7 +860,7 @@ describe Arachni::Browser do
                         pages_should_have_form_with_input @browser.captured_pages, 'myImageButton.y'
                     end
 
-                    it 'returns a replayable transition' do
+                    it 'returns a playable transition' do
                         @browser.load( url )
                         transition = @browser.fire_event @browser.watir.input( type: 'image'), :click
 
@@ -871,7 +871,7 @@ describe Arachni::Browser do
                         @browser.load( url )
                         @browser.flush_pages.should be_empty
 
-                        transition.replay @browser
+                        transition.play @browser
                         captured_pages = @browser.flush_pages
                         pages_should_have_form_with_input captured_pages, 'myImageButton.x'
                         pages_should_have_form_with_input captured_pages, 'myImageButton.y'
@@ -906,14 +906,14 @@ describe Arachni::Browser do
                                         calculate_expectation.call( inputs[:name] )
                                 end
 
-                                it 'returns a replayable transition' do
+                                it 'returns a playable transition' do
                                     @browser.load url
                                     transition = @browser.fire_event @browser.watir.input, event, inputs: inputs
 
                                     @browser.load url
                                     @browser.watir.div( id: 'container' ).text.should be_empty
 
-                                    transition.replay @browser
+                                    transition.play @browser
                                     @browser.watir.div( id: 'container' ).text.should ==
                                         calculate_expectation.call( inputs[:name] )
                                 end
@@ -927,14 +927,14 @@ describe Arachni::Browser do
                                         @browser.watir.div( id: 'container' ).text.should be_empty
                                     end
 
-                                    it 'returns a replayable transition' do
+                                    it 'returns a playable transition' do
                                         @browser.load url
                                         transition = @browser.fire_event @browser.watir.input, event, inputs: inputs
 
                                         @browser.load url
                                         @browser.watir.div( id: 'container' ).text.should be_empty
 
-                                        transition.replay @browser
+                                        transition.play @browser
                                         @browser.watir.div( id: 'container' ).text.should be_empty
                                     end
                                 end
@@ -948,14 +948,14 @@ describe Arachni::Browser do
                                         calculate_expectation.call( Arachni::Support::KeyFiller.name_to_value( 'name' ) )
                                 end
 
-                                it 'returns a replayable transition' do
+                                it 'returns a playable transition' do
                                     @browser.load url
                                     transition = @browser.fire_event @browser.watir.input, event
 
                                     @browser.load url
                                     @browser.watir.div( id: 'container' ).text.should be_empty
 
-                                    transition.replay @browser
+                                    transition.play @browser
                                     @browser.watir.div( id: 'container' ).text.should ==
                                         calculate_expectation.call( Arachni::Support::KeyFiller.name_to_value( 'name' ) )
                                 end
@@ -1326,7 +1326,7 @@ describe Arachni::Browser do
                 end
 
                 it 'replays its DOM#transitions' do
-                    @browser.load "#{@url}replay-transitions"
+                    @browser.load "#{@url}play-transitions"
                     page = @browser.explore_and_flush.last
                     page.body.should include ua
 

@@ -205,7 +205,7 @@ get '/set-javascript-cookie' do
 HTML
 end
 
-get '/replay-transitions' do
+get '/play-transitions' do
     <<HTML
     <html>
     <head>

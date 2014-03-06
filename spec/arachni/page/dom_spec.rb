@@ -34,8 +34,8 @@ describe Arachni::Page::DOM do
         end
     end
 
-    describe '#replayable_transitions' do
-        it 'returns replayable transitions' do
+    describe '#playable_transitions' do
+        it 'returns playable transitions' do
             dom.transitions = [
                 { :page                              => :load },
                 { "http://test.com/"                 => :request },
@@ -44,7 +44,7 @@ describe Arachni::Page::DOM do
                 { "<a href='javascript:clickMe();'>" => :click },
             ].map { |t| described_class::Transition.new t }
 
-            dom.replayable_transitions.should ==  [
+            dom.playable_transitions.should ==  [
                 { "<body onload='loadStuff();'>"     => :onload },
                 { "<a href='javascript:clickMe();'>" => :click },
             ].map { |t| described_class::Transition.new t }
