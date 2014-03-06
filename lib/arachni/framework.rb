@@ -741,7 +741,14 @@ class Framework
 
         page.dom.transitions.each do |t|
             padding = longest_event_size - t.event.to_s.size + 1
-            print_info "#{indent}-- #{t.event}#{' ' * padding} => #{t.element}"
+            time    = sprintf( "%.4f", t.time.to_f )
+
+            if t.event == :request
+                print_info "#{indent * 2}* [#{time}s] #{t.event}#{' ' * padding} => #{t.element}"
+                next
+            end
+
+            print_info "#{indent}-- [#{time}s] #{t.event}#{' ' * padding} => #{t.element}"
         end
     end
 
