@@ -19,6 +19,21 @@ describe Arachni::Page::DOM do
           )
     end
 
+    before( :all ) do
+        @url = Arachni::Utilities.normalize_url( web_server_url_for( :page_dom ) )
+    end
+
+    before( :each ) do
+        @browser = Arachni::Browser.new
+    end
+
+    after( :each ) do
+        Arachni::Options.reset
+        Arachni::Framework.reset
+        @browser.shutdown
+    end
+
+    let( :ua ) { Arachni::Options.http.user_agent }
     let( :dom ) { Factory[:dom] }
     let( :empty_dom ) { create_page.dom }
 
@@ -280,7 +295,49 @@ describe Arachni::Page::DOM do
 
             dom.hash.should == dom2.hash
         end
+    end
 
+    describe '#restore' do
+        context 'when the state can be restored by #url' do
+            it 'loads the #url' do
+                url = "#{@url}restore/by-url"
+
+                @browser.load "#{@url}restore/by-url"
+                page = @browser.explore_and_flush.last
+
+                page.url.should == url
+                page.dom.url.should == "#{url}#destination"
+                page.body.should include ua
+
+                page.dom.transitions.clear
+                page.dom.transitions.should be_empty
+
+                @browser.load page
+                @browser.source.should include ua
+            end
+        end
+
+        context 'when the state cannot be restored by URL' do
+            it 'replays its #transitions' do
+                url = "#{@url}restore/by-transitions"
+
+                @browser.load url
+                page = @browser.explore_and_flush.last
+
+                page.url.should == url
+                page.dom.url.should == "#{url}#destination"
+                page.body.should include ua
+
+                @browser.load page
+                @browser.source.should include ua
+
+                page.dom.transitions.clear
+                page.dom.transitions.should be_empty
+
+                @browser.load page
+                @browser.source.should_not include ua
+            end
+        end
     end
 
 end

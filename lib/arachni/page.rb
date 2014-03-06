@@ -383,7 +383,8 @@ class Page
     end
 
     def self._load( data )
-        new( Marshal.load( data ) )
+        data = Marshal.load( data )
+        new( data ).tap { |p| p.body = data[:body] }
     end
 
     private

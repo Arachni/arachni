@@ -291,6 +291,8 @@ class Browser
     #
     # @return   [Browser]   `self`
     def load( resource, take_snapshot = true )
+        @last_dom_url = nil
+
         case resource
             when String
                 goto resource, take_snapshot
@@ -304,11 +306,10 @@ class Browser
                 @transitions = resource.dom.transitions.dup
                 skip_states.merge resource.dom.skip_states
 
+                @last_dom_url = resource.dom.url
+
                 @add_request_transitions = false if @transitions.any?
-
-                goto preload( resource ), take_snapshot
-                replay_transitions
-
+                resource.dom.restore self
                 @add_request_transitions = true
 
             else
@@ -949,9 +950,9 @@ class Browser
             block.call
         end
     #rescue
-    #    ap 'TIMEOUT'
-    #    ap caller
-    #    raise
+        #ap 'TIMEOUT'
+        #ap caller
+        #raise
     end
 
     # @param    [Watir::HTMLElement]    element
@@ -1030,28 +1031,6 @@ class Browser
         load page, false
     end
 
-    def replay_transitions
-        @transitions.each do |transition|
-            begin
-                transition.play self
-            rescue => e
-                print_error "Error when replying transition for: #{url}"
-                @transitions.each do |t|
-                    print_error "-#{t == transition ? '>' : '-'} #{transition}"
-                end
-
-                print_error
-                print_error "    #{transition.element_tag_name} => " <<
-                                transition.element_attributes.to_s
-                print_error
-                print_error e
-                print_error_backtrace e
-            end
-        end
-
-        wait_for_pending_requests
-    end
-
     def capture_snapshot_with_sink( page )
         return if page.dom.data_flow_sink.empty? &&
             page.dom.execution_flow_sink.empty?
@@ -1063,6 +1042,14 @@ class Browser
     end
 
     def wait_for_pending_requests
+        # With AJAX requests being asynchronous and everything we need
+        # to wait a split second to give the browser time to initialize
+        # a connection.
+        #
+        # TODO: Add XMLHttpRequest.send() overrides to the DOMMonitor so
+        # that we'll know for sure when to wait.
+        sleep 0.1
+
         # Wait for pending requests to complete.
         with_timeout Options.http.request_timeout do
             sleep 0.1 while @proxy.has_connections?
@@ -1172,7 +1159,14 @@ class Browser
     end
 
     def response_handler( request, response )
-        return if request.url.include?( request_token ) || skip_path?( response.url )
+        return if request.url.include?( request_token )
+
+        @request_transitions.each do |transition|
+            next if !transition.running? || transition.element != request.url
+            transition.complete
+        end
+
+        return if skip_path?( response.url )
 
         intercept response
         save_response response
@@ -1206,6 +1200,7 @@ class Browser
 
         page = Page.from_data( url: @last_url )
         page.response.request = request
+        page.dom.url = @last_dom_url
         page.dom.push_transition Page::DOM::Transition.new( request.url => :request )
 
         case request.method

@@ -288,7 +288,7 @@ describe Arachni::Browser do
                     { "<div onclick=\"level6();\" id=\"level5\">" => :click },
                     { "#{@url}level6" => :request }
                 ]
-            ].map { |transitions| transitions.map { |t| Arachni::Page::DOM::Transition.new t } }
+            ].map { |transitions| transitions.map { |t| Arachni::Page::DOM::Transition.new( t ).complete } }
         end
 
         context 'with a depth argument' do
@@ -1057,13 +1057,13 @@ describe Arachni::Browser do
                     { :page => :load },
                     { "#{@url}explore" => :request },
                     { "<div id=\"my-div\" onclick=\"addForm();\">" => :click },
-                    { "#{@url}post-ajax" => :request },
                     { "#{@url}get-ajax?ajax-token=my-token" => :request }
                 ],
                 [
                     { :page => :load },
                     { "#{@url}explore" => :request },
-                    { "<a href=\"javascript:inHref();\">" => :click }
+                    { "<a href=\"javascript:inHref();\">" => :click },
+                    { "#{@url}href-ajax" => :request },
                 ]
             ].map { |transitions| transitions.map { |t| Arachni::Page::DOM::Transition.new t } }
         end
