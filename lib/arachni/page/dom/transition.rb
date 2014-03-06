@@ -84,7 +84,7 @@ class Transition
 
     # @return   [Float]
     #   Time it took to trigger the given {#event} on the {#element}.
-    attr_reader :time
+    attr_accessor :time
 
     # @note If arguments are provided they will be passed to {#start}.
     #
@@ -221,7 +221,7 @@ class Transition
 
     # @return   [String]
     def to_s
-        "'#{event}' on: #{element}"
+        "[#{time.to_f}s] '#{event}' on: #{element}"
     end
 
     def dup

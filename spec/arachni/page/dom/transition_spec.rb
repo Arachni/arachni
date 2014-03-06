@@ -257,6 +257,13 @@ describe Arachni::Page::DOM::Transition do
         end
     end
 
+    describe '#time=' do
+        it 'sets #time' do
+            completed_transition.time = 1.2
+            completed_transition.time.should == 1.2
+        end
+    end
+
     describe '#play' do
         let(:url) do
             Arachni::Utilities.normalize_url( web_server_url_for( :browser ) ) + 'trigger_events'
@@ -372,7 +379,9 @@ describe Arachni::Page::DOM::Transition do
     describe '#to_s' do
         it 'returns a string representation of the transition' do
             completed_transition.to_s.should ==
-                "'#{completed_transition.event}' on: #{completed_transition.element}"
+                "[#{completed_transition.time.to_f}s] " <<
+                    "'#{completed_transition.event}' on:" <<
+                    " #{completed_transition.element}"
         end
     end
 
