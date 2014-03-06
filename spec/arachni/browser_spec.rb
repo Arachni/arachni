@@ -693,12 +693,22 @@ describe Arachni::Browser do
         end
 
         it 'fires the given event' do
+            @browser.fire_event @browser.watir.div( id: 'my-div' ), :click
+            pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
+        end
+
+        it 'accepts events without the "on" prefix' do
+            pages_should_not_have_form_with_input [@browser.to_page], 'by-ajax'
+
             @browser.fire_event @browser.watir.div( id: 'my-div' ), :onclick
+            pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
+
+            @browser.fire_event @browser.watir.div( id: 'my-div' ), :click
             pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
         end
 
         it 'returns a replayable transition' do
-            transition = @browser.fire_event @browser.watir.div( id: 'my-div' ), :onclick
+            transition = @browser.fire_event @browser.watir.div( id: 'my-div' ), :click
             pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
 
             @browser.load( url ).start_capture
@@ -709,7 +719,7 @@ describe Arachni::Browser do
         end
 
         context 'form' do
-            context :onsubmit do
+            context :submit do
                 let(:url) { "#{@url}/fire_event/form/onsubmit" }
 
                 context 'when option' do
@@ -723,7 +733,7 @@ describe Arachni::Browser do
                             end
 
                             before(:each) do
-                                @browser.fire_event @browser.watir.form, :onsubmit, inputs: inputs
+                                @browser.fire_event @browser.watir.form, :submit, inputs: inputs
                             end
 
                             it 'fills in its inputs with the given values' do
@@ -736,7 +746,7 @@ describe Arachni::Browser do
                             it 'returns a replayable transition' do
                                 @browser.load url
 
-                                transition = @browser.fire_event @browser.watir.form, :onsubmit, inputs: inputs
+                                transition = @browser.fire_event @browser.watir.form, :submit, inputs: inputs
 
                                 @browser.load url
 
@@ -764,7 +774,7 @@ describe Arachni::Browser do
 
                                 it 'returns a replayable transition' do
                                     @browser.load url
-                                    transition = @browser.fire_event @browser.watir.form, :onsubmit, inputs: inputs
+                                    transition = @browser.fire_event @browser.watir.form, :submit, inputs: inputs
 
                                     @browser.load url
 
@@ -791,7 +801,7 @@ describe Arachni::Browser do
 
                                 it 'returns a replayable transition' do
                                     @browser.load url
-                                    transition = @browser.fire_event @browser.watir.form, :onsubmit, inputs: inputs
+                                    transition = @browser.fire_event @browser.watir.form, :submit, inputs: inputs
 
                                     @browser.load url
 
@@ -808,7 +818,7 @@ describe Arachni::Browser do
                         context 'is not given' do
                             it 'fills in its inputs with sample values' do
                                 @browser.load url
-                                @browser.fire_event @browser.watir.form, :onsubmit
+                                @browser.fire_event @browser.watir.form, :submit
 
                                 @browser.watir.div( id: 'container-name' ).text.should ==
                                     Arachni::Support::KeyFiller.name_to_value( 'name' )
@@ -818,7 +828,7 @@ describe Arachni::Browser do
 
                             it 'returns a replayable transition' do
                                 @browser.load url
-                                transition = @browser.fire_event @browser.watir.form, :onsubmit
+                                transition = @browser.fire_event @browser.watir.form, :submit
 
                                 @browser.load url
 
@@ -838,13 +848,13 @@ describe Arachni::Browser do
             end
 
             context 'image button' do
-                context :onclick do
+                context :click do
                     before( :each ) { @browser.start_capture }
                     let(:url) { "#{@url}fire_event/form/image-input" }
 
                     it 'submits the form with x, y coordinates' do
                         @browser.load( url )
-                        @browser.fire_event @browser.watir.input( type: 'image'), :onclick
+                        @browser.fire_event @browser.watir.input( type: 'image'), :click
 
                         pages_should_have_form_with_input @browser.captured_pages, 'myImageButton.x'
                         pages_should_have_form_with_input @browser.captured_pages, 'myImageButton.y'
@@ -852,7 +862,7 @@ describe Arachni::Browser do
 
                     it 'returns a replayable transition' do
                         @browser.load( url )
-                        transition = @browser.fire_event @browser.watir.input( type: 'image'), :onclick
+                        transition = @browser.fire_event @browser.watir.input( type: 'image'), :click
 
                         captured_pages = @browser.flush_pages
                         pages_should_have_form_with_input captured_pages, 'myImageButton.x'
@@ -871,14 +881,14 @@ describe Arachni::Browser do
         end
 
         context 'input' do
-            [:onkeypress, :onkeydown, :onkeyup, :onchange].each do |event|
+            [:keypress, :keydown, :keyup, :change, :input].each do |event|
                 calculate_expectation = proc do |string|
-                    [:onkeypress, :onkeydown].include?( event ) ?
+                    [:keypress, :keydown].include?( event ) ?
                         string[0...-1] : string
                 end
 
                 context event do
-                    let( :url ) { "#{@url}/fire_event/input/#{event}" }
+                    let( :url ) { "#{@url}/fire_event/input/on#{event}" }
 
                     context 'when option' do
                         describe :inputs do

@@ -66,7 +66,7 @@ get '/fire_event/form/image-input' do
 HTML
 end
 
-[:onkeyup, :onkeypress, :onkeydown, :onchange].each do |event|
+[:onkeyup, :onkeypress, :onkeydown, :onchange, :oninput].each do |event|
     get "/fire_event/input/#{event}" do
         <<-EOHTML
 <html>
