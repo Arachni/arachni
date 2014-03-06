@@ -263,29 +263,29 @@ describe Arachni::Browser do
                     { :page => :load },
                     { "#{@url}deep-dom" => :request },
                     { "#{@url}level2" => :request },
-                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :onmouseover }
+                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :mouseover }
                 ],
                 [
                     { :page => :load },
                     { "#{@url}deep-dom" => :request },
                     { "#{@url}level2" => :request },
-                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :onclick },
+                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :click },
                     { "#{@url}level4" => :request }
                 ],
                 [
                     { :page => :load },
                     { "#{@url}deep-dom" => :request },
                     { "#{@url}level2" => :request },
-                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :onmouseover },
-                    { "<button onclick=\"writeUserAgent();\">" => :onclick }
+                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :mouseover },
+                    { "<button onclick=\"writeUserAgent();\">" => :click }
                 ],
                 [
                     { :page => :load },
                     { "#{@url}deep-dom" => :request },
                     { "#{@url}level2" => :request },
-                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :onclick },
+                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :click },
                     { "#{@url}level4" => :request },
-                    { "<div onclick=\"level6();\" id=\"level5\">" => :onclick },
+                    { "<div onclick=\"level6();\" id=\"level5\">" => :click },
                     { "#{@url}level6" => :request }
                 ]
             ].map { |transitions| transitions.map { |t| Arachni::Page::DOM::Transition.new t } }
@@ -305,13 +305,13 @@ describe Arachni::Browser do
                         { :page => :load },
                         { "#{@url}deep-dom" => :request },
                         { "#{@url}level2" => :request },
-                        { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :onmouseover }
+                        { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :mouseover }
                     ],
                     [
                         { :page => :load },
                         { "#{@url}deep-dom" => :request },
                         { "#{@url}level2" => :request },
-                        { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :onclick },
+                        { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :click },
                         { "#{@url}level4" => :request }
                     ]
                 ].map { |transitions| transitions.map { |t| Arachni::Page::DOM::Transition.new t } }
@@ -332,7 +332,7 @@ describe Arachni::Browser do
             doms[0].transitions.should == [
                 { page: :load },
                 { "#{@url}lots_of_sinks?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}" => :request },
-                { "<a href=\"#\" onmouseover=\"onClick2('blah1', 'blah2', 'blah3');\">" => :onmouseover }
+                { "<a href=\"#\" onmouseover=\"onClick2('blah1', 'blah2', 'blah3');\">" => :mouseover }
             ].map { |t| Arachni::Page::DOM::Transition.new t }
 
             doms[0].execution_flow_sink.size.should == 2
@@ -393,7 +393,7 @@ describe Arachni::Browser do
             doms[1].transitions.should == [
                 { page: :load },
                 { "#{@url}lots_of_sinks?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}" => :request },
-                { "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">" => :onsubmit }
+                { "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">" => :submit }
             ].map { |t| Arachni::Page::DOM::Transition.new t }
 
             doms[1].execution_flow_sink.size.should == 2
@@ -456,7 +456,7 @@ describe Arachni::Browser do
             doms[0].transitions.should == [
                 { page: :load },
                 { "#{@url}lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub(1)}" => :request },
-                { "<a href=\"#\" onmouseover=\"onClick2('blah1', 'blah2', 'blah3');\">" => :onmouseover }
+                { "<a href=\"#\" onmouseover=\"onClick2('blah1', 'blah2', 'blah3');\">" => :mouseover }
             ].map { |t| Arachni::Page::DOM::Transition.new t }
 
             doms[0].data_flow_sink.size.should == 2
@@ -517,7 +517,7 @@ describe Arachni::Browser do
             doms[1].transitions.should == [
                 { page: :load },
                 { "#{@url}lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub(1)}" => :request },
-                { "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">" => :onsubmit }
+                { "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">" => :submit }
             ].map { |t| Arachni::Page::DOM::Transition.new t }
 
             doms[1].data_flow_sink.size.should == 2
@@ -1046,14 +1046,14 @@ describe Arachni::Browser do
                 [
                     { :page => :load },
                     { "#{@url}explore" => :request },
-                    { "<div id=\"my-div\" onclick=\"addForm();\">" => :onclick },
+                    { "<div id=\"my-div\" onclick=\"addForm();\">" => :click },
                     { "#{@url}post-ajax" => :request },
                     { "#{@url}get-ajax?ajax-token=my-token" => :request }
                 ],
                 [
                     { :page => :load },
                     { "#{@url}explore" => :request },
-                    { "<a href=\"javascript:inHref();\">" => :onclick }
+                    { "<a href=\"javascript:inHref();\">" => :click }
                 ]
             ].map { |transitions| transitions.map { |t| Arachni::Page::DOM::Transition.new t } }
         end

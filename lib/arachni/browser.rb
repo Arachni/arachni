@@ -37,6 +37,10 @@ class Browser
     # How much time to wait for the PhantomJS process to spawn before respawning.
     PHANTOMJS_SPAWN_TIMEOUT = 4
 
+    # How much time to wait for a targeted HTML element to appear on the page
+    # after the page is loaded.
+    ELEMENT_APPEARANCE_TIMEOUT = 5
+
     # Let the browser take as long as it needs to complete an operation.
     WATIR_COM_TIMEOUT = 3600 # 1 hour.
 
@@ -213,7 +217,7 @@ class Browser
         # This isn't used for HTTP requests but generic operations, however, from
         # a user's perspective it's the analysis time that matters and when
         # we're talking about the browser this means events instead of requests.
-        @options[:timeout]     ||= Options.http.request_timeout / 1_000
+        #@options[:timeout]     ||= Options.http.request_timeout / 1_000
         @options[:store_pages]   = true if !@options.include?( :store_pages )
 
         @proxy.start_async
@@ -482,7 +486,7 @@ class Browser
 
                     if !href.empty?
                         if href.start_with?( 'javascript:' )
-                            events << [ :onclick, href ]
+                            events << [ :click, href ]
                         else
                             next if skip_path?( href )
                         end
@@ -490,7 +494,7 @@ class Browser
 
                 when 'input'
                     if element.attribute_value( :type ).to_s.downcase == 'image'
-                        events << [ :onclick, 'image' ]
+                        events << [ :click, 'image' ]
                     end
 
                 when 'form'
@@ -498,7 +502,7 @@ class Browser
 
                     if !action.empty?
                         if action.start_with?( 'javascript:' )
-                            events << [ :onsubmit, action ]
+                            events << [ :submit, action ]
                         else
                             next if skip_path?( action )
                         end
@@ -621,21 +625,31 @@ class Browser
     # @return   [Page::DOM::Transition, false]
     #   Transition if the operation was successful, `nil` otherwise.
     def fire_event( element, event, options = {} )
-        event = event.to_sym
+        event = event.to_s.downcase.sub( /^on/, '' ).to_sym
 
         options[:inputs] = options[:inputs].stringify if options[:inputs]
 
         # The page may need a bit to settle and the element is lazily located
         # by Watir so give it a few tries.
         begin
-            with_timeout do
+            #ap '-' * 80
+            #ap element.exists?
+            #ap url
+            #ap event
+            #ap element.instance_variable_get(:@selector)
+            with_timeout ELEMENT_APPEARANCE_TIMEOUT do
                 sleep 0.1 while !element.exists?
             end
+            #ap element.exists?
         rescue Timeout::Error
             #ap 'TIMEOUT'
-            #ap element.instance_variable_get(:@selector)
-            #puts source_with_line_numbers
             #ap @transitions
+            #ap response.url
+            #response.body.lines.each.with_index do |line, i|
+            #    puts "#{i+1} - #{line}"
+            #end
+            #ap '-'
+            #puts source_with_line_numbers
             return
         end
 
@@ -658,21 +672,21 @@ class Browser
                         input.send_keys( value.to_s )
                     end
 
-                    if event == :onsubmit
+                    if event == :submit
                         had_special_trigger = true
                         element.submit
                     end
 
-                elsif tag_name == 'input' && event == :onclick &&
+                elsif tag_name == 'input' && event == :click &&
                         element.attribute_value(:type) == 'image'
 
                     had_special_trigger = true
                     watir.button( type: 'image' ).click
 
-                elsif [:onkeyup, :onkeypress, :onkeydown, :onchange].include? event
+                elsif [:keyup, :keypress, :keydown, :change, :input].include? event
 
                     # 'onchange' needs an explicit event trigger.
-                    had_special_trigger = true if event != :onchange
+                    had_special_trigger = true if event != :change
 
                     value = options[:inputs] ?
                         options[:inputs][name_or_id_for( element )] :
@@ -886,7 +900,7 @@ class Browser
         return if skip_path?( u )
 
         begin
-            with_timeout do
+            with_timeout Options.http.request_timeout do
                 while !(r = get_response( u )) do
                     sleep 0.1
                 end
@@ -930,10 +944,14 @@ class Browser
         nil
     end
 
-    def with_timeout( timeout = @options[:timeout], &block )
+    def with_timeout( timeout, &block )
         Timeout.timeout( timeout ) do
             block.call
         end
+    #rescue
+    #    ap 'TIMEOUT'
+    #    ap caller
+    #    raise
     end
 
     # @param    [Watir::HTMLElement]    element
@@ -1045,7 +1063,7 @@ class Browser
 
     def wait_for_pending_requests
         # Wait for pending requests to complete.
-        with_timeout do
+        with_timeout Options.http.request_timeout do
             sleep 0.1 while @proxy.has_connections?
         end
 
