@@ -1508,25 +1508,24 @@ describe Arachni::Browser do
     end
 
     describe '#start_capture' do
-        it 'starts capturing requests and parses them into forms of pages' do
+        it 'starts capturing requests and responses and parses them into forms of pages' do
             @browser.start_capture
             @browser.load @url + '/with-ajax'
 
-            pages = @browser.flush_pages
-            pages.size.should == 3
+            pages = @browser.captured_pages
+            pages.size.should == 2
 
             page = pages.first
-
             page.forms.find { |form| form.inputs.include? 'ajax-token' }.should be_true
         end
 
         context 'when a GET request is performed' do
-            it 'is added as an Arachni::Form to the page' do
+            it "is added as an #{Arachni::Element::Form} to the page" do
                 @browser.start_capture
                 @browser.load @url + '/with-ajax'
 
-                pages = @browser.flush_pages
-                pages.size.should == 3
+                pages = @browser.captured_pages
+                pages.size.should == 2
 
                 page = pages.first
 
@@ -1541,12 +1540,12 @@ describe Arachni::Browser do
         end
 
         context 'when a POST request is performed' do
-            it 'is added as an Arachni::Form to the page' do
+            it "is added as an #{Arachni::Element::Form} to the page" do
                 @browser.start_capture
                 @browser.load @url + '/with-ajax'
 
-                pages = @browser.flush_pages
-                pages.size.should == 3
+                pages = @browser.captured_pages
+                pages.size.should == 2
 
                 form = find_page_with_form_with_input( pages, 'post-name' ).
                     forms.find { |form| form.inputs.include? 'post-name' }
@@ -1559,66 +1558,66 @@ describe Arachni::Browser do
             end
         end
     end
-
-    describe '#flush_pages' do
-        it 'flushes the captured pages' do
-            @browser.start_capture
-            @browser.load @url + '/with-ajax'
-
-            pages = @browser.flush_pages
-            pages.size.should == 3
-            @browser.flush_pages.should be_empty
-        end
-    end
-
-    describe '#stop_capture' do
-        it 'stops the page capture' do
-            @browser.start_capture
-            @browser.load @url + '/with-ajax'
-            @browser.load @url + '/with-image'
-
-            @browser.flush_pages.size.should == 4
-
-            @browser.start_capture
-            @browser.load @url + '/with-ajax'
-            @browser.stop_capture
-            @browser.load @url + '/with-image'
-            @browser.flush_pages.size.should == 2
-        end
-    end
-
-    describe 'capture?' do
-        it 'returns false' do
-            @browser.start_capture
-            @browser.stop_capture
-            @browser.capture?.should be_false
-        end
-
-        context 'when capturing pages' do
-            it 'returns true' do
-                @browser.start_capture
-                @browser.capture?.should be_true
-            end
-        end
-        context 'when not capturing pages' do
-            it 'returns false' do
-                @browser.start_capture
-                @browser.stop_capture
-                @browser.capture?.should be_false
-            end
-        end
-    end
-
-    describe '#cookies' do
-        it 'returns the browser cookies' do
-            @browser.load @url
-            @browser.cookies.size.should == 1
-            cookie = @browser.cookies.first
-
-            cookie.should be_kind_of Arachni::Cookie
-            cookie.name.should == 'This name should be updated; and properly escaped'
-            cookie.value.should == 'This value should be updated; and properly escaped'
-        end
-    end
+    #
+    #describe '#flush_pages' do
+    #    it 'flushes the captured pages' do
+    #        @browser.start_capture
+    #        @browser.load @url + '/with-ajax'
+    #
+    #        pages = @browser.flush_pages
+    #        pages.size.should == 3
+    #        @browser.flush_pages.should be_empty
+    #    end
+    #end
+    #
+    #describe '#stop_capture' do
+    #    it 'stops the page capture' do
+    #        @browser.start_capture
+    #        @browser.load @url + '/with-ajax'
+    #        @browser.load @url + '/with-image'
+    #
+    #        @browser.flush_pages.size.should == 4
+    #
+    #        @browser.start_capture
+    #        @browser.load @url + '/with-ajax'
+    #        @browser.stop_capture
+    #        @browser.load @url + '/with-image'
+    #        @browser.flush_pages.size.should == 2
+    #    end
+    #end
+    #
+    #describe 'capture?' do
+    #    it 'returns false' do
+    #        @browser.start_capture
+    #        @browser.stop_capture
+    #        @browser.capture?.should be_false
+    #    end
+    #
+    #    context 'when capturing pages' do
+    #        it 'returns true' do
+    #            @browser.start_capture
+    #            @browser.capture?.should be_true
+    #        end
+    #    end
+    #    context 'when not capturing pages' do
+    #        it 'returns false' do
+    #            @browser.start_capture
+    #            @browser.stop_capture
+    #            @browser.capture?.should be_false
+    #        end
+    #    end
+    #end
+    #
+    #describe '#cookies' do
+    #    it 'returns the browser cookies' do
+    #        @browser.load @url
+    #        @browser.cookies.size.should == 1
+    #        cookie = @browser.cookies.first
+    #
+    #        cookie.should be_kind_of Arachni::Cookie
+    #        cookie.name.should == 'This name should be updated; and properly escaped'
+    #        cookie.value.should == 'This value should be updated; and properly escaped'
+    #    end
+    #end
 
 end

@@ -1147,11 +1147,6 @@ class Browser
         # preloaded or cached response for it.
         return if from_preloads( request, response ) || from_cache( request, response )
 
-        # Capture the request as elements of pages -- let's us grab AJAX and
-        # other browser requests and convert them into system elements we can
-        # analyze and audit.
-        capture( request )
-
         request.headers['user-agent'] = Options.http.user_agent
 
         # Signal the proxy to continue with its request to the origin server.
@@ -1167,6 +1162,11 @@ class Browser
         end
 
         return if skip_path?( response.url )
+
+        # Capture the request as elements of pages -- let's us grab AJAX and
+        # other browser requests and convert them into system elements we can
+        # analyze and audit.
+        capture( request, response )
 
         intercept response
         save_response response
@@ -1194,14 +1194,10 @@ class Browser
             Options.scope.auto_redundant_path?( request.url )
     end
 
-    def capture( request )
+    def capture( request, response )
         return if !capture?
-        return if !@last_url
 
-        page = Page.from_data( url: @last_url )
-        page.response.request = request
-        page.dom.url = @last_dom_url
-        page.dom.push_transition Page::DOM::Transition.new( request.url => :request )
+        page = response.to_page
 
         case request.method
             when :get
