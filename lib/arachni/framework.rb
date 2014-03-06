@@ -781,8 +781,10 @@ class Framework
             print_status "Got new page from the browser-cluster: #{page.dom.url}"
             print_info "DOM depth: #{page.dom.depth} (Limit: #{@opts.scope.dom_depth_limit})"
 
-            print_info '  Transitions:'
-            print_page_transitions( page, '    ' )
+            if page.dom.transitions.any?
+                print_info '  Transitions:'
+                print_page_transitions( page, '    ' )
+            end
 
             if pushed_paths
                 print_info "  -- Analysis resulted in #{pushed_paths} usable paths."
