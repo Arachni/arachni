@@ -46,6 +46,14 @@ class Transition
         class NotRunning < Error
         end
 
+        # Raised when a transition is not {#playable?}.
+        #
+        # @see #play
+        #
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        class NotPlayable < Error
+        end
+
         # Raised when an invalid element type is provided.
         #
         # @see #initialize
@@ -174,8 +182,11 @@ class Transition
     # @return   [Transition, nil]
     #   New transition as a result of the play, `nil` if the play wasn't
     #   successful.
+    #
+    # @raise    [Error::NotPlayable]
+    #   When the transition is not {#playable?}.
     def play( browser )
-        return if !playable?
+        fail Error::NotPlayable, "Transition is not playable: #{self}" if !playable?
         browser.fire_event browser.locate_element( element ), event, options
     end
 

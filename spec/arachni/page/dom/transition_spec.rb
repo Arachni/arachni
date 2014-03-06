@@ -300,10 +300,12 @@ describe Arachni::Page::DOM::Transition do
         end
 
         context 'when the transition is not playable' do
-            it 'returns nil' do
-                transition = described_class.new( '<div id="my-div">' => :load )
-                transition.playable?.should be_false
-                transition.complete.play( @browser ).should be_nil
+            it "raises #{described_class::Error::NotPlayable}" do
+                expect do
+                    transition = described_class.new( '<div id="my-div">' => :load )
+                    transition.playable?.should be_false
+                    transition.complete.play( @browser ).should be_nil
+                end.to raise_error described_class::Error::NotPlayable
             end
         end
     end
