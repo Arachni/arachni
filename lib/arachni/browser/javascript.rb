@@ -58,7 +58,7 @@ class Javascript
         # We won't have a response if the browser was steered towards an
         # out-of-scope resource.
         response = @browser.response
-        response && has_js_initializer?( @browser.response )
+        response && has_js_initializer?( response )
     end
 
     # @param    [HTTP::Response]    response
@@ -95,7 +95,7 @@ class Javascript
 
     # Blocks until the browser page is {#ready? ready}.
     def wait_till_ready
-        return if !@browser.response || !supported?
+        return if !supported?
         sleep 0.1 while !ready?
     end
 
