@@ -51,6 +51,10 @@ class Stub < BasicObject
     end
     alias :method_missing :write
 
+    def class
+        Stub
+    end
+
     # @return   [String]
     def to_s
         "<#{self.class}##{object_id} #{@proxy.js_object}>"

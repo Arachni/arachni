@@ -26,6 +26,10 @@ class TaintTracer < Proxy
         end
     end
 
+    def class
+        TaintTracer
+    end
+
     private
 
     def prepare_sink_data( sink_data )

@@ -18,6 +18,10 @@ class DOMMonitor < Proxy
         super javascript, 'DOMMonitor'
     end
 
+    def class
+        DOMMonitor
+    end
+
 end
 end
 end

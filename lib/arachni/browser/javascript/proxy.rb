@@ -73,6 +73,9 @@ class Proxy < BasicObject
         stub.respond_to?( property )
     end
 
+    def class
+        Proxy
+    end
 end
 
 end
