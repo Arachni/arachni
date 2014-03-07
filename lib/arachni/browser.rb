@@ -779,13 +779,14 @@ class Browser
     def to_page
         return if !(r = response)
 
-        page                 = r.deep_clone.to_page
-        page.body            = source.dup
-        page.cookies        |= cookies.dup
+        page         = r.deep_clone.to_page
+        page.body    = source
+        page.cookies |= cookies
 
         page.dom.url                 = watir.url
-        page.dom.execution_flow_sink = @javascript.execution_flow_sink.dup
-        page.dom.data_flow_sink      = @javascript.data_flow_sink.dup
+        page.dom.digest              = @javascript.dom_digest
+        page.dom.execution_flow_sink = @javascript.execution_flow_sink
+        page.dom.data_flow_sink      = @javascript.data_flow_sink
         page.dom.transitions         = @transitions.dup
         page.dom.skip_states         = @skip_states.dup
 

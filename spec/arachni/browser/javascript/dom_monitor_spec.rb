@@ -58,6 +58,18 @@ describe Arachni::Browser::Javascript::DOMMonitor do
         @browser.watir.button(id: 'my-button3').events.should == []
     end
 
+    describe '#digest' do
+        it 'returns a string digest of the current DOM tree' do
+            load '/digest'
+            subject.digest.should ==
+                '<HTML><HEAD><SCRIPT src=http://javascript.browser.arachni/tai' +
+                    'nt_tracer.js><SCRIPT><SCRIPT src=http://javascript.browser.' +
+                    'arachni/dom_monitor.js><SCRIPT><BODY onload=void();><DIV ' +
+                    'id=my-id-div><DIV class=my-class-div><STRONG><EM><I><B>' +
+                    '<STRONG><SCRIPT><A href=#stuff>'
+        end
+    end
+
     describe '#timeouts' do
         it 'keeps track of setTimeout() timers' do
             load '/timeouts'

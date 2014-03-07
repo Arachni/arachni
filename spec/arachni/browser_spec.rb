@@ -613,7 +613,7 @@ describe Arachni::Browser do
     end
 
     describe '#to_page' do
-        it 'converts the working window to an Arachni::Page' do
+        it "converts the working window to an #{Arachni::Page}" do
             ua = Arachni::Options.http.user_agent
 
             @browser.load( @url )
@@ -626,7 +626,16 @@ describe Arachni::Browser do
             page.body.should include( ua )
         end
 
-        it 'assigns the proper DOM#transitions' do
+        it "assigns the proper #{Arachni::Page::DOM}#digest" do
+            @browser.load( @url )
+            @browser.to_page.dom.instance_variable_get(:@digest).should ==
+                '<HTML><HEAD><SCRIPT src=http://javascript.browser.arachni/' +
+                    'taint_tracer.js><SCRIPT><SCRIPT src=http://javascript.' +
+                    'browser.arachni/dom_monitor.js><SCRIPT><TITLE><BODY><DIV' +
+                    '><SCRIPT type=text/javascript>'
+        end
+
+        it "assigns the proper #{Arachni::Page::DOM}#transitions" do
             @browser.load( @url )
             page = @browser.to_page
 
@@ -636,7 +645,7 @@ describe Arachni::Browser do
             ].map { |t| Arachni::Page::DOM::Transition.new t }
         end
 
-        it 'assigns the DOM#skip_states' do
+        it "assigns the proper #{Arachni::Page::DOM}#skip_states" do
             @browser.load( @url )
             pages = @browser.load( @url + '/explore' ).trigger_events.
                 page_snapshots
@@ -645,7 +654,7 @@ describe Arachni::Browser do
             page.dom.skip_states.should be_subset @browser.skip_states
         end
 
-        it 'assigns the proper sink data' do
+        it "assigns the proper #{Arachni::Page::DOM} sink data" do
             @browser.load "#{web_server_url_for( :taint_tracer )}/debug" <<
                               "?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}"
             @browser.watir.form.submit
@@ -1558,66 +1567,66 @@ describe Arachni::Browser do
             end
         end
     end
-    #
-    #describe '#flush_pages' do
-    #    it 'flushes the captured pages' do
-    #        @browser.start_capture
-    #        @browser.load @url + '/with-ajax'
-    #
-    #        pages = @browser.flush_pages
-    #        pages.size.should == 3
-    #        @browser.flush_pages.should be_empty
-    #    end
-    #end
-    #
-    #describe '#stop_capture' do
-    #    it 'stops the page capture' do
-    #        @browser.start_capture
-    #        @browser.load @url + '/with-ajax'
-    #        @browser.load @url + '/with-image'
-    #
-    #        @browser.flush_pages.size.should == 4
-    #
-    #        @browser.start_capture
-    #        @browser.load @url + '/with-ajax'
-    #        @browser.stop_capture
-    #        @browser.load @url + '/with-image'
-    #        @browser.flush_pages.size.should == 2
-    #    end
-    #end
-    #
-    #describe 'capture?' do
-    #    it 'returns false' do
-    #        @browser.start_capture
-    #        @browser.stop_capture
-    #        @browser.capture?.should be_false
-    #    end
-    #
-    #    context 'when capturing pages' do
-    #        it 'returns true' do
-    #            @browser.start_capture
-    #            @browser.capture?.should be_true
-    #        end
-    #    end
-    #    context 'when not capturing pages' do
-    #        it 'returns false' do
-    #            @browser.start_capture
-    #            @browser.stop_capture
-    #            @browser.capture?.should be_false
-    #        end
-    #    end
-    #end
-    #
-    #describe '#cookies' do
-    #    it 'returns the browser cookies' do
-    #        @browser.load @url
-    #        @browser.cookies.size.should == 1
-    #        cookie = @browser.cookies.first
-    #
-    #        cookie.should be_kind_of Arachni::Cookie
-    #        cookie.name.should == 'This name should be updated; and properly escaped'
-    #        cookie.value.should == 'This value should be updated; and properly escaped'
-    #    end
-    #end
+
+    describe '#flush_pages' do
+        it 'flushes the captured pages' do
+            @browser.start_capture
+            @browser.load @url + '/with-ajax'
+
+            pages = @browser.flush_pages
+            pages.size.should == 3
+            @browser.flush_pages.should be_empty
+        end
+    end
+
+    describe '#stop_capture' do
+        it 'stops the page capture' do
+            @browser.start_capture
+            @browser.load @url + '/with-ajax'
+            @browser.load @url + '/with-image'
+
+            @browser.flush_pages.size.should == 4
+
+            @browser.start_capture
+            @browser.load @url + '/with-ajax'
+            @browser.stop_capture
+            @browser.load @url + '/with-image'
+            @browser.flush_pages.size.should == 2
+        end
+    end
+
+    describe 'capture?' do
+        it 'returns false' do
+            @browser.start_capture
+            @browser.stop_capture
+            @browser.capture?.should be_false
+        end
+
+        context 'when capturing pages' do
+            it 'returns true' do
+                @browser.start_capture
+                @browser.capture?.should be_true
+            end
+        end
+        context 'when not capturing pages' do
+            it 'returns false' do
+                @browser.start_capture
+                @browser.stop_capture
+                @browser.capture?.should be_false
+            end
+        end
+    end
+
+    describe '#cookies' do
+        it 'returns the browser cookies' do
+            @browser.load @url
+            @browser.cookies.size.should == 1
+            cookie = @browser.cookies.first
+
+            cookie.should be_kind_of Arachni::Cookie
+            cookie.name.should == 'This name should be updated; and properly escaped'
+            cookie.value.should == 'This value should be updated; and properly escaped'
+        end
+    end
 
 end

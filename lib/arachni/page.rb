@@ -114,6 +114,15 @@ class Page
     #   An instantiated {Parser}.
     def initialize( options )
         fail ArgumentError, 'Options cannot be empty.' if options.empty?
+        options = options.dup
+
+        if response = options.delete(:response)
+            @parser = Parser.new( response )
+        end
+
+        if parser = options.delete(:parser)
+            @parser = parser
+        end
 
         options.each do |k, v|
             dupped = try_dup( v )
@@ -124,8 +133,7 @@ class Page
             end
         end
 
-        @parser ||= Parser.new( @response ) if @response
-        @dom      = DOM.new( (options[:dom] || {}).merge( page: self ) )
+        @dom = DOM.new( (options[:dom] || {}).merge( page: self ) )
 
         fail ArgumentError, 'No URL given!' if !url
 
@@ -208,7 +216,6 @@ class Page
     # @param    [String]    string  Page body.
     def body=( string )
         @links = @forms = @cookies = @document = @has_javascript = nil
-        dom.clear_caches
         @parser.body = @body = string.dup
     end
 
@@ -351,6 +358,11 @@ class Page
     alias :to_hash :to_h
 
     def hash
+        #ap dom.playable_transitions.hash
+        #ap body.hash
+        #ap elements.map(&:hash)
+        #ap elements.map(&:class)
+        #ap '--'
         "#{dom.playable_transitions.hash}:#{body.hash}:#{elements.map(&:hash).sort}".hash
     end
 
@@ -383,8 +395,7 @@ class Page
     end
 
     def self._load( data )
-        data = Marshal.load( data )
-        new( data ).tap { |p| p.body = data[:body] }
+        new( Marshal.load( data ) )
     end
 
     private

@@ -77,6 +77,13 @@ describe Arachni::Browser::Javascript do
         end
     end
 
+    describe '#dom_digest' do
+        it 'returns a string digest of the current DOM tree' do
+            @browser.load( @dom_monitor_url + 'digest' )
+            @javascript.dom_digest.should == @javascript.dom_monitor.digest
+        end
+    end
+
     describe '#timeouts' do
         it 'keeps track of setTimeout() timers' do
             @browser.load( @dom_monitor_url + 'timeout-tracker' )

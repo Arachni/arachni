@@ -8,6 +8,29 @@ get '/' do
 HTML
 end
 
+get '/digest' do
+    <<HTML
+    <html>
+        <body onload='void();'>
+            <div id="my-id-div">
+                <div class="my-class-div">
+                    <p>Hey <strong>Joe</strong>!</p>
+                    <em>blah em</em>
+                    <i>blah i</i>
+                    <b>blah b</b>
+                    <strong>blah strong</strong>
+                </div>
+                <script>
+                    //Do stuff...
+                </script>
+
+                <a href='#stuff'>Click me!</a>
+            </div>
+        </body>
+    </html>
+HTML
+end
+
 get '/timeouts' do
     <<HTML
     <script>

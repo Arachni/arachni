@@ -186,7 +186,7 @@ describe Arachni::Page::DOM do
             empty_dom.data_flow_sink = data[:data_flow_sink]
             empty_dom.execution_flow_sink = data[:execution_flow_sink]
 
-            empty_dom.to_h.should == data
+            empty_dom.to_h.should == data.merge( digest: empty_dom.digest )
         end
         it 'is aliased to #to_h' do
             empty_dom.to_h.should == empty_dom.to_h
@@ -194,106 +194,17 @@ describe Arachni::Page::DOM do
     end
 
     describe '#hash' do
-        it 'calculates a hash based on nodes' do
-            body = <<-EOHTML
-                Blah blah.
+        it 'calculates a hash based on #digest' do
+            dom  = empty_dom.dup
+            dom.digest = 'stuff'
 
-                <div id='my-div' class='stuff here'>
-                    Text here.
-                </div>
-            EOHTML
-
-            dom  = create_page( body: body ).dom
-            dom2 = create_page( body: body ).dom
+            dom2 = empty_dom.dup
+            dom2.digest = 'stuff'
 
             dom.hash.should == dom2.hash
 
-            body2 = <<-EOHTML
-                <div id='my-div' class='stuff here'>
-                    Different text here.
-                </div>
-            EOHTML
-
-            dom  = create_page( body: body ).dom
-            dom2 = create_page( body: body2 ).dom
-
-            dom.hash.should == dom2.hash
-
-            body2 = <<-EOHTML
-                <div id='my-div' class='stuff here'>
-                    Different text here.
-                </div>
-                <a href="stuff">Stuff</a>
-            EOHTML
-
-            dom  = create_page( body: body ).dom
-            dom2 = create_page( body: body2 ).dom
-
+            dom2.digest = 'other stuff'
             dom.hash.should_not == dom2.hash
-        end
-
-        it 'calculates a hash based on node attributes' do
-            body = <<-EOHTML
-                Blah blah.
-
-                <div id='my-div' class='stuff here'>
-                    Text here.
-                </div>
-            EOHTML
-
-            body2 = <<-EOHTML
-                Blah blah.
-
-                <div id='div' class='here'>
-                    Text here.
-                </div>
-            EOHTML
-
-            dom  = create_page( body: body ).dom
-            dom2 = create_page( body: body2 ).dom
-
-            dom.hash.should_not == dom2.hash
-        end
-
-        it 'ignores paragraphs' do
-            body = <<-EOHTML
-                <p>Blah blah.</p>
-            EOHTML
-
-            body2 = <<-EOHTML
-                <p>More blah blah.</p>
-            EOHTML
-
-            dom  = create_page( body: body ).dom
-            dom2 = create_page( body: body2 ).dom
-
-            dom.hash.should == dom2.hash
-        end
-
-        it 'ignores text' do
-            body = <<-EOHTML
-                Blah blah.
-
-                <div id='my-div' class='stuff here'>
-                    Text here.
-                </div>
-            EOHTML
-
-            dom  = create_page( body: body ).dom
-            dom2 = create_page( body: body ).dom
-
-            dom.hash.should == dom2.hash
-
-            body2 = <<-EOHTML
-                <div id='my-div' class='stuff here'>
-                    Different text here.
-                </div>
-            EOHTML
-
-            dom  = create_page( body: body ).dom
-            dom2 = create_page( body: body2 ).dom
-
-            dom.hash.should == dom2.hash
         end
     end
 

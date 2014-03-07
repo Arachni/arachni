@@ -36,6 +36,10 @@ class DOM
     attr_accessor :execution_flow_sink
 
     # @return   [String]
+    #   String digest of the DOM tree.
+    attr_accessor :digest
+
+    # @return   [String]
     #   URL of the page as seen by the user-agent, fragments and all.
     attr_accessor :url
 
@@ -47,6 +51,7 @@ class DOM
     def initialize( options )
         @page                = options[:page]
         @url                 = options[:url]                 || @page.url.dup
+        @digest              = options[:digest]
         @transitions         = options[:transitions]         || []
         @data_flow_sink      = options[:data_flow_sink]      || []
         @execution_flow_sink = options[:execution_flow_sink] || []
@@ -164,16 +169,18 @@ class DOM
     # @return   [Hash]
     def to_h
         {
-            url:                 @url,
-            transitions:         @transitions,
-            skip_states:         @skip_states,
-            data_flow_sink:      @data_flow_sink,
-            execution_flow_sink: @execution_flow_sink
+            url:                 url,
+            transitions:         transitions,
+            digest:              digest,
+            skip_states:         skip_states,
+            data_flow_sink:      data_flow_sink,
+            execution_flow_sink: execution_flow_sink
         }
     end
 
     def hash
-        @hash ||= rehash
+        # TODO: Maybe raise error if #digest is not set?
+        digest.persistent_hash
     end
 
     def ==( other )
@@ -190,39 +197,11 @@ class DOM
         digest_without_urls( other ) == other.digest_without_urls( self )
     end
 
-    # @private
-    def clear_caches
-        @hash = nil
-    end
-
     protected
 
     def digest_without_urls( other )
-        string_digest.gsub( url, '' ).gsub( other.url, '' ).
+        digest.gsub( url, '' ).gsub( other.url, '' ).
             gsub( page.url, '' ).gsub( other.page.url, '' )
-    end
-
-    def string_digest
-        digest = ''
-        @page.document.traverse do |node|
-            next if IGNORE_FROM_HASH.include? node.name
-            digest << node.name
-            digest << attributes_to_str( node )
-        end
-        digest
-    end
-
-    private
-
-    def rehash
-        string_digest.persistent_hash
-    end
-
-    def attributes_to_str( node )
-        node.attributes.inject({}){ |h, (name, attr)| h[name] = attr.value; h }.
-            sort.to_s
-    rescue NoMethodError
-        ''
     end
 
 end

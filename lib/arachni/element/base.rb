@@ -107,7 +107,7 @@ class Base
 
     def marshal_load( h )
         if (n = h.delete(:@node))
-            self.node = self.class.unserialize_node( h.delete(:@node) )
+            self.node = self.class.unserialize_node( n )
         end
 
         h.each { |k, v| instance_variable_set( k, v ) }

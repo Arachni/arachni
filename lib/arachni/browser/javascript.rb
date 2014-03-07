@@ -147,6 +147,14 @@ class Javascript
         taint_tracer.flush_data_flow_sink
     end
 
+    # @return   [String]
+    #   Digest of the current DOM tree (i.e. node names and their attributes
+    #   without text-nodes).
+    def dom_digest
+        return '' if !supported?
+        dom_monitor.digest
+    end
+
     # @return   [Array<Array>] Arguments for JS `setTimeout` calls.
     def timeouts
         return [] if !supported?

@@ -462,9 +462,20 @@ describe Arachni::Page do
             end
         end
 
-        it 'removes Arachni::Element::Form#node from #forms' do
-            subject.forms.first.node.should be_true
-            subject.dup.forms.first.node.should be_nil
+        it 'preserves Arachni::Element::Form#node of #forms' do
+            form = subject.forms.last
+            form.node.should be_kind_of Nokogiri::XML::Element
+            form.node.should be_true
+
+            subject.dup.forms.first.node.to_s.should == form.node.to_s
+        end
+
+        it 'preserves Arachni::Element::Link#node of #links' do
+            link = subject.links.last
+            link.node.should be_kind_of Nokogiri::XML::Element
+            link.node.should be_true
+
+            subject.dup.links.last.node.to_s.should == link.node.to_s
         end
 
         it 'preserves #page associations for #elements' do
