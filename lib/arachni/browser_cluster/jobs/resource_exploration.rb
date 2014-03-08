@@ -28,6 +28,15 @@ class ResourceExploration < Job
         browser.trigger_events
     end
 
+    def resource=( resource )
+        if resource.is_a? Page
+            resource = resource.dup
+            resource.clear_caches
+        end
+
+        @resource = resource
+    end
+
 end
 
 end
