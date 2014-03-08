@@ -374,8 +374,10 @@ module Output
         # Change in RAM consumption in MB | Total RAM consumption in MB (RAM %) |
         # CPU usage % | Amount of Typhoeus::Request - Typhoeus::Response objects in RAM |
         # Proc objects in RAM
-        sprintf( '%7.4f | %8.4f (%5.1f%%) | %5.1f%% | %3i - %3i | %5i | ',
+        sprintf( '%7.4f | %8.4f (%5.1f%%) | %5.1f%% | %3i - %3i | %3i - %3i | %5i | ',
                 rss_to_mb(rss - @rss), rss_to_mb(rss), pctmem, pctcpu,
+                ::ObjectSpace.each_object( Arachni::HTTP::Request ){},
+                ::ObjectSpace.each_object( Arachni::HTTP::Response ){},
                 ::ObjectSpace.each_object( ::Typhoeus::Request ){},
                 ::ObjectSpace.each_object( ::Typhoeus::Response ){},
                 ::ObjectSpace.each_object( ::Proc ){}) + message.to_s
