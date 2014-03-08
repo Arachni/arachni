@@ -120,9 +120,7 @@ class Page
             @parser = Parser.new( response )
         end
 
-        if parser = options.delete(:parser)
-            @parser = parser
-        end
+        @parser ||= options.delete(:parser)
 
         options.each do |k, v|
             dupped = try_dup( v )
@@ -305,6 +303,10 @@ class Page
         @document ||= (@parser.nil? ? Nokogiri::HTML( body ) : @parser.document)
     end
 
+    def clear_caches
+        @query_vars = @paths = @document = @forms = @links = @cookies = @headers = nil
+    end
+
     # @return   [Boolean]
     #   `true` if the page contains client-side code, `false` otherwise.
     def has_script?
@@ -358,11 +360,6 @@ class Page
     alias :to_hash :to_h
 
     def hash
-        #ap dom.playable_transitions.hash
-        #ap body.hash
-        #ap elements.map(&:hash)
-        #ap elements.map(&:class)
-        #ap '--'
         "#{dom.playable_transitions.hash}:#{body.hash}:#{elements.map(&:hash).sort}".hash
     end
 
@@ -380,12 +377,17 @@ class Page
 
     def _dump( _ )
         h = {}
-        [:response, :body, :links, :forms, :cookies, :headers, :cookiejar,
-         :paths, :element_audit_whitelist].each do |m|
-            h[m] = send( m )
+        [:body, :links, :forms, :cookies, :headers, :cookiejar, :paths,
+         :element_audit_whitelist].each do |m|
+            h[m] = instance_variable_get( "@#{m}".to_sym )
+            h.delete( m ) if !h[m]
         end
 
+        h[:response] = response
+
         [:links, :forms, :cookies, :headers] .each do |m|
+            #h.delete m
+            next if !h[m]
             h[m] = h[m].map(&:dup).each { |e| e.page = nil }
         end
 
