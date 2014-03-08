@@ -335,7 +335,7 @@ describe Arachni::Element::Form do
     
                 e.mutations( 'seed' ).select do |m|
                     m.inputs['my_pass'] == m.inputs['my_pass_validation']
-                end.size.should == 6
+                end.should be_any
             end
         end
     

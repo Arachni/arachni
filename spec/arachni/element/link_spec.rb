@@ -21,7 +21,7 @@ describe Arachni::Element::Link do
     let(:html) do
         '<html>
             <body>
-                <a href="/stuff">Bla</a>
+                <a href="/stuff#?stuff=blah">Bla</a>
             </body>
         </html>'
     end
@@ -56,7 +56,7 @@ describe Arachni::Element::Link do
     end
 
     describe '#dom' do
-        context 'when a #node has been assigned' do
+        context 'when #html has been assigned' do
             it "returns #{described_class::DOM}" do
                 with_node.dom.should be_kind_of described_class::DOM
             end

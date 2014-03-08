@@ -37,9 +37,23 @@ class Link < Base
 
         self.html   = options[:html]
         self.method = :get
-        self.dom    = DOM.new( parent: self ) if @html
 
         @default_inputs = self.inputs.dup.freeze
+    end
+
+    def dom
+        return @dom if @dom
+        return if !@html || @skip_dom
+
+        # Check if the DOM has any auditable inputs and only initialize it
+        # if it does.
+        if DOM.data_from_node( node )
+            @dom = DOM.new( parent: self )
+        else
+            @skip_dom = true
+        end
+
+        @dom
     end
 
     def node

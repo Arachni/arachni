@@ -85,9 +85,13 @@ class Form < Base
 
         self.html   = options[:html]
         self.method = options[:method] || :get
-        self.dom    = DOM.new( parent: self ) if @html
 
         @default_inputs = self.inputs.dup.freeze
+    end
+
+    def dom
+        return if !@html || inputs.empty?
+        @dom ||= DOM.new( parent: self )
     end
 
     # @return [Nokogiri::XML::Element]

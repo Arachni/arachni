@@ -35,15 +35,8 @@ class DOM < Capabilities::Auditable::DOM
     def initialize(*)
         super
 
-        href = node.attributes['href'].to_s
-        if href.include? '#'
-            @fragment = href.split( '#', 2 ).last
-            @fragment_path, @fragment_query = @fragment.split( '?', 2 )
-        end
-
-        self.inputs     = parse_query( "?#{fragment_query}" )
-        @default_inputs = self.inputs.dup.freeze
-        @method         = :get
+        prepare_data_from_node
+        @method = :get
     end
 
     # Loads the page with the {#inputs} in the {#fragment}.
@@ -63,6 +56,9 @@ class DOM < Capabilities::Auditable::DOM
     end
 
     def parse_query( *args )
+        self.class.parse_query( *args )
+    end
+    def self.parse_query( *args )
         Link.parse_query( *args )
     end
 
@@ -92,6 +88,38 @@ class DOM < Capabilities::Auditable::DOM
 
     def self.watir_type
         :a
+    end
+
+    def prepare_data_from_node
+        return if !(data = self.class.data_from_node( node ))
+
+        self.inputs     = data[:inputs]
+        @default_inputs = self.inputs.dup.freeze
+        @fragment       = data[:fragment]
+        @fragment_path  = data[:fragment_path]
+        @fragment_query = data[:fragment_query]
+    end
+
+    def self.data_from_node( node )
+        fragment_path = fragment = nil
+
+        href = node.attributes['href'].to_s
+        if href.include? '#'
+            fragment = href.split( '#', 2 ).last
+            fragment_path, fragment_query = fragment.split( '?', 2 )
+        else
+            return
+        end
+
+        inputs = parse_query( "?#{fragment_query}" )
+        return if inputs.empty?
+
+        {
+            inputs:         inputs,
+            fragment:       fragment,
+            fragment_path:  fragment_path,
+            fragment_query: fragment_query,
+        }
     end
 
     def hash
