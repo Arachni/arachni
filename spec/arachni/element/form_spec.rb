@@ -172,14 +172,14 @@ describe Arachni::Element::Form do
                 f2.should == with_node
             end
         end
-    
+
         context 'when there is no node' do
             it 'returns nil' do
                 subject.to_html.should be_nil
             end
         end
     end
-    
+
     describe '#requires_password?' do
         context 'when the form has a password field' do
             it 'returns true' do

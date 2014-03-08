@@ -13,11 +13,10 @@ class Link < Base
 
     require_relative 'link/dom'
 
-    # @return   [Nokogiri::XML::Element]
-    attr_accessor :node
-
     # @return   [DOM]
     attr_accessor :dom
+
+    attr_accessor :html
 
     # @param    [Hash]    options
     # @option   options [String]    :url
@@ -36,15 +35,16 @@ class Link < Base
             self.inputs = self.class.parse_query_vars( self.action )
         end
 
+        self.html   = options[:html]
         self.method = :get
-        self.node   = options[:node]
-        self.dom    = DOM.new( parent: self ) if @node
+        self.dom    = DOM.new( parent: self ) if @html
 
         @default_inputs = self.inputs.dup.freeze
     end
 
-    def node=( n )
-        @node = n.is_a?(String) ? self.class.unserialize_node( n ) : n
+    def node
+        return if !@html
+        Nokogiri::HTML.fragment( @html ).css( DOM.watir_type ).first
     end
 
     # @return   [Hash]
@@ -140,7 +140,7 @@ class Link < Base
                 url:    url,
                 action: href,
                 inputs: parse_query_vars( href ),
-                node:   Nokogiri::HTML.fragment( link.to_html ).css( 'a' ).first
+                html:   link.to_html
             )
         end.compact
     end
@@ -168,10 +168,6 @@ class Link < Base
         end
     end
 
-    def self.unserialize_node( serialized_node )
-        Nokogiri::HTML(serialized_node).css('a').first
-    end
-
     def audit_id( injection_str = '', opts = {} )
         vars = inputs.keys.compact.sort.to_s
 
@@ -187,7 +183,6 @@ class Link < Base
 
     def dup
         new = super
-        new.node = node.dup if node
         new.page = page
         new.dom  = dom.dup.tap { |d| d.parent = new } if @dom
         new

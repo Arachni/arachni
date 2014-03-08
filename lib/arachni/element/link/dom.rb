@@ -94,10 +94,6 @@ class DOM < Capabilities::Auditable::DOM
         :a
     end
 
-    def self.unserialize_node( *args )
-        Link.unserialize_node( *args )
-    end
-
     def hash
         to_s.hash
     end

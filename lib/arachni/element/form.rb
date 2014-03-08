@@ -36,11 +36,10 @@ class Form < Base
     # @return   [String, nil]   Name of the form, if it has one.
     attr_accessor   :name
 
-    # @return [Nokogiri::XML::Element]
-    attr_accessor   :node
-
     # @return   [DOM]
     attr_accessor   :dom
+
+    attr_accessor   :html
 
     # @param    [Hash]    options
     # @option   options [String]    :name
@@ -84,15 +83,17 @@ class Form < Base
                 h
             end
 
+        self.html   = options[:html]
         self.method = options[:method] || :get
-        self.node   = options[:node]
-        self.dom    = DOM.new( parent: self ) if @node
+        self.dom    = DOM.new( parent: self ) if @html
 
         @default_inputs = self.inputs.dup.freeze
     end
 
-    def node=( n )
-        @node = n.is_a?(String) ? self.class.unserialize_node( n ) : n
+    # @return [Nokogiri::XML::Element]
+    def node
+        return if !@html
+        Nokogiri::HTML.fragment( @html ).css( DOM.watir_type ).first
     end
 
     def action=( url )
@@ -107,8 +108,7 @@ class Form < Base
     end
 
     def to_html
-        return if !node
-        node.to_html
+        @html
     end
 
     def name_or_id
@@ -338,10 +338,6 @@ class Form < Base
         self.class.parse_request_body( body )
     end
 
-    def self.unserialize_node( serialized_node )
-        Nokogiri::HTML(serialized_node).css('form').first
-    end
-
     # Encodes a {String}'s reserved characters in order to prepare it
     # to be included in a request body.
     #
@@ -374,7 +370,6 @@ class Form < Base
             f.nonce_name = nonce_name.dup if nonce_name
             f.requires_password = requires_password?
             f.page = page
-            f.node = node.dup if node
             f.dom  = dom.dup.tap { |d| d.parent = f } if @dom
         end
     end
@@ -404,7 +399,7 @@ class Form < Base
         c_form          = attributes_to_hash( form.attributes )
         c_form[:action] = to_absolute( c_form[:action], url )
         c_form[:inputs] = {}
-        c_form[:node]   = Nokogiri::HTML.fragment( form.to_html ).css( 'form' ).first
+        c_form[:html]   = form.to_html
 
         %w(textarea input select button).each do |attr|
             c_form[attr] ||= []

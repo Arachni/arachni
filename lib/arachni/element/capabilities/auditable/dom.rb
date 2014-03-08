@@ -30,7 +30,7 @@ class DOM
 
     attr_accessor :page
 
-    attr_accessor :node
+    attr_accessor :html
 
     # @!method with_browser_cluster( &block )
     def_delegator :auditor, :with_browser_cluster
@@ -46,15 +46,20 @@ class DOM
             @url    = parent.url.dup    if parent.url
             @action = parent.action.dup if parent.action
             @page   = parent.page       if parent.page
-            @node   = parent.node.dup   if parent.node
+            @html   = parent.html.dup   if parent.html
         else
             @url    = options[:url]
             @action = options[:action]
             @page   = options[:page]
-            @node   = options[:node]
+            @html   = options[:html]
         end
 
         @audit_options = {}
+    end
+
+    def node
+        return if !@html
+        Nokogiri::HTML.fragment( @html ).css( watir_type ).first
     end
 
     def url=(*)
@@ -108,7 +113,7 @@ class DOM
 
     # Locates the element in the page.
     def locate
-        browser.locate_element( node.to_s )
+        browser.locate_element( @html )
     end
 
     # Triggers the event on the subject {#element}.
@@ -124,25 +129,6 @@ class DOM
         copy_auditable( copy_mutable( copy_inputable( new ) ) )
     end
 
-    def marshal_dump
-        instance_variables.inject( {} ) do |h, iv|
-            next h if [:@parent, :@page].include? iv
-
-            if iv == :@node
-                h[iv] = self.class.serialize_node( @node )
-            else
-                h[iv] = instance_variable_get( iv )
-            end
-
-            h
-        end
-    end
-
-    def marshal_load( h )
-        self.node = self.class.unserialize_node( h.delete(:@node) )
-        h.each { |k, v| instance_variable_set( k, v ) }
-    end
-
     def hash
         inputs.hash
     end
@@ -151,8 +137,16 @@ class DOM
         hash == other.hash
     end
 
-    def self.serialize_node( *args )
-        Element::Base.serialize_node( *args )
+    def marshal_dump
+        instance_variables.inject( {} ) do |h, iv|
+            next h if [:@parent, :@page].include? iv
+            h[iv] = instance_variable_get( iv )
+            h
+        end
+    end
+
+    def marshal_load( h )
+        h.each { |k, v| instance_variable_set( k, v ) }
     end
 
     private
@@ -162,7 +156,7 @@ class DOM
         options[:url]    = url.dup     if @url
         options[:action] = @action.dup if @action
         options[:page]   = page        if page
-        options[:node]   = node.dup    if @node
+        options[:html]   = @html.dup   if @html
         options
     end
 
