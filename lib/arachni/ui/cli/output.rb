@@ -378,7 +378,7 @@ module Output
                 rss_to_mb(rss - @rss), rss_to_mb(rss), pctmem, pctcpu,
                 ::ObjectSpace.each_object( ::Typhoeus::Request ){},
                 ::ObjectSpace.each_object( ::Typhoeus::Response ){},
-                ::ObjectSpace.each_object( ::Proc ){}) + message
+                ::ObjectSpace.each_object( ::Proc ){}) + message.to_s
     ensure
         @rss = rss
     end
