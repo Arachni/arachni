@@ -185,6 +185,25 @@ describe Arachni::Browser do
         end
     end
 
+    describe '#on_fire_event' do
+        it 'gets called before each event is triggered' do
+            @browser.load "#{@url}/trigger_events"
+
+            calls = []
+            @browser.on_fire_event do |element, event|
+                calls << [element.opening_tag, event]
+            end
+
+            @browser.fire_event @browser.watir.div( id: 'my-div' ), :click
+            @browser.fire_event @browser.watir.div( id: 'my-div' ), :mouseover
+
+            calls.should == [
+                [ "<div id=\"my-div\" onclick=\"addForm();\">", :click ],
+                [ "<div id=\"my-div\" onclick=\"addForm();\">", :mouseover ]
+            ]
+        end
+    end
+
     describe '#on_new_page' do
         it 'is passed each snapshot' do
             pages = []

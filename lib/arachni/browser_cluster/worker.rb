@@ -71,7 +71,7 @@ class Worker < Arachni::Browser
             print_error "Job timed-out after #{JOB_TIMEOUT} seconds: #{job}"
         end
 
-        @responses.clear
+        @window_responses.clear
         @preloads.clear
         @cache.clear
         @captured_pages.clear
@@ -83,16 +83,17 @@ class Worker < Arachni::Browser
         @on_new_page_blocks.clear
         @on_new_page_with_sink_blocks.clear
         @on_response_blocks.clear
+        @on_fire_event_blocks.clear
+
+        @job = nil
 
         # Close open windows to free system resources and have a clean
         # slate for the next job.
         #
-        # WARNING: This somehow leads to freezes, after a few jobs when
+        # WARNING: This can somehow lead to freezes, after a few jobs, when
         # triggering events, put it on the back burner and uncomment when I
         # figure it out.
-        #close_windows
-
-        @job = nil
+        close_windows
 
         true
     end

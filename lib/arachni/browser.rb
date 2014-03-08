@@ -193,8 +193,6 @@ class Browser
     end
 
     # @param    [Hash]  options
-    # @option   options [Integer] :timeout  (5)
-    #   Max time to wait for the page to settle (for pending AJAX requests etc).
     # @option options   [Integer]    :concurrency
     #   Maximum number of concurrent connections.
     # @option   options [Bool] :store_pages  (true)
@@ -214,11 +212,7 @@ class Browser
             end
         )
 
-        # This isn't used for HTTP requests but generic operations, however, from
-        # a user's perspective it's the analysis time that matters and when
-        # we're talking about the browser this means events instead of requests.
-        #@options[:timeout]     ||= Options.http.request_timeout / 1_000
-        @options[:store_pages]   = true if !@options.include?( :store_pages )
+        @options[:store_pages] = true if !@options.include?( :store_pages )
 
         @proxy.start_async
 
@@ -241,8 +235,8 @@ class Browser
         # pages with sink (Page::DOM#sink) data as populated by Javascript#flush_sink.
         @page_snapshots_with_sinks = []
 
-        # Captures HTTP::Response objects per URL.
-        @responses = {}
+        # Captures HTTP::Response objects per URL for open windows.
+        @window_responses = {}
 
         # Keeps track of resources which should be skipped -- like already fired
         # events and clicked links etc.
@@ -255,6 +249,7 @@ class Browser
         @on_new_page_blocks = []
         @on_new_page_with_sink_blocks = []
         @on_response_blocks = []
+        @on_fire_event_blocks = []
 
         # Last loaded URL.
         @last_url = nil
@@ -278,6 +273,11 @@ class Browser
     def on_new_page_with_sink( &block )
         fail ArgumentError, 'Missing block.' if !block_given?
         @on_new_page_with_sink_blocks << block
+    end
+
+    def on_fire_event( &block )
+        fail ArgumentError, 'Missing block.' if !block_given?
+        @on_fire_event_blocks << block
     end
 
     def on_response( &block )
@@ -659,9 +659,11 @@ class Browser
         opening_tag = element.opening_tag
         tag_name    = element.tag_name
 
+        call_on_fire_event_blocks( element, event )
+
         tries = 0
         begin
-            Page::DOM::Transition.new( { opening_tag => event }, options ) do
+            transition = Page::DOM::Transition.new( { opening_tag => event }, options ) do
                 had_special_trigger = false
 
                 if tag_name == 'form'
@@ -697,9 +699,11 @@ class Browser
                 end
 
                 element.fire_event( event ) if !had_special_trigger
-
                 wait_for_pending_requests
             end
+
+            prune_window_responses
+            transition
         rescue Selenium::WebDriver::Error::UnknownError,
             Watir::Exception::UnknownObjectException => e
 
@@ -903,10 +907,10 @@ class Browser
 
         begin
             with_timeout Options.http.request_timeout do
-                while !(r = get_response( u )) do
+                while !(r = get_response( u ))
+                    ap 1
                     sleep 0.1
                 end
-
                 return r
             end
         rescue Timeout::Error
@@ -935,6 +939,15 @@ class Browser
     end
 
     private
+
+    def prune_window_responses
+        open_windows_urls = watir.windows.map { |w| normalize_url w.url }
+        synchronize do
+            @window_responses.reject! do |url, _|
+                !open_windows_urls.include? url
+            end
+        end
+    end
 
     def name_or_id_for( element )
         name = element.attribute_value(:name).to_s
@@ -1024,6 +1037,10 @@ class Browser
 
     def call_on_response_blocks( page )
         @on_response_blocks.each { |b| b.call page }
+    end
+
+    def call_on_fire_event_blocks( element, event )
+        @on_fire_event_blocks.each { |b| b.call element, event }
     end
 
     # Loads `page` without taking a snapshot, used for restoring  the root page
@@ -1239,9 +1256,9 @@ class Browser
     end
 
     def from_cache( request, response )
-        return if !(cached = @cache[request.url])
+        return if !@cache.include?( request.url )
 
-        copy_response_data( cached, response )
+        copy_response_data( @cache[request.url], response )
         response.request = request
         save_response response
     end
@@ -1258,16 +1275,17 @@ class Browser
     end
 
     def clear_responses
-        synchronize { @responses.clear }
+        synchronize { @window_responses.clear }
     end
 
     def save_response( response )
         call_on_response_blocks response
-        @responses[response.url] = response
+        return response if !response.text?
+        @window_responses[response.url] = response
     end
 
     def get_response( url )
-        synchronize { @responses[url] }
+        synchronize { @window_responses[url] }
     end
 
     def synchronize( &block )
