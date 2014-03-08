@@ -46,7 +46,7 @@ class Job
         @options      = options.dup
         @options[:id] = @id = options.delete(:id) || increment_id
 
-        options.each { |k, v| send( "#{k}=", v ) }
+        options.each { |k, v| options[k] = send( "#{k}=", v ) }
     end
 
     # @note The following resources will be available at the time of execution:
