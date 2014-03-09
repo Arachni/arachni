@@ -25,15 +25,23 @@ class Worker < Arachni::Browser
     # for future use.
     JOB_TIMEOUT = 3600
 
+    # Re-spawn the browser every `DEFAULT_MAX_TIME_TO_LIVE` jobs.
+    DEFAULT_MAX_TIME_TO_LIVE = 100
+
     # @return    [BrowserCluster]
     attr_reader :master
 
     # @return [Job] Currently assigned job.
     attr_reader :job
 
+    # @return [Integer] Remaining time-to-live measured in jobs.
+    attr_reader :time_to_live
+
     def initialize( options )
-        javascript_token = options.delete( :javascript_token )
-        @master          = options.delete( :master )
+        javascript_token  = options.delete( :javascript_token )
+        @master           = options.delete( :master )
+        @max_time_to_live = options.delete( :max_time_to_live ) || DEFAULT_MAX_TIME_TO_LIVE
+        @time_to_live     = @max_time_to_live
 
         # Don't store pages if there's a master, we'll be sending them to him
         # as soon as they're logged.
@@ -87,13 +95,8 @@ class Worker < Arachni::Browser
 
         @job = nil
 
-        # Close open windows to free system resources and have a clean
-        # slate for the next job.
-        #
-        # WARNING: This can somehow lead to freezes, after a few jobs, when
-        # triggering events, put it on the back burner and uncomment when I
-        # figure it out.
-        #close_windows
+        # Respawn if need be.
+        handle_ttl
 
         true
     end
@@ -174,6 +177,21 @@ class Worker < Arachni::Browser
             end
             @done_signal << nil
         end
+    end
+
+    def handle_ttl
+        @time_to_live ||= @max_time_to_live
+        @time_to_live -= 1
+        return if @time_to_live != 0
+        @time_to_live = @max_time_to_live
+
+        @watir.close
+        kill_phantomjs
+
+        @watir    = nil
+        @selenium = nil
+
+        @watir = ::Watir::Browser.new( *phantomjs )
     end
 
     def save_response( response )
