@@ -54,10 +54,7 @@ class BrowserCluster
 
     DEFAULT_OPTIONS = {
         # Amount of Browsers to keep in the pool and put to work.
-        pool_size:    6,
-
-        # Lifetime of each Browser counted in pages.
-        time_to_live: 10
+        pool_size: 6
     }
 
     # @return   [Integer]   Amount of browser instances in the pool.
