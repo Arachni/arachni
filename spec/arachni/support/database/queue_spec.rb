@@ -10,6 +10,29 @@ describe Arachni::Support::Database::Queue do
         @queue.clear
     end
 
+    let(:sample_size) { 2 * subject.max_buffer_size }
+
+    describe "#{described_class}::DEFAULT_MAX_BUFFER_SIZE" do
+        it 'returns 100' do
+            described_class::DEFAULT_MAX_BUFFER_SIZE.should == 100
+        end
+    end
+
+    describe '#max_buffer_size' do
+        context 'by default' do
+            it "returns #{described_class}::DEFAULT_MAX_BUFFER_SIZE" do
+                subject.max_buffer_size.should == described_class::DEFAULT_MAX_BUFFER_SIZE
+            end
+        end
+    end
+
+    describe '#max_buffer_size=' do
+        it 'sets #max_buffer_size' do
+            subject.max_buffer_size = 10
+            subject.max_buffer_size.should == 10
+        end
+    end
+
     describe '#empty?' do
         context 'when the queue is empty' do
             it 'returns true' do
@@ -27,8 +50,13 @@ describe Arachni::Support::Database::Queue do
 
     describe '#<<' do
         it 'pushes an object' do
-            subject << :stuff
-            subject.pop.should == :stuff
+            sample_size.times do |i|
+                subject << "stuff #{i}"
+            end
+
+            sample_size.times do |i|
+                subject.pop.should == "stuff #{i}"
+            end
         end
     end
 
@@ -48,8 +76,13 @@ describe Arachni::Support::Database::Queue do
 
     describe '#pop' do
         it 'removes an object' do
-            subject << :stuff
-            subject.pop.should == :stuff
+            sample_size.times do |i|
+                subject << "stuff #{i}"
+            end
+
+            sample_size.times do |i|
+                subject.pop.should == "stuff #{i}"
+            end
         end
 
         it 'blocks until an entry is available' do
@@ -80,14 +113,43 @@ describe Arachni::Support::Database::Queue do
 
     describe '#size' do
         it 'returns the size of the queue' do
-            10.times { |i| subject << i }
-            subject.size.should == 10
+            sample_size.times { |i| subject << i }
+            subject.size.should == sample_size
         end
     end
 
+    describe '#buffer_size' do
+        it 'returns the size of the in-memory entries' do
+            subject.buffer_size.should == 0
+
+            (subject.max_buffer_size - 1).times { |i| subject << i }
+            subject.buffer_size.should == subject.max_buffer_size - 1
+
+            subject.clear
+
+            sample_size.times { |i| subject << i }
+            subject.buffer_size.should == subject.max_buffer_size
+        end
+    end
+
+    describe '#disk_size' do
+        it 'returns the size of the disk entries' do
+            subject.buffer_size.should == 0
+
+            (subject.max_buffer_size + 1).times { |i| subject << i }
+            subject.disk_size.should == 1
+
+            subject.clear
+
+            sample_size.times { |i| subject << i }
+            subject.disk_size.should == sample_size - subject.max_buffer_size
+        end
+    end
+
+
     describe '#clear' do
         it 'empties the queue' do
-            10.times { |i| subject << i }
+            sample_size.times { |i| subject << i }
             subject.clear
             subject.size.should == 0
         end

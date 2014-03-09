@@ -9,26 +9,49 @@ module Support::Database
 # Flat-file Queue implementation
 #
 # Behaves pretty much like a Ruby Queue however it transparently serializes and
-# saves its values to the file-system under the OS's temp directory.
+# saves its entries to the file-system under the OS's temp directory **after**
+# a specified {#max_buffer_size} (for in-memory entries) has been exceeded.
 #
 # It's pretty useful when you want to reduce memory footprint without
-# having to refactor any code since it behaves just like Ruby's implementation.
+# having to refactor any code since it behaves just like a Ruby Queue
+# implementation.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Queue < Base
 
+    # Default #{max_buffer_size}.
+    DEFAULT_MAX_BUFFER_SIZE = 100
+
+    # @return   [Integer]
+    #   How many entries to keep in memory before starting to off-load to disk.
+    attr_accessor :max_buffer_size
+
     # @see Arachni::Database::Base#initialize
     def initialize( *args )
         super( *args )
-        @q       = []
+        @disk    = []
+        @buffer  = []
         @waiting = []
         @mutex   = Mutex.new
+    end
+
+    # @note Defaults to {DEFAULT_max_buffer_size}.
+    #
+    # @return   [Integer]
+    #   How many entries to keep in memory before starting to off-load to disk.
+    def max_buffer_size
+        @max_buffer_size || DEFAULT_MAX_BUFFER_SIZE
     end
 
     # @param    [Object]    obj Object to add to the queue.
     def <<( obj )
         synchronize do
-            @q << dump( obj )
+            if @buffer.size < max_buffer_size
+                @buffer << obj
+            else
+                @disk << dump( obj )
+            end
+
             begin
                 t = @waiting.shift
                 t.wakeup if t
@@ -44,12 +67,12 @@ class Queue < Base
     def pop( non_block = false )
         synchronize do
             loop do
-                if @q.empty?
+                if empty?
                     raise ThreadError, 'queue empty' if non_block
                     @waiting.push Thread.current
                     @mutex.sleep
                 else
-                    return load_and_delete_file @q.shift
+                    return @buffer.shift || load_and_delete_file( @disk.shift )
                 end
             end
         end
@@ -60,19 +83,29 @@ class Queue < Base
     # @return   [Integer]
     #   Size of the queue, the number of objects it currently holds.
     def size
-        @q.size
+        buffer_size + disk_size
     end
     alias :length :size
 
+    def buffer_size
+        @buffer.size
+    end
+
+    def disk_size
+        @disk.size
+    end
+
     # @return   [Bool] `true` if the queue if empty, `false` otherwise.
     def empty?
-        @q.empty?
+        @buffer.empty? && @disk.empty?
     end
 
     # Removes all objects from the queue.
     def clear
-        while !@q.empty?
-            path = @q.pop
+        @buffer.clear
+
+        while !@disk.empty?
+            path = @disk.pop
             next if !path
             delete_file path
         end
