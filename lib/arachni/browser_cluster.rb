@@ -266,6 +266,11 @@ class BrowserCluster
 
         # Kill the browsers.
         @workers.each(&:shutdown)
+        @workers.clear
+
+        @job_callbacks.clear
+        @skip_states_per_job.clear
+        @pending_jobs.clear
 
         true
     end
