@@ -847,6 +847,14 @@ class Framework
                                 ' from the browser-cluster...'
                 end
                 show_workload_msg = false
+
+                last_pending_jobs ||= 0
+                pending_jobs = browser_cluster.pending_job_counter
+                if pending_jobs != last_pending_jobs
+                    browser_cluster.print_info "Pending jobs: #{pending_jobs}"
+                end
+                last_pending_jobs = pending_jobs
+
                 sleep 0.1
             end
 
