@@ -510,7 +510,7 @@ describe Arachni::Page do
 
                 dom:     {
                     url:         'http://test/#/stuff',
-                    transitions: [ page: :load ]
+                    transitions: [ described_class::DOM::Transition.new( page: :load )]
                 }
             }
 
