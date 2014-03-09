@@ -304,7 +304,7 @@ class Page
     end
 
     def clear_caches
-        elements.each { |e| e.page = nil }
+        [@forms, @links, @cookies, @headers].flatten.compact.each { |e| e.page = nil }
         @query_vars = @paths = @document = @forms = @links = @cookies = @headers = nil
         nil
     end
