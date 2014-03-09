@@ -51,6 +51,11 @@ post '/body' do
     request.body.read
 end
 
+post '/binary' do
+    headers['Content-Type'] = 'application/binary'
+    "\0"
+end
+
 get '/gzip' do
     headers['Content-Encoding'] = 'gzip'
     io = StringIO.new

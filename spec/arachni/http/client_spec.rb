@@ -177,21 +177,69 @@ describe Arachni::HTTP::Client do
         end
 
         describe '#fingerprint?' do
+            before( :each ) { Arachni::Platform::Manager.clear }
+
             context true do
-                it 'performs platform fingerprinting on the response' do
-                    Arachni::Options.fingerprint
+                context 'and the response is text based' do
+                    context 'and has not yet been fingerprinted' do
+                        context 'and is within scope' do
+                            it 'performs platform fingerprinting on the response' do
+                                Arachni::Options.fingerprint
 
-                    res = nil
-                    @http.request( @url + '/fingerprint.php' ) { |c_res| res = c_res }
-                    @http.run
+                                res = nil
+                                @http.request( @url + '/fingerprint.php' ) { |c_res| res = c_res }
+                                @http.run
 
-                    res.platforms.to_a.should == [:php]
+                                res.platforms.to_a.should == [:php]
+                            end
+                        end
+
+                        context 'and is out of scope' do
+                            it 'does not fingerprint it' do
+                                Arachni::Options.do_not_fingerprint
+
+                                Arachni::Options.scope.exclude_path_patterns << 'fingerprint'
+
+                                res = nil
+                                @http.request( @url + '/fingerprint.php' ) { |c_res| res = c_res }
+                                @http.run
+
+                                res.platforms.should be_empty
+                            end
+                        end
+                    end
+
+                    context 'and the resource has already been fingerprinted' do
+                        it 'does not fingerprint it' do
+                            Arachni::Options.do_not_fingerprint
+
+                            url = @url + '/fingerprint.php'
+
+                            Arachni::Platform::Manager[url] << :unix
+
+                            res = nil
+                            @http.request( url  ) { |c_res| res = c_res }
+                            @http.run
+
+                            res.platforms.should_not include :php
+                        end
+                    end
+                end
+                context 'and the response is not text based' do
+                    it 'does not fingerprint it' do
+                        Arachni::Options.do_not_fingerprint
+
+                        res = nil
+                        @http.request( @url + '/binary' ) { |c_res| res = c_res }
+                        @http.run
+
+                        res.platforms.should be_empty
+                    end
                 end
             end
 
             context false do
                 it 'does not fingerprint the response' do
-                    Arachni::Platform::Manager.clear
                     Arachni::Options.do_not_fingerprint
 
                     res = nil

@@ -599,7 +599,9 @@ class Client
                 @burst_response_time_sum += response.time
                 @total_response_time_sum += response.time
 
-                if Options.fingerprint? && response.platforms.empty?
+                if Options.fingerprint? && response.text? &&
+                    !Platform::Manager.include?( response.url ) &&
+                    !skip_resource?( response )
                     # Force a fingerprint by converting the Response to a Page object.
                     response.to_page
                 end
