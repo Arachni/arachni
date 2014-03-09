@@ -362,6 +362,10 @@ module Output
         end
     end
 
+    def print_with_statistics( message = nil )
+        print_info add_resource_usage_statistics( message )
+    end
+
     def add_resource_usage_statistics( message )
         require 'sys/proctable'
 
