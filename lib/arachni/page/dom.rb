@@ -85,7 +85,7 @@ class DOM
     #   Live page in the `browser` if successful, `nil` otherwise.
     def restore( browser, take_snapshot = true )
         # Preload the associated HTTP response since we've already got it.
-        browser.preload( @page )
+        browser.preload( page )
 
         # First, try to load the page via its DOM#url in case it can restore
         # itself via its URL fragments and whatnot.
@@ -96,11 +96,11 @@ class DOM
         # If we've got no playable transitions then we're done.
         return browser if playables.empty?
 
-        page = browser.to_page
+        browser_page = browser.to_page
 
         # We were probably led to an out-of-scope page via a JS redirect,
         # bail out.
-        return if !page
+        return if !browser_page
 
         # Check to see if just loading the DOM URL was enough.
         #
@@ -109,37 +109,10 @@ class DOM
         # the document may still be different from when our snapshot was captured.
         #
         # However, this check doesn't cost us much so it's worth a shot.
-        if page.dom === self
+        if browser_page.dom === self
             #ap "RESTORED BY URL: #{url}"
             return browser
         end
-
-        #if page.dom.url == url
-        #    ap '-' * 100
-        #
-        #    ap page.dom.url
-        #    ap url
-        #
-        #    page_body_lines = @page.body.gsub(url, '').lines
-        #    page.body.gsub(url, '').lines.each.with_index do |line, i|
-        #        next if line == page_body_lines[i]
-        #
-        #        ap i
-        #        puts "  #{line}"
-        #        puts "  #{page_body_lines[i]}"
-        #
-        #        next if !page_body_lines[i]
-        #        puts
-        #        puts "  #{line.gsub( url, '' ).gsub( page.dom.url, '' )}"
-        #        puts "  #{page_body_lines[i].gsub( url, '' ).gsub( page.dom.url, '' )}"
-        #    end
-        #
-        #    puts string_digest.gsub( url, '' ).gsub( page.dom.url, '' )
-        #    puts
-        #    puts page.dom.string_digest.gsub( url, '' ).gsub( page.dom.url, '' )
-        #
-        #    ap '-' * 100
-        #end
 
         # The URL restore failed so navigate to the pure version of the URL and
         # replay its transitions.
@@ -147,7 +120,7 @@ class DOM
         # Thankfully, all external resources will have been cached from the
         # previous attempt at restoring the page, so this operation shouldn't
         # cause much overhead.
-        browser.preload( @page )
+        browser.preload( page )
         browser.goto page.url, take_snapshot
 
         playables.each do |transition|
