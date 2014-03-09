@@ -1019,7 +1019,11 @@ class Browser
                 break
             end
         end
+
         @phantomjs_io.close
+
+        @phantomjs_pid = nil
+        @phantomjs_io  = nil
         @phantomjs_url = nil
     end
 
@@ -1223,8 +1227,8 @@ class Browser
                 return if inputs.empty?
 
                 page.forms |= [Form.new(
-                    url:    @last_url,
-                    action: request.url,
+                    url:    @last_url.dup,
+                    action: request.url.dup,
                     method: request.method,
                     inputs: inputs
                 ).tap(&:override_instance_scope)]
@@ -1234,8 +1238,8 @@ class Browser
                 return if inputs.empty?
 
                 page.forms |= [Form.new(
-                    url:    @last_url,
-                    action: request.url,
+                    url:    @last_url.dup,
+                    action: request.url.dup,
                     method: request.method,
                     inputs: inputs
                 ).tap(&:override_instance_scope)]
