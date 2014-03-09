@@ -93,7 +93,7 @@ class Worker < Arachni::Browser
         # WARNING: This can somehow lead to freezes, after a few jobs, when
         # triggering events, put it on the back burner and uncomment when I
         # figure it out.
-        close_windows
+        #close_windows
 
         true
     end
