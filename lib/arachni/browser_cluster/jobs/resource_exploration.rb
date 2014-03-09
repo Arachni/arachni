@@ -20,6 +20,11 @@ class ResourceExploration < Job
     #   and will be loaded.
     attr_accessor :resource
 
+    def initialize( options )
+        self.resource = options.delete(:resource)
+        super options
+    end
+
     # Loads a {#resource} and {Browser#trigger_events explores} its DOM.
     def run
         browser.on_new_page { |page| save_result( page: page ) }
@@ -35,6 +40,14 @@ class ResourceExploration < Job
         end
 
         @resource = resource
+    end
+
+    def dup
+        super.tap { |j| j.resource = resource }
+    end
+
+    def clean_copy
+        super.tap { |j| j.resource = nil }
     end
 
 end
