@@ -9,6 +9,7 @@ module Arachni
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Page
+    include Utilities
 
     class Error < Arachni::Error
     end
@@ -135,7 +136,7 @@ class Page
 
         fail ArgumentError, 'No URL given!' if !url
 
-        Platform::Manager.fingerprint( self ) if Options.fingerprint?
+        Platform::Manager.fingerprint( self )
 
         @element_audit_whitelist ||= []
         @element_audit_whitelist   = Set.new( @element_audit_whitelist )

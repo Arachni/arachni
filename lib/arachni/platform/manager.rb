@@ -205,11 +205,21 @@ class Manager
     end
     fingerprinters.load_all
 
+    # @param    [HTTP::Response, Page]  resource
+    # @return   [Bool]
+    #   `true` if the resource should be fingerprinted, `false` otherwise.
+    def self.fingerprint?( resource )
+        !(!Options.fingerprint? || !resource.text? || include?( resource.url ) ||
+            skip_resource?( resource ))
+    end
+
     # Runs all fingerprinters against the given `page`.
     #
     # @param    [Page]  page    Page to fingerprint.
     # @return   [Manager]   Updated `self`.
     def self.fingerprint( page )
+        return page if !fingerprint? page
+
         fingerprinters.available.each do |name|
             exception_jail( false ) do
                 fingerprinters[name].new( page ).run
@@ -230,6 +240,11 @@ class Manager
         return new( platforms ) if !(key = make_key( uri ))
         @platforms[key] =
             platforms.is_a?( self ) ? platforms : new( platforms )
+    end
+
+    # @param    [String, URI]   uri
+    def self.include?( uri )
+        @platforms.include?( make_key( uri ) )
     end
 
     #

@@ -6,6 +6,21 @@ describe Arachni::Platform::Manager do
     after(:each) { described_class.reset }
 
     let(:platforms) { described_class.new }
+    let(:http) { Arachni::HTTP::Client }
+
+    def page
+        Arachni::Options.do_not_fingerprint
+        page = Arachni::Page.from_url( "#{web_server_url_for( :auditor )}/s.php" )
+        Arachni::Options.fingerprint
+        page
+    end
+
+    def binary_page
+        Arachni::Options.do_not_fingerprint
+        page = Arachni::Page.from_url( "#{web_server_url_for( :auditor )}/binary" )
+        Arachni::Options.fingerprint
+        page
+    end
 
     it 'is Enumerable' do
         platforms.is_a? Enumerable
@@ -30,10 +45,77 @@ describe Arachni::Platform::Manager do
         end
     end
 
+    describe '.include?' do
+        context 'when the list includes the given key' do
+            it 'returns true' do
+                url = 'http://stuff/'
+                described_class[url] << :unix
+                described_class.should include url
+            end
+        end
+
+        context 'when the list does not include the given key' do
+            it 'returns true' do
+                url = 'http://stuff/'
+                described_class.should_not include url
+            end
+        end
+    end
+
+    describe '.fingerprint?' do
+        Arachni::Options.do_not_fingerprint
+        page = Arachni::Page.from_url( "#{web_server_url_for( :auditor )}/s.php" )
+        Arachni::Options.fingerprint
+        page
+
+        [page, page.response].each do |resource|
+            context "when given a #{resource.class}" do
+                context 'when Options.fingerprint is set to' do
+                    context true do
+                        context 'and it is text based' do
+                            context 'and has not yet been fingerprinted' do
+                                context 'and is within scope' do
+                                    it 'returns true' do
+                                        described_class.fingerprint?( page ).should be_true
+                                    end
+                                end
+
+                                context 'and is out of scope' do
+                                    it 'returns false' do
+                                        Arachni::Options.scope.exclude_path_patterns << 's'
+                                        described_class.fingerprint?( page ).should be_false
+                                    end
+                                end
+                            end
+
+                            context 'and the resource has already been fingerprinted' do
+                                it 'returns false' do
+                                    described_class[page.url] << :unix
+                                    described_class.fingerprint?( page ).should be_false
+                                end
+                            end
+                        end
+                        context 'and it is not text based' do
+                            it 'returns false' do
+                                described_class.fingerprint?( binary_page ).should be_false
+                            end
+                        end
+                    end
+
+                    context false do
+                        it 'returns false' do
+                            p = page
+                            Arachni::Options.do_not_fingerprint
+                            described_class.fingerprint?( p ).should be_false
+                        end
+                    end
+                end
+            end
+        end
+    end
+
     describe '.fingerprint' do
         it 'runs all fingerprinters against the given page' do
-            page = Arachni::Page.from_url( "#{web_server_url_for( :auditor )}/s.php" )
-
             described_class.fingerprint page
             page.platforms.sort.should == [:php].sort
 
@@ -41,7 +123,6 @@ describe Arachni::Platform::Manager do
         end
 
         it 'returns the given page' do
-            page = Arachni::Page.from_url( web_server_url_for( :auditor ) )
             described_class.fingerprint( page ).should == page
         end
     end
