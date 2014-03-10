@@ -906,7 +906,7 @@ class Browser
         return if skip_path?( u )
 
         begin
-            with_timeout Options.http.request_timeout do
+            with_timeout Options.http.request_timeout/ 1_000 do
                 while !(r = get_response( u ))
                     sleep 0.1
                 end
