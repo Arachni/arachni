@@ -173,10 +173,6 @@ class ProxyServer < WEBrick::HTTPProxyServer
     #   Merges the given HTTP options with some default ones.
     def http_opts( options = {} )
         options.merge(
-            # Don't use cookies from our own cookie-jar, let the client handle
-            # it.
-            no_cookiejar:    true,
-
             # Don't follow redirects, the client should handle this.
             follow_location: false,
 
@@ -226,20 +222,26 @@ class ProxyServer < WEBrick::HTTPProxyServer
     # Communicates with the endpoint webapp and forwards its responses to the
     # proxy which then sends it to the browser.
     def perform_proxy_request( req, res )
-        request = yield( req.request_uri.to_s, setup_proxy_header( req, res ) )
-
-        # Provisional empty, response in case the request_handler wants us to
-        # skip performing the request.
-        response = Response.new( url: req.request_uri.to_s )
-        response.request = request
-        request.on_complete { |r| response = r }
+        request  = yield( req.request_uri.to_s, setup_proxy_header( req, res ) )
+        response = nil
 
         if @options[:request_handler]
+            # Provisional empty, response in case the request_handler wants us to
+            # skip performing the request.
+            response = Response.new( url: req.request_uri.to_s )
+            response.request = request
+
+            # If the handler returns false then don't perform the HTTP request.
             if @options[:request_handler].call( request, response )
+                # Even though it's a blocking request, force it to go through
+                # the HTTP::Client in order to handle cookie update and
+                # fingerprinting handlers.
                 HTTP::Client.queue( request )
+                response = request.run
             end
         else
             HTTP::Client.queue( request )
+            response = request.run
         end
 
         if @options[:response_handler]
@@ -262,6 +264,9 @@ class ProxyServer < WEBrick::HTTPProxyServer
 
         res.header['content-length'] = response.body.bytesize.to_s
         res.body = response.body
+    rescue => e
+        ap e
+        ap e.backtrace
     end
 
     # Transfers headers from the webapp HTTP response to the Proxy HTTP response.

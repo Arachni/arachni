@@ -61,6 +61,32 @@ describe Arachni::HTTP::Request do
         end
     end
 
+    describe '#run' do
+        it 'performs the request' do
+            request  = described_class.new( url: @url )
+            response = request.run
+
+            response.should be_kind_of Arachni::HTTP::Response
+            response.request.should == request
+        end
+
+        it 'calls #on_complete callbacks' do
+            request  = described_class.new( url: @url )
+
+            called = []
+            request.on_complete do |r|
+                called << r
+            end
+
+            response = request.run
+            response.should be_kind_of Arachni::HTTP::Response
+            response.request.should == request
+
+            called.should == [response]
+            called.first.request.should == request
+        end
+    end
+
     describe '#parameters' do
         it 'defaults to an empty Hash' do
             described_class.new( url: url ).parameters.should == {}

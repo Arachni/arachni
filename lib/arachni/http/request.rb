@@ -59,6 +59,15 @@ class Request < Message
     # was a result of which submitted element.
     attr_accessor :performer
 
+    # @return   [String]    `host:port`
+    attr_accessor :proxy
+
+    # @return   [String]    `user:password`
+    attr_accessor :proxyuserpwd
+
+    # @return   [String]
+    attr_accessor :proxytype
+
     # @private
     attr_accessor :root_redirect_id
 
@@ -211,9 +220,19 @@ class Request < Message
         @update_cookies = true
     end
 
+    # @note Will call {#on_complete} callbacks.
+    #
+    # Performs the {Request} without going through {HTTP::Client}.
+    #
+    # @return   [Response]
+    def run
+        Response.from_typhoeus( to_typhoeus.run ).tap { |r| r.request = self }
+    end
+
     def handle_response( response )
         response.request = self
         @on_complete.each { |b| b.call response }
+        response
     end
 
     # @return [Typhoeus::Response] Converts self to a `Typhoeus::Response`.
@@ -253,7 +272,13 @@ class Request < Message
 
         options[:timeout_ms] = timeout if timeout
 
-        if Arachni::Options.http.proxy_host
+        if @proxy
+            options.merge!(
+                proxy:        proxy,
+                proxyuserpwd: proxyuserpwd,
+                proxytype:    proxytype
+            )
+        elsif Arachni::Options.http.proxy_host
             options.merge!(
                 proxy:        "#{Arachni::Options.http.proxy_host}:#{Arachni::Options.http.proxy_port}",
                 proxyuserpwd: "#{Arachni::Options.http.proxy_username}:#{Arachni::Options.http.proxy_password}",
@@ -263,9 +288,13 @@ class Request < Message
 
         curl = parsed_url.query ? url.gsub( "?#{parsed_url.query}", '' ) : url
         r = Typhoeus::Request.new( curl, options )
-        r.on_complete do |typhoeus_response|
-            handle_response Response.from_typhoeus( typhoeus_response )
+
+        if @on_complete.any?
+            r.on_complete do |typhoeus_response|
+                handle_response Response.from_typhoeus( typhoeus_response )
+            end
         end
+
         r
     end
 

@@ -219,6 +219,7 @@ describe Arachni::HTTP::Client do
             end
 
             @http.get( @opts.url + 'out', mode: :sync )
+
             @http.sandbox do
                 @http.cookies.should be_any
                 @http.cookie_jar.clear
@@ -233,8 +234,8 @@ describe Arachni::HTTP::Client do
                 end
 
                 @http.get( @opts.url + 'in', mode: :sync )
-                @http.run
             end
+
             @http.get( @opts.url + 'out', mode: :sync )
 
             signals.delete( :out )
@@ -863,16 +864,23 @@ describe Arachni::HTTP::Client do
                 end
             end
             describe :sync do
-                it 'performs the request synchronously' do
-                    performed = false
-                    @http.request( @url, mode: :sync ) { performed = true }
-                    @http.run
-                    performed.should be_true
+                it 'performs the request synchronously and returns the response' do
+                    @http.request( @url, mode: :sync ).should be_kind_of Arachni::HTTP::Response
                 end
 
-                context 'when no block is given' do
-                    it 'performs the request in blocking mode and returns the response' do
-                        @http.request( @url, mode: :sync ).should be_kind_of Arachni::HTTP::Response
+                it 'assigns a #request to the returned response' do
+                    @http.request( @url, mode: :sync ).request.should be_kind_of Arachni::HTTP::Request
+                end
+
+                context 'when a block is given' do
+                    it 'passes the response to it as well' do
+                        called = []
+                        response = @http.request( @url, mode: :sync ) do |r|
+                            called << r
+                        end
+
+                        response.should be_kind_of Arachni::HTTP::Response
+                        called.should == [response]
                     end
                 end
             end
@@ -1037,21 +1045,6 @@ describe Arachni::HTTP::Client do
             @http.run
 
             r.should be_kind_of Arachni::HTTP::Response
-        end
-
-        context 'when the request is synchronous' do
-            it 'also performs it' do
-                r = nil
-
-                request = Arachni::HTTP::Request.new( url: @url, mode: :sync )
-                request.on_complete do |response|
-                    r = response
-                end
-
-                @http.queue request
-
-                r.should be_kind_of Arachni::HTTP::Response
-            end
         end
     end
 

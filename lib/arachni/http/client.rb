@@ -294,15 +294,12 @@ class Client
                 cookies: cookies
             ))
 
-            response = nil
             if block_given?
                 request.on_complete( &block )
-            elsif request.blocking?
-                request.on_complete { |r| response = r }
             end
 
             queue( request )
-            return response if response
+            return request.run if request.blocking?
             request
         }
     end
@@ -362,8 +359,6 @@ class Client
         request( url, options, &block )
     end
 
-    # @note If the request is synchronous, it will perform it.
-    #
     # Queues a {Request} and calls the following callbacks:
     #
     # * `#on_queue` -- intersects a queued request and gets passed the original
@@ -394,7 +389,7 @@ class Client
         end
 
         hooks = {}
-        @__hooks.each { |k, v| hooks[k] = v.dup }
+        @__hooks.each { |k, v| hooks[k] = v.dup } if @__hooks
 
         ret = block.call( self )
 
@@ -562,22 +557,7 @@ class Client
     #
     # @param    [Request]     request
     def forward_request( request )
-        request.id   = @request_count
-        typhoeus_req = request.to_typhoeus
-
-        if request.blocking?
-            # The Typhoeus (Request#to_typhoeus) request **must** have the
-            # :forbid_reuse option set to true otherwise the socket will
-            # remain in the kernel's FD table even after our one-off Hydra will
-            # have been GC'ed.
-            hydra_sync = Typhoeus::Hydra.new( max_concurrency: 1 )
-            hydra_sync.queue( typhoeus_req )
-            synchronize { @request_count += 1 }
-        else
-            @hydra.queue( typhoeus_req )
-            @queue_size    += 1
-            @request_count += 1
-        end
+        request.id = @request_count
 
         if debug?
             print_debug '------------'
@@ -627,14 +607,19 @@ class Client
             end
         end
 
-        if request.blocking?
-            exception_jail { hydra_sync.run }
-        else
-            if emergency_run?
-                print_info 'Request queue reached its maximum size, performing an emergency run.'
-                hydra_run
-            end
+        synchronize { @request_count += 1 }
+
+        return if request.blocking?
+
+        @hydra.queue( request.to_typhoeus )
+        @queue_size += 1
+
+        if emergency_run?
+            print_info 'Request queue reached its maximum size, performing an emergency run.'
+            hydra_run
         end
+
+        request
     end
 
     def emergency_run?
