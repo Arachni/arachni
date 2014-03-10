@@ -72,6 +72,9 @@ class BrowserCluster
     #   Worker pool.
     attr_reader :workers
 
+    # @return   [Integer]   Number of pending jobs.
+    attr_reader :pending_job_counter
+
     attr_reader :consumed_pids
 
     # @param    [Hash]  options

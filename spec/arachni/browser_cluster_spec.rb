@@ -60,6 +60,26 @@ describe Arachni::BrowserCluster do
         end
     end
 
+    describe '#pending_job_counter' do
+        it 'returns the amount of pending jobs' do
+            @cluster = described_class.new
+            @cluster.pending_job_counter.should == 0
+
+            while_in_progress = []
+            @cluster.queue( job ) do
+                while_in_progress << @cluster.pending_job_counter
+            end
+            @cluster.wait
+
+            while_in_progress.should be_any
+            while_in_progress.each do |pending_job_counter|
+                pending_job_counter.should > 0
+            end
+
+            @cluster.pending_job_counter.should == 0
+        end
+    end
+
     describe '#queue' do
         it 'processes the job' do
             pages = []
