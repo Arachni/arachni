@@ -908,7 +908,6 @@ class Browser
         begin
             with_timeout Options.http.request_timeout do
                 while !(r = get_response( u ))
-                    ap 1
                     sleep 0.1
                 end
                 return r
