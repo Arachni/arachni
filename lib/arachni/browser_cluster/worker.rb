@@ -20,6 +20,8 @@ class BrowserCluster
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Worker < Arachni::Browser
 
+    personalize_output
+
     # Maximum allowed time for jobs in seconds. One hour is pretty close to
     # not having a timeout at all but it's good to at least have the option
     # for future use.
@@ -164,6 +166,10 @@ class Worker < Arachni::Browser
         end
 
         super
+    end
+
+    def self.name
+        "BrowserCluster Worker##{object_id}"
     end
 
     private
