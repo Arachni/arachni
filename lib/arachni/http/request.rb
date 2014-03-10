@@ -255,7 +255,7 @@ class Request < Message
 
         if Arachni::Options.http.proxy_host
             options.merge!(
-                http_proxy:        "#{Arachni::Options.http.proxy_host}:#{Arachni::Options.http.proxy_port}",
+                proxy:        "#{Arachni::Options.http.proxy_host}:#{Arachni::Options.http.proxy_port}",
                 proxyuserpwd: "#{Arachni::Options.http.proxy_username}:#{Arachni::Options.http.proxy_password}",
                 proxytype:    Arachni::Options.http.proxy_type
             )
