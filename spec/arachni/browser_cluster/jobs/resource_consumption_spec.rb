@@ -38,16 +38,51 @@ describe Arachni::BrowserCluster::Jobs::ResourceExploration do
         end
 
         context Arachni::HTTP::Response do
-            it 'loads it and explores the DOM' do
-                test described_class.new(
+            subject do
+                described_class.new(
                     resource: Arachni::HTTP::Client.get( url, mode: :sync )
                 )
+            end
+
+            it 'loads it and explores the DOM' do
+                test subject
+            end
+
+            it "can be stored to disk by the #{Arachni::Support::Database::Queue}" do
+                q = Arachni::Support::Database::Queue.new
+                q.max_buffer_size = 0
+
+                q << subject
+
+                restored = q.pop
+                restored.should == subject
             end
         end
 
         context Arachni::Page do
+            subject { described_class.new( resource: Arachni::Page.from_url( url ) ) }
+
             it 'loads it and explores the DOM' do
-                test described_class.new( resource: Arachni::Page.from_url( url ) )
+                test subject
+            end
+
+            it "can be stored to disk by the #{Arachni::Support::Database::Queue}" do
+                q = Arachni::Support::Database::Queue.new
+                q.max_buffer_size = 0
+
+                q << subject
+
+                restored = q.pop
+                restored.should == subject
+            end
+
+            it 'clears the page cache' do
+                q = Arachni::Support::Database::Queue.new
+                q.max_buffer_size = 0
+
+                expect_any_instance_of(Arachni::Page).to receive(:clear_caches)
+
+                q << subject
             end
         end
     end

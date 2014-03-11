@@ -33,13 +33,25 @@ class ResourceExploration < Job
         browser.trigger_events
     end
 
-    def resource=( resource )
-        if resource.is_a? Page
-            resource = resource.dup
-            resource.clear_caches
-        end
+    def marshal_dump
+        instance_variables.inject( {} ) do |h, iv|
+            obj = instance_variable_get( iv )
 
-        @resource = resource
+            # Since we don't care about the caches (lazy-loaded elements and
+            # such), clearing them makes serializing and un-serializing pages
+            # **much** less resource consuming.
+            if obj.is_a? Page
+                obj = resource.dup
+                obj.clear_caches
+            end
+
+            h[iv] = obj
+            h
+        end
+    end
+
+    def marshal_load( h )
+        h.each { |k, v| instance_variable_set( k, v ) }
     end
 
     def dup
