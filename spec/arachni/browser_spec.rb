@@ -1198,13 +1198,10 @@ describe Arachni::Browser do
 
             locators = []
             @browser.watir.elements.each do |element|
-                locators << described_class::ElementLocator.new(
-                    tag_name:   element.tag_name,
-                    attributes: described_class.supported_element_attributes_from(
-                        element.tag_name,
-                        element.opening_tag
-                    )
-                )
+                begin
+                    locators << described_class::ElementLocator.from_html( element.opening_tag )
+                rescue
+                end
             end
 
             locators.each do |element|
