@@ -7,7 +7,7 @@ describe Arachni::BrowserCluster::Jobs::ResourceExploration::EventTrigger do
         browser = Arachni::Browser.new
         browser.load url
 
-        browser.each_element_with_events { |data| @tag = data[:tag] }
+        browser.each_element_with_events { |element, _| @element = element }
         browser.shutdown
     end
 
@@ -15,7 +15,7 @@ describe Arachni::BrowserCluster::Jobs::ResourceExploration::EventTrigger do
         Arachni::Utilities.normalize_url( web_server_url_for( :event_trigger ) )
     end
     let(:event) { :click }
-    let(:tag) { @tag }
+    let(:element) { @element }
 
     after do
         @cluster.shutdown
@@ -41,7 +41,7 @@ describe Arachni::BrowserCluster::Jobs::ResourceExploration::EventTrigger do
     context 'when the resource is a' do
         context String do
             it 'loads the URL and triggers the given event on the given element' do
-                test described_class.new( resource: url, event: event, tag: tag )
+                test described_class.new( resource: url, event: event, element: element )
             end
         end
 
@@ -50,7 +50,7 @@ describe Arachni::BrowserCluster::Jobs::ResourceExploration::EventTrigger do
                 test described_class.new(
                          resource: Arachni::HTTP::Client.get( url, mode: :sync ),
                          event:    event,
-                         tag:      tag
+                         element:  element
                      )
             end
         end
@@ -60,7 +60,7 @@ describe Arachni::BrowserCluster::Jobs::ResourceExploration::EventTrigger do
                 test described_class.new(
                     resource: Arachni::Page.from_url( url ),
                     event:    event,
-                    tag:      tag
+                    element:  element
                 )
             end
         end

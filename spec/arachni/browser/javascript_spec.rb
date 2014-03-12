@@ -14,7 +14,6 @@ describe Arachni::Browser::Javascript do
 
     after( :each ) do
         Arachni::Options.reset
-        Arachni::Framework.reset
         @browser.shutdown
     end
 
@@ -83,6 +82,14 @@ describe Arachni::Browser::Javascript do
             @javascript.dom_digest.should == @javascript.dom_monitor.digest
         end
     end
+
+    describe '#dom_elements_with_events' do
+        it 'returns information about all DOM elements along with their events' do
+            @browser.load( @dom_monitor_url + 'load' )
+            @javascript.dom_elements_with_events.should == @javascript.dom_monitor.elements_with_events
+        end
+    end
+
 
     describe '#timeouts' do
         it 'keeps track of setTimeout() timers' do

@@ -122,9 +122,9 @@ class Worker < Arachni::Browser
     def trigger_events
         root_page = to_page
 
-        each_element_with_events do |info|
-            info[:events].each do |name, _|
-                distribute_event( root_page, info[:tag], name.to_sym )
+        each_element_with_events do |element, events|
+            events.each do |name, _|
+                distribute_event( root_page, element, name.to_sym )
             end
         end
 
@@ -135,12 +135,12 @@ class Worker < Arachni::Browser
     #
     # @see Jobs::EventTrigger
     # @see BrowserCluster#queue
-    def distribute_event( page, tag, event )
+    def distribute_event( page, element, event )
         master.queue @job.forward_as(
             @job.class::EventTrigger,
             {
                 resource: page,
-                tag:      tag,
+                element:  element,
                 event:    event
             }
         )

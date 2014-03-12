@@ -59,7 +59,7 @@ class DOM
 
     def node
         return if !@html
-        Nokogiri::HTML.fragment( @html ).css( watir_type ).first
+        Nokogiri::HTML.fragment( @html ).children.first
     end
 
     def url=(*)
@@ -111,9 +111,13 @@ class DOM
         nil
     end
 
+    def locator
+        @locator||= Browser::ElementLocator.from_node( node )
+    end
+
     # Locates the element in the page.
     def locate
-        browser.locate_element( @html )
+        locator.locate( browser )
     end
 
     # Triggers the event on the subject {#element}.

@@ -28,14 +28,6 @@ describe Arachni::Browser do
         Typhoeus::Request.get( "#{@url}/clear-hit-count" )
     end
 
-    it 'keeps track of which events are expected by each element' do
-        @browser.load( @url + 'event-tracker' )
-        @browser.watir.buttons.first.events.map { |a| a.first }.should == [
-            :click,
-            :onmouseover,
-        ]
-    end
-
     it 'supports HTTPS' do
         url = web_server_url_for( :browser_https ).gsub( 'http', 'https' )
 
@@ -44,30 +36,6 @@ describe Arachni::Browser do
 
         pages_should_have_form_with_input( pages, 'ajax-token' )
         pages_should_have_form_with_input( pages, 'by-ajax' )
-    end
-
-    describe '.events' do
-        it 'returns all DOM events' do
-            described_class.events.sort.should == [
-                :onclick,
-                :ondblclick,
-                :onmousedown,
-                :onmousemove,
-                :onmouseout,
-                :onmouseover,
-                :onmouseup,
-                :onload,
-                :onsubmit,
-                :onreset,
-                :onselect,
-                :onchange,
-                :onfocus,
-                :onblur,
-                :onkeydown,
-                :onkeypress,
-                :onkeyup
-            ].sort
-        end
     end
 
     describe '#initialize' do
@@ -282,32 +250,90 @@ describe Arachni::Browser do
                     { :page => :load },
                     { "#{@url}deep-dom" => :request },
                     { "#{@url}level2" => :request },
-                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :mouseover }
+                    {
+                        {
+                            tag_name: 'a',
+                            attributes: {
+                                'onmouseover' => 'writeButton();',
+                                'href'        => 'javascript:level3();'
+                            }
+                        } => :mouseover
+                    }
                 ],
                 [
                     { :page => :load },
                     { "#{@url}deep-dom" => :request },
                     { "#{@url}level2" => :request },
-                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :click },
+                    {
+                        {
+                            tag_name: 'a',
+                            attributes: {
+                                'onmouseover' => 'writeButton();',
+                                'href'        => 'javascript:level3();'
+                            }
+                        } => :click
+                    },
                     { "#{@url}level4" => :request }
                 ],
                 [
                     { :page => :load },
                     { "#{@url}deep-dom" => :request },
                     { "#{@url}level2" => :request },
-                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :mouseover },
-                    { "<button onclick=\"writeUserAgent();\">" => :click }
+                    {
+                        {
+                            tag_name: 'a',
+                            attributes: {
+                                'onmouseover' => 'writeButton();',
+                                'href'        => 'javascript:level3();'
+                            }
+                        } => :mouseover
+                    },
+                    {
+                        {
+                            tag_name: 'button',
+                            attributes: {
+                                'onclick' => 'writeUserAgent();',
+                            }
+                        } => :click
+                    }
                 ],
                 [
                     { :page => :load },
                     { "#{@url}deep-dom" => :request },
                     { "#{@url}level2" => :request },
-                    { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :click },
+                    {
+                        {
+                            tag_name: 'a',
+                            attributes: {
+                                'onmouseover' => 'writeButton();',
+                                'href'        => 'javascript:level3();'
+                            }
+                        } => :click
+                    },
                     { "#{@url}level4" => :request },
-                    { "<div onclick=\"level6();\" id=\"level5\">" => :click },
+                    {
+                        {
+                            tag_name: 'div',
+                            attributes: {
+                                'onclick' => 'level6();',
+                                'id'      => 'level5'
+                            }
+                        } => :click
+                    },
+
                     { "#{@url}level6" => :request }
                 ]
-            ].map { |transitions| transitions.map { |t| Arachni::Page::DOM::Transition.new( t ).complete } }
+            ].map do |transitions|
+                transitions.map do |t|
+                    element, event = t.first.to_a
+
+                    if element.is_a? Hash
+                        element = described_class::ElementLocator.new( element )
+                    end
+
+                    Arachni::Page::DOM::Transition.new( element => event ).complete
+                end
+            end
         end
 
         context 'with a depth argument' do
@@ -324,16 +350,42 @@ describe Arachni::Browser do
                         { :page => :load },
                         { "#{@url}deep-dom" => :request },
                         { "#{@url}level2" => :request },
-                        { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :mouseover }
+                        {
+                            {
+                                tag_name: 'a',
+                                attributes: {
+                                    'onmouseover' => 'writeButton();',
+                                    'href'        => 'javascript:level3();'
+                                }
+                            } => :mouseover
+                        }
                     ],
                     [
                         { :page => :load },
                         { "#{@url}deep-dom" => :request },
                         { "#{@url}level2" => :request },
-                        { "<a onmouseover=\"writeButton();\" href=\"javascript:level3();\">" => :click },
+                        {
+                            {
+                                tag_name: 'a',
+                                attributes: {
+                                    'onmouseover' => 'writeButton();',
+                                    'href'        => 'javascript:level3();'
+                                }
+                            } => :click
+                        },
                         { "#{@url}level4" => :request }
                     ]
-                ].map { |transitions| transitions.map { |t| Arachni::Page::DOM::Transition.new t } }
+                ].map do |transitions|
+                    transitions.map do |t|
+                        element, event = t.first.to_a
+
+                        if element.is_a? Hash
+                            element = described_class::ElementLocator.new( element )
+                        end
+
+                        Arachni::Page::DOM::Transition.new( element => event ).complete
+                    end
+                end
             end
         end
     end
@@ -351,8 +403,24 @@ describe Arachni::Browser do
             doms[0].transitions.should == [
                 { page: :load },
                 { "#{@url}lots_of_sinks?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}" => :request },
-                { "<a href=\"#\" onmouseover=\"onClick2('blah1', 'blah2', 'blah3');\">" => :mouseover }
-            ].map { |t| Arachni::Page::DOM::Transition.new t }
+                {
+                    {
+                        tag_name:   'a',
+                        attributes: {
+                            'href'        => '#',
+                            'onmouseover' => "onClick2('blah1', 'blah2', 'blah3');"
+                        }
+                    } => :mouseover
+                }
+            ].map do |t|
+                element, event = t.first.to_a
+
+                if element.is_a? Hash
+                    element = described_class::ElementLocator.new( element )
+                end
+
+                Arachni::Page::DOM::Transition.new( element => event ).complete
+            end
 
             doms[0].execution_flow_sink.size.should == 2
 
@@ -412,8 +480,24 @@ describe Arachni::Browser do
             doms[1].transitions.should == [
                 { page: :load },
                 { "#{@url}lots_of_sinks?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}" => :request },
-                { "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">" => :submit }
-            ].map { |t| Arachni::Page::DOM::Transition.new t }
+                {
+                    {
+                        tag_name:   'form',
+                        attributes: {
+                            'id'       => 'my_form',
+                            'onsubmit' => "onClick('some-arg', 'arguments-arg', 'here-arg'); return false;"
+                        }
+                    } => :submit
+                }
+            ].map do |t|
+                element, event = t.first.to_a
+
+                if element.is_a? Hash
+                    element = described_class::ElementLocator.new( element )
+                end
+
+                Arachni::Page::DOM::Transition.new( element => event ).complete
+            end
 
             doms[1].execution_flow_sink.size.should == 2
 
@@ -475,8 +559,24 @@ describe Arachni::Browser do
             doms[0].transitions.should == [
                 { page: :load },
                 { "#{@url}lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub(1)}" => :request },
-                { "<a href=\"#\" onmouseover=\"onClick2('blah1', 'blah2', 'blah3');\">" => :mouseover }
-            ].map { |t| Arachni::Page::DOM::Transition.new t }
+                {
+                    {
+                        tag_name:   'a',
+                        attributes: {
+                            'href'        => '#',
+                            'onmouseover' => "onClick2('blah1', 'blah2', 'blah3');"
+                        }
+                    } => :mouseover
+                }
+            ].map do |t|
+                element, event = t.first.to_a
+
+                if element.is_a? Hash
+                    element = described_class::ElementLocator.new( element )
+                end
+
+                Arachni::Page::DOM::Transition.new( element => event ).complete
+            end
 
             doms[0].data_flow_sink.size.should == 2
 
@@ -536,8 +636,24 @@ describe Arachni::Browser do
             doms[1].transitions.should == [
                 { page: :load },
                 { "#{@url}lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub(1)}" => :request },
-                { "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">" => :submit }
-            ].map { |t| Arachni::Page::DOM::Transition.new t }
+                {
+                    {
+                        tag_name:   'form',
+                        attributes: {
+                            'id'       => 'my_form',
+                            'onsubmit' => "onClick('some-arg', 'arguments-arg', 'here-arg'); return false;"
+                        }
+                    } => :submit
+                }
+            ].map do |t|
+                element, event = t.first.to_a
+
+                if element.is_a? Hash
+                    element = described_class::ElementLocator.new( element )
+                end
+
+                Arachni::Page::DOM::Transition.new( element => event ).complete
+            end
 
             doms[1].data_flow_sink.size.should == 2
 
@@ -1000,13 +1116,25 @@ describe Arachni::Browser do
             @browser.load( @url + '/trigger_events' ).start_capture
 
             elements_with_events = []
-            @browser.each_element_with_events do |info|
+            @browser.each_element_with_events do |*info|
                 elements_with_events << info
             end
 
             elements_with_events.should == [
-                { tag: '<body onmouseover="makePOST();">', events: [[:onmouseover, 'makePOST();']] },
-                { tag: '<div id="my-div" onclick="addForm();">',  events: [[:onclick, 'addForm();']] }
+                [
+                    described_class::ElementLocator.new(
+                        tag_name:   'body',
+                        attributes: { 'onmouseover' => 'makePOST();' }
+                    ),
+                    [[:onmouseover, 'makePOST();']]
+                ],
+                [
+                    described_class::ElementLocator.new(
+                        tag_name:   'div',
+                        attributes: { 'id' => 'my-div', 'onclick' => 'addForm();' }
+                    ),
+                    [[:onclick, 'addForm();']]
+                ]
             ]
         end
 
@@ -1029,21 +1157,60 @@ describe Arachni::Browser do
 
             elements_with_events.should be_empty
         end
+
+        it 'includes registered event handlers'
+        it 'includes attribute event handlers'
+
+        context :a do
+            context 'and the href is not empty' do
+                context 'and it starts with javascript:' do
+                    it 'includes the :click event'
+                end
+
+                context 'and is out of scope' do
+                    it 'is ignored'
+                end
+            end
+        end
+
+        context :input do
+            context 'of type "image"' do
+                it 'includes the :click event'
+            end
+        end
+
+        context :form do
+            context 'and the action is not empty' do
+                context 'and it starts with javascript:' do
+                    it 'includes the :submit event'
+                end
+
+                context 'and is out of scope' do
+                    it 'is ignored'
+                end
+            end
+        end
     end
 
     describe '#trigger_event' do
         it 'triggers the given event on the given tag and captures snapshots' do
             @browser.load( @url + '/trigger_events' ).start_capture
 
-            tags = []
+            locators = []
             @browser.watir.elements.each do |element|
-                tags << element.opening_tag
+                locators << described_class::ElementLocator.new(
+                    tag_name:   element.tag_name,
+                    attributes: described_class.supported_element_attributes_from(
+                        element.tag_name,
+                        element.opening_tag
+                    )
+                )
             end
 
-            tags.each do |tag|
+            locators.each do |element|
                 described_class.events.each do |e|
                     begin
-                        @browser.trigger_event @browser.to_page, tag, e
+                        @browser.trigger_event @browser.to_page, element, e
                     rescue
                         next
                     end
@@ -1073,10 +1240,7 @@ describe Arachni::Browser do
 
         it 'assigns the proper page transitions' do
             pages = @browser.load( @url + '/explore' ).trigger_events.page_snapshots
-
-            transitions = pages.map(&:dom).map(&:transitions)
-
-            transitions.should == [
+            pages.map(&:dom).map(&:transitions).should == [
                 [
                     { :page => :load },
                     { "#{@url}explore" => :request }
@@ -1084,16 +1248,41 @@ describe Arachni::Browser do
                 [
                     { :page => :load },
                     { "#{@url}explore" => :request },
-                    { "<div id=\"my-div\" onclick=\"addForm();\">" => :click },
+                    {
+                        {
+                            tag_name: 'div',
+                            attributes: {
+                                'id'      => 'my-div',
+                                'onclick' => 'addForm();'
+                            }
+                        } => :click
+                    },
                     { "#{@url}get-ajax?ajax-token=my-token" => :request }
                 ],
                 [
                     { :page => :load },
                     { "#{@url}explore" => :request },
-                    { "<a href=\"javascript:inHref();\">" => :click },
+                    {
+                        {
+                            tag_name: 'a',
+                            attributes: {
+                                'href' => 'javascript:inHref();'
+                            }
+                        } => :click
+                    },
                     { "#{@url}href-ajax" => :request },
                 ]
-            ].map { |transitions| transitions.map { |t| Arachni::Page::DOM::Transition.new t } }
+            ].map do |transitions|
+                transitions.map do |t|
+                    element, event = t.first.to_a
+
+                    if element.is_a? Hash
+                        element = described_class::ElementLocator.new( element )
+                    end
+
+                    Arachni::Page::DOM::Transition.new( element => event ).complete
+                end
+            end
         end
 
         it 'ignores differences in text nodes' do

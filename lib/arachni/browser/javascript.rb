@@ -155,6 +155,13 @@ class Javascript
         dom_monitor.digest
     end
 
+    # @return   [Array<Hash>]
+    #   Information about all DOM elements, including any registered event listeners.
+    def dom_elements_with_events
+        return [] if !supported?
+        dom_monitor.elements_with_events
+    end
+
     # @return   [Array<Array>] Arguments for JS `setTimeout` calls.
     def timeouts
         return [] if !supported?

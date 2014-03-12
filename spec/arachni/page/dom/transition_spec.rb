@@ -278,7 +278,10 @@ describe Arachni::Page::DOM::Transition do
             it 'plays it' do
                 pages_should_not_have_form_with_input [@browser.to_page], 'by-ajax'
 
-                transition = described_class.new( '<div id="my-div" onclick="addForm();">' => :click )
+                element = Arachni::Browser::ElementLocator.from_html(
+                    '<div id="my-div" onclick="addForm();">'
+                )
+                transition = described_class.new( element => :click )
                 transition.complete.play( @browser ).should == transition
 
                 pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
@@ -291,9 +294,12 @@ describe Arachni::Page::DOM::Transition do
 
                 pages_should_not_have_form_with_input [@browser.to_page], 'by-ajax'
 
-                transition = described_class.new( '<div id="my-div">' => :onclick )
+                element = Arachni::Browser::ElementLocator.from_html(
+                    '<div id="my-div">'
+                )
+                transition = described_class.new( element => :onclick )
                 transition.complete.play( @browser ).should ==
-                    described_class.new( '<div id="my-div" onclick="addForm();">' => :click )
+                    described_class.new( element => :click )
 
                 pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
             end
@@ -301,17 +307,23 @@ describe Arachni::Page::DOM::Transition do
 
         context 'when the transition could not be played' do
             it 'returns nil' do
-                described_class.new( '<div id="my-diva">' => :click ).
+                element = Arachni::Browser::ElementLocator.from_html(
+                    '<div id="my-diva">'
+                )
+                described_class.new( element => :click ).
                     complete.play( @browser ).should be_nil
             end
         end
 
         context 'when the transition is not playable' do
             it "raises #{described_class::Error::NotPlayable}" do
+                element = Arachni::Browser::ElementLocator.from_html(
+                    '<div id="my-diva">'
+                )
+                transition = described_class.new( element => :load )
+
                 expect do
-                    transition = described_class.new( '<div id="my-div">' => :load )
-                    transition.playable?.should be_false
-                    transition.complete.play( @browser ).should be_nil
+                    transition.complete.play( @browser )
                 end.to raise_error described_class::Error::NotPlayable
             end
         end
@@ -372,7 +384,6 @@ describe Arachni::Page::DOM::Transition do
                     extra: :options
                 }
             }
-
         end
     end
 

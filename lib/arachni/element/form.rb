@@ -97,7 +97,7 @@ class Form < Base
     # @return [Nokogiri::XML::Element]
     def node
         return if !@html
-        Nokogiri::HTML.fragment( @html ).css( DOM.watir_type ).first
+        Nokogiri::HTML.fragment( @html ).children.first
     end
 
     def action=( url )

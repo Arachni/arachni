@@ -5,6 +5,7 @@
 
 require 'watir-webdriver'
 require_relative 'watir/element'
+require_relative 'browser/element_locator'
 require_relative 'browser/javascript'
 
 module Arachni
@@ -150,42 +151,6 @@ class Browser
     def self.has_executable?
         return @has_executable if !@has_executable.nil?
         @has_executable = !!Selenium::WebDriver::PhantomJS.path
-    end
-
-    # @param    [String]  tag_name
-    #   Opening HTML tag of the element.
-    # @return   [Set<Symbol>]
-    #   List of attributes supported by Watir.
-    def self.supported_element_attributes_for( tag_name )
-        @supported_element_attributes_for ||= {}
-        @supported_element_attributes_for[tag_name.to_sym] ||=
-            Set.new( Watir.tag_to_class[tag_name.to_sym].attribute_list )
-    end
-
-    # @param    [String]  tag
-    #   Opening HTML tag of the element.
-    # @return   [Hash]
-    #   Hash with attributes supported by Watir.
-    def self.supported_element_attributes_from( tag )
-        return {} if !tag.is_a?( String )
-
-        tag_name = extract_tag_name( tag )
-
-        Nokogiri::HTML( tag ).css( tag_name ).first.attributes.
-            inject({}) do |h, (k, v)|
-            attribute = k.gsub( '-' ,'_' ).to_sym
-            next h if !supported_element_attributes_for( tag_name ).include?( attribute )
-
-            h[attribute] = v.to_s
-            h
-        end
-    end
-
-    # @param    [String]  tag   Opening HTML tag of the element.
-    # @return   [String] Tag name.
-    def self.extract_tag_name( tag )
-        return if !tag.is_a?( String )
-        tag.match( /<(\w+)\b/ )[1]
     end
 
     def self.events
@@ -453,69 +418,62 @@ class Browser
         skip_states << state
     end
 
-    # @note Will skip invisible elements as they can't be manipulated.
+    # @note Will skip non-visible elements as they can't be manipulated.
     #
     # Iterates over all elements which have events and passes their info to the
     # given block.
     #
-    # @yield [Hash]
-    #   Hash with information about the index of the element, its tag name and
-    #   its applicable events along with their handlers.
-    #
-    #       { tag: '<button id="stuff">', events: [[:onclick, 'addForm();']] }
+    # @yield [ElementLocator,Array<Symbol>]
+    #   Hash with information about the element, its tag name, applicable events
+    #   along with their handlers and attributes.
     def each_element_with_events
-        tries = 0
+        current_url = url
 
-        watir.elements.each do |element|
-            begin
-                next if !element.visible?
+        javascript.dom_elements_with_events.each do |element|
+            tag_name   = element['tag_name']
+            attributes = element['attributes']
 
-                tag_name = element.tag_name
-                tag      = element.opening_tag
-                events   = element.events
-            rescue => e
-                tries += 1
-                next if tries > 5
-
-                print_info "Refreshing page cache because: #{e}"
-                retry
-            end
+            events = element['events'].map { |event, fn| [event.to_sym, fn] } |
+                (self.class.events.flatten.map(&:to_s) & attributes.keys).
+                    map { |event| [event.to_sym, attributes[event]] }
 
             case tag_name
                 when 'a'
-                    href = element.attribute_value( :href )
+                    href = attributes['href'].to_s
 
                     if !href.empty?
                         if href.start_with?( 'javascript:' )
                             events << [ :click, href ]
                         else
-                            next if skip_path?( href )
+                            next if skip_path?( to_absolute( href, current_url ) )
                         end
                     end
 
                 when 'input'
-                    if element.attribute_value( :type ).to_s.downcase == 'image'
+                    if attributes['type'].to_s.downcase == 'image'
                         events << [ :click, 'image' ]
                     end
 
                 when 'form'
-                    action = element.attribute_value( :action )
+                    action = attributes['action'].to_s
 
                     if !action.empty?
                         if action.start_with?( 'javascript:' )
                             events << [ :submit, action ]
                         else
-                            next if skip_path?( action )
+                            next if skip_path?( to_absolute( action, current_url ) )
                         end
                     end
             end
 
-            next if skip_state?( tag ) || events.empty? ||
+            element_to_s = element.to_s
+            next if skip_state?( element_to_s ) || events.empty? ||
                 NO_EVENTS_FOR_ELEMENTS.include?( tag_name.to_sym )
 
-            skip_state tag
+            skip_state element_to_s
 
-            yield( { tag: tag, events: events } )
+            yield ElementLocator.new( tag_name: tag_name, attributes: attributes ),
+                    events
         end
 
         self
@@ -527,15 +485,17 @@ class Browser
     # @return   [Browser]   `self`
     def trigger_events
         pending = Set.new
-        each_element_with_events do |info|
-            pending << info
+
+        each_element_with_events do |*data|
+            pending << data
         end
 
         root_page = to_page
 
-        while (info = pending.shift) do
-            info[:events].each do |name, _|
-                distribute_event( root_page, info[:tag], name.to_sym )
+        while pending.any? do
+            locator, events = pending.shift
+            events.each do |name, _|
+                distribute_event( root_page, locator, name.to_sym )
             end
         end
 
@@ -549,10 +509,10 @@ class Browser
     # on `page`.
     #
     # @param    [Page]    page
-    # @param    [String]  tag
+    # @param    [ElementLocator]  locator
     # @param    [Symbol]  event
-    def distribute_event( page, tag, event )
-        trigger_event( page, tag, event )
+    def distribute_event( page, locator, event )
+        trigger_event( page, locator, event )
     end
 
     # @note Captures page {#page_snapshots}.
@@ -560,33 +520,19 @@ class Browser
     # Triggers `event` on the element described by `tag` on `page`.
     #
     # @param    [Page]    page  Page containing the element's `tag`.
-    # @param    [String]  tag   Opening HTML tag of the element.
+    # @param    [ElementLocator]  element
     # @param    [Symbol]  event Event to trigger.
-    def trigger_event( page, tag, event )
+    def trigger_event( page, element, event )
         event = event.to_sym
+        transition = fire_event( element, event )
 
-        begin
-            element = locate_element( tag )
-        rescue Selenium::WebDriver::Error::UnknownError,
-                Watir::Exception::UnknownObjectException => e
+        # For some reason the located element will linger on for quite a while
+        # and its instances will accumulate quickly.
+        #GC.start
 
-            print_error "Element '#{tag}' disappeared while triggering '#{event}'."
-            print_error
-            print_error e
-            print_error_backtrace e
-
-            print_info 'Could not trigger event because the page has changed' <<
-                           ', capturing a new snapshot.'
-            capture_snapshot
-
-            print_info 'Restoring page.'
-            restore page
-            return
-        end
-
-        if !(transition = fire_event( element, event ))
-            print_info 'Could not trigger event because the page has changed' <<
-                             ', capturing a new snapshot.'
+        if !transition
+            print_info "Could not trigger '#{event}' on '#{element}' because" <<
+                ' the page has changed, capturing a new snapshot.'
             capture_snapshot
 
             print_info 'Restoring page.'
@@ -595,7 +541,7 @@ class Browser
         end
 
         capture_snapshot( transition ).each do |snapshot|
-            print_debug "Found new page variation by triggering '#{event}' on: #{tag}"
+            print_debug "Found new page variation by triggering '#{event}' on: #{element}"
             print_debug 'Page transitions:'
             snapshot.dom.transitions.each { |t| print_debug "-- #{t}" }
         end
@@ -603,19 +549,9 @@ class Browser
         restore page
     end
 
-    # @param    [String]  tag
-    #   Opening HTML tag of the element.
-    # @return   [Watir::HTMLElement]
-    def locate_element( tag )
-        watir.send(
-            self.class.extract_tag_name( tag ),
-            self.class.supported_element_attributes_from( tag )
-        )
-    end
-
     # Triggers `event` on `element`.
     #
-    # @param    [Watir::Element]  element
+    # @param    [Watir::Element, ElementLocator]  element
     # @param    [Symbol]  event
     # @param    [Hash]  options
     # @option options [Hash<Symbol,String=>String>]  :inputs
@@ -626,9 +562,29 @@ class Browser
     # @return   [Page::DOM::Transition, false]
     #   Transition if the operation was successful, `nil` otherwise.
     def fire_event( element, event, options = {} )
-        event = event.to_s.downcase.sub( /^on/, '' ).to_sym
+        event   = event.to_s.downcase.sub( /^on/, '' ).to_sym
+        locator = nil
 
         options[:inputs] = options[:inputs].stringify if options[:inputs]
+
+        if element.is_a? ElementLocator
+            locator = element
+
+            begin
+                element = element.locate( self )
+            rescue Selenium::WebDriver::Error::UnknownError,
+                Watir::Exception::UnknownObjectException => e
+
+                print_error "Element '#{locator}' disappeared while triggering '#{event}'."
+                print_error
+                print_error e
+                print_error_backtrace e
+
+                print_info 'Could not trigger event because the page has changed' <<
+                               ', capturing a new snapshot.'
+                return
+            end
+        end
 
         # The page may need a bit to settle and the element is lazily located
         # by Watir so give it a few tries.
@@ -656,17 +612,25 @@ class Browser
 
         return if !element.visible?
 
-        opening_tag = element.opening_tag
-        tag_name    = element.tag_name
+        if locator
+            opening_tag = locator.to_s
+            tag_name    = locator.tag_name
+        else
+            opening_tag = element.opening_tag
+            tag_name    = element.tag_name
+            locator     = ElementLocator.from_html( opening_tag )
+        end
+
+        tag_name = tag_name.to_sym
 
         call_on_fire_event_blocks( element, event )
 
         tries = 0
         begin
-            transition = Page::DOM::Transition.new( { opening_tag => event }, options ) do
+            transition = Page::DOM::Transition.new( { locator => event }, options ) do
                 had_special_trigger = false
 
-                if tag_name == 'form'
+                if tag_name == :form
                     element.text_fields.each do |input|
                         value = options[:inputs] ?
                             options[:inputs][name_or_id_for( input )] :
@@ -680,7 +644,7 @@ class Browser
                         element.submit
                     end
 
-                elsif tag_name == 'input' && event == :click &&
+                elsif tag_name == :input && event == :click &&
                         element.attribute_value(:type) == 'image'
 
                     had_special_trigger = true
@@ -702,7 +666,9 @@ class Browser
                 wait_for_pending_requests
             end
 
+
             prune_window_responses
+
             transition
         rescue Selenium::WebDriver::Error::UnknownError,
             Watir::Exception::UnknownObjectException => e

@@ -70,7 +70,7 @@ class Transition
     # Events without a DOM depth.
     ZERO_DEPTH     = Set.new([:request])
 
-    # @return   [String]
+    # @return   [Browser::ElementLocator]
     #   HTML element which received the {#event}.
     attr_reader :element
 
@@ -100,7 +100,6 @@ class Transition
         @options = {}
 
         return if !args.any?
-
         start( *args, &block )
     end
 
@@ -114,8 +113,8 @@ class Transition
 
     # @note Will start the timer for {#time}.
     #
-    # @param    [Hash<String,Symbol=>Symbol>]  transition
-    #   `resource => event`
+    # @param    [Hash<Browser::ElementLocator=>Symbol>]  transition
+    #   `element => event`
     # @param    [Hash]  options
     #   Extra options to associate with this transition.
     # @param    [Block] block
@@ -136,7 +135,9 @@ class Transition
 
         element, self.event = transition.to_a.first
 
-        fail Error::InvalidElement if ![Symbol, String].include?( element.class )
+        if ![Symbol, String, Browser::ElementLocator].include?( element.class )
+            fail Error::InvalidElement
+        end
 
         @element = element
 
@@ -187,7 +188,7 @@ class Transition
     #   When the transition is not {#playable?}.
     def play( browser )
         fail Error::NotPlayable, "Transition is not playable: #{self}" if !playable?
-        browser.fire_event browser.locate_element( element ), event, options
+        browser.fire_event element, event, options
     end
 
     # @return   [Bool]

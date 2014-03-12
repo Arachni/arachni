@@ -9,7 +9,7 @@ module Jobs
 class ResourceExploration
 
 # Loads a {#resource} and {Browser#trigger_event triggers} the specified
-# {#event} on the given {#element_index element}.
+# {#event} on the given {#locator element}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class EventTrigger < ResourceExploration
@@ -20,8 +20,8 @@ class EventTrigger < ResourceExploration
     #   Event to trigger on the given {#element_index element}.
     attr_accessor :event
 
-    # @return   [String]
-    attr_accessor :tag
+    # @return   [Browser::ElementLocator]
+    attr_accessor :element
 
     # Loads a {#resource} and {Browser#trigger_event triggers} the specified
     # {#event} on the given {#tag element}.
@@ -29,7 +29,7 @@ class EventTrigger < ResourceExploration
         browser.on_new_page { |page| save_result( page: page ) }
 
         browser.load resource
-        browser.trigger_event( resource, tag, event )
+        browser.trigger_event( resource, element, event )
     end
 
 end

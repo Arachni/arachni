@@ -375,9 +375,11 @@ class Page
     end
 
     def dup
+        # TODO: Maybe self.class.new( _dump() )
         self.deep_clone
     end
 
+    # TODO: Maybe move most of the code to #to_h.
     def _dump( _ )
         h = {}
         [:body, :links, :forms, :cookies, :headers, :cookiejar, :paths,

@@ -17,6 +17,7 @@ describe Arachni::Browser::Javascript::DOMMonitor do
         @browser.load "#{@url}/#{path}"
     end
 
+    let(:javascript) { @javascript }
     subject { @dom_monitor }
 
     after( :each ) do
@@ -33,29 +34,29 @@ describe Arachni::Browser::Javascript::DOMMonitor do
     it 'adds .events property to elements holding the tracked events' do
         load '/events'
 
-        @browser.watir.button(id: 'my-button').events.should == [
+        javascript.run( "return document.getElementById('my-button').events").should == [
             [
-                :click,
+                'click',
                 'function (my_button_click) {}'
             ],
             [
-                :click,
+                'click',
                 'function (my_button_click2) {}'
             ],
             [
-                :onmouseover,
+                'onmouseover',
                 'function (my_button_onmouseover) {}'
             ]
         ]
 
-        @browser.watir.button(id: 'my-button2').events.should == [
+        javascript.run( "return document.getElementById('my-button2').events").should == [
             [
-                :click,
+                'click',
                 'function (my_button2_click) {}'
             ]
         ]
 
-        @browser.watir.button(id: 'my-button3').events.should == []
+        javascript.run( "return document.getElementById('my-button3').events").should be_nil
     end
 
     describe '#digest' do
@@ -119,4 +120,41 @@ describe Arachni::Browser::Javascript::DOMMonitor do
             ].sort
         end
     end
+
+    describe '#elements_with_events' do
+        it 'returns information about all DOM elements along with their events' do
+            load '/events'
+
+            subject.elements_with_events.should == [
+                { 'tag_name' => 'html', 'events' => [], 'attributes' => {}
+                },
+                {
+                    'tag_name' => 'body', 'events' => [], 'attributes' => {}
+                },
+                {
+                    'tag_name'   => 'button',
+                    'events'     => [
+                        ['click', 'function (my_button_click) {}'],
+                        ['click', 'function (my_button_click2) {}'],
+                        ['onmouseover', 'function (my_button_onmouseover) {}']
+                    ],
+                    'attributes' => { 'id' => 'my-button' } },
+                {
+                    'tag_name'   => 'button',
+                    'events'     => [
+                        ['click', 'function (my_button2_click) {}']
+                    ],
+                    'attributes' => { 'id' => 'my-button2' }
+                 },
+                 {
+                     'tag_name' => 'button',
+                     'events' => [],
+                     'attributes' => { 'id' => 'my-button3' }
+                 }
+            ]
+        end
+
+        it 'skips non visible elements'
+    end
+
 end
