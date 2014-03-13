@@ -101,11 +101,13 @@ class DOM
     def submit( options = {}, &block )
         with_browser do |browser|
             prepare_browser( browser, options )
-            trigger
 
+            if !(transition = trigger)
+                block.call
             # If we've wondered to an out-of-scope resource don't bother calling.
             # Can be caused by a JS redirect or something akin to that.
-            if (page = browser.to_page)
+            elsif (page = browser.to_page)
+                page.dom.transitions << transition
                 block.call page.tap { |p| p.request.performer = self }
             end
 

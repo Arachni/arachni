@@ -331,18 +331,18 @@ class Browser
         response.url
     end
 
-    # @param    [String]  url Loads the given URL in the browser.
-    #
-    # @return   [Browser]   `self`
+    # @param    [String]  url
+    #   Loads the given URL in the browser.
+    # @return   [Page::DOM::Transition]
+    #   Transition used to replay the resource visit.
     def goto( url, take_snapshot = true )
-        #@last_url = url = normalize_url( url )
         @last_url = url
 
         ensure_open_window
 
         load_cookies url
 
-        load_code = proc do
+        transition = Page::DOM::Transition.new( { page: :load }, { url: url } ) do
             watir.goto url
 
             @javascript.wait_till_ready
@@ -351,9 +351,7 @@ class Browser
         end
 
         if @add_request_transitions
-            @transitions << Page::DOM::Transition.new( page: :load, &load_code )
-        else
-            load_code.call
+            @transitions << transition
         end
 
         HTTP::Client.update_cookies cookies
@@ -361,7 +359,7 @@ class Browser
         # Capture the page at its initial state.
         capture_snapshot if take_snapshot
 
-        self
+        transition
     end
 
     def close_windows

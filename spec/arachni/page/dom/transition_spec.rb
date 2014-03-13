@@ -317,10 +317,7 @@ describe Arachni::Page::DOM::Transition do
 
         context 'when the transition is not playable' do
             it "raises #{described_class::Error::NotPlayable}" do
-                element = Arachni::Browser::ElementLocator.from_html(
-                    '<div id="my-diva">'
-                )
-                transition = described_class.new( element => :load )
+                transition = described_class.new( 'http://test/' => :request )
 
                 expect do
                     transition.complete.play( @browser )

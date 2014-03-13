@@ -65,7 +65,7 @@ class Transition
     end
 
     # Non-playable events.
-    NON_PLAYABLE = Set.new([:request, :load])
+    NON_PLAYABLE = Set.new([:request])
 
     # Events without a DOM depth.
     ZERO_DEPTH     = Set.new([:request])
@@ -188,6 +188,11 @@ class Transition
     #   When the transition is not {#playable?}.
     def play( browser )
         fail Error::NotPlayable, "Transition is not playable: #{self}" if !playable?
+
+        if element == :page && event == :load
+            return browser.goto options[:url]
+        end
+
         browser.fire_event element, event, options
     end
 

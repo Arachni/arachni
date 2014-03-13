@@ -20,6 +20,23 @@ describe Arachni::Browser do
 
     let( :ua ) { Arachni::Options.http.user_agent }
 
+    def transitions_from_array( transitions )
+        transitions.map do |t|
+            element, event = t.first.to_a
+
+            options = {}
+            if element == :page && event == :load
+                options.merge!( url: @browser.watir.url )
+            end
+
+            if element.is_a? Hash
+                element = described_class::ElementLocator.new( element )
+            end
+
+            Arachni::Page::DOM::Transition.new( { element => event }, options ).complete
+        end
+    end
+
     def hit_count
         Typhoeus::Request.get( "#{@url}/hit-count" ).body.to_i
     end
@@ -236,7 +253,8 @@ describe Arachni::Browser do
 
     describe '#explore_and_flush' do
         it 'handles deep DOM/page transitions' do
-            pages = @browser.load( @url + '/deep-dom' ).explore_and_flush
+            url = @url + '/deep-dom'
+            pages = @browser.load( url ).explore_and_flush
 
             pages_should_have_form_with_input pages, 'by-ajax'
 
@@ -323,17 +341,7 @@ describe Arachni::Browser do
 
                     { "#{@url}level6" => :request }
                 ]
-            ].map do |transitions|
-                transitions.map do |t|
-                    element, event = t.first.to_a
-
-                    if element.is_a? Hash
-                        element = described_class::ElementLocator.new( element )
-                    end
-
-                    Arachni::Page::DOM::Transition.new( element => event ).complete
-                end
-            end
+            ].map { |transitions| transitions_from_array( transitions ) }
         end
 
         context 'with a depth argument' do
@@ -375,17 +383,7 @@ describe Arachni::Browser do
                         },
                         { "#{@url}level4" => :request }
                     ]
-                ].map do |transitions|
-                    transitions.map do |t|
-                        element, event = t.first.to_a
-
-                        if element.is_a? Hash
-                            element = described_class::ElementLocator.new( element )
-                        end
-
-                        Arachni::Page::DOM::Transition.new( element => event ).complete
-                    end
-                end
+                ].map { |transitions| transitions_from_array( transitions ) }
             end
         end
     end
@@ -400,7 +398,7 @@ describe Arachni::Browser do
 
             doms.size.should == 2
 
-            doms[0].transitions.should == [
+            doms[0].transitions.should == transitions_from_array([
                 { page: :load },
                 { "#{@url}lots_of_sinks?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}" => :request },
                 {
@@ -412,15 +410,7 @@ describe Arachni::Browser do
                         }
                     } => :mouseover
                 }
-            ].map do |t|
-                element, event = t.first.to_a
-
-                if element.is_a? Hash
-                    element = described_class::ElementLocator.new( element )
-                end
-
-                Arachni::Page::DOM::Transition.new( element => event ).complete
-            end
+            ])
 
             doms[0].execution_flow_sink.size.should == 2
 
@@ -477,7 +467,7 @@ describe Arachni::Browser do
             event['srcElement'].should == link
             event['type'].should == 'mouseover'
 
-            doms[1].transitions.should == [
+            doms[1].transitions.should == transitions_from_array([
                 { page: :load },
                 { "#{@url}lots_of_sinks?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}" => :request },
                 {
@@ -489,15 +479,7 @@ describe Arachni::Browser do
                         }
                     } => :submit
                 }
-            ].map do |t|
-                element, event = t.first.to_a
-
-                if element.is_a? Hash
-                    element = described_class::ElementLocator.new( element )
-                end
-
-                Arachni::Page::DOM::Transition.new( element => event ).complete
-            end
+            ])
 
             doms[1].execution_flow_sink.size.should == 2
 
@@ -556,7 +538,7 @@ describe Arachni::Browser do
 
             doms.size.should == 2
 
-            doms[0].transitions.should == [
+            doms[0].transitions.should == transitions_from_array([
                 { page: :load },
                 { "#{@url}lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub(1)}" => :request },
                 {
@@ -568,15 +550,7 @@ describe Arachni::Browser do
                         }
                     } => :mouseover
                 }
-            ].map do |t|
-                element, event = t.first.to_a
-
-                if element.is_a? Hash
-                    element = described_class::ElementLocator.new( element )
-                end
-
-                Arachni::Page::DOM::Transition.new( element => event ).complete
-            end
+            ])
 
             doms[0].data_flow_sink.size.should == 2
 
@@ -633,7 +607,7 @@ describe Arachni::Browser do
             event['srcElement'].should == link
             event['type'].should == 'mouseover'
 
-            doms[1].transitions.should == [
+            doms[1].transitions.should == transitions_from_array([
                 { page: :load },
                 { "#{@url}lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub(1)}" => :request },
                 {
@@ -645,15 +619,7 @@ describe Arachni::Browser do
                         }
                     } => :submit
                 }
-            ].map do |t|
-                element, event = t.first.to_a
-
-                if element.is_a? Hash
-                    element = described_class::ElementLocator.new( element )
-                end
-
-                Arachni::Page::DOM::Transition.new( element => event ).complete
-            end
+            ])
 
             doms[1].data_flow_sink.size.should == 2
 
@@ -774,10 +740,10 @@ describe Arachni::Browser do
             @browser.load( @url )
             page = @browser.to_page
 
-            page.dom.transitions.should == [
+            page.dom.transitions.should == transitions_from_array([
                 { page: :load },
                 { @url => :request }
-            ].map { |t| Arachni::Page::DOM::Transition.new t }
+            ])
         end
 
         it "assigns the proper #{Arachni::Page::DOM}#skip_states" do
@@ -1269,17 +1235,7 @@ describe Arachni::Browser do
                     },
                     { "#{@url}href-ajax" => :request },
                 ]
-            ].map do |transitions|
-                transitions.map do |t|
-                    element, event = t.first.to_a
-
-                    if element.is_a? Hash
-                        element = described_class::ElementLocator.new( element )
-                    end
-
-                    Arachni::Page::DOM::Transition.new( element => event ).complete
-                end
-            end
+            ].map { |transitions| transitions_from_array( transitions ) }
         end
 
         it 'ignores differences in text nodes' do
@@ -1365,6 +1321,20 @@ describe Arachni::Browser do
             @browser.source.should include( ua )
         end
 
+        it 'returns a playable transition' do
+            transition = @browser.goto( @url )
+
+            page = @browser.to_page
+            @browser.shutdown
+            @browser = described_class.new
+
+            transition.play( @browser )
+            ua = Arachni::Options.http.user_agent
+            ua.should_not be_empty
+
+            @browser.source.should include( ua )
+        end
+
         context 'when Options#scope_exclude_path_patterns has bee configured' do
             it 'respects scope restrictions' do
                 pages = @browser.load( @url + '/explore' ).start_capture.trigger_events.page_snapshots
@@ -1415,10 +1385,10 @@ describe Arachni::Browser do
                     pages = @browser.page_snapshots
                     pages.size.should == 1
 
-                    pages.first.dom.transitions.should == [
+                    pages.first.dom.transitions.should == transitions_from_array([
                         { page: :load },
                         { @url => :request }
-                    ].map { |t| Arachni::Page::DOM::Transition.new t }
+                    ])
                 end
             end
 
@@ -1435,10 +1405,10 @@ describe Arachni::Browser do
                     pages = @browser.page_snapshots
                     pages.size.should == 1
 
-                    pages.first.dom.transitions.should == [
+                    pages.first.dom.transitions.should == transitions_from_array([
                         { page: :load },
                         { @url => :request }
-                    ].map { |t| Arachni::Page::DOM::Transition.new t }
+                    ])
                 end
             end
         end
@@ -1456,10 +1426,10 @@ describe Arachni::Browser do
                     pages = @browser.page_snapshots
                     pages.size.should == 1
 
-                    pages.first.dom.transitions.should == [
+                    pages.first.dom.transitions.should == transitions_from_array([
                         { page: :load },
                         { @url => :request }
-                    ].map { |t| Arachni::Page::DOM::Transition.new t }
+                    ])
                 end
             end
 
@@ -1476,10 +1446,10 @@ describe Arachni::Browser do
                     pages = @browser.page_snapshots
                     pages.size.should == 1
 
-                    pages.first.dom.transitions.should == [
+                    pages.first.dom.transitions.should == transitions_from_array([
                         { page: :load },
                         { @url => :request }
-                    ].map { |t| Arachni::Page::DOM::Transition.new t }
+                    ])
                 end
             end
         end

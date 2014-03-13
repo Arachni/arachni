@@ -123,14 +123,9 @@ class DOM
             return browser
         end
 
-        # The URL restore failed so navigate to the pure version of the URL and
+        # The URL restore failed, so, navigate to the pure version of the URL and
         # replay its transitions.
-        #
-        # Thankfully, all external resources will have been cached from the
-        # previous attempt at restoring the page, so this operation shouldn't
-        # cause much overhead.
         browser.preload( page )
-        browser.goto page.url, take_snapshot
 
         playables.each do |transition|
             next if transition.play( browser )

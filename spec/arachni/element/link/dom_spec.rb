@@ -110,6 +110,41 @@ describe Arachni::Element::Link::DOM do
             subject.auditor.browser_cluster.wait
             called.should be_true
         end
+
+        it 'returns a playable transition' do
+            inputs = { 'param'  => 'The.Dude' }
+            subject.update inputs
+
+            transition = nil
+            called = false
+            subject.with_browser do |browser|
+                subject.browser = browser
+                browser.load subject.page
+
+                transition = subject.trigger
+
+                page = browser.to_page
+
+                subject.inputs.should == auditable_extract_parameters( page )
+                called = true
+            end
+
+            subject.auditor.browser_cluster.wait
+            called.should be_true
+
+            called = false
+            auditor.with_browser do |browser|
+                browser.load subject.page
+                auditable_extract_parameters( browser.to_page ).should ==
+                    { 'param' => '' }
+
+                transition.play browser
+                auditable_extract_parameters( browser.to_page ).should == inputs
+                called = true
+            end
+            auditor.browser_cluster.wait
+            called.should be_true
+        end
     end
 
 end

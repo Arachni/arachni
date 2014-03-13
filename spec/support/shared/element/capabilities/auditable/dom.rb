@@ -96,8 +96,33 @@ shared_examples_for 'element_dom' do
             called.should be_true
         end
 
-        context 'when the browser wanders to an out-of-scope resource' do
-            it 'does not call the block'
+        it 'adds the submission transition to the Page::DOM#transitions'
+
+        context 'when the element could not be submitted' do
+            it 'calls the block without arguments' do
+                subject.stub( :trigger ) { false }
+                subject.trigger
+
+                page = false
+                subject.submit do |p|
+                    page = p
+                end
+                subject.auditor.browser_cluster.wait
+                page.should be_nil
+            end
+        end
+
+        context 'when Browser#to_page returns nil' do
+            it 'does not call the block' do
+                Arachni::BrowserCluster::Worker.any_instance.stub(:to_page).and_return(nil)
+
+                called = false
+                subject.submit do
+                    called = true
+                end
+                subject.auditor.browser_cluster.wait
+                called.should be_false
+            end
         end
 
         describe :options do

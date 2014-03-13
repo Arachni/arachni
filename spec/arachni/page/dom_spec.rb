@@ -60,6 +60,7 @@ describe Arachni::Page::DOM do
             ].map { |t| described_class::Transition.new t }
 
             dom.playable_transitions.should ==  [
+                { :page                              => :load },
                 { "<body onload='loadStuff();'>"     => :onload },
                 { "<a href='javascript:clickMe();'>" => :click },
             ].map { |t| described_class::Transition.new t }
