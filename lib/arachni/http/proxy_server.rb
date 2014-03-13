@@ -264,9 +264,6 @@ class ProxyServer < WEBrick::HTTPProxyServer
 
         res.header['content-length'] = response.body.bytesize.to_s
         res.body = response.body
-    rescue => e
-        ap e
-        ap e.backtrace
     end
 
     # Transfers headers from the webapp HTTP response to the Proxy HTTP response.
