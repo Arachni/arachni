@@ -82,14 +82,6 @@ class DOM < Capabilities::Auditable::DOM
         :link_dom
     end
 
-    def watir_type
-        self.class.watir_type
-    end
-
-    def self.watir_type
-        :a
-    end
-
     def prepare_data_from_node
         return if !(data = self.class.data_from_node( node ))
 

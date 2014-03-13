@@ -38,14 +38,6 @@ class DOM < Capabilities::Auditable::DOM
         :form_dom
     end
 
-    def watir_type
-        self.class.watir_type
-    end
-
-    def self.watir_type
-        :form
-    end
-
     private
 
     def dup_options
