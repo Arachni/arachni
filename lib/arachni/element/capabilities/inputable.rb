@@ -21,7 +21,7 @@ module Capabilities::Inputable
     #
     # @return   [Hash]
     def inputs
-        @inputs.freeze
+        @inputs
     end
 
     # @param  [Hash]  hash Inputs/params.
@@ -30,7 +30,7 @@ module Capabilities::Inputable
     #
     # @see #inputs
     def inputs=( hash )
-        @inputs = (hash || {}).inject({}) { |h, (k, v)| h[k.to_s] = v.to_s.freeze; h}
+        @inputs = (hash || {}).stringify_recursively_and_freeze
     end
 
     # Checks whether or not the given inputs match the inputs ones.

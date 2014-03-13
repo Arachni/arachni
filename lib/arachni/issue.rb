@@ -200,18 +200,20 @@ class Issue
     # @return   [String]    {#cwe CWE} reference URL.
     def cwe_url
         return if !cwe
-        @cwe_url ||= "http://cwe.mitre.org/data/definitions/#{cwe}.html"
+        @cwe_url ||= "http://cwe.mitre.org/data/definitions/#{cwe}.html".freeze
     end
 
     # @private
     def references=( refs )
-        @references = refs || {}
+        @references = (refs || {}).stringify_recursively_and_freeze
     end
 
-    # @private
-    def signature=( signature )
-        return if !signature
-        @signature = signature.to_s
+    [:name, :description, :remedy_guidance, :remedy_code, :proof,
+     :signature].each do |m|
+        define_method "#{m}=" do |string|
+            return if !string
+            instance_variable_set( "@#{m}".to_sym, string.to_s.freeze )
+        end
     end
 
     # @return   [Hash]

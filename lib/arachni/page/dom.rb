@@ -50,13 +50,22 @@ class DOM
     # @option   options [Array<Hash>]  :transitions
     def initialize( options )
         @page                = options[:page]
-        @url                 = options[:url]                 || @page.url.dup
-        @digest              = options[:digest]
+        self.url             = options[:url]                 || @page.url
+        self.digest          = options[:digest]
         @transitions         = options[:transitions]         || []
         @data_flow_sink      = options[:data_flow_sink]      || []
         @execution_flow_sink = options[:execution_flow_sink] || []
         @skip_states         = options[:skip_states]         ||
             Support::LookUp::HashSet.new( hasher: :persistent_hash )
+    end
+
+    def url=( url )
+        @url = url.freeze
+    end
+
+    def digest=( digest )
+        return if !digest
+        @digest = digest.freeze
     end
 
     # @param    [Transition]    transition

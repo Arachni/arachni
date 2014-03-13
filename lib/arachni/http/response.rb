@@ -69,7 +69,7 @@ class Response < Message
     # @return   [String]    First line of the response.
     def status_line
         return if !headers_string
-        @status_line ||= headers_string.lines.first.to_s.chomp
+        @status_line ||= headers_string.lines.first.to_s.chomp.freeze
     end
 
     # @return [Boolean]
@@ -79,6 +79,10 @@ class Response < Message
         code >= 300 && code <= 399 && !!headers.location
     end
     alias :redirection? :redirect?
+
+    def headers_string=( string )
+        @headers_string = string.freeze
+    end
 
     # @note Depends on the response code.
     #

@@ -48,7 +48,7 @@ class Message
 
     def url=( url )
         @parsed_url = Arachni::URI( url )
-        @url        = @parsed_url.to_s
+        @url        = @parsed_url.to_s.freeze
     end
 
     private

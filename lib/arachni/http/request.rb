@@ -112,7 +112,7 @@ class Request < Message
     #
     # @return [Hash]  Normalized cookies.
     def cookies=( cookies )
-        @cookies = cookies.stringify
+        @cookies = cookies.stringify_recursively_and_freeze
     end
 
     # @note All keys and values will be recursively converted to strings.
@@ -124,7 +124,7 @@ class Request < Message
     #
     # @return [Hash]  Normalized parameters.
     def parameters=( params )
-        @parameters = params.stringify
+        @parameters = params.stringify_recursively_and_freeze
     end
 
     # @return   [Boolean]

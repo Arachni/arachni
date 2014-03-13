@@ -28,7 +28,8 @@ class Hash
     def symbolize_keys( recursively = true )
         symbolize = {}
         each do |k, v|
-            symbolize[k.to_s.to_sym] = (recursively && v.is_a?( Hash ) ? v.symbolize_keys : v)
+            symbolize[k.to_s.to_sym] = (recursively && v.is_a?( Hash ) ?
+                v.symbolize_keys : v)
         end
         symbolize
     end
@@ -36,17 +37,46 @@ class Hash
     # @return [Hash]
     #   Hash with +self+'s keys and values recursively converted to strings.
     def stringify
-        stringified = {}
+        apply_recursively(:to_s)
+    end
+
+    def stringify_recursively_and_freeze
+        modified = {}
 
         each do |k, v|
             if v.is_a?( Hash )
-                stringified[k.to_s] = v.stringify
+                modified[k.to_s.freeze] = v.stringify_recursively_and_freeze
             else
-                stringified[k.to_s] = v.to_s
+                modified[k.to_s.freeze] = v.to_s.freeze
             end
         end
 
-        stringified
+        modified.freeze
+    end
+
+    def apply( method, *args )
+        modified = {}
+
+        each do |k, v|
+            if v.is_a?( Hash )
+                modified[k.send(method, *args)] = v
+            else
+                modified[k.send(method, *args)] = v.send(method, *args)
+            end
+        end
+
+        modified
+    end
+
+    def apply_recursively( method, *args )
+        modified = {}
+
+        each do |k, v|
+            modified[k.send(method, *args)] = v.is_a?( Hash ) ?
+                v.apply_recursively(method, *args) : v.send(method, *args)
+        end
+
+        modified
     end
 
     # @return   [Hash]

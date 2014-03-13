@@ -43,15 +43,15 @@ class DOM
         @parent = options.delete(:parent)
 
         if parent
-            @url    = parent.url.dup    if parent.url
-            @action = parent.action.dup if parent.action
-            @page   = parent.page       if parent.page
-            @html   = parent.html.dup   if parent.html
+            @url    = parent.url.dup.freeze    if parent.url
+            @action = parent.action.dup.freeze if parent.action
+            @page   = parent.page              if parent.page
+            @html   = parent.html.dup.freeze   if parent.html
         else
-            @url    = options[:url]
-            @action = options[:action]
+            @url    = options[:url].freeze
+            @action = options[:action].freeze
             @page   = options[:page]
-            @html   = options[:html]
+            @html   = options[:html].freeze
         end
 
         @audit_options = {}

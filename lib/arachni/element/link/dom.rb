@@ -116,9 +116,9 @@ class DOM < Capabilities::Auditable::DOM
 
         {
             inputs:         inputs,
-            fragment:       fragment,
-            fragment_path:  fragment_path,
-            fragment_query: fragment_query,
+            fragment:       fragment.freeze,
+            fragment_path:  fragment_path.freeze,
+            fragment_query: fragment_query.freeze,
         }
     end
 

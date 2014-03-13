@@ -206,6 +206,8 @@ class Javascript
     def inject( response )
         return false if has_js_initializer?( response )
 
+        body = response.body.dup
+
         # If we've got no taint to trace don't bother...
         if @taint
             # Schedule a tracer update at the beginning of each script block in order
@@ -213,14 +215,14 @@ class Javascript
             #
             # The fact that our update call seems to be taking place before any
             # functions get the chance to be defined doesn't seem to matter.
-            response.body.gsub!(
+            body.gsub!(
                 /<script(.*?)>/i,
                 "\\0\n#{@taint_tracer.stub.function( :update_tracers )}; // Injected by #{self.class}\n"
             )
 
             # Also perform an update after each script block, this is for external
             # scripts.
-            response.body.gsub!(
+            body.gsub!(
                 /<\/script>/i,
                 "\\0\n<script type=\"text/javascript\">#{@taint_tracer.stub.function( :update_tracers )}" <<
                     "</script> <!-- Script injected by #{self.class} -->\n"
@@ -239,7 +241,7 @@ class Javascript
                 #{custom_code}
             </script> <!-- Script injected by #{self.class} -->
 
-            #{response.body}
+            #{body}
         EOHTML
 
         response.headers['content-length'] = response.body.bytesize
@@ -256,7 +258,7 @@ class Javascript
         @scripts ||= {}
         @scripts[filename] ||=
             IO.read( filesystem_path_for_script( filename ) ).
-                gsub( '_token', "_#{token}" )
+                gsub( '_token', "_#{token}" ).freeze
     end
 
     def script_exists?( filename )

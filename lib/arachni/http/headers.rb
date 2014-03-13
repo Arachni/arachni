@@ -38,7 +38,7 @@ class Headers < Hash
     # @param  [String]  field Field name
     # @return [String]  Field value.
     def []( field )
-        super format_field_name( field.to_s.downcase )
+        super format_field_name( field.to_s.downcase ).freeze
     end
 
     # @note `field` will be capitalized appropriately before storing.
@@ -46,8 +46,8 @@ class Headers < Hash
     # @param  [Array<String>, String]  value Field value.
     # @return [String]  Field `value`.
     def []=( field, value )
-        super format_field_name( field.to_s.downcase ),
-              value.is_a?( Array ) ? value : value.to_s
+        super format_field_name( field.to_s.downcase ).freeze,
+              value.is_a?( Array ) ? value : value.to_s.freeze
     end
 
     # @return   [String, nil]   Value of the `Content-Type` field.

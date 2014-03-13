@@ -32,10 +32,7 @@ class ElementLocator
     # @return   [Hash]
     #   Frozen and stringified version of the hash.
     def attributes=( attributes )
-        @attributes = (attributes || {}).inject({}) do |h, (k, v)|
-            h[k.to_s.freeze] = v.to_s.freeze
-            h
-        end.freeze
+        @attributes = (attributes || {}).stringify_recursively_and_freeze
     end
 
     # @return   [Hash]
