@@ -96,6 +96,10 @@ shared_examples_for 'element_dom' do
             called.should be_true
         end
 
+        context 'when the browser wanders to an out-of-scope resource' do
+            it 'does not call the block'
+        end
+
         describe :options do
             describe :custom_code do
                 it 'injects the given code' do

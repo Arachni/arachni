@@ -103,7 +103,11 @@ class DOM
             prepare_browser( browser, options )
             trigger
 
-            block.call browser.to_page.tap { |p| p.request.performer = self }
+            # If we've wondered to an out-of-scope resource don't bother calling.
+            # Can be caused by a JS redirect or something akin to that.
+            if (page = browser.to_page)
+                block.call page.tap { |p| p.request.performer = self }
+            end
 
             @element = nil
             @browser = nil
@@ -112,7 +116,7 @@ class DOM
     end
 
     def locator
-        @locator||= Browser::ElementLocator.from_node( node )
+        @locator ||= Browser::ElementLocator.from_node( node )
     end
 
     # Locates the element in the page.
