@@ -947,47 +947,83 @@ class Browser
         port = nil
         10.times do
             port = available_port
-            @phantomjs_io = IO.popen([ 'phantomjs',
-                            "--webdriver=#{port}",
-                            "--proxy=http://#{@proxy.address}/",
-                            '--ignore-ssl-errors=true',
-                            err: [:child, :out]]
-            )
 
-            @phantomjs_pid = @phantomjs_io.pid
+            read, write = IO.pipe
 
-            begin
-                with_timeout PHANTOMJS_SPAWN_TIMEOUT do
-                    buff = ''
-                    while buff << @phantomjs_io.gets.to_s
-                        break if buff.include? 'GhostDriver - Main - running on port'
-                    end
+            # Really, really awkward code but we need a pipe to a PhantomJS
+            # process which will ignore signals. So, we need a child-container
+            # process to trap signals and ignore them and a IO.popen'ed
+            # PhantomJS grand-child.
+            phantomjs_container = fork do
+                %w(QUIT INT).each do |signal|
+                    next if !Signal.list.has_key?( signal )
+                    trap( signal, 'IGNORE' )
                 end
-                break
-            rescue Timeout::Error
-                kill_phantomjs
+
+                write.sync = true
+
+                io = IO.popen([ 'phantomjs',
+                    "--webdriver=#{port}",
+                    "--proxy=http://#{@proxy.address}/",
+                    '--ignore-ssl-errors=true',
+                    err: [:child, :out]]
+                )
+                Process.detach io.pid
+
+                # Send the PID to the parent right away, he may need to kill
+                # PhantomJS if initialization takes too long.
+                write.puts io.pid.to_s
+
+                # Wait for PhantomJS to initialize.
+                buff = ''
+                while buff << io.gets.to_s
+                    break if buff.include? 'running on port'
+                end
+
+                # All done, we're good to go.
+                write.puts 'ping'
             end
+            Process.detach phantomjs_container
+
+            # First read is the pid.
+            @phantomjs_pid = read.readline.to_i
+
+            # Wait for the container to let us know when PhantomJS is up and
+            # running. If it doesn't make contact in time cleanup and start over.
+            if !IO.select( [read], nil, nil, PHANTOMJS_SPAWN_TIMEOUT )
+                read.close
+                write.close
+
+                kill phantomjs_container
+                kill_phantomjs
+                next
+            end
+
+            read.close
+            write.close
+
+            kill phantomjs_container
+            break
         end
 
         @phantomjs_url = "http://localhost:#{port}"
     end
 
     def kill_phantomjs
-        Process.detach @phantomjs_pid
+        kill @phantomjs_pid
 
-        loop do
+        @phantomjs_pid = nil
+        @phantomjs_url = nil
+    end
+
+    def kill( pid )
+        while sleep 0.1
             begin
-                Process.kill( 'INT', @phantomjs_pid )
+                Process.kill( 'KILL', pid )
             rescue Errno::ESRCH
                 break
             end
         end
-
-        @phantomjs_io.close
-
-        @phantomjs_pid = nil
-        @phantomjs_io  = nil
-        @phantomjs_url = nil
     end
 
     def store_pages?
