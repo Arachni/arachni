@@ -51,7 +51,6 @@ class Worker < Arachni::Browser
 
         @javascript.token = javascript_token
 
-        @stop_signal = Queue.new
         @done_signal = Queue.new
 
         start_capture
@@ -160,10 +159,7 @@ class Worker < Arachni::Browser
 
         # If we've got a job running wait for it to finish before closing
         # the browser otherwise we'll get Selenium errors and zombie processes.
-        if @job
-            @stop_signal << nil
-            @done_signal.pop
-        end
+        @done_signal.pop if @job
 
         super
     end
@@ -176,7 +172,7 @@ class Worker < Arachni::Browser
 
     def start
         @consumer ||= Thread.new do
-            while @stop_signal.empty?
+            while !@shutdown
                 job = master.pop
                 run_job job
                 master.decrease_pending_job( job )
