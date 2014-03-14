@@ -230,8 +230,9 @@ class BrowserCluster
     #
     # @private
     def handle_job_result( result )
+        return if @shutdown
         return if job_done? result.job
-        fail_if_shutdown
+        #fail_if_shutdown
 
         synchronize do
             exception_jail( false ) do
@@ -268,6 +269,8 @@ class BrowserCluster
         @workers.each(&:shutdown)
         @workers.clear
 
+        # Very important to leave these for last, they may contain data
+        # necessary to cleanly handle interrupted jobs.
         @job_callbacks.clear
         @skip_states_per_job.clear
         @pending_jobs.clear
