@@ -19,7 +19,7 @@ module Support::Database
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Queue < Base
 
-    # Default #{max_buffer_size}.
+    # Default {#max_buffer_size}.
     DEFAULT_MAX_BUFFER_SIZE = 100
 
     # @return   [Integer]
@@ -35,7 +35,7 @@ class Queue < Base
         @mutex   = Mutex.new
     end
 
-    # @note Defaults to {DEFAULT_max_buffer_size}.
+    # @note Defaults to {DEFAULT_MAX_BUFFER_SIZE}.
     #
     # @return   [Integer]
     #   How many entries to keep in memory before starting to off-load to disk.

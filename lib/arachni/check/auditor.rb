@@ -10,11 +10,11 @@ module Check
 #
 # There are 3 main types of audit and analysis techniques available:
 #
-# * {Arachni::Element::Capabilities::Auditable::Analysis::Taint Taint analysis}
+# * {Arachni::Element::Capabilities::Analyzable::Taint Taint analysis}
 #   -- {#audit}
-# * {Arachni::Element::Capabilities::Auditable::Analysis::Timeout Timeout analysis}
+# * {Arachni::Element::Capabilities::Analyzable::Timeout Timeout analysis}
 #   -- {#audit_timeout}
-# * {Arachni::Element::Capabilities::Auditable::Analysis::Differential Differential analysis}
+# * {Arachni::Element::Capabilities::Analyzable::Differential Differential analysis}
 #   -- {#audit_differential}
 #
 # It should be noted that actual analysis takes place at the element level,
@@ -432,7 +432,7 @@ module Auditor
     # Uses {#each_candidate_element} to decide which elements to audit.
     #
     # @see OPTIONS
-    # @see Arachni::Element::Capabilities::Auditable::Analysis::Taint
+    # @see Arachni::Element::Capabilities::Analyzable::Taint
     def audit_taint( payloads, opts = {} )
         opts = OPTIONS.merge( opts )
         each_candidate_element( opts[:elements] ) { |e| e.taint_analysis( payloads, opts ) }
@@ -443,7 +443,7 @@ module Auditor
     # Uses {#each_candidate_element} to decide which elements to audit.
     #
     # @see OPTIONS
-    # @see Arachni::Element::Capabilities::Auditable::Analysis::Differential
+    # @see Arachni::Element::Capabilities::Analyzable::Differential
     def audit_differential( opts = {}, &block )
         opts = OPTIONS.merge( opts )
         each_candidate_element( opts[:elements] ) { |e| e.differential_analysis( opts, &block ) }
@@ -454,7 +454,7 @@ module Auditor
     # Uses {#each_candidate_element} to decide which elements to audit.
     #
     # @see OPTIONS
-    # @see Arachni::Element::Capabilities::Auditable::Analysis::Timeout
+    # @see Arachni::Element::Capabilities::Analyzable::Timeout
     def audit_timeout( payloads, opts = {} )
         opts = OPTIONS.merge( opts )
         each_candidate_element( opts[:elements] ) { |e| e.timeout_analysis( payloads, opts ) }

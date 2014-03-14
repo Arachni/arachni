@@ -55,8 +55,8 @@ module Taint
     #   * {Hash} -- Expects {Platform} (as `Symbol`s ) for keys and {Array} of
     #       `payloads` for values. The applicable `payloads` will be
     #       {Platform::Manager#pick picked} from the hash based on
-    #       {Element::Capabilities::Auditable#platforms applicable platforms}
-    #       for the {Element::Capabilities::Auditable#action resource} to be audited.
+    #       {Element::Capabilities::Submitable#platforms applicable platforms}
+    #       for the {Element::Capabilities::Submitable#action resource} to be audited.
     # @param  [Hash]    opts
     #   Options as described in {Arachni::Check::Auditor::OPTIONS} and
     #   {TAINT_OPTIONS}.
