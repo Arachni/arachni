@@ -6,11 +6,15 @@ shared_examples_for 'element_dom' do
     end
 
     describe '#url=' do
-        it 'raises NotImplementedError'
+        it 'raises NotImplementedError' do
+            expect { subject.url = url }.to raise_error NotImplementedError
+        end
     end
 
     describe '#action=' do
-        it 'raises NotImplementedError'
+        it 'raises NotImplementedError' do
+            expect { subject.action = url }.to raise_error NotImplementedError
+        end
     end
 
     it 'supports Marshal serialization'
@@ -99,22 +103,22 @@ shared_examples_for 'element_dom' do
         it 'adds the submission transition to the Page::DOM#transitions'
 
         context 'when the element could not be submitted' do
-            it 'calls the block without arguments' do
+            it 'does not call the block' do
                 subject.stub( :trigger ) { false }
-                subject.trigger
 
-                page = false
-                subject.submit do |p|
-                    page = p
+                called = false
+                subject.submit do
+                    called = true
                 end
                 subject.auditor.browser_cluster.wait
-                page.should be_nil
+                called.should be_false
             end
         end
 
         context 'when Browser#to_page returns nil' do
             it 'does not call the block' do
-                Arachni::BrowserCluster::Worker.any_instance.stub(:to_page).and_return(nil)
+                Arachni::BrowserCluster::Worker.
+                    any_instance.stub(:to_page).and_return(nil)
 
                 called = false
                 subject.submit do
@@ -180,6 +184,18 @@ shared_examples_for 'element_dom' do
             dup.should == subject
         end
 
-        it 'preserves the #parent'
+        it 'preserves the #parent' do
+            subject.dup.parent.should == subject.parent
+        end
+    end
+
+    describe '#to_hash' do
+        it 'includes the #type' do
+            subject.to_hash[:type].should == subject.type
+        end
+
+        it 'is aliased to #to_h' do
+            subject.to_h.should == subject.to_hash
+        end
     end
 end

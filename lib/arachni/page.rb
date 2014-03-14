@@ -48,7 +48,7 @@ class Page
     # @param    [HTTP::Response]    response    HTTP response to parse.
     # @return   [Page]
     def self.from_response( response )
-        new response: response
+        Parser.new( response ).page
     end
 
     # @option options  [String]    :url
@@ -97,6 +97,9 @@ class Page
     # @return   [DOM]   DOM snapshot.
     attr_reader :dom
 
+    # @return    [HTTP::Response]    HTTP response.
+    attr_reader :response
+
     # @return   [Set<Integer>]
     #   Audit whitelist based on {Element::Capabilities::Auditable#audit_scope_id}.
     #
@@ -117,11 +120,8 @@ class Page
         fail ArgumentError, 'Options cannot be empty.' if options.empty?
         options = options.dup
 
-        if response = options.delete(:response)
-            @parser = Parser.new( response )
-        end
-
-        @parser ||= options.delete(:parser)
+        @parser   = options.delete(:parser)
+        @response = @parser.response if @parser
 
         options.each do |k, v|
             dupped = try_dup( v )
@@ -144,6 +144,11 @@ class Page
 
     def performer
         request.performer
+    end
+
+    def parser
+        return if !@response
+        @parser ||= Parser.new( @response )
     end
 
     # @param    [Array<Element::Capabilities::Auditable, Integer>]    list
@@ -179,12 +184,6 @@ class Page
         @do_not_audit_elements = true
     end
 
-    # @return    [HTTP::Response]    HTTP response.
-    def response
-        return if !@parser
-        @parser.response
-    end
-
     # @return    [HTTP::Request]    HTTP request.
     def request
         response.request
@@ -192,7 +191,7 @@ class Page
 
     # @return    [String]    URL of the page.
     def url
-        @url ||= @parser.url
+        @url ||= @response.url
     end
 
     # @return    [String]    URL of the page.
@@ -208,21 +207,24 @@ class Page
 
     # @return    [String]    HTTP response body.
     def body
-        return '' if !@body && !@parser
+        return '' if !@body && !@response
         @body ||= response.body
     end
 
     # @param    [String]    string  Page body.
     def body=( string )
         @links = @forms = @cookies = @document = @has_javascript = nil
-        @parser.body = @body = string.dup.freeze
+
+        @body = string.dup.freeze
+        parser.body = @body if parser
+        @body
     end
 
     # @return    [Array<Element::Link>]
     # @see Parser#links
     def links
         @links ||=
-            assign_page_to_elements( (!@links && !@parser) ? [] : @parser.links )
+            assign_page_to_elements( (!@links && !parser) ? [] : parser.links )
     end
 
     # @param    [Array<Element::Link>]  links
@@ -235,7 +237,7 @@ class Page
     # @see Parser#forms
     def forms
         @forms ||=
-            assign_page_to_elements( (!@forms && !@parser) ? [] : @parser.forms )
+            assign_page_to_elements( (!@forms && !parser) ? [] : parser.forms )
     end
 
     # @param    [Array<Element::Form>]  forms
@@ -249,7 +251,7 @@ class Page
     def cookies
         @cookies ||=
             assign_page_to_elements(
-                (!@cookies && !@parser) ? [] : @parser.cookies_to_be_audited
+                (!@cookies && !parser) ? [] : parser.cookies_to_be_audited
             )
     end
 
@@ -262,7 +264,7 @@ class Page
     # @return    [Array<Element::Header>]   HTTP request headers.
     def headers
         @headers ||=
-            assign_page_to_elements( (!@headers && !@parser) ? [] : @parser.headers )
+            assign_page_to_elements( (!@headers && !parser) ? [] : parser.headers )
     end
 
     # @param    [Array<Element::Headers>]  headers
@@ -274,13 +276,13 @@ class Page
     # @return    [Array<Element::Cookie>]
     #   Cookies extracted from the supplied cookie-jar.
     def cookiejar
-        @cookiejar ||= (!@cookiejar && !@parser) ? [] : @parser.cookie_jar
+        @cookiejar ||= (!@cookiejar && !parser) ? [] : parser.cookie_jar
     end
 
     # @return    [Array<String>]    Paths contained in this page.
     # @see Parser#paths
     def paths
-        @paths ||= (!@paths && !@parser) ? [] : @parser.paths
+        @paths ||= (!@paths && !parser) ? [] : parser.paths
     end
 
     # @return   [Platform] Applicable platforms for the page.
@@ -301,13 +303,20 @@ class Page
 
     # @return   [Nokogiri::HTML]    Parsed {#body HTML} document.
     def document
-        @document ||= (@parser.nil? ? Nokogiri::HTML( body ) : @parser.document)
+        @document ||= (parser.nil? ? Nokogiri::HTML( body ) : parser.document)
     end
 
     def clear_caches
         [@forms, @links, @cookies, @headers].flatten.compact.each { |e| e.page = nil }
         @query_vars = @paths = @document = @forms = @links = @cookies = @headers = nil
         nil
+    end
+
+    def prepare_for_report
+        clear_caches
+        @parser          = nil
+        @dom.digest      = nil
+        @dom.skip_states = nil
     end
 
     # @return   [Boolean]
@@ -343,8 +352,8 @@ class Page
     # @return   [Boolean]
     #   `true` if the body of the page is text-base, `false` otherwise.
     def text?
-        return false if !@parser
-        @parser.text?
+        return false if !response
+        response.text?
     end
 
     # @return   [String]    Title of the page.
@@ -391,7 +400,6 @@ class Page
         h[:response] = response
 
         [:links, :forms, :cookies, :headers] .each do |m|
-            #h.delete m
             next if !h[m]
             h[m] = h[m].map(&:dup).each { |e| e.page = nil }
         end

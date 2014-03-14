@@ -252,18 +252,48 @@ describe Arachni::Issue do
             page.body << 'stuff'
 
             issue.referring_page = page
+            issue_h = issue.to_h
 
-            issue.to_h.should == {
+            dom_h = issue.page.dom.to_h
+            dom_h.delete(:skip_states)
+            dom_h[:transitions] = dom_h[:transitions].map do |t|
+                h = t.to_hash
+                h.delete(:time)
+                h
+            end
+
+            referring_page_dom_h = issue.referring_page.dom.to_h
+            referring_page_dom_h.delete(:skip_states)
+            referring_page_dom_h[:transitions] =
+                referring_page_dom_h[:transitions].map do |t|
+                    h = t.to_hash
+                    h.delete(:time)
+                    h
+                end
+
+            issue_h[:page][:dom][:transitions] =
+                issue_h[:page][:dom][:transitions].map do |h|
+                    h.delete(:time)
+                    h
+                end
+
+            issue_h[:referring_page][:dom][:transitions] =
+                issue_h[:page][:dom][:transitions].map do |h|
+                    h.delete(:time)
+                    h
+                end
+
+            issue_h.should == {
                 name:            "Check name \u2713",
                 description:     'Issue description',
                 vector:          issue.vector.to_h,
                 referring_page:  {
                     body: issue.referring_page.body,
-                    dom:  issue.referring_page.dom.to_h
+                    dom:  referring_page_dom_h
                 },
                 page:            {
                     body: issue.page.body,
-                    dom:  issue.page.dom.to_h
+                    dom:  dom_h
                 },
                 response:        Factory[:response].to_h,
                 platform_name:   :unix,
@@ -343,6 +373,35 @@ describe Arachni::Issue do
                 }
 
                 variations.each_with_index do |variation, i|
+                    dom_h = issue.page.dom.to_h
+                    dom_h.delete(:skip_states)
+                    dom_h[:transitions] = dom_h[:transitions].map do |t|
+                        h = t.to_hash
+                        h.delete(:time)
+                        h
+                    end
+
+                    referring_page_dom_h = page.dom.to_h
+                    referring_page_dom_h.delete(:skip_states)
+                    referring_page_dom_h[:transitions] =
+                        referring_page_dom_h[:transitions].map do |t|
+                            h = t.to_hash
+                            h.delete(:time)
+                            h
+                        end
+
+                    variation[:page][:dom][:transitions] =
+                        variation[:page][:dom][:transitions].map do |h|
+                            h.delete(:time)
+                            h
+                        end
+
+                    variation[:referring_page][:dom][:transitions] =
+                        variation[:page][:dom][:transitions].map do |h|
+                            h.delete(:time)
+                            h
+                        end
+
                     variation.should == {
                         vector:    {
                             method:               :get,
@@ -352,11 +411,11 @@ describe Arachni::Issue do
                         },
                         referring_page:  {
                             body: page.body,
-                            dom:  page.dom.to_h
+                            dom:  referring_page_dom_h
                         },
                         page:            {
                             body: issue.page.body,
-                            dom:  issue.page.dom.to_h
+                            dom:  dom_h
                         },
                         response:  issue.response.to_h,
                         remarks:   { the_dude: %w(Hey!) },

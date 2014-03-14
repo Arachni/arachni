@@ -102,11 +102,9 @@ class DOM
         with_browser do |browser|
             prepare_browser( browser, options )
 
-            if !(transition = trigger)
-                block.call
             # If we've wondered to an out-of-scope resource don't bother calling.
             # Can be caused by a JS redirect or something akin to that.
-            elsif (page = browser.to_page)
+            if (transition = trigger) && (page = browser.to_page)
                 page.dom.transitions << transition
                 block.call page.tap { |p| p.request.performer = self }
             end
@@ -146,6 +144,11 @@ class DOM
     def ==( other )
         hash == other.hash
     end
+
+    def to_h
+        super.merge( type: type )
+    end
+    alias :to_hash :to_h
 
     def marshal_dump
         instance_variables.inject( {} ) do |h, iv|

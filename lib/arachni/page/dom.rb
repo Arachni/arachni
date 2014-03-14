@@ -43,6 +43,8 @@ class DOM
     #   URL of the page as seen by the user-agent, fragments and all.
     attr_accessor :url
 
+    # @return   [Page]
+    #   Page to which this DOM state is attached.
     attr_reader   :page
 
     # @param    [Hash]  options
@@ -64,7 +66,7 @@ class DOM
     end
 
     def digest=( digest )
-        return if !digest
+        return @digest = nil if !digest
         @digest = digest.freeze
     end
 

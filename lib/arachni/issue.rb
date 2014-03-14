@@ -124,12 +124,6 @@ class Issue
         response.request
     end
 
-    def vector=( vector )
-        vector = vector.dup
-        vector.remove_auditor
-        @vector = vector
-    end
-
     # Adds a remark as a heads-up to the end user.
     #
     # @param    [String, Symbol]    author  Component which made the remark.
@@ -190,7 +184,6 @@ class Issue
         !trusted?
     end
 
-    # @private
     def cwe=( id )
         id = id.to_i
         return if id == 0
@@ -203,16 +196,33 @@ class Issue
         @cwe_url ||= "http://cwe.mitre.org/data/definitions/#{cwe}.html".freeze
     end
 
-    # @private
     def references=( refs )
         @references = (refs || {}).stringify_recursively_and_freeze
+    end
+
+    def vector=( vector )
+        vector = vector.dup
+        vector.remove_auditor
+        @vector = vector
+    end
+
+    [:page, :referring_page].each do |m|
+        define_method "#{m}=" do |page|
+            if page
+                page = page.dup
+                page.prepare_for_report
+            end
+            instance_variable_set( "@#{m}".to_sym, page )
+        end
     end
 
     [:name, :description, :remedy_guidance, :remedy_code, :proof,
      :signature].each do |m|
         define_method "#{m}=" do |string|
-            return if !string
-            instance_variable_set( "@#{m}".to_sym, string.to_s.freeze )
+            instance_variable_set(
+                "@#{m}".to_sym,
+                string ? string.to_s.freeze : nil
+            )
         end
     end
 
@@ -257,16 +267,25 @@ class Issue
 
         if variation? || solo?
             if page
+                dom_h = page.dom.to_h
+                dom_h[:transitions] = dom_h[:transitions].map(&:to_hash)
+                dom_h.delete(:skip_states)
+
                 h[:page] = {
                     body: page.body,
-                    dom:  page.dom.to_h
+                    dom:  dom_h
                 }
             end
 
             if referring_page
+                referring_page_dom_h = referring_page.dom.to_h
+                referring_page_dom_h[:transitions] =
+                    referring_page_dom_h[:transitions].map(&:to_hash)
+                referring_page_dom_h.delete(:skip_states)
+
                 h[:referring_page] = {
                     body: referring_page.body,
-                    dom:  referring_page.dom.to_h
+                    dom:  referring_page_dom_h
                 }
             end
 
