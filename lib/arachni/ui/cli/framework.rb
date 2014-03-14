@@ -292,7 +292,7 @@ class Framework
 
         if options.reports.any?
             begin
-                @framework.reports.load( options.reports )
+                @framework.reports.load( options.reports.keys )
             rescue Component::Error::NotFound => e
                 print_error e
                 print_info 'Available reports are:'
