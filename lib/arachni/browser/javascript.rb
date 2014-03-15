@@ -24,6 +24,72 @@ class Javascript
     # @return   [String]    Filesystem directory containing the JS scripts.
     SCRIPT_LIBRARY  = "#{File.dirname( __FILE__ )}/javascript/scripts/"
 
+    NO_EVENTS_FOR_ELEMENTS = Set.new([
+        :base, :bdo, :br, :head, :html, :iframe, :meta, :param, :script, :style,
+        :title, :link
+    ])
+
+    # Events that apply to all elements.
+    GLOBAL_EVENTS = [
+        :onclick,
+        :ondblclick,
+        :onmousedown,
+        :onmousemove,
+        :onmouseout,
+        :onmouseover,
+        :onmouseup
+    ]
+
+    # Special events for each element.
+    EVENTS_PER_ELEMENT = {
+        body: [
+                  :onload
+              ],
+
+        form: [
+                  :onsubmit,
+                  :onreset
+              ],
+
+        # These need to be covered via Watir's API, #send_keys etc.
+        input: [
+                  :onselect,
+                  :onchange,
+                  :onfocus,
+                  :onblur,
+                  :onkeydown,
+                  :onkeypress,
+                  :onkeyup
+              ],
+
+        # These need to be covered via Watir's API, #send_keys etc.
+        textarea: [
+                  :onselect,
+                  :onchange,
+                  :onfocus,
+                  :onblur,
+                  :onkeydown,
+                  :onkeypress,
+                  :onkeyup
+              ],
+
+        select: [
+                  :onchange,
+                  :onfocus,
+                  :onblur
+              ],
+
+        button: [
+                  :onfocus,
+                  :onblur
+              ],
+
+        label: [
+                  :onfocus,
+                  :onblur
+              ]
+    }
+
     # @return   [String]
     #   Token used to namespace the injected JS code and avoid clashes.
     attr_accessor :token
@@ -41,6 +107,10 @@ class Javascript
 
     # @return   [TaintTracer] {Proxy} for the `TaintTracer` JS interface.
     attr_reader :taint_tracer
+
+    def self.events
+        GLOBAL_EVENTS | EVENTS_PER_ELEMENT.values.flatten.uniq
+    end
 
     # @param    [Browser]   browser
     def initialize( browser )
@@ -159,7 +229,18 @@ class Javascript
     #   Information about all DOM elements, including any registered event listeners.
     def dom_elements_with_events
         return [] if !supported?
-        dom_monitor.elements_with_events
+
+        dom_monitor.elements_with_events.map do |element|
+            next if NO_EVENTS_FOR_ELEMENTS.include? element['tag_name'].to_sym
+
+            attributes = element['attributes']
+            element['events'] =
+                element['events'].map { |event, fn| [event.to_sym, fn] } |
+                    (self.class.events.flatten.map(&:to_s) & attributes.keys).
+                        map { |event| [event.to_sym, attributes[event]] }
+
+            element
+        end.compact
     end
 
     # @return   [Array<Array>] Arguments for JS `setTimeout` calls.

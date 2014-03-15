@@ -138,18 +138,19 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                         ['click', 'function (my_button_click2) {}'],
                         ['onmouseover', 'function (my_button_onmouseover) {}']
                     ],
-                    'attributes' => { 'id' => 'my-button' } },
+                    'attributes' => { 'onclick' => 'handler_1()', 'id' => 'my-button' }
+                },
                 {
                     'tag_name'   => 'button',
                     'events'     => [
                         ['click', 'function (my_button2_click) {}']
                     ],
-                    'attributes' => { 'id' => 'my-button2' }
+                    'attributes' => { 'onclick' => 'handler_2()', 'id' => 'my-button2' }
                  },
                  {
                      'tag_name' => 'button',
                      'events' => [],
-                     'attributes' => { 'id' => 'my-button3' }
+                     'attributes' => { 'onclick' => 'handler_3()', 'id' => 'my-button3' }
                  }
             ]
         end

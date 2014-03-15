@@ -33,7 +33,6 @@ describe Arachni::Page::DOM do
         @browser.shutdown
     end
 
-    let( :ua ) { Arachni::Options.http.user_agent }
     let( :dom ) { Factory[:dom] }
     let( :empty_dom ) { create_page.dom }
 
@@ -215,17 +214,19 @@ describe Arachni::Page::DOM do
                 url = "#{@url}restore/by-url"
 
                 @browser.load "#{@url}restore/by-url"
-                page = @browser.explore_and_flush.last
+                pages = @browser.explore_and_flush
+                page  = pages.last
+
 
                 page.url.should == url
                 page.dom.url.should == "#{url}#destination"
-                page.body.should include ua
+                page.body.should include 'final-vector'
 
                 page.dom.transitions.clear
                 page.dom.transitions.should be_empty
 
                 @browser.load page
-                @browser.source.should include ua
+                @browser.source.should include 'final-vector'
             end
         end
 
@@ -238,16 +239,16 @@ describe Arachni::Page::DOM do
 
                 page.url.should == url
                 page.dom.url.should == "#{url}#destination"
-                page.body.should include ua
+                page.body.should include 'final-vector'
 
                 @browser.load page
-                @browser.source.should include ua
+                @browser.source.should include 'final-vector'
 
                 page.dom.transitions.clear
                 page.dom.transitions.should be_empty
 
                 @browser.load page
-                @browser.source.should_not include ua
+                @browser.source.should_not include 'final-vector'
             end
         end
     end

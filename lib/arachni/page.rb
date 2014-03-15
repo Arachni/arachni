@@ -332,7 +332,7 @@ class Page
 
         # Check for event attributes, if there are any then there's JS to be
         # executed.
-        Browser.events.flatten.each do |event|
+        Browser::Javascript.events.flatten.each do |event|
             return @has_javascript = true if document.xpath( "//*[@#{event}]" ).any?
         end
 

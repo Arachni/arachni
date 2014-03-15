@@ -1171,7 +1171,7 @@ describe Arachni::Browser do
             end
 
             locators.each do |element|
-                described_class.events.each do |e|
+                @browser.javascript.class.events.each do |e|
                     begin
                         @browser.trigger_event @browser.to_page, element, e
                     rescue
@@ -1238,24 +1238,26 @@ describe Arachni::Browser do
             ].map { |transitions| transitions_from_array( transitions ) }
         end
 
-        it 'ignores differences in text nodes' do
-            url = @url + '/ever-changing'
-
-            @browser.load( url ).trigger_events
-            @browser.page_snapshots.size.should == 1
-
-            @browser.load( url ).trigger_events
-            @browser.page_snapshots.size.should == 1
+        context 'when nodes with events appear' do
+            it 'captures snapshots'
         end
 
-        it 'ignores differences in text nodes performed via JS' do
-            url = @url + '/ever-changing-via-js'
+        context 'when nodes without events appear' do
+            it 'ignores them'
 
-            @browser.load( url ).trigger_events
-            @browser.page_snapshots.size.should == 1
+            context 'of type' do
+                describe 'a' do
+                    it 'captures snapshots'
+                end
 
-            @browser.load( url ).trigger_events
-            @browser.page_snapshots.size.should == 1
+                describe 'form' do
+                    it 'captures snapshots'
+                end
+
+                describe 'input' do
+                    it 'captures snapshots'
+                end
+            end
         end
 
         it 'follows all javascript links' do

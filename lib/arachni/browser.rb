@@ -45,72 +45,6 @@ class Browser
     # Let the browser take as long as it needs to complete an operation.
     WATIR_COM_TIMEOUT = 3600 # 1 hour.
 
-    # Events that apply to all elements.
-    GLOBAL_EVENTS = [
-        :onclick,
-        :ondblclick,
-        :onmousedown,
-        :onmousemove,
-        :onmouseout,
-        :onmouseover,
-        :onmouseup
-    ]
-
-    # Special events for each element.
-    EVENTS_PER_ELEMENT = {
-        body: [
-            :onload
-        ],
-
-        form: [
-            :onsubmit,
-            :onreset
-        ],
-
-        # These need to be covered via Watir's API, #send_keys etc.
-        input: [
-            :onselect,
-            :onchange,
-            :onfocus,
-            :onblur,
-            :onkeydown,
-            :onkeypress,
-            :onkeyup
-        ],
-
-        # These need to be covered via Watir's API, #send_keys etc.
-        textarea: [
-            :onselect,
-            :onchange,
-            :onfocus,
-            :onblur,
-            :onkeydown,
-            :onkeypress,
-            :onkeyup
-        ],
-
-        select: [
-            :onchange,
-            :onfocus,
-            :onblur
-        ],
-
-        button: [
-            :onfocus,
-            :onblur
-        ],
-
-        label: [
-            :onfocus,
-            :onblur
-        ]
-    }
-
-    NO_EVENTS_FOR_ELEMENTS = Set.new([
-        :base, :bdo, :br, :head, :html, :iframe, :meta, :param, :script, :style,
-        :title, :link
-    ])
-
     HTML_IDENTIFIERS = ['<!doctype html', '<html', '<head', '<body', '<title', '<script']
 
     # @return   [Array<Page::DOM::Transition>]
@@ -151,10 +85,6 @@ class Browser
     def self.has_executable?
         return @has_executable if !@has_executable.nil?
         @has_executable = !!Selenium::WebDriver::PhantomJS.path
-    end
-
-    def self.events
-        Browser::GLOBAL_EVENTS | Browser::EVENTS_PER_ELEMENT.values.flatten.uniq
     end
 
     # @param    [Hash]  options
@@ -421,19 +351,20 @@ class Browser
     # Iterates over all elements which have events and passes their info to the
     # given block.
     #
+    # @param    [Bool]  skip_states
+    #   Mark each element/events as visited and skip it if it has already been
+    #   seen.
+    #
     # @yield [ElementLocator,Array<Symbol>]
     #   Hash with information about the element, its tag name, applicable events
     #   along with their handlers and attributes.
-    def each_element_with_events
+    def each_element_with_events( skip_states = true )
         current_url = url
 
         javascript.dom_elements_with_events.each do |element|
             tag_name   = element['tag_name']
             attributes = element['attributes']
-
-            events = element['events'].map { |event, fn| [event.to_sym, fn] } |
-                (self.class.events.flatten.map(&:to_s) & attributes.keys).
-                    map { |event| [event.to_sym, attributes[event]] }
+            events     = element['events']
 
             case tag_name
                 when 'a'
@@ -464,11 +395,9 @@ class Browser
                     end
             end
 
-            element_to_s = element.to_s
-            next if skip_state?( element_to_s ) || events.empty? ||
-                NO_EVENTS_FOR_ELEMENTS.include?( tag_name.to_sym )
-
-            skip_state element_to_s
+            state = "#{tag_name}#{attributes}#{events}"
+            next if events.empty? || (skip_states && skip_state?( state ))
+            skip_state state if skip_states
 
             yield ElementLocator.new( tag_name: tag_name, attributes: attributes ),
                     events
@@ -477,21 +406,73 @@ class Browser
         self
     end
 
+    # @return   [String]
+    #   Snapshot ID used to determine whether or not a page snapshot has already
+    #   been seen. Uses both elements and their DOM events and possible audit
+    #   workload to determine the ID, as page snapshots should be retained both
+    #   when further browser analysis can be performed and when new element
+    #   audit workload (but possibly without any DOM relevance) is available.
+    def snapshot_id
+        current_url = url
+
+        id = []
+        javascript.dom_elements_with_events.each do |element|
+            tag_name   = element['tag_name']
+            attributes = element['attributes']
+            events     = element['events']
+
+            case tag_name
+                when 'a'
+                    href = attributes['href'].to_s
+
+                    if !href.empty?
+                        if href.start_with?( 'javascript:' )
+                            events << [ :click, href ]
+                        else
+                            absolute = to_absolute( href, current_url )
+                            if !skip_path?( absolute )
+                                events << [ :click, absolute ]
+                            end
+                        end
+                    else
+                        events << [ :click, current_url ]
+                    end
+
+                when 'input'
+                    events << [ :input ]
+
+                when 'form'
+                    action = attributes['action'].to_s
+
+                    if !action.empty?
+                        if action.start_with?( 'javascript:' )
+                            events << [ :submit, action ]
+                        else
+                            absolute = to_absolute( action, current_url )
+                            if !skip_path?( absolute )
+                                events << [ :submit, absolute ]
+                            end
+                        end
+                    else
+                        events << [ :submit, current_url ]
+                    end
+            end
+
+            next if events.empty?
+            id << "#{tag_name}#{attributes}#{events}".hash
+        end
+
+        id.sort.to_s
+    end
+
     # Triggers all events on all elements (**once**) and captures
     # {#page_snapshots page snapshots}.
     #
     # @return   [Browser]   `self`
     def trigger_events
-        pending = Set.new
-
-        each_element_with_events do |*data|
-            pending << data
-        end
-
         root_page = to_page
 
-        while pending.any? do
-            locator, events = pending.shift
+        each_element_with_events do |locator, events|
             events.each do |name, _|
                 distribute_event( root_page, locator, name.to_sym )
             end
@@ -687,13 +668,6 @@ class Browser
         end
     end
 
-    def events_for( tag_name )
-        tag_name = tag_name.to_sym
-        return [] if NO_EVENTS_FOR_ELEMENTS.include?( tag_name )
-
-        (EVENTS_PER_ELEMENT[tag_name] || []) + GLOBAL_EVENTS
-    end
-
     # Starts capturing requests and parses them into elements of pages,
     # accessible via {#captured_pages}.
     #
@@ -782,14 +756,14 @@ class Browser
 
                     capture_snapshot_with_sink( page )
 
-                    unique_id = "#{page.dom.hash}:#{cookies.map(&:name).sort}"
+                    unique_id = self.snapshot_id
                     next if skip_state? unique_id
                     skip_state unique_id
 
                     call_on_new_page_blocks( page )
 
                     if store_pages?
-                        @page_snapshots[unique_id] = page
+                        @page_snapshots[unique_id.hash] = page
                         pages << page
                     end
                 end
@@ -1153,15 +1127,17 @@ class Browser
     end
 
     def request_handler( request, response )
-        return if @javascript.serve( request, response )
-
         return if request.headers['X-Arachni-Browser-Auth'] != auth_token
         request.headers.delete( 'X-Arachni-Browser-Auth' )
 
-        return if !request.url.include?( request_token ) && ignore_request?( request )
+        return if @javascript.serve( request, response )
 
-        if !request.url.include?( request_token ) && @add_request_transitions
-            @request_transitions << Page::DOM::Transition.new( request.url => :request )
+        if !request.url.include?( request_token )
+            return if ignore_request?( request )
+
+            if @add_request_transitions
+                @request_transitions << Page::DOM::Transition.new( request.url => :request )
+            end
         end
 
         # Signal the proxy to not actually perform the request if we have a
@@ -1223,22 +1199,23 @@ class Browser
         case request.method
             when :get
                 inputs = parse_url_vars( request.url )
-                return if inputs.empty?
+                return if !inputs.any?
 
+                # Make this a Link.
                 page.forms |= [Form.new(
-                    url:    @last_url.dup,
-                    action: request.url.dup,
+                    url:    @last_url,
+                    action: request.url,
                     method: request.method,
                     inputs: inputs
                 ).tap(&:override_instance_scope)]
 
             when :post
                 inputs = form_parse_request_body( request.body )
-                return if inputs.empty?
+                return if !inputs.any?
 
                 page.forms |= [Form.new(
-                    url:    @last_url.dup,
-                    action: request.url.dup,
+                    url:    @last_url,
+                    action: request.url,
                     method: request.method,
                     inputs: inputs
                 ).tap(&:override_instance_scope)]

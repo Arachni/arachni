@@ -85,11 +85,26 @@ describe Arachni::Browser::Javascript do
 
     describe '#dom_elements_with_events' do
         it 'returns information about all DOM elements along with their events' do
-            @browser.load( @dom_monitor_url + 'load' )
-            @javascript.dom_elements_with_events.should == @javascript.dom_monitor.elements_with_events
+            @browser.load @dom_monitor_url + 'events'
+            @javascript.dom_elements_with_events.should == [
+                { 'tag_name' => 'body', 'events' => [], 'attributes' => {} },
+                { 'tag_name'   => 'button',
+                  'events'     =>
+                      [[:click, 'function (my_button_click) {}'],
+                       [:click, 'function (my_button_click2) {}'],
+                       [:onmouseover, 'function (my_button_onmouseover) {}'],
+                       [:onclick, 'handler_1()']],
+                  'attributes' => { 'onclick' => 'handler_1()', 'id' => 'my-button' } },
+                { 'tag_name'   => 'button',
+                  'events'     =>
+                      [[:click, 'function (my_button2_click) {}'], [:onclick, 'handler_2()']],
+                  'attributes' => { 'onclick' => 'handler_2()', 'id' => 'my-button2' } },
+                { 'tag_name'   => 'button',
+                  'events'     => [[:onclick, 'handler_3()']],
+                  'attributes' => { 'onclick' => 'handler_3()', 'id' => 'my-button3' } }
+            ]
         end
     end
-
 
     describe '#timeouts' do
         it 'keeps track of setTimeout() timers' do

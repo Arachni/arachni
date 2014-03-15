@@ -12,7 +12,7 @@ get '/restore/by-url' do
 
             function reachDestination(){
                 document.getElementById( "inside-container" ).innerHTML =
-                    "<div id='final-container'>" + navigator.userAgent + "</div>";
+                    "<div id='final-container'><a id='final" + "-vector'>Final vector</a></div>";
             }
 
             level1_ajax = new XMLHttpRequest();
@@ -52,7 +52,7 @@ get '/restore/by-transitions' do
 
             function reachDestination(){
                 document.getElementById( "inside-container" ).innerHTML =
-                    "<div id='final-container'>" + navigator.userAgent + "</div>";
+                    "<div id='final-container'><a id='final" + "-vector'>Final vector</a></div>";
             }
 
             level1_ajax = new XMLHttpRequest();
