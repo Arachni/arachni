@@ -93,14 +93,12 @@ class Trainer
         print_error_backtrace e
     end
 
-    #
     # Sets the current working page and inits the element DB.
     #
     # @param    [Arachni::Page]    page
-    #
     def page=( page )
         init_db_from_page page
-        @page = page.dup
+        @page = page
     end
     alias :init :page=
 
@@ -127,6 +125,9 @@ class Trainer
             return
         end
 
+        # TODO: Maybe not only return new elements because it messes up
+        # the page integrity. Pass the page along if it has new elements and then
+        # clear the caches.
         [ :forms, :links ].each { |type| new_elements[type] = find_new( type ) }
 
         if @updated
