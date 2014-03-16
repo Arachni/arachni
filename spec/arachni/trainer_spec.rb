@@ -67,37 +67,6 @@ describe Arachni::Trainer do
         @trainer   = @framework.trainer
     end
 
-    context 'when Options.fingerprint? is' do
-        context true do
-            it 'fingerprints the page' do
-                Arachni::Options.no_fingerprinting = false
-                Arachni::Options.fingerprint?.should be_true
-
-                @framework.pages.should be_empty
-
-                Arachni::HTTP::Client.request( @url + '/fingerprint', train: true )
-                @framework.run
-
-                @framework.pages.size.should == 1
-                @framework.pages.first.platforms.to_a.should == [:php]
-            end
-        end
-
-        context false do
-            it 'does not fingerprint the page' do
-                Arachni::Options.no_fingerprinting = true
-                Arachni::Options.fingerprint?.should be_false
-
-                @framework.pages.should be_empty
-
-                Arachni::HTTP::Client.request( @url + '/fingerprint', train: true )
-                @framework.run
-
-                @framework.pages.should be_empty
-            end
-        end
-    end
-
     describe 'HTTP requests with "train" set to' do
         describe 'nil' do
             it 'skips the Trainer' do
@@ -269,8 +238,9 @@ describe Arachni::Trainer do
                 pages.size.should == 1
 
                 page = pages.pop
-                page.forms.size.should == 1
-                page.forms.first.inputs.include?( 'input2' ).should be_true
+                new_forms = (page.forms - @page.forms)
+                new_forms.size.should == 1
+                new_forms.first.inputs.include?( 'input2' ).should be_true
             end
         end
 
@@ -281,8 +251,10 @@ describe Arachni::Trainer do
                 @trainer.push( request( url ) ).should be_true
 
                 page = @framework.pages.first
-                page.links.size.should == 1
-                page.links.select { |l| l.inputs.include?( 'link_param' ) }.should be_any
+
+                new_links = (page.links - @page.links)
+                new_links.size.should == 1
+                new_links.select { |l| l.inputs.include?( 'link_param' ) }.should be_any
             end
         end
 

@@ -54,18 +54,13 @@ describe Arachni::ElementFilter do
                         'new_link_input' => 'new_link_value'
                     }
                 )
-                new_links, new_link_cnt = @edb.update_links( [link] | @page.links )
-                new_link_cnt.should == 1
-                new_links.size.should == 1
-                new_links.first.inputs[link.inputs.keys.first].should == link.inputs.values.first
+                @edb.update_links( [link] | @page.links ).should == 1
             end
         end
 
         context 'when there are no new links' do
             it 'returns empty results' do
-                new_links, new_link_cnt = @edb.update_links( @page.links )
-                new_link_cnt.should == 0
-                new_links.should be_empty
+                @edb.update_links( @page.links ).should == 0
             end
         end
     end
@@ -79,18 +74,13 @@ describe Arachni::ElementFilter do
                         'new_form_input' => 'new_form_value'
                     }
                 )
-                new_forms, new_form_cnt = @edb.update_forms( [form] | @page.forms )
-                new_form_cnt.should == 1
-                new_forms.size.should == 1
-                new_forms.first.inputs[form.inputs.keys.first].should == form.inputs.values.first
+                @edb.update_forms( [form] | @page.forms ).should == 1
             end
         end
 
         context 'when there are no new links' do
             it 'returns empty results' do
-                new_forms, new_form_cnt = @edb.update_forms( @page.forms )
-                new_form_cnt.should == 0
-                new_forms.should be_empty
+                @edb.update_forms( @page.forms ).should == 0
             end
         end
     end
@@ -103,9 +93,7 @@ describe Arachni::ElementFilter do
                     inputs: { 'new_cookie_input' => 'new_cookie_value' }
                 )
                 cookies = [cookie] | @page.cookies
-                new_cookies, new_cookie_cnt = @edb.update_cookies( cookies )
-                new_cookie_cnt.should == 1
-                new_cookies.size.should == cookies.size
+                @edb.update_cookies( cookies ).should == 1
             end
         end
 
@@ -115,18 +103,13 @@ describe Arachni::ElementFilter do
                     url:    'http://blah.com',
                     inputs: { 'cookie_input' => 'foo!' }
                 )
-                new_cookies, new_cookie_cnt = @edb.update_cookies( [cookie] | @page.cookies )
-                new_cookie_cnt.should == 0
-                new_cookies.size.should == 2
-                new_cookies.find{ |c| c.name == 'cookie_input' }.value.should == cookie.value
+                @edb.update_cookies( [cookie] | @page.cookies ).should == 0
             end
         end
 
         context 'when there are no new cookies' do
             it 'returns empty results' do
-                new_cookies, new_cookie_cnt = @edb.update_cookies( @page.cookies )
-                new_cookie_cnt.should == 0
-                new_cookies.size.should == 2
+                @edb.update_cookies( @page.cookies ).should == 0
             end
         end
     end

@@ -68,21 +68,19 @@ class Trainer
             return
         end
 
-        @parser = Parser.new( response )
-
-        return false if !@parser.text?
+        return false if !response.text?
 
         skip_message = nil
-        if @trainings_per_url[@parser.url] >= MAX_TRAININGS_PER_URL
+        if @trainings_per_url[response.url] >= MAX_TRAININGS_PER_URL
             skip_message = "Reached maximum trainings (#{MAX_TRAININGS_PER_URL})"
-        elsif redundant_path?( @parser.url )
+        elsif redundant_path?( response.url )
             skip_message = 'Matched redundancy filters'
         elsif skip_resource?( response )
             skip_message = 'Matched exclusion criteria'
         end
 
         if skip_message
-            print_verbose "#{skip_message}, skipping: #{@parser.url}"
+            print_verbose "#{skip_message}, skipping: #{response.url}"
             return false
         end
 
@@ -98,7 +96,7 @@ class Trainer
     # @param    [Arachni::Page]    page
     def page=( page )
         init_db_from_page page
-        @page = page
+        @page = page.dup
     end
     alias :init :page=
 
@@ -114,49 +112,36 @@ class Trainer
     def analyze( response )
         print_debug "Started for response with request ID: ##{response.request.id}"
 
-        new_elements = {
-            cookies: find_new( :cookies )
-        }
+        incoming_page    = response.to_page
+        has_new_elements = has_new?( incoming_page, :cookies )
 
         # if the response body is the same as the page body and
         # no new cookies have appeared there's no reason to analyze the page
-        if response.body == @page.body && !@updated && @page.url == @parser.url
+        if incoming_page.body == @page.body && !has_new_elements &&
+            @page.url == incoming_page.url
             print_debug 'Page hasn\'t changed.'
             return
         end
 
-        # TODO: Maybe not only return new elements because it messes up
-        # the page integrity. Pass the page along if it has new elements and then
-        # clear the caches.
-        [ :forms, :links ].each { |type| new_elements[type] = find_new( type ) }
+        [ :forms, :links ].each { |type| has_new_elements ||= has_new?( incoming_page, type ) }
 
-        if @updated
-            @trainings_per_url[@parser.url] += 1
+        if has_new_elements
+            @trainings_per_url[incoming_page.url] += 1
 
-            page = @parser.page
-
-            # Only keep new elements.
-            new_elements.each { |type, elements| page.send( "#{type}=", elements ) }
-
-            @on_new_page_blocks.each { |block| block.call page }
-
-            # feed the page back to the framework
-            @framework.push_to_page_queue( page )
-
-            @updated = false
+            @on_new_page_blocks.each { |block| block.call incoming_page }
+            @framework.push_to_page_queue( incoming_page )
         end
 
         print_debug 'Training complete.'
     end
 
-    def find_new( element_type )
-        elements, count = send( "update_#{element_type}".to_sym, @parser.send( element_type ) )
-        return [] if count == 0
+    def has_new?( incoming_page, element_type )
+        count = send( "update_#{element_type}".to_sym, incoming_page.send( element_type ) )
+        incoming_page.clear_caches
+        return if count == 0
 
-        @updated = true
         print_info "Found #{count} new #{element_type}."
-
-        elements
+        true
     end
 
 end

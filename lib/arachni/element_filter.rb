@@ -32,97 +32,73 @@ module ElementFilter
         init_cookies page.cookies
     end
 
-    #
     # Initializes @@forms with the cookies found during the crawl/analysis
-    #
     def init_forms( forms )
         forms.each { |form| @@forms << form.id }
     end
 
-    #
     # Initializes @@links with the links found during the crawl/analysis
-    #
     def init_links( links )
         links.each { |link| @@links << link.id }
     end
 
-    #
     # Initializes @@cookies with the cookies found during the crawl/analysis
-    #
     def init_cookies( cookies )
         @@cookies = cookies.map { |c| d = c.dup; d.page = nil; d }
     end
 
-    #
     # Updates @@forms wth new forms that may have dynamically appeared<br/>
     # after analyzing the HTTP responses during the audit.
     #
     # @param    [Array<Element::Form>] forms
-    #
     def update_forms( forms )
-        return [], 0 if forms.size == 0
+        return 0 if forms.size == 0
 
-        form_cnt = 0
-        new_forms ||= []
-
+        new_form_cnt = 0
         forms.each do |form|
             next if @@forms.include?( form.id )
-            @@forms   << form.id
-            new_forms << form
-            form_cnt += 1
+            @@forms << form.id
+            new_form_cnt += 1
         end
-
-        [new_forms, form_cnt]
+        new_form_cnt
     end
 
-    #
     # Updates @@links wth new links that may have dynamically appeared<br/>
     # after analyzing the HTTP responses during the audit.
     #
     # @param    [Array<Element::Link>]    links
-    #
     def update_links( links )
-      return [], 0 if links.size == 0
+      return 0 if links.size == 0
 
-      link_cnt = 0
-      new_links ||= []
+      new_link_cnt = 0
       links.each do |link|
           next if @@links.include?( link.id )
-          @@links   << link.id
-          new_links << link
-          link_cnt += 1
+          @@links << link.id
+          new_link_cnt += 1
       end
 
-      [new_links, link_cnt]
+      new_link_cnt
     end
 
-    #
-    # Updates @@cookies wth new cookies that may have dynamically appeared<br/>
+    # Updates @@cookies wth new cookies that may have dynamically appeared
     # after analyzing the HTTP responses during the audit.
     #
     # @param    [Array<Element::Cookie>]   cookies
-    #
     def update_cookies( cookies )
-        return [], 0 if cookies.size == 0
+        return 0 if cookies.size == 0
 
-        cookie_cnt = 0
-        @new_cookies ||= []
-
+        new_cookie_cnt = 0
         cookies.reverse.each do |cookie|
             @@cookies.each_with_index do |page_cookie, i|
                 if page_cookie.name == cookie.name
                     @@cookies[i] = cookie
                 elsif !cookie_in_jar?( cookie )
-                    @new_cookies << cookie
-                    cookie_cnt += 1
+                    new_cookie_cnt += 1
                 end
             end
         end
 
-        @@cookies.flatten!
-        @@cookies |= @new_cookies
-
-        [@@cookies, cookie_cnt]
+        new_cookie_cnt
     end
 
     def cookie_in_jar?( cookie )
