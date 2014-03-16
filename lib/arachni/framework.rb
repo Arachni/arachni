@@ -261,14 +261,10 @@ class Framework
         http.update_cookies( page.cookiejar )
         perform_browser_analysis( page )
 
-        # Append the request for the retrieval of the next page to the audit
-        # request of the current page to provide a SMOOTH experience.
-
         # Run checks which **don't** benefit from fingerprinting first, so that
         # we can use the responses of their HTTP requests to fingerprint the
         # webapp platforms, so that the checks which **do** benefit from knowing
         # the remote platforms can run more efficiently.
-
         ran = false
         @checks.without_platforms.values.each do |check|
             ran = true
@@ -286,6 +282,11 @@ class Framework
             wait_if_paused
             check_page( check, page )
         end
+
+        # Don't keep platform data more than we have to because they accumulate
+        # fast and can be quite large to store.
+        Platform::Manager.all.each { |_, platforms| platforms.clear }
+
         harvest_http_responses if ran
 
         run_http ||= ran
@@ -297,6 +298,9 @@ class Framework
             Check::Auditor.timeout_audit_run
             run_http = true
         end
+
+        # Makes it easier on the GC.
+        page.clear_caches
 
         call_after_page_audit_blocks( page )
         run_http
@@ -407,7 +411,7 @@ class Framework
     def push_to_page_queue( page )
         return false if skip_page?( page ) || @push_to_page_queue_filter.include?( page )
 
-        @page_queue << page
+        @page_queue << page.clear_caches
         @page_queue_total_size += 1
 
         add_to_sitemap( page )
