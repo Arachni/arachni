@@ -38,11 +38,7 @@ class ResourceExploration < Job
         # modules (or anything else) lazy-load elements and populate the caches
         # there won't be any lingering references to them from the more time
         # consuming browser analysis.
-        if resource.is_a? Page
-            resource = resource.dup
-            resource.clear_caches
-        end
-
+        resource = resource.dup if resource.is_a? Page
         @resource = resource
     end
 

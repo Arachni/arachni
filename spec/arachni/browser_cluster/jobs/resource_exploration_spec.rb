@@ -76,11 +76,11 @@ describe Arachni::BrowserCluster::Jobs::ResourceExploration do
                 restored.should == subject
             end
 
-            it 'clears the page cache' do
+            it 'dups the page' do
                 q = Arachni::Support::Database::Queue.new
                 q.max_buffer_size = 0
 
-                expect_any_instance_of(Arachni::Page).to receive(:clear_caches)
+                expect_any_instance_of(Arachni::Page).to receive(:dup)
 
                 q << subject
             end
