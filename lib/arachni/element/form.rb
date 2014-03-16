@@ -83,7 +83,7 @@ class Form < Base
                 h
             end
 
-        self.html   = options[:html]
+        self.html   = options[:html].freeze
         self.method = options[:method] || :get
 
         @default_inputs = self.inputs.dup.freeze
@@ -320,7 +320,7 @@ class Form < Base
         end
         document.search( '//form' ).map do |cform|
             next if !(form = form_from_element( base_url, cform ))
-            form.url = url
+            form.url = url.freeze
             form
         end.compact
     end
@@ -401,9 +401,9 @@ class Form < Base
 
     def self.form_from_element( url, form )
         c_form          = attributes_to_hash( form.attributes )
-        c_form[:action] = to_absolute( c_form[:action], url )
+        c_form[:action] = to_absolute( c_form[:action], url ).freeze
         c_form[:inputs] = {}
-        c_form[:html]   = form.to_html
+        c_form[:html]   = form.to_html.freeze
 
         %w(textarea input select button).each do |attr|
             c_form[attr] ||= []

@@ -151,10 +151,10 @@ class Link < Base
             next if !href
 
             new(
-                url:    url,
-                action: href,
+                url:    url.freeze,
+                action: href.freeze,
                 inputs: parse_query_vars( href ),
-                html:   link.to_html
+                html:   link.to_html.freeze
             )
         end.compact
     end
