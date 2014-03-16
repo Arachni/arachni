@@ -1139,14 +1139,14 @@ class Browser
             end
         end
 
+        # Signal the proxy to not actually perform the request if we have a
+        # preloaded or cached response for it.
+        return if from_preloads( request, response ) || from_cache( request, response )
+
         # Capture the request as elements of pages -- let's us grab AJAX and
         # other browser requests and convert them into elements we can analyze
         # and audit.
         capture( request )
-
-        # Signal the proxy to not actually perform the request if we have a
-        # preloaded or cached response for it.
-        return if from_preloads( request, response ) || from_cache( request, response )
 
         request.headers['user-agent'] = Options.http.user_agent
 
