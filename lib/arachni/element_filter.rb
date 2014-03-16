@@ -50,7 +50,7 @@ module ElementFilter
     # Initializes @@cookies with the cookies found during the crawl/analysis
     #
     def init_cookies( cookies )
-        @@cookies = cookies.dup
+        @@cookies = cookies.map { |c| d = c.dup; d.page = nil; d }
     end
 
     #
