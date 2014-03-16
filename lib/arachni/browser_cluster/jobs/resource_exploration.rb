@@ -33,25 +33,17 @@ class ResourceExploration < Job
         browser.trigger_events
     end
 
-    def marshal_dump
-        instance_variables.inject( {} ) do |h, iv|
-            obj = instance_variable_get( iv )
-
-            # Since we don't care about the caches (lazy-loaded elements and
-            # such), clearing them makes serializing and un-serializing pages
-            # **much** less resource consuming.
-            if obj.is_a? Page
-                obj = resource.dup
-                obj.clear_caches
-            end
-
-            h[iv] = obj
-            h
+    def resource=( resource )
+        # Get a copy of the page with the caches cleared, this way when the
+        # modules (or anything else) lazy-load elements and populate the caches
+        # there won't be any lingering references to them from the more time
+        # consuming browser analysis.
+        if resource.is_a? Page
+            resource = resource.dup
+            resource.clear_caches
         end
-    end
 
-    def marshal_load( h )
-        h.each { |k, v| instance_variable_set( k, v ) }
+        @resource = resource
     end
 
     def dup
