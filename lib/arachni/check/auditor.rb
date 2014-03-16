@@ -144,17 +144,6 @@ module Auditor
         @framework = framework
     end
 
-    # *OPTIONAL*
-    #
-    # Allows checks to ignore multi-Instance scope restrictions in order to
-    # audit elements that are not on the sanctioned whitelist.
-    #
-    # @return   [Bool]
-    # @abstract
-    def override_instance_scope?
-        false
-    end
-
     # @return   [HTTP::Client]
     def http
         HTTP::Client

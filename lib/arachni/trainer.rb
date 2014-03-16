@@ -156,11 +156,7 @@ class Trainer
         @updated = true
         print_info "Found #{count} new #{element_type}."
 
-        prepare_new_elements( elements )
-    end
-
-    def prepare_new_elements( elements )
-        elements.flatten.map { |elem| elem.override_instance_scope; elem }
+        elements
     end
 
 end

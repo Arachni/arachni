@@ -53,15 +53,6 @@ shared_examples_for 'auditable' do |options = {}|
     describe '#dup' do
         let(:dupped) { auditable.dup }
 
-        it 'preserves #override_instance_scope' do
-            auditable.override_instance_scope?.should be_false
-            dupped.override_instance_scope?.should == auditable.override_instance_scope?
-
-            dupped.override_instance_scope
-            dupped.override_instance_scope?.should_not == auditable.override_instance_scope?
-            dupped.dup.override_instance_scope?.should == dupped.override_instance_scope?
-        end
-
         it 'preserves #audit_options' do
             audited = nil
             dupped.audit( seed ) { |_, m| audited = m }
@@ -652,76 +643,6 @@ shared_examples_for 'auditable' do |options = {}|
                 auditable.audit( seed ) { ran = true }.should be_true
                 run
                 ran.should be_true
-            end
-        end
-
-        describe '.restrict_to_elements' do
-            after { Arachni::Element::Capabilities::Auditable.reset_instance_scope }
-
-            context 'when set' do
-                it 'restricts the audit to the provided elements' do
-                    scope_id_arr = [ auditable.audit_scope_id ]
-                    Arachni::Element::Capabilities::Auditable.restrict_to_elements( scope_id_arr )
-                    performed = false
-                    other.audit( '' ){ performed = true }
-                    run
-                    performed.should be_false
-
-                    performed = false
-                    auditable.audit( '' ){ performed = true }
-                    run
-                    performed.should be_true
-                end
-
-                describe '#override_instance_scope' do
-                    after { other.reset_scope_override }
-
-                    context 'when called' do
-                        it 'overrides scope restrictions' do
-                            scope_id_arr = [ auditable.audit_scope_id ]
-                            Arachni::Element::Capabilities::Auditable.restrict_to_elements( scope_id_arr )
-                            performed = false
-                            other.audit( '' ){ performed = true }
-                            run
-                            performed.should be_false
-
-                            other.override_instance_scope
-                            performed = false
-                            other.audit( '' ){ performed = true }
-                            run
-                            performed.should be_true
-                        end
-
-                        describe '#override_instance_scope?' do
-                            it 'returns true' do
-                                other.override_instance_scope
-                                other.override_instance_scope?.should be_true
-                            end
-                        end
-                    end
-
-                    context 'when not called' do
-                        describe '#override_instance_scope?' do
-                            it 'returns false' do
-                                other.override_instance_scope?.should be_false
-                            end
-                        end
-                    end
-                end
-            end
-
-            context 'when not set' do
-                it 'does not impose audit restrictions' do
-                    performed = false
-                    other.audit( '' ){ performed = true }
-                    run
-                    performed.should be_true
-
-                    performed = false
-                    auditable.audit( '' ){ performed = true }
-                    run
-                    performed.should be_true
-                end
             end
         end
     end

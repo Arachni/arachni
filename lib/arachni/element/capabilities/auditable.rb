@@ -61,29 +61,6 @@ module Auditable
     end
     reset
 
-    # Removes workload restrictions and allows all elements to be audited.
-    def self.reset_instance_scope
-        @@restrict_to_elements = Support::LookUp::HashSet.new( hasher: :to_i )
-    end
-    reset_instance_scope
-
-    # Restricts the audit to a specific set of elements.
-    #
-    # *Caution*: Each call overwrites the last.
-    #
-    # @param    [Array<String,Integer>]    elements
-    #   Element audit IDs as returned by {#audit_scope_id}.
-    #
-    # @see audit_scope_id
-    def self.restrict_to_elements( elements )
-        self.reset_instance_scope
-        elements.each { |elem| @@restrict_to_elements << elem }
-    end
-
-    def self.update_element_restrictions( elements )
-        elements.each { |elem| @@restrict_to_elements << elem }
-    end
-
     # @param    [Block] block
     #   Block to decide whether an element should be skipped or not.
     #
@@ -97,30 +74,6 @@ module Auditable
     def initialize( options )
         super
         @audit_options = {}
-    end
-
-    # When working in High Performance Grid mode the instances have
-    # a very specific list of elements which they are allowed to audit.
-    #
-    # Elements which do not fit the scope are ignored.
-    #
-    # When called, the element will override the scope and be audited
-    # no-matter what.
-    #
-    # This is mainly used on elements discovered during audit-time by the trainer.
-    def override_instance_scope
-        @override_instance_scope = true
-    end
-
-    def reset_scope_override
-        @override_instance_scope = false
-    end
-
-    # Does this element override the instance scope?
-    #
-    # @see override_instance_scope
-    def override_instance_scope?
-        @override_instance_scope ||= false
     end
 
     # Provides a more generalized audit ID which does not take into account
@@ -287,7 +240,6 @@ module Auditable
     private
 
     def copy_auditable( other )
-        other.override_instance_scope if override_instance_scope?
         other.auditor       = self.auditor
         other.audit_options = self.audit_options.dup
         other
@@ -441,17 +393,6 @@ module Auditable
         exception_jail( false ){ block.call( response, response.request.performer )}
     end
 
-    def within_scope?
-        auditor_override_instance_scope = false
-        begin
-            auditor_override_instance_scope = auditor.override_instance_scope?
-        rescue
-        end
-
-        override_instance_scope? || auditor_override_instance_scope ||
-        @@restrict_to_elements.empty? || @@restrict_to_elements.include?( audit_scope_id )
-    end
-
     # Checks whether or not an audit has been already performed.
     #
     # @param  [String]  elem_audit_id  a string returned by {#audit_id}
@@ -460,9 +401,6 @@ module Auditable
     def audited?( elem_audit_id )
         if @@audited.include?( elem_audit_id )
             print_debug 'Skipping, already audited.'
-            true
-        elsif !within_scope?
-            print_debug "Skipping, out of scope (#{audit_scope_id})."
             true
         else
             false

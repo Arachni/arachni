@@ -1721,7 +1721,6 @@ describe Arachni::Browser do
                 form.action.should == @url + 'get-ajax?ajax-token=my-token'
                 form.inputs.should == { 'ajax-token' => 'my-token' }
                 form.method.should == :get
-                form.override_instance_scope?.should be_true
             end
         end
 
@@ -1740,7 +1739,6 @@ describe Arachni::Browser do
                 form.action.should == @url + 'post-ajax'
                 form.inputs.should == { 'post-name' => 'post-value' }
                 form.method.should == :post
-                form.override_instance_scope?.should be_true
             end
         end
     end

@@ -1210,7 +1210,7 @@ class Browser
                     action: request.url,
                     method: request.method,
                     inputs: inputs
-                ).tap(&:override_instance_scope)]
+                )]
 
             when :post
                 inputs = form_parse_request_body( request.body )
@@ -1221,7 +1221,7 @@ class Browser
                     action: request.url,
                     method: request.method,
                     inputs: inputs
-                ).tap(&:override_instance_scope)]
+                )]
         end
 
         @captured_pages << page if store_pages?

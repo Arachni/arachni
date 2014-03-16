@@ -154,11 +154,6 @@ module Mutable
 
         elem = self.dup
 
-        # When under HPG mode element auditing is strictly regulated
-        # and when we flip params we essentially create a new element
-        # which won't be on the whitelist.
-        elem.override_instance_scope
-
         elem.affected_input_name = 'Parameter flip'
         elem[injection_str]      = seed
         elem.seed                = injection_str
