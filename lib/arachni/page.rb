@@ -152,7 +152,13 @@ class Page
 
     def parser
         return if !@response
-        @parser ||= Parser.new( @response )
+        return @parser if @parser
+
+        @parser = Parser.new( @response )
+
+        # The page may have a browser-assigned body, set it as the one to parse.
+        @parser.body = body
+        @parser
     end
 
     # @param    [Array<Element::Capabilities::Auditable, Integer>]    list
@@ -423,7 +429,7 @@ class Page
             next if !@has_custom_elements.include?( m )
             h[m] = instance_variable_get( "@#{m}".to_sym )
 
-            if !h[m]
+            if !h[m] || h[m].empty?
                 h.delete( m )
                 next
             end
