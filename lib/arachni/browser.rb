@@ -1140,6 +1140,11 @@ class Browser
             end
         end
 
+        # Capture the request as elements of pages -- let's us grab AJAX and
+        # other browser requests and convert them into elements we can analyze
+        # and audit.
+        capture( request, response )
+
         # Signal the proxy to not actually perform the request if we have a
         # preloaded or cached response for it.
         return if from_preloads( request, response ) || from_cache( request, response )
@@ -1159,11 +1164,6 @@ class Browser
         end
 
         return if skip_path?( response.url )
-
-        # Capture the request as elements of pages -- let's us grab AJAX and
-        # other browser requests and convert them into system elements we can
-        # analyze and audit.
-        capture( request, response )
 
         intercept response
         save_response response
@@ -1192,9 +1192,12 @@ class Browser
     end
 
     def capture( request, response )
-        return if !capture?
+        return if !@last_url || !capture?
 
-        page = response.to_page
+        page = Page.from_data( url: @last_url )
+        page.response.request = request
+        page.dom.url = @last_dom_url
+        page.dom.push_transition Page::DOM::Transition.new( request.url => :request )
 
         case request.method
             when :get
