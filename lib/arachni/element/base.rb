@@ -37,7 +37,7 @@ class Base
             fail 'Needs :url or :action option.'
         end
 
-        @initialized_options = options.deep_clone
+        @initialized_options = options.dup
         self.url = options[:url] || options[:action]
     end
 
@@ -63,12 +63,12 @@ class Base
     # @return  [String]
     #   URL of the page that owns the element.
     def url
-        @url.freeze
+        @url
     end
 
     # @see #url
     def url=( url )
-        @url = normalize_url( url )
+        @url = normalize_url( url ).freeze
     end
 
     # @return [Symbol]  Element type.
