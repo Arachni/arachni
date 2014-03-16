@@ -721,9 +721,8 @@ class Browser
     def to_page
         return if !(r = response)
 
-        page         = r.deep_clone.to_page
-        page.body    = source
-        page.cookies |= cookies
+        page      = r.to_page
+        page.body = source
 
         page.dom.url                 = watir.url
         page.dom.digest              = @javascript.dom_digest
@@ -1143,7 +1142,7 @@ class Browser
         # Capture the request as elements of pages -- let's us grab AJAX and
         # other browser requests and convert them into elements we can analyze
         # and audit.
-        capture( request, response )
+        capture( request )
 
         # Signal the proxy to not actually perform the request if we have a
         # preloaded or cached response for it.
@@ -1191,7 +1190,7 @@ class Browser
             Options.scope.auto_redundant_path?( request.url )
     end
 
-    def capture( request, response )
+    def capture( request )
         return if !@last_url || !capture?
 
         page = Page.from_data( url: @last_url )
