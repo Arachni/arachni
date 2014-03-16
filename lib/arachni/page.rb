@@ -123,6 +123,10 @@ class Page
         @parser   = options.delete(:parser)
         @response = @parser.response if @parser
 
+        # We need to know whether or not the page has been dynamically updated
+        # with elements, in order to optimize #dup and #hash operations.
+        @has_custom_elements = Set.new
+
         options.each do |k, v|
             dupped = try_dup( v )
             begin
@@ -230,6 +234,7 @@ class Page
     # @param    [Array<Element::Link>]  links
     # @see Parser#links
     def links=( links )
+        @has_custom_elements << :links
         @links = assign_page_to_elements( links )
     end
 
@@ -243,6 +248,7 @@ class Page
     # @param    [Array<Element::Form>]  forms
     # @see Parser#forms
     def forms=( forms )
+        @has_custom_elements << :forms
         @forms = assign_page_to_elements( forms )
     end
 
@@ -258,6 +264,7 @@ class Page
     # @param    [Array<Element::Cookies>]  cookies
     # @see Parser#cookies
     def cookies=( cookies )
+        @has_custom_elements << :cookies
         @cookies = assign_page_to_elements( cookies )
     end
 
@@ -270,6 +277,7 @@ class Page
     # @param    [Array<Element::Headers>]  headers
     # @see Parser#headers
     def headers=( headers )
+        @has_custom_elements << :headers
         @headers = assign_page_to_elements( headers )
     end
 
@@ -372,7 +380,17 @@ class Page
     alias :to_hash :to_h
 
     def hash
-        "#{dom.playable_transitions.hash}:#{body.hash}:#{elements.map(&:hash).sort}".hash
+        element_hashes = []
+        [:links, :forms, :cookies, :headers ].each do |type|
+            next if !@has_custom_elements.include? type
+
+            list = instance_variable_get( "@#{type}".to_sym )
+            next if !list
+
+            element_hashes |= send(type).map(&:hash)
+        end
+
+        "#{dom.playable_transitions.hash}:#{body.hash}#{element_hashes.sort}".hash
     end
 
     def ==( other )
@@ -384,29 +402,36 @@ class Page
     end
 
     def dup
-        # TODO: Maybe self.class.new( _dump() )
-        self.deep_clone
+        self.class.new to_initialization_options
     end
 
-    # TODO: Maybe move most of the code to #to_h.
-    def _dump( _ )
+    def to_initialization_options
         h = {}
-        [:body, :links, :forms, :cookies, :headers, :cookiejar, :paths,
-         :element_audit_whitelist].each do |m|
-            h[m] = instance_variable_get( "@#{m}".to_sym )
+        [:body, :cookiejar, :element_audit_whitelist].each do |m|
+            h[m] = try_dup( instance_variable_get( "@#{m}".to_sym ) )
             h.delete( m ) if !h[m]
+        end
+
+        [:links, :forms, :cookies, :headers ].each do |m|
+            next if !@has_custom_elements.include?(m)
+            h[m] = instance_variable_get( "@#{m}".to_sym )
+
+            if !h[m]
+                h.delete( m )
+                next
+            end
+
+            h[m] = h[m].dup.each { |e| e.page = nil }
         end
 
         h[:response] = response
 
-        [:links, :forms, :cookies, :headers] .each do |m|
-            next if !h[m]
-            h[m] = h[m].map(&:dup).each { |e| e.page = nil }
-        end
+        h[:dom] = dom.to_h.inject({}) { |dh, (k,v)| dh[k] = try_dup( v ); dh }
+        h
+    end
 
-        h[:dom] = dom.to_h
-
-        Marshal.dump( h )
+    def _dump( _ )
+        Marshal.dump( to_initialization_options )
     end
 
     def self._load( data )
