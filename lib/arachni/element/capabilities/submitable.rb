@@ -99,7 +99,7 @@ module Capabilities::Submitable
     alias :eql? :==
 
     def hash
-        "#{action}:#{method}:#{inputs}}".hash
+        "#{type}:#{action}:#{method}:#{inputs}}".hash
     end
 
     def dup
