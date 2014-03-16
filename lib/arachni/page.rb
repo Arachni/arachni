@@ -316,8 +316,15 @@ class Page
 
     def clear_caches
         [@forms, @links, @cookies, @headers].flatten.compact.each { |e| e.page = nil }
-        @query_vars = @paths = @document = @forms = @links = @cookies = @headers = nil
-        nil
+        @query_vars = @paths = @document = @parser = nil
+
+        # Clear element caches for lists which have not been externally modified.
+        [:links, :forms, :cookies, :headers ].each do |type|
+            next if @has_custom_elements.include? type
+            instance_variable_set( "@#{type}".to_sym, nil )
+        end
+
+        self
     end
 
     def prepare_for_report
@@ -387,7 +394,7 @@ class Page
             list = instance_variable_get( "@#{type}".to_sym )
             next if !list
 
-            element_hashes |= send(type).map(&:hash)
+            element_hashes |= list.map(&:hash)
         end
 
         "#{dom.playable_transitions.hash}:#{body.hash}#{element_hashes.sort}".hash
@@ -413,7 +420,7 @@ class Page
         end
 
         [:links, :forms, :cookies, :headers ].each do |m|
-            next if !@has_custom_elements.include?(m)
+            next if !@has_custom_elements.include?( m )
             h[m] = instance_variable_get( "@#{m}".to_sym )
 
             if !h[m]
