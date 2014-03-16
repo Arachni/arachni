@@ -411,6 +411,15 @@ describe Arachni::Platform::Manager do
         end
     end
 
+    describe '#clear' do
+        it 'clear the platforms' do
+            platforms.update( [:unix, :jsp] )
+            platforms.should be_any
+            platforms.clear
+            platforms.should be_empty
+        end
+    end
+
     describe '#update' do
         context 'with valid platforms' do
             it 'updates self with the given platforms' do

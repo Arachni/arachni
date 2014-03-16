@@ -433,6 +433,10 @@ class Manager
         !empty?
     end
 
+    def clear
+        @platforms.clear
+    end
+
     # @param    [Enumerable] enum Enumerable object containing platforms.
     # @return   [Manager] Updated `self`.
     # @raise    [Error::Invalid]  On {#invalid?} platforms.
