@@ -10,9 +10,6 @@ class Message
     # @return   [String]    Resource location.
     attr_accessor :url
 
-    # @return [Arachni::URI]  Parsed version of {#url}.
-    attr_reader :parsed_url
-
     # @return [String]  HTTP version.
     attr_accessor :version
 
@@ -46,9 +43,13 @@ class Message
         @version ||= '1.1'
     end
 
+    def parsed_url
+        # Don't cache this, that's already handled by the URI parser's own cache.
+        Arachni::URI( url )
+    end
+
     def url=( url )
-        @parsed_url = Arachni::URI( url )
-        @url        = @parsed_url.to_s.freeze
+        @url = Arachni::URI( url ).to_s.freeze
     end
 
     private
