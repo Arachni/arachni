@@ -62,6 +62,60 @@ describe Arachni::Platform::Manager do
         end
     end
 
+    describe '.ignore' do
+        it 'excludes resources matching the key from fingerprinting' do
+            url = 'http://stuff/'
+            page = Arachni::Page.from_data( url: url )
+
+            described_class.fingerprint?( page ).should be_true
+
+            described_class.ignore described_class.make_key( url )
+            described_class.fingerprint?( page ).should be_false
+        end
+    end
+
+    describe '.clear_all_and_lock' do
+        it 'clears the platforms' do
+            described_class.all.should be_empty
+
+            described_class.fingerprint page
+            described_class.all.should be_any
+
+            described_class.clear_all_and_lock
+            described_class.all.should be_empty
+        end
+
+        it 'prohibits fingerprinting of previously cleared resources' do
+            described_class.fingerprint page
+            described_class.all.should be_any
+
+            described_class.clear_all_and_lock
+            described_class.fingerprint page
+            described_class.all.should be_empty
+        end
+    end
+
+    describe '.ignore?' do
+        context 'when the key has been marked as ignored' do
+            it 'returns true' do
+                url = 'http://stuff/'
+                page = Arachni::Page.from_data( url: url )
+
+                described_class.ignore described_class.make_key( url )
+                described_class.ignore?( url ).should be_true
+            end
+        end
+
+        context 'when the key has not been marked as ignored' do
+            it 'returns false' do
+                url = 'http://stuff/'
+                page = Arachni::Page.from_data( url: url )
+
+                described_class.ignore?( url ).should be_false
+            end
+        end
+    end
+
     describe '.fingerprint?' do
         Arachni::Options.do_not_fingerprint
         page = Arachni::Page.from_url( "#{web_server_url_for( :auditor )}/s.php" )

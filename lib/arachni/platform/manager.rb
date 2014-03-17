@@ -151,6 +151,22 @@ class Manager
         rack:   'Rack'
     }
 
+    def self.synchronize( &block )
+        @mutex.synchronize( &block )
+    end
+
+    def self.ignore( key )
+        synchronize do
+            @ignore << key
+        end
+    end
+
+    def self.ignore?( url )
+        synchronize do
+            @ignore.include? make_key( url )
+        end
+    end
+
     def self.find_type( platform )
         @find_type ||= {}
 
@@ -194,6 +210,10 @@ class Manager
         set Hash.new
         @manager.clear if @manager
         @manager = nil
+
+        @mutex  = Monitor.new
+        @ignore = Set.new
+
         self
     end
     reset
@@ -209,8 +229,8 @@ class Manager
     # @return   [Bool]
     #   `true` if the resource should be fingerprinted, `false` otherwise.
     def self.fingerprint?( resource )
-        !(!Options.fingerprint? || !resource.text? || include?( resource.url ) ||
-            skip_resource?( resource ))
+        !(ignore?( resource.url ) || !Options.fingerprint? || !resource.text? ||
+            include?( resource.url ) || skip_resource?( resource ))
     end
 
     # Runs all fingerprinters against the given `page`.
@@ -238,8 +258,11 @@ class Manager
     # @raise    [Error::Invalid]  On {#invalid?} platforms.
     def self.[]=( uri, platforms )
         return new( platforms ) if !(key = make_key( uri ))
-        @platforms[key] =
-            platforms.is_a?( self ) ? platforms : new( platforms )
+
+        synchronize do
+            @platforms[key] =
+                platforms.is_a?( self ) ? platforms : new( platforms )
+        end
     end
 
     # @param    [String, URI]   uri
@@ -247,7 +270,6 @@ class Manager
         @platforms.include?( make_key( uri ) )
     end
 
-    #
     # Updates the `platforms` for the given `uri`.
     #
     # @param    [String, URI]   uri
@@ -256,14 +278,25 @@ class Manager
     # @return   [Manager] Updated manager.
     # @raise    [Error::Invalid]  On {#invalid?} platforms.
     def self.update( uri, platforms )
-        self[uri].update platforms
+        synchronize do
+            self[uri].update platforms
+        end
     end
 
     # @param    [String, URI]   uri
     # @return   [Manager] Platform for the given `uri`
     def self.[]( uri )
         return new if !(key = make_key( uri ))
-        @platforms[key] ||= new
+        synchronize { @platforms[key] ||= new }
+    end
+
+    # Clears each platform list without removing its entry. Effectively prevents
+    # all future attempts at fingerprinting a previously existing resource.
+    def self.clear_all_and_lock
+        synchronize do
+            all.keys.each { |k| ignore k }
+        end
+        clear
     end
 
     # @return   [Boolean]
@@ -295,10 +328,17 @@ class Manager
     #   Return value of {.light}.
     # @return   [Manager]
     def self.update_light( light_platforms )
-        light_platforms.each do |url, platforms|
-            @platforms[url] ||= new( platforms )
+        synchronize do
+            light_platforms.each do |url, platforms|
+                @platforms[url] ||= new( platforms )
+            end
         end
         self
+    end
+
+    def self.make_key( uri )
+        return if !(parsed = Arachni::URI( uri ))
+        parsed.without_query.persistent_hash
     end
 
     # @param    [Array<String, Symbol>] platforms
@@ -473,11 +513,6 @@ class Manager
         platform = List.normalize( platform )
         fail Error::Invalid, "Invalid platform: #{platform}" if invalid?( platform )
         platform
-    end
-
-    def self.make_key( uri )
-        return if !(parsed = Arachni::URI( uri ))
-        parsed.without_query.persistent_hash
     end
 
 end
