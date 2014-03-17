@@ -843,6 +843,9 @@ class Browser
                 while !(r = get_response( u ))
                     sleep 0.1
                 end
+
+                fail Timeout::Error if r.timed_out?
+
                 return r
             end
         rescue Timeout::Error
