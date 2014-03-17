@@ -201,7 +201,6 @@ describe Arachni::Framework do
                     "#{@url}/elem_combo" => 200,
                     "#{@url}/elem_combo?link_input=link_blah" => 200,
                     "#{@url}/elem_combo?link_input=--seed" => 200,
-                    "#{@url}/elem_combo?form_input=--seed" => 200,
                     "#{@url}/elem_combo?link_input=--seed&form_input=form_blah" => 200
                 }
             end
@@ -324,8 +323,9 @@ describe Arachni::Framework do
                 f.run
 
                 f.auditstore.issues.
-                    map { |i| i.variations.first.vector.affected_input_name }.sort.should ==
-                    %w(link_input form_input cookie_taint).sort
+                    map { |i| i.variations.first.vector.affected_input_name }.
+                    uniq.sort.should ==
+                        %w(link_input form_input cookie_taint).sort
             end
         end
 
