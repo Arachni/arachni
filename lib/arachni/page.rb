@@ -223,11 +223,10 @@ class Page
 
     # @param    [String]    string  Page body.
     def body=( string )
-        @links = @forms = @cookies = @document = @has_javascript = nil
+        @has_javascript = nil
+        clear_caches
 
         @body = string.dup.freeze
-        parser.body = @body if parser
-        @body
     end
 
     # @return    [Array<Element::Link>]
