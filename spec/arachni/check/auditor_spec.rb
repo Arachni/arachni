@@ -164,10 +164,16 @@ describe Arachni::Check::Auditor do
             @auditor.log_issue( issue_data )
 
             logged_issue = @framework.checks.results.first
-            logged_issue.to_h.should == issue.to_h.merge( referring_page: {
+
+            logged_issue.to_h.tap do |h|
+                h[:page][:dom][:transitions].first.delete :time
+            end.should eq issue.to_h.merge( referring_page: {
                 body: @auditor.page.body,
-                dom:  @auditor.page.dom.to_h
-            })
+                dom:  @auditor.page.dom.to_h.tap do |h|
+                    #h[:transitions].first.delete :time
+                    h.delete :skip_states
+                end
+            }).tap { |h| h[:page][:dom][:transitions].first.delete :time }
         end
 
         it 'assigns a #referring_page' do
@@ -348,10 +354,9 @@ describe Arachni::Check::Auditor do
                             @framework.http.run
                         end
 
-                        issue = @framework.checks.results.first
-                        issue.should be_true
-                        issue.vector.class.should == Arachni::Element::Link
-                        issue.vector.affected_input_name.should == 'you_made_it'
+                        @framework.checks.results.find do |i|
+                            i.vector.affected_input_name == 'you_made_it'
+                        end.should be_true
                     end
                 end
 
