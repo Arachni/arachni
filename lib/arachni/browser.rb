@@ -1193,15 +1193,14 @@ class Browser
     def capture( request )
         return if !@last_url || !capture?
 
-        page = Page.from_data( url: @last_url )
+        page = Page.from_data( url: request.url )
         page.response.request = request
-        page.dom.url = @last_dom_url
         page.dom.push_transition Page::DOM::Transition.new( request.url => :request )
 
         case request.method
             when :get
                 inputs = parse_url_vars( request.url )
-                return if !inputs.any?
+                return if inputs.empty?
 
                 # Make this a Link.
                 page.forms |= [Form.new(
@@ -1213,7 +1212,7 @@ class Browser
 
             when :post
                 inputs = form_parse_request_body( request.body )
-                return if !inputs.any?
+                return if inputs.empty?
 
                 page.forms |= [Form.new(
                     url:    @last_url,
