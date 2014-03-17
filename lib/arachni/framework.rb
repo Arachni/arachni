@@ -285,7 +285,7 @@ class Framework
 
         # Don't keep platform data more than we have to because they accumulate
         # fast and can be quite large to store.
-        Platform::Manager.all.each { |_, platforms| platforms.clear }
+        Platform::Manager.clear_all_and_lock
 
         harvest_http_responses if ran
 
