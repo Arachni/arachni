@@ -505,10 +505,6 @@ class Browser
         event = event.to_sym
         transition = fire_event( element, event )
 
-        # For some reason the located element will linger on for quite a while
-        # and its instances will accumulate quickly.
-        #GC.start
-
         if !transition
             print_info "Could not trigger '#{event}' on '#{element}' because" <<
                 ' the page has changed, capturing a new snapshot.'
