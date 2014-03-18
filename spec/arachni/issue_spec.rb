@@ -45,13 +45,13 @@ describe Arachni::Issue do
         describe "##{m}" do
             let(:obj) do
                 obj = Object.new
-                obj.stub(:dup).and_return(obj)
+                obj.stub(:deep_clone).and_return(obj)
                 obj.stub(:prepare_for_report)
                 obj
             end
 
-            it 'calls #dup' do
-                obj.should receive(:dup)
+            it 'calls #deep_clone' do
+                obj.should receive(:deep_clone)
                 empty_issue.send( "#{m}", obj )
             end
             it 'calls #prepare_for_report' do
