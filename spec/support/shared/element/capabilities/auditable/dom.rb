@@ -144,6 +144,21 @@ shared_examples_for 'element_dom' do
                     called.should be_true
                 end
             end
+
+            describe :taint do
+                it 'sets the Browser::Javascript#taint' do
+                    taint = Arachni::Utilities.generate_token
+
+                    set_taint = nil
+                    subject.submit taint: taint do |page|
+                        set_taint = page.performer.browser.javascript.taint
+                    end
+
+                    subject.auditor.browser_cluster.wait
+                    set_taint.should == taint
+                end
+            end
+
         end
     end
 

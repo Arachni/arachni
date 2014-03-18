@@ -123,6 +123,7 @@ class DOM < Capabilities::Auditable::DOM
     def prepare_browser( browser, options )
         @browser = browser
         browser.javascript.custom_code = options[:custom_code]
+        browser.javascript.taint       = options[:taint]
     end
 
 end
