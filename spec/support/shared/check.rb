@@ -33,7 +33,7 @@ shared_examples_for 'check' do
             issues.each { |i| @issues << i }
         end
 
-        Arachni::Element::Capabilities::Auditable::Timeout.do_not_deduplicate
+        Arachni::Element::Capabilities::Analyzable::Timeout.do_not_deduplicate
         Arachni::Check::Manager.do_not_store
     end
 
