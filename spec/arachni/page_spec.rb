@@ -442,15 +442,13 @@ describe Arachni::Page do
 
     describe '#dup' do
         it 'returns a copy of the page' do
-            subject.update_element_audit_whitelist subject.elements.first
-
             dupped = subject.dup
             dupped.should == subject
+        end
 
-            dupped.element_audit_whitelist.should include subject.elements.first.audit_scope_id
-
-            [:response, :body, :links, :forms, :cookies, :headers, :cookiejar,
-             :paths, :element_audit_whitelist].each do |m|
+        [:response, :body, :links, :forms, :cookies, :headers, :cookiejar, :paths].each do |m|
+            it "preserves ##{m}" do
+                dupped = subject.dup
 
                 # Make sure we're not comparing nils.
                 subject.send( m ).should be_true
@@ -462,9 +460,27 @@ describe Arachni::Page do
 
                 dupped.send( m ).should == subject.send( m )
             end
+        end
 
-            [:url, :skip_states, :transitions, :data_flow_sink, :execution_flow_sink].each do |m|
-                dupped.dom.send( m ).should be_true
+        it 'preserves #element_audit_whitelist' do
+            subject.update_element_audit_whitelist subject.elements.first
+            dupped = subject.dup
+            dupped.element_audit_whitelist.should include subject.elements.first.audit_scope_id
+        end
+
+
+        [:url, :skip_states, :transitions, :data_flow_sink, :execution_flow_sink].each do |m|
+            it "preserves #{Arachni::Page::DOM}##{m}" do
+                dupped = subject.dup
+
+                # Make sure we're not comparing nils.
+                subject.dom.send( m ).should be_true
+
+                # Make sure we're not comparing empty stuff.
+                if (enumerable = dupped.dom.send( m )).is_a? Enumerable
+                    enumerable.should be_any
+                end
+
                 dupped.dom.send( m ).should == subject.dom.send( m )
             end
         end
