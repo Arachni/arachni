@@ -88,6 +88,9 @@
     - _Recon_ checks renamed to _Passive_ checks.
 - Checks
     - Active
+        - New
+            - `xss_dom_script_context` -- Injects JavaScript code via DOM-based
+                links and forms.
         - `xss` -- Added support for Browser-based taint-analysis.
         - `xss_script_context` -- Added support for Browser-based taint-analysis.
             - Renamed from `xss_script_tag`.
