@@ -101,6 +101,12 @@ module Auditable
         self.auditor = nil
     end
 
+    # Removes the associated {#auditor}.
+    def prepare_for_report
+        super if defined? super
+        remove_auditor
+    end
+
     # Submits mutations of self and calls the block to handle the responses.
     #
     # @note Requires an {#auditor}.

@@ -47,6 +47,10 @@ class Base
         self
     end
 
+    # @abstract
+    def prepare_for_report
+    end
+
     # @return  [String] String uniquely identifying self.
     def id
         "#{action}:#{method}:#{inputs}"

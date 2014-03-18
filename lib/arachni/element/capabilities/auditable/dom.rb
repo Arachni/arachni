@@ -131,6 +131,14 @@ class DOM
         fail NotImplementedError
     end
 
+    # Removes the associated {#page}, {#parent} and {#browser}
+    def prepare_for_report
+        super
+        @page    = nil
+        @parent  = nil
+        @browser = nil
+    end
+
     def dup
         new = self.class.new( dup_options )
         new.parent = parent

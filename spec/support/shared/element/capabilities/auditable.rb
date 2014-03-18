@@ -50,6 +50,14 @@ shared_examples_for 'auditable' do |options = {}|
         true
     end
 
+    describe '#prepare_for_report' do
+        it 'removes the #auditor' do
+            auditable.auditor.should be_true
+            auditable.prepare_for_report
+            auditable.auditor.should be_nil
+        end
+    end
+
     describe '#dup' do
         let(:dupped) { auditable.dup }
 

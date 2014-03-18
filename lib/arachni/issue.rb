@@ -202,7 +202,7 @@ class Issue
 
     def vector=( vector )
         vector = vector.dup
-        vector.remove_auditor
+        vector.prepare_for_report
         @vector = vector
     end
 

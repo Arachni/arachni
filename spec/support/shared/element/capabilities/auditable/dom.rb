@@ -19,6 +19,31 @@ shared_examples_for 'element_dom' do
 
     it 'supports Marshal serialization'
 
+    describe '#prepare_for_report' do
+        it 'removes #page' do
+            subject.page.should be_true
+            subject.prepare_for_report
+            subject.page.should be_nil
+        end
+        it 'removes #parent' do
+            subject.parent.should be_true
+            subject.prepare_for_report
+            subject.parent.should be_nil
+        end
+        it 'removes #browser' do
+            called = false
+            subject.with_browser do |browser|
+                subject.browser = browser
+
+                subject.browser.should be_true
+                subject.prepare_for_report
+                subject.browser.should be_nil
+            end
+            subject.auditor.browser_cluster.wait
+            called.should be_true
+        end
+    end
+
     describe '#with_browser_cluster' do
         context 'when a browser cluster is' do
             context 'available' do
