@@ -401,6 +401,7 @@ class Form < Base
 
     def self.form_from_element( url, form )
         c_form          = attributes_to_hash( form.attributes )
+        c_form[:url]    = url.freeze
         c_form[:action] = to_absolute( c_form[:action], url ).freeze
         c_form[:inputs] = {}
         c_form[:html]   = form.to_html.freeze
