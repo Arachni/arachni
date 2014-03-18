@@ -136,6 +136,7 @@ class DOM
         super
         @page    = nil
         @parent  = nil
+        @element = nil
         @browser = nil
     end
 
@@ -160,7 +161,7 @@ class DOM
 
     def marshal_dump
         instance_variables.inject( {} ) do |h, iv|
-            next h if [:@parent, :@page].include? iv
+            next h if [:@parent, :@page, :@auditor, :@browser, :@element].include? iv
             h[iv] = instance_variable_get( iv )
             h
         end
