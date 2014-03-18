@@ -144,8 +144,6 @@ module Master
     #   List of element IDs (as created by
     #   {Arachni::Element::Capabilities::Auditable#audit_scope_id}) for each
     #   page (by URL).
-    # @option data [Hash] :platforms
-    #   List of platforms (as created by {Platform::Manager.light}).
     # @option data [Array<Arachni::Issue>]    issues
     #
     # @param    [String]    url
@@ -168,9 +166,6 @@ module Master
         end
 
         update_issues( data[:issues] || [], token )
-
-        Platform::Manager.update_light( data[:platforms] || {} ) if Options.fingerprint?
-
         slave_done( url, token ) if data[:audit_done]
 
         true

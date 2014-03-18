@@ -26,18 +26,28 @@ describe Arachni::Platform::Manager do
         platforms.is_a? Enumerable
     end
 
+    it "caches up to #{described_class::PLATFORM_CACHE_SIZE} entries" do
+        url = 'http://test/'
+
+        (2 * described_class::PLATFORM_CACHE_SIZE).times do |i|
+            described_class["#{url}/#{i}"] << :unix
+        end
+
+        described_class.size.should == described_class::PLATFORM_CACHE_SIZE
+    end
+
     describe '.set' do
         it 'set the global platform fingerprints' do
-            described_class.set 'stuff'
-            described_class.all.should == 'stuff'
+            described_class.set( 'http://test/' => [:unix] )
+            described_class['http://test/'].should include :unix
         end
     end
 
     describe '.reset' do
         it 'clears the global platform fingerprints' do
-            described_class.set 'stuff'
+            described_class.set( 'http://test/' => [:unix] )
             described_class.reset
-            described_class.all.should be_empty
+            described_class.should be_empty
         end
 
         it 'returns self' do
@@ -58,60 +68,6 @@ describe Arachni::Platform::Manager do
             it 'returns true' do
                 url = 'http://stuff/'
                 described_class.should_not include url
-            end
-        end
-    end
-
-    describe '.ignore' do
-        it 'excludes resources matching the key from fingerprinting' do
-            url = 'http://stuff/'
-            page = Arachni::Page.from_data( url: url )
-
-            described_class.fingerprint?( page ).should be_true
-
-            described_class.ignore described_class.make_key( url )
-            described_class.fingerprint?( page ).should be_false
-        end
-    end
-
-    describe '.clear_all_and_lock' do
-        it 'clears the platforms' do
-            described_class.all.should be_empty
-
-            described_class.fingerprint page
-            described_class.all.should be_any
-
-            described_class.clear_all_and_lock
-            described_class.all.should be_empty
-        end
-
-        it 'prohibits fingerprinting of previously cleared resources' do
-            described_class.fingerprint page
-            described_class.all.should be_any
-
-            described_class.clear_all_and_lock
-            described_class.fingerprint page
-            described_class.all.should be_empty
-        end
-    end
-
-    describe '.ignore?' do
-        context 'when the key has been marked as ignored' do
-            it 'returns true' do
-                url = 'http://stuff/'
-                page = Arachni::Page.from_data( url: url )
-
-                described_class.ignore described_class.make_key( url )
-                described_class.ignore?( url ).should be_true
-            end
-        end
-
-        context 'when the key has not been marked as ignored' do
-            it 'returns false' do
-                url = 'http://stuff/'
-                page = Arachni::Page.from_data( url: url )
-
-                described_class.ignore?( url ).should be_false
             end
         end
     end
@@ -220,13 +176,18 @@ describe Arachni::Platform::Manager do
         it 'set the platforms for the given URI' do
             platforms = [:unix, :jsp]
             described_class['http://stuff.com'] = platforms
-            described_class.all.values.first.sort.should == platforms.sort
+
+            platforms.each do |platform|
+                described_class['http://stuff.com'].should include platform
+            end
         end
 
         it "converts the value to a #{described_class}" do
             platforms = [:unix, :jsp]
             described_class['http://stuff.com'] = platforms
-            described_class.all.values.first.should be_kind_of described_class
+            platforms.each do |platform|
+                described_class['http://stuff.com'].should be_kind_of described_class
+            end
         end
 
         context 'when invalid platforms are given' do
@@ -252,35 +213,6 @@ describe Arachni::Platform::Manager do
                     described_class['http://test.com/'].update( [:blah] )
                 }.to raise_error Arachni::Platform::Error::Invalid
             end
-        end
-    end
-
-    describe '.all' do
-        it 'returns the raw internal DB of fingerprints' do
-            described_class.all.size.should == 0
-            described_class['http://test.com/'] << :unix
-            described_class.all.size.should == 1
-            described_class.all.first.last.should be_kind_of described_class
-        end
-    end
-
-    describe '.light' do
-        it 'returns a light representation of the internal DB of fingerprints' do
-            described_class['http://test.com/'] << :unix
-            described_class.light.first.last.should == [:unix]
-        end
-    end
-
-    describe '.update_light' do
-        it 'loads a DB from a light representation' do
-            described_class['http://test.com/'] << :unix
-            light = described_class.light
-            described_class.reset
-            described_class.all.should be_empty
-
-            described_class.update_light light
-            described_class.all.should be_any
-            described_class['http://test.com/'].should include :unix
         end
     end
 

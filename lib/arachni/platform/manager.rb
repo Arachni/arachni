@@ -151,20 +151,11 @@ class Manager
         rack:   'Rack'
     }
 
+    # Amount of
+    PLATFORM_CACHE_SIZE = 1000
+
     def self.synchronize( &block )
         @mutex.synchronize( &block )
-    end
-
-    def self.ignore( key )
-        synchronize do
-            @ignore << key
-        end
-    end
-
-    def self.ignore?( url )
-        synchronize do
-            @ignore.include? make_key( url )
-        end
     end
 
     def self.find_type( platform )
@@ -197,7 +188,9 @@ class Manager
     # Sets global platforms fingerprints
     # @private
     def self.set( platforms )
-        @platforms = platforms
+        @platforms = Support::Cache::RandomReplacement.new( PLATFORM_CACHE_SIZE )
+        platforms.each { |k, v| @platforms[k] = v }
+        @platforms
     end
 
     # Clears global platforms DB.
@@ -212,7 +205,6 @@ class Manager
         @manager = nil
 
         @mutex  = Monitor.new
-        @ignore = Set.new
 
         self
     end
@@ -229,8 +221,8 @@ class Manager
     # @return   [Bool]
     #   `true` if the resource should be fingerprinted, `false` otherwise.
     def self.fingerprint?( resource )
-        !(ignore?( resource.url ) || !Options.fingerprint? || !resource.text? ||
-            include?( resource.url ) || skip_resource?( resource ))
+        !(!Options.fingerprint? || !resource.text? || include?( resource.url ) ||
+            skip_resource?( resource ))
     end
 
     # Runs all fingerprinters against the given `page`.
@@ -265,6 +257,10 @@ class Manager
         end
     end
 
+    def self.size
+        @platforms.size
+    end
+
     # @param    [String, URI]   uri
     def self.include?( uri )
         @platforms.include?( make_key( uri ) )
@@ -290,15 +286,6 @@ class Manager
         synchronize { @platforms[key] ||= new }
     end
 
-    # Clears each platform list without removing its entry. Effectively prevents
-    # all future attempts at fingerprinting a previously existing resource.
-    def self.clear_all_and_lock
-        synchronize do
-            all.keys.each { |k| ignore k }
-        end
-        clear
-    end
-
     # @return   [Boolean]
     #   `true` if there are no platforms fingerprints, `false` otherwise.
     def self.empty?
@@ -311,34 +298,9 @@ class Manager
         !empty?
     end
 
-    # @return   [Hash<Integer, Platform>]
-    #   Platform per {URI#persistent_hash hashed URL}.
-    def self.all
-        @platforms
-    end
-
-    # @return   [Hash{Integer=>Array<Symbol>}]
-    #   Light representation of the fingerprint DB with URL hashes as keys
-    #   and arrays of symbols for platforms as values.
-    def self.light
-        all.inject({}) { |h, (k, v)| h[k] = v.to_a; h }
-    end
-
-    # @param    [Hash{Integer=>Array<Symbol>}]   light_platforms
-    #   Return value of {.light}.
-    # @return   [Manager]
-    def self.update_light( light_platforms )
-        synchronize do
-            light_platforms.each do |url, platforms|
-                @platforms[url] ||= new( platforms )
-            end
-        end
-        self
-    end
-
     def self.make_key( uri )
         return if !(parsed = Arachni::URI( uri ))
-        parsed.without_query.persistent_hash
+        parsed.without_query
     end
 
     # @param    [Array<String, Symbol>] platforms

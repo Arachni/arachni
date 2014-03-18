@@ -197,6 +197,7 @@ class Framework
         # catch exceptions so that if something breaks down or the user opted to
         # exit the reports will still run with whatever results Arachni managed to gather
         exception_jail( false ){ audit }
+        #print_with_statistics
 
         clean_up
         exception_jail( false ){ block.call } if block_given?
@@ -235,6 +236,8 @@ class Framework
 
         print_line
         print_status "[HTTP: #{page.code}] #{page.dom.url}"
+        #print_object_space
+        #print_with_statistics
 
         if page.platforms.any?
             print_info "Identified as: #{page.platforms.to_a.join( ', ' )}"
@@ -282,10 +285,6 @@ class Framework
             wait_if_paused
             check_page( check, page )
         end
-
-        # Don't keep platform data more than we have to because they accumulate
-        # fast and can be quite large to store.
-        Platform::Manager.clear_all_and_lock
 
         harvest_http_responses if ran
 
