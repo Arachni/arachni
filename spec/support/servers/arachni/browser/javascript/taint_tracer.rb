@@ -83,6 +83,17 @@ get '/data_trace/global-functions' do
     EOHTML
 end
 
+get '/data_trace/window.eval' do
+    <<-EOHTML
+    <html>
+
+        <script type="text/javascript">
+            eval('#{params[:taint]}');
+        </script>
+    </html>
+    EOHTML
+end
+
 get '/data_trace/AngularJS/$http.delete' do
     <<-EOHTML
 <html ng-app>
