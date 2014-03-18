@@ -203,20 +203,19 @@ class Issue
     [:page, :referring_page, :vector].each do |m|
         define_method "#{m}=" do |object|
             if object
-                object = object.dup
+                # Once the object is logged we need a deep copy of it to ensure
+                # integrity.
+                object = object.deep_clone
                 object.prepare_for_report
             end
+
             instance_variable_set( "@#{m}".to_sym, object )
         end
     end
 
-    [:name, :description, :remedy_guidance, :remedy_code, :proof,
-     :signature].each do |m|
-        define_method "#{m}=" do |string|
-            instance_variable_set(
-                "@#{m}".to_sym,
-                string ? string.to_s.freeze : nil
-            )
+    [:name, :description, :remedy_guidance, :remedy_code, :proof, :signature].each do |m|
+        define_method "#{m}=" do |s|
+            instance_variable_set( "@#{m}".to_sym, s ? s.to_s.freeze : nil )
         end
     end
 
