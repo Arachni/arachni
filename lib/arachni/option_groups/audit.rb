@@ -43,6 +43,8 @@ class Audit < Arachni::OptionGroup
     # @see Element::Link
     # @see Element::Capabilities::Auditable#audit
     attr_accessor :links
+    alias :link_doms :links
+    alias :link_doms= :links=
 
     # @note Default is `false`.
     # @return    [Bool] Audit forms.
@@ -50,6 +52,8 @@ class Audit < Arachni::OptionGroup
     # @see Element::Form
     # @see Element::Capabilities::Auditable#audit
     attr_accessor :forms
+    alias :form_doms :forms
+    alias :form_doms= :forms=
 
     # @note Default is `false`.
     # @return    [Bool] Audit cookies.
