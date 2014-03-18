@@ -433,6 +433,13 @@ describe Arachni::Page do
         end
     end
 
+    describe '#prepare_for_report' do
+        it 'calls #clear_caches'
+        it 'removes #request#persormer'
+        it 'removes #dom#digest'
+        it 'removes #dom#skip_states'
+    end
+
     describe '#dup' do
         it 'returns a copy of the page' do
             subject.update_element_audit_whitelist subject.elements.first

@@ -337,9 +337,9 @@ class Page
 
     def prepare_for_report
         clear_caches
-        @parser          = nil
-        @dom.digest      = nil
-        @dom.skip_states = nil
+        request.performer = nil if request
+        @dom.digest       = nil
+        @dom.skip_states  = nil
     end
 
     # @return   [Boolean]
