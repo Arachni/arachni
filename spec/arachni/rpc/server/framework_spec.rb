@@ -135,7 +135,7 @@ describe 'Arachni::RPC::Server::Framework' do
             sleep 0.1 while inst.framework.busy?
 
             inst.framework.issues.
-                map { |i| i.vector.affected_input_name }.sort.should ==
+                map { |i| i.vector.affected_input_name }.uniq.should be
                 %w(link_input form_input cookie_input).sort
         end
 
@@ -151,7 +151,7 @@ describe 'Arachni::RPC::Server::Framework' do
             sleep 0.1 while inst.framework.busy?
 
             inst.framework.issues.
-                map { |i| i.vector.affected_input_name }.sort.should ==
+                map { |i| i.vector.affected_input_name }.uniq.should be
                 %w(link_input form_input cookie_taint).sort
         end
 
@@ -229,7 +229,7 @@ describe 'Arachni::RPC::Server::Framework' do
                 inst.opts.url = web_server_url_for( :framework )
                 inst.checks.load( 'test' )
                 inst.framework.run
-                sleep 2
+                sleep 1 while inst.framework.busy?
                 inst.framework.status.should == 'done'
             end
         end
