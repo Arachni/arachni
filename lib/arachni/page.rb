@@ -320,12 +320,15 @@ class Page
     end
 
     def clear_caches
-        [@forms, @links, @cookies, @headers].flatten.compact.each { |e| e.page = nil }
         @query_vars = @paths = @document = @parser = nil
 
         # Clear element caches for lists which have not been externally modified.
         [:links, :forms, :cookies, :headers ].each do |type|
             next if @has_custom_elements.include? type
+
+            # Remove the association to this page before clearing the cache to
+            # make it easier on the GC.
+            (instance_variable_get( "@#{type}".to_sym ) || []).each { |e| e.page = nil }
             instance_variable_set( "@#{type}".to_sym, nil )
         end
 
@@ -433,7 +436,7 @@ class Page
                 next
             end
 
-            h[m] = h[m].dup.each { |e| e.page = nil }
+            h[m] = h[m].map { |e| c = e.dup; c.page = nil; c }
         end
 
         h[:response] = response
