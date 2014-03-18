@@ -118,7 +118,7 @@ describe 'Arachni::RPC::Server::Framework' do
             sleep 0.1 while instance.framework.busy?
 
             instance.framework.issues.
-                map { |i| i.vector.affected_input_name }.should be
+                map { |i| i.vector.affected_input_name }.uniq.should be
                     %w(link_input form_input cookie_input)
 
             dispatcher_kill_by_instance instance
@@ -133,8 +133,8 @@ describe 'Arachni::RPC::Server::Framework' do
             sleep 0.1 while instance.framework.busy?
 
             instance.framework.issues.
-                map { |i| i.vector.affected_input_name }.should be
-                    %w(link_input form_input cookie_taint)
+                map { |i| i.vector.affected_input_name }.uniq.should be
+                    %w(link_input form_input cookie_taint).sort
 
             dispatcher_kill_by_instance instance
         end
