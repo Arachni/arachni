@@ -20,7 +20,7 @@ class DOM < Capabilities::Auditable::DOM
 
     # Submits the form using the configured {#inputs}.
     def trigger
-        browser.fire_event element, :onsubmit, inputs: inputs.dup
+        browser.fire_event element, :submit, inputs: inputs.dup
     end
 
     def encode( *args )
