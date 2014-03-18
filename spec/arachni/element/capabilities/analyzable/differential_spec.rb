@@ -57,7 +57,7 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
             it 'does not log any issues' do
                 auditable = Arachni::Element::Link.new( url: @url + '/timeout', inputs: @params )
                 auditable.auditor = @auditor
-                auditable.differential_analysis( @opts.merge( timeout: 1_000 ) )
+                auditable.differential_analysis( @opts.merge( submit: { timeout: 1_000 } ) )
                 @auditor.http.run
 
                 issues.should be_empty
