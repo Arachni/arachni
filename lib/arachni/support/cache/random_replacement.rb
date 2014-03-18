@@ -30,6 +30,11 @@ class RandomReplacement < Base
         @keys << k if !already_in
     end
 
+    def clear
+        super
+        @keys.clear
+    end
+
     private
 
     def prune_candidate
