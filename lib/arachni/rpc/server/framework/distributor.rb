@@ -143,8 +143,8 @@ module Distributor
         #
         # The pages should contain all their original elements to maintain their
         # integrity, with the elements which should be audited explicitly white-listed.
-        workload      = []
-        filter_elements_from_pages(pages).chunk( preferred_slaves.size + 1 ).
+        workload  = []
+        filter_elements_from_pages( pages ).chunk( preferred_slaves.size + 1 ).
             each_with_index do |elements, i|
                 workload[i] ||= {}
 
