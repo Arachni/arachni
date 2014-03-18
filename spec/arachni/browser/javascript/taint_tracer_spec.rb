@@ -78,6 +78,26 @@ describe Arachni::Browser::Javascript::TaintTracer do
                 end
             end
 
+            context 'window' do
+                context '.eval' do
+                    it 'logs it' do
+                        load_with_taint 'data_trace/window.eval'
+
+                        sink = subject.data_flow_sink
+                        sink.size.should == 1
+
+                        entry = sink[0]
+                        entry[:data][0]['object'].should == 'DOMWindow'
+                        entry[:data][0]['function'].should == 'eval'
+                        entry[:data][0]['source'].should start_with 'function eval'
+                        entry[:data][0]['arguments'].should == [ @javascript.taint ]
+                        entry[:data][0]['tainted'].should == @javascript.taint
+                        entry[:data][0]['taint'].should == @javascript.taint
+                        @browser.source.split("\n")[entry[:trace][0][:line]].should include 'eval('
+                    end
+                end
+            end
+
             context 'XMLHttpRequest' do
                 context '.open' do
                     it 'logs it' do
