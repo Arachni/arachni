@@ -6,7 +6,7 @@
 class Arachni::Checks::Taint < Arachni::Check::Base
 
     def run
-        audit '--seed', train: true
+        audit '--seed', submit: { train: true }
     end
 
     def self.info
