@@ -374,7 +374,7 @@ describe Arachni::Check::Auditor do
                         # audit until no more new elements appear
                         while page = pages.pop
                             auditor = Arachni::Check::Base.new( page, @framework )
-                            auditor.audit( @seed, train: true )
+                            auditor.audit( @seed, submit: { train: true })
                             # run audit requests
                             @framework.http.run
                         end
@@ -399,7 +399,7 @@ describe Arachni::Check::Auditor do
                         @framework.trainer.on_new_page { |p| updated_pages << p }
 
                         auditor = Arachni::Check::Base.new( page, @framework )
-                        auditor.audit( @seed, train: false )
+                        auditor.audit( @seed, submit: { train: false } )
                         @framework.http.run
                         updated_pages.should be_empty
                     end
