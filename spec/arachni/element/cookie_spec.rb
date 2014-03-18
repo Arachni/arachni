@@ -51,8 +51,15 @@ describe Arachni::Element::Cookie do
 
                 c.mutations( 'seed' ).map { |e| e.type }.uniq.size.should == 1
 
+                mutations = c.mutations( 'seed' ).map { |e| e.inputs }
+
                 Arachni::Options.audit.cookies_extensively = true
                 c.mutations( 'seed' ).map { |e| e.type }.uniq.size.should > 1
+                c.mutations( 'seed' ).each do |e|
+                    next if e.is_a? described_class
+
+                    mutations.should include e.audit_options[:submit][:cookies]
+                end
 
                 Arachni::Options.audit.cookies_extensively = false
                 c.mutations( 'seed' ).map { |e| e.type }.uniq.size.should == 1

@@ -174,7 +174,7 @@ class Cookie < Base
             yield elem
 
             next if !Arachni::Options.audit.cookies_extensively?
-            elem.each_extensive_mutation( &block )
+            elem.each_extensive_mutation( elem, &block )
         end
 
         return if !flip
@@ -185,7 +185,7 @@ class Cookie < Base
         yield elem if block_given?
     end
 
-    def each_extensive_mutation
+    def each_extensive_mutation( mutation )
         return if orphan?
 
         (auditor.page.links | auditor.page.forms).each do |e|
@@ -194,7 +194,8 @@ class Cookie < Base
             c = e.dup
             c.affected_input_name = "mutation for the '#{name}' cookie"
             c.auditor = auditor
-            c.audit_options[:cookies] = self.inputs.dup
+            c.audit_options[:submit] ||= {}
+            c.audit_options[:submit][:cookies] = mutation.inputs.dup
             c.inputs = Arachni::Support::KeyFiller.fill( c.inputs.dup )
 
             yield c
