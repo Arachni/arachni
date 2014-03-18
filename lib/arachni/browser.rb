@@ -611,7 +611,7 @@ class Browser
                             options[:inputs][name_or_id_for( input )] :
                             value_for( input )
 
-                        input.send_keys( value.to_s )
+                        input.set( value.to_s )
                     end
 
                     if event == :submit
