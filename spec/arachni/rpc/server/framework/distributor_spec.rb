@@ -17,10 +17,10 @@ class Distributor
     end
 
     def initialize( token )
-        @opts           = Arachni::Options.instance
-        @local_token    = token
+        @opts        = Arachni::Options.instance
+        @local_token = token
         @slaves      = []
-        @done_slaves    = Set.new
+        @done_slaves = Set.new
     end
 
     def slave_done?( url )
