@@ -296,6 +296,10 @@ shared_examples_for 'auditable' do |options = {}|
         end
 
         context 'when called with option' do
+            describe :submit do
+                it 'uses them for the #submit call'
+            end
+
             describe :each_mutation do
                 it 'is passed each generated mutation' do
                     pending if !has_parameter_extractor?

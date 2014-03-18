@@ -40,9 +40,6 @@ module Auditable
         # Optionally enable skipping of already audited inputs, disabled by default.
         redundant:     false,
 
-        # Perform requests asynchronously.
-        mode:          :async,
-
         # Block to be passed each mutation right before being submitted.
         # Allows for last minute changes.
         each_mutation: nil,
@@ -303,6 +300,8 @@ module Auditable
         skip_like_option = [@audit_options.delete(:skip_like)].flatten.compact
         each_mutation    = @audit_options.delete(:each_mutation)
 
+        submit_options = @audit_options[:submit] || {}
+
         # Iterate over all fuzz variations and audit each one.
         each_mutation( injection_str, @audit_options ) do |elem|
             if Options.audit.exclude_vectors.include?( elem.affected_input_name )
@@ -337,12 +336,6 @@ module Auditable
 
             # Inform the user about what we're auditing.
             print_status( elem.status_string ) if !@audit_options[:silent]
-
-            submit_options = {
-                timeout: @audit_options[:timeout],
-                mode:    @audit_options[:mode],
-                train:   @audit_options[:train]
-            }
 
             # Process each mutation via the supplied block if we have one and
             # submit new mutations returned by that block, if any.
