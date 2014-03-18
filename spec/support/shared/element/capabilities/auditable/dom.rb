@@ -38,6 +38,8 @@ shared_examples_for 'element_dom' do
                 subject.browser.should be_true
                 subject.prepare_for_report
                 subject.browser.should be_nil
+
+                called = true
             end
             subject.auditor.browser_cluster.wait
             called.should be_true
