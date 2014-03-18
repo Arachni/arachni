@@ -89,6 +89,18 @@ class Base
         self.class.new @initialized_options
     end
 
+    def marshal_dump
+        instance_variables.inject({}) do |h, iv|
+            next h if [:@page, :@auditor].include? iv
+            h[iv] = instance_variable_get( iv )
+            h
+        end
+    end
+
+    def marshal_load( h )
+        h.each { |k, v| instance_variable_set( k, v ) }
+    end
+
 end
 end
 end
