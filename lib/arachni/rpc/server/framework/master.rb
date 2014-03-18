@@ -20,10 +20,10 @@ module Master
         return true if master?
 
         # Holds info for our slave Instances -- if we have any.
-        @slaves      = []
+        @slaves = []
 
         # Instances which have completed their scan.
-        @done_slaves    = Set.new
+        @done_slaves = Set.new
 
         # Holds element IDs for each page, to be used as a representation of the
         # the audit workload that will need to be distributed.
@@ -322,7 +322,7 @@ module Master
 
     def push_to_distributed_page_queue( page )
         return false if skip_page?( page )
-        @distributed_page_queue << page
+        @distributed_page_queue << page.clear_caches
         true
     end
 
