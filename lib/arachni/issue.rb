@@ -200,19 +200,13 @@ class Issue
         @references = (refs || {}).stringify_recursively_and_freeze
     end
 
-    def vector=( vector )
-        vector = vector.dup
-        vector.prepare_for_report
-        @vector = vector
-    end
-
-    [:page, :referring_page].each do |m|
-        define_method "#{m}=" do |page|
-            if page
-                page = page.dup
-                page.prepare_for_report
+    [:page, :referring_page, :vector].each do |m|
+        define_method "#{m}=" do |object|
+            if object
+                object = object.dup
+                object.prepare_for_report
             end
-            instance_variable_set( "@#{m}".to_sym, page )
+            instance_variable_set( "@#{m}".to_sym, object )
         end
     end
 

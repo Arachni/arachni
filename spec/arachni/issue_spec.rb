@@ -41,6 +41,26 @@ describe Arachni::Issue do
         issue.name.should == "Check name \u2713"
     end
 
+    [:page=, :referring_page=, :vector=].each do |m|
+        describe "##{m}" do
+            let(:obj) do
+                obj = Object.new
+                obj.stub(:dup).and_return(obj)
+                obj.stub(:prepare_for_report)
+                obj
+            end
+
+            it 'calls #dup' do
+                obj.should receive(:dup)
+                empty_issue.send( "#{m}", obj )
+            end
+            it 'calls #prepare_for_report' do
+                obj.should receive(:prepare_for_report)
+                empty_issue.send( "#{m}", obj )
+            end
+        end
+    end
+
     describe '#tags' do
         it 'returns the set tags' do
             issue.tags.should == issue_data[:tags]
