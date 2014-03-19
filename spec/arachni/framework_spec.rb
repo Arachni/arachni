@@ -309,8 +309,8 @@ describe Arachni::Framework do
                 f.run
 
                 f.auditstore.issues.
-                    map { |i| i.variations.first.vector.affected_input_name }.sort.should ==
-                    %w(link_input form_input cookie_input).sort
+                    map { |i| i.variations.first.vector.affected_input_name }.
+                    uniq.sort.should == %w(link_input form_input cookie_input).sort
             end
         end
 
@@ -324,8 +324,7 @@ describe Arachni::Framework do
 
                 f.auditstore.issues.
                     map { |i| i.variations.first.vector.affected_input_name }.
-                    uniq.sort.should ==
-                        %w(link_input form_input cookie_taint).sort
+                    uniq.sort.should == %w(link_input form_input cookie_taint).sort
             end
         end
 
