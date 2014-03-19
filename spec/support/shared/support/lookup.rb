@@ -55,6 +55,20 @@ shared_examples_for 'lookup' do
         end
     end
 
+    describe '#any?' do
+        context 'when empty' do
+            it 'returns false' do
+                subject.any?.should be_false
+            end
+        end
+        context 'when not empty' do
+            it 'returns true' do
+                subject << 'test'
+                subject.any?.should be_true
+            end
+        end
+    end
+
     describe '#size' do
         it 'returns the size' do
             bf = described_class.new

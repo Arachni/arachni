@@ -60,6 +60,10 @@ class Base
         @collection.empty?
     end
 
+    def any?
+        !empty?
+    end
+
     def size
         @collection.size
     end
