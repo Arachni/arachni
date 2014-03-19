@@ -11,115 +11,124 @@ module Arachni
 # Mostly used by the {Trainer}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-module ElementFilter
-    include Utilities
+class ElementFilter
+class <<self
 
-    @@mutex    ||= Mutex.new
-    @@forms    ||= Support::LookUp::HashSet.new
-    @@links    ||= Support::LookUp::HashSet.new
-    @@cookies  ||= Set.new
-
-    def self.reset
-        @@forms.clear
-        @@links.clear
-        @@cookies.clear
+    def reset
+        @mutex   = Mutex.new
+        @forms   = Support::LookUp::HashSet.new
+        @links   = Support::LookUp::HashSet.new
+        @cookies = Support::LookUp::HashSet.new
+        nil
     end
 
-    def self.synchronize( &block )
-        @@mutex.synchronize( &block )
+    # @return    [Support::LookUp::HashSet]
+    def forms
+        @forms
     end
 
-    def synchronize( &block )
-        @@mutex.synchronize( &block )
+    # @return    [Support::LookUp::HashSet]
+    def links
+        @links
     end
 
-    def init_db_from_page( page )
-        init_links page.links
-        init_forms page.forms
-        init_cookies page.cookies
+    # @return    [Support::LookUp::HashSet]
+    def cookies
+        @cookies
     end
 
-    # Initializes @@forms with the cookies found during the crawl/analysis
-    def init_forms( forms )
-        forms.each { |form| @@forms << form.id }
+    # @param    [Element::Form] form
+    # @return   [Bool]
+    def forms_include?( form )
+        forms.include? form.id
     end
 
-    # Initializes @@links with the links found during the crawl/analysis
-    def init_links( links )
-        links.each { |link| @@links << link.id }
+    # @param    [Element::Link] link
+    # @return   [Bool]
+    def links_include?( link )
+        links.include? link.id
     end
 
-    # Initializes @@cookies with the cookies found during the crawl/analysis
-    def init_cookies( cookies )
-        @@cookies = cookies.map { |c| d = c.dup; d.page = nil; d }
+    # @param    [Element::Cookie] cookie
+    # @return   [Bool]
+    def cookies_include?( cookie )
+        cookies.include? cookie.id
     end
 
-    # Updates @@forms wth new forms that may have dynamically appeared<br/>
-    # after analyzing the HTTP responses during the audit.
-    #
+    # @param    [Element::Base] element
+    # @return   [Bool]
+    def include?( element )
+        forms_include?( element ) || links_include?( element ) ||
+            cookies_include?( element )
+    end
+
+    # @param    [Page]  page
+    # @return   [Integer]   Amount of new elements.
+    def update_from_page( page )
+        update_links( page.links ) + update_forms( page.forms ) +
+            update_cookies( page.cookies )
+    end
+
     # @param    [Array<Element::Form>] forms
+    # @return   [Integer]   Amount of new forms.
     def update_forms( forms )
+        forms = [forms].flatten.compact
         return 0 if forms.size == 0
 
         synchronize do
             new_form_cnt = 0
             forms.each do |form|
-                next if @@forms.include?( form.id )
-                @@forms << form.id
+                next if @forms.include?( form.id )
+                @forms << form.id
                 new_form_cnt += 1
             end
             new_form_cnt
         end
     end
 
-    # Updates @@links wth new links that may have dynamically appeared<br/>
-    # after analyzing the HTTP responses during the audit.
-    #
     # @param    [Array<Element::Link>]    links
+    # @return   [Integer]   Amount of new links.
     def update_links( links )
-      return 0 if links.size == 0
+        links = [links].flatten.compact
+        return 0 if links.size == 0
 
-      synchronize do
-          new_link_cnt = 0
-          links.each do |link|
-              next if @@links.include?( link.id )
-              @@links << link.id
-              new_link_cnt += 1
-          end
-
-          new_link_cnt
-      end
+        synchronize do
+            new_link_cnt = 0
+            links.each do |link|
+                next if @links.include?( link.id )
+                @links << link.id
+                new_link_cnt += 1
+            end
+            new_link_cnt
+        end
     end
 
-    # Updates @@cookies wth new cookies that may have dynamically appeared
-    # after analyzing the HTTP responses during the audit.
-    #
     # @param    [Array<Element::Cookie>]   cookies
+    # @return   [Integer]   Amount of new cookies.
     def update_cookies( cookies )
+        cookies = [cookies].flatten.compact
         return 0 if cookies.size == 0
 
         synchronize do
             new_cookie_cnt = 0
-            cookies.reverse.each do |cookie|
-                @@cookies.each_with_index do |page_cookie, i|
-                    if page_cookie.name == cookie.name
-                        @@cookies[i] = cookie
-                    elsif !cookie_in_jar?( cookie )
-                        new_cookie_cnt += 1
-                    end
-                end
+            cookies.each do |cookie|
+                next if @cookies.include? cookie.id
+                @cookies << cookie.id
+                new_cookie_cnt += 1
             end
-
             new_cookie_cnt
         end
     end
 
-    def cookie_in_jar?( cookie )
-        @@cookies.each { |c| return true if c.name == cookie.name }
-        false
+    private
+
+    def synchronize( &block )
+        @mutex.synchronize( &block )
     end
 
-    extend self
+end
+
+reset
 end
 
 end

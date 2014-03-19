@@ -14,7 +14,6 @@ require Options.paths.lib + 'element_filter'
 # @author Tasos Laskos <tasos.laskos@gmail.com>
 class Trainer
     include UI::Output
-    include ElementFilter
     include Utilities
 
     personalize_output
@@ -95,7 +94,7 @@ class Trainer
     #
     # @param    [Arachni::Page]    page
     def page=( page )
-        init_db_from_page page
+        ElementFilter.update_from_page page
         @page = page.dup
     end
     alias :init :page=
@@ -136,7 +135,7 @@ class Trainer
     end
 
     def has_new?( incoming_page, element_type )
-        count = send( "update_#{element_type}".to_sym, incoming_page.send( element_type ) )
+        count = ElementFilter.send( "update_#{element_type}".to_sym, incoming_page.send( element_type ) )
         incoming_page.clear_cache
         return if count == 0
 
