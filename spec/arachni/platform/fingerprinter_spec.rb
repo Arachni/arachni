@@ -117,8 +117,10 @@ describe Arachni::Platform::Fingerprinter do
             it 'returns true' do
                 page = Arachni::Page.from_data(
                     url: 'http://stuff.com/?A=B',
-                    response_headers: {
-                        'SeRvEr' => 'Server/32'
+                    response: {
+                        headers: {
+                            'SeRvEr' => 'Server/32'
+                        }
                     }
                 )
                 described_class.new( page ).server_or_powered_by_include?( 'uberserver' ).should be_false
@@ -128,8 +130,10 @@ describe Arachni::Platform::Fingerprinter do
             it 'returns true' do
                 page = Arachni::Page.from_data(
                     url: 'http://stuff.com/?A=B',
-                    response_headers: {
-                        'X-Powered-By' => 'Server/32'
+                    response: {
+                        headers: {
+                            'X-Powered-By' => 'Server/32'
+                        }
                     }
                 )
                 described_class.new( page ).server_or_powered_by_include?( 'uberserver' ).should be_false
@@ -139,9 +143,11 @@ describe Arachni::Platform::Fingerprinter do
             it 'returns true' do
                 page = Arachni::Page.from_data(
                     url: 'http://stuff.com/?A=B',
-                    response_headers: {
-                        'Server' => 'Server/32',
-                        'X-Powered-By' => 'Server/32'
+                    response: {
+                        headers: {
+                            'Server' => 'Server/32',
+                            'X-Powered-By' => 'Server/32'
+                        }
                     }
                 )
                 described_class.new( page ).server_or_powered_by_include?( 'uberserver' ).should be_false
