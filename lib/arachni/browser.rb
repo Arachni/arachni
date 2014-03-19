@@ -272,7 +272,7 @@ class Browser
 
         load_cookies url
 
-        transition = Page::DOM::Transition.new( { page: :load }, { url: url } ) do
+        transition = Page::DOM::Transition.new( :page, :load, url: url ) do
             watir.goto url
 
             @javascript.wait_till_ready
@@ -602,7 +602,7 @@ class Browser
 
         tries = 0
         begin
-            transition = Page::DOM::Transition.new( { locator => event }, options ) do
+            transition = Page::DOM::Transition.new( locator, event, options ) do
                 had_special_trigger = false
 
                 if tag_name == :form
@@ -1134,7 +1134,7 @@ class Browser
             return if ignore_request?( request )
 
             if @add_request_transitions
-                @request_transitions << Page::DOM::Transition.new( request.url => :request )
+                @request_transitions << Page::DOM::Transition.new( request.url, :request )
             end
         end
 
@@ -1226,7 +1226,7 @@ class Browser
 
         page = Page.from_data( url: request.url, forms: [form] )
         page.response.request = request
-        page.dom.push_transition Page::DOM::Transition.new( request.url => :request )
+        page.dom.push_transition Page::DOM::Transition.new( request.url, :request )
 
         @captured_pages << page if store_pages?
         call_on_new_page_blocks( page )

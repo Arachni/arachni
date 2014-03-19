@@ -113,8 +113,8 @@ class Transition
 
     # @note Will start the timer for {#time}.
     #
-    # @param    [Hash<Browser::ElementLocator=>Symbol>]  transition
-    #   `element => event`
+    # @param    [Browser::ElementLocator]  element
+    # @param    [Symbol]  event
     # @param    [Hash]  options
     #   Extra options to associate with this transition.
     # @param    [Block] block
@@ -129,17 +129,16 @@ class Transition
     #   When the transition has already been marked as running.
     # @raise    [Error::InvalidElement]
     #   When an element of invalid type is passed.
-    def start( transition, options = {}, &block )
+    def start( element, event, options = {}, &block )
         fail Error::Completed, 'Transition has completed.'   if completed?
         fail Error::Running, 'Transition is already running' if running?
-
-        element, self.event = transition.to_a.first
 
         if ![Symbol, String, Browser::ElementLocator].include?( element.class )
             fail Error::InvalidElement
         end
 
-        @element = element
+        self.event = event
+        @element   = element
 
         @options = options
         @clock   = Time.now

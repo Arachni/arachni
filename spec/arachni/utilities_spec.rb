@@ -193,7 +193,7 @@ describe Arachni::Utilities do
                              { page: :load },
                              { "<a href='javascript:click();'>" => :click },
                              { "<button dblclick='javascript:doubleClick();'>" => :ondblclick }
-                         ].map { |t| Arachni::Page::DOM::Transition.new t }
+                         ].map { |t| Arachni::Page::DOM::Transition.new *t.first }
                     }
                 )
                 @utils.skip_page?( page ).should be_false

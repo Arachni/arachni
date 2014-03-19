@@ -33,7 +33,7 @@ describe Arachni::Browser do
                 element = described_class::ElementLocator.new( element )
             end
 
-            Arachni::Page::DOM::Transition.new( { element => event }, options ).complete
+            Arachni::Page::DOM::Transition.new( element, event, options ).complete
         end
     end
 

@@ -56,13 +56,13 @@ describe Arachni::Page::DOM do
                 { "<body onload='loadStuff();'>"     => :onload },
                 { "http://test.com/ajax"             => :request },
                 { "<a href='javascript:clickMe();'>" => :click },
-            ].map { |t| described_class::Transition.new t }
+            ].map { |t| described_class::Transition.new *t.first }
 
             dom.playable_transitions.should ==  [
                 { :page                              => :load },
                 { "<body onload='loadStuff();'>"     => :onload },
                 { "<a href='javascript:clickMe();'>" => :click },
-            ].map { |t| described_class::Transition.new t }
+            ].map { |t| described_class::Transition.new *t.first }
         end
     end
 
@@ -146,7 +146,7 @@ describe Arachni::Page::DOM do
                 { "<body onload='loadStuff();'>"     => :onload },
                 { "http://test.com/ajax"             => :request },
                 { "<a href='javascript:clickMe();'>" => :click },
-            ].map { |t| described_class::Transition.new t }
+            ].map { |t| described_class::Transition.new *t.first }
 
             dom.depth.should == 3
         end
@@ -157,11 +157,11 @@ describe Arachni::Page::DOM do
             transitions = [
                 { element: :stuffed },
                 { element2: :stuffed2 }
-            ].each do |transition|
-                empty_dom.push_transition described_class::Transition.new( transition )
+            ].each do |t|
+                empty_dom.push_transition described_class::Transition.new( *t.first )
             end
 
-            empty_dom.transitions.should == transitions.map { |t| described_class::Transition.new t }
+            empty_dom.transitions.should == transitions.map { |t| described_class::Transition.new *t.first }
         end
     end
 
@@ -173,7 +173,7 @@ describe Arachni::Page::DOM do
                 transitions: [
                     { element:  :stuffed },
                     { element2: :stuffed2 }
-                ].map { |t| described_class::Transition.new t },
+                ].map { |t| described_class::Transition.new *t.first },
                 data_flow_sink:      ['stuff'],
                 execution_flow_sink: ['stuff2']
             }
