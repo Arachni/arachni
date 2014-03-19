@@ -1694,7 +1694,7 @@ describe Arachni::Browser do
     end
 
     describe '#start_capture' do
-        it 'starts capturing requests and responses and parses them into forms of pages' do
+        it 'parses requests into elements of pages' do
             @browser.start_capture
             @browser.load @url + '/with-ajax'
 
