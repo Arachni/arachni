@@ -13,13 +13,13 @@ describe Arachni::Page::DOM::Transition do
     describe '#initialize' do
         context 'when given options' do
             it 'uses them to configure the attributes' do
-                t = described_class.new( page: :load )
+                t = described_class.new( :page, :load )
                 t.element.should == :page
                 t.event.should == :load
             end
 
             it 'marks it as running' do
-                described_class.new( page: :load ).should be_running
+                described_class.new( :page, :load ).should be_running
             end
         end
 
@@ -27,7 +27,7 @@ describe Arachni::Page::DOM::Transition do
             it 'stores them' do
                 options = { more: :stuff }
 
-                t = described_class.new( { page: :load }, options )
+                t = described_class.new( :page, :load, options )
                 t.options.should == options
             end
         end
@@ -35,7 +35,7 @@ describe Arachni::Page::DOM::Transition do
         context 'when passed a block' do
             it 'calls the block' do
                 called = false
-                described_class.new page: :load do
+                described_class.new :page, :load do
                     called = true
                 end
                 called.should be_true
@@ -43,7 +43,7 @@ describe Arachni::Page::DOM::Transition do
 
             it 'marks the transition as finished' do
                 called = false
-                t = described_class.new page: :load do
+                t = described_class.new :page, :load do
                     called = true
                     sleep 1
                 end
@@ -58,28 +58,28 @@ describe Arachni::Page::DOM::Transition do
 
     describe '#start' do
         it 'configures the attributes' do
-            t = empty_transition.start( page: :load )
+            t = empty_transition.start( :page, :load )
             t.element.should == :page
             t.event.should == :load
         end
 
         it 'converts the event to a symbol' do
-            empty_transition.start( page: 'load' ).event.should == :load
+            empty_transition.start( :page, 'load' ).event.should == :load
         end
 
         it 'marks it as running' do
-            empty_transition.start( page: :load ).should be_running
+            empty_transition.start( :page, :load ).should be_running
         end
 
         it 'returns self' do
-            empty_transition.start( page: :load ).should be empty_transition
+            empty_transition.start( :page, :load ).should be empty_transition
         end
 
         context 'when given extra options' do
             it 'stores them' do
                 options = { more: :stuff }
 
-                t = empty_transition.start( { page: :load }, options )
+                t = empty_transition.start( :page, :load, options )
                 t.options.should == options
             end
         end
@@ -87,7 +87,7 @@ describe Arachni::Page::DOM::Transition do
         context 'when passed a block' do
             it 'calls the block' do
                 called = false
-                empty_transition.start page: :load do
+                empty_transition.start :page, :load do
                     called = true
                 end
                 called.should be_true
@@ -95,7 +95,7 @@ describe Arachni::Page::DOM::Transition do
 
             it 'marks the transition as finished' do
                 called = false
-                t = empty_transition.start page: :load do
+                t = empty_transition.start :page, :load do
                     called = true
                     sleep 1
                 end
@@ -107,28 +107,28 @@ describe Arachni::Page::DOM::Transition do
             end
 
             it 'returns self' do
-                empty_transition.start( page: :load ){}.should be empty_transition
+                empty_transition.start( :page, :load ){}.should be empty_transition
             end
         end
 
         context 'when the element is' do
             context String do
                 it 'assigns it to #element' do
-                    empty_transition.start '<form>' => :load
-                    empty_transition.element.should == '<form>'
+                    empty_transition.start 'http://test.com/stuff', :request
+                    empty_transition.element.should == 'http://test.com/stuff'
 
                 end
             end
             context Symbol do
                 it 'assigns it to #element' do
-                    empty_transition.start page: :load
+                    empty_transition.start :page, :load
                     empty_transition.element.should == :page
                 end
             end
             context 'other' do
                 it "raises #{described_class::Error::InvalidElement}" do
                     expect do
-                        empty_transition.start( 0 => :load )
+                        empty_transition.start( 0, :load )
                     end.to raise_error described_class::Error::InvalidElement
                 end
             end
@@ -137,7 +137,7 @@ describe Arachni::Page::DOM::Transition do
         context 'when the job is running' do
             it "raises #{described_class::Error::Running}" do
                 expect do
-                    running_transition.start( page: :load )
+                    running_transition.start( :page, :load )
                 end.to raise_error described_class::Error::Running
             end
         end
@@ -145,7 +145,7 @@ describe Arachni::Page::DOM::Transition do
         context 'when the job is completed' do
             it "raises #{described_class::Error::Completed}" do
                 expect do
-                    completed_transition.start( page: :load )
+                    completed_transition.start( :page, :load )
                 end.to raise_error described_class::Error::Completed
             end
         end
@@ -187,13 +187,13 @@ describe Arachni::Page::DOM::Transition do
         context 'when the event is' do
             context :request do
                 it 'returns 0' do
-                    empty_transition.start( 'http://test/' => :request ).depth.should == 0
+                    empty_transition.start( 'http://test/', :request ).depth.should == 0
                 end
             end
 
             context 'other' do
                 it 'returns 1' do
-                    empty_transition.start( stuff: :blah ).depth.should == 1
+                    empty_transition.start( :stuff, :blah ).depth.should == 1
                 end
             end
         end
@@ -281,7 +281,7 @@ describe Arachni::Page::DOM::Transition do
                 element = Arachni::Browser::ElementLocator.from_html(
                     '<div id="my-div" onclick="addForm();">'
                 )
-                transition = described_class.new( element => :click )
+                transition = described_class.new( element, :click )
                 transition.complete.play( @browser ).should == transition
 
                 pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
@@ -297,9 +297,9 @@ describe Arachni::Page::DOM::Transition do
                 element = Arachni::Browser::ElementLocator.from_html(
                     '<div id="my-div">'
                 )
-                transition = described_class.new( element => :onclick )
+                transition = described_class.new( element, :onclick )
                 transition.complete.play( @browser ).should ==
-                    described_class.new( element => :click )
+                    described_class.new( element, :click )
 
                 pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
             end
@@ -310,14 +310,14 @@ describe Arachni::Page::DOM::Transition do
                 element = Arachni::Browser::ElementLocator.from_html(
                     '<div id="my-diva">'
                 )
-                described_class.new( element => :click ).
+                described_class.new( element, :click ).
                     complete.play( @browser ).should be_nil
             end
         end
 
         context 'when the transition is not playable' do
             it "raises #{described_class::Error::NotPlayable}" do
-                transition = described_class.new( 'http://test/' => :request )
+                transition = described_class.new( 'http://test/', :request )
 
                 expect do
                     transition.complete.play( @browser )
@@ -402,18 +402,18 @@ describe Arachni::Page::DOM::Transition do
     describe '#==' do
         context 'when 2 transitions are identical' do
             it 'returns true' do
-                args = [{ page: :load }, { extra: :options }]
+                args = [:page, :load, { extra: :options }]
                 described_class.new( *args ).should == described_class.new( *args )
             end
         end
 
         context 'when 2 transitions are different' do
             it 'returns false' do
-                args  = [{ page: :load }, { extra: :options }]
-                args1 = [{ page: :load1 }, { extra: :options }]
-                args2 = [{ page: :load }, { extra: :options1 }]
-                args3 = [{ page1: :load }, { extra: :options }]
-                args4 = [{ page: :load }, { extra1: :options }]
+                args  = [:page, :load, { extra: :options }]
+                args1 = [:page, :load1 , { extra: :options }]
+                args2 = [:page, :load, { extra: :options1 }]
+                args3 = [:page1, :load, { extra: :options }]
+                args4 = [:page, :load, { extra1: :options }]
 
                 described_class.new( *args ).should_not == described_class.new( *args1 )
                 described_class.new( *args ).should_not == described_class.new( *args2 )
@@ -426,18 +426,18 @@ describe Arachni::Page::DOM::Transition do
     describe '#hash' do
         context 'when 2 transitions are identical' do
             it 'returns the same value' do
-                args = [{ page: :load }, { extra: :options }]
+                args = [:page, :load, { extra: :options }]
                 described_class.new( *args ).hash.should == described_class.new( *args ).hash
             end
         end
 
         context 'when 2 transitions are different' do
             it 'returns the same value' do
-                args  = [{ page: :load }, { extra: :options }]
-                args1 = [{ page: :load1 }, { extra: :options }]
-                args2 = [{ page: :load }, { extra: :options1 }]
-                args3 = [{ page1: :load }, { extra: :options }]
-                args4 = [{ page: :load }, { extra1: :options }]
+                args  = [:page, :load, { extra: :options }]
+                args1 = [:page, :load1 , { extra: :options }]
+                args2 = [:page, :load, { extra: :options1 }]
+                args3 = [:page1, :load, { extra: :options }]
+                args4 = [:page, :load, { extra1: :options }]
 
                 described_class.new( *args ).hash.should_not == described_class.new( *args1 ).hash
                 described_class.new( *args ).hash.should_not == described_class.new( *args2 ).hash
