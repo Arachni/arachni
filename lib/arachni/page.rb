@@ -95,10 +95,14 @@ class Page
     end
 
     # @return   [DOM]   DOM snapshot.
-    attr_reader :dom
+    attr_accessor :dom
 
     # @return    [HTTP::Response]    HTTP response.
     attr_reader :response
+
+    # @return    [Hash]
+    # @private
+    attr_reader :cache
 
     # @return   [Set<Integer>]
     #   Audit whitelist based on {Element::Capabilities::Auditable#audit_scope_id}.
@@ -120,20 +124,17 @@ class Page
         fail ArgumentError, 'Options cannot be empty.' if options.empty?
         options = options.dup
 
-        @parser   = options.delete(:parser)
-        @response = @parser.response if @parser
+        @cache = {}
+
+        @cache[:parser] = options.delete(:parser)
+        @response = @cache[:parser].response if @cache[:parser]
 
         # We need to know whether or not the page has been dynamically updated
         # with elements, in order to optimize #dup and #hash operations.
         @has_custom_elements = Set.new
 
         options.each do |k, v|
-            dupped = try_dup( v )
-            begin
-                send( "#{k}=", dupped )
-            rescue NoMethodError
-                instance_variable_set( "@#{k}".to_sym, dupped )
-            end
+            send( "#{k}=", try_dup( v ) )
         end
 
         @dom = DOM.new( (options[:dom] || {}).merge( page: self ) )
@@ -146,19 +147,22 @@ class Page
         @element_audit_whitelist   = Set.new( @element_audit_whitelist )
     end
 
+    # @return   [Object]
+    #   Object which performed the {#request} which lead to this page.
     def performer
         request.performer
     end
 
+    # @return   [Parser]
     def parser
         return if !@response
-        return @parser if @parser
+        return @cache[:parser] if @cache[:parser]
 
-        @parser = Parser.new( @response )
+        @cache[:parser] = Parser.new( @response )
 
         # The page may have a browser-assigned body, set it as the one to parse.
-        @parser.body = body
-        @parser
+        @cache[:parser].body = body
+        @cache[:parser]
     end
 
     # @param    [Array<Element::Capabilities::Auditable, Integer>]    list
@@ -212,7 +216,7 @@ class Page
 
     # @return    [Hash]    {#url URL} query parameters.
     def query_vars
-        @query_vars ||= Link.parse_query_vars( url )
+        @cache[:query_vars] ||= Link.parse_query_vars( url )
     end
 
     # @return    [String]    HTTP response body.
@@ -224,78 +228,36 @@ class Page
     # @param    [String]    string  Page body.
     def body=( string )
         @has_javascript = nil
-        clear_caches
+        clear_cache
 
         @body = string.dup.freeze
     end
 
-    # @return    [Array<Element::Link>]
-    # @see Parser#links
-    def links
-        @links ||=
-            assign_page_to_elements( (!@links && !parser) ? [] : parser.links )
-    end
+    [:links, :forms, :cookies, :headers].each do |type|
+        parser_method = type
+        parser_method = :cookies_to_be_audited if type == :cookies
 
-    # @param    [Array<Element::Link>]  links
-    # @see Parser#links
-    def links=( links )
-        @has_custom_elements << :links
-        @links = assign_page_to_elements( links )
-    end
+        define_method type do
+            @cache[type] ||=
+                assign_page_to_elements( parser ? parser.send(parser_method) : [] )
+        end
 
-    # @return    [Array<Element::Form>]
-    # @see Parser#forms
-    def forms
-        @forms ||=
-            assign_page_to_elements( (!@forms && !parser) ? [] : parser.forms )
-    end
-
-    # @param    [Array<Element::Form>]  forms
-    # @see Parser#forms
-    def forms=( forms )
-        @has_custom_elements << :forms
-        @forms = assign_page_to_elements( forms )
-    end
-
-    # @return    [Array<Element::Cookie>]
-    # @see Parser#cookies
-    def cookies
-        @cookies ||=
-            assign_page_to_elements(
-                (!@cookies && !parser) ? [] : parser.cookies_to_be_audited
-            )
-    end
-
-    # @param    [Array<Element::Cookies>]  cookies
-    # @see Parser#cookies
-    def cookies=( cookies )
-        @has_custom_elements << :cookies
-        @cookies = assign_page_to_elements( cookies )
-    end
-
-    # @return    [Array<Element::Header>]   HTTP request headers.
-    def headers
-        @headers ||=
-            assign_page_to_elements( (!@headers && !parser) ? [] : parser.headers )
-    end
-
-    # @param    [Array<Element::Headers>]  headers
-    # @see Parser#headers
-    def headers=( headers )
-        @has_custom_elements << :headers
-        @headers = assign_page_to_elements( headers )
+        define_method "#{type}=" do |elements|
+            @has_custom_elements << type
+            @cache[type] = assign_page_to_elements( elements )
+        end
     end
 
     # @return    [Array<Element::Cookie>]
     #   Cookies extracted from the supplied cookie-jar.
     def cookiejar
-        @cookiejar ||= (!@cookiejar && !parser) ? [] : parser.cookie_jar
+        @cookiejar ||= (parser ? parser.cookie_jar : [])
     end
 
     # @return    [Array<String>]    Paths contained in this page.
     # @see Parser#paths
     def paths
-        @paths ||= (!@paths && !parser) ? [] : parser.paths
+        @cache[:paths] ||= parser ? parser.paths : []
     end
 
     # @return   [Platform] Applicable platforms for the page.
@@ -316,27 +278,24 @@ class Page
 
     # @return   [Nokogiri::HTML]    Parsed {#body HTML} document.
     def document
-        @document ||= (parser.nil? ? Nokogiri::HTML( body ) : parser.document)
+        @cache[:document] ||= (parser.nil? ? Nokogiri::HTML( body ) : parser.document)
     end
 
-    def clear_caches
-        @query_vars = @paths = @document = @parser = nil
-
+    def clear_cache
         # Clear element caches for lists which have not been externally modified.
         [:links, :forms, :cookies, :headers ].each do |type|
             next if @has_custom_elements.include? type
-
-            # Remove the association to this page before clearing the cache to
-            # make it easier on the GC.
-            (instance_variable_get( "@#{type}".to_sym ) || []).each { |e| e.page = nil }
-            instance_variable_set( "@#{type}".to_sym, nil )
+            # Remove the association to this page before clearing the elements
+            # from cache to make it easier on the GC.
+            (@cache[type] || []).each { |e| e.page = nil }
         end
 
+        @cache.clear
         self
     end
 
     def prepare_for_report
-        clear_caches
+        clear_cache
         @dom.digest      = nil
         @dom.skip_states = nil
     end
@@ -391,18 +350,14 @@ class Page
             next h if iv == :@document
             h[iv.to_s.gsub( '@', '').to_sym] = try_dup( instance_variable_get( iv ) )
             h
-        end
+        end.merge(@cache)
     end
     alias :to_hash :to_h
 
     def hash
         element_hashes = []
         [:links, :forms, :cookies, :headers ].each do |type|
-            next if !@has_custom_elements.include? type
-
-            list = instance_variable_get( "@#{type}".to_sym )
-            next if !list
-
+            next if !@has_custom_elements.include?( type ) || !(list = @cache[type])
             element_hashes |= list.map(&:hash)
         end
 
@@ -428,16 +383,16 @@ class Page
             h.delete( m ) if !h[m]
         end
 
-        [:links, :forms, :cookies, :headers ].each do |m|
-            next if !@has_custom_elements.include?( m )
-            h[m] = instance_variable_get( "@#{m}".to_sym )
+        [:links, :forms, :cookies, :headers ].each do |type|
+            next if !@has_custom_elements.include?( type )
+            h[type] = @cache[type]
 
-            if !h[m] || h[m].empty?
-                h.delete( m )
+            if !h[type] || h[type].empty?
+                h.delete( type )
                 next
             end
 
-            h[m] = h[m].map { |e| c = e.dup; c.page = nil; c }
+            h[type] = h[type].map { |e| c = e.dup; c.page = nil; c }
         end
 
         h[:response] = response
@@ -455,6 +410,14 @@ class Page
     end
 
     private
+
+    [:url, :response, :cookiejar, :element_audit_whitelist].each do |attribute|
+        attr_writer attribute
+    end
+
+    def paths=( paths )
+        @cache[:paths] = paths
+    end
 
     def assign_page_to_elements( list )
         list.map { |e| e.page = self; e }.freeze

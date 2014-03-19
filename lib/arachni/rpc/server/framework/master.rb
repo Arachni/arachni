@@ -317,7 +317,7 @@ module Master
 
     def push_to_distributed_page_queue( page )
         return false if skip_page?( page )
-        @distributed_page_queue << page.clear_caches
+        @distributed_page_queue << page.clear_cache
         true
     end
 

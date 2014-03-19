@@ -299,7 +299,7 @@ class Framework
         end
 
         # Makes it easier on the GC.
-        page.clear_caches
+        page.clear_cache
 
         call_after_page_audit_blocks( page )
         run_http
@@ -410,7 +410,7 @@ class Framework
     def push_to_page_queue( page )
         return false if skip_page?( page ) || @push_to_page_queue_filter.include?( page )
 
-        @page_queue << page.clear_caches
+        @page_queue << page.clear_cache
         @page_queue_total_size += 1
 
         add_to_sitemap( page )

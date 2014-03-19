@@ -22,8 +22,6 @@ describe Arachni::Page do
     let( :page ) { Factory[:page] }
     subject { page }
 
-    it 'supports Marshal serialization'
-
     describe '#initialize' do
         describe 'option' do
             describe :response do
@@ -211,22 +209,90 @@ describe Arachni::Page do
         end
     end
 
+    describe '#body=' do
+        it 'sets the #body' do
+            subject.body = 'stuff'
+            subject.body.should == 'stuff'
+        end
+        it 'sets the applicable #parser body' do
+            subject.body = 'stuff'
+            subject.parser.body.should == 'stuff'
+        end
+        it 'calls #clear_cache' do
+            subject.should receive(:clear_cache)
+            subject.body = 'stuff'
+        end
+        it 'resets the #has_script? flag' do
+            page = create_page(
+                body:    'stuff',
+                headers: { 'content-type' => 'text/html' }
+            )
+
+            page.has_script?.should be_false
+            page.body = '<script></script>'
+            page.has_script?.should be_true
+        end
+    end
+
+    describe '#parser' do
+        it 'is lazy-loaded' do
+            subject.cache[:parser].should be_nil
+            subject.parser.should be_kind_of Arachni::Parser
+            subject.cache[:parser].should == subject.parser
+        end
+
+        it 'is cached' do
+            s = subject.dup
+
+            s.parser
+            Arachni::Parser.should_not receive(:new)
+            s.parser
+        end
+
+        it 'uses the Page#body instead of HTTP::Response#body' do
+            page = described_class.new(
+                response: response.tap { |r| r.body = 'blah'},
+                body:     'stuff'
+            )
+            page.body.should == 'stuff'
+            page.parser.body.should == page.body
+
+            page.body = 'stuff2'
+            page.parser.body.should == page.body
+        end
+    end
+
     [:links, :forms, :cookies, :headers].each do |element|
+        parser_method = element
+        parser_method = :cookies_to_be_audited if element == :cookies
+
         describe "##{element}" do
-            context 'when lazy loaded' do
-                it 'sets the correct #page association' do
-                    subject.instance_variable_get( "@#{element}" ).should be_nil
+            it 'sets the correct #page association' do
+                subject.send(element).each { |e| e.page.should == subject }
+            end
 
-                    subject.send(element).should be_any
-                    subject.instance_variable_get( "@#{element}" ).should be_any
+            it 'is lazy-loaded' do
+                subject.cache[element].should be_nil
+                subject.send(element).should be_any
+                subject.cache[element].should == subject.send(element)
+            end
 
-                    subject.send(element).each { |e| e.page.should == subject }
-                end
+            it 'delegates to Parser' do
+                s = subject.dup
+                s.parser.should receive(parser_method).and_return([])
+                s.send(element)
+            end
 
-                it 'returns a frozen list' do
-                    subject.instance_variable_get( "@#{element}" ).should be_nil
-                    subject.send(element).should be_frozen
-                end
+            it 'is cached' do
+                s = subject.dup
+
+                s.send(element)
+                s.parser.should_not receive(parser_method)
+                s.send(element)
+            end
+
+            it 'is frozen' do
+                subject.send(element).should be_frozen
             end
         end
 
@@ -241,6 +307,12 @@ describe Arachni::Page do
                 subject.send(element).should be_empty
                 subject.send("#{element}=", list)
                 subject.send(element).should == list
+            end
+
+            it 'caches it' do
+                subject.cache[element].should be_nil
+                subject.send("#{element}=", list)
+                subject.cache[element].should == list
             end
 
             it "sets the #page association on the #{element_klass} elements" do
@@ -433,78 +505,114 @@ describe Arachni::Page do
         end
     end
 
-    describe '#prepare_for_report' do
-        it 'calls #clear_caches'
-        it 'removes #request#persormer'
-        it 'removes #dom#digest'
-        it 'removes #dom#skip_states'
+    describe '#clear_cache' do
+        it 'returns self' do
+            subject.clear_cache.should == subject
+        end
+
+        it 'clears the #cache' do
+            cachable = [:query_vars, :links, :forms, :cookies, :headers, :paths,
+                        :document, :parser]
+
+            subject.cache.keys.should == [:parser]
+
+            cachable.each do |attribute|
+                subject.send attribute
+            end
+
+            subject.cache.keys.sort.should == cachable.sort
+            subject.clear_cache
+            subject.cache.keys.should be_empty
+        end
     end
 
-    describe '#dup' do
-        it 'returns a copy of the page' do
-            dupped = subject.dup
-            dupped.should == subject
+    describe '#prepare_for_report' do
+        it 'calls #clear_cache' do
+            s = subject.dup
+            s.should receive(:clear_cache)
+            s.prepare_for_report
         end
 
-        [:response, :body, :links, :forms, :cookies, :headers, :cookiejar, :paths].each do |m|
-            it "preserves ##{m}" do
-                dupped = subject.dup
+        it 'removes #dom#digest' do
+            subject.dom.digest = 'stuff'
+            subject.prepare_for_report
+            subject.dom.digest.should be_nil
+        end
 
-                # Make sure we're not comparing nils.
-                subject.send( m ).should be_true
+        it 'removes #dom#skip_states' do
+            subject.dom.skip_states.should be_true
+            subject.prepare_for_report
+            subject.dom.digest.should be_nil
+        end
+    end
 
-                # Make sure we're not comparing empty stuff.
-                if (enumerable = dupped.send( m )).is_a? Enumerable
-                    enumerable.should be_any
-                end
-
-                dupped.send( m ).should == subject.send( m )
+    [:dup, :deep_clone].each do |method|
+        describe "##{method}" do
+            it 'returns a copy of the page' do
+                dupped = subject.send(method)
+                dupped.should == subject
             end
-        end
 
-        it 'preserves #element_audit_whitelist' do
-            subject.update_element_audit_whitelist subject.elements.first
-            dupped = subject.dup
-            dupped.element_audit_whitelist.should include subject.elements.first.audit_scope_id
-        end
+            [:response, :body, :links, :forms, :cookies, :headers, :cookiejar, :paths].each do |m|
+                it "preserves ##{m}" do
+                    dupped = subject.send(method)
 
+                    # Make sure we're not comparing nils.
+                    subject.send( m ).should be_true
 
-        [:url, :skip_states, :transitions, :data_flow_sink, :execution_flow_sink].each do |m|
-            it "preserves #{Arachni::Page::DOM}##{m}" do
-                dupped = subject.dup
+                    # Make sure we're not comparing empty stuff.
+                    if (enumerable = dupped.send( m )).is_a? Enumerable
+                        enumerable.should be_any
+                    end
 
-                # Make sure we're not comparing nils.
-                subject.dom.send( m ).should be_true
-
-                # Make sure we're not comparing empty stuff.
-                if (enumerable = dupped.dom.send( m )).is_a? Enumerable
-                    enumerable.should be_any
+                    dupped.send( m ).should == subject.send( m )
                 end
-
-                dupped.dom.send( m ).should == subject.dom.send( m )
             end
-        end
 
-        it 'preserves Arachni::Element::Form#node of #forms' do
-            form = subject.forms.last
-            form.node.should be_kind_of Nokogiri::XML::Element
-            form.node.should be_true
+            it 'preserves #element_audit_whitelist' do
+                subject.update_element_audit_whitelist subject.elements.first
+                dupped = subject.send(method)
+                dupped.element_audit_whitelist.should include subject.elements.first.audit_scope_id
+            end
 
-            subject.dup.forms.first.node.to_s.should == form.node.to_s
-        end
 
-        it 'preserves Arachni::Element::Link#node of #links' do
-            link = subject.links.last
-            link.node.should be_kind_of Nokogiri::XML::Element
-            link.node.should be_true
+            [:url, :skip_states, :transitions, :data_flow_sink, :execution_flow_sink].each do |m|
+                it "preserves #{Arachni::Page::DOM}##{m}" do
+                    dupped = subject.send(method)
 
-            subject.dup.links.last.node.to_s.should == link.node.to_s
-        end
+                    # Make sure we're not comparing nils.
+                    subject.dom.send( m ).should be_true
 
-        it 'preserves #page associations for #elements' do
-            dup = subject.dup
-            dup.elements.should be_any
-            dup.elements.each { |e| e.page.should == subject }
+                    # Make sure we're not comparing empty stuff.
+                    if (enumerable = dupped.dom.send( m )).is_a? Enumerable
+                        enumerable.should be_any
+                    end
+
+                    dupped.dom.send( m ).should == subject.dom.send( m )
+                end
+            end
+
+            it 'preserves Arachni::Element::Form#node of #forms' do
+                form = subject.forms.last
+                form.node.should be_kind_of Nokogiri::XML::Element
+                form.node.should be_true
+
+                subject.send(method).forms.first.node.to_s.should == form.node.to_s
+            end
+
+            it 'preserves Arachni::Element::Link#node of #links' do
+                link = subject.links.last
+                link.node.should be_kind_of Nokogiri::XML::Element
+                link.node.should be_true
+
+                subject.send(method).links.last.node.to_s.should == link.node.to_s
+            end
+
+            it 'preserves #page associations for #elements' do
+                dup = subject.send(method)
+                dup.elements.should be_any
+                dup.elements.each { |e| e.page.should == subject }
+            end
         end
     end
 

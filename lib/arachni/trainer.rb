@@ -137,7 +137,7 @@ class Trainer
 
     def has_new?( incoming_page, element_type )
         count = send( "update_#{element_type}".to_sym, incoming_page.send( element_type ) )
-        incoming_page.clear_caches
+        incoming_page.clear_cache
         return if count == 0
 
         print_info "Found #{count} new #{element_type}."
