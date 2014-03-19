@@ -1080,14 +1080,19 @@ describe Arachni::Browser do
     end
 
     describe '#each_element_with_events' do
-        it 'passes each element and event info to the block' do
-            @browser.load( @url + '/trigger_events' ).start_capture
-
+        before :each do
+            @browser.load url
+        end
+        let(:elements_with_events) do
             elements_with_events = []
             @browser.each_element_with_events do |*info|
                 elements_with_events << info
             end
+            elements_with_events
+        end
 
+        let(:url) { @url + '/trigger_events' }
+        it 'passes each element and event info to the block' do
             elements_with_events.should == [
                 [
                     described_class::ElementLocator.new(
@@ -1106,55 +1111,98 @@ describe Arachni::Browser do
             ]
         end
 
-        it 'skips invisible elements' do
-            @browser.load( @url + '/skip-invisible-elements' ).start_capture
-
-            elements_with_events = []
-            @browser.each_element_with_events do |info|
-                elements_with_events << info
-            end
-
-            elements_with_events.should be_any
-
-            @browser.javascript.run( "document.getElementById('my-button').style.visibility='none'" )
-
-            elements_with_events = []
-            @browser.each_element_with_events do |info|
-                elements_with_events << info
-            end
-
-            elements_with_events.should be_empty
-        end
-
-        it 'includes registered event handlers'
-        it 'includes attribute event handlers'
-
         context :a do
             context 'and the href is not empty' do
                 context 'and it starts with javascript:' do
-                    it 'includes the :click event'
+                    let(:url) { @url + '/each_element_with_events/a/href/javascript' }
+
+                    it 'includes the :click event' do
+                        elements_with_events.should == [
+                            [
+                                described_class::ElementLocator.new(
+                                    tag_name:   'a',
+                                    attributes: { 'href' => 'javascript:doStuff()' }
+                                ),
+                                [[:click, 'javascript:doStuff()']]
+                            ]
+                        ]
+                    end
+                end
+
+                context 'and it does not start with javascript:' do
+                    let(:url) { @url + '/each_element_with_events/a/href/regular' }
+
+                    it 'is ignored' do
+                        elements_with_events.should be_empty
+                    end
                 end
 
                 context 'and is out of scope' do
-                    it 'is ignored'
-                end
-            end
-        end
+                    let(:url) { @url + '/each_element_with_events/a/href/out-of-scope' }
 
-        context :input do
-            context 'of type "image"' do
-                it 'includes the :click event'
+                    it 'is ignored' do
+                        elements_with_events.should be_empty
+                    end
+                end
             end
         end
 
         context :form do
+            context :input do
+                context 'of type "image"' do
+                    let(:url) { @url + '/each_element_with_events/form/input/image' }
+
+                    it 'includes the :click event' do
+                        elements_with_events.should == [
+                            [
+                                described_class::ElementLocator.new(
+                                    tag_name:   'input',
+                                    attributes: {
+                                        'type' => 'image',
+                                        'name' => 'myImageButton',
+                                        'src'  => '/__sinatra__/404.png'
+                                    }
+                                ),
+                                [[:click, 'image']]
+                            ]
+                        ]
+                    end
+                end
+            end
+
             context 'and the action is not empty' do
                 context 'and it starts with javascript:' do
-                    it 'includes the :submit event'
+                    let(:url) { @url + '/each_element_with_events/form/action/javascript' }
+
+                    it 'includes the :submit event' do
+                        elements_with_events.should == [
+                            [
+                                described_class::ElementLocator.new(
+                                    tag_name:   'form',
+                                    attributes: {
+                                        'action' => 'javascript:doStuff()'
+                                    }
+                                ),
+                                [[:submit, 'javascript:doStuff()']]
+                            ]
+                        ]
+                    end
+                end
+
+                context 'and it does not start with javascript:' do
+                    let(:url) { @url + '/each_element_with_events/form/action/regular' }
+
+                    it 'is ignored'do
+                        elements_with_events.should be_empty
+                    end
                 end
 
                 context 'and is out of scope' do
-                    it 'is ignored'
+                    let(:url) { @url + '/each_element_with_events/form/action/out-of-scope' }
+
+                    it 'is ignored'do
+                        elements_with_events.should be_empty
+                    end
                 end
             end
         end
@@ -1816,7 +1864,7 @@ describe Arachni::Browser do
             cookie = @browser.cookies.first
 
             cookie.should be_kind_of Arachni::Cookie
-            cookie.name.should == 'This name should be updated; and properly escaped'
+            cookie.name.should  == 'This name should be updated; and properly escaped'
             cookie.value.should == 'This value should be updated; and properly escaped'
         end
     end

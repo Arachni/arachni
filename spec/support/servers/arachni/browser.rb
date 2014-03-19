@@ -26,6 +26,85 @@ get '/' do
 HTML
 end
 
+get '/each_element_with_events/a/href/javascript' do
+    <<-EOHTML
+    <html>
+        <body>
+            <a href="javascript:doStuff()">Click me!</a>
+        </body>
+    </html>
+EOHTML
+end
+
+get '/each_element_with_events/a/href/regular' do
+    <<-EOHTML
+    <html>
+        <body>
+            <a href="/">Click me!</a>
+        </body>
+    </html>
+    EOHTML
+end
+
+get '/each_element_with_events/a/href/out-of-scope' do
+    <<-EOHTML
+    <html>
+        <body>
+            <a href="http://google.com">Click me!</a>
+        </body>
+    </html>
+    EOHTML
+end
+
+get '/each_element_with_events/form/input/image' do
+    <<-EOHTML
+    <html>
+        <body>
+            <form>
+                <input type="text" name="stuff" value="blah">
+                <input type="image" name="myImageButton" src="/__sinatra__/404.png">
+            </form>
+        </body>
+    </html>
+    EOHTML
+end
+
+get '/each_element_with_events/form/action/javascript' do
+    <<-EOHTML
+    <html>
+        <body>
+            <form action="javascript:doStuff()">
+                <input type="text" name="stuff" value="blah">
+            </form>
+        </body>
+    </html>
+    EOHTML
+end
+
+get '/each_element_with_events/form/action/regular' do
+    <<-EOHTML
+    <html>
+        <body>
+            <form action="/">
+                <input type="text" name="stuff" value="blah">
+            </form>
+        </body>
+    </html>
+    EOHTML
+end
+
+get '/each_element_with_events/form/action/out-of-scope' do
+    <<-EOHTML
+    <html>
+        <body>
+            <form action="http://google.com/">
+                <input type="text" name="stuff" value="blah">
+            </form>
+        </body>
+    </html>
+    EOHTML
+end
+
 get '/fire_event/form/onsubmit' do
     <<-EOHTML
 <html>
