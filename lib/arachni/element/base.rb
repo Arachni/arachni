@@ -53,7 +53,7 @@ class Base
 
     # @return  [String] String uniquely identifying self.
     def id
-        "#{action}:#{method}:#{inputs}"
+        "#{action}:#{method}:#{inputs.keys.sort}"
     end
 
     # @return   [Hash] Simple representation of self.

@@ -48,11 +48,6 @@ module Capabilities::Submitable
         @action = self.url ? to_absolute( url, self.url ) : normalize_url( url )
     end
 
-    # @return  [String] String uniquely identifying self.
-    def id
-        "#{self.action}:#{self.method}:#{self.inputs}"
-    end
-
     # @note Sets `self` as the {HTTP::Request#performer}.
     #
     # Submits `self` to the {#action} URL with the appropriate
