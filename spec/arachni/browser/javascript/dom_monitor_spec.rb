@@ -32,7 +32,7 @@ describe Arachni::Browser::Javascript::DOMMonitor do
     end
 
     it 'adds .events property to elements holding the tracked events' do
-        load '/events'
+        load '/elements_with_events'
 
         javascript.run( "return document.getElementById('my-button').events").should == [
             [
@@ -123,7 +123,7 @@ describe Arachni::Browser::Javascript::DOMMonitor do
 
     describe '#elements_with_events' do
         it 'returns information about all DOM elements along with their events' do
-            load '/events'
+            load '/elements_with_events'
 
             subject.elements_with_events.should == [
                 { 'tag_name' => 'html', 'events' => [], 'attributes' => {}
@@ -155,7 +155,35 @@ describe Arachni::Browser::Javascript::DOMMonitor do
             ]
         end
 
-        it 'skips non visible elements'
+        it 'skips non visible elements' do
+            load '/elements_with_events/with-hidden'
+
+            subject.elements_with_events.should == [
+                {
+                      'tag_name' => 'html',
+                        'events' => [],
+                    'attributes' => {}
+                },
+                 {
+                      'tag_name' => 'body',
+                        'events' => [],
+                    'attributes' => {}
+                },
+                 {
+                      'tag_name' => 'button',
+                        'events' => [
+                         [
+                             'click',
+                             'function (my_button_click) {}'
+                        ]
+                    ],
+                    'attributes' => {
+                        'onclick' => 'handler_1()',
+                             'id' => 'my-button'
+                    }
+                }
+            ]
+        end
     end
 
 end

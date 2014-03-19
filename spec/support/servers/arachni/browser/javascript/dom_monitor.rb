@@ -62,7 +62,7 @@ get '/intervals' do
 HTML
 end
 
-get '/events' do
+get '/elements_with_events' do
     <<HTML
     <button onclick="handler_1()" id="my-button">Click me</button>
     <button onclick="handler_2()" id="my-button2">Click me too</button>
@@ -74,6 +74,17 @@ get '/events' do
         document.getElementById( "my-button" ).addEventListener( "onmouseover", function( my_button_onmouseover ){}, false );
 
         document.getElementById( "my-button2" ).addEventListener( "click", function( my_button2_click ){}, false );
+    </script>
+HTML
+end
+
+get '/elements_with_events/with-hidden' do
+    <<HTML
+    <button onclick="handler_1()" id="my-button">Click me</button>
+    <button style="display: none" onclick="handler_3()" id="my-button3">Don't bother clicking me</button>
+
+    <script>
+        document.getElementById( "my-button" ).addEventListener( "click", function( my_button_click ){}, false );
     </script>
 HTML
 end
