@@ -192,17 +192,12 @@ describe Arachni::Framework do
     describe '#sitemap' do
         it 'returns a hash with covered URLs and HTTP status codes' do
             Arachni::Framework.new do |f|
-                f.opts.url = "#{@url}/elem_combo"
+                f.opts.url = "#{@url}/"
                 f.opts.audit.elements :links, :forms, :cookies
                 f.checks.load :taint
 
                 f.run
-                f.sitemap.should == {
-                    "#{@url}/elem_combo" => 200,
-                    "#{@url}/elem_combo?link_input=link_blah" => 200,
-                    "#{@url}/elem_combo?link_input=--seed" => 200,
-                    "#{@url}/elem_combo?link_input=--seed&form_input=form_blah" => 200
-                }
+                f.sitemap.should == { "#{@url}/" => 200 }
             end
         end
     end
