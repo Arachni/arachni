@@ -1192,34 +1192,41 @@ class Browser
     def capture( request )
         return if !@last_url || !capture?
 
-        page = Page.from_data( url: request.url )
-        page.response.request = request
-        page.dom.push_transition Page::DOM::Transition.new( request.url => :request )
-
         case request.method
             when :get
                 inputs = parse_url_vars( request.url )
                 return if inputs.empty?
 
                 # Make this a Link.
-                page.forms |= [Form.new(
+                 form = Form.new(
                     url:    @last_url,
                     action: request.url,
                     method: request.method,
                     inputs: inputs
-                )]
+                )
 
             when :post
                 inputs = form_parse_request_body( request.body )
                 return if inputs.empty?
 
-                page.forms |= [Form.new(
+                form = Form.new(
                     url:    @last_url,
                     action: request.url,
                     method: request.method,
                     inputs: inputs
-                )]
+                )
+
+            else
+                return
         end
+
+        # Don't bother is we or the system in general has already seen the vector.
+        return if skip_state?( form.id ) || ElementFilter.include?( form )
+        skip_state form.id
+
+        page = Page.from_data( url: request.url, forms: [form] )
+        page.response.request = request
+        page.dom.push_transition Page::DOM::Transition.new( request.url => :request )
 
         @captured_pages << page if store_pages?
         call_on_new_page_blocks( page )

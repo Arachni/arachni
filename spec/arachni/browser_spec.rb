@@ -977,9 +977,11 @@ describe Arachni::Browser do
                         captured_pages = @browser.flush_pages
                         pages_should_have_form_with_input captured_pages, 'myImageButton.x'
                         pages_should_have_form_with_input captured_pages, 'myImageButton.y'
+                        @browser.shutdown
 
+                        @browser = described_class.new.start_capture
                         @browser.load( url )
-                        @browser.flush_pages.should be_empty
+                        @browser.flush_pages.size.should == 1
 
                         transition.play @browser
                         captured_pages = @browser.flush_pages
@@ -1694,8 +1696,9 @@ describe Arachni::Browser do
     end
 
     describe '#start_capture' do
+        before(:each) { @browser.start_capture }
+
         it 'parses requests into elements of pages' do
-            @browser.start_capture
             @browser.load @url + '/with-ajax'
 
             pages = @browser.captured_pages
@@ -1705,9 +1708,33 @@ describe Arachni::Browser do
             page.forms.find { |form| form.inputs.include? 'ajax-token' }.should be_true
         end
 
+        context 'when an element has already been seen' do
+            context 'by the browser' do
+                it 'ignores it' do
+                    @browser.load @url + '/with-ajax'
+                    @browser.captured_pages.size.should == 2
+                    @browser.captured_pages.clear
+
+                    @browser.load @url + '/with-ajax'
+                    @browser.captured_pages.should be_empty
+                end
+            end
+
+            context "by the #{Arachni::ElementFilter}" do
+                it 'ignores it' do
+                    @browser.load @url + '/with-ajax'
+                    Arachni::ElementFilter.update_forms @browser.captured_pages.map(&:forms).flatten
+                    @browser.shutdown
+
+                    @browser = described_class.new
+                    @browser.load @url + '/with-ajax'
+                    @browser.captured_pages.should be_empty
+                end
+            end
+        end
+
         context 'when a GET request is performed' do
             it "is added as an #{Arachni::Element::Form} to the page" do
-                @browser.start_capture
                 @browser.load @url + '/with-ajax'
 
                 pages = @browser.captured_pages
@@ -1726,7 +1753,6 @@ describe Arachni::Browser do
 
         context 'when a POST request is performed' do
             it "is added as an #{Arachni::Element::Form} to the page" do
-                @browser.start_capture
                 @browser.load @url + '/with-ajax'
 
                 pages = @browser.captured_pages
@@ -1756,17 +1782,8 @@ describe Arachni::Browser do
 
     describe '#stop_capture' do
         it 'stops the page capture' do
-            @browser.start_capture
-            @browser.load @url + '/with-ajax'
-            @browser.load @url + '/with-image'
-
-            @browser.flush_pages.size.should == 4
-
-            @browser.start_capture
-            @browser.load @url + '/with-ajax'
             @browser.stop_capture
-            @browser.load @url + '/with-image'
-            @browser.flush_pages.size.should == 2
+            @browser.capture?.should be_false
         end
     end
 
