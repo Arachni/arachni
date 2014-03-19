@@ -290,7 +290,7 @@ class Page
             (@cache[type] || []).each { |e| e.page = nil }
         end
 
-        @cache.clear
+        @cache.delete_if { |k, _| !@has_custom_elements.include? k }
         self
     end
 

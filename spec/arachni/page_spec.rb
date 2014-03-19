@@ -524,6 +524,17 @@ describe Arachni::Page do
             subject.clear_cache
             subject.cache.keys.should be_empty
         end
+
+        [:links, :forms, :cookies, :headers].each do |type|
+            context "when ##{type} have been externally set" do
+                it 'does not empty their cache' do
+                    subject.send("#{type}=", subject.send(type))
+                    subject.clear_cache
+                    subject.cache.keys.should == [type]
+                    subject.cache[type].should == subject.send(type)
+                end
+            end
+        end
     end
 
     describe '#prepare_for_report' do
