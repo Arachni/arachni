@@ -65,6 +65,39 @@ module Auditor
 
     def self.included( m )
         m.class_eval do
+            # Determines whether or not to run the check against the given page
+            # depending on which elements exist in the page, which elements the check
+            # is configured to audit and user options.
+            #
+            # @param    [Page]    page
+            #
+            # @return   [Bool]
+            def self.check?( page )
+                return false if issue_limit_reached?
+                return true  if elements.empty?
+
+                audit = Arachni::Options.audit
+
+                {
+                    # We use procs to make the decision, to avoid loading the page
+                    # element caches unless it's absolutely necessary.
+                    Element::Link      => proc { audit.links?   && page.links.any? },
+                    Element::Link::DOM => proc { audit.links?   && page.links.any? },
+                    Element::Form      => proc { audit.forms?   && page.forms.any? },
+                    Element::Form::DOM => proc { audit.forms?   && page.forms.any? },
+                    Element::Cookie    => proc { audit.cookies? && page.cookies.any? },
+                    Element::Header    => proc { audit.headers? && page.headers.any? },
+                    Element::Body      => !page.body.empty?,
+                    Element::Path      => true,
+                    Element::Server    => true
+                }.each do |type, decider|
+                    return true if elements.include?( type ) &&
+                        (decider.is_a?( Proc ) ? decider.call : decider)
+                end
+
+                false
+            end
+
             def self.issue_counter
                 @issue_counter ||= 0
             end

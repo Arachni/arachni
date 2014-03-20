@@ -104,42 +104,12 @@ class Manager < Arachni::Component::Manager
     # @param    [::Arachni::Check::Base]   check    Check to run as a class.
     # @param    [::Arachni::Page]   page    Page to audit.
     def run_one( check, page )
-        return false if !check?( check, page )
+        return false if !check.check?( page )
 
         check_new = check.new( page, @framework )
         check_new.prepare
         check_new.run
         check_new.clean_up
-    end
-
-    # Determines whether or not to run the check against the given page
-    # depending on which elements exist in the page, which elements the check
-    # is configured to audit and user options.
-    #
-    # @param    [Class]   check
-    # @param    [Page]    page
-    #
-    # @return   [Bool]
-    def check?( check, page )
-        return false if check.issue_limit_reached?
-
-        elements = check.info[:elements]
-        return true if !elements || elements.empty?
-
-        elems = {
-            Element::Link      => page.links.any?   && @opts.audit.links,
-            Element::Link::DOM => page.links.any?   && @opts.audit.links,
-            Element::Form      => page.forms.any?   && @opts.audit.forms,
-            Element::Form::DOM => page.forms.any?   && @opts.audit.forms,
-            Element::Cookie    => page.cookies.any? && @opts.audit.cookies,
-            Element::Header    => page.headers.any? && @opts.audit.headers,
-            Element::Body      => !page.body.empty?,
-            Element::Path      => true,
-            Element::Server    => true
-        }
-
-        elems.each_pair { |elem, expr| return true if elements.include?( elem ) && expr }
-        false
     end
 
     def self.on_register_results( &block )

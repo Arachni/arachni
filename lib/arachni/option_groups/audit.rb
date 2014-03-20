@@ -20,7 +20,6 @@ class Audit < Arachni::OptionGroup
     # @see Element::Capabilities::Mutable#each_mutation
     # @see Element::Capabilities::Mutable#switch_method
     attr_accessor :with_both_http_methods
-    alias :with_both_http_methods? :with_both_http_methods
 
     # @note Default is `false`.
     # @return   [Bool]
@@ -29,7 +28,6 @@ class Audit < Arachni::OptionGroup
     #
     # @see Framework#audit_page
     attr_accessor :exclude_binaries
-    alias :exclude_binaries? :exclude_binaries
 
     # @return    [Array<String>]
     #   Vectors to exclude from the audit, by name.
@@ -70,7 +68,6 @@ class Audit < Arachni::OptionGroup
     # @see Element::Cookie#each_mutation
     # @see Element::Capabilities::Auditable#audit
     attr_accessor :cookies_extensively
-    alias :cookies_extensively? :cookies_extensively
 
     # @note Default is `false`.
     # @return    [Bool] Audit HTTP request headers.
@@ -135,6 +132,13 @@ class Audit < Arachni::OptionGroup
         end.uniq.include?( false ))
     end
     alias :element? :elements?
+
+    [:links, :forms, :cookies, :headers, :cookies_extensively,
+     :with_both_http_methods, :exclude_binaries].each do |attribute|
+        define_method "#{attribute}?" do
+            !!send(attribute)
+        end
+    end
 
 end
 end

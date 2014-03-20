@@ -10,6 +10,34 @@ describe Arachni::OptionGroups::Audit do
         it { should respond_to "#{method}=" }
     end
 
+    [:links, :forms, :cookies, :headers, :cookies_extensively,
+     :with_both_http_methods, :exclude_binaries].each do |attribute|
+        describe "#{attribute}?" do
+            context "when ##{attribute} is" do
+                context true do
+                    it 'returns true' do
+                        subject.send "#{attribute}=", true
+                        subject.send("#{attribute}?").should == true
+                    end
+                end
+
+                context false do
+                    it 'returns false' do
+                        subject.send "#{attribute}=", false
+                        subject.send("#{attribute}?").should == false
+                    end
+                end
+
+                context 'nil' do
+                    it 'returns false' do
+                        subject.send "#{attribute}=", false
+                        subject.send("#{attribute}?").should == false
+                    end
+                end
+            end
+        end
+    end
+
     describe '#exclude_vectors=' do
         it 'converts the argument to a flat array of strings' do
             subject.exclude_vectors = [ [:test], 'string' ]

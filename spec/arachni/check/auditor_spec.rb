@@ -64,8 +64,93 @@ describe Arachni::Check::Auditor do
     end
 
     let(:auditor) { @auditor }
+    let(:url) { @url }
     let(:issue) { Factory[:issue] }
     let(:issue_data) { Factory[:issue_data].tap { |d| d.delete :check } }
+
+    describe '.check?' do
+        context Arachni::Element::Body do
+            before(:each) { auditor.class.info[:elements] = Arachni::Element::Body }
+
+            context 'and page with a non-empty body' do
+                it 'returns true' do
+                    p = Arachni::Page.from_data( url: url, body: 'stuff' )
+                    auditor.class.check?( p ).should be_true
+                end
+            end
+
+            context 'and page with a non-empty body' do
+                it 'returns true' do
+                    p = Arachni::Page.from_data( url: url, body: '' )
+                    auditor.class.check?( p ).should be_false
+                end
+            end
+        end
+
+        element_classes = [Arachni::Element::Link, Arachni::Element::Form,
+                           Arachni::Element::Cookie, Arachni::Element::Header]
+
+        element_classes.each do |element|
+            context "#{Arachni::OptionGroups::Audit}##{element.type}?" do
+                let(:page) do
+                    Arachni::Page.from_data(
+                        url: url,
+                        "#{element.type}s".to_sym => [element.new( url: url )]
+                    )
+                end
+                before(:each) { auditor.class.info[:elements] = [element] }
+
+                context true do
+                    before(:each) { Arachni::Options.audit.elements element.type }
+
+                    context "and the page contains #{element}" do
+                        context 'and the check supports it' do
+                            it 'returns true' do
+                                auditor.class.check?( page ).should be_true
+                            end
+                        end
+
+                        context 'and the check does not support it' do
+                            it 'returns false' do
+                                auditor.class.info[:elements] = element_classes - [element]
+                                auditor.class.check?( page ).should be_false
+                            end
+                        end
+
+                        [Arachni::Element::Path, Arachni::Element::Server, nil].each do |e|
+                            context "and the check supports #{e ? e : 'everything'}" do
+                                it 'returns true' do
+                                    auditor.class.info[:elements] = e
+                                    auditor.class.check?( page ).should be_true
+                                end
+                            end
+                        end
+                    end
+                end
+
+                context false do
+                    before(:each) { Arachni::Options.audit.skip_elements element.type }
+
+                    context "and the page contains #{element}" do
+                        context "and the check only supports #{element}" do
+                            it 'returns false' do
+                                auditor.class.check?( page ).should be_false
+                            end
+                        end
+
+                        [Arachni::Element::Path, Arachni::Element::Server, nil].each do |e|
+                            context "and the check supports #{e ? e : 'everything'}" do
+                                it 'returns true' do
+                                    auditor.class.info[:elements] = e
+                                    auditor.class.check?( page ).should be_true
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
 
     describe '#each_candidate_element' do
         before(:each) { auditor.load_page_from "#{@url}each_candidate_element" }

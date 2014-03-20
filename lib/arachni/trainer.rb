@@ -90,14 +90,14 @@ class Trainer
         print_error_backtrace e
     end
 
-    # Sets the current working page and inits the element DB.
+    # Sets the current working page and {ElementFilter.update_from_page updates}
+    # the {ElementFilter}.
     #
     # @param    [Arachni::Page]    page
     def page=( page )
         ElementFilter.update_from_page page
         @page = page.dup
     end
-    alias :init :page=
 
     def on_new_page( &block )
         @on_new_page_blocks << block
