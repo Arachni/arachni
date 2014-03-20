@@ -26,6 +26,15 @@ get '/' do
 HTML
 end
 
+get '/snapshot_id/default' do
+    <<-EOHTML
+    <html>
+        <body>
+        </body>
+    </html>
+    EOHTML
+end
+
 get '/each_element_with_events/a/href/javascript' do
     <<-EOHTML
     <html>
@@ -88,6 +97,16 @@ get '/each_element_with_events/form/action/regular' do
             <form action="/">
                 <input type="text" name="stuff" value="blah">
             </form>
+        </body>
+    </html>
+    EOHTML
+end
+
+get '/snapshot_id/form/default' do
+    <<-EOHTML
+    <html>
+        <body>
+            <input type="text" name="stuff" value="blah">
         </body>
     </html>
     EOHTML

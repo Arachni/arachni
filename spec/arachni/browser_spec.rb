@@ -1288,28 +1288,6 @@ describe Arachni::Browser do
             ].map { |transitions| transitions_from_array( transitions ) }
         end
 
-        context 'when nodes with events appear' do
-            it 'captures snapshots'
-        end
-
-        context 'when nodes without events appear' do
-            it 'ignores them'
-
-            context 'of type' do
-                describe 'a' do
-                    it 'captures snapshots'
-                end
-
-                describe 'form' do
-                    it 'captures snapshots'
-                end
-
-                describe 'input' do
-                    it 'captures snapshots'
-                end
-            end
-        end
-
         it 'follows all javascript links' do
             @browser.load( @url + '/explore' ).start_capture.trigger_events
 
@@ -1866,6 +1844,92 @@ describe Arachni::Browser do
             cookie.should be_kind_of Arachni::Cookie
             cookie.name.should  == 'This name should be updated; and properly escaped'
             cookie.value.should == 'This value should be updated; and properly escaped'
+        end
+    end
+
+    describe '#snapshot_id' do
+        before(:each) { Arachni::Options.url = @url }
+
+        let(:empty_snapshot_id_url) { @url + '/snapshot_id/default' }
+        let(:empty_snapshot_id) do
+            @browser.load( empty_snapshot_id_url ).snapshot_id
+        end
+        let(:snapshot_id) do
+            @browser.load( url ).snapshot_id
+        end
+
+        let(:url) { @url + '/trigger_events' }
+
+        it 'returns a DOM digest' do
+            snapshot_id.should == @browser.load( url ).snapshot_id
+        end
+
+        context :a do
+            context 'and the href is not empty' do
+                context 'and it starts with javascript:' do
+                    let(:url) { @url + '/each_element_with_events/a/href/javascript' }
+
+                    it 'takes it into account' do
+                        snapshot_id.should_not == empty_snapshot_id
+                    end
+                end
+
+                context 'and it does not start with javascript:' do
+                    let(:url) { @url + '/each_element_with_events/a/href/regular' }
+
+                    it 'takes it into account' do
+                        snapshot_id.should_not == empty_snapshot_id
+                    end
+                end
+
+                context 'and is out of scope' do
+                    let(:url) { @url + '/each_element_with_events/a/href/out-of-scope' }
+
+                    it 'is ignored' do
+                        snapshot_id.should == empty_snapshot_id
+                    end
+                end
+            end
+        end
+
+        context :form do
+            let(:empty_snapshot_id_url) { @url + '/snapshot_id/form/default' }
+
+            context :input do
+                context 'of type "image"' do
+                    let(:url) { @url + '/each_element_with_events/form/input/image' }
+
+                    it 'takes it into account' do
+                        snapshot_id.should_not == empty_snapshot_id
+                    end
+                end
+            end
+
+            context 'and the action is not empty' do
+                context 'and it starts with javascript:' do
+                    let(:url) { @url + '/each_element_with_events/form/action/javascript' }
+
+                    it 'takes it into account' do
+                        snapshot_id.should_not == empty_snapshot_id
+                    end
+                end
+
+                context 'and it does not start with javascript:' do
+                    let(:url) { @url + '/each_element_with_events/form/action/regular' }
+
+                    it 'takes it into account' do
+                        snapshot_id.should_not == empty_snapshot_id
+                    end
+                end
+
+                context 'and is out of scope' do
+                    let(:url) { @url + '/each_element_with_events/form/action/out-of-scope' }
+
+                    it 'is ignored'do
+                        snapshot_id.should == empty_snapshot_id
+                    end
+                end
+            end
         end
     end
 
