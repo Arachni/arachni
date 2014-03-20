@@ -162,6 +162,40 @@ describe Arachni::ElementFilter do
         end
     end
 
+    describe '#update_from_page_cache' do
+        context 'when there are new elements in the Page#cache' do
+            it 'adds them to the list' do
+                page.cache.should_not include :links
+                page.links
+                page.cache[:links].should == page.links
+
+                subject.update_from_page_cache( page )
+
+                page.links.each do |element|
+                    subject.should include element
+                end
+
+                (page.forms | page.cookies).each do |element|
+                    subject.should_not include element
+                end
+            end
+
+            it 'returns the amount of new ones' do
+                page.links
+                subject.update_from_page_cache( page ).should == page.links.size
+            end
+        end
+
+        context 'when there are no new elements in the Page#cache' do
+            it 'returns 0' do
+                page.elements.should be_any
+                subject.update_from_page_cache( page ).should ==
+                    (page.links | page.forms | page.cookies).size
+                subject.update_from_page_cache( page ).should == 0
+            end
+        end
+    end
+
     describe '#update_links' do
         context 'when there are new links' do
             it 'adds them to the list' do

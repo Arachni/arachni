@@ -69,6 +69,17 @@ class <<self
             update_cookies( page.cookies )
     end
 
+    # Updates the elements from the {Page#cache}, useful in situations where
+    # resources need to be preserved (thus avoiding a full page parse) and the
+    # need for a full coverage update isn't vital.
+    #
+    # @param    [Page]  page
+    # @return   [Integer]   Amount of new elements.
+    def update_from_page_cache( page )
+        update_links( page.cache[:links] ) + update_forms( page.cache[:forms] ) +
+            update_cookies( page.cache[:cookies] )
+    end
+
     # @param    [Array<Element::Form>] forms
     # @return   [Integer]   Amount of new forms.
     def update_forms( forms )
