@@ -398,7 +398,6 @@ class Framework
         }
     end
 
-    #
     # Pushes a page to the page audit queue and updates {#page_queue_total_size}
     #
     # @param    [Page]  page
@@ -406,9 +405,19 @@ class Framework
     # @return   [Bool]
     #   `true` if push was successful, `false` if the `page` matched any
     #   exclusion criteria.
-    #
     def push_to_page_queue( page )
         return false if skip_page?( page ) || @push_to_page_queue_filter.include?( page )
+
+        # We want to update from the already loaded page cache (if there is one)
+        # as we have to store the page anyways (needs to go through Browser analysis)
+        # and it's not worth the resources to parse its elements.
+        #
+        # We're basically doing this to give the Browser and Trainer a better
+        # view of what elements have been seen, so that they won't feed us pages
+        # with elements that they think are new, but have been provided to us by
+        # some other component; however, it wouldn't be the end of the world if
+        # that were to happen.
+        ElementFilter.update_from_page_cache page
 
         @page_queue << page.clear_cache
         @page_queue_total_size += 1

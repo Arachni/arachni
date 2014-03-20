@@ -599,6 +599,14 @@ describe Arachni::Framework do
             @f.sitemap.should include @url + '/link/#/stuff'
         end
 
+        it 'passes it to ElementFilter#update_from_page_cache' do
+            page = Arachni::Page.from_url( @url + '/link' )
+
+            Arachni::ElementFilter.should receive(:update_from_page_cache).with(page)
+
+            @f.push_to_page_queue page
+        end
+
         context 'when the page has already been seen' do
             it 'ignores it' do
                 page = Arachni::Page.from_url( @url + '/stuff' )
