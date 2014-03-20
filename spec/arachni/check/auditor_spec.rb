@@ -87,15 +87,16 @@ describe Arachni::Check::Auditor do
             end
         end
 
-        element_classes = [Arachni::Element::Link, Arachni::Element::Form,
+        element_classes = [Arachni::Element::Link, Arachni::Element::Link::DOM,
+                           Arachni::Element::Form, Arachni::Element::Form::DOM,
                            Arachni::Element::Cookie, Arachni::Element::Header]
 
         element_classes.each do |element|
-            context "#{Arachni::OptionGroups::Audit}##{element.type}?" do
+            context "when #{Arachni::OptionGroups::Audit}##{element.type.to_s.gsub( '_dom', '')}? is" do
                 let(:page) do
                     Arachni::Page.from_data(
                         url: url,
-                        "#{element.type}s".to_sym => [element.new( url: url )]
+                        "#{element.type}s".gsub( '_dom', '').to_sym => [Factory[element.type]]
                     )
                 end
                 before(:each) { auditor.class.info[:elements] = [element] }
@@ -110,10 +111,20 @@ describe Arachni::Check::Auditor do
                             end
                         end
 
-                        context 'and the check does not support it' do
-                            it 'returns false' do
-                                auditor.class.info[:elements] = element_classes - [element]
-                                auditor.class.check?( page ).should be_false
+                        (element_classes - [element]).each do |e|
+                            context "and the check supports #{e}" do
+                                if element == Arachni::Element::Form::DOM &&
+                                    e == Arachni::Element::Form
+                                    it 'returns true' do
+                                        auditor.class.info[:elements] = e
+                                        auditor.class.check?( page ).should be_true
+                                    end
+                                else
+                                    it 'returns false' do
+                                        auditor.class.info[:elements] = e
+                                        auditor.class.check?( page ).should be_false
+                                    end
+                                end
                             end
                         end
 

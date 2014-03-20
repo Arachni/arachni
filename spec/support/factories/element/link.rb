@@ -1,12 +1,12 @@
-Factory.define :form, class: Arachni::Element::Form,
+Factory.define :link, class: Arachni::Element::Link,
                options: {
                    url:    'http://test.com',
                    inputs: { stuff: 1 }
                }
 
-Factory.define :form_dom, class: Arachni::Element::Form,
+Factory.define :link_dom, class: Arachni::Element::Link,
                options: {
                    url:    'http://test.com',
-                   inputs: { stuff: 1 },
-                   html:   '<form><inputs name="stuff" value="1">'
+                   html:   '<a href="#/?link-dom-input=1">a</a>'
                }
+
