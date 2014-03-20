@@ -85,7 +85,7 @@ describe Arachni::Browser::Javascript do
 
     describe '#dom_elements_with_events' do
         it 'returns information about all DOM elements along with their events' do
-            @browser.load @dom_monitor_url + 'events'
+            @browser.load @dom_monitor_url + 'elements_with_events'
             @javascript.dom_elements_with_events.should == [
                 { 'tag_name' => 'body', 'events' => [], 'attributes' => {} },
                 { 'tag_name'   => 'button',
