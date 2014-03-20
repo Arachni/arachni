@@ -41,7 +41,7 @@ class DOM < Capabilities::Auditable::DOM
 
     # Loads the page with the {#inputs} in the {#fragment}.
     def trigger
-        browser.goto to_s
+        browser.goto to_s, false # Don't capture a snapshot.
     end
 
     # @return   [String]    URL including the DOM {#inputs}.
