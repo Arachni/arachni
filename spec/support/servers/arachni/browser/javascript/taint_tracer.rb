@@ -68,7 +68,7 @@ get '/data_trace/XMLHttpRequest.setRequestHeader' do
 HTML
 end
 
-get '/data_trace/global-functions' do
+get '/data_trace/user-defined-global-functions' do
     <<-EOHTML
     <html>
 
@@ -83,15 +83,18 @@ get '/data_trace/global-functions' do
     EOHTML
 end
 
-get '/data_trace/window.eval' do
-    <<-EOHTML
+%w(eval encodeURIComponent decodeURIComponent encodeURI decodeURI).each do |function|
+    get "/data_trace/window.#{function}" do
+        <<-EOHTML
     <html>
 
         <script type="text/javascript">
-            eval('#{params[:taint]}');
+            #{function}('#{params[:taint]}');
         </script>
     </html>
-    EOHTML
+        EOHTML
+    end
+
 end
 
 get '/data_trace/AngularJS/$http.delete' do

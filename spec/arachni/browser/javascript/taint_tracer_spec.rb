@@ -55,9 +55,9 @@ describe Arachni::Browser::Javascript::TaintTracer do
         context 'when tainted data pass through' do
             before { @javascript.taint = @browser.generate_token }
 
-            context 'global methods' do
+            context 'user-defined global functions' do
                 it 'logs it' do
-                    load_with_taint 'data_trace/global-functions'
+                    load_with_taint 'data_trace/user-defined-global-functions'
 
                     sink = subject.data_flow_sink
                     sink.size.should == 1
@@ -79,21 +79,23 @@ describe Arachni::Browser::Javascript::TaintTracer do
             end
 
             context 'window' do
-                context '.eval' do
-                    it 'logs it' do
-                        load_with_taint 'data_trace/window.eval'
+                %w(eval encodeURIComponent decodeURIComponent encodeURI decodeURI).each do |function|
+                    context ".#{function}" do
+                        it 'logs it' do
+                            load_with_taint "data_trace/window.#{function}"
 
-                        sink = subject.data_flow_sink
-                        sink.size.should == 1
+                            sink = subject.data_flow_sink
+                            sink.size.should == 1
 
-                        entry = sink[0]
-                        entry[:data][0]['object'].should == 'DOMWindow'
-                        entry[:data][0]['function'].should == 'eval'
-                        entry[:data][0]['source'].should start_with 'function eval'
-                        entry[:data][0]['arguments'].should == [ @javascript.taint ]
-                        entry[:data][0]['tainted'].should == @javascript.taint
-                        entry[:data][0]['taint'].should == @javascript.taint
-                        @browser.source.split("\n")[entry[:trace][0][:line]].should include 'eval('
+                            entry = sink[0]
+                            entry[:data][0]['object'].should == 'DOMWindow'
+                            entry[:data][0]['function'].should == function
+                            entry[:data][0]['source'].should start_with "function #{function}"
+                            entry[:data][0]['arguments'].should == [ @javascript.taint ]
+                            entry[:data][0]['tainted'].should == @javascript.taint
+                            entry[:data][0]['taint'].should == @javascript.taint
+                            @browser.source.split("\n")[entry[:trace][0][:line]].should include "#{function}("
+                        end
                     end
                 end
             end
@@ -324,7 +326,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             load_with_taint 'data_trace/AngularJS/$http.post'
 
                             sink = subject.data_flow_sink
-                            sink.size.should == 3
+                            sink.size.should == 4
 
                             entry = sink[1]
                             entry[:data][0]['object'].should == 'angular.$http'
@@ -344,7 +346,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             entry[:data][0]['taint'].should == @javascript.taint
                             entry[:trace][0][:url].should == @browser.url
 
-                            entry = sink[2]
+                            entry = sink[3]
                             entry[:data][0]['object'].should == 'XMLHttpRequestPrototype'
                             entry[:data][0]['function'].should == 'open'
                             entry[:data][0]['arguments'].should == [
@@ -538,7 +540,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/jQuery.ajax'
 
                         sink = subject.data_flow_sink
-                        sink.size.should == 2
+                        sink.size.should == 3
 
                         entry = sink[0]
                         entry[:data][0]['object'].should == 'jQuery'
@@ -565,7 +567,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/jQuery.get'
 
                         sink = subject.data_flow_sink
-                        sink.size.should == 3
+                        sink.size.should == 4
 
                         entry = sink[0]
                         entry[:data][0]['object'].should == 'jQuery'
