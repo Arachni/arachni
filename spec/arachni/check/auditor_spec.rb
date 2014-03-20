@@ -598,7 +598,7 @@ describe Arachni::Check::Auditor do
             let(:taint) { Arachni::Utilities.generate_token }
             let(:url) do
                 Arachni::Utilities.normalize_url( web_server_url_for( :taint_tracer ) ) +
-                    "/data_trace/global-functions?taint=#{taint}"
+                    "/data_trace/user-defined-global-functions?taint=#{taint}"
             end
 
             context 'and the resource is a' do
