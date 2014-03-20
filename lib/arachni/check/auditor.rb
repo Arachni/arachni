@@ -117,9 +117,11 @@ module Auditor
         #
         # If no elements have been passed to audit methods, candidates will be
         # determined by {#each_candidate_element}.
-        elements: [Element::Link, Element::Form,
-                   Element::Cookie, Element::Header,
-                   Element::Body],
+        elements:     [Element::Link, Element::Form,
+                        Element::Cookie, Element::Header,
+                        Element::Body],
+
+        dom_elements: [Element::Link::DOM, Element::Form::DOM],
 
         # If set to `true` the HTTP response will be analyzed for new elements.
         # Be careful when enabling it, there'll be a performance penalty.
@@ -128,7 +130,7 @@ module Auditor
         #
         # If set to `nil`, when the Auditor submits a form with original or
         # sample values this option will be overridden to `true`
-        train:    nil
+        train:        nil
     }
 
     # @return   [Arachni::Page]  Page object to be audited.
@@ -379,6 +381,7 @@ module Auditor
     # @yieldparam [Arachni::Element]
     def each_candidate_dom_element( types = [], &block )
         types = self.class.info[:elements] if types.empty?
+        types = OPTIONS[:dom_elements]     if types.empty?
 
         types.each do |elem|
             elem = elem.type

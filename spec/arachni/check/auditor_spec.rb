@@ -18,12 +18,13 @@ class AuditorTest < Arachni::Check::Base
     end
 
     def self.info
-        check_info = Factory[:issue_data][:check].dup
+        return @check_info if @check_info
+        @check_info = Factory[:issue_data][:check].dup
 
         # Should be calculated by the auditor when it logs the issue.
-        check_info.delete :shortname
+        @check_info.delete :shortname
 
-        check_info[:issue] = {
+        @check_info[:issue] = {
             name:            "Check name \xE2\x9C\x93",
             description:     'Issue description',
             references:      {
@@ -35,20 +36,25 @@ class AuditorTest < Arachni::Check::Base
             remedy_code:     'Sample code on how to fix the issue',
             tags:            %w(these are a few tags)
         }
-        check_info
+        @check_info
+    end
+
+    def self.clear_info_cache
+        @check_info = nil
     end
 end
 
 describe Arachni::Check::Auditor do
-
     before :each do
         @opts = Arachni::Options.instance
         @opts.audit.elements :links, :forms, :cookies, :headers
 
         @opts.url = web_server_url_for( :auditor )
-        @url      = @opts.url.dup
+        @url      = @opts.url
 
         @framework = Arachni::Framework.new( @opts )
+
+        AuditorTest.clear_info_cache
         @auditor   = AuditorTest.new( @framework )
     end
 
@@ -57,35 +63,118 @@ describe Arachni::Check::Auditor do
         @framework.reset
     end
 
+    let(:auditor) { @auditor }
     let(:issue) { Factory[:issue] }
     let(:issue_data) { Factory[:issue_data].tap { |d| d.delete :check } }
 
     describe '#each_candidate_element' do
-        context 'when types have been provided' do
-            it 'returns those types of elements'
-        end
-        context 'when types have not been provided' do
-            it 'returns the types of elements specified by the check'
+        before(:each) { auditor.load_page_from "#{@url}each_candidate_element" }
 
-            context 'and no types are specified by the check' do
-                it 'returns all types of elements'
+        it 'sets the auditor' do
+            auditor.each_candidate_element do |element|
+                element.auditor.should == auditor
             end
         end
-        it 'passes each element applicable for audit with the auditor set'
+
+        context 'when types have been provided' do
+            it 'provides those types of elements' do
+                elements = []
+                auditor.each_candidate_element [ Arachni::Link, Arachni::Header ] do |element|
+                    elements << element
+                end
+
+                elements.should == auditor.page.links | auditor.page.headers
+            end
+
+            context 'and are not supported' do
+                it 'raises ArgumentError' do
+                    expect {
+                        auditor.each_candidate_element [Arachni::Link::DOM]
+                    }.to raise_error ArgumentError
+                end
+            end
+        end
+        context 'when types have not been provided' do
+            it 'provides the types of elements specified by the check' do
+                elements = []
+                auditor.each_candidate_element do |element|
+                    elements << element
+                end
+
+                auditor.class.elements.should == [Arachni::Link, Arachni::Form]
+                elements.should == auditor.page.links | auditor.page.forms
+            end
+
+            context 'and no types are specified by the check' do
+                it 'provides all types of elements'do
+                    auditor.class.info[:elements].clear
+
+                    elements = []
+                    auditor.each_candidate_element do |element|
+                        elements << element
+                    end
+
+                    elements.should == auditor.page.elements
+                end
+            end
+        end
     end
 
     describe '#each_candidate_dom_element' do
-        context 'when types have been provided' do
-            it 'returns those types of elements'
-        end
-        context 'when types have not been provided' do
-            it 'returns the types of elements specified by the check'
+        before(:each) { auditor.load_page_from "#{@url}each_candidate_dom_element" }
 
-            context 'and no types are specified by the check' do
-                it 'returns all types of elements'
+        it 'sets the auditor' do
+            auditor.each_candidate_element do |element|
+                element.auditor.should == auditor
             end
         end
-        it 'passes each DOM element applicable for audit with the auditor set'
+
+        context 'when types have been provided' do
+            it 'provides those types of elements' do
+                elements = []
+                auditor.each_candidate_dom_element [ Arachni::Link::DOM ] do |element|
+                    elements << element
+                end
+
+                elements.should be_any
+                elements.should == auditor.page.links.select { |l| l.dom }
+            end
+
+            context 'and are not supported' do
+                it 'raises ArgumentError' do
+                    expect {
+                        auditor.each_candidate_dom_element [Arachni::Link]
+                    }.to raise_error ArgumentError
+                end
+            end
+        end
+        context 'when types have not been provided' do
+            it 'provides the types of elements specified by the check' do
+                auditor.class.info[:elements] = [Arachni::Form::DOM]
+                auditor.class.elements.should == [Arachni::Form::DOM]
+
+                elements = []
+                auditor.each_candidate_dom_element do |element|
+                    elements << element
+                end
+
+                elements.should == auditor.page.forms
+            end
+
+            context 'and no types are specified by the check' do
+                it 'provides all types of elements'do
+                    auditor.class.info[:elements].clear
+
+                    elements = []
+                    auditor.each_candidate_dom_element do |element|
+                        elements << element
+                    end
+
+                    elements.should ==
+                        auditor.page.links.select { |l| l.dom } | auditor.page.forms
+                end
+            end
+        end
     end
 
     describe '#with_browser_cluster' do

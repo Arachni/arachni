@@ -6,6 +6,37 @@ get '/' do
     'Match this!'
 end
 
+get '/each_candidate_element' do
+    cookies['cookie-input'] = 'blah'
+
+    <<HTML
+    <html>
+        <body>
+            <a href="?link-input=blah">Click me</a>
+            <form>
+                <input name='form-input'>
+            </form>
+        </body>
+    </html>
+HTML
+end
+
+get '/each_candidate_dom_element' do
+    cookies['cookie-input'] = 'blah'
+
+    <<HTML
+    <html>
+        <body>
+            <a href="?link-input=blah">Click me</a>
+            <a href="#/?dom-link-input=blah">Click me</a>
+            <form>
+                <input name='form-input'>
+            </form>
+        </body>
+    </html>
+HTML
+end
+
 get '/with_javascript' do
     <<HTML
     <html>
