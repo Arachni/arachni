@@ -41,9 +41,6 @@ class BrowserCluster
     require lib + 'browser_cluster/worker'
     require lib + 'browser_cluster/job'
 
-    # Load all job types.
-    Dir[lib + 'browser_cluster/jobs/*'].each { |j| require j }
-
     # Holds {BrowserCluster} {Job} types.
     #
     # @see BrowserCluster#queue
@@ -51,6 +48,9 @@ class BrowserCluster
     # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
     module Jobs
     end
+
+    # Load all job types.
+    Dir[lib + 'browser_cluster/jobs/*'].each { |j| require j }
 
     DEFAULT_OPTIONS = {
         # Amount of Browsers to keep in the pool and put to work.
@@ -232,7 +232,6 @@ class BrowserCluster
     def handle_job_result( result )
         return if @shutdown
         return if job_done? result.job
-        #fail_if_shutdown
 
         synchronize do
             exception_jail( false ) do
@@ -261,7 +260,7 @@ class BrowserCluster
     def shutdown
         @shutdown = true
 
-        # Clear the jobs -- don't forget this, it also remove the disk files for
+        # Clear the jobs -- don't forget this, it also removes the disk files for
         # the contained items.
         @jobs.clear
 

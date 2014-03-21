@@ -6,11 +6,7 @@
 
 module Arachni
 
-lib = Options.paths.lib
-require lib + 'browser'
-require lib + 'rpc/server/base'
-require lib + 'processes'
-require lib + 'framework'
+require Options.paths.lib + 'browser'
 
 class BrowserCluster
 
@@ -68,7 +64,7 @@ class Worker < Arachni::Browser
         @job = job
 
         begin
-            Timeout.timeout( JOB_TIMEOUT ) do
+            with_timeout JOB_TIMEOUT do
                 begin
                     @job.configure_and_run( self )
                 rescue => e
