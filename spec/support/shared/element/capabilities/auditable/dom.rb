@@ -5,7 +5,19 @@ shared_examples_for 'element_dom' do
         auditor.browser_cluster.wait
     end
 
-    it 'supports Marshal serialization'
+    it 'supports .deep_clone' do
+        called = false
+
+        # We do this inside a #submit handler to make sure the associations
+        # which are added during a submit are handled successfully.
+        subject.submit do
+            subject.deep_clone.should == subject
+            called = true
+        end
+        run
+
+        called.should be_true
+    end
 
     describe '#url=' do
         it 'raises NotImplementedError' do
