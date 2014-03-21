@@ -60,6 +60,14 @@ class OptionGroup
     end
     alias :to_hash :to_h
 
+    # @return   [Hash]
+    #   Hash of errors with the name of the invalid options as the keys.
+    #
+    # @abstract
+    def validate
+        {}
+    end
+
     def ==( other )
         hash == other.hash
     end

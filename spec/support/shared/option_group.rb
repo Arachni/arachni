@@ -83,8 +83,4 @@ shared_examples_for 'option_group' do
             subject.merge( group ).should == subject
         end
     end
-
-    describe '#validate' do
-        it 'validates the configuration'
-    end
 end
