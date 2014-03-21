@@ -70,6 +70,7 @@ class Dispatcher < Arachni::OptionGroup
     attr_accessor :node_nickname
 
     set_defaults(
+        node_ping_interval:  60.0,
         instance_port_range: [1025, 65535],
         pool_size:           5
     )
@@ -98,16 +99,14 @@ class Dispatcher < Arachni::OptionGroup
     #
     # @raise    ArgumentError   On invalid mode.
     def grid_mode=( mode )
-        if mode
-            mode = mode.to_sym
-            if !GRID_MODES.include?( mode )
-                fail ArgumentError, "Unknown grid mode: #{mode}"
-            end
+        return @grid_mode = nil if !mode
 
-            @grid_mode = mode
-        else
-            @grid_mode = nil
+        mode = mode.to_sym
+        if !GRID_MODES.include?( mode )
+            fail ArgumentError, "Unknown grid mode: #{mode}"
         end
+
+        @grid_mode = mode
     end
 
     # @return   [Bool]

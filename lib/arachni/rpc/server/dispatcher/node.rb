@@ -26,8 +26,6 @@ module RPC
 class Server::Dispatcher::Node
     include UI::Output
 
-    DEFAULT_PING_INTERVAL = 60
-
     #
     # Initializes the node by:
     #
@@ -58,8 +56,7 @@ class Server::Dispatcher::Node
             add_neighbour( neighbour, true )
 
             # grab the neighbour's neighbours
-            peer = connect_to_peer( neighbour )
-            peer.neighbours do |urls|
+            connect_to_peer( neighbour ).neighbours do |urls|
                 fail "Neighbour '#{neighbour}' is unreachable." if urls.rpc_exception?
                 urls.each { |url| @neighbours << url if url != @url }
             end
@@ -69,8 +66,7 @@ class Server::Dispatcher::Node
 
         log_updated_neighbours
 
-        interval = @opts.dispatcher.node_ping_interval || DEFAULT_PING_INTERVAL
-        ::EM.add_periodic_timer( interval ) do
+        ::EM.add_periodic_timer( @opts.dispatcher.node_ping_interval ) do
             ping
             check_for_comebacks
         end
