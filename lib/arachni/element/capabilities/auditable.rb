@@ -74,7 +74,7 @@ module Auditable
     end
 
     def marshal_dump
-        super.tap { |h| h.delete :auditor }
+        super.tap { |h| h.delete :@auditor }
     end
 
     # Provides a more generalized audit ID which does not take into account

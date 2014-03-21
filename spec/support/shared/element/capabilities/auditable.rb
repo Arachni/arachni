@@ -59,8 +59,8 @@ shared_examples_for 'auditable' do |options = {}|
     end
 
     describe '#marshal_dump' do
-        it 'excludes #auditor' do
-            subject.marshal_dump.should_not include :auditor
+        it 'excludes @auditor' do
+            subject.marshal_dump.should_not include :@auditor
         end
     end
 

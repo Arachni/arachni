@@ -9,10 +9,22 @@ module Arachni
 module Element::Capabilities
 module Auditable
 
+# We extend this from {DOM} in order for the {Auditable} mixin to be able to
+# call `super` when it overrides any of the included methods.
+class DOMPrepend
+    def marshal_dump
+        instance_variables.inject( {} ) do |h, iv|
+            next h if [:@parent, :@page, :@browser, :@element].include? iv
+            h[iv] = instance_variable_get( iv )
+            h
+        end
+    end
+end
+
 # Provides access to DOM operations for {Element elements}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-class DOM
+class DOM < DOMPrepend
     include Auditable::Output
     include Auditable
 
@@ -158,14 +170,6 @@ class DOM
         super.merge( type: type )
     end
     alias :to_hash :to_h
-
-    def marshal_dump
-        instance_variables.inject( {} ) do |h, iv|
-            next h if [:@parent, :@page, :@browser, :@element].include? iv
-            h[iv] = instance_variable_get( iv )
-            h
-        end
-    end
 
     def marshal_load( h )
         h.each { |k, v| instance_variable_set( k, v ) }
