@@ -272,6 +272,17 @@ class Options
     end
     alias :set :update
 
+    # @return   [Hash]
+    #   Hash of errors with the name of the invalid options/groups as the keys.
+    def validate
+        errors = {}
+        group_classes.keys.each do |name|
+            next if (group_errors = send(name).validate).empty?
+            errors[name] = group_errors
+        end
+        errors
+    end
+
     # @param    [String]    file    Saves `self` to `file` using YAML.
     def save( file )
         as_hash = to_h

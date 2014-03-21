@@ -75,6 +75,25 @@ describe Arachni::Options do
         end
     end
 
+    describe '#validate' do
+        context 'when valid' do
+            it 'returns nil' do
+                subject.validate.should be_empty
+            end
+        end
+
+        context 'when invalid' do
+            it 'returns errors by group' do
+                subject.login.check_pattern = /test/
+                subject.validate.should == {
+                    login: {
+                        check_url: "Option is missing."
+                    }
+                }
+            end
+        end
+    end
+
     describe '#url=' do
         it 'normalizes its argument' do
             subject.url = 'http://test.com/my path'
