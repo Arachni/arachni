@@ -24,7 +24,12 @@ describe Arachni::Element::Base do
         described_class.new options
     end
 
-    it 'supports Marshal serialization'
+    describe '#marshal_dump' do
+        it 'excludes #page' do
+            subject.page = Factory[:page]
+            subject.marshal_dump.should_not include :page
+        end
+    end
 
     describe '#url' do
         it 'returns the assigned URL' do

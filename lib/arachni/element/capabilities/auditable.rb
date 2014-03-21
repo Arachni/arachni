@@ -73,6 +73,10 @@ module Auditable
         @audit_options = {}
     end
 
+    def marshal_dump
+        super.tap { |h| h.delete :auditor }
+    end
+
     # Provides a more generalized audit ID which does not take into account
     # the auditor's name nor timeout value of injection string.
     #

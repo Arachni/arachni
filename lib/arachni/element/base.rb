@@ -91,7 +91,7 @@ class Base
 
     def marshal_dump
         instance_variables.inject({}) do |h, iv|
-            next h if [:@page, :@auditor].include? iv
+            next h if [:@page].include? iv
             h[iv] = instance_variable_get( iv )
             h
         end

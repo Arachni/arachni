@@ -5,18 +5,22 @@ shared_examples_for 'element_dom' do
         auditor.browser_cluster.wait
     end
 
-    it 'supports .deep_clone' do
-        called = false
+    describe '#marshal_dump' do
+        [:@parent, :@page, :@browser, :@element].each do |ivar|
+            it "excludes #{ivar}" do
+                called = false
 
-        # We do this inside a #submit handler to make sure the associations
-        # which are added during a submit are handled successfully.
-        subject.submit do
-            subject.deep_clone.should == subject
-            called = true
+                # We do this inside a #submit handler to make sure the associations
+                # which are added during a submit are handled successfully.
+                subject.submit do
+                    subject.marshal_dump.should_not include ivar
+                    called = true
+                end
+                run
+
+                called.should be_true
+            end
         end
-        run
-
-        called.should be_true
     end
 
     describe '#url=' do

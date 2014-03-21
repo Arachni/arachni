@@ -58,6 +58,12 @@ shared_examples_for 'auditable' do |options = {}|
         end
     end
 
+    describe '#marshal_dump' do
+        it 'excludes #auditor' do
+            subject.marshal_dump.should_not include :auditor
+        end
+    end
+
     describe '#dup' do
         let(:dupped) { auditable.dup }
 
