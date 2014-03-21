@@ -38,6 +38,12 @@ class Options
         # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
         class InvalidURL < Error
         end
+
+        # Raised when a provided 'localhost' or '127.0.0.1' {Options#url= URL}.
+        #
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        class ReservedHostname < Error
+        end
     end
 
     class <<self
@@ -197,15 +203,15 @@ class Options
     #
     # @raise    [Error::InvalidURL] If the given `url` is not valid.
     def url=( url )
-        if !url
-            return @url = nil
-        end
+        return @url = nil if !url
 
         parsed = Arachni::URI( url.to_s )
 
         if parsed.to_s.empty? || !parsed.absolute?
             fail Error::InvalidURL,
                  'Invalid URL argument, please provide a full absolute URL and try again.'
+        elsif %w(localhost 127.0.0.1).include? parsed.host
+            fail Error::ReservedHostname, "'#{parsed.host}' is reserved, please use a different hostname."
         else
             if scope.https_only? && parsed.scheme != 'https'
                 fail Error::InvalidURL,

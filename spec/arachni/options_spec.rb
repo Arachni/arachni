@@ -110,31 +110,42 @@ describe Arachni::Options do
             subject.url.should == 'https://test.com/'
         end
 
+        context 'when passed reserved host' do
+            %w(localhost 127.0.0.1).each do |hostname|
+                context hostname do
+                    it "raises #{described_class::Error::ReservedHostname}" do
+                        expect { subject.url = "http://#{hostname}" }.to raise_error
+                            described_class::Error::ReservedHostname
+                    end
+                end
+            end
+        end
+
         context 'when nil is passed' do
-            it "raises #{described_class}::Error::InvalidURL" do
+            it "raises #{described_class::Error::InvalidURL}" do
                 expect { subject.url = '/my path' }.to raise_error
-                described_class::Error::InvalidURL
+                    described_class::Error::InvalidURL
             end
         end
 
         context 'when a relative URL is passed' do
-            it "raises #{described_class}::Error::InvalidURL" do
+            it "raises #{described_class::Error::InvalidURL}" do
                 expect { subject.url = '/my path' }.to raise_error
-                described_class::Error::InvalidURL
+                    described_class::Error::InvalidURL
             end
         end
 
         context 'when a URL with invalid scheme is passed' do
-            it "raises #{described_class}::Error::InvalidURL" do
+            it "raises #{described_class::Error::InvalidURL}" do
                 expect { subject.url = 'httpss://test.com/my path' }.to raise_error
-                described_class::Error::InvalidURL
+                    described_class::Error::InvalidURL
             end
         end
 
         context 'when a URL with no scheme is passed' do
-            it "raises #{described_class}::Error::InvalidURL" do
+            it "raises #{described_class::Error::InvalidURL}" do
                 expect { subject.url = 'test.com/my path' }.to raise_error
-                described_class::Error::InvalidURL
+                    described_class::Error::InvalidURL
             end
         end
     end
