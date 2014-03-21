@@ -26,5 +26,14 @@ class Login < Arachni::OptionGroup
     # @see Session
     attr_accessor :check_pattern
 
+    def validate
+        return {} if (check_url && check_pattern) || (!check_url && !check_pattern)
+
+        {
+            (check_url ? :check_pattern : :check_url) =>
+                'Option is missing.'
+        }
+    end
+
 end
 end
