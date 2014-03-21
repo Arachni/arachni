@@ -305,7 +305,18 @@ shared_examples_for 'auditable' do |options = {}|
 
         context 'when called with option' do
             describe :submit do
-                it 'uses them for the #submit call'
+                it 'uses them for the #submit call' do
+                    options = { cookies: { stuff: 'blah' }}
+
+                    called = false
+                    each = proc do |mutation|
+                        mutation.should receive(:submit).with(options)
+                        called = true
+                    end
+                    auditable.audit( seed, each_mutation: each, submit: options ){}
+
+                    called.should be_true
+                end
             end
 
             describe :each_mutation do
