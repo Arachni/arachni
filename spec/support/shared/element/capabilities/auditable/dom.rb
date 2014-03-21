@@ -5,6 +5,8 @@ shared_examples_for 'element_dom' do
         auditor.browser_cluster.wait
     end
 
+    it 'supports Marshal serialization'
+
     describe '#url=' do
         it 'raises NotImplementedError' do
             expect { subject.url = url }.to raise_error NotImplementedError
@@ -16,8 +18,6 @@ shared_examples_for 'element_dom' do
             expect { subject.action = url }.to raise_error NotImplementedError
         end
     end
-
-    it 'supports Marshal serialization'
 
     describe '#prepare_for_report' do
         it 'removes #page' do
@@ -127,7 +127,24 @@ shared_examples_for 'element_dom' do
             called.should be_true
         end
 
-        it 'adds the submission transition to the Page::DOM#transitions'
+        it 'adds the submission transition to the Page::DOM#transitions' do
+            transition = nil
+            subject.with_browser do |browser|
+                subject.browser = browser
+                browser.load subject.page
+                transition = subject.trigger
+            end
+            subject.auditor.browser_cluster.wait
+
+            submitted_page = nil
+            subject.dup.submit do |page|
+                submitted_page = page
+            end
+            subject.auditor.browser_cluster.wait
+
+            subject.page.dom.transitions.should_not include transition
+            submitted_page.dom.transitions.should include transition
+        end
 
         context 'when the element could not be submitted' do
             it 'does not call the block' do
