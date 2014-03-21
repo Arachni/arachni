@@ -58,6 +58,7 @@ module Capabilities::Submitable
     #
     # @see #http_request
     def submit( options = {}, &block )
+        options                   = options.dup
         options[:parameters]      = @inputs.dup
         options[:follow_location] = true if !options.include?( :follow_location )
 
