@@ -474,7 +474,7 @@ class OptionParser < UI::CLI::OptionParser
     def validate_login
         if (!options.login.check_url && options.login.check_pattern) ||
             (options.login.check_url && !options.login.check_pattern)
-            print_error "Both '--login-check-url' and '--login-check-pattern'" <
+            print_error "Both '--login-check-url' and '--login-check-pattern'" <<
                             ' options are required.'
             exit 1
         end
