@@ -6,6 +6,7 @@
 require_relative 'inputable'
 require_relative 'mutable'
 require_relative 'submitable'
+require_relative 'with_auditor'
 
 module Arachni
 module Element::Capabilities
@@ -19,21 +20,13 @@ module Auditable
     include Inputable
     include Submitable
     include Mutable
+    include WithAuditor
 
     # Load and include all available analysis/audit techniques.
     Dir.glob( File.dirname( __FILE__ ) + '/auditable/**/*.rb' ).each { |f| require f }
 
-    include Output
-
-    # Sets the auditor for this element.
-    #
-    # The auditor provides its output, HTTP and issue logging interfaces.
-    #
-    # @return   [Arachni::Check::Auditor]
-    attr_accessor   :auditor
-
-    # @return [Hash]    Audit and general options for convenience's sake.
-    attr_accessor   :audit_options
+    # @return   [Hash]  Audit and general options for convenience's sake.
+    attr_accessor :audit_options
 
     # Default audit options.
     OPTIONS = {
@@ -73,10 +66,6 @@ module Auditable
         @audit_options = {}
     end
 
-    def marshal_dump
-        super.tap { |h| h.delete :@auditor }
-    end
-
     # Provides a more generalized audit ID which does not take into account
     # the auditor's name nor timeout value of injection string.
     #
@@ -93,22 +82,6 @@ module Auditable
             no_timeout:       true,
             no_injection_str: true
         )).persistent_hash
-    end
-
-    # @return   [Bool]  `true` if it has no auditor, `false` otherwise.
-    def orphan?
-        !auditor
-    end
-
-    # Removes the {#auditor} from this element.
-    def remove_auditor
-        self.auditor = nil
-    end
-
-    # Removes the associated {#auditor}.
-    def prepare_for_report
-        super if defined? super
-        remove_auditor
     end
 
     # Submits mutations of self and calls the block to handle the responses.
@@ -247,7 +220,6 @@ module Auditable
     private
 
     def copy_auditable( other )
-        other.auditor       = self.auditor
         other.audit_options = self.audit_options.dup
         other
     end

@@ -3,7 +3,7 @@
     All rights reserved.
 =end
 
-require_relative 'output'
+#require_relative 'output'
 
 module Arachni
 module Element::Capabilities
@@ -25,9 +25,7 @@ end
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class DOM < DOMPrepend
-    include Auditable::Output
     include Auditable
-
     extend Forwardable
 
     # @return   [Element::Base]
@@ -155,7 +153,7 @@ class DOM < DOMPrepend
     def dup
         new = self.class.new( dup_options )
         new.parent = parent
-        copy_auditable( copy_mutable( copy_inputable( new ) ) )
+        copy_with_auditor( copy_auditable( copy_mutable( copy_inputable( new ) ) ) )
     end
 
     def hash

@@ -1,20 +1,30 @@
 require 'spec_helper'
 
 describe Arachni::Element::Body do
+    it_should_behave_like 'with_auditor'
 
     before :each do
-        @framework.reset if @framework
-        @framework = Arachni::Framework.new
+        @url  = web_server_url_for( :body )
+        @framework ||= Arachni::Framework.new
+        @page = Arachni::Page.from_url( @url )
+        @auditor = Auditor.new( @page, @framework )
     end
 
-    before :all do
-        @url  = web_server_url_for( :body )
-        @page = Arachni::Page.from_url( @url )
+    after :each do
+        @framework.clean_up
+        @framework.reset
+        reset_options
+    end
 
-        @auditor = Auditor.new( @page, Arachni::Framework.new )
+    subject do
+        described_class.new( @page )
+    end
 
-        @body = described_class.new( @page )
-        @body.auditor = @auditor
+    let(:auditor) { @auditor }
+    let(:auditable) do
+        s = subject.dup
+        s.auditor = auditor
+        s
     end
 
     let(:valid_pattern) { /match/i }
@@ -24,7 +34,7 @@ describe Arachni::Element::Body do
         context 'when defaulting to current page' do
             context 'and it matches the given pattern' do
                 it 'logs an issue' do
-                    @body.match_and_log( valid_pattern )
+                    auditable.match_and_log( valid_pattern )
 
                     logged_issue = @framework.checks.results.first
                     logged_issue.should be_true
@@ -39,7 +49,7 @@ describe Arachni::Element::Body do
 
             context 'and it does not matche the given pattern' do
                 it 'does not log an issue' do
-                    @body.match_and_log( invalid_pattern )
+                    auditable.match_and_log( invalid_pattern )
                     @framework.checks.results.should be_empty
                 end
             end
@@ -48,15 +58,15 @@ describe Arachni::Element::Body do
 
     describe '#dup' do
         it 'duplicates self' do
-            body = @body.dup
-            body.should == @body
-            body.object_id.should_not == @body
+            body = auditable.dup
+            body.should == auditable
+            body.object_id.should_not == auditable
         end
     end
 
     describe '#to_h' do
         it 'returns a hash' do
-            @body.to_h.should == {
+            auditable.to_h.should == {
                 type: :body,
                 url:  @page.url
             }

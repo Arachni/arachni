@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe Arachni::Element::Server do
+    it_should_behave_like 'with_auditor'
+
     def response
         Arachni::HTTP::Response.new(
             request: Arachni::HTTP::Request.new(
@@ -21,28 +23,37 @@ describe Arachni::Element::Server do
     end
 
     before :each do
-        @framework.reset if @framework
-        @framework = Arachni::Framework.new
+        @framework ||= Arachni::Framework.new
+        @auditor = Auditor.new( nil, @framework )
     end
 
-    before :all do
-        @auditor = Auditor.new( nil, Arachni::Framework.new )
+    after :each do
+        @framework.clean_up
+        @framework.reset
+        reset_options
+    end
 
-        @server = described_class.new( response )
-        @server.auditor = @auditor
+    subject do
+        described_class.new( response )
+    end
 
-        @url = web_server_url_for( :auditor )
+    let(:url) { web_server_url_for :auditor }
+    let(:auditor) { @auditor }
+    let(:auditable) do
+        s = subject.dup
+        s.auditor = auditor
+        s
     end
 
     describe '#log_remote_file_if_exists' do
         before do
-            @base_url = @url + '/log_remote_file_if_exists/'
+            @base_url = url + '/log_remote_file_if_exists/'
         end
 
         context 'when a remote file exists' do
             it 'logs an issue ' do
                 file = @base_url + 'true'
-                @server.log_remote_file_if_exists( file )
+                auditable.log_remote_file_if_exists( file )
                 @framework.http.run
 
                 logged_issue = @framework.checks.results.first
@@ -59,7 +70,7 @@ describe Arachni::Element::Server do
 
         context 'when a remote file does not exist' do
             it 'does not log an issue' do
-                @server.log_remote_file_if_exists( @base_url + 'false' )
+                auditable.log_remote_file_if_exists( @base_url + 'false' )
                 @framework.http.run
                 @framework.checks.results.should be_empty
             end
@@ -68,13 +79,13 @@ describe Arachni::Element::Server do
 
     describe '#remote_file_exist?' do
         before do
-            @base_url = @url + '/log_remote_file_if_exists/'
+            @base_url = url + '/log_remote_file_if_exists/'
         end
 
         context 'when a remote file exists' do
             it 'returns true' do
                 exists = false
-                @server.remote_file_exist?( @base_url + 'true' ) { |bool| exists = bool }
+                auditable.remote_file_exist?( @base_url + 'true' ) { |bool| exists = bool }
                 @framework.http.run
                 exists.should be_true
             end
@@ -83,7 +94,7 @@ describe Arachni::Element::Server do
         context 'when a remote file does not exist' do
             it 'returns false' do
                 exists = true
-                @server.remote_file_exist?( @base_url + 'false' ) { |bool| exists = bool }
+                auditable.remote_file_exist?( @base_url + 'false' ) { |bool| exists = bool }
                 @framework.http.run
                 exists.should be_false
             end
@@ -92,7 +103,7 @@ describe Arachni::Element::Server do
         context 'when the response is a redirect' do
             it 'returns false' do
                 exists = true
-                @server.remote_file_exist?( @base_url + 'redirect' ) { |bool| exists = bool }
+                auditable.remote_file_exist?( @base_url + 'redirect' ) { |bool| exists = bool }
                 @framework.http.run
                 exists.should be_false
             end
@@ -106,7 +117,7 @@ describe Arachni::Element::Server do
                     it 'returns false' do
                         exists = true
                         url = @_404_url + 'static/this_does_not_exist'
-                        @server.remote_file_exist?( url ) { |bool| exists = bool }
+                        auditable.remote_file_exist?( url ) { |bool| exists = bool }
                         @framework.http.run
                         exists.should be_false
                     end
@@ -117,7 +128,7 @@ describe Arachni::Element::Server do
                         it 'returns false' do
                             exists = true
                             url = @_404_url + 'invalid/this_does_not_exist'
-                            @server.remote_file_exist?( url ) { |bool| exists = bool }
+                            auditable.remote_file_exist?( url ) { |bool| exists = bool }
                             @framework.http.run
                             exists.should be_false
                         end
@@ -127,7 +138,7 @@ describe Arachni::Element::Server do
                         it 'returns false' do
                             exists = true
                             url = @_404_url + 'dynamic/this_does_not_exist'
-                            @server.remote_file_exist?( url ) { |bool| exists = bool }
+                            auditable.remote_file_exist?( url ) { |bool| exists = bool }
                             @framework.http.run
                             exists.should be_false
                         end
@@ -138,7 +149,7 @@ describe Arachni::Element::Server do
                             exist = []
                             100.times {
                                 url = @_404_url + 'combo/this_does_not_exist_' + rand( 9999 ).to_s
-                                @server.remote_file_exist?( url ) { |bool| exist << bool }
+                                auditable.remote_file_exist?( url ) { |bool| exist << bool }
                             }
                             @framework.http.run
                             exist.include?( true ).should be_false
@@ -152,15 +163,15 @@ describe Arachni::Element::Server do
 
     describe '#dup' do
         it 'duplicates self' do
-            server = @server.dup
-            server.should == @server
-            server.object_id.should_not == @server
+            server = auditable.dup
+            server.should == auditable
+            server.object_id.should_not == auditable
         end
     end
 
     describe '#to_h' do
         it 'returns a hash' do
-            @server.to_h.should == {
+            auditable.to_h.should == {
                 type: :server,
                 url:  'http://a-url.com/?myvar=my%20value'
             }

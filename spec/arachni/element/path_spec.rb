@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe Arachni::Element::Path do
+    it_should_behave_like 'with_auditor'
+
     let( :response ) do
         Arachni::HTTP::Response.new(
             request: Arachni::HTTP::Request.new(

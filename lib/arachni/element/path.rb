@@ -7,24 +7,15 @@ require Arachni::Options.paths.lib + 'element/base'
 
 module Arachni::Element
 class Path < Base
-
-    attr_accessor :auditor
+    include Capabilities::WithAuditor
 
     def initialize( response )
-        @response = response
         super url: response.url
+        @initialized_options = response
     end
 
     def action
         url
-    end
-
-    def remove_auditor
-        @auditor = nil
-    end
-
-    def dup
-        self.class.new @response
     end
 
     def hash

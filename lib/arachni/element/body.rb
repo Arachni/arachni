@@ -7,24 +7,15 @@ require Arachni::Options.paths.lib + 'element/base'
 
 module Arachni::Element
 class Body < Base
-
-    attr_accessor :auditor
+    include Capabilities::WithAuditor
 
     def initialize( page )
-        @page = page
         super url: page.url
+        @initialized_options = page
     end
 
     def action
         url
-    end
-
-    def remove_auditor
-        @auditor = nil
-    end
-
-    def dup
-        self.class.new( @page ) { |b| b.auditor = @auditor }
     end
 
     def hash
