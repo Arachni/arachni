@@ -256,6 +256,7 @@ class Framework
         parser.platforms
         parser.session
         parser.profiles
+        parser.browser_cluster
         parser.parse
 
         if options.checks.any?

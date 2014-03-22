@@ -18,28 +18,31 @@ class Worker < Arachni::Browser
 
     personalize_output
 
-    # Maximum allowed time for jobs in seconds. One hour is pretty close to
-    # not having a timeout at all but it's good to at least have the option
-    # for future use.
-    JOB_TIMEOUT = 3600
-
-    # Re-spawn the browser every `DEFAULT_MAX_TIME_TO_LIVE` jobs.
-    DEFAULT_MAX_TIME_TO_LIVE = 100
-
     # @return    [BrowserCluster]
     attr_reader :master
 
-    # @return [Job] Currently assigned job.
+    # @return    [Job] Currently assigned job.
     attr_reader :job
 
-    # @return [Integer] Remaining time-to-live measured in jobs.
+    # @return   [Integer]
+    attr_accessor :job_timeout
+
+    # @return    [Integer]
+    attr_accessor :max_time_to_live
+
+    # @return    [Integer] Remaining time-to-live measured in jobs.
     attr_reader :time_to_live
 
-    def initialize( options )
+    def initialize( options = {} )
         javascript_token  = options.delete( :javascript_token )
         @master           = options.delete( :master )
-        @max_time_to_live = options.delete( :max_time_to_live ) || DEFAULT_MAX_TIME_TO_LIVE
+
+        @max_time_to_live = options.delete( :max_time_to_live ) ||
+            Options.browser_cluster.worker_time_to_live
         @time_to_live     = @max_time_to_live
+
+        @job_timeout      = options.delete( :job_timeout ) ||
+            Options.browser_cluster.job_timeout
 
         # Don't store pages if there's a master, we'll be sending them to him
         # as soon as they're logged.
@@ -64,7 +67,7 @@ class Worker < Arachni::Browser
         @job = job
 
         begin
-            with_timeout JOB_TIMEOUT do
+            with_timeout @job_timeout do
                 begin
                     @job.configure_and_run( self )
                 rescue => e
@@ -73,7 +76,7 @@ class Worker < Arachni::Browser
                 end
             end
         rescue TimeoutError
-            print_error "Job timed-out after #{JOB_TIMEOUT} seconds: #{job}"
+            print_error "Job timed-out after #{@job_timeout} seconds: #{job}"
         end
 
         @window_responses.clear

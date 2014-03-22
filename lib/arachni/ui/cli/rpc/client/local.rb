@@ -33,6 +33,7 @@ class Local
         parser.platforms
         parser.session
         parser.profiles
+        parser.browser_cluster
         parser.distribution
         parser.parse
 

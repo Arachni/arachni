@@ -14,6 +14,21 @@ describe Arachni::BrowserCluster do
         @cluster.shutdown if @cluster
     end
 
+    describe '#initialize' do
+        describe :pool_size do
+            it 'sets the amount of browsers to instantiate' do
+                @cluster = described_class.new( pool_size: 3 )
+                @cluster.workers.size.should == 3
+            end
+
+            it "defaults to #{Arachni::OptionGroups::BrowserCluster}#pool_size" do
+                Arachni::Options.browser_cluster.pool_size = 10
+                @cluster = described_class.new
+                @cluster.workers.size.should == 10
+            end
+        end
+    end
+
     describe '#with_browser' do
         it 'provides a worker to the block' do
             worker = nil
@@ -25,24 +40,6 @@ describe Arachni::BrowserCluster do
             @cluster.wait
 
             worker.should be_kind_of described_class::Worker
-        end
-    end
-
-    describe '#initialize' do
-        describe :pool_size do
-            it 'sets the amount of browsers to instantiate' do
-                @cluster = described_class.new( pool_size: 3 )
-                @cluster.workers.size.should == 3
-            end
-
-            it 'defaults to 6' do
-                @cluster = described_class.new
-                @cluster.workers.size.should == 6
-            end
-        end
-
-        describe :time_to_live do
-            it 'sets how many pages each browser should analyze before it is restarted'
         end
     end
 

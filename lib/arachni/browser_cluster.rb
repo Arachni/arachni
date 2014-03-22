@@ -52,11 +52,6 @@ class BrowserCluster
     # Load all job types.
     Dir[lib + 'browser_cluster/jobs/*'].each { |j| require j }
 
-    DEFAULT_OPTIONS = {
-        # Amount of Browsers to keep in the pool and put to work.
-        pool_size: 6
-    }
-
     # @return   [Integer]   Amount of browser instances in the pool.
     attr_reader :pool_size
 
@@ -87,7 +82,9 @@ class BrowserCluster
     #
     # @raise    ArgumentError   On missing `:handler` option.
     def initialize( options = {} )
-        DEFAULT_OPTIONS.merge( options ).each do |k, v|
+        {
+            pool_size: Options.browser_cluster.pool_size
+        }.merge( options ).each do |k, v|
             begin
                 send( "#{k}=", try_dup( v ) )
             rescue NoMethodError

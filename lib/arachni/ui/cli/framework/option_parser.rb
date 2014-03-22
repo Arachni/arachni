@@ -418,6 +418,29 @@ class OptionParser < UI::CLI::OptionParser
         end
     end
 
+    def browser_cluster
+        separator ''
+        separator 'Browser cluster'
+
+        on( '--browser-cluster-pool-size SIZE', Integer,
+            'Amount of browser workers to keep in the pool and put to work.'
+        ) do |pool_size|
+            options.browser_cluster.pool_size = pool_size
+        end
+
+        on( '--browser-cluster-job-timeout SECONDS', Integer,
+            'Maximum allowed time for each job.'
+        ) do |job_timeout|
+            options.browser_cluster.job_timeout = job_timeout
+        end
+
+        on( '--browser-cluster-worker-time-to-live COUNT', Integer,
+            'Re-spawn the browser of each worker every COUNT jobs.'
+        ) do |worker_time_to_live|
+            options.browser_cluster.worker_time_to_live = worker_time_to_live
+        end
+    end
+
     def profiles
         separator ''
         separator 'Profiles'
