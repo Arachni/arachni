@@ -1,68 +1,67 @@
 require 'sinatra'
 require 'sinatra/contrib'
 
-get '/onsubmit' do
+get '/' do
     <<-EOHTML
-<html>
-    <script>
-        function submitForm() {
-            document.getElementById("container").innerHTML =
-                document.getElementById("my-input").value;
-        }
-    </script>
-
-    <body>
-        <form onsubmit="submitForm();return false;">
-            <input id="my-input" name="my-input" />
-        </fom>
-
-        <div id="container">
-        </div>
-    </body>
-</html>
+        <a href="/link">Link</a>
+        <a href="/form">Form</a>
     EOHTML
 end
 
-get '/onkeypress' do
+get '/link' do
     <<-EOHTML
-<html>
-    <script>
-        function onKeyPress() {
-            document.getElementById("container").innerHTML =
-                document.getElementById("my-input").value;
-        }
-    </script>
-
-    <body>
-        <form>
-            <input onkeypress="onKeyPress();" id="my-input" name="my-input" />
-        </fom>
-
-        <div id="container">
-        </div>
-    </body>
-</html>
+        <a href="/link/straight#/?input=default">Link</a>
     EOHTML
 end
 
-get '/onchange' do
+get '/link/straight' do
     <<-EOHTML
-<html>
-    <script>
-        function onChange() {
-            document.getElementById("container").innerHTML =
-                document.getElementById("my-input").value;
-        }
-    </script>
+    <html>
+        <script>
+            function getQueryVariable(variable) {
+                var query = window.location.hash.split('?')[1];
+                var vars = query.split('&');
+                for (var i = 0; i < vars.length; i++) {
+                    var pair = vars[i].split('=');
+                    if (decodeURIComponent(pair[0]) == variable) {
+                        return decodeURIComponent(pair[1]);
+                    }
+                }
+            }
+        </script>
 
-    <body>
-        <form>
-            <input onchange="onChange();" id="my-input" name="my-input" />
-        </fom>
+        <body>
+            <div id="container">
+            </div>
+
+            <script>
+                document.getElementById("container").innerHTML = getQueryVariable('input');
+            </script>
+        </body>
+    </html>
+    EOHTML
+end
+
+get '/form' do
+    <<-EOHTML
+        <a href="/form/straight">Form</a>
+    EOHTML
+end
+
+get '/form/straight' do
+    <<-EOHTML
+        <script>
+            function handleSubmit() {
+                document.getElementById("container").innerHTML =
+                    document.getElementById("my-input").value;
+            }
+        </script>
 
         <div id="container">
         </div>
-    </body>
-</html>
+
+        <form action="javascript:handleSubmit()">
+            <input id='my-input' value='default' />
+        </form>
     EOHTML
 end

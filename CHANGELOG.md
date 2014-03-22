@@ -89,6 +89,7 @@
 - Checks
     - Active
         - New
+            - `xss_dom` -- Injects HTML code via DOM-based links and forms.
             - `xss_dom_script_context` -- Injects JavaScript code via DOM-based
                 links and forms.
         - `xss` -- Added support for Browser-based taint-analysis.
