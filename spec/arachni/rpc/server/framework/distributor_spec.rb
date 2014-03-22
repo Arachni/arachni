@@ -407,7 +407,13 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 reports:   {},
                 plugins:   {},
                 no_fingerprinting: false,
-                authorized_by:     nil
+                authorized_by:     nil,
+                browser_cluster: {
+                    pool_size:           6,
+                    job_timeout:         50,
+                    worker_time_to_live: 100,
+                    ignore_images:       false
+                }
             }
         end
     end
