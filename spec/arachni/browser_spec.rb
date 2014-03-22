@@ -1365,6 +1365,42 @@ describe Arachni::Browser do
             @browser.source.should include( ua )
         end
 
+        context "#{Arachni::OptionGroups::BrowserCluster}#ignore_images" do
+            context true do
+                it 'does not load images' do
+                    Arachni::Options.browser_cluster.ignore_images = true
+                    @browser.shutdown
+                    @browser = described_class.new
+
+                    loaded_image = false
+                    @browser.on_response do |response|
+                        loaded_image ||= (response.parsed_url.resource_extension == 'png')
+                    end
+
+                    @browser.load( "#{@url}form-with-image-button" )
+
+                    loaded_image.should be_false
+                end
+            end
+
+            context false do
+                it 'does not load images' do
+                    Arachni::Options.browser_cluster.ignore_images = false
+                    @browser.shutdown
+                    @browser = described_class.new
+
+                    loaded_image = false
+                    @browser.on_response do |response|
+                        loaded_image ||= (response.parsed_url.resource_extension == 'png')
+                    end
+
+                    @browser.load( "#{@url}form-with-image-button" )
+
+                    loaded_image.should be_true
+                end
+            end
+        end
+
         context 'when Options#scope_exclude_path_patterns has bee configured' do
             it 'respects scope restrictions' do
                 pages = @browser.load( @url + '/explore' ).start_capture.trigger_events.page_snapshots
