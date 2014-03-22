@@ -22,10 +22,15 @@ class BrowserCluster < Arachni::OptionGroup
     #   Re-spawn the browser every {#worker_time_to_live} jobs.
     attr_accessor :worker_time_to_live
 
+    # @return   [Bool]
+    #   Should the browser's avoid loading images?
+    attr_accessor :ignore_images
+
     set_defaults(
         pool_size:           6,
         job_timeout:         3_600,
-        worker_time_to_live: 100
+        worker_time_to_live: 100,
+        ignore_images:       false
     )
 
 end

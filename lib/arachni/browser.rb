@@ -1106,7 +1106,7 @@ class Browser
             'phantomjs.page.settings.userAgent'  => Options.http.user_agent,
             'phantomjs.page.customHeaders.X-Arachni-Browser-Auth' => auth_token,
             'phantomjs.page.settings.resourceTimeout' => Options.http.request_timeout,
-            #'phantomjs.page.settings.loadImages' => false
+            'phantomjs.page.settings.loadImages' => !Options.browser_cluster.ignore_images
         )
     end
 

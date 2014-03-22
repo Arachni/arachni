@@ -439,6 +439,10 @@ class OptionParser < UI::CLI::OptionParser
         ) do |worker_time_to_live|
             options.browser_cluster.worker_time_to_live = worker_time_to_live
         end
+
+        on( '--browser-cluster-ignore-images', 'Do not load images.' ) do |ignore_images|
+            options.browser_cluster.ignore_images = ignore_images
+        end
     end
 
     def profiles
