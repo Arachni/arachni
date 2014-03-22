@@ -35,7 +35,6 @@ get '/link/straight' do
             </div>
 
             <script>
-                //window.location = getQueryVariable('input');
                 eval(getQueryVariable('input'));
             </script>
         </body>
