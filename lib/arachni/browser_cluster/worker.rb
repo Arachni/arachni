@@ -66,6 +66,10 @@ class Worker < Arachni::Browser
     def run_job( job )
         @job = job
 
+        # PhantomJS may have crashed (it happens sometimes) so make sure that
+        # we've got a live one before running the job.
+        ensure_phantomjs
+
         begin
             with_timeout @job_timeout do
                 begin
@@ -180,19 +184,38 @@ class Worker < Arachni::Browser
         end
     end
 
-    def handle_ttl
-        @time_to_live ||= @max_time_to_live
-        @time_to_live -= 1
-        return if @time_to_live != 0
+    def ensure_phantomjs
+        return if phantomjs_alive?
+        phantomjs_respawn
+    end
+
+    def phantomjs_alive?
+        Process.getpgid( @phantomjs_pid )
+        true
+    rescue Errno::ESRCH
+        false
+    end
+
+    def phantomjs_respawn
         @time_to_live = @max_time_to_live
 
-        @watir.close
+        # If PhantomJS is already dead this will block for quite some time so
+        # beware.
+        @watir.close if phantomjs_alive?
         kill_phantomjs
 
         @watir    = nil
         @selenium = nil
 
         @watir = ::Watir::Browser.new( *phantomjs )
+    end
+
+    def handle_ttl
+        @time_to_live ||= @max_time_to_live
+        @time_to_live -= 1
+        return if @time_to_live != 0
+
+        phantomjs_respawn
     end
 
     def save_response( response )

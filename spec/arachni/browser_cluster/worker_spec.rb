@@ -63,6 +63,19 @@ describe Arachni::BrowserCluster::Worker do
             job.should == custom_job
         end
 
+        context 'before running the job' do
+            it 'ensures that there is a live PhantomJS process' do
+                Arachni::Processes::Manager.kill subject.phantomjs_pid
+                expect{ Process.getpgid( subject.phantomjs_pid ) }.to raise_error Errno::ESRCH
+                dead_pid = subject.phantomjs_pid
+
+                @cluster.queue( custom_job ){}
+                @cluster.wait
+
+                subject.phantomjs_pid.should_not == dead_pid
+                Process.getpgid( subject.phantomjs_pid ).should be_true
+            end
+        end
         context 'when the job finishes' do
             let(:page) { Arachni::Page.from_url(url)  }
 
@@ -181,18 +194,14 @@ describe Arachni::BrowserCluster::Worker do
 
                     subject.max_time_to_live = 1
 
-                    watir = subject.watir
-                    browser_client = subject.watir.driver.instance_variable_get(:@bridge).
-                        http.instance_variable_get(:@http)
-                    browser_port = browser_client.port
+                    watir         = subject.watir
+                    phantomjs_pid = subject.phantomjs_pid
 
                     @cluster.queue( custom_job ) {}
                     @cluster.wait
 
                     watir.should_not == subject.watir
-                    browser_port.should_not == subject.watir.driver.
-                        instance_variable_get(:@bridge).
-                        http.instance_variable_get(:@http).port
+                    phantomjs_pid.should_not == subject.phantomjs_pid
                 end
             end
         end
