@@ -97,8 +97,12 @@ module Distributor
         workloads = split_page_workload( pages.compact )
         return if workloads.empty?
 
-        # Grab our chunk of the pages...
-        self_workload = workloads.pop
+        instances = preferred_slaves
+
+        # Grab our chunk of the pages from the last slot (which could be empty
+        # if there's not enough workload), since we've got the added burden of
+        # performing browser analysis while the slaves do not...
+        self_workload = workloads.delete_at( instances.size ) || []
 
         # ... and allow us to preload the next page from it...
         block.call self_workload.pop if block_given?
@@ -106,10 +110,17 @@ module Distributor
         # ...and just push the rest to be audited ASAP.
         self_workload.each { |page| push_to_distributed_page_queue( page ) }
 
-        instances = preferred_slaves
-
-        # Assign the workload amongst the slaves.
+        # Assign the rest of the workload amongst the slaves.
         workloads.each.with_index do |workload, i|
+            # We won't see these pages again so this is our only chance to
+            # process them.
+            (workload - self_workload).each do |p|
+                add_to_sitemap( p )
+                # Push any new resources to the audit queue.
+                push_paths_from_page( p ) if crawl?
+                perform_browser_analysis p
+            end
+
             # Assign the workload to the slave.
             connect_to_instance( instances[i] ).
                 framework.process_pages( workload ) do
@@ -345,9 +356,12 @@ module Distributor
     # @param    [Block] block
     #   Block to be called once the slaves are ready to receive workload.
     def initialize_slaves( &block )
+        # NOTE: Leave this commented, splitting the default value in half (or more)
+        # causes performance issues.
+        #
         # Adjust the max HTTP concurrency setting for the multi-Instance scan.
-        @opts.http.request_concurrency /= slave_urls.size + 1
-        http.max_concurrency = @opts.http.request_concurrency
+        # @opts.http.request_concurrency /= slave_urls.size + 1
+        # http.max_concurrency = @opts.http.request_concurrency
 
         slave_options = prepare_slave_options
 

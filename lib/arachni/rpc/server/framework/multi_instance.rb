@@ -208,6 +208,11 @@ module MultiInstance
 
     private
 
+    def perform_browser_analysis( *args )
+        return slave_perform_browser_analysis( *args ) if slave?
+        super
+    end
+
     def multi_run
         if master?
             master_run

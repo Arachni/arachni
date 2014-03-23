@@ -159,12 +159,6 @@ module Master
     def slave_sitrep( data, url, token = nil )
         return false if master? && !valid_token?( token )
 
-        if data[:browser_cluster_skip_lookup]
-            browser_cluster.update_skip_states_for(
-                browser_job.id, data[:browser_cluster_skip_lookup]
-            )
-        end
-
         update_issues( data[:issues] || [], token )
         slave_done( url, token ) if data[:audit_done]
 
@@ -253,31 +247,36 @@ module Master
         while !page_limit_reached? && (page = next_page || pop_page_from_url_queue)
             next_page = nil
 
-            # We don't care about the results, we just want to pass the seed
-            # page's elements through the filters to be marked as seen.
-            split_page_workload( [page] ) if @first_run
+            page_lookahead = calculate_workload_size( @url_queue.size )
+            if page_lookahead > 0
+                # We don't care about the results, we just want to pass the seed
+                # page's elements through the filters to be marked as seen.
+                split_page_workload( [page] ) if @first_run
+
+                # Distribute workload from the URL queue.
+                pages = []
+                page_lookahead.times do
+                    pop_page_from_url_queue do |p|
+                        pages << p
+                        next if pages.size != page_lookahead
+
+                        distribute_page_workload( pages ) { |np| next_page = np }
+                    end
+                end
+
+            # If there's no more workload in the URL queue and we've got idle
+            # slaves then share the one page we do have.
+            elsif !@first_run && has_idle_slaves?
+                distribute_page_workload( [page] ) { |np| page = np }
+            end
             @first_run = false
 
-            # Distribute workload from the URL queue.
-            pages = []
-            page_lookahead = calculate_workload_size( @url_queue.size )
-            page_lookahead.times do
-                pop_page_from_url_queue do |p|
-                    pages << p
-
-                    # Push any new resources to the audit queue.
-                    push_paths_from_page( p ) if p
-
-                    next if pages.size != page_lookahead
-
-                    distribute_page_workload( pages ) { |np| next_page = np }
-                end
+            if page
+                # We're counting on piggybacking the next page retrieval and the
+                # workload gathering and distribution with the page audit, however
+                # if there wasn't an audit we need to force an HTTP run.
+                audit_page( page ) or http.run
             end
-
-            # We're counting on piggybacking the next page retrieval and the
-            # workload gathering and distribution with the page audit, however
-            # if there wasn't an audit we need to force an HTTP run.
-            audit_page( page ) or http.run
 
             audit_page_queue
         end
@@ -300,7 +299,13 @@ module Master
                 calculate_workload_size( @page_queue.size ).times do
                     pages << @page_queue.pop
                 end
-                distribute_page_workload( pages )
+
+                if pages.empty?
+                    # Don't be selfish, if there's no extra workload to share then
+                    # share the one page we do have.
+                    pages = [page]
+                end
+                distribute_page_workload( pages ) { |next_page| page = next_page }
             end
 
             audit_page( page )

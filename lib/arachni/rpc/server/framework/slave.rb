@@ -60,17 +60,6 @@ module Slave
         true
     end
 
-    # @param    [Array<Integer>]    lookups
-    #   Hashes representing browser actions that have already been performed
-    #   and thus should be skipped.
-    #
-    # @see BrowserCluster#update_skip_states_for
-    # @see BrowserCluster#skip_states_for
-    def update_browser_cluster_lookup( lookups )
-        browser_cluster.update_skip_states_for( browser_job.id, lookups )
-        nil
-    end
-
     # @return   [Bool]  `true` if this instance is a slave, `false` otherwise.
     def slave?
         # If we don't have a connection to the master then we're not a slave.
@@ -100,6 +89,36 @@ module Slave
     end
 
     private
+
+    # Here's the reasoning behind this NOP:
+    #
+    # Slaves should be consumers because the whole idea behind the distribution
+    # is that the master splits the available workload as best as possible and
+    # a big source of that workload is browser analysis.
+    #
+    # If slaves perform browser analysis too, then they'd too become producers,
+    # but without the capability of distribution, so we'd either have to rectify
+    # that by way of a very complex design or have them send all their workload
+    # back to the master so that it can distribute it and sync up all Instances'
+    # browser states.
+    #
+    # Either way, we'd end up with high resource utilization from all Instances
+    # using their browser cluster full time and from the necessary RPC traffic
+    # to have them all reach convergence at key points during the scan.
+    #
+    # That could allow for faster workload discovery but it would be moot as the
+    # bottleneck here is the audit.
+    #
+    # To cut this short, more workload would be anathema as we'd have no way
+    # to actually consume it fast enough and all we'd end up with would be
+    # massive resource utilization and a very complex design.
+    #
+    # To make this a bit more clear, a scan without any checks loaded would
+    # end up being faster as it'd purely be a discovery operation, however
+    # a full scan would end up taking the same amount time and use massively
+    # more resources.
+    def slave_perform_browser_analysis( *args )
+    end
 
     def sitrep( data, &block )
         block ||= proc{}
