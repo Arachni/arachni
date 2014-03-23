@@ -641,7 +641,6 @@ class Browser
                 wait_for_pending_requests
             end
 
-
             prune_window_responses
 
             transition
@@ -839,7 +838,7 @@ class Browser
         return if skip_path?( u )
 
         begin
-            with_timeout Options.http.request_timeout/ 1_000 do
+            with_timeout Options.http.request_timeout / 1_000 do
                 while !(r = get_response( u ))
                     sleep 0.1
                 end
