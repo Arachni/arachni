@@ -197,7 +197,7 @@ class Framework
         # catch exceptions so that if something breaks down or the user opted to
         # exit the reports will still run with whatever results Arachni managed to gather
         exception_jail( false ){ audit }
-        #print_with_statistics
+        # print_with_statistics
 
         clean_up
         exception_jail( false ){ block.call } if block_given?
@@ -236,8 +236,8 @@ class Framework
 
         print_line
         print_status "[HTTP: #{page.code}] #{page.dom.url}"
-        #print_object_space
-        #print_with_statistics
+        # print_object_space
+        # print_with_statistics
 
         if page.platforms.any?
             print_info "Identified as: #{page.platforms.to_a.join( ', ' )}"
@@ -275,19 +275,15 @@ class Framework
             check_page( check, page )
         end
         harvest_http_responses if ran
-
         run_http = ran
 
         ran = false
-        @checks.schedule.each do |check|
-            next if !check.has_platforms?
+        @checks.with_platforms.values.each do |check|
             ran = true
             wait_if_paused
             check_page( check, page )
         end
-
         harvest_http_responses if ran
-
         run_http ||= ran
 
         if Check::Auditor.has_timeout_candidates?
