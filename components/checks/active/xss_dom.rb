@@ -21,9 +21,6 @@ class Arachni::Checks::XSSDOM < Arachni::Check::Base
             # Straight injection.
             tag,
 
-            # Go for an error.
-            "()\"&%1'-;#{tag}'",
-
             # Break out of HTML comments.
             "-->#{tag}<!--"
         ]
