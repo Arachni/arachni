@@ -15,14 +15,20 @@ class BrowserCluster
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Worker < Arachni::Browser
-
     personalize_output
 
+    # @return   [Integer]
+    #   We can't just close all windows because PhantomJS for some reason
+    #   freezes after we do it a lot of times and we can't just leave open
+    #   windows accumulate, so we've got to take more drastic measures and kill
+    #   it when the amount of open windows reaches or exceeds this setting.
+    RESPAWN_WHEN_WINDOW_COUNT_REACHES = 5
+
     # @return    [BrowserCluster]
-    attr_reader :master
+    attr_reader   :master
 
     # @return    [Job] Currently assigned job.
-    attr_reader :job
+    attr_reader   :job
 
     # @return   [Integer]
     attr_accessor :job_timeout
@@ -31,7 +37,7 @@ class Worker < Arachni::Browser
     attr_accessor :max_time_to_live
 
     # @return    [Integer] Remaining time-to-live measured in jobs.
-    attr_reader :time_to_live
+    attr_reader   :time_to_live
 
     def initialize( options = {} )
         javascript_token  = options.delete( :javascript_token )
@@ -68,7 +74,7 @@ class Worker < Arachni::Browser
 
         # PhantomJS may have crashed (it happens sometimes) so make sure that
         # we've got a live one before running the job.
-        ensure_phantomjs
+        phantomjs_respawn_if_necessary
 
         begin
             with_timeout @job_timeout do
@@ -79,11 +85,10 @@ class Worker < Arachni::Browser
                     print_error_backtrace e
                 end
             end
-        rescue TimeoutError
+        rescue TimeoutError => e
             print_error "Job timed-out after #{@job_timeout} seconds: #{job}"
         end
 
-        @window_responses.clear
         @preloads.clear
         @cache.clear
         @captured_pages.clear
@@ -99,8 +104,8 @@ class Worker < Arachni::Browser
 
         @job = nil
 
-        # Respawn if need be.
-        handle_ttl
+        decrease_time_to_live
+        phantomjs_respawn_if_necessary
 
         true
     end
@@ -184,11 +189,6 @@ class Worker < Arachni::Browser
         end
     end
 
-    def ensure_phantomjs
-        return if phantomjs_alive?
-        phantomjs_respawn
-    end
-
     def phantomjs_alive?
         Process.getpgid( @phantomjs_pid )
         true
@@ -196,8 +196,17 @@ class Worker < Arachni::Browser
         false
     end
 
+    def phantomjs_respawn_if_necessary
+        return if !time_to_die? && phantomjs_alive? &&
+            watir.windows.size < RESPAWN_WHEN_WINDOW_COUNT_REACHES
+
+        phantomjs_respawn
+    end
+
     def phantomjs_respawn
         @time_to_live = @max_time_to_live
+
+        @window_responses.clear
 
         # If PhantomJS is already dead this will block for quite some time so
         # beware.
@@ -210,12 +219,12 @@ class Worker < Arachni::Browser
         @watir = ::Watir::Browser.new( *phantomjs )
     end
 
-    def handle_ttl
-        @time_to_live ||= @max_time_to_live
-        @time_to_live -= 1
-        return if @time_to_live != 0
+    def time_to_die?
+        @time_to_live <= 0
+    end
 
-        phantomjs_respawn
+    def decrease_time_to_live
+        @time_to_live -= 1
     end
 
     def save_response( response )

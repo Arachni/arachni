@@ -77,17 +77,39 @@ describe Arachni::BrowserCluster::Worker do
             end
         end
         context 'when the job finishes' do
-            let(:page) { Arachni::Page.from_url(url)  }
+            let(:page) { Arachni::Page.from_url(url) }
 
-            it 'clears the cached HTTP responses' do
-                subject.preload page
-                subject.preloads.should be_any
-                subject.instance_variable_get(:@window_responses)
+            context 'when there are 5 or more windows open' do
+                before(:each) do
+                    5.times do
+                        subject.javascript.run( 'window.open()' )
+                    end
+                end
 
-                @cluster.queue( custom_job ) {}
-                @cluster.wait
+                it 'respawns PhantomJS' do
+                    watir         = subject.watir
+                    phantomjs_pid = subject.phantomjs_pid
 
-                subject.instance_variable_get(:@window_responses).should be_empty
+                    subject.watir.windows.size.should > 5
+                    @cluster.explore( page ) {}
+                    @cluster.wait
+
+                    watir.should_not == subject.watir
+                    phantomjs_pid.should_not == subject.phantomjs_pid
+                    subject.watir.windows.size.should == 2
+                end
+
+                it 'clears the cached HTTP responses' do
+                    subject.preload page
+                    subject.preloads.should be_any
+                    subject.instance_variable_get(:@window_responses)
+
+                    subject.watir.windows.size.should > 5
+                    @cluster.queue( custom_job ) {}
+                    @cluster.wait
+
+                    subject.instance_variable_get(:@window_responses).should be_empty
+                end
             end
 
             it 'clears #preloads' do
