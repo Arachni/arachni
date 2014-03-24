@@ -112,6 +112,15 @@ describe Arachni::BrowserCluster::Worker do
                 end
             end
 
+            it "clears the #{Arachni::Browser::Javascript}#taint" do
+                subject.javascript.taint = 'stuff'
+
+                @cluster.queue( custom_job ) {}
+                @cluster.wait
+
+                subject.javascript.taint.should be_nil
+            end
+
             it 'clears #preloads' do
                 subject.preload page
                 subject.preloads.should be_any

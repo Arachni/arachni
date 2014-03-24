@@ -89,6 +89,8 @@ class Worker < Arachni::Browser
             print_error "Job timed-out after #{@job_timeout} seconds: #{job}"
         end
 
+        @javascript.taint = nil
+
         @preloads.clear
         @cache.clear
         @captured_pages.clear
