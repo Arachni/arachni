@@ -418,29 +418,6 @@ describe 'Arachni::RPC::Server::Instance' do
                         i_report[:issues].should be_any
                     end
                 end
-
-                context 'when OptionGroup::HTTP#request_concurrency has been set' do
-                    it 'should be divided by the amount of spawns' do
-                        @instance = instance = instance_spawn
-
-                        http_request_concurrency = 100
-                        spawns                   = 4
-
-                        instance.service.scan(
-                            url:    web_server_url_for( :framework ),
-                            audit:  { elements: [:links, :forms] },
-                            checks: :test,
-                            spawns: spawns,
-                            http:   {
-                                request_concurrency: http_request_concurrency
-                            }
-                        )
-
-                        sleep 1 while instance.service.busy?
-                        instance.opts.http.request_concurrency.should ==
-                            http_request_concurrency / (spawns + 1)
-                    end
-                end
             end
         end
 

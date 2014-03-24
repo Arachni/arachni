@@ -356,13 +356,6 @@ module Distributor
     # @param    [Block] block
     #   Block to be called once the slaves are ready to receive workload.
     def initialize_slaves( &block )
-        # NOTE: Leave this commented, splitting the default value in half (or more)
-        # causes performance issues.
-        #
-        # Adjust the max HTTP concurrency setting for the multi-Instance scan.
-        # @opts.http.request_concurrency /= slave_urls.size + 1
-        # http.max_concurrency = @opts.http.request_concurrency
-
         slave_options = prepare_slave_options
 
         [:exclude_path_patterns, :include_path_patterns].each do |k|
