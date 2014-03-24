@@ -1005,34 +1005,34 @@ describe Arachni::Browser do
                     context 'when option' do
                         describe :inputs do
                             context 'is given' do
-                                let(:inputs) do
-                                    { name: 'The Dude' }
+                                let(:value) do
+                                    'The Dude'
                                 end
 
                                 before(:each) do
-                                    @browser.fire_event @browser.watir.input, event, inputs: inputs
+                                    @browser.fire_event @browser.watir.input, event, value: value
                                 end
 
                                 it 'fills in its inputs with the given values' do
                                     @browser.watir.div( id: 'container' ).text.should ==
-                                        calculate_expectation.call( inputs[:name] )
+                                        calculate_expectation.call( value )
                                 end
 
                                 it 'returns a playable transition' do
                                     @browser.load url
-                                    transition = @browser.fire_event @browser.watir.input, event, inputs: inputs
+                                    transition = @browser.fire_event @browser.watir.input, event, value: value
 
                                     @browser.load url
                                     @browser.watir.div( id: 'container' ).text.should be_empty
 
                                     transition.play @browser
                                     @browser.watir.div( id: 'container' ).text.should ==
-                                        calculate_expectation.call( inputs[:name] )
+                                        calculate_expectation.call( value )
                                 end
 
                                 context 'and is empty' do
-                                    let(:inputs) do
-                                        {}
+                                    let(:value) do
+                                        ''
                                     end
 
                                     it 'fills in empty values' do
@@ -1041,7 +1041,7 @@ describe Arachni::Browser do
 
                                     it 'returns a playable transition' do
                                         @browser.load url
-                                        transition = @browser.fire_event @browser.watir.input, event, inputs: inputs
+                                        transition = @browser.fire_event @browser.watir.input, event, value: value
 
                                         @browser.load url
                                         @browser.watir.div( id: 'container' ).text.should be_empty

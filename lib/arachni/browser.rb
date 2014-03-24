@@ -438,8 +438,8 @@ class Browser
                         events << [ :click, current_url ]
                     end
 
-                when 'input'
-                    events << [ :input ]
+                when 'input', 'textarea', 'select'
+                    events << [ tag_name.to_sym ]
 
                 when 'form'
                     action = attributes['action'].to_s
@@ -630,11 +630,7 @@ class Browser
                     # 'onchange' needs an explicit event trigger.
                     had_special_trigger = true if event != :change
 
-                    value = options[:inputs] ?
-                        options[:inputs][name_or_id_for( element )] :
-                        value_for( element )
-
-                    element.send_keys( value.to_s )
+                    element.send_keys( (options[:value] || value_for( element )).to_s )
                 end
 
                 element.fire_event( event ) if !had_special_trigger
