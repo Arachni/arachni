@@ -44,8 +44,8 @@ Gem::Specification.new do |s|
     # RPC client/server implementation.
     s.add_dependency 'arachni-rpc-em',  '0.2.1dev'
 
-    # HTTP interface.
-    s.add_dependency 'typhoeus',        '0.6.4'
+    # HTTP client.
+    s.add_dependency 'typhoeus',        '0.6.8'
 
     # Fallback URI parsing and encoding utilities.
     s.add_dependency 'addressable',     '~> 2.3.2'
