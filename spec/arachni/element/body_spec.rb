@@ -1,6 +1,7 @@
 require 'spec_helper'
 
 describe Arachni::Element::Body do
+    it_should_behave_like 'element'
     it_should_behave_like 'with_auditor'
 
     before :each do
@@ -64,12 +65,4 @@ describe Arachni::Element::Body do
         end
     end
 
-    describe '#to_h' do
-        it 'returns a hash' do
-            auditable.to_h.should == {
-                type: :body,
-                url:  @page.url
-            }
-        end
-    end
 end

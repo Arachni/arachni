@@ -1,6 +1,7 @@
 require 'spec_helper'
 
 describe Arachni::Element::Header do
+    it_should_behave_like 'element'
     it_should_behave_like 'auditable', single_input: true, supports_nulls: false
 
     def auditable_extract_parameters( resource )

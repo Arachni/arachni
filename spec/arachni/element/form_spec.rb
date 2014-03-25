@@ -1,6 +1,7 @@
 require 'spec_helper'
 
 describe Arachni::Element::Form do
+    it_should_behave_like 'element'
     it_should_behave_like 'refreshable'
     it_should_behave_like 'auditable'
 

@@ -160,21 +160,4 @@ describe Arachni::Element::Server do
 
         end
     end
-
-    describe '#dup' do
-        it 'duplicates self' do
-            server = auditable.dup
-            server.should == auditable
-            server.object_id.should_not == auditable
-        end
-    end
-
-    describe '#to_h' do
-        it 'returns a hash' do
-            auditable.to_h.should == {
-                type: :server,
-                url:  'http://a-url.com/?myvar=my%20value'
-            }
-        end
-    end
 end

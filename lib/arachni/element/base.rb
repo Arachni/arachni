@@ -59,15 +59,29 @@ class Base
     # @return   [Hash] Simple representation of self.
     def to_h
         {
-            type: type,
-            url:  url
+            class: self.class,
+            type:  type,
+            url:   url
         }
+    end
+    alias :to_hash :to_h
+
+    def hash
+        to_h.hash
+    end
+
+    def ==( other )
+        hash == other.hash
     end
 
     # @return  [String]
     #   URL of the page that owns the element.
     def url
         @url
+    end
+
+    def action
+        url
     end
 
     # @see #url

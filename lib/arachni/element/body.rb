@@ -14,18 +14,6 @@ class Body < Base
         @initialized_options = page
     end
 
-    def action
-        url
-    end
-
-    def hash
-        to_h.hash
-    end
-
-    def ==( other )
-        hash == other.hash
-    end
-
     # Matches an array of regular expressions against a string and logs the
     # result as an issue.
     #

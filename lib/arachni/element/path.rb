@@ -18,13 +18,5 @@ class Path < Base
         url
     end
 
-    def hash
-        to_h.hash
-    end
-
-    def ==( other )
-        hash == other.hash
-    end
-
 end
 end

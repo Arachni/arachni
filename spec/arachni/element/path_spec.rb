@@ -1,6 +1,7 @@
 require 'spec_helper'
 
 describe Arachni::Element::Path do
+    it_should_behave_like 'element'
     it_should_behave_like 'with_auditor'
 
     let( :response ) do
@@ -23,21 +24,4 @@ describe Arachni::Element::Path do
     end
 
     subject { described_class.new response }
-
-    describe '#to_h' do
-        it 'returns a hash' do
-            subject.to_h.should == {
-                type: :path,
-                url:  'http://a-url.com/?myvar=my%20value'
-            }
-        end
-    end
-
-    describe '#dup' do
-        it 'duplicates self' do
-            path = subject.dup
-            path.should == subject
-            path.object_id.should_not == subject
-        end
-    end
 end

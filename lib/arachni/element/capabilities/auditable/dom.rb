@@ -165,7 +165,7 @@ class DOM < DOMPrepend
     end
 
     def to_h
-        super.merge( type: type )
+        super.merge( class: self.class, type: type )
     end
     alias :to_hash :to_h
 

@@ -1,27 +1,8 @@
 require 'spec_helper'
 
-describe Arachni::Element::Base do
-    before( :all ) do
-        @utils =  Arachni::Utilities
-    end
-
-    let( :url ) do
-        'http://test.com'
-    end
-
+shared_examples_for 'element' do
     let( :normalized_url ) do
         Arachni::Utilities.normalize_url( 'http://test.com' )
-    end
-
-    let( :options ) do
-        {
-            url:    url,
-            inputs: { hash: 'stuff' }
-        }
-    end
-
-    subject do
-        described_class.new options
     end
 
     describe '#marshal_dump' do
@@ -31,17 +12,11 @@ describe Arachni::Element::Base do
         end
     end
 
-    describe '#url' do
-        it 'returns the assigned URL' do
-            subject.url.should == normalized_url
-        end
-    end
-
     describe '#url=' do
         it 'normalizes the passed URL' do
             url = 'http://test.com/some stuff#frag!'
             subject.url = url
-            subject.url.should == @utils.normalize_url( url )
+            subject.url.should == Arachni::Utilities.normalize_url( url )
         end
     end
 
@@ -56,19 +31,21 @@ describe Arachni::Element::Base do
         it 'returns a copy of self' do
             subject.dup.to_h.should == subject.to_h
         end
-
-        it 'removed the associated #page' do
-            subject.page = Factory[:page]
-            subject.dup.page.should be_nil
-        end
     end
 
     describe '#to_h' do
-        it 'returns a hash representation of self' do
-            subject.to_h.should == {
-                type: :base,
-                url:  subject.url
-            }
+        let(:hash) { subject.to_h }
+
+        it 'includes the #type' do
+            hash[:type].should == subject.type
+        end
+
+        it 'includes the #url' do
+            hash[:url].should == subject.url
+        end
+
+        it 'includes the element class' do
+            hash[:class].should == described_class
         end
     end
 end

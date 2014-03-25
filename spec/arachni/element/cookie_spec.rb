@@ -1,6 +1,7 @@
 require 'spec_helper'
 
 describe Arachni::Element::Cookie do
+    it_should_behave_like 'element'
     it_should_behave_like 'auditable', single_input: true
 
     def auditable_extract_parameters( resource )

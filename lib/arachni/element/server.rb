@@ -14,18 +14,6 @@ class Server < Base
         @initialized_options = response
     end
 
-    def action
-        url
-    end
-
-    def hash
-        to_h.hash
-    end
-
-    def ==( other )
-        hash == other.hash
-    end
-
     # @note Ignores custom 404 responses.
     #
     # Logs a remote file or directory if it exists.
