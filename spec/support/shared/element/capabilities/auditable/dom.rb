@@ -1,4 +1,5 @@
 shared_examples_for 'element_dom' do
+    it_should_behave_like 'element'
     it_should_behave_like 'auditable', supports_nulls: false
 
     def run
@@ -20,18 +21,6 @@ shared_examples_for 'element_dom' do
 
                 called.should be_true
             end
-        end
-    end
-
-    describe '#url=' do
-        it 'raises NotImplementedError' do
-            expect { subject.url = url }.to raise_error NotImplementedError
-        end
-    end
-
-    describe '#action=' do
-        it 'raises NotImplementedError' do
-            expect { subject.action = url }.to raise_error NotImplementedError
         end
     end
 
@@ -254,23 +243,8 @@ shared_examples_for 'element_dom' do
     end
 
     describe '#dup' do
-        it 'returns a copy' do
-            dup = subject.dup
-            dup.should == subject
-        end
-
         it 'preserves the #parent' do
             subject.dup.parent.should == subject.parent
-        end
-    end
-
-    describe '#to_hash' do
-        it 'includes the #type' do
-            subject.to_hash[:type].should == subject.type
-        end
-
-        it 'is aliased to #to_h' do
-            subject.to_h.should == subject.to_hash
         end
     end
 end

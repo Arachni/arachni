@@ -12,7 +12,8 @@ shared_examples_for 'element' do
         end
     end
 
-    describe '#url=' do
+    describe '#url=',
+             if: !described_class.ancestors.include?( Arachni::Element::Capabilities::Auditable::DOM ) do
         it 'normalizes the passed URL' do
             url = 'http://test.com/some stuff#frag!'
             subject.url = url
@@ -29,7 +30,7 @@ shared_examples_for 'element' do
 
     describe '#dup' do
         it 'returns a copy of self' do
-            subject.dup.to_h.should == subject.to_h
+            subject.dup.should == subject
         end
     end
 
@@ -46,6 +47,10 @@ shared_examples_for 'element' do
 
         it 'includes the element class' do
             hash[:class].should == described_class
+        end
+
+        it 'is aliased to #to_hash' do
+            hash.should == subject.to_hash
         end
     end
 end

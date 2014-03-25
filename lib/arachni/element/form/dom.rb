@@ -9,7 +9,8 @@ class Form
 # Provides access to DOM operations for {Form forms}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-class DOM < Capabilities::Auditable::DOM
+class DOM < Base
+    include Capabilities::Auditable::DOM
 
     def initialize( options )
         super
@@ -38,9 +39,7 @@ class DOM < Capabilities::Auditable::DOM
         :form_dom
     end
 
-    private
-
-    def dup_options
+    def initialization_options
         super.merge( inputs: inputs.dup )
     end
 

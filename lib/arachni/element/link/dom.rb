@@ -9,7 +9,8 @@ class Link
 # Provides access to DOM operations for {Link links}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-class DOM < Capabilities::Auditable::DOM
+class DOM < Base
+    include Capabilities::Auditable::DOM
 
     # @return   [String, nil]
     #   URL fragment.

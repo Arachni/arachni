@@ -3,28 +3,14 @@
     All rights reserved.
 =end
 
-#require_relative 'output'
-
 module Arachni
 module Element::Capabilities
 module Auditable
 
-# We extend this from {DOM} in order for the {Auditable} mixin to be able to
-# call `super` when it overrides any of the included methods.
-class DOMPrepend
-    def marshal_dump
-        instance_variables.inject( {} ) do |h, iv|
-            next h if [:@parent, :@page, :@browser, :@element].include? iv
-            h[iv] = instance_variable_get( iv )
-            h
-        end
-    end
-end
-
 # Provides access to DOM operations for {Element elements}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-class DOM < DOMPrepend
+module DOM
     include Auditable
     extend Forwardable
 
@@ -34,11 +20,7 @@ class DOM < DOMPrepend
     # @return   [Browser]
     attr_accessor :browser
 
-    attr_reader   :url
-
     attr_reader   :action
-
-    attr_accessor :page
 
     attr_accessor :html
 
@@ -73,11 +55,11 @@ class DOM < DOMPrepend
     end
 
     def url=(*)
-        fail NotImplementedError
+        # NOP
     end
 
     def action=(*)
-        fail NotImplementedError
+        # NOP
     end
 
     def page
@@ -151,31 +133,14 @@ class DOM < DOMPrepend
     end
 
     def dup
-        new = self.class.new( dup_options )
-        new.parent = parent
-        copy_with_auditor( copy_auditable( copy_mutable( copy_inputable( new ) ) ) )
+        super.tap { |new| new.parent = parent }
     end
 
-    def hash
-        inputs.hash
+    def marshal_dump
+        super.reject{ |k, _| [:@parent, :@page, :@browser, :@element].include? k }
     end
 
-    def ==( other )
-        hash == other.hash
-    end
-
-    def to_h
-        super.merge( class: self.class, type: type )
-    end
-    alias :to_hash :to_h
-
-    def marshal_load( h )
-        h.each { |k, v| instance_variable_set( k, v ) }
-    end
-
-    private
-
-    def dup_options
+    def initialization_options
         options = {}
         options[:url]    = url.dup     if @url
         options[:action] = @action.dup if @action
@@ -183,6 +148,8 @@ class DOM < DOMPrepend
         options[:html]   = @html.dup   if @html
         options
     end
+
+    private
 
     def prepare_browser( browser, options )
         @browser = browser

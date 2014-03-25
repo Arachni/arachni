@@ -66,7 +66,9 @@ class Base
             url:   url
         }
     end
-    alias :to_hash :to_h
+    def to_hash
+        to_h
+    end
 
     def hash
         to_h.hash
