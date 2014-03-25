@@ -28,7 +28,7 @@ class GenericDOM < Base
         @transition = options[:transition]
         fail 'Missing element locator.' if !@transition
 
-        @initialized_options = options
+        @initialization_options = options
     end
 
     # @return   [Symbol]    DOM event.

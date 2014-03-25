@@ -28,7 +28,9 @@ class Base
     # @return   [Page]  Page this element belongs to.
     attr_accessor :page
 
-    attr_reader   :initialized_options
+    # @return   [Object]
+    #   Options used to initialize an identical element.
+    attr_reader   :initialization_options
 
     def initialize( options )
         options = options.symbolize_keys( false )
@@ -37,7 +39,7 @@ class Base
             fail 'Needs :url or :action option.'
         end
 
-        @initialized_options = options.dup
+        @initialization_options = options.dup
         self.url = options[:url] || options[:action]
     end
 
@@ -100,7 +102,7 @@ class Base
     end
 
     def dup
-        self.class.new @initialized_options
+        self.class.new self.initialization_options
     end
 
     def marshal_dump

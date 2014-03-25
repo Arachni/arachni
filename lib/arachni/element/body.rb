@@ -11,7 +11,7 @@ class Body < Base
 
     def initialize( page )
         super url: page.url
-        @initialized_options = page
+        @initialization_options = page
     end
 
     # Matches an array of regular expressions against a string and logs the

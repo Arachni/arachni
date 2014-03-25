@@ -132,7 +132,7 @@ class Form < Base
     # @return   [Hash]
     #   A simple representation of self including attributes and inputs.
     def simple
-        @initialized_options.merge( url: url, action: action, inputs: inputs )
+        @initialization_options.merge( url: url, action: action, inputs: inputs )
     end
 
     # @return   [Bool]

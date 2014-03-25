@@ -11,7 +11,7 @@ class Server < Base
 
     def initialize( response )
         super url: response.url
-        @initialized_options = response
+        @initialization_options = response
     end
 
     # @note Ignores custom 404 responses.
