@@ -59,7 +59,8 @@ class Javascript
                   :onblur,
                   :onkeydown,
                   :onkeypress,
-                  :onkeyup
+                  :onkeyup,
+                  :oninput
               ],
 
         # These need to be covered via Watir's API, #send_keys etc.
@@ -70,7 +71,8 @@ class Javascript
                   :onblur,
                   :onkeydown,
                   :onkeypress,
-                  :onkeyup
+                  :onkeyup,
+                  :oninput
               ],
 
         select: [
