@@ -11,6 +11,9 @@
 - `Element`
     - Cleaned up initializers.
         - Now passed a single Hash argument with configuration options.
+    - Added `GenericDOM`
+        - Provides an interface similar to traditional elements in order for
+            generic DOM elements to be logged and assigned as vectors to issues.
     - `Form`
         - Added `#dom` pointing to a `Auditable::DOM` object handling browser-based
             form submissions/audits.
