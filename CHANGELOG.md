@@ -6,8 +6,11 @@
     - Fixed mixed up status messages upon out-of-scope redirections.
 - `HTTP`
     - `disable_ssl_host_verification` set to `true`.
-- `Element::Form`
-    - Updated to handle empty base-href values.
+- `Element`
+    - `Capabilities::Auditable::Taint`
+        - Fixed bug when checking for trust level of issue when there's no match.
+    - `Form`
+        - Updated to handle empty base-href values.
 - Plugins
     - `autologin`
         - Updated to handle stacked post-login redirects.

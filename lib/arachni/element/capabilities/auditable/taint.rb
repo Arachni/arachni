@@ -216,6 +216,7 @@ module Auditable::Taint
             # Grab an untainted response.
             submit do |response|
                 @logged_issues.each do |issue|
+                    next if !issue.match
                     next if !response.body.include?( issue.match )
 
                     issue.verification = true
