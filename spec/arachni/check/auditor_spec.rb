@@ -69,27 +69,29 @@ describe Arachni::Check::Auditor do
     let(:issue_data) { Factory[:issue_data].tap { |d| d.delete :check } }
 
     describe '.check?' do
-        context Arachni::Element::Body do
-            before(:each) { auditor.class.info[:elements] = Arachni::Element::Body }
+        [Arachni::Element::Body, Arachni::Element::GenericDOM].each do |element|
+            context element do
+                before(:each) { auditor.class.info[:elements] = element }
 
-            context 'and page with a non-empty body' do
-                it 'returns true' do
-                    p = Arachni::Page.from_data( url: url, body: 'stuff' )
-                    auditor.class.check?( p ).should be_true
+                context 'and page with a non-empty body' do
+                    it 'returns true' do
+                        p = Arachni::Page.from_data( url: url, body: 'stuff' )
+                        auditor.class.check?( p ).should be_true
+                    end
                 end
-            end
 
-            context 'and page with a non-empty body' do
-                it 'returns true' do
-                    p = Arachni::Page.from_data( url: url, body: '' )
-                    auditor.class.check?( p ).should be_false
+                context 'and page with an empty body' do
+                    it 'returns false' do
+                        p = Arachni::Page.from_data( url: url, body: '' )
+                        auditor.class.check?( p ).should be_false
+                    end
                 end
             end
         end
 
         element_classes = [Arachni::Element::Link, Arachni::Element::Link::DOM,
                            Arachni::Element::Form, Arachni::Element::Form::DOM,
-                           Arachni::Element::Cookie, Arachni::Element::Header]
+                           Arachni::Element::Cookie, Arachni::Element::Header ]
 
         element_classes.each do |element|
             context "when #{Arachni::OptionGroups::Audit}##{element.type.to_s.gsub( '_dom', '')}? is" do
