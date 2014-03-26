@@ -993,14 +993,14 @@ describe Arachni::Browser do
         end
 
         context 'input' do
-            [:keypress, :keydown, :keyup, :change, :input].each do |event|
+            described_class::Javascript::EVENTS_PER_ELEMENT[:input].each do |event|
                 calculate_expectation = proc do |string|
-                    [:keypress, :keydown].include?( event ) ?
+                    [:onkeypress, :onkeydown].include?( event ) ?
                         string[0...-1] : string
                 end
 
                 context event do
-                    let( :url ) { "#{@url}/fire_event/input/on#{event}" }
+                    let( :url ) { "#{@url}/fire_event/input/#{event}" }
 
                     context 'when option' do
                         describe :inputs do

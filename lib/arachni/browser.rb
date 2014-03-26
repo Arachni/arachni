@@ -625,10 +625,10 @@ class Browser
                     had_special_trigger = true
                     watir.button( type: 'image' ).click
 
-                elsif [:keyup, :keypress, :keydown, :change, :input].include? event
+                elsif [:keyup, :keypress, :keydown, :change, :input, :focus, :blur, :select].include? event
 
-                    # 'onchange' needs an explicit event trigger.
-                    had_special_trigger = true if event != :change
+                    # Some of these need an explicit event triggers.
+                    had_special_trigger = true if ![:change, :blur, :focus, :select].include? event
 
                     element.send_keys( (options[:value] || value_for( element )).to_s )
                 end
