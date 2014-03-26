@@ -1,5 +1,6 @@
 require 'sinatra'
 require 'sinatra/contrib'
+require_relative '../../../../lib/arachni'
 
 @@hit_count ||= 0
 
@@ -164,7 +165,7 @@ get '/fire_event/form/image-input' do
 HTML
 end
 
-[:onkeyup, :onkeypress, :onkeydown, :onchange, :oninput].each do |event|
+Arachni::Browser::Javascript::EVENTS_PER_ELEMENT[:input].each do |event|
     get "/fire_event/input/#{event}" do
         <<-EOHTML
 <html>
