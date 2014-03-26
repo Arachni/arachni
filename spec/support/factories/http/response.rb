@@ -30,7 +30,7 @@ end
 Factory.define :binary_response do
     Arachni::HTTP::Response.new(
         url:     'http://test.com',
-        body:    '',
+        body:    "\0\0\0\0\0\1\1\0",
         request: Factory.create( :request ),
         headers: {
             'Content-Type' => 'stuff/bin'
