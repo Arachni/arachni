@@ -1354,7 +1354,6 @@ describe Arachni::Browser do
         it 'returns a playable transition' do
             transition = @browser.goto( @url )
 
-            page = @browser.to_page
             @browser.shutdown
             @browser = described_class.new
 
