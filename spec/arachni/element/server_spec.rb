@@ -34,7 +34,7 @@ describe Arachni::Element::Server do
     end
 
     subject do
-        described_class.new( response )
+        described_class.new( response.url )
     end
 
     let(:url) { web_server_url_for :auditor }

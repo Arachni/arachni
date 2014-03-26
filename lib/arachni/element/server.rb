@@ -9,9 +9,9 @@ module Arachni::Element
 class Server < Base
     include Capabilities::WithAuditor
 
-    def initialize( response )
-        super url: response.url
-        @initialization_options = response
+    def initialize( url )
+        super url: url
+        @initialization_options = url
     end
 
     # @note Ignores custom 404 responses.

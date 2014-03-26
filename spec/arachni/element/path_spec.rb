@@ -23,5 +23,5 @@ describe Arachni::Element::Path do
         )
     end
 
-    subject { described_class.new response }
+    subject { described_class.new response.url }
 end

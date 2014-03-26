@@ -9,9 +9,9 @@ module Arachni::Element
 class Path < Base
     include Capabilities::WithAuditor
 
-    def initialize( response )
-        super url: response.url
-        @initialization_options = response
+    def initialize( url )
+        super url: url
+        @initialization_options = url
     end
 
     def action
