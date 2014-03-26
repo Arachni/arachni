@@ -180,7 +180,7 @@ shared_examples_for 'check' do
         if logs_issues
             # make sure we ONLY got results for the requested element type
             issues.should be_any
-            issues.map { |i| i.vector.type }.uniq.should == [e.to_sym]
+            issues.map { |i| i.vector.class.type }.uniq.should == [e.to_sym]
 
             if current_check.info[:issue]
                 issues.map { |i| i.severity }.uniq.should ==
