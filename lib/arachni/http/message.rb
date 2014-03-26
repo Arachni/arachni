@@ -52,6 +52,10 @@ class Message
         @url = Arachni::URI( url ).to_s.freeze
     end
 
+    def body=( body )
+        @body = body.to_s.freeze
+    end
+
     private
 
     def my_dup( value )
