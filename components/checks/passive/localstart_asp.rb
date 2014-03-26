@@ -29,7 +29,7 @@ class Arachni::Checks::LocalstartASP < Arachni::Check::Base
     def check_and_log( response )
         return if response.code != 401
 
-        log vector: Element::Server.new( response ), response: response
+        log vector: Element::Server.new( response.url ), response: response
     end
 
     def self.info

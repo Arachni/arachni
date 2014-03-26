@@ -65,7 +65,7 @@ class Arachni::Checks::DirectoryListing < Arachni::Check::Base
             return
         end
 
-        log vector: Element::Server.new( @harvested[5] ), response: @harvested[5]
+        log vector: Element::Server.new( @harvested[5].url ), response: @harvested[5]
     end
 
     def same_page?( res1, res2 )

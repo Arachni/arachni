@@ -20,13 +20,13 @@ Factory.define :unique_active_vector do |type = :Form|
 end
 
 Factory.define :body_vector do
-    Arachni::Element::Body.new Factory[:page]
+    Arachni::Element::Body.new Factory[:page].url
 end
 
 Factory.define :server_vector do
-    Arachni::Element::Server.new Factory[:response]
+    Arachni::Element::Server.new Factory[:response].url
 end
 
 Factory.define :path_vector do
-    Arachni::Element::Path.new Factory[:response]
+    Arachni::Element::Path.new Factory[:response].url
 end

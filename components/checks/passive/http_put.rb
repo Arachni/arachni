@@ -30,7 +30,7 @@ class Arachni::Checks::HTTP_PUT < Arachni::Check::Base
     def check_and_log( response )
         return if !response.body.to_s.include?( self.class.substring )
 
-        log vector: Element::Server.new( response ), response: response
+        log vector: Element::Server.new( response.url ), response: response
         print_ok "File has been created: #{response.url}"
     end
 

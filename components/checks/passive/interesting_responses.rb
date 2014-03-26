@@ -45,7 +45,7 @@ class Arachni::Checks::InterestingResponses < Arachni::Check::Base
 
         log(
              proof:    response.status_line,
-             vector:   Element::Server.new( response ),
+             vector:   Element::Server.new( response.url ),
              response: response
         )
         print_ok "Found an interesting response -- Code: #{response.code}."

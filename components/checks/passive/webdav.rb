@@ -48,7 +48,7 @@ class Arachni::Checks::WebDav < Arachni::Check::Base
 
         log(
              proof:    response.headers['Allow'],
-             vector:   Element::Server.new( response ),
+             vector:   Element::Server.new( response.url ),
              response: response
         )
         print_ok "Enabled for: #{response.url}"
