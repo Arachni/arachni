@@ -18,7 +18,7 @@ describe Arachni::Element::Body do
     end
 
     subject do
-        described_class.new( @page )
+        described_class.new( @page.url )
     end
 
     let(:auditor) { @auditor }

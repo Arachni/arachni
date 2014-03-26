@@ -9,9 +9,9 @@ module Arachni::Element
 class Body < Base
     include Capabilities::WithAuditor
 
-    def initialize( page )
-        super url: page.url
-        @initialization_options = page
+    def initialize( url )
+        super url: url
+        @initialization_options = url
     end
 
     # Matches an array of regular expressions against a string and logs the

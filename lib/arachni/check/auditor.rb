@@ -219,7 +219,7 @@ module Auditor
     #
     # @see Element::Body#match_and_log
     def match_and_log( patterns, &block )
-        Element::Body.new( self.page ).tap { |b| b.auditor = self }.
+        Element::Body.new( self.page.url ).tap { |b| b.auditor = self }.
             match_and_log( patterns, &block )
     end
 
