@@ -538,10 +538,10 @@ describe Arachni::Page do
     end
 
     describe '#prepare_for_report' do
-        it 'calls #clear_cache' do
+        it 'clears the #cache' do
             s = subject.dup
-            s.should receive(:clear_cache)
             s.prepare_for_report
+            s.cache.should be_empty
         end
 
         it 'removes #dom#digest' do
@@ -554,6 +554,26 @@ describe Arachni::Page do
             subject.dom.skip_states.should be_true
             subject.prepare_for_report
             subject.dom.digest.should be_nil
+        end
+
+        it 'returns self' do
+            subject.prepare_for_report.should == subject
+        end
+    end
+
+    context 'if the body is not #text?' do
+        let(:page) { Factory[:binary_response].to_page }
+
+        it 'clears it' do
+            page.body.should_not be_empty
+            page.prepare_for_report
+            page.body.should be_empty
+        end
+
+        it 'clears the #response#body' do
+            page.response.body.should_not be_empty
+            page.prepare_for_report
+            page.response.body.should be_empty
         end
     end
 

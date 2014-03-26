@@ -230,7 +230,7 @@ class Page
         @has_javascript = nil
         clear_cache
 
-        @body = string.dup.freeze
+        @body = string.to_s.dup.freeze
     end
 
     [:links, :forms, :cookies, :headers].each do |type|
@@ -281,8 +281,9 @@ class Page
         @cache[:document] ||= (parser.nil? ? Nokogiri::HTML( body ) : parser.document)
     end
 
+    # @note Will preserve caches for elements which have been externally modified.
+    # @return   [Page]  `self` with caches cleared.
     def clear_cache
-        # Clear element caches for lists which have not been externally modified.
         [:links, :forms, :cookies, :headers ].each do |type|
             next if @has_custom_elements.include? type
             # Remove the association to this page before clearing the elements
@@ -295,9 +296,19 @@ class Page
     end
 
     def prepare_for_report
-        clear_cache
+        # We want a hard clear, that's why we don't call #clear_cache.
+        @cache.clear
+
+        # If we're dealing with binary data remove it before storing.
+        if !text?
+            response.body = nil
+            self.body     = nil
+        end
+
         @dom.digest      = nil
         @dom.skip_states = nil
+
+        self
     end
 
     # @return   [Boolean]
