@@ -5,6 +5,7 @@
 
 require_relative 'state/issues'
 require_relative 'state/audit'
+require_relative 'state/element_filter'
 
 module Arachni
 
@@ -21,12 +22,19 @@ class State
 
 class <<self
 
+    # @return   [Issues]
     attr_reader :issues
+
+    # @return   [Audit]
     attr_reader :audit
 
+    # @return   [ElementFilter]
+    attr_reader :element_filter
+
     def reset
-        @issues = Issues.new
-        @audit  = Audit.new
+        @issues         = Issues.new
+        @audit          = Audit.new
+        @element_filter = ElementFilter.new
     end
     alias :clear :reset
 

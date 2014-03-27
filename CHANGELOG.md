@@ -8,6 +8,7 @@
 - Added `State` -- Stores and provides access to the system's state.
     - `Issues` -- Stores logged `Issue` objects.
     - `Audit` -- Stores audit operations.
+    - `ElementFilter` -- Stores seen elements.
 - Removed the `Spider`.
     - The Framework has grown to encompass a process providing the same
         functionality as a result of `Browser` analysis.
