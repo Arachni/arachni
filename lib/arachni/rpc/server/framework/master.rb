@@ -128,7 +128,7 @@ module Master
     # @private
     def update_issues( issues, token = nil )
         return false if master? && !valid_token?( token )
-        @checks.class.register_results( issues )
+        issues.each { |issue| state.issues << issue }
         true
     end
 

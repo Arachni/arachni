@@ -7,6 +7,10 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
         @auditor = Auditor.new( Arachni::Page.from_url( @url ), Arachni::Framework.new )
     end
 
+    after :each do
+        @auditor.framework.reset
+    end
+
     describe '#differential_analysis' do
         before do
             @opts = {
@@ -17,9 +21,6 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
             }
 
             @params = { 'input' => 'blah' }
-
-            Arachni::Element::Capabilities::Analyzable.reset
-            issues.clear
         end
 
         context 'when the element action matches a skip rule' do
@@ -36,7 +37,7 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
                 auditable.differential_analysis( @opts )
                 @auditor.http.run
 
-                results = Arachni::Check::Manager.results
+                results = @auditor.framework.state.issues.flatten
                 results.should be_any
                 results.first.vector.affected_input_name.should == 'input'
             end

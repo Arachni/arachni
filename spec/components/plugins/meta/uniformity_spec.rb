@@ -15,7 +15,7 @@ describe name_from_filename do
 
         issue = Factory[:active_issue].tap { |issue| issue.vector.method = :stuff2 }
 
-        framework.checks.register_results( @uniformals.flatten | [issue] )
+        (@uniformals.flatten | [issue]).each { |i| Arachni::State.issues << i }
     end
 
     it 'logs digests of issues which affect similar parameters across multipla pages' do

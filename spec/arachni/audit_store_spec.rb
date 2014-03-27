@@ -13,65 +13,6 @@ describe Arachni::AuditStore do
     let( :passive_issue ) { Factory[:passive_issue] }
     let( :active_issue ) { Factory[:active_issue] }
 
-    it 'organizes identical passive issues into variations' do
-        i = passive_issue
-        i.remarks.clear
-
-        i3 = i.deep_clone
-        i3.add_remark :dd3, 'ddddd3'
-
-        i.add_remark :dd, 'ddddd'
-
-        i2 = i.deep_clone
-        i2.add_remark :dd2, 'ddddd2'
-
-        issues = [
-            i.deep_clone, i2, i3,
-            active_issue
-        ]
-
-        opts = audit_store_data.merge( issues: issues.deep_clone )
-        organized = Arachni::AuditStore.new( opts ).issues.reverse
-        organized.first.variations.size.should == 3
-
-        organized.first.remarks.should be_nil
-
-        organized.first.variations.first.remarks.should == { dd: ['ddddd'] }
-        organized.first.variations[1].remarks.should ==
-            { dd: ['ddddd'], dd2: ['ddddd2'] }
-        organized.first.variations[2].remarks.should == { dd3: ['ddddd3'] }
-
-        # This will be the active one.
-        organized.last.variations.size.should == 1
-    end
-
-    it 'sorts the issues based on severity' do
-        high = passive_issue.deep_clone.tap do |i|
-            i.severity = ::Arachni::Issue::Severity::HIGH
-            i.name     = '1'
-        end
-
-        medium = passive_issue.deep_clone.tap do |i|
-            i.severity = ::Arachni::Issue::Severity::MEDIUM
-            i.name     = '2'
-        end
-
-        low = passive_issue.deep_clone.tap do |i|
-            i.severity = ::Arachni::Issue::Severity::LOW
-            i.name     = '3'
-        end
-
-        info = passive_issue.deep_clone.tap do |i|
-            i.severity = ::Arachni::Issue::Severity::INFORMATIONAL
-            i.name     = '4'
-        end
-
-        issues = [low, medium, info, high]
-        sorted = Arachni::AuditStore.new( audit_store_data.merge( issues: issues ) ).issues
-        sorted.map { |i| i.severity }.should ==
-            [high.severity, medium.severity, low.severity, info.severity]
-    end
-
     describe '#version' do
         it 'returns the version number' do
             audit_store.version.should == Arachni::VERSION
@@ -141,16 +82,6 @@ describe Arachni::AuditStore do
             it 'uses Time.now for the calculation' do
                 audit_store_empty.start_datetime = Time.now - 2000
                 audit_store_empty.delta_time.to_s.should == '00:33:19'
-            end
-        end
-    end
-
-    describe '#issue_by_digest' do
-        it 'returns an issue based on its digest' do
-            audit_store.issues.should be_any
-
-            audit_store.issues.each do |issue|
-                audit_store.issue_by_digest( issue.digest ).should == issue
             end
         end
     end

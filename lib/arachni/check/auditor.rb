@@ -319,7 +319,9 @@ module Auditor
         return if issue_limit_reached?
         self.class.issue_counter += issues.size
 
-        framework.checks.register_results( issues )
+        issues.each do |i|
+            framework.state.issues << i
+        end
     end
 
     # @see Arachni::Check::Base#preferred
@@ -345,14 +347,15 @@ module Auditor
 
         # Don't audit elements which have been already logged as vulnerable
         # either by us or preferred checks.
-        (preferred | [shortname]).each do |mod|
-            next if !framework.checks.include?( mod )
+        (preferred | [shortname]).each do |check|
+            next if !framework.checks.include?( check )
 
-            klass = framework.checks[mod]
+            klass = framework.checks[check]
             next if !klass.info.include?(:issue)
 
-            issue_id = klass.create_issue( vector: element ).unique_id
-            return true if framework.checks.issue_set.include?( issue_id )
+            if framework.state.issues.include?( klass.create_issue( vector: element ) )
+                return true
+            end
         end
 
         false

@@ -18,25 +18,6 @@ describe Arachni::Issue do
     let( :untrusted_issue ) { Factory[:untrusted_issue] }
     let( :issue_with_variations ) { Factory[:issue_with_variations] }
 
-    describe '.sort'do
-        it 'returns a sorted Array of Issues' do
-            informational = issue.deep_clone
-            informational.severity = described_class::Severity::INFORMATIONAL
-
-            low = issue.deep_clone
-            low.severity = described_class::Severity::LOW
-
-            medium = issue.deep_clone
-            medium.severity = described_class::Severity::MEDIUM
-
-            high = issue.deep_clone
-            high.severity = described_class::Severity::HIGH
-
-            described_class.sort([low, informational, high, medium]).should ==
-                [informational, low, medium, high]
-        end
-    end
-
     it 'recodes string data to UTF8' do
         issue.name.should == "Check name \u2713"
     end

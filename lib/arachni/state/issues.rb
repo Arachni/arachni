@@ -1,0 +1,170 @@
+=begin
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
+=end
+
+require 'monitor'
+
+module Arachni
+class State
+
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+class Issues
+    include MonitorMixin
+
+    def initialize
+        super
+
+        # Stores all issues with Issue#hash as the key as a way to deduplicate
+        # and group variations.
+        @collection = {}
+
+        # Called when a new issue is logged.
+        @on_new_blocks = []
+
+        # Called whenever #<< is called.
+        @on_new_pre_deduplication_blocks = []
+
+        store
+    end
+
+    # @note Defaults to `true`.
+    # @return   [Bool]
+    #   `true` if {#<<} is configured to store issues, `false` otherwise.
+    #
+    # @see #<<
+    def store?
+        @store
+    end
+
+    # Enables issue storage via {#<<}.
+    #
+    # @see #store?
+    # @see #<<
+    def store
+        @store = true
+        self
+    end
+
+    # Disables issue storage via {#<<}.
+    #
+    # @see #store?
+    # @see #<<
+    def do_not_store
+        @store = false
+        self
+    end
+
+    # @return   [Array<Issue>]
+    #   All logged issues grouped as variations.
+    def all
+        @collection.values
+    end
+
+    # @return   [Array<Issue>]
+    #   All logged issues as solo objects, without variations.
+    def flatten
+        all.map { |issue| issue.variations.map { |v| v.to_solo issue } }.flatten
+    end
+
+    def each( &block )
+        all.each( &block )
+    end
+
+    def map( &block )
+        all.map( &block )
+    end
+
+    # @return   [Bool]
+    #   `true` if `issue` is
+    def include?( issue )
+        @collection.include? issue.hash
+    end
+
+    # @note Will deduplicate and group issues as variations.
+    #
+    # @param    [Issue] issue   Issue to push to the collection.
+    # @return   [Issues]    `self`
+    def <<( issue )
+        call_on_new_pre_deduplication_blocks( issue )
+
+        # Only allow passive issues to have variations.
+        return self if include?( issue ) && issue.active?
+
+        synchronize do
+            call_on_new_blocks( issue )
+
+            if store?
+                id = issue.hash
+                @collection[id] ||= issue.with_variations
+                @collection[id].variations << issue.as_variation
+            end
+        end
+
+        self
+    end
+
+    # @param    [Integer]   hash    {Issue#hash}
+    # @return   [Issue]
+    def []( hash )
+        @collection[hash]
+    end
+
+    # @return   [Array<Issue>]  Sorted array of {Issue}s.
+    def sort
+        all.sort_by { |i| Issue::Severity::ORDER.index i.severity }.reverse
+    end
+
+    # @return   [Array<Integer>]    {Issue#hash}es.
+    def hashes
+        @collection.keys
+    end
+
+    # @param    [Block] block
+    #   Block to be passed each new issue as it is logged by {#<<}.
+    def on_new( &block )
+        synchronize { @on_new_blocks << block }
+        true
+    end
+
+    # @param    [Block] block
+    #   Block to be passed each issue passed to {#<<}.
+    def on_new_pre_deduplication( &block )
+        synchronize { @on_new_pre_deduplication_blocks << block }
+        true
+    end
+
+    def first
+        @collection.first.last
+    end
+
+    def last
+        @collection.last.last
+    end
+
+    def any?
+        @collection.any?
+    end
+
+    def empty?
+        !any?
+    end
+
+    def size
+        @collection.size
+    end
+
+    private
+
+    def call_on_new_blocks( issue )
+        @on_new_blocks.each { |block| block.call issue }
+    end
+
+    def call_on_new_pre_deduplication_blocks( issue )
+        @on_new_pre_deduplication_blocks.each { |block| block.call issue }
+    end
+
+end
+
+end
+end

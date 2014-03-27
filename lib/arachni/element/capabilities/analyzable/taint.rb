@@ -147,7 +147,7 @@ module Taint
             proof:     substring,
             signature: substring,
             vector:    response.request.performer
-        )
+        ).map(&:hash)
         setup_verification_callbacks
     end
 
@@ -168,7 +168,7 @@ module Taint
             proof:     match_data,
             signature: regexp,
             vector:    response.request.performer
-        )
+        ).map(&:hash)
         setup_verification_callbacks
     rescue => e
         ap e
@@ -194,11 +194,14 @@ module Taint
 
             # Grab an untainted response.
             submit do |response|
-                @logged_issues.each do |issue|
-                    next if !response.body.include?( issue.proof )
+                @logged_issues.each do |hash|
+                    issue = auditor.framework.state.issues[hash]
+                    issue.variations.each do |v|
+                        next if !response.body.include?( v.proof )
 
-                    issue.trusted = false
-                    issue.add_remark :auditor, REMARK
+                        v.trusted = false
+                        v.add_remark :auditor, REMARK
+                    end
                 end
 
                 @logged_issues = []

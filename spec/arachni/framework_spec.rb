@@ -28,6 +28,12 @@ describe Arachni::Framework do
         end
     end
 
+    describe '#state' do
+        it "returns #{Arachni::State}" do
+            @f.state.should == Arachni::State
+        end
+    end
+
     describe '#on_audit_page' do
         it 'calls the given block before each page is audited' do
             ok = false
@@ -325,36 +331,36 @@ describe Arachni::Framework do
 
         context 'when it has log-in capabilities and gets logged out' do
             it 'logs-in again before continuing with the audit' do
-                f = Arachni::Framework.new
-                url = web_server_url_for( :framework ) + '/'
-                f.opts.url = "#{url}/congrats"
+                Arachni::Framework.new do |f|
+                    url = web_server_url_for( :framework ) + '/'
+                    f.opts.url = "#{url}/congrats"
 
-                f.opts.audit.elements :links, :forms
-                f.checks.load_all
+                    f.opts.audit.elements :links, :forms
+                    f.checks.load_all
 
-                f.session.login_sequence = proc do
-                    res = f.http.get( url, mode: :sync, follow_location: true )
-                    return false if !res
+                    f.session.login_sequence = proc do
+                        res = f.http.get( url, mode: :sync, follow_location: true )
+                        return false if !res
 
-                    login_form = f.forms_from_response( res ).first
-                    next false if !login_form
+                        login_form = f.forms_from_response( res ).first
+                        next false if !login_form
 
-                    login_form['username'] = 'john'
-                    login_form['password'] = 'doe'
-                    res = login_form.submit( mode: :sync, update_cookies: true, follow_location: false )
-                    return false if !res
+                        login_form['username'] = 'john'
+                        login_form['password'] = 'doe'
+                        res = login_form.submit( mode: :sync, update_cookies: true, follow_location: false )
+                        return false if !res
 
-                    true
+                        true
+                    end
+
+                    f.session.login_check = proc do
+                        !!f.http.get( url, mode: :sync, follow_location: true ).
+                            body.match( 'logged-in user' )
+                    end
+
+                    f.run
+                    f.auditstore.issues.size.should == 1
                 end
-
-                f.session.login_check = proc do
-                    !!f.http.get( url, mode: :sync, follow_location: true ).
-                        body.match( 'logged-in user' )
-                end
-
-                f.run
-                f.auditstore.issues.size.should == 1
-                f.reset
             end
         end
     end

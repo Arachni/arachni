@@ -83,9 +83,8 @@ describe Arachni::Check::Manager do
         it 'runs all checks' do
             checks.load_all
             checks.run( page )
-            results = checks.results
-            results.size.should equal 1
-            results.first.name.should == checks['test'].info[:issue][:name]
+            issues.size.should equal 1
+            issues.first.name.should == checks['test'].info[:issue][:name]
         end
     end
 
@@ -93,90 +92,9 @@ describe Arachni::Check::Manager do
         it 'runs a single check' do
             checks.load :test
             checks.run_one( checks.values.first, page )
-            results = checks.results
-            results.size.should equal 1
-            results.first.name.should == checks['test'].info[:issue][:name]
+            issues.size.should equal 1
+            issues.first.name.should == checks['test'].info[:issue][:name]
         end
     end
 
-    describe '#register_results' do
-        it 'registers an array of issues' do
-            checks.register_results( [ issue ] )
-            checks.results.any?.should be true
-        end
-
-        context 'when an issue was discovered by manipulating an input' do
-            it 'does not register redundant issues' do
-                i = issue.deep_clone
-                i.vector.affected_input_name = 'some input'
-                2.times { checks.register_results( [ i ] ) }
-                checks.results.size.should be 1
-            end
-        end
-
-        context 'when an issue was not discovered by manipulating an input' do
-            it 'registers it multiple times' do
-                2.times { checks.register_results( [ issue ] ) }
-                checks.results.size.should be 2
-            end
-        end
-    end
-
-    describe '#on_register_results' do
-        it 'registers callbacks to be executed on new results' do
-            callback_called = false
-            checks.on_register_results { callback_called = true }
-            checks.register_results( [ issue ] )
-            callback_called.should be true
-        end
-    end
-
-    describe '#do_not_store' do
-        it 'does not store results' do
-            checks.do_not_store
-            checks.register_results( [ issue ] )
-            checks.results.empty?.should be true
-            checks.store
-        end
-    end
-
-    describe '#results' do
-        it 'returns the registered results' do
-            checks.register_results( [ issue ] )
-            checks.results.empty?.should be false
-        end
-
-        it 'aliased to #issues' do
-            checks.register_results( [ issue ] )
-            checks.results.empty?.should be false
-            checks.results.should == checks.issues
-        end
-    end
-
-    describe '.results' do
-        it 'returns the registered results' do
-            checks.register_results( [ issue ] )
-            checks.class.results.empty?.should be false
-        end
-
-        it 'aliased to #issues' do
-            checks.register_results( [ issue ] )
-            checks.class.results.empty?.should be false
-            checks.class.results.should == checks.class.issues
-        end
-    end
-
-    describe '#register_results' do
-        it 'registers the given issues' do
-            checks.register_results( [ issue ] )
-            checks.results.empty?.should be false
-        end
-    end
-
-    describe '.register_results' do
-        it 'registers the given issues' do
-            checks.register_results( [ issue ] )
-            checks.class.results.empty?.should be false
-        end
-    end
 end

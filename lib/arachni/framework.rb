@@ -23,6 +23,7 @@ require lib + 'error'
 require lib + 'utilities'
 require lib + 'support'
 require lib + 'uri'
+require lib + 'state'
 require lib + 'component'
 require lib + 'platform'
 require lib + 'parser'
@@ -207,6 +208,11 @@ class Framework
         @reports.run( audit_store ) if !@reports.empty?
 
         true
+    end
+
+    # @return   [State]
+    def state
+        State
     end
 
     # Runs loaded checks against a given `page`
@@ -464,7 +470,7 @@ class Framework
         AuditStore.new(
             options: opts,
             sitemap: (auditstore_sitemap || {}),
-            issues:  @checks.results,
+            issues:  state.issues.sort,
             plugins: @plugins.results,
             start_datetime:  @start_datetime,
             finish_datetime: @finish_datetime
@@ -723,6 +729,7 @@ class Framework
     # You should first update {Arachni::Options}.
     #
     def self.reset
+        State.reset
         UI::Output.reset_output_options
         Platform::Manager.reset
         Check::Auditor.reset
