@@ -82,12 +82,10 @@ describe Arachni::State::Issues do
         end
     end
 
-    describe '#flatten' do
-        it 'returns all issues as solo versions' do
-            20.times { subject << issue }
-            subject.flatten.size.should == 20
-            subject.flatten.first.should == issue
-            subject.flatten.map(&:solo?).uniq.should == [true]
+    describe '#[]' do
+        it 'provides access to issues by their #digest' do
+            subject << issue
+            subject[issue.digest].should == issue
         end
     end
 
@@ -123,6 +121,13 @@ describe Arachni::State::Issues do
             issues = []
             subject.each { |i| issues << i }
             issues.should == [issue]
+        end
+    end
+
+    describe '#map' do
+        it 'passes each issue to the given block' do
+            subject << issue
+            subject.map { |i| i.severity }.should == [issue.severity]
         end
     end
 

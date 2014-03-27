@@ -78,7 +78,7 @@ class Issues
     # @return   [Bool]
     #   `true` if `issue` is
     def include?( issue )
-        @collection.include? issue.hash
+        @collection.include? issue.digest
     end
 
     # @note Will deduplicate and group issues as variations.
@@ -95,7 +95,7 @@ class Issues
             call_on_new_blocks( issue )
 
             if store?
-                id = issue.hash
+                id = issue.digest
                 @collection[id] ||= issue.with_variations
                 @collection[id].variations << issue.as_variation
             end
@@ -104,10 +104,10 @@ class Issues
         self
     end
 
-    # @param    [Integer]   hash    {Issue#hash}
+    # @param    [Integer]   digest    {Issue#digest}
     # @return   [Issue]
-    def []( hash )
-        @collection[hash]
+    def []( digest )
+        @collection[digest]
     end
 
     # @return   [Array<Issue>]  Sorted array of {Issue}s.
