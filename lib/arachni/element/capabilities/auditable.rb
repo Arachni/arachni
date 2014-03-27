@@ -46,7 +46,7 @@ module Auditable
     # Unless you're sure you need this, set the :redundant flag to true
     # when calling audit methods to bypass it.
     def Auditable.reset
-        @@audited          = Support::LookUp::HashSet.new
+        State.audit.clear
         @@skip_like_blocks = []
     end
     reset
@@ -374,7 +374,7 @@ module Auditable
     #
     # @see #audited
     def audited?( elem_audit_id )
-        if @@audited.include?( elem_audit_id )
+        if State.audit.include?( elem_audit_id )
             print_debug 'Skipping, already audited.'
             true
         else
@@ -388,10 +388,7 @@ module Auditable
     #
     # @see #audited?
     def audited( audit_id )
-        @@audited << audit_id
-    end
-    def self.audited
-        @@audited
+        State.audit << audit_id
     end
 
     def self.skip_like_blocks

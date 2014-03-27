@@ -539,16 +539,13 @@ module Auditor
         end
     end
 
-
-    # Helper `Set` for checks which want to keep track of what they've audited
-    # by themselves.
-    #
-    # @return   [Set]
+    # @return   [State::Audit]
+    #   Keeps track of audit operations.
     #
     # @see #audited?
     # @see #audited
     def self.audited
-        @audited ||= Support::LookUp::HashSet.new
+        State.audit
     end
 
 end

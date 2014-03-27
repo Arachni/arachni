@@ -4,6 +4,7 @@
 =end
 
 require_relative 'state/issues'
+require_relative 'state/audit'
 
 module Arachni
 
@@ -21,10 +22,13 @@ class State
 class <<self
 
     attr_reader :issues
+    attr_reader :audit
 
     def reset
         @issues = Issues.new
+        @audit  = Audit.new
     end
+    alias :clear :reset
 
 end
 reset

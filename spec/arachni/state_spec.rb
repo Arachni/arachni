@@ -13,4 +13,10 @@ describe Arachni::State do
             subject.issues.should be_kind_of described_class::Issues
         end
     end
+
+    describe '#audit' do
+        it "returns an instance of #{described_class::Audit}" do
+            subject.audit.should be_kind_of described_class::Audit
+        end
+    end
 end
