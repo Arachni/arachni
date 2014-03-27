@@ -7,6 +7,7 @@ describe Arachni::HTTP::Response do
         @http = Arachni::HTTP::Client
         @url  = web_server_url_for( :client )
     end
+    let(:url) { 'http://test.com' }
 
     describe '#status_line' do
         it 'returns the first line of the response' do
@@ -170,6 +171,27 @@ describe Arachni::HTTP::Response do
             page.headers.should == parser.headers
             page.cookiejar.should == parser.cookie_jar
             page.text?.should == parser.text?
+        end
+    end
+
+    describe '#body=' do
+        it 'sets the #body' do
+            body = 'Stuff...'
+            r = described_class.new( url: url )
+            r.body = body
+            r.body.should == body
+        end
+
+        it 'it freezes it' do
+            r = described_class.new( url: url )
+            r.body = 'Stuff...'
+            r.body.should be_frozen
+        end
+
+        it 'it forces it to a string' do
+            r = described_class.new( url: url )
+            r.body = nil
+            r.body.should == ''
         end
     end
 

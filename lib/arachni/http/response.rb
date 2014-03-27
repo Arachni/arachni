@@ -54,7 +54,6 @@ class Response < Message
         super( options )
 
         @body ||= ''
-        @body   = @body.recode if text?
         @code ||= 0
 
         # Holds the redirection responses that eventually led to this one.
@@ -114,6 +113,12 @@ class Response < Message
     # @return [Boolean] `true` if timed out, `false` otherwise.
     def timed_out?
         [:operation_timedout, :couldnt_connect].include? return_code
+    end
+
+    def body=( body )
+        @body = body.to_s
+        @body = @body.recode if text?
+        @body.freeze
     end
 
     # @return [Arachni::Page]

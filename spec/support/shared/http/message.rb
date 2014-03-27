@@ -72,24 +72,4 @@ shared_examples_for 'Arachni::HTTP::Message' do
         end
     end
 
-    describe '#body=' do
-        it 'sets the #body' do
-            body = 'Stuff...'
-            r = described_class.new( url: url )
-            r.body = body
-            r.body.should == body
-        end
-
-        it 'it freezes it' do
-            r = described_class.new( url: url )
-            r.body = 'Stuff...'
-            r.body.should be_frozen
-        end
-
-        it 'it forces it to a string' do
-            r = described_class.new( url: url )
-            r.body = nil
-            r.body.should == ''
-        end
-    end
 end
