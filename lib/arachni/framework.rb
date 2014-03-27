@@ -730,7 +730,6 @@ class Framework
     #
     def self.reset
         State.reset
-        UI::Output.reset_output_options
         Platform::Manager.reset
         Check::Auditor.reset
         ElementFilter.reset
