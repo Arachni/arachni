@@ -147,7 +147,7 @@ module Taint
             proof:     substring,
             signature: substring,
             vector:    response.request.performer
-        ).hash
+        ).digest
         setup_verification_callbacks
     end
 
@@ -168,7 +168,7 @@ module Taint
             proof:     match_data,
             signature: regexp,
             vector:    response.request.performer
-        ).hash
+        ).digest
         setup_verification_callbacks
     rescue => e
         ap e
