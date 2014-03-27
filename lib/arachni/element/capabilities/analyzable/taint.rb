@@ -141,13 +141,13 @@ module Taint
         return if substring.to_s.empty?
         return if !response.body.include?( substring ) || ignore?( response, opts )
 
-        @logged_issues |= @auditor.log(
+        @logged_issues << @auditor.log(
             response:  response,
             platform:  opts[:platform],
             proof:     substring,
             signature: substring,
             vector:    response.request.performer
-        ).map(&:hash)
+        ).hash
         setup_verification_callbacks
     end
 
@@ -162,13 +162,13 @@ module Taint
         match_data = response.body.scan( regexp ).flatten.first.to_s
         return if match_data.to_s.empty? || ignore?( response, opts )
 
-        @logged_issues |= @auditor.log(
+        @logged_issues << @auditor.log(
             response:  response,
             platform:  opts[:platform],
             proof:     match_data,
             signature: regexp,
             vector:    response.request.performer
-        ).map(&:hash)
+        ).hash
         setup_verification_callbacks
     rescue => e
         ap e
@@ -195,8 +195,7 @@ module Taint
             # Grab an untainted response.
             submit do |response|
                 @logged_issues.each do |hash|
-                    issue = auditor.framework.state.issues[hash]
-                    issue.variations.each do |v|
+                    auditor.framework.state.issues[hash].variations.each do |v|
                         next if !response.body.include?( v.proof )
 
                         v.trusted = false

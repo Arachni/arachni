@@ -333,13 +333,6 @@ describe Arachni::Check::Auditor do
         end
     end
 
-    describe '#register_results' do
-        it 'registers issues with the framework' do
-            @auditor.register_results( [ Factory[:issue] ] )
-            @framework.state.issues.flatten.first.should == Factory[:issue]
-        end
-    end
-
     describe '#create_issue' do
         it 'creates an issue' do
             @auditor.class.create_issue( vector: issue.vector ).should == issue
@@ -368,6 +361,10 @@ describe Arachni::Check::Auditor do
             logged_issue = @framework.state.issues.flatten.first
             logged_issue.referring_page.should == @auditor.page
         end
+
+        it 'returns the issue' do
+            @auditor.log_issue( issue_data ).should be_kind_of Arachni::Issue
+        end
     end
 
     describe '#log' do
@@ -376,6 +373,10 @@ describe Arachni::Check::Auditor do
 
             logged_issue = @framework.state.issues.flatten.first
             logged_issue.remarks.first.should be_any
+        end
+
+        it 'returns the issue' do
+            @auditor.log( issue_data ).should be_kind_of Arachni::Issue
         end
 
         context 'when given a page' do

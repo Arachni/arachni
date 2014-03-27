@@ -32,7 +32,6 @@ module Check
 # * General {Arachni::Issue} logging helpers.
 #   * {#log}
 #   * {#log_issue}
-#   * {#register_results}
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 module Auditor
@@ -226,6 +225,7 @@ module Auditor
     # Populates and logs an {Arachni::Issue}.
     #
     # @param    [Hash]  options {Arachni::Issue} initialization options.
+    # @return   [Issue]
     def log( options )
         options       = options.dup
         vector        = options[:vector]
@@ -301,27 +301,16 @@ module Auditor
     # Helper method for issue logging.
     #
     # @param    [Hash]  options {Issue} options.
+    # @return   [Issue]
     #
     # @see .create_issue
-    # @see #register_results
     def log_issue( options )
-        register_results([
-            self.class.create_issue( options.merge( referring_page: self.page ) )
-        ])
-    end
-
-    # Just a delegator, logs an array of issues.
-    #
-    # @param    [Array<Arachni::Issue>]     issues
-    #
-    # @see Arachni::Check::Manager#register_results
-    def register_results( issues )
         return if issue_limit_reached?
         self.class.issue_counter += issues.size
 
-        issues.each do |i|
-            framework.state.issues << i
-        end
+        issue = self.class.create_issue( options.merge( referring_page: self.page ) )
+        framework.state.issues << issue
+        issue
     end
 
     # @see Arachni::Check::Base#preferred
