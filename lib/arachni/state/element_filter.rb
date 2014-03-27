@@ -6,6 +6,8 @@ All rights reserved.
 module Arachni
 class State
 
+# Stores and provides access to the state of the {Arachni::ElementFilter}.
+#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class ElementFilter
 

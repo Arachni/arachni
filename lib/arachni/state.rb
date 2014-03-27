@@ -9,6 +9,8 @@ require_relative 'state/element_filter'
 
 module Arachni
 
+# Stores and provides access to the state of the system.
+#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class State
 

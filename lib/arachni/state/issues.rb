@@ -8,6 +8,8 @@ require 'monitor'
 module Arachni
 class State
 
+# Stores and provides access to all logged {Issue}s.
+#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Issues
     include MonitorMixin
