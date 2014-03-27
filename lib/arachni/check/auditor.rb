@@ -306,7 +306,7 @@ module Auditor
     # @see .create_issue
     def log_issue( options )
         return if issue_limit_reached?
-        self.class.issue_counter += issues.size
+        self.class.issue_counter += 1
 
         issue = self.class.create_issue( options.merge( referring_page: self.page ) )
         framework.state.issues << issue
