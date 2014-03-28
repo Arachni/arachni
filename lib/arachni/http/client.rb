@@ -125,10 +125,6 @@ class Client
         @response_count = 0
         @time_out_count = 0
 
-        @burst_response_time_sum = 0
-        @burst_response_count    = 0
-        @burst_runtime           = 0
-
         @total_response_time_sum = 0
         @total_runtime           = 0
 
@@ -540,8 +536,10 @@ class Client
     def hydra_run
         @running = true
 
-        @burst_runtime     ||= 0
-        @burst_runtime_start = Time.now
+        @burst_response_time_sum = 0
+        @burst_response_count    = 0
+        @burst_runtime           = 0
+        @burst_runtime_start     = Time.now
 
         @hydra.run
 
