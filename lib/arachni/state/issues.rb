@@ -67,7 +67,7 @@ class Issues
     #   First variation of all issues (as solo issues) sorted by severity.
     def summary
         all.map { |issue| issue.variations.first.to_solo issue }.flatten.
-            sort_by { |i| Issue::Severity::ORDER.index i.severity }.reverse
+            sort_by { |i| Issue::Severity::ORDER.index i.severity.to_sym }
     end
 
     # @return   [Array<Issue>]
@@ -121,7 +121,7 @@ class Issues
 
     # @return   [Array<Issue>]  Sorted array of {Issue}s.
     def sort
-        all.sort_by { |i| Issue::Severity::ORDER.index i.severity }.reverse
+        all.sort_by { |i| Issue::Severity::ORDER.index i.severity.to_sym }
     end
 
     # @return   [Array<Integer>]    {Issue#hash}es.

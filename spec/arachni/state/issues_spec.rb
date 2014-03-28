@@ -6,6 +6,44 @@ describe Arachni::State::Issues do
     let(:issue) { Factory[:issue] }
     let(:active_issue){ Factory[:active_issue] }
 
+    let(:issue_low_severity) do
+        low = issue.deep_clone
+        low.vector.action = 'http://test/2'
+        low.severity = Arachni::Issue::Severity::LOW
+        low
+    end
+
+    let(:issue_medium_severity) do
+        medium = issue.deep_clone
+        medium.vector.action = 'http://test/3'
+        medium.severity = Arachni::Issue::Severity::MEDIUM
+        medium
+    end
+
+    let(:issue_informational_severity) do
+        informational = issue.deep_clone
+        informational.vector.action = 'http://test/1'
+        informational.severity = Arachni::Issue::Severity::INFORMATIONAL
+        informational
+    end
+
+    let(:issue_high_severity) do
+        high = issue.deep_clone
+        high.vector.action = 'http://test/4'
+        high.severity = Arachni::Issue::Severity::HIGH
+        high
+    end
+
+    let(:unsorted_issues) do
+        [issue_low_severity, issue_informational_severity, issue_high_severity,
+        issue_medium_severity]
+    end
+
+    let(:sorted_issues) do
+        [issue_high_severity, issue_medium_severity, issue_low_severity,
+         issue_informational_severity]
+    end
+
     describe '#<<' do
         it 'registers an array of issues' do
             subject << issue
@@ -76,9 +114,9 @@ describe Arachni::State::Issues do
 
     describe '#summary' do
         it 'returns first variation of all issues as solo versions' do
-            20.times { subject << issue }
-            subject.summary.size.should == 1
-            subject.summary.first.should be_solo
+            unsorted_issues.each { |i| subject << i }
+            subject.summary.should == sorted_issues
+            subject.summary.map(&:solo?).uniq.should == [true]
         end
     end
 
@@ -100,27 +138,8 @@ describe Arachni::State::Issues do
 
     describe '#sort'do
         it 'returns a sorted array of Issues' do
-            informational = issue.deep_clone
-            informational.vector.action = 'http://test/1'
-            informational.severity = Arachni::Issue::Severity::INFORMATIONAL
-            subject << informational
-
-            low = issue.deep_clone
-            low.vector.action = 'http://test/2'
-            low.severity = Arachni::Issue::Severity::LOW
-            subject << low
-
-            medium = issue.deep_clone
-            medium.vector.action = 'http://test/3'
-            medium.severity = Arachni::Issue::Severity::MEDIUM
-            subject << medium
-
-            high = issue.deep_clone
-            high.vector.action = 'http://test/4'
-            high.severity = Arachni::Issue::Severity::HIGH
-            subject << high
-
-            subject.sort.should == [high, medium, low, informational]
+            unsorted_issues.each { |i| subject << i }
+            subject.sort.should == sorted_issues
         end
     end
 
