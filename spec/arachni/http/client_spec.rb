@@ -490,10 +490,30 @@ describe Arachni::HTTP::Client do
             @http.run
             url.start_with?( @opts.url.to_s ).should be_true
         end
+
         it 'raises exception when no URL is available' do
             @opts.reset
             @http.reset
             expect { @http.request }.to raise_error
+        end
+
+        it "fills in #{Arachni::HTTP::Request}#headers_string" do
+            host = "#{Arachni::URI(@url).host}:#{Arachni::URI(@url).port}"
+            @http.request( @url, mode: :sync ).request.headers_string.should ==
+                "GET / HTTP/1.1\r\nHost: #{host}\r\nAccept-Encoding: gzip, " +
+                    "deflate\r\nUser-Agent: Arachni/v1.0dev\r\nAccept: text/html," +
+                    "application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n\r\n"
+        end
+
+        it "fills in #{Arachni::HTTP::Request}#effective_body" do
+            @http.request( @url,
+               body: {
+                   '1' => ' 2',
+                   ' 3' => '4'
+               },
+               mode:   :sync,
+               method: :post
+            ).request.effective_body.should == "1=%202&%203=4"
         end
 
         describe :maxfilesize do

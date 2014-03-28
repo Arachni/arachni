@@ -55,6 +55,9 @@ class Request < Message
     # @see MODES
     attr_reader :mode
 
+    attr_accessor :headers_string
+    attr_accessor :effective_body
+
     # Entity which performed the request -- mostly used to track which response
     # was a result of which submitted element.
     attr_accessor :performer
@@ -226,10 +229,17 @@ class Request < Message
     #
     # @return   [Response]
     def run
-        Response.from_typhoeus( to_typhoeus.run ).tap { |r| r.request = self }
+        response = to_typhoeus.run
+        fill_in_data_from_typhoeus_response response
+
+        Response.from_typhoeus( response ).tap { |r| r.request = self }
     end
 
-    def handle_response( response )
+    def handle_response( response, typhoeus_response = nil )
+        if typhoeus_response
+            fill_in_data_from_typhoeus_response typhoeus_response
+        end
+
         response.request = self
         @on_complete.each { |b| b.call response }
         response
@@ -240,6 +250,10 @@ class Request < Message
         headers['Cookie'] = effective_cookies.
             map { |k, v| "#{Cookie.encode( k )}=#{Cookie.encode( v )}" }.
             join( ';' )
+
+        headers['User-Agent'] ||= Arachni::Options.http.user_agent
+        headers['Accept']     ||= 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+        headers['From']       ||= Arachni::Options.authorized_by if Arachni::Options.authorized_by
 
         headers.delete( 'Cookie' ) if headers['Cookie'].empty?
         headers.each { |k, v| headers[k] = Header.encode( v ) if v }
@@ -267,7 +281,8 @@ class Request < Message
 
             # Don't keep the socket alive if this is a blocking request because
             # it's going to be performed by an one-off Hydra.
-            forbid_reuse:    blocking?
+            forbid_reuse:    blocking?,
+            verbose:         true
         }
 
         options[:timeout_ms] = timeout if timeout
@@ -291,7 +306,7 @@ class Request < Message
 
         if @on_complete.any?
             r.on_complete do |typhoeus_response|
-                handle_response Response.from_typhoeus( typhoeus_response )
+                handle_response Response.from_typhoeus( typhoeus_response ), typhoeus_response
             end
         end
 
@@ -300,11 +315,13 @@ class Request < Message
 
     def to_h
         {
-            url:        url,
-            parameters: parameters,
-            headers:    headers,
-            body:       body,
-            method:     method
+            url:            url,
+            parameters:     parameters,
+            headers:        headers,
+            headers_string: headers_string,
+            effective_body: effective_body,
+            body:           body,
+            method:         method
         }
     end
 
@@ -335,6 +352,14 @@ class Request < Message
     def marshal_load( h )
         h.each { |k, v| instance_variable_set( k, v ) }
     end
+
+    private
+
+    def fill_in_data_from_typhoeus_response( response )
+        @headers_string = response.debug_info.header_out.first
+        @effective_body = response.debug_info.data_out.first
+    end
+
 end
 end
 end

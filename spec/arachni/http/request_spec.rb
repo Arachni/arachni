@@ -85,6 +85,26 @@ describe Arachni::HTTP::Request do
             called.should == [response]
             called.first.request.should == request
         end
+
+        it "fills in #{Arachni::HTTP::Request}#headers_string" do
+            host = "#{Arachni::URI(@url).host}:#{Arachni::URI(@url).port}"
+            described_class.new( url: @url ).run.request.headers_string.should ==
+                "GET / HTTP/1.1\r\nHost: #{host}\r\nAccept-Encoding: gzip, " +
+                    "deflate\r\nUser-Agent: Arachni/v1.0dev\r\nAccept: text/html," +
+                    "application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n\r\n"
+        end
+
+        it "fills in #{Arachni::HTTP::Request}#effective_body" do
+            described_class.new(
+                url: @url,
+                body: {
+                    '1' => ' 2',
+                    ' 3' => '4'
+                },
+                mode:   :sync,
+                method: :post
+            ).run.request.effective_body.should == "1=%202&%203=4"
+        end
     end
 
     describe '#parameters' do

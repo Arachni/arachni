@@ -3,6 +3,8 @@
     All rights reserved.
 =end
 
+require_relative '../ethon/easy'
+
 module Typhoeus
 class Hydra
 
