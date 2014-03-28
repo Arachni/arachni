@@ -194,9 +194,9 @@ describe 'Arachni::RPC::Server::Framework' do
 
             results = auditstore.plugins
             results.should be_any
-            results['wait'].should be_any
-            results['wait'][:results].should == { stuff: true }
-            results['distributable'][:results].should == { stuff: instance_count }
+            results[:wait].should be_any
+            results[:wait][:results].should == { stuff: true }
+            results[:distributable][:results].should == { stuff: instance_count }
 
             dispatcher_kill_by_instance instance
         end

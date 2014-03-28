@@ -246,8 +246,8 @@ describe 'Arachni::RPC::Server::Framework' do
             instance.framework.clean_up.should be_true
             results = instance.framework.auditstore.plugins
             results.should be_any
-            results['wait'].should be_any
-            results['wait'][:results].should == { stuff: true }
+            results[:wait].should be_any
+            results[:wait][:results].should == { stuff: true }
         end
     end
     describe '#progress' do

@@ -190,51 +190,12 @@ class Manager < Arachni::Component::Manager
         nil
     end
 
-    #
-    # Registers plugin results.
-    #
-    # @param    [Arachni::Plugin::Base]    plugin   Instance of a plugin.
-    # @param    [Object]    results
-    #
-    def register_results( plugin, results )
-        mutex.synchronize {
-            name = nil
-            self.each do |k, v|
-                if plugin.class.name == v.name
-                    name = k
-                    break
-                end
-            end
-
-            return if !name
-            self.class.results[name] =
-                { results: results }.merge( plugin.class.info )
-        }
-    end
-
-    def self.mutex
-        @mutex ||= Mutex.new
-    end
-    def mutex
-        self.class.mutex
-    end
-
-    def self.results
-        @results ||= {}
-    end
     def results
-        self.class.results
-    end
-
-    def self.results=( v )
-        @results = v
-    end
-    def results=( v )
-        self.class.results = v
+        State.plugins.results
     end
 
     def self.reset
-        results.clear
+        State.plugins.clear
         remove_constants( NAMESPACE )
     end
     def reset

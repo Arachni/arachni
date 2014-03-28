@@ -1,6 +1,7 @@
 require 'spec_helper'
+require "#{Arachni::Options.paths.lib}/rpc/server/framework"
 
-describe Arachni::RPC::Server::Plugin::Manager do
+describe 'Arachni::RPC::Server::Plugin::Manager' do
 
     describe '#available' do
         it 'returns an array of available plugins' do
@@ -46,16 +47,10 @@ describe Arachni::RPC::Server::Plugin::Manager do
     end
 
     describe '#merge_results' do
-        it 'merges the results of the distributable plugins' do
-            framework = Arachni::RPC::Server::Framework.new( Arachni::Options.instance )
-            plugins = framework.plugins
-            plugins.load( { 'distributable' => {}} )
-            plugins.loaded.should == ['distributable']
-
-            results = [ 'distributable' => { results: { stuff: 2 } } ]
-            plugins.register_results( Arachni::Plugins::Distributable.new( framework, {} ), stuff: 1 )
-            plugins.merge_results( results )['distributable'][:results][:stuff].should == 3
-            plugins.clear
+        it "delegates to ##{Arachni::State::Plugins}#merge_results" do
+            plugins = Arachni::RPC::Server::Framework.new.plugins
+            Arachni::State.plugins.should receive(:merge_results)
+            plugins.merge_results( [ distributable: { results: { stuff: 2 } } ] )
         end
     end
 

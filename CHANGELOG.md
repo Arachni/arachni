@@ -7,6 +7,7 @@
         feed DOM page snapshots and new paths back to the `Framework`.
 - Added `State` -- Stores and provides access to the system's state.
     - `Issues` -- Stores logged `Issue` objects.
+    - `Plugins` -- Stores plugin results.
     - `Audit` -- Stores audit operations.
     - `ElementFilter` -- Stores seen elements.
     - `Framework` -- Stores the `Framework` state.

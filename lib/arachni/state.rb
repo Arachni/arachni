@@ -4,6 +4,7 @@
 =end
 
 require_relative 'state/issues'
+require_relative 'state/plugins'
 require_relative 'state/audit'
 require_relative 'state/element_filter'
 require_relative 'state/framework'
@@ -28,6 +29,9 @@ class <<self
     # @return   [Issues]
     attr_reader :issues
 
+    # @return   [Plugins]
+    attr_reader :plugins
+
     # @return   [Audit]
     attr_reader :audit
 
@@ -39,6 +43,7 @@ class <<self
 
     def reset
         @issues         = Issues.new
+        @plugins        = Plugins.new
         @audit          = Audit.new
         @element_filter = ElementFilter.new
         @framework      = Framework.new
@@ -46,6 +51,7 @@ class <<self
 
     def clear
         @issues.clear
+        @plugins.clear
         @audit.clear
         @element_filter.clear
         @framework.clear

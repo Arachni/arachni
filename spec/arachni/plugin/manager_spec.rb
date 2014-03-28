@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Arachni::Plugin::Manager do
     before( :all ) do
-        @plugins = Arachni::Framework.new( Arachni::Options.instance ).plugins
+        @plugins = Arachni::Framework.new.plugins
     end
 
     after( :all ) { @plugins.clear }
@@ -35,11 +35,11 @@ describe Arachni::Plugin::Manager do
             it 'runs loaded plugins' do
                 @plugins.run
                 @plugins.block
-                @plugins.results['default'][:results].should be_true
+                @plugins.results[:default][:results].should be_true
             end
         end
         context 'when gem dependencies are not met' do
-            it 'raises Arachni::Plugin::Error::UnsatisfiedDependency' do
+            it "raises #{Arachni::Plugin::Error::UnsatisfiedDependency}" do
                 trigger = proc do
                     begin
                         @plugins.load :bad
@@ -155,7 +155,7 @@ describe Arachni::Plugin::Manager do
             it 'returns its thread' do
                 @plugins.load( 'loop' )
                 @plugins.run
-                @plugins.get( 'loop' ).is_a?( Thread ).should be_true
+                @plugins.get( 'loop' ).should be_kind_of Thread
                 @plugins.kill( 'loop' )
                 @plugins.block
 
@@ -169,6 +169,13 @@ describe Arachni::Plugin::Manager do
                 @plugins.block
                 @plugins.get( 'default' ).should be_nil
             end
+        end
+    end
+
+    describe '#results' do
+        it "delegates to ##{Arachni::State::Plugins}#results" do
+            Arachni::State.plugins.results.object_id.should ==
+                @plugins.results.object_id
         end
     end
 
