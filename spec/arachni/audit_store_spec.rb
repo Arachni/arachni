@@ -42,6 +42,16 @@ describe Arachni::AuditStore do
         end
     end
 
+    describe '#issue_by_digest' do
+        it 'returns an issue based on its digest' do
+            audit_store.issues.should be_any
+
+            audit_store.issues.each do |issue|
+                audit_store.issue_by_digest( issue.digest ).should == issue
+            end
+        end
+    end
+
     describe '#plugins' do
         it 'returns the plugin results' do
             audit_store.plugins.should == Factory[:audit_store_data][:plugins]

@@ -64,6 +64,13 @@ class Issues
     end
 
     # @return   [Array<Issue>]
+    #   First variation of all issues (as solo issues) sorted by severity.
+    def summary
+        all.map { |issue| issue.variations.first.to_solo issue }.flatten.
+            sort_by { |i| Issue::Severity::ORDER.index i.severity }.reverse
+    end
+
+    # @return   [Array<Issue>]
     #   All logged issues as solo objects, without variations.
     def flatten
         all.map { |issue| issue.variations.map { |v| v.to_solo issue } }.flatten

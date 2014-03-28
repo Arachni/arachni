@@ -21,9 +21,6 @@ class AuditStore
     # @return    [Hash]  Plugin results.
     attr_accessor :plugins
 
-    # @return    [Array<Issue>]  Logged issues.
-    attr_accessor :issues
-
     # @return    [Time]    The date and time when the scan started.
     attr_accessor :start_datetime
 
@@ -56,6 +53,27 @@ class AuditStore
     # @return   [Hash]
     def options=( options )
         @options = prepare_options( options )
+    end
+
+    # @param    [Array<Issue>]  issues  Logged issues.
+    # @return    [Array<Issue>]  Logged issues.
+    def issues=( issues )
+        @issues = {}
+        issues.each do |issue|
+            @issues[issue.digest] = issue
+        end
+        self.issues
+    end
+
+    # @return    [Array<Issue>]  Logged issues.
+    def issues
+        @issues.values
+    end
+
+    # @param    [Issue#digest]  digest
+    # @return    [Issue]
+    def issue_by_digest( digest )
+        @issues[digest]
     end
 
     # Loads and returns an AuditStore object from file

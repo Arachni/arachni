@@ -74,6 +74,14 @@ describe Arachni::State::Issues do
         end
     end
 
+    describe '#summary' do
+        it 'returns first variation of all issues as solo versions' do
+            20.times { subject << issue }
+            subject.summary.size.should == 1
+            subject.summary.first.should be_solo
+        end
+    end
+
     describe '#flatten' do
         it 'returns all issues as solo versions' do
             20.times { subject << issue }

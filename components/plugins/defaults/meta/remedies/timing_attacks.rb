@@ -8,7 +8,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2
+# @version 0.3
 class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
 
     is_distributable
@@ -59,16 +59,18 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
         # Calculate average request time for each path.
         @times.each_pair { |url, time| avg[url] = time / @counter[url] }
 
-        framework.checks.issues.each do |issue|
-            response_time = avg[uri_parse( issue.vector.action ).up_to_path.hash]
+        framework.state.issues.each do |issue|
+            issue.variations.each do |variation|
+                response_time = avg[uri_parse( variation.vector.action ).up_to_path.hash]
 
-            next if !issue.tags || !issue.tags.includes_tags?( TAG ) ||
-                !response_time || response_time < TIME_THRESHOLD
+                next if !variation.tags || !variation.tags.includes_tags?( TAG ) ||
+                    !response_time || response_time < TIME_THRESHOLD
 
-            issue.add_remark :meta_analysis, REMARK
+                variation.add_remark :meta_analysis, REMARK
 
-            # Requires manual verification.
-            issue.trusted = false
+                # Requires manual verification.
+                variation.trusted = false
+            end
         end
     end
 
@@ -82,7 +84,7 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
                 Pages with high response times usually include heavy-duty processing
                 which makes them prime targets for Denial-of-Service attacks.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.2',
+            version:     '0.3',
             tags:        %w(anomaly timing attacks meta)
         }
     end
