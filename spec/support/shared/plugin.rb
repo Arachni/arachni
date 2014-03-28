@@ -8,7 +8,7 @@ shared_examples_for "plugin" do
         framework.plugins.load name
     end
     before( :each ) do
-        framework.reset_filters
+        # framework.reset_filters
         framework.plugins.reset
         framework.reports.clear
     end

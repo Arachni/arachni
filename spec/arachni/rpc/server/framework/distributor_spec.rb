@@ -23,6 +23,10 @@ class Distributor
         @done_slaves = Set.new
     end
 
+    def state
+        Arachni::State
+    end
+
     def slave_done?( url )
         @done_slaves.include? url
     end
@@ -211,6 +215,8 @@ describe Arachni::RPC::Server::Framework::Distributor do
                             "#{@url}5" => [659674061]
                         }
                     ]
+
+                    Arachni::State.clear
 
                     distributor = get_distributor
                     # Mark one of the instances as done.

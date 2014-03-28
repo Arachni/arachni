@@ -365,14 +365,12 @@ class Page
     end
     alias :to_hash :to_h
 
-    def hash
-        element_hashes = []
-        [:links, :forms, :cookies, :headers ].each do |type|
-            next if !@has_custom_elements.include?( type ) || !(list = @cache[type])
-            element_hashes |= list.map(&:hash)
-        end
+    def persistent_hash
+        digest.persistent_hash
+    end
 
-        "#{dom.playable_transitions.hash}:#{body.hash}#{element_hashes.sort}".hash
+    def hash
+        digest.hash
     end
 
     def ==( other )
@@ -421,6 +419,16 @@ class Page
     end
 
     private
+
+    def digest
+        element_hashes = []
+        [:links, :forms, :cookies, :headers ].each do |type|
+            next if !@has_custom_elements.include?( type ) || !(list = @cache[type])
+            element_hashes |= list.map(&:hash)
+        end
+
+        "#{dom.playable_transitions.hash}:#{body.hash}#{element_hashes.sort}"
+    end
 
     [:url, :response, :cookiejar, :element_audit_whitelist].each do |attribute|
         attr_writer attribute

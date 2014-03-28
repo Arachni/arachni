@@ -25,10 +25,6 @@ module Master
         # Instances which have completed their scan.
         @done_slaves = Set.new
 
-        # Holds element IDs for each page, to be used as a representation of the
-        # the audit workload that will need to be distributed.
-        @element_ids_per_url = {}
-
         @distributed_page_queue = Support::Database::Queue.new
 
         # Some methods need to be accessible over RPC for instance management,
@@ -313,22 +309,22 @@ module Master
     end
 
     def pop_page_from_queue
-        if @distributed_page_queue && !@distributed_page_queue.empty?
-            return @distributed_page_queue.pop
-        end
-
+        return distributed_page_queue.pop if !distributed_page_queue.empty?
         super
     end
 
     def push_to_distributed_page_queue( page )
         return false if skip_page?( page )
-        @distributed_page_queue << page.clear_cache
+        distributed_page_queue << page.clear_cache
         true
     end
 
+    def distributed_page_queue
+        state.framework.rpc.distributed_page_queue
+    end
+
     def clear_distributed_page_queue
-        return if !@distributed_page_queue
-        @distributed_page_queue.clear
+        distributed_page_queue.clear
     end
 
     # Cleans up the system if all Instances have finished.

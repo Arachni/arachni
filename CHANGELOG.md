@@ -9,6 +9,8 @@
     - `Issues` -- Stores logged `Issue` objects.
     - `Audit` -- Stores audit operations.
     - `ElementFilter` -- Stores seen elements.
+    - `Framework` -- Stores the `Framework` state.
+        - `RPC` -- Stores the `RPC::Server::Framework` state.
 - Removed the `Spider`.
     - The Framework has grown to encompass a process providing the same
         functionality as a result of `Browser` analysis.

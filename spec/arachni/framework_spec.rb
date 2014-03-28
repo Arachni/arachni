@@ -23,7 +23,7 @@ describe Arachni::Framework do
     end
 
     describe '#browser_cluster' do
-        it 'returns Arachni::BrowserCluster' do
+        it "returns #{Arachni::BrowserCluster}" do
             @f.browser_cluster.should be_kind_of Arachni::BrowserCluster
         end
     end
@@ -244,39 +244,7 @@ describe Arachni::Framework do
             @f.plugins.load :wait
             @f.reports.load :foo
 
-            @f.status.should == 'ready'
-
-            @f.pause
-            @f.status.should == 'paused'
-
-            @f.resume
-            @f.status.should == 'ready'
-
-            called = false
-            t = Thread.new{
-                @f.run {
-                    called = true
-                    @f.status.should == 'cleanup'
-                }
-            }
-
-            raised = false
-            begin
-                Timeout.timeout( 10 ) {
-                    sleep( 0.01 ) while @f.status == 'preparing'
-                    sleep( 0.01 ) while @f.status == 'crawling'
-                    sleep( 0.01 ) while @f.status == 'auditing'
-                }
-            rescue TimeoutError
-                raised = true
-            end
-
-            raised.should be_false
-
-            t.join
-            called.should be_true
-
-            @f.status.should == 'done'
+            @f.run
             @f.auditstore.issues.size.should == 3
 
             @f.auditstore.plugins['wait'][:results].should == { stuff: true }
@@ -285,6 +253,20 @@ describe Arachni::Framework do
             File.exists?( 'foo' ).should be_true
             File.delete( 'foo' )
             File.delete( 'afr' )
+        end
+
+        it 'sets #status to scanning' do
+            described_class.new do |f|
+                f.opts.url = @url + '/elem_combo'
+                f.opts.audit.elements :links, :forms, :cookies
+                f.checks.load :taint
+
+                t = Thread.new { f.run }
+                Timeout.timeout( 5 ) do
+                    sleep 0.1 while f.status != 'scanning'
+                end
+                t.join
+            end
         end
 
         it 'handles heavy load' do
@@ -329,6 +311,36 @@ describe Arachni::Framework do
             end
         end
 
+        it "updates #{Arachni::State::Framework}#browser_skip_states" do
+            Arachni::Framework.new do |f|
+                f.opts.url = @url + '/with_javascript'
+                f.opts.audit.elements :links, :forms, :cookies
+
+                f.checks.load :taint
+
+                states = []
+                f.state.framework.browser_skip_states.should be_empty
+                f.run do
+                    states |= f.browser_job_skip_states.to_a
+                end
+                states.should be_any
+                f.state.framework.browser_skip_states.to_a.should == states
+            end
+        end
+
+        context 'when done' do
+            it 'sets #status to done' do
+                described_class.new do |f|
+                    f.opts.url = @url + '/elem_combo'
+                    f.opts.audit.elements :links, :forms, :cookies
+                    f.checks.load :taint
+
+                    f.run
+                    f.status.should == 'done'
+                end
+            end
+        end
+
         context 'when it has log-in capabilities and gets logged out' do
             it 'logs-in again before continuing with the audit' do
                 Arachni::Framework.new do |f|
@@ -361,6 +373,141 @@ describe Arachni::Framework do
                     f.run
                     f.auditstore.issues.size.should == 1
                 end
+            end
+        end
+    end
+
+    describe '#pause' do
+        it 'pauses the system' do
+            described_class.new do |f|
+                f.opts.url = @url + '/elem_combo'
+                f.opts.audit.elements :links, :forms, :cookies
+                f.checks.load :taint
+
+                t = Thread.new do
+                    f.run
+                end
+
+                f.pause
+
+                10.times do
+                    sleep 1
+                end
+
+                f.running?.should be_true
+                t.kill
+            end
+        end
+
+        it 'sets #status to paused' do
+            described_class.new do |f|
+                f.opts.url = @url + '/elem_combo'
+                f.opts.audit.elements :links, :forms, :cookies
+                f.checks.load :taint
+
+                t = Thread.new do
+                    f.run
+                end
+
+                f.pause
+                f.status.should == 'paused'
+            end
+        end
+    end
+
+    describe '#resume' do
+        it 'resumes the system' do
+            described_class.new do |f|
+                f.opts.url = @url + '/elem_combo'
+                f.opts.audit.elements :links, :forms, :cookies
+                f.checks.load :taint
+
+                t = Thread.new do
+                    f.run
+                end
+
+                f.pause
+
+                10.times do
+                    sleep 1
+                end
+
+                f.running?.should be_true
+                f.resume
+                t.join
+            end
+        end
+
+        it 'sets #status to scanning' do
+            described_class.new do |f|
+                f.opts.url = @url + '/elem_combo'
+                f.opts.audit.elements :links, :forms, :cookies
+                f.checks.load :taint
+
+                t = Thread.new do
+                    f.run
+                end
+
+                f.pause
+                f.status.should == 'paused'
+
+                f.resume
+                Timeout.timeout( 5 ) do
+                    sleep 0.1 while f.status != 'scanning'
+                end
+                t.join
+            end
+        end
+    end
+
+    describe '#clean_up' do
+        it 'stops the #plugins' do
+            described_class.new do |f|
+                f.opts.url = @url + '/elem_combo'
+                f.plugins.load :wait
+
+                f.plugins.run
+                f.clean_up
+                f.plugins.jobs.should be_empty
+            end
+        end
+
+        it 'sets the status to cleanup' do
+            described_class.new do |f|
+                f.opts.url = @url + '/elem_combo'
+
+                f.clean_up
+                f.status.should == 'cleanup'
+            end
+        end
+
+        it 'clears the page queue' do
+            described_class.new do |f|
+                f.opts.url = @url + '/elem_combo'
+                f.push_to_page_queue Arachni::Page.from_url( f.opts.url )
+
+                f.state.framework.page_queue.should_not be_empty
+                f.clean_up
+                f.state.framework.page_queue.should be_empty
+            end
+        end
+
+        it 'clears the URL queue' do
+            described_class.new do |f|
+                f.opts.url = @url + '/elem_combo'
+                f.push_to_url_queue f.opts.url
+
+                f.state.framework.url_queue.should_not be_empty
+                f.clean_up
+                f.state.framework.url_queue.should be_empty
+            end
+        end
+
+        it 'sets #running? to false' do
+            described_class.new do |f|
+                f.opts.url = @url + '/elem_combo'
+                f.clean_up
+                f.should_not be_running
             end
         end
     end

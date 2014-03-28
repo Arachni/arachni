@@ -156,6 +156,12 @@ class Issues
         @collection.size
     end
 
+    def clear
+        @collection.clear
+        @on_new_blocks.clear
+        @on_new_pre_deduplication_blocks.clear
+    end
+
     private
 
     def call_on_new_blocks( issue )
