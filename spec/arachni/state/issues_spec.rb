@@ -4,6 +4,7 @@ describe Arachni::State::Issues do
 
     subject { described_class.new }
     let(:issue) { Factory[:issue] }
+    let(:active_issue){ Factory[:active_issue] }
 
     describe '#<<' do
         it 'registers an array of issues' do
@@ -33,7 +34,7 @@ describe Arachni::State::Issues do
         it 'registers callbacks to be called on new issue' do
             callback_called = 0
             subject.on_new { callback_called += 1 }
-            10.times { subject << Factory[:active_issue] }
+            10.times { subject << active_issue }
             callback_called.should == 1
         end
     end
@@ -141,7 +142,7 @@ describe Arachni::State::Issues do
 
         context 'when it does not includes the given issue' do
             it 'returns true' do
-                subject << Factory[:active_issue]
+                subject << active_issue
                 subject.should_not include issue
             end
         end
@@ -180,8 +181,34 @@ describe Arachni::State::Issues do
     describe '#size' do
         it 'returns the amount of issues' do
             subject << issue
-            subject << Factory[:active_issue]
+            subject << active_issue
             subject.size.should == 2
+        end
+    end
+
+    describe '#clear' do
+        it 'clears the collection' do
+            subject << issue
+            subject.clear
+            subject.should be_empty
+        end
+
+        it 'clears #on_new callbacks' do
+            callback_called = 0
+            subject.on_new { callback_called += 1 }
+            subject.clear
+
+            10.times { subject << active_issue }
+            callback_called.should == 0
+        end
+
+        it 'clears #on_new_pre_deduplication callbacks' do
+            callback_called = 0
+            subject.on_new_pre_deduplication { callback_called += 1 }
+            subject.clear
+
+            10.times { subject << active_issue }
+            callback_called.should == 0
         end
     end
 end
