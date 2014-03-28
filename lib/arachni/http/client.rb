@@ -121,6 +121,8 @@ class Client
         update_cookies( opts.http.cookies )
         update_cookies( opts.http.cookie_string ) if opts.http.cookie_string
 
+        reset_burst_info
+
         @request_count  = 0
         @response_count = 0
         @time_out_count = 0
@@ -536,10 +538,7 @@ class Client
     def hydra_run
         @running = true
 
-        @burst_response_time_sum = 0
-        @burst_response_count    = 0
-        @burst_runtime           = 0
-        @burst_runtime_start     = Time.now
+        reset_burst_info
 
         @hydra.run
 
@@ -548,6 +547,13 @@ class Client
 
         @burst_runtime += Time.now - @burst_runtime_start
         @total_runtime += @burst_runtime
+    end
+
+    def reset_burst_info
+        @burst_response_time_sum = 0
+        @burst_response_count    = 0
+        @burst_runtime           = 0
+        @burst_runtime_start     = Time.now
     end
 
     # Performs the actual queueing of requests, passes them to Hydra and sets
