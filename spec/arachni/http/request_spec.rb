@@ -6,7 +6,7 @@ describe Arachni::HTTP::Request do
     before( :all ) do
         @opts = Arachni::Options.instance
         @http = Arachni::HTTP::Client
-        @url  = web_server_url_for( :client )
+        @url  = "#{web_server_url_for( :client )}/"
     end
 
     before( :each ){
@@ -18,19 +18,27 @@ describe Arachni::HTTP::Request do
 
     let(:url){ @url }
     let(:url_with_query) { "#{url}/?id=1&stuff=blah" }
+    let(:options) do
+        {
+            url:        url,
+            method:     :get,
+            parameters: { 'test' => 'blah' },
+            body: {
+                '1' => ' 2',
+                ' 3' => '4'
+            },
+            headers_string: 'stuff',
+            effective_body: '1=%202&%203=4',
+            timeout:    10_000,
+            headers:    { 'Content-Type' => 'test/html' },
+            cookies:    { 'cname'=> 'cvalue' },
+            username:   'user',
+            password:   'pass'
+        }
+    end
 
     describe '#initialize' do
         it 'sets the instance attributes by the options' do
-            options = {
-                url:        url,
-                method:     :get,
-                parameters: { 'test' => 'blah' },
-                timeout:    10_000,
-                headers:    { 'Content-Type' => 'test/html' },
-                cookies:    { 'cname'=> 'cvalue' },
-                username:   'user',
-                password:   'pass'
-            }
             r = described_class.new( options )
             r.url.should          == Arachni::Utilities.normalize_url( url )
             r.method.should       == options[:method]
@@ -310,6 +318,17 @@ describe Arachni::HTTP::Request do
             it 'reuses sockets' do
                 described_class.new( url: url, mode: :async ).to_typhoeus.
                     options[:forbid_reuse].should be_false
+            end
+        end
+    end
+
+    describe '#to_h' do
+        it 'returns a hash representation of self' do
+            described_class.new( options ).to_h.should == options.tap do |h|
+                h.delete :timeout
+                h.delete :cookies
+                h.delete :username
+                h.delete :password
             end
         end
     end
