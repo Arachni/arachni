@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Arachni::State::Issues do
 
     after(:each) do
-        FileUtils.rm_rf @store_directory if @store_directory
+        FileUtils.rm_rf @dump_directory if @dump_directory
     end
 
     subject { described_class.new }
@@ -48,8 +48,8 @@ describe Arachni::State::Issues do
          issue_informational_severity]
     end
 
-    let(:store_directory) do
-        @store_directory = "#{Dir.tmpdir}/issues-#{Arachni::Utilities.generate_token}"
+    let(:dump_directory) do
+        @dump_directory = "#{Dir.tmpdir}/issues-#{Arachni::Utilities.generate_token}"
     end
 
     describe '#<<' do
@@ -221,13 +221,13 @@ describe Arachni::State::Issues do
         end
     end
 
-    describe '#store_or_update' do
+    describe '#dump' do
         it 'stores the issues to disk' do
             unsorted_issues.each { |i| subject << i }
-            subject.store_or_update( store_directory )
+            subject.dump( dump_directory )
 
             subject.each do |issue|
-                issue_path = "#{store_directory}/#{issue.digest}.issue"
+                issue_path = "#{dump_directory}/#{issue.digest}.issue"
                 File.exists?( issue_path ).should be_true
 
                 loaded_issue = Marshal.load( IO.read( issue_path ) )
@@ -237,12 +237,12 @@ describe Arachni::State::Issues do
         end
     end
 
-    describe '.restore' do
+    describe '.load' do
         it 'restores issues from disk' do
             unsorted_issues.each { |i| subject << i }
-            subject.store_or_update( store_directory )
+            subject.dump( dump_directory )
 
-            subject.should == described_class.restore( store_directory )
+            subject.should == described_class.load( dump_directory )
         end
     end
 

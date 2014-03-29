@@ -165,7 +165,7 @@ class Issues
         @collection.size
     end
 
-    def store_or_update( directory )
+    def dump( directory )
         FileUtils.mkdir_p( directory )
 
         @collection.each do |digest, issue|
@@ -175,7 +175,7 @@ class Issues
         end
     end
 
-    def self.restore( directory )
+    def self.load( directory )
         issues = new
 
         Dir["#{directory}/*.#{EXTENSION}"].each do |issue_file|
