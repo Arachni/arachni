@@ -3,6 +3,7 @@
     All rights reserved.
 =end
 
+require 'fileutils'
 require_relative 'state/issues'
 require_relative 'state/plugins'
 require_relative 'state/audit'
@@ -26,20 +27,20 @@ class State
 
 class <<self
 
-    # @return   [Issues]
-    attr_reader :issues
+    # @return     [Issues]
+    attr_accessor :issues
 
-    # @return   [Plugins]
-    attr_reader :plugins
+    # @return     [Plugins]
+    attr_accessor :plugins
 
-    # @return   [Audit]
-    attr_reader :audit
+    # @return     [Audit]
+    attr_accessor :audit
 
-    # @return   [ElementFilter]
-    attr_reader :element_filter
+    # @return     [ElementFilter]
+    attr_accessor :element_filter
 
-    # @return   [Framework]
-    attr_reader :framework
+    # @return     [Framework]
+    attr_accessor :framework
 
     def reset
         @issues         = Issues.new
@@ -49,12 +50,36 @@ class <<self
         @framework      = Framework.new
     end
 
+    def dump( directory )
+        FileUtils.rm_rf( directory )
+        FileUtils.mkdir_p( directory )
+
+        each do |name, state|
+            state.dump( "#{directory}/#{name}/" )
+        end
+    end
+
+    def load( directory )
+        each do |name, state|
+            klass.send( "#{name}=", state.class.load( "#{directory}/#{name}/" ) )
+        end
+    end
+
+    def compress( directory )
+    end
+
     def clear
-        @issues.clear
-        @plugins.clear
-        @audit.clear
-        @element_filter.clear
-        @framework.clear
+        each do |_, state|
+            state.clear
+        end
+    end
+
+    private
+
+    def each( &block )
+        [:issues, :plugins, :audit, :element_filter, :framework].each do |attr|
+            block.call attr, send( attr )
+        end
     end
 
 

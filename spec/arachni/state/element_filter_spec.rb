@@ -7,7 +7,7 @@ describe Arachni::State::ElementFilter do
 
     subject { described_class.new }
     let(:dump_directory) do
-        @dump_directory = "#{Dir.tmpdir}/audit-#{Arachni::Utilities.generate_token}"
+        @dump_directory = "#{Dir.tmpdir}/element-filter-#{Arachni::Utilities.generate_token}"
     end
 
     %w(forms links cookies).each do |type|

@@ -1,12 +1,17 @@
 require 'spec_helper'
 
 describe Arachni::State do
-
+    after(:each) do
+        FileUtils.rm_rf @dump_directory if @dump_directory
+    end
     after( :each ) do
         described_class.reset
     end
 
     subject { described_class }
+    let(:dump_directory) do
+        @dump_directory = "#{Dir.tmpdir}/state-#{Arachni::Utilities.generate_token}"
+    end
 
     describe '#issues' do
         it "returns an instance of #{described_class::Issues}" do
@@ -29,6 +34,15 @@ describe Arachni::State do
     describe '#framework' do
         it "returns an instance of #{described_class::Framework}" do
             subject.framework.should be_kind_of described_class::Framework
+        end
+    end
+
+    describe '#dump' do
+        [:issues, :plugins, :audit, :element_filter, :framework].each do |name|
+            it "stores ##{name} to disk" do
+                subject.dump( dump_directory )
+                subject.send(name).class.load( "#{dump_directory}/#{name}" ).should be_kind_of subject.send(name).class
+            end
         end
     end
 
