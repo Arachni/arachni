@@ -194,8 +194,9 @@ class Framework
         # exit the reports will still run with whatever results Arachni managed to gather
         exception_jail( false ){ audit }
         # print_with_statistics
-        exception_jail( false ){ block.call } if block_given?
+
         clean_up
+        exception_jail( false ){ block.call } if block_given?
         @status = :done
 
         # run reports

@@ -237,6 +237,11 @@ describe Arachni::Framework do
     end
 
     describe '#run' do
+        after do
+            File.delete( 'foo' ) rescue nil
+            File.delete( 'afr' ) rescue nil
+        end
+
         it 'performs the audit' do
             @f.opts.url = @url + '/elem_combo'
             @f.opts.audit.elements :links, :forms, :cookies
@@ -247,12 +252,10 @@ describe Arachni::Framework do
             @f.run
             @f.auditstore.issues.size.should == 3
 
-            @f.auditstore.plugins['wait'][:results].should == { stuff: true }
+            @f.auditstore.plugins[:wait][:results].should == { stuff: true }
 
             File.exists?( 'afr' ).should be_true
             File.exists?( 'foo' ).should be_true
-            File.delete( 'foo' )
-            File.delete( 'afr' )
         end
 
         it 'sets #status to scanning' do
@@ -318,13 +321,9 @@ describe Arachni::Framework do
 
                 f.checks.load :taint
 
-                states = []
                 f.state.framework.browser_skip_states.should be_empty
-                f.run do
-                    states |= f.browser_job_skip_states.to_a
-                end
-                states.should be_any
-                f.state.framework.browser_skip_states.to_a.should == states
+                f.run
+                f.state.framework.browser_skip_states.should be_any
             end
         end
 
