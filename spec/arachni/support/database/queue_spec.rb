@@ -18,6 +18,28 @@ describe Arachni::Support::Database::Queue do
         end
     end
 
+    describe '#buffer' do
+        it 'returns the objects stored in the memory buffer' do
+            subject << 1
+            subject << 2
+
+            subject.buffer.should == [1, 2]
+        end
+    end
+
+    describe '#disk' do
+        it 'returns paths to the files of objects stored to disk' do
+            subject.max_buffer_size = 0
+            subject << 1
+            subject << 2
+
+            subject.disk.size.should == 2
+            subject.disk.each do |path|
+                File.exists?( path ).should be_true
+            end
+        end
+    end
+
     describe '#max_buffer_size' do
         context 'by default' do
             it "returns #{described_class}::DEFAULT_MAX_BUFFER_SIZE" do

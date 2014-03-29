@@ -26,6 +26,12 @@ class Queue < Base
     #   How many entries to keep in memory before starting to off-load to disk.
     attr_accessor :max_buffer_size
 
+    # @return   [Array<Object>] Objects stored in the memory buffer.
+    attr_reader :buffer
+
+    # @return   [Array<String>] Paths to files stored to disk.
+    attr_reader :disk
+
     # @see Arachni::Database::Base#initialize
     def initialize( *args )
         super( *args )
