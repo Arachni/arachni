@@ -26,6 +26,26 @@ class ElementFilter
         @cookies = Support::LookUp::HashSet.new( hasher: :persistent_hash )
     end
 
+    def dump( directory )
+        FileUtils.mkdir_p( directory )
+
+        File.open( "#{directory}/sets", 'w' ) do |f|
+            f.write Marshal.dump( self )
+        end
+    end
+
+    def self.load( directory )
+        Marshal.load( IO.read( "#{directory}/sets" ) )
+    end
+
+    def ==( other )
+        hash == other.hash
+    end
+
+    def hash
+        [@forms.hash, @links.hash, @cookies.hash].hash
+    end
+
     def clear
         forms.clear
         links.clear
