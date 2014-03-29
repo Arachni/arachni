@@ -14,6 +14,8 @@ class State
 class Issues
     include MonitorMixin
 
+    EXTENSION = 'issue'
+
     def initialize
         super
 
@@ -163,10 +165,44 @@ class Issues
         @collection.size
     end
 
+    def store_or_update( directory )
+        FileUtils.mkdir_p( directory )
+
+        @collection.each do |digest, issue|
+            File.open( "#{directory}/#{digest}.#{EXTENSION}", 'w' ) do |f|
+                f.write Marshal.dump( issue )
+            end
+        end
+    end
+
+    def self.restore( directory )
+        issues = new
+
+        Dir["#{directory}/*.#{EXTENSION}"].each do |issue_file|
+            issues << Marshal.load( IO.read( issue_file ) )
+        end
+
+        issues
+    end
+
+    def ==( other )
+        hash == other.hash
+    end
+
+    def hash
+        @collection.hash
+    end
+
     def clear
         @collection.clear
         @on_new_blocks.clear
         @on_new_pre_deduplication_blocks.clear
+    end
+
+    protected
+
+    def collection
+        @collection
     end
 
     private

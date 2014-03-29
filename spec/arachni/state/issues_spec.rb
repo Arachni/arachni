@@ -2,6 +2,10 @@ require 'spec_helper'
 
 describe Arachni::State::Issues do
 
+    after(:each) do
+        FileUtils.rm_rf @store_directory if @store_directory
+    end
+
     subject { described_class.new }
     let(:issue) { Factory[:issue] }
     let(:active_issue){ Factory[:active_issue] }
@@ -42,6 +46,10 @@ describe Arachni::State::Issues do
     let(:sorted_issues) do
         [issue_high_severity, issue_medium_severity, issue_low_severity,
          issue_informational_severity]
+    end
+
+    let(:store_directory) do
+        @store_directory = "#{Dir.tmpdir}/issues-#{Arachni::Utilities.generate_token}"
     end
 
     describe '#<<' do
@@ -210,6 +218,31 @@ describe Arachni::State::Issues do
             subject << issue
             subject << active_issue
             subject.size.should == 2
+        end
+    end
+
+    describe '#store_or_update' do
+        it 'stores the issues to disk' do
+            unsorted_issues.each { |i| subject << i }
+            subject.store_or_update( store_directory )
+
+            subject.each do |issue|
+                issue_path = "#{store_directory}/#{issue.digest}.issue"
+                File.exists?( issue_path ).should be_true
+
+                loaded_issue = Marshal.load( IO.read( issue_path ) )
+                issue.should == loaded_issue
+                issue.variations.should == loaded_issue.variations
+            end
+        end
+    end
+
+    describe '.restore' do
+        it 'restores issues from disk' do
+            unsorted_issues.each { |i| subject << i }
+            subject.store_or_update( store_directory )
+
+            subject.should == described_class.restore( store_directory )
         end
     end
 
