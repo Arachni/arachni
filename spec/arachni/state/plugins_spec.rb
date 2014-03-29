@@ -3,11 +3,18 @@ require 'spec_helper'
 describe Arachni::State::Plugins do
     subject { described_class.new }
     let(:plugins) { @framework.plugins }
+    let(:dump_directory) do
+        @dump_directory = "#{Dir.tmpdir}/plugins-#{Arachni::Utilities.generate_token}"
+    end
+
     before(:each) do
         @framework = Arachni::Framework.new
         subject.clear
     end
-    after(:each) { @framework.reset }
+    after(:each) do
+        FileUtils.rm_rf @dump_directory if @dump_directory
+        @framework.reset
+    end
 
     describe '#results' do
         it 'returns a Hash' do
@@ -39,6 +46,46 @@ describe Arachni::State::Plugins do
             subject.store( plugins.create(:distributable), stuff: 1 )
 
             subject.merge_results( plugins, results )[:distributable][:results][:stuff].should == 3
+        end
+    end
+
+    describe '#dump' do
+        it 'stores #results to disk' do
+            subject.store( plugins.create(:distributable), stuff: 1 )
+            subject.dump( dump_directory )
+
+            results_file = "#{dump_directory}/results/distributable"
+            File.exists?( results_file ).should be_true
+            subject.results.should == {
+                distributable: Marshal.load( IO.read( results_file ) )
+            }
+        end
+
+        it 'stores #runtime to disk' do
+            subject.runtime[:distributable] = { stuff: 1 }
+            subject.dump( dump_directory )
+
+            results_file = "#{dump_directory}/runtime/distributable"
+            File.exists?( results_file ).should be_true
+            subject.runtime.should == {
+                distributable: Marshal.load( IO.read( results_file ) )
+            }
+        end
+    end
+
+    describe '.load' do
+        it 'loads #results from disk' do
+            subject.store( plugins.create(:distributable), stuff: 1 )
+            subject.dump( dump_directory )
+
+            subject.results.should == described_class.load( dump_directory ).results
+        end
+
+        it 'loads #runtime from disk' do
+            subject.runtime[:distributable] = { stuff: 1 }
+            subject.dump( dump_directory )
+
+            subject.runtime.should == described_class.load( dump_directory ).runtime
         end
     end
 
