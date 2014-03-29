@@ -2,15 +2,15 @@ require 'spec_helper'
 
 describe Arachni::State do
     after(:each) do
-        FileUtils.rm_rf @dump_directory if @dump_directory
+        FileUtils.rm_rf @dump_archive if @dump_archive
     end
     after( :each ) do
         described_class.reset
     end
 
     subject { described_class }
-    let(:dump_directory) do
-        @dump_directory = "#{Dir.tmpdir}/state-#{Arachni::Utilities.generate_token}"
+    let(:dump_archive) do
+        @dump_archive = "#{Dir.tmpdir}/state-#{Arachni::Utilities.generate_token}.zip"
     end
 
     describe '#issues' do
@@ -40,8 +40,14 @@ describe Arachni::State do
     describe '#dump' do
         [:issues, :plugins, :audit, :element_filter, :framework].each do |name|
             it "stores ##{name} to disk" do
-                subject.dump( dump_directory )
-                subject.send(name).class.load( "#{dump_directory}/#{name}" ).should be_kind_of subject.send(name).class
+                previous_instance = subject.send(name)
+
+                subject.dump( dump_archive )
+
+                new_instance = subject.load( dump_archive ).send(name)
+
+                new_instance.should be_kind_of subject.send(name).class
+                new_instance.object_id.should_not == previous_instance.object_id
             end
         end
     end

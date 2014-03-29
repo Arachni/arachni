@@ -3,6 +3,7 @@
     All rights reserved.
 =end
 
+require 'zip'
 require 'fileutils'
 require_relative 'state/issues'
 require_relative 'state/plugins'
@@ -50,31 +51,57 @@ class <<self
         @framework      = Framework.new
     end
 
-    def dump( directory )
+    # @param    [String]    archive
+    #   Location of the archive.
+    # @return   [String]
+    #   Location of the archive.
+    def dump( archive )
+        directory = get_temporary_directory
+
         FileUtils.rm_rf( directory )
         FileUtils.mkdir_p( directory )
 
-        each do |name, state|
-            state.dump( "#{directory}/#{name}/" )
+        begin
+            each do |name, state|
+                state.dump( "#{directory}/#{name}/" )
+            end
+
+            compress directory, archive
+        ensure
+            FileUtils.rm_rf( directory )
         end
     end
 
-    def load( directory )
-        each do |name, state|
-            klass.send( "#{name}=", state.class.load( "#{directory}/#{name}/" ) )
+    # @param    [String]    archive
+    #   Location of the archive.
+    # @return   [State]     `self`
+    def load( archive )
+        directory = get_temporary_directory
+
+        begin
+            decompress( archive, directory )
+
+            each do |name, state|
+                send( "#{name}=", state.class.load( "#{directory}/#{name}/" ) )
+            end
+
+            self
+        ensure
+            FileUtils.rm_rf( directory )
         end
     end
 
-    def compress( directory )
-    end
-
+    # Clears all states.
     def clear
-        each do |_, state|
-            state.clear
-        end
+        each { |_, state| state.clear }
+        self
     end
 
     private
+
+    def get_temporary_directory
+        "#{Dir.tmpdir}/Arachni_State_#{Utilities.generate_token}/"
+    end
 
     def each( &block )
         [:issues, :plugins, :audit, :element_filter, :framework].each do |attr|
@@ -82,6 +109,27 @@ class <<self
         end
     end
 
+    def decompress( archive, directory )
+        Zip::File.open( archive ) do |zip_file|
+            zip_file.each do |f|
+                f_path = File.join( directory, f.name )
+                FileUtils.mkdir_p( File.dirname( f_path ) )
+                zip_file.extract( f, f_path ) unless File.exist?( f_path )
+            end
+        end
+
+        directory
+    end
+
+    def compress( directory, archive )
+        Zip::File.open( archive, Zip::File::CREATE ) do |zipfile|
+            Dir[File.join(directory, '**', '**')].each do |file|
+                zipfile.add( file.sub( directory, '' ), file )
+            end
+        end
+
+        archive
+    end
 
 end
 reset
