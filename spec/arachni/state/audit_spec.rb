@@ -1,8 +1,15 @@
 require 'spec_helper'
 
 describe Arachni::State::Audit do
+    after(:each) do
+        FileUtils.rm_rf @dump_directory if @dump_directory
+    end
+
     subject { described_class.new }
     let(:audit_id) { 'super-special-audit-operation' }
+    let(:dump_directory) do
+        @dump_directory = "#{Dir.tmpdir}/audit-#{Arachni::Utilities.generate_token}"
+    end
 
     describe '#<<' do
         it 'pushes a state' do
@@ -66,6 +73,24 @@ describe Arachni::State::Audit do
             subject << audit_id
             subject << "#{audit_id}2"
             subject.size.should == 2
+        end
+    end
+
+    describe '#dump' do
+        it 'stores to disk' do
+            subject << audit_id
+            subject << "#{audit_id}2"
+            subject.dump( dump_directory )
+        end
+    end
+
+    describe '.load' do
+        it 'restores issues from disk' do
+            subject << audit_id
+            subject << "#{audit_id}2"
+            subject.dump( dump_directory )
+
+            subject.should == described_class.load( dump_directory )
         end
     end
 
