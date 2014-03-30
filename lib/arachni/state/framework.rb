@@ -38,8 +38,19 @@ class Framework
     # @return     [Integer]
     attr_accessor :url_queue_total_size
 
+    # @return     [Integer]
+    attr_accessor :audited_page_count
+
     # @return     [Set]
     attr_reader   :browser_skip_states
+
+    # @return     [Symbol]
+    attr_accessor :status
+
+    attr_accessor :running
+
+    # @return     [Array]
+    attr_reader   :pause_requests
 
     def initialize
         @rpc = RPC.new
@@ -56,7 +67,16 @@ class Framework
         @url_queue_filter     = Support::LookUp::HashSet.new( hasher: :persistent_hash )
         @url_queue_total_size = 0
 
-        @browser_skip_states = Set.new
+        @audited_page_count = 0
+
+        @browser_skip_states = Support::LookUp::HashSet.new( hasher: :persistent_hash )
+
+        @running = false
+        @pre_pause_status = nil
+
+        @pause_requests   = Set.new
+        @paused_signal    = Queue.new
+        @suspended_signal = Queue.new
     end
 
     def update_browser_skip_states( states )
@@ -89,6 +109,83 @@ class Framework
         sitemap[page.dom.url] = page.code
     end
 
+    def running?
+        !!@running
+    end
+
+    def suspend( block = true )
+        @status = :suspending
+        @suspend = true
+
+        @suspended_signal.pop if block
+    end
+
+    def suspended
+        @suspend = false
+        @status = :suspended
+        @suspended_signal << nil
+    end
+
+    # @return   [Bool]
+    #   `true` if the system has been suspended, `false` otherwise.
+    def suspended?
+        @status == :suspended
+    end
+
+    def suspend?
+        !!@suspend
+    end
+
+    def paused
+        @status = :paused
+        @paused_signal << nil
+    end
+
+    # @return   [TrueClass]
+    #   Pauses the framework on a best effort basis, might take a while to take effect.
+    def pause( caller, wait = true )
+        @pre_pause_status ||= @status
+
+        @status = :pausing if !paused?
+        @pause_requests << caller
+
+        paused if !running?
+
+        wait_for_pause if wait
+        true
+    end
+
+    def wait_for_pause
+        return if paused?
+        @paused_signal.pop
+    end
+
+    def pausing?
+        @status == :pausing
+    end
+
+    # @return   [Bool]
+    #   `true` if the framework is paused.
+    def paused?
+        @status == :paused
+    end
+
+    # @return   [Bool]
+    #   `true` if the framework should pause, `false` otherwise.
+    def pause?
+        @pause_requests.any?
+    end
+
+    # Resumes the scan/audit.
+    def resume( caller )
+        @pause_requests.delete( caller )
+
+        if @pause_requests.empty?
+            @status = @pre_pause_status
+            @pre_pause_status = nil
+        end
+    end
+
     def dump( directory )
         FileUtils.mkdir_p( directory )
 
@@ -113,7 +210,8 @@ class Framework
         end
 
         %w(sitemap page_queue_filter page_queue_total_size url_queue_filter
-            url_queue_total_size browser_skip_states).each do |attribute|
+            url_queue_total_size browser_skip_states pause_requests
+            audited_page_count).each do |attribute|
             File.open( "#{directory}/#{attribute}", 'w' ) do |f|
                 f.write Marshal.dump( send(attribute) )
             end
@@ -142,9 +240,14 @@ class Framework
         framework.url_queue_total_size =
             Marshal.load( IO.read( "#{directory}/url_queue_total_size" ) )
 
+        framework.audited_page_count =
+            Marshal.load( IO.read( "#{directory}/audited_page_count" ) )
+
         framework.url_queue_filter.merge Marshal.load( IO.read( "#{directory}/url_queue_filter" ) )
 
         framework.browser_skip_states.merge Marshal.load( IO.read( "#{directory}/browser_skip_states" ) )
+
+        framework.pause_requests.merge Marshal.load( IO.read( "#{directory}/pause_requests" ) )
 
         framework
     end

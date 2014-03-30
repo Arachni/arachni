@@ -104,7 +104,7 @@ class Framework < ::Arachni::Framework
         # If we have a block it means that it was called via RPC, so use the
         # status variable to determine if the scan is done.
         if block_given?
-            block.call @prepared && @status != :done
+            block.call @prepared && status != :done
             return
         end
 
@@ -162,12 +162,12 @@ class Framework < ::Arachni::Framework
         r = super( false )
 
         if !block_given?
-            @status = :done
+            state.framework.status = :done
             return r
         end
 
         if !has_slaves?
-            @status = :done
+            state.framework.status = :done
             block.call r
             return
         end
@@ -181,7 +181,7 @@ class Framework < ::Arachni::Framework
         end
         after = proc do |results|
             @plugins.merge_results( results.compact )
-            @status = :done
+            state.framework.status = :done
             block.call true
         end
         map_slaves( foreach, after )
@@ -189,7 +189,8 @@ class Framework < ::Arachni::Framework
 
     # Pauses the running scan on a best effort basis.
     def pause( &block )
-        r = super
+        # Send the pause request but don't block.
+        r = super( false )
         return r if !block_given?
 
         if !has_slaves?

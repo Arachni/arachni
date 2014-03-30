@@ -25,8 +25,6 @@ module Master
         # Instances which have completed their scan.
         @done_slaves = Set.new
 
-        @distributed_page_queue = Support::Database::Queue.new
-
         # Some methods need to be accessible over RPC for instance management,
         # restricting elements, adding more pages etc.
         #
@@ -243,7 +241,7 @@ module Master
         while !page_limit_reached? && (page = next_page || pop_page_from_url_queue)
             next_page = nil
 
-            page_lookahead = calculate_workload_size( @url_queue.size )
+            page_lookahead = calculate_workload_size( url_queue.size )
             if page_lookahead > 0
                 # We don't care about the results, we just want to pass the seed
                 # page's elements through the filters to be marked as seen.
@@ -292,8 +290,8 @@ module Master
             # Instances with nothing to do.
             if has_idle_slaves?
                 pages = []
-                calculate_workload_size( @page_queue.size ).times do
-                    pages << @page_queue.pop
+                calculate_workload_size( page_queue.size ).times do
+                    pages << page_queue.pop
                 end
 
                 if pages.empty?

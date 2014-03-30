@@ -190,18 +190,44 @@ describe 'Arachni::RPC::Server::Framework' do
         end
         context 'when paused' do
             it 'returns true' do
-                instance = @instance_clean
+                instance = instance_spawn
+                instance.opts.url = web_server_url_for( :framework )
+                instance.checks.load( 'test' )
+                instance.framework.run
+
                 instance.framework.pause
+                instance.framework.status.should == :pausing
+
+                Timeout.timeout 5 do
+                    sleep 1 while !instance.framework.paused?
+                end
+
                 instance.framework.paused?.should be_true
             end
         end
     end
     describe '#resume' do
         it 'resumes the scan' do
-            instance = @instance_clean
+            instance = instance_spawn
+            instance.opts.url = web_server_url_for( :framework )
+            instance.checks.load( 'test' )
+            instance.framework.run
+
             instance.framework.pause
+
+            instance.framework.status.should == :pausing
+
+            Timeout.timeout 5 do
+                sleep 1 while !instance.framework.paused?
+            end
+
             instance.framework.paused?.should be_true
             instance.framework.resume.should be_true
+
+            Timeout.timeout 5 do
+                sleep 1 while instance.framework.paused?
+            end
+
             instance.framework.paused?.should be_false
         end
     end
@@ -212,25 +238,25 @@ describe 'Arachni::RPC::Server::Framework' do
             @inst.checks.load( 'test' )
         end
         context 'after initialization' do
-            it 'returns "ready"' do
-                @inst.framework.status.should == 'ready'
+            it 'returns :ready' do
+                @inst.framework.status.should == :ready
             end
         end
-        context 'after "run" has been called' do
-            it 'returns "scanning"' do
+        context 'after #run has been called' do
+            it 'returns :scanning' do
                 @inst.framework.run.should be_true
                 sleep 2
-                @inst.framework.status.should == 'scanning'
+                @inst.framework.status.should == :scanning
             end
         end
         context 'once the scan had completed' do
-            it 'returns "done"' do
+            it 'returns :done' do
                 inst = instance_spawn
                 inst.opts.url = web_server_url_for( :framework )
                 inst.checks.load( 'test' )
                 inst.framework.run
                 sleep 1 while inst.framework.busy?
-                inst.framework.status.should == 'done'
+                inst.framework.status.should == :done
             end
         end
     end

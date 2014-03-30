@@ -5,6 +5,7 @@
 
 require 'zip'
 require 'fileutils'
+require_relative 'state/options'
 require_relative 'state/issues'
 require_relative 'state/plugins'
 require_relative 'state/audit'
@@ -28,6 +29,9 @@ class State
 
 class <<self
 
+    # @return     [Options]
+    attr_accessor :options
+
     # @return     [Issues]
     attr_accessor :issues
 
@@ -44,6 +48,7 @@ class <<self
     attr_accessor :framework
 
     def reset
+        @options        = Options.new
         @issues         = Issues.new
         @plugins        = Plugins.new
         @audit          = Audit.new
@@ -87,7 +92,7 @@ class <<self
 
             self
         ensure
-            FileUtils.rm_rf( directory )
+            # FileUtils.rm_rf( directory )
         end
     end
 
@@ -104,7 +109,7 @@ class <<self
     end
 
     def each( &block )
-        [:issues, :plugins, :audit, :element_filter, :framework].each do |attr|
+        [:options, :issues, :plugins, :audit, :element_filter, :framework].each do |attr|
             block.call attr, send( attr )
         end
     end

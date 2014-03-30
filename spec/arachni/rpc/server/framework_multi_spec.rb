@@ -164,6 +164,11 @@ describe 'Arachni::RPC::Server::Framework' do
             it 'returns true' do
                 instance = @instance_clean
                 instance.framework.pause
+
+                Timeout.timeout 5 do
+                    sleep 1 while !instance.framework.paused?
+                end
+
                 instance.framework.paused?.should be_true
             end
         end
@@ -172,8 +177,18 @@ describe 'Arachni::RPC::Server::Framework' do
         it 'resumes the scan' do
             instance = @instance_clean
             instance.framework.pause
+
+            Timeout.timeout 5 do
+                sleep 1 while !instance.framework.paused?
+            end
+
             instance.framework.paused?.should be_true
             instance.framework.resume.should be_true
+
+            Timeout.timeout 5 do
+                sleep 1 while instance.framework.paused?
+            end
+
             instance.framework.paused?.should be_false
         end
     end

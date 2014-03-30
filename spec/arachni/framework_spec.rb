@@ -18,6 +18,9 @@ describe Arachni::Framework do
         @f.opts.url = @url
     end
     after( :each ) do
+        File.delete( 'foo' ) rescue nil
+        File.delete( 'afr' ) rescue nil
+
         @f.clean_up
         @f.reset
     end
@@ -237,11 +240,6 @@ describe Arachni::Framework do
     end
 
     describe '#run' do
-        after do
-            File.delete( 'foo' ) rescue nil
-            File.delete( 'afr' ) rescue nil
-        end
-
         it 'performs the audit' do
             @f.opts.url = @url + '/elem_combo'
             @f.opts.audit.elements :links, :forms, :cookies
@@ -266,7 +264,7 @@ describe Arachni::Framework do
 
                 t = Thread.new { f.run }
                 Timeout.timeout( 5 ) do
-                    sleep 0.1 while f.status != 'scanning'
+                    sleep 0.1 while f.status != :scanning
                 end
                 t.join
             end
@@ -314,28 +312,15 @@ describe Arachni::Framework do
             end
         end
 
-        it "updates #{Arachni::State::Framework}#browser_skip_states" do
-            Arachni::Framework.new do |f|
-                f.opts.url = @url + '/with_javascript'
-                f.opts.audit.elements :links, :forms, :cookies
-
-                f.checks.load :taint
-
-                f.state.framework.browser_skip_states.should be_empty
-                f.run
-                f.state.framework.browser_skip_states.should be_any
-            end
-        end
-
         context 'when done' do
-            it 'sets #status to done' do
+            it 'sets #status to :done' do
                 described_class.new do |f|
                     f.opts.url = @url + '/elem_combo'
                     f.opts.audit.elements :links, :forms, :cookies
                     f.checks.load :taint
 
                     f.run
-                    f.status.should == 'done'
+                    f.status.should == :done
                 end
             end
         end
@@ -376,6 +361,63 @@ describe Arachni::Framework do
         end
     end
 
+    describe '#suspend' do
+        after(:each) { FileUtils.rm @snapshot }
+
+        it 'suspends the system' do
+            @opts.paths.checks  = fixtures_path + '/taint_check/'
+
+            described_class.new do |f|
+                f.opts.url = web_server_url_for :framework_multi
+                f.opts.audit.elements :links
+
+                f.plugins.load :wait
+                f.reports.load :foo
+                f.checks.load :taint
+
+                t = Thread.new do
+                    f.run
+                end
+
+                sleep 0.1 while f.state.issues.size < 200
+
+                @snapshot = f.suspend
+                t.join
+
+                f.state.issues.size.should < 500
+            end
+
+            described_class.new do |f|
+                f.restore @snapshot
+                f.run
+
+                f.state.issues.size.should == 500
+
+                f.auditstore.plugins[:wait][:results].should == { stuff: true }
+
+                File.exists?( 'afr' ).should be_true
+                File.exists?( 'foo' ).should be_true
+            end
+        end
+
+        it 'sets #status to :suspended' do
+            described_class.new do |f|
+                f.opts.url = web_server_url_for :framework_multi
+                f.opts.audit.elements :links
+                f.checks.load :taint
+
+                t = Thread.new do
+                    f.run
+                end
+                @snapshot = f.suspend
+                f.status.should == :suspended
+
+                t.join
+                f.status.should == :suspended
+            end
+        end
+    end
+
     describe '#pause' do
         it 'pauses the system' do
             described_class.new do |f|
@@ -389,16 +431,14 @@ describe Arachni::Framework do
 
                 f.pause
 
-                10.times do
-                    sleep 1
-                end
+                sleep 10
 
                 f.running?.should be_true
                 t.kill
             end
         end
 
-        it 'sets #status to paused' do
+        it 'sets #status to :paused' do
             described_class.new do |f|
                 f.opts.url = @url + '/elem_combo'
                 f.opts.audit.elements :links, :forms, :cookies
@@ -409,7 +449,9 @@ describe Arachni::Framework do
                 end
 
                 f.pause
-                f.status.should == 'paused'
+                f.status.should == :paused
+
+                t.kill
             end
         end
     end
@@ -427,9 +469,7 @@ describe Arachni::Framework do
 
                 f.pause
 
-                10.times do
-                    sleep 1
-                end
+                sleep 10
 
                 f.running?.should be_true
                 f.resume
@@ -448,11 +488,11 @@ describe Arachni::Framework do
                 end
 
                 f.pause
-                f.status.should == 'paused'
+                f.status.should == :paused
 
                 f.resume
                 Timeout.timeout( 5 ) do
-                    sleep 0.1 while f.status != 'scanning'
+                    sleep 0.1 while f.status != :scanning
                 end
                 t.join
             end
@@ -476,7 +516,7 @@ describe Arachni::Framework do
                 f.opts.url = @url + '/elem_combo'
 
                 f.clean_up
-                f.status.should == 'cleanup'
+                f.status.should == :cleanup
             end
         end
 
