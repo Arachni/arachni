@@ -38,7 +38,7 @@ describe Arachni::State::Framework do
         end
 
         context 'when #running is false' do
-            it 'returns true' do
+            it 'returns false' do
                 subject.running = false
                 subject.should_not be_running
             end
