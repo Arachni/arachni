@@ -20,6 +20,7 @@ describe Arachni::Framework do
     after( :each ) do
         File.delete( 'foo' ) rescue nil
         File.delete( 'afr' ) rescue nil
+        File.delete( @snapshot ) rescue nil
 
         @f.clean_up
         @f.reset
@@ -362,8 +363,6 @@ describe Arachni::Framework do
     end
 
     describe '#suspend' do
-        after(:each) { FileUtils.rm @snapshot }
-
         it 'suspends the system' do
             @opts.paths.checks  = fixtures_path + '/taint_check/'
 
@@ -463,11 +462,76 @@ describe Arachni::Framework do
             end
         end
 
-        it 'restores BrowserCluster skip states'
-        it 'restores loaded checks'
-        it 'restores loaded plugins'
-        it 'restores loaded plugin options'
-        it 'restores loaded reports'
+        it 'restores BrowserCluster skip states' do
+            described_class.new do |f|
+                f.opts.url = @url + '/with_ajax'
+                f.opts.audit.elements :links, :forms, :cookies
+
+                f.checks.load :taint
+
+                t = Thread.new { f.run }
+
+                sleep 0.1 while f.browser_cluster.done?
+                @snapshot = f.suspend
+
+                t.join
+            end
+
+            described_class.restore( @snapshot ) do |f|
+                f.browser_job_skip_states.should be_any
+            end
+        end
+
+        it 'restores loaded checks' do
+            described_class.new do |f|
+                f.opts.url = @url
+                f.checks.load :taint
+
+                t = Thread.new { f.run }
+
+                @snapshot = f.suspend
+
+                t.join
+            end
+
+            described_class.restore( @snapshot ) do |f|
+                f.checks.loaded.should == ['taint']
+            end
+        end
+
+        it 'restores loaded plugins' do
+            described_class.new do |f|
+                f.opts.url = @url
+                f.plugins.load :wait
+
+                t = Thread.new { f.run }
+
+                @snapshot = f.suspend
+
+                t.join
+            end
+
+            described_class.restore( @snapshot ) do |f|
+                f.plugins.loaded.should == ['wait']
+            end
+        end
+
+        it 'restores loaded reports' do
+            described_class.new do |f|
+                f.opts.url = @url
+                f.reports.load :foo
+
+                t = Thread.new { f.run }
+
+                @snapshot = f.suspend
+
+                t.join
+            end
+
+            described_class.restore( @snapshot ) do |f|
+                f.reports.loaded.should == ['foo']
+            end
+        end
     end
 
     describe '#pause' do

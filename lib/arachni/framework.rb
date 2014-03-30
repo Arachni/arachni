@@ -721,6 +721,11 @@ class Framework
         true
     end
 
+    def browser_job_skip_states
+        return if !@browser_cluster
+        browser_cluster.skip_states_for( browser_job.id )
+    end
+
     # @return    [String]   Returns the version of the framework.
     def version
         Arachni::VERSION
@@ -782,13 +787,8 @@ class Framework
         browser_cluster.sitemap
     end
 
-    def browser_job_skip_states
-        return [] if !@browser_cluster
-        browser_cluster.skip_states_for( browser_job.id )
-    end
-
     def browser_job_update_skip_states( states )
-        return if !@browser_cluster
+        return if states.empty?
         browser_cluster.update_skip_states_for browser_job.id, states
     end
 
@@ -828,7 +828,9 @@ class Framework
         Options.reports = reports.loaded.
             inject({}) { |h, name| h[name.to_s] = Options.reports[name.to_s] || {}; h }
 
-        State.framework.browser_skip_states.merge browser_job_skip_states
+        if browser_job_skip_states
+            State.framework.browser_skip_states.merge browser_job_skip_states
+        end
 
         archive = state.dump( state_archive_path )
 
