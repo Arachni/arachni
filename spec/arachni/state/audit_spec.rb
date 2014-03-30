@@ -18,13 +18,6 @@ describe Arachni::State::Audit do
         end
     end
 
-    describe '#<<' do
-        it 'pushes a state' do
-            subject << audit_id
-            subject.should include audit_id
-        end
-    end
-
     describe '#include?' do
         context 'when an operation is included' do
             it 'returns true' do
@@ -33,7 +26,7 @@ describe Arachni::State::Audit do
             end
         end
         context 'when an operation is not included' do
-            it 'returns true' do
+            it 'returns false' do
                 subject << audit_id
                 subject.should_not include "#{audit_id}2"
             end
@@ -61,7 +54,7 @@ describe Arachni::State::Audit do
             end
         end
         context 'when the list is not empty' do
-            it 'returns false' do
+            it 'returns true' do
                 subject << audit_id
                 subject.should be_any
             end
@@ -85,7 +78,7 @@ describe Arachni::State::Audit do
     end
 
     describe '.load' do
-        it 'restores issues from disk' do
+        it 'restores from disk' do
             subject << audit_id
             subject << "#{audit_id}2"
             subject.dump( dump_directory )
