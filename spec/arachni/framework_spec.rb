@@ -379,7 +379,7 @@ describe Arachni::Framework do
                     f.run
                 end
 
-                sleep 0.1 while f.state.issues.size < 200
+                sleep 0.1 while f.state.issues.size < 2
 
                 @snapshot = f.suspend
                 t.join
@@ -387,17 +387,7 @@ describe Arachni::Framework do
                 f.state.issues.size.should < 500
             end
 
-            described_class.new do |f|
-                f.restore @snapshot
-                f.run
-
-                f.state.issues.size.should == 500
-
-                f.auditstore.plugins[:wait][:results].should == { stuff: true }
-
-                File.exists?( 'afr' ).should be_true
-                File.exists?( 'foo' ).should be_true
-            end
+            Arachni::State.load( @snapshot ).should be_true
         end
 
         it 'sets #status to :suspended' do
@@ -416,6 +406,68 @@ describe Arachni::Framework do
                 f.status.should == :suspended
             end
         end
+
+        it 'waits for the BrowserCluster jobs to finish'
+    end
+
+    describe '#restore' do
+        after(:each) { FileUtils.rm @snapshot }
+
+        it 'restores a suspended scan' do
+            @opts.paths.checks  = fixtures_path + '/taint_check/'
+
+            logged_issues = 0
+            described_class.new do |f|
+                f.opts.url = web_server_url_for :framework_multi
+                f.opts.audit.elements :links
+
+                f.plugins.load :wait
+                f.reports.load :foo
+                f.checks.load :taint
+
+                f.state.issues.on_new do
+                    logged_issues += 1
+                end
+
+                t = Thread.new do
+                    f.run
+                end
+
+                sleep 0.1 while logged_issues < 200
+
+                @snapshot = f.suspend
+                t.join
+
+                logged_issues.should < 500
+            end
+
+            reset_options
+            @opts.paths.checks  = fixtures_path + '/taint_check/'
+            @opts.paths.reports = fixtures_path + '/reports/manager_spec/'
+
+            described_class.new do |f|
+                f.restore @snapshot
+
+                f.state.issues.on_new do
+                    logged_issues += 1
+                end
+                f.run
+
+                # logged_issues.should == 500
+                f.state.issues.size.should == 500
+
+                f.auditstore.plugins[:wait][:results].should == { stuff: true }
+
+                File.exists?( 'afr' ).should be_true
+                File.exists?( 'foo' ).should be_true
+            end
+        end
+
+        it 'restores BrowserCluster skip states'
+        it 'restores loaded checks'
+        it 'restores loaded plugins'
+        it 'restores loaded plugin options'
+        it 'restores loaded reports'
     end
 
     describe '#pause' do

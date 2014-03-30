@@ -13,6 +13,17 @@ class State
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Framework
 
+    # {Framework} error namespace.
+    #
+    # All {Framework} errors inherit from and live under it.
+    #
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    class Error < State::Error
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        class StateNotSuspendable < Error
+        end
+    end
+
     # @return     [RPC]
     attr_accessor :rpc
 
@@ -141,7 +152,12 @@ class Framework
     # @return   [Bool]
     #   `true` if the suspend request was successful, `false` if the system is
     #   already {#suspended?} or is {#suspending?}.
+    #
+    # @raise    [StateNotSuspendable]
+    #   When {#paused?} or {#pausing?}.
     def suspend( block = true )
+        fail Error::StateNotSuspendable, 'Cannot suspend a paused state.' if paused? || pausing?
+
         return false if suspended? || suspending?
 
         @status = :suspending

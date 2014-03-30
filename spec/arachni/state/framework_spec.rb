@@ -110,6 +110,23 @@ describe Arachni::State::Framework do
                 subject.suspend.should be_false
             end
         end
+
+        context 'when #pausing?' do
+            it "raises #{described_class::Error::StateNotSuspendable}" do
+                subject.pause( :caller, false )
+
+                expect{ subject.suspend }.to raise_error described_class::Error::StateNotSuspendable
+            end
+        end
+
+        context 'when #paused?' do
+            it "raises #{described_class::Error::StateNotSuspendable}" do
+                subject.pause( :caller, false )
+                subject.paused
+
+                expect{ subject.suspend }.to raise_error described_class::Error::StateNotSuspendable
+            end
+        end
     end
 
     describe '#suspended' do

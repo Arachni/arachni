@@ -5,12 +5,6 @@
 
 require 'zip'
 require 'fileutils'
-require_relative 'state/options'
-require_relative 'state/issues'
-require_relative 'state/plugins'
-require_relative 'state/audit'
-require_relative 'state/element_filter'
-require_relative 'state/framework'
 
 module Arachni
 
@@ -26,6 +20,13 @@ class State
     # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
     class Error < Arachni::Error
     end
+
+    require_relative 'state/options'
+    require_relative 'state/issues'
+    require_relative 'state/plugins'
+    require_relative 'state/audit'
+    require_relative 'state/element_filter'
+    require_relative 'state/framework'
 
 class <<self
 

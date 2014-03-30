@@ -280,7 +280,6 @@ class Framework
         ran = false
         @checks.without_platforms.values.each do |check|
             ran = true
-            wait_if_paused
             check_page( check, page )
         end
         harvest_http_responses if ran
@@ -289,7 +288,6 @@ class Framework
         ran = false
         @checks.with_platforms.values.each do |check|
             ran = true
-            wait_if_paused
             check_page( check, page )
         end
         harvest_http_responses if ran
@@ -824,19 +822,32 @@ class Framework
 
         # Make sure the component options are up to date with what's actually
         # happening.
-        Options.checks     = checks.loaded
-        Options.plugins    = plugins.jobs.
+        Options.checks  = checks.loaded
+        Options.plugins = plugins.jobs.
             inject({}) { |h, j| h[j[:instance].shortname] = j[:instance].options; h }
-        Options.reports    = reports.loaded.
+        Options.reports = reports.loaded.
             inject({}) { |h, name| h[name.to_s] = Options.reports[name.to_s] || {}; h }
 
         State.framework.browser_skip_states.merge browser_job_skip_states
 
         archive = state.dump( state_archive_path )
+
+        # Don't block for plugins, maybe signal a #suspend or have them store
+        # everything in system control data structures.
         clean_up
 
         print_status "Saved state to: #{archive}"
         state.framework.suspended
+    end
+
+    def handle_signals
+        wait_if_paused
+        suspend_if_signaled
+    end
+
+    def wait_if_paused
+        state.framework.paused if pause?
+        ::IO::select( nil, nil, nil, 0.2 ) while pause?
     end
 
     def call_after_page_audit_blocks( page )
@@ -1012,11 +1023,11 @@ class Framework
             # HTTP run.
             audit_page( page ) or http.run
 
-            if suspend?
-                page_queue << next_page if next_page
-                suspend_to_disk
-                return
+            if next_page && suspend?
+                state.framework.page_queue << next_page
             end
+
+            handle_signals
 
             # Consume pages somehow triggered by the audit and pushed by the
             # trainer or plugins or whatever.
@@ -1066,6 +1077,7 @@ class Framework
     def audit_page_queue
         while !page_limit_reached? && (page = pop_page_from_queue)
             audit_page( page )
+            handle_signals
         end
     end
 
@@ -1079,11 +1091,6 @@ class Framework
         if /^(.+?):(\d+)(?::in `(.*)')?/ =~ ::Kernel.caller[1]
             Regexp.last_match[1]
         end
-    end
-
-    def wait_if_paused
-        state.framework.paused if pause?
-        ::IO::select( nil, nil, nil, 0.2 ) while pause?
     end
 
     def harvest_http_responses
