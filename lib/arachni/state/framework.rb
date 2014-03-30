@@ -80,7 +80,7 @@ class Framework
     end
 
     def update_browser_skip_states( states )
-        @browser_skip_states |= states
+        @browser_skip_states.merge states
     end
 
     def push_to_page_queue( page )

@@ -27,8 +27,8 @@ describe Arachni::State::Framework do
     end
 
     describe '#browser_skip_states' do
-        it 'returns a Set' do
-            subject.browser_skip_states.should be_kind_of Set
+        it "returns a #{Arachni::Support::LookUp::HashSet}" do
+            subject.browser_skip_states.should be_kind_of Arachni::Support::LookUp::HashSet
         end
     end
 
@@ -36,7 +36,8 @@ describe Arachni::State::Framework do
         it 'updates #browser_skip_states' do
             subject.browser_skip_states.should be_empty
 
-            set = Set.new([1,2,3])
+            set = Arachni::Support::LookUp::HashSet.new
+            set << 1 << 2 << 3
             subject.update_browser_skip_states( set )
             subject.browser_skip_states.should == set
         end
@@ -234,13 +235,15 @@ describe Arachni::State::Framework do
         end
 
         it 'stores #browser_skip_states to disk' do
-            hash = 'stuff'.persistent_hash
-            subject.browser_skip_states << hash
+            stuff = 'stuff'
+            subject.browser_skip_states << stuff
 
             subject.dump( dump_directory )
 
-            Marshal.load( IO.read( "#{dump_directory}/browser_skip_states" ) ).
-                should == Set.new([hash])
+            set = Arachni::Support::LookUp::HashSet.new( hasher: :persistent_hash)
+            set << stuff
+
+            Marshal.load( IO.read( "#{dump_directory}/browser_skip_states" ) ).should == set
         end
     end
 
@@ -322,12 +325,14 @@ describe Arachni::State::Framework do
         end
 
         it 'loads #browser_skip_states from disk' do
-            hash = 'stuff'.persistent_hash
-            subject.browser_skip_states << hash
+            stuff = 'stuff'
+            subject.browser_skip_states << stuff
 
             subject.dump( dump_directory )
 
-            described_class.load( dump_directory ).browser_skip_states.should == Set.new([hash])
+            set = Arachni::Support::LookUp::HashSet.new( hasher: :persistent_hash)
+            set << stuff
+            described_class.load( dump_directory ).browser_skip_states.should == set
         end
     end
 
