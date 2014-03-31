@@ -418,8 +418,6 @@ describe Arachni::Framework do
     end
 
     describe '#restore' do
-        after(:each) { FileUtils.rm @snapshot }
-
         it 'restores a suspended scan' do
             @opts.paths.checks  = fixtures_path + '/taint_check/'
 
@@ -467,6 +465,31 @@ describe Arachni::Framework do
 
                 File.exists?( 'afr' ).should be_true
                 File.exists?( 'foo' ).should be_true
+            end
+        end
+
+        it 'restores options' do
+            options_hash = nil
+
+            described_class.new do |f|
+                f.opts.url = @url + '/with_ajax'
+                f.opts.audit.elements :links, :forms, :cookies
+                f.opts.datastore.my_custom_option = 'my custom value'
+                options_hash = f.opts.to_h.deep_clone
+
+                f.checks.load :taint
+
+                t = Thread.new { f.run }
+
+                sleep 0.1 while f.browser_cluster.done?
+                @snapshot = f.suspend
+
+                t.join
+            end
+
+            described_class.restore( @snapshot ) do |f|
+                f.opts.to_h.should == options_hash.merge( checks: ['taint'] )
+                f.browser_job_skip_states.should be_any
             end
         end
 
