@@ -309,7 +309,7 @@ module Auditor
         self.class.issue_counter += 1
 
         issue = self.class.create_issue( options.merge( referring_page: self.page ) )
-        framework.state.issues << issue
+        State.issues << issue
         issue
     end
 
@@ -342,7 +342,7 @@ module Auditor
             klass = framework.checks[check]
             next if !klass.info.include?(:issue)
 
-            if framework.state.issues.include?( klass.create_issue( vector: element ) )
+            if State.issues.include?( klass.create_issue( vector: element ) )
                 return true
             end
         end

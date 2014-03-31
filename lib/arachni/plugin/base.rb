@@ -181,7 +181,7 @@ class Base < Component::Base
     # @param    [Object]    results
     #
     def register_results( results )
-        framework.state.plugins.store( self, results )
+        State.plugins.store( self, results )
     end
 
     #

@@ -343,7 +343,7 @@ describe Arachni::Check::Auditor do
         it 'logs an issue' do
             @auditor.log_issue( issue_data )
 
-            logged_issue = @framework.state.issues.flatten.first
+            logged_issue = Arachni::State.issues.flatten.first
 
             logged_issue.to_h.tap do |h|
                 h[:page][:dom][:transitions].first.delete :time
@@ -358,7 +358,7 @@ describe Arachni::Check::Auditor do
         it 'assigns a #referring_page' do
             @auditor.log_issue( issue_data )
 
-            logged_issue = @framework.state.issues.flatten.first
+            logged_issue = Arachni::State.issues.flatten.first
             logged_issue.referring_page.should == @auditor.page
         end
 
@@ -371,7 +371,7 @@ describe Arachni::Check::Auditor do
         it 'preserves the given remarks' do
             @auditor.log( issue_data )
 
-            logged_issue = @framework.state.issues.flatten.first
+            logged_issue = Arachni::State.issues.flatten.first
             logged_issue.remarks.first.should be_any
         end
 
@@ -384,13 +384,13 @@ describe Arachni::Check::Auditor do
 
             it 'includes response data' do
                 @auditor.log( issue_data )
-                @framework.state.issues.flatten.first.response.should ==
+                Arachni::State.issues.flatten.first.response.should ==
                     issue_data[:page].response
             end
 
             it 'includes request data' do
                 @auditor.log( issue_data )
-                @framework.state.issues.flatten.first.request.should ==
+                Arachni::State.issues.flatten.first.request.should ==
                     issue_data[:page].request
             end
         end
@@ -400,7 +400,7 @@ describe Arachni::Check::Auditor do
                 issue_data.delete(:page)
                 @auditor.log( issue_data )
 
-                issue = @framework.state.issues.flatten.first
+                issue = Arachni::State.issues.flatten.first
                 issue.page.body.should == @auditor.page.body
                 issue.response.should == @auditor.page.response
                 issue.request.should == @auditor.page.request
@@ -421,7 +421,7 @@ describe Arachni::Check::Auditor do
                 @auditor.load_page_from( @url + '/link' )
                 @auditor.audit( @seed )
                 @framework.http.run
-                @framework.state.issues.size.should == 1
+                Arachni::State.issues.size.should == 1
             end
         end
 
@@ -430,8 +430,8 @@ describe Arachni::Check::Auditor do
                 @auditor.load_page_from( @url + '/link' )
                 @auditor.audit( { unix: @seed }, substring: @seed )
                 @framework.http.run
-                @framework.state.issues.size.should == 1
-                issue = @framework.state.issues.flatten.first
+                Arachni::State.issues.size.should == 1
+                issue = Arachni::State.issues.flatten.first
                 issue.platform_name.should == :unix
                 issue.platform_type.should == :os
             end
@@ -449,8 +449,8 @@ describe Arachni::Check::Auditor do
                             elements: [ Arachni::Element::Link ]
                          )
                         @framework.http.run
-                        @framework.state.issues.size.should == 1
-                        issue = @framework.state.issues.flatten.first
+                        Arachni::State.issues.size.should == 1
+                        issue = Arachni::State.issues.flatten.first
                         issue.vector.class.should == Arachni::Element::Link
                         issue.vector.affected_input_name.should == 'link_input'
                     end
@@ -462,8 +462,8 @@ describe Arachni::Check::Auditor do
                             elements: [ Arachni::Element::Form ]
                          )
                         @framework.http.run
-                        @framework.state.issues.size.should == 1
-                        issue = @framework.state.issues.flatten.first
+                        Arachni::State.issues.size.should == 1
+                        issue = Arachni::State.issues.flatten.first
                         issue.vector.class.should == Arachni::Element::Form
                         issue.vector.affected_input_name.should == 'form_input'
                     end
@@ -475,8 +475,8 @@ describe Arachni::Check::Auditor do
                             elements: [ Arachni::Element::Cookie ]
                          )
                         @framework.http.run
-                        @framework.state.issues.size.should == 1
-                        issue = @framework.state.issues.flatten.first
+                        Arachni::State.issues.size.should == 1
+                        issue = Arachni::State.issues.flatten.first
                         issue.vector.class.should == Arachni::Element::Cookie
                         issue.vector.affected_input_name.should == 'cookie_input'
                     end
@@ -487,8 +487,8 @@ describe Arachni::Check::Auditor do
                                         elements: [ Arachni::Element::Cookie ]
                         )
                         @framework.http.run
-                        @framework.state.issues.size.should == 1
-                        issue = @framework.state.issues.flatten.first
+                        Arachni::State.issues.size.should == 1
+                        issue = Arachni::State.issues.flatten.first
                         issue.vector.class.should == Arachni::Element::Cookie
                         issue.vector.affected_input_name.should == 'vulnerable'
                     end
@@ -501,8 +501,8 @@ describe Arachni::Check::Auditor do
                             elements: [ Arachni::Element::Header ]
                          )
                         @framework.http.run
-                        @framework.state.issues.size.should == 1
-                        issue = @framework.state.issues.flatten.first
+                        Arachni::State.issues.size.should == 1
+                        issue = Arachni::State.issues.flatten.first
                         issue.vector.class.should == Arachni::Element::Header
                         issue.vector.affected_input_name.should == 'Referer'
                     end
@@ -514,7 +514,7 @@ describe Arachni::Check::Auditor do
                             format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                          )
                         @framework.http.run
-                        @framework.state.issues.size.should == 4
+                        Arachni::State.issues.size.should == 4
                     end
                 end
             end
@@ -539,7 +539,7 @@ describe Arachni::Check::Auditor do
                             @framework.http.run
                         end
 
-                        @framework.state.issues.flatten.find do |i|
+                        Arachni::State.issues.flatten.find do |i|
                             i.vector.affected_input_name == 'you_made_it'
                         end.should be_true
                     end

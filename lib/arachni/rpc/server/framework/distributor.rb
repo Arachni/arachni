@@ -286,11 +286,11 @@ module Distributor
     end
 
     def distributed_elements
-        state.framework.rpc.distributed_elements
+        state.rpc.distributed_elements
     end
 
     def distributed_pages
-        state.framework.rpc.distributed_pages
+        state.rpc.distributed_pages
     end
 
     def clear_filters

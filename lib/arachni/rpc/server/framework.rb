@@ -162,12 +162,12 @@ class Framework < ::Arachni::Framework
         r = super( false )
 
         if !block_given?
-            state.framework.status = :done
+            state.status = :done
             return r
         end
 
         if !has_slaves?
-            state.framework.status = :done
+            state.status = :done
             block.call r
             return
         end
@@ -181,7 +181,7 @@ class Framework < ::Arachni::Framework
         end
         after = proc do |results|
             @plugins.merge_results( results.compact )
-            state.framework.status = :done
+            state.status = :done
             block.call true
         end
         map_slaves( foreach, after )
@@ -228,7 +228,7 @@ class Framework < ::Arachni::Framework
     #   First variations of all discovered issues with generic info filled in
     #   from the parent.
     def issues
-        state.issues.map { |issue| issue.variations.first.to_solo issue }
+        State.issues.map { |issue| issue.variations.first.to_solo issue }
     end
 
     # @return   [Array<Hash>]   {#issues} as an array of Hashes.

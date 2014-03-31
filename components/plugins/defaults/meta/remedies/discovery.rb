@@ -43,7 +43,7 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
         # URL path => size of response bodies.
         response_size_per_path  = {}
 
-        framework.state.issues.each do |issue|
+        State.issues.each do |issue|
             next if !issue.tags.includes_tags?( :discovery )
 
             issue.variations.each do |variation|
@@ -83,7 +83,7 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
 
             # Gotcha!
             issue_digests_per_path[path].each do |digest|
-                framework.state.issues[digest].variations.each do |issue|
+                State.issues[digest].variations.each do |issue|
                     issue.add_remark :meta_analysis, REMARK
 
                     # Requires manual verification.

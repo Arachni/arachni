@@ -26,15 +26,17 @@ describe Arachni::Framework do
         @f.reset
     end
 
+    subject { @f }
+
     describe '#browser_cluster' do
         it "returns #{Arachni::BrowserCluster}" do
-            @f.browser_cluster.should be_kind_of Arachni::BrowserCluster
+            subject.browser_cluster.should be_kind_of Arachni::BrowserCluster
         end
     end
 
     describe '#state' do
-        it "returns #{Arachni::State}" do
-            @f.state.should == Arachni::State
+        it "returns #{Arachni::State::Framework}" do
+            subject.state.should be_kind_of Arachni::State::Framework
         end
     end
 
@@ -92,10 +94,10 @@ describe Arachni::Framework do
                 @opts.url = 'http://blahaha'
                 @opts.scope.do_not_crawl
 
-                @f.push_to_url_queue @opts.url
-                @f.checks.load :taint
-                @f.run
-                @f.failures.should be_any
+                subject.push_to_url_queue @opts.url
+                subject.checks.load :taint
+                subject.run
+                subject.failures.should be_any
             end
         end
 
@@ -104,10 +106,10 @@ describe Arachni::Framework do
                 @opts.url = @f_url + '/fail'
                 @opts.scope.do_not_crawl
 
-                @f.push_to_url_queue @opts.url
-                @f.checks.load :taint
-                @f.run
-                @f.failures.should be_any
+                subject.push_to_url_queue @opts.url
+                subject.checks.load :taint
+                subject.run
+                subject.failures.should be_any
             end
         end
 
@@ -115,10 +117,10 @@ describe Arachni::Framework do
             @opts.url = @f_url + '/fail_4_times'
             @opts.scope.do_not_crawl
 
-            @f.push_to_url_queue @opts.url
-            @f.checks.load :taint
-            @f.run
-            @f.failures.should be_empty
+            subject.push_to_url_queue @opts.url
+            subject.checks.load :taint
+            subject.run
+            subject.failures.should be_empty
         end
     end
 
@@ -128,10 +130,10 @@ describe Arachni::Framework do
                 @opts.url = @f_url
                 @opts.scope.do_not_crawl
 
-                @f.push_to_url_queue @opts.url
-                @f.checks.load :taint
-                @f.run
-                @f.failures.should be_empty
+                subject.push_to_url_queue @opts.url
+                subject.checks.load :taint
+                subject.run
+                subject.failures.should be_empty
             end
         end
         context 'when there are failed requests' do
@@ -139,17 +141,17 @@ describe Arachni::Framework do
                 @opts.url = @f_url + '/fail'
                 @opts.scope.do_not_crawl
 
-                @f.push_to_url_queue @opts.url
-                @f.checks.load :taint
-                @f.run
-                @f.failures.should be_any
+                subject.push_to_url_queue @opts.url
+                subject.checks.load :taint
+                subject.run
+                subject.failures.should be_any
             end
         end
     end
 
     describe '#opts' do
         it 'provides access to the framework options' do
-            @f.opts.is_a?( Arachni::Options ).should be_true
+            subject.opts.is_a?( Arachni::Options ).should be_true
         end
 
         describe '#audit.exclude_binaries' do
@@ -214,44 +216,44 @@ describe Arachni::Framework do
 
     describe '#reports' do
         it 'provides access to the report manager' do
-            @f.reports.is_a?( Arachni::Report::Manager ).should be_true
-            @f.reports.available.sort.should == %w(afr foo).sort
+            subject.reports.is_a?( Arachni::Report::Manager ).should be_true
+            subject.reports.available.sort.should == %w(afr foo).sort
         end
     end
 
     describe '#checks' do
         it 'provides access to the check manager' do
-            @f.checks.is_a?( Arachni::Check::Manager ).should be_true
-            @f.checks.available.should == %w(taint)
+            subject.checks.is_a?( Arachni::Check::Manager ).should be_true
+            subject.checks.available.should == %w(taint)
         end
     end
 
     describe '#plugins' do
         it 'provides access to the plugin manager' do
-            @f.plugins.is_a?( Arachni::Plugin::Manager ).should be_true
-            @f.plugins.available.sort.should ==
+            subject.plugins.is_a?( Arachni::Plugin::Manager ).should be_true
+            subject.plugins.available.sort.should ==
                 %w(wait bad with_options distributable loop default).sort
         end
     end
 
     describe '#http' do
         it 'provides access to the HTTP interface' do
-            @f.http.is_a?( Arachni::HTTP::Client ).should be_true
+            subject.http.is_a?( Arachni::HTTP::Client ).should be_true
         end
     end
 
     describe '#run' do
         it 'performs the audit' do
-            @f.opts.url = @url + '/elem_combo'
-            @f.opts.audit.elements :links, :forms, :cookies
-            @f.checks.load :taint
-            @f.plugins.load :wait
-            @f.reports.load :foo
+            subject.opts.url = @url + '/elem_combo'
+            subject.opts.audit.elements :links, :forms, :cookies
+            subject.checks.load :taint
+            subject.plugins.load :wait
+            subject.reports.load :foo
 
-            @f.run
-            @f.auditstore.issues.size.should == 3
+            subject.run
+            subject.auditstore.issues.size.should == 3
 
-            @f.auditstore.plugins[:wait][:results].should == { stuff: true }
+            subject.auditstore.plugins[:wait][:results].should == { stuff: true }
 
             File.exists?( 'afr' ).should be_true
             File.exists?( 'foo' ).should be_true
@@ -378,12 +380,12 @@ describe Arachni::Framework do
                     f.run
                 end
 
-                sleep 0.1 while f.state.issues.size < 2
+                sleep 0.1 while Arachni::State.issues.size < 2
 
                 @snapshot = f.suspend
                 t.join
 
-                f.state.issues.size.should < 500
+                Arachni::State.issues.size.should < 500
             end
 
             Arachni::State.load( @snapshot ).should be_true
@@ -424,7 +426,7 @@ describe Arachni::Framework do
                 f.reports.load :foo
                 f.checks.load :taint
 
-                f.state.issues.on_new do
+                Arachni::State.issues.on_new do
                     logged_issues += 1
                 end
 
@@ -447,13 +449,13 @@ describe Arachni::Framework do
             described_class.new do |f|
                 f.restore @snapshot
 
-                f.state.issues.on_new do
+                Arachni::State.issues.on_new do
                     logged_issues += 1
                 end
                 f.run
 
                 # logged_issues.should == 500
-                f.state.issues.size.should == 500
+                Arachni::State.issues.size.should == 500
 
                 f.auditstore.plugins[:wait][:results].should == { stuff: true }
 
@@ -462,7 +464,7 @@ describe Arachni::Framework do
             end
         end
 
-        it 'restores BrowserCluster skip states' do
+        it 'restores BrowserCluster skip Arachni::States' do
             described_class.new do |f|
                 f.opts.url = @url + '/with_ajax'
                 f.opts.audit.elements :links, :forms, :cookies
@@ -641,9 +643,9 @@ describe Arachni::Framework do
                 f.opts.url = @url + '/elem_combo'
                 f.push_to_page_queue Arachni::Page.from_url( f.opts.url )
 
-                f.state.framework.page_queue.should_not be_empty
+                f.state.page_queue.should_not be_empty
                 f.clean_up
-                f.state.framework.page_queue.should be_empty
+                f.state.page_queue.should be_empty
             end
         end
 
@@ -652,9 +654,9 @@ describe Arachni::Framework do
                 f.opts.url = @url + '/elem_combo'
                 f.push_to_url_queue f.opts.url
 
-                f.state.framework.url_queue.should_not be_empty
+                f.state.url_queue.should_not be_empty
                 f.clean_up
-                f.state.framework.url_queue.should be_empty
+                f.state.url_queue.should be_empty
             end
         end
 
@@ -695,29 +697,29 @@ describe Arachni::Framework do
 
     describe '#audit_page' do
         it 'updates the #sitemap with the DOM URL' do
-            @f.opts.audit.elements :links, :forms, :cookies
-            @f.checks.load :taint
+            subject.opts.audit.elements :links, :forms, :cookies
+            subject.checks.load :taint
 
-            @f.sitemap.should be_empty
+            subject.sitemap.should be_empty
 
             page = Arachni::Page.from_url( @url + '/link' )
             page.dom.url = @url + '/link/#/stuff'
 
-            @f.audit_page page
-            @f.sitemap.should include @url + '/link/#/stuff'
+            subject.audit_page page
+            subject.sitemap.should include @url + '/link/#/stuff'
         end
 
         context 'when checks were' do
             context 'ran against the page' do
                 it 'returns true' do
-                    @f.checks.load :taint
-                    @f.audit_page( Arachni::Page.from_url( @url + '/link' ) ).should be_true
+                    subject.checks.load :taint
+                    subject.audit_page( Arachni::Page.from_url( @url + '/link' ) ).should be_true
                 end
             end
 
             context 'not ran against the page' do
                 it 'returns false' do
-                    @f.audit_page( Arachni::Page.from_url( @url + '/link' ) ).should be_false
+                    subject.audit_page( Arachni::Page.from_url( @url + '/link' ) ).should be_false
                 end
             end
         end
@@ -812,18 +814,18 @@ describe Arachni::Framework do
 
         context 'when the page matches exclusion criteria' do
             it 'does not audit it' do
-                @f.opts.scope.exclude_path_patterns << /link/
-                @f.opts.audit.elements :links, :forms, :cookies
+                subject.opts.scope.exclude_path_patterns << /link/
+                subject.opts.audit.elements :links, :forms, :cookies
 
-                @f.checks.load :taint
+                subject.checks.load :taint
 
-                @f.audit_page( Arachni::Page.from_url( @url + '/link' ) )
-                @f.auditstore.issues.size.should == 0
+                subject.audit_page( Arachni::Page.from_url( @url + '/link' ) )
+                subject.auditstore.issues.size.should == 0
             end
 
             it 'returns false' do
-                @f.opts.scope.exclude_path_patterns << /link/
-                @f.audit_page( Arachni::Page.from_url( @url + '/link' ) ).should be_false
+                subject.opts.scope.exclude_path_patterns << /link/
+                subject.audit_page( Arachni::Page.from_url( @url + '/link' ) ).should be_false
             end
         end
     end
@@ -883,28 +885,28 @@ describe Arachni::Framework do
         it 'pushes it to the page audit queue and returns true' do
             page = Arachni::Page.from_url( @url + '/train/true' )
 
-            @f.opts.audit.elements :links, :forms, :cookies
-            @f.checks.load :taint
+            subject.opts.audit.elements :links, :forms, :cookies
+            subject.checks.load :taint
 
-            @f.page_queue_total_size.should == 0
-            @f.push_to_page_queue( page ).should be_true
-            @f.run
+            subject.page_queue_total_size.should == 0
+            subject.push_to_page_queue( page ).should be_true
+            subject.run
 
-            @f.auditstore.issues.size.should == 2
-            @f.page_queue_total_size.should > 0
+            subject.auditstore.issues.size.should == 2
+            subject.page_queue_total_size.should > 0
         end
 
         it 'updates the #sitemap with the DOM URL' do
-            @f.opts.audit.elements :links, :forms, :cookies
-            @f.checks.load :taint
+            subject.opts.audit.elements :links, :forms, :cookies
+            subject.checks.load :taint
 
-            @f.sitemap.should be_empty
+            subject.sitemap.should be_empty
 
             page = Arachni::Page.from_url( @url + '/link' )
             page.dom.url = @url + '/link/#/stuff'
 
-            @f.push_to_page_queue page
-            @f.sitemap.should include @url + '/link/#/stuff'
+            subject.push_to_page_queue page
+            subject.sitemap.should include @url + '/link/#/stuff'
         end
 
         it 'passes it to ElementFilter#update_from_page_cache' do
@@ -912,28 +914,28 @@ describe Arachni::Framework do
 
             Arachni::ElementFilter.should receive(:update_from_page_cache).with(page)
 
-            @f.push_to_page_queue page
+            subject.push_to_page_queue page
         end
 
         context 'when the page has already been seen' do
             it 'ignores it' do
                 page = Arachni::Page.from_url( @url + '/stuff' )
 
-                @f.page_queue_total_size.should == 0
-                @f.push_to_page_queue( page )
-                @f.push_to_page_queue( page )
-                @f.push_to_page_queue( page )
-                @f.page_queue_total_size.should == 1
+                subject.page_queue_total_size.should == 0
+                subject.push_to_page_queue( page )
+                subject.push_to_page_queue( page )
+                subject.push_to_page_queue( page )
+                subject.page_queue_total_size.should == 1
             end
 
             it 'returns false' do
                 page = Arachni::Page.from_url( @url + '/stuff' )
 
-                @f.page_queue_total_size.should == 0
-                @f.push_to_page_queue( page ).should be_true
-                @f.push_to_page_queue( page ).should be_false
-                @f.push_to_page_queue( page ).should be_false
-                @f.page_queue_total_size.should == 1
+                subject.page_queue_total_size.should == 0
+                subject.push_to_page_queue( page ).should be_true
+                subject.push_to_page_queue( page ).should be_false
+                subject.push_to_page_queue( page ).should be_false
+                subject.page_queue_total_size.should == 1
             end
         end
 
@@ -941,61 +943,61 @@ describe Arachni::Framework do
             it 'ignores it' do
                 page = Arachni::Page.from_url( @url + '/train/true' )
 
-                @f.opts.audit.elements :links, :forms, :cookies
-                @f.checks.load :taint
+                subject.opts.audit.elements :links, :forms, :cookies
+                subject.checks.load :taint
 
-                @f.opts.scope.exclude_path_patterns << /train/
+                subject.opts.scope.exclude_path_patterns << /train/
 
-                @f.page_queue_total_size.should == 0
-                @f.push_to_page_queue( page )
-                @f.run
-                @f.auditstore.issues.size.should == 0
-                @f.page_queue_total_size.should == 0
-                @f.checks.clear
+                subject.page_queue_total_size.should == 0
+                subject.push_to_page_queue( page )
+                subject.run
+                subject.auditstore.issues.size.should == 0
+                subject.page_queue_total_size.should == 0
+                subject.checks.clear
             end
 
             it 'returns false' do
                 page = Arachni::Page.from_url( @url + '/train/true' )
-                @f.opts.scope.exclude_path_patterns << /train/
-                @f.page_queue_total_size.should == 0
-                @f.push_to_page_queue( page ).should be_false
-                @f.page_queue_total_size.should == 0
+                subject.opts.scope.exclude_path_patterns << /train/
+                subject.page_queue_total_size.should == 0
+                subject.push_to_page_queue( page ).should be_false
+                subject.page_queue_total_size.should == 0
             end
         end
     end
 
     describe '#push_to_url_queue' do
         it 'pushes a URL to the URL audit queue' do
-            @f.opts.audit.elements :links, :forms, :cookies
-            @f.checks.load :taint
+            subject.opts.audit.elements :links, :forms, :cookies
+            subject.checks.load :taint
 
-            @f.url_queue_total_size.should == 0
-            @f.push_to_url_queue(  @url + '/link' ).should be_true
-            @f.run
+            subject.url_queue_total_size.should == 0
+            subject.push_to_url_queue(  @url + '/link' ).should be_true
+            subject.run
 
-            @f.auditstore.issues.size.should == 1
-            @f.url_queue_total_size.should == 3
+            subject.auditstore.issues.size.should == 1
+            subject.url_queue_total_size.should == 3
         end
 
         context 'when the URL has already been seen' do
             it 'returns false' do
-                @f.push_to_url_queue(  @url + '/link' ).should be_true
-                @f.push_to_url_queue(  @url + '/link' ).should be_false
+                subject.push_to_url_queue(  @url + '/link' ).should be_true
+                subject.push_to_url_queue(  @url + '/link' ).should be_false
             end
 
             it 'ignores it' do
-                @f.url_queue_total_size.should == 0
-                @f.push_to_url_queue(  @url + '/link' )
-                @f.push_to_url_queue(  @url + '/link' )
-                @f.push_to_url_queue(  @url + '/link' )
-                @f.url_queue_total_size.should == 1
+                subject.url_queue_total_size.should == 0
+                subject.push_to_url_queue(  @url + '/link' )
+                subject.push_to_url_queue(  @url + '/link' )
+                subject.push_to_url_queue(  @url + '/link' )
+                subject.url_queue_total_size.should == 1
             end
         end
     end
 
     describe '#stats' do
         it 'returns a hash with stats' do
-            @f.stats.keys.sort.should == [ :requests, :responses, :time_out_count,
+            subject.stats.keys.sort.should == [ :requests, :responses, :time_out_count,
                 :time, :avg, :sitemap_size, :auditmap_size, :progress, :curr_res_time,
                 :curr_res_cnt, :curr_avg, :average_res_time, :max_concurrency, :current_page, :eta ].sort
         end
@@ -1003,7 +1005,7 @@ describe Arachni::Framework do
 
     describe '#list_platforms' do
         it 'returns information about all valid platforms' do
-            @f.list_platforms.should == {
+            subject.list_platforms.should == {
                 'Operating systems' => {
                     unix:    'Generic Unix family',
                     linux:   'Linux',
@@ -1057,18 +1059,18 @@ describe Arachni::Framework do
     describe '#list_checks' do
         context 'when a pattern is given' do
             it 'uses it to filter out checks that do not match it' do
-                @f.list_checks( 'boo' ).size == 0
+                subject.list_checks( 'boo' ).size == 0
 
-                @f.list_checks( 'taint' ).should == @f.list_checks
-                @f.list_checks.size == 1
+                subject.list_checks( 'taint' ).should == subject.list_checks
+                subject.list_checks.size == 1
             end
         end
     end
 
     describe '#list_plugins' do
         it 'returns info on all plugins' do
-            loaded = @f.plugins.loaded
-            @f.list_plugins.map { |r| r.delete( :path ); r }
+            loaded = subject.plugins.loaded
+            subject.list_plugins.map { |r| r.delete( :path ); r }
                 .sort_by { |e| e[:shortname] }.should == YAML.load( '
 ---
 - :name: \'\'
@@ -1147,21 +1149,21 @@ describe Arachni::Framework do
   :shortname: !binary |-
     d2l0aF9vcHRpb25z
 ' ).sort_by { |e| e[:shortname] }
-            @f.plugins.loaded.should == loaded
+            subject.plugins.loaded.should == loaded
         end
 
         context 'when a pattern is given' do
             it 'uses it to filter out plugins that do not match it' do
-                @f.list_plugins( 'bad|foo' ).size == 2
-                @f.list_plugins( 'boo' ).size == 0
+                subject.list_plugins( 'bad|foo' ).size == 2
+                subject.list_plugins( 'boo' ).size == 0
             end
         end
     end
 
     describe '#list_reports' do
         it 'returns info on all reports' do
-            loaded = @f.reports.loaded
-            @f.list_reports.map { |r| r[:options] = []; r.delete( :path ); r }
+            loaded = subject.reports.loaded
+            subject.list_reports.map { |r| r[:options] = []; r.delete( :path ); r }
                 .sort_by { |e| e[:shortname] }.should == YAML.load( '
 ---
 - :name: Report abstract class.
@@ -1181,13 +1183,13 @@ describe Arachni::Framework do
   :version: 0.1.1
   :shortname: foo
 ').sort_by { |e| e[:shortname] }
-            @f.reports.loaded.should == loaded
+            subject.reports.loaded.should == loaded
         end
 
         context 'when a pattern is given' do
             it 'uses it to filter out reports that do not match it' do
-                @f.list_reports( 'foo' ).size == 1
-                @f.list_reports( 'boo' ).size == 0
+                subject.list_reports( 'foo' ).size == 1
+                subject.list_reports( 'boo' ).size == 0
             end
         end
     end

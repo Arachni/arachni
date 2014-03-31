@@ -24,7 +24,7 @@ class Distributor
     end
 
     def state
-        Arachni::State
+        Arachni::State.framework
     end
 
     def slave_done?( url )

@@ -135,7 +135,7 @@ class Framework
         # for the reports.
         @orig_redundant = @opts.scope.redundant_path_patterns.deep_clone
 
-        state.framework.status = :ready
+        state.status = :ready
 
         @current_url = ''
 
@@ -163,19 +163,19 @@ class Framework
     # @return   [Integer]
     #   Total number of pages added to the {#push_to_page_queue page audit queue}.
     def page_queue_total_size
-        state.framework.page_queue_total_size
+        state.page_queue_total_size
     end
 
     # @return   [Integer]
     #   Total number of URLs added to the {#push_to_url_queue URL audit queue}.
     def url_queue_total_size
-        state.framework.url_queue_total_size
+        state.url_queue_total_size
     end
 
     # @return   [Hash<String, Integer>]
     #   List of crawled URLs with their HTTP codes.
     def sitemap
-        state.framework.sitemap
+        state.sitemap
     end
 
     # @return   [BrowserCluster]
@@ -203,16 +203,16 @@ class Framework
 
         clean_up
         exception_jail( false ){ block.call } if block_given?
-        state.framework.status = :done
+        state.status = :done
 
         @reports.run( audit_store ) if !@reports.empty?
 
         true
     end
 
-    # @return   [State]
+    # @return   [State::Framework]
     def state
-        State
+        State.framework
     end
 
     # @note Will update the {HTTP::Client#cookie_jar} with {Page#cookiejar}.
@@ -229,7 +229,7 @@ class Framework
     def audit_page( page )
         return if !page
 
-        state.framework.status = :scanning if !pausing?
+        state.status = :scanning if !pausing?
 
         if skip_page? page
             print_info "Ignoring page due to exclusion criteria: #{page.dom.url}"
@@ -239,7 +239,7 @@ class Framework
         # Initialize the BrowserCluster.
         browser_cluster
 
-        state.framework.audited_page_count += 1
+        state.audited_page_count += 1
         add_to_sitemap( page )
         sitemap.merge!( browser_sitemap )
 
@@ -354,7 +354,7 @@ class Framework
         @start_datetime = Time.now if !@start_datetime
 
         sitemap_sz  = sitemap.size
-        auditmap_sz = state.framework.audited_page_count
+        auditmap_sz = state.audited_page_count
 
         # Progress of audit is calculated as:
         #     amount of audited pages / amount of all discovered pages
@@ -397,7 +397,7 @@ class Framework
     #   `true` if push was successful, `false` if the `page` matched any
     #   exclusion criteria or has already been seen.
     def push_to_page_queue( page )
-        return false if state.framework.page_seen?( page ) || skip_page?( page )
+        return false if state.page_seen?( page ) || skip_page?( page )
 
         # We want to update from the already loaded page cache (if there is one)
         # as we have to store the page anyways (needs to go through Browser analysis)
@@ -410,7 +410,7 @@ class Framework
         # that were to happen.
         ElementFilter.update_from_page_cache page
 
-        state.framework.push_to_page_queue page
+        state.push_to_page_queue page
 
         true
     end
@@ -425,9 +425,9 @@ class Framework
         return if page_limit_reached?
 
         url = to_absolute( url ) || url
-        return false if state.framework.url_seen?( url ) || skip_path?( url )
+        return false if state.url_seen?( url ) || skip_path?( url )
 
-        state.framework.push_to_url_queue url
+        state.push_to_url_queue url
 
         true
     end
@@ -442,7 +442,7 @@ class Framework
         AuditStore.new(
             options: opts,
             sitemap: sitemap,
-            issues:  state.issues.sort,
+            issues:  State.issues.sort,
             plugins: @plugins.results,
             start_datetime:  @start_datetime,
             finish_datetime: @finish_datetime
@@ -588,31 +588,31 @@ class Framework
     #       {#clean_up cleaning up} after itself (i.e. waiting for plugins to finish etc.).
     #   * `:done` -- The scan has completed, you can grab the report and shutdown.
     def status
-        state.framework.status
+        state.status
     end
 
     # @return   [Bool]
     #   `true` if the framework is running, `false` otherwise. This is `true`
     #   even if the scan is {#paused?}.
     def running?
-        state.framework.running?
+        state.running?
     end
 
     # @return   [Bool]
     #   `true` if the framework is paused, `false` otherwise..
     def paused?
-        state.framework.paused?
+        state.paused?
     end
 
     # @return   [Bool]
     #   `true` if the framework is in the process of being paused (or has been
     #   paused), `false` otherwise.
     def pause?
-        state.framework.pause?
+        state.pause?
     end
 
     def pausing?
-        state.framework.pausing?
+        state.pausing?
     end
 
     # @note Each call from a unique caller is counted as a pause request
@@ -623,7 +623,7 @@ class Framework
     #
     # @param    [Bool]  wait    Wait until the system has been paused.
     def pause( wait = true )
-        state.framework.pause caller, wait
+        state.pause caller, wait
     end
 
     # @note Each call from a unique caller is counted as a pause request
@@ -632,7 +632,7 @@ class Framework
     #
     # Removes a {#pause} request for the current caller.
     def resume
-        state.framework.resume caller
+        state.resume caller
     end
 
     # Writes the current {State} to disk.
@@ -643,7 +643,7 @@ class Framework
     # @return   [String,ni]
     #   Path to the state file `wait` is `true`, `nil` otherwise.
     def suspend( wait = true )
-        state.framework.suspend( wait )
+        state.suspend( wait )
         return state_archive_path if wait
         nil
     end
@@ -652,13 +652,13 @@ class Framework
     #   `true` if the system is in the process of being suspended, `false`
     #   otherwise.
     def suspend?
-        state.framework.suspend?
+        state.suspend?
     end
 
     # @return   [Bool]
     #   `true` if the system has been suspended, `false` otherwise.
     def suspended?
-        state.framework.suspended?
+        state.suspended?
     end
 
     # @return   [String]
@@ -680,7 +680,7 @@ class Framework
     def restore( afs )
         State.load afs
 
-        browser_job_update_skip_states State.framework.browser_skip_states
+        browser_job_update_skip_states state.browser_skip_states
 
         checks.load  Options.checks
         plugins.load Options.plugins.keys
@@ -698,7 +698,7 @@ class Framework
     #
     # It stops the clock and waits for the plugins to finish up.
     def clean_up( shutdown_browsers = true )
-        state.framework.status = :cleanup
+        state.status = :cleanup
 
         sitemap.merge!( browser_sitemap )
 
@@ -713,7 +713,7 @@ class Framework
         # make sure this is disabled or it'll break report output
         disable_only_positives
 
-        state.framework.running = false
+        state.running = false
 
         # wait for the plugins to finish
         @plugins.block
@@ -829,17 +829,17 @@ class Framework
             inject({}) { |h, name| h[name.to_s] = Options.reports[name.to_s] || {}; h }
 
         if browser_job_skip_states
-            State.framework.browser_skip_states.merge browser_job_skip_states
+            state.browser_skip_states.merge browser_job_skip_states
         end
 
-        archive = state.dump( state_archive_path )
+        archive = State.dump( state_archive_path )
 
         # Don't block for plugins, maybe signal a #suspend or have them store
         # everything in system control data structures.
         clean_up
 
         print_status "Saved state to: #{archive}"
-        state.framework.suspended
+        state.suspended
     end
 
     def handle_signals
@@ -848,7 +848,7 @@ class Framework
     end
 
     def wait_if_paused
-        state.framework.paused if pause?
+        state.paused if pause?
         sleep 0.2 while pause?
     end
 
@@ -883,8 +883,8 @@ class Framework
     # * Starts the clock.
     # * Runs the plugins.
     def prepare
-        state.framework.status  = :preparing
-        state.framework.running = true
+        state.status  = :preparing
+        state.running = true
         @start_datetime = Time.now
 
         # run all plugins
@@ -949,7 +949,7 @@ class Framework
     def audit
         wait_if_paused
 
-        state.framework.status = :scanning if !pausing?
+        state.status = :scanning if !pausing?
 
         push_to_url_queue( @opts.url )
         @opts.scope.restrict_paths.each { |url| push_to_url_queue( url ) }
@@ -992,11 +992,11 @@ class Framework
     end
 
     def page_queue
-        state.framework.page_queue
+        state.page_queue
     end
 
     def url_queue
-        state.framework.url_queue
+        state.url_queue
     end
 
     #
@@ -1026,7 +1026,7 @@ class Framework
             audit_page( page ) or http.run
 
             if next_page && suspend?
-                state.framework.page_queue << next_page
+                state.page_queue << next_page
             end
 
             handle_signals
@@ -1128,7 +1128,7 @@ class Framework
     end
 
     def add_to_sitemap( page )
-        state.framework.add_page_to_sitemap( page )
+        state.add_page_to_sitemap( page )
     end
 
     def list_report?( path, patterns = nil )

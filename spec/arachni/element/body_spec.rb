@@ -37,7 +37,7 @@ describe Arachni::Element::Body do
                 it 'logs an issue' do
                     auditable.match_and_log( valid_pattern )
 
-                    logged_issue = @framework.state.issues.flatten.first
+                    logged_issue = Arachni::State.issues.flatten.first
                     logged_issue.should be_true
 
                     logged_issue.vector.url.should == Arachni::Utilities.normalize_url( @url )
@@ -51,7 +51,7 @@ describe Arachni::Element::Body do
             context 'and it does not matche the given pattern' do
                 it 'does not log an issue' do
                     auditable.match_and_log( invalid_pattern )
-                    @framework.state.issues.should be_empty
+                    Arachni::State.issues.should be_empty
                 end
             end
         end
