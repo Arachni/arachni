@@ -47,9 +47,9 @@ describe 'Arachni::RPC::Server::Plugin::Manager' do
     end
 
     describe '#merge_results' do
-        it "delegates to ##{Arachni::State::Plugins}#merge_results" do
+        it "delegates to ##{Arachni::Data::Plugins}#merge_results" do
             plugins = Arachni::RPC::Server::Framework.new.plugins
-            Arachni::State.plugins.should receive(:merge_results)
+            Arachni::Data.plugins.should receive(:merge_results)
             plugins.merge_results( [ distributable: { results: { stuff: 2 } } ] )
         end
     end

@@ -4,7 +4,7 @@ describe name_from_filename do
     include_examples 'plugin'
 
     before( :all ) do
-        Arachni::State.issues << Factory[:issue].tap { |i| i.vector.action = 'http://localhost/' }
+        Arachni::Data.issues << Factory[:issue].tap { |i| i.vector.action = 'http://localhost/' }
     end
 
     it 'resolves vulnerable hostnames to IP addresses' do

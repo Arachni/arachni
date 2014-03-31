@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::State do
+describe Arachni::Data do
     after(:each) do
         FileUtils.rm_rf @dump_directory if @dump_directory
     end
@@ -10,19 +10,7 @@ describe Arachni::State do
 
     subject { described_class }
     let(:dump_directory) do
-        @dump_directory = "#{Dir.tmpdir}/state-#{Arachni::Utilities.generate_token}"
-    end
-
-    describe '#audit' do
-        it "returns an instance of #{described_class::Audit}" do
-            subject.audit.should be_kind_of described_class::Audit
-        end
-    end
-
-    describe '#element_filter' do
-        it "returns an instance of #{described_class::ElementFilter}" do
-            subject.element_filter.should be_kind_of described_class::ElementFilter
-        end
+        @dump_directory = "#{Dir.tmpdir}/state-#{Arachni::Utilities.generate_token}/"
     end
 
     describe '#framework' do
@@ -31,14 +19,20 @@ describe Arachni::State do
         end
     end
 
-    describe '#options' do
-        it "returns an instance of #{described_class::Options}" do
-            subject.options.should be_kind_of described_class::Options
+    describe '#issues' do
+        it "returns an instance of #{described_class::Issues}" do
+            subject.issues.should be_kind_of described_class::Issues
+        end
+    end
+
+    describe '#plugins' do
+        it "returns an instance of #{described_class::Plugins}" do
+            subject.plugins.should be_kind_of described_class::Plugins
         end
     end
 
     describe '.dump' do
-        %w(options audit element_filter framework).each do |name|
+        %w(framework issues plugins).each do |name|
             it "stores ##{name} to disk" do
                 previous_instance = subject.send(name)
 
@@ -53,7 +47,7 @@ describe Arachni::State do
     end
 
     describe '#clear' do
-        %w(options audit element_filter framework).each do |method|
+        %w(framework issues plugins).each do |method|
             it "clears ##{method}" do
                 subject.send(method).should receive(:clear)
                 subject.clear

@@ -28,9 +28,9 @@ shared_examples_for 'check' do
         # Do not deduplicate, the check tests need to see everything.
         current_check.instance_eval { define_method( :skip? ) { |_| false } }
 
-        Arachni::State.issues.do_not_store
-        Arachni::State.issues.on_new_pre_deduplication do |issues|
-            issues.each { |i| @issues << i }
+        Arachni::Data.issues.do_not_store
+        Arachni::Data.issues.on_new_pre_deduplication do |issue|
+            @issues << issue
         end
 
         Arachni::Element::Capabilities::Analyzable::Timeout.do_not_deduplicate

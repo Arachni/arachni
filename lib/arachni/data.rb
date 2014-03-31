@@ -5,49 +5,44 @@
 
 module Arachni
 
-# Stores and provides access to the state of the system.
+# Stores and provides access to the data of the system.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-class State
+class Data
 
-    # {State} error namespace.
+    # {Data} error namespace.
     #
-    # All {State} errors inherit from and live under it.
+    # All {Data} errors inherit from and live under it.
     #
     # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
     class Error < Arachni::Error
     end
 
-    require_relative 'state/options'
-    require_relative 'state/audit'
-    require_relative 'state/element_filter'
-    require_relative 'state/framework'
+    require_relative 'data/framework'
+    require_relative 'data/issues'
+    require_relative 'data/plugins'
 
 class <<self
-
-    # @return     [Options]
-    attr_accessor :options
-
-    # @return     [Audit]
-    attr_accessor :audit
-
-    # @return     [ElementFilter]
-    attr_accessor :element_filter
 
     # @return     [Framework]
     attr_accessor :framework
 
+    # @return     [Issues]
+    attr_accessor :issues
+
+    # @return     [Plugins]
+    attr_accessor :plugins
+
     def reset
-        @options        = Options.new
-        @audit          = Audit.new
-        @element_filter = ElementFilter.new
-        @framework      = Framework.new
+        @framework = Framework.new
+        @issues    = Issues.new
+        @plugins   = Plugins.new
     end
 
     # @param    [String]    directory
     #   Location of the dump directory.
     # @return   [String]
-    #   Location of the directory.
+    #   Location of the dump directory.
     def dump( directory )
         FileUtils.mkdir_p( directory )
 
@@ -60,7 +55,7 @@ class <<self
 
     # @param    [String]    directory
     #   Location of the dump directory.
-    # @return   [State]     `self`
+    # @return   [Data]     `self`
     def load( directory )
         each do |name, state|
             send( "#{name}=", state.class.load( "#{directory}/#{name}/" ) )
@@ -69,7 +64,7 @@ class <<self
         self
     end
 
-    # Clears all states.
+    # Clears all data.
     def clear
         each { |_, state| state.clear }
         self
@@ -78,7 +73,7 @@ class <<self
     private
 
     def each( &block )
-        [:options, :audit, :element_filter, :framework].each do |attr|
+        [:framework, :issues, :plugins].each do |attr|
             block.call attr, send( attr )
         end
     end

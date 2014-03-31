@@ -27,6 +27,10 @@ class Distributor
         Arachni::State.framework
     end
 
+    def data
+        Arachni::Data.framework
+    end
+
     def slave_done?( url )
         @done_slaves.include? url
     end
@@ -217,6 +221,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                     ]
 
                     Arachni::State.clear
+                    Arachni::Data.clear
 
                     distributor = get_distributor
                     # Mark one of the instances as done.

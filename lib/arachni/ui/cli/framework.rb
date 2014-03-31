@@ -149,7 +149,7 @@ class Framework
     end
 
     def print_issues( unmute = false )
-        super( State.issues.summary, unmute, &method( :restr ) )
+        super( Data.issues.summary, unmute, &method( :restr ) )
     end
 
     def kill_interrupt_handler

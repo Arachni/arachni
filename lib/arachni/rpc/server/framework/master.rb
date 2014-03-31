@@ -122,7 +122,7 @@ module Master
     # @private
     def update_issues( issues, token = nil )
         return false if master? && !valid_token?( token )
-        issues.each { |issue| State.issues << issue }
+        issues.each { |issue| Data.issues << issue }
         true
     end
 
@@ -318,7 +318,7 @@ module Master
     end
 
     def distributed_page_queue
-        state.rpc.distributed_page_queue
+        data.rpc.distributed_page_queue
     end
 
     def clear_distributed_page_queue

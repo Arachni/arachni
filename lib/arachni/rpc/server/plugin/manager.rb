@@ -39,9 +39,9 @@ class Manager < ::Arachni::Plugin::Manager
     end
 
     # Merges the plug-in results of multiple instances by delegating to
-    # {State::Plugins#merge_results}.
+    # {Data::Plugins#merge_results}.
     def merge_results( results )
-        State.plugins.merge_results self, results
+        Data.plugins.merge_results self, results
     end
 
 end

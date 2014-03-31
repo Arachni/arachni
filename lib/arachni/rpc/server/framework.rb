@@ -228,7 +228,7 @@ class Framework < ::Arachni::Framework
     #   First variations of all discovered issues with generic info filled in
     #   from the parent.
     def issues
-        State.issues.map { |issue| issue.variations.first.to_solo issue }
+        Data.issues.map { |issue| issue.variations.first.to_solo issue }
     end
 
     # @return   [Array<Hash>]   {#issues} as an array of Hashes.

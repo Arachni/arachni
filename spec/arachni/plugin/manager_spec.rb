@@ -173,8 +173,8 @@ describe Arachni::Plugin::Manager do
     end
 
     describe '#results' do
-        it "delegates to ##{Arachni::State::Plugins}#results" do
-            Arachni::State.plugins.results.object_id.should ==
+        it "delegates to ##{Arachni::Data::Plugins}#results" do
+            Arachni::Data.plugins.results.object_id.should ==
                 @plugins.results.object_id
         end
     end

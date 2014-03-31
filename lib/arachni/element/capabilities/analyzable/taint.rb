@@ -195,7 +195,7 @@ module Taint
             # Grab an untainted response.
             submit do |response|
                 @logged_issues.each do |hash|
-                    State.issues[hash].variations.each do |v|
+                    Data.issues[hash].variations.each do |v|
                         next if !response.body.include?( v.proof )
 
                         v.trusted = false

@@ -4,5 +4,5 @@
 =end
 
 def issues
-    Arachni::State.issues.flatten
+    Arachni::Data.issues.flatten
 end

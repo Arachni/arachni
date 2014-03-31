@@ -117,7 +117,7 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                     context 'when the payloads are per platform' do
                         it 'only tries to matches the regexps for that platform' do
                             issues = []
-                            Arachni::State.issues.on_new_pre_deduplication do |issue|
+                            Arachni::Data.issues.on_new_pre_deduplication do |issue|
                                 issues << issue
                             end
 
@@ -275,7 +275,7 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                     context 'when the payloads are per platform' do
                         it 'only tries to matches the regexps for that platform' do
                             issues = []
-                            Arachni::State.issues.on_new_pre_deduplication do |issue|
+                            Arachni::Data.issues.on_new_pre_deduplication do |issue|
                                 issues << issue
                             end
 

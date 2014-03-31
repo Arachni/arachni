@@ -6,7 +6,7 @@
 require 'monitor'
 
 module Arachni
-class State
+class Data
 
 # Stores and provides access to all logged {Issue}s.
 #

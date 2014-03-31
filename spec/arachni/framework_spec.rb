@@ -40,6 +40,12 @@ describe Arachni::Framework do
         end
     end
 
+    describe '#data' do
+        it "returns #{Arachni::Data::Framework}" do
+            subject.data.should be_kind_of Arachni::Data::Framework
+        end
+    end
+
     describe '#on_audit_page' do
         it 'calls the given block before each page is audited' do
             ok = false
@@ -380,15 +386,15 @@ describe Arachni::Framework do
                     f.run
                 end
 
-                sleep 0.1 while Arachni::State.issues.size < 2
+                sleep 0.1 while Arachni::Data.issues.size < 2
 
                 @snapshot = f.suspend
                 t.join
 
-                Arachni::State.issues.size.should < 500
+                Arachni::Data.issues.size.should < 500
             end
 
-            Arachni::State.load( @snapshot ).should be_true
+            Arachni::Snapshot.load( @snapshot ).should be_true
         end
 
         it 'sets #status to :suspended' do
@@ -426,7 +432,7 @@ describe Arachni::Framework do
                 f.reports.load :foo
                 f.checks.load :taint
 
-                Arachni::State.issues.on_new do
+                Arachni::Data.issues.on_new do
                     logged_issues += 1
                 end
 
@@ -449,13 +455,13 @@ describe Arachni::Framework do
             described_class.new do |f|
                 f.restore @snapshot
 
-                Arachni::State.issues.on_new do
+                Arachni::Data.issues.on_new do
                     logged_issues += 1
                 end
                 f.run
 
                 # logged_issues.should == 500
-                Arachni::State.issues.size.should == 500
+                Arachni::Data.issues.size.should == 500
 
                 f.auditstore.plugins[:wait][:results].should == { stuff: true }
 
@@ -464,7 +470,7 @@ describe Arachni::Framework do
             end
         end
 
-        it 'restores BrowserCluster skip Arachni::States' do
+        it 'restores BrowserCluster skip states' do
             described_class.new do |f|
                 f.opts.url = @url + '/with_ajax'
                 f.opts.audit.elements :links, :forms, :cookies
@@ -643,9 +649,9 @@ describe Arachni::Framework do
                 f.opts.url = @url + '/elem_combo'
                 f.push_to_page_queue Arachni::Page.from_url( f.opts.url )
 
-                f.state.page_queue.should_not be_empty
+                f.data.page_queue.should_not be_empty
                 f.clean_up
-                f.state.page_queue.should be_empty
+                f.data.page_queue.should be_empty
             end
         end
 
@@ -654,9 +660,9 @@ describe Arachni::Framework do
                 f.opts.url = @url + '/elem_combo'
                 f.push_to_url_queue f.opts.url
 
-                f.state.url_queue.should_not be_empty
+                f.data.url_queue.should_not be_empty
                 f.clean_up
-                f.state.url_queue.should be_empty
+                f.data.url_queue.should be_empty
             end
         end
 

@@ -37,7 +37,7 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
                 auditable.differential_analysis( @opts )
                 @auditor.http.run
 
-                results = Arachni::State.issues.flatten
+                results = Arachni::Data.issues.flatten
                 results.should be_any
                 results.first.vector.affected_input_name.should == 'input'
             end

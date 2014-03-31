@@ -191,11 +191,11 @@ class Manager < Arachni::Component::Manager
     end
 
     def results
-        State.plugins.results
+        Data.plugins.results
     end
 
     def self.reset
-        State.plugins.clear
+        Data.plugins.clear
         remove_constants( NAMESPACE )
     end
     def reset

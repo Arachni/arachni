@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::State::Issues do
+describe Arachni::Data::Issues do
 
     after(:each) do
         FileUtils.rm_rf @dump_directory if @dump_directory

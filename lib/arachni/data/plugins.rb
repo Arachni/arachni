@@ -6,7 +6,7 @@
 require 'monitor'
 
 module Arachni
-class State
+class Data
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Plugins

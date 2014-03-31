@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::State::Plugins do
+describe Arachni::Data::Plugins do
     subject { described_class.new }
     let(:plugins) { @framework.plugins }
     let(:dump_directory) do

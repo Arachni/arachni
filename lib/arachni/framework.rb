@@ -23,7 +23,7 @@ require lib + 'error'
 require lib + 'utilities'
 require lib + 'support'
 require lib + 'uri'
-require lib + 'state'
+require lib + 'snapshot'
 require lib + 'component'
 require lib + 'platform'
 require lib + 'parser'
@@ -163,19 +163,19 @@ class Framework
     # @return   [Integer]
     #   Total number of pages added to the {#push_to_page_queue page audit queue}.
     def page_queue_total_size
-        state.page_queue_total_size
+        data.page_queue_total_size
     end
 
     # @return   [Integer]
     #   Total number of URLs added to the {#push_to_url_queue URL audit queue}.
     def url_queue_total_size
-        state.url_queue_total_size
+        data.url_queue_total_size
     end
 
     # @return   [Hash<String, Integer>]
     #   List of crawled URLs with their HTTP codes.
     def sitemap
-        state.sitemap
+        data.sitemap
     end
 
     # @return   [BrowserCluster]
@@ -213,6 +213,11 @@ class Framework
     # @return   [State::Framework]
     def state
         State.framework
+    end
+
+    # @return   [Data::Framework]
+    def data
+        Data.framework
     end
 
     # @note Will update the {HTTP::Client#cookie_jar} with {Page#cookiejar}.
@@ -397,7 +402,7 @@ class Framework
     #   `true` if push was successful, `false` if the `page` matched any
     #   exclusion criteria or has already been seen.
     def push_to_page_queue( page )
-        return false if state.page_seen?( page ) || skip_page?( page )
+        return false if data.page_seen?( page ) || skip_page?( page )
 
         # We want to update from the already loaded page cache (if there is one)
         # as we have to store the page anyways (needs to go through Browser analysis)
@@ -410,7 +415,7 @@ class Framework
         # that were to happen.
         ElementFilter.update_from_page_cache page
 
-        state.push_to_page_queue page
+        data.push_to_page_queue page
 
         true
     end
@@ -425,9 +430,9 @@ class Framework
         return if page_limit_reached?
 
         url = to_absolute( url ) || url
-        return false if state.url_seen?( url ) || skip_path?( url )
+        return false if data.url_seen?( url ) || skip_path?( url )
 
-        state.push_to_url_queue url
+        data.push_to_url_queue url
 
         true
     end
@@ -440,10 +445,10 @@ class Framework
         opts[:scope][:redundant_path_patterns] = @orig_redundant
 
         AuditStore.new(
-            options: opts,
-            sitemap: sitemap,
-            issues:  State.issues.sort,
-            plugins: @plugins.results,
+            options:         opts,
+            sitemap:         sitemap,
+            issues:          Data.issues.sort,
+            plugins:         @plugins.results,
             start_datetime:  @start_datetime,
             finish_datetime: @finish_datetime
         )
@@ -678,7 +683,7 @@ class Framework
     #
     # @return   [Framework] Restored instance.
     def restore( afs )
-        State.load afs
+        Snapshot.load afs
 
         browser_job_update_skip_states state.browser_skip_states
 
@@ -756,6 +761,8 @@ class Framework
     # Resets everything and allows the framework environment to be re-used.
     def self.reset
         State.clear
+        Data.clear
+
         Platform::Manager.reset
         Check::Auditor.reset
         ElementFilter.reset
@@ -832,7 +839,7 @@ class Framework
             state.browser_skip_states.merge browser_job_skip_states
         end
 
-        archive = State.dump( state_archive_path )
+        archive = Snapshot.dump( state_archive_path )
 
         # Don't block for plugins, maybe signal a #suspend or have them store
         # everything in system control data structures.
@@ -992,11 +999,11 @@ class Framework
     end
 
     def page_queue
-        state.page_queue
+        data.page_queue
     end
 
     def url_queue
-        state.url_queue
+        data.url_queue
     end
 
     #
@@ -1026,7 +1033,7 @@ class Framework
             audit_page( page ) or http.run
 
             if next_page && suspend?
-                state.page_queue << next_page
+                data.page_queue << next_page
             end
 
             handle_signals
@@ -1128,7 +1135,7 @@ class Framework
     end
 
     def add_to_sitemap( page )
-        state.add_page_to_sitemap( page )
+        data.add_page_to_sitemap( page )
     end
 
     def list_report?( path, patterns = nil )

@@ -59,7 +59,7 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
         # Calculate average request time for each path.
         @times.each_pair { |url, time| avg[url] = time / @counter[url] }
 
-        State.issues.each do |issue|
+        Data.issues.each do |issue|
             issue.variations.each do |variation|
                 response_time = avg[uri_parse( variation.vector.action ).up_to_path.hash]
 
