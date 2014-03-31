@@ -14,8 +14,6 @@ class Data
 class Issues
     include MonitorMixin
 
-    EXTENSION = 'issue'
-
     def initialize
         super
 
@@ -169,7 +167,7 @@ class Issues
         FileUtils.mkdir_p( directory )
 
         @collection.each do |digest, issue|
-            File.open( "#{directory}/#{digest}.#{EXTENSION}", 'w' ) do |f|
+            File.open( "#{directory}/#{digest}", 'w' ) do |f|
                 f.write Marshal.dump( issue )
             end
         end
@@ -178,7 +176,7 @@ class Issues
     def self.load( directory )
         issues = new
 
-        Dir["#{directory}/*.#{EXTENSION}"].each do |issue_file|
+        Dir["#{directory}/*"].each do |issue_file|
             issues << Marshal.load( IO.read( issue_file ) )
         end
 

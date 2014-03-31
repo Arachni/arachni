@@ -227,7 +227,7 @@ describe Arachni::Data::Issues do
             subject.dump( dump_directory )
 
             subject.each do |issue|
-                issue_path = "#{dump_directory}/#{issue.digest}.issue"
+                issue_path = "#{dump_directory}/#{issue.digest}"
                 File.exists?( issue_path ).should be_true
 
                 loaded_issue = Marshal.load( IO.read( issue_path ) )

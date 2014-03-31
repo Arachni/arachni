@@ -11,11 +11,11 @@ class Options
 
     def dump( directory )
         FileUtils.mkdir_p( directory )
-        Arachni::Options.save( "#{directory}/options.afr" )
+        Arachni::Options.save( "#{directory}/options" )
     end
 
     def self.load( directory )
-        Arachni::Options.load( "#{directory}/options.afr" )
+        Arachni::Options.load( "#{directory}/options" )
         new
     end
 

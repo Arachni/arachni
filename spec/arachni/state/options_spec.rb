@@ -17,7 +17,7 @@ describe Arachni::State::Options do
             Arachni::Options.datastore.my_custom_option = 'my value'
             subject.dump( dump_directory )
 
-            Arachni::Options.load( "#{dump_directory}/options.afr" ).
+            Arachni::Options.load( "#{dump_directory}/options" ).
                 datastore.my_custom_option.should == 'my value'
         end
     end
