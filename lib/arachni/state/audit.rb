@@ -12,7 +12,7 @@ class State
 #       * {Check::Auditor.audited}
 #       * {Check::Auditor#audited}
 #       * {Check::Auditor#audited?}
-#   * {Capabilities::Element::Auditable}
+#   * {Element::Capabilities::Auditable}
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Audit

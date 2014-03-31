@@ -215,7 +215,7 @@ class Framework
         State
     end
 
-    # @note Will update the {HTTP::Client#cookiejar} with {Page#cookiejar}.
+    # @note Will update the {HTTP::Client#cookie_jar} with {Page#cookiejar}.
     # @note It will audit just the given `page` and not any subsequent pages
     #   discovered by the {Trainer} -- i.e. ignore any new elements that might
     #   appear as a result.
@@ -662,13 +662,13 @@ class Framework
     end
 
     # @return   [String]
-    #   Provisioned {suspend} dump file for this instance.
+    #   Provisioned {#suspend} dump file for this instance.
     def state_archive_path
         @state_archive ||= File.expand_path( state_archive_name )
     end
 
     # @return   [String]
-    #   Provisioned {suspend} dump filename for this instance.
+    #   Provisioned {#suspend} dump filename for this instance.
     def state_archive_name
         @state_archive_path ||= "#{URI(@opts.url).host}-#{Utilities.generate_token}.afs"
     end
