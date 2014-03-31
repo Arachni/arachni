@@ -168,6 +168,17 @@ describe Arachni::Data::Issues do
     end
 
     describe '#include?' do
+        context 'when #do_not_store' do
+            before(:each) { subject.do_not_store }
+
+            context 'and it includes the given issue' do
+                it 'returns true' do
+                    subject << issue
+                    subject.should include issue
+                end
+            end
+        end
+
         context 'when it includes the given issue' do
             it 'returns true' do
                 subject << issue

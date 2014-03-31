@@ -17,9 +17,13 @@ class Issues
     def initialize
         super
 
-        # Stores all issues with Issue#hash as the key as a way to deduplicate
+        # Stores all issues with Issue#digest as the key as a way to deduplicate
         # and group variations.
         @collection = {}
+
+        # We also use this Set for deduplication in case #do_not_store has been
+        # called.
+        @issue_digests = Set.new
 
         # Called when a new issue is logged.
         @on_new_blocks = []
@@ -87,7 +91,7 @@ class Issues
     # @return   [Bool]
     #   `true` if `issue` is
     def include?( issue )
-        @collection.include? issue.digest
+        @issue_digests.include? issue.digest
     end
 
     # @note Will deduplicate and group issues as variations.
@@ -99,6 +103,8 @@ class Issues
 
         # Only allow passive issues to have variations.
         return self if include?( issue ) && issue.active?
+
+        @issue_digests << issue.digest
 
         synchronize do
             call_on_new_blocks( issue )
@@ -124,9 +130,9 @@ class Issues
         all.sort_by { |i| Issue::Severity::ORDER.index i.severity.to_sym }
     end
 
-    # @return   [Array<Integer>]    {Issue#hash}es.
-    def hashes
-        @collection.keys
+    # @return   [Set<Integer>]    {Issue#digest}s.
+    def digests
+        @issue_digests
     end
 
     # @param    [Block] block
@@ -188,10 +194,11 @@ class Issues
     end
 
     def hash
-        @collection.hash
+        @issue_digests.hash
     end
 
     def clear
+        @issue_digests.clear
         @collection.clear
         @on_new_blocks.clear
         @on_new_pre_deduplication_blocks.clear
