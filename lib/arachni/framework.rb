@@ -849,7 +849,7 @@ class Framework
 
     def wait_if_paused
         state.framework.paused if pause?
-        ::IO::select( nil, nil, nil, 0.2 ) while pause?
+        sleep 0.2 while pause?
     end
 
     def call_after_page_audit_blocks( page )
