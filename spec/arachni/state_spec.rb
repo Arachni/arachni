@@ -37,8 +37,14 @@ describe Arachni::State do
         end
     end
 
+    describe '#http' do
+        it "returns an instance of #{described_class::HTTP}" do
+            subject.http.should be_kind_of described_class::HTTP
+        end
+    end
+
     describe '.dump' do
-        %w(options audit element_filter framework).each do |name|
+        %w(options audit element_filter framework http).each do |name|
             it "stores ##{name} to disk" do
                 previous_instance = subject.send(name)
 
@@ -53,7 +59,7 @@ describe Arachni::State do
     end
 
     describe '#clear' do
-        %w(options audit element_filter framework).each do |method|
+        %w(options audit element_filter framework http).each do |method|
             it "clears ##{method}" do
                 subject.send(method).should receive(:clear)
                 subject.clear

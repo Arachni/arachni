@@ -22,11 +22,15 @@ class State
     require_relative 'state/audit'
     require_relative 'state/element_filter'
     require_relative 'state/framework'
+    require_relative 'state/http'
 
 class <<self
 
     # @return     [Options]
     attr_accessor :options
+
+    # @return     [HTTP]
+    attr_accessor :http
 
     # @return     [Audit]
     attr_accessor :audit
@@ -38,6 +42,7 @@ class <<self
     attr_accessor :framework
 
     def reset
+        @http           = HTTP.new
         @options        = Options.new
         @audit          = Audit.new
         @element_filter = ElementFilter.new
@@ -78,9 +83,17 @@ class <<self
     private
 
     def each( &block )
-        [:options, :audit, :element_filter, :framework].each do |attr|
+        accessors.each do |attr|
             block.call attr, send( attr )
         end
+    end
+
+    def accessors
+        instance_variables.map do |ivar|
+            attribute = "#{ivar.to_s.gsub('@','')}"
+            next if !methods.include?( :"#{attribute}=" )
+            attribute
+        end.compact
     end
 
 end

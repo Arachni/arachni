@@ -73,9 +73,17 @@ class <<self
     private
 
     def each( &block )
-        [:framework, :issues, :plugins].each do |attr|
+        accessors.each do |attr|
             block.call attr, send( attr )
         end
+    end
+
+    def accessors
+        instance_variables.map do |ivar|
+            attribute = "#{ivar.to_s.gsub('@','')}"
+            next if !methods.include?( :"#{attribute}=" )
+            attribute
+        end.compact
     end
 
 end

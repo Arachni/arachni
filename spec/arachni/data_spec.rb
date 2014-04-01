@@ -10,7 +10,7 @@ describe Arachni::Data do
 
     subject { described_class }
     let(:dump_directory) do
-        @dump_directory = "#{Dir.tmpdir}/state-#{Arachni::Utilities.generate_token}/"
+        @dump_directory = "#{Dir.tmpdir}/data-#{Arachni::Utilities.generate_token}/"
     end
 
     describe '#framework' do
