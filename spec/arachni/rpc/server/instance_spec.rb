@@ -12,8 +12,157 @@ describe 'Arachni::RPC::Server::Instance' do
         @instance = nil
     end
     after :each do
-        @instance.service.shutdown if @instance
+        if @instance
+            @instance.service.shutdown
+
+            path = @instance.service.snapshot_path
+            File.delete path if path
+        end
+
         dispatcher_killall
+    end
+
+    describe '#snapshot_path' do
+        context 'when the scan has not been suspended' do
+            it 'returns nil' do
+                @shared_instance.service.snapshot_path.should be_nil
+            end
+        end
+
+        context 'when the scan has been suspended' do
+            it 'returns the path to the snapshot' do
+                @instance = instance_spawn
+
+                @instance.service.scan(
+                    url:    web_server_url_for( :framework_multi ),
+                    audit:  { elements: [:links, :forms] },
+                    checks: :test
+                )
+
+                Timeout.timeout 5 do
+                    sleep 1 while @instance.service.status != :scanning
+                end
+
+                @instance.service.suspend
+
+                Timeout.timeout 5 do
+                    sleep 1 while @instance.service.status != :suspended
+                end
+
+                File.exists?( @instance.service.snapshot_path ).should be_true
+            end
+        end
+    end
+
+    describe '#suspend' do
+        it 'suspends the scan to disk' do
+            @instance = instance_spawn
+
+            @instance.service.scan(
+                url:    web_server_url_for( :framework_multi ),
+                audit:  { elements: [:links, :forms] },
+                checks: :test
+            )
+
+            Timeout.timeout 5 do
+                sleep 1 while @instance.service.status != :scanning
+            end
+
+            @instance.service.suspend
+
+            Timeout.timeout 5 do
+                sleep 1 while @instance.service.status != :suspended
+            end
+
+            File.exists?( @instance.service.snapshot_path ).should be_true
+        end
+
+        context 'when performing a multi-Instance scan' do
+            it "raises #{Arachni::State::Framework::Error::StateNotSuspendable}" do
+                @instance = instance_spawn
+
+                @instance.service.scan(
+                    url:    web_server_url_for( :framework_multi ),
+                    audit:  { elements: [:links, :forms] },
+                    checks: :test,
+                    spawns: 2
+                )
+
+                Timeout.timeout 5 do
+                    sleep 1 while @instance.service.status != :scanning
+                end
+
+                expect { @instance.service.suspend }.to raise_error Arachni::RPC::Exceptions::RemoteException
+            end
+        end
+    end
+
+    describe '#suspended?' do
+        context 'when the scan has not been suspended' do
+            it 'returns false' do
+                @shared_instance.service.should_not be_suspended
+            end
+        end
+
+        context 'when the scan has been suspended' do
+            it 'returns true' do
+                @instance = instance_spawn
+
+                @instance.service.scan(
+                    url:    web_server_url_for( :framework_multi ),
+                    audit:  { elements: [:links, :forms] },
+                    checks: :test
+                )
+
+                Timeout.timeout 5 do
+                    sleep 1 while @instance.service.status != :scanning
+                end
+
+                @instance.service.suspend
+
+                Timeout.timeout 5 do
+                    sleep 1 while @instance.service.status != :suspended
+                end
+
+                @instance.service.should be_suspended
+            end
+        end
+    end
+
+    describe '#restore' do
+        it 'suspends the scan to disk' do
+            @instance = instance_spawn
+
+            @instance.service.scan(
+                url:    web_server_url_for( :framework_multi ),
+                audit:  { elements: [:links, :forms] },
+                checks: :test
+            )
+
+            Timeout.timeout 5 do
+                sleep 1 while @instance.service.status != :scanning
+            end
+
+            options = @instance.service.report[:options]
+
+            @instance.service.suspend
+
+            Timeout.timeout 5 do
+                sleep 1 while @instance.service.status != :suspended
+            end
+
+            snapshot_path = @instance.service.snapshot_path
+            @instance.service.shutdown
+
+            @instance = instance_spawn
+            @instance.service.restore snapshot_path
+
+            File.delete snapshot_path
+
+            sleep 1 while @instance.service.busy?
+
+            @instance.service.report[:options].should == options
+        end
     end
 
     it 'supports UNIX sockets' do

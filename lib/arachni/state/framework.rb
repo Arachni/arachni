@@ -88,7 +88,13 @@ class Framework
     # @raise    [StateNotSuspendable]
     #   When {#paused?} or {#pausing?}.
     def suspend( block = true )
-        fail Error::StateNotSuspendable, 'Cannot suspend a paused state.' if paused? || pausing?
+        if paused? || pausing?
+            fail Error::StateNotSuspendable, 'Cannot suspend a paused state.'
+        end
+
+        if !running?
+            fail Error::StateNotSuspendable, 'Cannot suspend an idle state.'
+        end
 
         return false if suspended? || suspending?
 

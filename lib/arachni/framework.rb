@@ -640,7 +640,7 @@ class Framework
         state.resume caller
     end
 
-    # Writes the current {State} to disk.
+    # Writes a {Snapshot.dump} to disk and aborts the scan.
     #
     # @param   [Bool]  wait
     #   Wait for the system to write it state to disk.
@@ -649,7 +649,7 @@ class Framework
     #   Path to the state file `wait` is `true`, `nil` otherwise.
     def suspend( wait = true )
         state.suspend( wait )
-        return state_archive_path if wait
+        return snapshot_path if wait
         nil
     end
 
@@ -668,13 +668,13 @@ class Framework
 
     # @return   [String]
     #   Provisioned {#suspend} dump file for this instance.
-    def state_archive_path
-        @state_archive ||= File.expand_path( state_archive_name )
+    def snapshot_path
+        @state_archive ||= File.expand_path( snapshot_filename )
     end
 
     # @return   [String]
     #   Provisioned {#suspend} dump filename for this instance.
-    def state_archive_name
+    def snapshot_filename
         @state_archive_path ||= "#{URI(@opts.url).host}-#{Utilities.generate_token}.afs"
     end
 
@@ -691,7 +691,7 @@ class Framework
         plugins.load Options.plugins.keys
         reports.load Options.reports.keys
 
-        self
+        nil
     end
 
     def wait_for_browser?
@@ -839,7 +839,7 @@ class Framework
             state.browser_skip_states.merge browser_job_skip_states
         end
 
-        archive = Snapshot.dump( state_archive_path )
+        archive = Snapshot.dump( snapshot_path )
 
         # Don't block for plugins, maybe signal a #suspend or have them store
         # everything in system control data structures.

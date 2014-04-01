@@ -46,80 +46,93 @@ describe Arachni::State::Framework do
     end
 
     describe '#suspend' do
-        context 'when blocking' do
-            it 'waits for a #suspended signal' do
-                t = Thread.new do
-                    sleep 1
-                    subject.suspended
+        context 'when #running?' do
+            before(:each) { subject.running = true }
+
+            context 'when blocking' do
+                it 'waits for a #suspended signal' do
+                    t = Thread.new do
+                        sleep 1
+                        subject.suspended
+                    end
+
+                    time = Time.now
+                    subject.suspend
+                    (Time.now - time).should > 1
+                    t.join
                 end
 
-                time = Time.now
-                subject.suspend
-                (Time.now - time).should > 1
-                t.join
-            end
+                it 'sets the #status to :suspended' do
+                    t = Thread.new do
+                        sleep 1
+                        subject.suspended
+                    end
+                    subject.suspend
+                    t.join
 
-            it 'sets the #status to :suspended' do
-                t = Thread.new do
-                    sleep 1
-                    subject.suspended
+                    subject.status.should == :suspended
                 end
-                subject.suspend
-                t.join
 
-                subject.status.should == :suspended
-            end
+                it 'returns true' do
+                    t = Thread.new do
+                        sleep 1
+                        subject.suspended
+                    end
+                    subject.suspend.should be_true
+                    t.join
 
-            it 'returns true' do
-                t = Thread.new do
-                    sleep 1
-                    subject.suspended
+                    subject.status.should == :suspended
                 end
-                subject.suspend.should be_true
-                t.join
+            end
 
-                subject.status.should == :suspended
+            context 'when non-blocking' do
+                it 'sets the #status to :suspending' do
+                    subject.suspend( false )
+                    subject.status.should == :suspending
+                end
+
+                it 'returns true' do
+                    subject.suspend( false ).should be_true
+                end
+            end
+
+            context 'when already #suspending?' do
+                it 'returns false' do
+                    subject.suspend( false ).should be_true
+                    subject.should be_suspending
+                    subject.suspend.should be_false
+                end
+            end
+
+            context 'when already #suspended?' do
+                it 'returns false' do
+                    subject.suspend( false ).should be_true
+                    subject.suspended
+                    subject.should be_suspended
+
+                    subject.suspend.should be_false
+                end
+            end
+
+            context 'when #pausing?' do
+                it "raises #{described_class::Error::StateNotSuspendable}" do
+                    subject.pause( :caller, false )
+
+                    expect{ subject.suspend }.to raise_error described_class::Error::StateNotSuspendable
+                end
+            end
+
+            context 'when #paused?' do
+                it "raises #{described_class::Error::StateNotSuspendable}" do
+                    subject.pause( :caller, false )
+                    subject.paused
+
+                    expect{ subject.suspend }.to raise_error described_class::Error::StateNotSuspendable
+                end
             end
         end
 
-        context 'when non-blocking' do
-            it 'sets the #status to :suspending' do
-                subject.suspend( false )
-                subject.status.should == :suspending
-            end
-
-            it 'returns true' do
-                subject.suspend( false ).should be_true
-            end
-        end
-
-        context 'when already #suspending?' do
-            it 'returns false' do
-                subject.suspend( false ).should be_true
-                subject.should be_suspending
-                subject.suspend.should be_false
-            end
-        end
-
-        context 'when already #suspended?' do
-            it 'returns false' do
-                subject.suspend( false ).should be_true
-                subject.suspended
-                subject.should be_suspended
-
-                subject.suspend.should be_false
-            end
-        end
-
-        context 'when #pausing?' do
-            it "raises #{described_class::Error::StateNotSuspendable}" do
-                subject.pause( :caller, false )
-
-                expect{ subject.suspend }.to raise_error described_class::Error::StateNotSuspendable
-            end
-        end
-
-        context 'when #paused?' do
+        context 'when not #running?' do
             it "raises #{described_class::Error::StateNotSuspendable}" do
                 subject.pause( :caller, false )
                 subject.paused
@@ -152,6 +165,8 @@ describe Arachni::State::Framework do
     end
 
     describe '#suspending?' do
+        before(:each) { subject.running = true }
+
         context 'while suspending' do
             it 'returns true' do
                 subject.suspend( false )
@@ -171,6 +186,8 @@ describe Arachni::State::Framework do
     end
 
     describe '#suspend?' do
+        before(:each) { subject.running = true }
+
         context 'when a #suspend signal is in place' do
             it 'returns true' do
                 subject.suspend( false )
