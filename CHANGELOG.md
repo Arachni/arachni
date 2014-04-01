@@ -6,6 +6,7 @@
     - `#audit_page` -- Updated to perform DOM/JS/AJAX analysis on the page and
         feed DOM page snapshots and new paths back to the `Framework`.
 - Added `State` -- Stores and provides access to the system's state.
+    - `HTTP` -- Stores client headers and cookies.
     - `Audit` -- Stores audit operations.
     - `ElementFilter` -- Stores seen elements.
     - `Framework` -- Stores the `Framework` state.
