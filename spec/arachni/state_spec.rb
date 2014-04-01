@@ -43,6 +43,10 @@ describe Arachni::State do
         end
     end
 
+    describe '#session' do
+        it "returns an instance of #{described_class}::Session"
+    end
+
     describe '.dump' do
         %w(options audit element_filter framework http).each do |name|
             it "stores ##{name} to disk" do
