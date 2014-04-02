@@ -19,6 +19,7 @@ class State
     end
 
     require_relative 'state/options'
+    require_relative 'state/plugins'
     require_relative 'state/audit'
     require_relative 'state/element_filter'
     require_relative 'state/framework'
@@ -32,6 +33,9 @@ class <<self
     # @return     [HTTP]
     attr_accessor :http
 
+    # @return     [Plugins]
+    attr_accessor :plugins
+
     # @return     [Audit]
     attr_accessor :audit
 
@@ -43,6 +47,7 @@ class <<self
 
     def reset
         @http           = HTTP.new
+        @plugins        = Plugins.new
         @options        = Options.new
         @audit          = Audit.new
         @element_filter = ElementFilter.new

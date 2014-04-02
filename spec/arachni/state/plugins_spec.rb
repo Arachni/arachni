@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::Data::Plugins do
+describe Arachni::State::Plugins do
     subject { described_class.new }
     let(:plugins) { @framework.plugins }
     let(:dump_directory) do
@@ -16,57 +16,46 @@ describe Arachni::Data::Plugins do
         @framework.reset
     end
 
-    describe '#results' do
+    describe '#runtime' do
         it 'returns a Hash' do
-            subject.results.should be_kind_of Hash
+            subject.runtime.should be_kind_of Hash
         end
     end
 
     describe '#store' do
-        it 'stores plugin results' do
+        it 'stores plugin runtime state' do
             plugins.load :distributable
             result = { stuff: 1 }
 
             subject.store( plugins.create(:distributable), result )
-            subject.results[:distributable][:results].should == result
-        end
-    end
-
-    describe '#merge_results' do
-        it 'merges the results of the distributable plugins' do
-            plugins.load :distributable
-
-            results = [ distributable: { results: { stuff: 2 } } ]
-            subject.store( plugins.create(:distributable), stuff: 1 )
-
-            subject.merge_results( plugins, results )[:distributable][:results][:stuff].should == 3
+            subject[:distributable].should == result
         end
     end
 
     describe '#dump' do
-        it 'stores #results to disk' do
-            subject.store( plugins.create(:distributable), stuff: 1 )
+        it 'stores #runtime to disk' do
+            subject.runtime[:distributable] = { stuff: 1 }
             subject.dump( dump_directory )
 
-            results_file = "#{dump_directory}/results/distributable"
+            results_file = "#{dump_directory}/runtime/distributable"
             File.exists?( results_file ).should be_true
-            subject.results.should == {
+            subject.runtime.should == {
                 distributable: Marshal.load( IO.read( results_file ) )
             }
         end
     end
 
     describe '.load' do
-        it 'loads #results from disk' do
-            subject.store( plugins.create(:distributable), stuff: 1 )
+        it 'loads #runtime from disk' do
+            subject.runtime[:distributable] = { stuff: 1 }
             subject.dump( dump_directory )
 
-            subject.results.should == described_class.load( dump_directory ).results
+            subject.runtime.should == described_class.load( dump_directory ).runtime
         end
     end
 
     describe '#clear' do
-        %w(results).each do |method|
+        %w(runtime).each do |method|
             it "clears ##{method}" do
                 subject.send(method).should receive(:clear)
                 subject.clear

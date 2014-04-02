@@ -16,15 +16,10 @@ class Plugins
     #   Plugin results.
     attr_reader :results
 
-    # @return   [Hash]
-    #   Runtime plugin data.
-    attr_reader :runtime
-
     def initialize
         super
 
         @results = {}
-        @runtime = {}
     end
 
     # Registers plugin results.
@@ -72,7 +67,7 @@ class Plugins
     end
 
     def dump( directory )
-        %w(runtime results).each do |type|
+        %w(results).each do |type|
             send(type).each do |plugin, data|
                 result_directory = "#{directory}/#{type}/"
                 FileUtils.mkdir_p( result_directory )
@@ -87,7 +82,7 @@ class Plugins
     def self.load( directory )
         plugins = new
 
-        %w(runtime results).each do |type|
+        %w(results).each do |type|
             Dir["#{directory}/#{type}/*"].each do |plugin_directory|
                 plugin = File.basename( plugin_directory ).to_sym
                 plugins.send(type)[plugin] = Marshal.load( IO.read( plugin_directory ) )
@@ -99,7 +94,6 @@ class Plugins
 
     def clear
         @results.clear
-        @runtime.clear
     end
 
 end

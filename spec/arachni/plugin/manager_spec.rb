@@ -4,8 +4,67 @@ describe Arachni::Plugin::Manager do
     before( :all ) do
         @plugins = Arachni::Framework.new.plugins
     end
+    subject { @plugins }
+    after( :each ) do
+        @plugins.reset
+        Arachni::Options.reset
+    end
 
-    after( :all ) { @plugins.clear }
+    describe '#suspend' do
+        before :each do
+            Arachni::Options.plugins['suspendable'] = {
+                'my_option' => 'my value'
+            }
+
+            subject.load :suspendable
+            subject.run
+
+            sleep 2
+            subject.suspend
+        end
+        let(:state) { Arachni::State.plugins.runtime }
+
+        it 'stores plugin options' do
+            state[:suspendable][:options].should == {
+                'my_option' => 'updated'
+            }
+        end
+
+        it 'stores plugin state' do
+            state.should include :suspendable
+            state[:suspendable][:data].should == 1
+        end
+    end
+
+    describe '#restore' do
+        before :each do
+            Arachni::Options.plugins['suspendable'] = {
+                'my_option' => 'my value'
+            }
+
+            subject.load :suspendable
+            subject.run
+
+            sleep 2
+            subject.suspend
+
+            subject.killall
+        end
+        let(:state) { Arachni::State.plugins.runtime }
+
+        it 'restores plugin options' do
+            subject.restore
+
+            subject.jobs.first[:instance].options.should == {
+                'my_option' => 'updated'
+            }
+        end
+
+        it 'restores plugin state' do
+            subject.restore
+            subject.jobs.first[:instance].counter.should == 2
+        end
+    end
 
     describe '#load_default' do
         it 'loads default plugins' do
@@ -33,6 +92,7 @@ describe Arachni::Plugin::Manager do
     describe '#run' do
         context 'when gem dependencies are met' do
             it 'runs loaded plugins' do
+                @plugins.load_default
                 @plugins.run
                 @plugins.block
                 @plugins.results[:default][:results].should be_true
@@ -80,6 +140,7 @@ describe Arachni::Plugin::Manager do
     describe '#busy?' do
         context 'when plugins are running' do
             it 'returns true' do
+                @plugins.load :wait
                 @plugins.run
                 @plugins.busy?.should be_true
                 @plugins.block
@@ -114,6 +175,7 @@ describe Arachni::Plugin::Manager do
     describe '#jobs' do
         context 'when plugins are running' do
             it 'returns the names of the running plugins' do
+                @plugins.load_default
                 @plugins.run
                 @plugins.jobs.first.instance_of?( Thread ).should be_true
                 @plugins.block

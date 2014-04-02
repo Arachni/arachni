@@ -57,26 +57,51 @@ class Manager < Arachni::Component::Manager
     # @raise [Error::UnsatisfiedDependency]
     #   If the environment is {#sane_env? not sane}.
     def run
+        prepare.each do |name, options|
+            @jobs << Thread.new do
+                exception_jail( false ) do
+                    Thread.current[:instance] = create( name, options )
+                    Thread.current[:instance].prepare
+                    Thread.current[:instance].run
+                    Thread.current[:instance].clean_up
+                end
+            end
+        end
+
+        return if @jobs.empty?
+
+        print_status 'Waiting for plugins to settle...'
+        sleep 1
+    end
+
+    # @return   [Hash]
+    #   Sorted plugins with their prepared options.
+    #
+    # @raise [Error::UnsatisfiedDependency]
+    #   If the environment is not {#sane_env? sane}.
+    def prepare
         ordered   = []
         unordered = []
 
         loaded.each do |name|
             ph = { name => self[name] }
-            if order = self[name].info[:priority]
+
+            if (order = self[name].info[:priority])
                 ordered[order] ||= []
                 ordered[order] << ph
             else
                 unordered << ph
             end
         end
+
         ordered << unordered
         ordered.flatten!
 
-        ordered.each do |ph|
+        ordered.inject({}) do |h, ph|
             name   = ph.keys.first
             plugin = ph.values.first
 
-            if( ret = sane_env?( plugin ) ) != true
+            if (ret = sane_env?( plugin )) != true
                 deps = ''
                 if !ret[:gem_errors].empty?
                     print_bad "[#{name}] The following plug-in dependencies aren't satisfied:"
@@ -91,27 +116,9 @@ class Manager < Arachni::Component::Manager
                      "Plug-in dependencies not met: #{name} -- #{deps}"
             end
 
-            opts = @framework.opts.plugins[name]
-            opts = prep_opts( name, self[name], opts )
-
-            @jobs << Thread.new {
-
-                exception_jail( false ) {
-                    Thread.current[:name]     = name
-                    Thread.current[:instance] = plugin_new = create( name, opts )
-
-                    plugin_new.prepare
-                    plugin_new.run
-                    plugin_new.clean_up
-                }
-
-            }
+            h[name] = prep_opts( name, plugin, @framework.opts.plugins[name] )
+            h
         end
-
-        return if @jobs.empty?
-
-        print_status 'Waiting for plugins to settle...'
-        ::IO::select( nil, nil, nil, 1 )
     end
 
     # Checks whether or not the environment satisfies all plugin dependencies.
@@ -133,33 +140,67 @@ class Manager < Arachni::Component::Manager
         true
     end
 
-    def create( name, opts ={} )
-        self[name].new( @framework, opts )
+    def create( name, options = {} )
+        self[name].new( @framework, options )
     end
 
     # Blocks until all plug-ins have finished executing.
     def block
-        while !@jobs.empty?
+        while @jobs.any?
             print_debug
-            print_debug "Waiting on the following (#{@jobs.size}) plugins to finish:"
+            print_debug "Waiting on #{@jobs.size} plugins to finish:"
             print_debug job_names.join( ', ' )
             print_debug
 
             @jobs.delete_if { |j| !j.alive? }
-            ::IO::select( nil, nil, nil, 1 )
+            sleep 0.1
         end
+        nil
+    end
+
+    def suspend
+        @jobs.each do |job|
+            next if !job.alive?
+            plugin = job[:instance]
+
+            state.store( plugin,
+                data:    plugin.suspend,
+                options: plugin.options
+            )
+        end
+
+        nil
+    end
+
+    def restore
+        prepare.each do |name, options|
+            @jobs << Thread.new do
+                exception_jail( false ) do
+                    Thread.current[:instance] = create( name, options )
+                    Thread.current[:instance].restore state[name][:data]
+                    Thread.current[:instance].run
+                    Thread.current[:instance].clean_up
+                end
+            end
+        end
+
+        return if @jobs.empty?
+
+        print_status 'Waiting for plugins to settle...'
+        sleep 1
+
         nil
     end
 
     # @return   [Bool]
     #   `false` if all plug-ins have finished executing, `true` otherwise.
     def busy?
-        !@jobs.reject{ |j| j.alive? }.empty?
+        !@jobs.reject { |j| j.alive? }.empty?
     end
 
     # @return   [Array] Names of all running plug-ins.
     def job_names
-        @jobs.map{ |j| j[:name] }
+        @jobs.map{ |j| j[:instance].shortname }
     end
 
     # @return   [Array<Thread>] All the running threads.
@@ -167,38 +208,50 @@ class Manager < Arachni::Component::Manager
         @jobs
     end
 
-    #
     # Kills a plug-in by `name`.
     #
     # @param    [String]    name
-    #
     def kill( name )
         job = get( name )
         return true if job && job.kill
         false
     end
 
-    #
+    def killall
+        @jobs.each(&:kill)
+        @jobs.clear
+    end
+
     # Gets a running plug-in by name.
     #
     # @param    [String]    name
     #
     # @return   [Thread]
-    #
     def get( name )
-        @jobs.each { |job| return job if job[:name] == name }
+        @jobs.each { |job| return job if job[:instance].shortname == name }
         nil
     end
 
+    def state
+        State.plugins
+    end
+
+    def data
+        Data.plugins
+    end
+
     def results
-        Data.plugins.results
+        data.results
     end
 
     def self.reset
+        State.plugins.clear
         Data.plugins.clear
         remove_constants( NAMESPACE )
     end
     def reset
+        killall
+        clear
         self.class.reset
     end
 

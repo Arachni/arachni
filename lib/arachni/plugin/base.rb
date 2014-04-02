@@ -13,7 +13,6 @@ module Plugin
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Formatter
-    # get the output interface
     include UI::Output
 
     attr_reader :auditstore
@@ -38,93 +37,114 @@ end
 class Base < Component::Base
     include Component
 
+    # @return   [Hash]  Plugin options.
     attr_reader :options
+
+    # @return   [Framework]
     attr_reader :framework
 
-    #
-    # @param    [Arachni::Framework]    framework
+    # @param    [Framework]   framework
     # @param    [Hash]        options    options passed to the plugin
-    #
     def initialize( framework, options )
         @framework = framework
         @options   = options
-
-        self.class.initialize_mutex
     end
 
+    # @note **OPTIONAL**
     #
-    # OPTIONAL
+    # Gets called right after the plugin is initialized and it used to prepare
+    # its data.
     #
+    # @abstract
     def prepare
     end
 
+    # @note **OPTIONAL**
     #
-    # REQUIRED
+    # Gets called instead of {#prepare} when restoring a suspended plugin.
+    # If no {#restore} method has been defined, {#prepare} will be called instead.
     #
+    # @param   [Object] state    State to restore.
+    #
+    # @see #suspend
+    # @abstract
+    def restore( state = nil )
+        prepare
+    end
+
+    # @note **REQUIRED**
+    #
+    # Gets called right after {#prepare} and delivers the plugin payload.
+    #
+    # @abstract
     def run
     end
 
+    # @note **OPTIONAL**
     #
-    # OPTIONAL
+    # Gets called right after {#run} and is used for generic clean-up.
     #
+    # @abstract
     def clean_up
     end
 
+    # @note **OPTIONAL**
     #
-    # OPTIONAL
+    # Gets called right before killing the plugin and should return state data
+    # to be {{State::Plugins stored} and passed to {#restore}.
+    #
+    # @return   [Object]    State to store.
+    #
+    # @see #restore
+    # @abstract
+    def suspend
+    end
+
+    # @note **OPTIONAL**
     #
     # Only used when in Grid mode.
     #
-    # Should the plug-in be distributed
-    # across all instances or only run by the master
-    # prior to any distributed operations?
+    # Should the plug-in be distributed across all instances or only run by the
+    # master prior to any distributed operations?
     #
-    # For example, if a plug-in dynamically modifies the framework options
-    # in any way and wants these changes to be identical
-    # across instances this method should return 'false'.
-    #
+    # For example, if a plug-in dynamically modifies the framework options in
+    # any way and wants these changes to be identical across instances this
+    # method should return `false`.
     def self.distributable?
         @distributable ||= false
     end
 
-    # Should the plug-in be distributed
-    # across all instances or only run by the master
-    # prior to any distributed operations?
+    # Should the plug-in be distributed across all instances or only run by the
+    # master prior to any distributed operations?
     def self.distributable
         @distributable = true
     end
-    # Should the plug-in be distributed
-    # across all instances or only run by the master
-    # prior to any distributed operations?
+
+    # Should the plug-in be distributed across all instances or only run by the
+    # master prior to any distributed operations?
     def self.is_distributable
         distributable
     end
 
+    # @note **REQUIRED** if {.distributable?} returns `true` and the plugin
+    #   {#register_results registers results}.
     #
-    # REQUIRED IF self.distributable? returns 'true' and the plugins stores results.
-    #
-    # Only used when in Grid mode.
-    #
-    # Merges an array of results as gathered by the plug-in when run
-    # by multiple instances.
-    #
+    # Merges an array of results as gathered by the plug-in when ran by multiple
+    # instances.
     def self.merge( results )
     end
 
-    #
     # Should return an array of plugin related gem dependencies.
     #
     # @return   [Array]
-    #
     def self.gems
         []
     end
 
-    #
     # REQUIRED
     #
-    # Do not omit any of the info.
-    #
+    # @return   [Hash]
+    # @abstract
     def self.info
         {
             name:        'Abstract plugin class',
@@ -154,16 +174,12 @@ class Base < Component::Base
         framework.http
     end
 
-    #
     # Provides a thread-safe way to run the queued HTTP requests.
-    #
     def http_run
         synchronize { http.run }
     end
 
-    #
     # Provides plugin-wide synchronization.
-    #
     def self.synchronize( &block )
         @mutex.synchronize( &block )
     end
@@ -174,21 +190,18 @@ class Base < Component::Base
     def self.initialize_mutex
         @mutex ||= Mutex.new
     end
+    initialize_mutex
 
-    #
-    # Registers the plugin's results with the framework.
+    # Registers the plugin's results to {Data::Plugins}.
     #
     # @param    [Object]    results
-    #
     def register_results( results )
         Data.plugins.store( self, results )
     end
 
-    #
     # Will block until the scan finishes.
-    #
     def wait_while_framework_running
-        ::IO.select( nil, nil, nil, 1 ) while( framework.running? )
+        sleep 1 while framework.running?
     end
 
 end
