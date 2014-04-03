@@ -52,6 +52,38 @@ describe Arachni::Data::Issues do
         @dump_directory = "#{Dir.tmpdir}/issues-#{Arachni::Utilities.generate_token}"
     end
 
+    describe '#statistics' do
+        let(:statistics) do
+            unsorted_issues.each { |i| subject << i }
+            subject.statistics
+        end
+
+        it 'includes the amount of total issues' do
+            statistics[:total].should == subject.size
+        end
+
+        it 'includes the amount of issues by severity' do
+            statistics[:by_severity].should == {
+                low:           1,
+                informational: 1,
+                high:          1,
+                medium:        1
+            }
+        end
+
+        it 'includes the amount of issues by type' do
+            statistics[:by_type].should == {
+                issue.name => 4
+            }
+        end
+
+        it 'includes the amount of issues by check' do
+            statistics[:by_check].should == {
+                issue.check[:shortname] => 4
+            }
+        end
+    end
+
     describe '#<<' do
         it 'registers an array of issues' do
             subject << issue

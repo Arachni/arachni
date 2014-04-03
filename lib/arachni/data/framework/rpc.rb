@@ -19,6 +19,10 @@ class RPC
         @distributed_page_queue = Support::Database::Queue.new
     end
 
+    def statistics
+        { distributed_page_queue: @distributed_page_queue.size }
+    end
+
     def dump( directory )
         FileUtils.mkdir_p( directory )
 

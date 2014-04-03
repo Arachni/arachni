@@ -39,6 +39,14 @@ class <<self
         @plugins   = Plugins.new
     end
 
+    def statistics
+        stats = {}
+        each do |attribute|
+            stats[attribute] = send(attribute).statistics
+        end
+        stats
+    end
+
     # @param    [String]    directory
     #   Location of the dump directory.
     # @return   [String]
@@ -82,7 +90,7 @@ class <<self
         instance_variables.map do |ivar|
             attribute = "#{ivar.to_s.gsub('@','')}"
             next if !methods.include?( :"#{attribute}=" )
-            attribute
+            attribute.to_sym
         end.compact
     end
 

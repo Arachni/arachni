@@ -12,6 +12,25 @@ describe Arachni::State::Options do
 
     it { should respond_to :clear}
 
+    describe '#statistics' do
+        let(:statistics) { subject.statistics }
+
+        it 'includes :url' do
+            Arachni::Options.url = 'http://test/'
+            statistics[:url].should == Arachni::Options.url
+        end
+
+        it 'includes :checks' do
+            Arachni::Options.checks = %w(xss* sqli)
+            statistics[:checks].should == Arachni::Options.checks
+        end
+
+        it 'includes :plugins' do
+            Arachni::Options.plugins = { 'autologin' => {} }
+            statistics[:plugins].should == %w(autologin)
+        end
+    end
+
     describe '#dump' do
         it 'stores to disk' do
             Arachni::Options.datastore.my_custom_option = 'my value'

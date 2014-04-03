@@ -20,6 +20,12 @@ class Plugins
         @runtime = {}
     end
 
+    def statistics
+        {
+            names: @runtime.keys
+        }
+    end
+
     # Registers plugin states.
     #
     # @param    [Arachni::Plugin::Base]    plugin   Instance of a plugin.

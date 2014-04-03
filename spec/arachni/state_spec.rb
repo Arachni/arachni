@@ -53,6 +53,14 @@ describe Arachni::State do
         it "returns an instance of #{described_class}::Session"
     end
 
+    describe '#statistics' do
+        %w(options audit element_filter framework http plugins).each do |name|
+            it "includes :#{name} statistics" do
+                subject.statistics[name.to_sym].should == subject.send(name).statistics
+            end
+        end
+    end
+
     describe '.dump' do
         %w(options audit element_filter framework http plugins).each do |name|
             it "stores ##{name} to disk" do

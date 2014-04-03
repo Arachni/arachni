@@ -31,6 +31,14 @@ describe Arachni::Data do
         end
     end
 
+    describe '#statistics' do
+        %w(framework issues plugins).each do |name|
+            it "includes :#{name} statistics" do
+                subject.statistics[name.to_sym].should == subject.send(name).statistics
+            end
+        end
+    end
+
     describe '.dump' do
         %w(framework issues plugins).each do |name|
             it "stores ##{name} to disk" do

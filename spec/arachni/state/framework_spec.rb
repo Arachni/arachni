@@ -14,6 +14,27 @@ describe Arachni::State::Framework do
         @dump_directory = "#{Dir.tmpdir}/framework-#{Arachni::Utilities.generate_token}"
     end
 
+    describe '#statistics' do
+        let(:statistics) { subject.statistics }
+
+        it 'includes #rpc statistics' do
+            statistics[:rpc].should == subject.rpc.statistics
+        end
+
+        it 'includes #audited_page_count' do
+            subject.audited_page_count += 1
+            statistics[:audited_page_count].should == subject.audited_page_count
+        end
+
+        it 'includes amount of #browser_skip_states' do
+            set = Arachni::Support::LookUp::HashSet.new
+            set << 1 << 2 << 3
+            subject.update_browser_skip_states( set )
+
+            statistics[:browser_states].should == subject.browser_skip_states.size
+        end
+    end
+
     describe '#rpc' do
         it "returns an instance of #{described_class::RPC}" do
             subject.rpc.should be_kind_of described_class::RPC

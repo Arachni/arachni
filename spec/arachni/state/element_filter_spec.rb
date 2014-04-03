@@ -18,6 +18,17 @@ describe Arachni::State::ElementFilter do
         end
     end
 
+    describe '#statistics' do
+        let(:statistics) { subject.statistics }
+
+        %w(forms links cookies).each do |type|
+            it "includes the amount of seen :#{type}" do
+                subject.send(type) << type
+                statistics[type.to_sym].should == subject.send(type).size
+            end
+        end
+    end
+
     describe '#dump' do
         it 'stores to disk' do
             subject.forms << 'form'

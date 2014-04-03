@@ -33,6 +33,7 @@ class Framework
     # @return     [Symbol]
     attr_accessor :status
 
+    # @return     [Bool]
     attr_accessor :running
 
     # @return     [Integer]
@@ -43,19 +44,6 @@ class Framework
 
     def initialize
         @rpc = RPC.new
-
-        @sitemap = {}
-
-        @page_queue            = Support::Database::Queue.new
-        @page_queue_filter     = Support::LookUp::HashSet.new( hasher: :persistent_hash )
-        @page_queue_total_size = 0
-
-        @url_queue                 = Support::Database::Queue.new
-        @url_queue.max_buffer_size = Float::INFINITY
-
-        @url_queue_filter     = Support::LookUp::HashSet.new( hasher: :persistent_hash )
-        @url_queue_total_size = 0
-
         @audited_page_count = 0
 
         @browser_skip_states = Support::LookUp::HashSet.new( hasher: :persistent_hash )
@@ -63,9 +51,17 @@ class Framework
         @running = false
         @pre_pause_status = nil
 
-        @pause_signals   = Set.new
+        @pause_signals    = Set.new
         @paused_signal    = Queue.new
         @suspended_signal = Queue.new
+    end
+
+    def statistics
+        {
+            rpc:                @rpc.statistics,
+            audited_page_count: @audited_page_count,
+            browser_states:     @browser_skip_states.size
+        }
     end
 
     # @param    [Support::LookUp::HashSet]  states

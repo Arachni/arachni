@@ -19,6 +19,14 @@ describe Arachni::Data::Framework::RPC do
         end
     end
 
+    describe '#statistics' do
+        it 'includes #distributed_page_queue size' do
+            subject.distributed_page_queue << page
+            subject.statistics[:distributed_page_queue].should ==
+                subject.distributed_page_queue.size
+        end
+    end
+
     describe '#dump' do
         it 'stores #distributed_page_queue to disk' do
             subject.distributed_page_queue.max_buffer_size = 1

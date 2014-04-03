@@ -16,6 +16,17 @@ describe Arachni::Data::Plugins do
         @framework.reset
     end
 
+    describe '#statistics' do
+        it 'includes plugin names' do
+            plugins.load :distributable
+            result = { stuff: 1 }
+
+            subject.store( plugins.create(:distributable), result )
+
+            subject.statistics[:names].should == [:distributable]
+        end
+    end
+
     describe '#results' do
         it 'returns a Hash' do
             subject.results.should be_kind_of Hash

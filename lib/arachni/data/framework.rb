@@ -57,9 +57,19 @@ class Framework
 
         @url_queue                 = Support::Database::Queue.new
         @url_queue.max_buffer_size = Float::INFINITY
+        @url_queue_filter          = Support::LookUp::HashSet.new( hasher: :persistent_hash )
+        @url_queue_total_size      = 0
+    end
 
-        @url_queue_filter     = Support::LookUp::HashSet.new( hasher: :persistent_hash )
-        @url_queue_total_size = 0
+    def statistics
+        {
+            rpc:                   @rpc.statistics,
+            sitemap:               @sitemap.size,
+            page_queue:            @page_queue.size,
+            page_queue_total_size: @page_queue_total_size,
+            url_queue:             @url_queue.size,
+            url_queue_total_size:  @url_queue_total_size
+        }
     end
 
     # @note Increases the {#page_queue_total_size}.

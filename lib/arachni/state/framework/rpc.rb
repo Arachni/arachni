@@ -19,8 +19,15 @@ class RPC
     attr_reader :distributed_elements
 
     def initialize
-        @distributed_pages      = Support::LookUp::HashSet.new( hasher: :persistent_hash )
-        @distributed_elements   = Set.new
+        @distributed_pages    = Support::LookUp::HashSet.new( hasher: :persistent_hash )
+        @distributed_elements = Set.new
+    end
+
+    def statistics
+        {
+            distributed_pages:    @distributed_pages.size,
+            distributed_elements: @distributed_elements.size
+        }
     end
 
     def dump( directory )

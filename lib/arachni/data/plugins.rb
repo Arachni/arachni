@@ -22,6 +22,12 @@ class Plugins
         @results = {}
     end
 
+    def statistics
+        {
+            names: @results.keys
+        }
+    end
+
     # Registers plugin results.
     #
     # @param    [Arachni::Plugin::Base]    plugin   Instance of a plugin.

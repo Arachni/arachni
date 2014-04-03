@@ -11,6 +11,15 @@ describe Arachni::State::Audit do
         @dump_directory = "#{Dir.tmpdir}/audit-#{Arachni::Utilities.generate_token}"
     end
 
+    describe '#statistics' do
+        let(:statistics) { subject.statistics }
+
+        it 'includes the total audit operations' do
+            subject << audit_id
+            statistics[:total].should == subject.size
+        end
+    end
+
     describe '#<<' do
         it 'pushes a state' do
             subject << audit_id

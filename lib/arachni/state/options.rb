@@ -9,6 +9,14 @@ class State
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Options
 
+    def statistics
+        {
+            url:     Arachni::Options.url,
+            checks:  Arachni::Options.checks,
+            plugins: Arachni::Options.plugins.keys
+        }
+    end
+
     def dump( directory )
         FileUtils.mkdir_p( directory )
         Arachni::Options.save( "#{directory}/options" )

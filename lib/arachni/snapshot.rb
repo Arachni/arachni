@@ -26,11 +26,32 @@ class Snapshot
 
 class <<self
 
-    # @param    [String]    archive
-    #   Location of the archive.
+    # @return   [Hash]
+    #   Metadata associated with the {#load loaded} snapshot.
+    attr_accessor :metadata
+
     # @return   [String]
-    #   Location of the archive.
-    def dump( archive )
+    #   Location of the {#load loaded} snapshot.
+    attr_accessor :location
+
+    def reset
+        @metadata = nil
+        @location = nil
+    end
+
+    # @return   [Hash]  Snapshot summary information.
+    def summary
+        {
+            data:  Data.statistics,
+            state: State.statistics
+        }
+    end
+
+    # @param    [String]    location
+    #   Location of the snapshot.
+    # @return   [String]
+    #   Location of the snapshot.
+    def dump( location )
         directory = get_temporary_directory
 
         FileUtils.rm_rf( directory )
@@ -40,19 +61,30 @@ class <<self
             Data.dump( "#{directory}/data/" )
             State.dump( "#{directory}/state/" )
 
-            compress directory, archive
+            compress directory, location
+
+            # Append metadata to the end of the file.
+            metadata = Marshal.dump( prepare_metadata )
+            File.open( location, 'a' ) do |f|
+                f.write [metadata, metadata.size].pack( 'a*N' )
+            end
+
+            location
         ensure
             FileUtils.rm_rf( directory )
         end
     end
 
-    # @param    [String]    archive
-    #   Location of the archive.
+    # @param    [String]    snapshot
+    #   Location of the snapshot to load.
     # @return   [Snapshot]     `self`
-    def load( archive )
+    def load( snapshot )
         directory = get_temporary_directory
 
-        decompress( archive, directory )
+        @location = snapshot
+        @metadata = read_metadata( snapshot )
+
+        extract( snapshot, directory )
 
         Data.load( "#{directory}/data/" )
         State.load( "#{directory}/state/" )
@@ -60,13 +92,35 @@ class <<self
         self
     end
 
+    # @param    [String]    snapshot
+    #   Location of the snapshot.
+    # @return   [Hash]
+    #   Metadata associated with the given snapshot.
+    def read_metadata( snapshot )
+        File.open( snapshot ) do |f|
+            f.seek -4, IO::SEEK_END
+            metadata_size = f.read( 4 ).unpack( 'N' ).first
+
+            f.seek -metadata_size-4, IO::SEEK_END
+            Marshal.load( f.read( metadata_size ) )
+        end
+    end
+
     private
+
+    def prepare_metadata
+        {
+            timestamp: Time.now,
+            version:   Arachni::VERSION,
+            summary:   summary
+        }
+    end
 
     def get_temporary_directory
         "#{Dir.tmpdir}/Arachni_Snapshot_#{Utilities.generate_token}/"
     end
 
-    def decompress( archive, directory )
+    def extract( archive, directory )
         Zip::File.open( archive ) do |zip_file|
             zip_file.each do |f|
                 f_path = File.join( directory, f.name )
@@ -89,5 +143,7 @@ class <<self
     end
 
 end
+
+reset
 end
 end

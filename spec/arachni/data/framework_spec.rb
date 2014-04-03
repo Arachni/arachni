@@ -14,6 +14,45 @@ describe Arachni::Data::Framework do
         @dump_directory = "#{Dir.tmpdir}/framework-#{Arachni::Utilities.generate_token}"
     end
 
+    describe '#statistics' do
+        let(:statistics) { subject.statistics }
+
+        it "includes #{described_class::RPC}#statistics" do
+            statistics[:rpc].should == subject.rpc.statistics
+        end
+
+        it 'includes the #sitemap size' do
+            subject.add_page_to_sitemap page
+
+            statistics[:sitemap].should == subject.sitemap.size
+        end
+
+        it 'includes the #page_queue size' do
+            subject.push_to_page_queue page
+            statistics[:page_queue].should == subject.page_queue.size
+        end
+
+        it 'includes the #page_queue size' do
+            subject.push_to_page_queue page
+            statistics[:page_queue_total_size].should == subject.page_queue_total_size
+        end
+
+        it 'includes the #page_queue size' do
+            subject.push_to_page_queue page
+            statistics[:page_queue_total_size].should == subject.page_queue_total_size
+        end
+
+        it 'includes the #url_queue size' do
+            subject.push_to_url_queue url
+            statistics[:url_queue_total_size].should == subject.url_queue_total_size
+        end
+
+        it 'includes the #url_queue size' do
+            subject.push_to_url_queue page
+            statistics[:url_queue_total_size].should == subject.url_queue_total_size
+        end
+    end
+
     describe '#rpc' do
         it "returns an instance of #{described_class::RPC}" do
             subject.rpc.should be_kind_of described_class::RPC

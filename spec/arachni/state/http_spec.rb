@@ -6,6 +6,7 @@ describe Arachni::State::HTTP do
     end
 
     subject { described_class.new }
+    let(:cookie) { Factory[:cookie] }
     let(:dump_directory) do
         @dump_directory = "#{Dir.tmpdir}/http-#{Arachni::Utilities.generate_token}"
     end
@@ -22,6 +23,15 @@ describe Arachni::State::HTTP do
         end
     end
 
+    describe '#statistics' do
+        let(:statistics) { subject.statistics }
+
+        it 'includes :cookies' do
+            subject.cookiejar << cookie
+            statistics[:cookies].should == [cookie.to_s]
+        end
+    end
+
     describe '#dump' do
         it 'stores to disk' do
             subject.headers['X-Stuff'] = 'my stuff'
@@ -32,7 +42,7 @@ describe Arachni::State::HTTP do
     describe '.load' do
         it 'restores from disk' do
             subject.headers['X-Stuff'] = 'my stuff'
-            subject.cookiejar << Factory[:cookie]
+            subject.cookiejar << cookie
             subject.dump( dump_directory )
 
             http = described_class.load( dump_directory )

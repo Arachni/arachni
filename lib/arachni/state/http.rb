@@ -20,6 +20,12 @@ class HTTP
         @cookiejar = Arachni::HTTP::CookieJar.new
     end
 
+    def statistics
+        {
+            cookies: @cookiejar.cookies.map(&:to_s)
+        }
+    end
+
     def dump( directory )
         FileUtils.mkdir_p( directory )
 

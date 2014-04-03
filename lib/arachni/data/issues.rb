@@ -34,6 +34,24 @@ class Issues
         store
     end
 
+    def statistics
+        by_severity = Hash.new(0)
+        each { |issue| by_severity[issue.severity.to_sym] += 1 }
+
+        by_type = Hash.new(0)
+        each { |issue| by_type[issue.name] += 1 }
+
+        by_check = Hash.new(0)
+        each { |issue| by_check[issue.check[:shortname]] += 1 }
+
+        {
+            total:       size,
+            by_severity: by_severity,
+            by_type:     by_type,
+            by_check:    by_check
+        }
+    end
+
     # @note Defaults to `true`.
     # @return   [Bool]
     #   `true` if {#<<} is configured to store issues, `false` otherwise.

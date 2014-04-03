@@ -97,7 +97,8 @@ class Framework
     #
     # @return   [Framework] Restored instance.
     def self.restore( afs, &block )
-        framework = new.restore( afs )
+        framework = new
+        framework.restore( afs )
 
         if block_given?
             begin

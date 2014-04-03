@@ -25,6 +25,20 @@ describe Arachni::State::Framework::RPC do
         end
     end
 
+    describe '#statistics' do
+        let(:statistics) { subject.statistics }
+
+        it 'includes the size of #distributed_pages' do
+            subject.distributed_pages << url
+            statistics[:distributed_pages].should == subject.distributed_pages.size
+        end
+
+        it 'includes the size of #distributed_elements' do
+            subject.distributed_elements << url.persistent_hash
+            statistics[:distributed_elements].should == subject.distributed_elements.size
+        end
+    end
+
     describe '#dump' do
         it 'stores #distributed_pages to disk' do
             subject.distributed_pages << url

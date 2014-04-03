@@ -22,6 +22,12 @@ class Audit
         @collection = Support::LookUp::HashSet.new( hasher: :persistent_hash )
     end
 
+    def statistics
+        {
+            total: size
+        }
+    end
+
     [:<<, :merge, :include?, :clear, :empty?, :any?, :size, :hash, :==].each do |method|
         def_delegator :collection, method
     end

@@ -54,6 +54,14 @@ class <<self
         @framework      = Framework.new
     end
 
+    def statistics
+        stats = {}
+        each do |attribute|
+            stats[attribute] = send(attribute).statistics
+        end
+        stats
+    end
+
     # @param    [String]    directory
     #   Location of the dump directory.
     # @return   [String]
@@ -98,7 +106,7 @@ class <<self
             attribute = "#{ivar.to_s.gsub('@','')}"
             next if !methods.include?( :"#{attribute}=" )
             attribute
-        end.compact
+        end.compact.map(&:to_sym)
     end
 
 end

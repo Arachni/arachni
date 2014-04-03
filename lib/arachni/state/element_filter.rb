@@ -26,6 +26,14 @@ class ElementFilter
         @cookies = Support::LookUp::HashSet.new( hasher: :persistent_hash )
     end
 
+    def statistics
+        {
+            forms:   forms.size,
+            links:   links.size,
+            cookies: cookies.size
+        }
+    end
+
     def dump( directory )
         FileUtils.mkdir_p( directory )
 
