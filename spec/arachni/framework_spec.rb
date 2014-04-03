@@ -238,7 +238,7 @@ describe Arachni::Framework do
         it 'provides access to the plugin manager' do
             subject.plugins.is_a?( Arachni::Plugin::Manager ).should be_true
             subject.plugins.available.sort.should ==
-                %w(wait bad with_options distributable loop default).sort
+                %w(wait bad with_options distributable loop default suspendable).sort
         end
     end
 
@@ -406,6 +406,8 @@ describe Arachni::Framework do
                 t = Thread.new do
                     f.run
                 end
+                sleep 0.1 while f.status != :scanning
+
                 @snapshot = f.suspend
                 f.status.should == :suspended
 
@@ -519,6 +521,7 @@ describe Arachni::Framework do
                 f.checks.load :taint
 
                 t = Thread.new { f.run }
+                sleep 0.1 while f.status != :scanning
 
                 @snapshot = f.suspend
 
@@ -536,6 +539,7 @@ describe Arachni::Framework do
                 f.plugins.load :wait
 
                 t = Thread.new { f.run }
+               sleep 0.1 while f.status != :scanning
 
                 @snapshot = f.suspend
 
@@ -553,6 +557,7 @@ describe Arachni::Framework do
                 f.reports.load :foo
 
                 t = Thread.new { f.run }
+                sleep 0.1 while f.status != :scanning
 
                 @snapshot = f.suspend
 
@@ -594,6 +599,7 @@ describe Arachni::Framework do
                 t = Thread.new do
                     f.run
                 end
+                sleep 0.1 while f.status != :scanning
 
                 f.pause
                 f.status.should == :paused
@@ -1107,8 +1113,7 @@ describe Arachni::Framework do
   :author:
   - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
   :version: \'0.1\'
-  :shortname: !binary |-
-    YmFk
+  :shortname: bad
 - :name: Default
   :description: Some description
   :author:
@@ -1121,8 +1126,7 @@ describe Arachni::Framework do
     desc: An integer.
     default: 4
     enums: []
-  :shortname: !binary |-
-    ZGVmYXVsdA==
+  :shortname: default
 - :name: Distributable
   :description: \'\'
   :author:
@@ -1132,15 +1136,26 @@ describe Arachni::Framework do
     :tags:
     - distributable_string
     - :distributable_sym
-  :shortname: !binary |-
-    ZGlzdHJpYnV0YWJsZQ==
+  :shortname: distributable
 - :name: \'\'
   :description: \'\'
   :author:
   - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
   :version: \'0.1\'
-  :shortname: !binary |-
-    bG9vcA==
+  :shortname: loop
+- :name: Suspendable
+  :description: \'\'
+  :author:
+  - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  :version: \'0.1\'
+  :options:
+  - !ruby/object:Arachni::Component::Options::String
+    name: my_option
+    required: true
+    desc: Required option
+    default:
+    enums: []
+  :shortname: suspendable
 - :name: Wait
   :description: \'\'
   :tags:
@@ -1149,8 +1164,7 @@ describe Arachni::Framework do
   :author:
   - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
   :version: \'0.1\'
-  :shortname: !binary |-
-    d2FpdA==
+  :shortname: wait
 - :name: Component
   :description: Component with options
   :author:
@@ -1175,8 +1189,7 @@ describe Arachni::Framework do
     desc: Option with default value
     default: value
     enums: []
-  :shortname: !binary |-
-    d2l0aF9vcHRpb25z
+  :shortname: with_options
 ' ).sort_by { |e| e[:shortname] }
             subject.plugins.loaded.should == loaded
         end
