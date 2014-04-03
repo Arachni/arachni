@@ -35,9 +35,81 @@ describe Arachni::State::Framework do
         end
     end
 
+    describe '#page_queue_filter' do
+        it "returns an instance of #{Arachni::Support::LookUp::HashSet}" do
+            subject.page_queue_filter.should be_kind_of Arachni::Support::LookUp::HashSet
+        end
+    end
+
+    describe '#url_queue_filter' do
+        it "returns an instance of #{Arachni::Support::LookUp::HashSet}" do
+            subject.url_queue_filter.should be_kind_of Arachni::Support::LookUp::HashSet
+        end
+    end
+
     describe '#rpc' do
         it "returns an instance of #{described_class::RPC}" do
             subject.rpc.should be_kind_of described_class::RPC
+        end
+    end
+
+    describe '#page_seen?' do
+        context 'when a page has already been seen' do
+            it 'returns true' do
+                subject.page_queue_filter << page
+                subject.page_seen?( page ).should be_true
+            end
+        end
+
+        context 'when a page has not been seen' do
+            it 'returns false' do
+                subject.page_seen?( page ).should be_false
+            end
+        end
+    end
+
+    describe '#page_seen' do
+        context 'when the given page has been marked as seen' do
+            it 'returns true' do
+                subject.page_seen page
+                subject.page_seen?( page ).should be_true
+            end
+        end
+
+        context 'when the given page has not been marked as seen' do
+            it 'returns false' do
+                subject.page_seen?( page ).should be_false
+            end
+        end
+    end
+
+    describe '#url_seen?' do
+        context 'when a URL has already been seen' do
+            it 'returns true' do
+                subject.url_queue_filter << url
+                subject.url_seen?( url ).should be_true
+            end
+        end
+
+        context 'when a page has not been seen' do
+            it 'returns false' do
+                subject.url_seen?( url ).should be_false
+            end
+        end
+    end
+
+    describe '#url_seen' do
+        context 'when the given URL has been marked as seen' do
+            it 'returns true' do
+                subject.url_seen url
+                subject.url_seen?( url ).should be_true
+            end
+        end
+
+        context 'when the given URL has not been marked as seen' do
+            it 'returns false' do
+                subject.url_seen?( url ).should be_false
+            end
         end
     end
 
@@ -440,6 +512,24 @@ describe Arachni::State::Framework do
             described_class::RPC.load( "#{dump_directory}/rpc" ).should be_kind_of described_class::RPC
         end
 
+        it 'stores #page_queue_filter to disk' do
+            subject.page_queue_filter << page
+
+            subject.dump( dump_directory )
+
+            Marshal.load( IO.read( "#{dump_directory}/page_queue_filter" ) ).
+                collection.should == Set.new([page.persistent_hash])
+        end
+
+        it 'stores #url_queue_filter to disk' do
+            subject.url_queue_filter << url
+
+            subject.dump( dump_directory )
+
+            Marshal.load( IO.read( "#{dump_directory}/url_queue_filter" ) ).
+                collection.should == Set.new([url.persistent_hash])
+        end
+
         it 'stores #browser_skip_states to disk' do
             stuff = 'stuff'
             subject.browser_skip_states << stuff
@@ -459,6 +549,25 @@ describe Arachni::State::Framework do
             described_class.load( dump_directory ).rpc.should be_kind_of described_class::RPC
         end
 
+        it 'loads #page_queue_filter from disk' do
+            subject.page_queue_filter << page
+
+            subject.dump( dump_directory )
+
+            described_class.load( dump_directory ).page_queue_filter.
+                collection.should == Set.new([page.persistent_hash])
+        end
+
+        it 'loads #url_queue_filter from disk' do
+            subject.url_queue_filter << url
+            subject.url_queue_filter.should be_any
+
+            subject.dump( dump_directory )
+
+            described_class.load( dump_directory ).url_queue_filter.
+                collection.should == Set.new([url.persistent_hash])
+        end
+
         it 'loads #browser_skip_states from disk' do
             stuff = 'stuff'
             subject.browser_skip_states << stuff
@@ -472,7 +581,7 @@ describe Arachni::State::Framework do
     end
 
     describe '#clear' do
-        %w(rpc browser_skip_states).each do |method|
+        %w(rpc browser_skip_states page_queue_filter url_queue_filter).each do |method|
             it "clears ##{method}" do
                 subject.send(method).should receive(:clear)
                 subject.clear

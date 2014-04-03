@@ -32,12 +32,7 @@ describe Arachni::Data::Framework do
             statistics[:page_queue].should == subject.page_queue.size
         end
 
-        it 'includes the #page_queue size' do
-            subject.push_to_page_queue page
-            statistics[:page_queue_total_size].should == subject.page_queue_total_size
-        end
-
-        it 'includes the #page_queue size' do
+        it 'includes the #page_queue_total_size' do
             subject.push_to_page_queue page
             statistics[:page_queue_total_size].should == subject.page_queue_total_size
         end
@@ -47,7 +42,7 @@ describe Arachni::Data::Framework do
             statistics[:url_queue_total_size].should == subject.url_queue_total_size
         end
 
-        it 'includes the #url_queue size' do
+        it 'includes the #url_queue_total_size' do
             subject.push_to_url_queue page
             statistics[:url_queue_total_size].should == subject.url_queue_total_size
         end
@@ -71,9 +66,10 @@ describe Arachni::Data::Framework do
         end
     end
 
-    describe '#page_queue_filter' do
-        it "returns an instance of #{Arachni::Support::LookUp::HashSet}" do
-            subject.page_queue_filter.should be_kind_of Arachni::Support::LookUp::HashSet
+    describe '#add_page_to_sitemap' do
+        it 'updates the sitemap with the given page' do
+            subject.add_page_to_sitemap page
+            subject.sitemap[page.url].should == page.code
         end
     end
 
@@ -92,26 +88,6 @@ describe Arachni::Data::Framework do
             subject.should receive(:add_page_to_sitemap).with(page)
             subject.push_to_page_queue page
         end
-
-        it 'updates #page_queue_filter' do
-            subject.push_to_page_queue page
-            subject.page_queue_filter.should include page
-        end
-    end
-
-    describe '#page_seen?' do
-        context 'when a page has already been seen' do
-            it 'returns true' do
-                subject.push_to_page_queue page
-                subject.page_seen?( page ).should be_true
-            end
-        end
-
-        context 'when a page has not been seen' do
-            it 'returns false' do
-                subject.page_seen?( page ).should be_false
-            end
-        end
     end
 
     describe '#page_queue_total_size' do
@@ -123,12 +99,6 @@ describe Arachni::Data::Framework do
     describe '#url_queue' do
         it "returns an instance of #{Arachni::Support::Database::Queue}" do
             subject.url_queue.should be_kind_of Arachni::Support::Database::Queue
-        end
-    end
-
-    describe '#url_queue_filter' do
-        it "returns an instance of #{Arachni::Support::LookUp::HashSet}" do
-            subject.url_queue_filter.should be_kind_of Arachni::Support::LookUp::HashSet
         end
     end
 
@@ -147,33 +117,6 @@ describe Arachni::Data::Framework do
             subject.url_queue_total_size.should == 0
             subject.push_to_url_queue url
             subject.url_queue_total_size.should == 1
-        end
-
-        it 'updates #url_queue_filter' do
-            subject.push_to_url_queue url
-            subject.url_queue_filter.should include url
-        end
-    end
-
-    describe '#url_seen?' do
-        context 'when a URL has already been seen' do
-            it 'returns true' do
-                subject.push_to_url_queue url
-                subject.url_seen?( url ).should be_true
-            end
-        end
-
-        context 'when a page has not been seen' do
-            it 'returns false' do
-                subject.url_seen?( url ).should be_false
-            end
-        end
-    end
-
-    describe '#add_page_to_sitemap' do
-        it 'updates the sitemap with the given page' do
-            subject.add_page_to_sitemap page
-            subject.sitemap[page.url].should == page.code
         end
     end
 
@@ -209,15 +152,6 @@ describe Arachni::Data::Framework do
             pages.should == [page, page]
         end
 
-        it 'stores #page_queue_filter to disk' do
-            subject.push_to_page_queue page
-
-            subject.dump( dump_directory )
-
-            Marshal.load( IO.read( "#{dump_directory}/page_queue_filter" ) ).
-                collection.should == Set.new([page.persistent_hash])
-        end
-
         it 'stores #page_queue_total_size to disk' do
             subject.push_to_page_queue page
             subject.push_to_page_queue page
@@ -235,15 +169,6 @@ describe Arachni::Data::Framework do
             subject.dump( dump_directory )
 
             Marshal.load( IO.read( "#{dump_directory}/url_queue" ) ).should == [url, url]
-        end
-
-        it 'stores #url_queue_filter to disk' do
-            subject.push_to_url_queue url
-
-            subject.dump( dump_directory )
-
-            Marshal.load( IO.read( "#{dump_directory}/url_queue_filter" ) ).
-                collection.should == Set.new([url.persistent_hash])
         end
 
         it 'stores #url_queue_total_size to disk' do
@@ -283,15 +208,6 @@ describe Arachni::Data::Framework do
             page_queue.pop.should == page
         end
 
-        it 'loads #page_queue_filter from disk' do
-            subject.push_to_page_queue page
-
-            subject.dump( dump_directory )
-
-            described_class.load( dump_directory ).page_queue_filter.
-                collection.should == Set.new([page.persistent_hash])
-        end
-
         it 'loads #page_queue_total_size from disk' do
             subject.push_to_page_queue page
             subject.push_to_page_queue page
@@ -314,16 +230,6 @@ describe Arachni::Data::Framework do
             url_queue.pop.should == url
         end
 
-        it 'loads #url_queue_filter from disk' do
-            subject.push_to_url_queue url
-            subject.url_queue_filter.should be_any
-
-            subject.dump( dump_directory )
-
-            described_class.load( dump_directory ).url_queue_filter.
-                collection.should == Set.new([url.persistent_hash])
-        end
-
         it 'loads #url_queue_total_size from disk' do
             subject.push_to_url_queue url
             subject.push_to_url_queue url
@@ -336,7 +242,7 @@ describe Arachni::Data::Framework do
     end
 
     describe '#clear' do
-        %w(rpc sitemap page_queue page_queue_filter url_queue url_queue_filter ).each do |method|
+        %w(rpc sitemap page_queue url_queue).each do |method|
             it "clears ##{method}" do
                 subject.send(method).should receive(:clear)
                 subject.clear

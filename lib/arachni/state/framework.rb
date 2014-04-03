@@ -27,6 +27,12 @@ class Framework
     # @return     [RPC]
     attr_accessor :rpc
 
+    # @return     [Support::LookUp::HashSet]
+    attr_reader   :page_queue_filter
+
+    # @return     [Support::LookUp::HashSet]
+    attr_reader   :url_queue_filter
+
     # @return     [Set]
     attr_reader   :browser_skip_states
 
@@ -48,6 +54,9 @@ class Framework
 
         @browser_skip_states = Support::LookUp::HashSet.new( hasher: :persistent_hash )
 
+        @page_queue_filter = Support::LookUp::HashSet.new( hasher: :persistent_hash )
+        @url_queue_filter  = Support::LookUp::HashSet.new( hasher: :persistent_hash )
+
         @running = false
         @pre_pause_status = nil
 
@@ -62,6 +71,42 @@ class Framework
             audited_page_count: @audited_page_count,
             browser_states:     @browser_skip_states.size
         }
+    end
+
+    # @param    [Page]  page
+    # @return    [Bool]
+    #   `true` if the `page` has already been seen (based on the
+    #   {#page_queue_filter}), `false` otherwise.
+    #
+    # @see #page_seen
+    def page_seen?( page )
+        @page_queue_filter.include? page
+    end
+
+    # @param    [Page]  page
+    #   Page to mark as seen.
+    #
+    # @see #page_seen?
+    def page_seen( page )
+        @page_queue_filter << page
+    end
+
+    # @param    [String]  url
+    # @return    [Bool]
+    #   `true` if the `url` has already been seen (based on the
+    #   {#url_queue_filter}), `false` otherwise.
+    #
+    # @see #url_seen
+    def url_seen?( url )
+        @url_queue_filter.include? url
+    end
+
+    # @param    [Page]  url
+    #   URL to mark as seen.
+    #
+    # @see #url_seen?
+    def url_seen( url )
+        @url_queue_filter << url
     end
 
     # @param    [Support::LookUp::HashSet]  states
@@ -197,7 +242,8 @@ class Framework
 
         rpc.dump( "#{directory}/rpc/" )
 
-        %w(browser_skip_states audited_page_count).each do |attribute|
+        %w(page_queue_filter url_queue_filter browser_skip_states
+            audited_page_count).each do |attribute|
             File.open( "#{directory}/#{attribute}", 'w' ) do |f|
                 f.write Marshal.dump( send(attribute) )
             end
@@ -208,13 +254,20 @@ class Framework
         framework = new
 
         framework.rpc = RPC.load( "#{directory}/rpc/" )
-        framework.browser_skip_states.merge Marshal.load( IO.read( "#{directory}/browser_skip_states" ) )
+
+        %w(page_queue_filter url_queue_filter browser_skip_states).each do |attribute|
+            framework.send(attribute).merge Marshal.load( IO.read( "#{directory}/#{attribute}" ) )
+        end
+
         framework.audited_page_count = Marshal.load( IO.read( "#{directory}/audited_page_count" ) )
         framework
     end
 
     def clear
         rpc.clear
+
+        @page_queue_filter.clear
+        @url_queue_filter.clear
 
         @pause_signals.clear
         @paused_signal.clear

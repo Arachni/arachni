@@ -31,17 +31,11 @@ class Framework
     # @return     [Support::Database::Queue]
     attr_reader   :page_queue
 
-    # @return     [Support::LookUp::HashSet]
-    attr_reader   :page_queue_filter
-
     # @return     [Integer]
     attr_accessor :page_queue_total_size
 
     # @return     [Support::Database::Queue]
     attr_reader   :url_queue
-
-    # @return     [Support::LookUp::HashSet]
-    attr_reader   :url_queue_filter
 
     # @return     [Integer]
     attr_accessor :url_queue_total_size
@@ -52,12 +46,10 @@ class Framework
         @sitemap = {}
 
         @page_queue            = Support::Database::Queue.new
-        @page_queue_filter     = Support::LookUp::HashSet.new( hasher: :persistent_hash )
         @page_queue_total_size = 0
 
         @url_queue                 = Support::Database::Queue.new
         @url_queue.max_buffer_size = Float::INFINITY
-        @url_queue_filter          = Support::LookUp::HashSet.new( hasher: :persistent_hash )
         @url_queue_total_size      = 0
     end
 
@@ -73,43 +65,22 @@ class Framework
     end
 
     # @note Increases the {#page_queue_total_size}.
-    # @note Updates {#page_queue_filter}.
     #
     # @param    [Page]  page
     #   Page to push to the {#page_queue}.
     def push_to_page_queue( page )
         @page_queue << page.clear_cache
-        @page_queue_filter << page
-
         add_page_to_sitemap( page )
         @page_queue_total_size += 1
     end
 
-    # @param    [Page]  page
-    # @return    [Bool]
-    #   `true` if the `page` has already been seen (based on the
-    #   {#page_queue_filter}), `false` otherwise.
-    def page_seen?( page )
-        @page_queue_filter.include? page
-    end
-
     # @note Increases the {#url_queue_total_size}.
-    # @note Updates {#url_queue_filter}.
     #
     # @param    [String]  url
     #   URL to push to the {#url_queue}.
     def push_to_url_queue( url )
         @url_queue << url
-        @url_queue_filter << url
         @url_queue_total_size += 1
-    end
-
-    # @param    [String]  url
-    # @return    [Bool]
-    #   `true` if the `url` has already been seen (based on the
-    #   {#url_queue_filter}), `false` otherwise.
-    def url_seen?( url )
-        @url_queue_filter.include? url
     end
 
     # @param    [Page]  page
@@ -141,8 +112,7 @@ class Framework
             f.write Marshal.dump( @url_queue.buffer )
         end
 
-        %w(sitemap page_queue_filter page_queue_total_size url_queue_filter
-            url_queue_total_size).each do |attribute|
+        %w(sitemap page_queue_total_size url_queue_total_size).each do |attribute|
             File.open( "#{directory}/#{attribute}", 'w' ) do |f|
                 f.write Marshal.dump( send(attribute) )
             end
@@ -165,13 +135,8 @@ class Framework
 
         framework.page_queue_total_size =
             Marshal.load( IO.read( "#{directory}/page_queue_total_size" ) )
-
-        framework.page_queue_filter.merge Marshal.load( IO.read( "#{directory}/page_queue_filter" ) )
-
         framework.url_queue_total_size =
             Marshal.load( IO.read( "#{directory}/url_queue_total_size" ) )
-
-        framework.url_queue_filter.merge Marshal.load( IO.read( "#{directory}/url_queue_filter" ) )
 
         framework
     end
@@ -182,11 +147,9 @@ class Framework
         @sitemap.clear
 
         @page_queue.clear
-        @page_queue_filter.clear
         @page_queue_total_size = 0
 
         @url_queue.clear
-        @url_queue_filter.clear
         @url_queue_total_size = 0
     end
 
