@@ -138,6 +138,21 @@ describe Arachni::State::Framework do
         end
     end
 
+    describe '#scanning?' do
+        context 'when the status is set to :scanning' do
+            it 'returns true' do
+                subject.status = :scanning
+                subject.should be_scanning
+            end
+        end
+
+        context 'when the status is not set to :scanning' do
+            it 'returns false' do
+                subject.should_not be_scanning
+            end
+        end
+    end
+
     describe '#suspend' do
         context 'when #running?' do
             before(:each) { subject.running = true }

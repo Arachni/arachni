@@ -607,18 +607,26 @@ class Framework
     end
 
     # @return   [Bool]
+    #   `true` if the system is scanning, `false` otherwise.
+    def scanning?
+        state.scanning?
+    end
+
+    # @return   [Bool]
     #   `true` if the framework is paused, `false` otherwise..
     def paused?
         state.paused?
     end
 
     # @return   [Bool]
-    #   `true` if the framework is in the process of being paused (or has been
-    #   paused), `false` otherwise.
+    #   `true` if the framework has been instructed to pause (i.e. is in the
+    #   process of being paused or has been paused), `false` otherwise.
     def pause?
         state.pause?
     end
 
+    # @return   [Bool]
+    #   `true` if the framework is in the process of pausing, `false` otherwise.
     def pausing?
         state.pausing?
     end
@@ -1023,7 +1031,7 @@ class Framework
         audit_page_queue
 
         next_page = nil
-        while !page_limit_reached? && (page = next_page || pop_page_from_url_queue)
+        while !suspended? && !page_limit_reached? && (page = next_page || pop_page_from_url_queue)
             next_page = nil
 
             # Schedule the next page to be grabbed along with the audit requests
@@ -1087,7 +1095,7 @@ class Framework
     #
     # @see #pop_page_from_queue
     def audit_page_queue
-        while !page_limit_reached? && (page = pop_page_from_queue)
+        while !suspended? && !page_limit_reached? && (page = pop_page_from_queue)
             audit_page( page )
             handle_signals
         end

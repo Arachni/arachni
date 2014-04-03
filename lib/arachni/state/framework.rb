@@ -172,6 +172,12 @@ class Framework
         @status == :suspending
     end
 
+    # @return   [Bool]
+    #   `true` if the system is scanning, `false` otherwise.
+    def scanning?
+        @status == :scanning
+    end
+
     # @param    [Object]    caller
     #   Identification for the caller which issued the pause signal.
     # @param    [Bool]  block
