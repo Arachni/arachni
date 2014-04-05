@@ -163,7 +163,7 @@ class Manager < Arachni::Component::Manager
             next if !job.alive?
             plugin = job[:instance]
 
-            state.store( plugin,
+            state.store( plugin.shortname,
                 data:    plugin.suspend,
                 options: plugin.options
             )
@@ -176,8 +176,14 @@ class Manager < Arachni::Component::Manager
         prepare.each do |name, options|
             @jobs << Thread.new do
                 exception_jail( false ) do
-                    Thread.current[:instance] = create( name, options )
-                    Thread.current[:instance].restore state[name][:data]
+                    if state.include? name
+                        Thread.current[:instance] = create( name, state[name][:options] )
+                        Thread.current[:instance].restore state[name][:data]
+                    else
+                        Thread.current[:instance] = create( name, options )
+                        Thread.current[:instance].prepare
+                    end
+
                     Thread.current[:instance].run
                     Thread.current[:instance].clean_up
                 end

@@ -64,6 +64,14 @@ describe Arachni::Plugin::Manager do
             subject.restore
             subject.jobs.first[:instance].counter.should == 2
         end
+
+        context 'when a loaded plugin has no associated state' do
+            it 'calls #prepare instead of #restore' do
+                subject.state.delete :suspendable
+                subject.restore
+                subject.jobs.first[:instance].counter.should == 1
+            end
+        end
     end
 
     describe '#load_default' do

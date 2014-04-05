@@ -28,15 +28,29 @@ class Plugins
 
     # Registers plugin states.
     #
-    # @param    [Arachni::Plugin::Base]    plugin   Instance of a plugin.
+    # @param    [String,Symbol]    plugin   Plugin {Plugin::Base.shortname}.
     # @param    [Object]    state
     def store( plugin, state )
-        @runtime[plugin.shortname.to_sym] = state
+        @runtime[plugin.to_sym] = state
     end
     alias :[]= :store
 
-    def []( k )
-        @runtime[k.to_sym]
+    # @param    [String,Symbol]    plugin   Plugin {Plugin::Base.shortname}.
+    # @return    [Object]
+    def []( plugin )
+        @runtime[plugin.to_sym]
+    end
+
+    # @param    [String,Symbol]    plugin   Plugin {Plugin::Base.shortname}.
+    # @return    [Object]
+    def delete( plugin )
+        @runtime.delete( plugin.to_sym )
+    end
+
+    # @param    [String,Symbol]    plugin   Plugin {Plugin::Base.shortname}.
+    # @return    [Bool]
+    def include?( plugin )
+        @runtime.include?( plugin.to_sym )
     end
 
     def dump( directory )
