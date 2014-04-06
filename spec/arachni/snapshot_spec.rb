@@ -40,6 +40,23 @@ describe Arachni::Snapshot do
         end
     end
 
+    describe '.restored?' do
+        context 'when dealing with a restored snapshot' do
+            it 'returns true' do
+                subject.dump( dump_archive )
+                subject.load( dump_archive )
+
+                subject.should be_restored
+            end
+        end
+
+        context 'when not dealing with a restored snapshot' do
+            it 'returns false' do
+                subject.should_not be_restored
+            end
+        end
+    end
+
     describe '.location' do
         context 'when dealing with a restored snapshot' do
             it 'returns the location of the loaded snapshot' do

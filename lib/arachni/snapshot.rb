@@ -27,16 +27,22 @@ class Snapshot
 class <<self
 
     # @return   [Hash]
-    #   Metadata associated with the {#load loaded} snapshot.
+    #   Metadata associated with the {.load loaded} snapshot.
     attr_accessor :metadata
 
     # @return   [String]
-    #   Location of the {#load loaded} snapshot.
+    #   Location of the {.load loaded} snapshot.
     attr_accessor :location
 
     def reset
         @metadata = nil
         @location = nil
+    end
+
+    # @return   [Bool]
+    #   `true` if this is a restored snapshot, `false` otherwise.
+    def restored?
+        !!location
     end
 
     # @return   [Hash]  Snapshot summary information.
