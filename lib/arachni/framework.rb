@@ -689,7 +689,8 @@ class Framework
     # @return   [String]
     #   Provisioned {#suspend} dump filename for this instance.
     def snapshot_filename
-        @state_archive_path ||= "#{URI(@opts.url).host}-#{Utilities.generate_token}.afs"
+        @state_archive_path ||=
+            "#{URI(@opts.url).host} #{Time.now.to_s.gsub( ':', '.' )}.afs"
     end
 
     # @param   [String]    afs
@@ -721,8 +722,12 @@ class Framework
 
         sitemap.merge!( browser_sitemap )
 
-        shutdown_browser_cluster if shutdown_browsers
+        if shutdown_browsers
+            state.set_status_message :browser_cluster_shutdown
+            shutdown_browser_cluster
+        end
 
+        state.set_status_message :clearing_queues
         page_queue.clear
         url_queue.clear
 
@@ -734,7 +739,7 @@ class Framework
 
         state.running = false
 
-        # wait for the plugins to finish
+        state.set_status_message :waiting_for_plugins
         @plugins.block
 
         true
@@ -828,7 +833,7 @@ class Framework
             pending_jobs = browser_cluster.pending_job_counter
 
             if pending_jobs != last_pending_jobs
-                state.set_status_message :waiting_for_browser, pending_jobs
+                state.set_status_message :waiting_for_browser_cluster_jobs, pending_jobs
                 print_info "Suspending: #{status_messages.first}"
             end
 
