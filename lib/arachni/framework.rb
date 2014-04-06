@@ -860,8 +860,6 @@ class Framework
         Snapshot.dump( snapshot_path )
         state.clear_status_messages
 
-        # Don't block for plugins, maybe signal a #suspend or have them store
-        # everything in system control data structures.
         clean_up
 
         state.set_status_message :snapshot_location, snapshot_path
@@ -914,7 +912,7 @@ class Framework
         state.running = true
         @start_datetime = Time.now
 
-        @plugins.run
+        Snapshot.restored? ? @plugins.restore : @plugins.run
     end
 
     def handle_browser_page( page )

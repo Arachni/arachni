@@ -416,7 +416,31 @@ describe Arachni::Framework do
             end
         end
 
-        it 'suspends plugins'
+        it 'suspends plugins' do
+            Arachni::Options.plugins['suspendable'] = {
+                'my_option' => 'my value'
+            }
+
+            described_class.new do |f|
+                f.opts.url = web_server_url_for :framework_multi
+                f.opts.audit.elements :links
+
+                f.checks.load  :taint
+                f.plugins.load :suspendable
+
+                t = Thread.new do
+                    f.run
+                end
+
+                sleep 0.1 while f.status != :scanning
+
+                f.suspend
+                t.join
+
+                Arachni::State.plugins.runtime[:suspendable][:data].should == 1
+            end
+        end
+
         it 'waits for the BrowserCluster jobs to finish'
     end
 
@@ -543,7 +567,6 @@ describe Arachni::Framework do
                sleep 0.1 while f.status != :scanning
 
                 @snapshot = f.suspend
-
                 t.join
             end
 
@@ -552,7 +575,42 @@ describe Arachni::Framework do
             end
         end
 
-        it 'restores plugin states'
+        it 'restores plugin states' do
+            Arachni::Options.plugins['suspendable'] = {
+                'my_option' => 'my value'
+            }
+
+            described_class.new do |f|
+                f.opts.url = web_server_url_for :framework_multi
+                f.opts.audit.elements :links
+
+                f.checks.load  :taint
+                f.plugins.load :suspendable
+
+                t = Thread.new do
+                    f.run
+                end
+
+                sleep 0.1 while f.status != :scanning
+
+                @snapshot = f.suspend
+                t.join
+
+                Arachni::State.plugins.runtime[:suspendable][:data].should == 1
+            end
+
+            described_class.restore( @snapshot ) do |f|
+                t = Thread.new do
+                    f.run
+                end
+
+                sleep 0.1 while f.status != :scanning
+
+                f.plugins.jobs.first[:instance].counter.should == 2
+
+                t.kill
+            end
+        end
 
         it 'restores loaded reports' do
             described_class.new do |f|
