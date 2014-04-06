@@ -14,6 +14,67 @@ describe Arachni::State::Framework do
         @dump_directory = "#{Dir.tmpdir}/framework-#{Arachni::Utilities.generate_token}"
     end
 
+    describe '#status_messages' do
+        it 'returns the assigned status messages' do
+            message = 'Hey!'
+            subject.set_status_message message
+            subject.status_messages.should == [message]
+        end
+
+        context 'by defaults' do
+            it 'returns an empty array' do
+                subject.status_messages.should == []
+            end
+        end
+    end
+
+    describe '#set_status_message' do
+        it 'sets the #status_messages to the given message' do
+            message = 'Hey!'
+            subject.set_status_message message
+            subject.set_status_message message
+            subject.status_messages.should == [message]
+        end
+    end
+
+    describe '#add_status_message' do
+        context 'when given a message of type' do
+            context String do
+                it 'pushes it to #status_messages' do
+                    message = 'Hey!'
+                    subject.add_status_message message
+                    subject.add_status_message message
+                    subject.status_messages.should == [message, message]
+                end
+            end
+
+            context Symbol do
+                context 'and it exists in #available_status_messages' do
+                    it 'pushes the associated message to #status_messages' do
+                        subject.add_status_message :pausing
+                        subject.status_messages.should == [subject.available_status_messages[:pausing]]
+                    end
+                end
+
+                context 'and it does not exist in #available_status_messages' do
+                    it "raises #{described_class::Error::InvalidStatusMessage}" do
+                        expect do
+                            subject.add_status_message :stuff
+                        end.to raise_error described_class::Error::InvalidStatusMessage
+                    end
+                end
+
+                context 'when given sprintf arguments' do
+                    it 'uses them to fill in the placeholders' do
+                        location = '/blah/stuff.afs'
+                        subject.add_status_message :snapshot_location, location
+                        subject.status_messages.should == [subject.available_status_messages[:snapshot_location] % location]
+                    end
+                end
+            end
+        end
+    end
+
     describe '#statistics' do
         let(:statistics) { subject.statistics }
 
@@ -181,6 +242,18 @@ describe Arachni::State::Framework do
                     subject.status.should == :suspended
                 end
 
+                it 'sets the status message to :suspending' do
+                    t = Thread.new do
+                        sleep 1
+                        subject.suspended
+                    end
+                    subject.suspend
+                    t.join
+
+                    subject.status_messages.should ==
+                        [subject.available_status_messages[:suspending]]
+                end
+
                 it 'returns true' do
                     t = Thread.new do
                         sleep 1
@@ -197,6 +270,12 @@ describe Arachni::State::Framework do
                 it 'sets the #status to :suspending' do
                     subject.suspend( false )
                     subject.status.should == :suspending
+                end
+
+                it 'sets the status message to :suspending' do
+                    subject.suspend( false )
+                    subject.status_messages.should ==
+                        [subject.available_status_messages[:suspending]]
                 end
 
                 it 'returns true' do
@@ -355,9 +434,15 @@ describe Arachni::State::Framework do
             end
 
             context 'when non-blocking' do
-                it 'sets the #status to :suspending' do
+                it 'sets the #status to :pausing' do
                     subject.pause( :a_caller, false )
                     subject.status.should == :pausing
+                end
+
+                it 'sets the status message to :pausing' do
+                    subject.pause( :a_caller, false )
+                    subject.status_messages.should ==
+                        [subject.available_status_messages[:pausing]]
                 end
 
                 it 'returns true' do

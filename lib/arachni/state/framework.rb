@@ -22,6 +22,10 @@ class Framework
         # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
         class StateNotSuspendable < Error
         end
+
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        class InvalidStatusMessage < Error
+        end
     end
 
     # @return     [RPC]
@@ -48,6 +52,9 @@ class Framework
     # @return     [Array]
     attr_reader   :pause_signals
 
+    # @return     [Array<String>]
+    attr_reader    :status_messages
+
     def initialize
         @rpc = RPC.new
         @audited_page_count = 0
@@ -63,6 +70,8 @@ class Framework
         @pause_signals    = Set.new
         @paused_signal    = Queue.new
         @suspended_signal = Queue.new
+
+        @status_messages = []
     end
 
     def statistics
@@ -71,6 +80,53 @@ class Framework
             audited_page_count: @audited_page_count,
             browser_states:     @browser_skip_states.size
         }
+    end
+
+    # @return   [Hash{Symbol=>String}]
+    #   All possible {#status_messages} by type.
+    def available_status_messages
+        {
+            pausing:             'Will pause as soon as the current page is audited.',
+            suspending:          'Will suspend as soon as the current page is audited.',
+            waiting_for_browser: 'Waiting for %i browser cluster jobs to finish.',
+            suspending_plugins:  'Suspending plugins.',
+            saving_snapshot:     'Saving snapshot at: %s',
+            snapshot_location:   'Snapshot location: %s'
+        }
+    end
+
+    # Sets a message as {#status_messages}.
+    #
+    # @param    (see #add_status_message)
+    # @return   (see #add_status_message)
+    def set_status_message( *args )
+        clear_status_messages
+        add_status_message( *args )
+    end
+
+    # Pushes a message to {#status_messages}.
+    #
+    # @param    [String, Symbol]    message
+    #   Status message. If `Symbol`, it will be grabbed from
+    #   {#available_status_messages}.
+    # @param    [String, Numeric]    sprintf
+    #   `sprintf` arguments.
+    def add_status_message( message, *sprintf )
+        if message.is_a? Symbol
+            if !available_status_messages.include?( message )
+                fail Error::InvalidStatusMessage,
+                     "Could not find status message for: '#{message}'"
+            end
+
+            message = available_status_messages[message] % sprintf
+        end
+
+        @status_messages << message.to_s
+    end
+
+    # Clears {#status_messages}.
+    def clear_status_messages
+        @status_messages.clear
     end
 
     # @param    [Page]  page
@@ -129,6 +185,8 @@ class Framework
     # @raise    [StateNotSuspendable]
     #   When {#paused?} or {#pausing?}.
     def suspend( block = true )
+        return false if suspending? || suspended?
+
         if paused? || pausing?
             fail Error::StateNotSuspendable, 'Cannot suspend a paused state.'
         end
@@ -137,8 +195,7 @@ class Framework
             fail Error::StateNotSuspendable, 'Cannot suspend an idle state.'
         end
 
-        return false if suspended? || suspending?
-
+        set_status_message :suspending
         @status = :suspending
         @suspend = true
 
@@ -189,7 +246,11 @@ class Framework
     def pause( caller, block = true )
         @pre_pause_status ||= @status if !paused? && !pausing?
 
-        @status = :pausing if !paused?
+        if !paused?
+            @status = :pausing
+            set_status_message :pausing
+        end
+
         @pause_signals << caller
 
         paused if !running?
@@ -200,6 +261,7 @@ class Framework
 
     # Signals that the system has been paused..
     def paused
+        clear_status_messages
         @status = :paused
         @paused_signal << nil
     end

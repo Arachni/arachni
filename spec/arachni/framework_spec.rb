@@ -416,6 +416,7 @@ describe Arachni::Framework do
             end
         end
 
+        it 'suspends plugins'
         it 'waits for the BrowserCluster jobs to finish'
     end
 
@@ -550,6 +551,8 @@ describe Arachni::Framework do
                 f.plugins.loaded.should == ['wait']
             end
         end
+
+        it 'restores plugin states'
 
         it 'restores loaded reports' do
             described_class.new do |f|
@@ -1034,7 +1037,8 @@ describe Arachni::Framework do
         it 'returns a hash with stats' do
             subject.stats.keys.sort.should == [ :requests, :responses, :time_out_count,
                 :time, :avg, :sitemap_size, :auditmap_size, :progress, :curr_res_time,
-                :curr_res_cnt, :curr_avg, :average_res_time, :max_concurrency, :current_page, :eta ].sort
+                :curr_res_cnt, :curr_avg, :average_res_time, :max_concurrency,
+                :current_page, :eta, :messages ].sort
         end
     end
 

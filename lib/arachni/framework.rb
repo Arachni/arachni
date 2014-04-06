@@ -235,8 +235,6 @@ class Framework
     def audit_page( page )
         return if !page
 
-        state.status = :scanning if !pausing?
-
         if skip_page? page
             print_info "Ignoring page due to exclusion criteria: #{page.dom.url}"
             return false
@@ -392,8 +390,13 @@ class Framework
             average_res_time: http.burst_average_response_time,
             max_concurrency:  http.max_concurrency,
             current_page:     @current_url,
-            eta:              pb
+            eta:              pb,
+            messages:         status_messages
         }
+    end
+
+    def status_messages
+        state.status_messages
     end
 
     # @param    [Page]  page
@@ -820,21 +823,16 @@ class Framework
     end
 
     def suspend_to_disk
-        show_workload_msg = true
         while wait_for_browser?
-            if show_workload_msg
-                print_line
-                print_status 'Waiting for the browser cluster to finish.'
-            end
-            show_workload_msg = false
-
             last_pending_jobs ||= 0
             pending_jobs = browser_cluster.pending_job_counter
-            if pending_jobs != last_pending_jobs
-                browser_cluster.print_info "Pending jobs: #{pending_jobs}"
-            end
-            last_pending_jobs = pending_jobs
 
+            if pending_jobs != last_pending_jobs
+                state.set_status_message :waiting_for_browser, pending_jobs
+                print_info "Suspending: #{status_messages.first}"
+            end
+
+            last_pending_jobs = pending_jobs
             sleep 0.1
         end
 
@@ -850,13 +848,19 @@ class Framework
             state.browser_skip_states.merge browser_job_skip_states
         end
 
-        archive = Snapshot.dump( snapshot_path )
+        state.set_status_message :suspending_plugins
+        @plugins.suspend
+
+        state.set_status_message :saving_snapshot, snapshot_path
+        Snapshot.dump( snapshot_path )
+        state.clear_status_messages
 
         # Don't block for plugins, maybe signal a #suspend or have them store
         # everything in system control data structures.
         clean_up
 
-        print_status "Saved state to: #{archive}"
+        state.set_status_message :snapshot_location, snapshot_path
+        print_info status_messages.first
         state.suspended
     end
 
@@ -882,7 +886,7 @@ class Framework
 
         page.dom.transitions.each do |t|
             padding = longest_event_size - t.event.to_s.size + 1
-            time    = sprintf( "%.4f", t.time.to_f )
+            time    = sprintf( '%.4f', t.time.to_f )
 
             if t.event == :request
                 print_info "#{indent * 2}* [#{time}s] #{t.event}#{' ' * padding} => #{t.element}"
@@ -897,7 +901,7 @@ class Framework
     #
     # Prepares the framework for the audit.
     #
-    # * Sets the status to ':preparing'.
+    # * Sets the status to `:preparing`.
     # * Starts the clock.
     # * Runs the plugins.
     def prepare
@@ -905,7 +909,6 @@ class Framework
         state.running = true
         @start_datetime = Time.now
 
-        # run all plugins
         @plugins.run
     end
 
