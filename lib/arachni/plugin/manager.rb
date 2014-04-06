@@ -159,7 +159,7 @@ class Manager < Arachni::Component::Manager
     end
 
     def suspend
-        @jobs.each do |job|
+        @jobs.dup.each do |job|
             next if !job.alive?
             plugin = job[:instance]
 
@@ -167,6 +167,9 @@ class Manager < Arachni::Component::Manager
                 data:    plugin.suspend,
                 options: plugin.options
             )
+
+            job.kill
+            @jobs.delete job
         end
 
         nil
@@ -201,7 +204,7 @@ class Manager < Arachni::Component::Manager
     # @return   [Bool]
     #   `false` if all plug-ins have finished executing, `true` otherwise.
     def busy?
-        !@jobs.reject { |j| j.alive? }.empty?
+        !!@jobs.find { |j| j.alive? }
     end
 
     # @return   [Array] Names of all running plug-ins.

@@ -1,12 +1,15 @@
 require 'spec_helper'
 
 describe Arachni::Plugin::Manager do
-    before( :all ) do
-        @plugins = Arachni::Framework.new.plugins
+    before( :each ) do
+        reset_options
+        @framework = Arachni::Framework.new
+        @framework.state.running = true
     end
-    subject { @plugins }
+    subject { @framework.plugins }
+    let(:framework) { @framework }
     after( :each ) do
-        @plugins.reset
+        @framework.reset
         Arachni::Options.reset
     end
 
@@ -33,6 +36,10 @@ describe Arachni::Plugin::Manager do
         it 'stores plugin state' do
             state.should include :suspendable
             state[:suspendable][:data].should == 1
+        end
+
+        it 'kills the running plugins' do
+            subject.jobs.should be_empty
         end
     end
 
@@ -76,45 +83,45 @@ describe Arachni::Plugin::Manager do
 
     describe '#load_default' do
         it 'loads default plugins' do
-            @plugins.should be_empty
-            @plugins.load_default
-            @plugins.include?( 'default' ).should be_true
-            @plugins.clear
+            subject.should be_empty
+            subject.load_default
+            subject.include?( 'default' ).should be_true
+            subject.clear
         end
         it 'aliased to #load_defaults' do
-            @plugins.should be_empty
-            @plugins.load_defaults
-            @plugins.include?( 'default' ).should be_true
+            subject.should be_empty
+            subject.load_defaults
+            subject.include?( 'default' ).should be_true
         end
     end
 
     describe '#default' do
         it 'returns the default plugins' do
-            @plugins.default.include?( 'default' ).should be_true
+            subject.default.include?( 'default' ).should be_true
         end
         it 'aliased to #defaults' do
-            @plugins.defaults.include?( 'default' ).should be_true
+            subject.defaults.include?( 'default' ).should be_true
         end
     end
 
     describe '#run' do
         context 'when gem dependencies are met' do
             it 'runs loaded plugins' do
-                @plugins.load_default
-                @plugins.run
-                @plugins.block
-                @plugins.results[:default][:results].should be_true
+                subject.load_default
+                subject.run
+                subject.block
+                subject.results[:default][:results].should be_true
             end
         end
         context 'when gem dependencies are not met' do
             it "raises #{Arachni::Plugin::Error::UnsatisfiedDependency}" do
                 trigger = proc do
                     begin
-                        @plugins.load :bad
-                        @plugins.run
-                        @plugins.block
+                        subject.load :bad
+                        subject.run
+                        subject.block
                     ensure
-                        @plugins.clear
+                        subject.clear
                     end
                 end
 
@@ -128,37 +135,38 @@ describe Arachni::Plugin::Manager do
     describe '#sane_env?' do
         context 'when gem dependencies are met' do
             it 'returns true' do
-                @plugins.sane_env?( @plugins['default'] ).should == true
+                subject.sane_env?( subject['default'] ).should == true
             end
         end
         context 'when gem dependencies are not met' do
             it 'returns a hash with errors' do
-                @plugins.sane_env?( @plugins['bad'] ).include?( :gem_errors ).should be_true
-                @plugins.delete( 'bad' )
+                subject.sane_env?( subject['bad'] ).include?( :gem_errors ).should be_true
+                subject.delete( 'bad' )
             end
         end
     end
 
     describe '#create' do
         it 'returns a plugin instance' do
-            @plugins.create( 'default' ).instance_of?( @plugins['default'] ).should be_true
+            subject.create( 'default' ).instance_of?( subject['default'] ).should be_true
         end
     end
 
     describe '#busy?' do
         context 'when plugins are running' do
             it 'returns true' do
-                @plugins.load :wait
-                @plugins.run
-                @plugins.busy?.should be_true
-                @plugins.block
+                subject.load :wait
+                subject.run
+                subject.busy?.should be_true
+                framework.state.running = false
+                subject.block
             end
         end
         context 'when plugins have finished' do
             it 'returns false' do
-                @plugins.run
-                @plugins.block
-                @plugins.busy?.should be_false
+                subject.run
+                subject.block
+                subject.busy?.should be_false
             end
         end
     end
@@ -166,16 +174,16 @@ describe Arachni::Plugin::Manager do
     describe '#job_names' do
         context 'when plugins are running' do
             it 'returns the names of the running plugins' do
-                @plugins.run
-                @plugins.job_names.should == @plugins.keys
-                @plugins.block
+                subject.run
+                subject.job_names.should == subject.keys
+                subject.block
             end
         end
         context 'when plugins have finished' do
             it 'returns an empty array' do
-                @plugins.run
-                @plugins.block
-                @plugins.job_names.should be_empty
+                subject.run
+                subject.block
+                subject.job_names.should be_empty
             end
         end
     end
@@ -183,17 +191,17 @@ describe Arachni::Plugin::Manager do
     describe '#jobs' do
         context 'when plugins are running' do
             it 'returns the names of the running plugins' do
-                @plugins.load_default
-                @plugins.run
-                @plugins.jobs.first.instance_of?( Thread ).should be_true
-                @plugins.block
+                subject.load_default
+                subject.run
+                subject.jobs.first.instance_of?( Thread ).should be_true
+                subject.block
             end
         end
         context 'when plugins have finished' do
             it 'returns an empty array' do
-                @plugins.run
-                @plugins.block
-                @plugins.jobs.should be_empty
+                subject.run
+                subject.block
+                subject.jobs.should be_empty
             end
         end
     end
@@ -201,21 +209,21 @@ describe Arachni::Plugin::Manager do
     describe '#kill' do
         context 'when a plugin is running' do
             it 'kills a running plugin' do
-                @plugins.load( 'loop' )
-                @plugins.run
-                ret = @plugins.kill( 'loop' )
-                @plugins.block
+                subject.load( 'loop' )
+                subject.run
+                ret = subject.kill( 'loop' )
+                subject.block
 
                 ret.should be_true
-                @plugins.delete( 'loop' )
+                subject.delete( 'loop' )
             end
         end
 
         context 'when plugin is not running' do
             it 'returns false' do
-                @plugins.run
-                @plugins.block
-                @plugins.kill( 'default' ).should be_false
+                subject.run
+                subject.block
+                subject.kill( 'default' ).should be_false
             end
         end
     end
@@ -223,21 +231,21 @@ describe Arachni::Plugin::Manager do
     describe '#get' do
         context 'when a plugin is running' do
             it 'returns its thread' do
-                @plugins.load( 'loop' )
-                @plugins.run
-                @plugins.get( 'loop' ).should be_kind_of Thread
-                @plugins.kill( 'loop' )
-                @plugins.block
+                subject.load( 'loop' )
+                subject.run
+                subject.get( 'loop' ).should be_kind_of Thread
+                subject.kill( 'loop' )
+                subject.block
 
-                @plugins.delete( 'loop' )
+                subject.delete( 'loop' )
             end
         end
 
         context 'when plugin is not running' do
             it 'returns nil' do
-                @plugins.run
-                @plugins.block
-                @plugins.get( 'default' ).should be_nil
+                subject.run
+                subject.block
+                subject.get( 'default' ).should be_nil
             end
         end
     end
@@ -245,7 +253,7 @@ describe Arachni::Plugin::Manager do
     describe '#results' do
         it "delegates to ##{Arachni::Data::Plugins}#results" do
             Arachni::Data.plugins.results.object_id.should ==
-                @plugins.results.object_id
+                subject.results.object_id
         end
     end
 
