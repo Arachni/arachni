@@ -24,6 +24,8 @@ end
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Manager < Arachni::Component::Manager
+    include MonitorMixin
+
     # Namespace under which all plugins reside.
     NAMESPACE = Arachni::Plugins
 
@@ -35,7 +37,7 @@ class Manager < Arachni::Component::Manager
         super( framework.opts.paths.plugins, NAMESPACE )
         @framework = framework
 
-        @jobs = []
+        @jobs = {}
     end
 
     # Loads the default plugins.
@@ -58,12 +60,16 @@ class Manager < Arachni::Component::Manager
     #   If the environment is {#sane_env? not sane}.
     def run
         prepare.each do |name, options|
-            @jobs << Thread.new do
+            @jobs[name] = Thread.new do
                 exception_jail( false ) do
                     Thread.current[:instance] = create( name, options )
                     Thread.current[:instance].prepare
                     Thread.current[:instance].run
                     Thread.current[:instance].clean_up
+
+                    synchronize do
+                        @jobs.delete name
+                    end
                 end
             end
         end
@@ -116,7 +122,7 @@ class Manager < Arachni::Component::Manager
                      "Plug-in dependencies not met: #{name} -- #{deps}"
             end
 
-            h[name] = prep_opts( name, plugin, @framework.opts.plugins[name] )
+            h[name.to_sym] = prep_opts( name, plugin, @framework.opts.plugins[name] )
             h
         end
     end
@@ -152,24 +158,25 @@ class Manager < Arachni::Component::Manager
             print_debug job_names.join( ', ' )
             print_debug
 
-            @jobs.delete_if { |j| !j.alive? }
+            @jobs.select! { |_,j| j.alive? }
+
             sleep 0.1
         end
         nil
     end
 
     def suspend
-        @jobs.dup.each do |job|
+        @jobs.dup.each do |name, job|
             next if !job.alive?
             plugin = job[:instance]
 
-            state.store( plugin.shortname,
+            state.store( name,
                 data:    plugin.suspend,
                 options: plugin.options
             )
 
             job.kill
-            @jobs.delete job
+            @jobs.delete name
         end
 
         nil
@@ -177,7 +184,7 @@ class Manager < Arachni::Component::Manager
 
     def restore
         prepare.each do |name, options|
-            @jobs << Thread.new do
+            @jobs[name] = Thread.new do
                 exception_jail( false ) do
                     if state.include? name
                         Thread.current[:instance] = create( name, state[name][:options] )
@@ -189,6 +196,10 @@ class Manager < Arachni::Component::Manager
 
                     Thread.current[:instance].run
                     Thread.current[:instance].clean_up
+
+                    synchronize do
+                        @jobs.delete name
+                    end
                 end
             end
         end
@@ -204,15 +215,15 @@ class Manager < Arachni::Component::Manager
     # @return   [Bool]
     #   `false` if all plug-ins have finished executing, `true` otherwise.
     def busy?
-        !!@jobs.find { |j| j.alive? }
+        @jobs.any?
     end
 
     # @return   [Array] Names of all running plug-ins.
     def job_names
-        @jobs.map{ |j| j[:instance].shortname }
+        @jobs.keys
     end
 
-    # @return   [Array<Thread>] All the running threads.
+    # @return   [Hash{String=>Thread}] All the running threads.
     def jobs
         @jobs
     end
@@ -221,24 +232,15 @@ class Manager < Arachni::Component::Manager
     #
     # @param    [String]    name
     def kill( name )
-        job = get( name )
+        job = @jobs.delete( name.to_sym )
         return true if job && job.kill
         false
     end
 
     def killall
-        @jobs.each(&:kill)
+        @jobs.values.each(&:kill)
         @jobs.clear
-    end
-
-    # Gets a running plug-in by name.
-    #
-    # @param    [String]    name
-    #
-    # @return   [Thread]
-    def get( name )
-        @jobs.each { |job| return job if job[:instance].shortname == name }
-        nil
+        true
     end
 
     def state

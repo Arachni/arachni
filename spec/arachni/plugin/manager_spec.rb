@@ -62,21 +62,21 @@ describe Arachni::Plugin::Manager do
         it 'restores plugin options' do
             subject.restore
 
-            subject.jobs.first[:instance].options.should == {
+            subject.jobs[:suspendable][:instance].options.should == {
                 'my_option' => 'updated'
             }
         end
 
         it 'restores plugin state' do
             subject.restore
-            subject.jobs.first[:instance].counter.should == 2
+            subject.jobs[:suspendable][:instance].counter.should == 2
         end
 
         context 'when a loaded plugin has no associated state' do
             it 'calls #prepare instead of #restore' do
                 subject.state.delete :suspendable
                 subject.restore
-                subject.jobs.first[:instance].counter.should == 1
+                subject.jobs[:suspendable][:instance].counter.should == 1
             end
         end
     end
@@ -190,16 +190,22 @@ describe Arachni::Plugin::Manager do
 
     describe '#jobs' do
         context 'when plugins are running' do
-            it 'returns the names of the running plugins' do
-                subject.load_default
+            it 'returns the plugins threads' do
+                subject.load :wait
                 subject.run
-                subject.jobs.first.instance_of?( Thread ).should be_true
+                subject.jobs[:wait].should be_instance_of Thread
+
+                framework.state.running = false
+
                 subject.block
             end
         end
         context 'when plugins have finished' do
-            it 'returns an empty array' do
+            it 'returns an empty hash' do
+                subject.load :wait
                 subject.run
+                framework.state.running = false
+
                 subject.block
                 subject.jobs.should be_empty
             end
@@ -224,28 +230,6 @@ describe Arachni::Plugin::Manager do
                 subject.run
                 subject.block
                 subject.kill( 'default' ).should be_false
-            end
-        end
-    end
-
-    describe '#get' do
-        context 'when a plugin is running' do
-            it 'returns its thread' do
-                subject.load( 'loop' )
-                subject.run
-                subject.get( 'loop' ).should be_kind_of Thread
-                subject.kill( 'loop' )
-                subject.block
-
-                subject.delete( 'loop' )
-            end
-        end
-
-        context 'when plugin is not running' do
-            it 'returns nil' do
-                subject.run
-                subject.block
-                subject.get( 'default' ).should be_nil
             end
         end
     end

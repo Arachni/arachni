@@ -606,7 +606,7 @@ describe Arachni::Framework do
 
                 sleep 0.1 while f.status != :scanning
 
-                f.plugins.jobs.first[:instance].counter.should == 2
+                f.plugins.jobs[:suspendable][:instance].counter.should == 2
 
                 t.kill
             end

@@ -844,8 +844,8 @@ class Framework
         # Make sure the component options are up to date with what's actually
         # happening.
         Options.checks  = checks.loaded
-        Options.plugins = plugins.jobs.
-            inject({}) { |h, j| h[j[:instance].shortname] = j[:instance].options; h }
+        Options.plugins = plugins.loaded.
+            inject({}) { |h, name| h[name.to_s] = Options.plugins[name.to_s] || {}; h }
         Options.reports = reports.loaded.
             inject({}) { |h, name| h[name.to_s] = Options.reports[name.to_s] || {}; h }
 
