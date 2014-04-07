@@ -27,7 +27,7 @@ describe Arachni::State::Plugins do
             plugins.load :distributable
             result = { stuff: 1 }
 
-            subject.store( plugins.create(:distributable), result )
+            subject.store( :distributable, result )
 
             subject.statistics[:names].should == [:distributable]
         end
@@ -38,7 +38,7 @@ describe Arachni::State::Plugins do
             plugins.load :distributable
             result = { stuff: 1 }
 
-            subject.store( plugins.create(:distributable), result )
+            subject.store( :distributable, result )
             subject[:distributable].should == result
         end
     end
