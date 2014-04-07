@@ -17,7 +17,7 @@ describe 'Arachni::RPC::Server::Framework' do
         @stat_keys = [
             :requests, :responses, :time_out_count, :time, :avg, :sitemap_size,
             :auditmap_size, :progress, :curr_res_time, :curr_res_cnt, :curr_avg,
-            :average_res_time, :max_concurrency, :current_page, :eta
+            :average_res_time, :max_concurrency, :current_page, :eta, :messages
         ]
     end
 

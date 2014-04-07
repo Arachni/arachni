@@ -71,7 +71,7 @@ describe 'Arachni::RPC::Server::Framework' do
     describe '#list_plugins' do
         it 'lists all available plugins' do
             plugins = @framework_clean.list_plugins
-            plugins.size.should == 6
+            plugins.size.should == 7
             plugin = plugins.select { |i| i[:name] =~ /default/i }.first
             plugin[:name].should == 'Default'
             plugin[:description].should == 'Some description'
@@ -175,7 +175,7 @@ describe 'Arachni::RPC::Server::Framework' do
                 :requests, :responses, :time_out_count,
                 :time, :avg, :sitemap_size, :auditmap_size, :progress, :curr_res_time,
                 :curr_res_cnt, :curr_avg, :average_res_time, :max_concurrency,
-                :current_page, :eta
+                :current_page, :eta, :messages
             ]
             stats.keys.should == stat_keys
             stat_keys.each { |k| stats[k].should be_true }
