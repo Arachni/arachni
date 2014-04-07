@@ -81,7 +81,7 @@ class Manager < Arachni::Component::Manager
     end
 
     # @return   [Hash]
-    #   Sorted plugins with their prepared options.
+    #   Sorted plugins (by priority) with their prepared options.
     #
     # @raise [Error::UnsatisfiedDependency]
     #   If the environment is not {#sane_env? sane}.
@@ -152,13 +152,15 @@ class Manager < Arachni::Component::Manager
 
     # Blocks until all plug-ins have finished executing.
     def block
-        while @jobs.any?
+        while busy?
             print_debug
             print_debug "Waiting on #{@jobs.size} plugins to finish:"
             print_debug job_names.join( ', ' )
             print_debug
 
-            @jobs.select! { |_,j| j.alive? }
+            synchronize do
+                @jobs.select! { |_ ,j| j.alive? }
+            end
 
             sleep 0.1
         end
@@ -175,8 +177,7 @@ class Manager < Arachni::Component::Manager
                 options: plugin.options
             )
 
-            job.kill
-            @jobs.delete name
+            kill name
         end
 
         nil
@@ -232,15 +233,19 @@ class Manager < Arachni::Component::Manager
     #
     # @param    [String]    name
     def kill( name )
-        job = @jobs.delete( name.to_sym )
-        return true if job && job.kill
+        synchronize do
+            job = @jobs.delete( name.to_sym )
+            return true if job && job.kill
+        end
         false
     end
 
     def killall
-        @jobs.values.each(&:kill)
-        @jobs.clear
-        true
+        synchronize do
+            @jobs.values.each(&:kill)
+            @jobs.clear
+            true
+        end
     end
 
     def state
