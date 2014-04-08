@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+=begin
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
+=end
+
+require_relative '../lib/arachni/ui/cli/restored_framework'
+
+Arachni::UI::CLI::RestoredFramework.new

@@ -2,11 +2,15 @@
 
 ## _Under development_
 
-- `UI::CLI::Framework`
-    - `Ctrl+C` (`SIGINT`) now aborts the scan.
-    - Hitting `Enter` now toggles between the progress message and the progress
-        summary screens.
-    - Updated to provide access to the new suspend-to-disk feature..
+- Executables:
+    - Added `arachni_restore` (`UI::CLI::RestoredFramework`)
+        - Restores snapshots of suspended scans.
+        - Prints snapshot metadata.
+    - `arachni` (`UI::CLI::Framework`)
+        - `Ctrl+C` (`SIGINT`) now aborts the scan.
+        - Hitting `Enter` now toggles between the progress message and the
+            command summary screens.
+        - Updated to provide access to the new suspend-to-disk feature..
 - `Framework`
     - `#audit_page` -- Updated to perform DOM/JS/AJAX analysis on the page and
         feed DOM page snapshots and new paths back to the `Framework`.
