@@ -3,8 +3,6 @@
     All rights reserved.
 =end
 
-require 'highline/system_extensions'
-
 module Arachni
 
 require Options.paths.mixins + 'terminal'
@@ -79,11 +77,7 @@ class Instance
     private
 
     def print_progress
-        # Clear existing terminal text.
-        move_to_home
-        cols, rows = HighLine::SystemExtensions.terminal_size
-        (rows - 1).times{ print_line ' ' * cols }
-        move_to_home
+        empty_screen
 
         print_banner
 
@@ -134,7 +128,7 @@ class Instance
         @progress = progress
         @issues  |= @progress['issues']
 
-        @issues = Issue.sort( @issues )
+        @issues = @issues.sort_by(&:severity).reverse
 
         # Keep issue digests and error messages in order to ask not to retrieve
         # them on subsequent progress calls in order to save bandwidth.
