@@ -118,7 +118,7 @@ class Framework
     end
 
     def print_issues( unmute = false )
-        super( Data.issues.summary, unmute, &method( :restr ) )
+        super( Data.issues.summary, unmute )
     end
 
     # Handles Ctrl+C signals.
@@ -129,13 +129,13 @@ class Framework
         @@only_positives    = false
 
         @show_command_screen = Thread.new do
+            clear_screen
             get_user_command
             mute
-            clear_screen
 
             while sleep 0.3
-                refresh_line
-                move_to_home
+                empty_screen
+
                 refresh_info 'Results thus far:'
 
                 begin
@@ -156,12 +156,12 @@ class Framework
                     refresh_info 'Hit:'
 
                     {
-                        'Enter' => "go back to status messages",
-                        'p'     => "pause the scan",
-                        'r'     => "resume the scan",
-                        'a'     => "abort the scan",
-                        's'     => "suspend the scan to disk",
-                        'g'     => "generate reports"
+                        'Enter' => 'go back to status messages',
+                        'p'     => 'pause the scan',
+                        'r'     => 'resume the scan',
+                        'a'     => 'abort the scan',
+                        's'     => 'suspend the scan to disk',
+                        'g'     => 'generate reports'
                     }.each do |key, action|
                         next if %w(Enter s p).include?( key ) && !@framework.scanning?
                         next if key == 'r' && !(@framework.paused? || @framework.pausing?)
@@ -172,8 +172,6 @@ class Framework
 
                 flush
             end
-
-            unmute
         end
     end
 
@@ -182,50 +180,44 @@ class Framework
     end
 
     def refresh_line( string = nil, unmute = true )
-        print_line( restr( string.to_s ), unmute )
+        print_line( string.to_s, unmute )
     end
 
     def refresh_info( string = nil, unmute = true )
-        print_info( restr( string.to_s ), unmute )
+        print_info( string.to_s, unmute )
     end
 
     def get_user_command
         Thread.new do
             command = gets[0].strip
 
+            get_user_command
+
             # Only accept the empty/toggle-screen command when the command
             # screen is not shown.
-            return get_user_command if !command_screen_shown? && !command.empty?
+            return if !command_screen_shown? && !command.empty?
 
             case command
 
                 # Abort
                 when 'a'
                     shutdown
-                    reset_command_screen
 
                 # Pause
                 when 'p'
-                    return get_user_command if !@framework.scanning?
-                    reset_command_screen
+                    return if !@framework.scanning?
 
                     @framework.pause
-                    reset_command_screen
 
                 # Resume
                 when 'r'
-                    return get_user_command if !@framework.pause?
-                    reset_command_screen
-
+                    return if !@framework.pause?
                     @framework.resume
-                    reset_command_screen
 
                 # Suspend
                 when 's'
-                    return get_user_command if !@framework.scanning?
-                    reset_command_screen
+                    return if !@framework.scanning?
                     suspend
-                    # reset_command_screen
 
                 # Generate reports.
                 when 'g'
@@ -235,7 +227,7 @@ class Framework
 
                 # Toggle between status messages and command screens.
                 when ''
-                    return get_user_command if !@framework.scanning?
+                    return if !@framework.scanning?
 
                     if @show_command_screen
                         hide_command_screen
@@ -244,13 +236,7 @@ class Framework
                     end
 
                     restore_output
-                    clear_screen
-
-                    get_user_command
-
-                # Invalid command.
-                else
-                    get_user_command
+                    empty_screen
             end
         end
     end
