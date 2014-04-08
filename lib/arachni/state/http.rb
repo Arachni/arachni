@@ -22,7 +22,7 @@ class HTTP
 
     def statistics
         {
-            cookies: @cookiejar.cookies.map(&:to_s)
+            cookies: @cookiejar.cookies.map(&:to_s).uniq
         }
     end
 
