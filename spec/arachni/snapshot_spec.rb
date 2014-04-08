@@ -91,6 +91,12 @@ describe Arachni::Snapshot do
         it 'includes a #summary' do
             metadata[:summary].should == subject.summary
         end
+
+        context 'when trying to read an invalid file' do
+            it "raises #{described_class::Error::InvalidFile}" do
+                expect { subject.read_metadata( __FILE__ ) }.to raise_error described_class::Error::InvalidFile
+            end
+        end
     end
 
     describe '.dump' do
@@ -110,6 +116,12 @@ describe Arachni::Snapshot do
             Arachni::Data.should receive(:load)
 
             subject.load( dump_archive )
+        end
+
+        context 'when trying to load an invalid file' do
+            it "raises #{described_class::Error::InvalidFile}" do
+                expect { subject.load( __FILE__ ) }.to raise_error described_class::Error::InvalidFile
+            end
         end
     end
 end

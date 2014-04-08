@@ -16,12 +16,18 @@ module Arachni
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Snapshot
 
-    # {State} error namespace.
+    # {Snapshot} error namespace.
     #
-    # All {State} errors inherit from and live under it.
+    # All {Snapshot} errors inherit from and live under it.
     #
     # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
     class Error < Arachni::Error
+
+        # Raised when trying to read an invalid snapshot file.
+        #
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        class InvalidFile < Error
+        end
     end
 
 class <<self
@@ -84,6 +90,9 @@ class <<self
     # @param    [String]    snapshot
     #   Location of the snapshot to load.
     # @return   [Snapshot]     `self`
+    #
+    # @raise    [Error::InvalidFile]
+    #   When trying to read an invalid file.
     def load( snapshot )
         directory = get_temporary_directory
 
@@ -102,6 +111,9 @@ class <<self
     #   Location of the snapshot.
     # @return   [Hash]
     #   Metadata associated with the given snapshot.
+    #
+    # @raise    [Error::InvalidFile]
+    #   When trying to read an invalid file.
     def read_metadata( snapshot )
         File.open( snapshot ) do |f|
             f.seek -4, IO::SEEK_END
@@ -110,6 +122,10 @@ class <<self
             f.seek -metadata_size-4, IO::SEEK_END
             Marshal.load( f.read( metadata_size ) )
         end
+    rescue => e
+        ne = Error::InvalidFile.new( "Invalid snapshot: #{snapshot} (#{e})" )
+        ne.set_backtrace e.backtrace
+        raise ne
     end
 
     private
