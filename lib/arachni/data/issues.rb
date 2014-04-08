@@ -14,6 +14,12 @@ class Data
 class Issues
     include MonitorMixin
 
+    # @return   [Hash{Integer=>Issue}]  Issues by their {Issue#digest}.
+    attr_reader :collection
+
+    # @return   [Set<Integer>]    {Issue#digest}s.
+    attr_reader :digests
+
     def initialize
         super
 
@@ -23,7 +29,7 @@ class Issues
 
         # We also use this Set for deduplication in case #do_not_store has been
         # called.
-        @issue_digests = Set.new
+        @digests = Set.new
 
         # Called when a new issue is logged.
         @on_new_blocks = []
@@ -109,7 +115,7 @@ class Issues
     # @return   [Bool]
     #   `true` if `issue` is
     def include?( issue )
-        @issue_digests.include? issue.digest
+        @digests.include? issue.digest
     end
 
     # @note Will deduplicate and group issues as variations.
@@ -122,7 +128,7 @@ class Issues
         # Only allow passive issues to have variations.
         return self if include?( issue ) && issue.active?
 
-        @issue_digests << issue.digest
+        @digests << issue.digest
 
         synchronize do
             call_on_new_blocks( issue )
@@ -146,11 +152,6 @@ class Issues
     # @return   [Array<Issue>]  Sorted array of {Issue}s.
     def sort
         all.sort_by { |i| Issue::Severity::ORDER.index i.severity.to_sym }
-    end
-
-    # @return   [Set<Integer>]    {Issue#digest}s.
-    def digests
-        @issue_digests
     end
 
     # @param    [Block] block
@@ -191,18 +192,25 @@ class Issues
         FileUtils.mkdir_p( directory )
 
         @collection.each do |digest, issue|
-            File.open( "#{directory}/#{digest}", 'w' ) do |f|
+            File.open( "#{directory}/issue_#{digest}", 'w' ) do |f|
                 f.write Marshal.dump( issue )
             end
+        end
+
+        File.open( "#{directory}/digests", 'w' ) do |f|
+            f.write Marshal.dump( digests )
         end
     end
 
     def self.load( directory )
         issues = new
 
-        Dir["#{directory}/*"].each do |issue_file|
-            issues << Marshal.load( IO.read( issue_file ) )
+        Dir["#{directory}/issue_*"].each do |issue_file|
+            issue = Marshal.load( IO.read( issue_file ) )
+            issues.collection[issue.digest] = issue
         end
+
+        issues.digests.merge Marshal.load( IO.read( "#{directory}/digests" ) )
 
         issues
     end
@@ -212,20 +220,14 @@ class Issues
     end
 
     def hash
-        @issue_digests.hash
+        @digests.hash
     end
 
     def clear
-        @issue_digests.clear
+        @digests.clear
         @collection.clear
         @on_new_blocks.clear
         @on_new_pre_deduplication_blocks.clear
-    end
-
-    protected
-
-    def collection
-        @collection
     end
 
     private

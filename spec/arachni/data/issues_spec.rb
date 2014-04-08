@@ -270,13 +270,20 @@ describe Arachni::Data::Issues do
             subject.dump( dump_directory )
 
             subject.each do |issue|
-                issue_path = "#{dump_directory}/#{issue.digest}"
+                issue_path = "#{dump_directory}/issue_#{issue.digest}"
                 File.exists?( issue_path ).should be_true
 
                 loaded_issue = Marshal.load( IO.read( issue_path ) )
                 issue.should == loaded_issue
                 issue.variations.should == loaded_issue.variations
             end
+        end
+
+        it 'stores the #digests to disk' do
+            unsorted_issues.each { |i| subject << i }
+            subject.dump( dump_directory )
+
+            subject.digests.should == Marshal.load( IO.read( "#{dump_directory}/digests" ) )
         end
     end
 
@@ -286,6 +293,13 @@ describe Arachni::Data::Issues do
             subject.dump( dump_directory )
 
             subject.should == described_class.load( dump_directory )
+        end
+
+        it 'restores digests from disk' do
+            unsorted_issues.each { |i| subject << i }
+            subject.dump( dump_directory )
+
+            subject.digests.should == described_class.load( dump_directory ).digests
         end
     end
 
