@@ -164,6 +164,7 @@ you with its findings.
     - [Command-line Interface](https://github.com/Arachni/arachni/wiki/Executables).
     - [Web User Interface](https://github.com/Arachni/arachni-ui-web).
  - Pause/resume functionality.
+ - Hibernation support -- Suspend to and restore from disk.
  - High performance asynchronous HTTP requests.
     - With adjustable concurrency.
 
