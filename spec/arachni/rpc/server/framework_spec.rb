@@ -71,7 +71,7 @@ describe 'Arachni::RPC::Server::Framework' do
     describe '#list_plugins' do
         it 'lists all available plugins' do
             plugins = @framework_clean.list_plugins
-            plugins.size.should == 6
+            plugins.size.should == 7
             plugin = plugins.select { |i| i[:name] =~ /default/i }.first
             plugin[:name].should == 'Default'
             plugin[:description].should == 'Some description'
@@ -175,7 +175,7 @@ describe 'Arachni::RPC::Server::Framework' do
                 :requests, :responses, :time_out_count,
                 :time, :avg, :sitemap_size, :auditmap_size, :progress, :curr_res_time,
                 :curr_res_cnt, :curr_avg, :average_res_time, :max_concurrency,
-                :current_page, :eta
+                :current_page, :eta, :messages
             ]
             stats.keys.should == stat_keys
             stat_keys.each { |k| stats[k].should be_true }
@@ -190,18 +190,44 @@ describe 'Arachni::RPC::Server::Framework' do
         end
         context 'when paused' do
             it 'returns true' do
-                instance = @instance_clean
+                instance = instance_spawn
+                instance.opts.url = web_server_url_for( :framework )
+                instance.checks.load( 'test' )
+                instance.framework.run
+
                 instance.framework.pause
+                instance.framework.status.should == :pausing
+
+                Timeout.timeout 5 do
+                    sleep 1 while !instance.framework.paused?
+                end
+
                 instance.framework.paused?.should be_true
             end
         end
     end
     describe '#resume' do
         it 'resumes the scan' do
-            instance = @instance_clean
+            instance = instance_spawn
+            instance.opts.url = web_server_url_for( :framework )
+            instance.checks.load( 'test' )
+            instance.framework.run
+
             instance.framework.pause
+
+            instance.framework.status.should == :pausing
+
+            Timeout.timeout 5 do
+                sleep 1 while !instance.framework.paused?
+            end
+
             instance.framework.paused?.should be_true
             instance.framework.resume.should be_true
+
+            Timeout.timeout 5 do
+                sleep 1 while instance.framework.paused?
+            end
+
             instance.framework.paused?.should be_false
         end
     end
@@ -212,25 +238,25 @@ describe 'Arachni::RPC::Server::Framework' do
             @inst.checks.load( 'test' )
         end
         context 'after initialization' do
-            it 'returns "ready"' do
-                @inst.framework.status.should == 'ready'
+            it 'returns :ready' do
+                @inst.framework.status.should == :ready
             end
         end
-        context 'after "run" has been called' do
-            it 'returns "scanning"' do
+        context 'after #run has been called' do
+            it 'returns :scanning' do
                 @inst.framework.run.should be_true
                 sleep 2
-                @inst.framework.status.should == 'scanning'
+                @inst.framework.status.should == :scanning
             end
         end
         context 'once the scan had completed' do
-            it 'returns "done"' do
+            it 'returns :done' do
                 inst = instance_spawn
                 inst.opts.url = web_server_url_for( :framework )
                 inst.checks.load( 'test' )
                 inst.framework.run
                 sleep 1 while inst.framework.busy?
-                inst.framework.status.should == 'done'
+                inst.framework.status.should == :done
             end
         end
     end
@@ -246,8 +272,8 @@ describe 'Arachni::RPC::Server::Framework' do
             instance.framework.clean_up.should be_true
             results = instance.framework.auditstore.plugins
             results.should be_any
-            results['wait'].should be_any
-            results['wait'][:results].should == { stuff: true }
+            results[:wait].should be_any
+            results[:wait][:results].should == { stuff: true }
         end
     end
     describe '#progress' do

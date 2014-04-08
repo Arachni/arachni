@@ -17,7 +17,7 @@ describe 'Arachni::RPC::Server::Framework' do
         @stat_keys = [
             :requests, :responses, :time_out_count, :time, :avg, :sitemap_size,
             :auditmap_size, :progress, :curr_res_time, :curr_res_cnt, :curr_avg,
-            :average_res_time, :max_concurrency, :current_page, :eta
+            :average_res_time, :max_concurrency, :current_page, :eta, :messages
         ]
     end
 
@@ -164,6 +164,11 @@ describe 'Arachni::RPC::Server::Framework' do
             it 'returns true' do
                 instance = @instance_clean
                 instance.framework.pause
+
+                Timeout.timeout 5 do
+                    sleep 1 while !instance.framework.paused?
+                end
+
                 instance.framework.paused?.should be_true
             end
         end
@@ -172,8 +177,18 @@ describe 'Arachni::RPC::Server::Framework' do
         it 'resumes the scan' do
             instance = @instance_clean
             instance.framework.pause
+
+            Timeout.timeout 5 do
+                sleep 1 while !instance.framework.paused?
+            end
+
             instance.framework.paused?.should be_true
             instance.framework.resume.should be_true
+
+            Timeout.timeout 5 do
+                sleep 1 while instance.framework.paused?
+            end
+
             instance.framework.paused?.should be_false
         end
     end
@@ -194,9 +209,9 @@ describe 'Arachni::RPC::Server::Framework' do
 
             results = auditstore.plugins
             results.should be_any
-            results['wait'].should be_any
-            results['wait'][:results].should == { stuff: true }
-            results['distributable'][:results].should == { stuff: instance_count }
+            results[:wait].should be_any
+            results[:wait][:results].should == { stuff: true }
+            results[:distributable][:results].should == { stuff: instance_count }
 
             dispatcher_kill_by_instance instance
         end

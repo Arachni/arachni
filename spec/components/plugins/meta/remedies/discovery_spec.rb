@@ -5,7 +5,7 @@ describe name_from_filename do
 
     before( :all ) do
         options.url = url
-        options.audit :forms
+        options.audit.element :forms
 
         framework.checks.load :common_files
     end

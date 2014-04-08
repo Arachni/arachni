@@ -72,9 +72,6 @@ class Client
     # @return    [Hash]     Default headers for {Request requests}.
     attr_reader :headers
 
-    # @return    [CookieJar]
-    attr_reader :cookie_jar
-
     # @return   [Integer]   Amount of performed requests.
     attr_reader :request_count
 
@@ -101,6 +98,7 @@ class Client
     # @return   [Arachni::HTTP] self
     def reset( hooks_too = true )
         clear_observers if hooks_too
+        State.http.clear
 
         opts = Options
 
@@ -109,25 +107,22 @@ class Client
 
         @hydra = Typhoeus::Hydra.new( max_concurrency: opts.http.request_concurrency || MAX_CONCURRENCY )
 
-        @headers = {
+        headers.merge!(
             'Accept'     => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'User-Agent' => opts.http.user_agent
-        }
-        @headers['From'] = opts.authorized_by if opts.authorized_by
+        )
+        headers['From'] = opts.authorized_by if opts.authorized_by
+        headers.merge!( opts.http.request_headers )
 
-        @headers.merge!( opts.http.request_headers )
-
-        @cookie_jar = CookieJar.new( opts.http.cookie_jar_filepath )
+        cookie_jar.load( opts.http.cookie_jar_filepath ) if opts.http.cookie_jar_filepath
         update_cookies( opts.http.cookies )
         update_cookies( opts.http.cookie_string ) if opts.http.cookie_string
+
+        reset_burst_info
 
         @request_count  = 0
         @response_count = 0
         @time_out_count = 0
-
-        @burst_response_time_sum = 0
-        @burst_response_count    = 0
-        @burst_runtime           = 0
 
         @total_response_time_sum = 0
         @total_runtime           = 0
@@ -139,6 +134,15 @@ class Client
         @_404 = Hash.new
         @mutex = Monitor.new
         self
+    end
+
+    # @return    [CookieJar]
+    def cookie_jar
+        State.http.cookiejar
+    end
+
+    def headers
+        State.http.headers
     end
 
     # Runs all queued requests
@@ -167,6 +171,39 @@ class Client
         raise
     rescue
         nil
+    end
+
+    # @note Cookies or new callbacks set as a result of the block won't affect
+    #   the HTTP singleton.
+    #
+    # @param    [Block] block   Block to executes  inside a sandbox.
+    #
+    # @return   [Object]    Return value of the block.
+    def sandbox( &block )
+        h = {}
+        instance_variables.each do |iv|
+            val = instance_variable_get( iv )
+            h[iv] = val.deep_clone rescue val.dup rescue val
+        end
+
+        hooks = {}
+        @__hooks.each { |k, v| hooks[k] = v.dup } if @__hooks
+
+        pre_cookies = cookies.deep_clone
+        pre_headers = headers.deep_clone
+
+        ret = block.call( self )
+
+        cookie_jar.clear
+        update_cookies pre_cookies
+
+        headers.clear
+        headers.merge! pre_headers
+
+        h.each { |iv, val| instance_variable_set( iv, val ) }
+        @__hooks = hooks
+
+        ret
     end
 
     # Aborts the running requests on a best effort basis.
@@ -232,7 +269,7 @@ class Client
 
     # @return   [Array<Arachni::Element::Cookie>]   All cookies in the jar.
     def cookies
-        @cookie_jar.cookies
+        cookie_jar.cookies
     end
 
     # Gets called each time a hydra {#run} completes.
@@ -277,7 +314,7 @@ class Client
         exception_jail( false ) {
             if !options.delete( :no_cookiejar )
                 cookies = begin
-                    @cookie_jar.for_url( url ).inject({}) do |h, c|
+                    cookie_jar.for_url( url ).inject({}) do |h, c|
                         h[c.name] = c.value
                         h
                     end.merge( cookies )
@@ -290,7 +327,7 @@ class Client
 
             request = Request.new( options.merge(
                 url:     url,
-                headers: @headers.merge( options.delete( :headers ) || {} ),
+                headers: headers.merge( options.delete( :headers ) || {} ),
                 cookies: cookies
             ))
 
@@ -375,35 +412,11 @@ class Client
             each { |request| forward_request( request ) }
     end
 
-    # @note Cookies or new callbacks set as a result of the block won't affect
-    #   the HTTP singleton.
-    #
-    # @param    [Block] block   Block to executes  under a sandbox.
-    #
-    # @return   [Object]    Return value of the block.
-    def sandbox( &block )
-        h = {}
-        instance_variables.each do |iv|
-            val = instance_variable_get( iv )
-            h[iv] = val.deep_clone rescue val.dup rescue val
-        end
-
-        hooks = {}
-        @__hooks.each { |k, v| hooks[k] = v.dup } if @__hooks
-
-        ret = block.call( self )
-
-        h.each { |iv, val| instance_variable_set( iv, val ) }
-        @__hooks = hooks
-
-        ret
-    end
-
     # @param    [Array<String, Hash, Arachni::Element::Cookie>]   cookies
     #   Updates the cookie-jar with the passed `cookies`.
     def update_cookies( cookies )
-        @cookie_jar.update( cookies )
-        @cookie_jar.cookies
+        cookie_jar.update( cookies )
+        cookie_jar.cookies
     end
     alias :set_cookies :update_cookies
 
@@ -540,8 +553,7 @@ class Client
     def hydra_run
         @running = true
 
-        @burst_runtime     ||= 0
-        @burst_runtime_start = Time.now
+        reset_burst_info
 
         @hydra.run
 
@@ -550,6 +562,13 @@ class Client
 
         @burst_runtime += Time.now - @burst_runtime_start
         @total_runtime += @burst_runtime
+    end
+
+    def reset_burst_info
+        @burst_response_time_sum = 0
+        @burst_response_count    = 0
+        @burst_runtime           = 0
+        @burst_runtime_start     = Time.now
     end
 
     # Performs the actual queueing of requests, passes them to Hydra and sets

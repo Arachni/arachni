@@ -30,7 +30,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.3.2
+# @version 0.3.3
 #
 # @see http://en.wikipedia.org/wiki/Cross-site_request_forgery
 # @see http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)
@@ -67,7 +67,7 @@ class Arachni::Checks::CSRF < Arachni::Check::Base
     #
     def unsafe?( form )
         # if a form has a nonce then we're cool, bail out early
-        return false if form.has_nonce?
+        return false if form.has_nonce? || !form.html
 
         #
         # Nobody says that tokens must be in a +value+ attribute, they can
@@ -152,7 +152,7 @@ class Arachni::Checks::CSRF < Arachni::Check::Base
                 It requires a logged-in user's cookie-jar.},
             elements:    [ Element::Form ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.3.2',
+            version:     '0.3.3',
 
             issue:       {
                 name:            %q{Cross-Site Request Forgery},

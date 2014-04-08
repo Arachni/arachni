@@ -167,6 +167,48 @@ class Instance
         end
     end
 
+    # @return   [String, nil]
+    #   Path to the {Snapshot snapshot} of the {#suspend suspended} scan,
+    #   `nil` if not {#suspended?}.
+    #
+    # @see #suspend
+    # @see #suspended?
+    def snapshot_path
+        return if !suspended?
+        @framework.snapshot_path
+    end
+
+    # @note The path to the snapshot can be retrieved via {#snapshot_path}.
+    #
+    # {Snapshot.dump Writes} a {Snapshot} to disk and aborts the scan.
+    #
+    # @see #restore
+    def suspend
+        if !@framework.solo?
+            fail State::Framework::Error::StateNotSuspendable,
+                 'Cannot suspend a multi-Instance scan.'
+        end
+
+        @framework.suspend false
+    end
+
+    # @param (see Arachni::Framework#restore)
+    # @return (see Arachni::Framework#restore)
+    #
+    # @see #suspend
+    # @see #snapshot_path
+    def restore( snapshot )
+        @framework.restore snapshot
+        @framework.run
+        true
+    end
+
+    # @return (see Arachni::Framework#suspended?)
+    # @see #suspend
+    def suspended?
+        @framework.suspended?
+    end
+
     # @return   [true]
     def alive?
         @server.alive?

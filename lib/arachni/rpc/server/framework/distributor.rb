@@ -147,8 +147,6 @@ module Distributor
     #   This is because we still need passive checks and browser analysis to
     #   seem them.
     def split_page_workload( pages )
-        @seen_pages ||= Support::LookUp::HashSet.new
-
         # Split elements in chunks for each instance and setup audit restrictions
         # for the relevant pages.
         #
@@ -162,13 +160,13 @@ module Distributor
                 elements.each do |element|
                     workload[i][element.page] ||= element.page.dup
                     workload[i][element.page].update_element_audit_whitelist element
-                    @seen_pages << element.page
+                    distributed_pages << element.page
                 end
 
                 workload[i] = workload[i].values
             end
 
-        missed_pages = pages.select { |page| !@seen_pages.include? page }
+        missed_pages = pages.select { |page| !distributed_pages.include? page }
 
         # Some pages may not have any elements but they still need to be seen in
         # order to be passed to passive checks and be analyzed by the browser
@@ -276,24 +274,28 @@ module Distributor
     end
 
     def filter_elements( elements )
-        # Helps us do some preliminary deduplication on our part to avoid sending
-        # over duplicate element IDs.
-        @element_filter ||= Support::LookUp::HashSet.new
-
         elements.map do |e|
             next if e.inputs.empty?
 
             id = e.audit_scope_id
-            next if @element_filter.include?( id )
-            @element_filter << id
+            next if distributed_elements.include?( id )
+            distributed_elements << id
 
             e
         end.compact.uniq
     end
 
+    def distributed_elements
+        state.rpc.distributed_elements
+    end
+
+    def distributed_pages
+        state.rpc.distributed_pages
+    end
+
     def clear_filters
-        @element_filter.clear if @element_filter
-        @seen_pages.clear if @element_filter
+        distributed_elements.clear
+        distributed_pages.clear
     end
 
     # @param    [Block] block

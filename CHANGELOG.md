@@ -2,9 +2,33 @@
 
 ## _Under development_
 
+- Executables:
+    - Added `arachni_restore` (`UI::CLI::RestoredFramework`)
+        - Restores snapshots of suspended scans.
+        - Prints snapshot metadata.
+    - `arachni` (`UI::CLI::Framework`)
+        - `Ctrl+C` (`SIGINT`) now aborts the scan.
+        - Hitting `Enter` now toggles between the progress message and the
+            command summary screens.
+        - Updated to provide access to the new suspend-to-disk feature..
 - `Framework`
     - `#audit_page` -- Updated to perform DOM/JS/AJAX analysis on the page and
         feed DOM page snapshots and new paths back to the `Framework`.
+- Added `State` -- Stores and provides access to the system's state.
+    - `Plugins` -- Stores plugin runtime states when suspending.
+    - `HTTP` -- Stores client headers and cookies.
+    - `Audit` -- Stores audit operations.
+    - `ElementFilter` -- Stores seen elements.
+    - `Framework` -- Stores the `Framework` state.
+        - `RPC` -- Stores the `RPC::Server::Framework` state.
+- Added `Data` -- Stores and provides access to the system's data.
+    - `Issues` -- Stores logged `Issue` objects.
+    - `Plugins` -- Stores plugin results.
+    - `Framework` -- Stores the `Framework` audit workload.
+        - `RPC` -- Stores the `RPC::Server::Framework` audit workload.
+- Added `Snapshot`
+    - Dumps and loads `State` and `Data` to and from disk to suspend and restore
+        active scans.
 - Removed the `Spider`.
     - The Framework has grown to encompass a process providing the same
         functionality as a result of `Browser` analysis.

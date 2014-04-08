@@ -32,7 +32,6 @@ module Check
 # * General {Arachni::Issue} logging helpers.
 #   * {#log}
 #   * {#log_issue}
-#   * {#register_results}
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 module Auditor
@@ -226,6 +225,7 @@ module Auditor
     # Populates and logs an {Arachni::Issue}.
     #
     # @param    [Hash]  options {Arachni::Issue} initialization options.
+    # @return   [Issue]
     def log( options )
         options       = options.dup
         vector        = options[:vector]
@@ -301,25 +301,16 @@ module Auditor
     # Helper method for issue logging.
     #
     # @param    [Hash]  options {Issue} options.
+    # @return   [Issue]
     #
     # @see .create_issue
-    # @see #register_results
     def log_issue( options )
-        register_results([
-            self.class.create_issue( options.merge( referring_page: self.page ) )
-        ])
-    end
-
-    # Just a delegator, logs an array of issues.
-    #
-    # @param    [Array<Arachni::Issue>]     issues
-    #
-    # @see Arachni::Check::Manager#register_results
-    def register_results( issues )
         return if issue_limit_reached?
-        self.class.issue_counter += issues.size
+        self.class.issue_counter += 1
 
-        framework.checks.register_results( issues )
+        issue = self.class.create_issue( options.merge( referring_page: self.page ) )
+        Data.issues << issue
+        issue
     end
 
     # @see Arachni::Check::Base#preferred
@@ -345,14 +336,15 @@ module Auditor
 
         # Don't audit elements which have been already logged as vulnerable
         # either by us or preferred checks.
-        (preferred | [shortname]).each do |mod|
-            next if !framework.checks.include?( mod )
+        (preferred | [shortname]).each do |check|
+            next if !framework.checks.include?( check )
 
-            klass = framework.checks[mod]
+            klass = framework.checks[check]
             next if !klass.info.include?(:issue)
 
-            issue_id = klass.create_issue( vector: element ).unique_id
-            return true if framework.checks.issue_set.include?( issue_id )
+            if Data.issues.include?( klass.create_issue( vector: element ) )
+                return true
+            end
         end
 
         false
@@ -547,16 +539,13 @@ module Auditor
         end
     end
 
-
-    # Helper `Set` for checks which want to keep track of what they've audited
-    # by themselves.
-    #
-    # @return   [Set]
+    # @return   [State::Audit]
+    #   Keeps track of audit operations.
     #
     # @see #audited?
     # @see #audited
     def self.audited
-        @audited ||= Support::LookUp::HashSet.new
+        State.audit
     end
 
 end

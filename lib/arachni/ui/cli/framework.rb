@@ -28,36 +28,17 @@ class Framework
 
         parse_options
 
-        @interrupt_handler = nil
+        @show_command_screen = nil
+        @cleanup_handler     = nil
 
-        # Trap Ctrl+C signals.
-        trap( 'INT' ) { handle_interrupt }
-
-        # Trap SIGUSR1 signals.
-        trap ( 'USR1' ) { handle_usr1_interrupt }
+        trap( 'INT' ) do
+            hide_command_screen
+            clear_screen
+            shutdown
+        end
 
         # Kick the tires and light the fires.
         run
-    end
-
-    # Outputs all available platforms and their info.
-    def list_platforms
-        super @framework.list_platforms
-    end
-
-    # Outputs all available checks and their info.
-    def list_checks( *args )
-        super @framework.list_checks( *args )
-    end
-
-    # Outputs all available reports and their info.
-    def list_reports( *args )
-        super @framework.list_reports( *args )
-    end
-
-    # Outputs all available reports and their info.
-    def list_plugins( *args )
-        super @framework.list_plugins( *args )
     end
 
     private
@@ -65,22 +46,25 @@ class Framework
     def run
         print_status 'Initializing...'
 
+        get_user_command
+
         begin
             # We may need to kill the audit so put it in a thread.
             @scan = Thread.new do
                 @framework.run do
-                    kill_interrupt_handler
+                    hide_command_screen
+                    restore_output
                     clear_screen
                 end
-
-                print_stats
             end
 
             @scan.join
 
-            # If the user requested to exit the scan wait for the Thread that
+            # If the user requested to abort the scan, wait for the thread that
             # takes care of the clean-up to finish.
             @cleanup_handler.join if @cleanup_handler
+
+            print_stats
         rescue Component::Options::Error::Invalid => e
             print_error e
             print_line
@@ -99,103 +83,60 @@ class Framework
 
     def print_stats( unmute = false )
         stats = @framework.stats
-        mapped  = stats[:sitemap_size]
 
-        print_line( restr, unmute )
-
-        print_info( restr( "#{progress_bar( stats[:progress], 61 )}" ), unmute )
-        print_info( restr( "Est. remaining time: #{stats[:eta]}" ), unmute )
-
-        print_line( restr, unmute )
-
-        if stats[:current_page] && !stats[:current_page].empty?
-            print_info( restr( "Crawler has discovered #{mapped} pages." ), unmute )
-        else
-            print_info( restr( "Crawling, discovered #{mapped} pages and counting." ), unmute )
-        end
+        refresh_line nil, unmute
+        refresh_info( "Audited #{stats[:auditmap_size]} pages.", unmute )
 
         if @framework.opts.scope.page_limit
-            print_info(
-                restr( "Audit limited to a max of #{@framework.opts.scope.page_limit} " +
-                                      "pages." ),
-                unmute
-            )
+            refresh_info( "Audit limited to a max of #{@framework.opts.scope.page_limit} " +
+                          "pages.", unmute )
         end
 
-        print_line( restr, unmute )
+        refresh_line nil, unmute
 
-        print_info( restr( "Sent #{stats[:requests]} requests." ), unmute )
-        print_info( restr( "Received and analyzed #{stats[:responses]} responses." ), unmute )
-        print_info( restr( 'In ' + stats[:time] ), unmute )
+        refresh_info( "Sent #{stats[:requests]} requests.", unmute )
+        refresh_info( "Received and analyzed #{stats[:responses]} responses.", unmute )
+        refresh_info( 'In ' + stats[:time], unmute )
 
-        avg = 'Average: ' + stats[:avg].to_s + ' requests/second.'
-        print_info( restr( avg ), unmute )
+        avg = "Average: #{stats[:avg].to_s} requests/second."
+        refresh_info( avg, unmute )
 
-        print_line( restr, unmute )
+        refresh_line nil, unmute
         if stats[:current_page] && !stats[:current_page].empty?
-            print_info( restr( "Currently auditing" +
-                                              "           #{stats[:current_page]}" ), unmute )
+            refresh_info( "Currently auditing           #{stats[:current_page]}", unmute )
         end
 
-        print_info( restr( "Burst response time total    #{stats[:curr_res_time]}" ), unmute )
-        print_info( restr( "Burst response count total   #{stats[:curr_res_cnt]} " ), unmute )
-        print_info( restr( "Burst average response time  #{stats[:average_res_time]}" ), unmute )
-        print_info( restr( "Burst average                #{stats[:curr_avg]} requests/second" ), unmute )
-        print_info( restr( "Timed-out requests           #{stats[:time_out_count]}" ), unmute )
-        print_info( restr( "Original max concurrency     #{options.http.request_concurrency}" ), unmute )
-        print_info( restr( "Throttled max concurrency    #{stats[:max_concurrency]}" ), unmute )
+        refresh_info( "Burst response time total    #{stats[:curr_res_time]}", unmute )
+        refresh_info( "Burst response count total   #{stats[:curr_res_cnt]} ", unmute )
+        refresh_info( "Burst average response time  #{stats[:average_res_time]}", unmute )
+        refresh_info( "Burst average                #{stats[:curr_avg]} requests/second", unmute )
+        refresh_info( "Timed-out requests           #{stats[:time_out_count]}", unmute )
+        refresh_info( "Original max concurrency     #{options.http.request_concurrency}", unmute )
+        refresh_info( "Throttled max concurrency    #{stats[:max_concurrency]}", unmute )
 
-        print_line( restr, unmute )
+        refresh_line nil, unmute
     end
 
     def print_issues( unmute = false )
-        super( Issue.sort( @framework.checks.issues ), unmute, &method( :restr ) )
-    end
-
-    def kill_interrupt_handler
-        @@only_positives = @only_positives_opt
-        @interrupt_handler.exit if @interrupt_handler
-        unmute
+        super( Data.issues.summary, unmute )
     end
 
     # Handles Ctrl+C signals.
-    #
-    # Once an interrupt has been trapped the system pauses and waits for user
-    # input.
-    # The user can either continue or exit.
-    def handle_interrupt
-        return if @interrupt_handler && @interrupt_handler.alive?
+    def show_command_screen
+        return if command_screen_shown?
 
         @only_positives_opt = only_positives?
         @@only_positives    = false
 
-        @interrupt_handler = Thread.new do
-            Thread.new do
-                c = gets[0]
-                clear_screen
-                unmute
-
-                case c
-                    when 'e'
-                        @@only_positives = false
-                        @interrupt_handler.kill
-                        shutdown
-
-                    when 'r'
-                        @framework.reports.run( @framework.audit_store )
-                end
-
-                kill_interrupt_handler
-                Thread.exit
-            end
-
-            mute
+        @show_command_screen = Thread.new do
             clear_screen
+            get_user_command
+            mute
 
-            loop do
-                print_line( restr, true )
-                move_to_home
-                print_info( restr( 'Results thus far:' ), true )
+            while sleep 0.3
+                empty_screen
+
+                refresh_info 'Results thus far:'
 
                 begin
                     print_issues( true )
@@ -205,37 +146,156 @@ class Framework
                     raise e
                 end
 
-                print_info( restr( 'Continue? (hit \'enter\' to continue, ' <<
-                    '\'r\' to generate reports and \'e\' to exit)' ), true )
+                refresh_info "Status: #{@framework.status.to_s.capitalize}"
+                @framework.status_messages.each do |message|
+                    refresh_info "  #{message}"
+                end
+
+                if !@framework.suspend?
+                    refresh_info
+                    refresh_info 'Hit:'
+
+                    {
+                        'Enter' => 'go back to status messages',
+                        'p'     => 'pause the scan',
+                        'r'     => 'resume the scan',
+                        'a'     => 'abort the scan',
+                        's'     => 'suspend the scan to disk',
+                        'g'     => 'generate reports'
+                    }.each do |key, action|
+                        next if %w(Enter s p).include?( key ) && !@framework.scanning?
+                        next if key == 'r' && !(@framework.paused? || @framework.pausing?)
+
+                        refresh_info "  '#{key}' to #{action}."
+                    end
+                end
+
                 flush
-
-                ::IO::select( nil, nil, nil, 0.3 )
             end
-
-            unmute
         end
     end
 
-    # Handles SIGUSR1 signals.
-    #
-    # It will cause Arachni to create a report and shut down afterwards.
-    def handle_usr1_interrupt
-        print_status 'Received SIGUSR1!'
-        shutdown
+    def command_screen_shown?
+        @show_command_screen && @show_command_screen.alive?
+    end
+
+    def refresh_line( string = nil, unmute = true )
+        print_line( string.to_s, unmute )
+    end
+
+    def refresh_info( string = nil, unmute = true )
+        print_info( string.to_s, unmute )
+    end
+
+    def get_user_command
+        Thread.new do
+            command = gets[0].strip
+
+            get_user_command
+
+            # Only accept the empty/toggle-screen command when the command
+            # screen is not shown.
+            return if !command_screen_shown? && !command.empty?
+
+            case command
+
+                # Abort
+                when 'a'
+                    shutdown
+
+                # Pause
+                when 'p'
+                    return if !@framework.scanning?
+
+                    @framework.pause
+
+                # Resume
+                when 'r'
+                    return if !@framework.pause?
+                    @framework.resume
+
+                # Suspend
+                when 's'
+                    return if !@framework.scanning?
+                    suspend
+
+                # Generate reports.
+                when 'g'
+                    hide_command_screen
+                    restore_output
+                    @framework.reports.run( @framework.audit_store )
+
+                # Toggle between status messages and command screens.
+                when ''
+                    return if !@framework.scanning?
+
+                    if @show_command_screen
+                        hide_command_screen
+                    else
+                        show_command_screen
+                    end
+
+                    restore_output
+                    empty_screen
+            end
+        end
+    end
+
+    def reset_command_screen
+        hide_command_screen
+        show_command_screen
+    end
+
+    def hide_command_screen
+        @show_command_screen.kill if @show_command_screen
+        @show_command_screen = nil
+    end
+
+    def restore_output
+        @@only_positives = @only_positives_opt
+        unmute
+    end
+
+    def suspend
+        @cleanup_handler = Thread.new do
+            @framework.suspend
+
+            hide_command_screen
+            restore_output
+            clear_screen
+
+            @framework.reports.run( @framework.audit_store )
+
+            print_line
+
+            filesize = (File.size( @framework.snapshot_path ).to_f / 2**20).round(2)
+            print_info "The snapshot has been saved at: #{@framework.snapshot_path} [#{filesize}MB]"
+
+            print_line
+        end
     end
 
     def shutdown
-        print_status 'Exiting...'
+        restore_output
+
+        print_status 'Aborting...'
         print_info 'Please wait while the system cleans up.'
 
-        # Kill the audit.
-        @scan.exit
-
+        killed = Queue.new
         @cleanup_handler = Thread.new do
+            killed.pop
+
             @framework.clean_up
+
+            hide_command_screen
+            restore_output
+            clear_screen
+
             @framework.reports.run( @framework.audit_store )
-            print_stats
         end
+
+        @scan.kill
+        killed << true
     end
 
     # It parses and processes CLI options.

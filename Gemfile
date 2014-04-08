@@ -5,6 +5,8 @@ gem 'redcarpet'
 
 gem 'faker'
 
+gem 'stackprof'
+
 if File.exist?( p = File.dirname( __FILE__ ) + '/../arachni-rpc-em' )
     gem 'arachni-rpc-em', path: p
 else

@@ -5,7 +5,7 @@ describe name_from_filename do
 
     before( :all ) do
         options.url = url
-        options.audit :forms
+        options.audit.elements :forms
 
         # this check uses the least amount of seeds, should save us some time
         framework.checks.load :os_cmd_injection_timing

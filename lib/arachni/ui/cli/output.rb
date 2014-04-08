@@ -74,7 +74,7 @@ module Output
     # @param    [String]    str
     #
     def print_error( str = '' )
-        print_color( '[-]', 31, str, $stderr, true )
+        print_color( '[-]', 31, str, $stderr )
         log_error( str )
     end
 

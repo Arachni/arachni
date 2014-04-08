@@ -56,11 +56,10 @@ class AuditStore
     end
 
     # @param    [Array<Issue>]  issues  Logged issues.
-    # @return   [Array<Issue>]
-    #   Logged issues sorted and grouped into variations.
+    # @return    [Array<Issue>]  Logged issues.
     def issues=( issues )
         @issues = {}
-        Issue.sort( prepare_variations( issues ) ).each do |issue|
+        issues.each do |issue|
             @issues[issue.digest] = issue
         end
         self.issues
@@ -144,22 +143,6 @@ class AuditStore
     # @return    [Hash]
     def prepare_options( options )
         options.to_hash.symbolize_keys( false )
-    end
-
-    # @param    [Array<Issue>]    issues
-    # @return    [Array<Issue>]
-    #   New array of Issues with populated {Issue#variations}.
-    #
-    # @see Issue#variations
-    def prepare_variations( issues )
-        new_issues = {}
-        issues.each do |issue|
-            id = issue.hash
-            new_issues[id] ||= issue.with_variations
-            new_issues[id].variations << issue.as_variation
-        end
-
-        new_issues.values
     end
 
     # @param    [String, Float, Integer]    seconds

@@ -156,6 +156,11 @@ class CookieJar
         end.flatten.compact
     end
 
+    # @param    [CookieJar] other
+    def merge!( other )
+        update other.cookies
+    end
+
     # Empties the cookiejar
     def clear
         @domains.clear
@@ -169,6 +174,15 @@ class CookieJar
     # @return   [Bool]  +true+ if cookiejar is not empty, +false+ otherwise
     def any?
         !empty?
+    end
+
+    # @param    [CookieJar] other
+    def ==( other )
+        hash == other.hash
+    end
+
+    def hash
+        cookies.map(&:to_s).hash
     end
 
     private

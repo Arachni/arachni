@@ -7,7 +7,7 @@ describe Arachni::Component::Manager do
         @namespace = Arachni::Plugins
         @components = Arachni::Component::Manager.new( @lib, @namespace )
     end
-
+    let(:available) { %w(wait bad distributable loop default with_options suspendable).sort }
     after( :each ) { @components.clear }
 
     describe '#lib' do
@@ -24,8 +24,7 @@ describe Arachni::Component::Manager do
 
     describe '#available' do
         it 'returns all available components' do
-            @components.available.sort.should ==
-                %w(wait bad distributable loop default with_options).sort
+            @components.available.sort.should == available
         end
     end
 
@@ -421,16 +420,10 @@ describe Arachni::Component::Manager do
         end
     end
 
-    describe '#available' do
-        it 'returns all available components' do
-            @components.available.sort.should == %w(wait bad with_options distributable loop default).sort
-        end
-    end
-
     describe '#loaded' do
         it 'returns all loaded components' do
             @components.load( '*' )
-            @components.loaded.sort.should == %w(wait bad with_options distributable loop default).sort
+            @components.loaded.sort.should == available
         end
     end
 

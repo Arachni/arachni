@@ -3,21 +3,20 @@
     All rights reserved.
 =end
 
+require 'securerandom'
 require 'digest/sha2'
 require 'cgi'
 
 module Arachni
 
-#
 # Includes some useful methods for the system.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 module Utilities
 
     # @return   [String]    random HEX (SHA2) string
     def seed
-        @@seed ||= Digest::SHA2.hexdigest( srand( 1000 ).to_s )
+        @@seed ||= generate_token
     end
 
     # @see Arachni::Element::Form.from_response
@@ -385,9 +384,7 @@ module Utilities
     end
 
     def generate_token
-        secret = ''
-        1000.times { secret << rand( 9999 ).to_s }
-        Digest::SHA2.hexdigest( secret )
+        SecureRandom.hex
     end
 
     #

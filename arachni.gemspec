@@ -41,6 +41,9 @@ Gem::Specification.new do |s|
 
     s.add_dependency 'bundler'
 
+    # For compressing/decompressing system state archives.
+    s.add_dependency 'rubyzip'
+
     # RPC client/server implementation.
     s.add_dependency 'arachni-rpc-em',  '0.2.1dev'
 

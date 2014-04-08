@@ -94,7 +94,7 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
                 @run.call
 
                 issues.should be_any
-                issues.first.vector.seed.should == '8000'
+                issues.flatten.first.vector.seed.should == '8000'
             end
         end
 
@@ -109,7 +109,7 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
                 @run.call
 
                 issues.should be_any
-                issues.first.vector.seed.should == '8'
+                issues.flatten.first.vector.seed.should == '8'
             end
         end
 
@@ -125,7 +125,7 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
                 @run.call
 
                 issues.should be_any
-                issues.first.response.body.should == '11'
+                issues.flatten.first.response.body.should == '11'
             end
         end
 

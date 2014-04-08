@@ -56,7 +56,7 @@ describe Arachni::Element::Server do
                 auditable.log_remote_file_if_exists( file )
                 @framework.http.run
 
-                logged_issue = @framework.checks.results.first
+                logged_issue = Arachni::Data.issues.first
                 logged_issue.vector.url.split( '?' ).first.should == file
                 logged_issue.vector.class.should == Arachni::Element::Server
                 logged_issue.check.should == {
@@ -72,7 +72,7 @@ describe Arachni::Element::Server do
             it 'does not log an issue' do
                 auditable.log_remote_file_if_exists( @base_url + 'false' )
                 @framework.http.run
-                @framework.checks.results.should be_empty
+                Arachni::Data.issues.should be_empty
             end
         end
     end

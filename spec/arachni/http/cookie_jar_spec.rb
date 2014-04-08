@@ -2,22 +2,22 @@ require 'spec_helper'
 
 describe Arachni::HTTP::CookieJar do
 
-    before do
-        @jar = Arachni::HTTP::CookieJar.new
-        @file = fixtures_path + 'cookies.txt'
-    end
+    subject { described_class.new }
+    let(:cookies) { Arachni::Utilities.cookies_from_file( '', cookiejar_file ) }
+    let(:cookie) { cookies.first }
+    let(:cookiejar_file) { fixtures_path + 'cookies.txt' }
 
     describe '.from_file' do
         it 'loads cookies from a Netscape cookie-jar file' do
-            j = @jar.class.from_file( @file )
+            j = subject.class.from_file( cookiejar_file )
             cookies = j.cookies
             cookies.size.should == 4
-            cookies.should == Arachni::Utilities.cookies_from_file( '', @file )
+            cookies.should == cookies
         end
 
         context 'when the provided file does not exist' do
             it 'raises Arachni::HTTP::CookieJar::Error::CookieJarFileNotFound' do
-                trigger = proc { @jar.class.from_file( 'file' ) }
+                trigger = proc { subject.class.from_file( 'file' ) }
 
                 expect { trigger.call }.to raise_error Arachni::Error
                 expect { trigger.call }.to raise_error Arachni::HTTP::Error
@@ -34,16 +34,16 @@ describe Arachni::HTTP::CookieJar do
 
         context 'when a cookiejer option has been provided' do
             it 'loads cookies from a Netscape cookie-jar file' do
-                j = @jar.class.from_file( @file )
+                j = subject.class.from_file( cookiejar_file )
                 cookies = j.cookies
                 cookies.size.should == 4
-                cookies.should == Arachni::Utilities.cookies_from_file( '', @file )
+                cookies.should == Arachni::Utilities.cookies_from_file( '', cookiejar_file )
             end
         end
 
         context 'when the provided file does not exist' do
             it 'raises Arachni::HTTP::CookieJar::Error::CookieJarFileNotFound' do
-                expect { @jar.class.from_file( 'file' ) }.to raise_error Arachni::HTTP::CookieJar::Error::CookieJarFileNotFound
+                expect { subject.class.from_file( 'file' ) }.to raise_error Arachni::HTTP::CookieJar::Error::CookieJarFileNotFound
             end
         end
     end
@@ -51,30 +51,28 @@ describe Arachni::HTTP::CookieJar do
     describe '#<<' do
         context 'when a cookie with that name does not already exist' do
             it 'adds the cookie to the jar' do
-                cookie = Arachni::Utilities.cookies_from_file( '', @file ).first
-                @jar.empty?.should be_true
+                subject.empty?.should be_true
 
-                (@jar << cookie).should == @jar
-                @jar.cookies.first.should == cookie
+                (subject << cookie).should == subject
+                subject.cookies.first.should == cookie
 
-                @jar.empty?.should be_false
+                subject.empty?.should be_false
             end
         end
         context 'when a cookie with that name already exists' do
             it 'updates the jar (i.e. replace the cookie)' do
-                cookie = Arachni::Utilities.cookies_from_file( '', @file ).first
-                @jar.empty?.should be_true
+                subject.empty?.should be_true
 
-                (@jar << cookie).should == @jar
-                @jar.cookies.first.should == cookie
+                (subject << cookie).should == subject
+                subject.cookies.first.should == cookie
 
                 c = cookie.dup
                 c.inputs = { c.name => 'my val' }
 
-                (@jar << c).should == @jar
-                @jar.cookies.first.should == c
+                (subject << c).should == subject
+                subject.cookies.first.should == c
 
-                @jar.empty?.should be_false
+                subject.empty?.should be_false
             end
         end
     end
@@ -82,28 +80,26 @@ describe Arachni::HTTP::CookieJar do
     describe '#update' do
         context 'when cookies with the same name do not already exist' do
             it 'adds the cookies to the jar' do
-                cookies = Arachni::Utilities.cookies_from_file( '', @file )
-                @jar.empty?.should be_true
+                subject.empty?.should be_true
 
-                @jar.update( cookies ).should == @jar
-                @jar.cookies.should == cookies
+                subject.update( cookies ).should == subject
+                subject.cookies.should == cookies
 
-                @jar.empty?.should be_false
+                subject.empty?.should be_false
             end
         end
         context 'when cookies with the same name already exist' do
             it 'updates the jar (i.e. replace the cookies)' do
-                cookies = Arachni::Utilities.cookies_from_file( '', @file )
-                @jar.empty?.should be_true
+                subject.empty?.should be_true
 
-                @jar.update( cookies ).should == @jar
-                @jar.cookies.should == cookies
+                subject.update( cookies ).should == subject
+                subject.cookies.should == cookies
 
                 c = cookies.dup.map { |dc| dc.inputs = { dc.name => dc.name + '-updated' }; dc }
-                @jar.update( c ).should == @jar
-                @jar.cookies.should == c
+                subject.update( c ).should == subject
+                subject.cookies.should == c
 
-                @jar.empty?.should be_false
+                subject.empty?.should be_false
             end
         end
 
@@ -112,60 +108,60 @@ describe Arachni::HTTP::CookieJar do
                 it 'updates the cookie jar with it' do
                     c = Arachni::Cookie.new( url: 'http://test.com', inputs: { name: 'value' } )
 
-                    @jar.should be_empty
+                    subject.should be_empty
 
-                    @jar.update( c )
-                    @jar.cookies.first.name.should == 'name'
-                    @jar.cookies.first.value.should == 'value'
+                    subject.update( c )
+                    subject.cookies.first.name.should == 'name'
+                    subject.cookies.first.value.should == 'value'
                 end
             end
 
             context Hash do
                 it 'converts it to Cookie and update the cookie jar with it' do
-                    @jar.should be_empty
+                    subject.should be_empty
 
                     Arachni::Options.url = 'http://test.com'
-                    @jar.update( name: 'value' )
-                    @jar.cookies.first.name.should == 'name'
-                    @jar.cookies.first.value.should == 'value'
+                    subject.update( name: 'value' )
+                    subject.cookies.first.name.should == 'name'
+                    subject.cookies.first.value.should == 'value'
                 end
             end
 
             context String do
                 it 'parses it into a Cookie and update the cookie jar with it' do
-                    @jar.should be_empty
+                    subject.should be_empty
 
                     Arachni::Options.url = 'http://test.com'
-                    @jar.update( 'name=value' )
-                    @jar.cookies.first.name.should == 'name'
-                    @jar.cookies.first.value.should == 'value'
+                    subject.update( 'name=value' )
+                    subject.cookies.first.name.should == 'name'
+                    subject.cookies.first.value.should == 'value'
                 end
 
                 context 'when in the form of a Set-Cookie header' do
                     it 'parses it into a Cookie and update the cookie jar with it' do
-                        @jar.should be_empty
+                        subject.should be_empty
 
                         Arachni::Options.url = 'http://test.com'
-                        @jar.update( 'some_param=9e4ca2cc0f18a49f7c1881f78bebf7df; path=/; expires=Wed, 02-Oct-2020 23:53:46 GMT; HttpOnly' )
-                        @jar.cookies.first.name.should == 'some_param'
-                        @jar.cookies.first.value.should == '9e4ca2cc0f18a49f7c1881f78bebf7df'
+                        subject.update( 'some_param=9e4ca2cc0f18a49f7c1881f78bebf7df; path=/; expires=Wed, 02-Oct-2020 23:53:46 GMT; HttpOnly' )
+                        subject.cookies.first.name.should == 'some_param'
+                        subject.cookies.first.value.should == '9e4ca2cc0f18a49f7c1881f78bebf7df'
                     end
                 end
             end
 
             context Array do
                 it 'iterates and if necessary parses the entries and update the cookie jar with them' do
-                    @jar.should be_empty
+                    subject.should be_empty
 
                     Arachni::Options.url = 'http://test.com'
-                    @jar.update([
+                    subject.update([
                         Arachni::Cookie.new(
                             url: 'http://test.com', inputs: { cookie_name: 'cookie_value' } ),
                         { hash_name: 'hash_value' },
                         'string_name=string_value'
                     ] )
 
-                    cookies = @jar.cookies
+                    cookies = subject.cookies
 
                     cookies.size.should == 3
 
@@ -246,27 +242,27 @@ describe Arachni::HTTP::CookieJar do
                 expires: Time.now - 999999
             )
 
-            @jar.update( cookies.values )
+            subject.update( cookies.values )
 
-            @jar.for_url( 'http://domain.com/my/path' ).should == [cookies[:with_path], cookies[:without_path]]
-            @jar.for_url( 'http://domain.com/my/path/' ).should == [cookies[:with_path], cookies[:without_path]]
-            @jar.for_url( 'http://domain.com' ).should == [cookies[:without_path]]
-            @jar.for_url( 'http://domain.com/' ).should == [cookies[:without_path]]
+            subject.for_url( 'http://domain.com/my/path' ).should == [cookies[:with_path], cookies[:without_path]]
+            subject.for_url( 'http://domain.com/my/path/' ).should == [cookies[:with_path], cookies[:without_path]]
+            subject.for_url( 'http://domain.com' ).should == [cookies[:without_path]]
+            subject.for_url( 'http://domain.com/' ).should == [cookies[:without_path]]
 
-            @jar.for_url( 'http://mydomain.com' ).should == [cookies[:another_domain], cookies[:tailmatching]]
-            @jar.for_url( 'http://sub.mydomain.com' ).should == [cookies[:tailmatching]]
-            @jar.for_url( 'http://deep.sub.mydomain.com' ).should == [cookies[:tailmatching]]
+            subject.for_url( 'http://mydomain.com' ).should == [cookies[:another_domain], cookies[:tailmatching]]
+            subject.for_url( 'http://sub.mydomain.com' ).should == [cookies[:tailmatching]]
+            subject.for_url( 'http://deep.sub.mydomain.com' ).should == [cookies[:tailmatching]]
 
-            @jar.for_url( 'http://sub.domain.com' ).should == [cookies[:subdomain], cookies[:subdomain_tailmatching]]
-            @jar.for_url( 'http://deeeep.deep.sub.domain.com' ).should == [cookies[:subdomain_tailmatching]]
+            subject.for_url( 'http://sub.domain.com' ).should == [cookies[:subdomain], cookies[:subdomain_tailmatching]]
+            subject.for_url( 'http://deeeep.deep.sub.domain.com' ).should == [cookies[:subdomain_tailmatching]]
 
-            @jar.for_url( 'http://expired.com' ).should be_empty
+            subject.for_url( 'http://expired.com' ).should be_empty
         end
     end
 
     describe '#cookies' do
         before( :each ) do
-            @jar << Arachni::Element::Cookie.new(
+            subject << Arachni::Element::Cookie.new(
                 url:     '',
                 name:    'expired_name',
                 value:   'expired_value',
@@ -274,7 +270,7 @@ describe Arachni::HTTP::CookieJar do
                 path:    '/',
                 expires: Time.now - 999999
             )
-            @jar << Arachni::Element::Cookie.new(
+            subject << Arachni::Element::Cookie.new(
                 url:    '',
                 name:   'my_name',
                 value:  'my_value',
@@ -285,19 +281,19 @@ describe Arachni::HTTP::CookieJar do
         describe 'include_expired' do
             context true do
                 it 'returns all cookies' do
-                    @jar.cookies( true ).size.should == 2
+                    subject.cookies( true ).size.should == 2
                 end
             end
             context false do
                 it 'returns non expired cookies only' do
-                    c = @jar.cookies( false )
+                    c = subject.cookies( false )
                     c.size.should == 1
                     c.first.name.should == 'my_name'
                 end
             end
             context 'nil' do
                 it 'returns non expired cookies only' do
-                    c = @jar.cookies( false )
+                    c = subject.cookies( false )
                     c.size.should == 1
                     c.first.name.should == 'my_name'
                 end
@@ -307,24 +303,24 @@ describe Arachni::HTTP::CookieJar do
 
     describe '#clear' do
         it 'empties the jar' do
-            @jar.load( @file )
-            @jar.empty?.should be_false
-            @jar.clear
-            @jar.empty?.should be_true
+            subject.load( cookiejar_file )
+            subject.empty?.should be_false
+            subject.clear
+            subject.empty?.should be_true
         end
     end
 
     describe '#empty?' do
         context 'when the cookie jar is empty' do
             it 'returns true' do
-                @jar.empty?.should be_true
+                subject.empty?.should be_true
             end
         end
         context 'when the cookie jar is not empty' do
             it 'returns false' do
-                @jar.empty?.should be_true
-                @jar.load( @file )
-                @jar.empty?.should be_false
+                subject.empty?.should be_true
+                subject.load( cookiejar_file )
+                subject.empty?.should be_false
             end
         end
     end
@@ -332,16 +328,33 @@ describe Arachni::HTTP::CookieJar do
     describe '#any?' do
         context 'when the cookie jar is empty' do
             it 'returns false' do
-                @jar.any?.should be_false
+                subject.any?.should be_false
             end
         end
         context 'when the cookie jar is not empty' do
             it 'returns true' do
-                @jar.any?.should be_false
-                @jar.load( @file )
-                @jar.any?.should be_true
+                subject.any?.should be_false
+                subject.load( cookiejar_file )
+                subject.any?.should be_true
             end
         end
     end
 
+    describe '#merge!' do
+        it 'updates the cookiejar with the cookies of another' do
+            other = subject.class.from_file( cookiejar_file )
+
+            c = Arachni::Element::Cookie.new(
+                url:    '',
+                name:   'my_name',
+                value:  'my_value',
+                domain: 'domain.com',
+                path:   '/',
+            )
+            subject << c
+            subject.merge! other
+
+            subject.cookies.should == [c, other.cookies].flatten
+        end
+    end
 end

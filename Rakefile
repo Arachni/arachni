@@ -219,8 +219,8 @@ end
 
 desc 'Remove report and log files.'
 task :clean do
-    files = %w(error.log *.afr *.yaml *.json *.marshal *.gem pkg/*.gem logs/*.log
-        spec/support/logs/*.log).map { |file| Dir.glob( file ) }.flatten
+    files = %w(error.log *.afr *.afs *.yaml *.json *.marshal *.gem pkg/*.gem
+        logs/*.log spec/support/logs/*.log).map { |file| Dir.glob( file ) }.flatten
 
     next if files.empty?
 

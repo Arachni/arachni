@@ -25,12 +25,6 @@ module Master
         # Instances which have completed their scan.
         @done_slaves = Set.new
 
-        # Holds element IDs for each page, to be used as a representation of the
-        # the audit workload that will need to be distributed.
-        @element_ids_per_url = {}
-
-        @distributed_page_queue = Support::Database::Queue.new
-
         # Some methods need to be accessible over RPC for instance management,
         # restricting elements, adding more pages etc.
         #
@@ -128,7 +122,7 @@ module Master
     # @private
     def update_issues( issues, token = nil )
         return false if master? && !valid_token?( token )
-        @checks.class.register_results( issues )
+        issues.each { |issue| Data.issues << issue }
         true
     end
 
@@ -247,7 +241,7 @@ module Master
         while !page_limit_reached? && (page = next_page || pop_page_from_url_queue)
             next_page = nil
 
-            page_lookahead = calculate_workload_size( @url_queue.size )
+            page_lookahead = calculate_workload_size( url_queue.size )
             if page_lookahead > 0
                 # We don't care about the results, we just want to pass the seed
                 # page's elements through the filters to be marked as seen.
@@ -296,8 +290,8 @@ module Master
             # Instances with nothing to do.
             if has_idle_slaves?
                 pages = []
-                calculate_workload_size( @page_queue.size ).times do
-                    pages << @page_queue.pop
+                calculate_workload_size( page_queue.size ).times do
+                    pages << page_queue.pop
                 end
 
                 if pages.empty?
@@ -313,22 +307,22 @@ module Master
     end
 
     def pop_page_from_queue
-        if @distributed_page_queue && !@distributed_page_queue.empty?
-            return @distributed_page_queue.pop
-        end
-
+        return distributed_page_queue.pop if !distributed_page_queue.empty?
         super
     end
 
     def push_to_distributed_page_queue( page )
         return false if skip_page?( page )
-        @distributed_page_queue << page.clear_cache
+        distributed_page_queue << page.clear_cache
         true
     end
 
+    def distributed_page_queue
+        data.rpc.distributed_page_queue
+    end
+
     def clear_distributed_page_queue
-        return if !@distributed_page_queue
-        @distributed_page_queue.clear
+        distributed_page_queue.clear
     end
 
     # Cleans up the system if all Instances have finished.

@@ -15,26 +15,24 @@ class ElementFilter
 class <<self
 
     def reset
-        @mutex   = Mutex.new
-        @forms   = Support::LookUp::HashSet.new
-        @links   = Support::LookUp::HashSet.new
-        @cookies = Support::LookUp::HashSet.new
+        @mutex = Mutex.new
+        State.element_filter.clear
         nil
     end
 
     # @return    [Support::LookUp::HashSet]
     def forms
-        @forms
+        State.element_filter.forms
     end
 
     # @return    [Support::LookUp::HashSet]
     def links
-        @links
+        State.element_filter.links
     end
 
     # @return    [Support::LookUp::HashSet]
     def cookies
-        @cookies
+        State.element_filter.cookies
     end
 
     # @param    [Element::Form] form
@@ -80,51 +78,51 @@ class <<self
             update_cookies( page.cache[:cookies] )
     end
 
-    # @param    [Array<Element::Form>] forms
+    # @param    [Array<Element::Form>] elements
     # @return   [Integer]   Amount of new forms.
-    def update_forms( forms )
-        forms = [forms].flatten.compact
-        return 0 if forms.size == 0
+    def update_forms( elements )
+        elements = [elements].flatten.compact
+        return 0 if elements.size == 0
 
         synchronize do
             new_form_cnt = 0
-            forms.each do |form|
-                next if @forms.include?( form.id )
-                @forms << form.id
+            elements.each do |form|
+                next if forms.include?( form.id )
+                forms << form.id
                 new_form_cnt += 1
             end
             new_form_cnt
         end
     end
 
-    # @param    [Array<Element::Link>]    links
+    # @param    [Array<Element::Link>]    elements
     # @return   [Integer]   Amount of new links.
-    def update_links( links )
-        links = [links].flatten.compact
-        return 0 if links.size == 0
+    def update_links( elements )
+        elements = [elements].flatten.compact
+        return 0 if elements.size == 0
 
         synchronize do
             new_link_cnt = 0
-            links.each do |link|
-                next if @links.include?( link.id )
-                @links << link.id
+            elements.each do |link|
+                next if links.include?( link.id )
+                links << link.id
                 new_link_cnt += 1
             end
             new_link_cnt
         end
     end
 
-    # @param    [Array<Element::Cookie>]   cookies
+    # @param    [Array<Element::Cookie>]   elements
     # @return   [Integer]   Amount of new cookies.
-    def update_cookies( cookies )
-        cookies = [cookies].flatten.compact
-        return 0 if cookies.size == 0
+    def update_cookies( elements )
+        elements = [elements].flatten.compact
+        return 0 if elements.size == 0
 
         synchronize do
             new_cookie_cnt = 0
-            cookies.each do |cookie|
-                next if @cookies.include? cookie.id
-                @cookies << cookie.id
+            elements.each do |cookie|
+                next if cookies.include? cookie.id
+                cookies << cookie.id
                 new_cookie_cnt += 1
             end
             new_cookie_cnt

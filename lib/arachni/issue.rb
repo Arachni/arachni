@@ -88,10 +88,6 @@ class Issue
     # @return   [Array<Issue>]  Variations of this issue.
     attr_accessor :variations
 
-    def self.sort( issues )
-        issues.sort_by { |i| i.severity }.reverse
-    end
-
     # @param    [Hash]    options
     #   Configuration hash holding instance attributes.
     def initialize( options = {} )
@@ -145,7 +141,7 @@ class Issue
             return variations.first.active?
         end
 
-        vector.respond_to?( :affected_input_name ) && vector.affected_input_name
+        !!(vector.respond_to?( :affected_input_name ) && vector.affected_input_name)
     end
 
     # @return   [String, nil]
@@ -363,9 +359,9 @@ class Issue
     #   Solo issue, with generic vulnerability data filled in from `issue`.
     def to_solo!( issue )
         issue.instance_variables.each do |k|
-            next if k == :@variations || k == :@vector
+            next if k == :@variations || k == :@vector || k == :@trusted
             next if (val = issue.instance_variable_get(k)).nil?
-            instance_variable_set( k, issue.instance_variable_get( k ) )
+            instance_variable_set( k, val )
         end
 
         @variations = []
