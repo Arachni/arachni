@@ -41,26 +41,6 @@ class Framework
         run
     end
 
-    # Outputs all available platforms and their info.
-    def list_platforms
-        super @framework.list_platforms
-    end
-
-    # Outputs all available checks and their info.
-    def list_checks( *args )
-        super @framework.list_checks( *args )
-    end
-
-    # Outputs all available reports and their info.
-    def list_reports( *args )
-        super @framework.list_reports( *args )
-    end
-
-    # Outputs all available reports and their info.
-    def list_plugins( *args )
-        super @framework.list_plugins( *args )
-    end
-
     private
 
     def run
@@ -253,7 +233,7 @@ class Framework
                     restore_output
                     @framework.reports.run( @framework.audit_store )
 
-                # Toggle between status messages and summary screens.
+                # Toggle between status messages and command screens.
                 when ''
                     return get_user_command if !@framework.scanning?
 
