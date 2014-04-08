@@ -28,8 +28,44 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
         @times   = {}
         @counter = {}
 
+        add_http_hook
+    end
+
+    def restore( data )
+        @times, @counter = *data
+
+        add_http_hook
+    end
+
+    def run
+        wait_while_framework_running
+        avg = {}
+
+        # Calculate average request time for each path.
+        @times.each_pair { |url, time| avg[url] = time / @counter[url] }
+
+        Data.issues.each do |issue|
+            issue.variations.each do |variation|
+                response_time = avg[uri_parse( variation.vector.action ).up_to_path.hash]
+
+                next if !variation.tags || !variation.tags.includes_tags?( TAG ) ||
+                    !response_time || response_time < TIME_THRESHOLD
+
+                variation.add_remark :meta_analysis, REMARK
+
+                # Requires manual verification.
+                variation.trusted = false
+            end
+        end
+    end
+
+    def suspend
+        [@times, @counter]
+    end
+
+    def add_http_hook
         # Run for each response as it arrives.
-        framework.http.add_on_complete do |response|
+        http.add_on_complete do |response|
             # We don't care about non OK responses.
             next if response.code != 200
 
@@ -48,29 +84,6 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
 
             # Add up all requests for each path.
             @counter[url] += 1
-        end
-
-        wait_while_framework_running
-    end
-
-    def run
-        avg = {}
-
-        # Calculate average request time for each path.
-        @times.each_pair { |url, time| avg[url] = time / @counter[url] }
-
-        Data.issues.each do |issue|
-            issue.variations.each do |variation|
-                response_time = avg[uri_parse( variation.vector.action ).up_to_path.hash]
-
-                next if !variation.tags || !variation.tags.includes_tags?( TAG ) ||
-                    !response_time || response_time < TIME_THRESHOLD
-
-                variation.add_remark :meta_analysis, REMARK
-
-                # Requires manual verification.
-                variation.trusted = false
-            end
         end
     end
 
