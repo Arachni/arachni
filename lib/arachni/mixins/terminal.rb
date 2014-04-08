@@ -3,10 +3,10 @@
     All rights reserved.
 =end
 
+require 'highline/system_extensions'
+
 module Arachni
-
 module Mixins
-
 
 #
 # Terminal manipulation methods
@@ -78,6 +78,13 @@ module Terminal
     #
     def clear_screen
         print "\e[2J"
+    end
+
+    def empty_screen
+        move_to_home
+        cols, rows = HighLine::SystemExtensions.terminal_size
+        (rows - 1).times{ puts ' ' * cols }
+        move_to_home
     end
 
     #
