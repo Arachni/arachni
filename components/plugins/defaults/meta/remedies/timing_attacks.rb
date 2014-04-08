@@ -27,18 +27,31 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
     def prepare
         @times   = {}
         @counter = {}
-
-        add_http_hook
     end
 
     def restore( data )
         @times, @counter = *data
-
-        add_http_hook
     end
 
     def run
+        # Run for each response as it arrives.
+        http.add_on_complete do |response|
+            # We don't care about non OK responses.
+            next if response.code != 200
+
+            url = response.parsed_url.up_to_path.persistent_hash
+
+            @counter[url] ||= @times[url] ||= 0
+
+            # Add up all request times for a specific path.
+            @times[url] += response.time
+
+            # Add up all requests for each path.
+            @counter[url] += 1
+        end
+
         wait_while_framework_running
+
         avg = {}
 
         # Calculate average request time for each path.
@@ -46,7 +59,7 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
 
         Data.issues.each do |issue|
             issue.variations.each do |variation|
-                response_time = avg[uri_parse( variation.vector.action ).up_to_path.hash]
+                response_time = avg[uri_parse( variation.vector.action ).up_to_path.persistent_hash]
 
                 next if !variation.tags || !variation.tags.includes_tags?( TAG ) ||
                     !response_time || response_time < TIME_THRESHOLD
@@ -61,30 +74,6 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
 
     def suspend
         [@times, @counter]
-    end
-
-    def add_http_hook
-        # Run for each response as it arrives.
-        http.add_on_complete do |response|
-            # We don't care about non OK responses.
-            next if response.code != 200
-
-            # Let's hope for a proper and clean parse but be prepared for
-            # all hell to break loose too...
-            begin
-                url = uri_parse( response.url ).up_to_path.hash
-            rescue => e
-                next
-            end
-
-            @counter[url] ||= @times[url] ||= 0
-
-            # Add up all request times for a specific path.
-            @times[url] += response.time
-
-            # Add up all requests for each path.
-            @counter[url] += 1
-        end
     end
 
     def self.info

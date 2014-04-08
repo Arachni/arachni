@@ -10,11 +10,9 @@ class Arachni::Plugins::HealthMap < Arachni::Plugin::Base
 
     is_distributable
 
-    def prepare
-        wait_while_framework_running
-    end
-
     def run
+        wait_while_framework_running
+
         auditstore = framework.auditstore
 
         sitemap  = auditstore.sitemap.keys.map { |url| url.split( '?' ).first }.uniq

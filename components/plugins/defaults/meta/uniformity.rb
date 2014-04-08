@@ -16,11 +16,9 @@
 # @version 0.2
 class Arachni::Plugins::Uniformity < Arachni::Plugin::Base
 
-    def prepare
-        wait_while_framework_running
-    end
-
     def run
+        wait_while_framework_running
+
         issue_digests = {}
         framework.auditstore.issues.each do |issue|
             next if issue.passive?
