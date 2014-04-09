@@ -64,20 +64,23 @@ class Server < Base
     #   * `false` if the request couldn't be fired.
     #   * `true` if everything went fine.
     def remote_file_exist?( url, &block )
-        request = auditor.http.get( url, performer: self )
-        return false if !request
-
-        request.on_complete do |response|
+        http.request( url, method: :head, performer: self ) do |response|
             if response.code != 200
                 block.call( false, response )
             else
-                auditor.http.custom_404?( response ) { |bool| block.call( !bool, response ) }
+                http.request( url, performer: self ) do |r|
+                    http.custom_404?( r ) { |bool| block.call( !bool, r ) }
+                end
             end
         end
 
         true
     end
     alias :remote_file_exists? :remote_file_exist?
+
+    def http
+        auditor.http
+    end
 
 end
 end
