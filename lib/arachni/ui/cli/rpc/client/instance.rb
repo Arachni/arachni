@@ -170,8 +170,6 @@ class Instance
             exit 1
         end
 
-        @opts.reports['stdout'] = {} if @opts.reports.empty?
-
         # No checks have been specified, set the mods to '*' (all).
         if @opts.checks.empty?
             @opts.checks = ['*']
@@ -188,7 +186,7 @@ class Instance
         end
 
         opts = @opts.to_h.deep_clone
-        %w(paths rpc reports dispatcher datastore).each { |k| opts.delete( k.to_sym ) }
+        %w(paths rpc dispatcher datastore).each { |k| opts.delete( k.to_sym ) }
 
         if opts[:http][:cookie_jar_filepath]
             opts[:http][:cookies] =
@@ -204,16 +202,19 @@ class Instance
 
     # Grabs the report from the RPC server and runs the selected Arachni report.
     def report_and_shutdown
-        @framework.reports.load @opts.reports.keys
-
         print_status 'Shutting down and retrieving the report, please wait...'
 
-        # Grab the AuditStore ad shutdown.
-        audit_store = @instance.service.abort_and_report( :auditstore )
+        report = @instance.service.abort_and_report( :auditstore )
         shutdown
 
-        # Run the loaded reports and get the generated filename.
-        @framework.reports.run audit_store
+        @framework.reports.run :stdout, report
+
+        filename = "#{URI(Arachni::Options.url).host} #{Time.now.to_s.gsub( ':', '.' )}.afr"
+        report.save( filename )
+
+        filesize = (File.size( filename ).to_f / 2**20).round(2)
+
+        print_info "Report saved at: #{File.expand_path( filename )} [#{filesize}MB]"
 
         print_line
         print_stats

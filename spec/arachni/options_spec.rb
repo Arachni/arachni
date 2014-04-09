@@ -14,8 +14,7 @@ describe Arachni::Options do
         subject.url.should == url
     end
 
-    %w(checks platforms reports plugins authorized_by no_fingerprinting spawns
-    ).each do |method|
+    %w(checks platforms plugins authorized_by no_fingerprinting spawns).each do |method|
         it { should respond_to method }
         it { should respond_to "#{method}=" }
     end

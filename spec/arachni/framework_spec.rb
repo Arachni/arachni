@@ -6,7 +6,7 @@ describe Arachni::Framework do
         @url   = web_server_url_for( :auditor )
         @f_url = web_server_url_for( :framework )
 
-        @opts  = Arachni::Options.instance
+        @opts = Arachni::Options.instance
     end
 
     before( :each ) do
@@ -18,8 +18,6 @@ describe Arachni::Framework do
         @f.opts.url = @url
     end
     after( :each ) do
-        File.delete( 'foo' ) rescue nil
-        File.delete( 'afr' ) rescue nil
         File.delete( @snapshot ) rescue nil
 
         @f.clean_up
@@ -254,15 +252,11 @@ describe Arachni::Framework do
             subject.opts.audit.elements :links, :forms, :cookies
             subject.checks.load :taint
             subject.plugins.load :wait
-            subject.reports.load :foo
 
             subject.run
             subject.auditstore.issues.size.should == 3
 
             subject.auditstore.plugins[:wait][:results].should == { stuff: true }
-
-            File.exists?( 'afr' ).should be_true
-            File.exists?( 'foo' ).should be_true
         end
 
         it 'sets #status to scanning' do
@@ -379,7 +373,6 @@ describe Arachni::Framework do
                 f.opts.audit.elements :links
 
                 f.plugins.load :wait
-                f.reports.load :foo
                 f.checks.load :taint
 
                 t = Thread.new do
@@ -454,7 +447,6 @@ describe Arachni::Framework do
                 f.opts.audit.elements :links
 
                 f.plugins.load :wait
-                f.reports.load :foo
                 f.checks.load :taint
 
                 Arachni::Data.issues.on_new do
@@ -475,7 +467,6 @@ describe Arachni::Framework do
 
             reset_options
             @opts.paths.checks  = fixtures_path + '/taint_check/'
-            @opts.paths.reports = fixtures_path + '/reports/manager_spec/'
 
             described_class.new do |f|
                 f.restore @snapshot
@@ -489,9 +480,6 @@ describe Arachni::Framework do
                 Arachni::Data.issues.size.should == 500
 
                 f.auditstore.plugins[:wait][:results].should == { stuff: true }
-
-                File.exists?( 'afr' ).should be_true
-                File.exists?( 'foo' ).should be_true
             end
         end
 
@@ -609,24 +597,6 @@ describe Arachni::Framework do
                 f.plugins.jobs[:suspendable][:instance].counter.should == 2
 
                 t.kill
-            end
-        end
-
-        it 'restores loaded reports' do
-            described_class.new do |f|
-                f.opts.url = @url
-                f.reports.load :foo
-
-                t = Thread.new { f.run }
-                sleep 0.1 while f.status != :scanning
-
-                @snapshot = f.suspend
-
-                t.join
-            end
-
-            described_class.restore( @snapshot ) do |f|
-                f.reports.loaded.should == ['foo']
             end
         end
     end

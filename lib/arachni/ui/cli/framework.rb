@@ -161,7 +161,7 @@ class Framework
                         'r'     => 'resume the scan',
                         'a'     => 'abort the scan',
                         's'     => 'suspend the scan to disk',
-                        'g'     => 'generate reports'
+                        'g'     => 'generate a report'
                     }.each do |key, action|
                         next if %w(Enter s p).include?( key ) && !@framework.scanning?
                         next if key == 'r' && !(@framework.paused? || @framework.pausing?)
@@ -223,7 +223,7 @@ class Framework
                 when 'g'
                     hide_command_screen
                     restore_output
-                    @framework.reports.run( @framework.audit_store )
+                    generate_reports
 
                 # Toggle between status messages and command screens.
                 when ''
@@ -264,12 +264,10 @@ class Framework
             restore_output
             clear_screen
 
-            @framework.reports.run( @framework.audit_store )
-
-            print_line
+            generate_reports
 
             filesize = (File.size( @framework.snapshot_path ).to_f / 2**20).round(2)
-            print_info "The snapshot has been saved at: #{@framework.snapshot_path} [#{filesize}MB]"
+            print_info "Snapshot saved at: #{@framework.snapshot_path} [#{filesize}MB]"
 
             print_line
         end
@@ -291,11 +289,24 @@ class Framework
             restore_output
             clear_screen
 
-            @framework.reports.run( @framework.audit_store )
+            generate_reports
         end
 
         @scan.kill
         killed << true
+    end
+
+    def generate_reports
+        report = @framework.audit_store
+
+        @framework.reports.run :stdout, report
+
+        filename = "#{URI(Arachni::Options.url).host} #{Time.now.to_s.gsub( ':', '.' )}.afr"
+        report.save( filename )
+
+        filesize = (File.size( filename ).to_f / 2**20).round(2)
+
+        print_info "Report saved at: #{File.expand_path( filename )} [#{filesize}MB]"
     end
 
     # It parses and processes CLI options.
@@ -311,7 +322,6 @@ class Framework
         parser.audit
         parser.http
         parser.checks
-        parser.reports
         parser.plugins
         parser.platforms
         parser.session
@@ -327,7 +337,7 @@ class Framework
                 print_info 'Available checks are:'
                 print_info @framework.checks.available.join( ', ' )
                 print_line
-                print_info 'Use the \'--list-checks\' parameter to see a ' <<
+                print_info 'Use the \'--checks-list\' parameter to see a ' <<
                                'detailed list of all available checks.'
                 exit 1
             end
@@ -345,26 +355,10 @@ class Framework
                 print_info 'Available plugins are:'
                 print_info @framework.plugins.available.join( ', ' )
                 print_line
-                print_info 'Use the \'--list-plugins\' parameter to see a ' <<
+                print_info 'Use the \'--plugins-list\' parameter to see a ' <<
                                'detailed list of all available plugins.'
                 exit 1
             end
-        end
-
-        if options.reports.any?
-            begin
-                @framework.reports.load( options.reports.keys )
-            rescue Component::Error::NotFound => e
-                print_error e
-                print_info 'Available reports are:'
-                print_info @framework.reports.available.join( ', ' )
-                print_line
-                print_info 'Use the \'--list-reports\' parameter to see a' <<
-                               ' detailed list of all available reports.'
-                exit 1
-            end
-        else
-            @framework.reports.load( 'stdout' )
         end
 
         if options.platforms.any?
@@ -376,7 +370,7 @@ class Framework
                 print_info 'Available platforms are:'
                 print_info Platform::Manager.new.valid.to_a.join( ', ' )
                 print_line
-                print_info 'Use the \'--list-platforms\' parameter to see a' <<
+                print_info 'Use the \'--platforms-list\' parameter to see a' <<
                                ' detailed list of all available platforms.'
                 exit 1
             end

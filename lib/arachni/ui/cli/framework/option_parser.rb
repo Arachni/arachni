@@ -321,35 +321,6 @@ class OptionParser < UI::CLI::OptionParser
         end
     end
 
-    def reports
-        separator ''
-        separator 'Reports'
-
-        on( '--reports-list [PATTERN]', Regexp,
-               'List available reports based on the provided pattern.',
-               '(If no pattern is provided all reports will be listed.)'
-        ) do |pattern|
-            list_reports( framework.list_reports( pattern ) )
-            exit
-        end
-
-        on( '--report-load [FILE]',
-               "Load scan results from an '.afr' report file.",
-               '(Allows you to create new reports from finished scans.)'
-        ) do |report|
-            @report_load = report
-        end
-
-        on( "--report 'REPORT:OPTION=VALUE,OPTION2=VALUE2'",
-               "REPORT is the name of the report as displayed by '--list-reports'.",
-               "(Reports are referenced by their filename without the '.rb' extension, use '--list-reports' to list all.)",
-               '(Default: stdout)',
-               '(Can be used multiple times.)'
-        ) do |report|
-            prepare_component_options( options.reports, report )
-        end
-    end
-
     def plugins
         separator ''
         separator 'Plugins'
@@ -469,21 +440,6 @@ class OptionParser < UI::CLI::OptionParser
 
     def after_parse
         options.url = ARGV.shift
-
-        return if !@report_load
-
-        begin
-            reports = options.reports.empty? ? 'stdout' : options.reports.keys
-            framework.reports.load( reports )
-            framework.reports.run( AuditStore.load( @report_load ), false )
-        rescue ::Errno::ENOENT
-            print_error "Report file '#{@report_load}' doesn't exist."
-            exit 1
-        rescue => e
-            print_error e
-            print_error_backtrace e
-        end
-        exit
     end
 
     def validate

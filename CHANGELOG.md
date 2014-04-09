@@ -3,14 +3,18 @@
 ## _Under development_
 
 - Executables:
-    - Added `arachni_restore` (`UI::CLI::RestoredFramework`)
-        - Restores snapshots of suspended scans.
-        - Prints snapshot metadata.
+    - Added
+        - `arachni_restore` (`UI::CLI::RestoredFramework`)
+            - Restores snapshots of suspended scans.
+            - Prints snapshot metadata.
+        - `arachni_report` (`UI::CLI::Report`)
+            - Creates reports from `.afr` files.
     - `arachni` (`UI::CLI::Framework`)
         - `Ctrl+C` (`SIGINT`) now aborts the scan.
         - Hitting `Enter` now toggles between the progress message and the
-            command summary screens.
-        - Updated to provide access to the new suspend-to-disk feature..
+            command screens.
+        - Updated to provide access to the new suspend-to-disk feature.
+        - Moved reporting functionality to `arachni_report`.
 - `Framework`
     - `#audit_page` -- Updated to perform DOM/JS/AJAX analysis on the page and
         feed DOM page snapshots and new paths back to the `Framework`.

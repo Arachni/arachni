@@ -109,14 +109,6 @@ class Options
     attr_accessor :platforms
 
     # @return   [Hash{<String, Symbol> => Hash{String => String}}]
-    #   Reports to load, by name, as keys and their options as values.
-    #
-    # @see Reports
-    # @see Report::Base
-    # @see Report::Manager
-    attr_accessor :reports
-
-    # @return   [Hash{<String, Symbol> => Hash{String => String}}]
     #   Plugins to load, by name, as keys and their options as values.
     #
     # @see Plugins
@@ -163,7 +155,6 @@ class Options
 
         @checks    = []
         @platforms = []
-        @reports   = {}
         @plugins   = {}
         @spawns    = 0
 

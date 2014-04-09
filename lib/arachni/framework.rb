@@ -124,7 +124,7 @@ class Framework
         @opts = opts
 
         @checks  = Check::Manager.new( self )
-        @reports = Report::Manager.new( @opts )
+        @reports = Report::Manager.new
         @plugins = Plugin::Manager.new( self )
 
         @session = Session.new( @opts )
@@ -205,8 +205,6 @@ class Framework
         clean_up
         exception_jail( false ){ block.call } if block_given?
         state.status = :done
-
-        @reports.run( audit_store ) if !@reports.empty?
 
         true
     end
@@ -493,7 +491,7 @@ class Framework
             end
 
             outfile = "/#{Dir.tmpdir}/arachn_report_as.#{name}"
-            @reports.run_one( name, external_report, 'outfile' => outfile )
+            @reports.run( name, external_report, 'outfile' => outfile )
 
             IO.read( outfile )
         ensure
@@ -704,7 +702,6 @@ class Framework
 
         checks.load  Options.checks
         plugins.load Options.plugins.keys
-        reports.load Options.reports.keys
 
         nil
     end
@@ -846,8 +843,6 @@ class Framework
         Options.checks  = checks.loaded
         Options.plugins = plugins.loaded.
             inject({}) { |h, name| h[name.to_s] = Options.plugins[name.to_s] || {}; h }
-        Options.reports = reports.loaded.
-            inject({}) { |h, name| h[name.to_s] = Options.reports[name.to_s] || {}; h }
 
         if browser_job_skip_states
             state.browser_skip_states.merge browser_job_skip_states
