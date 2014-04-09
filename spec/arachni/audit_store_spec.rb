@@ -7,6 +7,10 @@ describe Arachni::AuditStore do
         @opts.url = 'http://test.com'
     end
 
+    after :each do
+        File.delete( @report_file ) rescue nil
+    end
+
     let( :audit_store_data ) { Factory[:audit_store_data] }
     let( :audit_store ) { Factory[:audit_store] }
     let( :audit_store_empty ) { Factory[:audit_store_empty] }
@@ -97,12 +101,19 @@ describe Arachni::AuditStore do
     end
 
     describe '#save' do
-        it 'serializes and save the object to a file' do
-            filename = 'auditstore'
-            audit_store.save( filename )
+        it 'dumps the object to a file' do
+            @report_file = audit_store.save
 
-            Arachni::AuditStore.load( filename ).should == audit_store
-            File.delete( filename )
+            described_class.load( @report_file ).should == audit_store
+        end
+
+        context 'when given a location' do
+            it 'serializes and save the object to a file' do
+                @report_file = filename = 'auditstore'
+                audit_store.save( filename )
+
+                described_class.load( filename ).should == audit_store
+            end
         end
     end
 

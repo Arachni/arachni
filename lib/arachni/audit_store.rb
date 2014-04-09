@@ -3,6 +3,8 @@
     All rights reserved.
 =end
 
+require 'zip'
+
 module Arachni
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
@@ -76,30 +78,31 @@ class AuditStore
         @issues[digest]
     end
 
-    # Loads and returns an AuditStore object from file
-    #
-    # @param    [String]    file    the file to load
-    #
-    # @return    [AuditStore]
-    def self.load( file )
-         begin
-             r = YAML.load( IO.read( file ) )
-             r.version
-             r
-         rescue Exception => e
-             Marshal.load( File.binread( file ) )
-         end
-    end
-
-    # Saves 'self' to file
+    # Loads and a {#save saved} {AuditStore} object from file.
     #
     # @param    [String]    file
-    def save( file )
-        begin
-            File.open( file, 'w' ) { |f| f.write( YAML.dump( self ) ) }
-        rescue
-            File.open( file, 'wb' ) { |f| f.write( Marshal.dump( self ) ) }
+    #   File created by {#save}.
+    #
+    # @return    [AuditStore]
+    #   Loaded instance.
+    def self.load( file )
+        Zip::File.open( file ) do |zip_file|
+            Marshal.load zip_file.get_entry('report').get_input_stream.read
         end
+    end
+
+    # @param    [String]    location
+    #   Location for the dumped report file.
+    # @return   [String]
+    #   Absolute location of the report.
+    def save( location = nil )
+        location ||= "#{URI(options[:url]).host} #{Time.now.to_s.gsub( ':', '.' )}.afr"
+
+        Zip::File.open( location, Zip::File::CREATE ) do |zipfile|
+            zipfile.get_output_stream( 'report' ) { |os| os.write Marshal.dump( self ) }
+        end
+
+        File.expand_path( location )
     end
 
     # @return    [Hash] Hash representation of `self`.
