@@ -125,7 +125,7 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
                 @run.call
 
                 issues.should be_any
-                issues.flatten.first.response.body.should == '11'
+                issues.flatten.first.response.time.to_i.should == 11
             end
         end
 
