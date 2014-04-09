@@ -353,7 +353,7 @@ class Framework
     #
     # @return   [Hash]
     def stats
-        @start_datetime = Time.now if !@start_datetime
+        @start_datetime ||= Time.now
 
         sitemap_sz  = sitemap.size
         auditmap_sz = state.audited_page_count
@@ -681,14 +681,20 @@ class Framework
     # @return   [String]
     #   Provisioned {#suspend} dump file for this instance.
     def snapshot_path
-        @state_archive ||= File.expand_path( snapshot_filename )
-    end
+        return @state_archive if @state_archive
 
-    # @return   [String]
-    #   Provisioned {#suspend} dump filename for this instance.
-    def snapshot_filename
-        @state_archive_path ||=
+        default_filename =
             "#{URI(@opts.url).host} #{Time.now.to_s.gsub( ':', '.' )}.afs"
+
+        location = @opts.snapshot.save_path
+
+        if !location
+            location = default_filename
+        elsif File.directory? location
+            location += "/#{default_filename}"
+        end
+
+        @state_archive ||= File.expand_path( location )
     end
 
     # @param   [String]    afs

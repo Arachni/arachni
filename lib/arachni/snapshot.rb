@@ -64,6 +64,8 @@ class <<self
     # @return   [String]
     #   Location of the snapshot.
     def dump( location )
+        FileUtils.rm_rf( location )
+
         directory = get_temporary_directory
 
         FileUtils.rm_rf( directory )

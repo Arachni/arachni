@@ -14,7 +14,6 @@ class Framework
 class OptionParser < UI::CLI::OptionParser
 
     attr_reader :framework
-    attr_reader :report_path
 
     def initialize
         super
@@ -445,10 +444,23 @@ class OptionParser < UI::CLI::OptionParser
 
         on( '--report-save-path PATH', String,
             'Directory or file path where to store the scan report.',
-            "You can use the generated file to create reports in several " +
+            'You can use the generated file to create reports in several ' +
                 "formats with the 'arachni_report' executable."
         ) do |path|
             options.datastore.report_path = path
+        end
+    end
+
+    def snapshot
+        separator ''
+        separator 'Snapshot'
+
+        on( '--snapshot-save-path PATH', String,
+            'Directory or file path where to store the scan snapshot.',
+            'You can use the generated file to resume the scan at a later time ' +
+                "with the 'arachni_restore' executable."
+        ) do |path|
+            options.snapshot.save_path = path
         end
     end
 
@@ -458,6 +470,7 @@ class OptionParser < UI::CLI::OptionParser
 
     def validate
         validate_report_path
+        validate_snapshot_save_path
         validate_login
         validate_url
     end
@@ -469,11 +482,17 @@ class OptionParser < UI::CLI::OptionParser
         exit 1
     end
 
+    def validate_snapshot_save_path
+        snapshot_path = options.snapshot.save_path
+        return if valid_save_path?( snapshot_path )
+
+        print_error "Snapshot path does not exist: #{snapshot_path}"
+        exit 1
+    end
+
     def validate_report_path
         report_path = options.datastore.report_path
-
-        return if !report_path || File.directory?( report_path ) ||
-            !report_path.end_with?( '/' )
+        return if valid_save_path?( report_path )
 
         print_error "Report path does not exist: #{report_path}"
         exit 1
@@ -486,6 +505,10 @@ class OptionParser < UI::CLI::OptionParser
                             ' options are required.'
             exit 1
         end
+    end
+
+    def valid_save_path?( path )
+        !path || File.directory?( path ) || !path.end_with?( '/' )
     end
 
     def banner

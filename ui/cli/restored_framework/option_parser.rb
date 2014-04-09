@@ -23,6 +23,14 @@ class OptionParser < UI::CLI::OptionParser
             'Show the metadata associated with the specified snapshot.' ) do
             @print_metadata = true
         end
+
+        on( '--snapshot-save-path PATH', String,
+            'Directory or file path where to store the scan snapshot.',
+            'You can use the generated file to resume the scan at a later time ' +
+                "with the 'arachni_restore' executable."
+        ) do |path|
+            options.snapshot.save_path = path
+        end
     end
 
     def report
@@ -38,6 +46,7 @@ class OptionParser < UI::CLI::OptionParser
         end
     end
 
+
     def print_metadata?
         !!@print_metadata
     end
@@ -49,6 +58,7 @@ class OptionParser < UI::CLI::OptionParser
     def validate
         validate_report_path
         validate_snapshot_path
+        validate_snapshot_save_path
     end
 
     def validate_snapshot_path
@@ -72,14 +82,24 @@ class OptionParser < UI::CLI::OptionParser
         end
     end
 
+    def validate_snapshot_save_path
+        snapshot_path = options.snapshot.save_path
+        return if valid_save_path?( snapshot_path )
+
+        print_error "Snapshot path does not exist: #{snapshot_path}"
+        exit 1
+    end
+
     def validate_report_path
         report_path = options.datastore.report_path
-
-        return if !report_path || File.directory?( report_path ) ||
-            !report_path.end_with?( '/' )
+        return if valid_save_path?( report_path )
 
         print_error "Report path does not exist: #{report_path}"
         exit 1
+    end
+
+    def valid_save_path?( path )
+        !path || File.directory?( path ) || !path.end_with?( '/' )
     end
 
     def banner

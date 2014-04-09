@@ -326,6 +326,7 @@ class Framework
         parser.profiles
         parser.browser_cluster
         parser.report
+        parser.snapshot
         parser.parse
 
         if options.checks.any?

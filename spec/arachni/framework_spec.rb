@@ -435,6 +435,66 @@ describe Arachni::Framework do
         end
 
         it 'waits for the BrowserCluster jobs to finish'
+
+        context 'when OptionGroups::Snapshot#save_path' do
+            context 'is a directory' do
+                it 'stores the snapshot under it' do
+                    @opts.paths.checks       = fixtures_path + '/taint_check/'
+                    @opts.snapshot.save_path = '/tmp/'
+
+                    described_class.new do |f|
+                        f.opts.url = web_server_url_for :framework_multi
+                        f.opts.audit.elements :links
+
+                        f.plugins.load :wait
+                        f.checks.load :taint
+
+                        t = Thread.new do
+                            f.run
+                        end
+
+                        sleep 0.1 while Arachni::Data.issues.size < 2
+
+                        @snapshot = f.suspend
+                        t.join
+
+                        Arachni::Data.issues.size.should < 500
+                    end
+
+                    File.dirname( @snapshot ).should == '/tmp'
+                    Arachni::Snapshot.load( @snapshot ).should be_true
+                end
+            end
+
+            context 'is a file path' do
+                it 'stores the snapshot there' do
+                    @opts.paths.checks       = fixtures_path + '/taint_check/'
+                    @opts.snapshot.save_path = '/tmp/snapshot'
+
+                    described_class.new do |f|
+                        f.opts.url = web_server_url_for :framework_multi
+                        f.opts.audit.elements :links
+
+                        f.plugins.load :wait
+                        f.checks.load :taint
+
+                        t = Thread.new do
+                            f.run
+                        end
+
+                        sleep 0.1 while Arachni::Data.issues.size < 2
+
+                        @snapshot = f.suspend
+                        t.join
+
+                        Arachni::Data.issues.size.should < 500
+                    end
+
+                    @snapshot.should == '/tmp/snapshot'
+                    Arachni::Snapshot.load( @snapshot ).should be_true
+                end
+            end
+        end
     end
 
     describe '#restore' do

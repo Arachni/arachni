@@ -284,6 +284,7 @@ class Options
     def save( file )
         as_hash = to_h
         as_hash.delete :paths
+        as_hash.delete :snapshot
 
         begin
             f = File.open( file, 'w' )

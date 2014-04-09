@@ -387,7 +387,7 @@ module Distributor
     def prepare_slave_options
         options = @opts.to_h.deep_clone
 
-        %w(instance rpc dispatcher paths spawns).each { |k| options.delete k.to_sym }
+        %w(instance rpc dispatcher paths spawns snapshot).each { |k| options.delete k.to_sym }
         options[:http].delete :cookie_jar_filepath
 
         # Don't let the slaves run plugins that are not meant to be distributed.
