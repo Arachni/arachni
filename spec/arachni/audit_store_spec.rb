@@ -108,11 +108,22 @@ describe Arachni::AuditStore do
         end
 
         context 'when given a location' do
-            it 'serializes and save the object to a file' do
-                @report_file = filename = 'auditstore'
-                audit_store.save( filename )
+            context 'which is a filepath' do
+                it 'saves the object to that file' do
+                    @report_file = 'auditstore'
+                    audit_store.save( @report_file )
 
-                described_class.load( filename ).should == audit_store
+                    described_class.load( @report_file ).should == audit_store
+                end
+            end
+
+            context 'which is a directory' do
+                it 'saves the object under that directory' do
+                    directory = '/tmp/'
+                    @report_file = audit_store.save( directory )
+
+                    described_class.load( @report_file ).should == audit_store
+                end
             end
         end
     end

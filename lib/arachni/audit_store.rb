@@ -96,7 +96,13 @@ class AuditStore
     # @return   [String]
     #   Absolute location of the report.
     def save( location = nil )
-        location ||= "#{URI(options[:url]).host} #{@finish_datetime.to_s.gsub( ':', '.' )}.afr"
+        default_filename = "#{URI(options[:url]).host} #{@finish_datetime.to_s.gsub( ':', '.' )}.afr"
+
+        if !location
+            location = default_filename
+        elsif File.directory? location
+            location += "/#{default_filename}"
+        end
 
         Zip::File.open( location, Zip::File::CREATE ) do |zipfile|
             zipfile.get_output_stream( 'report' ) { |os| os.write Marshal.dump( self ) }
