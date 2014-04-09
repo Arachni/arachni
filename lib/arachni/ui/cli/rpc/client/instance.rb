@@ -209,12 +209,10 @@ class Instance
 
         @framework.reports.run :stdout, report
 
-        filename = "#{URI(Arachni::Options.url).host} #{Time.now.to_s.gsub( ':', '.' )}.afr"
-        report.save( filename )
+        filepath = report.save
+        filesize = (File.size( filepath ).to_f / 2**20).round(2)
 
-        filesize = (File.size( filename ).to_f / 2**20).round(2)
-
-        print_info "Report saved at: #{File.expand_path( filename )} [#{filesize}MB]"
+        print_info "Report saved at: #{filepath} [#{filesize}MB]"
 
         print_line
         print_stats
