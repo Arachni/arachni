@@ -136,7 +136,7 @@ module Timeout
 
             # This is the control; request the URL of the element to make sure
             # that the web page is responsive i.e won't time-out by default.
-            elem.submit( timeout: opts[:delay] ) do |res|
+            elem.submit( response_max_size: 0, timeout: opts[:delay] ) do |res|
                 # Remove the timeout option set by the liveness check in order
                 # to now affect later requests.
                 elem.audit_options.delete( :timeout )
@@ -191,7 +191,7 @@ module Timeout
 
             # This is the control; request the URL of the element to make sure
             # that the web page is alive i.e won't time-out by default.
-            elem.submit( timeout: opts[:delay] ) do |res|
+            elem.submit( response_max_size: 0, timeout: opts[:delay] ) do |res|
                 if res.timed_out?
                     elem.print_info '* Liveness check failed.'
                     next
@@ -282,11 +282,12 @@ module Timeout
     #   `true` if server responds within the given time limit, `false` otherwise.
     def responsive?( limit = 120_000, prepend = '* ' )
         d_opts = {
-            skip_original: true,
-            redundant:     true,
-            timeout:       limit * 1000,
-            silent:        true,
-            mode:          :sync
+            skip_original:     true,
+            redundant:         true,
+            timeout:           limit * 1000,
+            silent:            true,
+            mode:              :sync,
+            response_max_size: 0
         }
 
         orig_opts = @audit_options.dup
@@ -335,6 +336,10 @@ module Timeout
         opts[:delay]             = opts.delete(:timeout)
         opts[:timeout_divider] ||= 1
         opts[:add]             ||= 0
+
+        # Ignore response bodies to preserve bandwidth since we don't care
+        # about them anyways.
+        opts[:submit] = { response_max_size: 0 }
 
         # Intercept each element mutation prior to it being submitted and replace
         # the '__TIME__' placeholder with the actual delay value.
