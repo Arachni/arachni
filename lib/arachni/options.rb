@@ -286,16 +286,10 @@ class Options
         as_hash.delete :paths
         as_hash.delete :snapshot
 
-        begin
-            f = File.open( file, 'w' )
-            YAML.dump( as_hash, f )
-        rescue
-            return
-        ensure
-            f.close
+        File.open( file, 'w' ) do |f|
+            f.write as_hash.to_yaml
+            f.path
         end
-
-        f.path
     end
 
     # Loads a file created by {#save}.

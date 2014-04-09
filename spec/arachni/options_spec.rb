@@ -194,6 +194,20 @@ describe Arachni::Options do
             end
             raised.should be_false
         end
+
+        it 'returns the file location'do
+            f = 'options'
+
+            f = subject.save( f )
+
+            raised = false
+            begin
+                File.delete( f )
+            rescue
+                raised = true
+            end
+            raised.should be_false
+        end
     end
 
     describe '#load' do
