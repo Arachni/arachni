@@ -68,7 +68,7 @@ class Server < Base
             if response.code != 200
                 block.call( false, response )
             else
-                http.request( url, performer: self ) do |r|
+                http.get( url, performer: self ) do |r|
                     http.custom_404?( r ) { |bool| block.call( !bool, r ) }
                 end
             end
