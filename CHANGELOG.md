@@ -15,6 +15,8 @@
     - `autologin`
         - Updated to handle stacked post-login redirects.
         - Added debugging information for failed logins.
+    - `proxy`
+        - Fixed forwarding of request bodies.
 - Modules
     - All
         - Updated descriptions and remedies.
