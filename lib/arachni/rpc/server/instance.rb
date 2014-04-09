@@ -607,8 +607,6 @@ class Instance
             opts[:plugins] = opts[:plugins].inject( {} ) { |h, n| h[n] = {}; h }
         end
 
-        multi = opts.delete(:multi)
-
         if opts.include?( :grid )
             @framework.opts.dispatcher.grid = opts.delete(:grid)
         end
