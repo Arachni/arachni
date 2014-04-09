@@ -657,7 +657,7 @@ class Framework
     # @param   [Bool]  wait
     #   Wait for the system to write it state to disk.
     #
-    # @return   [String,ni]
+    # @return   [String,nil]
     #   Path to the state file `wait` is `true`, `nil` otherwise.
     def suspend( wait = true )
         state.suspend( wait )
