@@ -4,7 +4,7 @@
     All rights reserved.
 =end
 
-require_relative '../lib/arachni/ui/cli/output'
+require_relative '../ui/cli/output'
 require_relative '../lib/arachni'
 require 'irb'
 require 'irb/completion'

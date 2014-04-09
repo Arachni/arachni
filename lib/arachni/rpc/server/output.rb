@@ -3,21 +3,15 @@
     All rights reserved.
 =end
 
-# get some basics from the CLI UI's output interface
-require Arachni::Options.paths.lib + 'ui/cli/output'
-
 module Arachni
-
 module UI
 
+# RPC Output interface
 #
-# RPC Output module
-#
-# It basically classifies and buffers all system messages until it's time to
-# flush the buffer and send them over the wire.
+# Basically useless as system messages are no longer sent over the wire but it
+# does provide us with {#print_error error logging}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 module Output
 
     class << self
@@ -29,16 +23,13 @@ module Output
         @@output_buffer_cap = 30
         @@output_buffer ||= []
     end
-
     reset_output_options
 
-    #
     # Empties the output buffer and returns all messages.
     #
     # Messages are classified by their type.
     #
     # @return   [Array<Hash>]
-    #
     def flush_buffer
         buf = @@output_buffer.dup
         @@output_buffer.clear
@@ -59,7 +50,6 @@ module Output
     # circumstances.
     #
     # @param    [String]    str    error string
-    #
     def print_error( str = '' )
         log_error( str )
         push_to_output_buffer( :error => str )
@@ -68,14 +58,12 @@ module Output
         e.backtrace.each { |line| print_error( line ) }
     end
 
-    #
     # Same as print_error but the message won't be printed to stderr.
     #
     # Used mainly to draw attention to something that didn't behave as expected
     # rather than display an actual error.
     #
     # @param    [String]    str
-    #
     def print_bad( str = '' )
         push_to_output_buffer( bad: str )
     end
@@ -88,7 +76,6 @@ module Output
     # @see #only_positives
     #
     # @param    [String]    str
-    #
     def print_status( str = '' )
         return if only_positives?
         push_to_output_buffer( status: str )
@@ -102,7 +89,6 @@ module Output
     # @see #only_positives
     #
     # @param    [String]    str
-    #
     def print_info( str = '' )
         return if only_positives?
         push_to_output_buffer( info: str )
@@ -115,7 +101,6 @@ module Output
     #
     # @param    [String]    str
     # @return    [void]
-    #
     def print_ok( str = '' )
         push_to_output_buffer( ok: str )
     end
@@ -128,7 +113,6 @@ module Output
     # @see #debug
     #
     # @param    [String]    str
-    #
     def print_debug( str = '' )
         return if !debug?
 
@@ -147,7 +131,6 @@ module Output
     # @see #verbose
     #
     # @param    [String]    str
-    #
     def print_verbose( str = '' )
         return if !verbose?
         push_to_output_buffer( verbose: str )
@@ -161,7 +144,6 @@ module Output
     # @see #only_positives
     #
     # @param    [String]    str
-    #
     def print_line( str = '' )
         return if only_positives?
         push_to_output_buffer( line: str )

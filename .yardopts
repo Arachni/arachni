@@ -4,6 +4,7 @@
 --title "Arachni - Web Application Security Scanner Framework"
 components/**/*.rb
 lib/**/*.rb
+ui/**/*.rb
 -
 CHANGELOG.md
 LICENSE.md

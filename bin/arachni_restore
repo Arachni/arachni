@@ -4,6 +4,6 @@
     All rights reserved.
 =end
 
-require_relative '../lib/arachni/ui/cli/restored_framework'
+require_relative '../ui/cli/restored_framework'
 
 Arachni::UI::CLI::RestoredFramework.new

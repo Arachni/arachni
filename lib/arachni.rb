@@ -21,12 +21,11 @@ end
 require_relative 'arachni/version'
 require_relative 'arachni/banner'
 
-#
 # If there's no UI driving us then there's no output interface.
-#
 # Chances are that someone is using Arachni as a Ruby lib so there's no
 # need for a functional output interface, so provide non-functional one.
 #
+# However, functional or not, the system does depend on one being available.
 if !Arachni.constants.include?( :UI )
     require_relative 'arachni/ui/foo/output'
 end

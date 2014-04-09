@@ -5,7 +5,7 @@
 
 module Arachni
 
-require Options.paths.lib    + 'ui/cli/output'
+require_relative 'output'
 require Options.paths.mixins + 'terminal'
 require Options.paths.mixins + 'progress_bar'
 

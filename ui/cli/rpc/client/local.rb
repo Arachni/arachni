@@ -28,7 +28,6 @@ class Local
         parser.audit
         parser.http
         parser.checks
-        parser.reports
         parser.plugins
         parser.platforms
         parser.session

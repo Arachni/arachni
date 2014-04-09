@@ -22,6 +22,7 @@ Gem::Specification.new do |s|
 
     s.files            += Dir.glob( 'gfx/**/**' )
     s.files            += Dir.glob( 'lib/**/**' )
+    s.files            += Dir.glob( 'ui/**/**' )
     s.files            += Dir.glob( 'logs/**/**' )
     s.files            += Dir.glob( 'components/**/**' )
     s.files            += Dir.glob( 'profiles/**/**' )

@@ -9,7 +9,7 @@ require Options.paths.mixins + 'terminal'
 require Options.paths.mixins + 'progress_bar'
 require Options.paths.lib + 'rpc/client/instance'
 require Options.paths.lib + 'utilities'
-require Options.paths.lib + 'ui/cli/utilities'
+require_relative '../../utilities'
 require Options.paths.lib + 'framework'
 
 module UI::CLI

@@ -5,6 +5,6 @@
 =end
 
 require_relative '../lib/arachni'
-require Arachni::Options.paths.lib + 'ui/cli/rpc/client/dispatcher_monitor'
+require_relative '../ui/cli/rpc/client/dispatcher_monitor'
 
 Arachni::UI::CLI::RPC::Client::DispatcherMonitor.new

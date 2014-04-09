@@ -9,7 +9,7 @@ require_relative 'dispatcher/option_parser'
 module Arachni
 
 require Options.paths.lib + 'rpc/server/dispatcher'
-require Options.paths.lib + 'ui/cli/utilities'
+require_relative '../../utilities'
 
 module UI::CLI
 module RPC

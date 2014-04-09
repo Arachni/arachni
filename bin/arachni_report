@@ -4,6 +4,6 @@
     All rights reserved.
 =end
 
-require_relative '../lib/arachni/ui/cli/report'
+require_relative '../ui/cli/report'
 
 Arachni::UI::CLI::Report.new

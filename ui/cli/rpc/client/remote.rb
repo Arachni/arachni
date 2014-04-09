@@ -11,7 +11,7 @@ module Arachni
 require Options.paths.lib + 'rpc/client/dispatcher'
 require Options.paths.lib + 'rpc/client/instance'
 require Options.paths.lib + 'utilities'
-require Options.paths.lib + 'ui/cli/utilities'
+require_relative '../../utilities'
 
 module UI::CLI
 module RPC::Client

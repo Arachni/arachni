@@ -3,7 +3,7 @@
     All rights reserved.
 =end
 
-require_relative '../../../arachni'
+require_relative '../../lib/arachni'
 require_relative 'report/option_parser'
 require_relative 'utilities'
 
