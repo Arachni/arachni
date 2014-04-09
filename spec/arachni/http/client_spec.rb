@@ -516,13 +516,13 @@ describe Arachni::HTTP::Client do
             ).request.effective_body.should == "1=%202&%203=4"
         end
 
-        describe :maxfilesize do
+        describe :response_max_size do
             context 'when Options#http_response_max_size is specified' do
                 it 'ignores bodies of responses which are larger than specified' do
                     @opts.http.response_max_size = 0
                     @http.request( @url + '/http_response_max_size',
                                    mode: :sync
-                    ).body.should_not be_empty
+                    ).body.should be_empty
 
                     @opts.http.response_max_size = 1
                     @http.request( @url + '/http_response_max_size',
@@ -545,22 +545,22 @@ describe Arachni::HTTP::Client do
                 it 'ignores bodies of responses which are larger than specified' do
                     @http.request( @url + '/http_response_max_size',
                                    mode: :sync,
-                                   http_response_max_size: 0
-                    ).body.should_not be_empty
-
-                    @http.request( @url + '/http_response_max_size',
-                                   mode: :sync,
-                                   http_response_max_size: 1
+                                   response_max_size: 0
                     ).body.should be_empty
 
                     @http.request( @url + '/http_response_max_size',
                                    mode: :sync,
-                                   http_response_max_size: 999999
+                                   response_max_size: 1
                     ).body.should be_empty
 
                     @http.request( @url + '/http_response_max_size',
                                    mode: :sync,
-                                   http_response_max_size: 1000000
+                                   response_max_size: 999999
+                    ).body.should be_empty
+
+                    @http.request( @url + '/http_response_max_size',
+                                   mode: :sync,
+                                   response_max_size: 1000000
                     ).body.should_not be_empty
                 end
             end

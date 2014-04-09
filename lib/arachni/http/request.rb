@@ -264,6 +264,10 @@ class Request < Message
             end
         end
 
+        max_size = @response_max_size || Arachni::Options.http.response_max_size
+        # Weird I know, for some reason 0 gets ignored.
+        max_size = 1 if max_size == 0
+
         options = {
             method:          method,
             headers:         headers,
@@ -277,7 +281,7 @@ class Request < Message
             ssl_verifyhost:  0,
             accept_encoding: 'gzip, deflate',
             nosignal:        true,
-            maxfilesize:     @http_response_max_size || Arachni::Options.http.response_max_size,
+            maxfilesize:     max_size,
 
             # Don't keep the socket alive if this is a blocking request because
             # it's going to be performed by an one-off Hydra.
