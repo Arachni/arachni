@@ -84,9 +84,6 @@ class Instance
         print_issues
         print_line
 
-        print_progressbar
-        print_line
-
         print_stats
         print_line
 
@@ -103,11 +100,6 @@ class Instance
 
     def has_errors?
         !!error_log_file
-    end
-
-    def print_progressbar
-        print_info "#{progress_bar( stats['progress'], 61 )}"
-        print_info "Est. remaining time: #{stats['eta']}"
     end
 
     def progress
@@ -209,7 +201,7 @@ class Instance
 
         @framework.reports.run :stdout, report
 
-        filepath = report.save
+        filepath = report.save( @opts.datastore.report_path )
         filesize = (File.size( filepath ).to_f / 2**20).round(2)
 
         print_info "Report saved at: #{filepath} [#{filesize}MB]"

@@ -14,6 +14,7 @@ class Framework
 class OptionParser < UI::CLI::OptionParser
 
     attr_reader :framework
+    attr_reader :report_path
 
     def initialize
         super
@@ -438,11 +439,25 @@ class OptionParser < UI::CLI::OptionParser
         end
     end
 
+    def report
+        separator ''
+        separator 'Report'
+
+        on( '--report-save-path PATH', String,
+            'Directory or file path where to store the scan report.',
+            "You can use the generated file to create reports in several " +
+                "formats with the 'arachni_report' executable."
+        ) do |path|
+            options.datastore.report_path = path
+        end
+    end
+
     def after_parse
         options.url = ARGV.shift
     end
 
     def validate
+        validate_report_path
         validate_login
         validate_url
     end
@@ -451,6 +466,16 @@ class OptionParser < UI::CLI::OptionParser
         return if options.url
 
         print_error 'Missing URL argument.'
+        exit 1
+    end
+
+    def validate_report_path
+        report_path = options.datastore.report_path
+
+        return if !report_path || File.directory?( report_path ) ||
+            !report_path.end_with?( '/' )
+
+        print_error "Report path does not exist: #{report_path}"
         exit 1
     end
 

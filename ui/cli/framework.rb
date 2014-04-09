@@ -301,7 +301,7 @@ class Framework
 
         @framework.reports.run :stdout, report
 
-        filepath = report.save
+        filepath = report.save( options.datastore.report_path )
         filesize = (File.size( filepath ).to_f / 2**20).round(2)
 
         print_info "Report saved at: #{filepath} [#{filesize}MB]"
@@ -325,6 +325,7 @@ class Framework
         parser.session
         parser.profiles
         parser.browser_cluster
+        parser.report
         parser.parse
 
         if options.checks.any?

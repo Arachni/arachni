@@ -37,6 +37,7 @@ class Remote
         parser.browser_cluster
         parser.distribution
         parser.ssl
+        parser.report
         parser.parse
 
         options = parser.options

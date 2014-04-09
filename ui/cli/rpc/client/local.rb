@@ -34,6 +34,7 @@ class Local
         parser.profiles
         parser.browser_cluster
         parser.distribution
+        parser.report
         parser.parse
 
         options = parser.options

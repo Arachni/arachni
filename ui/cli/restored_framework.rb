@@ -22,6 +22,7 @@ class RestoredFramework < Framework
     def parse_options
         parser = OptionParser.new
         parser.snapshot
+        parser.report
         parser.parse
 
         if parser.print_metadata?
