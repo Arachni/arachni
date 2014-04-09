@@ -298,7 +298,7 @@ class Options
     #
     # @return   [Arachni::Options]
     def load( filepath )
-        self.deep_clone.update( YAML.load_file( filepath ) )
+        update( YAML.load_file( filepath ) )
     end
 
     # @return    [Hash] `self` converted to a Hash.
