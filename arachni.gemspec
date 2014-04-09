@@ -31,7 +31,7 @@ Gem::Specification.new do |s|
 
     s.executables       = [ 'arachni', 'arachni_rpcd_monitor', 'arachni_rpcd',
                             'arachni_rpc', 'arachni_console', 'arachni_script',
-                            'arachni_multi' ]
+                            'arachni_multi', 'arachni_report', 'arachni_restore' ]
 
     s.extra_rdoc_files  = %w(README.md ACKNOWLEDGMENTS.md LICENSE.md
                             AUTHORS.md CHANGELOG.md CONTRIBUTORS.md
