@@ -229,9 +229,9 @@ module Utilities
     #
     # @see VERSION
     def print_banner
-        print_line BANNER
-        print_line
-        print_line
+        puts BANNER
+        puts
+        puts
     end
 
 end

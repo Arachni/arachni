@@ -3,6 +3,7 @@
     All rights reserved.
 =end
 
+require_relative '../../../output'
 require_relative '../../../option_parser'
 
 module Arachni
@@ -131,6 +132,26 @@ class OptionParser < UI::CLI::OptionParser
         ) do |file|
             options.rpc.client_ssl_certificate = file
         end
+
+        separator ''
+        separator 'Snapshot'
+
+        on( '--snapshot-save-path DIRECTORY', String,
+            'Directory under which to store scan snapshots.' ) do |path|
+            options.snapshot.save_path = path
+        end
+    end
+
+    def validate
+        validate_snapshot_save_path
+    end
+
+    def validate_snapshot_save_path
+        snapshot_path = options.snapshot.save_path
+        return if !snapshot_path || File.directory?( snapshot_path )
+
+        $stderr.puts "Snapshot directory does not exist: #{snapshot_path}"
+        exit 1
     end
 
 end

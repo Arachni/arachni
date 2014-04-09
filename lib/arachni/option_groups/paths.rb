@@ -24,11 +24,13 @@ class Paths < Arachni::OptionGroup
     attr_accessor :lib
     attr_accessor :support
     attr_accessor :mixins
+    attr_accessor :snapshots
 
     def initialize
         @root       = root_path
         @gfx        = @root + 'gfx/'
         @components = @root + 'components/'
+        @snapshots  = @root + 'snapshots/'
 
         @logs = ENV['ARACHNI_FRAMEWORK_LOGDIR'] ?
             "#{ENV['ARACHNI_FRAMEWORK_LOGDIR']}/" : @root + 'logs/'

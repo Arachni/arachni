@@ -47,6 +47,7 @@ class Dispatcher
         @opts = opts
 
         @opts.dispatcher.external_address ||= @opts.rpc.server_address
+        @opts.snapshot.save_path          ||= @opts.paths.snapshots
 
         @server = Base.new( @opts )
         @server.logger.level = @opts.datastore.log_level if @opts.datastore.log_level
