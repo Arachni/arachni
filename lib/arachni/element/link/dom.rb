@@ -42,7 +42,7 @@ class DOM < Base
 
     # Loads the page with the {#inputs} in the {#fragment}.
     def trigger
-        browser.goto to_s, false # Don't capture a snapshot.
+        browser.goto to_s, take_snapshot: false
     end
 
     # @return   [String]    URL including the DOM {#inputs}.

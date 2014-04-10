@@ -100,7 +100,7 @@ class DOM
 
         # First, try to load the page via its DOM#url in case it can restore
         # itself via its URL fragments and whatnot.
-        browser.goto url, take_snapshot
+        browser.goto url, take_snapshot: take_snapshot
 
         playables = playable_transitions
 

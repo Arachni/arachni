@@ -1443,10 +1443,19 @@ describe Arachni::Browser do
             end
         end
 
-        context 'when the take_snapshot argument has been set to' do
+        describe :cookies do
+            it 'loads the given cookies' do
+                cookie = Arachni::Element::Cookie.new( url: @url, inputs: { 'myname' => 'myvalue' } )
+                @browser.goto @url, cookies: [cookie]
+
+                @browser.cookies.should include cookie
+            end
+        end
+
+        describe :take_snapshot do
             describe true do
                 it 'captures a snapshot of the loaded page' do
-                    @browser.goto @url, true
+                    @browser.goto @url, take_snapshot: true
                     pages = @browser.page_snapshots
                     pages.size.should == 1
 
@@ -1459,7 +1468,7 @@ describe Arachni::Browser do
 
             describe false do
                 it 'does not capture a snapshot of the loaded page' do
-                    @browser.goto @url, false
+                    @browser.goto @url, take_snapshot:  false
                     @browser.page_snapshots.should be_empty
                 end
             end
@@ -1484,10 +1493,19 @@ describe Arachni::Browser do
             @browser.load( @url ).should == @browser
         end
 
-        context 'when the take_snapshot argument has been set to' do
+        describe :cookies do
+            it 'loads the given cookies' do
+                cookie = Arachni::Element::Cookie.new( url: @url, inputs: { 'myname' => 'myvalue' } )
+                @browser.load @url, cookies: [cookie]
+
+                @browser.cookies.should include cookie
+            end
+        end
+
+        describe :take_snapshot do
             describe true do
                 it 'captures a snapshot of the loaded page' do
-                    @browser.load @url, true
+                    @browser.load @url, take_snapshot: true
                     pages = @browser.page_snapshots
                     pages.size.should == 1
 
@@ -1500,7 +1518,7 @@ describe Arachni::Browser do
 
             describe false do
                 it 'does not capture a snapshot of the loaded page' do
-                    @browser.load @url, false
+                    @browser.load @url, take_snapshot: false
                     @browser.page_snapshots.should be_empty
                 end
             end

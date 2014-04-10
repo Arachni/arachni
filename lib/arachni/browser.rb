@@ -185,15 +185,15 @@ class Browser
     #   treated like a URL.
     #
     # @return   [Browser]   `self`
-    def load( resource, take_snapshot = true )
+    def load( resource, options = {} )
         @last_dom_url = nil
 
         case resource
             when String
-                goto resource, take_snapshot
+                goto resource, options
 
             when HTTP::Response
-                goto preload( resource ), take_snapshot
+                goto preload( resource ), options
 
             when Page
                 HTTP::Client.update_cookies resource.cookiejar
@@ -263,14 +263,20 @@ class Browser
 
     # @param    [String]  url
     #   Loads the given URL in the browser.
+    # @param    [Hash]  options
+    #
     # @return   [Page::DOM::Transition]
     #   Transition used to replay the resource visit.
-    def goto( url, take_snapshot = true )
+    def goto( url, options = {} )
+        take_snapshot = options.include?(:take_snapshot) ?
+            options[:take_snapshot] : true
+        cookies       = options[:cookies] || {}
+
         @last_url = url
 
         ensure_open_window
 
-        load_cookies url
+        load_cookies url, cookies
 
         transition = Page::DOM::Transition.new( :page, :load, url: url ) do
             watir.goto url
@@ -1050,19 +1056,26 @@ class Browser
         false
     end
 
-    def load_cookies( url )
+    def load_cookies( url, cookies = {} )
         # First clears the browser's cookies and then tricks it into accepting
         # the system cookies for its cookie-jar.
 
         url = normalize_url( url )
         watir.cookies.clear
 
+        set_cookies = {}
+        HTTP::Client.cookie_jar.for_url( url ).each do |cookie|
+            set_cookies[cookie.name] = cookie
+        end
+        cookies.each do |cookie|
+            set_cookies[cookie.name] = cookie
+        end
+
         url = "#{url}/set-cookies-#{request_token}"
         watir.goto preload( HTTP::Response.new(
             url:     url,
             headers: {
-                'Set-Cookie' => HTTP::Client.cookie_jar.for_url( url ).
-                    map( &:to_set_cookie )
+                'Set-Cookie' => set_cookies.values.map(&:to_set_cookie)
             }
         ))
     end
