@@ -18,7 +18,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
     end
 
     def load( path )
-        @browser.load "#{@url}#{path}", false
+        @browser.load "#{@url}#{path}", take_snapshot: false
     end
 
     subject { @taint_tracer }
