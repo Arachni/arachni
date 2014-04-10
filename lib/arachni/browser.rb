@@ -278,7 +278,7 @@ class Browser
 
         load_cookies url, cookies
 
-        transition = Page::DOM::Transition.new( :page, :load, url: url ) do
+        transition = Page::DOM::Transition.new( :page, :load, url: url, cookies: cookies ) do
             watir.goto url
 
             @javascript.wait_till_ready
@@ -718,8 +718,8 @@ class Browser
     def to_page
         return if !(r = response)
 
-        page      = r.to_page
-        page.body = source
+        page         = r.to_page
+        page.body    = source
 
         page.dom.url                 = watir.url
         page.dom.digest              = @javascript.dom_digest

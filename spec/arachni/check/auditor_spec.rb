@@ -55,7 +55,7 @@ describe Arachni::Check::Auditor do
         @framework = Arachni::Framework.new( @opts )
 
         AuditorTest.clear_info_cache
-        @auditor   = AuditorTest.new( @framework )
+        @auditor = AuditorTest.new( @framework )
     end
 
     after :each do
@@ -69,21 +69,40 @@ describe Arachni::Check::Auditor do
     let(:issue_data) { Factory[:issue_data].tap { |d| d.delete :check } }
 
     describe '.check?' do
-        [Arachni::Element::Body, Arachni::Element::GenericDOM].each do |element|
-            context element do
-                before(:each) { auditor.class.info[:elements] = element }
+        context Arachni::Element::Body do
+            before(:each) { auditor.class.info[:elements] = Arachni::Element::Body }
 
-                context 'and page with a non-empty body' do
+            context 'and page with a non-empty body' do
+                it 'returns true' do
+                    p = Arachni::Page.from_data( url: url, body: 'stuff' )
+                    auditor.class.check?( p ).should be_true
+                end
+            end
+
+            context 'and page with an empty body' do
+                it 'returns false' do
+                    p = Arachni::Page.from_data( url: url, body: '' )
+                    auditor.class.check?( p ).should be_false
+                end
+            end
+        end
+
+        context Arachni::Element::GenericDOM do
+            before(:each) { auditor.class.info[:elements] = Arachni::Element::GenericDOM }
+            let(:page) { Arachni::Page.from_data( url: url, body: 'stuff' ) }
+
+            context 'and Page#has_script? is' do
+                context true do
                     it 'returns true' do
-                        p = Arachni::Page.from_data( url: url, body: 'stuff' )
-                        auditor.class.check?( p ).should be_true
+                        page.stub(:has_script?) { true }
+                        auditor.class.check?( page ).should be_true
                     end
                 end
 
-                context 'and page with an empty body' do
+                context false do
                     it 'returns false' do
-                        p = Arachni::Page.from_data( url: url, body: '' )
-                        auditor.class.check?( p ).should be_false
+                        page.stub(:has_script?) { false }
+                        auditor.class.check?( page ).should be_false
                     end
                 end
             end
@@ -91,7 +110,8 @@ describe Arachni::Check::Auditor do
 
         element_classes = [Arachni::Element::Link, Arachni::Element::Link::DOM,
                            Arachni::Element::Form, Arachni::Element::Form::DOM,
-                           Arachni::Element::Cookie, Arachni::Element::Header ]
+                           Arachni::Element::Cookie, Arachni::Element::Cookie::DOM,
+                           Arachni::Element::Header ]
 
         element_classes.each do |element|
             context "when #{Arachni::OptionGroups::Audit}##{element.type.to_s.gsub( '_dom', '')}? is" do
@@ -108,23 +128,75 @@ describe Arachni::Check::Auditor do
 
                     context "and the page contains #{element}" do
                         context 'and the check supports it' do
-                            it 'returns true' do
-                                auditor.class.check?( page ).should be_true
+                            if element == Arachni::Element::Form::DOM ||
+                                element == Arachni::Element::Cookie::DOM
+
+                                context 'and Page#has_script? is' do
+                                    context true do
+                                        it 'returns true' do
+                                            page.stub(:has_script?) { true }
+                                            auditor.class.check?( page ).should be_true
+                                        end
+                                    end
+
+                                    context false do
+                                        it 'returns false' do
+                                            page.stub(:has_script?) { false }
+                                            auditor.class.check?( page ).should be_false
+                                        end
+                                    end
+                                end
+
+                            else
+                                it 'returns true' do
+                                    auditor.class.check?( page ).should be_true
+                                end
                             end
                         end
 
                         (element_classes - [element]).each do |e|
                             context "and the check supports #{e}" do
-                                if element == Arachni::Element::Form::DOM &&
-                                    e == Arachni::Element::Form
+                                if element == Arachni::Element::Cookie::DOM &&
+                                    e == Arachni::Element::Cookie
+
                                     it 'returns true' do
                                         auditor.class.info[:elements] = e
                                         auditor.class.check?( page ).should be_true
                                     end
+
+                                elsif element == Arachni::Element::Cookie &&
+                                        e == Arachni::Element::Cookie::DOM
+
+                                    context 'and Page#has_script? is' do
+                                        context true do
+                                            it 'returns true' do
+                                                page.stub(:has_script?) { true }
+                                                auditor.class.info[:elements] = e
+                                                auditor.class.check?( page ).should be_true
+                                            end
+                                        end
+
+                                        context false do
+                                            it 'returns false' do
+                                                page.stub(:has_script?) { false }
+                                                auditor.class.info[:elements] = e
+                                                auditor.class.check?( page ).should be_false
+                                            end
+                                        end
+                                    end
+
                                 else
-                                    it 'returns false' do
-                                        auditor.class.info[:elements] = e
-                                        auditor.class.check?( page ).should be_false
+                                    if element == Arachni::Element::Form::DOM &&
+                                        e == Arachni::Element::Form
+                                        it 'returns true' do
+                                            auditor.class.info[:elements] = e
+                                            auditor.class.check?( page ).should be_true
+                                        end
+                                    else
+                                        it 'returns false' do
+                                            auditor.class.info[:elements] = e
+                                            auditor.class.check?( page ).should be_false
+                                        end
                                     end
                                 end
                             end
@@ -269,7 +341,8 @@ describe Arachni::Check::Auditor do
                     end
 
                     elements.should ==
-                        auditor.page.links.select { |l| l.dom } | auditor.page.forms
+                        auditor.page.links.select { |l| l.dom } |
+                            auditor.page.forms | auditor.page.cookies
                 end
             end
         end

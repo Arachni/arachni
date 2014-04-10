@@ -47,7 +47,10 @@
             form submissions/audits.
     - `Link`
         - Added `#dom` pointing to a `Auditable::DOM` object handling browser-based
-            form submissions/audits.
+            link submissions/audits.
+    - `Cookie`
+        - Added `#dom` pointing to a `Auditable::DOM` object handling browser-based
+            cookie submissions/audits.
     - `Capabilities::Auditable`
         - Removed `#use_anonymous_auditor`
         - `#auditable` => `#inputs`
@@ -123,10 +126,11 @@
 - Checks
     - Active
         - New
-            - `xss_dom` -- Injects HTML code via DOM-based links and forms.
-            - `xss_dom_inputs` -- Injects HTML code via orphan text inputs with associated DOM events.
+            - `xss_dom` -- Injects HTML code via DOM-based links, forms and cookies.
+            - `xss_dom_inputs` -- Injects HTML code via orphan text inputs with
+                associated DOM events.
             - `xss_dom_script_context` -- Injects JavaScript code via DOM-based
-                links and forms.
+                links, forms and cookies.
         - `xss` -- Added support for Browser-based taint-analysis.
         - `xss_script_context` -- Added support for Browser-based taint-analysis.
             - Renamed from `xss_script_tag`.

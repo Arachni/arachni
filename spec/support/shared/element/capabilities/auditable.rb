@@ -206,8 +206,7 @@ shared_examples_for 'auditable' do |options = {}|
                     it 'injects all given payloads' do
                         payloads = {
                             linux:   [ 'linux-payload-1', 'linux-payload-2' ],
-                            freebsd: 'freebsd-payload',
-                            openbsd: [ 'openbsd-payload-1', 'openbsd-payload-2' ],
+                            bsd:     'freebsd-payload',
                             php:     [ 'php-payload-1', 'php-payload-2' ],
                             apache:  'apache-payload',
                             windows: 'windows-payload',
@@ -216,6 +215,7 @@ shared_examples_for 'auditable' do |options = {}|
 
                         injected = []
 
+                        auditable.platforms.clear
                         auditable.audit( payloads,
                                           format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
                                           skip_original: true

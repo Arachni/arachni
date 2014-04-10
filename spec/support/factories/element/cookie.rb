@@ -3,3 +3,5 @@ Factory.define :cookie, class: Arachni::Element::Cookie,
                    url:    'http://test.com',
                    inputs: { stuff: 1 },
                }
+
+Factory.alias :cookie_dom, :cookie

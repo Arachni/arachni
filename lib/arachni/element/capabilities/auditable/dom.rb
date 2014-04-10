@@ -38,7 +38,7 @@ module DOM
             @url    = parent.url.dup.freeze    if parent.url
             @action = parent.action.dup.freeze if parent.action
             @page   = parent.page              if parent.page
-            @html   = parent.html.dup.freeze   if parent.html
+            @html   = parent.html.dup.freeze   if parent.respond_to?(:html) && parent.html
         else
             @url    = options[:url].freeze
             @action = options[:action].freeze

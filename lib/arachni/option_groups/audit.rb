@@ -59,6 +59,8 @@ class Audit < Arachni::OptionGroup
     # @see Element::Cookie
     # @see Element::Capabilities::Auditable#audit
     attr_accessor :cookies
+    alias :cookie_doms :cookies
+    alias :cookie_doms= :cookies=
 
     # @note Default is `false`.
     # @return    [Bool]

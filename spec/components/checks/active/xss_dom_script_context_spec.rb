@@ -4,13 +4,14 @@ describe name_from_filename do
     include_examples 'check'
 
     def self.elements
-        [ Element::Form::DOM, Element::Link::DOM ]
+        [ Element::Form::DOM, Element::Link::DOM, Element::Cookie::DOM ]
     end
 
     def issue_count_per_element
         {
-            Element::Form::DOM => 3,
-            Element::Link::DOM => 3
+            Element::Form::DOM   => 3,
+            Element::Link::DOM   => 3,
+            Element::Cookie::DOM => 2
         }
     end
 
@@ -19,9 +20,13 @@ describe name_from_filename do
             issue.page.dom.execution_flow_sink.should be_any
             data_flow_sink = issue.page.dom.data_flow_sink
 
-            data_flow_sink.size.should == 1
+            if issue.vector.is_a? Element::Link::DOM
+                data_flow_sink.size.should == 2
+            else
+                data_flow_sink.size.should == 1
+            end
 
-            data = data_flow_sink.first[:data]
+            data = data_flow_sink.last[:data]
             data.size.should == 1
             data = data.first
             data['source'].should start_with 'function eval()'
@@ -33,13 +38,20 @@ describe name_from_filename do
 
             trace = data_flow_sink.first[:trace]
 
-            if issue.vector.is_a? Element::Form::DOM
-                trace.size.should == 2
-                trace.first[:source].should start_with 'function handleSubmit()'
-                trace.first[:function].should start_with 'handleSubmit'
-            else
-                trace.size.should == 1
-                trace.first[:url].should == issue.page.dom.url
+            case issue.vector
+
+                when Element::Form::DOM
+                    trace.size.should == 2
+                    trace.first[:source].should start_with 'function handleSubmit()'
+                    trace.first[:function].should start_with 'handleSubmit'
+
+                when Element::Link::DOM
+                    trace.size.should == 2
+                    trace.first[:url].should == issue.page.dom.url
+
+                when Element::Cookie::DOM
+                    trace.size.should == 1
+                    trace.first[:url].should == issue.page.dom.url
             end
 
         end

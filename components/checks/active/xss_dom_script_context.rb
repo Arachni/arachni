@@ -58,7 +58,7 @@ class Arachni::Checks::XSSDOMScriptContext < Arachni::Check::Base
             name:        'DOM XSS in script context',
             description: %q{Injects JS taint code and checks to see if it gets
                 executed as proof of vulnerability.},
-            elements:    [Element::Form::DOM, Element::Link::DOM],
+            elements:    [Element::Form::DOM, Element::Link::DOM, Element::Cookie::DOM],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1',
 

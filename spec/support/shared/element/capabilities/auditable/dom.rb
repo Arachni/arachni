@@ -1,6 +1,6 @@
-shared_examples_for 'element_dom' do
-    it_should_behave_like 'element'
-    it_should_behave_like 'auditable', supports_nulls: false
+shared_examples_for 'element_dom' do |options = {}|
+    it_should_behave_like 'element', options
+    it_should_behave_like 'auditable', options.merge( supports_nulls: false )
 
     def run
         auditor.browser_cluster.wait
@@ -121,7 +121,7 @@ shared_examples_for 'element_dom' do
             called.should be_true
         end
 
-        it 'sets the #element on the #performer' do
+        it 'sets the #element on the #performer', if: !options[:without_node] do
             called = false
             subject.submit do |page|
                 page.performer.element.should be_kind_of Watir::HTMLElement
@@ -230,7 +230,7 @@ shared_examples_for 'element_dom' do
         end
     end
 
-    describe '#node' do
+    describe '#node', if: !options[:without_node] do
         it 'returns the Nokogiri node of the element' do
             subject.node.is_a?( Nokogiri::XML::Element ).should be_true
         end

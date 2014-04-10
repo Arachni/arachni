@@ -43,8 +43,6 @@ class Arachni::Checks::XSSDOM < Arachni::Check::Base
 
     def check_and_log( page, element )
         return if !(proof = find_proof( page ))
-        # ap page.dom.data_flow_sink
-        # ap page.dom.transitions
         log vector: element, proof: proof, page: page
     end
 
@@ -54,13 +52,12 @@ class Arachni::Checks::XSSDOM < Arachni::Check::Base
         proof.to_s
     end
 
-
     def self.info
         {
             name:        'DOM XSS',
             description: %q{Injects an HTML element into page DOM inputs and then
                 parses the HTML markup of tainted responses to look for proof of vulnerability.},
-            elements:    [Element::Form::DOM, Element::Link::DOM],
+            elements:    [Element::Form::DOM, Element::Link::DOM, Element::Cookie::DOM],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1',
 
