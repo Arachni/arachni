@@ -104,6 +104,8 @@ class Worker < Arachni::Browser
         @on_response_blocks.clear
         @on_fire_event_blocks.clear
 
+        watir.cookies.clear
+
         @job = nil
 
         decrease_time_to_live

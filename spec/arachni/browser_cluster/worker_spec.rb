@@ -121,6 +121,19 @@ describe Arachni::BrowserCluster::Worker do
                 subject.javascript.taint.should be_nil
             end
 
+            it 'clears #cookies' do
+                subject.preload page
+                subject.preloads.should be_any
+
+                @cluster.with_browser do |browser|
+                    browser.load page
+                    subject.cookies.should be_any
+                end
+                @cluster.wait
+
+                subject.cookies.should be_empty
+            end
+
             it 'clears #preloads' do
                 subject.preload page
                 subject.preloads.should be_any
