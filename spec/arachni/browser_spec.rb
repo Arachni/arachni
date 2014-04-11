@@ -26,7 +26,7 @@ describe Arachni::Browser do
 
             options = {}
             if element == :page && event == :load
-                options.merge!( url: @browser.watir.url, cookies: {} )
+                options.merge!( url: @browser.watir.url, cookies: [] )
             end
 
             if element.is_a? Hash
@@ -1455,7 +1455,7 @@ describe Arachni::Browser do
                 cookie = Arachni::Element::Cookie.new( url: @url, inputs: { 'myname' => 'myvalue' } )
                 transition = @browser.goto( @url, cookies: [cookie] )
 
-                transition.options[:cookies].should include cookie
+                transition.options[:cookies].map(&:to_s).should include cookie.to_s
             end
         end
 

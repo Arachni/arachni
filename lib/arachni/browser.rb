@@ -270,13 +270,13 @@ class Browser
     def goto( url, options = {} )
         take_snapshot = options.include?(:take_snapshot) ?
             options[:take_snapshot] : true
-        cookies       = options[:cookies] || {}
+        extra_cookies = options[:cookies] || {}
 
         @last_url = url
 
         ensure_open_window
 
-        load_cookies url, cookies
+        load_cookies url, extra_cookies
 
         transition = Page::DOM::Transition.new( :page, :load, url: url, cookies: cookies ) do
             watir.goto url
@@ -810,7 +810,7 @@ class Browser
             c[:name]  = Cookie.decode( c[:name].to_s )
             c[:value] = Cookie.decode( c[:value].to_s )
 
-            Cookie.new c.merge( url: url )
+            Cookie.new c.merge( url: @last_url )
         end
     end
 
@@ -1022,7 +1022,7 @@ class Browser
     # Loads `page` without taking a snapshot, used for restoring  the root page
     # after manipulation.
     def restore( page )
-        load page, false
+        load page, take_snapshot: false
     end
 
     def capture_snapshot_with_sink( page )
