@@ -1,6 +1,6 @@
 # ChangeLog
 
-## _Under development_
+## 0.4.7 _(April 12, 2014)_
 
 - `Spider`
     - Fixed mixed up status messages upon out-of-scope redirections.
