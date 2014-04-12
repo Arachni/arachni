@@ -18,7 +18,7 @@ class Page
 
     # @param    [String]    url URL to fetch.
     # @param    [Hash]  opts
-    # @option  opts    [Integer]   :precision  (1)
+    # @option  opts    [Integer]   :precision  (2)
     #   How many times to request the page and examine changes between requests.
     #   Used tp identify nonce tokens etc.
     # @option  opts    [Hash]  :http   HTTP {HTTP::Client#get request} options.
@@ -30,14 +30,14 @@ class Page
     def self.from_url( url, opts = {}, &block )
         responses = []
 
-        opts[:precision] ||= 1
-        opts[:precision].times {
+        opts[:precision] ||= 2
+        opts[:precision].times do
             HTTP::Client.get( url, opts[:http] || {} ) do |res|
                 responses << res
                 next if responses.size != opts[:precision]
                 block.call( from_response( responses ) ) if block_given?
             end
-        }
+        end
 
         if !block_given?
             HTTP::Client.run
@@ -104,6 +104,11 @@ class Page
     # @private
     attr_reader :cache
 
+    # @return    [Hash]
+    #   Holds page data that will need to persist between {#clear_cache} calls
+    #   and other utility data.
+    attr_reader :metadata
+
     # @return   [Set<Integer>]
     #   Audit whitelist based on {Element::Capabilities::Auditable#audit_scope_id}.
     #
@@ -132,6 +137,8 @@ class Page
         # We need to know whether or not the page has been dynamically updated
         # with elements, in order to optimize #dup and #hash operations.
         @has_custom_elements = Set.new
+
+        @metadata ||= {}
 
         options.each do |k, v|
             send( "#{k}=", try_dup( v ) )
@@ -387,7 +394,7 @@ class Page
 
     def to_initialization_options
         h = {}
-        [:body, :cookiejar, :element_audit_whitelist].each do |m|
+        [:body, :cookiejar, :element_audit_whitelist, :metadata].each do |m|
             h[m] = try_dup( instance_variable_get( "@#{m}".to_sym ) )
             h.delete( m ) if !h[m]
         end
@@ -422,7 +429,7 @@ class Page
 
     def digest
         element_hashes = []
-        [:links, :forms, :cookies, :headers ].each do |type|
+        [:links, :forms, :cookies, :headers].each do |type|
             next if !@has_custom_elements.include?( type ) || !(list = @cache[type])
             element_hashes |= list.map(&:hash)
         end
@@ -430,7 +437,7 @@ class Page
         "#{dom.playable_transitions.hash}:#{body.hash}#{element_hashes.sort}"
     end
 
-    [:url, :response, :cookiejar, :element_audit_whitelist].each do |attribute|
+    [:url, :response, :cookiejar, :element_audit_whitelist, :metadata].each do |attribute|
         attr_writer attribute
     end
 
@@ -439,7 +446,34 @@ class Page
     end
 
     def assign_page_to_elements( list )
-        list.map { |e| e.page = self; e }.freeze
+        list.map do |e|
+            e.page = self
+            store_nonce_to_metadata e
+            restore_nonce_from_metadata e
+            e
+        end.freeze
+    end
+
+    def store_nonce_to_metadata( element )
+        ensure_metadata_nonces( element )
+
+        return if !element.respond_to?(:has_nonce?) || !element.has_nonce?
+
+        @metadata[element.type][:nonces][element.id.persistent_hash] =
+            element.nonce_name
+    end
+
+    def restore_nonce_from_metadata( element )
+        ensure_metadata_nonces( element )
+
+        return if !element.respond_to?(:nonce_name=) || element.has_nonce?
+
+        element.nonce_name = @metadata[element.type][:nonces][element.id.persistent_hash]
+    end
+
+    def ensure_metadata_nonces( element )
+        @metadata[element.type] ||= {}
+        @metadata[element.type][:nonces] ||= {}
     end
 
     def try_dup( v )

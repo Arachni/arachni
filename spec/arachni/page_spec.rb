@@ -18,8 +18,10 @@ describe Arachni::Page do
         )
     end
 
-    let( :response ) { Factory[:response] }
-    let( :page ) { Factory[:page] }
+    let(:url) { Arachni::Utilities.normalize_url web_server_url_for( :parser ) }
+    let(:response) { Factory[:response] }
+    let(:page) { Factory[:page] }
+    let(:page_with_nonces) { described_class.from_url( url + 'with_nonce' ) }
     subject { page }
 
     describe '#initialize' do
@@ -535,6 +537,18 @@ describe Arachni::Page do
                 end
             end
         end
+
+        context 'when #forms have nonces' do
+            it 'preserves them' do
+                page_with_nonces.forms.map { |f| f.nonce_name }.sort.
+                    should == %w(nonce nonce2).sort
+
+                page_with_nonces.clear_cache
+
+                page_with_nonces.forms.map { |f| f.nonce_name }.sort.
+                    should == %w(nonce nonce2).sort
+            end
+        end
     end
 
     describe '#prepare_for_report' do
@@ -584,7 +598,7 @@ describe Arachni::Page do
                 dupped.should == subject
             end
 
-            [:response, :body, :links, :forms, :cookies, :headers, :cookiejar, :paths].each do |m|
+            [:response, :metadata, :body, :links, :forms, :cookies, :headers, :cookiejar, :paths].each do |m|
                 it "preserves ##{m}" do
                     dupped = subject.send(method)
 
@@ -643,6 +657,26 @@ describe Arachni::Page do
                 dup = subject.send(method)
                 dup.elements.should be_any
                 dup.elements.each { |e| e.page.should == subject }
+            end
+
+            context 'when #forms have nonces' do
+                it 'preserves them' do
+                    page_with_nonces.forms.map { |f| f.nonce_name }.sort.should == %w(nonce nonce2).sort
+                    page_with_nonces.send(method).forms.map { |f| f.nonce_name }.sort.should == %w(nonce nonce2).sort
+                end
+            end
+        end
+    end
+
+    describe '.from_url' do
+        it 'returns a page from the given url' do
+            described_class.from_url( url + 'with_nonce' ).should be_kind_of described_class
+        end
+
+        context 'when #forms have nonces' do
+            it 'preserves them' do
+                described_class.from_url( url + 'with_nonce' ).forms.
+                    map { |f| f.nonce_name }.sort.should == %w(nonce nonce2).sort
             end
         end
     end
