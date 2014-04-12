@@ -12,22 +12,33 @@ describe name_from_filename do
             name = name_from_filename
 
             options.plugins[name] = {
-                'url'    => url + '/login',
-                'params' => 'username=john&password=doe',
-                'check'  => 'Hi there logged-in user'
+                'url'        => url + '/login',
+                'parameters' => 'username=john&password=doe',
+                'check'      => 'Hi there logged-in user'
             }
 
             run
 
             results = results_for( name )
-            results[:code].should == 1
-            results[:msg].should  == framework.plugins[name]::MSG_SUCCESS
+
+            results[:status].should  == :ok
+            results[:message].should == framework.plugins[name]::STATUSES[:ok]
             results[:cookies]['success'].should == 'true'
 
             framework.sitemap.include?( url + 'congrats' ).should be_true
         end
 
-        it 'should provide a login sequence and login check to the framework' do
+        it 'provides a login sequence and login check to the framework' do
+            name = name_from_filename
+
+            options.plugins[name] = {
+                'url'        => url + '/login',
+                'parameters' => 'username=john&password=doe',
+                'check'      => 'Hi there logged-in user'
+            }
+
+            run
+
             session.logged_in?.should be_true
 
             http.cookie_jar.clear
@@ -43,26 +54,26 @@ describe name_from_filename do
             name = name_from_filename
 
             options.plugins[name] = {
-                'url'    => url + '/login',
-                'params' => 'username2=john&password=doe',
-                'check'  => 'Hi there logged-in user'
+                'url'        => url + '/login',
+                'parameters' => 'username2=john&password=doe',
+                'check'      => 'Hi there logged-in user'
             }
 
             t = Thread.new { run }
             sleep 0.1 while !(results = results_for( name ))
             t.kill
 
-            results[:code].should == 0
-            results[:msg].start_with?( framework.plugins[name]::MSG_FAILURE ).should be_true
+            results[:status].should  == :form_not_found
+            results[:message].should == framework.plugins[name]::STATUSES[:form_not_found]
         end
 
         it 'does not resume the scan' do
             name = name_from_filename
 
             options.plugins[name] = {
-                'url'    => url + '/login',
-                'params' => 'username2=john&password=doe',
-                'check'  => 'Hi there logged-in user'
+                'url'        => url + '/login',
+                'parameters' => 'username2=john&password=doe',
+                'check'      => 'Hi there logged-in user'
             }
 
             t = Thread.new { run }
@@ -78,17 +89,17 @@ describe name_from_filename do
             name = name_from_filename
 
             options.plugins[name] = {
-                'url'    => url + '/login',
-                'params' => 'username=john&password=doe',
-                'check'  => 'Hi there Jimbo'
+                'url'        => url + '/login',
+                'parameters' => 'username=john&password=doe',
+                'check'      => 'Hi there Jimbo'
             }
 
             t = Thread.new { run }
             sleep 0.1 while !(results = results_for( name ))
             t.kill
 
-            results[:code].should == -2
-            results[:msg].start_with?( framework.plugins[name]::MSG_NO_MATCH ).should be_true
+            results[:status].should  == :check_failed
+            results[:message].should == framework.plugins[name]::STATUSES[:check_failed]
         end
     end
 end

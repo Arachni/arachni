@@ -5,18 +5,13 @@
 
 class Arachni::Reports::Stdout
 
-#
 # Stdout formatter for the results of the AutoLogin plugin
 #
-#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-# @version 0.1.1
-#
 class PluginFormatters::AutoLogin < Arachni::Plugin::Formatter
 
     def run
-        print_ok results[:msg]
+        print_ok results[:message]
 
         return if !results[:cookies]
         print_info 'Cookies set to:'

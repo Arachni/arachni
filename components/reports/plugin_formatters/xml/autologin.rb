@@ -5,17 +5,15 @@
 
 class Arachni::Reports::XML
 
-#
 # XML formatter for the results of the AutoLogin plugin
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class PluginFormatters::AutoLogin < Arachni::Plugin::Formatter
     include Buffer
 
     def run
-        simple_tag( 'message', results[:msg] )
-        simple_tag( 'code', results[:code].to_s )
+        simple_tag( 'message', results[:message] )
+        simple_tag( 'status', results[:status].to_s )
 
         start_tag 'cookies'
         if results[:cookies]

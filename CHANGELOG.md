@@ -115,6 +115,10 @@
         responses associated with each issue.
     - `proxy`
         - Updated to use `HTTP::ProxyServer`.
+    - `autologin`
+        - `params` option renames to `parameters`.
+        - Changed results to include `status` (`Symbol`) and `message` (`String`)
+            instead of `code` (`Integer`) and `msg` (`String`).
 - Path extractors
     - Added:
         - Extract partial paths from HTML comments (`comments`).
