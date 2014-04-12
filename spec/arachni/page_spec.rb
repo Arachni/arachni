@@ -559,21 +559,21 @@ describe Arachni::Page do
         it 'returns self' do
             subject.prepare_for_report.should == subject
         end
-    end
 
-    context 'if the body is not #text?' do
-        let(:page) { Factory[:binary_response].to_page }
+        context 'if the body is not #text?' do
+            let(:page) { Factory[:binary_response].to_page }
 
-        it 'clears it' do
-            page.body.should_not be_empty
-            page.prepare_for_report
-            page.body.should be_empty
-        end
+            it 'clears it' do
+                page.body.should_not be_empty
+                page.prepare_for_report
+                page.body.should be_empty
+            end
 
-        it 'clears the #response#body' do
-            page.response.body.should_not be_empty
-            page.prepare_for_report
-            page.response.body.should be_empty
+            it 'clears the #response#body' do
+                page.response.body.should_not be_empty
+                page.prepare_for_report
+                page.response.body.should be_empty
+            end
         end
     end
 
