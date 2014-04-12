@@ -3,17 +3,20 @@ shared_examples_for "plugin" do
 
     before( :all ) do
         FileUtils.cp "#{fixtures_path}checks/test2.rb", options.paths.checks
+
         framework.checks.load :test2
-
-        framework.plugins.load name
+        @name = name
     end
+    after( :all ) do
+        FileUtils.rm "#{options.paths.checks}test2.rb"
+    end
+
     before( :each ) do
-        # framework.reset_filters
-        framework.plugins.reset
-        framework.reports.clear
+        framework.plugins.load @name
     end
-
-    after( :all ) { FileUtils.rm "#{options.paths.checks}test2.rb" }
+    after( :each ) do
+        framework.reset
+    end
 
     def results
     end
@@ -33,11 +36,11 @@ shared_examples_for "plugin" do
         framework.run
 
         # Make sure plugin formatters work as well.
-        framework.reports.load_all
-        framework.reports.each do |name, klass|
-            framework.reports.run_one name, framework.auditstore, 'outfile' => outfile
-            File.delete( outfile ) rescue nil
-        end
+        # framework.reports.load_all
+        # framework.reports.each do |name, klass|
+        #     framework.reports.run_one name, framework.auditstore, 'outfile' => outfile
+        #     File.delete( outfile ) rescue nil
+        # end
     end
 
     def outfile
@@ -49,7 +52,7 @@ shared_examples_for "plugin" do
     end
 
     def results_for( name )
-        (framework.plugins.results[name] || {})[:results]
+        (framework.plugins.results[name.to_sym] || {})[:results]
     end
 
     def expected_results
