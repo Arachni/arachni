@@ -442,7 +442,6 @@
   - Protocol -- Now supports both ```Marshal``` and ```YAML``` automatically.
       - ```Marshal``` by default since it's many times faster than ```YAML```.
       - ```YAML``` as an automatic fallback in order to maintain backwards compatibility and ease of integration with 3rd parties.
-          - Updated to use the Ruby-default ```Psych``` engine.
   - ```Framework```
       - Updated gathering of slave status -- once a slave is done it reports back to the master.
       - Clean-up happens automatically, clients no longer need to call ```#clean_up``` (like previously mentioned).
