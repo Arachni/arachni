@@ -4,8 +4,8 @@ describe Arachni::Component::Options::Base do
 
     describe '#name' do
         it 'returns the name of the option' do
-            name = 'a name'
-            described_class.new( name ).name.should == name
+            name = 'myname'
+            described_class.new( name ).name.should == name.to_sym
         end
     end
 

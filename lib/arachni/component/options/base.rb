@@ -10,7 +10,7 @@
 class Arachni::Component::Options::Base
 
     # The name of the option.
-    attr_accessor :name
+    attr_reader   :name
 
     # The description of the option.
     attr_reader   :description
@@ -24,12 +24,12 @@ class Arachni::Component::Options::Base
     # Initializes a named option with the supplied attribute array.
     # The array is composed of three values.
     #
-    # @param    [String]    name    the name of the options
+    # @param    [Symbol]    name    the name of the options
     # @param    [Hash]     options   option attributes
     def initialize( name, options = {} )
         options = options.dup
 
-        @name         = name
+        @name         = name.to_sym
         @required     = !!options.delete(:required)
         @description  = options.delete(:description)
         @default      = options.delete(:default)

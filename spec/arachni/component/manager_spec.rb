@@ -292,9 +292,9 @@ describe Arachni::Component::Manager do
             @components.prep_opts( c, @components[c],
                 { 'req_opt' => 'my value'}
             ).should == {
-                    'req_opt' => 'my value',
-                    'opt_opt' => '',
-                'default_opt' => 'value'
+                    req_opt: 'my value',
+                    opt_opt: '',
+                default_opt: 'value'
             }
 
             opts = {
@@ -302,7 +302,7 @@ describe Arachni::Component::Manager do
                 'opt_opt' => 'opt_opt value',
                 'default_opt' => 'default_opt value'
             }
-            @components.prep_opts( c, @components[c], opts ).should == opts
+            @components.prep_opts( c, @components[c], opts ).should == opts.symbolize_keys
         end
 
         context 'with invalid options' do

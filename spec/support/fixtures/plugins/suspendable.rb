@@ -16,7 +16,7 @@ class Arachni::Plugins::Suspendable < Arachni::Plugin::Base
     end
 
     def run
-        options['my_option'] = 'updated'
+        options[:my_option] = 'updated'
         @counter += 1
 
         wait_while_framework_running

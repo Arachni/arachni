@@ -29,7 +29,7 @@ describe Arachni::Plugin::Manager do
 
         it 'stores plugin options' do
             state[:suspendable][:options].should == {
-                'my_option' => 'updated'
+                my_option: 'updated'
             }
         end
 
@@ -63,7 +63,7 @@ describe Arachni::Plugin::Manager do
             subject.restore
 
             subject.jobs[:suspendable][:instance].options.should == {
-                'my_option' => 'updated'
+                my_option: 'updated'
             }
         end
 

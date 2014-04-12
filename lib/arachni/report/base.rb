@@ -25,14 +25,14 @@ module Options
     #
     # @return   [Arachni::OptString]
     def outfile( extension = '', description = 'Where to save the report.' )
-        Options::String.new( 'outfile',
+        Options::String.new( :outfile,
             description: description,
             default:     Time.now.to_s.gsub( ':', '.' ) + extension
         )
     end
 
     def skip_responses
-        Options::Bool.new( 'skip_responses',
+        Options::Bool.new( :skip_responses,
              description: "Don't include the bodies of the HTTP " +
                  'responses of the issues in the report' +
                  ' -- will lead to a greatly decreased report file-size.',
@@ -46,7 +46,7 @@ end
 
 class FormatterManager < Component::Manager
     def paths
-        Dir.glob( File.join( "#{@lib}", "*.rb" ) ).reject { |path| helper?( path ) }
+        Dir.glob( File.join( "#{@lib}", '*.rb' ) ).reject { |path| helper?( path ) }
     end
 end
 
@@ -127,16 +127,16 @@ class Base < Component::Base
     end
 
     def outfile
-        if File.directory?( options['outfile'] )
-            return File.expand_path "#{options['outfile']}/" +
+        if File.directory?( options[:outfile] )
+            return File.expand_path "#{options[:outfile]}/" +
                     "#{self.class.outfile_option.default}"
         end
 
-        options['outfile']
+        options[:outfile]
     end
 
     def skip_responses?
-        !!options['skip_responses']
+        !!options[:skip_responses]
     end
 
     def self.has_outfile?

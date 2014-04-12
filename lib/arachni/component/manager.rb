@@ -178,7 +178,7 @@ class Manager < Hash
         options     = {}
         errors      = {}
         info[:options].each do |option|
-            option.value = user_opts[option.name]
+            option.value = user_opts[option.name.to_s]
 
             if option.missing_value?
                 errors[option.name] = {
@@ -202,7 +202,7 @@ class Manager < Hash
                  format_error_string( component_name, errors )
         end
 
-        options
+        options.symbolize_keys( false )
     end
 
     #

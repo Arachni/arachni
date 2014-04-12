@@ -24,7 +24,7 @@ describe Arachni::Report::Manager do
 
                 report = @reports.run( :foo, audit_store, options )
 
-                report.options.should == options
+                report.options.should == options.symbolize_keys(false)
             end
         end
     end
