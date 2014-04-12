@@ -349,7 +349,7 @@ class Framework
         @framework.plugins.load_defaults
         if options.plugins.any?
             begin
-                @framework.plugins.load( options.plugins )
+                @framework.plugins.load( options.plugins.keys )
             rescue Component::Error::NotFound => e
                 print_error e
                 print_info 'Available plugins are:'
