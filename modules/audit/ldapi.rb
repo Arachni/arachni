@@ -19,7 +19,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.2
+# @version 0.1.3
 #
 # @see http://cwe.mitre.org/data/definitions/90.html
 # @see http://projects.webappsec.org/w/page/13246947/LDAP-Injection
@@ -47,7 +47,7 @@ class Arachni::Modules::LDAPInjection < Arachni::Module::Base
                 in user input validation.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.2',
+            version:     '0.1.3',
             references:  {
                 'WASC'  => 'http://projects.webappsec.org/w/page/13246947/LDAP-Injection',
                 'OWASP' => 'http://www.owasp.org/index.php/LDAP_injection'
@@ -55,14 +55,39 @@ class Arachni::Modules::LDAPInjection < Arachni::Module::Base
             targets:     %w(Generic),
             issue:       {
                 name:            %q{LDAP Injection},
-                description:     %q{LDAP queries can be injected into the web application
-    which can be used to disclose sensitive data of affect the execution flow.},
+                description:     %q{Lightweight Directory Access Protocol (LDAP) 
+                    is used by web applications to access and maintain directory 
+                    information services. One of the most common uses for LDAP 
+                    is to provide a single sign on service that will allow 
+                    clients to authenticate with a web site without any 
+                    interaction (assuming their credentials have been validated 
+                    by another service). LDAP injection occurs when untrusted 
+                    data is used by the web application to query the LDAP
+                    directory without prior sanitisation. This is a serious 
+                    security risk, as it could allow cyber-criminals the ability 
+                    to query, modify, or remove anything from the LDAP tree. It 
+                    could also allow other advanced injection techniques that 
+                    perform other more serious attacks. Arachni was able to 
+                    detect a page that is vulnerable to LDAP injection.},
                 tags:            %w(ldap injection regexp),
                 cwe:             '90',
                 severity:        Severity::HIGH,
                 cvssv2:          '',
-                remedy_guidance: %q{User inputs must be validated and filtered
-    before being used in an LDAP query.},
+                remedy_guidance: %q{It is recommended that untrusted or 
+                    invalidated data is never used to form a LDAP query. To 
+                    validate data, the application should ensure that the 
+                    supplied value contains only the characters that are 
+                    required to perform the required action. For example, where 
+                    a username is required, then no non-alpha characters should 
+                    be accepted. If this is not possible, then special 
+                    characters should be escaped so they are treated 
+                    accordingly. The following characters should be escaped with 
+                    a '\' backslash; Ampersand, exclamation mark, pipe, equals, 
+                    less than, greater than, comma, plus, minus, double quote, 
+                    single quote, and semicolon. Additional character filtering 
+                    must be applied to; Open round bracket, close round bracket, 
+                    backslash, asterisks, forward slash, NUL. These characters 
+                    require ASCII escaping.},
                 remedy_code:     ''
             }
 

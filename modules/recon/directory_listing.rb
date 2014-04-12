@@ -14,15 +14,12 @@
     limitations under the License.
 =end
 
-#
 # Tries to force directory listings.
 #
 # Can't take credit for this one, it's Michal's (lcamtuf's) method from Skipfish.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-# @version 0.1.4
-#
+# @version 0.1.5
 class Arachni::Modules::DirectoryListing < Arachni::Module::Base
 
     # The compared pages must be at least 75% different
@@ -92,20 +89,43 @@ class Arachni::Modules::DirectoryListing < Arachni::Module::Base
             description: %q{Tries to force directory listings.},
             elements:    [ Element::SERVER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.4',
+            version:     '0.1.5',
             targets:     %w(Generic),
             references: {
-                'CWE' => 'http://cwe.mitre.org/data/definitions/548.html'
+                'CWE' => 'http://cwe.mitre.org/data/definitions/548.html',
+                'WASC' => 'http://projects.webappsec.org/w/page/13246922/Directory%20Indexing'
             },
             issue:       {
                 name:        %q{Directory listing},
-                description: %q{In most circumstances enabling directory listings is a bad practice
-    as it allows an attacker to better grasp the web application's structure.},
+                description: %q{Web servers permitting directory listing are 
+                    typically used for sharing files. Directory listing allows 
+                    the client to view a simple list of all the files and 
+                    folders hosted on the web server. The client is then able to
+                    traverse each directory and download the files. Cyber-
+                    criminals will utilise the presence of directory listing to 
+                    discover sensitive files, download protected content, or 
+                    even just learn how the web application is structured. 
+                    Arachni discovered that the affected page permits directory
+                    listing.},
                 tags:        %w(path directory listing index),
                 cwe:         '548',
                 severity:    Severity::LOW,
-                remedy_guidance: %q{Restrict access to important directories or files by adopting a need to know requirement for both the document and server root,
-                    and turn off features such as Automatic Directory Listings.}
+                remedy_guidance: %q{Unless the web server is being utilised to
+                    share static and non-sensitive files, enabling
+                    directory listing is considered a poor security practice
+                    and therefore should be disabled. This can typically be done
+                    with a simple configuration change on the server. The steps 
+                    to disable the directory listing will differ depending on 
+                    the type of server being used (IIS, Apache, etc.). If 
+                    directory listing is required, and permitted, then steps 
+                    should be taken to ensure that the risk of such a configuration
+                    is reduced. These can include: 1. Requiring
+                    authentication to access affected pages. 2. Adding the 
+                    affected path to the robots.txt file to prevent the 
+                    directory contents being searchable via search engines. 3.
+                    Ensuring that sensitive files are not stored within the
+                    web or document root. 4. Removing any files that are not 
+                    required for the application to function.}
             }
         }
     end

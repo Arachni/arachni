@@ -14,10 +14,8 @@
     limitations under the License.
 =end
 
-#
 # @author   Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>, haliphax
-# @version  0.1.2
-#
+# @version  0.1.3
 class Arachni::Modules::SSN < Arachni::Module::Base
 
     def self.regexp
@@ -37,17 +35,30 @@ class Arachni::Modules::SSN < Arachni::Module::Base
                 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>', # original
                 'haliphax' # tweaked regexp
             ],
-            version:     '0.1.2',
+            version:     '0.1.3',
             targets:     %w(Generic),
             references: {
                 'ssa.gov' => 'http://www.ssa.gov/pubs/10064.html'
             },
             issue:       {
                 name:            %q{Disclosed US Social Security Number (SSN)},
-                description:     %q{A US Social Security Number is being disclosed.},
+                description:     %q{The US Social Security Number (SSN) is a 
+                    personally identifiable number that is issued to its 
+                    citizens. A stolen or leaked SSN can lead to a compromise, 
+                    and/or the theft of the affected individual's identity. 
+                    Through the use of regular expressions, Arachni has discovered
+                    a SSN located within the response of the affected page.},
                 cwe:             '200',
                 severity:        Severity::HIGH,
-                remedy_guidance: %q{Remove all SSN occurrences from the page.},
+                remedy_guidance: %q{Initially, the SSN within the response 
+                    should be checked to ensure its validity, as it is possible 
+                    that the regular expression has matched a similar number
+                    with no relation to a real SSN. If the response does contain 
+                    a valid SSN, then all efforts should be taken to remove or
+                    further protect this information. This can be achieved by 
+                    removing the SSN all together or by masking the number so
+                    that only the last few digits are present within the 
+                    response. eg. **********123.},
             }
         }
     end

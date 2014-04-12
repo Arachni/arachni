@@ -14,13 +14,9 @@
     limitations under the License.
 =end
 
-require 'digest/md5'
-
-#
 # Logs all non 200 (OK) and non 404 server responses.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Arachni::Modules::InterestingResponses < Arachni::Module::Base
 
     IGNORE_CODES = [ 200, 404 ].to_set
@@ -48,13 +44,12 @@ class Arachni::Modules::InterestingResponses < Arachni::Module::Base
         return if IGNORE_CODES.include?( res.code ) || res.body.to_s.empty? ||
             issue_limit_reached?
 
-        digest = Digest::MD5.hexdigest( res.body )
-        path   = uri_parse( res.effective_url ).path
+        path = uri_parse( res.effective_url ).path
 
-        return if audited?( path ) || audited?( digest )
+        return if audited?( path ) || audited?( res.body )
 
         audited( path )
-        audited( digest )
+        audited( res.body )
 
         log( { id: "Code: #{res.code}", element: Element::SERVER }, res )
         print_ok "Found an interesting response -- Code: #{res.code}."
@@ -66,14 +61,17 @@ class Arachni::Modules::InterestingResponses < Arachni::Module::Base
             description: %q{Logs all non 200 (OK) server responses.},
             elements:    [ Element::SERVER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.4',
+            version:     '0.1.5',
             targets:     %w(Generic),
             references:  {
                 'w3.org' => 'http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html'
             },
             issue:       {
                 name:        %q{Interesting response},
-                description: %q{The server responded with a non 200 (OK) code. },
+                description: %q{The server responded with a non 200 (OK) nor 404
+                (Not Found) status code. This is a non-issue, however exotic HTTP
+                response status codes can provide useful insights into the behavior
+                of the web application and assist with the penetration test.},
                 tags:        %w(interesting response server),
                 severity:    Severity::INFORMATIONAL
             },

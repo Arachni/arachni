@@ -76,14 +76,7 @@ class Server < WEBrick::HTTPProxyServer
     #
     def do_POST( req, res )
         perform_proxy_request( req, res ) do |url, header|
-            params = Arachni::Utilities.form_parse_request_body( req.body )
-
-            # This is not necessary since we've parsed and put the POST body
-            # in the request parameters. Otherwise the server will not return
-            # a response.
-            header.delete 'Content-Length'
-
-            Arachni::HTTP.post( url, http_opts( params: params, headers: header ) ).response
+            Arachni::HTTP.post( url, http_opts( body: req.body, headers: header ) ).response
         end
     end
 
@@ -94,7 +87,7 @@ class Server < WEBrick::HTTPProxyServer
     #
     def do_PUT( req, res )
         perform_proxy_request( req, res ) do |url, header|
-            Arachni::HTTP.request( url, http_opts( method: :put, headers: header ) ).response
+            Arachni::HTTP.request( url, http_opts( method: :put, body: req.body, headers: header ) ).response
         end
     end
 

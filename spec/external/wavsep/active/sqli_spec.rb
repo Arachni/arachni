@@ -7,7 +7,7 @@ describe 'WAVSEP SQL Injection' do
         {
             'Erroneous 500 Responses' => {
                 modules:    'sqli',
-                url:        "SInjection-Detection-Evaluation-#{http_method}-500Error/",
+                url:        "SQL-Injection/SInjection-Detection-Evaluation-#{http_method}-500Error/",
                 vulnerable: [
                     'Case01-InjectionInLogin-String-LoginBypass-WithErrors.jsp',
                     'Case02-InjectionInSearch-String-UnionExploit-WithErrors.jsp',
@@ -32,7 +32,7 @@ describe 'WAVSEP SQL Injection' do
             },
             'Erroneous 200 Responses'=> {
                 modules: 'sqli',
-                url:     "SInjection-Detection-Evaluation-#{http_method}-200Error/",
+                url:     "SQL-Injection/SInjection-Detection-Evaluation-#{http_method}-200Error/",
                 vulnerable: [
                      'Case01-InjectionInLogin-String-LoginBypass-With200Errors.jsp',
                      'Case02-InjectionInSearch-String-UnionExploit-With200Errors.jsp',
@@ -57,7 +57,7 @@ describe 'WAVSEP SQL Injection' do
             },
             '200 Responses With Differentiation' => {
                 modules:    'sqli_blind_*',
-                url:        "SInjection-Detection-Evaluation-#{http_method}-200Valid/",
+                url:        "SQL-Injection/SInjection-Detection-Evaluation-#{http_method}-200Valid/",
                 vulnerable: [
                     'Case01-InjectionInLogin-String-LoginBypass-WithDifferent200Responses.jsp',
                     'Case02-InjectionInSearch-String-UnionExploit-WithDifferent200Responses.jsp',
@@ -82,7 +82,7 @@ describe 'WAVSEP SQL Injection' do
             },
             'Identical 200 Responses' => {
                 modules: 'sqli_blind_*',
-                url:     "SInjection-Detection-Evaluation-#{http_method}-200Identical/",
+                url:     "SQL-Injection/SInjection-Detection-Evaluation-#{http_method}-200Identical/",
                 vulnerable: [
                      'Case01-InjectionInView-Numeric-Blind-200ValidResponseWithDefaultOnException.jsp',
                      'Case02-InjectionInView-String-Blind-200ValidResponseWithDefaultOnException.jsp',

@@ -21,7 +21,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.5
+# @version 0.1.6
 #
 # @see http://cwe.mitre.org/data/definitions/693.html
 # @see http://capec.mitre.org/data/definitions/107.html
@@ -60,7 +60,7 @@ class Arachni::Modules::XST < Arachni::Module::Base
             description: %q{Sends an HTTP TRACE request and checks if it succeeded.},
             elements:    [ Element::SERVER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.5',
+            version:     '0.1.6',
             references:  {
                 'CAPEC' => 'http://capec.mitre.org/data/definitions/107.html',
                 'OWASP' => 'http://www.owasp.org/index.php/Cross_Site_Tracing'
@@ -68,12 +68,33 @@ class Arachni::Modules::XST < Arachni::Module::Base
             targets:     %w(Generic),
             issue:       {
                 name:            %q{HTTP TRACE},
-                description:     %q{The HTTP TRACE method is enabled.
-    This misconfiguration can become a pivoting point for a Cross-Site Scripting (XSS) attack.},
+                description:     %q{The TRACE HTTP method allows a client so 
+                    send a request to the server, and have the same request then 
+                    send back in the server's response. This allows the client 
+                    to determine if the server is receiving the request as 
+                    expected or if specific parts of the request are not 
+                    arriving as expected. For example incorrect encoding or a 
+                    load balancer has filtered or changed a value. On many 
+                    default installations the TRACE method is still enabled. 
+                    While not vulnerable by itself, it does provide a method for 
+                    cyber-criminals to bypass the HTTPOnly cookie, and therefore 
+                    could allow a XSS attack to successfully access a session 
+                    token. Arachni has discovered that the affected page permits 
+                    the HTTP TRACE method. },
                 tags:            %w(xst methods trace server),
                 cwe:             '693',
                 severity:        Severity::MEDIUM,
-                remedy_guidance: %q{Disable the TRACE method if not required or use input/output validation.}
+                remedy_guidance: %q{The HTTP TRACE method is normally not 
+                    required within production sites, and should therefor be 
+                    disabled. Depending on the function being performed by the 
+                    web application, ie. Serves static content or provides a 
+                    portal where users must authenticate, then the risk level 
+                    can start low and increase as more functionality is 
+                    implemented. The remediation is typically a very simple 
+                    configuration change and in most cases will not have any 
+                    negative impact on the server or application. For framework 
+                    specific remediation see the following page 
+                    'www.owasp.org/index.php/Cross_Site_Tracing'.}
             }
 
         }

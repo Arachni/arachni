@@ -14,7 +14,6 @@
     limitations under the License.
 =end
 
-#
 # HTTP Response Splitting audit module.
 #
 # It audits links, forms and cookies.
@@ -22,12 +21,11 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.7
+# @version 0.1.8
 #
 # @see http://cwe.mitre.org/data/definitions/20.html
 # @see http://www.owasp.org/index.php/HTTP_Response_Splitting
 # @see http://www.securiteam.com/securityreviews/5WP0E2KFGK.html
-#
 class Arachni::Modules::ResponseSplitting < Arachni::Module::Base
 
     def run
@@ -56,23 +54,42 @@ class Arachni::Modules::ResponseSplitting < Arachni::Module::Base
                 if any of them end up in the response header.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.1.7',
+            version:     '0.1.8',
             references:  {
                 'SecuriTeam' => 'http://www.securiteam.com/securityreviews/5WP0E2KFGK.html',
-                'OWASP'      => 'http://www.owasp.org/index.php/HTTP_Response_Splitting'
+                'OWASP'      => 'http://www.owasp.org/index.php/HTTP_Response_Splitting',
+                'WASC'       => 'http://projects.webappsec.org/w/page/13246931/HTTP%20Response%20Splitting'
             },
             targets:     %w(Generic),
 
             issue:       {
                 name:            %q{Response Splitting},
-                description:     %q{The web application includes user input
-     in the response HTTP header.},
+                description:     %q{HTTP response splitting occurs when 
+                    untrusted data (usually a client's request) is inserted into 
+                    the response headers without any sanitisation or validation. 
+                    If vulnerable, this allows a cyber-criminal to essentially 
+                    split the HTTP response into two. This is abused by the 
+                    cyber-criminal injecting both CR (aka, carriage return, %0d, 
+                    or /r) characters and LF (aka, line feed, %0a, or \n) which 
+                    will then form the split. If the CR or LF characters are not 
+                    processed by the server then it cannot be exploited. Along 
+                    with these characters, the cyber-criminal can then construct 
+                    their own arbitrary response headers and body which would 
+                    then form the second response. The second response is 
+                    entirely under their control, and then permits a number of 
+                    other attacks.},
                 tags:            %w(response splitting injection header),
                 cwe:             '20',
                 severity:        Severity::MEDIUM,
                 cvssv2:          '5.0',
-                remedy_guidance: %q{User inputs must be validated and filtered
-    before being included as part of the HTTP response headers.},
+                remedy_guidance: %q{It is recommended that untrusted or 
+                    non-validated data is never used to form the contents of the
+                    response header. Where any untrusted source is required to 
+                    be used in the response headers, it is important to ensure 
+                    that any hazardous characters (%0d, %0a, /r, /n, and 
+                    potentially others) are prior to being used. This is 
+                    especially important when setting cookie values, redirecting, 
+                    or when virtual hosting.},
                 remedy_code:     '',
             }
 

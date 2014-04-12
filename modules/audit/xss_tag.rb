@@ -19,7 +19,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.5
+# @version 0.1.6
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -67,22 +67,68 @@ class Arachni::Modules::XSSHTMLTag < Arachni::Module::Base
             description: %q{Cross-Site Scripting in HTML tag.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.1.5',
+            version:     '0.1.6',
             references:  {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
-                'Secunia'  => 'http://secunia.com/advisories/9716/'
+                'Secunia'  => 'http://secunia.com/advisories/9716/',
+                'WASC' => 'http://projects.webappsec.org/w/page/13246920/Cross%20Site%20Scripting'
             },
             targets:     %w(Generic),
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS) in HTML tag},
-                description:     %q{Unvalidated user input is being embedded in a HTML element.
-    This can lead to a Cross-Site Scripting vulnerability or a form of HTML manipulation.},
+                description:     %q{Client side scripts are used extensively by 
+                    modern web applications. They perform simple functions such 
+                    as the formatting of text to full manipulation of client 
+                    side data and operating system interaction. Cross Site 
+                    Scripting (XSS) is where the client is able to inject 
+                    scripts into a request and have the server return the script 
+                    to the client. This occurs because the application is taking 
+                    untrusted data (in this example from the client) and reusing 
+                    it without performing any data validation or sanitisation. 
+                    If the injected script is returned immediately this is known 
+                    as reflected XSS. If the injected script is stored by the 
+                    server and returned to any client visiting the affected page 
+                    then this is known as persistent XSS (also stored XSS). A 
+                    common attack used by cyber-criminals is to steal a client's 
+                    session token by injecting JavaScript, however XSS 
+                    vulnerabilities can also be abused to exploit clients for 
+                    example by visiting the page either directly or through a 
+                    crafted HTTP link delivered via a social engineering email. 
+                    Note: many modern browsers attempt to implement some form of 
+                    XSS protection, however these do not protect against all 
+                    methods of attack, and in some cases can easily be bypassed. 
+                    Arachni has discovered that it is possible to insert content 
+                    directly into a HTML tag. for example 
+                    '<INJECTION_HERE href=.......etc>' where INJECTION_HERE 
+                    represents the location where the Arachni payload was 
+                    detected.},
                 tags:            %w(xss script tag regexp dom attribute injection),
                 cwe:             '79',
                 severity:        Severity::HIGH,
                 cvssv2:          '9.0',
-                remedy_guidance: 'User inputs must be validated and filtered
-    before being returned as part of the HTML code of a page.',
+                remedy_guidance: %q{To remediate XSS vulnerabilities it is 
+                    important to never use untrusted or unfiltered data within 
+                    the code of a HTML page. Untrusted data can originate not 
+                    only form the client but potentially a third party, or 
+                    previously uploaded file etc. Filtering of untrusted data 
+                    typically involves converting special characters to their 
+                    HTML entity encoding equivalent (however other methods do 
+                    exist. see ref.). These special characters include (ignoring 
+                    commas) '&, <, >, ", ', /'. An example of HTML entity encode 
+                    is converting a '<' to '&lt;'. Although it is possible to 
+                    filter untrusted input, there are five locations within a 
+                    HTML page where untrusted input (even if it has been 
+                    filtered) should never be placed. These locations include 
+                    1. Directly in a script. 2. inside a HTML comment. 3. in an 
+                    attribute name. 4. in a tag name. 5. Directly in CSS. Where 
+                    untrusted data is inserted into HTML element content, HTML 
+                    common attributes, JavaScript data values, JSON values, HTML 
+                    style property values, or HTML URL parameter values it must 
+                    be filtered. Each of these locations have their own form of 
+                    escaping and filtering.
+                    Because many browsers attempt to implement XSS protection, 
+                    any manual verification of this finding should be conducted 
+                    utilising multiple different browsers and browser versions.},
             }
 
         }

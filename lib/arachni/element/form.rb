@@ -736,12 +736,10 @@ class Form < Arachni::Element::Base
     #
     def self.from_document( url, document )
         document = Nokogiri::HTML( document.to_s ) if !document.is_a?( Nokogiri::HTML::Document )
-        base_url = url
-        begin
-            base_url = document.search( '//base[@href]' )[0]['href']
-        rescue
-            base_url = url
-        end
+
+        base_url = document.search( '//base[@href]' )[0]['href'] rescue nil
+        base_url = url if base_url.to_s.empty?
+
         document.search( '//form' ).map do |cform|
             next if !(form = form_from_element( base_url, cform ))
             form.url = url

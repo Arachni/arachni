@@ -1,5 +1,26 @@
 # ChangeLog
 
+## 0.4.7 _(April 12, 2014)_
+
+- `Spider`
+    - Fixed mixed up status messages upon out-of-scope redirections.
+- `HTTP`
+    - `disable_ssl_host_verification` set to `true`.
+- `Element`
+    - `Capabilities::Auditable::Taint`
+        - Fixed bug when checking for trust level of issue when there's no match.
+    - `Form`
+        - Updated to handle empty base-href values.
+- Plugins
+    - `autologin`
+        - Updated to handle stacked post-login redirects.
+        - Added debugging information for failed logins.
+    - `proxy`
+        - Fixed forwarding of request bodies.
+- Modules
+    - All
+        - Updated descriptions and remedies.
+
 ## 0.4.6 _(January 1, 2014)_
 
 - CLI user interfaces

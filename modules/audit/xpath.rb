@@ -14,17 +14,15 @@
     limitations under the License.
 =end
 
-#
 # XPath Injection audit module.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.3
+# @version 0.1.4
 #
 # @see http://cwe.mitre.org/data/definitions/91.html
 # @see http://www.owasp.org/index.php/XPATH_Injection
 # @see http://www.owasp.org/index.php/Testing_for_XPath_Injection_%28OWASP-DV-010%29
-#
 class Arachni::Modules::XPathInjection < Arachni::Module::Base
 
     def self.error_strings
@@ -50,19 +48,48 @@ class Arachni::Modules::XPathInjection < Arachni::Module::Base
             description: %q{XPath injection module},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.3',
+            version:     '0.1.4',
             references:  {
-                'OWASP' => 'http://www.owasp.org/index.php/XPATH_Injection'
+                'OWASP' => 'http://www.owasp.org/index.php/XPATH_Injection',
+                'WASC' => 'http://projects.webappsec.org/w/page/13247005/XPath%20Injection'
             },
             targets:     %w(General PHP Java dotNET libXML2),
             issue:       {
                 name:            %q{XPath Injection},
-                description:     %q{XPath queries can be injected into the web application.},
+                description:     %q{XML Path Language (XPath) queries are used 
+                    by web applications for selecting nodes from XML documents. 
+                    Once selected, the value of these nodes can then be used by 
+                    the application. A simple example for the use of XML 
+                    documents is to store user information. As part of the 
+                    authentication process, the application will perform an 
+                    XPath query to confirm the login credentials and retrieve 
+                    that user's information to use in the following request. 
+                    XPath injection occurs where untrusted data is used to build 
+                    the XPath query. Cyber-criminals may abuse this injection 
+                    vulnerability to bypass authentication, query other user's 
+                    information, or, if the XML document contains privileged user
+                    credentials, allow the cyber-criminal to escalate their
+                    privileges. Arachni injected XPath queries into the page,
+                    and based on the responses from the server, has discovered
+                    the page is vulnerable to XPath injection.},
                 tags:            %w(xpath database error injection regexp),
                 cwe:             '91',
                 severity:        Severity::HIGH,
-                remedy_guidance: 'User inputs must be validated and filtered
-    before being included in database queries.',
+                remedy_guidance: %q{The preferred way to protect against XPath 
+                    injection is to utilise parameterized (also known as prepared)
+                    XPath queries. When utilising this method of querying the 
+                    XML document any value supplied by the client will be 
+                    handled as a string rather than part of the XPath query. An 
+                    alternative to parameterized queries it to use precompiled
+                    XPath queries. Precompiled XPath queries are not generated 
+                    dynamically and will therefor never process user supplied 
+                    input as XPath. Depending on the framework being used, 
+                    implementation of parameterized queries or precompiled queries
+                    will differ. Depending on the framework being used by the 
+                    application parameterized queries and/or precompiled queries
+                    may not be possible. In this case, input filtering on all 
+                    untrusted input should occur to ensure that it is not 
+                    included as part of the query.}
             }
         }
     end
