@@ -3,88 +3,68 @@
     All rights reserved.
 =end
 
-###
-#
 # The base class for all options.
 #
-###
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @abstract
 class Arachni::Component::Options::Base
 
-    #
     # The name of the option.
-    #
     attr_accessor :name
 
-    #
     # The description of the option.
-    #
-    attr_reader :desc
+    attr_reader   :description
 
-    #
     # The default value of the option.
-    #
-    attr_reader :default
+    attr_reader   :default
 
-    #
-    # The list of potential valid values
-    #
-    attr_accessor :enums
+    # The value of the option.
+    attr_accessor :value
 
-
-    #
     # Initializes a named option with the supplied attribute array.
     # The array is composed of three values.
     #
-    # attrs[0] = required (boolean type)
-    # attrs[1] = description (string)
-    # attrs[2] = default value
-    # attrs[3] = possible enum values
-    #
     # @param    [String]    name    the name of the options
-    # @param    [Array]     attrs   option attributes
-    #
-    def initialize( name, attrs = [] )
-        @name     = name
-        @required = attrs[0] || false
-        @desc     = attrs[1]
-        @default  = attrs[2]
-        @enums    = [ *(attrs[3]) ].map { |x| x.to_s }
+    # @param    [Hash]     options   option attributes
+    def initialize( name, options = {} )
+        options = options.dup
+
+        @name         = name
+        @required     = !!options.delete(:required)
+        @description  = options.delete(:description)
+        @default      = options.delete(:default)
+        self.value    = options.delete(:value)
+
+        return if options.empty?
+        fail ArgumentError, "Unknown options: #{options.keys.join( ', ' )}"
     end
 
-    #
+    def value
+        (@value || @default).to_s
+    end
+
     # Returns true if this is a required option.
     #
+    # @return   [Bool]
+    #   `true` if the option is required, `false` otherwise.
     def required?
         @required
     end
 
-    #
-    # Returns true if the supplied type is equivalent to this option's type.
-    #
-    def type?( in_type )
-        type == in_type
-    end
-
-    #
     # If it's required and the value is nil or empty, then it's not valid.
-    #
-    def valid?( value )
-        ( required? && ( value.nil? || value.to_s.empty? ) ) ? false : true
+    def valid?
+        !missing_value?
     end
 
-    #
-    # Returns true if the value supplied is nil and it's required to be
+    # Returns true if the value supplied is `nil` and it's required to be
     # a valid value
-    #
-    def empty_required_value?( value )
-        required? && value.nil?
+    def missing_value?
+        required? && value.empty?
     end
 
-    #
     # Normalizes the supplied value to conform with the type that the option is
     # conveying.
-    #
-    def normalize( value )
+    def normalize
         value
     end
 
@@ -92,24 +72,26 @@ class Arachni::Component::Options::Base
         'abstract'
     end
 
-    #
-    # Converts the Options object to hash
-    #
+    # @return    [Hash] `name` => `value`
+    def for_component
+        { name => normalize }
+    end
+
     # @return    [Hash]
-    #
     def to_h
         hash = {}
-        self.instance_variables.each do |var|
-            hash[var.to_s.gsub( /@/, '' )] = self.instance_variable_get( var )
+        instance_variables.each do |var|
+            hash[var.to_s.gsub( /@/, '' ).to_sym] = instance_variable_get( var )
         end
-        hash.merge( 'type' => type )
+        hash.merge( type: type )
     end
 
-    def ==( opt )
-        to_h == opt.to_h
+    def ==( option )
+        to_h == option.hash
     end
 
-    protected
-    attr_writer :required, :desc, :default # :nodoc:
+    def hash
+        to_h.hash
+    end
 
 end

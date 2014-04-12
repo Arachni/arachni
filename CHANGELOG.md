@@ -107,6 +107,7 @@
 - `AuditStore`
     - `#save` -- Updated to store a compressed `Marshal` dump of the instance.
     - `.load` -- Updated to load the new `#save` format.
+- `Component::Options` -- Refactored initializers and API.
 - Reports
     - Removed `metareport`.
 - Plugins

@@ -1,104 +1,151 @@
 require 'spec_helper'
 
 describe Arachni::Component::Options::Base do
-    before( :all ) do
-        @opt = Arachni::Component::Options::Base
-    end
 
     describe '#name' do
         it 'returns the name of the option' do
             name = 'a name'
-            @opt.new( name ).name.should == name
+            described_class.new( name ).name.should == name
         end
     end
 
-    describe '#desc' do
+    describe '#description' do
         it 'returns the description' do
-            desc = 'a description'
-            @opt.new( '', [ false, desc ] ).desc.should == desc
+            description = 'a description'
+            described_class.new( '', description: description ).description.should == description
         end
     end
 
     describe '#default' do
-        it 'returns the default value -- if there is one' do
+        it 'returns the default value' do
             default = 'default value'
-            @opt.new( '', [ false, '', default ] ).default.should == default
-        end
-    end
-
-    describe '#enums' do
-        it 'returns an array of possible, predefined, values' do
-            enums = %w(1 2 3)
-            @opt.new( '', [ false, '', nil, enums ] ).enums.should == enums
+            described_class.new( '', default: default ).default.should == default
         end
     end
 
     describe '#required?' do
         context 'when the option is mandatory' do
             it 'returns true' do
-                @opt.new( '', [ true ] ).required?.should be_true
+                described_class.new( '', required: true ).required?.should be_true
             end
         end
 
         context 'when the option is not mandatory' do
             it 'returns false' do
-                @opt.new( '', [ false ] ).required?.should be_false
+                described_class.new( '', required: false ).required?.should be_false
             end
         end
-    end
 
-    describe '#type?' do
-        context 'when the type matches the param' do
-            it 'returns true' do
-                @opt.new( '' ).type?( 'abstract' ).should be_true
-            end
-        end
-        context 'when the type does not match the param' do
+        context 'by default' do
             it 'returns false' do
-                @opt.new( '' ).type?( 'blah' ).should be_false
+                described_class.new( '' ).required?.should be_false
             end
         end
     end
 
     describe '#valid?' do
-        context 'when the value is valid' do
-            it 'returns true' do
-                @opt.new( '' ).valid?( nil ).should be_true
-                @opt.new( '' ).valid?( '' ).should be_true
-                @opt.new( '', [ true ] ).valid?( 'blah' ).should be_true
-                @opt.new( '' ).valid?( 'blah' ).should be_true
+        context 'when the option is required' do
+            context 'and the value is not empty' do
+                it 'returns true' do
+                    described_class.new( '', required: true, value: 'stuff' ).valid?.should be_true
+                end
+            end
+
+            context 'and the value is empty' do
+                it 'returns false' do
+                    described_class.new( '', required: true, value: '' ).valid?.should be_false
+                end
+            end
+
+            context 'and the value is nil' do
+                it 'returns false' do
+                    described_class.new( '', required: true ).valid?.should be_false
+                end
             end
         end
-        context 'when the value is not valid' do
-            it 'returns false' do
-                @opt.new( '', [ true ] ).valid?( nil ).should be_false
-                @opt.new( '', [ true ] ).valid?( '' ).should be_false
+
+        context 'when the option is not required' do
+            context 'and the value is not empty' do
+                it 'returns true' do
+                    described_class.new( '', value: 'true' ).valid?.should be_true
+                end
+            end
+
+            context 'and the value is empty' do
+                it 'returns true' do
+                    described_class.new( '' ).valid?.should be_true
+                end
             end
         end
     end
 
-    describe '#empty_required_value?' do
-        context 'when a required value is empty' do
-            it 'returns true' do
-                @opt.new( '', [ true ] ).empty_required_value?( nil ).should be_true
+    describe '#missing_value?' do
+        context 'when the option is required' do
+            context 'and the value is not empty' do
+                it 'returns false' do
+                    described_class.new( '', required: true, value: 'stuff' ).missing_value?.should be_false
+                end
+            end
+
+            context 'and the value is empty' do
+                it 'returns true' do
+                    described_class.new( '', required: true, value: '' ).missing_value?.should be_true
+                end
+            end
+
+            context 'and the value is nil' do
+                it 'returns true' do
+                    described_class.new( '', required: true ).missing_value?.should be_true
+                end
             end
         end
-        context 'when a required value is not empty' do
-            it 'returns false' do
-                @opt.new( '' ).empty_required_value?( nil ).should be_false
+
+        context 'when the option is not required' do
+            context 'and the value is not empty' do
+                it 'returns false' do
+                    described_class.new( '', value: 'true' ).missing_value?.should be_false
+                end
+            end
+
+            context 'and the value is empty' do
+                it 'returns false' do
+                    described_class.new( '' ).missing_value?.should be_false
+                end
+            end
+        end
+    end
+
+    describe '#value=' do
+        it 'corces the value to a string' do
+            option = described_class.new( '' )
+            option.value = 1
+            option.value.should == '1'
+        end
+    end
+
+    describe '#value' do
+        it 'returns the set value' do
+            option = described_class.new( '' )
+            option.value = 1
+            option.value.should == '1'
+        end
+
+        context 'when no value is set' do
+            it 'returns #default' do
+                described_class.new( '', default: 'test' ).value.should == 'test'
             end
         end
     end
 
     describe '#normalize' do
         it 'returns the value as is' do
-            @opt.new( '' ).normalize( 'blah' ).should == 'blah'
+            described_class.new( '', value: 'blah' ).normalize.should == 'blah'
         end
     end
 
     describe '#type' do
         it 'returns the option type as a string' do
-            @opt.new( '' ).type.should == 'abstract'
+            described_class.new( '' ).type.should == 'abstract'
         end
     end
 

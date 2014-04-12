@@ -3,29 +3,23 @@
     All rights reserved.
 =end
 
-###
-#
 # URL option.
 #
-###
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @abstract
 class Arachni::Component::Options::URL < Arachni::Component::Options::Base
+
+    def normalize
+        Arachni::URI( value )
+    end
+
+    def valid?
+        return false if !super
+        IPSocket.getaddress( normalize.host ) rescue false
+    end
+
     def type
         'url'
     end
 
-    def valid?( value )
-        return false if empty_required_value?( value )
-
-        if value && !value.to_s.empty?
-            require 'uri'
-            require 'socket'
-            begin
-                ::IPSocket.getaddress( URI( value ).host )
-            rescue
-                return false
-            end
-        end
-
-        super
-    end
 end

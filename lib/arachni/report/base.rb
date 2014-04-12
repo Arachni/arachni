@@ -15,30 +15,28 @@ module Report
 module Options
     include Component::Options
 
-    #
-    # Returns a string option named 'outfile'.
+    # Returns a string option named `outfile`.
     #
     # Default value is:
     #   year-month-day hour.minute.second +timezone.extension
     #
-    # @param    [String]    ext     extension for the outfile
-    # @param    [String]    desc    description of the option
+    # @param    [String]    extension     Extension for the outfile.
+    # @param    [String]    description   Description of the option.
     #
     # @return   [Arachni::OptString]
-    #
-    def outfile( ext = '', desc = 'Where to save the report.' )
-        Options::String.new( 'outfile', [ false, desc,
-            Time.now.to_s.gsub( ':', '.' ) + ext ] )
+    def outfile( extension = '', description = 'Where to save the report.' )
+        Options::String.new( 'outfile',
+            description: description,
+            default:     Time.now.to_s.gsub( ':', '.' ) + extension
+        )
     end
 
     def skip_responses
         Options::Bool.new( 'skip_responses',
-            [ false,
-             "Don't include the bodies of the HTTP " +
-                 "responses of the issues in the report" +
-                 " -- will lead to a greatly decreased report file-size.",
-             false
-            ]
+             description: "Don't include the bodies of the HTTP " +
+                 'responses of the issues in the report' +
+                 ' -- will lead to a greatly decreased report file-size.',
+             default:     false
         )
     end
 
@@ -156,11 +154,7 @@ class Base < Component::Base
     def self.info
         {
             name:        'Report abstract class.',
-            options:     [
-                #                    option name    required?       description                         default
-                # Arachni::OptBool.new( 'html',    [ false, 'Include the HTML responses in the report?', true ] ),
-                # Arachni::OptBool.new( 'headers', [ false, 'Include the headers in the report?', true ] ),
-            ],
+            options:     [],
             description: %q{This class should be extended by all reports.},
             author:      'zapotek',
             version:     '0.1.1',
@@ -168,7 +162,7 @@ class Base < Component::Base
     end
 
     def self.outfile_option
-        (info[:options] || {}).select { |opt| opt.name == Options.outfile.name }.first
+        (info[:options] || {}).find { |opt| opt.name == Options.outfile.name }
     end
 end
 

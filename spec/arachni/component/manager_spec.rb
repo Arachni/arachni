@@ -292,21 +292,21 @@ describe Arachni::Component::Manager do
             @components.prep_opts( c, @components[c],
                 { 'req_opt' => 'my value'}
             ).should == {
-                    "req_opt" => "my value",
-                    "opt_opt" => nil,
-                "default_opt" => "value"
+                    'req_opt' => 'my value',
+                    'opt_opt' => '',
+                'default_opt' => 'value'
             }
 
             opts = {
                 'req_opt' => 'req_opt value',
                 'opt_opt' => 'opt_opt value',
-                "default_opt" => "default_opt value"
+                'default_opt' => 'default_opt value'
             }
             @components.prep_opts( c, @components[c], opts ).should == opts
         end
 
         context 'with invalid options' do
-            it 'raises Arachni::Component::Options::Error::Invalid' do
+            it "raises #{Arachni::Component::Options::Error::Invalid}" do
                 trigger = proc do
                     begin
                         c = 'with_options'
@@ -317,9 +317,6 @@ describe Arachni::Component::Manager do
                     end
                 end
 
-                expect { trigger.call }.to raise_error Arachni::Error
-                expect { trigger.call }.to raise_error Arachni::Component::Error
-                expect { trigger.call }.to raise_error Arachni::Component::Options::Error
                 expect { trigger.call }.to raise_error Arachni::Component::Options::Error::Invalid
             end
         end

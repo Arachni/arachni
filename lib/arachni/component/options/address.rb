@@ -3,28 +3,21 @@
     All rights reserved.
 =end
 
-###
-#
+require 'socket'
+
 # Network address option.
 #
-###
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @abstract
 class Arachni::Component::Options::Address < Arachni::Component::Options::Base
+
+    def valid?
+        return false if !super
+        !!IPSocket.getaddress( value ) rescue false
+    end
+
     def type
         'address'
     end
 
-    def valid?( value )
-        return false if empty_required_value?( value )
-
-        if value && !value.empty?
-            require 'socket'
-            begin
-                ::IPSocket.getaddress( value )
-            rescue
-                return false
-            end
-        end
-
-        super
-    end
 end

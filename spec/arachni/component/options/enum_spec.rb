@@ -1,50 +1,58 @@
 require 'spec_helper'
 
 describe Arachni::Component::Options::Enum do
-    before( :all ) do
-        @opt = Arachni::Component::Options::Enum.new( '', [ false, 'Blah', nil, %w(1 2 3)] )
+    subject do
+        described_class.new( '', description: 'Blah', valid_values: %w(1 2 3) )
+    end
+
+    describe '#valid_values' do
+        context 'when no values have been provided' do
+            it 'returns an empty array' do
+                described_class.new( '' ).valid_values.should == []
+            end
+        end
+
+        it 'returns an array of possible, predefined, values' do
+            valid_values = %w(1 2 3)
+            described_class.new( '', valid_values: valid_values ).valid_values.should == valid_values
+        end
     end
 
     describe '#valid?' do
         context 'when the value is valid' do
             it 'returns true' do
-                @opt.valid?( '1' ).should be_true
+                subject.value = 1
+                subject.should be_true
             end
         end
         context 'when the value is not valid' do
             it 'returns false' do
-                @opt.valid?( '4' ).should be_false
-            end
-        end
-        context 'when required but empty' do
-            it 'returns false' do
-                @opt.class.new( '', [true] ).valid?( nil ).should be_false
+                subject.value = 4
+                subject.valid?.should be_false
             end
         end
     end
 
     describe '#normalize' do
         it 'converts the string input into a boolean value' do
-            @opt.normalize( '5' ).should be_nil
-            @opt.normalize( '3' ).should == '3'
-            @opt.normalize( 3 ).should == '3'
+            subject.value = '3'
+            subject.normalize.should == '3'
+
+            subject.value = 3
+            subject.normalize.should == '3'
         end
     end
 
-    describe '#desc' do
+    describe '#description' do
         it 'returns a description including the acceptable values' do
-            @opt.desc.include?( 'Blah' ).should be_true
-            @opt.enums.each { |v| @opt.desc.include?( v ).should be_true }
-
-            @opt.desc = 'boo'
-            @opt.desc.include?( 'boo' ).should be_true
-            @opt.desc.include?( 'Blah' ).should be_false
+            subject.description.include?( 'Blah' ).should be_true
+            subject.valid_values.each { |v| subject.description.should include v }
         end
     end
 
     describe '#type' do
         it 'returns the option type as a string' do
-            @opt.type.should == 'enum'
+            subject.type.should == 'enum'
         end
     end
 

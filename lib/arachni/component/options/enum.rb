@@ -3,38 +3,32 @@
     All rights reserved.
 =end
 
-###
-#
 # Enum option.
 #
-###
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @abstract
 class Arachni::Component::Options::Enum < Arachni::Component::Options::Base
+
+    # The list of potential valid values
+    attr_accessor :valid_values
+
+    def initialize( name, options = {} )
+        options = options.dup
+        @valid_values = [options.delete(:valid_values)].flatten.compact.map(&:to_s)
+        super
+    end
+
+    def valid?
+        return false if !super
+        valid_values.include?( value )
+    end
+
+    def description
+        "#{@description} (accepted: #{valid_values.join( ', ' )})"
+    end
+
     def type
         'enum'
     end
 
-    def valid?( value = self.value )
-        return false if empty_required_value?( value )
-        value && self.enums.include?( value.to_s )
-    end
-
-    def normalize( value = self.value )
-        return nil if !self.valid?( value )
-        value.to_s
-    end
-
-    def desc=( value )
-        self.desc_string = value
-        self.desc
-    end
-
-    def desc
-        if self.enums
-            str = self.enums.join( ', ' )
-        end
-        "#{self.desc_string || @desc || ''} (accepted: #{str})"
-    end
-
-    protected
-    attr_accessor :desc_string # :nodoc:
 end

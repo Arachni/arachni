@@ -3,31 +3,18 @@
     All rights reserved.
 =end
 
-###
-#
 # Mult-byte character string option.
 #
-###
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @abstract
 class Arachni::Component::Options::String < Arachni::Component::Options::Base
+
+    def normalize
+        value.to_s
+    end
+
     def type
         'string'
     end
 
-    def normalize( value )
-        if value =~ /^file:(.*)/
-            path = $1
-            begin
-                value = File.read( path )
-            rescue ::Errno::ENOENT, ::Errno::EISDIR
-                value = nil
-            end
-        end
-        value
-    end
-
-    def valid?( value = self.value )
-        value = normalize( value )
-        return false if empty_required_value?( value )
-        super
-    end
 end

@@ -14,9 +14,9 @@ Factory.define :audit_store_data do
                 options: [
                     Arachni::Component::Options::Enum.new(
                         'some_name',
-                        [ false, 'Some description.', 'default_value',
-                                      [ 'available', 'values', 'go', 'here' ]
-                        ]
+                        description:  'Some description.',
+                        default:      'default_value',
+                        valid_values: %w(available values go here)
                     )
                 ]
             }

@@ -3,31 +3,23 @@
     All rights reserved.
 =end
 
-###
-#
 # Integer option.
 #
-###
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @abstract
 class Arachni::Component::Options::Int < Arachni::Component::Options::Base
+
+    def normalize
+        value.to_i
+    end
+
+    def valid?
+        return false if !super
+        value.to_s =~ /^\d+$/
+    end
+
     def type
         'integer'
     end
 
-    def normalize( value )
-        if value.to_s.match( /^0x[a-fA-F\d]+$/ )
-            value.to_i( 16 )
-        elsif value.to_s.match( /^\d+$/ )
-            value.to_i
-        end
-    end
-
-    def valid?( value )
-        return false if empty_required_value?( value )
-
-        if value && !normalize( value ).to_s.match( /^\d+$/ )
-            return false
-        end
-
-        super
-    end
 end

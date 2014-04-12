@@ -175,27 +175,26 @@ class Manager < Hash
         return {} if !info.include?( :options ) || info[:options].empty?
 
         user_opts ||= {}
-        options = {}
-        errors  = {}
-        info[:options].each do |opt|
-            name = opt.name
-            val  = user_opts[name] || opt.default
+        options     = {}
+        errors      = {}
+        info[:options].each do |option|
+            option.value = user_opts[option.name]
 
-            if opt.empty_required_value?( val )
-                errors[name] = {
-                    opt:   opt,
-                    value: val,
-                    type:  :empty_required_value
+            if option.missing_value?
+                errors[option.name] = {
+                    option: option,
+                    value:  option.value,
+                    type:  :missing_value
                 }
-            elsif !opt.valid?( val )
-                errors[name] = {
-                    opt:   opt,
-                    value: val,
-                    type:  :invalid
+            elsif !option.valid?
+                errors[option.name] = {
+                    option: option,
+                    value:  option.value,
+                    type:   :invalid
                 }
             end
 
-            options[name] = opt.normalize( val )
+            options.merge! option.for_component
         end
 
         if !errors.empty?
@@ -357,10 +356,10 @@ class Manager < Hash
         "Invalid options for component: #{name}\n" +
         errors.map do |optname, error|
             val = error[:value].nil? ? '<empty>' : error[:value]
-            msg = (error[:type] == :invalid) ? "Invalid type" : "Empty required value"
+            msg = (error[:type] == :invalid) ? 'Invalid type' : 'Empty required value'
 
             " *  #{msg}: #{optname} => '#{val}'\n" +
-            " *  Expected type: #{error[:opt].type}"
+            " *  Expected type: #{error[:option].type}"
         end.join( "\n\n" )
     end
 

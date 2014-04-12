@@ -3,32 +3,22 @@
     All rights reserved.
 =end
 
-###
-#
 # Floating point option.
 #
-###
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @abstract
 class Arachni::Component::Options::Float < Arachni::Component::Options::Base
+
+    def normalize
+        Float( value ) rescue nil
+    end
+
+    def valid?
+        super && normalize
+    end
+
     def type
         'float'
-    end
-
-    def normalize( value )
-        begin
-            Float( value )
-        rescue
-            nil
-        end
-    end
-
-    def valid?( value )
-        return false if empty_required_value?( value )
-
-        if value && !normalize( value ).to_s.match( /^\d+\.\d+$/ )
-            return false
-        end
-
-        super
     end
 
 end

@@ -26,7 +26,7 @@ class Arachni::Plugins::Default < Arachni::Plugin::Base
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1',
             options:     [
-                Options::Int.new( 'int_opt', [false, 'An integer.', 4] )
+                Options::Int.new( 'int_opt', description: 'An integer.', default: 4 )
             ]
         }
     end

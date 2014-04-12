@@ -3,42 +3,34 @@
     All rights reserved.
 =end
 
-###
-#
 # Boolean option.
 #
-###
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @abstract
 class Arachni::Component::Options::Bool < Arachni::Component::Options::Base
-    TRUE_REGEX = /^(y|yes|t|1|true|on)$/i
+
+    TRUE_REGEX   = /^(y|yes|t|1|true|on)$/i
+    VALID_REGEXP = /^(y|yes|n|no|t|f|0|1|true|false|on)$/i
+
+    def valid?
+        return false if !super
+        value.to_s.match( VALID_REGEXP )
+    end
+
+    def normalize
+        value.to_s =~ TRUE_REGEX
+    end
+
+    def true?
+        normalize
+    end
+
+    def false?
+        !true?
+    end
 
     def type
         'bool'
     end
 
-    def valid?( value )
-        return false if empty_required_value?(value)
-
-        if value && !value.to_s.empty? &&
-            !value.to_s.match( /^(y|yes|n|no|t|f|0|1|true|false|on)$/i )
-            return false
-        end
-
-        true
-    end
-
-    def normalize( value )
-        if value.nil? || value.to_s.match( TRUE_REGEX ).nil?
-            false
-        else
-            true
-        end
-    end
-
-    def true?( value )
-        normalize( value )
-    end
-
-    def false?( value )
-        !true?( value )
-    end
 end

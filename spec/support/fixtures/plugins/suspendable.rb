@@ -33,7 +33,7 @@ class Arachni::Plugins::Suspendable < Arachni::Plugin::Base
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1',
             options:     [
-                Options::String.new( 'my_option', [ true, 'Required option' ] ),
+                Options::String.new( 'my_option', required: true, description: 'Required option' )
             ]
         }
     end

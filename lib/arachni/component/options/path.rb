@@ -3,23 +3,19 @@
     All rights reserved.
 =end
 
-###
-#
 # Network address option.
 #
-###
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @abstract
 class Arachni::Component::Options::Path < Arachni::Component::Options::Base
+
+    def valid?
+        return false if !super
+        File.exists?( value )
+    end
+
     def type
         'path'
     end
 
-    def valid?( value )
-        return false if empty_required_value?( value )
-
-        if value && !value.empty? && !File.exists?( value )
-            return false
-        end
-
-        super
-    end
 end
