@@ -119,6 +119,8 @@
         - `params` option renames to `parameters`.
         - Changed results to include `status` (`Symbol`) and `message` (`String`)
             instead of `code` (`Integer`) and `msg` (`String`).
+    - `content_types`
+        - Renamed `params` in logged results to `parameters`.
 - Path extractors
     - Added:
         - Extract partial paths from HTML comments (`comments`).

@@ -3,60 +3,67 @@
     All rights reserved.
 =end
 
-#
 # Logs content-types of all server responses.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-# @version 0.1.5
-#
+# @version 0.1.6
 class Arachni::Plugins::ContentTypes < Arachni::Plugin::Base
 
     is_distributable
 
     def prepare
         @results = {}
-        @exclude = Regexp.new( options['exclude'] )
+        @logged  = Arachni::Support::LookUp::HashSet.new
+    end
 
-        @logged = Arachni::Support::LookUp::HashSet.new
+    def restore( data )
+        @results = data[:results]
+        @logged  = data[:logged]
+    end
+
+    def suspend
+        { results: @results, logged: @logged }
     end
 
     def run
-        framework.http.add_on_complete do |res|
-            next if skip?( res )
+        framework.http.add_on_complete do |response|
+            next if skip?( response )
 
-            type = res.headers.content_type
+            type = response.headers.content_type
             type = type.join( ' - ' ) if type.is_a?( Array )
 
             @results[type] ||= []
             @results[type] << {
-                url:    res.url,
-                method: res.request.method.to_s.upcase,
-                params: res.request.parameters
+                url:        response.url,
+                method:     response.request.method.to_s.upcase,
+                parameters: response.request.parameters
             }
 
-            log( res )
+            log( response )
         end
     end
 
-    def skip?( res )
-        logged?( res ) || res.headers.content_type.to_s.empty? || !log?( res )
+    def skip?( response )
+        logged?( response ) || response.headers.content_type.to_s.empty? ||
+            !log?( response )
     end
 
-    def log?( res )
-        options['exclude'].empty? || !res.headers.content_type.to_s.match( @exclude )
+    def log?( response )
+        @exclude ||= Regexp.new( options[:exclude] )
+        options[:exclude].empty? ||
+            !response.headers.content_type.to_s.match( @exclude )
     end
 
-    def logged?( res )
-        @logged.include?( log_id( res ) )
+    def logged?( response )
+        @logged.include?( log_id( response ) )
     end
 
-    def log( res )
-        @logged << log_id( res )
+    def log( response )
+        @logged << log_id( response )
     end
 
-    def log_id( res )
-        res.request.method.to_s.upcase + res.url
+    def log_id( response )
+        response.request.method.to_s.upcase + response.url
     end
 
     def clean_up
@@ -84,10 +91,11 @@ class Arachni::Plugins::ContentTypes < Arachni::Plugin::Base
                 It can help you categorize and identify publicly available file-types
                 which in turn can help you identify accidentally leaked files.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.5',
+            version:     '0.1.6',
             options:     [
                 Options::String.new( 'exclude',
-                    [false, 'Exclude content-types that match this regular expression.', 'text']
+                    description: 'Exclude content-types that match this regular expression.',
+                    default:     'text'
                 )
             ]
         }

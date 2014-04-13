@@ -5,16 +5,14 @@
 
 class Arachni::Reports::XML
 
-#
 # XML formatter for the results of the ContentTypes plugin
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class PluginFormatters::ContentTypes < Arachni::Plugin::Formatter
     include Buffer
 
     def run
-        results.each_pair do |type, responses|
+        results.each do |type, responses|
             start_content_type( type )
 
             responses.each do |res|
@@ -23,9 +21,9 @@ class PluginFormatters::ContentTypes < Arachni::Plugin::Formatter
                 simple_tag( 'url', res[:url] )
                 simple_tag( 'method', res[:method] )
 
-                if res[:params] && res[:method].downcase == 'post'
+                if res[:parameters] && res[:method].downcase == 'post'
                     start_tag 'params'
-                    res[:params].each { |name, value| add_param( name, value ) }
+                    res[:parameters].each { |name, value| add_param( name, value ) }
                     end_tag 'params'
                 end
 
@@ -43,7 +41,7 @@ class PluginFormatters::ContentTypes < Arachni::Plugin::Formatter
     end
 
     def end_content_type
-        append "</content_type>"
+        append '</content_type>'
     end
 
 end

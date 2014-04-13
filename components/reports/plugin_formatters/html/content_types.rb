@@ -5,11 +5,9 @@
 
 class Arachni::Reports::HTML
 
-#
 # HTML formatter for the results of the ContentTypes plugin
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class PluginFormatters::ContentTypes < Arachni::Plugin::Formatter
     include Utils
 
@@ -30,10 +28,10 @@ class PluginFormatters::ContentTypes < Arachni::Plugin::Formatter
                                 URL: <a href="<%=escapeHTML(res[:url])%>"><%=escapeHTML(res[:url])%></a><br/>
                                 Method: <%=res[:method]%>
 
-                                <% if res[:params] && res[:method].downcase == 'post' %>
+                                <% if res[:parameters] && res[:method].downcase == 'post' %>
                                     <ul>
                                         <li>Parameters:</li>
-                                        <%res[:params].each_pair do |name, val|%>
+                                        <%res[:parameters].each do |name, val|%>
                                         <li>
                                             <%=name%> = <%=val%>
                                         </li>

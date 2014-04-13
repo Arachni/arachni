@@ -3,12 +3,8 @@ require 'spec_helper'
 describe name_from_filename do
     include_examples 'plugin'
 
-    before ( :all ) do
+    before(:all) do
         options.url = url
-    end
-
-    def results
-        framework.plugins.results[name_from_filename][:results]
     end
 
     def default_results
@@ -17,11 +13,11 @@ describe name_from_filename do
 image/png:
 - :url: __URL__png
   :method: GET
-  :params: {}
+  :parameters: {}
 application/vnd.ms-excel:
 - :url: __URL__excel
   :method: GET
-  :params: {}
+  :parameters: {}
 YAML
     end
 
@@ -31,11 +27,11 @@ YAML
 text/html;charset=utf-8:
 - :url: __URL__
   :method: GET
-  :params: {}
+  :parameters: {}
 text/css:
 - :url: __URL__css
   :method: GET
-  :params: {}
+  :parameters: {}
 YAML
     end
 
@@ -45,48 +41,50 @@ YAML
 text/html;charset=utf-8:
 - :url: __URL__
   :method: GET
-  :params: {}
+  :parameters: {}
 text/css:
 - :url: __URL__css
   :method: GET
-  :params: {}
+  :parameters: {}
 image/png:
 - :url: __URL__png
   :method: GET
-  :params: {}
+  :parameters: {}
 application/vnd.ms-excel:
 - :url: __URL__excel
   :method: GET
-  :params: {}
+  :parameters: {}
 YAML
     end
 
     context 'with default options' do
         it "skips 'text' content types" do
             run
-            results.should eq default_results
+            actual_results.should eq default_results
         end
     end
 
     context 'with custom \'exclude\' option' do
-        it "skips the provided content types" do
-            Arachni::Options.plugins = { name_from_filename => { 'exclude' => 'image|excel' } }
+        it 'skips the provided content types' do
+            options.plugins[component_name] = { 'exclude' => 'image|excel' }
+
             run
-            results.should eq results_with_options
+            actual_results.should eq results_with_options
         end
     end
 
     context 'with an empty \'exclude\' option' do
-        it "logs everything" do
-            Arachni::Options.plugins = { name_from_filename => { 'exclude' => '' } }
+        it 'logs everything' do
+            options.plugins[component_name] = { 'exclude' => '' }
+
             run
-            results.should eq results_with_empty_options
+            actual_results.should eq results_with_empty_options
         end
     end
 
     describe '.merge' do
         it 'merges an array of results' do
-            results = framework.plugins[name_from_filename].merge [ default_results, results_with_options ]
+            results = plugin.merge( [default_results, results_with_options] )
             results.should eq results_with_empty_options
         end
     end
