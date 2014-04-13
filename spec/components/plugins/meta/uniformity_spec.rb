@@ -20,7 +20,7 @@ describe name_from_filename do
         (@uniformals.flatten | [issue]).each { |i| Arachni::Data.issues << i }
     end
 
-    it 'logs digests of issues which affect similar parameters across multipla pages' do
+    it 'logs digests of issues which affect similar parameters across multiple pages' do
         run
 
         actual_results[0].sort.should == @uniformals[1].map(&:digest).sort
