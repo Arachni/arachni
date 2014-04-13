@@ -38,6 +38,15 @@ class Arachni::Plugins::UncommonHeaders < Arachni::Plugin::Base
         end
     end
 
+    def restore( headers )
+        prepare
+        @headers_per_url.merge!( headers )
+    end
+
+    def suspend
+        @headers_per_url
+    end
+
     def run
         http.add_on_complete do |response|
             headers = response.headers.
@@ -46,9 +55,7 @@ class Arachni::Plugins::UncommonHeaders < Arachni::Plugin::Base
 
             @headers_per_url[response.url].merge! headers
         end
-    end
 
-    def clean_up
         wait_while_framework_running
         register_results @headers_per_url
     end
@@ -72,7 +79,7 @@ class Arachni::Plugins::UncommonHeaders < Arachni::Plugin::Base
             name:        'Uncommon headers',
             description: %q{Intercepts HTTP responses and logs uncommon headers.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.1'
+            version:     '0.1.2'
         }
     end
 

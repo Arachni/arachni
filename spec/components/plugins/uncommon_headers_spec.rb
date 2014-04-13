@@ -50,7 +50,7 @@ describe name_from_filename do
                 },
             ]
 
-            framework.plugins[name_from_filename].merge( results ).should == {
+            framework.plugins[component_name].merge( results ).should == {
                 "#{url}" => {
                     "Name" => "Value",
                     "Name2" => "Value2"
