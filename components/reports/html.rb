@@ -118,8 +118,8 @@ class Arachni::Reports::HTML < Arachni::Report::Base
             version:      '0.3.2',
             options:      [
                 Options::Path.new( :tpl,
-                    describe: 'Template to use.',
-                    default:  File.dirname( __FILE__ ) + '/html/default.erb'
+                    description: 'Template to use.',
+                    default:     File.dirname( __FILE__ ) + '/html/default.erb'
                 ),
                 Options.outfile( '.html' ),
                 Options.skip_responses
