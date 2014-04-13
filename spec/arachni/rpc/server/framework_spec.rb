@@ -80,13 +80,13 @@ describe 'Arachni::RPC::Server::Framework' do
             plugin[:version].should == '0.1'
             plugin[:shortname].should == 'default'
             plugin[:options].size.should== 1
+
             opt = plugin[:options].first
-            opt['name'].should == 'int_opt'
-            opt['required'].should == false
-            opt['desc'].should == 'An integer.'
-            opt['default'].should == 4
-            opt['enums'].should be_empty
-            opt['type'].should == 'integer'
+            opt[:name].should == :int_opt
+            opt[:required].should == false
+            opt[:description].should == 'An integer.'
+            opt[:default].should == 4
+            opt[:type].should == 'integer'
         end
     end
     describe '#list_reports' do
