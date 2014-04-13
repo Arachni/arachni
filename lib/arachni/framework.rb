@@ -1071,7 +1071,7 @@ class Framework
         return if url_queue.empty?
 
         grabbed_page = nil
-        Page.from_url( url_queue.pop, precision: 2 ) do |page|
+        Page.from_url( url_queue.pop ) do |page|
             @retries[page.url.hash] ||= 0
 
             if page.code != 0
