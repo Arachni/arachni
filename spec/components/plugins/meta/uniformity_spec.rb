@@ -4,6 +4,8 @@ describe name_from_filename do
     include_examples 'plugin'
 
     before( :all ) do
+        options.url = web_server_url_for(:framework)
+
         @uniformals = [[],[]]
         10.times do |i|
             @uniformals[0] << Factory[:active_issue].
