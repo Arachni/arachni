@@ -4,12 +4,12 @@ describe name_from_filename do
     include_examples 'plugin'
 
     def url
-        'http://test.com/'
+        Arachni::Utilities.normalize_url web_server_url_for( :framework )
     end
 
     before( :all ) do
         options.url = url
-        options.do_not_crawl
+        options.scope.do_not_crawl
     end
 
     def vectors
@@ -124,20 +124,22 @@ describe name_from_filename do
         framework.on_audit_page { |page| pages << page }
         run
 
+        pages.pop
+
         check( pages )
     end
 
     context 'when setting the option' do
         describe :vectors do
             it 'forwards the given vectors to the framework to be audited' do
-                options.plugins[name_from_filename] = { 'vectors' => vectors.dup }
+                options.plugins[component_name] = { 'vectors' => vectors.dup }
                 run_test
             end
         end
 
         describe :yaml_string do
             it 'unserializes the given string and forward the given vectors to the framework to be audited' do
-                options.plugins[name_from_filename] = { 'yaml_string' => vectors.to_yaml }
+                options.plugins[component_name] = { 'yaml_string' => vectors.to_yaml }
                 run_test
             end
         end
@@ -146,7 +148,7 @@ describe name_from_filename do
             it 'unserializes the given string and forward the given vectors to the framework to be audited' do
                 File.open( 'yaml_file.yml', 'w' ){ |f| f.write( YAML.dump( vectors ) ) }
 
-                options.plugins[name_from_filename] = { 'yaml_file' => 'yaml_file.yml' }
+                options.plugins[component_name] = { 'yaml_file' => 'yaml_file.yml' }
                 run_test
 
                 File.delete( 'yaml_file.yml' )
@@ -156,7 +158,7 @@ describe name_from_filename do
                 File.open( 'yaml_file.yml', 'w' ){ |f| f.write( YAML.dump( vectors[1..-1] ) ) }
                 File.open( 'yaml_file.yml', 'a' ){ |f| f.write( YAML.dump( vectors.first ) ) }
 
-                options.plugins[name_from_filename] = { 'yaml_file' => 'yaml_file.yml' }
+                options.plugins[component_name] = { 'yaml_file' => 'yaml_file.yml' }
                 run_test
 
                 File.delete( 'yaml_file.yml' )

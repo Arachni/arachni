@@ -21,11 +21,11 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
     def run
         # if the 'vectors' option is an array at this point then someone fed
         # them to us programmatically
-        if !options['vectors'].is_a? Array
-            feed = if options['yaml_file']
-                IO.read( options['yaml_file'] )
-            elsif options['yaml_string']
-                options['yaml_string']
+        if !options[:vectors].is_a? Array
+            feed = if !options[:yaml_file].empty?
+                IO.read( options[:yaml_file] )
+            elsif !options[:yaml_string].empty?
+                options[:yaml_string]
             else
                 ''
             end
@@ -48,7 +48,7 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
                 return
             end
         else
-            feed = options['vectors']
+            feed = options[:vectors]
         end
 
         pages = {}
@@ -57,24 +57,19 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
         feed.each do |obj|
             vector = (obj.respond_to?( :value ) ? obj.value : obj).symbolize_keys( false )
 
-            begin
-                exception_jail{
+            exception_jail false do
+                if page?( vector )
+                    page_buffer << page_from_body_vector( vector )
+                    next
+                end
 
-                    if page?( vector )
-                        page_buffer << page_from_body_vector( vector )
-                        next
-                    end
+                next if !(element = hash_to_element( vector ))
 
-                    next if !(element = hash_to_element( vector ))
-
-                    pages[element.url] ||= Page.from_data( url: element.url )
-                    pages[element.url].send(
-                        "#{element.type}s=",
-                        pages[element.url].send( "#{element.type}s" ) | [element]
-                    )
-                }
-            rescue
-                next
+                pages[element.url] ||= Page.from_data( url: element.url )
+                pages[element.url].send(
+                    "#{element.type}s=",
+                    pages[element.url].send( "#{element.type}s" ) | [element]
+                )
             end
         end
 
@@ -206,11 +201,17 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
 
             },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.6',
+            version:     '0.1.7',
             options:     [
-                Options::Base.new( 'vectors', [false, ' Vector array (for configuration over RPC).'] ),
-                Options::String.new( 'yaml_string', [false, 'A string of YAML serialized vectors (for configuration over RPC).'] ),
-                Options::Path.new( 'yaml_file', [false, 'A file containing the YAML serialized vectors.'] )
+                Options::Object.new( :vectors,
+                    description: ' Vector array (for configuration over RPC).'
+                ),
+                Options::String.new( :yaml_string,
+                    description: 'A string of YAML serialized vectors (for configuration over RPC).'
+                ),
+                Options::Path.new( :yaml_file,
+                    description: 'A file containing the YAML serialized vectors.'
+                )
             ]
         }
     end
