@@ -537,6 +537,7 @@ class Framework
                 next if !list_report?( path, patterns )
 
                 @reports[report].info.merge(
+                    options:   @reports[report].info[:options] || [],
                     shortname: report,
                     path:      path,
                     author:    [@reports[report].info[:author]].
@@ -560,6 +561,7 @@ class Framework
                 next if !list_plugin?( path, patterns )
 
                 @plugins[plugin].info.merge(
+                    options:   @plugins[plugin].info[:options] || [],
                     shortname: plugin,
                     path:      path,
                     author:    [@plugins[plugin].info[:author]].
