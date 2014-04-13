@@ -1,20 +1,20 @@
 require 'spec_helper'
 
-describe Arachni::Component::Options::Enum do
+describe Arachni::Component::Options::MultipleChoice do
     subject do
-        described_class.new( '', description: 'Blah', valid_values: %w(1 2 3) )
+        described_class.new( '', description: 'Blah', choices: %w(1 2 3) )
     end
 
-    describe '#valid_values' do
+    describe '#choices' do
         context 'when no values have been provided' do
             it 'returns an empty array' do
-                described_class.new( '' ).valid_values.should == []
+                described_class.new( '' ).choices.should == []
             end
         end
 
         it 'returns an array of possible, predefined, values' do
             valid_values = %w(1 2 3)
-            described_class.new( '', valid_values: valid_values ).valid_values.should == valid_values
+            described_class.new( '', choices: valid_values ).choices.should == valid_values
         end
     end
 
@@ -46,7 +46,7 @@ describe Arachni::Component::Options::Enum do
     describe '#description' do
         it 'returns a description including the acceptable values' do
             subject.description.include?( 'Blah' ).should be_true
-            subject.valid_values.each { |v| subject.description.should include v }
+            subject.choices.each { |v| subject.description.should include v }
         end
     end
 

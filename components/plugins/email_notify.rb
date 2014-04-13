@@ -91,15 +91,15 @@ class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
                     required:    true,
                     description: 'SMTP password.'
                 ),
-                Options::Enum.new( :authentication,
+                Options::MultipleChoice.new( :authentication,
                     description:  'Authentication.',
                     default:      'plain',
-                    valid_values: ['plain', 'login', 'cram_md5', '']
+                    choices: ['plain', 'login', 'cram_md5', '']
                 ),
-                Options::Enum.new( :report,
+                Options::MultipleChoice.new( :report,
                     description:  'Report type to send as an attachment.',
                     default:      'txt',
-                    valid_values: ['txt', 'xml', 'html', 'json', 'yaml', 'marshal' 'none']
+                    choices: ['txt', 'xml', 'html', 'json', 'yaml', 'marshal' 'none']
                 )
             ]
 

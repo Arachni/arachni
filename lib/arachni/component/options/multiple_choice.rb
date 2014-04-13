@@ -3,18 +3,18 @@
     All rights reserved.
 =end
 
-# Enum option.
+# MultipleChoice option.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 # @abstract
-class Arachni::Component::Options::Enum < Arachni::Component::Options::Base
+class Arachni::Component::Options::MultipleChoice < Arachni::Component::Options::Base
 
     # The list of potential valid values
-    attr_accessor :valid_values
+    attr_accessor :choices
 
     def initialize( name, options = {} )
-        options = options.dup
-        @valid_values = [options.delete(:valid_values)].flatten.compact.map(&:to_s)
+        options  = options.dup
+        @choices = [options.delete(:choices)].flatten.compact.map(&:to_s)
         super
     end
 
@@ -24,11 +24,11 @@ class Arachni::Component::Options::Enum < Arachni::Component::Options::Base
 
     def valid?
         return false if !super
-        valid_values.include?( value )
+        choices.include?( value )
     end
 
     def description
-        "#{@description} (accepted: #{valid_values.join( ', ' )})"
+        "#{@description} (accepted: #{choices.join( ', ' )})"
     end
 
     def type

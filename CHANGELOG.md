@@ -108,6 +108,7 @@
     - `#save` -- Updated to store a compressed `Marshal` dump of the instance.
     - `.load` -- Updated to load the new `#save` format.
 - `Component::Options` -- Refactored initializers and API.
+    - `Enum` renamed to `MultipleChoice`.
 - Reports
     - Removed `metareport`.
 - Plugins

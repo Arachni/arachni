@@ -12,11 +12,11 @@ Factory.define :audit_store_data do
             'plugin_name' => {
                 results: 'stuff',
                 options: [
-                    Arachni::Component::Options::Enum.new(
+                    Arachni::Component::Options::MultipleChoice.new(
                         'some_name',
                         description:  'Some description.',
                         default:      'default_value',
-                        valid_values: %w(available values go here)
+                        choices: %w(available values go here)
                     )
                 ]
             }
