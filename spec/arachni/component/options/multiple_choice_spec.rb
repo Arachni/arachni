@@ -52,7 +52,7 @@ describe Arachni::Component::Options::MultipleChoice do
 
     describe '#type' do
         it 'returns the option type as a string' do
-            subject.type.should == 'enum'
+            subject.type.should == 'multiple_choice'
         end
     end
 

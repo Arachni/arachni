@@ -32,7 +32,7 @@ class Arachni::Component::Options::MultipleChoice < Arachni::Component::Options:
     end
 
     def type
-        'enum'
+        'multiple_choice'
     end
 
 end
