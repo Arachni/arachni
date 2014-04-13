@@ -1196,94 +1196,21 @@ describe Arachni::Framework do
 
     describe '#list_plugins' do
         it 'returns info on all plugins' do
-            loaded = subject.plugins.loaded
-            subject.list_plugins.map { |r| r.delete( :path ); r }
-                .sort_by { |e| e[:shortname] }.should == YAML.load( '
----
-- :name: \'\'
-  :description: \'\'
-  :author:
-  - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-  :version: \'0.1\'
-  :shortname: bad
-- :name: Default
-  :description: Some description
-  :author:
-  - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-  :version: \'0.1\'
-  :options:
-  - !ruby/object:Arachni::Component::Options::Int
-    name: int_opt
-    required: false
-    desc: An integer.
-    default: 4
-    enums: []
-  :shortname: default
-- :name: Distributable
-  :description: \'\'
-  :author:
-  - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-  :version: \'0.1\'
-  :issue:
-    :tags:
-    - distributable_string
-    - :distributable_sym
-  :shortname: distributable
-- :name: \'\'
-  :description: \'\'
-  :author:
-  - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-  :version: \'0.1\'
-  :shortname: loop
-- :name: Suspendable
-  :description: \'\'
-  :author:
-  - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-  :version: \'0.1\'
-  :options:
-  - !ruby/object:Arachni::Component::Options::String
-    name: my_option
-    required: true
-    desc: Required option
-    default:
-    enums: []
-  :shortname: suspendable
-- :name: Wait
-  :description: \'\'
-  :tags:
-  - wait_string
-  - :wait_sym
-  :author:
-  - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-  :version: \'0.1\'
-  :shortname: wait
-- :name: Component
-  :description: Component with options
-  :author:
-  - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-  :version: \'0.1\'
-  :options:
-  - !ruby/object:Arachni::Component::Options::String
-    name: req_opt
-    required: true
-    desc: Required option
-    default:
-    enums: []
-  - !ruby/object:Arachni::Component::Options::String
-    name: opt_opt
-    required: false
-    desc: Optional option
-    default:
-    enums: []
-  - !ruby/object:Arachni::Component::Options::String
-    name: default_opt
-    required: false
-    desc: Option with default value
-    default: value
-    enums: []
-  :shortname: with_options
-' ).sort_by { |e| e[:shortname] }
-            subject.plugins.loaded.should == loaded
+            subject.list_plugins.size.should == subject.plugins.available.size
+
+            info   = subject.list_plugins.find { |p| p[:options].any? }
+            plugin = subject.plugins[info[:shortname]]
+
+            plugin.info.each do |k, v|
+                if k == :author
+                    info[k].should == [v].flatten
+                    next
+                end
+
+                info[k].should == v
+            end
+
+            info[:shortname].should == plugin.shortname
         end
 
         context 'when a pattern is given' do
@@ -1296,28 +1223,21 @@ describe Arachni::Framework do
 
     describe '#list_reports' do
         it 'returns info on all reports' do
-            loaded = subject.reports.loaded
-            subject.list_reports.map { |r| r[:options] = []; r.delete( :path ); r }
-                .sort_by { |e| e[:shortname] }.should == YAML.load( '
----
-- :name: Report abstract class.
-  :options: []
+            subject.list_reports.size.should == subject.reports.available.size
 
-  :description: This class should be extended by all reports.
-  :author:
-  - zapotek
-  :version: 0.1.1
-  :shortname: afr
-- :name: Report abstract class.
-  :options: []
+            info   = subject.list_reports.find { |p| p[:options].any? }
+            report = subject.reports[info[:shortname]]
 
-  :description: This class should be extended by all reports.
-  :author:
-  - zapotek
-  :version: 0.1.1
-  :shortname: foo
-').sort_by { |e| e[:shortname] }
-            subject.reports.loaded.should == loaded
+            report.info.each do |k, v|
+                if k == :author
+                    info[k].should == [v].flatten
+                    next
+                end
+
+                info[k].should == v
+            end
+
+            info[:shortname].should == report.shortname
         end
 
         context 'when a pattern is given' do
