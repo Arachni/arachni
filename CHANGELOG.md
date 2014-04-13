@@ -227,6 +227,8 @@
             - Check for an ASP platform instead of a Windows one.
             - Fixed `LocalJumpError`.
 - Plugins
+    - Removed
+        - `libnotify`
     - `autologin`
         - Changed `print_bad` to `print_error` so that errors are written to the
             error log.

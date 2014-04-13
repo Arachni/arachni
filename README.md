@@ -430,8 +430,6 @@ core remains lean and makes it easy for anyone to add arbitrary functionality.
 - WAF (Web Application Firewall) Detector (`waf_detector`) -- Establishes a baseline of
     normal behavior and uses rDiff analysis to determine if malicious inputs cause any behavioral changes.
 - BeepNotify (`beep_notify`) -- Beeps when the scan finishes.
-- LibNotify (`libnotify`) -- Uses the libnotify library to send notifications for each
-    discovered issue and a summary at the end of the scan.
 - EmailNotify (`email_notify`) -- Sends a notification (and optionally a report) over SMTP at
     the end of the scan.
 - VectorFeed (`vector_feed`) -- Reads in vector data from which it creates elements to be
