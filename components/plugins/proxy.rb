@@ -6,16 +6,14 @@
 require 'erb'
 require 'ostruct'
 
-#
 # Passive proxy.
 #
 # Will gather data based on user actions and exchanged HTTP traffic and push that
-# data to {Framework#push_to_page_queue} to be audited.
+# data to {Arachni::Framework#push_to_page_queue} to be audited.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 # @version 0.3
-#
 class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
     BASEDIR  = "#{File.dirname( __FILE__ )}/proxy/"
@@ -43,11 +41,11 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         require_relative 'proxy/template_scope'
 
         @server = Arachni::HTTP::ProxyServer.new(
-             address:          options['bind_address'],
-             port:             options['port'],
+             address:          options[:bind_address],
+             port:             options[:port],
              response_handler: method( :response_handler ),
              request_handler:  method( :request_handler ),
-             timeout:          options['timeout']
+             timeout:          options[:timeout]
         )
 
         @pages = Set.new
@@ -132,12 +130,12 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         print_status "Requesting #{url}"
 
         # This is a sign-in request.
-        if params['session_token'] == options['session_token']
+        if params['session_token'] == options[:session_token]
             # Set us up for the redirection that's coming.
             res.code = 302
 
             # Set the session cookie.
-            res.headers['Set-Cookie'] = "#{SESSION_TOKEN_COOKIE}=#{options['session_token']}; path=/"
+            res.headers['Set-Cookie'] = "#{SESSION_TOKEN_COOKIE}=#{options[:session_token]}; path=/"
 
             # This is the cookie-set request for the domain of the scan target domain...
             if url == sign_in_url && req.method == :post
@@ -204,8 +202,8 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                         when '/record/stop'
                             record_stop
                             erb :verify_login_check, verify_fail: false, params: {
-                                'url'     => session.opts.login_check_url,
-                                'pattern' => session.opts.login_check_pattern
+                                'url'     => Arachni::Options.login.check_url,
+                                'pattern' => Arachni::Options.login.check_pattern
                             }
 
                         when '/verify/login_check'
@@ -262,7 +260,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     end
 
     def valid_session_token?( request )
-        session_token = options['session_token']
+        session_token = options[:session_token]
         return true if session_token.to_s.empty?
 
         request.effective_cookies[SESSION_TOKEN_COOKIE] == session_token
@@ -303,9 +301,11 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     def find_login_form_from_request( request )
         return if (params = parse_request_body( request.body )).empty?
 
-        f = session.find_login_form( pages:  @pages.to_a,
-                                     action: normalize_url( request.url ),
-                                     inputs: params.keys )
+        f = session.find_login_form(
+            pages:  @pages.to_a,
+            action: normalize_url( request.url ),
+            inputs: params.keys
+        )
 
         return if !f
         f.update( params )
@@ -371,12 +371,12 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     end
 
     def update_forms( page, request, response )
-        page.forms << Form.new(
+        page.forms |= [Form.new(
             url:    response.url,
             action: response.url,
             method: request.method,
             inputs: form_parse_request_body( request.body )
-        )
+        )]
         page
     end
 
@@ -442,16 +442,22 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.3',
             options:     [
-                 Options::Port.new( 'port', [false, 'Port to bind to.', 8282] ),
-                 Options::Address.new( 'bind_address',
-                                       [false, 'IP address to bind to.', '0.0.0.0'] ),
-                 Options::String.new( 'session_token',
-                                      [false, 'A session token to demand from ' +
-                                          'users before allowing them to use the proxy.', ''] ),
-                 Options::Int.new( 'timeout',
-                                   [false, 'How long to wait for a request to ' +
-                                       'complete, in milliseconds.', 20000] )
-             ]
+                Options::Port.new( :port,
+                    description: 'Port to bind to.',
+                    default:     8282
+                ),
+                Options::Address.new( :bind_address,
+                    description: 'IP address to bind to.',
+                    default:     '0.0.0.0'
+                ),
+                Options::String.new( :session_token,
+                    description: 'A session token to demand from users before allowing them to use the proxy.'
+                ),
+                Options::Int.new( :timeout,
+                    description: 'How long to wait for a request to complete, in milliseconds.',
+                    default:     20000
+                )
+            ]
         }
     end
 
