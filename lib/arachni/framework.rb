@@ -490,8 +490,8 @@ class Framework
                      "Report '#{name}' cannot format the audit results as a String."
             end
 
-            outfile = "/#{Dir.tmpdir}/arachn_report_as.#{name}"
-            @reports.run( name, external_report, 'outfile' => outfile )
+            outfile = "#{Dir.tmpdir}/arachni_report_as.#{name}"
+            @reports.run( name, external_report, outfile: outfile )
 
             IO.read( outfile )
         ensure
