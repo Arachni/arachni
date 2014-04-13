@@ -175,10 +175,12 @@ class Manager < Hash
         return {} if !info.include?( :options ) || info[:options].empty?
 
         user_opts ||= {}
+        user_opts   = user_opts.symbolize_keys(false)
+
         options     = {}
         errors      = {}
         info[:options].each do |option|
-            option.value = user_opts[option.name.to_s]
+            option.value = user_opts[option.name]
 
             if option.missing_value?
                 errors[option.name] = {
