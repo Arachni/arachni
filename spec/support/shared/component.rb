@@ -3,6 +3,8 @@ shared_examples_for "component" do
     before( :all ) do
         Arachni::Options.reset
         options.http.user_agent = 'arachni_user'
+
+        @name = name
     end
     after( :all ) { framework.reset }
 
@@ -12,6 +14,10 @@ shared_examples_for "component" do
 
     def name
         self.class.description
+    end
+
+    def component_name
+        @name
     end
 
     def url

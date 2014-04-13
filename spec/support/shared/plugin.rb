@@ -1,11 +1,10 @@
-shared_examples_for "plugin" do
+shared_examples_for 'plugin' do
     include_examples 'component'
 
     before( :all ) do
         FileUtils.cp "#{fixtures_path}checks/test2.rb", options.paths.checks
 
         framework.checks.load :test2
-        @name = name
     end
     after( :all ) do
         FileUtils.rm "#{options.paths.checks}test2.rb"
@@ -47,12 +46,16 @@ shared_examples_for "plugin" do
         @outfile ||= "#{Dir.tmpdir}/#{(0..10).map{ rand( 9 ).to_s }.join}"
     end
 
+    def plugin
+        framework.plugins[component_name]
+    end
+
     def actual_results
-        results_for( name )
+        results_for( component_name )
     end
 
     def results_for( name )
-        (framework.plugins.results[name.to_sym] || {})[:results]
+        (framework.plugins.results[component_name.to_sym] || {})[:results]
     end
 
     def expected_results
@@ -60,10 +63,6 @@ shared_examples_for "plugin" do
 
         (results.is_a?( String ) && results.include?( '__URL__' )) ?
             yaml_load( results ) : results
-    end
-
-    def current_plugin
-        framework.plugins[name]
     end
 
 end
