@@ -3,22 +3,19 @@
     All rights reserved.
 =end
 
-#
 # Beeps when the scan finishes.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-# @version 0.1.1
-#
+# @version 0.1.2
 class Arachni::Plugins::BeepNotify < Arachni::Plugin::Base
 
     def run
         wait_while_framework_running
-        options['repeat'].times {
-            sleep options['interval']
+        options[:repeat].times do
+            sleep options[:interval]
             print_info 'Beep!'
             print 7.chr
-        }
+        end
     end
 
     def self.info
@@ -26,12 +23,17 @@ class Arachni::Plugins::BeepNotify < Arachni::Plugin::Base
             name: 'Beep notify',
             description: %q{It beeps when the scan finishes.},
             author: 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version: '0.1',
+            version: '0.1.2',
             options: [
-                Options::Int.new( 'repeat', [false, 'How many times to beep.', 4] ),
-                Options::Float.new( 'interval', [false, 'How long to wait between beeps.', 0.4] )
+                Options::Int.new( 'repeat',
+                    description: 'How many times to beep.',
+                    default:     4
+                ),
+                Options::Float.new( 'interval',
+                    description: 'How long to wait between beeps.',
+                    default:     0.4
+                )
             ]
-
         }
     end
 
