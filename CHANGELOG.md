@@ -126,6 +126,9 @@
     - `waf_detector`
         - Changed results to include `status` (`Symbol`) and `message` (`String`)
             instead of `code` (`Integer`) and `msg` (`String`).
+    - `healthmap`
+        - Changed results to use `with_issues` and `without_issues` instead of
+            `unsafe` and `safe`.
 - Path extractors
     - Added:
         - Extract partial paths from HTML comments (`comments`).

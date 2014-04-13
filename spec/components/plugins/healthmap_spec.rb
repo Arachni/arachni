@@ -5,7 +5,7 @@ describe name_from_filename do
 
     before ( :all ) do
         options.url = url
-        framework.opts.audit :links
+        framework.opts.audit.elements :links
         framework.checks.load :xss
     end
 
@@ -13,17 +13,17 @@ describe name_from_filename do
         <<YAML
 ---
 :map:
-- :safe: __URL__
-- :safe: __URL__safe
-- :unsafe: __URL__vuln
+- :without_issues: __URL__
+- :without_issues: __URL__safe
+- :with_issues: __URL__vuln
 :total: 4
-:safe: 3
-:unsafe: 1
+:without_issues: 3
+:with_issues: 1
 :issue_percentage: 25
 YAML
     end
 
-    it 'logs safe and vuln URLs accordingly' do
+    it 'logs URLs with and without issues accordingly' do
         run
 
         results     = actual_results
@@ -32,8 +32,8 @@ YAML
         actual_map   = results.delete( :map )
         expected_map = exp_results.delete( :map )
 
-        actual_map.select { |k, v| k == :safe }.should be_eql expected_map.select { |k, v| k == :safe }
-        actual_map.select { |k, v| k == :unsafe }.should be_eql expected_map.select { |k, v| k == :unsafe }
+        actual_map.select { |k, v| k == :without_issues }.should be_eql expected_map.select { |k, v| k == :without_issues }
+        actual_map.select { |k, v| k == :with_issues }.should be_eql expected_map.select { |k, v| k == :with_issues }
 
         results.should be_eql exp_results
     end
