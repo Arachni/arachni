@@ -115,7 +115,7 @@ class Base < Component::Base
 
         # run the formatters and gather the formatted data they return
         @@formatters[ancestor].each do |name, formatter|
-            plugin_results = plugins[name]
+            plugin_results = plugins[name.to_sym]
             next if !plugin_results || plugin_results[:results].empty?
 
             cr = plugin_results.clone
