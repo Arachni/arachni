@@ -173,11 +173,6 @@ class Base < Component::Base
         framework.http
     end
 
-    # Provides a thread-safe way to run the queued HTTP requests.
-    def http_run
-        synchronize { http.run }
-    end
-
     # Provides plugin-wide synchronization.
     def self.synchronize( &block )
         @mutex.synchronize( &block )

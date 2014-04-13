@@ -30,7 +30,7 @@ class Manager < Arachni::Component::Manager
     # @see AuditStore
     def run( name, audit_store, options = {} )
         exception_jail false do
-            report = self[name].new( audit_store, prep_opts( name, self[name], options ) )
+            report = self[name].new( audit_store, prepare_options( name, self[name], options ) )
             report.run
             report
         end

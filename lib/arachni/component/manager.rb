@@ -158,7 +158,6 @@ class Manager < Hash
         end.compact
     end
 
-    #
     # Validates and prepares options for a given component.
     #
     # @param    [String]    component_name    Name of the component.
@@ -169,8 +168,7 @@ class Manager < Hash
     #
     # @raise    [Component::Options::Error::Invalid]
     #   If given options are invalid.
-    #
-    def prep_opts( component_name, component, user_opts = {} )
+    def prepare_options( component_name, component, user_opts = {} )
         info = component.info
         return {} if !info.include?( :options ) || info[:options].empty?
 

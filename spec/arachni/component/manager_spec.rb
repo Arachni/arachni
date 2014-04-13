@@ -284,12 +284,12 @@ describe Arachni::Component::Manager do
         end
     end
 
-    describe '#prep_opts' do
+    describe '#prepare_options' do
         it 'prepares options for passing to the component' do
             c = 'with_options'
 
             @components.load( c )
-            @components.prep_opts( c, @components[c],
+            @components.prepare_options( c, @components[c],
                 { 'req_opt' => 'my value'}
             ).should == {
                     req_opt: 'my value',
@@ -302,7 +302,7 @@ describe Arachni::Component::Manager do
                 'opt_opt' => 'opt_opt value',
                 'default_opt' => 'default_opt value'
             }
-            @components.prep_opts( c, @components[c], opts ).should == opts.symbolize_keys
+            @components.prepare_options( c, @components[c], opts ).should == opts.symbolize_keys
         end
 
         context 'with invalid options' do
@@ -311,7 +311,7 @@ describe Arachni::Component::Manager do
                     begin
                         c = 'with_options'
                         @components.load( c )
-                        @components.prep_opts( c, @components[c], {} )
+                        @components.prepare_options( c, @components[c], {} )
                     ensure
                         @components.clear
                     end

@@ -122,7 +122,7 @@ class Manager < Arachni::Component::Manager
                      "Plug-in dependencies not met: #{name} -- #{deps}"
             end
 
-            h[name.to_sym] = prep_opts( name, plugin, @framework.opts.plugins[name] )
+            h[name.to_sym] = prepare_options( name, plugin, @framework.opts.plugins[name] )
             h
         end
     end

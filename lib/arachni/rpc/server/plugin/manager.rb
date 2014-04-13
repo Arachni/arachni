@@ -31,7 +31,7 @@ class Manager < ::Arachni::Plugin::Manager
         end
 
         plugins.each do |plugin, opts|
-            prep_opts( plugin, self[plugin], opts )
+            prepare_options( plugin, self[plugin], opts )
         end
 
         @framework.opts.plugins.merge!( plugins )
