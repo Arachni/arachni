@@ -35,7 +35,7 @@ describe Arachni::Component::Options::Int do
 
     describe '#type' do
         it 'returns the option type as a string' do
-            subject.type.should == 'integer'
+            subject.type.should == :integer
         end
     end
 

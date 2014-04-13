@@ -30,7 +30,7 @@ describe Arachni::Component::Options::URL do
 
     describe '#type' do
         it 'returns the option type as a string' do
-            subject.type.should == 'url'
+            subject.type.should == :url
         end
     end
 

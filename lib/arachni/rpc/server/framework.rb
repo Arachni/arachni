@@ -80,9 +80,7 @@ class Framework < ::Arachni::Framework
     # @return (see Arachni::Framework#list_plugins)
     def list_plugins
         super.map do |plugin|
-            plugin[:options] = [plugin[:options]].flatten.compact.map do |opt|
-                opt.to_h.merge( 'type' => opt.type )
-            end
+            plugin[:options] = plugin[:options].map(&:to_h)
             plugin
         end
     end
@@ -90,9 +88,7 @@ class Framework < ::Arachni::Framework
     # @return (see Arachni::Framework#list_reports)
     def list_reports
         super.map do |report|
-            report[:options] = [report[:options]].flatten.compact.map do |opt|
-                opt.to_h.merge( 'type' => opt.type )
-            end
+            report[:options] = report[:options].map(&:to_h)
             report
         end
     end

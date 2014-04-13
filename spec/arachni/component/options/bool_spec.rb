@@ -55,7 +55,7 @@ describe Arachni::Component::Options::Bool do
 
     describe '#type' do
         it 'returns the option type as a string' do
-            described_class.new( '' ).type.should == 'bool'
+            described_class.new( '' ).type.should == :bool
         end
     end
 

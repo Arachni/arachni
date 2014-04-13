@@ -31,7 +31,7 @@ describe Arachni::Component::Options::Port do
 
     describe '#type' do
         it 'returns the option type as a string' do
-            subject.type.should == 'port'
+            subject.type.should == :port
         end
     end
 

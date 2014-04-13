@@ -16,7 +16,7 @@ describe Arachni::Component::Options::Object do
 
     describe '#type' do
         it 'returns the option type as a string' do
-            subject.type.should == 'object'
+            subject.type.should == :object
         end
     end
 

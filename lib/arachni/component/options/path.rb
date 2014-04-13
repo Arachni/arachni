@@ -6,7 +6,6 @@
 # Network address option.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-# @abstract
 class Arachni::Component::Options::Path < Arachni::Component::Options::Base
 
     def valid?
@@ -15,7 +14,7 @@ class Arachni::Component::Options::Path < Arachni::Component::Options::Base
     end
 
     def type
-        'path'
+        :path
     end
 
 end

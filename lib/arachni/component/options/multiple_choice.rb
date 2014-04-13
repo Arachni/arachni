@@ -6,7 +6,6 @@
 # MultipleChoice option.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-# @abstract
 class Arachni::Component::Options::MultipleChoice < Arachni::Component::Options::Base
 
     # The list of potential valid values
@@ -32,7 +31,7 @@ class Arachni::Component::Options::MultipleChoice < Arachni::Component::Options:
     end
 
     def type
-        'multiple_choice'
+        :multiple_choice
     end
 
 end

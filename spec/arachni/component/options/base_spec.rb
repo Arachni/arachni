@@ -142,8 +142,32 @@ describe Arachni::Component::Options::Base do
     end
 
     describe '#type' do
-        it 'returns the option type as a string' do
-            described_class.new( '' ).type.should == 'abstract'
+        it 'returns the option type' do
+            described_class.new( '' ).type.should == :abstract
+        end
+    end
+
+    describe '#to_h' do
+        let(:option) do
+            described_class.new( :my_name,
+                description: 'My description',
+                required:    true,
+                default:     'stuff'
+            )
+        end
+
+        %w(name description value default type).each do |m|
+            it "includes :#{m}" do
+                option.to_h[m.to_sym].should == option.send(m)
+            end
+        end
+
+        it 'includes :required' do
+            option.to_h[:required].should == option.required?
+        end
+
+        it 'is aliased to #to_hash' do
+            option.to_hash.should == option.to_h
         end
     end
 

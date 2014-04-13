@@ -6,7 +6,6 @@
 # URL option.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-# @abstract
 class Arachni::Component::Options::URL < Arachni::Component::Options::Base
 
     def normalize
@@ -19,7 +18,7 @@ class Arachni::Component::Options::URL < Arachni::Component::Options::Base
     end
 
     def type
-        'url'
+        :url
     end
 
 end

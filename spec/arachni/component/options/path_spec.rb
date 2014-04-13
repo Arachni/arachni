@@ -21,7 +21,7 @@ describe Arachni::Component::Options::Path do
 
     describe '#type' do
         it 'returns the option type as a string' do
-            subject.type.should == 'path'
+            subject.type.should == :path
         end
     end
 

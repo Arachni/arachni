@@ -9,16 +9,16 @@
 # @abstract
 class Arachni::Component::Options::Base
 
-    # The name of the option.
+    # @return   [Symbol]    Name.
     attr_reader   :name
 
-    # The description of the option.
+    # @return   [String]    Description.
     attr_reader   :description
 
-    # The default value of the option.
+    # @return   [Object]    Default value.
     attr_reader   :default
 
-    # The value of the option.
+    # @return   [Object]    Assigned value.
     attr_accessor :value
 
     # Initializes a named option with the supplied attribute array.
@@ -26,6 +26,16 @@ class Arachni::Component::Options::Base
     #
     # @param    [Symbol]    name    the name of the options
     # @param    [Hash]     options   option attributes
+    # @option   options [String, Symbol]    :name
+    #   {#name Name} for this option.
+    # @option   options [String]    :description
+    #   {#name Description} for this option.
+    # @option   options [Bool]    :required (false)
+    #   Is this option {#required?}.
+    # @option   options [Object]    :default
+    #   {#name Default value} for this option.
+    # @option   options [Object]    :value
+    #   {#value Value} for this option.
     def initialize( name, options = {} )
         options = options.dup
 
@@ -47,30 +57,44 @@ class Arachni::Component::Options::Base
         @required
     end
 
-    # If it's required and the value is nil or empty, then it's not valid.
+    # @return   [Bool]
+    #   `true` if the option value is valid, `false` otherwise.
     def valid?
         !missing_value?
     end
 
-    # Returns true if the value supplied is `nil` and it's required to be
-    # a valid value
+    # @return   [Bool]
+    #   `true` if the option is {#required?} but has no {#value},
+    #   `false` otherwise.
     def missing_value?
         required? && effective_value.nil?
     end
 
+    # @return   [Object]
+    #   Convert the user-provided {#value} (which will usually be a
+    #   user-supplied String) to the desired Ruby type.
+    #
+    # @abstract
     def normalize
         effective_value
     end
 
+    # @return   [Object]
+    #   {#value} or {#default}.
     def effective_value
         @value || @default
     end
 
+    # @return   [Symbol]
+    #   Type identifying the option.
+    #
+    # @abstract
     def type
-        'abstract'
+        :abstract
     end
 
-    # @return    [Hash] `name` => `value`
+    # @return    [Hash]
+    #   {#name} => {#normalize}
     def for_component
         { name => normalize }
     end
@@ -83,6 +107,7 @@ class Arachni::Component::Options::Base
         end
         hash.merge( type: type )
     end
+    alias :to_hash :to_h
 
     def ==( option )
         hash == option.hash

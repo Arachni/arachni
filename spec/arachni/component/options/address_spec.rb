@@ -18,7 +18,7 @@ describe Arachni::Component::Options::Address do
 
     describe '#type' do
         it 'returns the option type as a string' do
-            described_class.new( '' ).type.should == 'address'
+            described_class.new( '' ).type.should == :address
         end
     end
 

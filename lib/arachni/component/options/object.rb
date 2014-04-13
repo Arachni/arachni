@@ -4,11 +4,10 @@
 =end
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-# @abstract
 class Arachni::Component::Options::Object < Arachni::Component::Options::Base
 
     def type
-        'object'
+        :object
     end
 
 end

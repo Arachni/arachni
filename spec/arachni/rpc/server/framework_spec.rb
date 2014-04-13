@@ -86,7 +86,7 @@ describe 'Arachni::RPC::Server::Framework' do
             opt[:required].should == false
             opt[:description].should == 'An integer.'
             opt[:default].should == 4
-            opt[:type].should == 'integer'
+            opt[:type].should == :integer
         end
     end
     describe '#list_reports' do

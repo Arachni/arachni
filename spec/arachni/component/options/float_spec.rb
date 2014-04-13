@@ -35,7 +35,7 @@ describe Arachni::Component::Options::Float do
 
     describe '#type' do
         it 'returns the option type as a string' do
-            subject.type.should == 'float'
+            subject.type.should == :float
         end
     end
 

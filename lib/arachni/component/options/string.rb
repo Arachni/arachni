@@ -6,7 +6,6 @@
 # Mult-byte character string option.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-# @abstract
 class Arachni::Component::Options::String < Arachni::Component::Options::Base
 
     def normalize
@@ -14,7 +13,7 @@ class Arachni::Component::Options::String < Arachni::Component::Options::Base
     end
 
     def type
-        'string'
+        :string
     end
 
 end

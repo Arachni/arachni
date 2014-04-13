@@ -52,7 +52,13 @@ describe Arachni::Component::Options::MultipleChoice do
 
     describe '#type' do
         it 'returns the option type as a string' do
-            subject.type.should == 'multiple_choice'
+            subject.type.should == :multiple_choice
+        end
+    end
+
+    describe '#to_h' do
+        it 'includes :choices' do
+            subject.to_h[:choices].should == subject.choices
         end
     end
 

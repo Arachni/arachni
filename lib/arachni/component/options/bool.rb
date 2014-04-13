@@ -6,7 +6,6 @@
 # Boolean option.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-# @abstract
 class Arachni::Component::Options::Bool < Arachni::Component::Options::Base
 
     TRUE_REGEX   = /^(y|yes|t|1|true|on)$/i
@@ -30,7 +29,7 @@ class Arachni::Component::Options::Bool < Arachni::Component::Options::Base
     end
 
     def type
-        'bool'
+        :bool
     end
 
 end

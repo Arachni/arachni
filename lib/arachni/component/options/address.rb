@@ -8,7 +8,6 @@ require 'socket'
 # Network address option.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-# @abstract
 class Arachni::Component::Options::Address < Arachni::Component::Options::Base
 
     def valid?
@@ -17,7 +16,7 @@ class Arachni::Component::Options::Address < Arachni::Component::Options::Base
     end
 
     def type
-        'address'
+        :address
     end
 
 end
