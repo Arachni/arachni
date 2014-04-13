@@ -3,14 +3,13 @@ shared_examples_for 'plugin' do
 
     before( :all ) do
         FileUtils.cp "#{fixtures_path}checks/test2.rb", options.paths.checks
-
-        framework.checks.load :test2
     end
     after( :all ) do
         FileUtils.rm "#{options.paths.checks}test2.rb"
     end
 
     before( :each ) do
+        framework.checks.load :test2
         framework.plugins.load @name
     end
     after( :each ) do
