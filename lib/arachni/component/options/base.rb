@@ -85,7 +85,7 @@ class Arachni::Component::Options::Base
     end
 
     def ==( option )
-        to_h == option.hash
+        hash == option.hash
     end
 
     def hash
