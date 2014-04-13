@@ -7,11 +7,9 @@ describe name_from_filename do
         options.url = url
     end
 
-    context "when given the right params" do
+    context 'when given the right params' do
         it 'locates the form and login successfully' do
-            name = name_from_filename
-
-            options.plugins[name] = {
+            options.plugins[component_name] = {
                 'username_field' => 'username',
                 'password_field' => 'password',
                 'username_list'  => fixtures_path + 'usernames.txt',
@@ -20,15 +18,13 @@ describe name_from_filename do
             }
 
             run
-            results_for( name ).should == { username: 'sys', password: 'admin' }
+            actual_results.should == { username: 'sys', password: 'admin' }
         end
     end
 
-    context "when being unable to login" do
+    context 'when being unable to login' do
         it 'logs nothing' do
-            name = name_from_filename
-
-            options.plugins[name] = {
+            options.plugins[component_name] = {
                 'username_field' => 'username',
                 'password_field' => 'password',
                 'username_list'  => fixtures_path + 'usernames.txt',
@@ -37,15 +33,13 @@ describe name_from_filename do
             }
 
             run
-            results_for( name ).should be_nil
+            actual_results.should be_nil
         end
     end
 
-    context "when given invalid params" do
+    context 'when given invalid params' do
         it 'complains about not being able to find the form' do
-            name = name_from_filename
-
-            options.plugins[name] = {
+            options.plugins[component_name] = {
                 'username_field' => 'username2',
                 'password_field' => 'password',
                 'username_list'  => fixtures_path + 'usernames.txt',
@@ -54,7 +48,7 @@ describe name_from_filename do
             }
 
             run
-            results_for( name ).should be_nil
+            actual_results.should be_nil
         end
     end
 end
