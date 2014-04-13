@@ -230,6 +230,7 @@
     - Removed
         - `libnotify`
         - `profiler`
+        - `rescan`
     - `autologin`
         - Changed `print_bad` to `print_error` so that errors are written to the
             error log.
