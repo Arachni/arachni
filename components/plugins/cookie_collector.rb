@@ -6,48 +6,55 @@
 # Simple cookie collector
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-# @version 0.1.6
+# @version 0.2
 class Arachni::Plugins::CookieCollector < Arachni::Plugin::Base
 
     is_distributable
 
     def prepare
         @cookies = []
+    end
 
-        if options['filter']
-            @filter = Regexp.new( options['filter'] )
-        end
+    def suspend
+        @cookies
+    end
+
+    def restore( cookies )
+        @cookies = cookies
     end
 
     def run
-        framework.http.add_on_new_cookies do |cookies, res|
+        http.add_on_new_cookies do |cookies, response|
             cookies_hash = cookies.inject({}) { |h, c| h.merge!( c.simple ); h }
-            update( filter( cookies_hash ), res )
+            update( filter( cookies_hash ), response )
         end
+
+        wait_while_framework_running
     end
 
-    def update( cookies, res )
+    def update( cookies, response )
         return if cookies.empty? || !update?( cookies )
 
-        res_hash = res.to_h
-        res_hash.delete( :body )
-        res_hash.delete( :headers_string )
+        response_hash = response.to_h
+        response_hash.delete( :body )
+        response_hash.delete( :headers_string )
 
-        @cookies << { time: Time.now, res: res_hash, cookies: cookies }
+        @cookies << { time: Time.now, response: response_hash, cookies: cookies }
     end
 
     def update?( cookies )
         return true if @cookies.empty?
-        cookies.each_pair { |k, v| return true if @cookies.last[:cookies][k] != v }
+        cookies.each { |k, v| return true if @cookies.last[:cookies][k] != v }
         false
     end
 
     def clean_up
-        wait_while_framework_running
         register_results( @cookies )
     end
 
     def filter( cookies )
+        @filter ||= Regexp.new( options[:filter] ) if options[:filter]
+
         return cookies if !@filter
         cookies.select { |name, _| name =~ @filter }
     end
@@ -65,9 +72,12 @@ class Arachni::Plugins::CookieCollector < Arachni::Plugin::Base
                     It will log thousands of results leading to a huge report,
                     highly increased memory consumption and CPU usage.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.6',
+            version:     '0.2',
             options:     [
-                Options::String.new( 'filter', [false, 'Pattern to use to determine which cookies to log, based on cookie name.'] )
+                Options::String.new( :filter,
+                    description: 'Pattern to use to determine which cookies to ' +
+                                  'log, based on cookie name.'
+                )
             ]
         }
     end

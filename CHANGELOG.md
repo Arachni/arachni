@@ -121,6 +121,8 @@
             instead of `code` (`Integer`) and `msg` (`String`).
     - `content_types`
         - Renamed `params` in logged results to `parameters`.
+    - `cookie_collector`
+        - Renamed `res` in logged results to `response`.
 - Path extractors
     - Added:
         - Extract partial paths from HTML comments (`comments`).

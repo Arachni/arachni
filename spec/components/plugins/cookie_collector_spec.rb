@@ -10,21 +10,18 @@ describe name_from_filename do
     it 'logs the expected results' do
         run
 
-        results = results_for( name_from_filename )
-
-        results.size.should == 3
+        actual_results.size.should == 3
 
         oks = 0
-        results.each do |result|
-            if (result[:res][:url] == url &&
+        actual_results.each do |result|
+            if (result[:response][:url] == url &&
                 result[:cookies] == { 'cookie1' => 'val1' }) ||
-                (result[:res][:url] == url + 'a_link' &&
+                (result[:response][:url] == url + 'a_link' &&
                 result[:cookies] == { 'link_followed' => 'yay link!' }) ||
-                (result[:res][:url] == url + 'update_cookie' &&
+                (result[:response][:url] == url + 'update_cookie' &&
                 result[:cookies] == { 'link_followed' => 'updated link!', 'stuff' => 'blah' })
                 oks += 1
             end
-
         end
 
         oks.should == 3
@@ -32,17 +29,12 @@ describe name_from_filename do
 
     context 'when a filter has been specified' do
         it 'only logs cookies that match it' do
-            name = name_from_filename
-
-            options.plugins[name] = {
-                'filter' => 'followed'
-            }
+            options.plugins[component_name] = { 'filter' => 'followed' }
 
             run
 
-            results = results_for( name )
-            results.size.should == 2
-            results.map { |r| r[:cookies].keys }.flatten.
+            actual_results.size.should == 2
+            actual_results.map { |r| r[:cookies].keys }.flatten.
                 uniq.sort.should == %w(link_followed)
         end
     end
