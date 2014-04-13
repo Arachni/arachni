@@ -117,7 +117,10 @@ class Arachni::Reports::HTML < Arachni::Report::Base
             author:       'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:      '0.3.2',
             options:      [
-                Options::Path.new( 'tpl', [false, 'Template to use.', File.dirname( __FILE__ ) + '/html/default.erb'] ),
+                Options::Path.new( :tpl,
+                    describe: 'Template to use.',
+                    default:  File.dirname( __FILE__ ) + '/html/default.erb'
+                ),
                 Options.outfile( '.html' ),
                 Options.skip_responses
             ]
