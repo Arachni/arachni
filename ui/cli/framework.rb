@@ -64,6 +64,8 @@ class Framework
             # takes care of the clean-up to finish.
             @cleanup_handler.join if @cleanup_handler
 
+            @framework.reports.run :stdout, @framework.auditstore
+
             print_stats
         rescue Component::Options::Error::Invalid => e
             print_error e
