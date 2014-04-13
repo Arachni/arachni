@@ -229,6 +229,7 @@
 - Plugins
     - Removed
         - `libnotify`
+        - `profiler`
     - `autologin`
         - Changed `print_bad` to `print_error` so that errors are written to the
             error log.

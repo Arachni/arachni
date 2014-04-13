@@ -425,7 +425,6 @@ core remains lean and makes it easy for anyone to add arbitrary functionality.
 - Form based AutoLogin (`autologin`).
 - Dictionary attacker for HTTP Auth (`http_dicattack`).
 - Dictionary attacker for form based authentication (`form_dicattack`).
-- Profiler (`profiler`) -- Performs taint analysis (with benign inputs) and response time analysis.
 - Cookie collector (`cookie_collector`) -- Keeps track of cookies while establishing a timeline of changes.
 - WAF (Web Application Firewall) Detector (`waf_detector`) -- Establishes a baseline of
     normal behavior and uses rDiff analysis to determine if malicious inputs cause any behavioral changes.
