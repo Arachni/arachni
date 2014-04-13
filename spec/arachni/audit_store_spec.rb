@@ -143,12 +143,13 @@ describe Arachni::AuditStore do
                         results: 'stuff',
                         options: [
                             {
-                                'name'     => 'some_name',
-                                'required' => false,
-                                'desc'     => 'Some description.',
-                                'default'  => 'default_value',
-                                'enums'    => %w(available values go here),
-                                'type'     => 'enum'
+                                name:        :some_name,
+                                required:    false,
+                                value:       nil,
+                                description: 'Some description.',
+                                default:     'default_value',
+                                choices:      %w(available values go here),
+                                type:        'multiple_choice'
                             }
                         ]
                     }
