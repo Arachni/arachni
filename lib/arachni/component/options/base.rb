@@ -29,18 +29,14 @@ class Arachni::Component::Options::Base
     def initialize( name, options = {} )
         options = options.dup
 
-        @name         = name.to_sym
-        @required     = !!options.delete(:required)
-        @description  = options.delete(:description)
-        @default      = options.delete(:default)
-        self.value    = options.delete(:value)
+        @name        = name.to_sym
+        @required    = !!options.delete(:required)
+        @description = options.delete(:description)
+        @default     = options.delete(:default)
+        @value       = options.delete(:value)
 
         return if options.empty?
         fail ArgumentError, "Unknown options: #{options.keys.join( ', ' )}"
-    end
-
-    def value
-        (@value || @default).to_s
     end
 
     # Returns true if this is a required option.
@@ -59,13 +55,15 @@ class Arachni::Component::Options::Base
     # Returns true if the value supplied is `nil` and it's required to be
     # a valid value
     def missing_value?
-        required? && value.empty?
+        required? && effective_value.nil?
     end
 
-    # Normalizes the supplied value to conform with the type that the option is
-    # conveying.
     def normalize
-        value
+        effective_value
+    end
+
+    def effective_value
+        @value || @default
     end
 
     def type

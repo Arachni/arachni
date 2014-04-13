@@ -10,7 +10,7 @@
 class Arachni::Component::Options::Port < Arachni::Component::Options::Base
 
     def normalize
-        value.to_i
+        effective_value.to_i
     end
 
     def valid?

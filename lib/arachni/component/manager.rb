@@ -184,14 +184,22 @@ class Manager < Hash
                 errors[option.name] = {
                     option: option,
                     value:  option.value,
-                    type:  :missing_value
+                    type:   :missing_value
                 }
-            elsif !option.valid?
+
+                break
+            end
+
+            next if option.effective_value.nil?
+
+            if !option.valid?
                 errors[option.name] = {
                     option: option,
                     value:  option.value,
                     type:   :invalid
                 }
+
+                break
             end
 
             options.merge! option.for_component
@@ -356,7 +364,7 @@ class Manager < Hash
         "Invalid options for component: #{name}\n" +
         errors.map do |optname, error|
             val = error[:value].nil? ? '<empty>' : error[:value]
-            msg = (error[:type] == :invalid) ? 'Invalid type' : 'Empty required value'
+            msg = (error[:type] == :invalid) ? 'Invalid type' : 'Missing value'
 
             " *  #{msg}: #{optname} => '#{val}'\n" +
             " *  Expected type: #{error[:option].type}"

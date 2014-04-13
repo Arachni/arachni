@@ -7,10 +7,6 @@
 # @abstract
 class Arachni::Component::Options::Object < Arachni::Component::Options::Base
 
-    def value
-        @value || @default
-    end
-
     def type
         'object'
     end

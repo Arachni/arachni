@@ -34,7 +34,7 @@ describe Arachni::Component::Options::Enum do
     end
 
     describe '#normalize' do
-        it 'converts the string input into a boolean value' do
+        it 'returns a String' do
             subject.value = '3'
             subject.normalize.should == '3'
 

@@ -17,12 +17,6 @@ describe Arachni::Component::Options::Path do
                 subject.valid?.should be_false
             end
         end
-
-        context 'when no path has been provided' do
-            it 'returns true' do
-                subject.valid?.should be_true
-            end
-        end
     end
 
     describe '#type' do

@@ -18,6 +18,10 @@ class Arachni::Component::Options::Enum < Arachni::Component::Options::Base
         super
     end
 
+    def normalize
+        super.to_s
+    end
+
     def valid?
         return false if !super
         valid_values.include?( value )

@@ -13,7 +13,7 @@ class Arachni::Component::Options::Address < Arachni::Component::Options::Base
 
     def valid?
         return false if !super
-        !!IPSocket.getaddress( value ) rescue false
+        !!IPSocket.getaddress( effective_value ) rescue false
     end
 
     def type

@@ -292,14 +292,13 @@ describe Arachni::Component::Manager do
             @components.prepare_options( c, @components[c],
                 { 'req_opt' => 'my value'}
             ).should == {
-                    req_opt: 'my value',
-                    opt_opt: '',
+                req_opt:     'my value',
                 default_opt: 'value'
             }
 
             opts = {
-                'req_opt' => 'req_opt value',
-                'opt_opt' => 'opt_opt value',
+                'req_opt'     => 'req_opt value',
+                'opt_opt'     => 'opt_opt value',
                 'default_opt' => 'default_opt value'
             }
             @components.prepare_options( c, @components[c], opts ).should == opts.symbolize_keys

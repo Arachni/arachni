@@ -10,7 +10,7 @@
 class Arachni::Component::Options::Float < Arachni::Component::Options::Base
 
     def normalize
-        Float( value ) rescue nil
+        Float( effective_value ) rescue nil
     end
 
     def valid?

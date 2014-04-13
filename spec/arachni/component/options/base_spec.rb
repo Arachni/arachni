@@ -51,12 +51,6 @@ describe Arachni::Component::Options::Base do
                 end
             end
 
-            context 'and the value is empty' do
-                it 'returns false' do
-                    described_class.new( '', required: true, value: '' ).valid?.should be_false
-                end
-            end
-
             context 'and the value is nil' do
                 it 'returns false' do
                     described_class.new( '', required: true ).valid?.should be_false
@@ -87,12 +81,6 @@ describe Arachni::Component::Options::Base do
                 end
             end
 
-            context 'and the value is empty' do
-                it 'returns true' do
-                    described_class.new( '', required: true, value: '' ).missing_value?.should be_true
-                end
-            end
-
             context 'and the value is nil' do
                 it 'returns true' do
                     described_class.new( '', required: true ).missing_value?.should be_true
@@ -116,10 +104,10 @@ describe Arachni::Component::Options::Base do
     end
 
     describe '#value=' do
-        it 'corces the value to a string' do
+        it 'sets #value' do
             option = described_class.new( '' )
             option.value = 1
-            option.value.should == '1'
+            option.value.should == 1
         end
     end
 
@@ -127,19 +115,29 @@ describe Arachni::Component::Options::Base do
         it 'returns the set value' do
             option = described_class.new( '' )
             option.value = 1
-            option.value.should == '1'
-        end
-
-        context 'when no value is set' do
-            it 'returns #default' do
-                described_class.new( '', default: 'test' ).value.should == 'test'
-            end
+            option.value.should == 1
         end
     end
 
-    describe '#normalize' do
-        it 'returns the value as is' do
-            described_class.new( '', value: 'blah' ).normalize.should == 'blah'
+    describe '#effective_value' do
+        it 'returns the set value' do
+            option = described_class.new( '' )
+            option.value = 1
+            option.value.should == 1
+        end
+    end
+
+    %w(effective_value normalize).each do |m|
+        describe "##{m}" do
+            it 'returns the value as is' do
+                described_class.new( '', value: 'blah' ).send(m).should == 'blah'
+            end
+
+            context 'when no #value is set' do
+                it 'returns #default' do
+                    described_class.new( '', default: 'test' ).send(m).should == 'test'
+                end
+            end
         end
     end
 

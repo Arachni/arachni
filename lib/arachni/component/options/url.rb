@@ -10,7 +10,7 @@
 class Arachni::Component::Options::URL < Arachni::Component::Options::Base
 
     def normalize
-        Arachni::URI( value )
+        Arachni::URI( effective_value )
     end
 
     def valid?

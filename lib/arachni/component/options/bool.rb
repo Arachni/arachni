@@ -14,11 +14,11 @@ class Arachni::Component::Options::Bool < Arachni::Component::Options::Base
 
     def valid?
         return false if !super
-        value.to_s.match( VALID_REGEXP )
+        effective_value.to_s.match( VALID_REGEXP )
     end
 
     def normalize
-        value.to_s =~ TRUE_REGEX
+        effective_value.to_s =~ TRUE_REGEX
     end
 
     def true?

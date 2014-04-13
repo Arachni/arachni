@@ -10,12 +10,12 @@
 class Arachni::Component::Options::Int < Arachni::Component::Options::Base
 
     def normalize
-        value.to_i
+        effective_value.to_i
     end
 
     def valid?
         return false if !super
-        value.to_s =~ /^\d+$/
+        effective_value.to_s =~ /^\d+$/
     end
 
     def type

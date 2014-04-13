@@ -10,7 +10,7 @@
 class Arachni::Component::Options::String < Arachni::Component::Options::Base
 
     def normalize
-        value.to_s
+        effective_value.to_s
     end
 
     def type
