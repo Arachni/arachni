@@ -22,9 +22,9 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
         # if the 'vectors' option is an array at this point then someone fed
         # them to us programmatically
         if !options[:vectors].is_a? Array
-            feed = if !options[:yaml_file].empty?
+            feed = if options[:yaml_file]
                 IO.read( options[:yaml_file] )
-            elsif !options[:yaml_string].empty?
+            elsif options[:yaml_string]
                 options[:yaml_string]
             else
                 ''
