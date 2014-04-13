@@ -9,9 +9,7 @@ describe name_from_filename do
 
     context 'when given the right params' do
         it 'locates the form and login successfully' do
-            name = name_from_filename
-
-            options.plugins[name] = {
+            options.plugins[component_name] = {
                 'url'        => url + '/login',
                 'parameters' => 'username=john&password=doe',
                 'check'      => 'Hi there logged-in user'
@@ -19,19 +17,15 @@ describe name_from_filename do
 
             run
 
-            results = results_for( name )
-
-            results[:status].should  == :ok
-            results[:message].should == framework.plugins[name]::STATUSES[:ok]
-            results[:cookies]['success'].should == 'true'
+            actual_results[:status].should  == :ok
+            actual_results[:message].should == plugin::STATUSES[:ok]
+            actual_results[:cookies]['success'].should == 'true'
 
             framework.sitemap.include?( url + 'congrats' ).should be_true
         end
 
         it 'provides a login sequence and login check to the framework' do
-            name = name_from_filename
-
-            options.plugins[name] = {
+            options.plugins[component_name] = {
                 'url'        => url + '/login',
                 'parameters' => 'username=john&password=doe',
                 'check'      => 'Hi there logged-in user'
@@ -51,33 +45,29 @@ describe name_from_filename do
 
     context 'when given invalid params' do
         it 'complains about not being able to find the form' do
-            name = name_from_filename
-
-            options.plugins[name] = {
+            options.plugins[component_name] = {
                 'url'        => url + '/login',
                 'parameters' => 'username2=john&password=doe',
                 'check'      => 'Hi there logged-in user'
             }
 
             t = Thread.new { run }
-            sleep 0.1 while !(results = results_for( name ))
+            sleep 0.1 while !actual_results
             t.kill
 
-            results[:status].should  == :form_not_found
-            results[:message].should == framework.plugins[name]::STATUSES[:form_not_found]
+            actual_results[:status].should  == :form_not_found
+            actual_results[:message].should == plugin::STATUSES[:form_not_found]
         end
 
         it 'does not resume the scan' do
-            name = name_from_filename
-
-            options.plugins[name] = {
+            options.plugins[component_name] = {
                 'url'        => url + '/login',
                 'parameters' => 'username2=john&password=doe',
                 'check'      => 'Hi there logged-in user'
             }
 
             t = Thread.new { run }
-            sleep 0.1 while !results_for( name )
+            sleep 0.1 while !actual_results
 
             framework.status.to_s.should == 'paused'
             t.kill
@@ -86,20 +76,18 @@ describe name_from_filename do
 
     context 'when the verifier does not match' do
         it 'complains about not being able to verify the login' do
-            name = name_from_filename
-
-            options.plugins[name] = {
+            options.plugins[component_name] = {
                 'url'        => url + '/login',
                 'parameters' => 'username=john&password=doe',
                 'check'      => 'Hi there Jimbo'
             }
 
             t = Thread.new { run }
-            sleep 0.1 while !(results = results_for( name ))
+            sleep 0.1 while !actual_results
             t.kill
 
-            results[:status].should  == :check_failed
-            results[:message].should == framework.plugins[name]::STATUSES[:check_failed]
+            actual_results[:status].should  == :check_failed
+            actual_results[:message].should == plugin::STATUSES[:check_failed]
         end
     end
 end
