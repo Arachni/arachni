@@ -4,26 +4,32 @@ describe name_from_filename do
     include_examples 'plugin'
 
     def url
-        web_server_url_for( name_from_filename ) + '/'
+        Arachni::Utilities.normalize_url web_server_url_for( component_name )
     end
 
     context 'when malicious requests are' do
         context 'being rejected' do
             it 'logs that a WAF exists' do
                 options.url = "#{url}positive"
+
                 run
-                results_for( name_from_filename ).should == {
-                    code: 1, msg: framework.plugins[name_from_filename]::MSG_FOUND
+
+                actual_results.should == {
+                    status: :found,
+                    message: plugin::STATUSES[:found]
                 }
             end
         end
 
         context 'being accepted' do
-            it 'does log a WAF' do
+            it 'does not log a WAF' do
                 options.url = "#{url}negative"
+
                 run
-                results_for( name_from_filename ).should == {
-                    code: 0, msg: framework.plugins[name_from_filename]::MSG_NOT_FOUND
+
+                actual_results.should == {
+                    status: :not_found,
+                    message: plugin::STATUSES[:not_found]
                 }
             end
         end
@@ -32,9 +38,12 @@ describe name_from_filename do
     context 'when the webapp behaves erratically' do
         it 'logs that the tests were inconclusive' do
             options.url = "#{url}inconclusive"
+
             run
-            results_for( name_from_filename ).should == {
-                code: -1, msg: framework.plugins[name_from_filename]::MSG_INCONCLUSIVE
+
+            actual_results.should == {
+                status: :inconclusive,
+                message: plugin::STATUSES[:inconclusive]
             }
         end
     end

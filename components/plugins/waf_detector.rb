@@ -3,7 +3,6 @@
     All rights reserved.
 =end
 
-#
 # Web Application Firewall detection plugin.
 #
 # This is a 4 stage process:
@@ -14,21 +13,21 @@
 #
 # Steps 1 to 3 will be repeated _precision_ times and the responses will be averaged using rDiff analysis.
 #
-#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-# @version 0.1.2
-#
+# @version 0.1.3
 class Arachni::Plugins::WAFDetector < Arachni::Plugin::Base
 
-    MSG_INCONCLUSIVE = %q{Could not establish a baseline behavior for the website. Due to that fact analysis has been aborted.}
-    MSG_FOUND        = %q{Request parameters are being filtered, this is usually a sign of a WAF.}
-    MSG_NOT_FOUND    = %q{Could not detect any sign of filtering, a WAF doesn't seem to be present.}
+    STATUSES = {
+        inconclusive: %q{Could not establish a baseline behavior for the website.
+            Due to that fact analysis has been aborted.},
+        found:        %q{Request parameters are being filtered, this is usually a sign of a WAF.},
+        not_found:    %q{Could not detect any sign of filtering, a WAF doesn't seem to be present.}
+    }
 
     def prepare
         framework.pause
 
-        @precision = options['precision']
+        @precision = options[:precision]
 
         bad = [
             '../../../../',
@@ -60,18 +59,18 @@ class Arachni::Plugins::WAFDetector < Arachni::Plugin::Base
     def run
         print_status "Starting detection with a precision of #{@precision}."
 
-        print_status "Stage #1: Requesting original page."
+        print_status 'Stage #1: Requesting original page.'
         queue_original
 
-        print_status "Stage #2: Requesting with vanilla inputs."
+        print_status 'Stage #2: Requesting with vanilla inputs.'
         queue_vanilla
 
-        print_status "Stage #3: Requesting with spicy inputs."
+        print_status 'Stage #3: Requesting with spicy inputs.'
         queue_spicy
 
-        print_status "Stage #4: Analyzing gathered responses."
+        print_status 'Stage #4: Analyzing gathered responses.'
 
-        http.after_run {
+        http.after_run do
             if @responses[:original] == @responses[:vanilla]
                 if @responses[:vanilla] == @responses[:spicy]
                     not_found
@@ -81,9 +80,9 @@ class Arachni::Plugins::WAFDetector < Arachni::Plugin::Base
             else
                 inconclusive
             end
-        }
+        end
 
-        http_run
+        http.run
     end
 
     def clean_up
@@ -91,45 +90,45 @@ class Arachni::Plugins::WAFDetector < Arachni::Plugin::Base
     end
 
     def found
-        print_ok MSG_FOUND
-        register_results( code: 1, msg: MSG_FOUND )
+        print_ok STATUSES[:found]
+        register_results( status: :found, message: STATUSES[:found] )
     end
 
     def not_found
-        print_ok MSG_NOT_FOUND
-        register_results( code: 0, msg: MSG_NOT_FOUND )
+        print_ok STATUSES[:not_found]
+        register_results( status: :not_found, message: STATUSES[:not_found] )
     end
 
     def inconclusive
-        print_ok MSG_INCONCLUSIVE
-        register_results( code: -1, msg: MSG_INCONCLUSIVE )
+        print_ok STATUSES[:inconclusive]
+        register_results( status: :inconclusive, message: STATUSES[:inconclusive] )
     end
 
     def queue_original
-        @precision.times {
+        @precision.times do
             http.get( @url.to_s ) do |res|
                 @responses[:original] ||= res.body
                 @responses[:original] = @responses[:original].rdiff( res.body )
             end
-        }
+        end
     end
 
     def queue_vanilla
-        @precision.times {
+        @precision.times do
             http.get( @url.to_s, parameters: @safe ) do |res|
                 @responses[:vanilla] ||= res.body
                 @responses[:vanilla] = @responses[:vanilla].rdiff( res.body )
             end
-        }
+        end
     end
 
     def queue_spicy
-        @precision.times {
+        @precision.times do
             http.get( @url.to_s, parameters: @unsafe ) do |res|
                 @responses[:spicy] ||= res.body
                 @responses[:spicy] = @responses[:spicy].rdiff( res.body )
             end
-        }
+        end
     end
 
     def self.info
@@ -146,9 +145,12 @@ class Arachni::Plugins::WAFDetector < Arachni::Plugin::Base
 
                  Steps 1 to 3 will be repeated _precision_ times (default: 5) and the responses will be averaged using rDiff analysis.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.2',
+            version:     '0.1.3',
             options:     [
-                Options::Int.new( 'precision', [false, 'Stage precision (how many times to perform each detection stage).', 5] )
+                Options::Int.new( :precision,
+                    description: 'Stage precision (how many times to perform each detection stage).',
+                    default:     5
+                )
             ]
         }
     end

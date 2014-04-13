@@ -123,6 +123,9 @@
         - Renamed `params` in logged results to `parameters`.
     - `cookie_collector`
         - Renamed `res` in logged results to `response`.
+    - `waf_detector`
+        - Changed results to include `status` (`Symbol`) and `message` (`String`)
+            instead of `code` (`Integer`) and `msg` (`String`).
 - Path extractors
     - Added:
         - Extract partial paths from HTML comments (`comments`).
