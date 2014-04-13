@@ -3,22 +3,18 @@
     All rights reserved.
 =end
 
-#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-# @version 0.1.3
-#
+# @version 0.1.4
 class Arachni::Plugins::HTTPDicattack < Arachni::Plugin::Base
 
     def prepare
-        # don't scan the website just yet
         framework.pause
-        print_info "System paused."
+        print_info 'System paused.'
 
         @url = framework.opts.url.to_s
 
-        @users   = File.read( options['username_list'] ).split( "\n" )
-        @passwds = File.read( options['password_list'] ).split( "\n" )
+        @users   = File.read( options[:username_list] ).split( "\n" )
+        @passwds = File.read( options[:password_list] ).split( "\n" )
 
         @found = false
     end
@@ -26,13 +22,13 @@ class Arachni::Plugins::HTTPDicattack < Arachni::Plugin::Base
     def run
         if !protected?( @url )
             print_info "The URL you provided doesn't seem to be protected."
-            print_info "Aborting..."
+            print_info 'Aborting...'
             return
         end
 
         url = uri_parse( @url )
 
-        print_status "Building the request queue..."
+        print_status 'Building the request queue...'
 
         total_req = @users.size * @passwds.size
         print_status "Maximum number of requests to be transmitted: #{total_req}"
@@ -50,8 +46,8 @@ class Arachni::Plugins::HTTPDicattack < Arachni::Plugin::Base
                     print_ok "Found a match. Username: '#{user}' -- Password: '#{pass}'"
                     print_info "URL: #{res.url}"
 
-                    framework.opts.http_authentication_username = user
-                    framework.opts.http_authentication_password = pass
+                    framework.opts.http.authentication_username = user
+                    framework.opts.http.authentication_password = pass
 
                     # register our findings...
                     register_results( username: user, password: pass )
@@ -61,13 +57,12 @@ class Arachni::Plugins::HTTPDicattack < Arachni::Plugin::Base
             end
         end
 
-        print_status "Waiting for the requests to complete..."
-        http_run
-        print_bad "Couldn't find a match."
+        print_status 'Waiting for the requests to complete...'
+        http.run
+        print_bad "Couldn't find a match." if !@found
     end
 
     def clean_up
-        # continue with the scan
         framework.resume
     end
 
@@ -83,10 +78,16 @@ class Arachni::Plugins::HTTPDicattack < Arachni::Plugin::Base
                 framework-wide and used for the duration of the audit.
                 If that's not what you want set the crawler's link-count limit to "0".},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.3',
+            version:     '0.1.4',
             options:     [
-                Options::Path.new( 'username_list', [true, 'File with a list of usernames (newline separated).'] ),
-                Options::Path.new( 'password_list', [true, 'File with a list of passwords (newline separated).'] )
+                Options::Path.new( :username_list,
+                    required:    true,
+                    description: 'File with a list of usernames (newline separated).'
+                ),
+                Options::Path.new( :password_list,
+                    required:    true,
+                    description: 'File with a list of passwords (newline separated).'
+                )
             ]
         }
     end
