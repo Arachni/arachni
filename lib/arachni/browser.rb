@@ -264,13 +264,17 @@ class Browser
     # @param    [String]  url
     #   Loads the given URL in the browser.
     # @param    [Hash]  options
+    # @options  [Bool]  :take_snapshot  (true)
+    #   Take a snapshot right after loading the page.
+    # @options  [Array<Cookie>]  :cookies  ([])
+    #   Extra cookies to pass to the webapp.
     #
     # @return   [Page::DOM::Transition]
     #   Transition used to replay the resource visit.
     def goto( url, options = {} )
         take_snapshot = options.include?(:take_snapshot) ?
             options[:take_snapshot] : true
-        extra_cookies = options[:cookies] || {}
+        extra_cookies = options[:cookies] || []
 
         @last_url = url
 
@@ -278,7 +282,10 @@ class Browser
 
         load_cookies url, extra_cookies
 
-        transition = Page::DOM::Transition.new( :page, :load, url: url, cookies: cookies ) do
+        transition = Page::DOM::Transition.new( :page, :load,
+            url:     url,
+            cookies: extra_cookies
+        ) do
             watir.goto url
 
             @javascript.wait_till_ready
@@ -570,24 +577,10 @@ class Browser
         # The page may need a bit to settle and the element is lazily located
         # by Watir so give it a few tries.
         begin
-            #ap '-' * 80
-            #ap element.exists?
-            #ap url
-            #ap event
-            #ap element.instance_variable_get(:@selector)
             with_timeout ELEMENT_APPEARANCE_TIMEOUT do
                 sleep 0.1 while !element.exists?
             end
-            #ap element.exists?
         rescue Timeout::Error
-            #ap 'TIMEOUT'
-            #ap @transitions
-            #ap response.url
-            #response.body.lines.each.with_index do |line, i|
-            #    puts "#{i+1} - #{line}"
-            #end
-            #ap '-'
-            #puts source_with_line_numbers
             return
         end
 
