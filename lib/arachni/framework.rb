@@ -127,8 +127,8 @@ class Framework
         @reports = Report::Manager.new
         @plugins = Plugin::Manager.new( self )
 
-        @session = Session.new( @opts )
-        @http    = HTTP::Client.instance
+        reset_session
+        @http = HTTP::Client.instance
 
         reset_trainer
 
@@ -723,6 +723,9 @@ class Framework
     #
     # It stops the clock and waits for the plugins to finish up.
     def clean_up( shutdown_browsers = true )
+        return if @cleaned_up
+        @cleaned_up = true
+
         state.status = :cleanup
 
         sitemap.merge!( browser_sitemap )
@@ -746,6 +749,10 @@ class Framework
 
         state.set_status_message :waiting_for_plugins
         @plugins.block
+
+        # Plugins may need the session right till the very end so save it for last.
+        @session.clean_up
+        @session = nil
 
         true
     end
@@ -775,6 +782,7 @@ class Framework
 
         clear_observers
         reset_trainer
+        reset_session
         @checks.clear
         @reports.clear
         @plugins.clear
@@ -825,6 +833,11 @@ class Framework
 
     def reset_trainer
         @trainer = Trainer.new( self )
+    end
+
+    def reset_session
+        @session.clean_up if @session
+        @session = Session.new
     end
 
     def suspend_if_signaled
@@ -1026,9 +1039,9 @@ class Framework
         data.url_queue
     end
 
-    #
-    # Audits the URL and Page queues
-    #
+    # Audits the {Data::Framework.url_queue URL} and {Data::Framework.page_queue Page}
+    # queues while maintaining a valid session with the webapp if we've got
+    # login capabilities.
     def audit_queues
         return if @audit_queues_done == false || !has_audit_workload? ||
             page_limit_reached?
@@ -1040,12 +1053,30 @@ class Framework
         audit_page_queue
 
         next_page = nil
-        while !suspended? && !page_limit_reached? && (page = next_page || pop_page_from_url_queue)
-            next_page = nil
+        while !suspended? && !page_limit_reached? &&
+            (page = next_page || pop_page_from_url_queue)
 
-            # Schedule the next page to be grabbed along with the audit requests
-            # for the current page to avoid blocking.
-            pop_page_from_url_queue { |p| next_page = p }
+            # Helps us schedule the next page to be grabbed along with the audit
+            # requests for the current page to avoid blocking.
+            next_page = nil
+            next_page_call = proc do
+                pop_page_from_url_queue { |p| next_page = p }
+            end
+
+            # If we can login capabilities make sure that our session is valid
+            # before grabbing and auditing the next page.
+            if session.can_login?
+                # Schedule the login check to happen along with the audit requests
+                # to prevent blocking and grab the next page as well.
+                session.logged_in? do |bool|
+                    next next_page_call.call if bool
+
+                    session.login
+                    next_page_call
+                end
+            else
+                next_page_call.call
+            end
 
             # We're counting on piggybacking the next page retrieval with the
             # page audit, however if there wasn't an audit we need to force an
@@ -1132,8 +1163,6 @@ class Framework
 
         # Needed for some HTTP callbacks.
         http.run
-
-        session.ensure_logged_in
     end
 
     # Passes a page to the check and runs it.

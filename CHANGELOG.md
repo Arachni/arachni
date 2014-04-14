@@ -18,6 +18,8 @@
 - `Framework`
     - `#audit_page` -- Updated to perform DOM/JS/AJAX analysis on the page and
         feed DOM page snapshots and new paths back to the `Framework`.
+- `Session`
+    - Updated to support login forms which depend on DOM/Javascript.
 - Added `State` -- Stores and provides access to the system's state.
     - `Plugins` -- Stores plugin runtime states when suspending.
     - `HTTP` -- Stores client headers and cookies.

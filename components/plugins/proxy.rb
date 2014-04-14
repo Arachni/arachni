@@ -130,7 +130,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         print_status "Requesting #{url}"
 
         # This is a sign-in request.
-        if params['session_token'] == options[:session_token]
+        if params['session_token'] == options[:session_token].to_s
             # Set us up for the redirection that's coming.
             res.code = 302
 
@@ -142,7 +142,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
                 # ...now we need to set the cookie for the proxy control domain
                 # so redirect us to its handler.
-                res.headers['Location'] = "#{url_for( :sign_in )}?session_token=#{params['session_token']}"
+                res.headers['Location'] = "#{url_for( :sign_in )}?session_token=#{options[:session_token]}"
 
             # This is the cookie-set request for the domain of the proxy control domain...
             elsif url.start_with?( url_for( :sign_in ) )
@@ -202,8 +202,8 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                         when '/record/stop'
                             record_stop
                             erb :verify_login_check, verify_fail: false, params: {
-                                'url'     => Arachni::Options.login.check_url,
-                                'pattern' => Arachni::Options.login.check_pattern
+                                'url'     => framework.opts.login.check_url,
+                                'pattern' => framework.opts.login.check_pattern
                             }
 
                         when '/verify/login_check'
@@ -211,7 +211,8 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                             if req.method != :post
                                 erb :verify_login_check, verify_fail: false
                             else
-                                session.set_login_check( params['url'], params['pattern'] )
+                                framework.opts.login.check_url     = params['url']
+                                framework.opts.login.check_pattern = params['pattern']
 
                                 if !session.logged_in?
                                     erb :verify_login_check,
@@ -226,8 +227,13 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                             end
 
                         when '/verify/login_sequence'
-
-                            session.login_form = find_login_form
+                            login_form = find_login_form
+                            session.configure(
+                                form: {
+                                    url:    login_form.url,
+                                    inputs: login_form.inputs
+                                }
+                            )
 
                             logged_in = false
                             framework.http.sandbox do |http|

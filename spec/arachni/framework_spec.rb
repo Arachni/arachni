@@ -337,25 +337,18 @@ describe Arachni::Framework do
                     f.opts.audit.elements :links, :forms
                     f.checks.load_all
 
-                    f.session.login_sequence = proc do
-                        res = f.http.get( url, mode: :sync, follow_location: true )
-                        return false if !res
+                    f.session.configure(
+                        form: {
+                            url:    url,
+                            inputs: {
+                                username: 'john',
+                                password: 'doe'
+                            }
+                        }
+                    )
 
-                        login_form = f.forms_from_response( res ).first
-                        next false if !login_form
-
-                        login_form['username'] = 'john'
-                        login_form['password'] = 'doe'
-                        res = login_form.submit( mode: :sync, update_cookies: true, follow_location: false )
-                        return false if !res
-
-                        true
-                    end
-
-                    f.session.login_check = proc do
-                        !!f.http.get( url, mode: :sync, follow_location: true ).
-                            body.match( 'logged-in user' )
-                    end
+                    f.opts.login.check_url     = url
+                    f.opts.login.check_pattern = 'logged-in user'
 
                     f.run
                     f.auditstore.issues.size.should == 1

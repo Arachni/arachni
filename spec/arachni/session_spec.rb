@@ -3,122 +3,236 @@ require 'spec_helper'
 describe Arachni::Session do
 
     before( :all ) do
-        @url = web_server_url_for( :session )
+        @url  = web_server_url_for( :session )
         @opts = Arachni::Options.instance
     end
 
+    before(:each) do
+        @opts.url = @url
+    end
     after( :each ) do
-        Arachni::Options.reset
+        @session.clean_up if @session
+        @opts.reset
         Arachni::HTTP::Client.reset
     end
 
-    def new_session
-        Arachni::Session.new
+    subject { @session = Arachni::Session.new }
+
+    describe "#{Arachni::OptionGroups::Login}" do
+        describe '#has_login_check?' do
+            context 'when #check_url and #check_pattern have not been configured' do
+                it 'returns false' do
+                    subject.has_login_check?.should be_false
+                end
+            end
+
+            context 'when #check_url and #check_pattern have been configured' do
+                it 'returns true' do
+                    @opts.login.check_url     = @url
+                    @opts.login.check_pattern = 'logged-in user'
+
+                    subject.has_login_check?.should be_true
+                end
+            end
+        end
     end
 
-    describe '#opts' do
-        describe '#login_check_url and #login_check_pattern' do
-            it 'sets a login check' do
-                s = new_session
-                s.opts.url = @url
+    describe '#clean_up' do
+        it 'shuts down the #browser'
+    end
 
-                s.has_login_sequence?.should be_false
-                s.login_sequence = proc do
-                    res = s.http.get( @url, mode: :sync, follow_location: true )
-                    return false if !res
+    describe '#browser' do
+        context 'after #login' do
+            it "returns an #{Arachni::Browser}"
+        end
 
-                    login_form = s.forms_from_response( res ).first
-                    next false if !login_form
+        context 'before calling #login' do
+            it 'returns nil'
+        end
 
-                    login_form['username'] = 'john'
-                    login_form['password'] = 'doe'
-                    res = login_form.submit( mode: :sync, update_cookies: true, follow_location: false )
-                    return false if !res
+    end
 
-                    true
+
+    describe '#login' do
+        it 'finds and submits the login form with the given credentials' do
+            subject.configure(
+                form: {
+                    url:    "#{@url}/login",
+                    inputs: {
+                        username: 'john',
+                        password: 'doe'
+                    }
+                }
+            )
+
+            @opts.login.check_url     = @url
+            @opts.login.check_pattern = 'logged-in user'
+
+            subject.login
+
+            subject.should be_logged_in
+        end
+
+        it 'can handle Javascript forms' do
+            subject.configure(
+                form: {
+                    url:    "#{@url}/javascript_login",
+                    inputs: {
+                        username: 'john',
+                        password: 'doe'
+                    }
+                }
+            )
+
+            @opts.login.check_url     = @url
+            @opts.login.check_pattern = 'logged-in user'
+
+            subject.login
+
+            subject.should be_logged_in
+        end
+
+        context 'each time' do
+            it 'uses a fresh #browser'
+        end
+    end
+
+    describe '#logged_in?' do
+        context 'when no login check is available' do
+            it "raises #{described_class::Error::NoLoginCheck}" do
+                expect { subject.logged_in? }.to raise_error described_class::Error::NoLoginCheck
+            end
+        end
+
+        context 'when a login check is available' do
+            context 'and a valid session is available' do
+                it 'returns true' do
+                    subject.configure(
+                        form: {
+                            url:    "#{@url}/login",
+                            inputs: {
+                                username: 'john',
+                                password: 'doe'
+                            }
+                        }
+                    )
+
+                    @opts.login.check_url     = @url
+                    @opts.login.check_pattern = 'logged-in user'
+
+                    subject.login
+
+                    subject.should be_logged_in
                 end
-                s.has_login_sequence?.should be_true
+            end
 
-                s.has_login_check?.should be_false
-                s.opts.login.check_url     = @url
-                s.opts.login.check_pattern = 'logged-in user'
-                s.has_login_check?.should be_true
+            context 'and a valid session is not available' do
+                it 'returns true' do
+                    @opts.login.check_url     = @url
+                    @opts.login.check_pattern = 'logged-in user'
 
-                s.logged_in?.should be_false
-                s.login.should be_true
-                s.logged_in?.should be_true
+                    subject.should_not be_logged_in
+                end
+            end
 
-                bool = false
-                s.logged_in? { |b| bool = b }
-                s.http.run
-                bool.should be_true
+            context 'when a block is given' do
+                it 'performs the check asynchronously' do
+                    subject.configure(
+                        form: {
+                            url:    "#{@url}/login",
+                            inputs: {
+                                username: 'john',
+                                password: 'doe'
+                            }
+                        }
+                    )
 
-                not_bool = true
-                s.logged_in?( no_cookiejar: true ) { |b| not_bool = b }
-                s.http.run
-                not_bool.should be_false
+                    @opts.login.check_url     = @url
+                    @opts.login.check_pattern = 'logged-in user'
+
+                    subject.login
+
+                    bool = false
+                    subject.logged_in? { |b| bool = b }
+                    subject.http.run
+                    bool.should be_true
+
+                    not_bool = true
+                    subject.logged_in?( no_cookiejar: true ) { |b| not_bool = b }
+                    subject.http.run
+                    not_bool.should be_false
+                end
+            end
+        end
+    end
+
+    describe '#configured?' do
+        context 'when login instructions have been provided' do
+            it 'returns true' do
+                subject.configure(
+                    form: {
+                        url:    "#{@url}/login",
+                        inputs: {
+                            username: 'john',
+                            password: 'doe'
+                        }
+                    }
+                )
+
+                subject.configured?.should be_true
+            end
+        end
+
+        context 'when login instructions have not been provided' do
+            it 'returns false' do
+                subject.configured?.should be_false
             end
         end
     end
 
     describe '#cookies' do
         it 'returns session cookies' do
-            s = new_session
-            s.http.get @url + '/cookies', mode: :sync, update_cookies: true
+            subject.http.get @url + '/with_nonce', mode: :sync, update_cookies: true
 
-            s.cookies.select { |c| c.name == 'rack.session' }.size == 1
-            s.cookies.select { |c| c.name == 'session_cookie' }.size == 1
+            subject.cookies.map(&:name).sort.should == %w(rack.session session_cookie).sort
+        end
+    end
 
-            s.can_login?.should be_false
-            s.has_login_sequence?.should be_false
-
-            s.login_form = s.find_login_form( url: @url + '/nonce_login' ).
-                update( username: 'nonce_john', password: 'nonce_doe' )
+    describe '#cookie' do
+        it 'returns the cookie that determines the login status' do
+            subject.configure(
+                form: {
+                    url:    "#{@url}/nonce_login",
+                    inputs: {
+                        username: 'nonce_john',
+                        password: 'nonce_doe'
+                    }
+                }
+            )
 
             # lets invalidate the form nonce now
             # (to make sure that it will be refreshed before logging in)
-            s.http.get @url + '/nonce_login', mode: :sync
+            subject.http.get @url + '/nonce_login', mode: :sync
 
-            s.has_login_sequence?.should be_true
+            subject.configured?.should be_true
 
-            s.set_login_check @url + '/with_nonce', 'logged-in user'
+            @opts.login.check_url     = @url + '/with_nonce'
+            @opts.login.check_pattern = 'logged-in user'
+
+            subject.login
 
             cookie = nil
-            s.cookie { |c| cookie = c }
-            s.http.run
+            subject.cookie { |c| cookie = c }
+            subject.http.run
 
             cookie.name.should == 'rack.session'
 
-            s.can_login?.should be_true
-            s.logged_in?.should be_false
+            subject.can_login?.should be_true
         end
+
         context 'when called without having configured a login check' do
             it 'should raise an exception' do
-                trigger = proc { new_session.cookie }
-
-                raised = false
-                begin
-                    trigger.call
-                rescue Arachni::Error
-                    raised = true
-                end
-                raised.should be_true
-
-                raised = false
-                begin
-                    trigger.call
-                rescue Arachni::Session::Error
-                    raised = true
-                end
-                raised.should be_true
-
-                raised = false
-                begin
-                    trigger.call
-                rescue Arachni::Session::Error::NoLoginCheck
-                    raised = true
-                end
-                raised.should be_true
+                expect { subject.cookie }.to raise_error described_class::Error::NoLoginCheck
             end
         end
     end
@@ -128,24 +242,20 @@ describe Arachni::Session do
         context 'when passed an array of :pages' do
             it 'should go through its forms and locate the login one' do
                 p = Arachni::Page.from_url( @url + '/login' )
-                s = new_session
-
-                s.find_login_form( pages: [ p, p ] ).id.should == @id
+                subject.find_login_form( pages: [ p, p ] ).id.should == @id
             end
         end
         context 'when passed an array of :forms' do
             it 'should go through its forms and locate the login one' do
                 p = Arachni::Page.from_url( @url + '/login' )
-                s = new_session
-
-                s.find_login_form( forms: p.forms ).id.should == @id
+                subject.find_login_form( forms: p.forms ).id.should == @id
             end
         end
         context 'when passed a url' do
             it 'store the cookies set by that url' do
                 Arachni::HTTP::Client.cookies.should be_empty
 
-                new_session.find_login_form( url: @url + '/login' ).id.should == @id
+                subject.find_login_form( url: @url + '/login' ).id.should == @id
 
                 Arachni::HTTP::Client.cookies.find do |c|
                     c.name == 'you_need_to' && c.value == 'preserve this'
@@ -154,17 +264,15 @@ describe Arachni::Session do
 
             context 'and called without a block' do
                 it 'should operate in blocking mode, go through its forms and locate the login one' do
-                    s = new_session
-                    s.find_login_form( url: @url + '/login' ).id.should == @id
+                    subject.find_login_form( url: @url + '/login' ).id.should == @id
                 end
             end
             context 'and called with a block' do
                 it 'should operate in async mode, go through its forms, locate the login one and pass it to the block' do
-                    s = new_session
 
                     form = nil
-                    s.find_login_form( url: @url + '/login' ) { |f| form = f }
-                    s.http.run
+                    subject.find_login_form( url: @url + '/login' ) { |f| form = f }
+                    subject.http.run
 
                     form.id.should == @id
                 end
@@ -172,66 +280,55 @@ describe Arachni::Session do
         end
         context 'when passed an array of :inputs' do
             it 'should use them to narrow down the list' do
-                new_session.find_login_form( url: @url + '/multiple',
-                                             inputs: :token ).id.should == @id
+                subject.find_login_form(
+                    url:    @url + '/multiple',
+                    inputs: :token
+                ).id.should == @id
             end
         end
         context 'when passed an :action' do
             context Regexp do
                 it 'should use it to match against form actions' do
-                    new_session.find_login_form( url: @url + '/multiple',
-                                                 action: /login/ ).id.should == @id
+                    subject.find_login_form(
+                        url:    @url + '/multiple',
+                        action: /login/
+                    ).id.should == @id
                 end
             end
             context String do
                 it 'should use it to match against form actions' do
-                    new_session.find_login_form( url: @url + '/multiple',
-                                                 action: "#{@url}/login" ).
-                        id.should == @id
+                    subject.find_login_form(
+                        url:    @url + '/multiple',
+                        action: "#{@url}/login"
+                    ).id.should == @id
                 end
             end
-        end
-
-    end
-
-    describe '#login_form=' do
-        it 'sets a login form' do
-            s = new_session
-
-            s.can_login?.should be_false
-            s.has_login_sequence?.should be_false
-
-            s.login_form = s.find_login_form( url: @url + '/nonce_login' ).
-                update( username: 'nonce_john', password: 'nonce_doe' )
-
-            # lets invalidate the form nonce now
-            # (to make sure that it will be refreshed before logging in)
-            s.http.get @url + '/nonce_login', mode: :sync
-
-            s.has_login_sequence?.should be_true
-
-            s.set_login_check @url + '/with_nonce', 'logged-in user'
-
-            s.can_login?.should be_true
-            s.logged_in?.should be_false
-
-            s.login
-            s.logged_in?.should be_true
         end
     end
 
     describe '#can_login?' do
         context 'when there are no login sequences' do
             it 'returns false' do
-                new_session.can_login?.should be_false
+                subject.can_login?.should be_false
             end
         end
+
         context 'when there are login sequences' do
             it 'returns true' do
-                s = new_session
-                s.login_sequence = proc {}
-                s.login_check = proc {}
-                s.can_login?.should be_true
+                subject.configure(
+                    form: {
+                        url:    "#{@url}/login",
+                        inputs: {
+                            username: 'john',
+                            password: 'doe'
+                        }
+                    }
+                )
+
+                @opts.login.check_url     = @url
+                @opts.login.check_pattern = 'logged-in user'
+
+                subject.can_login?.should be_true
             end
         end
     end
@@ -239,21 +336,17 @@ describe Arachni::Session do
     describe '#login' do
         context 'when there is no login capability' do
             it 'returns nil' do
-                s = new_session
-                s.can_login?.should be_false
-                s.has_login_sequence?.should be_false
-                s.login.should be_nil
+                subject.can_login?.should be_false
+                subject.configured?.should be_false
+                subject.login.should be_nil
             end
         end
     end
 
     describe '#logged_in?' do
         context 'when there is no login check' do
-            it 'returns nil' do
-                s = new_session
-                s.can_login?.should be_false
-                s.has_login_check?.should be_false
-                s.logged_in?.should be_nil
+            it "raises #{Arachni::Session::Error::NoLoginCheck}" do
+                expect { subject.logged_in? }.to raise_error described_class::Error::NoLoginCheck
             end
         end
     end
@@ -261,114 +354,71 @@ describe Arachni::Session do
     describe '#ensure_logged_in' do
         context 'when the login is successful' do
             it 'returns true' do
-                s = new_session
-                s.set_login_check @url + '/with_nonce', 'logged-in user'
-                s.login_form = s.find_login_form( url: @url + '/nonce_login' ).
-                    update( username: 'nonce_john', password: 'nonce_doe' )
+                @opts.login.check_url     = @url + '/with_nonce'
+                @opts.login.check_pattern = 'logged-in user'
 
-                s.logged_in?.should be_false
-                s.ensure_logged_in
-                s.logged_in?.should be_true
+                subject.configure(
+                    form: {
+                        url:    "#{@url}/nonce_login",
+                        inputs: {
+                            username: 'nonce_john',
+                            password: 'nonce_doe'
+                        }
+                    }
+                )
+
+                subject.logged_in?.should be_false
+                subject.ensure_logged_in
+                subject.logged_in?.should be_true
             end
         end
 
         context 'when the login fails' do
             it 'returns false' do
-                s = new_session
-                s.set_login_check @url + '/with_nonce', 'logged-in user'
-                s.login_form = s.find_login_form( url: @url + '/nonce_login' ).
-                    update( username: '1', password: '2' )
+                @opts.login.check_url     = @url + '/with_nonce'
+                @opts.login.check_pattern = 'logged-in user'
+                subject.configure(
+                    form: {
+                        url:    "#{@url}/nonce_login",
+                        inputs: {
+                            username: '1',
+                            password: '2'
+                        }
+                    }
+                )
 
-                s.logged_in?.should be_false
-                s.ensure_logged_in
-                s.logged_in?.should be_false
+                subject.logged_in?.should be_false
+                subject.ensure_logged_in
+                subject.logged_in?.should be_false
             end
         end
 
         context 'when the login attempt fails' do
             it 'retries 5 times' do
-                s = new_session
-                s.set_login_check @url, 'logged-in user'
-                s.login_form = s.find_login_form( url: @url + '/disappearing_login' ).
-                    update( username: 'john', password: 'doe' )
+                @opts.login.check_url     = @url
+                @opts.login.check_pattern = 'logged-in user'
 
-                s.logged_in?.should be_false
-                s.ensure_logged_in
-                s.logged_in?.should be_true
+                subject.configure(
+                    form: {
+                        url:    "#{@url}/disappearing_login",
+                        inputs: {
+                            username: 'john',
+                            password: 'doe'
+                        }
+                    }
+                )
+
+                subject.logged_in?.should be_false
+                subject.ensure_logged_in
+                subject.logged_in?.should be_true
             end
         end
 
         context 'when there is no login capability' do
             it 'returns nil' do
-                s = new_session
-                s.can_login?.should be_false
-                s.ensure_logged_in.should be_nil
+                subject.can_login?.should be_false
+                subject.ensure_logged_in.should be_nil
             end
-        end
-    end
-
-    describe '#login_sequence' do
-        context 'when a block is given' do
-            it 'sets it as a login sequence' do
-                s = new_session
-                s.login_sequence { :yeah! }
-                s.login_sequence.call.should == :yeah!
-                s.login.should == :yeah!
-            end
-        end
-    end
-
-    describe '#login_check' do
-        context 'when a block is given' do
-            it 'sets it as a login sequence' do
-                s = new_session
-                s.login_check { :yeah! }
-                s.login_check.call.should == :yeah!
-                s.logged_in?.should == :yeah!
-            end
-        end
-    end
-
-    describe '#set_login_check' do
-        it 'sets a login check using a URL and regular expression' do
-            s = new_session
-            url = web_server_url_for( :session ) + '/'
-            s.opts.url = "#{url}/congrats"
-
-            s.has_login_sequence?.should be_false
-            s.login_sequence = proc do
-                res = s.http.get( url, mode: :sync, follow_location: true )
-                return false if !res
-
-                login_form = s.forms_from_response( res ).first
-                next false if !login_form
-
-                login_form['username'] = 'john'
-                login_form['password'] = 'doe'
-                res = login_form.submit( mode: :sync, update_cookies: true, follow_location: false )
-                return false if !res
-
-                true
-            end
-            s.has_login_sequence?.should be_true
-
-            s.has_login_check?.should be_false
-            s.set_login_check( url, 'logged-in user' )
-            s.has_login_check?.should be_true
-
-            s.logged_in?.should be_false
-            s.login.should be_true
-            s.logged_in?.should be_true
-
-            bool = false
-            s.logged_in? { |b| bool = b }
-            s.http.run
-            bool.should be_true
-
-            not_bool = true
-            s.logged_in?( no_cookiejar: true ) { |b| not_bool = b }
-            s.http.run
-            not_bool.should be_false
         end
     end
 

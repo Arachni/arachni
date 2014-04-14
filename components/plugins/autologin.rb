@@ -31,12 +31,16 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
     end
 
     def run
-        login_form = session.find_login_form(
-            url:    @url,
-            inputs: @parameters.keys
+        session.configure(
+            form: {
+                url:    @url,
+                inputs: @parameters
+            }
         )
 
-        if !login_form
+        response = begin
+            session.login
+        rescue Session::Error::FormNotFound
             register_results(
                 status:  :form_not_found,
                 message: STATUSES[:form_not_found]
@@ -46,30 +50,10 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
             return
         end
 
-        print_status "Found log-in form with name: #{login_form.name || '<n/a>'}"
+        framework.opts.login.check_url     = response.url
+        framework.opts.login.check_pattern = @verifier
 
-        # merge the input fields of the form with the user supplied parameters
-        login_form.update @parameters
-
-        response = login_form.submit(
-            mode:            :sync,
-            update_cookies:  true,
-            follow_location: false
-        )
-
-        check_url = response.url
-        body = if response.redirection?
-            check_url = to_absolute( response.headers.location )
-            http.get( check_url,
-                mode:            :sync,
-                update_cookies:  true,
-                follow_location: true
-            ).body
-        else
-            response.body
-        end
-
-        if !body.match( @verifier )
+        if !session.logged_in?
             register_results(
                 status:  :check_failed,
                 message: STATUSES[:check_failed]
@@ -79,10 +63,7 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
             return
         end
 
-        session.login_form = login_form
-        session.set_login_check check_url, @verifier
-
-        cookies = http.cookies.inject({}){ |h, c| h.merge!( c.simple ) } || {}
+        cookies = http.cookies.inject({}){ |h, c| h.merge!( c.simple ) }
 
         register_results(
             status:  :ok,

@@ -1,6 +1,8 @@
 require 'sinatra'
 require 'sinatra/contrib'
+require 'ap'
 
+set :protection, except: :session_hijacking
 enable :sessions
 
 def logged_in?
@@ -31,11 +33,48 @@ get '/login' do
     HTML
 end
 
+get '/javascript_login' do
+    cookies[:you_need_to] = 'preserve this'
+
+    <<-HTML
+        <body>
+        </body>
+
+        <script>
+            var form = document.createElement("form");
+            form.id = 'login-form';
+            form.method = 'post';
+            form.action = '/login'
+
+            var input = document.createElement("input");
+            input.name = "username";
+            form.appendChild(input);
+
+            var input = document.createElement("input");
+            input.type = "password";
+            input.name = "password";
+            form.appendChild(input);
+
+            var input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "token";
+            input.value = "secret!";
+            form.appendChild(input);
+
+            var input = document.createElement("input");
+            input.type = "submit";
+            form.appendChild(input);
+
+            document.body.appendChild(form);
+        </script>
+    HTML
+end
+
 get '/disappearing_login' do
     @@visited ||= 0
     @@visited += 1
 
-    next if ![1, 6].include? @@visited
+    next if @@visited < 5
 
     cookies[:you_need_to] = 'preserve this'
 
@@ -50,7 +89,7 @@ end
 
 get '/multiple' do
     <<-HTML
-        <form method='post' name='login_form' action="/blah">
+        <form method='post' name='other_login_form' action="/blah">
             <input name='password' type='password' value='' />
             <input name='username' value='' />
         </form>
@@ -77,7 +116,7 @@ get '/with_nonce' do
     session[:success] ||= false
 
     cookies['session_cookie'] = 'blah'
-    response.set_cookie( "non_session", value: "value_of_cookie", expires: Time.now )
+    response.set_cookie( 'non_session', value: 'value_of_cookie', expires: Time.now )
 
     if session[:success]
         <<-HTML
@@ -92,7 +131,7 @@ get '/nonce_login' do
     session[:nonce] = rand( 999 ).to_s
 
     <<-HTML
-        <form method='post' name='login_form' action="/nonce_login">
+        <form method='post' name='other_login_form' action="/nonce_login">
             <input name='username' value='' />
             <input name='token' type='hidden' value='secret!' />
         </form>
