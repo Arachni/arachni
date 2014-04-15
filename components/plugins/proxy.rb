@@ -229,10 +229,8 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                         when '/verify/login_sequence'
                             login_form = find_login_form
                             session.configure(
-                                form: {
-                                    url:    login_form.url,
-                                    inputs: login_form.inputs
-                                }
+                                url:    login_form.url,
+                                inputs: login_form.inputs
                             )
 
                             logged_in = false

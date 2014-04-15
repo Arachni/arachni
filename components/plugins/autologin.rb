@@ -31,12 +31,7 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
     end
 
     def run
-        session.configure(
-            form: {
-                url:    @url,
-                inputs: @parameters
-            }
-        )
+        session.configure( url: @url, inputs: @parameters )
 
         response = begin
             session.login

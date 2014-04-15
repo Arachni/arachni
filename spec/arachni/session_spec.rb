@@ -19,12 +19,10 @@ describe Arachni::Session do
     subject { @session = Arachni::Session.new }
     let(:configured) do
         subject.configure(
-            form: {
-                url:    "#{@url}/login",
-                inputs: {
-                    username: 'john',
-                    password: 'doe'
-                }
+            url:    "#{@url}/login",
+            inputs: {
+                username: 'john',
+                password: 'doe'
             }
         )
 
@@ -91,27 +89,25 @@ describe Arachni::Session do
             transition = configured.login.dom.transitions.first
             transition.event.should == :load
             transition.element.should == :page
-            transition.options[:url].should == configured.options[:form][:url]
+            transition.options[:url].should == configured.options[:url]
 
             transition = configured.login.dom.transitions.last
             transition.event.should == :submit
             transition.element.tag_name.should == :form
 
             transition.options[:inputs]['username'].should ==
-                configured.options[:form][:inputs][:username]
+                configured.options[:inputs][:username]
 
             transition.options[:inputs]['password'].should ==
-                configured.options[:form][:inputs][:password]
+                configured.options[:inputs][:password]
         end
 
         it 'can handle Javascript forms' do
             subject.configure(
-                form: {
-                    url:    "#{@url}/javascript_login",
-                    inputs: {
-                        username: 'john',
-                        password: 'doe'
-                    }
+                url:    "#{@url}/javascript_login",
+                inputs: {
+                    username: 'john',
+                    password: 'doe'
                 }
             )
 
@@ -208,12 +204,10 @@ describe Arachni::Session do
     describe '#cookie' do
         it 'returns the cookie that determines the login status' do
             subject.configure(
-                form: {
-                    url:    "#{@url}/nonce_login",
-                    inputs: {
-                        username: 'nonce_john',
-                        password: 'nonce_doe'
-                    }
+                url:    "#{@url}/nonce_login",
+                inputs: {
+                    username: 'nonce_john',
+                    password: 'nonce_doe'
                 }
             )
 
@@ -334,12 +328,10 @@ describe Arachni::Session do
                 @opts.login.check_pattern = 'logged-in user'
 
                 subject.configure(
-                    form: {
-                        url:    "#{@url}/nonce_login",
-                        inputs: {
-                            username: 'nonce_john',
-                            password: 'nonce_doe'
-                        }
+                    url:    "#{@url}/nonce_login",
+                    inputs: {
+                        username: 'nonce_john',
+                        password: 'nonce_doe'
                     }
                 )
 
@@ -354,12 +346,10 @@ describe Arachni::Session do
                 @opts.login.check_url     = @url + '/with_nonce'
                 @opts.login.check_pattern = 'logged-in user'
                 subject.configure(
-                    form: {
-                        url:    "#{@url}/nonce_login",
-                        inputs: {
-                            username: '1',
-                            password: '2'
-                        }
+                    url:    "#{@url}/nonce_login",
+                    inputs: {
+                        username: '1',
+                        password: '2'
                     }
                 )
 
@@ -375,12 +365,10 @@ describe Arachni::Session do
                 @opts.login.check_pattern = 'logged-in user'
 
                 subject.configure(
-                    form: {
-                        url:    "#{@url}/disappearing_login",
-                        inputs: {
-                            username: 'john',
-                            password: 'doe'
-                        }
+                    url:    "#{@url}/disappearing_login",
+                    inputs: {
+                        username: 'john',
+                        password: 'doe'
                     }
                 )
 

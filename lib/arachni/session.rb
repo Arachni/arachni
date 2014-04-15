@@ -83,6 +83,10 @@ class Session
     end
 
     # @param    [Hash]  options
+    # @option   options [String]    :url
+    #   URL containing the login form.
+    # @option   options [Hash{String=>String}]    :inputs
+    #   Hash containing inputs with which to locate and fill-in the form.
     def configure( options )
         @options = options.dup
     end
@@ -208,8 +212,8 @@ class Session
         @browser = Browser.new
 
         form = find_login_form(
-            pages:  browser.load( @options[:form][:url] ).to_page,
-            inputs: @options[:form][:inputs].keys
+            pages:  browser.load( @options[:url] ).to_page,
+            inputs: @options[:inputs].keys
         )
 
         if !form
@@ -217,7 +221,7 @@ class Session
                  "Login form could not be found with: #{@options}"
         end
 
-        form.dom.update @options[:form][:inputs]
+        form.dom.update @options[:inputs]
         form.dom.auditor = self
 
         page = nil
@@ -228,6 +232,8 @@ class Session
         page
     end
 
+    # @param    [Block] block
+    #   Block to be passed the {#browser}.
     def with_browser( &block )
         block.call browser
     end

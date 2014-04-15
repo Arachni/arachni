@@ -264,9 +264,9 @@ class Browser
     # @param    [String]  url
     #   Loads the given URL in the browser.
     # @param    [Hash]  options
-    # @options  [Bool]  :take_snapshot  (true)
+    # @option  [Bool]  :take_snapshot  (true)
     #   Take a snapshot right after loading the page.
-    # @options  [Array<Cookie>]  :cookies  ([])
+    # @option  [Array<Cookie>]  :cookies  ([])
     #   Extra cookies to pass to the webapp.
     #
     # @return   [Page::DOM::Transition]
