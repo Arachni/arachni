@@ -19,6 +19,7 @@ class Data
     end
 
     require_relative 'data/framework'
+    require_relative 'data/session'
     require_relative 'data/issues'
     require_relative 'data/plugins'
 
@@ -26,6 +27,9 @@ class <<self
 
     # @return     [Framework]
     attr_accessor :framework
+
+    # @return     [Session]
+    attr_accessor :session
 
     # @return     [Issues]
     attr_accessor :issues
@@ -35,6 +39,7 @@ class <<self
 
     def reset
         @framework = Framework.new
+        @session   = Session.new
         @issues    = Issues.new
         @plugins   = Plugins.new
     end

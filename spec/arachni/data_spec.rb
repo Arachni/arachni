@@ -19,6 +19,12 @@ describe Arachni::Data do
         end
     end
 
+    describe '#session' do
+        it "returns an instance of #{described_class::Session}" do
+            subject.session.should be_kind_of described_class::Session
+        end
+    end
+
     describe '#issues' do
         it "returns an instance of #{described_class::Issues}" do
             subject.issues.should be_kind_of described_class::Issues
@@ -40,7 +46,7 @@ describe Arachni::Data do
     end
 
     describe '.dump' do
-        %w(framework issues plugins).each do |name|
+        %w(framework issues plugins session).each do |name|
             it "stores ##{name} to disk" do
                 previous_instance = subject.send(name)
 
@@ -55,7 +61,7 @@ describe Arachni::Data do
     end
 
     describe '#clear' do
-        %w(framework issues plugins).each do |method|
+        %w(framework issues plugins session).each do |method|
             it "clears ##{method}" do
                 subject.send(method).should receive(:clear)
                 subject.clear

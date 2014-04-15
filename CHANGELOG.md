@@ -30,6 +30,7 @@
 - Added `Data` -- Stores and provides access to the system's data.
     - `Issues` -- Stores logged `Issue` objects.
     - `Plugins` -- Stores plugin results.
+    - `Session` -- Stores login configuration.
     - `Framework` -- Stores the `Framework` audit workload.
         - `RPC` -- Stores the `RPC::Server::Framework` audit workload.
 - Added `Snapshot`

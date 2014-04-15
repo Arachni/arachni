@@ -14,6 +14,7 @@ describe Arachni::Session do
         @session.clean_up if @session
         @opts.reset
         Arachni::HTTP::Client.reset
+        Arachni::Data.session.clear
     end
 
     subject { @session = Arachni::Session.new }
@@ -51,6 +52,13 @@ describe Arachni::Session do
         end
     end
 
+    describe '#configuration' do
+        it "returns #{Arachni::Data::Session}#configuration" do
+            subject.configuration.object_id.should ==
+                Arachni::Data.session.configuration.object_id
+        end
+    end
+
     describe '#clean_up' do
         it 'shuts down the #browser' do
             configured.login
@@ -59,6 +67,12 @@ describe Arachni::Session do
             browser = configured.browser
             configured.clean_up
             browser.phantomjs_pid.should be_nil
+        end
+
+        it 'clears the #configuration' do
+            configured.should be_configured
+            configured.clean_up
+            configured.should_not be_configured
         end
     end
 
@@ -89,17 +103,17 @@ describe Arachni::Session do
             transition = configured.login.dom.transitions.first
             transition.event.should == :load
             transition.element.should == :page
-            transition.options[:url].should == configured.options[:url]
+            transition.options[:url].should == configured.configuration[:url]
 
             transition = configured.login.dom.transitions.last
             transition.event.should == :submit
             transition.element.tag_name.should == :form
 
             transition.options[:inputs]['username'].should ==
-                configured.options[:inputs][:username]
+                configured.configuration[:inputs][:username]
 
             transition.options[:inputs]['password'].should ==
-                configured.options[:inputs][:password]
+                configured.configuration[:inputs][:password]
         end
 
         it 'can handle Javascript forms' do

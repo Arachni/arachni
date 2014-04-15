@@ -48,13 +48,9 @@ class Session
     # @return   [Browser]
     attr_reader :browser
 
-    # @return   [Hash,nil]
-    attr_reader :options
-
     def clean_up
-        return if ! @browser
-        @browser.shutdown
-        @browser = nil
+        configuration.clear
+        shutdown_browser
     end
 
     # @return   [Array<Element::Cookie>]
@@ -88,13 +84,18 @@ class Session
     # @option   options [Hash{String=>String}]    :inputs
     #   Hash containing inputs with which to locate and fill-in the form.
     def configure( options )
-        @options = options.dup
+        configuration.clear
+        configuration.merge! options
+    end
+
+    def configuration
+        Data.session.configuration
     end
 
     # @return   [Bool]
     #   `true` if {#configure configured}, `false` otherwise.
     def configured?
-        !!@options
+        configuration.any?
     end
 
     # Finds a login forms based on supplied location, collection and criteria.
@@ -208,20 +209,19 @@ class Session
     def login
         fail Error::NotConfigured, 'Please #configure the session first.' if !configured?
 
-        clean_up
-        @browser = Browser.new
+        refresh_browser
 
         form = find_login_form(
-            pages:  browser.load( @options[:url] ).to_page,
-            inputs: @options[:inputs].keys
+            pages:  browser.load( configuration[:url] ).to_page,
+            inputs: configuration[:inputs].keys
         )
 
         if !form
             fail Error::FormNotFound,
-                 "Login form could not be found with: #{@options}"
+                 "Login form could not be found with: #{configuration}"
         end
 
-        form.dom.update @options[:inputs]
+        form.dom.update configuration[:inputs]
         form.dom.auditor = self
 
         page = nil
@@ -273,6 +273,19 @@ class Session
     # @return   [HTTP::Client]
     def http
         HTTP::Client
+    end
+
+    private
+
+    def shutdown_browser
+        return if !@browser
+        @browser.shutdown
+        @browser = nil
+    end
+
+    def refresh_browser
+        shutdown_browser
+        @browser = Browser.new
     end
 
 end
