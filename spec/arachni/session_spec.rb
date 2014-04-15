@@ -17,6 +17,22 @@ describe Arachni::Session do
     end
 
     subject { @session = Arachni::Session.new }
+    let(:configured) do
+        subject.configure(
+            form: {
+                url:    "#{@url}/login",
+                inputs: {
+                    username: 'john',
+                    password: 'doe'
+                }
+            }
+        )
+
+        @opts.login.check_url     = @url
+        @opts.login.check_pattern = 'logged-in user'
+
+        subject
+    end
 
     describe "#{Arachni::OptionGroups::Login}" do
         describe '#has_login_check?' do
@@ -38,39 +54,54 @@ describe Arachni::Session do
     end
 
     describe '#clean_up' do
-        it 'shuts down the #browser'
+        it 'shuts down the #browser' do
+            configured.login
+            configured.should be_logged_in
+
+            browser = configured.browser
+            configured.clean_up
+            browser.phantomjs_pid.should be_nil
+        end
     end
 
     describe '#browser' do
-        context 'after #login' do
-            it "returns an #{Arachni::Browser}"
-        end
-
         context 'before calling #login' do
-            it 'returns nil'
+            it 'returns nil' do
+                configured.browser.should be_nil
+            end
         end
 
+        context 'after #login' do
+            it "returns an #{Arachni::Browser}" do
+                configured.login
+                configured.browser.should be_kind_of Arachni::Browser
+            end
+        end
     end
-
 
     describe '#login' do
         it 'finds and submits the login form with the given credentials' do
-            subject.configure(
-                form: {
-                    url:    "#{@url}/login",
-                    inputs: {
-                        username: 'john',
-                        password: 'doe'
-                    }
-                }
-            )
+            configured.login
+            configured.should be_logged_in
+        end
 
-            @opts.login.check_url     = @url
-            @opts.login.check_pattern = 'logged-in user'
+        it 'returns the resulting page' do
+            configured.login.should be_kind_of Arachni::Page
 
-            subject.login
+            transition = configured.login.dom.transitions.first
+            transition.event.should == :load
+            transition.element.should == :page
+            transition.options[:url].should == configured.options[:form][:url]
 
-            subject.should be_logged_in
+            transition = configured.login.dom.transitions.last
+            transition.event.should == :submit
+            transition.element.tag_name.should == :form
+
+            transition.options[:inputs]['username'].should ==
+                configured.options[:form][:inputs][:username]
+
+            transition.options[:inputs]['password'].should ==
+                configured.options[:form][:inputs][:password]
         end
 
         it 'can handle Javascript forms' do
@@ -92,8 +123,21 @@ describe Arachni::Session do
             subject.should be_logged_in
         end
 
+        context 'when no configuration has been provided' do
+            it "raises #{described_class::Error::NotConfigured}" do
+                expect { subject.login }.to raise_error described_class::Error::NotConfigured
+            end
+        end
+
         context 'each time' do
-            it 'uses a fresh #browser'
+            it 'uses a fresh #browser' do
+                configured.login
+                browser = configured.browser
+
+                configured.login
+                configured.browser.object_id.should_not == browser.object_id
+                configured.browser.should be_kind_of Arachni::Browser
+            end
         end
     end
 
@@ -107,22 +151,8 @@ describe Arachni::Session do
         context 'when a login check is available' do
             context 'and a valid session is available' do
                 it 'returns true' do
-                    subject.configure(
-                        form: {
-                            url:    "#{@url}/login",
-                            inputs: {
-                                username: 'john',
-                                password: 'doe'
-                            }
-                        }
-                    )
-
-                    @opts.login.check_url     = @url
-                    @opts.login.check_pattern = 'logged-in user'
-
-                    subject.login
-
-                    subject.should be_logged_in
+                    configured.login
+                    configured.should be_logged_in
                 end
             end
 
@@ -137,29 +167,16 @@ describe Arachni::Session do
 
             context 'when a block is given' do
                 it 'performs the check asynchronously' do
-                    subject.configure(
-                        form: {
-                            url:    "#{@url}/login",
-                            inputs: {
-                                username: 'john',
-                                password: 'doe'
-                            }
-                        }
-                    )
-
-                    @opts.login.check_url     = @url
-                    @opts.login.check_pattern = 'logged-in user'
-
-                    subject.login
+                    configured.login
 
                     bool = false
-                    subject.logged_in? { |b| bool = b }
-                    subject.http.run
+                    configured.logged_in? { |b| bool = b }
+                    configured.http.run
                     bool.should be_true
 
                     not_bool = true
-                    subject.logged_in?( no_cookiejar: true ) { |b| not_bool = b }
-                    subject.http.run
+                    configured.logged_in?( no_cookiejar: true ) { |b| not_bool = b }
+                    configured.http.run
                     not_bool.should be_false
                 end
             end
@@ -169,17 +186,7 @@ describe Arachni::Session do
     describe '#configured?' do
         context 'when login instructions have been provided' do
             it 'returns true' do
-                subject.configure(
-                    form: {
-                        url:    "#{@url}/login",
-                        inputs: {
-                            username: 'john',
-                            password: 'doe'
-                        }
-                    }
-                )
-
-                subject.configured?.should be_true
+                configured.configured?.should be_true
             end
         end
 
@@ -315,38 +322,7 @@ describe Arachni::Session do
 
         context 'when there are login sequences' do
             it 'returns true' do
-                subject.configure(
-                    form: {
-                        url:    "#{@url}/login",
-                        inputs: {
-                            username: 'john',
-                            password: 'doe'
-                        }
-                    }
-                )
-
-                @opts.login.check_url     = @url
-                @opts.login.check_pattern = 'logged-in user'
-
-                subject.can_login?.should be_true
-            end
-        end
-    end
-
-    describe '#login' do
-        context 'when there is no login capability' do
-            it 'returns nil' do
-                subject.can_login?.should be_false
-                subject.configured?.should be_false
-                subject.login.should be_nil
-            end
-        end
-    end
-
-    describe '#logged_in?' do
-        context 'when there is no login check' do
-            it "raises #{Arachni::Session::Error::NoLoginCheck}" do
-                expect { subject.logged_in? }.to raise_error described_class::Error::NoLoginCheck
+                configured.can_login?.should be_true
             end
         end
     end

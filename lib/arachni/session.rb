@@ -24,6 +24,12 @@ class Session
     # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
     class Error < Arachni::Error
 
+        # Raised when trying to {#login} without proper {#configure configuration}.
+        #
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        class NotConfigured < Error
+        end
+
         # Raised when a login check is required to perform an action but none
         # has been configured.
         #
@@ -42,11 +48,13 @@ class Session
     # @return   [Browser]
     attr_reader :browser
 
-    def initialize
-    end
+    # @return   [Hash,nil]
+    attr_reader :options
 
     def clean_up
-        @browser.shutdown if @browser
+        return if ! @browser
+        @browser.shutdown
+        @browser = nil
     end
 
     # @return   [Array<Element::Cookie>]
@@ -194,9 +202,9 @@ class Session
     # @raise    [Error::FormNotFound]
     #   If the form could not be found.
     def login
-        return if !configured?
+        fail Error::NotConfigured, 'Please #configure the session first.' if !configured?
 
-        @browser.shutdown if @browser
+        clean_up
         @browser = Browser.new
 
         form = find_login_form(
@@ -210,13 +218,18 @@ class Session
         end
 
         form.dom.update @options[:form][:inputs]
+        form.dom.auditor = self
 
-        form.dom.browser = browser
-        form.dom.trigger
+        page = nil
+        form.dom.submit { |p| page = p }
 
         http.update_cookies browser.cookies
 
-        browser.to_page
+        page
+    end
+
+    def with_browser( &block )
+        block.call browser
     end
 
     # @param    [Hash]   http_options
