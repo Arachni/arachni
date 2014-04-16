@@ -143,6 +143,18 @@ class Response < Message
         hash
     end
 
+    def to_serializer_data
+        data = to_h
+        data[:request] = request.to_serializer_data
+        data
+    end
+
+    def self.from_serializer_data( data )
+        data['request']     = Request.from_serializer_data( data['request'] )
+        data['return_code'] = data['return_code'].to_sym if data['return_code']
+        new data
+    end
+
     def ==( other )
         hash == other.hash
     end

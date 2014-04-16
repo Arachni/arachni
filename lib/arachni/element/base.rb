@@ -119,6 +119,31 @@ class Base
         h.each { |k, v| instance_variable_set( k, v ) }
     end
 
+    def to_serializer_data
+        data = marshal_dump
+        data[:@dom] = data[:@dom].to_serializer_data if data[:@dom]
+        data
+    end
+
+    def self.from_serializer_data( data )
+        instance = allocate
+        data.each do |name, value|
+            value = case name
+                        when '@dom'
+                            self::DOM.from_serializer_data( value )
+
+                        when '@method'
+                            value.to_sym
+
+                        else
+                            value
+                    end
+
+            instance.instance_variable_set( name, value )
+        end
+        instance
+    end
+
 end
 end
 end

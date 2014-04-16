@@ -24,6 +24,11 @@ describe Arachni::Page do
     let(:page_with_nonces) { described_class.from_url( url + 'with_nonce' ) }
     subject { page }
 
+    it "supports #{Arachni::Serializer}" do
+        page_with_nonces.forms = page_with_nonces.forms
+        page_with_nonces.should == Arachni::Serializer.load( Arachni::Serializer.dump( page_with_nonces ) )
+    end
+
     describe '#initialize' do
         describe 'option' do
             describe :response do

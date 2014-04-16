@@ -35,6 +35,12 @@ describe Arachni::Page::DOM do
 
     let( :dom ) { Factory[:dom] }
     let( :empty_dom ) { create_page.dom }
+    subject { dom }
+
+    it "supports #{Arachni::Serializer}" do
+        subject.digest = 'stuff'
+        subject.should == Arachni::Serializer.load( Arachni::Serializer.dump( subject ) )
+    end
 
     describe '#url' do
         it 'defaults to the page URL' do

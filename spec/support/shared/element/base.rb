@@ -5,6 +5,10 @@ shared_examples_for 'element' do
         Arachni::Utilities.normalize_url( 'http://test.com' )
     end
 
+    it "supports #{Arachni::Serializer}" do
+        subject.should == Arachni::Serializer.load( Arachni::Serializer.dump( subject ) )
+    end
+
     describe '#marshal_dump' do
         it 'excludes #page' do
             subject.page = Factory[:page]

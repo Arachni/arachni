@@ -417,6 +417,34 @@ class Page
         h
     end
 
+    def to_serializer_data
+        data = to_initialization_options
+        data[:dom]      = dom.to_serializer_data
+        data[:response] = response.to_serializer_data
+        data[:element_audit_whitelist] = element_audit_whitelist.to_a
+        data
+    end
+
+    def self.from_serializer_data( data )
+        normalized_data = {}
+        data.each do |name, value|
+
+            value = case name
+                        when 'response'
+                            HTTP::Response.from_serializer_data( value )
+
+                        else
+                            value
+                    end
+
+            normalized_data[name.to_sym] = value
+        end
+
+        instance = new( normalized_data )
+        instance.instance_variable_set( '@dom', DOM.from_serializer_data( data['dom'] ) )
+        instance
+    end
+
     def _dump( _ )
         Marshal.dump( to_initialization_options )
     end

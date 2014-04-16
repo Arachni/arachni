@@ -7,7 +7,13 @@ Factory.define :running_transition do
 end
 
 Factory.define :completed_transition do
-    Arachni::Page::DOM::Transition.new( :page, :load, extra: :options ).complete
+    Arachni::Page::DOM::Transition.new( :page, :load,
+        extra: {
+            options: {
+                stuff: 'here'
+            }
+        }
+    ).complete
 end
 
 Factory.define :empty_transition do

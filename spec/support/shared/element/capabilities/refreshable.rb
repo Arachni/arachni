@@ -3,7 +3,7 @@ shared_examples_for 'refreshable' do
     let( :refreshable ) { described_class }
     let( :refreshable_url ) { url + 'refreshable' }
     let(:http) { Arachni::HTTP::Client }
-    
+
     describe '#refresh' do
         context 'when the form disappears' do
             context 'when called without a block' do

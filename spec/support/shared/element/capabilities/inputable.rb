@@ -39,6 +39,10 @@ shared_examples_for 'inputable' do |options = {}|
         end
     end
 
+    it "supports #{Arachni::Serializer}" do
+        subject.should == Arachni::Serializer.load( Arachni::Serializer.dump( subject ) )
+    end
+
     describe '#has_inputs?' do
         describe '#reset' do
             it 'returns the element to its original state' do

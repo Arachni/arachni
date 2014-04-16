@@ -28,6 +28,10 @@ shared_examples_for 'mutable' do |options = {}|
         mutable.mutations( seed ).find { |m| m.mutation? }
     end
 
+    it "supports #{Arachni::Serializer}" do
+        mutable.should == Arachni::Serializer.load( Arachni::Serializer.dump( mutable ) )
+    end
+
     describe '#mutation?' do
         context 'when the element has not been mutated' do
             it 'returns true' do

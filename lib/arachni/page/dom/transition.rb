@@ -140,7 +140,7 @@ class Transition
         self.event = event
         @element   = element
 
-        @options = options
+        @options = options.symbolize_keys
         @clock   = Time.now
 
         return self if !block_given?
@@ -243,6 +243,41 @@ class Transition
         }
     end
     alias :to_h :to_hash
+
+    def to_serializer_data
+        data = to_hash
+        if data[:element].is_a?( Browser::ElementLocator )
+            data[:element] = data[:element].to_serializer_data
+        end
+        data
+    end
+
+    def self.from_serializer_data( data )
+        instance = allocate
+        data.each do |name, value|
+
+            value = case name
+                        when 'event'
+                            value.to_sym
+
+                        when 'element'
+                            if value.is_a? String
+                                value.to_sym
+                            else
+                                Browser::ElementLocator.from_serializer_data( value )
+                            end
+
+                        when 'options'
+                            value.symbolize_keys
+
+                        else
+                            value
+                    end
+
+            instance.instance_variable_set( "@#{name}", value )
+        end
+        instance
+    end
 
     def hash
         to_hash.tap { |h| h.delete :time }.hash

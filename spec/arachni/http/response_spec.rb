@@ -9,6 +9,11 @@ describe Arachni::HTTP::Response do
     end
     let(:url) { 'http://test.com' }
 
+    it "supports #{Arachni::Serializer}" do
+        subject = @http.get( @url, mode: :sync )
+        subject.should == Arachni::Serializer.load( Arachni::Serializer.dump( subject ) )
+    end
+
     describe '#status_line' do
         it 'returns the first line of the response' do
             @http.get( @url, mode: :sync ).status_line.should == 'HTTP/1.1 200 OK'

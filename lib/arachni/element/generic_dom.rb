@@ -79,5 +79,36 @@ class GenericDOM < Base
         element.tag_name
     end
 
+    def to_serializer_data
+        data = super
+        data[:@transition] = transition.to_serializer_data
+        data[:@initialization_options][:transition] =
+            data[:@initialization_options][:transition].to_serializer_data
+
+        # ap data
+        data
+    end
+
+    def self.from_serializer_data( data )
+        instance = allocate
+        data.each do |name, value|
+            value = case name
+                        when '@transition'
+                            Arachni::Page::DOM::Transition.from_serializer_data( value )
+
+                        when '@initialization_options'
+                            value['transition'] =
+                                Arachni::Page::DOM::Transition.from_serializer_data( value['transition'] )
+                            value
+
+                        else
+                            value
+                    end
+
+            instance.instance_variable_set( name, value )
+        end
+        instance
+    end
+
 end
 end

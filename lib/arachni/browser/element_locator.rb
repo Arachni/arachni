@@ -76,6 +76,14 @@ class ElementLocator
     end
     alias :to_h :to_hash
 
+    def to_serializer_data
+        to_h
+    end
+
+    def self.from_serializer_data( data )
+        new data
+    end
+
     def hash
         to_hash.hash
     end

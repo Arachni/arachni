@@ -50,6 +50,10 @@ shared_examples_for 'auditable' do |options = {}|
         true
     end
 
+    it "supports #{Arachni::Serializer}" do
+        auditable.should == Arachni::Serializer.load( Arachni::Serializer.dump( auditable ) )
+    end
+
     describe '#dup' do
         let(:dupped) { auditable.dup }
 

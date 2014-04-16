@@ -37,6 +37,11 @@ describe Arachni::HTTP::Request do
         }
     end
 
+    it "supports #{Arachni::Serializer}" do
+        subject = described_class.new( options )
+        subject.should == Arachni::Serializer.load( Arachni::Serializer.dump( subject ) )
+    end
+
     describe '#initialize' do
         it 'sets the instance attributes by the options' do
             r = described_class.new( options )

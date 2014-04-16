@@ -9,7 +9,11 @@ describe Arachni::Page::DOM::Transition do
     after :each do
         @browser.shutdown if @browser
     end
-    
+
+    it "supports #{Arachni::Serializer}" do
+        subject.should == Arachni::Serializer.load( Arachni::Serializer.dump( subject ) )
+    end
+
     describe '#initialize' do
         context 'when given options' do
             it 'uses them to configure the attributes' do
@@ -225,7 +229,7 @@ describe Arachni::Page::DOM::Transition do
 
     describe '#options' do
         it 'returns any extra options' do
-            subject.options.should == { extra: :options }
+            subject.options.should be_any
         end
 
         context 'when the transition has not been initialized with any arguments' do
@@ -377,9 +381,7 @@ describe Arachni::Page::DOM::Transition do
             hash.should == {
                 element: :page,
                 event:   :load,
-                options: {
-                    extra: :options
-                }
+                options: completed_transition.options
             }
         end
     end

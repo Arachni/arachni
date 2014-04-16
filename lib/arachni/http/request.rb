@@ -345,7 +345,7 @@ class Request < Message
         @on_complete = []
 
         instance_variables.inject( {} ) do |h, iv|
-            h[iv] = instance_variable_get( iv )
+            h[iv.to_s.gsub('@','').to_sym] = instance_variable_get( iv )
             h
         end
     ensure
@@ -354,7 +354,28 @@ class Request < Message
     end
 
     def marshal_load( h )
-        h.each { |k, v| instance_variable_set( k, v ) }
+        h.each { |k, v| instance_variable_set( "@#{k}", v ) }
+    end
+
+    def to_serializer_data
+        marshal_dump
+    end
+
+    def self.from_serializer_data( data )
+        instance = allocate
+        data.each do |name, value|
+
+            value = case name
+                        when 'method', 'mode'
+                            value.to_sym
+
+                        else
+                            value
+                    end
+
+            instance.instance_variable_set( "@#{name}", value )
+        end
+        instance
     end
 
     private

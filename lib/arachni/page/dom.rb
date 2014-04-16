@@ -121,7 +121,6 @@ class DOM
         #
         # However, this check doesn't cost us much so it's worth a shot.
         if browser_page.dom === self
-            #ap "RESTORED BY URL: #{url}"
             return browser
         end
 
@@ -140,8 +139,6 @@ class DOM
             return
         end
 
-        #ap "RESTORED BY TRANSITIONS: #{url}"
-
         browser
     end
 
@@ -155,6 +152,40 @@ class DOM
             data_flow_sink:      data_flow_sink,
             execution_flow_sink: execution_flow_sink
         }
+    end
+    alias :to_hash :to_h
+
+    def to_serializer_data
+        data = to_hash
+        data[:transitions] = data[:transitions].map(&:to_serializer_data)
+        data[:skip_states] = data[:skip_states].collection.to_a
+        data
+    end
+
+    def self.from_serializer_data( data )
+        instance = allocate
+        data.each do |name, value|
+
+            value = case name
+                        when 'transitions'
+                            value.map { |t| Transition.from_serializer_data t }
+
+                        when 'options'
+                            value.symbolize_keys
+
+                        when 'skip_states'
+                            skip_states = Support::LookUp::HashSet.new(
+                                hasher: :persistent_hash
+                            )
+                            skip_states.collection.merge value
+
+                        else
+                            value
+                    end
+
+            instance.instance_variable_set( "@#{name}", value )
+        end
+        instance
     end
 
     def hash
