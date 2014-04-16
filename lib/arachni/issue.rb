@@ -391,6 +391,53 @@ class Issue
         hash == other.hash
     end
 
+    def to_serializer_data
+        data = {}
+        instance_variables.each do |ivar|
+            data[ivar.to_s.gsub('@','')] = instance_variable_get( ivar )
+        end
+        data['vector']   = data['vector'].to_serializer_data.merge( '@class' => vector.class.to_s )
+        data['severity'] = data['severity'].to_s
+
+        if data['check']
+            data['check'] = data['check'][:elements].map(&:type)
+        end
+
+        if data['page']
+            data['page'] = data['page'].to_serializer_data
+        end
+
+        if data['referring_page']
+            data['referring_page'] = data['referring_page'].to_serializer_data
+        end
+
+        if data['variations']
+            data['variations'] = data['variations'].map(&:to_serializer_data)
+        end
+
+        data
+    end
+
+    def self.from_serializer_data( data )
+        instance = allocate
+        data.each do |name, value|
+            value = case name
+                        when 'vector'
+                            klass = value.delete('@class').split( '::' ).last.to_sym
+                            Arachni::Element.const_get(klass).from_serializer_data( value )
+
+                        when 'page', 'referring_page'
+                            Arachni::Page.from_serializer_data( value )
+
+                        else
+                            value
+                    end
+
+            instance.instance_variable_set( "@#{name}", value )
+        end
+        instance
+    end
+
     protected
 
     def unique_id=( id )

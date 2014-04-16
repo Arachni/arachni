@@ -18,6 +18,10 @@ describe Arachni::Issue do
     let( :untrusted_issue ) { Factory[:untrusted_issue] }
     let( :issue_with_variations ) { Factory[:issue_with_variations] }
 
+    it "supports #{Arachni::Serializer}" do
+        issue_with_variations.should == Arachni::Serializer.load( Arachni::Serializer.dump( issue_with_variations ) )
+    end
+
     it 'recodes string data to UTF8' do
         issue.name.should == "Check name \u2713"
     end
