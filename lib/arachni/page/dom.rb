@@ -158,7 +158,7 @@ class DOM
     def to_serializer_data
         data = to_hash
         data[:transitions] = data[:transitions].map(&:to_serializer_data)
-        data[:skip_states] = data[:skip_states].collection.to_a
+        data[:skip_states] = data[:skip_states].collection.to_a if data[:skip_states]
         data
     end
 
@@ -170,14 +170,19 @@ class DOM
                         when 'transitions'
                             value.map { |t| Transition.from_serializer_data t }
 
-                        when 'options'
-                            value.symbolize_keys
+                        when 'data_flow_sink', 'execution_flow_sink'
+                            (value.map do |entry|
+                                entry['trace'] = entry['trace'].
+                                    map { |o| o.map { |h| h.symbolize_keys( false ) } }
+                                entry.symbolize_keys( false )
+                            end)
 
                         when 'skip_states'
                             skip_states = Support::LookUp::HashSet.new(
                                 hasher: :persistent_hash
                             )
-                            skip_states.collection.merge value
+                            skip_states.collection.merge( value || [] )
+                            skip_states
 
                         else
                             value
