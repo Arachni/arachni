@@ -61,7 +61,7 @@ class Base
     # @return   [Hash] Simple representation of self.
     def to_h
         {
-            class: self.class,
+            class: self.class.to_s,
             type:  type,
             url:   url
         }

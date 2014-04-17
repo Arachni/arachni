@@ -49,8 +49,8 @@ shared_examples_for 'element' do
             hash[:url].should == subject.url
         end
 
-        it 'includes the element class' do
-            hash[:class].should == described_class
+        it 'includes the element class as a string' do
+            hash[:class].should == described_class.to_s
         end
 
         it 'is aliased to #to_hash' do
