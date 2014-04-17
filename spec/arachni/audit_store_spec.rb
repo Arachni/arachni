@@ -138,12 +138,12 @@ describe Arachni::AuditStore do
                 version:         audit_store.version,
                 options:         audit_store.options,
                 sitemap:         audit_store.sitemap,
-                start_datetime:  audit_store.start_datetime,
-                finish_datetime: audit_store.finish_datetime,
+                start_datetime:  audit_store.start_datetime.to_s,
+                finish_datetime: audit_store.finish_datetime.to_s,
                 delta_time:      audit_store.delta_time,
                 issues:          audit_store.issues.map(&:to_h),
                 plugins:         {
-                    'plugin_name' => {
+                    plugin_name: {
                         results: 'stuff',
                         options: [
                             {

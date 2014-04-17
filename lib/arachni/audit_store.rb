@@ -110,25 +110,27 @@ class AuditStore
         File.expand_path( location )
     end
 
-    # @return    [Hash] Hash representation of `self`.
+    # @return   [Hash]  Hash representation of `self`.
     def to_h
-        hash = {
+        h = {
             version:         @version,
             options:         @options,
             sitemap:         @sitemap,
-            start_datetime:  @start_datetime,
-            finish_datetime: @finish_datetime,
+            start_datetime:  @start_datetime.to_s,
+            finish_datetime: @finish_datetime.to_s,
             delta_time:      delta_time,
             issues:          issues.map(&:to_h),
-            plugins:         @plugins.deep_clone
+            plugins:         @plugins.dup
         }
 
-        hash[:plugins].each do |plugin, data|
+        h[:plugins].each do |plugin, data|
             next if !data[:options]
-            hash[:plugins][plugin][:options] = data[:options].map(&:to_h)
+            h[:plugins][plugin] = h[:plugins][plugin].dup
+            h[:plugins][plugin][:options] = h[:plugins][plugin][:options].dup
+            h[:plugins][plugin][:options] = data[:options].map(&:to_h)
         end
 
-        hash.recode
+        h#.recode
     end
     alias :to_hash :to_h
 
@@ -144,6 +146,8 @@ class AuditStore
 
         data['plugins'] = data['plugins'].inject({}) do |h, (k, v)|
             h[k] = v.dup
+            next h if !h[k][:options]
+
             h[k][:options] = v[:options].map do |option|
                 option.to_serializer_data.merge( 'class' => option.class.to_s )
             end
@@ -161,7 +165,10 @@ class AuditStore
         data['issues'] = data['issues'].map { |i| Arachni::Issue.from_serializer_data( i ) }
 
         data['plugins'] = data['plugins'].inject({}) do |h, (k, v)|
+            k = k.to_sym
             h[k] = v.symbolize_keys(false)
+            next h if !h[k][:options]
+
             h[k][:options] = v['options'].map do |option|
                 klass = option['class'].split( '::' ).last.to_sym
                 Component::Options.const_get( klass ).from_serializer_data( option )
