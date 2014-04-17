@@ -11,7 +11,7 @@ module Arachni
 class AuditStore
 
     # @return    [String]    {Arachni::VERSION}
-    attr_reader   :version
+    attr_accessor :version
 
     # @return    [Hash]    {Options#to_h}
     attr_reader   :options
@@ -30,10 +30,9 @@ class AuditStore
     attr_accessor :finish_datetime
 
     def initialize( options = {} )
-        @version = Arachni::VERSION
-
         options.each { |k, v| send( "#{k}=", v ) }
 
+        @version     ||= Arachni::VERSION
         @plugins     ||= {}
         @sitemap     ||= {}
         self.options ||= Options
@@ -133,12 +132,55 @@ class AuditStore
     end
     alias :to_hash :to_h
 
+    def to_serializer_data
+        data = {}
+        instance_variables.each do |ivar|
+            data[ivar.to_s.gsub('@','')] = instance_variable_get( ivar )
+        end
+
+        if data['issues']
+            data['issues'] = data['issues'].values.map(&:to_serializer_data)
+        end
+
+        data['plugins'] = data['plugins'].inject({}) do |h, (k, v)|
+            h[k] = v.dup
+            h[k][:options] = v[:options].map do |option|
+                option.to_serializer_data.merge( 'class' => option.class.to_s )
+            end
+            h
+        end
+        data['start_datetime']  = data['start_datetime'].to_s
+        data['finish_datetime'] = data['finish_datetime'].to_s
+        data
+    end
+
+    def self.from_serializer_data( data )
+        data['start_datetime']  = Time.parse( data['start_datetime'] )
+        data['finish_datetime'] = Time.parse( data['finish_datetime'] )
+
+        data['issues'] = data['issues'].map { |i| Arachni::Issue.from_serializer_data( i ) }
+
+        data['plugins'] = data['plugins'].inject({}) do |h, (k, v)|
+            h[k] = v.symbolize_keys(false)
+            h[k][:options] = v['options'].map do |option|
+                klass = option['class'].split( '::' ).last.to_sym
+                Component::Options.const_get( klass ).from_serializer_data( option )
+            end
+            h
+        end
+        new data
+    end
+
     def ==( other )
-        to_h == other.to_h
+        hash == other.hash
     end
 
     def hash
-        to_hash.hash
+        h = to_hash
+        [:start_datetime, :finish_datetime, :delta_datetime].each do |k|
+            h.delete k
+        end
+        h.hash
     end
 
     private
@@ -151,7 +193,7 @@ class AuditStore
     # @param    [Hash]  options
     # @return    [Hash]
     def prepare_options( options )
-        options.to_hash.symbolize_keys( false )
+        options.to_hash.symbolize_keys
     end
 
     # @param    [String, Float, Integer]    seconds

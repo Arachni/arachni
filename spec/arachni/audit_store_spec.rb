@@ -17,6 +17,10 @@ describe Arachni::AuditStore do
     let( :passive_issue ) { Factory[:passive_issue] }
     let( :active_issue ) { Factory[:active_issue] }
 
+    it "supports #{Arachni::Serializer}" do
+        audit_store.should == Arachni::Serializer.load( Arachni::Serializer.dump( audit_store ) )
+    end
+
     describe '#version' do
         it 'returns the version number' do
             audit_store.version.should == Arachni::VERSION
