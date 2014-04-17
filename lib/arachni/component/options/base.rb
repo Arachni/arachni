@@ -109,6 +109,18 @@ class Arachni::Component::Options::Base
     end
     alias :to_hash :to_h
 
+    def to_serializer_data
+        to_h
+    end
+
+    def self.from_serializer_data( data )
+        data.delete('type')
+        data.delete('class')
+        name = data.delete('name')
+
+        new name, data.symbolize_keys(false)
+    end
+
     def ==( option )
         hash == option.hash
     end
