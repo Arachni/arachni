@@ -369,7 +369,7 @@ describe Arachni::Issue do
                     vector:          {
                         method: :get,
                         type:   :form,
-                        class:   Arachni::Element::Form,
+                        class:   'Arachni::Element::Form',
                         url:    'http://test.com/',
                         action: 'http://test.com/',
                         default_inputs: { 'stuff' => '1' },
@@ -414,7 +414,7 @@ describe Arachni::Issue do
                             inputs:               { 'stuff' => i.to_s },
                             affected_input_value: i.to_s,
                             seed:                 i.to_s,
-                            class:                Arachni::Element::Form,
+                            class:                Arachni::Element::Form.to_s,
                         },
                         referring_page:  {
                             body: page.body,
