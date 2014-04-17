@@ -396,6 +396,7 @@ class Issue
         instance_variables.each do |ivar|
             data[ivar.to_s.gsub('@','')] = instance_variable_get( ivar )
         end
+        data['digest']   = digest
         data['vector']   = data['vector'].to_serializer_data.merge( '@class' => vector.class.to_s )
         data['severity'] = data['severity'].to_s
 
@@ -444,6 +445,7 @@ class Issue
                             value.symbolize_keys
 
                         when 'platform_name', 'platform_type'
+                            next if !value
                             value.to_sym
 
                         when 'severity'
