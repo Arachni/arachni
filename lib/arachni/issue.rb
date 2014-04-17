@@ -428,10 +428,13 @@ class Issue
                             Arachni::Element.const_get(klass).from_serializer_data( value )
 
                         when 'check'
-                            value['elements'] = (value['elements'].map do |class_name|
-                                klass = class_name.split( '::' ).last.to_sym
-                                Arachni::Element.const_get(klass)
-                            end)
+                            if value['elements']
+                                value['elements'] = (value['elements'].map do |class_name|
+                                    klass = class_name.split( '::' ).last.to_sym
+                                    Arachni::Element.const_get(klass)
+                                end)
+                            end
+
                             value.symbolize_keys(false)
 
                         when 'variations'
