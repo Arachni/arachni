@@ -33,7 +33,7 @@ class Base
     attr_reader   :initialization_options
 
     def initialize( options )
-        options = options.symbolize_keys( false )
+        options = options.symbolize_keys
 
         if !(options[:url] || options[:action])
             fail 'Needs :url or :action option.'
@@ -121,6 +121,7 @@ class Base
 
     def to_serializer_data
         data = marshal_dump
+        data.delete :@audit_options
         data[:@dom] = data[:@dom].to_serializer_data if data[:@dom]
         data
     end
@@ -131,6 +132,9 @@ class Base
             value = case name
                         when '@dom'
                             self::DOM.from_serializer_data( value )
+
+                        when '@initialization_options'
+                            value.symbolize_keys
 
                         when '@method'
                             value.to_sym
