@@ -312,6 +312,8 @@ class Page
             self.body     = nil
         end
 
+        @cookiejar.clear if @cookiejar
+
         @dom.digest      = nil
         @dom.skip_states = nil
 
@@ -432,6 +434,9 @@ class Page
             value = case name
                         when 'response'
                             HTTP::Response.from_serializer_data( value )
+
+                        when 'metadata'
+                            value.symbolize_keys
 
                         else
                             value
