@@ -399,8 +399,9 @@ class Issue
         data['vector']   = data['vector'].to_serializer_data.merge( '@class' => vector.class.to_s )
         data['severity'] = data['severity'].to_s
 
-        if data['check']
-            data['check'] = data['check'][:elements].map(&:type)
+        if data['check'] && data['check'][:elements]
+            data['check'] = data['check'].dup
+            data['check'][:elements] = data['check'][:elements].map(&:to_s)
         end
 
         if data['page']
@@ -425,6 +426,26 @@ class Issue
                         when 'vector'
                             klass = value.delete('@class').split( '::' ).last.to_sym
                             Arachni::Element.const_get(klass).from_serializer_data( value )
+
+                        when 'check'
+                            value['elements'] = (value['elements'].map do |class_name|
+                                klass = class_name.split( '::' ).last.to_sym
+                                Arachni::Element.const_get(klass)
+                            end)
+                            value.symbolize_keys(false)
+
+                        when 'variations'
+                            value.map { |i| from_serializer_data i }
+
+                        when 'remarks'
+                            value.symbolize_keys
+
+                        when 'platform_name', 'platform_type'
+                            value.to_sym
+
+                        when 'severity'
+                            return if value.to_s.empty?
+                            Severity.const_get( value.upcase.to_sym )
 
                         when 'page', 'referring_page'
                             Arachni::Page.from_serializer_data( value )
