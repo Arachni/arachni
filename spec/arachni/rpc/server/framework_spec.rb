@@ -273,11 +273,11 @@ describe 'Arachni::RPC::Server::Framework' do
             results = instance.framework.auditstore.plugins
             results.should be_any
             results[:wait].should be_any
-            results[:wait][:results].should == { stuff: true }
+            results[:wait][:results].should == { 'stuff' => true }
         end
     end
     describe '#progress' do
-        before { @progress_keys = %W(stats status busy issues instances).sort }
+        before { @progress_keys = %W(stats status busy issues instances).sort.map(&:to_sym) }
 
         it 'aliased to #progress_data' do
             instance = @instance_clean
@@ -292,15 +292,14 @@ describe 'Arachni::RPC::Server::Framework' do
                 data = instance.framework.progress
                 data.keys.sort.should == @progress_keys
 
-                data['stats'].should be_any
-                data['stats'].keys.should ==
-                    instance.framework.stats.keys.map { |s| s.to_s }
-                data['instances'].should be_empty
-                data['status'].should be_true
-                data['busy'].nil?.should be_false
-                data['issues'].should be_any
-                data['instances'].should be_empty
-                data.should_not include 'errors'
+                data[:stats].should be_any
+                data[:stats].keys.should == instance.framework.stats.keys
+                data[:instances].should be_empty
+                data[:status].should be_true
+                data[:busy].nil?.should be_false
+                data[:issues].should be_any
+                data[:instances].should be_empty
+                data.should_not include :errors
             end
         end
 
@@ -309,14 +308,14 @@ describe 'Arachni::RPC::Server::Framework' do
                 context 'when set to true' do
                     it 'includes all error messages' do
                         @instance_clean.framework.
-                            progress( errors: true )['errors'].should be_empty
+                            progress( errors: true )[:errors].should be_empty
 
                         test = 'Test'
                         @instance_clean.framework.error_test test
 
                         @instance_clean.framework.
-                            progress( errors: true )['errors'].last.
-                            should end_with test
+                            progress( errors: true )[:errors].last.
+                                should end_with test
                     end
                 end
                 context 'when set to an Integer' do
@@ -324,10 +323,10 @@ describe 'Arachni::RPC::Server::Framework' do
                         @instance_clean.framework.error_test 'test'
 
                         initial_errors = @instance_clean.framework.
-                            progress( errors: true )['errors']
+                            progress( errors: true )[:errors]
 
                         errors = @instance_clean.framework.
-                            progress( errors: 10 )['errors']
+                            progress( errors: 10 )[:errors]
 
                         errors.should == initial_errors[10..-1]
                     end
@@ -339,7 +338,7 @@ describe 'Arachni::RPC::Server::Framework' do
                         keys = @instance_clean.framework.progress( issues: false ).
                             keys.sort
                         pk = @progress_keys.dup
-                        pk.delete( "issues" )
+                        pk.delete( :issues )
                         keys.should == pk
                     end
                 end
@@ -348,7 +347,7 @@ describe 'Arachni::RPC::Server::Framework' do
                 context 'when set to true' do
                     it 'includes issues as a hash' do
                         @instance_clean.framework.
-                            progress( as_hash: true )['issues']
+                            progress( as_hash: true )[:issues]
                             .first.is_a?( Hash ).should be_true
                     end
                 end
@@ -359,7 +358,7 @@ describe 'Arachni::RPC::Server::Framework' do
         it 'returns a hash report of the scan' do
             report = @instance_clean.framework.report
             report.is_a?( Hash ).should be_true
-            report[:issues].should be_any
+            report['issues'].should be_any
         end
 
         it 'aliased to #audit_store_as_hash' do
@@ -422,25 +421,7 @@ describe 'Arachni::RPC::Server::Framework' do
 
             issue = issues.first
             issue.is_a?( Hash ).should be_true
-            issue[:variations].should be_empty
-        end
-    end
-    describe '#update_issues' do
-        it 'registers an issue with the instance' do
-            url = web_server_url_for( :framework )
-            inst = instance_spawn
-            inst.opts.url = url
-
-            cissue = Factory[:issue]
-            inst.framework.update_issues( [cissue] ).should be_true
-
-            issues = inst.framework.issues
-            issues.size.should == 1
-
-            issue = issues.first
-            issue.name.should == cissue.name
-            issue.vector.affected_input_name.should == cissue.vector.affected_input_name
-            issue.vector.should == cissue.vector
+            issue['variations'].should be_empty
         end
     end
 end

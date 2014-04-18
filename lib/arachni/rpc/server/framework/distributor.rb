@@ -123,7 +123,7 @@ module Distributor
 
             # Assign the workload to the slave.
             connect_to_instance( instances[i] ).
-                framework.process_pages( workload ) do
+                framework.process_pages( workload.map(&:to_serializer_data) ) do
                     # Slave got workload, remove it from the 'done' list.
                     mark_slave_as_not_done instances[i][:url]
                 end

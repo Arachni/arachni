@@ -7,7 +7,7 @@ class Arachni::Plugins::Wait < Arachni::Plugin::Base
 
     def run
         wait_while_framework_running
-        register_results( stuff: true )
+        register_results( 'stuff' => true )
     end
 
     def self.info

@@ -85,6 +85,37 @@ module Master
         true
     end
 
+    # Used by slaves to impart the knowledge they've gained during the scan to
+    # the master as well as for signaling.
+    #
+    # @param    [Hash]     data
+    # @option data [Boolean] audit_done
+    #   `true` if the slave has finished auditing, `false` otherwise.
+    # @option data [Array<Arachni::Issue>]    issues
+    #
+    # @param    [String]    url
+    #   URL of the slave.
+    # @param    [String]    token
+    #   Privileged token, prevents this method from being called by 3rd parties
+    #   when this instance is a master. If this instance is not a master one
+    #   the token needn't be provided.
+    #
+    # @return   [Bool]
+    #   `true` on success, `false` on invalid `token`.
+    #
+    # @private
+    def slave_sitrep( data, url, token = nil )
+        return false if master? && !valid_token?( token )
+
+        issues = (data['issues'] || []).map { |i| Arachni::Issue.from_serializer_data i }
+        update_issues( issues, token )
+        slave_done( url, token ) if data['audit_done']
+
+        true
+    end
+
+    private
+
     # Signals that a slave has finished auditing -- each slave must call this
     # when it finishes its job.
     #
@@ -95,8 +126,6 @@ module Master
     #   the token needn't be provided.
     #
     # @return   [Bool]  `true` on success, `false` on invalid `token`.
-    #
-    # @private
     def slave_done( slave_url, token = nil )
         return false if master? && !valid_token?( token )
         mark_slave_as_done slave_url
@@ -118,48 +147,11 @@ module Master
     #   the token needn't be provided.
     #
     # @return   [Bool]  `true` on success, `false` on invalid `token`.
-    #
-    # @private
     def update_issues( issues, token = nil )
         return false if master? && !valid_token?( token )
         issues.each { |issue| Data.issues << issue }
         true
     end
-
-    # Used by slaves to impart the knowledge they've gained during the scan to
-    # the master as well as for signaling.
-    #
-    # @param    [Hash]     data
-    # @option data [Boolean] :crawl_done
-    #   `true` if the peer has finished crawling, `false` otherwise.
-    # @option data [Boolean] :audit_done
-    #   `true` if the slave has finished auditing, `false` otherwise.
-    # @option data [Hash] :element_ids_per_url
-    #   List of element IDs (as created by
-    #   {Arachni::Element::Capabilities::Auditable#audit_scope_id}) for each
-    #   page (by URL).
-    # @option data [Array<Arachni::Issue>]    issues
-    #
-    # @param    [String]    url
-    #   URL of the slave.
-    # @param    [String]    token
-    #   Privileged token, prevents this method from being called by 3rd parties
-    #   when this instance is a master. If this instance is not a master one
-    #   the token needn't be provided.
-    #
-    # @return   [Bool]  `true` on success, `false` on invalid `token`.
-    #
-    # @private
-    def slave_sitrep( data, url, token = nil )
-        return false if master? && !valid_token?( token )
-
-        update_issues( data[:issues] || [], token )
-        slave_done( url, token ) if data[:audit_done]
-
-        true
-    end
-
-    private
 
     def master_run
         # We need to take our cues from the local framework as some plug-ins may

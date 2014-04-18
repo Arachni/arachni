@@ -33,8 +33,7 @@ class Base < ::Arachni::RPC::EM::Server
         end
 
         super(
-            serializer: Marshal,
-            fallback_serializer:  YAML,
+            serializer: Serializer,
             host:       options.rpc.server_address,
             port:       options.rpc.server_port,
             socket:     options.rpc.server_socket,

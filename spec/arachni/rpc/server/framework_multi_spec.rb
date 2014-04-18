@@ -121,7 +121,7 @@ describe 'Arachni::RPC::Server::Framework' do
                 map { |i| i.vector.affected_input_name }.uniq.should be
                     %w(link_input form_input cookie_input)
 
-            dispatcher_kill_by_instance instance
+            # dispatcher_kill_by_instance instance
         end
 
         it 'handles AJAX' do
@@ -136,7 +136,7 @@ describe 'Arachni::RPC::Server::Framework' do
                 map { |i| i.vector.affected_input_name }.uniq.should be
                     %w(link_input form_input cookie_taint).sort
 
-            dispatcher_kill_by_instance instance
+            # dispatcher_kill_by_instance instance
         end
     end
     describe '#auditstore' do
@@ -203,21 +203,21 @@ describe 'Arachni::RPC::Server::Framework' do
             instance.framework.busy?.should be_true
             instance.framework.clean_up.should be_true
 
-            instance_count = instance.framework.progress['instances'].size
+            instance_count = instance.framework.progress[:instances].size
             auditstore     = instance.framework.auditstore
             instance.service.shutdown
 
             results = auditstore.plugins
             results.should be_any
             results[:wait].should be_any
-            results[:wait][:results].should == { stuff: true }
-            results[:distributable][:results].should == { stuff: instance_count }
+            results[:wait][:results].should == { 'stuff' => true }
+            results[:distributable][:results].should == { 'stuff' => instance_count }
 
-            dispatcher_kill_by_instance instance
+            # dispatcher_kill_by_instance instance
         end
     end
     describe '#progress' do
-        before { @progress_keys = %W(stats status busy issues instances).sort }
+        before { @progress_keys = %W(stats status busy issues instances).map(&:to_sym).sort }
 
         it 'aliased to #progress_data' do
             instance = @instance_clean
@@ -232,20 +232,20 @@ describe 'Arachni::RPC::Server::Framework' do
                 data = instance.framework.progress
                 data.keys.sort.should == @progress_keys
 
-                keys = (@stat_keys | %w(url status)).flatten.map { |k| k.to_s }.sort
+                keys = (@stat_keys | [:url, :status]).flatten.sort
 
-                data['stats'].should be_any
-                data['stats'].keys.sort.should == (keys | %w(current_pages)).flatten.sort
-                data['instances'].should be_any
-                data['status'].should be_true
-                data['busy'].nil?.should be_false
-                data['issues'].should be_any
-                data['instances'].size.should == 3
-                data.should_not include 'errors'
+                data[:stats].should be_any
+                data[:stats].keys.sort.should == (keys | [:current_pages]).flatten.sort
+                data[:instances].should be_any
+                data[:status].should be_true
+                data[:busy].nil?.should be_false
+                data[:issues].should be_any
+                data[:instances].size.should == 3
+                data.should_not include :errors
 
-                keys = (keys | %w(current_page)).flatten.sort
-                data['instances'].first.keys.sort.should == keys
-                data['instances'].last.keys.sort.should == keys
+                keys = (keys | [:current_page]).flatten.sort
+                data[:instances].first.keys.sort.should == keys
+                data[:instances].last.keys.sort.should == keys
             end
         end
 
@@ -254,14 +254,14 @@ describe 'Arachni::RPC::Server::Framework' do
                 context 'when set to true' do
                     it 'includes all error messages' do
                         instance = instance_light_grid_spawn
-                        instance.framework.progress( errors: true )['errors'].should be_empty
+                        instance.framework.progress( errors: true )[:errors].should be_empty
 
                         test = 'Test'
                         instance.framework.error_test test
 
-                        instance.framework.progress( errors: true )['errors'].last.should end_with test
+                        instance.framework.progress( errors: true )[:errors].last.should end_with test
 
-                        dispatcher_kill_by_instance instance
+                        # dispatcher_kill_by_instance instance
                     end
                 end
                 context 'when set to an Integer' do
@@ -270,10 +270,10 @@ describe 'Arachni::RPC::Server::Framework' do
 
                         100.times { instance.framework.error_test 'test' }
 
-                        (instance.framework.progress( errors: true )['errors'].size -
-                            instance.framework.progress( errors: 10 )['errors'].size).should == 10
+                        (instance.framework.progress( errors: true )[:errors].size -
+                            instance.framework.progress( errors: 10 )[:errors].size).should == 10
 
-                        dispatcher_kill_by_instance instance
+                        # dispatcher_kill_by_instance instance
                     end
                 end
             end
@@ -283,7 +283,7 @@ describe 'Arachni::RPC::Server::Framework' do
                         keys = @instance_clean.framework.progress( stats: false ).
                             keys.sort
                         pk = @progress_keys.dup
-                        pk.delete( 'stats' )
+                        pk.delete( :stats )
                         keys.should == pk
                     end
                 end
@@ -294,7 +294,7 @@ describe 'Arachni::RPC::Server::Framework' do
                         keys = @instance_clean.framework.progress( issues: false ).
                             keys.sort
                         pk = @progress_keys.dup
-                        pk.delete( 'issues' )
+                        pk.delete( :issues )
                         keys.should == pk
                     end
                 end
@@ -305,7 +305,7 @@ describe 'Arachni::RPC::Server::Framework' do
                         keys = @instance_clean.framework.progress( slaves: false ).
                             keys.sort
                         pk = @progress_keys.dup
-                        pk.delete( 'instances' )
+                        pk.delete( :instances )
                         keys.should == pk
                     end
                 end
@@ -313,9 +313,9 @@ describe 'Arachni::RPC::Server::Framework' do
             describe :as_hash do
                 context 'when set to true' do
                     it 'includes issues as a hash' do
-                        @instance_clean.framework
-                            .progress( as_hash: true )['issues']
-                            .first.is_a?( Hash ).should be_true
+                        @instance_clean.framework.
+                            progress( as_hash: true )[:issues].
+                                first.is_a?( Hash ).should be_true
                     end
                 end
             end
@@ -325,7 +325,7 @@ describe 'Arachni::RPC::Server::Framework' do
         it 'returns a hash report of the scan' do
             report = @instance_clean.framework.report
             report.is_a?( Hash ).should be_true
-            report[:issues].should be_any
+            report['issues'].should be_any
         end
 
         it 'aliased to #audit_store_as_hash' do
@@ -354,17 +354,7 @@ describe 'Arachni::RPC::Server::Framework' do
 
             issue = issues.first
             issue.is_a?( Hash ).should be_true
-            issue[:variations].should be_empty
-        end
-    end
-    describe '#update_page_queue' do
-        it 'returns false' do
-            @instance_clean.framework.update_page_queue( [] ).should be_false
-        end
-    end
-    describe '#update_issues' do
-        it 'returns false' do
-            @instance_clean.framework.update_issues( [] ).should be_false
+            issue['variations'].should be_empty
         end
     end
 end

@@ -433,22 +433,20 @@ class Instance
         with    = parse_progress_opts( options, :with )
         without = parse_progress_opts( options, :without )
 
-        @framework.progress( as_hash:   !with.include?( :native_issues ),
-                             issues:    with.include?( :native_issues ) ||
-                                            with.include?( :issues ),
-                             stats:     !without.include?( :stats ),
-                             slaves:    with.include?( :instances ),
-                             errors:    with[:errors]
+        @framework.progress( as_hash: !with.include?( :native_issues ),
+                             issues:  with.include?( :native_issues ) ||
+                                          with.include?( :issues ),
+                             stats:   !without.include?( :stats ),
+                             slaves:  with.include?( :instances ),
+                             errors:  with[:errors]
         ) do |data|
             data['instances'] ||= [] if with.include?( :instances )
             data['busy'] = busy?
 
             if data['issues']
-                data['issues'] = data['issues'].dup
-
                 if without[:issues].is_a? Array
                     data['issues'].reject! do |i|
-                        without[:issues].include?( i.is_a?( Hash ) ? i['digest'] : i.digest )
+                        without[:issues].include?( i[:digest] || i['digest'] )
                     end
                 end
             end
@@ -566,7 +564,7 @@ class Instance
             return false
         end
 
-        # Normalize this sucker to have symbols as keys -- but not recursively.
+        # Normalize this sucker to have symbols as keys.
         opts = opts.symbolize_keys( false )
 
         slaves      = opts.delete(:slaves) || []
@@ -590,7 +588,7 @@ class Instance
                      'Option \'spawns\' must be greater than 1 for Grid scans.'
             end
 
-            if [opts[:scope][:restrict_paths]].flatten.compact.any?
+            if [opts[:scope]['restrict_paths']].flatten.compact.any?
                 fail ArgumentError,
                      'Scope option \'restrict_paths\' is not supported when in' <<
                          ' multi-Instance mode.'
@@ -730,6 +728,7 @@ class Instance
                         case q
                             when String, Symbol
                                 parsed[q.to_sym] = nil
+
                             when Hash
                                 parsed.merge!( q.symbolize_keys )
                         end

@@ -72,15 +72,16 @@
                 - `Taint`
             - `Submitable`
             - `Inputable`
-- `RPC::Server`
-    - `Dispatcher`
-        - `#dispatch` -- Returns `false` when the pool is empty as a signal to check
-            back later.
-    - `Instance`
-        - Removed `#output`.
-    - `Framework`
-        - Removed `#output`.
-        - `#progress` -- Removed `:messages`.
+- `RPC` -- Changed serialization to MessagePack.
+    - `RPC::Server`
+        - `Dispatcher`
+            - `#dispatch` -- Returns `false` when the pool is empty as a signal
+                to check back later.
+        - `Instance`
+            - Removed `#output`.
+        - `Framework`
+            - Removed `#output`.
+            - `#progress` -- Removed `:messages`.
 - `HTTP` expanded to be a complete wrapper around Typhoeus, providing:
     - `Headers`
     - `Message`

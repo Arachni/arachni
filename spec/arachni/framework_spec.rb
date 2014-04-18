@@ -256,7 +256,7 @@ describe Arachni::Framework do
             subject.run
             subject.auditstore.issues.size.should == 3
 
-            subject.auditstore.plugins[:wait][:results].should == { stuff: true }
+            subject.auditstore.plugins[:wait][:results].should == { 'stuff' => true }
         end
 
         it 'sets #status to scanning' do
@@ -338,12 +338,10 @@ describe Arachni::Framework do
                     f.checks.load_all
 
                     f.session.configure(
-                        form: {
-                            url:    url,
-                            inputs: {
-                                username: 'john',
-                                password: 'doe'
-                            }
+                        url:    url,
+                        inputs: {
+                            username: 'john',
+                            password: 'doe'
                         }
                     )
 
@@ -532,7 +530,7 @@ describe Arachni::Framework do
                 # logged_issues.should == 500
                 Arachni::Data.issues.size.should == 500
 
-                f.auditstore.plugins[:wait][:results].should == { stuff: true }
+                f.auditstore.plugins[:wait][:results].should == { 'stuff' => true }
             end
         end
 

@@ -80,7 +80,7 @@ class Framework < ::Arachni::Framework
     # @return (see Arachni::Framework#list_plugins)
     def list_plugins
         super.map do |plugin|
-            plugin[:options] = plugin[:options].map(&:to_h)
+            plugin[:options]  = plugin[:options].map(&:to_h)
             plugin
         end
     end
@@ -88,8 +88,16 @@ class Framework < ::Arachni::Framework
     # @return (see Arachni::Framework#list_reports)
     def list_reports
         super.map do |report|
-            report[:options] = report[:options].map(&:to_h)
+            report[:options]  = report[:options].map(&:to_h)
             report
+        end
+    end
+
+    # @return (see Arachni::Framework#list_checks)
+    def list_checks
+        super.map do |check|
+            check[:issue][:severity]  = check[:issue][:severity].to_s
+            check
         end
     end
 
@@ -224,7 +232,11 @@ class Framework < ::Arachni::Framework
     #   First variations of all discovered issues with generic info filled in
     #   from the parent.
     def issues
-        Data.issues.map { |issue| issue.variations.first.to_solo issue }
+        Data.issues.map { |issue| issue.variations.first.to_solo( issue ).to_serializer_data }
+    end
+
+    def auditstore
+        super.to_serializer_data
     end
 
     # @return   [Array<Hash>]   {#issues} as an array of Hashes.

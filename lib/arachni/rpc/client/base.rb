@@ -32,7 +32,7 @@ class Base < ::Arachni::RPC::EM::Client
         end
 
         super(
-            serializer:  Marshal,
+            serializer:  Serializer,
             host:        host,
             port:        port,
             socket:      socket,

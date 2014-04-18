@@ -9,7 +9,7 @@ Factory.define :audit_store_data do
             ]
         end.flatten,
         plugins:  {
-            'plugin_name' => {
+            plugin_name: {
                 results: 'stuff',
                 options: [
                     Arachni::Component::Options::MultipleChoice.new(

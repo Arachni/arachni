@@ -163,7 +163,7 @@ class Dispatcher
         else
             @pool.pop do |cjob|
                 cjob['owner']     = owner.to_s
-                cjob['starttime'] = Time.now
+                cjob['starttime'] = Time.now.to_s
                 cjob['helpers']   = helpers
 
                 print_status "Instance dispatched -- PID: #{cjob['pid']} - " +
@@ -189,9 +189,11 @@ class Dispatcher
             next if j['pid'] != pid
             cjob = j.dup
 
-            cjob['currtime'] = Time.now
-            cjob['age']      = cjob['currtime'] - cjob['birthdate']
-            cjob['runtime']  = cjob['currtime'] - cjob['starttime']
+            currtime = Time.now
+
+            cjob['currtime'] = currtime.to_s
+            cjob['age']      = currtime - Time.parse( cjob['birthdate'] )
+            cjob['runtime']  = currtime - Time.parse( cjob['starttime'] )
             cjob['proc']     = proc_hash( cjob['pid'] )
 
             return cjob
@@ -343,7 +345,7 @@ class Dispatcher
                 'port'      => port,
                 'url'       => url,
                 'owner'     => owner,
-                'birthdate' => Time.now
+                'birthdate' => Time.now.to_s
             }
         end
     end
