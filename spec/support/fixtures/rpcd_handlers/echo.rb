@@ -18,7 +18,7 @@ class Handler::Echo < Handler
 
     def test_map_instances( &block )
         each = proc do |instance, iterator|
-            instance.opts.datastore { |store| iterator.return [instance.url, store.token] }
+            iterator.return [instance.url, instance.token]
         end
         after = proc { |i| block.call Hash[i] }
 
