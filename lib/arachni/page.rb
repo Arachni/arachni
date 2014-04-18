@@ -424,6 +424,12 @@ class Page
         data[:dom]      = dom.to_serializer_data
         data[:response] = response.to_serializer_data
         data[:element_audit_whitelist] = element_audit_whitelist.to_a
+
+        %w(links forms cookies).each do |k|
+            next if !data[k.to_sym]
+            data[k.to_sym] = @cache[k.to_sym].map(&:to_serializer_data)
+        end
+
         data
     end
 
@@ -437,6 +443,11 @@ class Page
 
                         when 'metadata'
                             value.symbolize_keys
+
+                        when 'links', 'forms', 'cookies'
+                            value.map do |e|
+                                Element.const_get(name[0...-1].capitalize.to_sym).from_serializer_data( e )
+                            end.to_a
 
                         else
                             value
