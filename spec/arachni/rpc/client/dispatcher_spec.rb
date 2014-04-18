@@ -12,7 +12,7 @@ describe Arachni::RPC::Client::Dispatcher do
     after( :all ) { FileUtils.rm( "#{@handler_lib}/echo.rb" ) }
 
     it 'maps the remote handlers to local objects' do
-        args = [ 'stuff', 'here', { blah: true } ]
+        args = [ 'stuff', 'here', { 'blah' => true } ]
         @dispatcher.echo.echo( *args ).should == args
     end
 

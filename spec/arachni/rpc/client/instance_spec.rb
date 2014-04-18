@@ -31,29 +31,13 @@ describe Arachni::RPC::Client::Instance do
             @rpc_opts = @instance.opts
             @foo_url  = Arachni::Utilities.normalize_url( 'http://test.com' )
         end
-        context 'when assigning values' do
-            it 'uses setters' do
-                val = @foo_url + '1'
-                (@rpc_opts.url = val).should == val
-            end
-            it 'passes the value as a method parameter' do
-                val = @foo_url + '2'
-                @rpc_opts.url( val ).should == val
-            end
 
-            describe '#set' do
-                it 'allows batch assigning using a hash' do
-                    val = @foo_url + '3'
-                    @rpc_opts.set( url: val ).should be_true
-                    @rpc_opts.url.to_s.should == val
-                end
+        describe '#set' do
+            it 'allows batch assigning using a hash' do
+                val = @foo_url + '3'
+                @rpc_opts.set( url: val ).should be_true
+                @rpc_opts.url.to_s.should == val
             end
-        end
-
-        it 'retrieves values' do
-            val = Arachni::Utilities.normalize_url( 'http://test.com4' )
-            @rpc_opts.url = val
-            @rpc_opts.url.to_s.should == val
         end
     end
 
