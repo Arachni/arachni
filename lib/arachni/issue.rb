@@ -397,24 +397,11 @@ class Issue
             data[ivar.to_s.gsub('@','')] = instance_variable_get( ivar )
         end
         data['digest']   = digest
-        data['vector']   = data['vector'].to_serializer_data.merge( '@class' => vector.class.to_s )
         data['severity'] = data['severity'].to_s
 
         if data['check'] && data['check'][:elements]
             data['check'] = data['check'].dup
             data['check'][:elements] = data['check'][:elements].map(&:to_s)
-        end
-
-        if data['page']
-            data['page'] = data['page'].to_serializer_data
-        end
-
-        if data['referring_page']
-            data['referring_page'] = data['referring_page'].to_serializer_data
-        end
-
-        if data['variations']
-            data['variations'] = data['variations'].map(&:to_serializer_data)
         end
 
         data

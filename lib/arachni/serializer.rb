@@ -10,34 +10,19 @@ module Arachni
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 module Serializer
 
-    WHITELIST = Set.new([])
-
+    # @param    [#to_msgpack]   object
     def dump( object )
-        return object.to_msgpack if object.respond_to? :to_msgpack
-        MessagePack.dump( class: object.class.to_s, data: object.to_serializer_data )
+        MessagePack.dump object
     end
 
+    # @param    [String]   dump
     def load( dump )
-        data = MessagePack.load( dump )
-
-        if data.is_a?( Hash ) && data.include?( 'class' ) && data.include?( 'data' )
-            return constantize( data['class'] ).from_serializer_data( data['data'] )
-        end
-
-        data
+        MessagePack.load dump
     end
 
-    private
-
-    def constantize( klass )
-        namespaces = klass.split( '::' )
-
-        parent = Object
-        namespaces.each do |name|
-            parent = parent.const_get( name.to_sym )
-        end
-
-        parent
+    # @param    [#to_msgpack,.from_serializer_data]   object
+    def deep_clone( object )
+        object.class.from_serializer_data( load( dump( object ) ) )
     end
 
     extend self

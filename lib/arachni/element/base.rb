@@ -122,7 +122,7 @@ class Base
     def to_serializer_data
         data = marshal_dump
         data.delete :@audit_options
-        data[:@dom] = data[:@dom].to_serializer_data if data[:@dom]
+        data[:@class] = self.class.to_s
         data
     end
 

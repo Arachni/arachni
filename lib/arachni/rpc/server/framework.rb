@@ -232,11 +232,7 @@ class Framework < ::Arachni::Framework
     #   First variations of all discovered issues with generic info filled in
     #   from the parent.
     def issues
-        Data.issues.map { |issue| issue.variations.first.to_solo( issue ).to_serializer_data }
-    end
-
-    def auditstore
-        super.to_serializer_data
+        Data.issues.map { |issue| issue.variations.first.to_solo issue }
     end
 
     # @return   [Array<Hash>]   {#issues} as an array of Hashes.

@@ -24,6 +24,10 @@ describe Arachni::Browser::ElementLocator do
     end
     subject { described_class.new options }
 
+    it "supports #{Arachni::Serializer}" do
+        subject.should == Arachni::Serializer.deep_clone( subject )
+    end
+
     describe '.from_html' do
         it 'fills in locator data from HTML code' do
             l = described_class.from_html( '<a href="/test/">Click me</a>' )

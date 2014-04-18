@@ -26,7 +26,7 @@ describe Arachni::Page do
 
     it "supports #{Arachni::Serializer}" do
         page_with_nonces.forms = page_with_nonces.forms
-        page_with_nonces.should == Arachni::Serializer.load( Arachni::Serializer.dump( page_with_nonces ) )
+        page_with_nonces.should == Arachni::Serializer.deep_clone( page_with_nonces )
     end
 
     describe '#initialize' do

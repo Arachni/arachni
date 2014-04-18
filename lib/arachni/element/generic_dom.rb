@@ -79,16 +79,6 @@ class GenericDOM < Base
         element.tag_name
     end
 
-    def to_serializer_data
-        data = super
-        data[:@transition] = transition.to_serializer_data
-        data[:@initialization_options][:transition] =
-            data[:@initialization_options][:transition].to_serializer_data
-
-        # ap data
-        data
-    end
-
     def self.from_serializer_data( data )
         instance = allocate
         data.each do |name, value|

@@ -51,7 +51,7 @@ shared_examples_for 'auditable' do |options = {}|
     end
 
     it "supports #{Arachni::Serializer}" do
-        auditable.should == Arachni::Serializer.load( Arachni::Serializer.dump( auditable ) )
+        auditable.should == Arachni::Serializer.deep_clone( auditable )
     end
 
     describe '#dup' do

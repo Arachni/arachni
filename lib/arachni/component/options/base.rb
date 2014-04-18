@@ -110,7 +110,7 @@ class Arachni::Component::Options::Base
     alias :to_hash :to_h
 
     def to_serializer_data
-        to_h
+        to_h.merge( class: self.class.to_s )
     end
 
     def self.from_serializer_data( data )

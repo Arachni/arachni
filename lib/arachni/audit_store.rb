@@ -140,19 +140,7 @@ class AuditStore
             data[ivar.to_s.gsub('@','')] = instance_variable_get( ivar )
         end
 
-        if data['issues']
-            data['issues'] = data['issues'].values.map(&:to_serializer_data)
-        end
-
-        data['plugins'] = data['plugins'].inject({}) do |h, (k, v)|
-            h[k] = v.dup
-            next h if !h[k][:options]
-
-            h[k][:options] = v[:options].map do |option|
-                option.to_serializer_data.merge( 'class' => option.class.to_s )
-            end
-            h
-        end
+        data['issues']          = data['issues'].values
         data['start_datetime']  = data['start_datetime'].to_s
         data['finish_datetime'] = data['finish_datetime'].to_s
         data
@@ -165,7 +153,7 @@ class AuditStore
         data['issues'] = data['issues'].map { |i| Arachni::Issue.from_serializer_data( i ) }
 
         data['plugins'] = data['plugins'].inject({}) do |h, (k, v)|
-            k = k.to_sym
+            k    = k.to_sym
             h[k] = v.symbolize_keys(false)
             next h if !h[k][:options]
 

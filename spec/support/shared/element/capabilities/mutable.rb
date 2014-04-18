@@ -29,7 +29,7 @@ shared_examples_for 'mutable' do |options = {}|
     end
 
     it "supports #{Arachni::Serializer}" do
-        mutable.should == Arachni::Serializer.load( Arachni::Serializer.dump( mutable ) )
+        mutable.should == Arachni::Serializer.deep_clone( mutable )
     end
 
     describe '#mutation?' do

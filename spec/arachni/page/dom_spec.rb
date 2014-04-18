@@ -39,7 +39,7 @@ describe Arachni::Page::DOM do
 
     it "supports #{Arachni::Serializer}" do
         subject.digest = 'stuff'
-        subject.should == Arachni::Serializer.load( Arachni::Serializer.dump( subject ) )
+        subject.should == Arachni::Serializer.deep_clone( subject )
     end
 
     describe '#url' do

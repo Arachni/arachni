@@ -19,6 +19,14 @@ class Object
         Marshal.load( Marshal.dump( self ) )
     end
 
+    def to_msgpack( *args )
+        if respond_to? :to_serializer_data
+            return to_serializer_data.to_msgpack( *args )
+        end
+
+        super
+    end
+
     #
     # Attempts to approximate the real size of self by summing up the size of
     # all its instance variables' values and names.

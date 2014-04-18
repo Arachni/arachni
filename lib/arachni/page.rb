@@ -420,15 +420,9 @@ class Page
     end
 
     def to_serializer_data
-        data = to_initialization_options
-        data[:dom]      = dom.to_serializer_data
-        data[:response] = response.to_serializer_data
+        data       = to_initialization_options
+        data[:dom] = dom
         data[:element_audit_whitelist] = element_audit_whitelist.to_a
-
-        %w(links forms cookies).each do |k|
-            next if !data[k.to_sym]
-            data[k.to_sym] = @cache[k.to_sym].map(&:to_serializer_data)
-        end
 
         data
     end

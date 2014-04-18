@@ -157,7 +157,6 @@ class DOM
 
     def to_serializer_data
         data = to_hash
-        data[:transitions] = data[:transitions].map(&:to_serializer_data)
         data[:skip_states] = data[:skip_states].collection.to_a if data[:skip_states]
         data
     end

@@ -11,7 +11,7 @@ describe Arachni::HTTP::Response do
 
     it "supports #{Arachni::Serializer}" do
         subject = @http.get( @url, mode: :sync )
-        subject.should == Arachni::Serializer.load( Arachni::Serializer.dump( subject ) )
+        subject.should == Arachni::Serializer.deep_clone( subject )
     end
 
     describe '#status_line' do

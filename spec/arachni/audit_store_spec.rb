@@ -18,7 +18,7 @@ describe Arachni::AuditStore do
     let( :active_issue ) { Factory[:active_issue] }
 
     it "supports #{Arachni::Serializer}" do
-        audit_store.should == Arachni::Serializer.load( Arachni::Serializer.dump( audit_store ) )
+        audit_store.should == Arachni::Serializer.deep_clone( audit_store )
     end
 
     describe '#version' do
@@ -153,7 +153,8 @@ describe Arachni::AuditStore do
                                 description: 'Some description.',
                                 default:     'default_value',
                                 choices:      %w(available values go here),
-                                type:        :multiple_choice
+                                type:        :multiple_choice,
+                                class:       'Arachni::Component::Options::MultipleChoice'
                             }
                         ]
                     }

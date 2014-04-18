@@ -145,7 +145,7 @@ class Response < Message
 
     def to_serializer_data
         data = to_h
-        data[:request] = request.to_serializer_data
+        data[:request] = request
         data
     end
 

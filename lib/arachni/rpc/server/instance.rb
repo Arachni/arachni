@@ -383,28 +383,7 @@ class Instance
     #       of Grid) (disabled by default)
     #   * `errors` -- {#errors} (disabled by default)
     def progress( options = {}, &block )
-        with    = parse_progress_opts( options, :with )
-        without = parse_progress_opts( options, :without )
-
-        @framework.progress( as_hash: true,
-                             issues:  with.include?( :issues ),
-                             stats:   !without.include?( :stats ),
-                             slaves:  with.include?( :instances ),
-                             errors:  with[:errors]
-        ) do |data|
-            data['instances'] ||= [] if with.include?( :instances )
-            data['busy'] = busy?
-
-            if data['issues']
-                if without[:issues].is_a? Array
-                    data['issues'].reject! do |i|
-                        without[:issues].include?( i['digest'] )
-                    end
-                end
-            end
-
-            block.call( data )
-        end
+        progress_handler( options.merge( as_hash: true ), &block )
     end
 
     # Like {#progress} but returns MessagePack representation of native objects
@@ -412,30 +391,8 @@ class Instance
     #
     # @private
     def native_progress( options = {}, &block )
-        with    = parse_progress_opts( options, :with )
-        without = parse_progress_opts( options, :without )
-
-        @framework.progress( as_hash: false,
-                             issues:  with.include?( :issues ),
-                             stats:   !without.include?( :stats ),
-                             slaves:  with.include?( :instances ),
-                             errors:  with[:errors]
-        ) do |data|
-            data['instances'] ||= [] if with.include?( :instances )
-            data['busy'] = busy?
-
-            if data['issues']
-                if without[:issues].is_a? Array
-                    data['issues'].reject! do |i|
-                        without[:issues].include?( i['digest'] )
-                    end
-                end
-            end
-
-            block.call( data )
-        end
+        progress_handler( options.merge( as_hash: false ), &block )
     end
-
 
     # Configures and runs a scan.
     #
@@ -685,6 +642,31 @@ class Instance
 
     def browser_cluster
         @framework.instance_eval { @browser_cluster }
+    end
+
+    def progress_handler( options = {}, &block )
+        with    = parse_progress_opts( options, :with )
+        without = parse_progress_opts( options, :without )
+
+        @framework.progress( as_hash: options[:as_hash],
+                             issues:  with.include?( :issues ),
+                             stats:   !without.include?( :stats ),
+                             slaves:  with.include?( :instances ),
+                             errors:  with[:errors]
+        ) do |data|
+            data['instances'] ||= [] if with.include?( :instances )
+            data['busy'] = busy?
+
+            if data['issues']
+                if without[:issues].is_a? Array
+                    data['issues'].reject! do |i|
+                        without[:issues].include?( i.is_a?(Hash) ? i[:digest] : i.digest )
+                    end
+                end
+            end
+
+            block.call( data )
+        end
     end
 
     def parse_progress_opts( options, key )

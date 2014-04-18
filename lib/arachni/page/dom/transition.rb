@@ -245,11 +245,7 @@ class Transition
     alias :to_h :to_hash
 
     def to_serializer_data
-        data = to_hash
-        if data[:element].is_a?( Browser::ElementLocator )
-            data[:element] = data[:element].to_serializer_data
-        end
-        data
+        to_hash
     end
 
     def self.from_serializer_data( data )

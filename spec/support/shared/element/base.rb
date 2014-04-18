@@ -6,7 +6,7 @@ shared_examples_for 'element' do
     end
 
     it "supports #{Arachni::Serializer}" do
-        subject.should == Arachni::Serializer.load( Arachni::Serializer.dump( subject ) )
+        subject.should == Arachni::Serializer.deep_clone( subject )
     end
 
     describe '#marshal_dump' do

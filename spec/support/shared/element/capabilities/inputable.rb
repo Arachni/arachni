@@ -40,7 +40,7 @@ shared_examples_for 'inputable' do |options = {}|
     end
 
     it "supports #{Arachni::Serializer}" do
-        subject.should == Arachni::Serializer.load( Arachni::Serializer.dump( subject ) )
+        subject.should == Arachni::Serializer.deep_clone( subject )
     end
 
     describe '#has_inputs?' do
