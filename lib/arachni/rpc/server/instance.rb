@@ -32,10 +32,10 @@ class Server
 #   * {#list_reports Reports}
 # * {#scan Configuring and running a scan}.
 # * Retrieving progress information:
-#   * {#progress in aggregate form} (which includes a multitude of information)
+#   * {#progress in aggregate form} (which includes a multitude of information).
 #   * or simply by:
-#       * {#busy? checking whether the scan is still in progress}
-#       * {#status checking the status of the scan}
+#       * {#busy? checking whether the scan is still in progress}.
+#       * {#status checking the status of the scan}.
 # * {#pause Pausing}, {#resume resuming} or {#abort_and_report aborting} the scan.
 # * Retrieving the scan report:
 #   * {#report as a Hash}.
@@ -197,8 +197,6 @@ class Instance
 
     # @return   [Bool]
     #   `true` if the scan is initializing or running, `false` otherwise.
-    #   If a scan is started by {#scan} then this method should be used
-    #   instead of {Framework#busy?}.
     def busy?( &block )
         if @scan_initializing
             block.call( true ) if block_given?
@@ -208,8 +206,8 @@ class Instance
         @framework.busy?( &block )
     end
 
-    # @param (see Arachni::RPC::Server::Framework#errors)
-    # @return (see Arachni::RPC::Server::Framework#errors)
+    # @param (see Arachni::RPC::Server::Framework::MultiInstance#errors)
+    # @return (see Arachni::RPC::Server::Framework::MultiInstance#errors)
     def errors( starting_line = 0, &block )
         @framework.errors( starting_line, &block )
     end
@@ -235,24 +233,20 @@ class Instance
     end
 
     # Pauses the running scan on a best effort basis.
-    #
-    # @see Framework#pause
     def pause( &block )
         @framework.pause( &block )
     end
 
     # Resumes a paused scan.
-    #
-    # @see Framework#resume
     def resume( &block )
         @framework.resume( &block )
     end
 
+    # @note Don't forget to {#shutdown} the instance once you get the report.
+    #
     # Cleans up and returns the report.
     #
     # @return  [Hash]
-    #
-    # @note Don't forget to {#shutdown} the instance once you get the report.
     #
     # @see #report
     def abort_and_report( &block )
@@ -274,7 +268,6 @@ class Instance
     #
     # @note Don't forget to {#shutdown} the instance once you get the report.
     #
-    # @see Framework#clean_up
     # @see #abort_and_report
     # @see #report_as
     def abort_and_report_as( name, &block )
@@ -282,14 +275,12 @@ class Instance
     end
 
     # @return (see Arachni::Framework#auditstore)
-    # @see Framework#auditstore
     # @private
     def auditstore
         @framework.auditstore
     end
 
     # @return (see Arachni::RPC::Server::Framework#report)
-    # @see Framework#report
     def report
         @framework.report
     end
@@ -299,19 +290,15 @@ class Instance
     #   `:shortname` key.
     #
     # @return (see Arachni::Framework#report_as)
-    # @see Framework#report_as
     def report_as( name )
         @framework.report_as( name )
     end
 
     # @return (see Framework#status)
-    # @see Framework#status
     def status
         @framework.status
     end
 
-    # Simplified version of {Framework::MultiInstance#progress}.
-    #
     # # Recommended usage
     #
     #   Please request from the method only the things you are going to actually
@@ -368,9 +355,6 @@ class Instance
     #             puts "  * #{issue['name']} for input '#{issue['vector']['type']}' at '#{issue['vector']['action']}'."
     #         end
     #     end
-    #
-    #   _If your client is on a platform that has no access to native Arachni
-    #   objects, you'll have to calculate the {Issue#digest digests} yourself._
     #
     # @param  [Hash]  options
     #   Options about what progress data to retrieve and return.
@@ -458,10 +442,6 @@ class Instance
     # @note Options marked with an asterisk are required.
     # @note Options which expect patterns will interpret their arguments as
     #   regular expressions regardless of their type.
-    # @note When using more than one Instance, the
-    #   {OptionGroups::HTTP#request_concurrency} and
-    #   {OptionGroups::Scope#page_limit} options will be divided by the number
-    #   of Instances to be used.
     #
     # @param  [Hash]  opts
     #   Scan options to be passed to {Options#update} (along with some extra ones
