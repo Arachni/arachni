@@ -1,4 +1,5 @@
 require 'spec_helper'
+require "#{Arachni::Options.paths.lib}/rpc/server/base"
 
 class Server
     def initialize( opts, token = nil, &block )
