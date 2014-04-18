@@ -153,8 +153,7 @@ describe Arachni::AuditStore do
                                 description: 'Some description.',
                                 default:     'default_value',
                                 choices:      %w(available values go here),
-                                type:        :multiple_choice,
-                                class:       'Arachni::Component::Options::MultipleChoice'
+                                type:        :multiple_choice
                             }
                         ]
                     }
