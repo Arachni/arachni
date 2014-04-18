@@ -145,6 +145,8 @@ class Base
 
             instance.instance_variable_set( name, value )
         end
+
+        instance.instance_variable_set( :@audit_options, {} )
         instance
     end
 
