@@ -26,6 +26,7 @@ class Instance
     require_relative 'instance/service'
 
     def initialize( opts, url, token = nil )
+        @token  = token
         @client = Base.new( opts, url, token )
 
         @opts      = Options.new( @client )
@@ -33,6 +34,10 @@ class Instance
         @checks    = RemoteObjectMapper.new( @client, 'checks' )
         @plugins   = RemoteObjectMapper.new( @client, 'plugins' )
         @service   = Service.new( @client )
+    end
+
+    def token
+        @token
     end
 
     def close
