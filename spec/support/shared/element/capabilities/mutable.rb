@@ -28,8 +28,8 @@ shared_examples_for 'mutable' do |options = {}|
         mutable.mutations( seed ).find { |m| m.mutation? }
     end
 
-    it "supports #{Arachni::Serializer}" do
-        mutable.should == Arachni::Serializer.deep_clone( mutable )
+    it "supports #{Arachni::RPC::Serializer}" do
+        mutable.should == Arachni::RPC::Serializer.deep_clone( mutable )
     end
 
     describe '#mutation?' do

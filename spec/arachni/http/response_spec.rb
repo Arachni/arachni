@@ -9,9 +9,9 @@ describe Arachni::HTTP::Response do
     end
     let(:url) { 'http://test.com' }
 
-    it "supports #{Arachni::Serializer}" do
+    it "supports #{Arachni::RPC::Serializer}" do
         subject = @http.get( @url, mode: :sync )
-        subject.should == Arachni::Serializer.deep_clone( subject )
+        subject.should == Arachni::RPC::Serializer.deep_clone( subject )
     end
 
     describe '#status_line' do

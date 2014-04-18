@@ -37,9 +37,9 @@ describe Arachni::Page::DOM do
     let( :empty_dom ) { create_page.dom }
     subject { dom }
 
-    it "supports #{Arachni::Serializer}" do
+    it "supports #{Arachni::RPC::Serializer}" do
         subject.digest = 'stuff'
-        subject.should == Arachni::Serializer.deep_clone( subject )
+        subject.should == Arachni::RPC::Serializer.deep_clone( subject )
     end
 
     describe '#url' do

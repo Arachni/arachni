@@ -17,8 +17,8 @@ describe Arachni::AuditStore do
     let( :passive_issue ) { Factory[:passive_issue] }
     let( :active_issue ) { Factory[:active_issue] }
 
-    it "supports #{Arachni::Serializer}" do
-        audit_store.should == Arachni::Serializer.deep_clone( audit_store )
+    it "supports #{Arachni::RPC::Serializer}" do
+        audit_store.should == Arachni::RPC::Serializer.deep_clone( audit_store )
     end
 
     describe '#version' do

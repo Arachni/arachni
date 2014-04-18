@@ -72,8 +72,11 @@
                 - `Taint`
             - `Submitable`
             - `Inputable`
-- `RPC` -- Changed serialization to MessagePack.
-    - `RPC::Server`
+- `RPC`
+    - `Serializer` -- Replaced `Marshal` and `YAML` as RPC serialization providers.
+        - Delegates to `MessagePack`.
+        - Supports message compression -- applied based on message size to minimize overhead.
+    - `Server`
         - `Dispatcher`
             - `#dispatch` -- Returns `false` when the pool is empty as a signal
                 to check back later.

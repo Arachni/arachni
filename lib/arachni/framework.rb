@@ -19,7 +19,6 @@ module Arachni
 lib = Options.paths.lib
 require lib + 'version'
 require lib + 'ruby'
-require lib + 'serializer'
 require lib + 'error'
 require lib + 'utilities'
 require lib + 'support'

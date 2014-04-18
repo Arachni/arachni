@@ -4,6 +4,7 @@
 =end
 
 require 'arachni/rpc/em'
+require_relative '../serializer'
 
 module Arachni
 module RPC

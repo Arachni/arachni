@@ -24,9 +24,9 @@ describe Arachni::Page do
     let(:page_with_nonces) { described_class.from_url( url + 'with_nonce' ) }
     subject { page }
 
-    it "supports #{Arachni::Serializer}" do
+    it "supports #{Arachni::RPC::Serializer}" do
         page_with_nonces.forms = page_with_nonces.forms
-        page_with_nonces.should == Arachni::Serializer.deep_clone( page_with_nonces )
+        page_with_nonces.should == Arachni::RPC::Serializer.deep_clone( page_with_nonces )
     end
 
     describe '#initialize' do

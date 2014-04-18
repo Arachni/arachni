@@ -6,6 +6,7 @@
 require 'msgpack'
 
 module Arachni
+module RPC
 
 # Used for serialization of {RPC} messages.
 #
@@ -60,5 +61,7 @@ module Serializer
     end
 
     extend self
+end
+
 end
 end

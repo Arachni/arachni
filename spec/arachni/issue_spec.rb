@@ -18,8 +18,8 @@ describe Arachni::Issue do
     let( :untrusted_issue ) { Factory[:untrusted_issue] }
     let( :issue_with_variations ) { Factory[:issue_with_variations] }
 
-    it "supports #{Arachni::Serializer}" do
-        issue_with_variations.should == Arachni::Serializer.deep_clone( issue_with_variations )
+    it "supports #{Arachni::RPC::Serializer}" do
+        issue_with_variations.should == Arachni::RPC::Serializer.deep_clone( issue_with_variations )
     end
 
     it 'recodes string data to UTF8' do

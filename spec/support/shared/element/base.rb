@@ -5,8 +5,8 @@ shared_examples_for 'element' do
         Arachni::Utilities.normalize_url( 'http://test.com' )
     end
 
-    it "supports #{Arachni::Serializer}" do
-        subject.should == Arachni::Serializer.deep_clone( subject )
+    it "supports #{Arachni::RPC::Serializer}" do
+        subject.should == Arachni::RPC::Serializer.deep_clone( subject )
     end
 
     describe '#marshal_dump' do

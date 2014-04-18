@@ -6,8 +6,8 @@ shared_examples_for 'element_dom' do |options = {}|
         auditor.browser_cluster.wait
     end
 
-    it "supports #{Arachni::Serializer}" do
-        subject.should == Arachni::Serializer.deep_clone( subject )
+    it "supports #{Arachni::RPC::Serializer}" do
+        subject.should == Arachni::RPC::Serializer.deep_clone( subject )
     end
 
     describe '#marshal_dump' do

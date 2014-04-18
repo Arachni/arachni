@@ -37,9 +37,9 @@ describe Arachni::HTTP::Request do
         }
     end
 
-    it "supports #{Arachni::Serializer}" do
+    it "supports #{Arachni::RPC::Serializer}" do
         subject = described_class.new( options )
-        subject.should == Arachni::Serializer.deep_clone( subject )
+        subject.should == Arachni::RPC::Serializer.deep_clone( subject )
     end
 
     describe '#initialize' do

@@ -50,8 +50,8 @@ shared_examples_for 'auditable' do |options = {}|
         true
     end
 
-    it "supports #{Arachni::Serializer}" do
-        auditable.should == Arachni::Serializer.deep_clone( auditable )
+    it "supports #{Arachni::RPC::Serializer}" do
+        auditable.should == Arachni::RPC::Serializer.deep_clone( auditable )
     end
 
     describe '#dup' do
