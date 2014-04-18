@@ -39,11 +39,22 @@ class Service < Proxy
         platforms.inject({}) { |h, (k, v)| h[k] = v.symbolize_keys; h }
     end
 
-    translate :progress do |data, options = {}|
+    translate :progress do |data|
         data = data.symbolize_keys
         data[:status] = data[:status].to_sym
 
-        if data[:issues] && [options[:with]].include?( :native_issues )
+        if data[:instances]
+            data[:instances] = data[:instances].map(&:symbolize_keys)
+        end
+
+        data
+    end
+
+    translate :native_progress do |data|
+        data = data.symbolize_keys
+        data[:status] = data[:status].to_sym
+
+        if data[:issues]
             data[:issues] = data[:issues].map { |i| Arachni::Issue.from_serializer_data i }
         end
 
@@ -58,8 +69,8 @@ class Service < Proxy
         issues.map { |i| Arachni::Issue.from_serializer_data i }
     end
 
-    translate :abort_and_report do |data, type|
-        type == :auditstore ? AuditStore.from_serializer_data( data ) : data
+    translate :native_abort_and_report do |data|
+        AuditStore.from_serializer_data data
     end
 
     translate :auditstore do |data|

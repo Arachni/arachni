@@ -19,43 +19,29 @@ require lib + 'rpc/server/framework'
 module RPC
 class Server
 
-#
 # Represents an Arachni instance (or multiple instances when running a
-# high-performance scan) and serves as a central point of access to the
-# scanner's components:
+# multi-Instance scan) and serves as a central point of access and control.
 #
-# * {Instance self} -- mapped to `service`
-# * {Options} -- mapped to `opts`
-# * {Framework} -- mapped to `framework`
-# * {Check::Manager} -- mapped to `checks`
-# * {Plugin::Manager} -- mapped to `plugins`
+# # Methods
 #
-# # Convenience methods
+# Provides methods for:
 #
-# The `service` RPC handler (which is this class) provides convenience
-# methods which cover the most commonly used functionality so that you
-# won't have to concern yourself with any other RPC handler.
-#
-# This should be the only RPC API you'll ever need.
-#
-# Provided methods for:
-#
-# * Retrieving available components
+# * Retrieving available components:
 #   * {#list_checks Checks}
 #   * {#list_plugins Plugins}
 #   * {#list_reports Reports}
-# * {#scan Configuring and running a scan}
-# * Retrieving progress information
+# * {#scan Configuring and running a scan}.
+# * Retrieving progress information:
 #   * {#progress in aggregate form} (which includes a multitude of information)
 #   * or simply by:
 #       * {#busy? checking whether the scan is still in progress}
 #       * {#status checking the status of the scan}
 # * {#pause Pausing}, {#resume resuming} or {#abort_and_report aborting} the scan.
-# * Retrieving the scan report
-#   * {#report as a Hash} or a native {#auditstore AuditStore} object
+# * Retrieving the scan report:
+#   * {#report as a Hash}.
 #   * {#report_as in one of the supported formats} (as made available by the
-#     {Reports report} components)
-# * {#shutdown Shutting down}
+#     {Reports report} components).
+# * {#shutdown Shutting down}.
 #
 # (A nice simple example can be found in the {UI::CLI::RPC RPC command-line client}
 # interface.)
@@ -68,8 +54,9 @@ class Server
 #                                                   'localhost:1111', 's3cr3t' )
 #
 #    instance.service.scan url: 'http://testfire.net',
-#                          audit_links: true,
-#                          audit_forms: true,
+#                          audit:  {
+#                              elements: [:links, :forms]
+#                          },
 #                          # load all XSS checks
 #                          checks: 'xss*'
 #
@@ -79,8 +66,8 @@ class Server
 #        sleep 1
 #    end
 #
-#    # Grab the report as a native AuditStore object
-#    report = instance.service.auditstore
+#    # Grab the report
+#    report = instance.service.report
 #
 #    # Kill the instance and its process, no zombies please...
 #    instance.service.shutdown
@@ -88,8 +75,8 @@ class Server
 #    puts
 #    puts
 #    puts 'Logged issues:'
-#    report.issues.each do |issue|
-#        puts "  * #{issue.name} for input '#{issue.var}' at '#{issue.url}'."
+#    report['issues'].each do |issue|
+#        puts "  * #{issue['name']} for input '#{issue['vector']['type']}' at '#{issue['vector']['action']}'."
 #    end
 #
 # @note Ignore:
@@ -98,11 +85,6 @@ class Server
 #       accessible over RPC.
 #   * `block` parameters, they are an RPC implementation detail for methods which
 #       perform asynchronous operations.
-#
-# @note Avoid calling methods which return Arachni-specific objects (like {AuditStore},
-#   {Issue}, etc.) when you don't have these objects available on the client-side
-#   (like when working from a non-Ruby platform or not having the Arachni framework
-#   installed).
 #
 # @note Methods which expect `Symbol` type parameters will also accept `String`
 #   types as well.
@@ -116,7 +98,6 @@ class Server
 #       instance.service.scan 'url' => 'http://testfire.net'
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Instance
     include UI::Output
     include Utilities
@@ -253,7 +234,6 @@ class Instance
         @framework.list_reports
     end
 
-    #
     # Pauses the running scan on a best effort basis.
     #
     # @see Framework#pause
@@ -261,7 +241,6 @@ class Instance
         @framework.pause( &block )
     end
 
-    #
     # Resumes a paused scan.
     #
     # @see Framework#resume
@@ -269,29 +248,25 @@ class Instance
         @framework.resume( &block )
     end
 
-    #
     # Cleans up and returns the report.
     #
-    # @param   [Symbol] report_type
-    #   Report type to return, `:hash` for {#report} or `:audistore` for
-    #   {#auditstore}.
-    #
-    # @return  [Hash,AuditStore]
+    # @return  [Hash]
     #
     # @note Don't forget to {#shutdown} the instance once you get the report.
     #
-    # @see Framework#clean_up
-    # @see #abort_and_report
     # @see #report
-    # @see #auditstore
-    #
-    def abort_and_report( report_type = :hash, &block )
-        @framework.clean_up do
-            block.call report_type.to_sym == :auditstore ? auditstore : report
-        end
+    def abort_and_report( &block )
+        @framework.clean_up { block.call report }
     end
 
+    # Like {#abort_and_report} but returns a {Serializer.dump} representation
+    # of {AuditStore}.
     #
+    # @private
+    def native_abort_and_report( &block )
+        @framework.clean_up { block.call auditstore }
+    end
+
     # Cleans up and delegates to {#report_as}.
     #
     # @param (see #report_as)
@@ -302,15 +277,13 @@ class Instance
     # @see Framework#clean_up
     # @see #abort_and_report
     # @see #report_as
-    #
     def abort_and_report_as( name, &block )
-        @framework.clean_up do
-            block.call report_as( name )
-        end
+        @framework.clean_up { block.call report_as( name ) }
     end
 
     # @return (see Arachni::Framework#auditstore)
     # @see Framework#auditstore
+    # @private
     def auditstore
         @framework.auditstore
     end
@@ -337,7 +310,6 @@ class Instance
         @framework.status
     end
 
-    #
     # Simplified version of {Framework::MultiInstance#progress}.
     #
     # # Recommended usage
@@ -384,17 +356,16 @@ class Instance
     #     issue_digests = []
     #     while sleep 1
     #         issues = instance.service.progress(
-    #                      # Ask for native Arachni::Issue object instead of hashes
-    #                      with: :native_issues,
+    #                      with: :issues,
     #                      # Only request issues we don't already have
     #                      without: { issues: issue_digests  }
     #                  )['issues']
     #
-    #         issue_digests |= issues.map( &:digest )
+    #         issue_digests |= issues.map { |issue| issue['digest'] }
     #
     #         # You will only see new issues
     #         issues.each do |issue|
-    #             puts "  * #{issue.name} for input '#{issue.var}' at '#{issue.url}'."
+    #             puts "  * #{issue['name']} for input '#{issue['vector']['type']}' at '#{issue['vector']['action']}'."
     #         end
     #     end
     #
@@ -406,7 +377,6 @@ class Instance
     # @option options [Array<Symbol, Hash>]  :with
     #   Specify data to include:
     #
-    #   * :native_issues -- Discovered issues as {Arachni::Issue} objects.
     #   * :issues -- Discovered issues as {Arachni::Issue#to_h hashes}.
     #   * :instances -- Statistics and info for slave instances.
     #   * :errors -- Errors and the line offset to use for {#errors}.
@@ -423,19 +393,17 @@ class Instance
     #       (enabled by default)
     #   * `status` -- {#status}
     #   * `busy` -- {#busy?}
-    #   * `issues` -- {Framework#issues_as_hash} or {Framework#issues}
+    #   * `issues` -- Discovered issues as {Arachni::Issue#to_h hashes}.
     #       (disabled by default)
     #   * `instances` -- Raw `stats` for each running instance (only when part
     #       of Grid) (disabled by default)
     #   * `errors` -- {#errors} (disabled by default)
-    #
     def progress( options = {}, &block )
         with    = parse_progress_opts( options, :with )
         without = parse_progress_opts( options, :without )
 
-        @framework.progress( as_hash: !with.include?( :native_issues ),
-                             issues:  with.include?( :native_issues ) ||
-                                          with.include?( :issues ),
+        @framework.progress( as_hash: true,
+                             issues:  with.include?( :issues ),
                              stats:   !without.include?( :stats ),
                              slaves:  with.include?( :instances ),
                              errors:  with[:errors]
@@ -446,7 +414,7 @@ class Instance
             if data['issues']
                 if without[:issues].is_a? Array
                     data['issues'].reject! do |i|
-                        without[:issues].include?( i[:digest] || i['digest'] )
+                        without[:issues].include?( i['digest'] )
                     end
                 end
             end
@@ -455,10 +423,37 @@ class Instance
         end
     end
 
-    # Configures and runs a scan.
+    # Like {#progress} but returns MessagePack representation of native objects
+    # instead of simplified hashes.
     #
-    # @note If you use this method to start the scan use {#busy?} instead of
-    #   {Framework#busy?} to check if the scan is still running.
+    # @private
+    def native_progress( options = {}, &block )
+        with    = parse_progress_opts( options, :with )
+        without = parse_progress_opts( options, :without )
+
+        @framework.progress( as_hash: false,
+                             issues:  with.include?( :issues ),
+                             stats:   !without.include?( :stats ),
+                             slaves:  with.include?( :instances ),
+                             errors:  with[:errors]
+        ) do |data|
+            data['instances'] ||= [] if with.include?( :instances )
+            data['busy'] = busy?
+
+            if data['issues']
+                if without[:issues].is_a? Array
+                    data['issues'].reject! do |i|
+                        without[:issues].include?( i['digest'] )
+                    end
+                end
+            end
+
+            block.call( data )
+        end
+    end
+
+
+    # Configures and runs a scan.
     #
     # @note Options marked with an asterisk are required.
     # @note Options which expect patterns will interpret their arguments as
@@ -503,9 +498,9 @@ class Instance
     #       {
     #           'proxy'      => {}, # empty options
     #           'autologin'  => {
-    #               'url'    => 'http://demo.testfire.net/bank/login.aspx',
-    #               'params' => 'uid=jsmith&passw=Demo1234',
-    #               'check'  => 'MY ACCOUNT'
+    #               'url'         => 'http://demo.testfire.net/bank/login.aspx',
+    #               'parameters' => 'uid=jsmith&passw=Demo1234',
+    #               'check'       => 'MY ACCOUNT'
     #           },
     #       }
     #
@@ -515,22 +510,14 @@ class Instance
     #   The fingerprinter cannot identify database servers so specifying the
     #   remote DB backend will greatly enhance performance and reduce bandwidth
     #   consumption.
-    # @option opts [Integer] :no_fingerprinting (false)
+    # @option opts [Bool] :no_fingerprinting (false)
     #   Disable platform fingerprinting and include all payloads in the audit.
     #
     #   Use this option in addition to the `:platforms` one to restrict the
     #   audit payloads to explicitly specified platforms.
-    # @option opts [Array<Hash>]  :slaves
-    #   Info of Instances to {Framework::Master#enslave enslave}.
-    #
-    #       [
-    #           { url: 'address:port', token: 's3cr3t' },
-    #           { url: 'anotheraddress:port', token: '3v3nm0r3s3cr3t' }
-    #       ]
     #
     # @option opts [Bool]  :grid    (false)
-    #   Uses the Dispatcher Grid to obtain slave instances for a multi-Instance
-    #   scan.
+    #   Use the Dispatcher Grid to load-balance scans across the available nodes.
     #
     #   If set to `true`, it serves as a shorthand for:
     #
@@ -542,11 +529,12 @@ class Instance
     #   * `nil` -- No grid.
     #   * `:balance` -- Slave Instances will be provided by the least burdened
     #       grid members to keep the overall Grid workload even across all Dispatchers.
-    #   * `:aggregate` -- Same as `:balance` but with high-level line-aggregation.
-    #       Will only request Instances from Grid members with different Pipe-IDs.
+    #   * `:aggregate` -- Used to perform a multi-Instance scan and will only
+    #       request Instances from Grid members with different Pipe-IDs, resulting
+    #       in application-level bandwidth aggregation.
     # @option opts [Integer]  :spawns   (0)
     #   The amount of slaves to spawn. The behavior of this option changes
-    #   depending on the `dispatcher_grid_mode` setting:
+    #   depending on the `grid_mode` setting:
     #
     #   * `nil` -- All slave Instances will be spawned by this Instance directly,
     #       and thus reside in the same machine. This has the added benefit of
@@ -556,7 +544,7 @@ class Instance
     #   * `:aggregate` -- Slaves will be provided by Grid Dispatchers with unique
     #       Pipe-IDs and the value of this option will be treated as a possible
     #       maximum rather than a hard setting. Actual spawn count will be determined
-    #       by Dispatcher availability and the size of the workload.
+    #       by Dispatcher availability at the time.
     def scan( opts = {}, &block )
         # If the instance isn't clean bail out now.
         if busy? || @called
@@ -745,7 +733,6 @@ class Instance
         parsed
     end
 
-    #
     # Provides `num` Instances.
     #
     # New Instance processes will be spawned and immediately detached.
@@ -753,9 +740,7 @@ class Instance
     # over a UNIX socket as well so that IPC won't have to go over TCP/IP.
     #
     # @param    [Integer]   num Amount of Instances to return.
-    #
     # @return   [Array<Hash>]   Instance info (urls and tokens).
-    #
     def spawn( num, &block )
         if num <= 0
             block.call []
@@ -770,19 +755,19 @@ class Instance
             num.times do
                 token = generate_token
 
-                pid = fork {
+                pid = fork do
                     # Make sure we start with a clean env (namepsace, opts, etc).
                     @framework.reset
 
-                    # All Instances will be on the same host so use UNIX
-                    # domain sockets to avoid TCP/IP overhead.
+                    # All Instances will be on the same host so use UNIX domain
+                    # sockets to avoid TCP/IP overhead.
                     Options.rpc.server_address          = nil
                     Options.dispatcher.external_address = nil
                     Options.rpc.server_port             = nil
                     Options.rpc.server_socket           = "/tmp/arachni-instance-slave-#{Process.pid}"
 
                     Server::Instance.new( Options.instance, token )
-                }
+                end
 
                 Process.detach pid
                 @consumed_pids << pid

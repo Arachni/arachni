@@ -248,18 +248,17 @@ describe 'Arachni::RPC::Server::Instance' do
         end
 
         describe '#abort_and_report' do
-            describe 'nil' do
-                it 'cleans-up and returns the report as a Hash' do
-                    @shared_instance.service.abort_and_report.should == @shared_instance.framework.report
-                end
-            end
-
-            describe :auditstore do
-                it 'delegates to Framework#auditstore' do
-                    @shared_instance.service.abort_and_report( :auditstore ).should == @shared_instance.framework.auditstore
-                end
+            it 'cleans-up and returns the report as a Hash' do
+                @shared_instance.service.abort_and_report.should == @shared_instance.framework.report
             end
         end
+
+        describe '#native_abort_and_report' do
+            it "cleans-up and returns the report as #{Arachni::AuditStore}" do
+                @shared_instance.service.native_abort_and_report.should == @shared_instance.framework.auditstore
+            end
+        end
+
 
         describe '#abort_and_report_as' do
             it 'cleans-up and delegate to #report_as' do
@@ -320,47 +319,10 @@ describe 'Arachni::RPC::Server::Instance' do
                     @instance = instance_spawn
                     expect {
                         @instance.service.scan(
-                            url:         web_server_url_for( :framework ),
-                            platforms:   [ :stuff ]
+                            url:       web_server_url_for( :framework ),
+                            platforms: [ :stuff ]
                         )
                     }.to raise_error
-                end
-            end
-
-            context 'when the options Hash uses Strings instead of Symbols' do
-                it 'makes no difference' do
-                    @instance = instance = instance_spawn
-                    slave    = instance_spawn
-
-                    instance.service.busy?.should  == instance.framework.busy?
-                    instance.service.status.should == instance.framework.status
-
-                    instance.service.scan(
-                        'url'    => web_server_url_for( :framework ),
-                        'audit'  =>  { 'elements' => ['links', 'forms'] },
-                        'checks' => 'test',
-                        'slaves' => [{
-                            'url'   => slave.url,
-                            'token' => instance_token_for( slave )
-                        }]
-                    )
-
-                    # if a scan in already running it should just bail out early
-                    instance.service.scan.should be_false
-
-                    sleep 1 while instance.service.busy?
-
-                    instance.framework.progress_data[:instances].size.should == 2
-
-                    instance.service.busy?.should  == instance.framework.busy?
-                    instance.service.status.should == instance.framework.status
-
-                    i_report = instance.service.report
-                    f_report = instance.framework.report
-
-                    i_report.should == f_report
-                    i_report['issues'].should be_any
-
                 end
             end
 
@@ -600,29 +562,18 @@ describe 'Arachni::RPC::Server::Instance' do
             describe :without do
                 describe :stats do
                     it 'includes stats' do
-                        @progress_instance.service.progress( without: :stats )['stats'].should be_nil
+                        @progress_instance.service.progress( without: :stats )[:stats].should be_nil
                     end
                 end
                 describe :issues do
                     it 'does not include issues with the given Issue#digest hashes' do
-                        p = @progress_instance.service.progress( with: :native_issues )
-                        issue = p[:issues].first
-                        digest = issue.digest
-
-                        p = @progress_instance.service.
-                                progress( with: :native_issues,
-                                      without: { issues: [digest] }
-                        )
-
-                        p[:issues].include?( issue ).should be_false
-
                         p = @progress_instance.service.progress( with: :issues )
                         issue = p[:issues].first
                         digest = issue['digest']
 
-                        p = @progress_instance.service.
-                                progress( with: :issues,
-                                      without: { issues: [digest] }
+                        p = @progress_instance.service.progress(
+                            with:    :issues,
+                            without: { issues: [digest] }
                         )
 
                         p[:issues].include?( issue ).should be_false
@@ -632,11 +583,14 @@ describe 'Arachni::RPC::Server::Instance' do
                     it 'excludes those things' do
                         instance = @progress_instance
 
-                        p = @progress_instance.service.progress( with: :native_issues )
+                        p = @progress_instance.service.progress( with: :issues )
                         issue = p[:issues].first
-                        digest = issue.digest
+                        digest = issue['digest']
 
-                        p = instance.service.progress( with: [ :issues, :instances ], without: [ :stats,  issues: [digest] ] )
+                        p = instance.service.progress(
+                            with:    [ :issues, :instances ],
+                            without: [ :stats,  issues: [digest] ]
+                        )
                         p[:stats].should be_nil
                         p[:issues].include?( issue ).should be_false
                     end
@@ -652,16 +606,6 @@ describe 'Arachni::RPC::Server::Instance' do
                         issues.should be_any
                         issues.first.class.should == Hash
                         issues.should == instance.framework.progress_data( as_hash: true )[:issues]
-                    end
-                end
-
-                describe :native_issues do
-                    it 'includes issues as Arachni::Issue objects' do
-                        instance = @progress_instance
-
-                        issues = instance.service.progress( with: :native_issues )[:issues]
-                        issues.should be_any
-                        issues.first.class.should == Arachni::Issue
                     end
                 end
 
@@ -685,7 +629,131 @@ describe 'Arachni::RPC::Server::Instance' do
                     it 'includes those things' do
                         instance = @progress_instance
 
-                        p = instance.service.progress( with: [ :issues, :instances ], without: :stats )
+                        p = instance.service.progress(
+                            with:    [ :issues, :instances ],
+                            without: :stats
+                        )
+                        p[:busy].should   == instance.framework.busy?
+                        p[:status].should == instance.framework.status
+                        p[:stats].should  be_nil
+
+                        p[:instances].size.should == 2
+                        p[:issues].should be_any
+                    end
+                end
+            end
+        end
+
+        describe '#native_progress' do
+            before( :all ) do
+                @progress_instance = instance_spawn
+                @progress_instance.service.scan(
+                    url:    web_server_url_for( :framework ),
+                    audit:  { elements: [:links, :forms] },
+                    checks: :test,
+                    spawns: 1
+                )
+                sleep 1 while @progress_instance.service.busy?
+            end
+            after :all do
+                @progress_instance.service.shutdown
+            end
+
+            it 'returns progress information' do
+                instance = @progress_instance
+
+                p = instance.service.native_progress
+                p[:busy].should   == instance.framework.busy?
+                p[:status].should == instance.framework.status
+                p[:stats].should  be_any
+
+                p[:instances].should be_nil
+                p[:issues].should be_nil
+            end
+
+            describe :without do
+                describe :stats do
+                    it 'includes stats' do
+                        @progress_instance.service.native_progress( without: :stats )[:stats].should be_nil
+                    end
+                end
+                describe :issues do
+                    it 'does not include issues with the given Issue#digest hashes' do
+                        p = @progress_instance.service.native_progress( with: :issues )
+                        issue = p[:issues].first
+                        digest = issue.digest
+
+                        p = @progress_instance.service.native_progress(
+                            with: :issues,
+                            without: { issues: [digest] }
+                        )
+
+                        p[:issues].include?( issue ).should be_false
+                    end
+                end
+                context 'with an array of things to be excluded'  do
+                    it 'excludes those things' do
+                        instance = @progress_instance
+
+                        p = @progress_instance.service.native_progress( with: :issues )
+                        issue = p[:issues].first
+                        digest = issue.digest
+
+                        p = instance.service.native_progress(
+                            with:    [ :issues, :instances ],
+                            without: [ :stats,  issues: [digest] ]
+                        )
+                        p[:stats].should be_nil
+                        p[:issues].include?( issue ).should be_false
+                    end
+                end
+            end
+
+            describe :with do
+                describe :issues do
+                    it 'includes issues' do
+                        instance = @progress_instance
+
+                        issues = instance.service.native_progress( with: :issues )[:issues]
+                        issues.should be_any
+                        issues.should == instance.framework.progress_data( as_hash: false )[:issues]
+                    end
+                end
+
+                describe :native_issues do
+                    it 'includes issues as Arachni::Issue objects' do
+                        instance = @progress_instance
+
+                        issues = instance.service.native_progress( with: :issues )[:issues]
+                        issues.should be_any
+                        issues.first.class.should == Arachni::Issue
+                    end
+                end
+
+                describe :instances do
+                    it 'includes instances' do
+                        instance = @progress_instance
+
+                        stats1 = instance.service.native_progress( with: :instances )[:instances]
+                        stats2 = instance.framework.progress_data[:instances]
+
+                        # Average req/s may differ.
+                        stats1.each { |h| h.delete :curr_avg; h.delete :avg }
+                        stats2.each { |h| h.delete :curr_avg; h.delete :avg }
+
+                        stats1.size.should == 2
+                        stats1.should == stats2
+                    end
+                end
+
+                context 'with an array of things to be included'  do
+                    it 'includes those things' do
+                        instance = @progress_instance
+
+                        p = instance.service.native_progress(
+                            with:    [ :issues, :instances ],
+                            without: :stats
+                        )
                         p[:busy].should   == instance.framework.busy?
                         p[:status].should == instance.framework.status
                         p[:stats].should  be_nil
