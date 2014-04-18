@@ -19,7 +19,10 @@ describe Arachni::Issue do
     let( :issue_with_variations ) { Factory[:issue_with_variations] }
 
     it "supports #{Arachni::RPC::Serializer}" do
-        issue_with_variations.should == Arachni::RPC::Serializer.deep_clone( issue_with_variations )
+        duped = Arachni::RPC::Serializer.deep_clone( issue_with_variations )
+        issue_with_variations.should == duped
+
+        duped.variations.should == issue_with_variations.variations
     end
 
     it 'recodes string data to UTF8' do

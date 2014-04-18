@@ -409,6 +409,7 @@ class Issue
 
     def self.from_serializer_data( data )
         instance = allocate
+
         data.each do |name, value|
             value = case name
                         when 'vector'
@@ -436,7 +437,7 @@ class Issue
                             value.to_sym
 
                         when 'severity'
-                            return if value.to_s.empty?
+                            next if value.to_s.empty?
                             Severity.const_get( value.upcase.to_sym )
 
                         when 'page', 'referring_page'
