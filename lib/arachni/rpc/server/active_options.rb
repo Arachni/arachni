@@ -55,6 +55,21 @@ class ActiveOptions
         @opts.http.proxy = proxy_url
     end
 
+    # @private
+    def to_h
+        h = @opts.to_h
+        %w(exclude_path_patterns exclude_page_patterns include_path_patterns).each do |k|
+            h[:scope][k.to_sym] = h[:scope][k.to_sym].map(&:source)
+        end
+
+        h[:scope][:redundant_path_patterns] = h[:scope][:redundant_path_patterns].inject({}) do |o, (k, v)|
+            o[k.source] = v
+            o
+        end
+
+        h
+    end
+
 end
 
 end
