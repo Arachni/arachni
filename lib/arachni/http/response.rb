@@ -143,14 +143,14 @@ class Response < Message
         hash
     end
 
-    def to_serializer_data
+    def to_rpc_data
         data = to_h
         data[:request] = request
         data
     end
 
-    def self.from_serializer_data( data )
-        data['request']     = Request.from_serializer_data( data['request'] )
+    def self.from_rpc_data( data )
+        data['request']     = Request.from_rpc_data( data['request'] )
         data['return_code'] = data['return_code'].to_sym if data['return_code']
         new data
     end

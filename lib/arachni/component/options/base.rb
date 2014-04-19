@@ -109,11 +109,11 @@ class Arachni::Component::Options::Base
     end
     alias :to_hash :to_h
 
-    def to_serializer_data
+    def to_rpc_data
         to_h.merge( class: self.class.to_s )
     end
 
-    def self.from_serializer_data( data )
+    def self.from_rpc_data( data )
         data.delete('type')
         data.delete('class')
         name = data.delete('name')

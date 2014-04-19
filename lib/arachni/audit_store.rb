@@ -134,7 +134,7 @@ class AuditStore
     end
     alias :to_hash :to_h
 
-    def to_serializer_data
+    def to_rpc_data
         data = {}
         instance_variables.each do |ivar|
             data[ivar.to_s.gsub('@','')] = instance_variable_get( ivar )
@@ -146,11 +146,11 @@ class AuditStore
         data
     end
 
-    def self.from_serializer_data( data )
+    def self.from_rpc_data( data )
         data['start_datetime']  = Time.parse( data['start_datetime'] )
         data['finish_datetime'] = Time.parse( data['finish_datetime'] )
 
-        data['issues'] = data['issues'].map { |i| Arachni::Issue.from_serializer_data( i ) }
+        data['issues'] = data['issues'].map { |i| Arachni::Issue.from_rpc_data( i ) }
 
         data['plugins'] = data['plugins'].inject({}) do |h, (k, v)|
             k    = k.to_sym
@@ -159,7 +159,7 @@ class AuditStore
 
             h[k][:options] = v['options'].map do |option|
                 klass = option['class'].split( '::' ).last.to_sym
-                Component::Options.const_get( klass ).from_serializer_data( option )
+                Component::Options.const_get( klass ).from_rpc_data( option )
             end
             h
         end

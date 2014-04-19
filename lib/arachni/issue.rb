@@ -391,7 +391,7 @@ class Issue
         hash == other.hash
     end
 
-    def to_serializer_data
+    def to_rpc_data
         data = {}
         instance_variables.each do |ivar|
             data[ivar.to_s.gsub('@','')] = instance_variable_get( ivar )
@@ -402,14 +402,14 @@ class Issue
         data
     end
 
-    def self.from_serializer_data( data )
+    def self.from_rpc_data( data )
         instance = allocate
 
         data.each do |name, value|
             value = case name
                         when 'vector'
                             klass = value.delete('@class').split( '::' ).last.to_sym
-                            Arachni::Element.const_get(klass).from_serializer_data( value )
+                            Arachni::Element.const_get(klass).from_rpc_data( value )
 
                         when 'check'
                             if value['elements']
@@ -422,7 +422,7 @@ class Issue
                             value.symbolize_keys(false)
 
                         when 'variations'
-                            value.map { |i| from_serializer_data i }
+                            value.map { |i| from_rpc_data i }
 
                         when 'remarks'
                             value.symbolize_keys
@@ -436,7 +436,7 @@ class Issue
                             Severity.const_get( value.upcase.to_sym )
 
                         when 'page', 'referring_page'
-                            Arachni::Page.from_serializer_data( value )
+                            Arachni::Page.from_rpc_data( value )
 
                         else
                             value

@@ -119,19 +119,19 @@ class Base
         h.each { |k, v| instance_variable_set( k, v ) }
     end
 
-    def to_serializer_data
+    def to_rpc_data
         data = marshal_dump
         data.delete :@audit_options
         data[:@class] = self.class.to_s
         data
     end
 
-    def self.from_serializer_data( data )
+    def self.from_rpc_data( data )
         instance = allocate
         data.each do |name, value|
             value = case name
                         when '@dom'
-                            self::DOM.from_serializer_data( value )
+                            self::DOM.from_rpc_data( value )
 
                         when '@initialization_options'
                             value.symbolize_keys

@@ -140,7 +140,7 @@ module DOM
         super.reject{ |k, _| [:@parent, :@page, :@browser, :@element].include? k }
     end
 
-    def to_serializer_data
+    def to_rpc_data
         marshal_dump
     end
 

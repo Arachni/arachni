@@ -107,7 +107,7 @@ module Master
     def slave_sitrep( data, url, token = nil )
         return false if master? && !valid_token?( token )
 
-        issues = (data['issues'] || []).map { |i| Arachni::Issue.from_serializer_data i }
+        issues = (data['issues'] || []).map { |i| Arachni::Issue.from_rpc_data i }
         update_issues( issues, token )
         slave_done( url, token ) if data['audit_done']
 

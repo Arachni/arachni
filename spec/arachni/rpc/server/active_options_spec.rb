@@ -5,7 +5,7 @@ require Arachni::Options.paths.lib + 'rpc/server/instance'
 
 class Arachni::RPC::Server::Instance
     def cookies
-        Arachni::HTTP::Client.cookies.map(&:to_serializer_data)
+        Arachni::HTTP::Client.cookies.map(&:to_rpc_data)
     end
     def clear_cookies
         Arachni::Options.reset
@@ -49,7 +49,7 @@ describe Arachni::RPC::Server::ActiveOptions do
             h['scope']['redundant_path_patterns'].should == opts['scope']['redundant_path_patterns']
             h['datastore'].should == opts['datastore']
 
-            @instance.service.cookies.map { |c| Arachni::Cookie.from_serializer_data c }.should == [
+            @instance.service.cookies.map { |c| Arachni::Cookie.from_rpc_data c }.should == [
                 Arachni::Cookie.new( url: opts['url'], inputs: opts['http']['cookies'] ),
                 Arachni::Cookie.new( url: opts['url'], inputs: { name3: 'value3' } )
             ]

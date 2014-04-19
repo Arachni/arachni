@@ -20,8 +20,8 @@ class Object
     end
 
     def to_msgpack( *args )
-        if respond_to? :to_serializer_data
-            return to_serializer_data.to_msgpack( *args )
+        if respond_to? :to_rpc_data
+            return to_rpc_data.to_msgpack( *args )
         end
 
         super

@@ -49,7 +49,7 @@ class Framework < Proxy
             data[:status] = data[:status].to_sym
 
             if data[:issues] && !options[:as_hash]
-                data[:issues] = data[:issues].map { |i| Arachni::Issue.from_serializer_data i }
+                data[:issues] = data[:issues].map { |i| Arachni::Issue.from_rpc_data i }
             end
 
             if data[:instances]
@@ -61,12 +61,12 @@ class Framework < Proxy
     end
 
     translate :issues do |issues|
-        issues.map { |i| Arachni::Issue.from_serializer_data i }
+        issues.map { |i| Arachni::Issue.from_rpc_data i }
     end
 
     [:auditstore, :audit_store].each do |m|
         translate m do |data|
-            AuditStore.from_serializer_data data
+            AuditStore.from_rpc_data data
         end
     end
 

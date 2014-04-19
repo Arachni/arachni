@@ -244,11 +244,11 @@ class Transition
     end
     alias :to_h :to_hash
 
-    def to_serializer_data
+    def to_rpc_data
         to_hash
     end
 
-    def self.from_serializer_data( data )
+    def self.from_rpc_data( data )
         instance = allocate
         data.each do |name, value|
 
@@ -260,7 +260,7 @@ class Transition
                             if value.is_a? String
                                 value.to_sym
                             else
-                                Browser::ElementLocator.from_serializer_data( value )
+                                Browser::ElementLocator.from_rpc_data( value )
                             end
 
                         when 'options'

@@ -155,19 +155,19 @@ class DOM
     end
     alias :to_hash :to_h
 
-    def to_serializer_data
+    def to_rpc_data
         data = to_hash
         data[:skip_states] = data[:skip_states].collection.to_a if data[:skip_states]
         data
     end
 
-    def self.from_serializer_data( data )
+    def self.from_rpc_data( data )
         instance = allocate
         data.each do |name, value|
 
             value = case name
                         when 'transitions'
-                            value.map { |t| Transition.from_serializer_data t }
+                            value.map { |t| Transition.from_rpc_data t }
 
                         when 'data_flow_sink', 'execution_flow_sink'
                             (value.map do |entry|

@@ -79,16 +79,16 @@ class GenericDOM < Base
         element.tag_name
     end
 
-    def self.from_serializer_data( data )
+    def self.from_rpc_data( data )
         instance = allocate
         data.each do |name, value|
             value = case name
                         when '@transition'
-                            Arachni::Page::DOM::Transition.from_serializer_data( value )
+                            Arachni::Page::DOM::Transition.from_rpc_data( value )
 
                         when '@initialization_options'
                             value['transition'] =
-                                Arachni::Page::DOM::Transition.from_serializer_data( value['transition'] )
+                                Arachni::Page::DOM::Transition.from_rpc_data( value['transition'] )
                             value
 
                         else

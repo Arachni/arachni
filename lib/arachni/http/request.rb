@@ -357,11 +357,11 @@ class Request < Message
         h.each { |k, v| instance_variable_set( "@#{k}", v ) }
     end
 
-    def to_serializer_data
+    def to_rpc_data
         marshal_dump
     end
 
-    def self.from_serializer_data( data )
+    def self.from_rpc_data( data )
         instance = allocate
         data.each do |name, value|
 

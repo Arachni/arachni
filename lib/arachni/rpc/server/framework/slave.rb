@@ -71,7 +71,7 @@ module Slave
     #   {#push_to_page_queue pushed to the page queue}, if not the audit
     #   will start right away.
     def process_pages( pages )
-        pages.each { |page| push_to_page_queue Page.from_serializer_data page }
+        pages.each { |page| push_to_page_queue Page.from_rpc_data page }
 
         return if @audit_page_running
         @audit_page_running = true
@@ -124,7 +124,7 @@ module Slave
         block ||= proc{}
 
         if data[:issues]
-            data[:issues] = data[:issues].map(&:to_serializer_data)
+            data[:issues] = data[:issues].map(&:to_rpc_data)
         end
 
         @master.framework.slave_sitrep( data, multi_self_url, master_priv_token, &block )

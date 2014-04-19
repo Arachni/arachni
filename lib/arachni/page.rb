@@ -419,7 +419,7 @@ class Page
         h
     end
 
-    def to_serializer_data
+    def to_rpc_data
         data       = to_initialization_options
         data[:dom] = dom
         data[:element_audit_whitelist] = element_audit_whitelist.to_a
@@ -427,20 +427,20 @@ class Page
         data
     end
 
-    def self.from_serializer_data( data )
+    def self.from_rpc_data( data )
         normalized_data = {}
         data.each do |name, value|
 
             value = case name
                         when 'response'
-                            HTTP::Response.from_serializer_data( value )
+                            HTTP::Response.from_rpc_data( value )
 
                         when 'metadata'
                             value.symbolize_keys
 
                         when 'links', 'forms', 'cookies'
                             value.map do |e|
-                                Element.const_get(name[0...-1].capitalize.to_sym).from_serializer_data( e )
+                                Element.const_get(name[0...-1].capitalize.to_sym).from_rpc_data( e )
                             end.to_a
 
                         else
@@ -451,7 +451,7 @@ class Page
         end
 
         instance = new( normalized_data )
-        instance.instance_variable_set( '@dom', DOM.from_serializer_data( data['dom'] ) )
+        instance.instance_variable_set( '@dom', DOM.from_rpc_data( data['dom'] ) )
         instance
     end
 

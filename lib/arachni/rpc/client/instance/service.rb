@@ -55,7 +55,7 @@ class Service < Proxy
         data[:status] = data[:status].to_sym
 
         if data[:issues]
-            data[:issues] = data[:issues].map { |i| Arachni::Issue.from_serializer_data i }
+            data[:issues] = data[:issues].map { |i| Arachni::Issue.from_rpc_data i }
         end
 
         if data[:instances]
@@ -66,15 +66,15 @@ class Service < Proxy
     end
 
     translate :issues do |issues|
-        issues.map { |i| Arachni::Issue.from_serializer_data i }
+        issues.map { |i| Arachni::Issue.from_rpc_data i }
     end
 
     translate :native_abort_and_report do |data|
-        AuditStore.from_serializer_data data
+        AuditStore.from_rpc_data data
     end
 
     translate :auditstore do |data|
-        AuditStore.from_serializer_data data
+        AuditStore.from_rpc_data data
     end
 
 end

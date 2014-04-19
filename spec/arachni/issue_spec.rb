@@ -29,9 +29,9 @@ describe Arachni::Issue do
         issue.name.should == "Check name \u2713"
     end
 
-    describe '#to_serializer_data' do
+    describe '#to_rpc_data' do
         let(:issue) { issue_with_variations }
-        let(:data) { issue.to_serializer_data }
+        let(:data) { issue.to_rpc_data }
 
         %w(name description vector platform_name platform_type references cwe
             remedy_guidance remedy_code tags check trusted variations unique_id
@@ -50,9 +50,9 @@ describe Arachni::Issue do
         end
     end
 
-    describe '.from_serializer_data' do
+    describe '.from_rpc_data' do
         let(:issue) { issue_with_variations }
-        let(:restored_issue) { described_class.from_serializer_data data }
+        let(:restored_issue) { described_class.from_rpc_data data }
         let(:data) { Arachni::RPC::Serializer.transmission_data( issue ) }
 
         %w(name description vector platform_name platform_type references cwe
