@@ -11,11 +11,11 @@ class Arachni::Reports::Stdout
 class PluginFormatters::AutoLogin < Arachni::Plugin::Formatter
 
     def run
-        print_ok results[:message]
+        print_ok results['message']
 
-        return if !results[:cookies]
+        return if !results['cookies']
         print_info 'Cookies set to:'
-        results[:cookies].each_pair { |name, val| print_info "    * #{name} = #{val}" }
+        results['cookies'].each_pair { |name, val| print_info "    * #{name} = #{val}" }
     end
 
 end

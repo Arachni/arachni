@@ -125,7 +125,7 @@
         - Updated to use `HTTP::ProxyServer`.
     - `autologin`
         - `params` option renames to `parameters`.
-        - Changed results to include `status` (`Symbol`) and `message` (`String`)
+        - Changed results to include `status` (`String`) and `message` (`String`)
             instead of `code` (`Integer`) and `msg` (`String`).
     - `content_types`
         - Renamed `params` in logged results to `parameters`.

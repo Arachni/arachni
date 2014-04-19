@@ -37,8 +37,8 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
             session.login
         rescue Session::Error::FormNotFound
             register_results(
-                status:  :form_not_found,
-                message: STATUSES[:form_not_found]
+                'status'  => 'form_not_found',
+                'message' => STATUSES[:form_not_found]
             )
             print_error STATUSES[:form_not_found]
             @errored = true
@@ -50,8 +50,8 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
 
         if !session.logged_in?
             register_results(
-                status:  :check_failed,
-                message: STATUSES[:check_failed]
+                'status'  => 'check_failed',
+                'message' => STATUSES[:check_failed]
             )
             print_error STATUSES[:check_failed]
             @errored = true
@@ -61,9 +61,9 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
         cookies = http.cookies.inject({}){ |h, c| h.merge!( c.simple ) }
 
         register_results(
-            status:  :ok,
-            message: STATUSES[:ok],
-            cookies: cookies
+            'status'  =>  'ok',
+            'message' => STATUSES[:ok],
+            'cookies' => cookies
         )
         print_ok STATUSES[:ok]
 

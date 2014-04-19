@@ -17,9 +17,9 @@ describe name_from_filename do
 
             run
 
-            actual_results[:status].should  == :ok
-            actual_results[:message].should == plugin::STATUSES[:ok]
-            actual_results[:cookies]['success'].should == 'true'
+            actual_results['status'].should  == 'ok'
+            actual_results['message'].should == plugin::STATUSES[:ok]
+            actual_results['cookies']['success'].should == 'true'
 
             framework.sitemap.include?( url + 'congrats' ).should be_true
         end
@@ -55,8 +55,8 @@ describe name_from_filename do
             sleep 0.1 while !actual_results
             t.kill
 
-            actual_results[:status].should  == :form_not_found
-            actual_results[:message].should == plugin::STATUSES[:form_not_found]
+            actual_results['status'].should  == 'form_not_found'
+            actual_results['message'].should == plugin::STATUSES[:form_not_found]
         end
 
         it 'does not resume the scan' do
@@ -86,8 +86,8 @@ describe name_from_filename do
             sleep 0.1 while !actual_results
             t.kill
 
-            actual_results[:status].should  == :check_failed
-            actual_results[:message].should == plugin::STATUSES[:check_failed]
+            actual_results['status'].should  == 'check_failed'
+            actual_results['message'].should == plugin::STATUSES[:check_failed]
         end
     end
 end
