@@ -5,6 +5,23 @@ describe Arachni::Component::Options::MultipleChoice do
         described_class.new( '', description: 'Blah', choices: %w(1 2 3) )
     end
 
+    describe '#to_rpc_data' do
+        let(:data) { subject.to_rpc_data }
+
+        it "includes 'choices'" do
+            data['choices'].should == subject.choices
+        end
+    end
+
+    describe '.from_rpc_data' do
+        let(:restored) { described_class.from_rpc_data data }
+        let(:data) { Arachni::RPC::Serializer.rpc_data( subject ) }
+
+        it "restores 'choices'" do
+            restored.choices.should == subject.choices
+        end
+    end
+
     describe '#choices' do
         context 'when no values have been provided' do
             it 'returns an empty array' do

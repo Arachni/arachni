@@ -1,6 +1,7 @@
 require 'spec_helper'
 
 describe Arachni::Component::Options::Address do
+    include_examples 'component_option'
 
     describe '#valid?' do
         context 'when the value is valid' do

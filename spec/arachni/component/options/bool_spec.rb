@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe Arachni::Component::Options::Bool do
+    include_examples 'component_option'
+
     let(:trues) { [ true, 'y', 'yes', '1', 1, 't', 'true', 'on' ] }
     let(:falses) { [ false, 'n', 'no', '0', 0, 'f', 'false', 'off', '' ] }
 

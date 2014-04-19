@@ -1,6 +1,7 @@
 require 'spec_helper'
 
 describe Arachni::Component::Options::String do
+    include_examples 'component_option'
     subject { described_class.new( '' ) }
 
     describe '#valid?' do

@@ -109,10 +109,14 @@ class Arachni::Component::Options::Base
     end
     alias :to_hash :to_h
 
+    # @return   [Hash]
+    #   Data representing this instance that are suitable the RPC transmission.
     def to_rpc_data
-        to_h.merge( class: self.class.to_s )
+        to_h.merge( class: self.class ).stringify_keys
     end
 
+    # @param    [Hash]  data    {#rpc_data}
+    # @return   [Base]
     def self.from_rpc_data( data )
         data.delete('type')
         data.delete('class')
