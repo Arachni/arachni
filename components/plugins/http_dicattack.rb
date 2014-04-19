@@ -50,7 +50,7 @@ class Arachni::Plugins::HTTPDicattack < Arachni::Plugin::Base
                     framework.opts.http.authentication_password = pass
 
                     # register our findings...
-                    register_results( username: user, password: pass )
+                    register_results( 'username' => user, 'password' => pass )
                     http.abort
                 end
 

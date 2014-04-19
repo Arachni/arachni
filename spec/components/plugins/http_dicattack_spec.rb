@@ -18,7 +18,7 @@ describe name_from_filename do
         it 'logins successfully' do
             options.url = web_server_url_for( name_from_filename )
             run
-            results.should == { username: 'admin', password: 'pass' }
+            results.should == { 'username' => 'admin', 'password' => 'pass' }
         end
     end
 
