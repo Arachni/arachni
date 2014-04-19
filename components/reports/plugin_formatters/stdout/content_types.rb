@@ -15,12 +15,12 @@ class PluginFormatters::ContentTypes < Arachni::Plugin::Formatter
             print_ok type
 
             responses.each do |res|
-                print_status "    URL:    #{res[:url]}"
-                print_info   "    Method: #{res[:method]}"
+                print_status "    URL:    #{res['url']}"
+                print_info   "    Method: #{res['method']}"
 
-                if res[:parameters] && res[:method].downcase == 'post'
+                if res['parameters'] && res['method'].downcase == 'post'
                     print_info '    Parameters:'
-                    res[:parameters].each do |k, v|
+                    res['parameters'].each do |k, v|
                         print_info "        #{k} => #{v}"
                     end
                 end

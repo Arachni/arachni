@@ -34,9 +34,9 @@ class Arachni::Plugins::ContentTypes < Arachni::Plugin::Base
 
             @results[type] ||= []
             @results[type] << {
-                url:        response.url,
-                method:     response.request.method.to_s.upcase,
-                parameters: response.request.parameters
+                'url'        => response.url,
+                'method'     => response.request.method.to_s.upcase,
+                'parameters' => response.request.parameters
             }
 
             log( response )
@@ -59,6 +59,7 @@ class Arachni::Plugins::ContentTypes < Arachni::Plugin::Base
     end
 
     def log( response )
+        ap response.headers.content_type
         @logged << log_id( response )
     end
 
@@ -93,7 +94,7 @@ class Arachni::Plugins::ContentTypes < Arachni::Plugin::Base
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.6',
             options:     [
-                Options::String.new( 'exclude',
+                Options::String.new( :exclude,
                     description: 'Exclude content-types that match this regular expression.',
                     default:     'text'
                 )

@@ -11,13 +11,13 @@ describe name_from_filename do
         yaml_load <<YAML
 ---
 image/png:
-- :url: __URL__png
-  :method: GET
-  :parameters: {}
+- url: __URL__png
+  method: GET
+  parameters: {}
 application/vnd.ms-excel:
-- :url: __URL__excel
-  :method: GET
-  :parameters: {}
+- url: __URL__excel
+  method: GET
+  parameters: {}
 YAML
     end
 
@@ -25,13 +25,13 @@ YAML
         yaml_load <<YAML
 ---
 text/html;charset=utf-8:
-- :url: __URL__
-  :method: GET
-  :parameters: {}
+- url: __URL__
+  method: GET
+  parameters: {}
 text/css:
-- :url: __URL__css
-  :method: GET
-  :parameters: {}
+- url: __URL__css
+  method: GET
+  parameters: {}
 YAML
     end
 
@@ -39,21 +39,21 @@ YAML
         yaml_load <<YAML
 ---
 text/html;charset=utf-8:
-- :url: __URL__
-  :method: GET
-  :parameters: {}
+- url: __URL__
+  method: GET
+  parameters: {}
 text/css:
-- :url: __URL__css
-  :method: GET
-  :parameters: {}
+- url: __URL__css
+  method: GET
+  parameters: {}
 image/png:
-- :url: __URL__png
-  :method: GET
-  :parameters: {}
+- url: __URL__png
+  method: GET
+  parameters: {}
 application/vnd.ms-excel:
-- :url: __URL__excel
-  :method: GET
-  :parameters: {}
+- url: __URL__excel
+  method: GET
+  parameters: {}
 YAML
     end
 
