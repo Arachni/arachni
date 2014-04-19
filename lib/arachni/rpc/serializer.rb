@@ -33,14 +33,14 @@ module Serializer
     # Simulates an object's over-the-wire transmission by {#dump dumping}
     # and then {#load loading}.
     #
-    # @param    [#to_msgpack,.from_rpc_data]   object
+    # @param    [#to_rpc_data,.from_rpc_data]   object
     # @return   [Object]
     #   Data that the peer would receive.
     def rpc_data( object )
         load( dump( object ) )
     end
 
-    # @param    [#to_msgpack,.from_rpc_data]   object
+    # @param    [#to_rpc_data,.from_rpc_data]   object
     # @return   [Object]
     def deep_clone( object )
         object.class.from_rpc_data rpc_data( object )
