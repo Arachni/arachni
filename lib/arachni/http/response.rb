@@ -143,12 +143,16 @@ class Response < Message
         hash
     end
 
+    # @return   [Hash]
+    #   Data representing this instance that are suitable the RPC transmission.
     def to_rpc_data
         data = to_h
         data[:request] = request
-        data
+        data.stringify_keys(false)
     end
 
+    # @param    [Hash]  data    {#to_rpc_data}
+    # @return   [Request]
     def self.from_rpc_data( data )
         data['request']     = Request.from_rpc_data( data['request'] )
         data['return_code'] = data['return_code'].to_sym if data['return_code']

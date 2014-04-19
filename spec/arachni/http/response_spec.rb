@@ -4,14 +4,38 @@ describe Arachni::HTTP::Response do
     it_should_behave_like 'Arachni::HTTP::Message'
 
     before( :all ) do
-        @http = Arachni::HTTP::Client
-        @url  = web_server_url_for( :client )
+        @http    = Arachni::HTTP::Client
+        @url     = web_server_url_for( :client )
+        @subject = @http.get( @url, mode: :sync )
     end
     let(:url) { 'http://test.com' }
+    subject { @subject }
 
     it "supports #{Arachni::RPC::Serializer}" do
-        subject = @http.get( @url, mode: :sync )
         subject.should == Arachni::RPC::Serializer.deep_clone( subject )
+    end
+
+    describe '#to_rpc_data' do
+        let(:data) { subject.to_rpc_data }
+
+        %w(url code ip_address headers body time app_time total_time return_code
+            return_message request).each do |attribute|
+            it "includes '#{attribute}'" do
+                data[attribute].should == subject.send( attribute )
+            end
+        end
+    end
+
+    describe '.from_rpc_data' do
+        let(:restored) { described_class.from_rpc_data data }
+        let(:data) { Arachni::RPC::Serializer.rpc_data( subject ) }
+
+        %w(url code ip_address headers body time app_time total_time return_code
+            return_message request).each do |attribute|
+            it "restores '#{attribute}'" do
+                restored.send( attribute ).should == subject.send( attribute )
+            end
+        end
     end
 
     describe '#status_line' do
