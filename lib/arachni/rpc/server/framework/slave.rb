@@ -76,7 +76,7 @@ module Slave
         return if @audit_page_running
         @audit_page_running = true
 
-        Thread.abort_on_exception = true
+        # Thread.abort_on_exception = true
         Thread.new do
             exception_jail { audit }
 

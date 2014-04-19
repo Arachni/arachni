@@ -130,7 +130,7 @@ class Framework < ::Arachni::Framework
         prepare
 
         # Start the scan  -- we can't block the RPC server so we're using a Thread.
-        Thread.abort_on_exception = true
+        # Thread.abort_on_exception = true
         Thread.new do
             if !solo?
                 multi_run
