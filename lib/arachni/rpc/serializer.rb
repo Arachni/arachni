@@ -10,6 +10,9 @@ module RPC
 
 # Used for serialization of {RPC} messages.
 #
+# It's simply a delegator for `MessagePack` with `Zlib` compression for messages
+# that are larger than {COMPRESS_LARGER_THAN}.
+#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 module Serializer
 
