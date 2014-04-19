@@ -53,7 +53,7 @@ describe Arachni::Issue do
     describe '.from_rpc_data' do
         let(:issue) { issue_with_variations }
         let(:restored_issue) { described_class.from_rpc_data data }
-        let(:data) { Arachni::RPC::Serializer.transmission_data( issue ) }
+        let(:data) { Arachni::RPC::Serializer.rpc_data( issue ) }
 
         %w(name description vector platform_name platform_type references cwe
             remedy_guidance remedy_code tags check trusted variations unique_id
