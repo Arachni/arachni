@@ -391,6 +391,8 @@ class Issue
         hash == other.hash
     end
 
+    # @return   [Hash]
+    #   Data representing this instance that are suitable the RPC transmission.
     def to_rpc_data
         data = {}
         instance_variables.each do |ivar|
@@ -402,6 +404,8 @@ class Issue
         data
     end
 
+    # @param    [Hash]  data    {#rpc_data}
+    # @return   [Issue]
     def self.from_rpc_data( data )
         instance = allocate
 
