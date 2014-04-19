@@ -30,10 +30,10 @@ describe Arachni::Page do
 
         page_with_nonces.do_not_audit_elements
 
-        page_with_nonces.instance_variable_set :@cookiejar, [Arachni::Element::Cookie.new(
-            url:    page_with_nonces.url,
-            inputs: { 'stuff' => 'blah' }
-        )]
+        dom = Factory[:dom]
+        page_with_nonces.dom.transitions = dom.transitions
+        page_with_nonces.dom.data_flow_sink = dom.data_flow_sink
+        page_with_nonces.dom.execution_flow_sink = dom.execution_flow_sink
 
         # Assign external forms.
         page_with_nonces.forms = page_with_nonces.forms
@@ -91,6 +91,39 @@ describe Arachni::Page do
         it "restores 'element_audit_whitelist'" do
             restored.element_audit_whitelist.should == subject.element_audit_whitelist
         end
+
+        it 'restores Arachni::Element::Form#node of #forms' do
+            form = subject.forms.last
+            form.node.should be_kind_of Nokogiri::XML::Element
+            form.node.should be_true
+
+            restored.forms.last.node.to_s.should == form.node.to_s
+        end
+
+        it 'restores Arachni::Element::Link#node of #links' do
+            link = subject.links.last
+            link.node.should be_kind_of Nokogiri::XML::Element
+            link.node.should be_true
+
+            restored.links.last.node.to_s.should == link.node.to_s
+        end
+
+        context Arachni::Page::DOM do
+            [:url, :skip_states, :transitions, :data_flow_sink, :execution_flow_sink].each do |m|
+                it "restores ##{m}" do
+                    # Make sure we're not comparing nils.
+                    subject.dom.send( m ).should be_true
+
+                    # Make sure we're not comparing empty stuff.
+                    if (enumerable = restored.dom.send( m )).is_a? Enumerable
+                        enumerable.should be_any
+                    end
+
+                    restored.dom.send( m ).should == subject.dom.send( m )
+                end
+            end
+        end
+
     end
 
     describe '#initialize' do
@@ -689,29 +722,12 @@ describe Arachni::Page do
                 dupped.element_audit_whitelist.should include subject.elements.first.audit_scope_id
             end
 
-
-            [:url, :skip_states, :transitions, :data_flow_sink, :execution_flow_sink].each do |m|
-                it "preserves #{Arachni::Page::DOM}##{m}" do
-                    dupped = subject.send(method)
-
-                    # Make sure we're not comparing nils.
-                    subject.dom.send( m ).should be_true
-
-                    # Make sure we're not comparing empty stuff.
-                    if (enumerable = dupped.dom.send( m )).is_a? Enumerable
-                        enumerable.should be_any
-                    end
-
-                    dupped.dom.send( m ).should == subject.dom.send( m )
-                end
-            end
-
             it 'preserves Arachni::Element::Form#node of #forms' do
                 form = subject.forms.last
                 form.node.should be_kind_of Nokogiri::XML::Element
                 form.node.should be_true
 
-                subject.send(method).forms.first.node.to_s.should == form.node.to_s
+                subject.send(method).forms.last.node.to_s.should == form.node.to_s
             end
 
             it 'preserves Arachni::Element::Link#node of #links' do
@@ -734,6 +750,25 @@ describe Arachni::Page do
                     page_with_nonces.send(method).forms.map { |f| f.nonce_name }.sort.should == %w(nonce nonce2).sort
                 end
             end
+
+            context Arachni::Page::DOM do
+                [:url, :skip_states, :transitions, :data_flow_sink, :execution_flow_sink].each do |m|
+                    it "preserves ##{m}" do
+                        dupped = subject.send(method)
+
+                        # Make sure we're not comparing nils.
+                        subject.dom.send( m ).should be_true
+
+                        # Make sure we're not comparing empty stuff.
+                        if (enumerable = dupped.dom.send( m )).is_a? Enumerable
+                            enumerable.should be_any
+                        end
+
+                        dupped.dom.send( m ).should == subject.dom.send( m )
+                    end
+                end
+            end
+
         end
     end
 
