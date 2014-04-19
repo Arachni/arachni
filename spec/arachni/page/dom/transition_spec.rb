@@ -8,10 +8,58 @@ describe Arachni::Page::DOM::Transition do
 
     after :each do
         @browser.shutdown if @browser
+        @browser = nil
     end
 
     it "supports #{Arachni::RPC::Serializer}" do
         subject.should == Arachni::RPC::Serializer.deep_clone( subject )
+    end
+
+    describe '#to_rpc_data' do
+        let(:data) { subject.to_rpc_data }
+
+        %w(element event options time).each do |attribute|
+            it "includes '#{attribute}'" do
+                data[attribute].should == subject.send( attribute )
+            end
+        end
+    end
+
+    describe '.from_rpc_data' do
+        let(:restored) { described_class.from_rpc_data data }
+        let(:data) { Arachni::RPC::Serializer.rpc_data( subject ) }
+
+        %w(element event options time).each do |attribute|
+            it "restores '#{attribute}'" do
+                restored.send( attribute ).should == subject.send( attribute )
+            end
+        end
+
+        context 'when the element is a' do
+            context Symbol do
+                it 'restores it' do
+                    original = described_class.new( :page, :load )
+                    data     = Arachni::RPC::Serializer.rpc_data( original )
+                    restored = described_class.from_rpc_data( data )
+
+                    restored.element.should == original.element
+                end
+            end
+
+            context Arachni::Browser::ElementLocator do
+                it 'restores it' do
+                    element = Arachni::Browser::ElementLocator.from_html(
+                        '<div id="my-div" onclick="addForm();">'
+                    )
+
+                    original = described_class.new( element, :click )
+                    data     = Arachni::RPC::Serializer.rpc_data( original )
+                    restored = described_class.from_rpc_data( data )
+
+                    restored.element.should == original.element
+                end
+            end
+        end
     end
 
     describe '#initialize' do

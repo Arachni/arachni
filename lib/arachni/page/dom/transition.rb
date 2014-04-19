@@ -244,10 +244,14 @@ class Transition
     end
     alias :to_h :to_hash
 
+    # @return   [Hash]
+    #   Data representing this instance that are suitable the RPC transmission.
     def to_rpc_data
-        to_hash
+        to_hash.stringify_keys(false)
     end
 
+    # @param    [Hash]  data    {#to_rpc_data}
+    # @return   [Transition]
     def self.from_rpc_data( data )
         instance = allocate
         data.each do |name, value|
