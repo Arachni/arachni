@@ -155,12 +155,16 @@ class DOM
     end
     alias :to_hash :to_h
 
+    # @return   [Hash]
+    #   Data representing this instance that are suitable the RPC transmission.
     def to_rpc_data
-        data = to_hash
-        data[:skip_states] = data[:skip_states].collection.to_a if data[:skip_states]
+        data = to_hash.stringify_keys
+        data['skip_states'] = data['skip_states'].collection.to_a if data['skip_states']
         data
     end
 
+    # @param    [Hash]  data    {#to_rpc_data}
+    # @return   [DOM]
     def self.from_rpc_data( data )
         instance = allocate
         data.each do |name, value|

@@ -23,23 +23,46 @@ describe Arachni::Page::DOM do
         @url = Arachni::Utilities.normalize_url( web_server_url_for( :page_dom ) )
     end
 
-    before( :each ) do
-        @browser = Arachni::Browser.new
-    end
-
     after( :each ) do
         Arachni::Options.reset
         Arachni::Framework.reset
-        @browser.shutdown
+        @browser.shutdown if @browser
+        @browser = nil
     end
 
-    let( :dom ) { Factory[:dom] }
-    let( :empty_dom ) { create_page.dom }
+    let(:browser) { @browser = Arachni::Browser.new }
+    let(:dom) { Factory[:dom] }
+    let(:empty_dom) { create_page.dom }
     subject { dom }
 
     it "supports #{Arachni::RPC::Serializer}" do
-        subject.digest = 'stuff'
         subject.should == Arachni::RPC::Serializer.deep_clone( subject )
+    end
+
+    describe '#to_rpc_data' do
+        let(:data) { subject.to_rpc_data }
+
+        %w(url transitions digest data_flow_sink execution_flow_sink).each do |attribute|
+            it "includes '#{attribute}'" do
+                data[attribute].should == subject.send( attribute )
+            end
+        end
+
+        it "includes 'skip_states'" do
+            data['skip_states'].should == subject.skip_states.collection.to_a
+        end
+    end
+
+    describe '.from_rpc_data' do
+        let(:restored) { described_class.from_rpc_data data }
+        let(:data) { Arachni::RPC::Serializer.rpc_data( subject ) }
+
+        %w(url transitions digest skip_states data_flow_sink
+            execution_flow_sink).each do |attribute|
+            it "restores '#{attribute}'" do
+                restored.send( attribute ).should == subject.send( attribute )
+            end
+        end
     end
 
     describe '#url' do
@@ -219,8 +242,8 @@ describe Arachni::Page::DOM do
             it 'loads the #url' do
                 url = "#{@url}restore/by-url"
 
-                @browser.load "#{@url}restore/by-url"
-                pages = @browser.explore_and_flush
+                browser.load "#{@url}restore/by-url"
+                pages = browser.explore_and_flush
                 page  = pages.last
 
 
@@ -231,8 +254,8 @@ describe Arachni::Page::DOM do
                 page.dom.transitions.clear
                 page.dom.transitions.should be_empty
 
-                @browser.load page
-                @browser.source.should include 'final-vector'
+                browser.load page
+                browser.source.should include 'final-vector'
             end
         end
 
@@ -240,21 +263,21 @@ describe Arachni::Page::DOM do
             it 'replays its #transitions' do
                 url = "#{@url}restore/by-transitions"
 
-                @browser.load url
-                page = @browser.explore_and_flush.last
+                browser.load url
+                page = browser.explore_and_flush.last
 
                 page.url.should == url
                 page.dom.url.should == "#{url}#destination"
                 page.body.should include 'final-vector'
 
-                @browser.load page
-                @browser.source.should include 'final-vector'
+                browser.load page
+                browser.source.should include 'final-vector'
 
                 page.dom.transitions.clear
                 page.dom.transitions.should be_empty
 
-                @browser.load page
-                @browser.source.should_not include 'final-vector'
+                browser.load page
+                browser.source.should_not include 'final-vector'
             end
         end
     end
