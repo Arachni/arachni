@@ -131,6 +131,8 @@ class Page
 
         @cache = {}
 
+        @do_not_audit_elements = options.delete(:do_not_audit_elements)
+
         @cache[:parser] = options.delete(:parser)
         @response = @cache[:parser].response if @cache[:parser]
 
@@ -414,20 +416,28 @@ class Page
         end
 
         h[:response] = response
+        h[:do_not_audit_elements] = @do_not_audit_elements
 
         h[:dom] = dom.to_h.inject({}) { |dh, (k,v)| dh[k] = try_dup( v ); dh }
         h
     end
 
+    # @return   [Hash]
+    #   Data representing this instance that are suitable the RPC transmission.
     def to_rpc_data
-        data       = to_initialization_options
-        data[:dom] = dom
-        data[:element_audit_whitelist] = element_audit_whitelist.to_a
+        data        = to_initialization_options.stringify_keys(false)
+        data['dom'] = dom
+        data['element_audit_whitelist'] = element_audit_whitelist.to_a
+
+        data.delete 'cookiejar'
 
         data
     end
 
+    # @param    [Hash]  data    {#to_rpc_data}
+    # @return   [Page]
     def self.from_rpc_data( data )
+        dom = data.delete('dom')
         normalized_data = {}
         data.each do |name, value|
 
@@ -436,7 +446,14 @@ class Page
                             HTTP::Response.from_rpc_data( value )
 
                         when 'metadata'
-                            value.symbolize_keys
+                            sanitized = {}
+                            %w(link form cookie header).each do |e|
+                                next if !value[e] || !value[e]['nonces']
+
+                                sanitized[e.to_sym] = {}
+                                sanitized[e.to_sym][:nonces] = value[e]['nonces']
+                            end
+                            sanitized
 
                         when 'links', 'forms', 'cookies'
                             value.map do |e|
@@ -451,7 +468,7 @@ class Page
         end
 
         instance = new( normalized_data )
-        instance.instance_variable_set( '@dom', DOM.from_rpc_data( data['dom'] ) )
+        instance.instance_variable_set( '@dom', DOM.from_rpc_data( dom ) )
         instance
     end
 

@@ -22,11 +22,75 @@ describe Arachni::Page do
     let(:response) { Factory[:response] }
     let(:page) { Factory[:page] }
     let(:page_with_nonces) { described_class.from_url( url + 'with_nonce' ) }
+    let(:rpc_subject) do
+        page_with_nonces.dom.digest = 'stuff'
+
+        # Load all elements in their caches.
+        page_with_nonces.elements
+
+        page_with_nonces.do_not_audit_elements
+
+        page_with_nonces.instance_variable_set :@cookiejar, [Arachni::Element::Cookie.new(
+            url:    page_with_nonces.url,
+            inputs: { 'stuff' => 'blah' }
+        )]
+
+        # Assign external forms.
+        page_with_nonces.forms = page_with_nonces.forms
+
+        page_with_nonces.update_element_audit_whitelist page_with_nonces.elements.first
+
+        page_with_nonces
+    end
+    let(:data) { subject.to_rpc_data }
+
     subject { page }
 
     it "supports #{Arachni::RPC::Serializer}" do
         page_with_nonces.forms = page_with_nonces.forms
         page_with_nonces.should == Arachni::RPC::Serializer.deep_clone( page_with_nonces )
+    end
+
+    describe '#to_rpc_data' do
+        subject { rpc_subject }
+
+        %w(response dom metadata forms).each do |attribute|
+            it "includes '#{attribute}'" do
+                data[attribute].should == subject.send( attribute )
+            end
+        end
+
+        it "includes 'do_not_audit_elements'" do
+            data['do_not_audit_elements'].should be_true
+        end
+
+        it "includes 'element_audit_whitelist'" do
+            data['element_audit_whitelist'].should == subject.element_audit_whitelist.to_a
+        end
+
+        it "does not include 'cookiejar'" do
+            data.should_not include 'cookiejar'
+        end
+    end
+
+    describe '.from_rpc_data' do
+        subject { rpc_subject }
+        let(:restored) { described_class.from_rpc_data data }
+        let(:data) { Arachni::RPC::Serializer.rpc_data( subject ) }
+
+        %w(response dom metadata forms).each do |attribute|
+            it "restores '#{attribute}'" do
+                restored.send( attribute ).should == subject.send( attribute )
+            end
+        end
+
+        it "restores 'do_not_audit_elements'" do
+            restored.instance_variable_get(:@do_not_audit_elements).should be_true
+        end
+
+        it "restores 'element_audit_whitelist'" do
+            restored.element_audit_whitelist.should == subject.element_audit_whitelist
+        end
     end
 
     describe '#initialize' do
