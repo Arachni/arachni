@@ -76,10 +76,14 @@ class ElementLocator
     end
     alias :to_h :to_hash
 
+    # @return   [Hash]
+    #   Data representing this instance that are suitable the RPC transmission.
     def to_rpc_data
-        to_h
+        to_h.stringify_keys
     end
 
+    # @param    [Hash]  data    {#rpc_data}
+    # @return   [ElementLocator]
     def self.from_rpc_data( data )
         new data
     end

@@ -28,6 +28,27 @@ describe Arachni::Browser::ElementLocator do
         subject.should == Arachni::RPC::Serializer.deep_clone( subject )
     end
 
+    describe '#to_rpc_data' do
+        let(:data) { subject.to_rpc_data }
+
+        %w(tag_name attributes).each do |attribute|
+            it "includes '#{attribute}'" do
+                data[attribute].should == subject.send( attribute )
+            end
+        end
+    end
+
+    describe '.from_rpc_data' do
+        let(:restored) { described_class.from_rpc_data data }
+        let(:data) { Arachni::RPC::Serializer.rpc_data( subject ) }
+
+        %w(tag_name attributes).each do |attribute|
+            it "restores '#{attribute}'" do
+                restored.send( attribute ).should == subject.send( attribute )
+            end
+        end
+    end
+
     describe '.from_html' do
         it 'fills in locator data from HTML code' do
             l = described_class.from_html( '<a href="/test/">Click me</a>' )
