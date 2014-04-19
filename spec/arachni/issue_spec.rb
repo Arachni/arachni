@@ -29,6 +29,45 @@ describe Arachni::Issue do
         issue.name.should == "Check name \u2713"
     end
 
+    describe '#to_serializer_data' do
+        let(:issue) { issue_with_variations }
+        let(:data) { issue.to_serializer_data }
+
+        %w(name description vector platform_name platform_type references cwe
+            remedy_guidance remedy_code tags check trusted variations unique_id
+            digest digest).each do |attribute|
+            it "includes '#{attribute}'" do
+                data[attribute].should == issue.send( attribute )
+            end
+        end
+
+        it "includes 'severity'" do
+            data['severity'].should == issue.severity.to_s
+        end
+
+        it "includes 'variation'" do
+            data['variation'].should == issue.variation?
+        end
+    end
+
+    describe '.from_serializer_data' do
+        let(:issue) { issue_with_variations }
+        let(:restored_issue) { described_class.from_serializer_data data }
+        let(:data) { Arachni::RPC::Serializer.transmission_data( issue ) }
+
+        %w(name description vector platform_name platform_type references cwe
+            remedy_guidance remedy_code tags check trusted variations unique_id
+            digest digest severity).each do |attribute|
+            it "restores '#{attribute}'" do
+                restored_issue.send( attribute ).should == issue.send( attribute )
+            end
+        end
+
+        it "restores 'variation'" do
+            restored_issue.variation?.should == issue.variation?
+        end
+    end
+
     [:page=, :referring_page=, :vector=].each do |m|
         describe "##{m}" do
             let(:obj) do

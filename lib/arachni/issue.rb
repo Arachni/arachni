@@ -399,11 +399,6 @@ class Issue
         data['digest']   = digest
         data['severity'] = data['severity'].to_s
 
-        if data['check'] && data['check'][:elements]
-            data['check'] = data['check'].dup
-            data['check'][:elements] = data['check'][:elements].map(&:to_s)
-        end
-
         data
     end
 
