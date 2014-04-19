@@ -14,12 +14,12 @@ describe name_from_filename do
 
         oks = 0
         actual_results.each do |result|
-            if (result[:response][:url] == url &&
-                result[:cookies] == { 'cookie1' => 'val1' }) ||
-                (result[:response][:url] == url + 'a_link' &&
-                result[:cookies] == { 'link_followed' => 'yay link!' }) ||
-                (result[:response][:url] == url + 'update_cookie' &&
-                result[:cookies] == { 'link_followed' => 'updated link!', 'stuff' => 'blah' })
+            if (result['response']['url'] == url &&
+                result['cookies'] == { 'cookie1' => 'val1' }) ||
+                (result['response']['url'] == url + 'a_link' &&
+                result['cookies'] == { 'link_followed' => 'yay link!' }) ||
+                (result['response']['url'] == url + 'update_cookie' &&
+                result['cookies'] == { 'link_followed' => 'updated link!', 'stuff' => 'blah' })
                 oks += 1
             end
         end
@@ -34,7 +34,7 @@ describe name_from_filename do
             run
 
             actual_results.size.should == 2
-            actual_results.map { |r| r[:cookies].keys }.flatten.
+            actual_results.map { |r| r['cookies'].keys }.flatten.
                 uniq.sort.should == %w(link_followed)
         end
     end

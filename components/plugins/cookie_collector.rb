@@ -39,12 +39,16 @@ class Arachni::Plugins::CookieCollector < Arachni::Plugin::Base
         response_hash.delete( :body )
         response_hash.delete( :headers_string )
 
-        @cookies << { time: Time.now, response: response_hash, cookies: cookies }
+        @cookies << {
+            'time'     => Time.now.to_s,
+            'response' => response_hash.stringify_keys,
+            'cookies'  => cookies
+        }
     end
 
     def update?( cookies )
         return true if @cookies.empty?
-        cookies.each { |k, v| return true if @cookies.last[:cookies][k] != v }
+        cookies.each { |k, v| return true if @cookies.last['cookies'][k] != v }
         false
     end
 

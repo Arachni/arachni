@@ -5,22 +5,18 @@
 
 class Arachni::Reports::Stdout
 
-#
 # Stdout formatter for the results of the CookieCollector plugin
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-# @version 0.1.1
-#
 class PluginFormatters::CookieCollector < Arachni::Plugin::Formatter
 
     def run
         results.each_with_index do |result, i|
-            print_info "[#{(i + 1).to_s}] On #{result[:time]}"
-            print_info "URL: " + result[:res]['url']
+            print_info "[#{(i + 1).to_s}] On #{result['time']}"
+            print_info "URL: #{result['response']['url']}"
 
             print_info 'Cookies forced to: '
-            result[:cookies].each_pair do |name, value|
+            result['cookies'].each_pair do |name, value|
                 print_info "    #{name} => #{value}"
             end
 
