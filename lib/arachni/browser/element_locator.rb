@@ -82,7 +82,7 @@ class ElementLocator
         to_h.stringify_keys
     end
 
-    # @param    [Hash]  data    {#rpc_data}
+    # @param    [Hash]  data    {#to_rpc_data}
     # @return   [ElementLocator]
     def self.from_rpc_data( data )
         new data

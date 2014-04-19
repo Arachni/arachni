@@ -404,7 +404,7 @@ class Issue
         data
     end
 
-    # @param    [Hash]  data    {#rpc_data}
+    # @param    [Hash]  data    {#to_rpc_data}
     # @return   [Issue]
     def self.from_rpc_data( data )
         instance = allocate

@@ -115,7 +115,7 @@ class Arachni::Component::Options::Base
         to_h.merge( class: self.class ).stringify_keys
     end
 
-    # @param    [Hash]  data    {#rpc_data}
+    # @param    [Hash]  data    {#to_rpc_data}
     # @return   [Base]
     def self.from_rpc_data( data )
         data.delete('type')
