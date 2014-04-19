@@ -138,7 +138,7 @@ class Base
                             self::DOM.from_rpc_data( value )
 
                         when 'initialization_options'
-                            value.symbolize_keys
+                            value.is_a?( Hash ) ? value.symbolize_keys : value
 
                         when 'method'
                             value.to_sym

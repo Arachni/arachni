@@ -20,7 +20,7 @@ shared_examples_for 'element' do
 
         rpc_attributes.each do |attribute|
             it "includes '#{attribute}'" do
-                data[at tribute].should == subject.send( attribute )
+                data[attribute].should == subject.send( attribute )
             end
         end
 

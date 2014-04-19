@@ -83,19 +83,20 @@ class GenericDOM < Base
         instance = allocate
         data.each do |name, value|
             value = case name
-                        when '@transition'
+                        when 'transition'
                             Arachni::Page::DOM::Transition.from_rpc_data( value )
 
-                        when '@initialization_options'
-                            value['transition'] =
-                                Arachni::Page::DOM::Transition.from_rpc_data( value['transition'] )
+                        when 'initialization_options'
+                            value = value.is_a?( Hash ) ? value.symbolize_keys(false) : value
+                            value[:transition] =
+                                Arachni::Page::DOM::Transition.from_rpc_data( value[:transition] )
                             value
 
                         else
                             value
                     end
 
-            instance.instance_variable_set( name, value )
+            instance.instance_variable_set( "@#{name}", value )
         end
         instance
     end
