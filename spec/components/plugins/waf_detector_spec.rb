@@ -15,8 +15,8 @@ describe name_from_filename do
                 run
 
                 actual_results.should == {
-                    status: :found,
-                    message: plugin::STATUSES[:found]
+                    'status'  => 'found',
+                    'message' => plugin::STATUSES[:found]
                 }
             end
         end
@@ -28,8 +28,8 @@ describe name_from_filename do
                 run
 
                 actual_results.should == {
-                    status: :not_found,
-                    message: plugin::STATUSES[:not_found]
+                    'status'  => 'not_found',
+                    'message' => plugin::STATUSES[:not_found]
                 }
             end
         end
@@ -42,8 +42,8 @@ describe name_from_filename do
             run
 
             actual_results.should == {
-                status: :inconclusive,
-                message: plugin::STATUSES[:inconclusive]
+                'status'  => 'inconclusive',
+                'message' => plugin::STATUSES[:inconclusive]
             }
         end
     end

@@ -90,18 +90,20 @@ class Arachni::Plugins::WAFDetector < Arachni::Plugin::Base
     end
 
     def found
-        print_ok STATUSES[:found]
-        register_results( status: :found, message: STATUSES[:found] )
+        log :found
     end
 
     def not_found
-        print_ok STATUSES[:not_found]
-        register_results( status: :not_found, message: STATUSES[:not_found] )
+        log :not_found
     end
 
     def inconclusive
-        print_ok STATUSES[:inconclusive]
-        register_results( status: :inconclusive, message: STATUSES[:inconclusive] )
+        log :inconclusive
+    end
+
+    def log( status )
+        print_ok STATUSES[status]
+        register_results( 'status' => status.to_s, 'message' => STATUSES[status] )
     end
 
     def queue_original

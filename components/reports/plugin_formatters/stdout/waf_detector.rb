@@ -5,15 +5,13 @@
 
 class Arachni::Reports::Stdout
 
-#
 # Stdout formatter for the results of the WAFDetector plugin
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class PluginFormatters::WAFDetector < Arachni::Plugin::Formatter
 
     def run
-        print_ok results[:msg]
+        print_ok results['message']
     end
 
 end
