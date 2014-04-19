@@ -772,7 +772,9 @@ class Framework
     #
     # Resets everything and allows the framework to be re-used.
     def reset
+        @cleaned_up  = false
         @browser_job = nil
+
         @failures.clear
         @retries.clear
 
