@@ -18,7 +18,7 @@ describe name_from_filename do
             }
 
             run
-            actual_results.should == { username: 'sys', password: 'admin' }
+            actual_results.should == { 'username' => 'sys', 'password' => 'admin' }
         end
     end
 
