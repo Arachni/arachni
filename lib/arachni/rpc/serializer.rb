@@ -30,9 +30,20 @@ module Serializer
         MessagePack.load( decompress( dump ) )
     end
 
+    # Simulates an object's over-the-wire transmission by {#dump dumping}
+    # and then {#load loading}.
+    #
     # @param    [#to_msgpack,.from_serializer_data]   object
+    # @return   [Object]
+    #   Data that the peer would receive.
+    def transmission_data( object )
+        load( dump( object ) )
+    end
+
+    # @param    [#to_msgpack,.from_serializer_data]   object
+    # @return   [Object]
     def deep_clone( object )
-        object.class.from_serializer_data( load( dump( object ) ) )
+        object.class.from_serializer_data transmission_data( object )
     end
 
     # @note Ignores strings smaller than #{COMPRESS_LARGER_THAN}.
