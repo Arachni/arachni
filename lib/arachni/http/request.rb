@@ -345,7 +345,7 @@ class Request < Message
         @on_complete = []
 
         instance_variables.inject( {} ) do |h, iv|
-            h[iv.to_s.gsub('@','').to_sym] = instance_variable_get( iv )
+            h[iv.to_s.gsub('@','')] = instance_variable_get( iv )
             h
         end
     ensure
@@ -357,10 +357,14 @@ class Request < Message
         h.each { |k, v| instance_variable_set( "@#{k}", v ) }
     end
 
+    # @return   [Hash]
+    #   Data representing this instance that are suitable the RPC transmission.
     def to_rpc_data
         marshal_dump
     end
 
+    # @param    [Hash]  data    {#to_rpc_data}
+    # @return   [Request]
     def self.from_rpc_data( data )
         instance = allocate
         data.each do |name, value|

@@ -9,12 +9,12 @@ describe Arachni::HTTP::Request do
         @url  = "#{web_server_url_for( :client )}/"
     end
 
-    before( :each ){
+    before( :each ) do
         @opts.reset
         @opts.audit.links = true
         @opts.url  = @url
         @http.reset
-    }
+    end
 
     let(:url){ @url }
     let(:url_with_query) { "#{url}/?id=1&stuff=blah" }
@@ -36,10 +36,34 @@ describe Arachni::HTTP::Request do
             password:   'pass'
         }
     end
+    subject { described_class.new( options ) }
 
     it "supports #{Arachni::RPC::Serializer}" do
         subject = described_class.new( options )
         subject.should == Arachni::RPC::Serializer.deep_clone( subject )
+    end
+
+    describe '#to_rpc_data' do
+        let(:data) { subject.to_rpc_data }
+
+        %w(url method parameters body headers_string effective_body timeout
+            headers cookies username password).each do |attribute|
+            it "includes '#{attribute}'" do
+                data[attribute].should == subject.send( attribute )
+            end
+        end
+    end
+
+    describe '.from_rpc_data' do
+        let(:restored) { described_class.from_rpc_data data }
+        let(:data) { Arachni::RPC::Serializer.rpc_data( subject ) }
+
+        %w(url method parameters body headers_string effective_body timeout
+            headers cookies username password).each do |attribute|
+            it "restores '#{attribute}'" do
+                restored.send( attribute ).should == subject.send( attribute )
+            end
+        end
     end
 
     describe '#initialize' do
