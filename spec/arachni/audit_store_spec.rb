@@ -21,6 +21,40 @@ describe Arachni::AuditStore do
         audit_store.should == Arachni::RPC::Serializer.deep_clone( audit_store )
     end
 
+    describe '#to_rpc_data' do
+        let(:data) { subject.to_rpc_data }
+
+        %w(options sitemap issues plugins version).each do |attribute|
+            it "includes '#{attribute}'" do
+                data[attribute].should == subject.send( attribute )
+            end
+        end
+
+        %w(start_datetime finish_datetime).each do |attribute|
+            it "includes '#{attribute}'" do
+                data[attribute].should == subject.send( attribute ).to_s
+            end
+        end
+    end
+
+    describe '.from_rpc_data' do
+        let(:restored) { described_class.from_rpc_data data }
+        let(:data) { Arachni::RPC::Serializer.rpc_data( subject ) }
+
+        %w(options sitemap issues plugins version).each do |attribute|
+            it "restores '#{attribute}'" do
+                restored.send( attribute ).should == subject.send( attribute )
+            end
+        end
+
+        %w(start_datetime finish_datetime).each do |attribute|
+            it "restores '#{attribute}'" do
+                restored.send( attribute ).should be_kind_of Time
+                restored.send( attribute ).to_s.should == subject.send( attribute ).to_s
+            end
+        end
+    end
+
     describe '#version' do
         it 'returns the version number' do
             audit_store.version.should == Arachni::VERSION

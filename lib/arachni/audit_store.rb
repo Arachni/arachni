@@ -134,6 +134,8 @@ class AuditStore
     end
     alias :to_hash :to_h
 
+    # @return   [Hash]
+    #   Data representing this instance that are suitable the RPC transmission.
     def to_rpc_data
         data = {}
         instance_variables.each do |ivar|
@@ -146,6 +148,8 @@ class AuditStore
         data
     end
 
+    # @param    [Hash]  data    {#to_rpc_data}
+    # @return   [DOM]
     def self.from_rpc_data( data )
         data['start_datetime']  = Time.parse( data['start_datetime'] )
         data['finish_datetime'] = Time.parse( data['finish_datetime'] )
