@@ -18,7 +18,7 @@ module Serializer
 
     # @param    [#to_msgpack]   object
     # @return   [String]
-    #   {#compressed Compressed} `object` dump.
+    #   {#compress Compressed} `object` dump.
     def dump( object )
         compress( MessagePack.dump( object ) )
     end
