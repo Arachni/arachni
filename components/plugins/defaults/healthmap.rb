@@ -26,40 +26,40 @@ class Arachni::Plugins::HealthMap < Arachni::Plugin::Base
             next if !url
 
             if issue_urls.include?( url )
-                map << { with_issues: url }
+                map << { 'with_issues' => url }
                 issue_cnt += 1
             else
-                map << { with_issues: url }
+                map << { 'with_issues' => url }
             end
         end
 
         register_results(
-            map:              map,
-            total:            map.size,
-            without_issues:   map.size - issue_cnt,
-            with_issues:      issue_cnt,
-            issue_percentage: ((issue_cnt.to_f / map.size.to_f) * 100).round
+            'map'              => map,
+            'total'            => map.size,
+            'without_issues'   => map.size - issue_cnt,
+            'with_issues'      => issue_cnt,
+            'issue_percentage' => ((issue_cnt.to_f / map.size.to_f) * 100).round
         )
     end
 
     def self.merge( results )
         merged = {
-            map:              [],
-            total:            0,
-            without_issues:   0,
-            with_issues:      0,
-            issue_percentage: 0
+            'map'              => [],
+            'total'            => 0,
+            'without_issues'   => 0,
+            'with_issues'      => 0,
+            'issue_percentage' => 0
         }
 
         results.each do |healthmap|
-            merged[:map]    |= healthmap[:map]
-            merged[:total]  += healthmap[:total]
-            merged[:without_issues] += healthmap[:without_issues]
-            merged[:with_issues]    += healthmap[:with_issues]
+            merged['map']            |= healthmap['map']
+            merged['total']          += healthmap['total']
+            merged['without_issues'] += healthmap['without_issues']
+            merged['with_issues']    += healthmap['with_issues']
         end
 
-        merged[:issue_percentage] =
-            ( ( merged[:with_issues].to_f / merged[:total].to_f ) * 100 ).round
+        merged['issue_percentage'] =
+            ( ( merged['with_issues'].to_f / merged['total'].to_f ) * 100 ).round
 
         merged
     end
