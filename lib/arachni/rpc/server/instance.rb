@@ -76,7 +76,7 @@ class Server
 #    puts
 #    puts 'Logged issues:'
 #    report['issues'].each do |issue|
-#        puts "  * #{issue['name']} for input '#{issue['vector']['type']}' at '#{issue['vector']['action']}'."
+#       puts "  * #{issue['name']} in '#{issue['vector']['type']}' input '#{issue['vector']['affected_input_name']}' at '#{issue['vector']['action']}'."
 #    end
 #
 # @note Ignore:
@@ -327,7 +327,7 @@ class Instance
     #         instance.service.error_test "BOOM! #{i+=1}"
     #
     #         # Only request errors we don't already have
-    #         errors = instance.service.progress( with: { errors: error_cnt } )['errors']
+    #         errors = instance.service.progress( with: { errors: error_cnt } )[:errors]
     #         error_cnt += errors.size
     #
     #         # You will only see new errors
@@ -346,13 +346,13 @@ class Instance
     #                      with: :issues,
     #                      # Only request issues we don't already have
     #                      without: { issues: issue_digests  }
-    #                  )['issues']
+    #                  )[:issues]
     #
     #         issue_digests |= issues.map { |issue| issue['digest'] }
     #
     #         # You will only see new issues
     #         issues.each do |issue|
-    #             puts "  * #{issue['name']} for input '#{issue['vector']['type']}' at '#{issue['vector']['action']}'."
+    #             puts "  * #{issue['name']} in '#{issue['vector']['type']}' input '#{issue['vector']['affected_input_name']}' at '#{issue['vector']['action']}'."
     #         end
     #     end
     #
