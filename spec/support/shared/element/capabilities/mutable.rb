@@ -29,7 +29,28 @@ shared_examples_for 'mutable' do |options = {}|
     end
 
     it "supports #{Arachni::RPC::Serializer}" do
-        mutable.should == Arachni::RPC::Serializer.deep_clone( mutable )
+        mutation.should == Arachni::RPC::Serializer.deep_clone( mutation )
+    end
+
+    describe '#to_rpc_data' do
+        let(:data) { mutation.to_rpc_data }
+
+        %w(seed format affected_input_name).each do |attribute|
+            it "includes '#{attribute}'" do
+                data[attribute].should == mutation.send( attribute )
+            end
+        end
+    end
+
+    describe '.from_rpc_data' do
+        let(:restored) { mutation.class.from_rpc_data data }
+        let(:data) { Arachni::RPC::Serializer.rpc_data( mutation ) }
+
+        %w(seed format affected_input_name).each do |attribute|
+            it "restores '#{attribute}'" do
+                restored.send( attribute ).should == mutation.send( attribute )
+            end
+        end
     end
 
     describe '#mutation?' do

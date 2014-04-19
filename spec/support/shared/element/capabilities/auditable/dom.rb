@@ -10,6 +10,25 @@ shared_examples_for 'element_dom' do |options = {}|
         subject.should == Arachni::RPC::Serializer.deep_clone( subject )
     end
 
+    describe '#to_rpc_data' do
+        %w(parent page browser element).each do |attribute|
+            it "excludes #{attribute}" do
+                called = false
+
+                # We do this inside a #submit handler to make sure the associations
+                # which are added during a submit are handled successfully.
+                subject.submit do
+                    subject.to_rpc_data.should_not include attribute
+                    called = true
+                end
+                run
+
+                called.should be_true
+            end
+        end
+    end
+
+
     describe '#marshal_dump' do
         [:@parent, :@page, :@browser, :@element].each do |ivar|
             it "excludes #{ivar}" do

@@ -140,10 +140,6 @@ module DOM
         super.reject{ |k, _| [:@parent, :@page, :@browser, :@element].include? k }
     end
 
-    def to_rpc_data
-        marshal_dump
-    end
-
     def initialization_options
         options = {}
         options[:url]    = url.dup     if @url

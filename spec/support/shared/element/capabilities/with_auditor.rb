@@ -18,6 +18,14 @@ shared_examples_for 'with_auditor' do
         s
     end
 
+    describe '#to_rpc_data' do
+        let(:data) { auditable.to_rpc_data }
+
+        it "does not include 'auditor'" do
+            data.should_not include 'auditor'
+        end
+    end
+
     describe '#prepare_for_report' do
         it 'removes the #auditor' do
             auditable.auditor.should be_true

@@ -6,6 +6,33 @@ shared_examples_for 'submitable' do
         s
     end
 
+    rpc_attributes = if described_class == Arachni::Element::Link::DOM
+                         %w(url method)
+                     else
+                         %w(url action method)
+                     end
+
+    describe '#to_rpc_data' do
+        let(:data) { submitable.to_rpc_data }
+
+        rpc_attributes.each do |attribute|
+            it "includes '#{attribute}'" do
+                data[attribute].should == submitable.send( attribute )
+            end
+        end
+    end
+
+    describe '.from_rpc_data' do
+        let(:restored) { submitable.class.from_rpc_data data }
+        let(:data) { Arachni::RPC::Serializer.rpc_data( submitable ) }
+
+        rpc_attributes.each do |attribute|
+            it "restores '#{attribute}'" do
+                restored.send( attribute ).should == submitable.send( attribute )
+            end
+        end
+    end
+
     describe '#platforms' do
         it 'returns platforms for the given element' do
             submitable.platforms.should be_kind_of Arachni::Platform::Manager

@@ -119,31 +119,35 @@ class Base
         h.each { |k, v| instance_variable_set( k, v ) }
     end
 
+    # @return   [Hash]
+    #   Data representing this instance that are suitable the RPC transmission.
     def to_rpc_data
-        data = marshal_dump
-        data.delete :@audit_options
-        data[:@class] = self.class.to_s
+        data = marshal_dump.inject({}) { |h, (k, v)| h[k.to_s.gsub('@', '')] = v; h }
+        data.delete 'audit_options'
+        data['class'] = self.class
         data
     end
 
+    # @param    [Hash]  data    {#to_rpc_data}
+    # @return   [Base]
     def self.from_rpc_data( data )
         instance = allocate
         data.each do |name, value|
             value = case name
-                        when '@dom'
+                        when 'dom'
                             self::DOM.from_rpc_data( value )
 
-                        when '@initialization_options'
+                        when 'initialization_options'
                             value.symbolize_keys
 
-                        when '@method'
+                        when 'method'
                             value.to_sym
 
                         else
                             value
                     end
 
-            instance.instance_variable_set( name, value )
+            instance.instance_variable_set( "@#{name}", value )
         end
 
         instance.instance_variable_set( :@audit_options, {} )

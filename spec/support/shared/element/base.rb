@@ -9,6 +9,37 @@ shared_examples_for 'element' do
         subject.should == Arachni::RPC::Serializer.deep_clone( subject )
     end
 
+    rpc_attributes = if described_class.ancestors.include? Arachni::Element::Capabilities::Auditable::DOM
+                         %w(url class)
+                     else
+                         %w(url initialization_options class)
+                     end
+
+    describe '#to_rpc_data' do
+        let(:data) { subject.to_rpc_data }
+
+        rpc_attributes.each do |attribute|
+            it "includes '#{attribute}'" do
+                data[at tribute].should == subject.send( attribute )
+            end
+        end
+
+        it 'excludes #page' do
+            data.should_not include 'page'
+        end
+    end
+
+    describe '.from_rpc_data' do
+        let(:restored) { described_class.from_rpc_data data }
+        let(:data) { Arachni::RPC::Serializer.rpc_data( subject ) }
+
+        rpc_attributes.each do |attribute|
+            it "restores '#{attribute}'" do
+                restored.send( attribute ).should == subject.send( attribute )
+            end
+        end
+    end
+
     describe '#marshal_dump' do
         it 'excludes #page' do
             subject.page = Factory[:page]

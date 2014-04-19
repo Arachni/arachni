@@ -54,6 +54,14 @@ shared_examples_for 'auditable' do |options = {}|
         auditable.should == Arachni::RPC::Serializer.deep_clone( auditable )
     end
 
+    describe '#to_rpc_data' do
+        let(:data) { auditable.to_rpc_data }
+
+        it 'excludes #audit_options' do
+            data.should_not include 'audit_options'
+        end
+    end
+
     describe '#dup' do
         let(:dupped) { auditable.dup }
 

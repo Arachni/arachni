@@ -43,6 +43,27 @@ shared_examples_for 'inputable' do |options = {}|
         subject.should == Arachni::RPC::Serializer.deep_clone( subject )
     end
 
+    describe '#to_rpc_data' do
+        let(:data) { subject.to_rpc_data }
+
+        %w(inputs default_inputs).each do |attribute|
+            it "includes '#{attribute}'" do
+                data[attribute].should == subject.send( attribute )
+            end
+        end
+    end
+
+    describe '.from_rpc_data' do
+        let(:restored) { subject.class.from_rpc_data data }
+        let(:data) { Arachni::RPC::Serializer.rpc_data( subject ) }
+
+        %w(inputs default_inputs).each do |attribute|
+            it "restores '#{attribute}'" do
+                restored.send( attribute ).should == subject.send( attribute )
+            end
+        end
+    end
+
     describe '#has_inputs?' do
         describe '#reset' do
             it 'returns the element to its original state' do
