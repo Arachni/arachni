@@ -29,7 +29,7 @@ class Arachni::Plugins::HealthMap < Arachni::Plugin::Base
                 map << { 'with_issues' => url }
                 issue_cnt += 1
             else
-                map << { 'with_issues' => url }
+                map << { 'without_issues' => url }
             end
         end
 
