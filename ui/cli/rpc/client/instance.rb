@@ -110,43 +110,41 @@ class Instance
         @error_messages_cnt ||= 0
         @issue_digests      ||= []
 
-        progress = @instance.service.progress(
-            with:    [ :instances, :native_issues, errors: @error_messages_cnt ],
+        progress = @instance.service.native_progress(
+            with:    [ :instances, :issues, errors: @error_messages_cnt ],
             without: [ issues: @issue_digests ]
         )
 
         return if !progress
 
         @progress = progress
-        @issues  |= @progress['issues']
+        @issues  |= @progress[:issues]
 
         @issues = @issues.sort_by(&:severity).reverse
 
         # Keep issue digests and error messages in order to ask not to retrieve
         # them on subsequent progress calls in order to save bandwidth.
-        @issue_digests  |= @progress['issues'].map( &:digest )
+        @issue_digests  |= @progress[:issues].map( &:digest )
 
-        if @progress['errors'].any?
+        if @progress[:errors].any?
             error_log_file = @instance.url.gsub( ':', '_' )
             @error_log_file = "#{error_log_file}.error.log"
 
-            File.open( @error_log_file, 'a' ) { |f| f.write @progress['errors'].join( "\n" ) }
+            File.open( @error_log_file, 'a' ) { |f| f.write @progress[:errors].join( "\n" ) }
 
-            @error_messages_cnt += @progress['errors'].size
+            @error_messages_cnt += @progress[:errors].size
         end
 
         @progress
     end
 
     def busy?
-        !!progress['busy']
+        !!progress[:busy]
     end
 
-    #
     # Laconically output the discovered issues.
     #
     # This method is used during a pause.
-    #
     def print_issues
         super @issues
     end
@@ -196,7 +194,7 @@ class Instance
     def report_and_shutdown
         print_status 'Shutting down and retrieving the report, please wait...'
 
-        report = @instance.service.abort_and_report( :auditstore )
+        report = @instance.service.native_abort_and_report
         shutdown
 
         @framework.reports.run :stdout, report
@@ -216,17 +214,17 @@ class Instance
     end
 
     def stats
-        progress['stats']
+        progress[:stats]
     end
 
     def status
-        progress['status']
+        progress[:status]
     end
 
     def print_stats
         print_info "Status: #{status.to_s.capitalize}"
 
-        sitemap_az = stats['sitemap_size']
+        sitemap_az = stats[:sitemap_size]
         if status == 'crawling'
             print_info "Discovered #{sitemap_az} pages and counting."
         elsif status == 'auditing'
@@ -234,39 +232,37 @@ class Instance
         end
         print_line
 
-        print_info "Sent #{stats['requests']} requests."
-        print_info "Received and analyzed #{stats['responses']} responses."
-        print_info 'In ' + stats['time'].to_s
-        print_info 'Average: ' + stats['avg'].to_s + ' requests/second.'
+        print_info "Sent #{stats[:requests]} requests."
+        print_info "Received and analyzed #{stats[:responses]} responses."
+        print_info 'In ' + stats[:time].to_s
+        print_info 'Average: ' + stats[:avg].to_s + ' requests/second.'
 
         print_line
-        if status == 'auditing'
-            if stats['current_pages']
-                print_info 'Currently auditing:'
+        if stats[:current_pages]
+            print_info 'Currently auditing:'
 
-                stats['current_pages'].each.with_index do |url, i|
-                    cnt = "[#{i + 1}]".rjust( stats['current_pages'].size.to_s.size + 4 )
+            stats[:current_pages].each.with_index do |url, i|
+                cnt = "[#{i + 1}]".rjust( stats[:current_pages].size.to_s.size + 4 )
 
-                    if !url.to_s.empty?
-                        print_info "#{cnt} #{url}"
-                    else
-                        print_info "#{cnt} Insufficient audit workload"
-                    end
+                if !url.to_s.empty?
+                    print_info "#{cnt} #{url}"
+                else
+                    print_info "#{cnt} Insufficient audit workload"
                 end
-
-                print_line
-            else
-                print_info "Currently auditing           #{stats['current_page']}"
             end
+
+            print_line
+        else
+            print_info "Currently auditing           #{stats[:current_page]}"
         end
 
-        print_info "Burst response time total    #{stats['curr_res_time']}"
-        print_info "Burst response count total   #{stats['curr_res_cnt']}"
-        print_info "Burst average response time  #{stats['average_res_time']}"
-        print_info "Burst average                #{stats['curr_avg']} requests/second"
-        print_info "Timed-out requests           #{stats['time_out_count']}"
+        print_info "Burst response time total    #{stats[:curr_res_time]}"
+        print_info "Burst response count total   #{stats[:curr_res_cnt]}"
+        print_info "Burst average response time  #{stats[:average_res_time]}"
+        print_info "Burst average                #{stats[:curr_avg]} requests/second"
+        print_info "Timed-out requests           #{stats[:time_out_count]}"
         print_info "Original max concurrency     #{@opts.http.request_concurrency}"
-        print_info "Throttled max concurrency    #{stats['max_concurrency']}"
+        print_info "Throttled max concurrency    #{stats[:max_concurrency]}"
     end
 
     def parse_cookie_jar( jar )
