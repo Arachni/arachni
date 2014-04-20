@@ -910,6 +910,7 @@ class Browser
     def spawn_phantomjs
         return @phantomjs_url if @phantomjs_url
 
+        ppid = Process.pid
         port = nil
         10.times do
             port = available_port
@@ -934,6 +935,7 @@ class Browser
                     '--ignore-ssl-errors=true',
                     err: [:child, :out]]
                 )
+                phantomjs_pid = io.pid
                 Process.detach io.pid
 
                 # Send the PID to the parent right away, he may need to kill
@@ -948,6 +950,17 @@ class Browser
 
                 # All done, we're good to go.
                 write.puts 'ping'
+
+                # This is our lifeline to the parent. It will Kill the browser
+                # if the parent dies for whatever reason.
+                while sleep 0.1
+                    begin
+                        Process.kill 0, ppid
+                    rescue Errno::ESRCH
+                        Process.kill( 'KILL', phantomjs_pid ) rescue Errno::ESRCH
+                        break
+                    end
+                end
             end
             Process.detach phantomjs_container
 
@@ -960,7 +973,6 @@ class Browser
                 read.close
                 write.close
 
-                kill phantomjs_container
                 kill_phantomjs
                 next
             end
@@ -968,7 +980,6 @@ class Browser
             read.close
             write.close
 
-            kill phantomjs_container
             break
         end
 
