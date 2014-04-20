@@ -412,7 +412,7 @@ class Issue
         data.each do |name, value|
             value = case name
                         when 'vector'
-                            klass = value.delete('@class').split( '::' ).last.to_sym
+                            klass = value.delete('class').split( '::' ).last.to_sym
                             Arachni::Element.const_get(klass).from_rpc_data( value )
 
                         when 'check'
