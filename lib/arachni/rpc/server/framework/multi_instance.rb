@@ -95,40 +95,40 @@ module MultiInstance
         as_hash = opts[:as_hash] ? true : opts[:as_hash]
 
         data = {
-            'stats'  => {},
-            'status' => status,
-            'busy'   => running?
+            stats:  {},
+            status: status,
+            busy:   running?
         }
 
         if include_errors
-            data['errors'] = errors( include_errors.is_a?( Integer ) ? include_errors : 0 )
+            data[:errors] = errors( include_errors.is_a?( Integer ) ? include_errors : 0 )
         end
 
         if include_issues
-            data['issues'] = as_hash ? issues_as_hash : issues
+            data[:issues] = as_hash ? issues_as_hash : issues
         end
 
-        data['instances'] = {} if include_slaves
+        data[:instances] = {} if include_slaves
 
         stats = []
         stat_hash = {}
-        self.stats.each { |k, v| stat_hash[k.to_s] = v } if include_stats
+        self.stats.each { |k, v| stat_hash[k] = v } if include_stats
 
         if master? && include_slaves
-            data['instances'][self_url] = stat_hash.dup
-            data['instances'][self_url]['url'] = self_url
-            data['instances'][self_url]['status'] = status
+            data[:instances][self_url] = stat_hash.dup
+            data[:instances][self_url][:url] = self_url
+            data[:instances][self_url][:status] = status
         end
 
         stats << stat_hash
 
         if !has_slaves? || !include_slaves
             if include_stats
-                data['stats'] = merge_stats( stats )
+                data[:stats] = merge_stats( stats )
             else
-                data.delete( 'stats' )
+                data.delete( :stats )
             end
-            data['instances'] = data['instances'].values if include_slaves
+            data[:instances] = data[:instances].values if include_slaves
             block.call( data )
             return
         end
@@ -136,7 +136,7 @@ module MultiInstance
         foreach = proc do |instance, iter|
             instance.framework.progress_data( opts ) do |tmp|
                 if !tmp.rpc_exception?
-                    tmp['url'] = instance.url
+                    tmp[:url] = instance.url
                     iter.return( tmp )
                 else
                     iter.return( nil )
@@ -147,36 +147,38 @@ module MultiInstance
         after = proc do |slave_data|
             slave_data.compact!
             slave_data.each do |slave|
-                if include_errors && slave['errors']
-                    data['errors'] ||= []
-                    data['errors']  |= slave['errors']
+                slave = slave.symbolize_keys
+
+                if include_errors && slave[:errors]
+                    data[:errors] ||= []
+                    data[:errors]  |= slave[:errors]
                 end
 
                 if include_slaves
-                    url = slave['url']
-                    data['instances'][url]           = slave['stats'] || {}
-                    data['instances'][url]['url']    = url
-                    data['instances'][url]['status'] = slave['status']
+                    url = slave[:url]
+                    data[:instances][url]          = slave[:stats] || {}
+                    data[:instances][url][:url]    = url
+                    data[:instances][url][:status] = slave[:status]
                 end
 
-                stats << slave['stats']
+                stats << slave[:stats]
             end
 
             if include_slaves
                 sorted_data_instances = {}
-                data['instances'].keys.sort.each do |url|
-                    sorted_data_instances[url] = data['instances'][url]
+                data[:instances].keys.sort.each do |url|
+                    sorted_data_instances[url] = data[:instances][url]
                 end
-                data['instances'] = sorted_data_instances.values
+                data[:instances] = sorted_data_instances.values
             end
 
             if include_stats
-                data['stats'] = merge_stats( stats )
+                data[:stats] = merge_stats( stats )
             else
-                data.delete( 'stats' )
+                data.delete( :stats )
             end
 
-            data['busy']  = slave_data.map { |d| d['busy'] }.include?( true )
+            data[:busy] = slave_data.map { |d| d[:busy] }.include?( true )
 
             block.call( data )
         end
