@@ -591,8 +591,8 @@ class Instance
         Thread.new do
             t = []
 
-            if (bc = browser_cluster)
-                t << Thread.new { browser_cluster.shutdown }
+            if browser_cluster
+                Thread.new { browser_cluster.shutdown }
             end
 
             @framework.instance_eval do
