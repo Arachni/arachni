@@ -165,15 +165,16 @@ class Worker < Arachni::Browser
     # @note If there is a running job it will wait for it to finish.
     #
     # Shuts down the worker.
-    def shutdown
+    def shutdown( wait = true )
         return if @shutdown
         @shutdown = true
 
         # If we've got a job running wait for it to finish before closing
         # the browser otherwise we'll get Selenium errors and zombie processes.
-        @done_signal.pop if @job
+        @done_signal.pop if wait && @job
+        @consumer.kill
 
-        super
+        super(*[])
     end
 
     def self.name

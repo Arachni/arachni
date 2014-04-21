@@ -592,7 +592,10 @@ class Instance
             t = []
 
             if browser_cluster
-                Thread.new { browser_cluster.shutdown }
+                # We can't block until the browser cluster shuts down cleanly
+                # (i.e. wait for any running jobs) but we don't need to anyways.
+                # Process.detach fork { browser_cluster.shutdown false }
+                t << Thread.new { browser_cluster.shutdown false }
             end
 
             @framework.instance_eval do

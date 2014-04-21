@@ -254,7 +254,7 @@ class BrowserCluster
     end
 
     # Shuts the cluster down.
-    def shutdown
+    def shutdown( wait = true )
         @shutdown = true
 
         # Clear the jobs -- don't forget this, it also removes the disk files for
@@ -262,7 +262,7 @@ class BrowserCluster
         @jobs.clear
 
         # Kill the browsers.
-        @workers.each(&:shutdown)
+        @workers.each { |b| exception_jail( false ) { b.shutdown wait } }
         @workers.clear
 
         # Very important to leave these for last, they may contain data
