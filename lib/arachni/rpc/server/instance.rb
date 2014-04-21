@@ -654,12 +654,12 @@ class Instance
                              slaves:  with.include?( :instances ),
                              errors:  with[:errors]
         ) do |data|
-            data['instances'] ||= [] if with.include?( :instances )
-            data['busy'] = busy?
+            data[:instances] ||= [] if with.include?( :instances )
+            data[:busy] = busy?
 
-            if data['issues']
+            if data[:issues]
                 if without[:issues].is_a? Array
-                    data['issues'].reject! do |i|
+                    data[:issues].reject! do |i|
                         without[:issues].include?( i.is_a?(Hash) ? i[:digest] : i.digest )
                     end
                 end
