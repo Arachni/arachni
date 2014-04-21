@@ -921,7 +921,7 @@ class Browser
             # process which will ignore signals. So, we need a child-container
             # process to trap signals and ignore them and a IO.popen'ed
             # PhantomJS grand-child.
-            phantomjs_container = fork do
+            @phantomjs_container = fork do
                 %w(QUIT INT).each do |signal|
                     next if !Signal.list.has_key?( signal )
                     trap( signal, 'IGNORE' )
@@ -962,7 +962,7 @@ class Browser
                     end
                 end
             end
-            Process.detach phantomjs_container
+            Process.detach @phantomjs_container
 
             # First read is the pid.
             @phantomjs_pid = read.readline.to_i
@@ -987,6 +987,7 @@ class Browser
     end
 
     def kill_phantomjs
+        kill @phantomjs_container
         kill @phantomjs_pid
 
         @phantomjs_pid = nil
