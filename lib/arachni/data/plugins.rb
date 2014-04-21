@@ -10,6 +10,7 @@ class Data
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Plugins
+    include UI::Output
     include MonitorMixin
 
     # @return   [Hash<Symbol=>Hash>]
@@ -34,9 +35,7 @@ class Plugins
     # @param    [Object]    results
     def store( plugin, results )
         synchronize do
-            @results[plugin.shortname.to_sym] = plugin.class.info.merge(
-                results: results
-            )
+            @results[plugin.shortname.to_sym] = plugin.info.merge( results: results )
         end
     end
 

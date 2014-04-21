@@ -164,6 +164,9 @@ class Base < Component::Base
             priority:    0
         }
     end
+    def info
+        self.class.info
+    end
 
     def session
         framework.session
