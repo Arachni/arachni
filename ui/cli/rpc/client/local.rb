@@ -43,16 +43,16 @@ class Local
         # signals.
         options.datastore.do_not_trap = true
 
+        socket = "/tmp/arachni-#{Arachni::Utilities.available_port}"
+
         # Spawns an Instance and configures it to listen on a UNIX-domain socket.
-        instance = Processes::Instances.spawn(
-            socket: "/tmp/arachni-#{Arachni::Utilities.available_port}"
-        )
+        instance = Processes::Instances.spawn( socket: socket )
 
         # Let the Instance UI manage the Instance from now on.
         Instance.new( options, instance ).run
 
         # Make sure the Instance processes are killed.
-        Processes::Instances.killall
+        Processes::Instances.kill( socket )
     end
 
 end
