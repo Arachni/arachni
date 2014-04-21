@@ -109,10 +109,10 @@ describe Arachni::Session do
             transition.event.should == :submit
             transition.element.tag_name.should == :form
 
-            transition.options[:inputs]['username'].should ==
+            transition.options[:inputs][:username].should ==
                 configured.configuration[:inputs][:username]
 
-            transition.options[:inputs]['password'].should ==
+            transition.options[:inputs][:password].should ==
                 configured.configuration[:inputs][:password]
         end
 
