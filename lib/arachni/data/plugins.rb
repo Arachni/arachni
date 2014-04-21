@@ -46,38 +46,29 @@ class Plugins
     # @param    [Plugin:Manager]     plugins
     # @param    [Array]               results
     def merge_results( plugins, results )
-        begin
-            plugin_info      = {}
-            isolated_results = {}
-            merged           = {}
+        isolated_results = {}
 
-            (results + [@results]).each do |result|
-                result.each do |name, res|
-                    next if !res
-                    name = name.to_sym
+        (results + [@results]).each do |result|
+            result.each do |name, res|
+                next if !res
+                name = name.to_sym
 
-                    isolated_results[name] ||= []
-                    isolated_results[name] << (res['results'] || res[:results])
-
-                    plugin_info[name] ||= res.reject { |k, v| k.to_s == 'results' }.
-                        symbolize_keys(false)
-                end
+                isolated_results[name] ||= []
+                isolated_results[name] << (res['results'] || res[:results])
             end
-
-            isolated_results.each do |plugin, res|
-                merged_result = plugins[plugin].distributable? ?
-                    plugins[plugin].merge( res ) : res[0]
-
-                merged[plugin] = plugin_info[plugin].merge( results: merged_result )
-            end
-
-            @results = merged
-        rescue => e
-            print_error "Could not merge plugin results, will only use local ones: #{e}"
-            print_error_backtrace e
         end
 
-        @results
+        isolated_results.each do |plugin, res|
+            next if !plugins[plugin].distributable?
+
+            begin
+                store( plugins[plugin], plugins[plugin].merge( res ) )
+            rescue => e
+                print_error "Could not merge plugin results for plugin '#{plugin}', " +
+                                "will only use local ones: #{e}"
+                print_error_backtrace e
+            end
+        end
     end
 
     def dump( directory )
