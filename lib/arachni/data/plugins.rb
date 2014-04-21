@@ -44,34 +44,40 @@ class Plugins
     # {Plugin::Base.distributable?} plugin's {Plugin::Base.merge} method.
     #
     # @param    [Plugin:Manager]     plugins
-    # @param    [Array]     results
+    # @param    [Array]               results
     def merge_results( plugins, results )
-        info = {}
-        formatted = {}
+        begin
+            plugin_info      = {}
+            isolated_results = {}
+            merged           = {}
 
-        results << @results
-        results.each do |result|
-            result.each do |name, res|
-                next if !res
+            (results + [@results]).each do |result|
+                result.each do |name, res|
+                    next if !res
+                    name = name.to_sym
 
-                formatted[name] ||= []
-                formatted[name] << res[:results]
+                    isolated_results[name] ||= []
+                    isolated_results[name] << (res['results'] || res[:results])
 
-                info[name] = res.reject{ |k, v| k == :results } if !info[name]
+                    plugin_info[name] ||= res.reject { |k, v| k.to_s == 'results' }.
+                        symbolize_keys(false)
+                end
             end
+
+            isolated_results.each do |plugin, res|
+                merged_result = plugins[plugin].distributable? ?
+                    plugins[plugin].merge( res ) : res[0]
+
+                merged[plugin] = plugin_info[plugin].merge( results: merged_result )
+            end
+
+            @results = merged
+        rescue => e
+            print_error "Could not merge plugin results, will only use local ones: #{e}"
+            print_error_backtrace e
         end
 
-        merged = {}
-        formatted.each do |plugin, c_results|
-            if !plugins[plugin].distributable?
-                res = c_results[0]
-            else
-                res = plugins[plugin].merge( c_results )
-            end
-            merged[plugin] = info[plugin].merge( results: res )
-        end
-
-        @results = merged
+        @results
     end
 
     def dump( directory )
