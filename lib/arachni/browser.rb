@@ -568,8 +568,7 @@ class Browser
                 print_error e
                 print_error_backtrace e
 
-                print_info 'Could not trigger event because the page has changed' <<
-                               ', capturing a new snapshot.'
+                print_info 'Could not trigger event because the page has changed.'
                 return
             end
         end
@@ -601,7 +600,7 @@ class Browser
 
         tries = 0
         begin
-            transition = Page::DOM::Transition.new( locator, event, options ) do
+            Page::DOM::Transition.new( locator, event, options ) do
                 had_special_trigger = false
 
                 if tag_name == :form
@@ -635,10 +634,6 @@ class Browser
                 element.fire_event( event ) if !had_special_trigger
                 wait_for_pending_requests
             end
-
-            prune_window_responses
-
-            transition
         rescue Selenium::WebDriver::Error::UnknownError,
             Watir::Exception::UnknownObjectException => e
 
