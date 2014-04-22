@@ -87,6 +87,9 @@ class Worker < Arachni::Browser
             end
         rescue TimeoutError => e
             print_error "Job timed-out after #{@job_timeout} seconds: #{job}"
+
+            # Could have left us with a broken browser.
+            phantomjs_respawn
         end
 
         @javascript.taint = nil
@@ -104,7 +107,12 @@ class Worker < Arachni::Browser
         @on_response_blocks.clear
         @on_fire_event_blocks.clear
 
-        watir.cookies.clear
+        begin
+            watir.cookies.clear
+        # Working window was closed by JS (probably), start from scratch.
+        rescue Selenium::WebDriver::Error::NoSuchWindowError => e
+            phantomjs_respawn
+        end
 
         @job = nil
 
@@ -222,6 +230,8 @@ class Worker < Arachni::Browser
         @selenium = nil
 
         @watir = ::Watir::Browser.new( *phantomjs )
+
+        ensure_open_window
     end
 
     def time_to_die?
