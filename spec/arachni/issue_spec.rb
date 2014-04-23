@@ -429,7 +429,7 @@ describe Arachni::Issue do
                         h
                     end
 
-                    referring_page_dom_h = page.dom.to_h
+                    referring_page_dom_h = variation[:referring_page][:dom]
                     referring_page_dom_h.delete(:skip_states)
                     referring_page_dom_h[:transitions] =
                         referring_page_dom_h[:transitions].map do |t|
