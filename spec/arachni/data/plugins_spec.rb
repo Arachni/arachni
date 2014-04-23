@@ -50,7 +50,8 @@ describe Arachni::Data::Plugins do
             results = [ distributable: { results: { stuff: 2 } } ]
             subject.store( plugins.create(:distributable), stuff: 1 )
 
-            subject.merge_results( plugins, results )[:distributable][:results][:stuff].should == 3
+            subject.merge_results( plugins, results )
+            subject.results[:distributable][:results][:stuff].should == 3
         end
     end
 

@@ -68,6 +68,8 @@ class Plugins
                 print_error_backtrace e
             end
         end
+
+        nil
     end
 
     def dump( directory )
