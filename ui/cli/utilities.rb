@@ -191,12 +191,10 @@ module Utilities
     # Loads an Arachni Framework Profile file and merges it with the user
     # supplied options.
     #
-    # @param    [Array<String>]    profiles    the files to load
-    def load_profile( profiles )
+    # @param    [String]    profile
+    def load_profile( profile )
         exception_jail do
-            profiles.each do |filename|
-                Arachni::Options.merge!( Arachni::Options.load( filename ) )
-            end
+            Arachni::Options.load( profile )
         end
     end
 
