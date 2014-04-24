@@ -12,7 +12,7 @@ class Node < Arachni::RPC::Server::Dispatcher::Node
             self.class.send :public, m
         end
 
-        @server = Arachni::RPC::Server::Base.new( @opts )
+        @server = Arachni::RPC::Server::Base.new( @options )
         @server.add_async_check do |method|
             # methods that expect a block are async
             method.parameters.flatten.include?( :block )
@@ -22,7 +22,7 @@ class Node < Arachni::RPC::Server::Dispatcher::Node
     end
 
     def url
-        "#{@opts.rpc.server_address}:#{@opts.rpc.server_port}"
+        "#{@options.rpc.server_address}:#{@options.rpc.server_port}"
     end
 
     def shutdown
@@ -30,7 +30,7 @@ class Node < Arachni::RPC::Server::Dispatcher::Node
     end
 
     def connect_to_peer( url )
-        self.class.connect_to_peer( url, @opts )
+        self.class.connect_to_peer( url, @options )
     end
 
     def self.connect_to_peer( url, opts )
@@ -41,32 +41,36 @@ end
 
 describe Arachni::RPC::Server::Dispatcher::Node do
     before( :all ) do
-        @opts = Arachni::Options.instance
-
         @get_node = proc do |c_port|
-            opts = @opts
             port = c_port || available_port
-            opts.rpc.server_port = port
+            Arachni::Options.rpc.server_port = port
+
             process_fork_em do
-                Node.new( opts )
+                Node.new( Arachni::Options )
             end
+
             sleep 1
-            Node.connect_to_peer( "#{opts.rpc.server_address}:#{port}", opts )
+
+            Node.connect_to_peer(
+                "#{Arachni::Options.rpc.server_address}:#{port}",
+                Arachni::Options
+            )
         end
 
         @node = @get_node.call
     end
+    before( :each ) { options.dispatcher.external_address = nil }
 
-    before( :each ) { @opts.dispatcher.external_address = nil }
+    let(:options) { Arachni::Options }
 
     describe '#grid_member?' do
         context 'when the dispatcher is a grid member' do
             it 'should return true' do
                 n = @get_node.call
 
-                @opts.dispatcher.neighbour = n.url
+                options.dispatcher.neighbour = n.url
                 c = @get_node.call
-                @opts.dispatcher.neighbour = nil
+                options.dispatcher.neighbour = nil
                 sleep 4
 
                 c.grid_member?.should be_true
@@ -82,11 +86,11 @@ describe Arachni::RPC::Server::Dispatcher::Node do
 
     context 'when a previously unreachable neighbour comes back to life' do
         before( :all ) do
-            @opts.dispatcher.node_ping_interval = 0.5
+            options.dispatcher.node_ping_interval = 0.5
         end
 
         after( :all ) do
-            @opts.dispatcher.node_ping_interval = nil
+            options.dispatcher.node_ping_interval = nil
         end
 
         it 'gets re-added to the neighbours list' do
@@ -104,17 +108,17 @@ describe Arachni::RPC::Server::Dispatcher::Node do
             n.neighbours.should == [c.url]
             c.neighbours.should == [n.url]
 
-            @opts.dispatcher.neighbour = nil
+            options.dispatcher.neighbour = nil
         end
     end
 
     context 'when a neighbour becomes unreachable' do
         before( :all ) do
-            @opts.dispatcher.node_ping_interval = 0.5
+            options.dispatcher.node_ping_interval = 0.5
         end
 
         after( :all ) do
-            @opts.dispatcher.node_ping_interval = nil
+            options.dispatcher.node_ping_interval = nil
         end
 
         it 'is removed' do
@@ -139,7 +143,7 @@ describe Arachni::RPC::Server::Dispatcher::Node do
         it 'adds that neighbour and reach convergence' do
             n = @get_node.call
 
-            @opts.dispatcher.neighbour = n.url
+            options.dispatcher.neighbour = n.url
             c = @get_node.call
             sleep 4
             c.neighbours.should == [n.url]
@@ -151,7 +155,7 @@ describe Arachni::RPC::Server::Dispatcher::Node do
             c.neighbours.sort.should == [n.url, d.url].sort
             n.neighbours.sort.should == [c.url, d.url].sort
 
-            @opts.dispatcher.neighbour = d.url
+            options.dispatcher.neighbour = d.url
             e = @get_node.call
             sleep 4
             e.neighbours.sort.should == [n.url, c.url, d.url].sort
@@ -159,7 +163,7 @@ describe Arachni::RPC::Server::Dispatcher::Node do
             c.neighbours.sort.should == [n.url, d.url, e.url].sort
             n.neighbours.sort.should == [c.url, d.url, e.url].sort
 
-            @opts.dispatcher.neighbour = nil
+            options.dispatcher.neighbour = nil
         end
     end
 
@@ -220,25 +224,25 @@ describe Arachni::RPC::Server::Dispatcher::Node do
 
     describe '#info' do
         it 'returns node info' do
-            @opts.dispatcher.node_pipe_id = 'dispatcher_node_pipe_id'
-            @opts.dispatcher.node_weight = 10
-            @opts.dispatcher.node_nickname = 'blah'
-            @opts.dispatcher.node_cost = 12
+            options.dispatcher.node_pipe_id = 'dispatcher_node_pipe_id'
+            options.dispatcher.node_weight = 10
+            options.dispatcher.node_nickname = 'blah'
+            options.dispatcher.node_cost = 12
 
             n = @get_node.call
             info = n.info
 
             info['url'].should == n.url
-            info['pipe_id'].should == @opts.dispatcher.node_pipe_id
-            info['weight'].should == @opts.dispatcher.node_weight
-            info['nickname'].should == @opts.dispatcher.node_nickname
-            info['cost'].should == @opts.dispatcher.node_cost
+            info['pipe_id'].should == options.dispatcher.node_pipe_id
+            info['weight'].should == options.dispatcher.node_weight
+            info['nickname'].should == options.dispatcher.node_nickname
+            info['cost'].should == options.dispatcher.node_cost
         end
 
         context 'when Options#dispatcher_external_address has been set' do
             it 'advertises that address' do
-                @opts.dispatcher.external_address = '9.9.9.9'
-                @get_node.call.info['url'].should start_with @opts.dispatcher.external_address
+                options.dispatcher.external_address = '9.9.9.9'
+                @get_node.call.info['url'].should start_with options.dispatcher.external_address
             end
         end
     end

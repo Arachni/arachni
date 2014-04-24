@@ -9,7 +9,6 @@ require Options.paths.lib + 'rpc/server/output'
 
 module RPC
 
-#
 # Dispatcher node class, helps maintain a list of all available Dispatchers in
 # the grid and announce itself to neighbouring Dispatchers.
 #
@@ -22,11 +21,9 @@ module RPC
 # copy of all available Dispatcher URLs.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Server::Dispatcher::Node
     include UI::Output
 
-    #
     # Initializes the node by:
     #
     #   * Adding the neighbour (if the user has supplied one) to the peer list.
@@ -34,14 +31,13 @@ class Server::Dispatcher::Node
     #   * Announces itself to the neighbour and instructs it to propagate our URL
     #     to the others.
     #
-    # @param    [Arachni::Options]    opts
+    # @param    [Arachni::Options]    options
     # @param    [String]              logfile   Where to send the output.
-    #
-    def initialize( opts, logfile = nil )
-        @opts = opts
-        @opts.dispatcher.external_address ||= @opts.rpc.server_address
+    def initialize( options, logfile = nil )
+        @options = options
+        @options.dispatcher.external_address ||= @options.rpc.server_address
 
-        @url = "#{@opts.dispatcher.external_address}:#{@opts.rpc.server_port}"
+        @url = "#{@options.dispatcher.external_address}:#{@options.rpc.server_port}"
 
         reroute_to_file( logfile ) if logfile
 
@@ -51,7 +47,7 @@ class Server::Dispatcher::Node
         @neighbours = Set.new
         @nodes_info_cache = []
 
-        if (neighbour = @opts.dispatcher.neighbour)
+        if (neighbour = @options.dispatcher.neighbour)
             # add neighbour and announce him to everyone
             add_neighbour( neighbour, true )
 
@@ -66,7 +62,7 @@ class Server::Dispatcher::Node
 
         log_updated_neighbours
 
-        ::EM.add_periodic_timer( @opts.dispatcher.node_ping_interval ) do
+        ::EM.add_periodic_timer( @options.dispatcher.node_ping_interval ) do
             ping
             check_for_comebacks
         end
@@ -77,13 +73,11 @@ class Server::Dispatcher::Node
         @neighbours.any?
     end
 
-    #
     # Adds a neighbour to the peer list.
     #
     # @param    [String]    node_url    URL of a neighbouring node.
     # @param    [Boolean]   propagate
     #   Whether or not to announce the new node to the peers.
-    #
     def add_neighbour( node_url, propagate = false )
         # we don't want ourselves in the Set
         return false if node_url == @url
@@ -142,18 +136,19 @@ class Server::Dispatcher::Node
     end
 
     # @return    [Hash]
-    #   * `:url` -- This node's URL.
-    #   * `:pipe_id` -- Bandwidth Pipe ID
-    #   * `:weight` -- Weight
-    #   * `:nickname` -- Nickname
-    #   * `:cost` -- Cost
+    #
+    #   * `url` -- This node's URL.
+    #   * `pipe_id` -- Bandwidth Pipe ID
+    #   * `weight` -- Weight
+    #   * `nickname` -- Nickname
+    #   * `cost` -- Cost
     def info
         {
             'url'      => @url,
-            'pipe_id'  => @opts.dispatcher.node_pipe_id,
-            'weight'   => @opts.dispatcher.node_weight,
-            'nickname' => @opts.dispatcher.node_nickname,
-            'cost'     => @opts.dispatcher.node_cost
+            'pipe_id'  => @options.dispatcher.node_pipe_id,
+            'weight'   => @options.dispatcher.node_weight,
+            'nickname' => @options.dispatcher.node_nickname,
+            'cost'     => @options.dispatcher.node_cost
         }
     end
 
@@ -209,11 +204,9 @@ class Server::Dispatcher::Node
         end
     end
 
-    #
     # Announces the node to the ones in the peer list
     #
     # @param    [String]    node    URL
-    #
     def announce( node )
         print_status "Advertising: #{node}"
 
@@ -228,7 +221,7 @@ class Server::Dispatcher::Node
     end
 
     def connect_to_peer( url )
-        Client::Dispatcher.new( @opts, url ).node
+        Client::Dispatcher.new( @options, url ).node
     end
 
 end
