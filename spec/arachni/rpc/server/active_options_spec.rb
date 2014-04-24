@@ -40,8 +40,8 @@ describe Arachni::RPC::Server::ActiveOptions do
                 }
             }
 
-            @instance.opts.set( opts )
-            h = @instance.opts.to_h
+            @instance.options.set( opts )
+            h = @instance.options.to_h
 
             h['url'].to_s.should == @utils.normalize_url( opts['url'] )
             h['scope']['exclude_path_patterns'].should == opts['scope']['exclude_path_patterns']

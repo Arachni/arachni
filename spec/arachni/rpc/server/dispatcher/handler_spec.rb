@@ -48,7 +48,7 @@ describe Arachni::RPC::Server::Dispatcher::Handler do
             @dispatcher.echo.test_each_instance
             urls = @dispatcher.jobs.map do |j|
                 Arachni::RPC::Client::Instance.
-                    new( Arachni::Options, j['url'], j['token'] ).opts.url
+                    new( Arachni::Options, j['url'], j['token'] ).options.url
             end
 
             urls.size.should == @instance_count

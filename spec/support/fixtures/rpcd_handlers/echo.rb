@@ -9,7 +9,7 @@ class Handler::Echo < Handler
     end
 
     def test_opts
-        dispatcher.instance_eval{ @opts } == opts
+        dispatcher.instance_eval{ @opts } == options
     end
 
     def test_node
@@ -29,7 +29,7 @@ class Handler::Echo < Handler
         i = 0
         each_instance do |instance, iterator|
             i += 1
-            instance.opts.set( url: "http://stuff.com/#{i}") { |p| iterator.next }
+            instance.options.set( url: "http://stuff.com/#{i}") { |p| iterator.next }
         end
         true
     end
@@ -39,7 +39,7 @@ class Handler::Echo < Handler
     end
 
     def test_connect_to_dispatcher( &block )
-        connect_to_dispatcher( opts.datastore.dispatcher_url ).alive? { |b| block.call b }
+        connect_to_dispatcher( options.datastore.dispatcher_url ).alive? { |b| block.call b }
     end
 
     def test_connect_to_instance( *args, &block )

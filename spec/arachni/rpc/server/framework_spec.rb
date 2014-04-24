@@ -7,7 +7,7 @@ describe 'Arachni::RPC::Server::Framework' do
 
         @instance  = instance_spawn
         @framework = @instance.framework
-        @checks   = @instance.checks
+        @checks    = @instance.checks
         @plugins   = @instance.plugins
 
         @instance_clean  = instance_spawn
@@ -41,7 +41,7 @@ describe 'Arachni::RPC::Server::Framework' do
         end
         context 'when the scan is running' do
             it 'returns true' do
-                @instance.opts.url = web_server_url_for( :auditor ) + '/sleep'
+                @instance.options.url = web_server_url_for( :auditor ) + '/sleep'
                 @checks.load( 'test' )
                 @framework.run.should be_true
                 @framework.busy?.should be_true
@@ -116,7 +116,7 @@ describe 'Arachni::RPC::Server::Framework' do
     describe '#run' do
         it 'performs a scan' do
             instance = @instance_clean
-            instance.opts.url = web_server_url_for( :framework )
+            instance.options.url = web_server_url_for( :framework )
             instance.checks.load( 'test' )
             instance.framework.run.should be_true
             sleep( 1 ) while instance.framework.busy?
@@ -126,15 +126,15 @@ describe 'Arachni::RPC::Server::Framework' do
         it 'handles pages with JavaScript code' do
             @opts.paths.checks = fixtures_path + '/taint_check/'
 
-            inst = instance_spawn
-            inst.opts.url = web_server_url_for( :auditor ) + '/with_javascript'
-            inst.opts.set audit: { elements: [:links, :forms, :cookies] }
-            inst.checks.load :taint
+            instance = instance_spawn
+            instance.options.url = web_server_url_for( :auditor ) + '/with_javascript'
+            instance.options.set audit: { elements: [:links, :forms, :cookies] }
+            instance.checks.load :taint
 
-            inst.framework.run.should be_true
-            sleep 0.1 while inst.framework.busy?
+            instance.framework.run.should be_true
+            sleep 0.1 while instance.framework.busy?
 
-            inst.framework.issues.
+            instance.framework.issues.
                 map { |i| i.vector.affected_input_name }.uniq.should be
                 %w(link_input form_input cookie_input).sort
         end
@@ -142,15 +142,15 @@ describe 'Arachni::RPC::Server::Framework' do
         it 'handles AJAX' do
             @opts.paths.checks = fixtures_path + '/taint_check/'
 
-            inst = instance_spawn
-            inst.opts.url = web_server_url_for( :auditor ) + '/with_ajax'
-            inst.opts.set audit: { elements: [:links, :forms, :cookies] }
-            inst.checks.load :taint
+            instance = instance_spawn
+            instance.options.url = web_server_url_for( :auditor ) + '/with_ajax'
+            instance.options.set audit: { elements: [:links, :forms, :cookies] }
+            instance.checks.load :taint
 
-            inst.framework.run.should be_true
-            sleep 0.1 while inst.framework.busy?
+            instance.framework.run.should be_true
+            sleep 0.1 while instance.framework.busy?
 
-            inst.framework.issues.
+            instance.framework.issues.
                 map { |i| i.vector.affected_input_name }.uniq.should be
                 %w(link_input form_input cookie_taint).sort
         end
@@ -166,7 +166,7 @@ describe 'Arachni::RPC::Server::Framework' do
     describe '#statistics' do
         it 'returns a hash containing general runtime statistics' do
             instance = @instance_clean
-            instance.opts.url = web_server_url_for( :framework )
+            instance.options.url = web_server_url_for( :framework )
             instance.checks.load( 'test' )
             instance.framework.run.should be_true
 
@@ -183,7 +183,7 @@ describe 'Arachni::RPC::Server::Framework' do
         context 'when paused' do
             it 'returns true' do
                 instance = instance_spawn
-                instance.opts.url = web_server_url_for( :framework )
+                instance.options.url = web_server_url_for( :framework )
                 instance.checks.load( 'test' )
                 instance.framework.run
 
@@ -201,7 +201,7 @@ describe 'Arachni::RPC::Server::Framework' do
     describe '#resume' do
         it 'resumes the scan' do
             instance = instance_spawn
-            instance.opts.url = web_server_url_for( :framework )
+            instance.options.url = web_server_url_for( :framework )
             instance.checks.load( 'test' )
             instance.framework.run
 
@@ -225,37 +225,37 @@ describe 'Arachni::RPC::Server::Framework' do
     end
     describe '#status' do
         before( :all ) do
-            @inst = instance_spawn
-            @inst.opts.url = web_server_url_for( :framework ) + '/crawl'
-            @inst.checks.load( 'test' )
+            @instance = instance_spawn
+            @instance.options.url = web_server_url_for( :framework ) + '/crawl'
+            @instance.checks.load( 'test' )
         end
         context 'after initialization' do
             it 'returns :ready' do
-                @inst.framework.status.should == :ready
+                @instance.framework.status.should == :ready
             end
         end
         context 'after #run has been called' do
             it 'returns :scanning' do
-                @inst.framework.run.should be_true
+                @instance.framework.run.should be_true
                 sleep 2
-                @inst.framework.status.should == :scanning
+                @instance.framework.status.should == :scanning
             end
         end
         context 'once the scan had completed' do
             it 'returns :done' do
-                inst = instance_spawn
-                inst.opts.url = web_server_url_for( :framework )
-                inst.checks.load( 'test' )
-                inst.framework.run
-                sleep 1 while inst.framework.busy?
-                inst.framework.status.should == :done
+                instance = instance_spawn
+                instance.options.url = web_server_url_for( :framework )
+                instance.checks.load( 'test' )
+                instance.framework.run
+                sleep 1 while instance.framework.busy?
+                instance.framework.status.should == :done
             end
         end
     end
     describe '#clean_up' do
         it 'sets the framework state to finished and wait for plugins to finish' do
             instance = instance_spawn
-            instance.opts.url = web_server_url_for( :framework_multi )
+            instance.options.url = web_server_url_for( :framework_multi )
             instance.checks.load( 'test' )
             instance.plugins.load( { 'wait' => {} } )
             instance.framework.run.should be_true

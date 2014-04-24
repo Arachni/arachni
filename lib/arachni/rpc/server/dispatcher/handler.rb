@@ -5,7 +5,6 @@
 
 module Arachni::RPC
 
-#
 # Base class and namespace for all RPCD/Dispatcher handlers.
 #
 # # RPC accessibility
@@ -17,8 +16,8 @@ module Arachni::RPC
 # Please try to avoid blocking operations as they will block the main Reactor loop.
 #
 # However, if you really need to perform such operations, you can update the
-# relevant methods to expect a block and then pass the desired return value to that block
-# instead of returning it the usual way.
+# relevant methods to expect a block and then pass the desired return value to
+# that block instead of returning it the usual way.
 #
 # This will result in the method's payload to be deferred into a Thread of its own.
 #
@@ -31,14 +30,13 @@ module Arachni::RPC
 # results to that block instead of returning a value.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Server::Dispatcher::Handler
 
-    attr_reader :opts
+    attr_reader :options
     attr_reader :dispatcher
 
-    def initialize( opts, dispatcher )
-        @opts       = opts
+    def initialize( options, dispatcher )
+        @options    = options
         @dispatcher = dispatcher
     end
 
@@ -121,7 +119,7 @@ class Server::Dispatcher::Handler
     #
     def connect_to_dispatcher( url )
         @dispatcher_connections ||= {}
-        @dispatcher_connections[url] ||= Client::Dispatcher.new( opts, url )
+        @dispatcher_connections[url] ||= Client::Dispatcher.new( options, url )
     end
 
     #
@@ -142,13 +140,13 @@ class Server::Dispatcher::Handler
         if args.size == 2
             url, token = *args
         elsif args.first.is_a? Hash
-            options = args.first
-            url     = options['url'] || options[:url]
-            token   = options['token'] || options[:token]
+            connection_options = args.first
+            url     = connection_options['url']   || connection_options[:url]
+            token   = connection_options['token'] || connection_options[:token]
         end
 
         @instance_connections ||= {}
-        @instance_connections[url] ||= Client::Instance.new( opts, url, token )
+        @instance_connections[url] ||= Client::Instance.new( options, url, token )
     end
 
 end

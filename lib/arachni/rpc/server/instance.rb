@@ -107,38 +107,38 @@ class Instance
 
     # Initializes the RPC interface and the framework.
     #
-    # @param    [Options]    opts
+    # @param    [Options]    options
     # @param    [String]    token   Authentication token.
-    def initialize( opts, token )
-        @opts   = opts
-        @token  = token
+    def initialize( options, token )
+        @options = options
+        @token   = token
 
         @framework      = Server::Framework.new( Options.instance )
         @active_options = Server::ActiveOptions.new( @framework )
 
-        @server = Base.new( @opts, token )
-        @server.logger.level = @opts.datastore.log_level if @opts.datastore.log_level
+        @server = Base.new( @options, token )
+        @server.logger.level = @options.datastore.log_level if @options.datastore.log_level
 
-        @opts.datastore.token = token
+        @options.datastore.token = token
 
-        debug if @opts.output.debug
+        debug if @options.output.debug
 
-        if @opts.output.reroute_to_logfile
-            reroute_to_file "#{@opts.paths.logs}/Instance - #{Process.pid}" <<
-                                "-#{@opts.rpc.server_port}.log"
+        if @options.output.reroute_to_logfile
+            reroute_to_file "#{@options.paths.logs}/Instance - #{Process.pid}" <<
+                                "-#{@options.rpc.server_port}.log"
         else
             reroute_to_file false
         end
 
-        set_error_logfile "#{@opts.paths.logs}/Instance - #{Process.pid}" <<
-                              "-#{@opts.rpc.server_port}.error.log"
+        set_error_logfile "#{@options.paths.logs}/Instance - #{Process.pid}" <<
+                              "-#{@options.rpc.server_port}.error.log"
 
         set_handlers( @server )
 
         # trap interrupts and exit cleanly when required
         %w(QUIT INT).each do |signal|
             next if !Signal.list.has_key?( signal )
-            trap( signal ){ shutdown if !@opts.datastore.do_not_trap }
+            trap( signal ){ shutdown if !@options.datastore.do_not_trap }
         end
 
         @consumed_pids = []
@@ -778,11 +778,11 @@ class Instance
 
     def dispatcher
         @dispatcher ||=
-            Client::Dispatcher.new( @opts, @opts.datastore[:dispatcher_url] )
+            Client::Dispatcher.new( @options, @options.datastore[:dispatcher_url] )
     end
 
     def has_dispatcher?
-        !!@opts.datastore[:dispatcher_url]
+        !!@options.datastore[:dispatcher_url]
     end
 
     # Outputs the Arachni banner.
@@ -809,7 +809,7 @@ class Instance
         Options.rpc.server_socket = "/tmp/arachni-instance-master-#{Process.pid}"
 
         ::EM.defer do
-            unix = Base.new( @opts, @token )
+            unix = Base.new( @options, @token )
             set_handlers( unix )
 
             # Don't change this to ::EM.defer because we'll get a thread error.
@@ -834,7 +834,7 @@ class Instance
 
         server.add_handler( 'service',   self )
         server.add_handler( 'framework', @framework )
-        server.add_handler( 'opts',      @active_options )
+        server.add_handler( 'options',   @active_options )
         server.add_handler( 'checks',    @framework.checks )
         server.add_handler( 'plugins',   @framework.plugins )
     end

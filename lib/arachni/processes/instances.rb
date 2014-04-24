@@ -137,7 +137,7 @@ class Instances
 
         instance = connect( info['url'], info['token'] )
         instance.framework.set_as_master
-        instance.opts.set( dispatcher: { grid_mode: :aggregate } )
+        instance.options.set( dispatcher: { grid_mode: :aggregate } )
         instance
     end
 
@@ -162,7 +162,7 @@ class Instances
 
         instance = connect( info['url'], info['token'] )
         instance.framework.set_as_master
-        instance.opts.set( dispatcher: { grid_mode: :aggregate } )
+        instance.options.set( dispatcher: { grid_mode: :aggregate } )
         instance
     end
 

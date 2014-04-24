@@ -26,9 +26,9 @@ describe Arachni::RPC::Client::Instance do
         end
     end
 
-    describe '#opts' do
+    describe '#options' do
         before do
-            @rpc_opts = @instance.opts
+            @rpc_opts = @instance.options
             @foo_url  = Arachni::Utilities.normalize_url( 'http://test.com' )
         end
 

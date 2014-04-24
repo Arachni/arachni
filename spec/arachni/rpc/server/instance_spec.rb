@@ -777,8 +777,8 @@ describe 'Arachni::RPC::Server::Instance' do
     describe '#opts' do
         it 'provides access to the Options' do
             url = 'http://blah.com'
-            @shared_instance.opts.url = url
-            @shared_instance.opts.url.to_s.should == @utils.normalize_url( url )
+            @shared_instance.options.url = url
+            @shared_instance.options.url.to_s.should == @utils.normalize_url( url )
         end
     end
 

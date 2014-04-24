@@ -78,6 +78,7 @@
     - `Serializer` -- Replaced `Marshal` and `YAML` as RPC serialization providers.
         - Delegates to `MessagePack`.
         - Supports message compression -- applied based on message size to minimize overhead.
+    - `opts` handler renamed to `options`.
     - `Server`
         - `Dispatcher`
             - `#dispatch` -- Returns `false` when the pool is empty as a signal

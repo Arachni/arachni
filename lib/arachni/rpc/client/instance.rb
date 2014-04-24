@@ -15,7 +15,7 @@ class Client
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Instance
-    attr_reader :opts
+    attr_reader :options
     attr_reader :framework
     attr_reader :checks
     attr_reader :plugins
@@ -24,14 +24,14 @@ class Instance
     require_relative 'instance/framework'
     require_relative 'instance/service'
 
-    def initialize( opts, url, token = nil )
+    def initialize( options, url, token = nil )
         @token  = token
-        @client = Base.new( opts, url, token )
+        @client = Base.new( options, url, token )
 
         @framework = Framework.new( @client )
         @service   = Service.new( @client )
 
-        @opts      = RemoteObjectMapper.new( @client, 'opts' )
+        @options   = RemoteObjectMapper.new( @client, 'options' )
         @checks    = RemoteObjectMapper.new( @client, 'checks' )
         @plugins   = RemoteObjectMapper.new( @client, 'plugins' )
     end

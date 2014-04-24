@@ -72,7 +72,7 @@ module Master
 
         # Take charge of the Instance we were given.
         instance = connect_to_instance( instance_info )
-        instance.opts.set( prepare_slave_options ) do
+        instance.options.set( prepare_slave_options ) do
             instance.framework.set_master( multi_self_url, token ) do
                 @slaves << instance_info
 
