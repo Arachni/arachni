@@ -136,6 +136,27 @@ class Client
         self
     end
 
+    # @return   [Hash]
+    #
+    #   Hash including HTTP client statistics including:
+    #
+    #   *  {#request_count}
+    #   *  {#response_count}
+    #   *  {#time_out_count}
+    #   *  {#total_responses_per_second}
+    #   *  {#burst_response_time_sum}
+    #   *  {#burst_response_count}
+    #   *  {#burst_responses_per_second}
+    #   *  {#burst_average_response_time}
+    #   *  {#max_concurrency}
+    def statistics
+       [:request_count, :response_count, :time_out_count,
+        :total_responses_per_second, :burst_response_time_sum,
+        :burst_response_count, :burst_responses_per_second,
+        :burst_average_response_time, :max_concurrency].
+           inject({}) { |h, k| h[k] = send(k); h }
+    end
+
     # @return    [CookieJar]
     def cookie_jar
         State.http.cookiejar

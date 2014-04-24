@@ -5,32 +5,48 @@ describe Arachni::HTTP::Client do
 
     before( :all ) do
         @opts = Arachni::Options.instance
-        @http = Arachni::HTTP::Client
         @url  = web_server_url_for( :client )
     end
-    before( :each ){
+    before( :each ) do
         @opts.reset
         @opts.audit.links = true
-        @opts.url  = @url
-        @http.reset
-    }
+        @opts.url = @url
+        subject.reset
+    end
+
+    subject { Arachni::HTTP::Client }
 
     it 'supports gzip content-encoding' do
         body = nil
-        @http.get( @opts.url + 'gzip' ) { |res| body = res.body }
-        @http.run
+        subject.get( @opts.url + 'gzip' ) { |res| body = res.body }
+        subject.run
         body.should == 'success'
     end
 
     it 'preserves set-cookies' do
         body = nil
-        @http.get( @opts.url + 'set_and_preserve_cookies', update_cookies: true )
-        @http.run
-        @http.cookies.first.value.should == "=stuf \00 here=="
+        subject.get( @opts.url + 'set_and_preserve_cookies', update_cookies: true )
+        subject.run
+        subject.cookies.first.value.should == "=stuf \00 here=="
 
-        @http.get( @opts.url + 'cookies' ) { |res| body = res.body }
-        @http.run
+        subject.get( @opts.url + 'cookies' ) { |res| body = res.body }
+        subject.run
         YAML.load( body ).should == { 'stuff' => "=stuf \00 here==" }
+    end
+
+
+    describe '#statistics' do
+        let(:statistics) { subject.statistics }
+
+        [:request_count, :response_count, :time_out_count,
+         :total_responses_per_second, :burst_response_time_sum,
+         :burst_response_count, :burst_responses_per_second,
+         :burst_average_response_time, :max_concurrency].each do |k|
+            it "includes #{k}" do
+                statistics[k].should == subject.send(k)
+            end
+        end
+        
     end
 
     describe 'Arachni::Options' do
@@ -39,8 +55,8 @@ describe Arachni::HTTP::Client do
                 it 'uses them globally' do
                     # first fail to make sure that our test server is actually working properly
                     code = 0
-                    @http.get( "#{@opts.url}auth/simple-chars" ) { |res| code = res.code }
-                    @http.run
+                    subject.get( "#{@opts.url}auth/simple-chars" ) { |res| code = res.code }
+                    subject.run
                     code.should == 401
 
                     url = Arachni::Utilities.uri_parse( "#{@opts.url}auth/simple-chars" )
@@ -49,8 +65,8 @@ describe Arachni::HTTP::Client do
                     @opts.url = url.to_s
 
                     body = nil
-                    @http.get( @opts.url ) { |res| body = res.body }
-                    @http.run
+                    subject.get( @opts.url ) { |res| body = res.body }
+                    subject.run
                     body.should == 'authenticated!'
                 end
             end
@@ -60,15 +76,15 @@ describe Arachni::HTTP::Client do
             context Integer do
                 it 'uses it as a max_concurrency' do
                     @opts.http.request_concurrency = 34
-                    @http.reset
-                    @http.max_concurrency.should == 34
+                    subject.reset
+                    subject.max_concurrency.should == 34
                 end
             end
             context 'nil' do
                 it 'uses a default max concurrency setting' do
                     @opts.http.request_concurrency = nil
-                    @http.reset
-                    @http.max_concurrency.should == Arachni::HTTP::Client::MAX_CONCURRENCY
+                    subject.reset
+                    subject.max_concurrency.should == Arachni::HTTP::Client::MAX_CONCURRENCY
                 end
             end
         end
@@ -78,23 +94,23 @@ describe Arachni::HTTP::Client do
                 it 'uses it as an HTTP timeout' do
                     @opts.http.request_timeout = 10000000000
                     timed_out = false
-                    @http.request( @url + '/sleep' ) { |res| timed_out = res.timed_out? }
-                    @http.run
+                    subject.request( @url + '/sleep' ) { |res| timed_out = res.timed_out? }
+                    subject.run
                     timed_out.should be_false
 
                     @opts.http.request_timeout = 1
-                    @http.reset
+                    subject.reset
                     timed_out = false
-                    @http.request( @url + '/sleep' ) { |res| timed_out = res.timed_out? }
-                    @http.run
+                    subject.request( @url + '/sleep' ) { |res| timed_out = res.timed_out? }
+                    subject.run
                     timed_out.should be_true
                 end
             end
             context 'nil' do
                 it 'uses a default timeout setting' do
                     timed_out = false
-                    @http.request( @url + '/sleep' ) { |res| timed_out = res.timed_out? }
-                    @http.run
+                    subject.request( @url + '/sleep' ) { |res| timed_out = res.timed_out? }
+                    subject.run
                     timed_out.should be_false
                 end
             end
@@ -107,8 +123,8 @@ describe Arachni::HTTP::Client do
 
                 # first fail to make sure that our test server is actually working properly
                 code = 0
-                @http.get( @opts.url + 'auth/weird-chars' ) { |res| code = res.code }
-                @http.run
+                subject.get( @opts.url + 'auth/weird-chars' ) { |res| code = res.code }
+                subject.run
                 code.should == 401
 
                 Arachni::Options.http.authentication_username,
@@ -116,8 +132,8 @@ describe Arachni::HTTP::Client do
                         ['u se rname$@#@#%$3#@%@#', 'p a  :wo\'rd$@#@#%$3#@%@#' ]
 
                 response = nil
-                @http.get( @opts.url + 'auth/weird-chars' ) { |res| response = res }
-                @http.run
+                subject.get( @opts.url + 'auth/weird-chars' ) { |res| response = res }
+                subject.run
                 response.code.should == 200
                 response.body.should == 'authenticated!'
             end
@@ -126,8 +142,8 @@ describe Arachni::HTTP::Client do
         describe 'Options#http.user_agent' do
             it 'uses the default user-agent setting' do
                 body = nil
-                @http.get( @opts.url + 'user-agent' ) { |res| body = res.body }
-                @http.run
+                subject.get( @opts.url + 'user-agent' ) { |res| body = res.body }
+                subject.run
 
                 body.should == @opts.http.user_agent
                 @opts.http.user_agent.should == Arachni::OptionGroups::HTTP.defaults[:user_agent]
@@ -136,11 +152,11 @@ describe Arachni::HTTP::Client do
                 it 'uses it as a user-agent' do
                     ua = 'my user agent'
                     @opts.http.user_agent = ua.dup
-                    @http.reset
+                    subject.reset
 
                     body = nil
-                    @http.get( @opts.url + 'user-agent' ) { |res| body = res.body }
-                    @http.run
+                    subject.get( @opts.url + 'user-agent' ) { |res| body = res.body }
+                    subject.run
                     body.should == ua
                 end
             end
@@ -151,26 +167,26 @@ describe Arachni::HTTP::Client do
                 it 'should not exceed that amount of redirects' do
                     @opts.http.request_redirect_limit = 2
                     code = nil
-                    @http.get( @opts.url + 'redirect', follow_location: true ) { |res| code = res.code }
-                    @http.run
+                    subject.get( @opts.url + 'redirect', follow_location: true ) { |res| code = res.code }
+                    subject.run
                     code.should == 302
 
                     @opts.http.request_redirect_limit = 10
-                    @http.reset
+                    subject.reset
 
                     body = nil
-                    @http.get( @opts.url + 'redirect', follow_location: true ) { |res| body = res.body }
-                    @http.run
+                    subject.get( @opts.url + 'redirect', follow_location: true ) { |res| body = res.body }
+                    subject.run
                     body.should == 'This is the end.'
                 end
             end
             context 'nil' do
                 it 'uses a default setting' do
-                    @http.reset
+                    subject.reset
 
                     body = nil
-                    @http.get( @opts.url + 'redirect', follow_location: true ) { |res| body = res.body }
-                    @http.run
+                    subject.get( @opts.url + 'redirect', follow_location: true ) { |res| body = res.body }
+                    subject.run
                     body.should == 'This is the end.'
                 end
             end
@@ -182,8 +198,8 @@ describe Arachni::HTTP::Client do
                     Arachni::Options.fingerprint
 
                     res = nil
-                    @http.request( @url + '/fingerprint.php' ) { |c_res| res = c_res }
-                    @http.run
+                    subject.request( @url + '/fingerprint.php' ) { |c_res| res = c_res }
+                    subject.run
 
                     res.platforms.to_a.should == [:php]
                 end
@@ -195,8 +211,8 @@ describe Arachni::HTTP::Client do
                     Arachni::Options.do_not_fingerprint
 
                     res = nil
-                    @http.request( @url + '/fingerprint.php' ) { |c_res| res = c_res }
-                    @http.run
+                    subject.request( @url + '/fingerprint.php' ) { |c_res| res = c_res }
+                    subject.run
 
                     res.platforms.should be_empty
                 end
@@ -206,55 +222,55 @@ describe Arachni::HTTP::Client do
 
     describe '#sandbox' do
         it 'preserves state, runs the block and then restores state' do
-            @http.cookies.should be_empty
-            @http.get( @opts.url + 'set_and_preserve_cookies', update_cookies: true )
-            @http.run
-            @http.cookies.should be_any
+            subject.cookies.should be_empty
+            subject.get( @opts.url + 'set_and_preserve_cookies', update_cookies: true )
+            subject.run
+            subject.cookies.should be_any
 
-            headers = @http.headers.dup
+            headers = subject.headers.dup
 
             signals = []
-            @http.add_on_complete do |r|
+            subject.add_on_complete do |r|
                 signals << :out
             end
 
-            @http.get( @opts.url + 'out', mode: :sync )
+            subject.get( @opts.url + 'out', mode: :sync )
 
-            @http.sandbox do
-                @http.cookies.should be_any
-                @http.cookie_jar.clear
-                @http.cookies.should be_empty
+            subject.sandbox do
+                subject.cookies.should be_any
+                subject.cookie_jar.clear
+                subject.cookies.should be_empty
 
-                @http.headers.should == headers
-                @http.headers['X-Custom'] = 'stuff'
-                @http.headers.include?( 'X-Custom' ).should be_true
+                subject.headers.should == headers
+                subject.headers['X-Custom'] = 'stuff'
+                subject.headers.include?( 'X-Custom' ).should be_true
 
-                @http.add_on_complete do |r|
+                subject.add_on_complete do |r|
                     signals << :in
                 end
 
-                @http.get( @opts.url + 'in', mode: :sync )
+                subject.get( @opts.url + 'in', mode: :sync )
             end
 
-            @http.get( @opts.url + 'out', mode: :sync )
+            subject.get( @opts.url + 'out', mode: :sync )
 
             signals.delete( :out )
             signals.size.should == 1
 
-            @http.headers.include?( 'X-Custom' ).should be_false
-            @http.cookies.should be_any
+            subject.headers.include?( 'X-Custom' ).should be_false
+            subject.cookies.should be_any
         end
     end
 
     describe '#url' do
         it 'returns the URL in opts' do
-            @http.url.should == @opts.url.to_s
+            subject.url.should == @opts.url.to_s
         end
     end
 
     describe '#headers' do
         it 'provides access to default headers' do
-            headers = @http.headers
+            headers = subject.headers
             headers['Accept'].should == 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
             headers['User-Agent'].should == 'Arachni/v' + Arachni::VERSION
         end
@@ -265,8 +281,8 @@ describe Arachni::HTTP::Client do
                     'User-Agent' => 'My UA',
                     'From'       => 'Some dude',
                 }
-                @http.reset
-                headers = @http.headers
+                subject.reset
+                headers = subject.headers
                 headers['From'].should == @opts.http.request_headers['From']
                 headers['Accept'].should == 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
                 headers['User-Agent'].should == @opts.http.request_headers['User-Agent']
@@ -276,30 +292,30 @@ describe Arachni::HTTP::Client do
         context 'when the authorized_by option is set' do
             it 'includes it in the From field' do
                 @opts.authorized_by = 'The Dude'
-                @http.reset
-                @http.headers['From'].should == @opts.authorized_by
+                subject.reset
+                subject.headers['From'].should == @opts.authorized_by
             end
         end
     end
 
     describe '#cookie_jar' do
         it 'provides access to the Cookie-jar' do
-            @http.cookie_jar.is_a?( Arachni::HTTP::CookieJar ).should be_true
+            subject.cookie_jar.is_a?( Arachni::HTTP::CookieJar ).should be_true
         end
 
         context 'when Options#http_cookie_jar_filepath is set' do
             it 'adds the contained cookies to the CookieJar' do
                 @opts.http.cookie_jar_filepath = fixtures_path + 'cookies.txt'
-                @http.cookie_jar.cookies.should be_empty
-                @http.reset
-                cookies = @http.cookie_jar.cookies
+                subject.cookie_jar.cookies.should be_empty
+                subject.reset
+                cookies = subject.cookie_jar.cookies
                 cookies.size.should == 4
                 cookies.should == Arachni::Utilities.cookies_from_file( '', @opts.http.cookie_jar_filepath )
             end
             context 'but the path is invalid' do
                 it 'raises Arachni::HTTP::CookieJar::Error::CookieJarFileNotFound' do
                     @opts.http.cookie_jar_filepath = fixtures_path + 'cookies.does_not_exist.txt'
-                    expect{ @http.reset }.to raise_error Arachni::HTTP::CookieJar::Error::CookieJarFileNotFound
+                    expect{ subject.reset }.to raise_error Arachni::HTTP::CookieJar::Error::CookieJarFileNotFound
                 end
             end
         end
@@ -308,9 +324,9 @@ describe Arachni::HTTP::Client do
             it 'adds those cookies to the CookieJar' do
                 cookie_jar_file = fixtures_path + 'cookies.txt'
                 @opts.http.cookies = Arachni::Utilities.cookies_from_file( '', cookie_jar_file )
-                @http.cookie_jar.cookies.should be_empty
-                @http.reset
-                cookies = @http.cookie_jar.cookies
+                subject.cookie_jar.cookies.should be_empty
+                subject.reset
+                cookies = subject.cookie_jar.cookies
                 cookies.size.should == 4
                 cookies.should == @opts.http.cookies
             end
@@ -319,9 +335,9 @@ describe Arachni::HTTP::Client do
         context 'when Options#http_cookie_string is set' do
             it 'parses the string and add those cookies to the CookieJar' do
                 @opts.http.cookie_string = 'my_cookie_name=val1;blah_name=val2; stuff=%25blah; another_name=another_val'
-                @http.cookie_jar.cookies.should be_empty
-                @http.reset
-                cookies = @http.cookie_jar.cookies
+                subject.cookie_jar.cookies.should be_empty
+                subject.reset
+                cookies = subject.cookie_jar.cookies
                 cookies.size.should == 4
                 cookies.first.name.should == 'my_cookie_name'
                 cookies.first.value.should == 'val1'
@@ -338,44 +354,44 @@ describe Arachni::HTTP::Client do
     describe '#cookies' do
         it 'returns the current cookies' do
             @opts.http.cookie_string = 'my_cookie_name=val1;blah_name=val2; another_name=another_val'
-            @http.cookie_jar.cookies.should be_empty
-            @http.reset
-            @http.cookies.size.should == 3
-            @http.cookies.should == @http.cookie_jar.cookies
+            subject.cookie_jar.cookies.should be_empty
+            subject.reset
+            subject.cookies.size.should == 3
+            subject.cookies.should == subject.cookie_jar.cookies
         end
     end
 
     describe '#after_run' do
         it 'sets blocks to be called after #run' do
             called = false
-            @http.after_run { called = true }
-            @http.run
+            subject.after_run { called = true }
+            subject.run
             called.should be_true
 
             called = false
-            @http.run
+            subject.run
             called.should be_false
         end
 
         context 'when the callback creates new requests and nested callbacks' do
             it 'run these too' do
                 called = false
-                @http.after_run do
-                    @http.after_run { called = true }
+                subject.after_run do
+                    subject.after_run { called = true }
                 end
-                @http.run
+                subject.run
                 called.should be_false
 
                 called = false
-                @http.after_run do
-                    @http.get
-                    @http.after_run { called = true }
+                subject.after_run do
+                    subject.get
+                    subject.after_run { called = true }
                 end
-                @http.run
+                subject.run
                 called.should be_true
 
                 called = false
-                @http.run
+                subject.run
                 called.should be_false
             end
         end
@@ -383,36 +399,36 @@ describe Arachni::HTTP::Client do
 
     describe '#run' do
         it 'performs the queues requests' do
-            @http.run
+            subject.run
         end
 
 
         it 'calls the after_run_persistent callbacks EVERY TIME' do
             called = false
-            @http.after_run_persistent { called = true }
-            @http.run
+            subject.after_run_persistent { called = true }
+            subject.run
             called.should be_true
             called = false
-            @http.run
+            subject.run
             called.should be_true
         end
 
         it 'calculates the burst average response time' do
-            @http.run
-            @http.burst_runtime.should > 0
+            subject.run
+            subject.burst_runtime.should > 0
         end
 
         it 'updates burst_response_time_sum, burst_response_count,' +
                ' burst_average_response_time and burst_responses_per_second' +
                ' during runtime and resets them afterwards' do
-            @http.total_runtime.to_i.should          == 0
-            @http.total_average_response_time.should == 0
-            @http.total_responses_per_second.should  == 0
+            subject.total_runtime.to_i.should          == 0
+            subject.total_average_response_time.should == 0
+            subject.total_responses_per_second.should  == 0
 
-            @http.burst_response_time_sum.should     == 0
-            @http.burst_response_count.should        == 0
-            @http.burst_average_response_time.should == 0
-            @http.burst_responses_per_second.should  == 0
+            subject.burst_response_time_sum.should     == 0
+            subject.burst_response_count.should        == 0
+            subject.burst_average_response_time.should == 0
+            subject.burst_responses_per_second.should  == 0
 
             total_runtime               = 0
             total_average_response_time = 0
@@ -424,19 +440,19 @@ describe Arachni::HTTP::Client do
             burst_responses_per_second  = 0
 
             20.times do
-                @http.get do
-                    total_runtime               = @http.total_runtime
-                    total_average_response_time = @http.total_average_response_time
-                    total_responses_per_second  = @http.total_responses_per_second
+                subject.get do
+                    total_runtime               = subject.total_runtime
+                    total_average_response_time = subject.total_average_response_time
+                    total_responses_per_second  = subject.total_responses_per_second
 
-                    burst_response_time_sum     = @http.burst_response_time_sum
-                    burst_response_count        = @http.burst_response_count
-                    burst_average_response_time = @http.burst_average_response_time
-                    burst_responses_per_second  = @http.burst_responses_per_second
+                    burst_response_time_sum     = subject.burst_response_time_sum
+                    burst_response_count        = subject.burst_response_count
+                    burst_average_response_time = subject.burst_average_response_time
+                    burst_responses_per_second  = subject.burst_responses_per_second
                 end
             end
 
-            @http.run
+            subject.run
 
             total_runtime.should               > 0
             total_average_response_time.should > 0
@@ -454,59 +470,59 @@ describe Arachni::HTTP::Client do
             cnt = 0
             n = 50
             n.times do |i|
-                @http.get {
+                subject.get {
                     cnt += 1
-                    @http.abort
+                    subject.abort
                 }
             end
-            @http.run
+            subject.run
             cnt.should < n
         end
     end
 
     describe '#max_concurrency' do
         it 'defaults to 20' do
-            @http.max_concurrency.should == 20
+            subject.max_concurrency.should == 20
         end
         it 'respects the http_request_concurrency option' do
             @opts.http.request_concurrency = 50
-            @http.reset
-            @http.max_concurrency.should == 50
+            subject.reset
+            subject.max_concurrency.should == 50
         end
     end
 
     describe '#max_concurrency=' do
         it 'sets the max_concurrency setting' do
-            @http.max_concurrency.should_not == 30
-            @http.max_concurrency = 30
-            @http.max_concurrency.should == 30
+            subject.max_concurrency.should_not == 30
+            subject.max_concurrency = 30
+            subject.max_concurrency.should == 30
         end
     end
 
     describe '#request' do
         it 'uses the URL in Arachni::Options.instance.url as a default' do
             url = nil
-            @http.request{ |res| url = res.url }
-            @http.run
+            subject.request{ |res| url = res.url }
+            subject.run
             url.start_with?( @opts.url.to_s ).should be_true
         end
 
         it 'raises exception when no URL is available' do
             @opts.reset
-            @http.reset
-            expect { @http.request }.to raise_error
+            subject.reset
+            expect { subject.request }.to raise_error
         end
 
         it "fills in #{Arachni::HTTP::Request}#headers_string" do
             host = "#{Arachni::URI(@url).host}:#{Arachni::URI(@url).port}"
-            @http.request( @url, mode: :sync ).request.headers_string.should ==
+            subject.request( @url, mode: :sync ).request.headers_string.should ==
                 "GET / HTTP/1.1\r\nHost: #{host}\r\nAccept-Encoding: gzip, " +
                     "deflate\r\nUser-Agent: Arachni/v1.0dev\r\nAccept: text/html," +
                     "application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n\r\n"
         end
 
         it "fills in #{Arachni::HTTP::Request}#effective_body" do
-            @http.request( @url,
+            subject.request( @url,
                body: {
                    '1' => ' 2',
                    ' 3' => '4'
@@ -520,22 +536,22 @@ describe Arachni::HTTP::Client do
             context 'when Options#http_response_max_size is specified' do
                 it 'ignores bodies of responses which are larger than specified' do
                     @opts.http.response_max_size = 0
-                    @http.request( @url + '/http_response_max_size',
+                    subject.request( @url + '/http_response_max_size',
                                    mode: :sync
                     ).body.should be_empty
 
                     @opts.http.response_max_size = 1
-                    @http.request( @url + '/http_response_max_size',
+                    subject.request( @url + '/http_response_max_size',
                                    mode: :sync
                     ).body.should be_empty
 
                     @opts.http.response_max_size = 999999
-                    @http.request( @url + '/http_response_max_size',
+                    subject.request( @url + '/http_response_max_size',
                                    mode: :sync
                     ).body.should be_empty
 
                     @opts.http.response_max_size = 1000000
-                    @http.request( @url + '/http_response_max_size',
+                    subject.request( @url + '/http_response_max_size',
                                    mode: :sync
                     ).body.should_not be_empty
                 end
@@ -543,22 +559,22 @@ describe Arachni::HTTP::Client do
 
             context 'when specified' do
                 it 'ignores bodies of responses which are larger than specified' do
-                    @http.request( @url + '/http_response_max_size',
+                    subject.request( @url + '/http_response_max_size',
                                    mode: :sync,
                                    response_max_size: 0
                     ).body.should be_empty
 
-                    @http.request( @url + '/http_response_max_size',
+                    subject.request( @url + '/http_response_max_size',
                                    mode: :sync,
                                    response_max_size: 1
                     ).body.should be_empty
 
-                    @http.request( @url + '/http_response_max_size',
+                    subject.request( @url + '/http_response_max_size',
                                    mode: :sync,
                                    response_max_size: 999999
                     ).body.should be_empty
 
-                    @http.request( @url + '/http_response_max_size',
+                    subject.request( @url + '/http_response_max_size',
                                    mode: :sync,
                                    response_max_size: 1000000
                     ).body.should_not be_empty
@@ -567,7 +583,7 @@ describe Arachni::HTTP::Client do
 
             context 'by default' do
                 it 'does not enforce a limit' do
-                    @http.request( @url + '/http_response_max_size',
+                    subject.request( @url + '/http_response_max_size',
                                    mode: :sync
                     ).body.should_not be_empty
                 end
@@ -578,21 +594,21 @@ describe Arachni::HTTP::Client do
             context true do
                 it 'skips the cookie-jar' do
                     body = nil
-                    @http.request( @url + '/cookies', no_cookiejar: true ) { |res| body = res.body }
-                    @http.run
+                    subject.request( @url + '/cookies', no_cookiejar: true ) { |res| body = res.body }
+                    subject.run
                     YAML.load( body ).should == {}
                 end
             end
             context false do
                 it 'uses the cookiejar' do
                     @opts.http.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
-                    @http.cookie_jar.cookies.should be_empty
-                    @http.reset
+                    subject.cookie_jar.cookies.should be_empty
+                    subject.reset
 
                     body = nil
 
-                    @http.request( @url + '/cookies', no_cookiejar: false ) { |res| body = res.body }
-                    @http.run
+                    subject.request( @url + '/cookies', no_cookiejar: false ) { |res| body = res.body }
+                    subject.run
                     YAML.load( body ).should == {
                         'my_cookie_name' => 'val1',
                         'blah_name' => 'val2',
@@ -602,15 +618,15 @@ describe Arachni::HTTP::Client do
                 context 'when custom cookies are provided' do
                     it 'merges them with the cookiejar and override it' do
                         @opts.http.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
-                        @http.cookie_jar.cookies.should be_empty
-                        @http.reset
+                        subject.cookie_jar.cookies.should be_empty
+                        subject.reset
 
                         body = nil
 
                         custom_cookies = { 'newcookie' => 'newval', 'blah_name' => 'val3' }
-                        @http.request( @url + '/cookies', cookies: custom_cookies,
+                        subject.request( @url + '/cookies', cookies: custom_cookies,
                                        no_cookiejar: false ) { |res| body = res.body }
-                        @http.run
+                        subject.run
                         YAML.load( body ).should == {
                             'my_cookie_name' => 'val1',
                             'blah_name' => 'val3',
@@ -623,13 +639,13 @@ describe Arachni::HTTP::Client do
             context 'nil' do
                 it 'defaults to false' do
                     @opts.http.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
-                    @http.cookie_jar.cookies.should be_empty
-                    @http.reset
+                    subject.cookie_jar.cookies.should be_empty
+                    subject.reset
 
                     body = nil
 
-                    @http.request( @url + '/cookies' ) { |res| body = res.body }
-                    @http.run
+                    subject.request( @url + '/cookies' ) { |res| body = res.body }
+                    subject.run
                     YAML.load( body ).should == {
                         'my_cookie_name' => 'val1',
                         'blah_name' => 'val2',
@@ -643,8 +659,8 @@ describe Arachni::HTTP::Client do
             it 'uses its value as a request body' do
                 req_body = 'heyaya'
                 body = nil
-                @http.request( @url + '/body', method: :post, body: req_body ) { |res| body = res.body }
-                @http.run
+                subject.request( @url + '/body', method: :post, body: req_body ) { |res| body = res.body }
+                subject.run
                 body.should == req_body
             end
         end
@@ -653,16 +669,16 @@ describe Arachni::HTTP::Client do
             describe 'nil' do
                 it 'performs a GET HTTP request' do
                     body = nil
-                    @http.request( @url ) { |res| body = res.body }
-                    @http.run
+                    subject.request( @url ) { |res| body = res.body }
+                    subject.run
                     body.should == 'GET'
                 end
             end
             describe :get do
                 it 'performs a GET HTTP request' do
                     body = nil
-                    @http.request( @url, method: :get ) { |res| body = res.body }
-                    @http.run
+                    subject.request( @url, method: :get ) { |res| body = res.body }
+                    subject.run
                     body.should == 'GET'
                 end
 
@@ -674,8 +690,8 @@ describe Arachni::HTTP::Client do
                             'param2' => 'value 2'
                         }
                         url = @url + '/echo?param1=value1&param3=value3'
-                        @http.request( url, parameters: params, method: :get ){ |res| body = res.body }
-                        @http.run
+                        subject.request( url, parameters: params, method: :get ){ |res| body = res.body }
+                        subject.run
                         YAML.load( body ).should eq params.merge( 'param3' => 'value3' )
                     end
                 end
@@ -683,32 +699,32 @@ describe Arachni::HTTP::Client do
             describe :post do
                 it 'performs a POST HTTP request' do
                     body = nil
-                    @http.request( @url, method: :post ) { |res| body = res.body }
-                    @http.run
+                    subject.request( @url, method: :post ) { |res| body = res.body }
+                    subject.run
                     body.should == 'POST'
                 end
             end
             describe :put do
                 it 'performs a PUT HTTP request' do
                     body = nil
-                    @http.request( @url, method: :put ) { |res| body = res.body }
-                    @http.run
+                    subject.request( @url, method: :put ) { |res| body = res.body }
+                    subject.run
                     body.should == 'PUT'
                 end
             end
             describe :options do
                 it 'performs a OPTIONS HTTP request' do
                     body = nil
-                    @http.request( @url, method: :options ) { |res| body = res.body }
-                    @http.run
+                    subject.request( @url, method: :options ) { |res| body = res.body }
+                    subject.run
                     body.should == 'OPTIONS'
                 end
             end
             describe :delete do
                 it 'performs a POST HTTP request' do
                     body = nil
-                    @http.request( @url, method: :delete ) { |res| body = res.body }
-                    @http.run
+                    subject.request( @url, method: :delete ) { |res| body = res.body }
+                    subject.run
                     body.should == 'DELETE'
                 end
             end
@@ -718,16 +734,16 @@ describe Arachni::HTTP::Client do
             it 'specifies the query params as a hash' do
                 body = nil
                 params = { 'param' => 'value' }
-                @http.request( @url + '/echo', parameters: params ) { |res| body = res.body }
-                @http.run
+                subject.request( @url + '/echo', parameters: params ) { |res| body = res.body }
+                subject.run
                 params.should eq YAML.load( body )
             end
 
             it 'preserves nullbytes' do
                 body = nil
                 params = { "pa\0ram" => "v\0alue" }
-                @http.request( @url + '/echo', parameters: params ) { |res| body = res.body }
-                @http.run
+                subject.request( @url + '/echo', parameters: params ) { |res| body = res.body }
+                subject.run
                 params.should eq YAML.load( body )
             end
         end
@@ -736,16 +752,16 @@ describe Arachni::HTTP::Client do
             it 'properly encodes special characters' do
                 body = nil
                 params = { '% param\ +=&;' => '% value\ +=&;', 'nil' => nil }
-                @http.request( @url + '/echo', method: :post, body: params ) { |res| body = res.body }
-                @http.run
+                subject.request( @url + '/echo', method: :post, body: params ) { |res| body = res.body }
+                subject.run
                 YAML.load( body ).should == { '% param\ +=&;' => '% value\ +=&;', 'nil' => '' }
             end
 
             it 'preserves nullbytes' do
                 body = nil
                 params = { "st\0uff" => "test\0" }
-                @http.request( @url + '/echo', method: :post, body: params, ) { |res| body = res.body }
-                @http.run
+                subject.request( @url + '/echo', method: :post, body: params, ) { |res| body = res.body }
+                subject.run
                 YAML.load( body ).should == params
             end
         end
@@ -754,21 +770,21 @@ describe Arachni::HTTP::Client do
             describe 'nil' do
                 it 'runs without a timeout' do
                     timed_out = false
-                    @http.request( @url + '/sleep' ) { |res| timed_out = res.timed_out? }
-                    @http.run
+                    subject.request( @url + '/sleep' ) { |res| timed_out = res.timed_out? }
+                    subject.run
                     timed_out.should be_false
                 end
             end
             describe Numeric do
                 it 'sets a timeout value in milliseconds' do
                     timed_out = false
-                    @http.request( @url + '/sleep', timeout: 4_000 ) { |res| timed_out = res.timed_out? }
-                    @http.run
+                    subject.request( @url + '/sleep', timeout: 4_000 ) { |res| timed_out = res.timed_out? }
+                    subject.run
                     timed_out.should be_true
 
                     timed_out = false
-                    @http.request( @url + '/sleep', timeout: 6_000 ) { |res| timed_out = res.timed_out? }
-                    @http.run
+                    subject.request( @url + '/sleep', timeout: 6_000 ) { |res| timed_out = res.timed_out? }
+                    subject.run
                     timed_out.should be_false
                 end
             end
@@ -778,16 +794,16 @@ describe Arachni::HTTP::Client do
             it 'uses them to authenticate' do
                 # first fail to make sure that our test server is actually working properly
                 code = 0
-                @http.get( @opts.url + 'auth/weird-chars' ) { |res| code = res.code }
-                @http.run
+                subject.get( @opts.url + 'auth/weird-chars' ) { |res| code = res.code }
+                subject.run
                 code.should == 401
 
                 response = nil
-                @http.get(
+                subject.get(
                     @opts.url + 'auth/weird-chars',
                     username: 'u se rname$@#@#%$3#@%@#',
                     password: 'p a  :wo\'rd$@#@#%$3#@%@#' ) { |res| response = res }
-                @http.run
+                subject.run
                 response.code.should == 200
                 response.body.should == 'authenticated!'
             end
@@ -797,12 +813,12 @@ describe Arachni::HTTP::Client do
             describe 'nil' do
                 it 'uses te cookies in the CookieJar' do
                     @opts.http.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
-                    @http.cookie_jar.cookies.should be_empty
-                    @http.reset
+                    subject.cookie_jar.cookies.should be_empty
+                    subject.reset
 
                     body = nil
-                    @http.request( @url + '/cookies' ) { |res| body = res.body }
-                    @http.run
+                    subject.request( @url + '/cookies' ) { |res| body = res.body }
+                    subject.run
                     YAML.load( body ).should == {
                         'my_cookie_name' => 'val1',
                         'blah_name' => 'val2',
@@ -821,10 +837,10 @@ describe Arachni::HTTP::Client do
                         inputs: { 'key2' => 'val2' }
                     )
 
-                    @http.cookie_jar.update( cookies )
+                    subject.cookie_jar.update( cookies )
                     body = nil
-                    @http.request( @url + '/cookies' ) { |res| body = res.body }
-                    @http.run
+                    subject.request( @url + '/cookies' ) { |res| body = res.body }
+                    subject.run
                     YAML.load( body ).should == { 'key2' => 'val2' }
                 end
             end
@@ -832,8 +848,8 @@ describe Arachni::HTTP::Client do
                 it 'uses the key-value pairs as cookies' do
                     cookies = { 'name' => 'val' }
                     body = nil
-                    @http.request( @url + '/cookies', cookies: cookies ) { |res| body = res.body }
-                    @http.run
+                    subject.request( @url + '/cookies', cookies: cookies ) { |res| body = res.body }
+                    subject.run
                     YAML.load( body ).should == cookies
                 end
 
@@ -848,8 +864,8 @@ describe Arachni::HTTP::Client do
                         }
 
                         body = nil
-                        @http.request( @url + '/cookies', options ) { |res| body = res.body }
-                        @http.run
+                        subject.request( @url + '/cookies', options ) { |res| body = res.body }
+                        subject.run
 
                         YAML.load( body ).should == { 'test' => '1', 'name' => 'val' }
                     end
@@ -859,8 +875,8 @@ describe Arachni::HTTP::Client do
             it 'preserves nullbytess' do
                 cookies = { "name\0" => "val\0" }
                 body = nil
-                @http.request( @url + '/cookies', cookies: cookies ) { |res| body = res.body }
-                @http.run
+                subject.request( @url + '/cookies', cookies: cookies ) { |res| body = res.body }
+                subject.run
                 YAML.load( body ).should == cookies
             end
 
@@ -870,32 +886,32 @@ describe Arachni::HTTP::Client do
             describe 'nil' do
                 it 'performs the request asynchronously' do
                     performed = false
-                    @http.request( @url ) { performed = true }
-                    @http.run
+                    subject.request( @url ) { performed = true }
+                    subject.run
                     performed.should be_true
                 end
             end
             describe :async do
                 it 'performs the request asynchronously' do
                     performed = false
-                    @http.request( @url, mode: :sync ) { performed = true }
-                    @http.run
+                    subject.request( @url, mode: :sync ) { performed = true }
+                    subject.run
                     performed.should be_true
                 end
             end
             describe :sync do
                 it 'performs the request synchronously and returns the response' do
-                    @http.request( @url, mode: :sync ).should be_kind_of Arachni::HTTP::Response
+                    subject.request( @url, mode: :sync ).should be_kind_of Arachni::HTTP::Response
                 end
 
                 it 'assigns a #request to the returned response' do
-                    @http.request( @url, mode: :sync ).request.should be_kind_of Arachni::HTTP::Request
+                    subject.request( @url, mode: :sync ).request.should be_kind_of Arachni::HTTP::Request
                 end
 
                 context 'when a block is given' do
                     it 'passes the response to it as well' do
                         called = []
-                        response = @http.request( @url, mode: :sync ) do |r|
+                        response = subject.request( @url, mode: :sync ) do |r|
                             called << r
                         end
 
@@ -910,10 +926,10 @@ describe Arachni::HTTP::Client do
             describe 'nil' do
                 it 'uses the default headers' do
                     body = nil
-                    @http.request( @url + '/headers' ) { |res| body = res.body }
-                    @http.run
+                    subject.request( @url + '/headers' ) { |res| body = res.body }
+                    subject.run
                     sent_headers = YAML.load( body )
-                    @http.headers.each { |k, v| sent_headers[k].should == v }
+                    subject.headers.each { |k, v| sent_headers[k].should == v }
                 end
             end
 
@@ -921,10 +937,10 @@ describe Arachni::HTTP::Client do
                 it 'merges them with the default headers' do
                     headers = { 'My-Header' => 'my value'}
                     body = nil
-                    @http.request( @url + '/headers', headers: headers ) { |res| body = res.body }
-                    @http.run
+                    subject.request( @url + '/headers', headers: headers ) { |res| body = res.body }
+                    subject.run
                     sent_headers = YAML.load( body )
-                    @http.headers.merge( headers ).each { |k, v| sent_headers[k].should == v }
+                    subject.headers.merge( headers ).each { |k, v| sent_headers[k].should == v }
                 end
             end
         end
@@ -937,10 +953,10 @@ describe Arachni::HTTP::Client do
                         url: @url,
                         inputs: { 'key2' => 'val2' }
                     )
-                    @http.update_cookies( cookies )
-                    @http.request( @url + '/update_cookies' )
-                    @http.run
-                    @http.cookies.should == cookies
+                    subject.update_cookies( cookies )
+                    subject.request( @url + '/update_cookies' )
+                    subject.run
+                    subject.cookies.should == cookies
                 end
             end
 
@@ -951,10 +967,10 @@ describe Arachni::HTTP::Client do
                         url: @url,
                         inputs: { 'key2' => 'val2' }
                     )
-                    @http.update_cookies( cookies )
-                    @http.request( @url + '/update_cookies', update_cookies: false )
-                    @http.run
-                    @http.cookies.should == cookies
+                    subject.update_cookies( cookies )
+                    subject.request( @url + '/update_cookies', update_cookies: false )
+                    subject.run
+                    subject.cookies.should == cookies
                 end
             end
 
@@ -967,10 +983,10 @@ describe Arachni::HTTP::Client do
                         value:  'val2',
                         domain: Arachni::URI( @url ).domain
                     )
-                    @http.update_cookies( cookies )
-                    @http.request( @url + '/update_cookies', update_cookies: true )
-                    @http.run
-                    @http.cookies.first.value.should == cookies.first.value + ' [UPDATED!]'
+                    subject.update_cookies( cookies )
+                    subject.request( @url + '/update_cookies', update_cookies: true )
+                    subject.run
+                    subject.cookies.first.value.should == cookies.first.value + ' [UPDATED!]'
                 end
             end
         end
@@ -979,8 +995,8 @@ describe Arachni::HTTP::Client do
             describe 'nil' do
                 it 'ignores redirects' do
                     res = nil
-                    @http.request( @url + '/follow_location' ) { |c_res| res = c_res }
-                    @http.run
+                    subject.request( @url + '/follow_location' ) { |c_res| res = c_res }
+                    subject.run
                     res.url.start_with?( @url + '/follow_location' ).should be_true
                     res.body.should == ''
                 end
@@ -988,8 +1004,8 @@ describe Arachni::HTTP::Client do
             describe false do
                 it 'ignores redirects' do
                     res = nil
-                    @http.request( @url + '/follow_location', follow_location: false ) { |c_res| res = c_res }
-                    @http.run
+                    subject.request( @url + '/follow_location', follow_location: false ) { |c_res| res = c_res }
+                    subject.run
                     res.url.start_with?( @url + '/follow_location' ).should be_true
                     res.body.should == ''
                 end
@@ -997,8 +1013,8 @@ describe Arachni::HTTP::Client do
             describe true do
                 it 'follows redirects' do
                     res = nil
-                    @http.request( @url + '/follow_location', follow_location: true ) { |c_res| res = c_res }
-                    @http.run
+                    subject.request( @url + '/follow_location', follow_location: true ) { |c_res| res = c_res }
+                    subject.run
                     res.url.should == @url + '/redir_2'
                     res.body.should == "Welcome to redir_2!"
                 end
@@ -1009,8 +1025,8 @@ describe Arachni::HTTP::Client do
     describe '#get' do
         it 'performs a GET request' do
             body = nil
-            @http.get { |res| body = res.body }
-            @http.run
+            subject.get { |res| body = res.body }
+            subject.run
             body.should == 'GET'
         end
     end
@@ -1018,16 +1034,16 @@ describe Arachni::HTTP::Client do
     describe '#post' do
         it 'performs a POST request' do
             body = nil
-            @http.post { |res| body = res.body }
-            @http.run
+            subject.post { |res| body = res.body }
+            subject.run
             body.should == 'POST'
         end
 
         it 'passes :parameters as a #request :body' do
             body = nil
             params = { '% param\ +=&;' => '% value\ +=&;', 'nil' => nil }
-            @http.post( @url + '/echo', parameters: params ) { |res| body = res.body }
-            @http.run
+            subject.post( @url + '/echo', parameters: params ) { |res| body = res.body }
+            subject.run
             YAML.load( body ).should == { '% param\ +=&;' => '% value\ +=&;', 'nil' => '' }
         end
     end
@@ -1036,8 +1052,8 @@ describe Arachni::HTTP::Client do
         it 'performs a GET request' do
             body = nil
             cookies = { 'name' => "v%+;al\00=" }
-            @http.cookie( @url + '/cookies', parameters: cookies ) { |res| body = res.body }
-            @http.run
+            subject.cookie( @url + '/cookies', parameters: cookies ) { |res| body = res.body }
+            subject.run
             YAML.load( body ).should == cookies
         end
     end
@@ -1046,8 +1062,8 @@ describe Arachni::HTTP::Client do
         it 'performs a GET request' do
             body = nil
             headers = { 'name' => 'val' }
-            @http.header( @url + '/headers', parameters: headers ) { |res| body = res.body }
-            @http.run
+            subject.header( @url + '/headers', parameters: headers ) { |res| body = res.body }
+            subject.run
             YAML.load( body )['Name'].should == headers.values.first
         end
     end
@@ -1061,8 +1077,8 @@ describe Arachni::HTTP::Client do
                 r = response
             end
 
-            @http.queue request
-            @http.run
+            subject.queue request
+            subject.run
 
             r.should be_kind_of Arachni::HTTP::Response
         end
@@ -1076,9 +1092,9 @@ describe Arachni::HTTP::Client do
                 inputs: { 'key2' => 'val2' }
             )
 
-            @http.cookies.should be_empty
-            @http.update_cookies( cookies )
-            @http.cookies.should == cookies
+            subject.cookies.should be_empty
+            subject.update_cookies( cookies )
+            subject.cookies.should == cookies
         end
     end
 
@@ -1093,11 +1109,11 @@ describe Arachni::HTTP::Client do
 
             callback_cookies  = nil
             callback_response = nil
-            @http.on_new_cookies do |cookies, res|
+            subject.on_new_cookies do |cookies, res|
                 callback_cookies  = cookies
                 callback_response = res
             end
-            @http.parse_and_set_cookies( res )
+            subject.parse_and_set_cookies( res )
 
             callback_cookies.should == cookies
             callback_response.should == res
@@ -1114,9 +1130,9 @@ describe Arachni::HTTP::Client do
             res = Arachni::HTTP::Response.new( url: @url, headers: { 'Set-Cookie' => 'name=value' } )
 
             @opts.http.cookies.should be_empty
-            @http.cookies.should be_empty
-            @http.parse_and_set_cookies( res )
-            @http.cookies.should == cookies
+            subject.cookies.should be_empty
+            subject.parse_and_set_cookies( res )
+            subject.cookies.should == cookies
         end
     end
 
@@ -1126,11 +1142,11 @@ describe Arachni::HTTP::Client do
         context 'when not dealing with a custom 404 handler' do
             it 'returns false' do
                 res = nil
-                @http.get( @custom_404 + 'not' ) { |c_res| res = c_res }
-                @http.run
+                subject.get( @custom_404 + 'not' ) { |c_res| res = c_res }
+                subject.run
                 bool = false
-                @http.custom_404?( res ) { |c_bool| bool = c_bool }
-                @http.run
+                subject.custom_404?( res ) { |c_bool| bool = c_bool }
+                subject.run
                 bool.should be_false
             end
         end
@@ -1138,11 +1154,11 @@ describe Arachni::HTTP::Client do
         context 'when dealing with a static handler' do
             it 'returns true' do
                 res = nil
-                @http.get( @custom_404 + 'static/crap' ) { |c_res| res = c_res }
-                @http.run
+                subject.get( @custom_404 + 'static/crap' ) { |c_res| res = c_res }
+                subject.run
                 bool = false
-                @http.custom_404?( res ) { |c_bool| bool = c_bool }
-                @http.run
+                subject.custom_404?( res ) { |c_bool| bool = c_bool }
+                subject.run
                 bool.should be_true
             end
         end
@@ -1151,33 +1167,33 @@ describe Arachni::HTTP::Client do
             context 'which includes the requested resource in the response' do
                 it 'returns true' do
                     res = nil
-                    @http.get( @custom_404 + 'dynamic/crap' ) { |c_res| res = c_res }
-                    @http.run
+                    subject.get( @custom_404 + 'dynamic/crap' ) { |c_res| res = c_res }
+                    subject.run
                     bool = false
-                    @http.custom_404?( res ) { |c_bool| bool = c_bool }
-                    @http.run
+                    subject.custom_404?( res ) { |c_bool| bool = c_bool }
+                    subject.run
                     bool.should be_true
                 end
             end
             context 'which includes constantly changing text in the response' do
                 it 'returns true' do
                     res = nil
-                    @http.get( @custom_404 + 'random/crap' ) { |c_res| res = c_res }
-                    @http.run
+                    subject.get( @custom_404 + 'random/crap' ) { |c_res| res = c_res }
+                    subject.run
                     bool = false
-                    @http.custom_404?( res ) { |c_bool| bool = c_bool }
-                    @http.run
+                    subject.custom_404?( res ) { |c_bool| bool = c_bool }
+                    subject.run
                     bool.should be_true
                 end
             end
             context 'which returns a combination of the above' do
                 it 'returns true' do
                     res = nil
-                    @http.get( @custom_404 + 'combo/crap' ) { |c_res| res = c_res }
-                    @http.run
+                    subject.get( @custom_404 + 'combo/crap' ) { |c_res| res = c_res }
+                    subject.run
                     bool = false
-                    @http.custom_404?( res ) { |c_bool| bool = c_bool }
-                    @http.run
+                    subject.custom_404?( res ) { |c_bool| bool = c_bool }
+                    subject.run
                     bool.should be_true
                 end
             end
