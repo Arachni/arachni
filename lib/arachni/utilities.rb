@@ -405,6 +405,15 @@ module Utilities
         end
     end
 
+    # @param    [String, Float, Integer]    seconds
+    # @return    [String]
+    #   Time in `00:00:00` (`hours:minutes:seconds`) format.
+    def secs_to_hms( seconds )
+        seconds = seconds.to_i
+        [seconds / 3600, seconds / 60 % 60, seconds % 60].
+            map { |t| t.to_s.rjust( 2, '0' ) }.join( ':' )
+    end
+
     #
     # Wraps the "block" in exception handling code and runs it.
     #

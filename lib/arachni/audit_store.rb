@@ -9,6 +9,7 @@ module Arachni
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class AuditStore
+    include Utilities
 
     # @return    [String]    {Arachni::VERSION}
     attr_accessor :version
@@ -193,15 +194,6 @@ class AuditStore
     # @return    [Hash]
     def prepare_options( options )
         options.to_hash.symbolize_keys
-    end
-
-    # @param    [String, Float, Integer]    seconds
-    # @return    [String]
-    #   Time in `00:00:00` (`hours:minutes:seconds`) format.
-    def secs_to_hms( seconds )
-        seconds = seconds.to_i
-        [seconds / 3600, seconds / 60 % 60, seconds % 60].
-            map { |t| t.to_s.rjust( 2, '0' ) }.join( ':' )
     end
 
 end

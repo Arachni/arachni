@@ -84,7 +84,7 @@ class Instance
         print_issues
         print_line
 
-        print_stats
+        print_statistics
         print_line
 
         if has_errors?
@@ -205,7 +205,7 @@ class Instance
         print_info "Report saved at: #{filepath} [#{filesize}MB]"
 
         print_line
-        print_stats
+        print_statistics
         print_line
     end
 
@@ -213,56 +213,52 @@ class Instance
         @instance.service.shutdown
     end
 
-    def stats
-        progress[:stats]
+    def statistics
+        progress[:statistics]
     end
 
     def status
         progress[:status]
     end
 
-    def print_stats
+    def print_statistics
         print_info "Status: #{status.to_s.capitalize}"
 
-        sitemap_az = stats[:sitemap_size]
-        if status == 'crawling'
-            print_info "Discovered #{sitemap_az} pages and counting."
-        elsif status == 'auditing'
-            print_info "Discovered #{sitemap_az} pages."
-        end
+        print_info "Discovered #{statistics[:found_pages]} pages thus far."
         print_line
 
-        print_info "Sent #{stats[:requests]} requests."
-        print_info "Received and analyzed #{stats[:responses]} responses."
-        print_info 'In ' + stats[:time].to_s
-        print_info 'Average: ' + stats[:avg].to_s + ' requests/second.'
+        http = statistics[:http]
+        print_info "Sent #{http[:request_count]} requests."
+        print_info "Received and analyzed #{http[:response_count]} responses."
+        print_info( "In #{secs_to_hms( statistics[:runtime] )}" )
+        print_info "Average: #{http[:total_responses_per_second]} requests/second."
 
         print_line
-        if stats[:current_pages]
+        if statistics[:current_pages]
             print_info 'Currently auditing:'
 
-            stats[:current_pages].each.with_index do |url, i|
-                cnt = "[#{i + 1}]".rjust( stats[:current_pages].size.to_s.size + 4 )
+            statistics[:current_pages].each.with_index do |url, i|
+                cnt = "[#{i + 1}]".rjust( statistics[:current_pages].size.to_s.size + 4 )
 
-                if !url.to_s.empty?
-                    print_info "#{cnt} #{url}"
+                if url.to_s.empty?
+                    print_info "#{cnt} Idle"
                 else
-                    print_info "#{cnt} Insufficient audit workload"
+                    print_info "#{cnt} #{url}"
                 end
             end
 
             print_line
         else
-            print_info "Currently auditing           #{stats[:current_page]}"
+            print_info "Currently auditing           #{statistics[:current_page]}"
         end
 
-        print_info "Burst response time total    #{stats[:curr_res_time]}"
-        print_info "Burst response count total   #{stats[:curr_res_cnt]}"
-        print_info "Burst average response time  #{stats[:average_res_time]}"
-        print_info "Burst average                #{stats[:curr_avg]} requests/second"
-        print_info "Timed-out requests           #{stats[:time_out_count]}"
+        print_info "Burst response time sum      #{http[:burst_response_time_sum]} seconds"
+        print_info "Burst response count total   #{http[:burst_response_count]}"
+        print_info "Burst average response time  #{http[:burst_average_response_time]} seconds"
+        print_info "Burst average                #{http[:burst_responses_per_second]} requests/second"
+        print_info "Timed-out requests           #{http[:time_out_count]}"
         print_info "Original max concurrency     #{@opts.http.request_concurrency}"
-        print_info "Throttled max concurrency    #{stats[:max_concurrency]}"
+        print_info "Throttled max concurrency    #{http[:max_concurrency]}"
     end
 
     def parse_cookie_jar( jar )

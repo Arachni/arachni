@@ -66,7 +66,7 @@ class Framework
 
             @framework.reports.run :stdout, @framework.auditstore
 
-            print_stats
+            print_statistics
         rescue Component::Options::Error::Invalid => e
             print_error e
             print_line
@@ -83,38 +83,39 @@ class Framework
         end
     end
 
-    def print_stats( unmute = false )
-        stats = @framework.stats
+    def print_statistics( unmute = false )
+        statistics = @framework.statistics
+        http = statistics[:http]
 
         refresh_line nil, unmute
-        refresh_info( "Audited #{stats[:auditmap_size]} pages.", unmute )
+        refresh_info( "Audited #{statistics[:audited_pages]} pages.", unmute )
 
         if @framework.opts.scope.page_limit
             refresh_info( "Audit limited to a max of #{@framework.opts.scope.page_limit} " +
-                          "pages.", unmute )
+                          'pages.', unmute )
         end
 
         refresh_line nil, unmute
 
-        refresh_info( "Sent #{stats[:requests]} requests.", unmute )
-        refresh_info( "Received and analyzed #{stats[:responses]} responses.", unmute )
-        refresh_info( 'In ' + stats[:time], unmute )
+        refresh_info( "Sent #{statistics[:http][:request_count]} requests.", unmute )
+        refresh_info( "Received and analyzed #{statistics[:http][:response_count]} responses.", unmute )
+        refresh_info( "In #{secs_to_hms( statistics[:runtime] )}", unmute )
 
-        avg = "Average: #{stats[:avg].to_s} requests/second."
+        avg = "Average: #{http[:total_responses_per_second].to_s} requests/second."
         refresh_info( avg, unmute )
 
         refresh_line nil, unmute
-        if stats[:current_page] && !stats[:current_page].empty?
-            refresh_info( "Currently auditing           #{stats[:current_page]}", unmute )
+        if !statistics[:current_page].to_s.empty?
+            refresh_info( "Currently auditing          #{statistics[:current_page]}", unmute )
         end
 
-        refresh_info( "Burst response time total    #{stats[:curr_res_time]}", unmute )
-        refresh_info( "Burst response count total   #{stats[:curr_res_cnt]} ", unmute )
-        refresh_info( "Burst average response time  #{stats[:average_res_time]}", unmute )
-        refresh_info( "Burst average                #{stats[:curr_avg]} requests/second", unmute )
-        refresh_info( "Timed-out requests           #{stats[:time_out_count]}", unmute )
-        refresh_info( "Original max concurrency     #{options.http.request_concurrency}", unmute )
-        refresh_info( "Throttled max concurrency    #{stats[:max_concurrency]}", unmute )
+        refresh_info( "Burst response time sum     #{http[:burst_response_time_sum]} seconds", unmute )
+        refresh_info( "Burst response count        #{http[:burst_response_count]}", unmute )
+        refresh_info( "Burst average response time #{http[:burst_average_response_time]} seconds", unmute )
+        refresh_info( "Burst average               #{http[:burst_responses_per_second]} requests/second", unmute )
+        refresh_info( "Timed-out requests          #{http[:time_out_count]}", unmute )
+        refresh_info( "Original max concurrency    #{options.http.request_concurrency}", unmute )
+        refresh_info( "Throttled max concurrency   #{http[:max_concurrency]}", unmute )
 
         refresh_line nil, unmute
     end
@@ -142,7 +143,7 @@ class Framework
 
                 begin
                     print_issues( true )
-                    print_stats( true )
+                    print_statistics( true )
                 rescue Exception => e
                     exception_jail{ raise e }
                     raise e
