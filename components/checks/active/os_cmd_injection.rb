@@ -14,7 +14,7 @@
 class Arachni::Checks::OSCmdInjection < Arachni::Check::Base
 
     def self.options
-        @opts ||= {
+        @options ||= {
             regexp: {
                 unix: [
                     /(root|mail):.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im
