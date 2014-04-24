@@ -19,6 +19,7 @@
     - `#audit_page` -- Updated to perform DOM/JS/AJAX analysis on the page and
         feed DOM page snapshots and new paths back to the `Framework`.
     - `#stats` renamed to `#statistics` with the return hash cleaned-up.
+    - `#opts` renamed to `#options`.
 - `Session`
     - Updated to support login forms which depend on DOM/Javascript.
 - Added `State` -- Stores and provides access to the system's state.

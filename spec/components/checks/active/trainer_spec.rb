@@ -24,7 +24,7 @@ describe name_from_filename do
 
     context 'when the link count limit has been reached' do
         it 'does not run' do
-            framework.opts.scope.page_limit = 4
+            framework.options.scope.page_limit = 4
             audit :form, false
 
             urls = framework.auditstore.sitemap

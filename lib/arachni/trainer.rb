@@ -35,7 +35,7 @@ class Trainer
             next if !response.request.train?
 
             if response.redirect?
-                reference_url = @page ? @page.url : @framework.opts.url
+                reference_url = @page ? @page.url : @framework.options.url
                 redirect_url  = to_absolute( response.headers.location, reference_url )
 
                 framework.http.get( redirect_url ) { |res| push res }

@@ -43,7 +43,7 @@ shared_examples_for "component" do
     end
 
     def options
-        framework.opts
+        framework.options
     end
 
     def yaml_load( yaml )

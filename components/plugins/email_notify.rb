@@ -20,7 +20,7 @@ class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
         auditstore = framework.auditstore
 
         opts = {
-            subject:     "Scan for #{framework.opts.url} finished in #{auditstore.delta_time}",
+            subject:     "Scan for #{framework.options.url} finished in #{auditstore.delta_time}",
             body:        "Found #{auditstore.issues.size} unique issues.",
             to:          options[:to],
             cc:          options[:cc],

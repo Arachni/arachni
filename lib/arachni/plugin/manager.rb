@@ -34,7 +34,7 @@ class Manager < Arachni::Component::Manager
 
     # @param    [Arachni::Framework]    framework   Framework instance.
     def initialize( framework )
-        super( framework.opts.paths.plugins, NAMESPACE )
+        super( framework.options.paths.plugins, NAMESPACE )
         @framework = framework
 
         @jobs = {}
@@ -122,7 +122,9 @@ class Manager < Arachni::Component::Manager
                      "Plug-in dependencies not met: #{name} -- #{deps}"
             end
 
-            h[name.to_sym] = prepare_options( name, plugin, @framework.opts.plugins[name] )
+            h[name.to_sym] = prepare_options(
+                name, plugin, @framework.options.plugins[name]
+            )
             h
         end
     end

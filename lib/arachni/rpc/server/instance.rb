@@ -531,16 +531,16 @@ class Instance
         end
 
         if opts.include?( :grid )
-            @framework.opts.dispatcher.grid = opts.delete(:grid)
+            @framework.options.dispatcher.grid = opts.delete(:grid)
         end
 
         if opts.include?( :grid_mode )
-            @framework.opts.dispatcher.grid_mode = opts.delete(:grid_mode)
+            @framework.options.dispatcher.grid_mode = opts.delete(:grid_mode)
         end
 
         @active_options.set( opts )
 
-        if @framework.opts.url.to_s.empty?
+        if @framework.options.url.to_s.empty?
             fail ArgumentError, 'Option \'url\' is mandatory.'
         end
 
@@ -550,7 +550,7 @@ class Instance
         # Starts the scan after all necessary options have been set.
         after = proc { block.call @framework.run; @scan_initializing = false }
 
-        if @framework.opts.dispatcher.grid?
+        if @framework.options.dispatcher.grid?
             # If a Grid scan has been selected then just set us as the master,
             # the Framework will sort out the rest.
             @framework.set_as_master

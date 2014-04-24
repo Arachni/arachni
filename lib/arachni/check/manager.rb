@@ -38,8 +38,7 @@ class Manager < Arachni::Component::Manager
         self.class.reset
 
         @framework = framework
-        @opts = @framework.opts
-        super( @opts.paths.checks, NAMESPACE )
+        super( @framework.options.paths.checks, NAMESPACE )
     end
 
     # Runs all checks against 'page'.

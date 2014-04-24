@@ -47,7 +47,7 @@ class Arachni::Plugins::WAFDetector < Arachni::Plugin::Base
             @unsafe[name] = i.to_s + '_' + bad.join( '_' )
         end
 
-        @url = framework.opts.url
+        @url = framework.options.url
 
         @responses = {
             original: nil,

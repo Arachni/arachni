@@ -26,7 +26,7 @@ class Manager < ::Arachni::Plugin::Manager
     def load( plugins )
         if plugins.is_a?( Array )
             h = {}
-            plugins.each { |p| h[p] = @framework.opts.plugins[p] || {} }
+            plugins.each { |p| h[p] = @framework.options.plugins[p] || {} }
             plugins = h
         end
 
@@ -34,7 +34,7 @@ class Manager < ::Arachni::Plugin::Manager
             prepare_options( plugin, self[plugin], opts )
         end
 
-        @framework.opts.plugins.merge!( plugins )
+        @framework.options.plugins.merge!( plugins )
         super( plugins.keys )
     end
 

@@ -159,14 +159,14 @@ module Master
         sleep( 0.2 ) while paused?
 
         # Grid-related operations.
-        return master_scan_run if !@opts.dispatcher.grid?
+        return master_scan_run if !options.dispatcher.grid?
 
         # Prepare a block to process each Dispatcher and request slave instances
         # from it. If we have any available Dispatchers, that is.
         each = proc do |d_url, iterator|
             d_opts = {
                 'rank'   => 'slave',
-                'target' => @opts.url,
+                'target' => options.url,
                 'master' => multi_self_url
             }
 
@@ -179,7 +179,7 @@ module Master
 
         # Get slaves from Dispatchers with unique Pipe IDs in order to take
         # advantage of line aggregation if we're in aggregation mode.
-        if @opts.dispatcher.grid_aggregate?
+        if options.dispatcher.grid_aggregate?
             print_info 'In Grid line-aggregation mode, will only request' <<
                         ' Instances from Dispatcher with unique Pipe-IDs.'
 
@@ -194,13 +194,13 @@ module Master
                         ' sort things out.'
 
             q = Queue.new
-            @opts.spawns.times do
+            options.spawns.times do
                 dispatcher.dispatch( multi_self_url ) do |instance_info|
                     enslave( instance_info ){ |b| q << true }
                 end
             end
 
-            @opts.spawns.times { q.pop }
+            options.spawns.times { q.pop }
             master_scan_run
         end
     end

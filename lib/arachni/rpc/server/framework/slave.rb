@@ -15,7 +15,6 @@ module Slave
     # Instance's master and makes this Instance a slave.
     #
     # @param    [String]    url         Master's URL in `hostname:port` form.
-    # @param    [Hash]      options
     # @param    [String]    token       Master's authentication token.
     #
     # @return   [Bool]
@@ -23,14 +22,14 @@ module Slave
     #   multi-Instance operation.
     #
     # @private
-    def set_master( url, options = {}, token )
+    def set_master( url, token )
         # If we're already a member of a multi-Instance operation bail out.
         return false if !solo?
 
-        @opts.scope.do_not_crawl
+        options.scope.do_not_crawl
 
         # Make sure the desired plugins are loaded before #prepare runs them.
-        plugins.load @opts.plugins if @opts.plugins
+        plugins.load options.plugins if options.plugins
 
         # Start the clock and run the plugins.
         prepare
@@ -134,7 +133,7 @@ module Slave
     # @return   [String]
     #   Privilege token for the master, we need this in order to report back to it.
     def master_priv_token
-        @opts.datastore.master_priv_token
+        options.datastore.master_priv_token
     end
 
 end

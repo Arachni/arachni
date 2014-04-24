@@ -11,7 +11,7 @@ class Arachni::Plugins::HTTPDicattack < Arachni::Plugin::Base
         framework.pause
         print_info 'System paused.'
 
-        @url = framework.opts.url.to_s
+        @url = framework.options.url.to_s
 
         @users   = File.read( options[:username_list] ).split( "\n" )
         @passwds = File.read( options[:password_list] ).split( "\n" )
@@ -46,8 +46,8 @@ class Arachni::Plugins::HTTPDicattack < Arachni::Plugin::Base
                     print_ok "Found a match. Username: '#{user}' -- Password: '#{pass}'"
                     print_info "URL: #{res.url}"
 
-                    framework.opts.http.authentication_username = user
-                    framework.opts.http.authentication_password = pass
+                    framework.options.http.authentication_username = user
+                    framework.options.http.authentication_password = pass
 
                     # register our findings...
                     register_results( 'username' => user, 'password' => pass )

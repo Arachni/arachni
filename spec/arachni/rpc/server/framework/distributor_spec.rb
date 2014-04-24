@@ -6,6 +6,7 @@ class Distributor
     include Arachni::RPC::Server::Framework::Distributor
 
     attr_reader   :slaves
+    attr_reader   :options
     attr_reader   :done_slaves
     attr_accessor :master_url
 
@@ -17,7 +18,7 @@ class Distributor
     end
 
     def initialize( token )
-        @opts        = Arachni::Options.instance
+        @options     = Arachni::Options.instance
         @local_token = token
         @slaves      = []
         @done_slaves = Set.new
@@ -36,7 +37,7 @@ class Distributor
     end
 
     def dispatcher_url=( url )
-        @opts.datastore.dispatcher_url = url
+        options.datastore.dispatcher_url = url
     end
 
     def <<( instance_h )

@@ -117,7 +117,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         # (so that we can check those requests too prevent another user
         # from shutting down the proxy).
         #
-        p = URI( framework.opts.url )
+        p = URI( framework.options.url )
 
         # This is the URL we'll use to sign in and set the cookie for the
         # domain of the scan target.
@@ -148,7 +148,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
             elsif url.start_with?( url_for( :sign_in ) )
 
                 # ...time to send the user to the webapp.
-                res.headers['Location'] = framework.opts.url
+                res.headers['Location'] = framework.options.url
             end
 
             return
@@ -202,8 +202,8 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                         when '/record/stop'
                             record_stop
                             erb :verify_login_check, verify_fail: false, params: {
-                                'url'     => framework.opts.login.check_url,
-                                'pattern' => framework.opts.login.check_pattern
+                                'url'     => framework.options.login.check_url,
+                                'pattern' => framework.options.login.check_pattern
                             }
 
                         when '/verify/login_check'
@@ -211,8 +211,8 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                             if req.method != :post
                                 erb :verify_login_check, verify_fail: false
                             else
-                                framework.opts.login.check_url     = params['url']
-                                framework.opts.login.check_pattern = params['pattern']
+                                framework.options.login.check_url     = params['url']
+                                framework.options.login.check_pattern = params['pattern']
 
                                 if !session.logged_in?
                                     erb :verify_login_check,

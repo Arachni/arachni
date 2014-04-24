@@ -6,16 +6,16 @@ describe Arachni::Framework do
         @url   = web_server_url_for( :auditor )
         @f_url = web_server_url_for( :framework )
 
-        @opts = Arachni::Options.instance
+        @options = Arachni::Options.instance
     end
 
     before( :each ) do
         reset_options
-        @opts.paths.reports = fixtures_path + '/reports/manager_spec/'
-        @opts.paths.checks  = fixtures_path + '/taint_check/'
+        @options.paths.reports = fixtures_path + '/reports/manager_spec/'
+        @options.paths.checks  = fixtures_path + '/taint_check/'
 
         @f = Arachni::Framework.new
-        @f.opts.url = @url
+        @f.options.url = @url
     end
     after( :each ) do
         File.delete( @snapshot ) rescue nil
@@ -48,7 +48,7 @@ describe Arachni::Framework do
         it 'calls the given block before each page is audited' do
             ok = false
             Arachni::Framework.new do |f|
-                f.opts.url = @url
+                f.options.url = @url
                 f.on_audit_page { ok = true }
 
                 f.audit_page Arachni::Page.from_url( @url + '/link' )
@@ -61,7 +61,7 @@ describe Arachni::Framework do
         it 'calls the given block before each page is audited' do
             ok = false
             Arachni::Framework.new do |f|
-                f.opts.url = @url
+                f.options.url = @url
                 f.after_page_audit { ok = true }
 
                 f.audit_page Arachni::Page.from_url( @url + '/link' )
@@ -95,10 +95,10 @@ describe Arachni::Framework do
     context 'when unable to get a response for the given URL' do
         context 'due to a network error' do
             it 'returns an empty sitemap and have failures' do
-                @opts.url = 'http://blahaha'
-                @opts.scope.do_not_crawl
+                @options.url = 'http://blahaha'
+                @options.scope.do_not_crawl
 
-                subject.push_to_url_queue @opts.url
+                subject.push_to_url_queue @options.url
                 subject.checks.load :taint
                 subject.run
                 subject.failures.should be_any
@@ -107,10 +107,10 @@ describe Arachni::Framework do
 
         context 'due to a server error' do
             it 'returns an empty sitemap and have failures' do
-                @opts.url = @f_url + '/fail'
-                @opts.scope.do_not_crawl
+                @options.url = @f_url + '/fail'
+                @options.scope.do_not_crawl
 
-                subject.push_to_url_queue @opts.url
+                subject.push_to_url_queue @options.url
                 subject.checks.load :taint
                 subject.run
                 subject.failures.should be_any
@@ -118,10 +118,10 @@ describe Arachni::Framework do
         end
 
         it "retries #{Arachni::Framework::AUDIT_PAGE_MAX_TRIES} times" do
-            @opts.url = @f_url + '/fail_4_times'
-            @opts.scope.do_not_crawl
+            @options.url = @f_url + '/fail_4_times'
+            @options.scope.do_not_crawl
 
-            subject.push_to_url_queue @opts.url
+            subject.push_to_url_queue @options.url
             subject.checks.load :taint
             subject.run
             subject.failures.should be_empty
@@ -131,10 +131,10 @@ describe Arachni::Framework do
     describe '#failures' do
         context 'when there are no failed requests' do
             it 'returns an empty array' do
-                @opts.url = @f_url
-                @opts.scope.do_not_crawl
+                @options.url = @f_url
+                @options.scope.do_not_crawl
 
-                subject.push_to_url_queue @opts.url
+                subject.push_to_url_queue @options.url
                 subject.checks.load :taint
                 subject.run
                 subject.failures.should be_empty
@@ -142,10 +142,10 @@ describe Arachni::Framework do
         end
         context 'when there are failed requests' do
             it 'returns an array containing the failed URLs' do
-                @opts.url = @f_url + '/fail'
-                @opts.scope.do_not_crawl
+                @options.url = @f_url + '/fail'
+                @options.scope.do_not_crawl
 
-                subject.push_to_url_queue @opts.url
+                subject.push_to_url_queue @options.url
                 subject.checks.load :taint
                 subject.run
                 subject.failures.should be_any
@@ -153,18 +153,18 @@ describe Arachni::Framework do
         end
     end
 
-    describe '#opts' do
+    describe '#options' do
         it 'provides access to the framework options' do
-            subject.opts.is_a?( Arachni::Options ).should be_true
+            subject.options.is_a?( Arachni::Options ).should be_true
         end
 
         describe '#audit.exclude_binaries' do
             it 'excludes binary pages from the audit' do
                 audited = []
                 Arachni::Framework.new do |f|
-                    f.opts.url = @url
-                    f.opts.scope.restrict_paths << @url + '/binary'
-                    f.opts.audit.elements :links, :forms, :cookies
+                    f.options.url = @url
+                    f.options.scope.restrict_paths << @url + '/binary'
+                    f.options.audit.elements :links, :forms, :cookies
                     f.checks.load :taint
 
                     f.on_audit_page { |p| audited << p.url }
@@ -174,9 +174,9 @@ describe Arachni::Framework do
 
                 audited = []
                 Arachni::Framework.new do |f|
-                    f.opts.url = @url
-                    f.opts.scope.restrict_paths << @url + '/binary'
-                    f.opts.audit.exclude_binaries = true
+                    f.options.url = @url
+                    f.options.scope.restrict_paths << @url + '/binary'
+                    f.options.audit.exclude_binaries = true
                     f.checks.load :taint
 
                     f.on_audit_page { |p| audited << p.url }
@@ -189,16 +189,16 @@ describe Arachni::Framework do
         describe '#scope.restrict_paths' do
             it 'serves as a replacement to crawling' do
                 Arachni::Framework.new do |f|
-                    f.opts.url = "#{@url}/elem_combo"
-                    f.opts.scope.restrict_paths = %w(/log_remote_file_if_exists/true)
-                    f.opts.audit.elements :links, :forms, :cookies
+                    f.options.url = "#{@url}/elem_combo"
+                    f.options.scope.restrict_paths = %w(/log_remote_file_if_exists/true)
+                    f.options.audit.elements :links, :forms, :cookies
                     f.checks.load :taint
 
                     f.run
 
                     sitemap = f.auditstore.sitemap.map { |u, _| u.split( '?' ).first }
                     sitemap.sort.uniq.should ==
-                        [f.opts.url] + f.opts.scope.restrict_paths.
+                        [f.options.url] + f.options.scope.restrict_paths.
                             map { |p| f.to_absolute( p ) }.sort
                 end
             end
@@ -208,8 +208,8 @@ describe Arachni::Framework do
     describe '#sitemap' do
         it 'returns a hash with covered URLs and HTTP status codes' do
             Arachni::Framework.new do |f|
-                f.opts.url = "#{@url}/"
-                f.opts.audit.elements :links, :forms, :cookies
+                f.options.url = "#{@url}/"
+                f.options.audit.elements :links, :forms, :cookies
                 f.checks.load :taint
 
                 f.run
@@ -248,8 +248,8 @@ describe Arachni::Framework do
 
     describe '#run' do
         it 'performs the audit' do
-            subject.opts.url = @url + '/elem_combo'
-            subject.opts.audit.elements :links, :forms, :cookies
+            subject.options.url = @url + '/elem_combo'
+            subject.options.audit.elements :links, :forms, :cookies
             subject.checks.load :taint
             subject.plugins.load :wait
 
@@ -261,8 +261,8 @@ describe Arachni::Framework do
 
         it 'sets #status to scanning' do
             described_class.new do |f|
-                f.opts.url = @url + '/elem_combo'
-                f.opts.audit.elements :links, :forms, :cookies
+                f.options.url = @url + '/elem_combo'
+                f.options.audit.elements :links, :forms, :cookies
                 f.checks.load :taint
 
                 t = Thread.new { f.run }
@@ -274,11 +274,11 @@ describe Arachni::Framework do
         end
 
         it 'handles heavy load' do
-            @opts.paths.checks  = fixtures_path + '/taint_check/'
+            @options.paths.checks  = fixtures_path + '/taint_check/'
 
             Arachni::Framework.new do |f|
-                f.opts.url = web_server_url_for :framework_multi
-                f.opts.audit.elements :links
+                f.options.url = web_server_url_for :framework_multi
+                f.options.audit.elements :links
 
                 f.checks.load :taint
 
@@ -289,8 +289,8 @@ describe Arachni::Framework do
 
         it 'handles pages with JavaScript code' do
             Arachni::Framework.new do |f|
-                f.opts.url = @url + '/with_javascript'
-                f.opts.audit.elements :links, :forms, :cookies
+                f.options.url = @url + '/with_javascript'
+                f.options.audit.elements :links, :forms, :cookies
 
                 f.checks.load :taint
                 f.run
@@ -303,8 +303,8 @@ describe Arachni::Framework do
 
         it 'handles AJAX' do
             Arachni::Framework.new do |f|
-                f.opts.url = @url + '/with_ajax'
-                f.opts.audit.elements :links, :forms, :cookies
+                f.options.url = @url + '/with_ajax'
+                f.options.audit.elements :links, :forms, :cookies
 
                 f.checks.load :taint
                 f.run
@@ -318,8 +318,8 @@ describe Arachni::Framework do
         context 'when done' do
             it 'sets #status to :done' do
                 described_class.new do |f|
-                    f.opts.url = @url + '/elem_combo'
-                    f.opts.audit.elements :links, :forms, :cookies
+                    f.options.url = @url + '/elem_combo'
+                    f.options.audit.elements :links, :forms, :cookies
                     f.checks.load :taint
 
                     f.run
@@ -332,9 +332,9 @@ describe Arachni::Framework do
             it 'logs-in again before continuing with the audit' do
                 Arachni::Framework.new do |f|
                     url = web_server_url_for( :framework ) + '/'
-                    f.opts.url = "#{url}/congrats"
+                    f.options.url = "#{url}/congrats"
 
-                    f.opts.audit.elements :links, :forms
+                    f.options.audit.elements :links, :forms
                     f.checks.load_all
 
                     f.session.configure(
@@ -345,8 +345,8 @@ describe Arachni::Framework do
                         }
                     )
 
-                    f.opts.login.check_url     = url
-                    f.opts.login.check_pattern = 'logged-in user'
+                    f.options.login.check_url     = url
+                    f.options.login.check_pattern = 'logged-in user'
 
                     f.run
                     f.auditstore.issues.size.should == 1
@@ -357,11 +357,11 @@ describe Arachni::Framework do
 
     describe '#suspend' do
         it 'suspends the system' do
-            @opts.paths.checks  = fixtures_path + '/taint_check/'
+            @options.paths.checks  = fixtures_path + '/taint_check/'
 
             described_class.new do |f|
-                f.opts.url = web_server_url_for :framework_multi
-                f.opts.audit.elements :links
+                f.options.url = web_server_url_for :framework_multi
+                f.options.audit.elements :links
 
                 f.plugins.load :wait
                 f.checks.load :taint
@@ -383,8 +383,8 @@ describe Arachni::Framework do
 
         it 'sets #status to :suspended' do
             described_class.new do |f|
-                f.opts.url = web_server_url_for :framework_multi
-                f.opts.audit.elements :links
+                f.options.url = web_server_url_for :framework_multi
+                f.options.audit.elements :links
                 f.checks.load :taint
 
                 t = Thread.new do
@@ -406,8 +406,8 @@ describe Arachni::Framework do
             }
 
             described_class.new do |f|
-                f.opts.url = web_server_url_for :framework_multi
-                f.opts.audit.elements :links
+                f.options.url = web_server_url_for :framework_multi
+                f.options.audit.elements :links
 
                 f.checks.load  :taint
                 f.plugins.load :suspendable
@@ -430,12 +430,12 @@ describe Arachni::Framework do
         context 'when OptionGroups::Snapshot#save_path' do
             context 'is a directory' do
                 it 'stores the snapshot under it' do
-                    @opts.paths.checks       = fixtures_path + '/taint_check/'
-                    @opts.snapshot.save_path = '/tmp/'
+                    @options.paths.checks       = fixtures_path + '/taint_check/'
+                    @options.snapshot.save_path = '/tmp/'
 
                     described_class.new do |f|
-                        f.opts.url = web_server_url_for :framework_multi
-                        f.opts.audit.elements :links
+                        f.options.url = web_server_url_for :framework_multi
+                        f.options.audit.elements :links
 
                         f.plugins.load :wait
                         f.checks.load :taint
@@ -459,12 +459,12 @@ describe Arachni::Framework do
 
             context 'is a file path' do
                 it 'stores the snapshot there' do
-                    @opts.paths.checks       = fixtures_path + '/taint_check/'
-                    @opts.snapshot.save_path = '/tmp/snapshot'
+                    @options.paths.checks       = fixtures_path + '/taint_check/'
+                    @options.snapshot.save_path = '/tmp/snapshot'
 
                     described_class.new do |f|
-                        f.opts.url = web_server_url_for :framework_multi
-                        f.opts.audit.elements :links
+                        f.options.url = web_server_url_for :framework_multi
+                        f.options.audit.elements :links
 
                         f.plugins.load :wait
                         f.checks.load :taint
@@ -490,12 +490,12 @@ describe Arachni::Framework do
 
     describe '#restore' do
         it 'restores a suspended scan' do
-            @opts.paths.checks  = fixtures_path + '/taint_check/'
+            @options.paths.checks  = fixtures_path + '/taint_check/'
 
             logged_issues = 0
             described_class.new do |f|
-                f.opts.url = web_server_url_for :framework_multi
-                f.opts.audit.elements :links
+                f.options.url = web_server_url_for :framework_multi
+                f.options.audit.elements :links
 
                 f.plugins.load :wait
                 f.checks.load :taint
@@ -517,7 +517,7 @@ describe Arachni::Framework do
             end
 
             reset_options
-            @opts.paths.checks  = fixtures_path + '/taint_check/'
+            @options.paths.checks  = fixtures_path + '/taint_check/'
 
             described_class.new do |f|
                 f.restore @snapshot
@@ -538,10 +538,10 @@ describe Arachni::Framework do
             options_hash = nil
 
             described_class.new do |f|
-                f.opts.url = @url + '/with_ajax'
-                f.opts.audit.elements :links, :forms, :cookies
-                f.opts.datastore.my_custom_option = 'my custom value'
-                options_hash = f.opts.to_h.deep_clone
+                f.options.url = @url + '/with_ajax'
+                f.options.audit.elements :links, :forms, :cookies
+                f.options.datastore.my_custom_option = 'my custom value'
+                options_hash = f.options.to_h.deep_clone
 
                 f.checks.load :taint
 
@@ -554,15 +554,15 @@ describe Arachni::Framework do
             end
 
             described_class.restore( @snapshot ) do |f|
-                f.opts.to_h.should == options_hash.merge( checks: ['taint'] )
+                f.options.to_h.should == options_hash.merge( checks: ['taint'] )
                 f.browser_job_skip_states.should be_any
             end
         end
 
         it 'restores BrowserCluster skip states' do
             described_class.new do |f|
-                f.opts.url = @url + '/with_ajax'
-                f.opts.audit.elements :links, :forms, :cookies
+                f.options.url = @url + '/with_ajax'
+                f.options.audit.elements :links, :forms, :cookies
 
                 f.checks.load :taint
 
@@ -581,7 +581,7 @@ describe Arachni::Framework do
 
         it 'restores loaded checks' do
             described_class.new do |f|
-                f.opts.url = @url
+                f.options.url = @url
                 f.checks.load :taint
 
                 t = Thread.new { f.run }
@@ -599,7 +599,7 @@ describe Arachni::Framework do
 
         it 'restores loaded plugins' do
             described_class.new do |f|
-                f.opts.url = @url
+                f.options.url = @url
                 f.plugins.load :wait
 
                 t = Thread.new { f.run }
@@ -620,8 +620,8 @@ describe Arachni::Framework do
             }
 
             described_class.new do |f|
-                f.opts.url = web_server_url_for :framework_multi
-                f.opts.audit.elements :links
+                f.options.url = web_server_url_for :framework_multi
+                f.options.audit.elements :links
 
                 f.checks.load  :taint
                 f.plugins.load :suspendable
@@ -655,8 +655,8 @@ describe Arachni::Framework do
     describe '#pause' do
         it 'pauses the system' do
             described_class.new do |f|
-                f.opts.url = @url + '/elem_combo'
-                f.opts.audit.elements :links, :forms, :cookies
+                f.options.url = @url + '/elem_combo'
+                f.options.audit.elements :links, :forms, :cookies
                 f.checks.load :taint
 
                 t = Thread.new do
@@ -674,8 +674,8 @@ describe Arachni::Framework do
 
         it 'sets #status to :paused' do
             described_class.new do |f|
-                f.opts.url = @url + '/elem_combo'
-                f.opts.audit.elements :links, :forms, :cookies
+                f.options.url = @url + '/elem_combo'
+                f.options.audit.elements :links, :forms, :cookies
                 f.checks.load :taint
 
                 t = Thread.new do
@@ -694,8 +694,8 @@ describe Arachni::Framework do
     describe '#resume' do
         it 'resumes the system' do
             described_class.new do |f|
-                f.opts.url = @url + '/elem_combo'
-                f.opts.audit.elements :links, :forms, :cookies
+                f.options.url = @url + '/elem_combo'
+                f.options.audit.elements :links, :forms, :cookies
                 f.checks.load :taint
 
                 t = Thread.new do
@@ -714,8 +714,8 @@ describe Arachni::Framework do
 
         it 'sets #status to scanning' do
             described_class.new do |f|
-                f.opts.url = @url + '/elem_combo'
-                f.opts.audit.elements :links, :forms, :cookies
+                f.options.url = @url + '/elem_combo'
+                f.options.audit.elements :links, :forms, :cookies
                 f.checks.load :taint
 
                 t = Thread.new do
@@ -737,7 +737,7 @@ describe Arachni::Framework do
     describe '#clean_up' do
         it 'stops the #plugins' do
             described_class.new do |f|
-                f.opts.url = @url + '/elem_combo'
+                f.options.url = @url + '/elem_combo'
                 f.plugins.load :wait
 
                 f.plugins.run
@@ -748,7 +748,7 @@ describe Arachni::Framework do
 
         it 'sets the status to cleanup' do
             described_class.new do |f|
-                f.opts.url = @url + '/elem_combo'
+                f.options.url = @url + '/elem_combo'
 
                 f.clean_up
                 f.status.should == :cleanup
@@ -757,8 +757,8 @@ describe Arachni::Framework do
 
         it 'clears the page queue' do
             described_class.new do |f|
-                f.opts.url = @url + '/elem_combo'
-                f.push_to_page_queue Arachni::Page.from_url( f.opts.url )
+                f.options.url = @url + '/elem_combo'
+                f.push_to_page_queue Arachni::Page.from_url( f.options.url )
 
                 f.data.page_queue.should_not be_empty
                 f.clean_up
@@ -768,8 +768,8 @@ describe Arachni::Framework do
 
         it 'clears the URL queue' do
             described_class.new do |f|
-                f.opts.url = @url + '/elem_combo'
-                f.push_to_url_queue f.opts.url
+                f.options.url = @url + '/elem_combo'
+                f.push_to_url_queue f.options.url
 
                 f.data.url_queue.should_not be_empty
                 f.clean_up
@@ -779,7 +779,7 @@ describe Arachni::Framework do
 
         it 'sets #running? to false' do
             described_class.new do |f|
-                f.opts.url = @url + '/elem_combo'
+                f.options.url = @url + '/elem_combo'
                 f.clean_up
                 f.should_not be_running
             end
@@ -814,7 +814,7 @@ describe Arachni::Framework do
 
     describe '#audit_page' do
         it 'updates the #sitemap with the DOM URL' do
-            subject.opts.audit.elements :links, :forms, :cookies
+            subject.options.audit.elements :links, :forms, :cookies
             subject.checks.load :taint
 
             subject.sitemap.should be_empty
@@ -844,7 +844,7 @@ describe Arachni::Framework do
         context 'when the page contains JavaScript code' do
             it 'analyzes the DOM and pushes new pages to the page queue' do
                 Arachni::Framework.new do |f|
-                    f.opts.audit.elements :links, :forms, :cookies
+                    f.options.audit.elements :links, :forms, :cookies
                     f.checks.load :taint
 
                     f.page_queue_total_size.should == 0
@@ -859,8 +859,8 @@ describe Arachni::Framework do
 
             it 'analyzes the DOM and pushes new paths to the url queue' do
                 Arachni::Framework.new do |f|
-                    f.opts.url = @url
-                    f.opts.audit.elements :links, :forms, :cookies
+                    f.options.url = @url
+                    f.options.audit.elements :links, :forms, :cookies
                     f.checks.load :taint
 
                     f.url_queue_total_size.should == 0
@@ -876,11 +876,11 @@ describe Arachni::Framework do
             context 'when the DOM depth limit has been reached' do
                 it 'does not analyze the DOM' do
                     Arachni::Framework.new do |f|
-                        f.opts.url = @url
+                        f.options.url = @url
 
-                        f.opts.audit.elements :links, :forms, :cookies
+                        f.options.audit.elements :links, :forms, :cookies
                         f.checks.load :taint
-                        f.opts.scope.dom_depth_limit = 1
+                        f.options.scope.dom_depth_limit = 1
                         f.url_queue_total_size.should == 0
                         f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) ).should be_true
                         sleep 0.1 while f.wait_for_browser?
@@ -888,9 +888,9 @@ describe Arachni::Framework do
 
                         f.reset
 
-                        f.opts.audit.elements :links, :forms, :cookies
+                        f.options.audit.elements :links, :forms, :cookies
                         f.checks.load :taint
-                        f.opts.scope.dom_depth_limit = 1
+                        f.options.scope.dom_depth_limit = 1
                         f.url_queue_total_size.should == 0
 
                         page = Arachni::Page.from_url( @url + '/with_javascript' )
@@ -920,10 +920,10 @@ describe Arachni::Framework do
                 Arachni::Framework.new do |f|
                     f.checks.load :taint
 
-                    f.opts.scope.dom_depth_limit = 10
+                    f.options.scope.dom_depth_limit = 10
                     f.audit_page( page ).should be_true
 
-                    f.opts.scope.dom_depth_limit = 2
+                    f.options.scope.dom_depth_limit = 2
                     f.audit_page( page ).should be_false
                 end
             end
@@ -931,8 +931,8 @@ describe Arachni::Framework do
 
         context 'when the page matches exclusion criteria' do
             it 'does not audit it' do
-                subject.opts.scope.exclude_path_patterns << /link/
-                subject.opts.audit.elements :links, :forms, :cookies
+                subject.options.scope.exclude_path_patterns << /link/
+                subject.options.audit.elements :links, :forms, :cookies
 
                 subject.checks.load :taint
 
@@ -941,7 +941,7 @@ describe Arachni::Framework do
             end
 
             it 'returns false' do
-                subject.opts.scope.exclude_path_patterns << /link/
+                subject.options.scope.exclude_path_patterns << /link/
                 subject.audit_page( Arachni::Page.from_url( @url + '/link' ) ).should be_false
             end
         end
@@ -952,9 +952,9 @@ describe Arachni::Framework do
             context 'been reached' do
                 it 'returns true' do
                     Arachni::Framework.new do |f|
-                        f.opts.url = web_server_url_for :framework_multi
-                        f.opts.audit.elements :links
-                        f.opts.scope.page_limit = 10
+                        f.options.url = web_server_url_for :framework_multi
+                        f.options.audit.elements :links
+                        f.options.scope.page_limit = 10
 
                         f.page_limit_reached?.should be_false
                         f.run
@@ -968,9 +968,9 @@ describe Arachni::Framework do
             context 'not been reached' do
                 it 'returns false' do
                     Arachni::Framework.new do |f|
-                        f.opts.url = web_server_url_for :framework
-                        f.opts.audit.elements :links
-                        f.opts.scope.page_limit = 100
+                        f.options.url = web_server_url_for :framework
+                        f.options.audit.elements :links
+                        f.options.scope.page_limit = 100
 
                         f.checks.load :taint
 
@@ -984,8 +984,8 @@ describe Arachni::Framework do
             context 'not been set' do
                 it 'returns false' do
                     Arachni::Framework.new do |f|
-                        f.opts.url = web_server_url_for :framework
-                        f.opts.audit.elements :links
+                        f.options.url = web_server_url_for :framework
+                        f.options.audit.elements :links
 
                         f.checks.load :taint
 
@@ -1002,7 +1002,7 @@ describe Arachni::Framework do
         it 'pushes it to the page audit queue and returns true' do
             page = Arachni::Page.from_url( @url + '/train/true' )
 
-            subject.opts.audit.elements :links, :forms, :cookies
+            subject.options.audit.elements :links, :forms, :cookies
             subject.checks.load :taint
 
             subject.page_queue_total_size.should == 0
@@ -1014,7 +1014,7 @@ describe Arachni::Framework do
         end
 
         it 'updates the #sitemap with the DOM URL' do
-            subject.opts.audit.elements :links, :forms, :cookies
+            subject.options.audit.elements :links, :forms, :cookies
             subject.checks.load :taint
 
             subject.sitemap.should be_empty
@@ -1060,10 +1060,10 @@ describe Arachni::Framework do
             it 'ignores it' do
                 page = Arachni::Page.from_url( @url + '/train/true' )
 
-                subject.opts.audit.elements :links, :forms, :cookies
+                subject.options.audit.elements :links, :forms, :cookies
                 subject.checks.load :taint
 
-                subject.opts.scope.exclude_path_patterns << /train/
+                subject.options.scope.exclude_path_patterns << /train/
 
                 subject.page_queue_total_size.should == 0
                 subject.push_to_page_queue( page )
@@ -1075,7 +1075,7 @@ describe Arachni::Framework do
 
             it 'returns false' do
                 page = Arachni::Page.from_url( @url + '/train/true' )
-                subject.opts.scope.exclude_path_patterns << /train/
+                subject.options.scope.exclude_path_patterns << /train/
                 subject.page_queue_total_size.should == 0
                 subject.push_to_page_queue( page ).should be_false
                 subject.page_queue_total_size.should == 0
@@ -1085,7 +1085,7 @@ describe Arachni::Framework do
 
     describe '#push_to_url_queue' do
         it 'pushes a URL to the URL audit queue' do
-            subject.opts.audit.elements :links, :forms, :cookies
+            subject.options.audit.elements :links, :forms, :cookies
             subject.checks.load :taint
 
             subject.url_queue_total_size.should == 0

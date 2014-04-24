@@ -14,7 +14,7 @@ class Server
 class ActiveOptions
 
     def initialize( framework )
-        @opts = framework.opts
+        @opts = framework.options
 
         %w( url http_request_concurrency http_request_timeout http_user_agent
             http_request_redirect_limit http_proxy_username http_proxy_password

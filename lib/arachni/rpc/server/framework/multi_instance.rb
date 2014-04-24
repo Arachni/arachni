@@ -179,7 +179,7 @@ module MultiInstance
     end
 
     def multi_self_url
-        @opts.rpc.server_socket || self_url
+        options.rpc.server_socket || self_url
     end
 
     private

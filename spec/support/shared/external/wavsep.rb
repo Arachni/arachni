@@ -7,7 +7,7 @@ shared_examples_for 'wavsep' do
         Arachni::Options.reset
 
         @framework = Arachni::Framework.new
-        @framework.opts.audit.elements :links, :forms
+        @framework.options.audit.elements :links, :forms
     end
 
     after :each do
@@ -70,13 +70,13 @@ shared_examples_for 'wavsep' do
 
                                     @framework.checks.issues.should be_empty
 
-                                    @framework.opts.url = "#{url}/#{info[:url]}"
+                                    @framework.options.url = "#{url}/#{info[:url]}"
                                     @framework.checks.load info[:checks]
                                     @framework.run
 
                                     urls      = @framework.checks.issues.map { |i| i.vector.action }.uniq.sort
                                     resources = urls.map { |url| url.split('?').first }.uniq.sort
-                                    expected  = info[:vulnerable].map { |resource| @framework.opts.url + resource }
+                                    expected  = info[:vulnerable].map { |resource| @framework.options.url + resource }
 
                                     resources.should eq(expected), format_error( urls, resources, expected )
 

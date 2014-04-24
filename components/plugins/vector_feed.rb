@@ -91,7 +91,7 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
 
     def page_from_body_vector( vector )
         Page.from_data(
-            url:      vector[:url] || framework.opts.url.to_s,
+            url:      vector[:url] || framework.options.url.to_s,
             response: {
                 code:    Integer( vector[:code] || 200 ),
                 body:    vector[:body]     || '',
@@ -101,7 +101,7 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
     end
 
     def hash_to_element( vector )
-        owner  = framework.opts.url.to_s
+        owner  = framework.options.url.to_s
         action = vector[:action]
         inputs = vector[:inputs]
         method = vector[:method] || 'get'

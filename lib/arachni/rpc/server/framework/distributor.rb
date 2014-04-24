@@ -34,7 +34,7 @@ module Distributor
         @tokens ||= {}
         @tokens[instance[:url]] = instance[:token] if instance[:token]
         @instance_connections[instance[:url]] =
-            RPC::Client::Instance.new( @opts, instance[:url], @tokens[instance[:url]] )
+            RPC::Client::Instance.new( options, instance[:url], @tokens[instance[:url]] )
     end
 
     #
@@ -269,7 +269,7 @@ module Distributor
     #   into account all scope restrictions.
     def build_element_list( page )
         [:links, :forms, :cookies, :headers].map do |type|
-            filter_elements( page.send(type) ) if @opts.audit.element? type
+            filter_elements( page.send(type) ) if options.audit.element? type
         end.flatten.compact
     end
 
@@ -350,7 +350,7 @@ module Distributor
     # the instructed maximum amount of slaves.
     def pick_dispatchers( dispatchers )
         dispatchers = dispatchers.sort_by { |d| d['node']['score'] }
-        @opts.spawns > 0 ? dispatchers[0...@opts.spawns] : dispatchers
+        options.spawns > 0 ? dispatchers[0...options.spawns] : dispatchers
     end
 
     # Configures and initializes slave instances.
@@ -385,7 +385,7 @@ module Distributor
     #   Finally, it sets the master's privilege token so that the slave can
     #   report back to us.
     def prepare_slave_options
-        options = @opts.to_h.deep_clone
+        options = @options.to_h.deep_clone
 
         %w(instance rpc dispatcher paths spawns snapshot).each { |k| options.delete k.to_sym }
         options[:http].delete :cookie_jar_filepath
@@ -477,12 +477,12 @@ module Distributor
 
     def connect_to_dispatcher( url )
         @dispatcher_connections ||= {}
-        @dispatcher_connections[url] ||= RPC::Client::Dispatcher.new( @opts, url )
+        @dispatcher_connections[url] ||= RPC::Client::Dispatcher.new( options, url )
     end
 
     def dispatcher
-        return if !@opts.datastore.dispatcher_url
-        connect_to_dispatcher( @opts.datastore.dispatcher_url )
+        return if !options.datastore.dispatcher_url
+        connect_to_dispatcher( options.datastore.dispatcher_url )
     end
 
 end

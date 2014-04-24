@@ -7,7 +7,7 @@ class AuditorTest < Arachni::Check::Base
 
     def initialize( framework )
         @framework = framework
-        load_page_from @framework.opts.url
+        load_page_from @framework.options.url
         framework.trainer.page = page
 
         http.update_cookies( page.cookiejar )
@@ -489,7 +489,7 @@ describe Arachni::Check::Auditor do
             Arachni::Element::Capabilities::Auditable.reset
          end
 
-        context 'when called with no opts' do
+        context 'when called with no options' do
             it 'uses the defaults' do
                 @auditor.load_page_from( @url + '/link' )
                 @auditor.audit( @seed )
@@ -510,7 +510,7 @@ describe Arachni::Check::Auditor do
             end
         end
 
-        context 'when called with opts' do
+        context 'when called with options' do
             describe :elements do
 
                 before { @auditor.load_page_from( @url + '/elem_combo' ) }

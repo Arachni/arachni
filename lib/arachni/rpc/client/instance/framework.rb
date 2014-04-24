@@ -43,21 +43,19 @@ class Framework < Proxy
         stats.symbolize_keys
     end
 
-    [:progress_data, :progress].each do |m|
-        translate m do |data, options = {}|
-            data = data.symbolize_keys
-            data[:status] = data[:status].to_sym
+    translate :progress do |data, options = {}|
+        data = data.symbolize_keys
+        data[:status] = data[:status].to_sym
 
-            if data[:issues] && !options[:as_hash]
-                data[:issues] = data[:issues].map { |i| Arachni::Issue.from_rpc_data i }
-            end
-
-            if data[:instances]
-                data[:instances] = data[:instances].map(&:symbolize_keys)
-            end
-
-            data
+        if data[:issues] && !options[:as_hash]
+            data[:issues] = data[:issues].map { |i| Arachni::Issue.from_rpc_data i }
         end
+
+        if data[:instances]
+            data[:instances] = data[:instances].map(&:symbolize_keys)
+        end
+
+        data
     end
 
     translate :issues do |issues|

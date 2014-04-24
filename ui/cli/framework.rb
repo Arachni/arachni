@@ -90,9 +90,9 @@ class Framework
         refresh_line nil, unmute
         refresh_info( "Audited #{statistics[:audited_pages]} pages.", unmute )
 
-        if @framework.opts.scope.page_limit
-            refresh_info( "Audit limited to a max of #{@framework.opts.scope.page_limit} " +
-                          'pages.', unmute )
+        if @framework.options.scope.page_limit
+            refresh_info( 'Audit limited to a max of ' <<
+                "#{@framework.options.scope.page_limit} pages.", unmute )
         end
 
         refresh_line nil, unmute

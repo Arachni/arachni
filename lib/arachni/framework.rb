@@ -66,8 +66,8 @@ class Framework
     # How many times to request a page upon failure.
     AUDIT_PAGE_MAX_TRIES = 5
 
-    # @return [Options] Instance options
-    attr_reader :opts
+    # @return   [Options] Instance options
+    attr_reader :options
 
     # @return   [Arachni::Report::Manager]
     attr_reader :reports
@@ -114,14 +114,14 @@ class Framework
         framework
     end
 
-    # @param    [Options]    opts
+    # @param    [Options]    options
     # @param    [Block]      block
     #   Block to be passed a {Framework} instance which will then be {#reset}.
-    def initialize( opts = Arachni::Options.instance, &block )
+    def initialize( options = Arachni::Options.instance, &block )
         Encoding.default_external = 'BINARY'
         Encoding.default_internal = 'BINARY'
 
-        @opts = opts
+        @options = options
 
         @checks  = Check::Manager.new( self )
         @reports = Report::Manager.new
@@ -134,7 +134,7 @@ class Framework
 
         # Deep clone the redundancy rules to preserve their original counters
         # for the reports.
-        @orig_redundant = @opts.scope.redundant_path_patterns.deep_clone
+        @orig_redundant = options.scope.redundant_path_patterns.deep_clone
 
         state.status = :ready
 
@@ -260,7 +260,7 @@ class Framework
         end
 
         if host_has_has_browser?
-            print_info "DOM depth: #{page.dom.depth} (Limit: #{@opts.scope.dom_depth_limit})"
+            print_info "DOM depth: #{page.dom.depth} (Limit: #{options.scope.dom_depth_limit})"
 
             if page.dom.transitions.any?
                 print_info '  Transitions:'
@@ -330,7 +330,7 @@ class Framework
     #   `true` if the {OptionGroups::Scope#page_limit} has been reached,
     #   `false` otherwise.
     def page_limit_reached?
-        @opts.scope.page_limit_reached?( sitemap.size )
+        options.scope.page_limit_reached?( sitemap.size )
     end
 
     # @return   [Hash]
@@ -407,13 +407,13 @@ class Framework
 
     # @return    [AuditStore]   Scan results.
     def audit_store
-        opts = @opts.to_hash.deep_clone
+        opts = options.to_hash.deep_clone
 
         # restore the original redundancy rules and their counters
         opts[:scope][:redundant_path_patterns] = @orig_redundant
 
         AuditStore.new(
-            options:         opts,
+            options:         options,
             sitemap:         sitemap,
             issues:          Data.issues.sort,
             plugins:         @plugins.results,
@@ -650,9 +650,9 @@ class Framework
         return @state_archive if @state_archive
 
         default_filename =
-            "#{URI(@opts.url).host} #{Time.now.to_s.gsub( ':', '.' )}.afs"
+            "#{URI(options.url).host} #{Time.now.to_s.gsub( ':', '.' )}.afs"
 
-        location = @opts.snapshot.save_path
+        location = options.snapshot.save_path
 
         if !location
             location = default_filename
@@ -827,8 +827,8 @@ class Framework
 
         # Make sure the component options are up to date with what's actually
         # happening.
-        Options.checks  = checks.loaded
-        Options.plugins = plugins.loaded.
+        options.checks  = checks.loaded
+        options.plugins = plugins.loaded.
             inject({}) { |h, name| h[name.to_s] = Options.plugins[name.to_s] || {}; h }
 
         if browser_job_skip_states
@@ -907,7 +907,7 @@ class Framework
             end
 
             print_status "Got new page from the browser-cluster: #{page.dom.url}"
-            print_info "DOM depth: #{page.dom.depth} (Limit: #{@opts.scope.dom_depth_limit})"
+            print_info "DOM depth: #{page.dom.depth} (Limit: #{options.scope.dom_depth_limit})"
 
             if page.dom.transitions.any?
                 print_info '  Transitions:'
@@ -921,7 +921,7 @@ class Framework
     end
 
     def crawl?
-        @opts.scope.crawl? && @opts.scope.restrict_paths.empty?
+        options.scope.crawl? && options.scope.restrict_paths.empty?
     end
 
     # Passes the `page` to {BrowserCluster#queue} and then pushes
@@ -957,8 +957,8 @@ class Framework
 
         state.status = :scanning if !pausing?
 
-        push_to_url_queue( @opts.url )
-        @opts.scope.restrict_paths.each { |url| push_to_url_queue( url ) }
+        push_to_url_queue( options.url )
+        options.scope.restrict_paths.each { |url| push_to_url_queue( url ) }
 
         # Initialize the BrowserCluster.
         browser_cluster

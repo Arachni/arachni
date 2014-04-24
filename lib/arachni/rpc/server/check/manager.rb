@@ -24,7 +24,7 @@ class Manager < ::Arachni::Check::Manager
     public :load, :available, :loaded, :load_all
 
     def load( checks )
-        @opts.checks = super( checks )
+        @framework.options.checks = super( checks )
     end
 
 end
