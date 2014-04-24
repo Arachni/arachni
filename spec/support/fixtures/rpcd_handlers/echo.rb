@@ -9,7 +9,7 @@ class Handler::Echo < Handler
     end
 
     def test_opts
-        dispatcher.instance_eval{ @opts } == options
+        dispatcher.instance_eval{ @options } == options
     end
 
     def test_node

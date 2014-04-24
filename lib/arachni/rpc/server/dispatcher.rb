@@ -43,25 +43,25 @@ class Dispatcher
 
     HANDLER_NAMESPACE = Handler
 
-    def initialize( opts = Options.instance )
-        @opts = opts
+    def initialize( options = Options.instance )
+        @options = options
 
-        @opts.dispatcher.external_address ||= @opts.rpc.server_address
-        @opts.snapshot.save_path          ||= @opts.paths.snapshots
+        @options.dispatcher.external_address ||= @options.rpc.server_address
+        @options.snapshot.save_path          ||= @options.paths.snapshots
 
-        @server = Base.new( @opts )
-        @server.logger.level = @opts.datastore.log_level if @opts.datastore.log_level
+        @server = Base.new( @options )
+        @server.logger.level = @options.datastore.log_level if @options.datastore.log_level
 
         @server.add_async_check do |method|
             # methods that expect a block are async
             method.parameters.flatten.include? :block
         end
 
-        @url = "#{@opts.dispatcher.external_address}:#{@opts.rpc.server_port.to_s}"
+        @url = "#{@options.dispatcher.external_address}:#{@options.rpc.server_port.to_s}"
 
         # let the instances in the pool know who to ask for routing instructions
         # when we're in grid mode.
-        @opts.datastore.dispatcher_url = @url.dup
+        @options.datastore.dispatcher_url = @url.dup
 
         prep_logging
 
@@ -76,20 +76,20 @@ class Dispatcher
         @consumed_pids = []
         @pool          = ::EM::Queue.new
 
-        if @opts.dispatcher.pool_size > 0
-            @opts.dispatcher.pool_size.times { add_instance_to_pool( false ) }
+        if @options.dispatcher.pool_size > 0
+            @options.dispatcher.pool_size.times { add_instance_to_pool( false ) }
         end
 
         # Check up on the pool and start the server once it has been filled.
         timer = ::EM::PeriodicTimer.new( 0.1 ) do
-            next if @opts.dispatcher.pool_size != @pool.size
+            next if @options.dispatcher.pool_size != @pool.size
             timer.cancel
 
             _handlers.each do |name, handler|
-                @server.add_handler( name, handler.new( @opts, self ) )
+                @server.add_handler( name, handler.new( @options, self ) )
             end
 
-            @node = Node.new( @opts, @logfile )
+            @node = Node.new( @options, @logfile )
             @server.add_handler( 'node', @node )
 
             run
@@ -129,7 +129,6 @@ class Dispatcher
         ::EM::Iterator.new( @node.neighbours ).map( each, after )
     end
 
-    #
     # Dispatches an {Instance} from the pool.
     #
     # @param    [String]  owner     An owner to assign to the {Instance}.
@@ -144,7 +143,6 @@ class Dispatcher
     #   * `Hash`: Includes URL, owner, clock info and proc info.
     #   * `false`: Pool is currently empty, check back again in a few seconds.
     #   * `nil`: The {Dispatcher} was configured with a pool-size of `0`.
-    #
     def dispatch( owner = 'unknown', helpers = {}, load_balance = true, &block )
         if load_balance && @node.grid_member?
             preferred do |url|
@@ -153,7 +151,7 @@ class Dispatcher
             return
         end
 
-        if @opts.dispatcher.pool_size <= 0
+        if @options.dispatcher.pool_size <= 0
             block.call nil
             return
         end
@@ -177,13 +175,11 @@ class Dispatcher
         ::EM.next_tick { add_instance_to_pool }
     end
 
-    #
     # Returns proc info for a given pid
     #
     # @param    [Fixnum]      pid
     #
     # @return   [Hash]
-    #
     def job( pid )
         @jobs.each do |j|
             next if j['pid'] != pid
@@ -205,20 +201,16 @@ class Dispatcher
         @jobs.map { |cjob| job( cjob['pid'] ) }.compact
     end
 
-    #
     # @return   [Array<Hash>]   Returns proc info for all running jobs.
     #
     # @see #jobs
-    #
     def running_jobs
         jobs.reject { |job| job['proc'].empty? }
     end
 
-    #
     # @return   [Array<Hash>]   Returns proc info for all finished jobs.
     #
     # @see #jobs
-    #
     def finished_jobs
         jobs.select { |job| job['proc'].empty? }
     end
@@ -228,7 +220,6 @@ class Dispatcher
     #   of {#running_jobs} and the configured node weight.
     #
     #   Lower is better.
-    #
     def workload_score
         score = (running_jobs.size + 1).to_f
         score *= @node.info['weight'].to_f if @node.info['weight']
@@ -241,7 +232,7 @@ class Dispatcher
         stats_h = {
             'running_jobs'   => running_jobs,
             'finished_jobs'  => finished_jobs,
-            'init_pool_size' => @opts.dispatcher.pool_size,
+            'init_pool_size' => @options.dispatcher.pool_size,
             'curr_pool_size' => @pool.size,
             'consumed_pids'  => @consumed_pids
         }
@@ -322,8 +313,8 @@ class Dispatcher
         token = generate_token
 
         pid = fork do
-            @opts.rpc.server_port = port
-            Server::Instance.new( @opts, token )
+            @options.rpc.server_port = port
+            Server::Instance.new( @options, token )
         end
 
         # Let the child go about its business.
@@ -333,7 +324,7 @@ class Dispatcher
         print_status "Instance added to pool -- PID: #{pid} - " +
             "Port: #{port} - Owner: #{owner}"
 
-        url = "#{@opts.dispatcher.external_address}:#{port}"
+        url = "#{@options.dispatcher.external_address}:#{port}"
 
         # Wait until the Instance has booted before adding it to the pool.
         when_instance_ready( url, token ) do
@@ -352,7 +343,7 @@ class Dispatcher
 
     def when_instance_ready( url, token, &block )
         options     = OpenStruct.new
-        options.rpc = OpenStruct.new( @opts.to_h[:rpc] )
+        options.rpc = OpenStruct.new( @options.to_h[:rpc] )
         options.rpc.max_retries = 0
 
         client = Client::Instance.new( options, url, token )
@@ -371,8 +362,8 @@ class Dispatcher
 
     def prep_logging
         # reroute all output to a logfile
-        @logfile ||= reroute_to_file( @opts.paths.logs +
-            "/Dispatcher - #{Process.pid}-#{@opts.rpc.server_port}.log" )
+        @logfile ||= reroute_to_file( @options.paths.logs +
+            "/Dispatcher - #{Process.pid}-#{@options.rpc.server_port}.log" )
     end
 
     def proc_hash( pid )
@@ -380,7 +371,7 @@ class Dispatcher
     end
 
     def connect_to_peer( url )
-        Client::Dispatcher.new( @opts, url )
+        Client::Dispatcher.new( @options, url )
     end
 
     def struct_to_h( struct )
