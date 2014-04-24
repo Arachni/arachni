@@ -39,7 +39,7 @@ class Framework < Proxy
         platforms.inject({}) { |h, (k, v)| h[k] = v.symbolize_keys; h }
     end
 
-    translate :stats do |stats|
+    translate :statistics do |stats|
         stats.symbolize_keys
     end
 

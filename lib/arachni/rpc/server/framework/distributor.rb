@@ -401,61 +401,60 @@ module Distributor
         options
     end
 
-    # @param    [Array<Hash>]   stats   Array of {Framework.stats} to merge.
+    # @param    [Array<Hash>]   stats
+    #   Array of {Framework#statistics} to merge.
     #
     # @return   [Hash]
-    #   Hash with the values of all passed stats appropriately merged.
-    def merge_stats( stats )
-        final_stats = stats.pop.dup
-        return {} if !final_stats || final_stats.empty?
+    #   Hash with the values of all passed statistics appropriately merged.
+    def merge_statistics( stats )
+        merged_statistics = stats.pop.dup
 
-        return final_stats if stats.empty?
+        return {} if !merged_statistics || merged_statistics.empty?
+        return merged_statistics if stats.empty?
 
-        final_stats[:current_pages] = []
-        final_stats[:current_pages] << final_stats[:current_page] if final_stats[:current_page]
+        merged_statistics[:current_pages] = []
 
-        total = [
-            :requests,
-            :responses,
+        if merged_statistics[:current_page]
+            merged_statistics[:current_pages] << merged_statistics[:current_page]
+        end
+
+        sum = [
+            :request_count,
+            :response_count,
             :time_out_count,
-            :avg,
-            :curr_avg,
-            :curr_res_cnt,
-            :sitemap_size,
-            :auditmap_size,
+            :total_responses_per_second,
+            :burst_response_time_sum,
+            :burst_response_count,
+            :burst_responses_per_second,
             :max_concurrency
         ]
 
-        avg = [
-            :curr_res_time,
-            :average_res_time
+        average = [
+            :burst_average_response_time,
+            :total_average_response_time
         ]
 
         begin
             stats.each do |instats|
-                (avg | total).each do |k|
-                    final_stats[k] += Float( instats[k] )
+                (sum | average).each do |k|
+                    merged_statistics[:http][k] += Float( instats[:http][k] )
                 end
 
-                final_stats[:current_pages] << instats[:current_page] if instats[:current_page]
-
-                final_stats[:eta] ||= instats[:eta]
-                final_stats[:eta]   = max_eta( final_stats[:eta], instats[:eta] )
+                merged_statistics[:current_pages] << instats[:current_page] if instats[:current_page]
             end
 
-            final_stats[:sitemap_size] = final_stats[:sitemap_size].to_i
-
-            avg.each do |k|
-                final_stats[k] /= Float( stats.size + 1 )
-                final_stats[k] = Float( sprintf( '%.2f', final_stats[k] ) )
+            average.each do |k|
+                merged_statistics[:http][k] /= Float( stats.size + 1 )
+                merged_statistics[:http][k] = Float( sprintf( '%.2f', merged_statistics[:http][k] ) )
             end
         rescue => e
             ap e
             ap e.backtrace
         end
 
-        final_stats[:url] = self_url
-        final_stats
+        merged_statistics.delete :current_page
+
+        merged_statistics
     end
 
     # @param    [String]    eta1    In the form of `hours:minutes:seconds`.

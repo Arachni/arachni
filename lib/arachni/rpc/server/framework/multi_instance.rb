@@ -10,11 +10,9 @@ require_relative 'slave'
 module Arachni
 class RPC::Server::Framework
 
-#
 # Holds multi-Instance methods for the {RPC::Server::Framework}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 module MultiInstance
     include Distributor
     include Slave
@@ -36,12 +34,10 @@ module MultiInstance
         !master? && !slave?
     end
 
-    #
     # @param    [Integer]   starting_line
     #   Sets the starting line for the range of errors to return.
     #
     # @return   [Array<String>]
-    #
     def errors( starting_line = 0, &block )
         return [] if !File.exists? error_logfile
 
@@ -65,9 +61,9 @@ module MultiInstance
         map_slaves( foreach, after )
     end
 
-    #
     # Returns aggregated progress data and helps to limit the amount of calls
-    # required in order to get an accurate depiction of a scan's progress and includes:
+    # required in order to get an accurate depiction of a scan's progress and
+    # includes:
     #
     # * discovered issues
     # * overall statistics
@@ -77,117 +73,96 @@ module MultiInstance
     # @param    [Hash]  opts    Options about what data to include:
     # @option opts [Bool] :slaves   (true) Slave statistics.
     # @option opts [Bool] :issues   (true) Issue summaries.
-    # @option opts [Bool] :stats   (true) Master/merged statistics.
+    # @option opts [Bool] :statistics   (true) Master/merged statistics.
     # @option opts [Integer] :errors   (false) Logged errors.
     # @option opts [Bool] :as_hash  (false)
     #   If set to `true`, will convert issues to hashes before returning them.
     #
     # @return    [Hash]  Progress data.
-    #
     def progress( opts = {}, &block )
         opts = opts.symbolize_keys
 
-        include_stats    = opts[:stats].nil? ? true : opts[:stats]
-        include_slaves   = opts[:slaves].nil? ? true : opts[:slaves]
-        include_issues   = opts[:issues].nil? ? true : opts[:issues]
-        include_errors   = opts.include?( :errors ) ? (opts[:errors] || 0) : false
+        include_statistics = opts[:statistics].nil? ? true : opts[:statistics]
+        include_slaves     = opts[:slaves].nil?     ? true : opts[:slaves]
+        include_issues     = opts[:issues].nil?     ? true : opts[:issues]
+        include_errors     = opts.include?( :errors ) ? (opts[:errors] || 0) : false
 
         as_hash = opts[:as_hash] ? true : opts[:as_hash]
 
         data = {
-            stats:  {},
             status: status,
             busy:   running?
         }
-
-        if include_errors
-            data[:errors] = errors( include_errors.is_a?( Integer ) ? include_errors : 0 )
-        end
 
         if include_issues
             data[:issues] = as_hash ? issues_as_hash : issues
         end
 
-        data[:instances] = {} if include_slaves
-
-        stats = []
-        stat_hash = {}
-        self.stats.each { |k, v| stat_hash[k] = v } if include_stats
-
-        if master? && include_slaves
-            data[:instances][self_url] = stat_hash.dup
-            data[:instances][self_url][:url] = self_url
-            data[:instances][self_url][:status] = status
+        if include_statistics
+            data[:statistics] = self.statistics
         end
 
-        stats << stat_hash
+        if include_errors
+            data[:errors] = errors( include_errors.is_a?( Integer ) ? include_errors : 0 )
+        end
 
-        if !has_slaves? || !include_slaves
-            if include_stats
-                data[:stats] = merge_stats( stats )
-            else
-                data.delete( :stats )
-            end
-            data[:instances] = data[:instances].values if include_slaves
-            block.call( data )
+        if solo? || slave? || !include_slaves
+            block.call data.merge( messages: status_messages )
             return
         end
 
+        data[:instances] = {
+            self_url => {
+                url:      self_url,
+                status:   status,
+                messages: status_messages,
+                busy:     running?
+            }
+        }
+
+        if include_statistics
+            data[:instances][self_url][:statistics] = data[:statistics].dup
+        end
+
         foreach = proc do |instance, iter|
-            instance.framework.progress_data( opts ) do |tmp|
-                if !tmp.rpc_exception?
-                    tmp[:url] = instance.url
-                    iter.return( tmp )
-                else
+            instance.framework.progress( opts.merge( issues: false ) ) do |d|
+                if d.rpc_exception?
                     iter.return( nil )
+                else
+                    iter.return( d.merge( url: instance.url ) )
                 end
             end
         end
 
         after = proc do |slave_data|
             slave_data.compact!
+
             slave_data.each do |slave|
                 slave = slave.symbolize_keys
 
-                if include_errors && slave[:errors]
-                    data[:errors] ||= []
-                    data[:errors]  |= slave[:errors]
+                if include_errors
+                    data[:errors] |= slave[:errors]
                 end
 
-                if include_slaves
-                    url = slave[:url]
-                    data[:instances][url]          = slave[:stats] || {}
-                    data[:instances][url][:url]    = url
-                    data[:instances][url][:status] = slave[:status]
-                end
-
-                stats << slave[:stats]
+                data[:instances][slave[:url]] = slave
             end
 
-            if include_slaves
-                sorted_data_instances = {}
-                data[:instances].keys.sort.each do |url|
-                    sorted_data_instances[url] = data[:instances][url]
-                end
-                data[:instances] = sorted_data_instances.values
+            data[:instances] = Hash[data[:instances].sort_by { |k, _| k }].values
+
+            if include_statistics
+                data[:statistics] =
+                    merge_statistics( data[:instances].map { |v| v[:statistics] } )
             end
 
-            if include_stats
-                data[:stats] = merge_stats( stats )
-            else
-                data.delete( :stats )
-            end
-
-            data[:busy] = slave_data.map { |d| d[:busy] }.include?( true )
+            data[:busy]   = slave_data.map { |d| d[:busy] }.include?( true )
+            data[:master] = self_url
 
             block.call( data )
         end
 
         map_slaves( foreach, after )
     end
-    alias :progress_data :progress
 
-    #
     # Updates the page queue with the provided pages.
     #
     # @param    [Array<Arachni::Page>]     pages   List of pages.
@@ -197,7 +172,6 @@ module MultiInstance
     #   the token needn't be provided.
     #
     # @return   [Bool]  `true` on success, `false` on invalid `token`.
-    #
     def update_page_queue( pages, token = nil )
         return false if master? && !valid_token?( token )
         [pages].flatten.each { |page| push_to_page_queue( page )}

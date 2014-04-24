@@ -333,66 +333,30 @@ class Framework
         @opts.scope.page_limit_reached?( sitemap.size )
     end
 
-    # Returns the following framework stats:
-    #
-    # *  `:requests`         -- HTTP request count
-    # *  `:responses`        -- HTTP response count
-    # *  `:time_out_count`   -- Amount of timed-out requests
-    # *  `:time`             -- Amount of running time
-    # *  `:avg`              -- Average requests per second
-    # *  `:sitemap_size`     -- Number of discovered pages
-    # *  `:auditmap_size`    -- Number of audited pages
-    # *  `:progress`         -- Progress percentage
-    # *  `:curr_res_time`    -- Average response time for the current burst of requests
-    # *  `:curr_res_cnt`     -- Amount of responses for the current burst
-    # *  `:curr_avg`         -- Average requests per second for the current burst
-    # *  `:average_res_time` -- Average response time
-    # *  `:max_concurrency`  -- Current maximum concurrency of HTTP requests
-    # *  `:current_page`     -- URL of the currently audited page
-    # *  `:eta`              -- Estimated time of arrival i.e. estimated remaining time
-    #
     # @return   [Hash]
-    def stats
-        @start_datetime ||= Time.now
-
-        sitemap_sz  = sitemap.size
-        auditmap_sz = state.audited_page_count
-
-        # Progress of audit is calculated as:
-        #     amount of audited pages / amount of all discovered pages
-        progress = (Float( auditmap_sz ) / sitemap_sz) * 100
-
-        progress = Float( sprintf( '%.2f', progress ) ) rescue 0.0
-
-        # Sometimes progress may slightly exceed 100% which can cause a few
-        # strange stuff to happen.
-        progress = 100.0 if progress > 100.0
-
-        # Make sure to keep weirdness at bay.
-        progress = 0.0 if progress < 0.0
-
-        pb = Mixins::ProgressBar.eta( progress, @start_datetime )
-
+    #
+    #   Framework statistics:
+    #
+    #   *  `:http`          -- {HTTP::Client#statistics}
+    #   *  `:runtime`       -- Scan runtime in seconds.
+    #   *  `:found_pages`   -- Number of discovered pages.
+    #   *  `:audited_pages` -- Number of audited pages.
+    #   *  `:current_page`  -- URL of the currently audited page.
+    #   *  `:status`        -- {#status}
+    #   *  `:messages`      -- {#status_messages}
+    def statistics
         {
-            requests:         http.request_count,
-            responses:        http.response_count,
-            time_out_count:   http.time_out_count,
-            time:             audit_store.delta_time,
-            avg:              http.total_responses_per_second,
-            sitemap_size:     sitemap_sz,
-            auditmap_size:    auditmap_sz,
-            progress:         progress,
-            curr_res_time:    http.burst_response_time_sum,
-            curr_res_cnt:     http.burst_response_count,
-            curr_avg:         http.burst_responses_per_second,
-            average_res_time: http.burst_average_response_time,
-            max_concurrency:  http.max_concurrency,
-            current_page:     @current_url,
-            eta:              pb,
-            messages:         status_messages
+            http:          http.statistics,
+            runtime:       @start_datetime ? Time.now - @start_datetime : 0,
+            found_pages:   sitemap.size,
+            audited_pages: state.audited_page_count,
+            current_page:  @current_url
         }
     end
 
+    # @return   [Array<String>]
+    #   Messages providing more information about the current {#status} of
+    #   the framework.
     def status_messages
         state.status_messages
     end

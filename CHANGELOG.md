@@ -18,6 +18,7 @@
 - `Framework`
     - `#audit_page` -- Updated to perform DOM/JS/AJAX analysis on the page and
         feed DOM page snapshots and new paths back to the `Framework`.
+    - `#stats` renamed to `#statistics` with the return hash cleaned-up.
 - `Session`
     - Updated to support login forms which depend on DOM/Javascript.
 - Added `State` -- Stores and provides access to the system's state.
@@ -84,7 +85,11 @@
             - Removed `#output`.
         - `Framework`
             - Removed `#output`.
-            - `#progress` -- Removed `:messages`.
+            - `#progress`
+                - `:messages` now returns `Framework#status_messages` instead of
+                    output messages.
+                - Cleaned up return data.
+                - Removed `#progress_data` alias.
 - `HTTP` expanded to be a complete wrapper around Typhoeus, providing:
     - `Headers`
     - `Message`

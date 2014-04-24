@@ -651,12 +651,18 @@ class Instance
         with    = parse_progress_opts( options, :with )
         without = parse_progress_opts( options, :without )
 
-        @framework.progress( as_hash: options[:as_hash],
-                             issues:  with.include?( :issues ),
-                             stats:   !without.include?( :stats ),
-                             slaves:  with.include?( :instances ),
-                             errors:  with[:errors]
-        ) do |data|
+        options = {
+            as_hash:    options[:as_hash],
+            issues:     with.include?( :issues ),
+            statistics: !without.include?( :statistics ),
+            slaves:     with.include?( :instances )
+        }
+
+        if with[:errors]
+            options[:errors] = with[:errors]
+        end
+
+        @framework.progress( options ) do |data|
             data[:instances] ||= [] if with.include?( :instances )
             data[:busy] = busy?
 

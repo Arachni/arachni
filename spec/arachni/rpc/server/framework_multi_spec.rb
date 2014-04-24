@@ -14,92 +14,88 @@ describe 'Arachni::RPC::Server::Framework' do
         @instance_clean  = instance_light_grid_spawn
         @framework_clean = @instance_clean.framework
 
-        @stat_keys = [
-            :requests, :responses, :time_out_count, :time, :avg, :sitemap_size,
-            :auditmap_size, :progress, :curr_res_time, :curr_res_cnt, :curr_avg,
-            :average_res_time, :max_concurrency, :current_page, :eta, :messages
-        ]
+        @statistics_keys = [:http, :found_pages, :audited_pages, :runtime]
     end
 
-    describe '#errors' do
-        context 'when no argument has been provided' do
-            it 'returns all logged errors' do
-                test = 'Test'
-                @framework.error_test test
-                @framework.errors.last.should end_with test
-            end
-        end
-        context 'when a start line-range has been provided' do
-            it 'returns all logged errors after that line' do
-                initial_errors = @framework.errors
-                errors = @framework.errors( 10 )
-
-                initial_errors[10..-1].should == errors
-            end
-        end
-    end
-
-    describe '#busy?' do
-        context 'when the scan is not running' do
-            it 'returns false' do
-                @framework_clean.busy?.should be_false
-            end
-        end
-        context 'when the scan is running' do
-            it 'returns true' do
-                @instance.opts.url = web_server_url_for( :auditor )
-                @checks.load( 'taint' )
-                @framework.run.should be_true
-                @framework.busy?.should be_true
-            end
-        end
-    end
-    describe '#version' do
-        it 'returns the system version' do
-            @framework_clean.version.should == Arachni::VERSION
-        end
-    end
-    describe '#master?' do
-        it 'returns false' do
-            @framework_clean.master?.should be_true
-        end
-    end
-    describe '#slave?' do
-        it 'returns false' do
-            @framework_clean.slave?.should be_false
-        end
-    end
-    describe '#solo?' do
-        it 'returns true' do
-            @framework_clean.solo?.should be_false
-        end
-    end
-    describe '#set_as_master' do
-        it 'sets the instance as the master' do
-            instance = instance_spawn
-            instance.framework.master?.should be_false
-            instance.framework.set_as_master
-            instance.framework.master?.should be_true
-
-            instance_kill instance.url
-        end
-    end
-    describe '#enslave' do
-        it 'enslaves another instance and set itself as its master' do
-            master = instance_spawn
-            slave  = instance_spawn
-
-            master.framework.master?.should be_false
-            master.framework.enslave(
-                'url'   => slave.url,
-                'token' => instance_token_for( slave )
-            )
-            master.framework.master?.should be_true
-
-            instance_kill master.url
-        end
-    end
-    describe '#run' do
+    # describe '#errors' do
+    #     context 'when no argument has been provided' do
+    #         it 'returns all logged errors' do
+    #             test = 'Test'
+    #             @framework.error_test test
+    #             @framework.errors.last.should end_with test
+    #         end
+    #     end
+    #     context 'when a start line-range has been provided' do
+    #         it 'returns all logged errors after that line' do
+    #             initial_errors = @framework.errors
+    #             errors = @framework.errors( 10 )
+    #
+    #             initial_errors[10..-1].should == errors
+    #         end
+    #     end
+    # end
+    #
+    # describe '#busy?' do
+    #     context 'when the scan is not running' do
+    #         it 'returns false' do
+    #             @framework_clean.busy?.should be_false
+    #         end
+    #     end
+    #     context 'when the scan is running' do
+    #         it 'returns true' do
+    #             @instance.opts.url = web_server_url_for( :auditor )
+    #             @checks.load( 'taint' )
+    #             @framework.run.should be_true
+    #             @framework.busy?.should be_true
+    #         end
+    #     end
+    # end
+    # describe '#version' do
+    #     it 'returns the system version' do
+    #         @framework_clean.version.should == Arachni::VERSION
+    #     end
+    # end
+    # describe '#master?' do
+    #     it 'returns false' do
+    #         @framework_clean.master?.should be_true
+    #     end
+    # end
+    # describe '#slave?' do
+    #     it 'returns false' do
+    #         @framework_clean.slave?.should be_false
+    #     end
+    # end
+    # describe '#solo?' do
+    #     it 'returns true' do
+    #         @framework_clean.solo?.should be_false
+    #     end
+    # end
+    # describe '#set_as_master' do
+    #     it 'sets the instance as the master' do
+    #         instance = instance_spawn
+    #         instance.framework.master?.should be_false
+    #         instance.framework.set_as_master
+    #         instance.framework.master?.should be_true
+    #
+    #         instance_kill instance.url
+    #     end
+    # end
+    # describe '#enslave' do
+    #     it 'enslaves another instance and set itself as its master' do
+    #         master = instance_spawn
+    #         slave  = instance_spawn
+    #
+    #         master.framework.master?.should be_false
+    #         master.framework.enslave(
+    #             'url'   => slave.url,
+    #             'token' => instance_token_for( slave )
+    #         )
+    #         master.framework.master?.should be_true
+    #
+    #         instance_kill master.url
+    #     end
+    # end
+    # describe '#run' do
         it 'performs a scan' do
             instance = @instance_clean
             instance.opts.url = web_server_url_for( :framework_multi )
@@ -109,143 +105,146 @@ describe 'Arachni::RPC::Server::Framework' do
             instance.framework.issues.size.should == 500
         end
 
-        it 'handles pages with JavaScript code' do
-            instance = instance_light_grid_spawn
-            instance.opts.url = web_server_url_for( :auditor ) + '/with_javascript'
-            instance.checks.load :taint
-
-            instance.framework.run.should be_true
-            sleep 0.1 while instance.framework.busy?
-
-            instance.framework.issues.
-                map { |i| i.vector.affected_input_name }.uniq.should be
-                    %w(link_input form_input cookie_input)
-
-            # dispatcher_kill_by_instance instance
-        end
-
-        it 'handles AJAX' do
-            instance = instance_light_grid_spawn
-            instance.opts.url = web_server_url_for( :auditor ) + '/with_ajax'
-            instance.checks.load :taint
-
-            instance.framework.run.should be_true
-            sleep 0.1 while instance.framework.busy?
-
-            instance.framework.issues.
-                map { |i| i.vector.affected_input_name }.uniq.should be
-                    %w(link_input form_input cookie_taint).sort
-
-            # dispatcher_kill_by_instance instance
-        end
-    end
-    describe '#auditstore' do
-        it 'returns an auditstore object' do
-            auditstore = @instance_clean.framework.auditstore
-            auditstore.is_a?( Arachni::AuditStore ).should be_true
-            auditstore.issues.should be_any
-        end
-    end
-    describe '#stats' do
-        it 'returns a hash containing general runtime statistics' do
-            stats = @instance_clean.framework.stats
-            stats.keys.should == @stat_keys
-            @stat_keys.each { |k| stats[k].should be_true }
-        end
-    end
-    describe '#paused?' do
-        context 'when not paused' do
-            it 'returns false' do
-                instance = @instance_clean
-                instance.framework.paused?.should be_false
-            end
-        end
-        context 'when paused' do
-            it 'returns true' do
-                instance = @instance_clean
-                instance.framework.pause
-
-                Timeout.timeout 5 do
-                    sleep 1 while !instance.framework.paused?
-                end
-
-                instance.framework.paused?.should be_true
-            end
-        end
-    end
-    describe '#resume' do
-        it 'resumes the scan' do
-            instance = @instance_clean
-            instance.framework.pause
-
-            Timeout.timeout 5 do
-                sleep 1 while !instance.framework.paused?
-            end
-
-            instance.framework.paused?.should be_true
-            instance.framework.resume.should be_true
-
-            Timeout.timeout 5 do
-                sleep 1 while instance.framework.paused?
-            end
-
-            instance.framework.paused?.should be_false
-        end
-    end
-    describe '#clean_up' do
-        it 'sets the framework state to finished, waits for plugins to finish and merges their results' do
-            instance = instance_light_grid_spawn
-            instance.opts.url = web_server_url_for( :framework_multi )
-            instance.checks.load( 'taint' )
-            instance.plugins.load( { 'wait' => {}, 'distributable' => {} } )
-            instance.framework.run.should be_true
-            instance.framework.auditstore.plugins.should be_empty
-            instance.framework.busy?.should be_true
-            instance.framework.clean_up.should be_true
-
-            instance_count = instance.framework.progress[:instances].size
-            auditstore     = instance.framework.auditstore
-            instance.service.shutdown
-
-            results = auditstore.plugins
-            results.should be_any
-            results[:wait].should be_any
-            results[:wait][:results].should == { 'stuff' => true }
-            results[:distributable][:results].should == { 'stuff' => instance_count }
-
-            # dispatcher_kill_by_instance instance
-        end
-    end
+    #     it 'handles pages with JavaScript code' do
+    #         instance = instance_light_grid_spawn
+    #         instance.opts.url = web_server_url_for( :auditor ) + '/with_javascript'
+    #         instance.checks.load :taint
+    #
+    #         instance.framework.run.should be_true
+    #         sleep 0.1 while instance.framework.busy?
+    #
+    #         instance.framework.issues.
+    #             map { |i| i.vector.affected_input_name }.uniq.should be
+    #                 %w(link_input form_input cookie_input)
+    #
+    #         # dispatcher_kill_by_instance instance
+    #     end
+    #
+    #     it 'handles AJAX' do
+    #         instance = instance_light_grid_spawn
+    #         instance.opts.url = web_server_url_for( :auditor ) + '/with_ajax'
+    #         instance.checks.load :taint
+    #
+    #         instance.framework.run.should be_true
+    #         sleep 0.1 while instance.framework.busy?
+    #
+    #         instance.framework.issues.
+    #             map { |i| i.vector.affected_input_name }.uniq.should be
+    #                 %w(link_input form_input cookie_taint).sort
+    #
+    #         # dispatcher_kill_by_instance instance
+    #     end
+    # end
+    # describe '#auditstore' do
+    #     it 'returns an auditstore object' do
+    #         auditstore = @instance_clean.framework.auditstore
+    #         auditstore.is_a?( Arachni::AuditStore ).should be_true
+    #         auditstore.issues.should be_any
+    #     end
+    # end
+    # describe '#statistics' do
+    #     it 'returns a hash containing general runtime statistics' do
+    #         statistics = @instance_clean.framework.statistics
+    #
+    #         keys = @statistics_keys | [:current_page]
+    #
+    #         statistics.keys.sort.should == keys.sort
+    #         keys.each { |k| statistics[k].should be_true }
+    #     end
+    # end
+    # describe '#paused?' do
+    #     context 'when not paused' do
+    #         it 'returns false' do
+    #             instance = @instance_clean
+    #             instance.framework.paused?.should be_false
+    #         end
+    #     end
+    #     context 'when paused' do
+    #         it 'returns true' do
+    #             instance = @instance_clean
+    #             instance.framework.pause
+    #
+    #             Timeout.timeout 5 do
+    #                 sleep 1 while !instance.framework.paused?
+    #             end
+    #
+    #             instance.framework.paused?.should be_true
+    #         end
+    #     end
+    # end
+    # describe '#resume' do
+    #     it 'resumes the scan' do
+    #         instance = @instance_clean
+    #         instance.framework.pause
+    #
+    #         Timeout.timeout 5 do
+    #             sleep 1 while !instance.framework.paused?
+    #         end
+    #
+    #         instance.framework.paused?.should be_true
+    #         instance.framework.resume.should be_true
+    #
+    #         Timeout.timeout 5 do
+    #             sleep 1 while instance.framework.paused?
+    #         end
+    #
+    #         instance.framework.paused?.should be_false
+    #     end
+    # end
+    # describe '#clean_up' do
+    #     it 'sets the framework state to finished, waits for plugins to finish and merges their results' do
+    #         instance = instance_light_grid_spawn
+    #         instance.opts.url = web_server_url_for( :framework_multi )
+    #         instance.checks.load( 'taint' )
+    #         instance.plugins.load( { 'wait' => {}, 'distributable' => {} } )
+    #         instance.framework.run.should be_true
+    #         instance.framework.auditstore.plugins.should be_empty
+    #         instance.framework.busy?.should be_true
+    #         instance.framework.clean_up.should be_true
+    #
+    #         instance_count = instance.framework.progress[:instances].size
+    #         auditstore     = instance.framework.auditstore
+    #         instance.service.shutdown
+    #
+    #         results = auditstore.plugins
+    #         results.should be_any
+    #         results[:wait].should be_any
+    #         results[:wait][:results].should == { 'stuff' => true }
+    #         results[:distributable][:results].should == { 'stuff' => instance_count }
+    #
+    #         # dispatcher_kill_by_instance instance
+    #     end
+    # end
     describe '#progress' do
-        before { @progress_keys = %W(stats status busy issues instances).map(&:to_sym).sort }
-
-        it 'aliased to #progress_data' do
-            instance = @instance_clean
-            data = instance.framework.progress_data
-            data.keys.sort.should == @progress_keys
-        end
+        before { @progress_keys = %W(statistics status busy issues instances).map(&:to_sym).sort }
 
         context 'when called without options' do
             it 'returns all progress data' do
                 instance = @instance_clean
 
                 data = instance.framework.progress
-                data.keys.sort.should == @progress_keys
 
-                keys = (@stat_keys | [:url, :status]).flatten.sort
+                data.keys.sort.should == (@progress_keys | [:master]).flatten.sort
 
-                data[:stats].should be_any
-                data[:stats].keys.sort.should == (keys | [:current_pages]).flatten.sort
-                data[:instances].should be_any
-                data[:status].should be_true
-                data[:busy].nil?.should be_false
+                data[:statistics].keys.sort.should ==
+                    (@statistics_keys | [:current_pages]).flatten.sort
+
+                data[:status].should be_kind_of Symbol
+                data[:master].should == instance.url
+                data[:busy].should_not be_nil
                 data[:issues].should be_any
                 data[:instances].size.should == 3
+
                 data.should_not include :errors
 
-                keys = (keys | [:current_page]).flatten.sort
-                data[:instances].first.keys.sort.should == keys
-                data[:instances].last.keys.sort.should == keys
+                keys = (@statistics_keys | [:current_page]).flatten.sort
+
+                data[:instances].each do |i|
+                    i[:statistics].keys.sort.should == keys
+                    i.keys.sort.should == [:url, :statistics, :status, :busy, :messages].sort
+                end
+
+                data.delete :issues
             end
         end
 
@@ -277,36 +276,30 @@ describe 'Arachni::RPC::Server::Framework' do
                     end
                 end
             end
-            describe :stats do
+            describe :statistics do
                 context 'when set to false' do
                     it 'excludes statistics' do
-                        keys = @instance_clean.framework.progress( stats: false ).
-                            keys.sort
-                        pk = @progress_keys.dup
-                        pk.delete( :stats )
-                        keys.should == pk
+                        @instance_clean.framework.progress(
+                            statistics: false
+                        ).should_not include :statistics
                     end
                 end
             end
             describe :issues do
                 context 'when set to false' do
                     it 'excludes issues' do
-                        keys = @instance_clean.framework.progress( issues: false ).
-                            keys.sort
-                        pk = @progress_keys.dup
-                        pk.delete( :issues )
-                        keys.should == pk
+                        @instance_clean.framework.progress(
+                            issues: false
+                        ).should_not include :issues
                     end
                 end
             end
             describe :slaves do
                 context 'when set to false' do
                     it 'excludes slave data' do
-                        keys = @instance_clean.framework.progress( slaves: false ).
-                            keys.sort
-                        pk = @progress_keys.dup
-                        pk.delete( :instances )
-                        keys.should == pk
+                        @instance_clean.framework.progress(
+                            slaves: false
+                        ).should_not include :instances
                     end
                 end
             end

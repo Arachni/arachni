@@ -1112,12 +1112,32 @@ describe Arachni::Framework do
         end
     end
 
-    describe '#stats' do
-        it 'returns a hash with stats' do
-            subject.stats.keys.sort.should == [ :requests, :responses, :time_out_count,
-                :time, :avg, :sitemap_size, :auditmap_size, :progress, :curr_res_time,
-                :curr_res_cnt, :curr_avg, :average_res_time, :max_concurrency,
-                :current_page, :eta, :messages ].sort
+    describe '#statistics' do
+        let(:statistics) { subject.statistics }
+
+        it 'includes http statistics' do
+            statistics[:http].should == subject.http.statistics
+        end
+
+        [:found_pages, :audited_pages, :current_page].each  do |k|
+            it "includes #{k}" do
+                statistics.should include k
+            end
+        end
+
+        describe :runtime do
+            context 'when the scan has been running' do
+                it 'returns the runtime in seconds' do
+                    subject.run
+                    statistics[:runtime].should > 0
+                end
+            end
+
+            context 'when no scan has been running' do
+                it 'returns 0' do
+                    statistics[:runtime].should == 0
+                end
+            end
         end
     end
 

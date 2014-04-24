@@ -302,7 +302,7 @@ describe 'Arachni::RPC::Server::Instance' do
 
                 sleep 1 while instance.service.busy?
 
-                instance.framework.progress_data[:instances].size.should == 2
+                instance.framework.progress[:instances].size.should == 2
 
                 instance.service.busy?.should  == instance.framework.busy?
                 instance.service.status.should == instance.framework.status
@@ -348,7 +348,7 @@ describe 'Arachni::RPC::Server::Instance' do
                                     sleep 1 while instance.service.busy?
 
                                     # Since we've only got 3 Dispatchers in the Grid.
-                                    instance.framework.progress_data[:instances].size.should == 3
+                                    instance.framework.progress[:instances].size.should == 3
 
                                     instance.service.busy?.should  == instance.framework.busy?
                                     instance.service.status.should == instance.framework.status
@@ -379,7 +379,7 @@ describe 'Arachni::RPC::Server::Instance' do
 
                                     # No matter how many grid members with unique Pipe-IDs there are
                                     # since we're in balance mode.
-                                    instance.framework.progress_data[:instances].size.should == 5
+                                    instance.framework.progress[:instances].size.should == 5
 
                                     instance.service.busy?.should  == instance.framework.busy?
                                     instance.service.status.should == instance.framework.status
@@ -429,7 +429,7 @@ describe 'Arachni::RPC::Server::Instance' do
 
                                     # No matter how many grid members with unique Pipe-IDs there are
                                     # since we're in balance mode.
-                                    instance.framework.progress_data[:instances].size.should == 5
+                                    instance.framework.progress[:instances].size.should == 5
 
                                     instance.service.busy?.should  == instance.framework.busy?
                                     instance.service.status.should == instance.framework.status
@@ -517,7 +517,7 @@ describe 'Arachni::RPC::Server::Instance' do
 
                         sleep 1 while instance.service.busy?
 
-                        instance.framework.progress_data[:instances].size.should == 5
+                        instance.framework.progress[:instances].size.should == 5
 
                         instance.service.busy?.should  == instance.framework.busy?
                         instance.service.status.should == instance.framework.status
@@ -553,16 +553,18 @@ describe 'Arachni::RPC::Server::Instance' do
                 p = instance.service.progress
                 p[:busy].should   == instance.framework.busy?
                 p[:status].should == instance.framework.status
-                p[:stats].should  be_any
+                p[:statistics].should  be_any
 
                 p[:instances].should be_nil
                 p[:issues].should be_nil
             end
 
             describe :without do
-                describe :stats do
-                    it 'includes stats' do
-                        @progress_instance.service.progress( without: :stats )[:stats].should be_nil
+                describe :statistics do
+                    it 'includes statistics' do
+                        @progress_instance.service.progress(
+                            without: :statistics
+                        ).should_not include :statistics
                     end
                 end
                 describe :issues do
@@ -589,9 +591,9 @@ describe 'Arachni::RPC::Server::Instance' do
 
                         p = instance.service.progress(
                             with:    [ :issues, :instances ],
-                            without: [ :stats,  issues: [digest] ]
+                            without: [ :statistics,  issues: [digest] ]
                         )
-                        p[:stats].should be_nil
+                        p.should_not include :statistics
                         p[:issues].include?( issue ).should be_false
                     end
                 end
@@ -605,7 +607,7 @@ describe 'Arachni::RPC::Server::Instance' do
                         issues = instance.service.progress( with: :issues )[:issues]
                         issues.should be_any
                         issues.first.class.should == Hash
-                        issues.should == instance.framework.progress_data( as_hash: true )[:issues]
+                        issues.should == instance.framework.progress( as_hash: true )[:issues]
                     end
                 end
 
@@ -614,11 +616,10 @@ describe 'Arachni::RPC::Server::Instance' do
                         instance = @progress_instance
 
                         stats1 = instance.service.progress( with: :instances )[:instances]
-                        stats2 = instance.framework.progress_data[:instances]
+                        stats2 = instance.framework.progress[:instances]
 
-                        # Average req/s may differ.
-                        stats1.each { |h| h.delete :curr_avg; h.delete :avg }
-                        stats2.each { |h| h.delete :curr_avg; h.delete :avg }
+                        stats1.each { |h| h[:statistics].delete :runtime }
+                        stats2.each { |h| h[:statistics].delete :runtime }
 
                         stats1.size.should == 2
                         stats1.should == stats2
@@ -631,11 +632,11 @@ describe 'Arachni::RPC::Server::Instance' do
 
                         p = instance.service.progress(
                             with:    [ :issues, :instances ],
-                            without: :stats
+                            without: :statistics
                         )
                         p[:busy].should   == instance.framework.busy?
                         p[:status].should == instance.framework.status
-                        p[:stats].should  be_nil
+                        p[:statistics].should  be_nil
 
                         p[:instances].size.should == 2
                         p[:issues].should be_any
@@ -665,7 +666,7 @@ describe 'Arachni::RPC::Server::Instance' do
                 p = instance.service.native_progress
                 p[:busy].should   == instance.framework.busy?
                 p[:status].should == instance.framework.status
-                p[:stats].should  be_any
+                p[:statistics].should  be_any
 
                 p[:instances].should be_nil
                 p[:issues].should be_nil
@@ -673,8 +674,10 @@ describe 'Arachni::RPC::Server::Instance' do
 
             describe :without do
                 describe :stats do
-                    it 'includes stats' do
-                        @progress_instance.service.native_progress( without: :stats )[:stats].should be_nil
+                    it 'includes statistics' do
+                        @progress_instance.service.native_progress(
+                            without: :statistics
+                        ).should_not include :statistics
                     end
                 end
                 describe :issues do
@@ -684,7 +687,7 @@ describe 'Arachni::RPC::Server::Instance' do
                         digest = issue.digest
 
                         p = @progress_instance.service.native_progress(
-                            with: :issues,
+                            with:    :issues,
                             without: { issues: [digest] }
                         )
 
@@ -701,9 +704,9 @@ describe 'Arachni::RPC::Server::Instance' do
 
                         p = instance.service.native_progress(
                             with:    [ :issues, :instances ],
-                            without: [ :stats,  issues: [digest] ]
+                            without: [ :statistics,  issues: [digest] ]
                         )
-                        p[:stats].should be_nil
+                        p.should_not include :statistics
                         p[:issues].include?( issue ).should be_false
                     end
                 end
@@ -711,16 +714,6 @@ describe 'Arachni::RPC::Server::Instance' do
 
             describe :with do
                 describe :issues do
-                    it 'includes issues' do
-                        instance = @progress_instance
-
-                        issues = instance.service.native_progress( with: :issues )[:issues]
-                        issues.should be_any
-                        issues.should == instance.framework.progress_data( as_hash: false )[:issues]
-                    end
-                end
-
-                describe :native_issues do
                     it 'includes issues as Arachni::Issue objects' do
                         instance = @progress_instance
 
@@ -735,11 +728,10 @@ describe 'Arachni::RPC::Server::Instance' do
                         instance = @progress_instance
 
                         stats1 = instance.service.native_progress( with: :instances )[:instances]
-                        stats2 = instance.framework.progress_data[:instances]
+                        stats2 = instance.framework.progress[:instances]
 
-                        # Average req/s may differ.
-                        stats1.each { |h| h.delete :curr_avg; h.delete :avg }
-                        stats2.each { |h| h.delete :curr_avg; h.delete :avg }
+                        stats1.each { |h| h[:statistics].delete :runtime }
+                        stats2.each { |h| h[:statistics].delete :runtime }
 
                         stats1.size.should == 2
                         stats1.should == stats2
@@ -752,11 +744,11 @@ describe 'Arachni::RPC::Server::Instance' do
 
                         p = instance.service.native_progress(
                             with:    [ :issues, :instances ],
-                            without: :stats
+                            without: :statistics
                         )
                         p[:busy].should   == instance.framework.busy?
                         p[:status].should == instance.framework.status
-                        p[:stats].should  be_nil
+                        p[:statistics].should  be_nil
 
                         p[:instances].size.should == 2
                         p[:issues].should be_any

@@ -163,22 +163,14 @@ describe 'Arachni::RPC::Server::Framework' do
             auditstore.issues.should be_any
         end
     end
-    describe '#stats' do
+    describe '#statistics' do
         it 'returns a hash containing general runtime statistics' do
             instance = @instance_clean
             instance.opts.url = web_server_url_for( :framework )
             instance.checks.load( 'test' )
             instance.framework.run.should be_true
 
-            stats = instance.framework.stats
-            stat_keys = [
-                :requests, :responses, :time_out_count,
-                :time, :avg, :sitemap_size, :auditmap_size, :progress, :curr_res_time,
-                :curr_res_cnt, :curr_avg, :average_res_time, :max_concurrency,
-                :current_page, :eta, :messages
-            ]
-            stats.keys.should == stat_keys
-            stat_keys.each { |k| stats[k].should be_true }
+            instance.framework.statistics.should be_kind_of Hash
         end
     end
     describe '#paused?' do
@@ -277,13 +269,7 @@ describe 'Arachni::RPC::Server::Framework' do
         end
     end
     describe '#progress' do
-        before { @progress_keys = %W(stats status busy issues instances).sort.map(&:to_sym) }
-
-        it 'aliased to #progress_data' do
-            instance = @instance_clean
-            data = instance.framework.progress_data
-            data.keys.sort.should == @progress_keys
-        end
+        before { @progress_keys = %W(statistics status busy messages issues).sort.map(&:to_sym) }
 
         context 'when called without options' do
             it 'returns all progress data' do
@@ -292,13 +278,11 @@ describe 'Arachni::RPC::Server::Framework' do
                 data = instance.framework.progress
                 data.keys.sort.should == @progress_keys
 
-                data[:stats].should be_any
-                data[:stats].keys.should == instance.framework.stats.keys
-                data[:instances].should be_empty
+                data[:statistics].keys.should == instance.framework.statistics.keys
+                data[:messages].should be_any
                 data[:status].should be_true
                 data[:busy].nil?.should be_false
                 data[:issues].should be_any
-                data[:instances].should be_empty
                 data.should_not include :errors
             end
         end
@@ -335,20 +319,18 @@ describe 'Arachni::RPC::Server::Framework' do
             describe :issue do
                 context 'when set to false' do
                     it 'excludes issues' do
-                        keys = @instance_clean.framework.progress( issues: false ).
-                            keys.sort
-                        pk = @progress_keys.dup
-                        pk.delete( :issues )
-                        keys.should == pk
+                        @instance_clean.framework.progress(
+                            issues: false
+                        ).should_not include :issues
                     end
                 end
             end
             describe :as_hash do
                 context 'when set to true' do
                     it 'includes issues as a hash' do
-                        @instance_clean.framework.
-                            progress( as_hash: true )[:issues]
-                            .first.is_a?( Hash ).should be_true
+                        @instance_clean.framework.progress(
+                            as_hash: true
+                        )[:issues].first.is_a?( Hash ).should be_true
                     end
                 end
             end
