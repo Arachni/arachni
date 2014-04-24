@@ -428,11 +428,7 @@ class OptionParser < UI::CLI::OptionParser
         end
 
         on( '--profile-load-filepath FILEPATH', String,
-               'Load a configuration profile from FILEPATH.',
-               '(Can be used multiple times.)',
-               'You can complement it with more options except for:',
-               '    * --checks',
-               '    * --scope-redundant-patterns'
+               'Loads a configuration profile from FILEPATH.'
         ) do |filepath|
             load_profile( filepath )
         end
