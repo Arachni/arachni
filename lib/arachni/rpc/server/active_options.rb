@@ -14,7 +14,7 @@ class Server
 class ActiveOptions
 
     def initialize( framework )
-        @opts = framework.options
+        @options = framework.options
 
         %w( url http_request_concurrency http_request_timeout http_user_agent
             http_request_redirect_limit http_proxy_username http_proxy_password
@@ -23,17 +23,17 @@ class ActiveOptions
             m = "#{m}=".to_sym
             self.class.class_eval do
                 define_method m do |v|
-                    @opts.send( m, v )
+                    @options.send( m, v )
                     HTTP::Client.reset false
                     v
                 end
             end
         end
 
-        (@opts.public_methods( false ) - public_methods( false ) ).each do |m|
+        (@options.public_methods( false ) - public_methods( false ) ).each do |m|
             self.class.class_eval do
                 define_method m do |*args|
-                    @opts.send( m, *args )
+                    @options.send( m, *args )
                 end
             end
         end
@@ -42,22 +42,22 @@ class ActiveOptions
 
     # @see Arachni::Options#set
     def set( options )
-        @opts.set( options )
+        @options.set( options )
         HTTP::Client.reset false
         true
     end
 
     def http_proxy=( proxy_url )
-        @opts.http.proxy_host, @opts.http.proxy_port = proxy_url.to_s.split( ':' )
-        @opts.http.proxy_port = @opts.http.proxy_port.to_i
+        @options.http.proxy_host, @options.http.proxy_port = proxy_url.to_s.split( ':' )
+        @options.http.proxy_port = @options.http.proxy_port.to_i
 
         HTTP::Client.reset false
-        @opts.http.proxy = proxy_url
+        @options.http.proxy = proxy_url
     end
 
     # @private
     def to_h
-        h = @opts.to_h
+        h = @options.to_h
         %w(exclude_path_patterns exclude_page_patterns include_path_patterns).each do |k|
             h[:scope][k.to_sym] = h[:scope][k.to_sym].map(&:source)
         end
