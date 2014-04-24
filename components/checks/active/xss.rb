@@ -38,15 +38,15 @@ class Arachni::Checks::XSS < Arachni::Check::Base
         ]
     end
 
-    def self.opts
-        @opts ||= {
+    def self.options
+        @options ||= {
             format:     [Format::APPEND],
             flip_param: true
         }
     end
 
     def run
-        audit( self.class.strings, self.class.opts ) do |response, element|
+        audit( self.class.strings, self.class.options ) do |response, element|
             check_and_log( response, element )
         end
     end
