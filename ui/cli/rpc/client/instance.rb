@@ -40,10 +40,10 @@ class Instance
     attr_reader :error_log_file
     attr_reader :framework
 
-    # @param    [Arachni::Options]  opts
+    # @param    [Arachni::Options]  options
     # @param    [RPC::Client::Instance] instance    Instance to control.
-    def initialize( opts, instance )
-        @opts     = opts
+    def initialize( options, instance )
+        @options  = options
         @instance = instance
 
         clear_screen
@@ -51,7 +51,7 @@ class Instance
 
         # We don't need the framework for much, in this case only for report
         # generation, version number etc.
-        @framework = Arachni::Framework.new( @opts )
+        @framework = Arachni::Framework.new( @options )
         @issues    = []
     end
 
@@ -150,32 +150,32 @@ class Instance
     end
 
     def prepare_rpc_options
-        if @opts.dispatcher.grid? && @opts.spawns <= 0
+        if @options.dispatcher.grid? && @options.spawns <= 0
             print_error "The 'spawns' option needs to be more than 1 for Grid scans."
             exit 1
         end
 
-        if (@opts.dispatcher.grid? || @opts.spawns > 0) && @opts.scope.restrict_paths.any?
+        if (@options.dispatcher.grid? || @options.spawns > 0) && @options.scope.restrict_paths.any?
             print_error "Option 'scope_restrict_paths' is not supported when in High-Performance mode."
             exit 1
         end
 
         # No checks have been specified, set the mods to '*' (all).
-        if @opts.checks.empty?
-            @opts.checks = ['*']
+        if @options.checks.empty?
+            @options.checks = ['*']
         end
 
-        if !@opts.audit.links && !@opts.audit.forms &&
-            !@opts.audit.cookies && !@opts.audit.headers
+        if !@options.audit.links && !@options.audit.forms &&
+            !@options.audit.cookies && !@options.audit.headers
 
             print_info 'No element audit options were specified, will audit ' <<
                            'links, forms and cookies.'
             print_line
 
-            @opts.audit.elements :links, :forms, :cookies
+            @options.audit.elements :links, :forms, :cookies
         end
 
-        opts = @opts.to_h.deep_clone
+        opts = @options.to_h.deep_clone
         %w(paths rpc dispatcher datastore).each { |k| opts.delete( k.to_sym ) }
 
         if opts[:http][:cookie_jar_filepath]
@@ -199,7 +199,7 @@ class Instance
 
         @framework.reports.run :stdout, report
 
-        filepath = report.save( @opts.datastore.report_path )
+        filepath = report.save( @options.datastore.report_path )
         filesize = (File.size( filepath ).to_f / 2**20).round(2)
 
         print_info "Report saved at: #{filepath} [#{filesize}MB]"
@@ -257,7 +257,7 @@ class Instance
         print_info "Burst average response time  #{http[:burst_average_response_time]} seconds"
         print_info "Burst average                #{http[:burst_responses_per_second]} requests/second"
         print_info "Timed-out requests           #{http[:time_out_count]}"
-        print_info "Original max concurrency     #{@opts.http.request_concurrency}"
+        print_info "Original max concurrency     #{@options.http.request_concurrency}"
         print_info "Throttled max concurrency    #{http[:max_concurrency]}"
     end
 
@@ -267,7 +267,7 @@ class Instance
             fail Arachni::Exceptions::NoCookieJar, "Cookie-jar '#{jar}' doesn't exist."
         end
 
-        Arachni::Element::Cookie.from_file( @opts.url, jar ).inject({}) do |h, e|
+        Arachni::Element::Cookie.from_file( @options.url, jar ).inject({}) do |h, e|
             h.merge!( e.simple ); h
         end
     end

@@ -44,9 +44,7 @@ module Utilities
         print_line( interceptor.call, unmute )
     end
 
-    #
     # Outputs all available checks and their info.
-    #
     def list_platforms( platform_info )
         print_line
         print_line
@@ -65,9 +63,7 @@ module Utilities
 
     end
 
-    #
     # Outputs all available checks and their info.
-    #
     def list_checks( checks )
         print_line
         print_line
@@ -118,9 +114,7 @@ module Utilities
 
     end
 
-    #
     # Outputs all available reports and their info.
-    #
     def list_reports( reports )
         print_line
         print_line
@@ -157,9 +151,7 @@ module Utilities
         end
     end
 
-    #
     # Outputs all available reports and their info.
-    #
     def list_plugins( plugins )
         print_line
         print_line
@@ -196,25 +188,23 @@ module Utilities
         end
     end
 
-    #
-    # Loads an Arachni Framework Profile file and merges it with the
-    # user supplied options.
+    # Loads an Arachni Framework Profile file and merges it with the user
+    # supplied options.
     #
     # @param    [Array<String>]    profiles    the files to load
-    #
     def load_profile( profiles )
-        exception_jail{
-            profiles.each { |filename| @opts.merge!( @opts.load( filename ) ) }
-        }
+        exception_jail do
+            profiles.each do |filename|
+                Arachni::Options.merge!( Arachni::Options.load( filename ) )
+            end
+        end
     end
 
-    #
     # Saves options to an Arachni Framework Profile file.
     #
     # @param    [String]    filename
-    #
     def save_profile( filename )
-        if filename = @opts.save( filename )
+        if (filename = Arachni::Options.save( filename ))
             print_status "Saved profile in '#{filename}'."
             print_line
         else
