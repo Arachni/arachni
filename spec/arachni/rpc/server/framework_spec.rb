@@ -190,7 +190,7 @@ describe 'Arachni::RPC::Server::Framework' do
                 instance.framework.pause
                 instance.framework.status.should == :pausing
 
-                Timeout.timeout 5 do
+                Timeout.timeout 10 do
                     sleep 1 while !instance.framework.paused?
                 end
 
@@ -209,14 +209,14 @@ describe 'Arachni::RPC::Server::Framework' do
 
             instance.framework.status.should == :pausing
 
-            Timeout.timeout 5 do
+            Timeout.timeout 10 do
                 sleep 1 while !instance.framework.paused?
             end
 
             instance.framework.paused?.should be_true
             instance.framework.resume.should be_true
 
-            Timeout.timeout 5 do
+            Timeout.timeout 10 do
                 sleep 1 while instance.framework.paused?
             end
 
