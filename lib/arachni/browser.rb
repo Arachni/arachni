@@ -907,71 +907,63 @@ class Browser
 
         port = nil
         10.times do
-            port = available_port
+            port      = available_port
+            comm_file = "#{Dir.tmpdir}/#{generate_token}"
 
-            read, write = IO.pipe
+            container_pid = Processes::Manager.spawn( :browser,
+                comm_file: comm_file,
+                port:      port,
+                proxy:     @proxy.address
+            )
+            Process.detach container_pid
 
-            # Really, really awkward code but we need a pipe to a PhantomJS
-            # process which will ignore signals. So, we need a child-container
-            # process to trap signals and ignore them and a IO.popen'ed
-            # PhantomJS grand-child.
-            phantomjs_container = fork do
-                %w(QUIT INT).each do |signal|
-                    next if !Signal.list.has_key?( signal )
-                    trap( signal, 'IGNORE' )
-                end
+            sleep 0.1 while !File.exist?( comm_file )
+            f = File.open( comm_file, 'r' )
 
-                write.sync = true
+            # Wait for the container to let us know of the browser's PID.
+            next if !(pid = wait_for_phantomjs( f, container_pid ))
 
-                io = IO.popen([ 'phantomjs',
-                    "--webdriver=#{port}",
-                    "--proxy=http://#{@proxy.address}/",
-                    '--ignore-ssl-errors=true',
-                    err: [:child, :out]]
-                )
-                Process.detach io.pid
-
-                # Send the PID to the parent right away, he may need to kill
-                # PhantomJS if initialization takes too long.
-                write.puts io.pid.to_s
-
-                # Wait for PhantomJS to initialize.
-                buff = ''
-                while buff << io.gets.to_s
-                    break if buff.include? 'running on port'
-                end
-
-                # All done, we're good to go.
-                write.puts 'ping'
-            end
-            Process.detach phantomjs_container
-
-            # First read is the pid.
-            @phantomjs_pid = read.readline.to_i
+            @phantomjs_pid = pid.to_i
 
             # Wait for the container to let us know when PhantomJS is up and
-            # running. If it doesn't make contact in time cleanup and start over.
-            if !IO.select( [read], nil, nil, PHANTOMJS_SPAWN_TIMEOUT )
-                read.close
-                write.close
+            # running.
+            next if !wait_for_phantomjs( f, container_pid )
 
-                kill phantomjs_container
-                kill_phantomjs
-                next
-            end
-
-            read.close
-            write.close
-
-            kill phantomjs_container
+            close_and_delete_file( f )
+            kill container_pid
             break
         end
 
         @phantomjs_url = "http://localhost:#{port}"
     end
 
+    def close_and_delete_file( file )
+        file.close
+        File.delete file.path
+    end
+
+    def wait_for_phantomjs( comm_file, container_pid )
+        if IO.select( [comm_file], nil, nil, PHANTOMJS_SPAWN_TIMEOUT )
+            begin
+                buff = ''
+                with_timeout PHANTOMJS_SPAWN_TIMEOUT do
+                    buff << comm_file.getc.to_s while !buff.end_with?( "\n" )
+                end
+                return buff
+            rescue Timeout::Error
+            end
+        end
+
+        close_and_delete_file( comm_file )
+
+        kill container_pid
+        kill_phantomjs
+
+        nil
+    end
+
     def kill_phantomjs
-        kill @phantomjs_pid
+        kill( @phantomjs_pid ) if @phantomjs_pid
 
         @phantomjs_pid = nil
         @phantomjs_url = nil
