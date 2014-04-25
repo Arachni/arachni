@@ -8,6 +8,8 @@ require 'ostruct'
 module Arachni
 lib = Options.paths.lib
 
+require lib + 'processes/manager'
+
 require lib + 'rpc/client/instance'
 require lib + 'rpc/client/dispatcher'
 
@@ -724,7 +726,7 @@ class Instance
         expose_over_unix_socket do
             num.times do
                 token  = generate_token
-                socket = "/tmp/arachni-instance-slave-#{generate_token}"
+                socket = "/#{Dir.tmpdir}/arachni-instance-slave-#{generate_token}"
 
                 pid = Processes::Manager.spawn( :instance, socket: socket, token: token )
                 Process.detach pid
