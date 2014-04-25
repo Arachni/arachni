@@ -5,6 +5,7 @@
 
 require 'watir-webdriver'
 require_relative 'watir/element'
+require_relative 'processes/manager'
 require_relative 'browser/element_locator'
 require_relative 'browser/javascript'
 
