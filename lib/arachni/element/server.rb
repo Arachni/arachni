@@ -57,12 +57,8 @@ class Server < Base
     #
     # @param    [String]    url Resource to check.
     # @param    [Block] block
-    #   Block to be passed  `true` if the resource exists, `false` otherwise.
-    #
-    # @return   [Object]
-    #   * `nil` if no URL was provided.
-    #   * `false` if the request couldn't be fired.
-    #   * `true` if everything went fine.
+    #   Block to be passed  `true` if the resource exists or `false` otherwise
+    #   and the response for the resource check.
     def remote_file_exist?( url, &block )
         http.request( url, method: :head, performer: self ) do |response|
             if response.code != 200
@@ -78,7 +74,7 @@ class Server < Base
             end
         end
 
-        true
+        nil
     end
     alias :remote_file_exists? :remote_file_exist?
 
