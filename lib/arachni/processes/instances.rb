@@ -68,35 +68,29 @@ class Instances
     #
     # @return   [RPC::Client::Instance]
     #
-    def spawn( options = {}, &block )
+    def spawn( options = {} )
         token = options.delete(:token) || generate_token
 
-        options = Options.to_h.merge(
+        options = {
             spawns: options[:spawns],
             rpc:    {
                 server_socket:  options[:socket],
-                server_port:    options[:port] || available_port,
+                server_port:    options[:port]    || available_port,
                 server_address: options[:address] || 'localhost'
             }
-        )
+        }
 
         url = nil
         if options[:rpc][:server_socket]
             url = options[:rpc][:server_socket]
+
             options[:rpc].delete :server_address
             options[:rpc].delete :server_port
         else
             url = "#{options[:rpc][:server_address]}:#{options[:rpc][:server_port]}"
         end
 
-        Manager.fork_em do
-            Options.set( options )
-            block.call( Options.instance ) if block_given?
-
-            require "#{Arachni::Options.paths.lib}/rpc/server/instance"
-
-            RPC::Server::Instance.new( Options.instance, token )
-        end
+        Manager.spawn( :instance, options: options, token: token )
 
         begin
             Timeout.timeout( 10 ) do

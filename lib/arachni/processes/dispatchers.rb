@@ -57,12 +57,9 @@ class Dispatchers
     #   To be passed to {Arachni::Options#set}. Allows `address` instead of
     #   `rpc_server_address` and `port` instead of `rpc_port`.
     #
-    # @param    [Block] block
-    #   Passed {Arachni::Options} to configure the Dispatcher options.
-    #
     # @return   [RPC::Client::Dispatcher]
-    def spawn( options = {}, &block )
-        options = Options.to_h.merge(
+    def spawn( options = {} )
+        options = {
             dispatcher: {
                 neighbour:        options[:neighbour],
                 node_pipe_id:     options[:pipe_id],
@@ -70,22 +67,15 @@ class Dispatchers
                 external_address: options[:external_address],
                 pool_size:        options[:pool_size]
             },
-            rpc: {
-                server_port:    options[:port] || available_port,
+            rpc:        {
+                server_port:    options[:port]    || available_port,
                 server_address: options[:address] || 'localhost'
             }
-        )
+        }
+
+        Manager.spawn( :dispatcher, options: options )
+
         url = "#{options[:rpc][:server_address]}:#{options[:rpc][:server_port]}"
-
-        Manager.fork_em do
-            Options.set( options )
-            block.call( Options.instance ) if block_given?
-
-            require "#{Arachni::Options.paths.lib}/rpc/server/dispatcher"
-
-            RPC::Server::Dispatcher.new
-        end
-
         begin
             Timeout.timeout( 10 ) do
                 while sleep( 0.1 )

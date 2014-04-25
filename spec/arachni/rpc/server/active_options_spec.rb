@@ -3,17 +3,6 @@ require 'spec_helper'
 require Arachni::Options.paths.lib + 'rpc/client/instance'
 require Arachni::Options.paths.lib + 'rpc/server/instance'
 
-class Arachni::RPC::Server::Instance
-    def cookies
-        Arachni::HTTP::Client.cookies.map(&:to_rpc_data)
-    end
-    def clear_cookies
-        Arachni::Options.reset
-        Arachni::HTTP::Client.cookie_jar.clear
-        true
-    end
-end
-
 describe Arachni::RPC::Server::ActiveOptions do
     before( :all ) do
         @utils = Arachni::Utilities

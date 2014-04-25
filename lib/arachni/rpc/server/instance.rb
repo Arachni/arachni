@@ -642,6 +642,20 @@ class Instance
         true
     end
 
+    # For testing.
+    # @private
+    def cookies
+        Arachni::HTTP::Client.cookies
+    end
+
+    # For testing.
+    # @private
+    def clear_cookies
+        Arachni::Options.reset
+        Arachni::HTTP::Client.cookie_jar.clear
+        true
+    end
+
     private
 
     def browser_cluster

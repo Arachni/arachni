@@ -104,14 +104,18 @@ class Manager
     end
 
     def spawn( executable, options = {} )
-        options[:options] = Options.to_h
+        options[:options] ||= {}
+        options[:options]   = Options.to_h.merge( options[:options] )
+
         encoded_options   = Base64.strict_encode64( Marshal.dump( options ) )
         executable        = "#{Options.paths.lib}processes/executables/#{executable}.rb"
 
         # It's very, **VERY** important that we use this argument format as it
         # bypasses the OS shell and we can thus count on a 1-to-1 process
         # creation and that the PID we get will be for the actual process.
-        Process.spawn( 'ruby', executable, encoded_options )
+        pid = Process.spawn( 'ruby', executable, encoded_options )
+        self << pid
+        pid
     end
 
     def self.method_missing( sym, *args, &block )
