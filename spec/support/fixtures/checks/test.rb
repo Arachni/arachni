@@ -16,7 +16,15 @@ class Arachni::Checks::Test < Arachni::Check::Base
 
     def clean_up
         return if !@ran
-        log_issue( vector: Factory.create( :unique_active_vector, :Link ) )
+        log_issue( vector: vector )
+    end
+
+    def vector
+        v = Arachni::Element::Link.new( url: 'http://test.com', inputs: { stuff: 1 } )
+        v.affected_input_name  = rand(9999).to_s + rand(9999).to_s
+        v.affected_input_value = 2
+        v.seed                 = 2
+        v
     end
 
     def self.info

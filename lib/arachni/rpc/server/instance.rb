@@ -594,7 +594,6 @@ class Instance
             if browser_cluster
                 # We can't block until the browser cluster shuts down cleanly
                 # (i.e. wait for any running jobs) but we don't need to anyways.
-                # Process.detach fork { browser_cluster.shutdown false }
                 t << Thread.new { browser_cluster.shutdown false }
             end
 
@@ -724,30 +723,14 @@ class Instance
         # which they should talk to us.
         expose_over_unix_socket do
             num.times do
-                token = generate_token
+                token  = generate_token
+                socket = "/tmp/arachni-instance-slave-#{generate_token}"
 
-                pid = fork do
-                    # Make sure we start with a clean env (namepsace, opts, etc).
-                    @framework.reset
-
-                    # All Instances will be on the same host so use UNIX domain
-                    # sockets to avoid TCP/IP overhead.
-                    Options.rpc.server_address          = nil
-                    Options.dispatcher.external_address = nil
-                    Options.rpc.server_port             = nil
-                    Options.rpc.server_socket           = "/tmp/arachni-instance-slave-#{Process.pid}"
-
-                    Server::Instance.new( Options.instance, token )
-                end
-
+                pid = Processes::Manager.spawn( :instance, socket: socket, token: token )
                 Process.detach pid
                 @consumed_pids << pid
 
-                instance_info = {
-                    url:   "/tmp/arachni-instance-slave-#{pid}",
-                    token: token
-                }
-
+                instance_info = { url: socket, token: token }
                 wait_till_alive( instance_info[:url] ) { q << instance_info }
             end
         end

@@ -9,6 +9,7 @@ require 'sys/proctable'
 module Arachni
 
 lib = Options.paths.lib
+require lib + 'processes/manager'
 require lib + 'rpc/client'
 require lib + 'rpc/server/base'
 require lib + 'rpc/server/instance'
@@ -57,11 +58,11 @@ class Dispatcher
             method.parameters.flatten.include? :block
         end
 
-        @url = "#{@options.dispatcher.external_address}:#{@options.rpc.server_port.to_s}"
+        @url = "#{@options.dispatcher.external_address}:#{@options.rpc.server_port}"
 
         # let the instances in the pool know who to ask for routing instructions
         # when we're in grid mode.
-        @options.datastore.dispatcher_url = @url.dup
+        @options.datastore.dispatcher_url = @url
 
         prep_logging
 
@@ -312,12 +313,7 @@ class Dispatcher
         port  = available_port
         token = generate_token
 
-        pid = fork do
-            @options.rpc.server_port = port
-            Server::Instance.new( @options, token )
-        end
-
-        # Let the child go about its business.
+        pid = Processes::Manager.spawn( :instance, port: port, token: token )
         Process.detach( pid )
         @consumed_pids << pid
 
@@ -344,7 +340,7 @@ class Dispatcher
     def when_instance_ready( url, token, &block )
         options     = OpenStruct.new
         options.rpc = OpenStruct.new( @options.to_h[:rpc] )
-        options.rpc.max_retries = 0
+        options.rpc.client_max_retries = 0
 
         client = Client::Instance.new( options, url, token )
         timer = ::EM::PeriodicTimer.new( 0.1 ) do

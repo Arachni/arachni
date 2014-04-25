@@ -103,6 +103,17 @@ class Manager
         end
     end
 
+    def spawn( executable, options = {} )
+        options[:options] = Options.to_h
+        encoded_options   = Base64.strict_encode64( Marshal.dump( options ) )
+        executable        = "#{Options.paths.lib}processes/executables/#{executable}.rb"
+
+        # It's very, **VERY** important that we use this argument format as it
+        # bypasses the OS shell and we can thus count on a 1-to-1 process
+        # creation and that the PID we get will be for the actual process.
+        Process.spawn( 'ruby', executable, encoded_options )
+    end
+
     def self.method_missing( sym, *args, &block )
         if instance.respond_to?( sym )
             instance.send( sym, *args, &block )
