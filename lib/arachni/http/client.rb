@@ -131,8 +131,10 @@ class Client
 
         @after_run = []
 
-        @_404 = Hash.new
+        @with_regular_404_handler = Support::LookUp::HashSet.new
+        @_404  = Hash.new
         @mutex = Monitor.new
+
         self
     end
 
@@ -481,6 +483,10 @@ class Client
                 get( generator.call, follow_location: true ) do |c_res|
                     gathered_responses += 1
 
+                    if c_res.code == 404
+                        @with_regular_404_handler << path
+                    end
+
                     if _404_signatures_for_path( path )[i][:body]
                         _404_signatures_for_path( path )[i][:rdiff] =
                             _404_signatures_for_path( path )[i][:body].
@@ -501,6 +507,14 @@ class Client
         end
 
         nil
+    end
+
+    def has_custom_404_signature?( path )
+        _404_data_for_path( path )[:analyzed]
+    end
+
+    def has_custom_404_handler?( path )
+        !@with_regular_404_handler.include?( path )
     end
 
     def self.method_missing( sym, *args, &block )
@@ -562,10 +576,6 @@ class Client
 
     def _404_signatures_for_path( path )
         _404_data_for_path( path )[:signatures]
-    end
-
-    def has_custom_404_signature?( path )
-        _404_data_for_path( path )[:analyzed]
     end
 
     def has_custom_404_signature( path )

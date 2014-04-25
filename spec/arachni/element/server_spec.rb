@@ -82,34 +82,48 @@ describe Arachni::Element::Server do
             @base_url = url + '/log_remote_file_if_exists/'
         end
 
-        context 'when a remote file exists' do
-            it 'returns true' do
-                exists = false
-                auditable.remote_file_exist?( @base_url + 'true' ) { |bool| exists = bool }
-                @framework.http.run
-                exists.should be_true
+        context 'without a custom 404 handler' do
+            context 'when a remote file exists' do
+                it 'returns true' do
+                    exists = false
+                    auditable.remote_file_exist?( @base_url + 'true' ) { |bool| exists = bool }
+                    @framework.http.run
+                end
+
+                context 'on subsequent calls' do
+                    it 'does not perform a check for a custom-404' do
+                        auditable.remote_file_exist?( @base_url + 'true' ) {}
+                        @framework.http.run
+
+                        exists = false
+                        @framework.http.should_not receive(:custom_404?)
+                        auditable.remote_file_exist?( @base_url + 'true' ) { |bool| exists = bool }
+                        @framework.http.run
+                        exists.should be_true
+                    end
+                end
+            end
+
+            context 'when a remote file does not exist' do
+                it 'returns false' do
+                    exists = true
+                    auditable.remote_file_exist?( @base_url + 'false' ) { |bool| exists = bool }
+                    @framework.http.run
+                    exists.should be_false
+                end
+            end
+
+            context 'when the response is a redirect' do
+                it 'returns false' do
+                    exists = true
+                    auditable.remote_file_exist?( @base_url + 'redirect' ) { |bool| exists = bool }
+                    @framework.http.run
+                    exists.should be_false
+                end
             end
         end
 
-        context 'when a remote file does not exist' do
-            it 'returns false' do
-                exists = true
-                auditable.remote_file_exist?( @base_url + 'false' ) { |bool| exists = bool }
-                @framework.http.run
-                exists.should be_false
-            end
-        end
-
-        context 'when the response is a redirect' do
-            it 'returns false' do
-                exists = true
-                auditable.remote_file_exist?( @base_url + 'redirect' ) { |bool| exists = bool }
-                @framework.http.run
-                exists.should be_false
-            end
-        end
-
-        context 'when faced with a custom 404' do
+        context 'without a custom 404 handler' do
             before { @_404_url = @base_url + 'custom_404/' }
 
             context 'and the response' do
@@ -157,7 +171,6 @@ describe Arachni::Element::Server do
                     end
                 end
             end
-
         end
     end
 end

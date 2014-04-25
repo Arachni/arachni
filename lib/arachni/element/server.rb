@@ -68,8 +68,12 @@ class Server < Base
             if response.code != 200
                 block.call( false, response )
             else
-                http.get( url, performer: self ) do |r|
-                    http.custom_404?( r ) { |bool| block.call( !bool, r ) }
+                if needs_custom_404_check?( url )
+                    http.get( url, performer: self ) do |r|
+                        http.custom_404?( r ) { |bool| block.call( !bool, r ) }
+                    end
+                else
+                    block.call( true, response )
                 end
             end
         end
@@ -80,6 +84,13 @@ class Server < Base
 
     def http
         auditor.http
+    end
+
+    def needs_custom_404_check?( url )
+        path = get_path( url )
+
+        !http.has_custom_404_signature?( path ) ||
+            http.has_custom_404_handler?( path )
     end
 
 end
