@@ -26,15 +26,3 @@ end
 def process_kill_many( *args )
     Arachni::Processes::Manager.kill_many( *args )
 end
-
-# @param (see Arachni::Processes::Manager#quiet_fork)
-# @return (see Arachni::Processes::Manager#quiet_fork)
-def process_quiet_fork( *args, &block )
-    Arachni::Processes::Manager.quiet_fork( *args, &block )
-end
-
-# @param (see Arachni::Processes::Manager#fork_em)
-# @return (see Arachni::Processes::Manager#fork_em)
-def process_fork_em( *args, &block )
-    Arachni::Processes::Manager.fork_em( *args, &block )
-end

@@ -9,11 +9,9 @@ require 'eventmachine'
 module Arachni
 module Processes
 
-#
 # Helper for managing processes.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Manager
     include Singleton
 
@@ -27,12 +25,10 @@ class Manager
         @discard_output = true
     end
 
-    #
     # @param    [Integer]   pid
     #   Adds a PID to the {#pids} and detaches the process.
     #
     # @return   [Integer]   `pid`
-    #
     def <<( pid )
         @pids << pid
         Process.detach pid
@@ -72,37 +68,21 @@ class Manager
         nil
     end
 
-    # @param    [Block] block   Block to fork and discard its output.
-    def quiet_fork( &block )
-        self << fork( &discard_output( &block ) )
-    end
-
-    # @param    [Block] block
-    #   Block to fork and run inside EventMachine's reactor thread -- its output
-    #   will be discarded..
-    def fork_em( *args, &block )
-        self << ::EM.fork_reactor( *args, &discard_output( &block ) )
-    end
-
     # Overrides the default setting of discarding process outputs.
     def preserve_output
         @discard_output = false
     end
 
-    # @param    [Block] block   Block to run silently.
-    def discard_output( &block )
-        if !block_given?
-            @discard_output = true
-            return
-        end
+    def preserve_output?
+        !discard_output?
+    end
 
-        proc do
-            if @discard_output
-                $stdout.reopen( '/dev/null', 'w' )
-                $stderr.reopen( '/dev/null', 'w' )
-            end
-            block.call
-        end
+    def discard_output
+        @discard_output = true
+    end
+
+    def discard_output?
+        @discard_output
     end
 
     def spawn( executable, options = {} )
