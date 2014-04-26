@@ -17,6 +17,8 @@ module Processes
 class Manager
     include Singleton
 
+    RUNNER = "#{File.dirname( __FILE__ )}/executables/base.rb"
+
     # @return   [Array<Integer>] PIDs of all running processes.
     attr_reader :pids
 
@@ -107,13 +109,13 @@ class Manager
         options[:options] ||= {}
         options[:options]   = Options.to_h.merge( options[:options] )
 
-        encoded_options   = Base64.strict_encode64( Marshal.dump( options ) )
-        executable        = "#{Options.paths.lib}processes/executables/#{executable}.rb"
+        encoded_options = Base64.strict_encode64( Marshal.dump( options ) )
+        executable      = "#{Options.paths.executables}/#{executable}.rb"
 
         # It's very, **VERY** important that we use this argument format as it
         # bypasses the OS shell and we can thus count on a 1-to-1 process
         # creation and that the PID we get will be for the actual process.
-        pid = Process.spawn( 'ruby', executable, encoded_options )
+        pid = Process.spawn( 'ruby', RUNNER, executable, encoded_options )
         self << pid
         pid
     end

@@ -1,5 +1,3 @@
-require_relative 'base'
-
 %w(QUIT INT).each do |signal|
     next if !Signal.list.has_key?( signal )
     trap( signal, 'IGNORE' )

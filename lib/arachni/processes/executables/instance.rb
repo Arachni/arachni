@@ -1,4 +1,3 @@
-require_relative 'base'
 require Options.paths.root + 'ui/cli/output'
 require Options.paths.lib  + 'rpc/server/instance'
 

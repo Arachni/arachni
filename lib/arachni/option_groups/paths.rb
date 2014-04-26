@@ -15,6 +15,7 @@ class Paths < Arachni::OptionGroup
     attr_accessor :gfx
     attr_accessor :components
     attr_accessor :logs
+    attr_accessor :executables
     attr_accessor :checks
     attr_accessor :reports
     attr_accessor :plugins
@@ -43,9 +44,11 @@ class Paths < Arachni::OptionGroup
         @fingerprinters  = @components + 'fingerprinters/'
 
         @lib     = @root + 'lib/arachni/'
-        @support = @lib + 'support/'
-        @mixins  = @lib + 'mixins/'
-        @arachni = @lib[0...-1]
+
+        @executables = @lib + 'processes/executables/'
+        @support     = @lib + 'support/'
+        @mixins      = @lib + 'mixins/'
+        @arachni     = @lib[0...-1]
     end
 
     # @return   [String]    Root path of the framework.
