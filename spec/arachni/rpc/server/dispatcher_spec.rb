@@ -5,7 +5,7 @@ require "#{Arachni::Options.paths.lib}/rpc/server/dispatcher"
 
 describe Arachni::RPC::Server::Dispatcher do
     before( :all ) do
-        @job_info_keys  = %w(token pid port url owner birthdate starttime helpers currtime age runtime proc)
+        @job_info_keys  = %w(token pid port url owner birthdate starttime helpers currtime age runtime)
         @node_info_keys = %w(url pipe_id weight nickname cost)
     end
 
@@ -184,19 +184,21 @@ describe Arachni::RPC::Server::Dispatcher do
 
     describe '#running_jobs' do
         it 'returns proc info for running jobs' do
-            dispatcher = dispatcher_light_spawn
+            dispatcher = dispatcher_spawn
 
-            dispatcher.running_jobs.size.should ==
-                dispatcher.jobs.reject { |job| job['proc'].empty? }.size
+            3.times { dispatcher.dispatch }
+
+            dispatcher.running_jobs.size.should == 3
         end
     end
 
     describe '#finished_jobs' do
         it 'returns proc info for finished jobs' do
-            dispatcher = dispatcher_light_spawn
+            dispatcher = dispatcher_spawn
 
-            dispatcher.finished_jobs.size.should ==
-                dispatcher.jobs.select { |job| job['proc'].empty? }.size
+            3.times { Arachni::Processes::Manager.kill dispatcher.dispatch['pid'] }
+
+            dispatcher.finished_jobs.size.should == 3
         end
     end
 
@@ -244,15 +246,6 @@ describe Arachni::RPC::Server::Dispatcher do
     describe '#log' do
         it 'returns the contents of the log file' do
             dispatcher_light_spawn.log.should be_true
-        end
-    end
-
-    describe '#proc_info' do
-        it 'returns the proc info of the dispatcher' do
-            info = dispatcher_light_spawn.proc_info
-
-            info.should be_true
-            info['node'].keys.should == @node_info_keys
         end
     end
 

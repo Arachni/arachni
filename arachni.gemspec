@@ -72,9 +72,6 @@ Gem::Specification.new do |s|
     # Markup parsing.
     s.add_dependency 'nokogiri',        '>= 1.5.7.rc1'
 
-    # System resource consumption and other proc info for the Grid.
-    s.add_dependency 'sys-proctable',   '>= 0.9.1'
-
     # Outputting data in table format (arachni_rpcd_monitor).
     s.add_dependency 'terminal-table',  '>= 1.4.2'
 

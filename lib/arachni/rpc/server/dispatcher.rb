@@ -3,9 +3,6 @@
     All rights reserved.
 =end
 
-require 'socket'
-require 'sys/proctable'
-
 module Arachni
 
 lib = Options.paths.lib
@@ -40,7 +37,6 @@ class Dispatcher
 
     include Utilities
     include UI::Output
-    include ::Sys
 
     HANDLER_NAMESPACE = Handler
 
@@ -191,29 +187,29 @@ class Dispatcher
             cjob['currtime'] = currtime.to_s
             cjob['age']      = currtime - Time.parse( cjob['birthdate'] )
             cjob['runtime']  = currtime - Time.parse( cjob['starttime'] )
-            cjob['proc']     = proc_hash( cjob['pid'] )
+            cjob['alive']    = !!Process.kill( 0, pid ) rescue false
 
             return cjob
         end
     end
 
-    # @return   [Array<Hash>]   Returns proc info for all jobs.
+    # @return   [Array<Hash>]   Returns info for all jobs.
     def jobs
         @jobs.map { |cjob| job( cjob['pid'] ) }.compact
     end
 
-    # @return   [Array<Hash>]   Returns proc info for all running jobs.
+    # @return   [Array<Hash>]   Returns info for all running jobs.
     #
     # @see #jobs
     def running_jobs
-        jobs.reject { |job| job['proc'].empty? }
+        jobs.select { |job| job['alive'] }
     end
 
-    # @return   [Array<Hash>]   Returns proc info for all finished jobs.
+    # @return   [Array<Hash>]   Returns info for all finished jobs.
     #
     # @see #jobs
     def finished_jobs
-        jobs.select { |job| job['proc'].empty? }
+        jobs.reject { |job| job['alive'] }
     end
 
     # @return   [Float]
@@ -249,9 +245,9 @@ class Dispatcher
         IO.read prep_logging
     end
 
-    # @return   [Hash]   the server's proc info
-    def proc_info
-        proc_hash( Process.pid ).merge( 'node' => @node.info )
+    # @private
+    def pid
+        Process.pid
     end
 
     private
@@ -360,10 +356,6 @@ class Dispatcher
         # reroute all output to a logfile
         @logfile ||= reroute_to_file( @options.paths.logs +
             "/Dispatcher - #{Process.pid}-#{@options.rpc.server_port}.log" )
-    end
-
-    def proc_hash( pid )
-        struct_to_h( ProcTable.ps( pid ) )
     end
 
     def connect_to_peer( url )

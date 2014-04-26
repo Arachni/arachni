@@ -105,7 +105,7 @@ class Dispatchers
     def kill( url )
         dispatcher = connect( url )
         Manager.kill_many dispatcher.stats['consumed_pids']
-        Manager.kill dispatcher.proc_info['pid'].to_i
+        Manager.kill dispatcher.pid
     rescue => e
         #ap e
         #ap e.backtrace

@@ -83,6 +83,8 @@
         - `Dispatcher`
             - `#dispatch` -- Returns `false` when the pool is empty as a signal
                 to check back later.
+            - Removed `#proc_info` method.
+            - Removed `proc` from job info data.
         - `Instance`
             - Removed `#output`.
         - `Framework`

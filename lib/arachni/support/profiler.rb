@@ -5,7 +5,6 @@
 
 require 'ruby-mass'
 require 'stackprof'
-require 'sys/proctable'
 
 module Arachni
 module Support
@@ -99,6 +98,8 @@ class Profiler
     end
 
     def resource_consumption
+        require 'sys/proctable'
+
         procinfo = ::Sys::ProcTable.ps( Process.pid )
         {
             cpu_utilization:    procinfo[:pctcpu],
