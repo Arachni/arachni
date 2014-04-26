@@ -105,9 +105,9 @@ class Server::Dispatcher::Handler
         ::EM::Iterator.new( arr, max_concurrency )
     end
 
-    # @return   [Array<Hash>]   All running instances.
+    # @return   [Array<Hash>]   Alive instances.
     def instances
-        dispatcher.jobs.select { |j| !j['proc'].empty? }
+        dispatcher.running_jobs
     end
 
     #
