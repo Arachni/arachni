@@ -1,60 +1,22 @@
 require 'spec_helper'
 require "#{Arachni::Options.paths.lib}/rpc/server/dispatcher"
 
-class Node < Arachni::RPC::Server::Dispatcher::Node
-
-    def initialize( * )
-        super
-
-        methods.each do |m|
-            next if method( m ).owner != Arachni::RPC::Server::Dispatcher::Node
-            self.class.send :private, m
-            self.class.send :public, m
-        end
-
-        @server = Arachni::RPC::Server::Base.new( @options )
-        @server.add_async_check do |method|
-            # methods that expect a block are async
-            method.parameters.flatten.include?( :block )
-        end
-        @server.add_handler( 'node', self )
-        @server.run
-    end
-
-    def url
-        "#{@options.rpc.server_address}:#{@options.rpc.server_port}"
-    end
-
-    def shutdown
-        process_kill Process.pid
-    end
-
-    def connect_to_peer( url )
-        self.class.connect_to_peer( url, @options )
-    end
-
-    def self.connect_to_peer( url, opts )
-        c = Arachni::RPC::Client::Base.new( opts, url )
-        Arachni::RPC::RemoteObjectMapper.new( c, 'node' )
-    end
-end
-
 describe Arachni::RPC::Server::Dispatcher::Node do
     before( :all ) do
-        @get_node = proc do |c_port|
-            port = c_port || available_port
+        Arachni::Options.paths.executables = "#{fixtures_path}executables/"
+
+        @get_node = proc do |port = available_port|
             Arachni::Options.rpc.server_port = port
 
-            process_fork_em do
-                Node.new( Arachni::Options )
-            end
+            Arachni::Processes::Manager.spawn( :node )
 
             sleep 1
 
-            Node.connect_to_peer(
-                "#{Arachni::Options.rpc.server_address}:#{port}",
-                Arachni::Options
+            c = Arachni::RPC::Client::Base.new(
+                Arachni::Options,
+                "#{Arachni::Options.rpc.server_address}:#{port}"
             )
+            Arachni::RPC::RemoteObjectMapper.new( c, 'node' )
         end
 
         @node = @get_node.call
