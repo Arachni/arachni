@@ -28,6 +28,7 @@ class WebServerManager
         server_info[:pid]  = Process.spawn(
             'ruby', server_info[:path], "-p #{server_info[:port]}"
         )
+        Process.detach server_info[:pid]
 
         begin
             Timeout::timeout( 10 ) { sleep 0.1 while !up?( name ) }
