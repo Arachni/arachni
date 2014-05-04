@@ -101,7 +101,7 @@ class Instances
                         connect( url, token ).service.alive?
                         break
                     rescue Exception => e
-                        ap e
+                        # ap e
                     end
                 end
             end
