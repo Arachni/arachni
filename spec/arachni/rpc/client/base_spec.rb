@@ -19,7 +19,8 @@ class Server
     end
 
     def start
-        t = Thread.new { @server.run }
+        Arachni::Reactor.global.run_in_thread if !Arachni::Reactor.global.running?
+        @server.start
         sleep( 0.1 ) while !@server.ready?
     end
 
@@ -101,7 +102,7 @@ describe Arachni::RPC::Client::Base do
                         begin
                             client = described_class.new( empty_options, server.url )
                             client.call( "foo.bar" )
-                        rescue Arachni::RPC::Exceptions::SSLPeerVerificationFailed
+                        rescue Arachni::RPC::Exceptions::ConnectionError
                             raised = true
                         end
 
