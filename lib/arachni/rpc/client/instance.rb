@@ -6,7 +6,6 @@
 module Arachni
 
 require Options.paths.lib + 'rpc/client/base'
-require Options.paths.lib + 'rpc/client/proxy'
 
 module RPC
 class Client
@@ -31,9 +30,9 @@ class Instance
         @framework = Framework.new( @client )
         @service   = Service.new( @client )
 
-        @options   = RemoteObjectMapper.new( @client, 'options' )
-        @checks    = RemoteObjectMapper.new( @client, 'checks' )
-        @plugins   = RemoteObjectMapper.new( @client, 'plugins' )
+        @options   = Proxy.new( @client, 'options' )
+        @checks    = Proxy.new( @client, 'checks' )
+        @plugins   = Proxy.new( @client, 'plugins' )
     end
 
     def token

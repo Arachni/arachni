@@ -4,7 +4,7 @@
 =end
 
 require 'ostruct'
-require 'arachni/rpc/em'
+require 'arachni/rpc'
 require_relative '../serializer'
 
 module Arachni
@@ -14,7 +14,7 @@ class Server
 # RPC server class
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-class Base < ::Arachni::RPC::EM::Server
+class Base < Server
 
     # @param    [Arachni::Options]   options
     #   Relevant options:

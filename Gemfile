@@ -7,10 +7,7 @@ gem 'faker'
 
 gem 'stackprof'
 
-if File.exist?( p = File.dirname( __FILE__ ) + '/../arachni-rpc-em' )
-    gem 'arachni-rpc-em', path: p
-else
-    gem 'arachni-rpc-em', git: 'http://github.com/Arachni/arachni-rpc-em.git'
-end
+gem 'arachni-reactor', path: File.dirname( __FILE__ ) + '/../arachni-reactor'
+gem 'arachni-rpc',     path: File.dirname( __FILE__ ) + '/../arachni-rpc-v0.2'
 
 gemspec

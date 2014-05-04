@@ -60,18 +60,18 @@ module Distributor
         slave_iterator.each( *[wrapped_foreach, after] )
     end
 
-    # @return   <::EM::Iterator>  Iterator for all slave instances.
+    # @return   [Arachni::Reactor::Iterator]
+    #   Iterator for all slave instances.
     def slave_iterator
         iterator_for( @slaves )
     end
 
-    #
     # @param    [Array]    arr
     #
-    # @return   [::EM::Iterator]  Iterator for the provided array.
-    #
+    # @return   [Arachni::Reactor::Iterator]
+    #   Iterator for the provided array.
     def iterator_for( arr )
-        ::EM::Iterator.new( arr, MAX_CONCURRENCY )
+        Reactor.global.create_iterator( arr, MAX_CONCURRENCY )
     end
 
     private

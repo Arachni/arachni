@@ -10,7 +10,7 @@ class Server
         if block_given?
             start
             block.call self
-            process_kill_em
+            process_kill_reactor
         end
     end
 

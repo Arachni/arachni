@@ -59,10 +59,7 @@ shared_examples_for 'check' do
 
         @issues.clear
 
-        if ::EM.reactor_running?
-            ::EM.stop
-            sleep 0.1 while ::EM.reactor_running?
-        end
+        process_kill_reactor
 
         framework.reset
     end

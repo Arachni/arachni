@@ -3,7 +3,8 @@
     All rights reserved.
 =end
 
-module Arachni::RPC
+module Arachni
+module RPC
 
 # Base class and namespace for all RPCD/Dispatcher handlers.
 #
@@ -45,12 +46,12 @@ class Server::Dispatcher::Handler
         dispatcher.instance_eval { @node }
     end
 
-    #
     # Performs an asynchronous map operation over all running instances.
     #
-    # @param [Proc]  each    Block to be passed {Client::Instance} and {::EM::Iterator}.
-    # @param [Proc]  after   Block to be passed the Array of results.
-    #
+    # @param [Proc]  each
+    #   Block to be passed {Client::Instance} and {Arachni::Reactor::Iterator}.
+    # @param [Proc]  after
+    #   Block to be passed the Array of results.
     def map_instances( each, after )
         wrap_each = proc do |instance, iterator|
             each.call( connect_to_instance( instance ), iterator )
@@ -58,11 +59,10 @@ class Server::Dispatcher::Handler
         iterator_for( instances ).map( wrap_each, after )
     end
 
-    #
     # Performs an asynchronous iteration over all running instances.
     #
-    # @param [Proc]  block    Block to be passed {Client::Instance} and {::EM::Iterator}.
-    #
+    # @param [Proc]  block
+    #   Block to be passed {Client::Instance} and {Arachni::Reactor::Iterator}.
     def each_instance( &block )
         wrap = proc do |instance, iterator|
             block.call( connect_to_instance( instance ), iterator )
@@ -70,7 +70,6 @@ class Server::Dispatcher::Handler
         iterator_for( instances ).each( &wrap )
     end
 
-    #
     # Defers a blocking operation in order to avoid blocking the main Reactor loop.
     #
     # The operation will be run in its own Thread - DO NOT block forever.
@@ -82,27 +81,23 @@ class Server::Dispatcher::Handler
     # @param    [Proc]  callback    Block to call with the results of the operation.
     #
     # @param    [Block]  block      Operation to defer.
-    #
     def defer( operation = nil, callback = nil, &block )
-        ::EM.defer( *[operation, callback].compact, &block )
+        Thread.new( *[operation, callback].compact, &block )
     end
 
-    #
     # Runs a block as soon as possible in the Reactor loop.
     #
     # @param    [Block] block
-    #
     def run_asap( &block )
-        ::EM.next_tick( &block )
+        Reactor.global.next_tick( &block )
     end
 
+    # @param    [Array]    list
     #
-    # @param    [Array]    arr
-    #
-    # @return   [::EM::Iterator]  Iterator for the provided array.
-    #
-    def iterator_for( arr, max_concurrency = 10 )
-        ::EM::Iterator.new( arr, max_concurrency )
+    # @return   [Reactor::Iterator]
+    #   Iterator for the provided array.
+    def iterator_for( list, max_concurrency = 10 )
+        Reactor.global.create_iterator( list, max_concurrency )
     end
 
     # @return   [Array<Hash>]   Alive instances.
@@ -149,5 +144,6 @@ class Server::Dispatcher::Handler
         @instance_connections[url] ||= Client::Instance.new( options, url, token )
     end
 
+end
 end
 end

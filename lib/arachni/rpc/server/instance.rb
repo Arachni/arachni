@@ -145,7 +145,7 @@ class Instance
 
         @consumed_pids = []
 
-        ::EM.run do
+        Reactor.global.run do
             run
         end
     end
@@ -570,7 +570,7 @@ class Instance
                 slaves |= spawns
 
                 # Process the Instances.
-                ::EM::Iterator.new( slaves, slaves.empty? ? 1 : slaves.size ).
+                Reactor.global.create_iterator( slaves, slaves.empty? ? 1 : slaves.size ).
                     each( each, after )
             end
         end
@@ -589,7 +589,7 @@ class Instance
         print_status 'Shutting down...'
 
         # We're shutting down services so we need to use a concurrent way but
-        # without going through EM.
+        # without going through the Reactor.
         Thread.new do
             t = []
 
@@ -626,7 +626,9 @@ class Instance
         pids  = ([Process.pid] | @consumed_pids)
         pids |= browser_cluster.consumed_pids if browser_cluster
 
-        block.call pids if @consumed_pids.size == 1
+        if @consumed_pids.empty?
+            return block.call pids
+        end
 
         foreach = proc do |instance, iter|
             instance.service.consumed_pids do |slave_pids|
@@ -733,7 +735,7 @@ class Instance
             return
         end
 
-        q = ::EM::Queue.new
+        q = Reactor.global.create_queue
 
         # Before spawning slaves, expose our API over a UNIX socket via
         # which they should talk to us.
@@ -761,7 +763,7 @@ class Instance
     end
 
     def wait_till_alive( socket, &block )
-        ::EM.defer do
+        Thread.new do
             # We're using UNIX sockets as URLs so wait till the Instance
             # has created its socket before proceeding.
             sleep 0.1 while !File.exist?( socket )
@@ -772,7 +774,7 @@ class Instance
     # Starts  RPC service.
     def run
         print_status 'Starting the server...'
-        @server.run
+        @server.start
     end
 
     def dispatcher
@@ -807,13 +809,12 @@ class Instance
 
         Options.rpc.server_socket = "/tmp/arachni-instance-master-#{Process.pid}"
 
-        ::EM.defer do
+        Thread.new do
             unix = Base.new( @options, @token )
             set_handlers( unix )
 
-            # Don't change this to ::EM.defer because we'll get a thread error.
             Thread.new do
-                unix.run
+                unix.start
             end
 
             sleep 0.1 while !File.exist?( Options.rpc.server_socket )

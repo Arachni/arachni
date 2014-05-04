@@ -33,6 +33,8 @@ class Instances
     # @return   [RPC::Client::Instance]
     #
     def connect( url, token = nil )
+        Reactor.global.run_in_thread if !Reactor.global.running?
+
         token ||= @list[url]
         @list[url] ||= token
 
@@ -98,7 +100,8 @@ class Instances
                     begin
                         connect( url, token ).service.alive?
                         break
-                    rescue Exception
+                    rescue Exception => e
+                        ap e
                     end
                 end
             end

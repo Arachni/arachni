@@ -61,9 +61,9 @@ class Manager
         @pids.clear
     end
 
-    # Stops the EventMachine reactor.
-    def kill_em
-        ::EM.stop while ::EM.reactor_running? && sleep( 0.1 )
+    # Stops the Reactor.
+    def kill_reactor
+        Reactor.stop
     rescue
         nil
     end

@@ -62,7 +62,7 @@ class Server::Dispatcher::Node
 
         log_updated_neighbours
 
-        ::EM.add_periodic_timer( @options.dispatcher.node_ping_interval ) do
+        Reactor.global.at_interval( @options.dispatcher.node_ping_interval ) do
             ping
             check_for_comebacks
         end
@@ -129,7 +129,7 @@ class Server::Dispatcher::Node
                 block.call( @nodes_info_cache )
             end
 
-            ::EM::Iterator.new( neighbours ).map( each, after )
+            Reactor.global.create_iterator( neighbours ).map( each, after )
         else
             block.call( @nodes_info_cache )
         end

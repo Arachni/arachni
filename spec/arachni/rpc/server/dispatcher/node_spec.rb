@@ -5,6 +5,8 @@ describe Arachni::RPC::Server::Dispatcher::Node do
     before( :all ) do
         Arachni::Options.paths.executables = "#{fixtures_path}executables/"
 
+        Arachni::Reactor.global.run_in_thread if !Arachni::Reactor.global.running?
+
         @get_node = proc do |port = available_port|
             Arachni::Options.rpc.server_port = port
 
@@ -16,12 +18,12 @@ describe Arachni::RPC::Server::Dispatcher::Node do
                 Arachni::Options,
                 "#{Arachni::Options.rpc.server_address}:#{port}"
             )
-            Arachni::RPC::RemoteObjectMapper.new( c, 'node' )
+            Arachni::RPC::Proxy.new( c, 'node' )
         end
 
         @node = @get_node.call
     end
-    before( :each ) { options.dispatcher.external_address = nil }
+    before( :each ) { Arachni::Options.dispatcher.external_address = nil }
 
     let(:options) { Arachni::Options }
 
@@ -48,11 +50,11 @@ describe Arachni::RPC::Server::Dispatcher::Node do
 
     context 'when a previously unreachable neighbour comes back to life' do
         before( :all ) do
-            options.dispatcher.node_ping_interval = 0.5
+            Arachni::Options.dispatcher.node_ping_interval = 0.5
         end
 
         after( :all ) do
-            options.dispatcher.node_ping_interval = nil
+            Arachni::Options.dispatcher.node_ping_interval = nil
         end
 
         it 'gets re-added to the neighbours list' do
@@ -76,11 +78,11 @@ describe Arachni::RPC::Server::Dispatcher::Node do
 
     context 'when a neighbour becomes unreachable' do
         before( :all ) do
-            options.dispatcher.node_ping_interval = 0.5
+            Arachni::Options.dispatcher.node_ping_interval = 0.5
         end
 
         after( :all ) do
-            options.dispatcher.node_ping_interval = nil
+            Arachni::Options.dispatcher.node_ping_interval = nil
         end
 
         it 'is removed' do
@@ -92,11 +94,21 @@ describe Arachni::RPC::Server::Dispatcher::Node do
             c.neighbours.should == [n.url]
             n.neighbours.should == [c.url]
 
+            ap 1
             begin
+                ap 2
                 n.shutdown
-            rescue Exception
+                ap 3
+            rescue => e
+                ap 4
+                ap e
+                ap 5
             end
+
+            ap 6
             sleep 4
+
+            ap c.neighbours
             c.neighbours.should be_empty
         end
     end

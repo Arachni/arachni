@@ -3,7 +3,7 @@
     All rights reserved.
 =end
 
-require 'arachni/rpc/em'
+require 'arachni/rpc'
 require_relative '../serializer'
 
 module Arachni
@@ -11,7 +11,7 @@ module RPC
 class Client
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-class Base < ::Arachni::RPC::EM::Client
+class Base < Client
     attr_reader :url
 
     # @param    [Arachni::Options]   options
@@ -35,7 +35,7 @@ class Base < ::Arachni::RPC::EM::Client
         super(
             serializer:  Serializer,
             host:        host,
-            port:        port,
+            port:        port.to_i,
             socket:      socket,
             token:       token,
             max_retries: options.rpc.client_max_retries,

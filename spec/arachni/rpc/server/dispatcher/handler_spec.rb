@@ -64,8 +64,6 @@ describe Arachni::RPC::Server::Dispatcher::Handler do
         it 'defers execution of the given block' do
             args = [1, 'stuff']
             @dispatcher.echo.test_defer( *args ).should == args
-
-            @dispatcher.echo.test_defer_two_args( *args ).should == args
         end
     end
 

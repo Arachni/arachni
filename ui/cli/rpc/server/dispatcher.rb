@@ -21,7 +21,7 @@ class Dispatcher
     def initialize
         OptionParser.new.parse
 
-        ::EM.run do
+        Reactor.global.run do
             Arachni::RPC::Server::Dispatcher.new
         end
     end

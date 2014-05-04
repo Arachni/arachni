@@ -49,7 +49,7 @@ Gem::Specification.new do |s|
     s.add_dependency 'msgpack'
 
     # RPC client/server implementation.
-    s.add_dependency 'arachni-rpc-em',  '0.2.1dev'
+    s.add_dependency 'arachni-rpc',     '0.2.0'
 
     # HTTP client.
     s.add_dependency 'typhoeus',        '0.6.8'

@@ -3,10 +3,10 @@
     All rights reserved.
 =end
 
-# @param (see Arachni::Processes::Manager#kill_em)
-# @return (see Arachni::Processes::Manager#kill_em)
-def process_kill_em( *args )
-    Arachni::Processes::Manager.kill_em( *args )
+# @param (see Arachni::Processes::Manager#kill_reactor)
+# @return (see Arachni::Processes::Manager#kill_reactor)
+def process_kill_reactor( *args )
+    Arachni::Processes::Manager.kill_reactor( *args )
 end
 
 # @param (see Arachni::Processes::Manager#kill)

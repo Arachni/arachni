@@ -35,7 +35,7 @@ class Handler::Echo < Handler
     end
 
     def test_iterator_for
-        iterator_for( instances ).class == ::EM::Iterator
+        iterator_for( instances ).class == Arachni::Reactor::Iterator
     end
 
     def test_connect_to_dispatcher( &block )
@@ -50,10 +50,6 @@ class Handler::Echo < Handler
         defer do
             block.call args
         end
-    end
-
-    def test_defer_two_args( *args, &block )
-        defer( proc { args }, proc { |r| block.call r } )
     end
 
     def test_run_asap( *args, &block )

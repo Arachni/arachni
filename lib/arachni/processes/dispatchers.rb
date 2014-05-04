@@ -30,6 +30,8 @@ class Dispatchers
     #
     # @return   [RPC::Client::Dispatcher]
     def connect( url, options = { } )
+        Reactor.global.run_in_thread if !Reactor.global.running?
+
         options[:client_max_retries] = options.delete(:max_retries)
 
         fresh = options.delete( :fresh )
@@ -82,7 +84,8 @@ class Dispatchers
                     begin
                         connect( url, max_retries: 1 ).alive?
                         break
-                    rescue Exception
+                    rescue Exception => e
+                        # ap e
                     end
                 end
             end

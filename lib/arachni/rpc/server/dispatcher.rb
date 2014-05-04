@@ -71,16 +71,16 @@ class Dispatcher
 
         @jobs          = []
         @consumed_pids = []
-        @pool          = ::EM::Queue.new
+        @pool          = Reactor.global.create_queue
 
         if @options.dispatcher.pool_size > 0
             @options.dispatcher.pool_size.times { add_instance_to_pool( false ) }
         end
 
         # Check up on the pool and start the server once it has been filled.
-        timer = ::EM::PeriodicTimer.new( 0.1 ) do
+        Reactor.global.at_interval( 0.1 ) do |task|
             next if @options.dispatcher.pool_size != @pool.size
-            timer.cancel
+            task.done
 
             _handlers.each do |name, handler|
                 @server.add_handler( name, handler.new( @options, self ) )
@@ -123,7 +123,7 @@ class Dispatcher
             block.call nodes.sort_by { |_, score| score }[0][0]
         end
 
-        ::EM::Iterator.new( @node.neighbours ).map( each, after )
+        Reactor.global.create_iterator( @node.neighbours ).map( each, after )
     end
 
     # Dispatches an {Instance} from the pool.
@@ -169,7 +169,7 @@ class Dispatcher
             end
         end
 
-        ::EM.next_tick { add_instance_to_pool }
+        Reactor.global.schedule { add_instance_to_pool }
     end
 
     # Returns proc info for a given pid
@@ -339,11 +339,13 @@ class Dispatcher
         options.rpc.client_max_retries = 0
 
         client = Client::Instance.new( options, url, token )
-        timer = ::EM::PeriodicTimer.new( 0.1 ) do
+        Reactor.global.delay( 0.1 ) do |task|
             client.service.alive? do |r|
-                next if r.rpc_exception?
+                if r.rpc_exception?
+                    Reactor.global.delay( 0.1, &task )
+                    next
+                end
 
-                timer.cancel
                 client.close
 
                 block.call

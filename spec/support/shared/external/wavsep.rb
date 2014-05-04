@@ -12,10 +12,7 @@ shared_examples_for 'wavsep' do
 
     after :each do
         @framework.reset
-        if ::EM.reactor_running?
-            ::EM.stop
-            sleep 0.1 while ::EM.reactor_running?
-        end
+        process_kill_reactor
     end
 
     def format_error( logged_urls, logged_resources, expected_resources )

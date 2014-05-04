@@ -1,9 +1,13 @@
 require 'spec_helper'
+require "#{Arachni::Options.paths.lib}/rpc/server/base"
 
 describe Arachni::RPC::Server::Base do
     before( :all ) do
         opts = Arachni::Options.instance
         opts.rpc.server_port = available_port
+
+        Arachni::Reactor.global.run_in_thread if !Arachni::Reactor.global.running?
+
         @server = Arachni::RPC::Server::Base.new( opts )
     end
 
@@ -11,10 +15,11 @@ describe Arachni::RPC::Server::Base do
         opts = Arachni::Options.instance
         opts.rpc.server_address = nil
         opts.rpc.server_port    = nil
-        opts.rpc.server_socket  = '/tmp/arachni-base-server'
+        opts.rpc.server_socket  = "/tmp/arachni-base-server-#{Arachni::Utilities.generate_token}"
         server = Arachni::RPC::Server::Base.new( opts )
 
-        Thread.new{ server.run }
+        server.start
+
         raised = false
         begin
             Timeout::timeout( 20 ){
@@ -37,7 +42,8 @@ describe Arachni::RPC::Server::Base do
 
         context 'when the server is ready' do
             it 'returns true' do
-                Thread.new{ @server.run }
+                @server.start
+
                 raised = false
                 begin
                     Timeout::timeout( 20 ){

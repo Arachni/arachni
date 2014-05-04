@@ -19,7 +19,7 @@ class Node < Arachni::RPC::Server::Dispatcher::Node
             method.parameters.flatten.include?( :block )
         end
         @server.add_handler( 'node', self )
-        @server.run
+        @server.start
     end
 
     def url
@@ -27,7 +27,11 @@ class Node < Arachni::RPC::Server::Dispatcher::Node
     end
 
     def shutdown
-        Arachni::Processes::Manager.kill Process.pid
+        Reactor.global.delay 2 do
+            Arachni::Processes::Manager.kill Process.pid
+        end
+
+        nil
     end
 
     def connect_to_peer( url )
@@ -36,10 +40,10 @@ class Node < Arachni::RPC::Server::Dispatcher::Node
 
     def self.connect_to_peer( url, opts )
         c = Arachni::RPC::Client::Base.new( opts, url )
-        Arachni::RPC::RemoteObjectMapper.new( c, 'node' )
+        Arachni::RPC::Proxy.new( c, 'node' )
     end
 end
 
-::EM.run do
+Reactor.global.run do
     Node.new
 end
