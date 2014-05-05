@@ -17,7 +17,8 @@ crt.not_before = Time.now
 crt.not_after  = Time.now + 1 * 365 * 24 * 60 * 60 # 1 year
 
 options = {
-    Port:            ARGV.first.gsub( /\D/, '' ).to_i,
+    Port:            ARGV[1].to_i,
+    Host:            ARGV[3],
     SSLEnable:       true,
     SSLVerifyClient: OpenSSL::SSL::VERIFY_NONE,
     SSLCertificate:  crt,
