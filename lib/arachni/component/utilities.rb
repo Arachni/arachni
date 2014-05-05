@@ -18,7 +18,7 @@ module Utilities
     #   The block to be passed each line as it's read.
     def read_file( filename, &block )
         component_path = block_given? ?
-            block.source_location.first : caller.first.split(':').first
+            block.source_location.first : caller_path
 
         # The name of the component that called us.
         component_name = File.basename( component_path, '.rb' )

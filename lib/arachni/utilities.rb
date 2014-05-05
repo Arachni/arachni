@@ -14,6 +14,18 @@ module Arachni
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 module Utilities
 
+    # @return   [String]
+    #   Filename (without extension) of the caller.
+    def caller_name
+        File.basename( caller_path( 3 ), '.rb' )
+    end
+
+    # @return   [String]
+    #   Filepath of the caller.
+    def caller_path( offset = 2 )
+        ::Kernel.caller[offset].split( /:(\d+):in/ ).first
+    end
+
     # @return   [String]    random HEX (SHA2) string
     def seed
         @@seed ||= generate_token

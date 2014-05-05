@@ -7,6 +7,7 @@ require 'yaml'
 require 'singleton'
 
 require_relative 'error'
+require_relative 'utilities'
 
 module Arachni
 
@@ -52,7 +53,7 @@ class Options
             if instance.respond_to?( sym )
                 instance.send( sym, *args, &block )
             elsif
-            super( sym, *args, &block )
+                super( sym, *args, &block )
             end
         end
 
@@ -74,7 +75,7 @@ class Options
         # Should be called by {OptionGroup.inherited}.
         # @private
         def register_group( group )
-            name = File.basename( caller[1].split( ':' ).first, '.rb' )
+            name = Utilities.caller_name
 
             # Prepare an attribute reader for this group...
             attr_reader name

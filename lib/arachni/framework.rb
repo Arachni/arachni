@@ -606,7 +606,7 @@ class Framework
     #
     # @param    [Bool]  wait    Wait until the system has been paused.
     def pause( wait = true )
-        state.pause caller, wait
+        state.pause caller_name, wait
     end
 
     # @note Each call from a unique caller is counted as a pause request
@@ -615,7 +615,7 @@ class Framework
     #
     # Removes a {#pause} request for the current caller.
     def resume
-        state.resume caller
+        state.resume caller_name
     end
 
     # Writes a {Snapshot.dump} to disk and aborts the scan.
@@ -1111,12 +1111,6 @@ class Framework
     def pop_page_from_queue
         return if page_queue.empty?
         page_queue.pop
-    end
-
-    def caller
-        if /^(.+?):(\d+)(?::in `(.*)')?/ =~ ::Kernel.caller[1]
-            Regexp.last_match[1]
-        end
     end
 
     def harvest_http_responses
