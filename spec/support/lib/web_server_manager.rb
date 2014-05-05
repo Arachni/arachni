@@ -13,10 +13,14 @@ class WebServerManager
     def initialize
         @lib     = "#{support_path}/servers/"
         @servers = {}
+        @consumed_ports = Set.new
 
         Dir.glob( File.join( @lib + '**', '*.rb' ) ) do |path|
+            {} while @consumed_ports.include?( (port = available_port) )
+            @consumed_ports << port
+
             @servers[normalize_name( File.basename( path, '.rb' ) )] = {
-                port: available_port,
+                port: port,
                 path: path
             }
         end
