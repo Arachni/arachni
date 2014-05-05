@@ -58,18 +58,13 @@ class Instances
         @list[client_or_url.is_a?( String ) ? client_or_url : client_or_url.url ]
     end
 
-    #
     # Spawns an {RPC::Server::Instance} process.
     #
     # @param    [Hash]  options
     #   To be passed to {Arachni::Options#set}. Allows `address` instead of
     #   `rpc_server_address` and `port` instead of `rpc_port`.
     #
-    # @param    [Block] block
-    #   Passed {Arachni::Options} to configure the Dispatcher options.
-    #
     # @return   [RPC::Client::Instance]
-    #
     def spawn( options = {} )
         token = options.delete(:token) || generate_token
 
