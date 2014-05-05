@@ -23,6 +23,30 @@ class Instance
     require_relative 'instance/framework'
     require_relative 'instance/service'
 
+    class <<self
+
+        def when_ready( url, token, &block )
+            options     = OpenStruct.new
+            options.rpc = OpenStruct.new( @options.to_h[:rpc] )
+            options.rpc.client_max_retries = 0
+
+            client = new( options, url, token )
+            Reactor.global.delay( 0.1 ) do |task|
+                client.service.alive? do |r|
+                    if r.rpc_exception?
+                        Reactor.global.delay( 0.1, &task )
+                        next
+                    end
+
+                    client.close
+
+                    block.call
+                end
+            end
+        end
+
+    end
+
     def initialize( options, url, token = nil )
         @token  = token
         @client = Base.new( options, url, token )

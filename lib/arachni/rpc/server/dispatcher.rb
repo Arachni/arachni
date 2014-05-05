@@ -319,7 +319,7 @@ class Dispatcher
         url = "#{@options.dispatcher.external_address}:#{port}"
 
         # Wait until the Instance has booted before adding it to the pool.
-        when_instance_ready( url, token ) do
+        Client::Instance.when_ready( url, token ) do
             @operation_in_progress = false
 
             @pool << {
@@ -331,27 +331,6 @@ class Dispatcher
                 'birthdate' => Time.now.to_s
             }
         end
-    end
-
-    def when_instance_ready( url, token, &block )
-        options     = OpenStruct.new
-        options.rpc = OpenStruct.new( @options.to_h[:rpc] )
-        options.rpc.client_max_retries = 0
-
-        client = Client::Instance.new( options, url, token )
-        Reactor.global.delay( 0.1 ) do |task|
-            client.service.alive? do |r|
-                if r.rpc_exception?
-                    Reactor.global.delay( 0.1, &task )
-                    next
-                end
-
-                client.close
-
-                block.call
-            end
-        end
-
     end
 
     def prep_logging
