@@ -30,7 +30,8 @@ class WebServerManager
         server_info        = data_for( name )
         server_info[:port] = port if port
         server_info[:pid]  = Process.spawn(
-            'ruby', server_info[:path], "-p #{server_info[:port]}"
+            'ruby', server_info[:path], '-p', server_info[:port].to_s,
+            '-o', address_for( name )
         )
         Process.detach server_info[:pid]
 
@@ -58,7 +59,7 @@ class WebServerManager
     end
 
     def protocol_for( name )
-        'http'
+        name.to_s.include?( 'https' ) ? 'https' : 'http'
     end
 
     def kill( name )
@@ -75,14 +76,11 @@ class WebServerManager
     end
 
     def up?( name )
-        begin
-            Net::HTTP.get_response( URI.parse( url_for( name, false ) ) )
-            true
-        rescue Errno::ECONNRESET
-            true
-        rescue
-            false
-        end
+        Typhoeus.get(
+            url_for( name, false ),
+            ssl_verifypeer: false,
+            ssl_verifyhost: 0
+        ).code != 0
     end
 
     def self.method_missing( sym, *args, &block )

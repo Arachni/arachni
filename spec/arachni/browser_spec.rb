@@ -46,7 +46,7 @@ describe Arachni::Browser do
     end
 
     it 'supports HTTPS' do
-        url = web_server_url_for( :browser_https ).gsub( 'http', 'https' )
+        url = web_server_url_for( :browser_https )
 
         @browser.start_capture
         pages = @browser.load( url ).flush_pages

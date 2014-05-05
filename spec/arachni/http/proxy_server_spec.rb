@@ -20,7 +20,7 @@ describe Arachni::HTTP::ProxyServer do
     end
 
     it 'supports SSL interception' do
-        url = web_server_url_for( :proxy_server_https ).gsub( 'http', 'https' )
+        url = web_server_url_for( :proxy_server_https )
 
         proxy = described_class.new
         proxy.start_async
