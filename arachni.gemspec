@@ -81,14 +81,6 @@ Gem::Specification.new do |s|
     # Browser support for DOM/JS/AJAX analysis stuff.
     s.add_dependency 'watir-webdriver'
 
-    s.add_development_dependency 'rake'
-    s.add_development_dependency 'rspec'
-
-    # For test mini-servers.
-    s.add_development_dependency 'thin'
-    s.add_development_dependency 'sinatra',         '~> 1.3.2'
-    s.add_development_dependency 'sinatra-contrib', '~> 1.3.1'
-
     s.post_install_message = <<MSG
 
 Thank you for installing Arachni, here are some resources which should
