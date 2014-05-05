@@ -737,20 +737,35 @@ class Instance
 
         q = Reactor.global.create_queue
 
-        # Before spawning slaves, expose our API over a UNIX socket via
-        # which they should talk to us.
-        expose_over_unix_socket do
+        spawner = proc do
             num.times do
-                token  = generate_token
-                socket = "/#{Dir.tmpdir}/arachni-instance-slave-#{generate_token}"
+                instance_info = { token: generate_token }
+                options       = instance_info.dup
 
-                pid = Processes::Manager.spawn( :instance, socket: socket, token: token )
+                if Reactor.supports_unix_sockets?
+                    instance_info[:url] = options[:socket] =
+                        "/#{Dir.tmpdir}/arachni-instance-slave-#{generate_token}"
+                else
+                    options[:port]      = Utilities.available_port
+                    instance_info[:url] = "#{Options.rpc.server_address}:#{options[:port]}"
+                end
+
+                pid = Processes::Manager.spawn( :instance, options )
                 Process.detach pid
                 @consumed_pids << pid
 
-                instance_info = { url: socket, token: token }
-                wait_till_alive( instance_info[:url] ) { q << instance_info }
+                Client::Instance.when_ready( instance_info[:url], instance_info[:token] ) do
+                    q << instance_info
+                end
             end
+        end
+
+        if Reactor.supports_unix_sockets?
+            # Before spawning slaves, expose our API over a UNIX socket via
+            # which they should talk to us to avoid the TCP/IP overhead.
+            expose_over_unix_socket(&spawner)
+        else
+            spawner.call
         end
 
         spawns = []
@@ -759,15 +774,6 @@ class Instance
                 spawns << r
                 block.call( spawns ) if spawns.size == num
             end
-        end
-    end
-
-    def wait_till_alive( socket, &block )
-        Thread.new do
-            # We're using UNIX sockets as URLs so wait till the Instance
-            # has created its socket before proceeding.
-            sleep 0.1 while !File.exist?( socket )
-            block.call true
         end
     end
 
