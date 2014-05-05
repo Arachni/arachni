@@ -22,6 +22,13 @@ describe 'Arachni::RPC::Server::Instance' do
         dispatcher_killall
     end
 
+    it 'supports UNIX sockets', if: Arachni::Reactor.supports_unix_sockets? do
+        socket = "/tmp/arachni-instance-#{@utils.generate_token}"
+        @instance = instance_spawn( socket: socket )
+        @instance.framework.multi_self_url.should == socket
+        @instance.service.alive?.should be_true
+    end
+
     describe '#snapshot_path' do
         context 'when the scan has not been suspended' do
             it 'returns nil' do
@@ -163,13 +170,6 @@ describe 'Arachni::RPC::Server::Instance' do
 
             @instance.service.report[:options].should == options
         end
-    end
-
-    it 'supports UNIX sockets' do
-        socket = "/tmp/arachni-instance-#{@utils.generate_token}"
-        @instance = instance_spawn( socket: socket )
-        @instance.framework.multi_self_url.should == socket
-        @instance.service.alive?.should be_true
     end
 
     describe '#service' do
