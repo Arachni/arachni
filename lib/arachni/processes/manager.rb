@@ -4,7 +4,6 @@
 =end
 
 require 'singleton'
-require 'eventmachine'
 
 module Arachni
 module Processes
