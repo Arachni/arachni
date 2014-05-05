@@ -50,24 +50,24 @@ class ProxyServer < WEBrick::HTTPProxyServer
             ssl_certificate_name: [ [ 'CN', 'Arachni' ] ]
         }.merge( options )
 
-        @logger = WEBrick::Log.new( '/dev/null', 7 )
+        @logger = WEBrick::Log.new( Gem.win_platform? ? 'NUL' : '/dev/null', 7 )
         # Will force the proxy to stfu.
         @logger.close
 
         super(
-            BindAddress:         @options[:address],
-            Port:                @options[:port],
-            MaxClients:          @options[:concurrency] || Options.http.request_concurrency,
-            ProxyVia:            false,
-            DoNotReverseLookup:  true,
-            AccessLog:           [],
-            Logger:              @logger,
-            Timeout:             @options[:timeout],
-            SSLEnable:           @options.include?( :ssl_certificate ) &&
-                                     @options.include?( :ssl_private_key ),
-            SSLCertName:         @options[:ssl_certificate_name],
-            SSLCertificate:      @options[:ssl_certificate],
-            SSLPrivateKey:       @options[:ssl_private_key]
+            BindAddress:        @options[:address],
+            Port:               @options[:port],
+            MaxClients:         @options[:concurrency] || Options.http.request_concurrency,
+            ProxyVia:           false,
+            DoNotReverseLookup: true,
+            AccessLog:          [],
+            Logger:             @logger,
+            Timeout:            @options[:timeout],
+            SSLEnable:          @options.include?( :ssl_certificate ) &&
+                                    @options.include?( :ssl_private_key ),
+            SSLCertName:        @options[:ssl_certificate_name],
+            SSLCertificate:     @options[:ssl_certificate],
+            SSLPrivateKey:      @options[:ssl_private_key]
         )
     end
 
