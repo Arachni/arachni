@@ -30,7 +30,7 @@ class WebServerManager
         server_info        = data_for( name )
         server_info[:port] = port if port
         server_info[:pid]  = Process.spawn(
-            'ruby', server_info[:path], '-p', server_info[:port].to_s,
+            RbConfig.ruby, server_info[:path], '-p', server_info[:port].to_s,
             '-o', address_for( name )
         )
         Process.detach server_info[:pid]
