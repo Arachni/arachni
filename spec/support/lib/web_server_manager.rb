@@ -3,12 +3,12 @@
     All rights reserved.
 =end
 
-require 'net/http'
-
 class WebServerManager
     include Singleton
     include Arachni::Utilities
-    attr_reader :lib
+
+    attr_reader   :lib
+    attr_accessor :address
 
     def initialize
         @lib     = "#{support_path}/servers/"
@@ -51,7 +51,7 @@ class WebServerManager
     end
 
     def address_for( name )
-        '127.0.0.2'
+        @address || '127.0.0.2'
     end
 
     def port_for( name )
@@ -73,6 +73,7 @@ class WebServerManager
 
     def killall
         @servers.keys.each { |name| kill name }
+        nil
     end
 
     def up?( name )

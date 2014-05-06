@@ -164,6 +164,13 @@ rescue LoadError
     puts '  gem install rspec'
 end
 
+desc 'Start a web server dispatcher.'
+task :web_server_dispatcher do
+    require_relative 'spec/support/lib/web_server_dispatcher'
+
+    WebServerDispatcher.new
+end
+
 desc 'Generate docs.'
 task :docs do
 

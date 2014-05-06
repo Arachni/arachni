@@ -27,5 +27,5 @@ def killall
     dispatcher_killall
     web_server_killall
     process_killall
-    process_kill_reactor
+    # process_kill_reactor
 end
