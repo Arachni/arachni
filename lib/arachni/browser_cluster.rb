@@ -279,8 +279,7 @@ class BrowserCluster
     #
     # @private
     def pop
-        job = @jobs.pop
-        job = pop if job_done? job
+        {} while job_done?( job = @jobs.pop )
         job
     end
 
