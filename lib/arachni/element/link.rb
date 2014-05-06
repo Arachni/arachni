@@ -58,7 +58,7 @@ class Link < Base
 
     def node
         return if !@html
-        Nokogiri::HTML.fragment( @html ).children.first
+        Nokogiri::HTML.fragment( @html.dup ).children.first
     end
 
     # @return   [Hash]

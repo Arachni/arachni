@@ -409,7 +409,7 @@ module Utilities
     def port_available?( port )
         begin
             socket = Socket.new( :INET, :STREAM, 0 )
-            socket.bind( Addrinfo.tcp( '127.0.0.1', port ) )
+            socket.bind( Socket.pack_sockaddr_in( port, 'localhost' ) )
             socket.close
             true
         rescue
