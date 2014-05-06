@@ -94,7 +94,7 @@ class Manager
         # It's very, **VERY** important that we use this argument format as it
         # bypasses the OS shell and we can thus count on a 1-to-1 process
         # creation and that the PID we get will be for the actual process.
-        pid = Process.spawn( 'ruby', RUNNER, executable, encoded_options )
+        pid = Process.spawn( RbConfig.ruby, RUNNER, executable, encoded_options )
         self << pid
         pid
     end
