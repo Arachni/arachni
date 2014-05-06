@@ -203,8 +203,7 @@ class Worker < Arachni::Browser
     end
 
     def phantomjs_alive?
-        Process.getpgid( @phantomjs_pid )
-        true
+        !!Process.kill( 0, @phantomjs_pid )
     rescue Errno::ESRCH
         false
     end
