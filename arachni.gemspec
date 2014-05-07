@@ -45,8 +45,12 @@ Gem::Specification.new do |s|
     # For compressing/decompressing system state archives.
     s.add_dependency 'rubyzip'
 
-    # General serialization.
-    s.add_dependency 'msgpack'
+    # RPC serialization.
+    if RUBY_PLATFORM == 'java'
+        s.add_dependency 'msgpack-jruby'
+    else
+        s.add_dependency 'msgpack'
+    end
 
     # RPC client/server implementation.
     s.add_dependency 'arachni-rpc',     '0.2.0'
