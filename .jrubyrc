@@ -1,4 +1,17 @@
+# Ruby 2.0 mode.
 compat.version=2.0
+
+# Make backtraces pretty.
 errno.backtrace=true
 backtrace.color=true
 backtrace.style=mri
+
+# Keep a lot of methods in the JIT cache.
+jruby.jit.max=16384
+
+# Could be trouble.
+compile.fastest=true
+
+# Store the JIT compilation data to disk for subsequent runs.
+# Will be set dynamically the first time Arachni is run.
+jit.codeCache=tmp/jit-cache
