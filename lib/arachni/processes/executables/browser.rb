@@ -10,7 +10,7 @@ File.open( $options[:comm_file], 'w' ) do |f|
                     "--webdriver=#{$options[:port]}",
                     "--proxy=http://#{$options[:proxy]}/",
                     '--ignore-ssl-errors=true',
-                    err: [:child, :out]]
+                    err: (Gem.win_platform? ? 'NUL' : '/dev/null') ]
     )
     Process.detach io.pid
 
