@@ -192,6 +192,13 @@ module Taint
         http.after_run do
             @setup_verification_callbacks = false
 
+            # Someone must have emptied the stored issues or issue storage is
+            # turned off.
+            if Data.issues.empty?
+                @logged_issues = []
+                next
+            end
+
             # Grab an untainted response.
             submit do |response|
                 @logged_issues.each do |hash|
