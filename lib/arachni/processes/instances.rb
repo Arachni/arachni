@@ -90,7 +90,7 @@ class Instances
         Manager.spawn( :instance, options: options, token: token )
 
         begin
-            Timeout.timeout( 10 ) do
+            Timeout.timeout( 30 ) do
                 while sleep( 0.1 )
                     begin
                         connect( url, token ).service.alive?
