@@ -18,24 +18,24 @@ module Utilities
     #   The block to be passed each line as it's read.
     def read_file( filename, &block )
         component_path = block_given? ?
-            block.source_location.first : caller_path
+            block.source_location.first : caller_path(1)
 
         # The name of the component that called us.
         component_name = File.basename( component_path, '.rb' )
 
         # The path to the component's data file directory.
-        path  = File.expand_path( File.dirname( component_path ) ) + "/#{component_name}/"
-        file  = File.open( "#{path}/#{filename}" )
+        path  = File.expand_path( File.dirname( component_path ) ) +
+            "/#{component_name}/"
 
-        if block_given?
-            # I really hope that ruby frees each line as soon as possible
-            # otherwise this provides no advantage
-            file.each { |line| yield line.strip }
-        else
-            file.read.lines.map { |l| l.strip }
+        File.open( "#{path}/#{filename}" ) do |file|
+            if block_given?
+                # I really hope that ruby frees each line as soon as possible
+                # otherwise this provides no advantage
+                file.each { |line| yield line.strip }
+            else
+                file.read.lines.map { |l| l.strip }
+            end
         end
-    ensure
-        file.close
     end
 
     extend self
