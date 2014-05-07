@@ -13,5 +13,6 @@ jruby.jit.max=16384
 compile.fastest=true
 
 # Store the JIT compilation data to disk for subsequent runs.
-# Will be set dynamically the first time Arachni is run.
-jit.codeCache=tmp/jit-cache
+# Could be nice but has to remain disabled for now as it throws
+# 'java.lang.NullPointerException' during runtime.
+#jit.codeCache=tmp/jit-cache
