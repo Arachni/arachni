@@ -3,7 +3,9 @@
     All rights reserved.
 =end
 
-require 'msgpack'
+if RUBY_PLATFORM != 'java'
+    require 'msgpack'
+end
 
 module Arachni
 module RPC
@@ -23,14 +25,14 @@ module Serializer
     # @return   [String]
     #   {#compress Compressed} `object` dump.
     def dump( object )
-        compress( MessagePack.dump( object ) )
+        compress( serializer.dump( object ) )
     end
 
     # @param    [String]   dump
     #   {#dump Dumped} object.
     # @return   [Object]
     def load( dump )
-        MessagePack.load( decompress( dump ) )
+        serializer.load( decompress( dump ) )
     end
 
     # Simulates an object's over-the-wire transmission by {#dump dumping}
@@ -72,6 +74,10 @@ module Serializer
         rescue Zlib::DataError
             string
         end
+    end
+
+    def serializer
+        @serializer ||= (RUBY_PLATFORM != 'java' ? MessagePack : Marshal)
     end
 
     extend self

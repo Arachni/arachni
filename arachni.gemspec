@@ -45,10 +45,8 @@ Gem::Specification.new do |s|
     # For compressing/decompressing system state archives.
     s.add_dependency 'rubyzip'
 
-    # RPC serialization.
-    if RUBY_PLATFORM == 'java'
-        s.add_dependency 'msgpack-jruby'
-    else
+    # RPC serialization when not on JRuby.
+    if RUBY_PLATFORM != 'java'
         s.add_dependency 'msgpack'
     end
 
