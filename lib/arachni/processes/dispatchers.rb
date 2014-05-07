@@ -79,7 +79,7 @@ class Dispatchers
 
         url = "#{options[:rpc][:server_address]}:#{options[:rpc][:server_port]}"
         begin
-            Timeout.timeout( 10 ) do
+            Timeout.timeout( 30 ) do
                 while sleep( 0.1 )
                     begin
                         connect( url, max_retries: 1 ).alive?
