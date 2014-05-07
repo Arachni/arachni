@@ -63,7 +63,7 @@ class RPC < Arachni::OptionGroup
     attr_accessor :client_max_retries
 
     set_defaults(
-        server_address: 'localhost',
+        server_address: '127.0.0.1',
         server_port:     7331
     )
 
