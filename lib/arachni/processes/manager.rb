@@ -88,13 +88,28 @@ class Manager
         options[:options] ||= {}
         options[:options]   = Options.to_h.merge( options[:options] )
 
-        encoded_options = Base64.strict_encode64( Marshal.dump( options ) )
-        executable      = "#{Options.paths.executables}/#{executable}.rb"
+        executable = "#{Options.paths.executables}/#{executable}.rb"
 
-        # It's very, **VERY** important that we use this argument format as it
-        # bypasses the OS shell and we can thus count on a 1-to-1 process
-        # creation and that the PID we get will be for the actual process.
-        pid = Process.spawn( RbConfig.ruby, RUNNER, executable, encoded_options )
+        if Process.respond_to? :fork
+            pid = Process.fork do
+                Framework.reset
+                Reactor.stop
+
+                $options = options
+
+                Options.update $options.delete(:options)
+
+                eval IO.read( executable )
+            end
+        else
+            encoded_options = Base64.strict_encode64( Marshal.dump( options ) )
+
+            # It's very, **VERY** important that we use this argument format as
+            # it bypasses the OS shell and we can thus count on a 1-to-1 process
+            # creation and that the PID we get will be for the actual process.
+            pid = Process.spawn( RbConfig.ruby, RUNNER, executable, encoded_options )
+        end
+
         self << pid
         pid
     end
