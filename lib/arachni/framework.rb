@@ -181,7 +181,7 @@ class Framework
 
     # @return   [BrowserCluster]
     def browser_cluster
-        return if !host_has_has_browser?
+        return if !host_has_browser?
 
         # Initialization may take a while so since we lazy load this make sure
         # that only one thread gets to this code at a time.
@@ -259,7 +259,7 @@ class Framework
             print_info "Analysis resulted in #{pushed.size} usable paths."
         end
 
-        if host_has_has_browser?
+        if host_has_browser?
             print_info "DOM depth: #{page.dom.depth} (Limit: #{options.scope.dom_depth_limit})"
 
             if page.dom.transitions.any?
@@ -322,7 +322,7 @@ class Framework
 
     # @return   [Bool]
     #   `true` if the environment has a browser, `false` otherwise.
-    def host_has_has_browser?
+    def host_has_browser?
         Browser.has_executable?
     end
 
@@ -930,7 +930,7 @@ class Framework
     # @param    [Page]  page    Page to analyze.
     def perform_browser_analysis( page )
         return if Options.scope.dom_depth_limit.to_i < page.dom.depth + 1 ||
-            !host_has_has_browser? || !page.has_script?
+            !host_has_browser? || !page.has_script?
 
         browser_cluster.queue( browser_job.forward( resource: page ) ) do |response|
             handle_browser_page response.page
