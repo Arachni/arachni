@@ -73,7 +73,7 @@ class Instances
             rpc:    {
                 server_socket:  options[:socket],
                 server_port:    options[:port]    || available_port,
-                server_address: options[:address] || 'localhost'
+                server_address: options[:address] || '127.0.0.1'
             }
         }
 

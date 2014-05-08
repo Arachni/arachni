@@ -164,7 +164,7 @@ class ProxyServer < WEBrick::HTTPProxyServer
     # @see #service
     # @see Webrick::HTTPProxyServer#service
     def do_CONNECT( req, res )
-        req.instance_variable_set( :@unparsed_uri, "localhost:#{interceptor_port}" )
+        req.instance_variable_set( :@unparsed_uri, "127.0.0.1:#{interceptor_port}" )
         start_ssl_interceptor
         super( req, res )
     end
@@ -197,7 +197,7 @@ class ProxyServer < WEBrick::HTTPProxyServer
         # The interceptor is only used for SSL decryption/encryption, the actual
         # proxy functionality is forwarded to the plain proxy server.
         @interceptor = self.class.new(
-            address:        'localhost',
+            address:        '127.0.0.1',
             port:            interceptor_port,
             ssl_certificate:
                 OpenSSL::X509::Certificate.new( File.read( INTERCEPTOR_CERTIFICATE ) ),

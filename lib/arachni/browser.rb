@@ -936,7 +936,7 @@ class Browser
             break
         end
 
-        @phantomjs_url = "http://localhost:#{port}"
+        @phantomjs_url = "http://127.0.0.1:#{port}"
     end
 
     def close_and_delete_file( file )

@@ -61,7 +61,7 @@ describe Arachni::RPC::Server::Dispatcher::Node do
             n = @get_node.call
 
             port = available_port
-            n.add_neighbour( 'localhost:' + port.to_s )
+            n.add_neighbour( '127.0.0.1:' + port.to_s )
 
             sleep 4
             n.neighbours.should be_empty
@@ -90,25 +90,17 @@ describe Arachni::RPC::Server::Dispatcher::Node do
             c = @get_node.call
 
             n.add_neighbour( c.url )
-            sleep 1
             c.neighbours.should == [n.url]
             n.neighbours.should == [c.url]
 
-            ap 1
             begin
-                ap 2
                 n.shutdown
-                ap 3
             rescue => e
-                ap 4
                 ap e
-                ap 5
             end
 
-            ap 6
             sleep 4
 
-            ap c.neighbours
             c.neighbours.should be_empty
         end
     end

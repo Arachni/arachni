@@ -6,7 +6,7 @@
 def reset_options
     opts = Arachni::Options.instance
     opts.reset
-    opts.rpc.server_address = 'localhost'
+    opts.rpc.server_address = '127.0.0.1'
 
     opts.paths.plugins        = fixtures_path + 'plugins/'
     opts.paths.checks         = fixtures_path + 'checks/'
