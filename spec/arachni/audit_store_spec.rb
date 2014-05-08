@@ -157,7 +157,7 @@ describe Arachni::AuditStore do
 
             context 'which is a directory' do
                 it 'saves the object under that directory' do
-                    directory = '/tmp/'
+                    directory = Dir.tmpdir
                     @report_file = audit_store.save( directory )
 
                     described_class.load( @report_file ).should == audit_store

@@ -445,7 +445,7 @@ describe Arachni::Framework do
             context 'is a directory' do
                 it 'stores the snapshot under it' do
                     @options.paths.checks       = fixtures_path + '/taint_check/'
-                    @options.snapshot.save_path = '/tmp/'
+                    @options.snapshot.save_path = Dir.tmpdir
 
                     described_class.new do |f|
                         f.options.url = web_server_url_for :framework_multi
@@ -466,7 +466,7 @@ describe Arachni::Framework do
                         Arachni::Data.issues.size.should < 500
                     end
 
-                    File.dirname( @snapshot ).should == '/tmp'
+                    File.dirname( @snapshot ).should == Dir.tmpdir
                     Arachni::Snapshot.load( @snapshot ).should be_true
                 end
             end
@@ -474,7 +474,7 @@ describe Arachni::Framework do
             context 'is a file path' do
                 it 'stores the snapshot there' do
                     @options.paths.checks       = fixtures_path + '/taint_check/'
-                    @options.snapshot.save_path = '/tmp/snapshot'
+                    @options.snapshot.save_path = "#{Dir.tmpdir}/snapshot"
 
                     described_class.new do |f|
                         f.options.url = web_server_url_for :framework_multi
@@ -495,7 +495,7 @@ describe Arachni::Framework do
                         Arachni::Data.issues.size.should < 500
                     end
 
-                    @snapshot.should == '/tmp/snapshot'
+                    @snapshot.should == "#{Dir.tmpdir}/snapshot"
                     Arachni::Snapshot.load( @snapshot ).should be_true
                 end
             end

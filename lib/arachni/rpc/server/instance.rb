@@ -744,7 +744,7 @@ class Instance
 
                 if Reactor.supports_unix_sockets?
                     instance_info[:url] = options[:socket] =
-                        "/#{Dir.tmpdir}/arachni-instance-slave-#{generate_token}"
+                        "#{Dir.tmpdir}/arachni-slave-#{generate_token}"
                 else
                     options[:port]      = Utilities.available_port
                     instance_info[:url] = "#{Options.rpc.server_address}:#{options[:port]}"
@@ -813,7 +813,7 @@ class Instance
             return
         end
 
-        Options.rpc.server_socket = "/tmp/arachni-instance-master-#{Process.pid}"
+        Options.rpc.server_socket = "#{Dir.tmpdir}/arachni-master-#{Process.pid}"
 
         Thread.new do
             unix = Base.new( @options, @token )

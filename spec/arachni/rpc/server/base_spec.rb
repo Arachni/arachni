@@ -15,7 +15,7 @@ describe Arachni::RPC::Server::Base do
         opts = Arachni::Options.instance
         opts.rpc.server_address = nil
         opts.rpc.server_port    = nil
-        opts.rpc.server_socket  = "/tmp/arachni-base-server-#{Arachni::Utilities.generate_token}"
+        opts.rpc.server_socket  = "#{Dir.tmpdir}/arachni-base-#{Arachni::Utilities.generate_token}"
         server = Arachni::RPC::Server::Base.new( opts )
 
         server.start
