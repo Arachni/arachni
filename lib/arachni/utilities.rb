@@ -451,7 +451,7 @@ module Utilities
 
     def remove_constants( mod, skip = [], children_only = true )
         return if skip.include?( mod )
-        return if !(mod.is_a?( Class ) || !mod.is_a?( Module )) ||
+        return if !(mod.is_a?( Class ) || mod.is_a?( Module )) ||
             !mod.to_s.start_with?( 'Arachni' )
 
         parent = Object
