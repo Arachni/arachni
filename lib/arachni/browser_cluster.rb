@@ -372,20 +372,12 @@ class BrowserCluster
         #concurrency = [(Options.http.request_concurrency / pool_size).to_i, 1].max
 
         @workers = []
-        workers  = Queue.new
-
         pool_size.times do
-            Thread.new do
-                workers << Worker.new(
-                    javascript_token: @javascript_token,
-                    master:           self
-                    #concurrency:      concurrency
-                )
-            end
-        end
-
-        pool_size.times do
-            @workers << workers.pop.tap { |b| @consumed_pids << b.phantomjs_pid }
+            @workers << Worker.new(
+                javascript_token: @javascript_token,
+                master:           self
+                #concurrency:      concurrency
+            ).tap { |b| @consumed_pids << b.phantomjs_pid }
         end
 
         print_status "Initialization completed with #{@workers.size} browsers in the pool."
