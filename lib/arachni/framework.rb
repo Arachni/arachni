@@ -179,9 +179,14 @@ class Framework
         data.sitemap
     end
 
-    # @return   [BrowserCluster]
+    # @return   [BrowserCluster, nil]
+    #   A lazy-loaded browser cluster or `nil` if
+    #   {OptionGroups::BrowserCluster#pool_size} or
+    #   {OptionGroups::Scope#dom_depth_limit} are 0 or not
+    #   {#host_has_browser?}.
     def browser_cluster
-        return if !host_has_browser?
+        return if options.browser_cluster.pool_size == 0 ||
+            Options.scope.dom_depth_limit == 0 || !host_has_browser?
 
         # Initialization may take a while so since we lazy load this make sure
         # that only one thread gets to this code at a time.
