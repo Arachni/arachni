@@ -941,7 +941,7 @@ class Browser
 
     def close_and_delete_file( file )
         file.close
-        File.delete file.path
+        File.delete file.path rescue Errno
     end
 
     def wait_for_phantomjs( comm_file, container_pid )
