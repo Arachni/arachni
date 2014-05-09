@@ -388,17 +388,17 @@ describe Arachni::RPC::Server::Framework::Distributor do
             @distributor.prepare_slave_options.should == {
                 http:      {
                     user_agent:             @opts.http.user_agent,
-                    request_timeout:        50000,
-                    request_redirect_limit: 5,
-                    request_concurrency:    20,
-                    request_queue_size:     500,
-                    request_headers:        {},
-                    cookies:                {}
+                    request_timeout:        @opts.http.request_timeout,
+                    request_redirect_limit: @opts.http.request_redirect_limit,
+                    request_concurrency:    @opts.http.request_concurrency,
+                    request_queue_size:     @opts.http.request_queue_size,
+                    request_headers:        @opts.http.request_headers,
+                    cookies:                @opts.http.cookies
                 },
                 audit:     {
-                    exclude_vectors: [],
-                    links:           true,
-                    forms:           true
+                    exclude_vectors: @opts.audit.exclude_vectors,
+                    links:           @opts.audit.links,
+                    forms:           @opts.audit.forms
                 },
                 login:     {},
                 datastore: {
@@ -407,7 +407,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 output:    {},
                 scope:     {
                     redundant_path_patterns: {},
-                    dom_depth_limit:         10,
+                    dom_depth_limit:         @opts.scope.dom_depth_limit,
                     exclude_path_patterns:   [],
                     exclude_page_patterns:   [],
                     include_path_patterns:   [],
@@ -420,10 +420,10 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 no_fingerprinting: false,
                 authorized_by:     nil,
                 browser_cluster: {
-                    pool_size:           6,
-                    job_timeout:         50,
-                    worker_time_to_live: 100,
-                    ignore_images:       false
+                    pool_size:           @opts.browser_cluster.pool_size,
+                    job_timeout:         @opts.browser_cluster.job_timeout,
+                    worker_time_to_live: @opts.browser_cluster.worker_time_to_live,
+                    ignore_images:       @opts.browser_cluster.ignore_images
                 }
             }
         end
