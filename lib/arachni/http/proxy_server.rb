@@ -50,7 +50,7 @@ class ProxyServer < WEBrick::HTTPProxyServer
             ssl_certificate_name: [ [ 'CN', 'Arachni' ] ]
         }.merge( options )
 
-        @logger = WEBrick::Log.new( Gem.win_platform? ? 'NUL' : '/dev/null', 7 )
+        @logger = WEBrick::Log.new( Arachni.null_device, 7 )
         # Will force the proxy to stfu.
         @logger.close
 

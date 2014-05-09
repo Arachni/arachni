@@ -11,11 +11,31 @@ def ap( obj )
 end
 
 module Arachni
-    # @return   [Bool]
-    #   `true` if the `ARACHNI_PROFILE` env variable is set, `false` otherwise.
-    def self.profile?
-        !!ENV['ARACHNI_PROFILER']
+
+    class <<self
+
+        def null_device
+            Gem.win_platform? ? 'NUL' : '/dev/null'
+        end
+
+        # @return   [Bool]
+        def jruby?
+            RUBY_PLATFORM == 'java'
+        end
+
+        # @return   [Bool]
+        def windows?
+            Gem.win_platform?
+        end
+
+        # @return   [Bool]
+        #   `true` if the `ARACHNI_PROFILE` env variable is set, `false` otherwise.
+        def profile?
+            !!ENV['ARACHNI_PROFILER']
+        end
+
     end
+
 end
 
 require_relative 'arachni/version'
