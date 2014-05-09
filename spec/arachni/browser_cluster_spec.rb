@@ -10,6 +10,9 @@ describe Arachni::BrowserCluster do
     end
     let(:custom_job) { Factory[:custom_job] }
 
+    before :each do
+        Arachni::Options.reset
+    end
     after( :each ) do
         @cluster.shutdown if @cluster
     end
