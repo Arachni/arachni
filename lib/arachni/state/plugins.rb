@@ -3,8 +3,6 @@
     All rights reserved.
 =end
 
-require 'monitor'
-
 module Arachni
 class State
 
@@ -16,7 +14,6 @@ class Plugins
     attr_reader :runtime
 
     def initialize
-        super
         @runtime = {}
     end
 
