@@ -88,8 +88,13 @@ class Manager
         options[:options] ||= {}
         options[:options]   = Options.to_h.merge( options[:options] )
 
-        executable = "#{Options.paths.executables}/#{executable}.rb"
+        executable      = "#{Options.paths.executables}/#{executable}.rb"
+        encoded_options = Base64.strict_encode64( Marshal.dump( options ) )
 
+        # Process.fork is faster, less stressful to the CPU and lets the parent
+        # and child share the same RAM due to copy-on-write support on Ruby 2.0.0.
+        # It is, however, not available when running on Windows nor JRuby so
+        # have a fallback ready.
         if Process.respond_to? :fork
             pid = Process.fork do
                 # Careful, Framework.reset will remove objects from Data
@@ -100,18 +105,14 @@ class Manager
                 Data.framework.url_queue.disk.clear
                 Data.framework.rpc.distributed_page_queue.disk.clear
 
+                # Provide a clean slate.
                 Framework.reset
                 Reactor.stop
 
-                $options = options
-
-                Options.update $options.delete(:options)
-
-                eval IO.read( executable )
+                ARGV.replace( [executable, encoded_options] )
+                load RUNNER
             end
         else
-            encoded_options = Base64.strict_encode64( Marshal.dump( options ) )
-
             # It's very, **VERY** important that we use this argument format as
             # it bypasses the OS shell and we can thus count on a 1-to-1 process
             # creation and that the PID we get will be for the actual process.
