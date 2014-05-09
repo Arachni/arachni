@@ -84,6 +84,14 @@ class Manager
         @discard_output
     end
 
+    # @param    [String]    executable
+    #   Name of the executable Ruby script found in {OptionGroups::Paths#executables}
+    #   without the '.rb' extension.
+    # @param    [Hash]  options
+    #   Options to pass to the script -- can be retrieved from `$options`.
+    #
+    # @return   [Integer]
+    #   PID of the process.
     def spawn( executable, options = {} )
         options[:options] ||= {}
         options[:options]   = Options.to_h.merge( options[:options] )
