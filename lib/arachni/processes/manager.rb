@@ -90,6 +90,7 @@ class Manager
 
         executable      = "#{Options.paths.executables}/#{executable}.rb"
         encoded_options = Base64.strict_encode64( Marshal.dump( options ) )
+        argv            = [executable, encoded_options]
 
         # Process.fork is faster, less stressful to the CPU and lets the parent
         # and child share the same RAM due to copy-on-write support on Ruby 2.0.0.
@@ -109,14 +110,14 @@ class Manager
                 Framework.reset
                 Reactor.stop
 
-                ARGV.replace( [executable, encoded_options] )
+                ARGV.replace( argv )
                 load RUNNER
             end
         else
             # It's very, **VERY** important that we use this argument format as
             # it bypasses the OS shell and we can thus count on a 1-to-1 process
             # creation and that the PID we get will be for the actual process.
-            pid = Process.spawn( RbConfig.ruby, RUNNER, executable, encoded_options )
+            pid = Process.spawn( RbConfig.ruby, RUNNER, *argv )
         end
 
         self << pid
