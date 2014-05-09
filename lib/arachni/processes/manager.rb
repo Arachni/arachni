@@ -92,6 +92,14 @@ class Manager
 
         if Process.respond_to? :fork
             pid = Process.fork do
+                # Careful, Framework.reset will remove objects from Data
+                # structures which off-load to disk, those files however belong
+                # to our parent and should not be touched, thus, we remove
+                # any references to them.
+                Data.framework.page_queue.disk.clear
+                Data.framework.url_queue.disk.clear
+                Data.framework.rpc.distributed_page_queue.disk.clear
+
                 Framework.reset
                 Reactor.stop
 
