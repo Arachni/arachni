@@ -52,7 +52,7 @@ class Options
         def method_missing( sym, *args, &block )
             if instance.respond_to?( sym )
                 instance.send( sym, *args, &block )
-            elsif
+            else
                 super( sym, *args, &block )
             end
         end

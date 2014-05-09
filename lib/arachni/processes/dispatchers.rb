@@ -128,8 +128,8 @@ class Dispatchers
     def self.method_missing( sym, *args, &block )
         if instance.respond_to?( sym )
             instance.send( sym, *args, &block )
-        elsif
-        super( sym, *args, &block )
+        else
+            super( sym, *args, &block )
         end
     end
 
