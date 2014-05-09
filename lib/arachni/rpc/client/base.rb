@@ -33,15 +33,16 @@ class Base < Client
         end
 
         super(
-            serializer:  Serializer,
-            host:        host,
-            port:        port.to_i,
-            socket:      socket,
-            token:       token,
-            max_retries: options.rpc.client_max_retries,
-            ssl_ca:      options.rpc.ssl_ca,
-            ssl_pkey:    options.rpc.client_ssl_private_key,
-            ssl_cert:    options.rpc.client_ssl_certificate
+            serializer:           Serializer,
+            host:                 host,
+            port:                 port.to_i,
+            socket:               socket,
+            token:                token,
+            connection_pool_size: options.rpc.connection_pool_size,
+            max_retries:          options.rpc.client_max_retries,
+            ssl_ca:               options.rpc.ssl_ca,
+            ssl_pkey:             options.rpc.client_ssl_private_key,
+            ssl_cert:             options.rpc.client_ssl_certificate
         )
     end
 

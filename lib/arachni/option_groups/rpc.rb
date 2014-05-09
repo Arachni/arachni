@@ -62,9 +62,19 @@ class RPC < Arachni::OptionGroup
     # @see RPC::Client::Base
     attr_accessor :client_max_retries
 
+    # @note This should be permanently set to `1`, otherwise it will cause issues
+    #   with the scheduling of the workload distribution of multi-Instance scans.
+    #
+    # @return [Integer]
+    #   Amount of concurrently open connections for each RPC client.
+    #
+    # @see RPC::Client::Base
+    attr_accessor :connection_pool_size
+
     set_defaults(
-        server_address: '127.0.0.1',
-        server_port:     7331
+        connection_pool_size: 1,
+        server_address:       '127.0.0.1',
+        server_port:          7331
     )
 
 end

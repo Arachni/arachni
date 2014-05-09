@@ -82,7 +82,7 @@ class Dispatchers
             Timeout.timeout( 30 ) do
                 while sleep( 0.1 )
                     begin
-                        connect( url, max_retries: 1 ).alive?
+                        connect( url, connection_pool_size: 1, max_retries: 1 ).alive?
                         break
                     rescue Exception => e
                         # ap e

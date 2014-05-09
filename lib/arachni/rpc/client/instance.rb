@@ -28,7 +28,8 @@ class Instance
         def when_ready( url, token, &block )
             options     = OpenStruct.new
             options.rpc = OpenStruct.new( @options.to_h[:rpc] )
-            options.rpc.client_max_retries = 0
+            options.rpc.client_max_retries   = 0
+            options.rpc.connection_pool_size = 1
 
             client = new( options, url, token )
             Reactor.global.delay( 0.1 ) do |task|
