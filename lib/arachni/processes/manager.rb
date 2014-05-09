@@ -136,7 +136,7 @@ class Manager
         if instance.respond_to?( sym )
             instance.send( sym, *args, &block )
         elsif
-        super( sym, *args, &block )
+            super( sym, *args, &block )
         end
     end
 
