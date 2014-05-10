@@ -100,22 +100,20 @@ class Framework
         FileUtils.mkdir_p( page_queue_directory )
 
         page_queue.buffer.each do |page|
-            File.open( "#{page_queue_directory}/#{page.persistent_hash}", 'w' ) do |f|
-                f.write Marshal.dump( page )
-            end
+            IO.binwrite(
+                "#{page_queue_directory}/#{page.persistent_hash}",
+                 Marshal.dump( page )
+            )
         end
+
         page_queue.disk.each do |filepath|
             FileUtils.cp filepath, "#{page_queue_directory}/"
         end
 
-        File.open( "#{directory}/url_queue", 'w' ) do |f|
-            f.write Marshal.dump( @url_queue.buffer )
-        end
+        IO.binwrite( "#{directory}/url_queue", Marshal.dump( @url_queue.buffer ) )
 
         %w(sitemap page_queue_total_size url_queue_total_size).each do |attribute|
-            File.open( "#{directory}/#{attribute}", 'w' ) do |f|
-                f.write Marshal.dump( send(attribute) )
-            end
+            IO.binwrite( "#{directory}/#{attribute}", Marshal.dump( send(attribute) ) )
         end
     end
 
@@ -123,20 +121,20 @@ class Framework
         framework = new
 
         framework.rpc = RPC.load( "#{directory}/rpc/" )
-        framework.sitemap.merge! Marshal.load( IO.read( "#{directory}/sitemap" ) )
+        framework.sitemap.merge! Marshal.load( IO.binread( "#{directory}/sitemap" ) )
 
         Dir["#{directory}/page_queue/*"].each do |page_file|
             framework.page_queue.disk << page_file
         end
 
-        Marshal.load( IO.read( "#{directory}/url_queue" ) ).each do |url|
+        Marshal.load( IO.binread( "#{directory}/url_queue" ) ).each do |url|
             framework.url_queue.buffer << url
         end
 
         framework.page_queue_total_size =
-            Marshal.load( IO.read( "#{directory}/page_queue_total_size" ) )
+            Marshal.load( IO.binread( "#{directory}/page_queue_total_size" ) )
         framework.url_queue_total_size =
-            Marshal.load( IO.read( "#{directory}/url_queue_total_size" ) )
+            Marshal.load( IO.binread( "#{directory}/url_queue_total_size" ) )
 
         framework
     end

@@ -315,9 +315,8 @@ class Framework
 
         %w(page_queue_filter url_queue_filter browser_skip_states
             audited_page_count).each do |attribute|
-            File.open( "#{directory}/#{attribute}", 'w' ) do |f|
-                f.write Marshal.dump( send(attribute) )
-            end
+
+            IO.binwrite( "#{directory}/#{attribute}", Marshal.dump( send(attribute) ) )
         end
     end
 
@@ -327,10 +326,10 @@ class Framework
         framework.rpc = RPC.load( "#{directory}/rpc/" )
 
         %w(page_queue_filter url_queue_filter browser_skip_states).each do |attribute|
-            framework.send(attribute).merge Marshal.load( IO.read( "#{directory}/#{attribute}" ) )
+            framework.send(attribute).merge Marshal.load( IO.binread( "#{directory}/#{attribute}" ) )
         end
 
-        framework.audited_page_count = Marshal.load( IO.read( "#{directory}/audited_page_count" ) )
+        framework.audited_page_count = Marshal.load( IO.binread( "#{directory}/audited_page_count" ) )
         framework
     end
 

@@ -34,17 +34,15 @@ class RPC
         FileUtils.mkdir_p( directory )
 
         %w(distributed_pages distributed_elements).each do |attribute|
-            File.open( "#{directory}/#{attribute}", 'w' ) do |f|
-                f.write Marshal.dump( send(attribute) )
-            end
+            IO.binwrite( "#{directory}/#{attribute}", Marshal.dump( send(attribute) ) )
         end
     end
 
     def self.load( directory )
         rpc = new
 
-        rpc.distributed_elements.merge Marshal.load( IO.read( "#{directory}/distributed_elements" ) )
-        rpc.distributed_pages.merge Marshal.load( IO.read( "#{directory}/distributed_pages" ) )
+        rpc.distributed_elements.merge Marshal.load( IO.binread( "#{directory}/distributed_elements" ) )
+        rpc.distributed_pages.merge Marshal.load( IO.binread( "#{directory}/distributed_pages" ) )
 
         rpc
     end

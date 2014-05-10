@@ -25,14 +25,12 @@ class Session
     def dump( directory )
         FileUtils.mkdir_p( directory )
 
-        File.open( "#{directory}/configuration", 'w' ) do |f|
-            f.write Marshal.dump( @configuration )
-        end
+        IO.binwrite( "#{directory}/configuration", Marshal.dump( @configuration ) )
     end
 
     def self.load( directory )
         session = new
-        session.configuration.merge! Marshal.load( IO.read( "#{directory}/configuration" ) )
+        session.configuration.merge! Marshal.load( IO.binread( "#{directory}/configuration" ) )
         session
     end
 

@@ -35,13 +35,11 @@ class Audit
     def dump( directory )
         FileUtils.mkdir_p( directory )
 
-        File.open( "#{directory}/set", 'w' ) do |f|
-            f.write Marshal.dump( self )
-        end
+        IO.binwrite( "#{directory}/set", Marshal.dump( self ) )
     end
 
     def self.load( directory )
-        Marshal.load( IO.read( "#{directory}/set" ) )
+        Marshal.load( IO.binread( "#{directory}/set" ) )
     end
 
     private

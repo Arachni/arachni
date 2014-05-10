@@ -30,9 +30,7 @@ class HTTP
         FileUtils.mkdir_p( directory )
 
         %w(headers cookiejar).each do |attribute|
-            File.open( "#{directory}/#{attribute}", 'w' ) do |f|
-                f.write Marshal.dump( send(attribute) )
-            end
+            IO.binwrite( "#{directory}/#{attribute}", Marshal.dump( send(attribute) ) )
         end
     end
 
@@ -40,7 +38,7 @@ class HTTP
         http = new
 
         %w(headers cookiejar).each do |attribute|
-            http.send(attribute).merge! Marshal.load( IO.read( "#{directory}/#{attribute}" ) )
+            http.send(attribute).merge! Marshal.load( IO.binread( "#{directory}/#{attribute}" ) )
         end
 
         http

@@ -37,13 +37,11 @@ class ElementFilter
     def dump( directory )
         FileUtils.mkdir_p( directory )
 
-        File.open( "#{directory}/sets", 'w' ) do |f|
-            f.write Marshal.dump( self )
-        end
+        IO.binwrite( "#{directory}/sets", Marshal.dump( self ) )
     end
 
     def self.load( directory )
-        Marshal.load( IO.read( "#{directory}/sets" ) )
+        Marshal.load( IO.binread( "#{directory}/sets" ) )
     end
 
     def ==( other )

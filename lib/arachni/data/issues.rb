@@ -192,25 +192,21 @@ class Issues
         FileUtils.mkdir_p( directory )
 
         @collection.each do |digest, issue|
-            File.open( "#{directory}/issue_#{digest}", 'w' ) do |f|
-                f.write Marshal.dump( issue )
-            end
+            IO.binwrite( "#{directory}/issue_#{digest}", Marshal.dump( issue ) )
         end
 
-        File.open( "#{directory}/digests", 'w' ) do |f|
-            f.write Marshal.dump( digests )
-        end
+        IO.binwrite( "#{directory}/digests", Marshal.dump( digests ) )
     end
 
     def self.load( directory )
         issues = new
 
         Dir["#{directory}/issue_*"].each do |issue_file|
-            issue = Marshal.load( IO.read( issue_file ) )
+            issue = Marshal.load( IO.binread( issue_file ) )
             issues.collection[issue.digest] = issue
         end
 
-        issues.digests.merge Marshal.load( IO.read( "#{directory}/digests" ) )
+        issues.digests.merge Marshal.load( IO.binread( "#{directory}/digests" ) )
 
         issues
     end

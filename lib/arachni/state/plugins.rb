@@ -56,9 +56,7 @@ class Plugins
                 result_directory = "#{directory}/#{type}/"
                 FileUtils.mkdir_p( result_directory )
 
-                File.open( "#{result_directory}/#{plugin}", 'w' ) do |f|
-                    f.write Marshal.dump( data )
-                end
+                IO.binwrite( "#{result_directory}/#{plugin}", Marshal.dump( data ) )
             end
         end
     end
@@ -69,7 +67,7 @@ class Plugins
         %w(runtime).each do |type|
             Dir["#{directory}/#{type}/*"].each do |plugin_directory|
                 plugin = File.basename( plugin_directory ).to_sym
-                plugins.send(type)[plugin] = Marshal.load( IO.read( plugin_directory ) )
+                plugins.send(type)[plugin] = Marshal.load( IO.binread( plugin_directory ) )
             end
         end
 
