@@ -157,11 +157,9 @@ class Worker < Arachni::Browser
     def distribute_event( page, element, event )
         master.queue @job.forward_as(
             @job.class::EventTrigger,
-            {
-                resource: page,
-                element:  element,
-                event:    event
-            }
+            resource: page,
+            element:  element,
+            event:    event
         )
         true
     # Job may have been marked as done or the cluster may have been shut down.
@@ -194,9 +192,11 @@ class Worker < Arachni::Browser
     def start
         @consumer ||= Thread.new do
             while !@shutdown
-                job = master.pop
-                run_job job
-                master.decrease_pending_job( job )
+                exception_jail do
+                    job = master.pop
+                    run_job job
+                    master.decrease_pending_job( job )
+                end
             end
             @done_signal << nil
         end
@@ -223,6 +223,7 @@ class Worker < Arachni::Browser
         # If PhantomJS is already dead this will block for quite some time so
         # beware.
         @watir.close if phantomjs_alive?
+
         kill_phantomjs
 
         @watir    = nil
