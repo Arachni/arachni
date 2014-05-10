@@ -12,6 +12,33 @@ describe Arachni::Support::Database::Queue do
 
     let(:sample_size) { 2 * subject.max_buffer_size }
 
+    it 'maintains stability and consistency under load' do
+        subject
+
+        entries = 1000
+        poped   = Queue.new
+        t       = []
+
+        10.times do
+            t << Thread.new do
+                loop do
+                    poped << subject.pop
+                end
+            end
+        end
+
+        entries.times do |i|
+            subject << 'a' * i
+        end
+
+        sleep 0.1 while !subject.empty?
+
+        consumed = []
+        consumed << poped.pop while !poped.empty?
+
+        consumed.sort.should == (0...entries).map { |i| 'a' * i }
+    end
+
     describe "#{described_class}::DEFAULT_MAX_BUFFER_SIZE" do
         it 'returns 100' do
             described_class::DEFAULT_MAX_BUFFER_SIZE.should == 100
