@@ -4,6 +4,7 @@
 =end
 
 require 'singleton'
+require 'arachni/reactor'
 
 module Arachni
 module Processes
