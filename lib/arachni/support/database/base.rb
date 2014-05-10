@@ -40,7 +40,7 @@ class Base
     # @return   [String]    filepath
     #
     def dump( obj, &block )
-        File.open( get_unique_filename, 'w' ) do |f|
+        File.open( get_unique_filename, 'wb' ) do |f|
             serialized = serialize( obj )
             f.write( serialized )
 
@@ -58,7 +58,7 @@ class Base
     # @return   [Object]
     #
     def load( filepath )
-        unserialize( IO.read( filepath ) )
+        unserialize( IO.binread( filepath ) )
     end
 
     #
