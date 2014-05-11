@@ -49,7 +49,7 @@ Gem::Specification.new do |s|
 
     # RPC serialization when not on JRuby.
     if RUBY_PLATFORM != 'java'
-        s.add_dependency 'msgpack'
+        s.add_dependency 'msgpack',     '0.5.8'
     end
 
     # RPC client/server implementation.
