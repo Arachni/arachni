@@ -21,7 +21,7 @@ group :prof do
     gem 'stackprof'
 end
 
-gem 'ethon', path: File.dirname( __FILE__ ) + '/../ethon'
+gem 'ethon', github: 'typhoeus/ethon'
 
 gem 'arachni-reactor', path: File.dirname( __FILE__ ) + '/../arachni-reactor'
 gem 'arachni-rpc',     path: File.dirname( __FILE__ ) + '/../arachni-rpc-v0.2'
