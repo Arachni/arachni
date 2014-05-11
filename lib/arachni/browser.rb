@@ -912,42 +912,39 @@ class Browser
     def spawn_phantomjs
         return @phantomjs_url if @phantomjs_url
 
-        port = nil
         ChildProcess.posix_spawn = true
 
+        port = nil
         10.times do
+            done = false
             port = available_port
 
-            ChildProcess.posix_spawn = true
-
-            @process = ChildProcess.build( self.class.executable,
-                "--webdriver=#{port}",
-                "--proxy=http://#{@proxy.address}/",
-                '--ignore-ssl-errors=true'
-            )
-            @process.detach = true
-
-            @process.io.stdout = Tempfile.new( 'phantomjs-out' )
-            @process.io.stderr = @process.io.stdout
-            @process.io.stdout.sync = true
-
-            @process.start
-
-            out      = File.new( @process.io.stdout.path, 'r' )
-            out.sync = true
-
-            buff = ''
-            done = false
             begin
                 with_timeout 10 do
-                    # Wait for PhantomJS to initialize.
-                    buff << out.gets.to_s while !buff.include?( 'running on port' )
-                    done = true
+                    @process = ChildProcess.build(
+                        self.class.executable,
+                        "--webdriver=#{port}",
+                        "--proxy=http://#{@proxy.address}/",
+                        '--ignore-ssl-errors=true'
+                    )
+                    @process.detach = true
+
+                    @process.io.stdout = Tempfile.new( 'phantomjs-out' )
+                    @process.io.stderr = @process.io.stdout
+                    @process.io.stdout.sync = true
+
+                    @process.start
+
+                    File.open( @process.io.stdout.path, 'r' ) do |out|
+                        buff = ''
+                        # Wait for PhantomJS to initialize.
+                        buff << out.gets.to_s while !buff.include?( 'running on port' )
+                        done = true
+                    end
                 end
             rescue Timeout::Error
             end
 
-            out.close
             break if done
 
             kill_phantomjs
@@ -963,8 +960,10 @@ class Browser
     end
 
     def kill_phantomjs
-        @process.stop if @process
-        @process.io.close rescue nil
+        if @process
+            @process.stop
+            @process.io.close rescue nil
+        end
 
         @phantomjs_pid = nil
         @phantomjs_url = nil
