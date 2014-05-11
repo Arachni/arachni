@@ -387,6 +387,7 @@ class BrowserCluster
         pool_size.times do
             @workers << workers.pop.tap { |b| @consumed_pids << b.phantomjs_pid }
         end
+        @consumed_pids.compact!
 
         print_status "Initialization completed with #{@workers.size} browsers in the pool."
     end
