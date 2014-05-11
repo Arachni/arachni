@@ -43,7 +43,7 @@ Gem::Specification.new do |s|
     s.add_dependency 'bundler'
 
     # For compressing/decompressing system state archives.
-    s.add_dependency 'rubyzip'
+    s.add_dependency 'rubyzip',         '1.1.3'
 
     s.add_dependency 'childprocess',    '0.5.3'
 
@@ -62,16 +62,16 @@ Gem::Specification.new do |s|
     s.add_dependency 'addressable',     '2.3.2'
 
     # E-mail plugin.
-    s.add_dependency 'pony'
+    s.add_dependency 'pony',            '1.8'
 
     # Printing complex objects.
-    s.add_dependency 'awesome_print'
+    s.add_dependency 'awesome_print',   '1.2.0'
 
     # JSON report.
-    s.add_dependency 'json'
+    s.add_dependency 'json',            '1.8.1'
 
     # For the Arachni console (arachni_console).
-    s.add_dependency 'rb-readline'
+    s.add_dependency 'rb-readline',     '0.5.1'
 
     # Markup parsing.
     s.add_dependency 'nokogiri',        '1.5.11'
@@ -80,10 +80,10 @@ Gem::Specification.new do |s|
     s.add_dependency 'terminal-table',  '1.4.2'
 
     # For CLI interfaces.
-    s.add_dependency 'highline'
+    s.add_dependency 'highline',        '1.6.21'
 
     # Browser support for DOM/JS/AJAX analysis stuff.
-    s.add_dependency 'watir-webdriver'
+    s.add_dependency 'watir-webdriver', '0.6.9'
 
     s.post_install_message = <<MSG
 
