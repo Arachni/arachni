@@ -3,6 +3,8 @@
     All rights reserved.
 =end
 
+require 'childprocess'
+
 class WebServerManager
     include Singleton
     include Arachni::Utilities
@@ -24,19 +26,22 @@ class WebServerManager
                 path: path
             }
         end
+
+        ChildProcess.posix_spawn = true
     end
 
     def spawn( name, port = nil )
-        server_info        = data_for( name )
-        server_info[:port] = port if port
-        server_info[:pid]  = Process.spawn(
+        server_info           = data_for( name )
+        server_info[:port]    = port if port
+        server_info[:process] = ChildProcess.build(
             RbConfig.ruby, server_info[:path], '-p', server_info[:port].to_s,
             '-o', address_for( name )
         )
-        Process.detach server_info[:pid]
+        server_info[:process].detach = true
+        server_info[:process].start
 
         begin
-            Timeout::timeout( 10 ) { sleep 0.1 while !up?( name ) }
+            Timeout::timeout( 30 ) { sleep 0.1 while !up?( name ) }
         rescue Timeout::Error
             abort "Server '#{name}' never started!"
         end
@@ -64,11 +69,9 @@ class WebServerManager
 
     def kill( name )
         server_info = data_for( name )
-        return if !server_info[:pid]
+        return if !server_info[:process]
 
-        r = process_kill( server_info[:pid] )
-        server_info.delete( :pid ) if r
-        r
+        server_info.delete( :process ).stop
     end
 
     def killall
