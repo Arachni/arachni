@@ -175,9 +175,16 @@ class Worker < Arachni::Browser
         return if @shutdown
         @shutdown = true
 
-        # If we've got a job running wait for it to finish before closing
-        # the browser otherwise we'll get Selenium errors and zombie processes.
-        @done_signal.pop if wait && @job
+        # Keep checking to see if any of the 'done' criteria are true.
+        kill_check = Thread.new do
+            sleep 0.1 while phantomjs_alive? && wait && @job
+            @done_signal << nil
+        end
+
+        # If we've got a job running wait for it to finish before closing the
+        # browser otherwise we'll get Selenium errors and zombie processes.
+        @done_signal.pop
+        kill_check.join
         @consumer.kill
 
         super(*[])
@@ -203,8 +210,8 @@ class Worker < Arachni::Browser
     end
 
     def phantomjs_alive?
-        !!Process.kill( 0, @phantomjs_pid )
-    rescue Errno::ESRCH
+        @process.alive?
+    rescue Errno::ECHILD
         false
     end
 

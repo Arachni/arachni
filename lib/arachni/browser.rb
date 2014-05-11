@@ -86,7 +86,11 @@ class Browser
     #   `true` if `phantomjs` is in the OS PATH, `false` otherwise.
     def self.has_executable?
         return @has_executable if !@has_executable.nil?
-        @has_executable = !!Selenium::WebDriver::PhantomJS.path
+        @has_executable = !!executable
+    end
+
+    def self.executable
+        Selenium::WebDriver::PhantomJS.path
     end
 
     # @param    [Hash]  options
@@ -318,7 +322,7 @@ class Browser
     end
 
     def shutdown
-        watir.close
+        watir.close if @process.alive?
         kill_phantomjs
         @proxy.shutdown
     end
@@ -908,77 +912,60 @@ class Browser
         return @phantomjs_url if @phantomjs_url
 
         port = nil
+        ChildProcess.posix_spawn = true
+
         10.times do
-            port      = available_port
-            comm_file = "#{Dir.tmpdir}/#{generate_token}"
+            port = available_port
 
-            container_pid = Processes::Manager.spawn( :browser,
-                comm_file: comm_file,
-                port:      port,
-                proxy:     @proxy.address
+            ChildProcess.posix_spawn = true
+
+            @process = ChildProcess.build( self.class.executable,
+                "--webdriver=#{port}",
+                "--proxy=http://#{@proxy.address}/",
+                '--ignore-ssl-errors=true'
             )
-            Process.detach container_pid
+            @process.detach = true
 
-            sleep 0.1 while !File.exist?( comm_file )
-            f = File.open( comm_file, 'r' )
+            @process.io.stdout = Tempfile.new( 'phantomjs-out' )
+            @process.io.stderr = @process.io.stdout
+            @process.io.stdout.sync = true
 
-            # Wait for the container to let us know of the browser's PID.
-            next if !(pid = wait_for_phantomjs( f, container_pid ))
+            @process.start
 
-            @phantomjs_pid = pid.to_i
+            out      = File.new( @process.io.stdout.path, 'r' )
+            out.sync = true
 
-            # Wait for the container to let us know when PhantomJS is up and
-            # running.
-            next if !wait_for_phantomjs( f, container_pid )
+            buff = ''
+            done = false
+            begin
+                with_timeout 10 do
+                    # Wait for PhantomJS to initialize.
+                    buff << out.gets.to_s while !buff.include?( 'running on port' )
+                    done = true
+                end
+            rescue Timeout::Error
+            end
 
-            close_and_delete_file( f )
-            kill container_pid
-            break
+            break if done
+
+            kill_phantomjs
+        end
+
+        begin
+            @phantomjs_pid = @process.pid
+        # Not supported on JRuby on MS Windows.
+        rescue NotImplementedError
         end
 
         @phantomjs_url = "http://127.0.0.1:#{port}"
     end
 
-    def close_and_delete_file( file )
-        file.close
-        File.delete file.path rescue Errno
-    end
-
-    def wait_for_phantomjs( comm_file, container_pid )
-        if IO.select( [comm_file], nil, nil, PHANTOMJS_SPAWN_TIMEOUT )
-            begin
-                buff = ''
-                with_timeout PHANTOMJS_SPAWN_TIMEOUT do
-                    buff << comm_file.getc.to_s while !buff.end_with?( "\n" )
-                end
-                return buff
-            rescue Timeout::Error
-            end
-        end
-
-        close_and_delete_file( comm_file )
-
-        kill container_pid
-        kill_phantomjs
-
-        nil
-    end
-
     def kill_phantomjs
-        kill( @phantomjs_pid ) if @phantomjs_pid
+        @process.stop if @process
+        @process.io.close rescue nil
 
         @phantomjs_pid = nil
         @phantomjs_url = nil
-    end
-
-    def kill( pid )
-        while sleep 0.1
-            begin
-                Process.kill( 'KILL', pid )
-            rescue Errno::ESRCH
-                break
-            end
-        end
     end
 
     def store_pages?
