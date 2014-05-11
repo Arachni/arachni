@@ -947,6 +947,7 @@ class Browser
             rescue Timeout::Error
             end
 
+            out.close
             break if done
 
             kill_phantomjs
