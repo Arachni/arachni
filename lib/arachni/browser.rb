@@ -3,6 +3,7 @@
     All rights reserved.
 =end
 
+require 'childprocess'
 require 'watir-webdriver'
 require_relative 'watir/element'
 require_relative 'selenium/webdriver/remote/http/typhoeus'
