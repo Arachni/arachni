@@ -59,7 +59,7 @@ Gem::Specification.new do |s|
     s.add_dependency 'typhoeus',        '0.6.8'
 
     # Fallback URI parsing and encoding utilities.
-    s.add_dependency 'addressable',     '2.3.2'
+    s.add_dependency 'addressable',     '2.3.6'
 
     # E-mail plugin.
     s.add_dependency 'pony',            '1.8'
@@ -74,10 +74,10 @@ Gem::Specification.new do |s|
     s.add_dependency 'rb-readline',     '0.5.1'
 
     # Markup parsing.
-    s.add_dependency 'nokogiri',        '1.5.11'
+    s.add_dependency 'nokogiri',        '>= 1.6.1'
 
     # Outputting data in table format (arachni_rpcd_monitor).
-    s.add_dependency 'terminal-table',  '1.4.2'
+    s.add_dependency 'terminal-table',  '1.4.5'
 
     # For CLI interfaces.
     s.add_dependency 'highline',        '1.6.21'
