@@ -11,7 +11,7 @@ group :spec do
     gem 'rspec'
     gem 'faker'
 
-    gem 'puma' if !Gem.win_platform?
+    gem 'puma' if !Gem.win_platform? || RUBY_PLATFORM == 'java'
 
     gem 'sinatra'
     gem 'sinatra-contrib'
