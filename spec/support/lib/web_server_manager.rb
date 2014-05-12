@@ -40,7 +40,11 @@ class WebServerManager
         server_info[:process].detach = true
         server_info[:process].start
 
-        sleep 0.1 while !up?( name )
+        begin
+            Timeout::timeout( 30 ) { sleep 0.1 while !up?( name ) }
+        rescue Timeout::Error
+            abort "Server '#{name}' never started!"
+        end
 
         url_for( name, false )
     end
