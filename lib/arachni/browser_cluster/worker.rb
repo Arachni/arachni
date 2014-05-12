@@ -110,16 +110,18 @@ class Worker < Arachni::Browser
         begin
             watir.cookies.clear
         # Working window was closed by JS (probably), start from scratch.
-        rescue Selenium::WebDriver::Error::NoSuchWindowError => e
+        rescue Selenium::WebDriver::Error::NoSuchWindowError
             phantomjs_respawn
         end
 
-        @job = nil
-
-        decrease_time_to_live
         phantomjs_respawn_if_necessary
 
         true
+    ensure
+        decrease_time_to_live
+        @job = nil
+
+        master.decrease_pending_job job
     end
 
     # @return   [Support::LookUp::HashSet]
@@ -200,9 +202,7 @@ class Worker < Arachni::Browser
         @consumer ||= Thread.new do
             while !@shutdown
                 exception_jail do
-                    job = master.pop
-                    run_job job
-                    master.decrease_pending_job( job )
+                    run_job master.pop
                 end
             end
             @done_signal << nil
