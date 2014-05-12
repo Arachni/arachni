@@ -59,6 +59,8 @@ class Worker < Arachni::Browser
         @done_signal = Queue.new
 
         start_capture
+
+        return if !@master
         start
     end
 
@@ -121,6 +123,7 @@ class Worker < Arachni::Browser
         decrease_time_to_live
         @job = nil
 
+        return if !master
         master.decrease_pending_job job
     end
 
