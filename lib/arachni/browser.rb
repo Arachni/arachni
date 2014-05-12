@@ -938,7 +938,9 @@ class Browser
                     File.open( @process.io.stdout.path, 'r' ) do |out|
                         buff = ''
                         # Wait for PhantomJS to initialize.
-                        buff << out.gets.to_s while !buff.include?( 'running on port' )
+                         while !buff.include?( 'running on port' )
+                             buff << (out.readpartial(1000) rescue '').to_s
+                         end
                         done = true
                     end
                 end
