@@ -38,7 +38,8 @@ class WebServerClient < Arachni::RPC::Proxy
         Typhoeus.get(
             url_for( name, false ),
             ssl_verifypeer: false,
-            ssl_verifyhost: 0
+            ssl_verifyhost: 0,
+            forbid_reuse:   true
         ).code != 0
     end
 

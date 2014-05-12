@@ -5,7 +5,7 @@
 
 require 'childprocess'
 
-class WebServerManager
+class WebServerManagerWebServerManager
     include Singleton
     include Arachni::Utilities
 
@@ -83,7 +83,8 @@ class WebServerManager
         Typhoeus.get(
             url_for( name, false ),
             ssl_verifypeer: false,
-            ssl_verifyhost: 0
+            ssl_verifyhost: 0,
+            forbid_reuse:   true
         ).code != 0
     end
 
