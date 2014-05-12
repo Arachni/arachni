@@ -5,7 +5,7 @@
 
 require 'childprocess'
 
-class WebServerManagerWebServerManager
+class WebServerManager
     include Singleton
     include Arachni::Utilities
 
