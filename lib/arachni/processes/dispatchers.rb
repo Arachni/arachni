@@ -78,19 +78,13 @@ class Dispatchers
         Manager.spawn( :dispatcher, options: options )
 
         url = "#{options[:rpc][:server_address]}:#{options[:rpc][:server_port]}"
-        begin
-            Timeout.timeout( 30 ) do
-                while sleep( 0.1 )
-                    begin
-                        connect( url, connection_pool_size: 1, max_retries: 1 ).alive?
-                        break
-                    rescue Exception => e
-                        # ap e
-                    end
-                end
+        while sleep( 0.1 )
+            begin
+                connect( url, connection_pool_size: 1, max_retries: 1 ).alive?
+                break
+            rescue => e
+                # ap e
             end
-        rescue Timeout::Error
-            abort "Dispatcher '#{url}' never started!"
         end
 
         @list << url

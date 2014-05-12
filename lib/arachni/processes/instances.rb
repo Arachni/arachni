@@ -89,19 +89,13 @@ class Instances
 
         Manager.spawn( :instance, options: options, token: token )
 
-        begin
-            Timeout.timeout( 30 ) do
-                while sleep( 0.1 )
-                    begin
-                        connect( url, token ).service.alive?
-                        break
-                    rescue Exception => e
-                        # ap e
-                    end
-                end
+        while sleep( 0.1 )
+            begin
+                connect( url, token ).service.alive?
+                break
+            rescue => e
+                # ap e
             end
-        rescue Timeout::Error
-            abort "Instance '#{url}' never started!"
         end
 
         @list[url] = token
