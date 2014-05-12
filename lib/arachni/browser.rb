@@ -930,7 +930,6 @@ class Browser
                     @process.detach = true
 
                     @process.io.stdout = Tempfile.new( 'phantomjs-out' )
-                    @process.io.stderr = @process.io.stdout
                     @process.io.stdout.sync = true
 
                     @process.start
