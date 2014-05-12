@@ -260,7 +260,7 @@ class Instance
     #
     # @private
     def native_abort_and_report( &block )
-        @framework.clean_up { block.call auditstore }
+        @framework.clean_up { auditstore( &block ) }
     end
 
     # Cleans up and delegates to {#report_as}.
@@ -278,8 +278,8 @@ class Instance
 
     # @return (see Arachni::Framework#auditstore)
     # @private
-    def auditstore
-        @framework.auditstore
+    def auditstore( &block )
+        @framework.auditstore( &block )
     end
 
     # @return (see Arachni::RPC::Server::Framework#report)
@@ -647,7 +647,7 @@ class Instance
     # For testing.
     # @private
     def cookies
-        Arachni::HTTP::Client.cookies
+        Arachni::HTTP::Client.cookies.map(&:to_rpc_data)
     end
 
     # For testing.
@@ -686,7 +686,7 @@ class Instance
             if data[:issues]
                 if without[:issues].is_a? Array
                     data[:issues].reject! do |i|
-                        without[:issues].include?( i.is_a?(Hash) ? i[:digest] : i.digest )
+                        without[:issues].include?( i[:digest] || i['digest'] )
                     end
                 end
             end

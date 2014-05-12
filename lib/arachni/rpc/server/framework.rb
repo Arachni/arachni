@@ -60,14 +60,12 @@ class Framework < ::Arachni::Framework
     end
 
     # Make these inherited methods public again (i.e. accessible over RPC).
-    [ :audit_store, :statistics, :paused?, :list_checks, :list_checks, :list_plugins,
+    [ :statistics, :paused?, :list_checks, :list_checks, :list_plugins,
       :list_plugins, :list_reports, :list_reports, :version, :status, :report_as,
       :list_platforms, :list_platforms ].each do |m|
         private m
         public  m
     end
-
-    alias :auditstore :audit_store
 
     def initialize( * )
         super
@@ -76,6 +74,17 @@ class Framework < ::Arachni::Framework
         @checks  = Check::Manager.new( self )
         @plugins = Plugin::Manager.new( self )
     end
+
+    def auditstore( &block )
+        # If a block is given it means the call was form an RPC client.
+        if block_given?
+            block.call super.to_rpc_data
+            return
+        end
+
+        super
+    end
+    alias :audit_store :auditstore
 
     # @return (see Arachni::Framework#list_plugins)
     def list_plugins
@@ -232,13 +241,14 @@ class Framework < ::Arachni::Framework
     #   First variations of all discovered issues with generic info filled in
     #   from the parent.
     def issues
-        Data.issues.map { |issue| issue.variations.first.to_solo issue }
+        Data.issues.map { |issue| issue.variations.first.to_solo( issue ).to_rpc_data }
     end
 
     # @return   [Array<Hash>]   {#issues} as an array of Hashes.
     # @see #issues
     def issues_as_hash
-        issues.map( &:to_h )
+        # issues.map( &:to_h )
+        Data.issues.map { |issue| issue.variations.first.to_solo( issue ).to_h }
     end
 
     # @return   [String]  URL of this instance.
