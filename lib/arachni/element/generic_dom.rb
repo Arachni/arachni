@@ -79,6 +79,14 @@ class GenericDOM < Base
         element.tag_name
     end
 
+    def to_rpc_data
+        data = super
+        data['initialization_options'] = data['initialization_options'].dup
+        data['initialization_options'][:transition] =
+            data['initialization_options'][:transition].to_rpc_data
+        data
+    end
+
     def self.from_rpc_data( data )
         instance = allocate
         data.each do |name, value|

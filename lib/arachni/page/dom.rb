@@ -160,6 +160,7 @@ class DOM
     def to_rpc_data
         data = to_hash.stringify_keys
         data['skip_states'] = data['skip_states'].collection.to_a if data['skip_states']
+        data['transitions'] = data['transitions'].map(&:to_rpc_data)
         data
     end
 

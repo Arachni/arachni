@@ -54,10 +54,18 @@ describe Arachni::Page do
     describe '#to_rpc_data' do
         subject { rpc_subject }
 
-        %w(response dom metadata forms).each do |attribute|
+        it "includes 'metadata'" do
+            data['metadata'].should == subject.metadata
+        end
+
+        %w(response dom).each do |attribute|
             it "includes '#{attribute}'" do
-                data[attribute].should == subject.send( attribute )
+                data[attribute].should == subject.send( attribute ).to_rpc_data
             end
+        end
+
+        it "includes 'forms'" do
+            data['forms'].should == subject.forms.map(&:to_rpc_data)
         end
 
         it "includes 'do_not_audit_elements'" do

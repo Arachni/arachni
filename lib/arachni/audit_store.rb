@@ -143,7 +143,16 @@ class AuditStore
             data[ivar.to_s.gsub('@','')] = instance_variable_get( ivar )
         end
 
-        data['issues']          = data['issues'].values
+        data['plugins'].each do |plugin, d|
+            next if !d[:options]
+
+            data['plugins'] = data['plugins'].dup
+            data['plugins'][plugin] = data['plugins'][plugin].dup
+            data['plugins'][plugin][:options] = data['plugins'][plugin][:options].dup
+            data['plugins'][plugin][:options] = d[:options].map(&:to_rpc_data)
+        end
+
+        data['issues']          = data['issues'].values.map(&:to_rpc_data)
         data['start_datetime']  = data['start_datetime'].to_s
         data['finish_datetime'] = data['finish_datetime'].to_s
         data

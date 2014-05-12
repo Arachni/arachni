@@ -122,9 +122,9 @@ class Base
     # @return   [Hash]
     #   Data representing this instance that are suitable the RPC transmission.
     def to_rpc_data
-        data = marshal_dump.inject({}) { |h, (k, v)| h[k.to_s.gsub('@', '')] = v; h }
+        data = marshal_dump.inject({}) { |h, (k, v)| h[k.to_s.gsub('@', '')] = v.to_rpc_data_or_self; h }
         data.delete 'audit_options'
-        data['class'] = self.class
+        data['class'] = self.class.to_s
         data
     end
 

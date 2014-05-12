@@ -19,10 +19,14 @@ describe Arachni::HTTP::Response do
         let(:data) { subject.to_rpc_data }
 
         %w(url code ip_address headers body time app_time total_time return_code
-            return_message request).each do |attribute|
+            return_message).each do |attribute|
             it "includes '#{attribute}'" do
                 data[attribute].should == subject.send( attribute )
             end
+        end
+
+        it "includes 'request'" do
+            data['request'].should == subject.request.to_rpc_data
         end
     end
 

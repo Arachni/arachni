@@ -426,8 +426,14 @@ class Page
     #   Data representing this instance that are suitable the RPC transmission.
     def to_rpc_data
         data        = to_initialization_options.stringify_keys(false)
-        data['dom'] = dom
+        data['dom'] = dom.to_rpc_data
         data['element_audit_whitelist'] = element_audit_whitelist.to_a
+        data['response'] = data['response'].to_rpc_data
+
+        %w(links forms cookies).each do |e|
+            next if !data[e]
+            data[e] = send(e).map(&:to_rpc_data)
+        end
 
         data.delete 'cookiejar'
 

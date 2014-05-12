@@ -22,12 +22,28 @@ describe Arachni::AuditStore do
     end
 
     describe '#to_rpc_data' do
+        let(:subject) { audit_store }
         let(:data) { subject.to_rpc_data }
 
-        %w(options sitemap issues plugins version).each do |attribute|
+        %w(options sitemap version).each do |attribute|
             it "includes '#{attribute}'" do
                 data[attribute].should == subject.send( attribute )
             end
+        end
+
+        it "includes 'plugins'" do
+            options_1 = data['plugins'].map { |name, d| d[:options] }
+            options_2 = subject.plugins.map { |name, d| d[:options].map(&:to_rpc_data) }
+
+            info_1 = data['plugins'].each { |name, d| d.delete :options }
+            info_2 = subject.plugins.each { |name, d| d.delete :options }
+
+            info_1.should == info_2
+            options_1.should == options_2
+        end
+
+        it "includes 'issues'" do
+            data['issues'].should == subject.issues.map(&:to_rpc_data)
         end
 
         %w(start_datetime finish_datetime).each do |attribute|
@@ -38,6 +54,8 @@ describe Arachni::AuditStore do
     end
 
     describe '.from_rpc_data' do
+        let(:subject) { audit_store }
+
         let(:restored) { described_class.from_rpc_data data }
         let(:data) { Arachni::RPC::Serializer.rpc_data( subject ) }
 

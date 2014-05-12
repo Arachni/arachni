@@ -27,6 +27,10 @@ class Object
         super
     end
 
+    def to_rpc_data_or_self
+        respond_to?( :to_rpc_data ) ? to_rpc_data : self
+    end
+
     #
     # Attempts to approximate the real size of self by summing up the size of
     # all its instance variables' values and names.

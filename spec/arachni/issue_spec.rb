@@ -33,12 +33,25 @@ describe Arachni::Issue do
         let(:issue) { issue_with_variations }
         let(:data) { issue.to_rpc_data }
 
-        %w(name description vector platform_name platform_type references cwe
-            remedy_guidance remedy_code tags check trusted variations unique_id
-            digest digest).each do |attribute|
+        %w(name description platform_name platform_type references cwe
+            remedy_guidance remedy_code tags trusted unique_id digest
+            digest).each do |attribute|
             it "includes '#{attribute}'" do
                 data[attribute].should == issue.send( attribute )
             end
+        end
+
+        it "includes 'variations'" do
+            check = issue.check.dup
+            data['check'].should == check.merge(elements: check[:elements].map(&:to_s))
+        end
+
+        it "includes 'variations'" do
+            data['variations'].should == issue.variations.map(&:to_rpc_data)
+        end
+
+        it "includes 'vector'" do
+            data['vector'].should == issue.vector.to_rpc_data
         end
 
         it "includes 'severity'" do

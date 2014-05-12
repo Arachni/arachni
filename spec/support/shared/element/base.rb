@@ -10,18 +10,29 @@ shared_examples_for 'element' do
     end
 
     rpc_attributes = if described_class.ancestors.include? Arachni::Element::Capabilities::Auditable::DOM
-                         %w(url class)
+                         %w(url)
                      else
-                         %w(url initialization_options class)
+                         %w(url initialization_options)
                      end
 
     describe '#to_rpc_data' do
         let(:data) { subject.to_rpc_data }
 
-        rpc_attributes.each do |attribute|
-            it "includes '#{attribute}'" do
-                data[attribute].should == subject.send( attribute )
+        it "includes 'url'" do
+            data['url'].should == subject.url
+        end
+
+        if rpc_attributes.include? 'initialization_options'
+            it "includes 'initialization_options'" do
+                init = subject.initialization_options.dup
+                init[:transition] = init[:transition].to_rpc_data if init[:transition]
+
+                data['initialization_options'].should == init
             end
+        end
+
+        it "includes 'class'" do
+            data['class'].should == subject.class.to_s
         end
 
         it 'excludes #page' do

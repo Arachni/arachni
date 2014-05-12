@@ -147,7 +147,7 @@ class Response < Message
     #   Data representing this instance that are suitable the RPC transmission.
     def to_rpc_data
         data = to_h
-        data[:request] = request
+        data[:request] = request.to_rpc_data
         data.stringify_keys(false)
     end
 

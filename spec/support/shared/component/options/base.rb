@@ -16,10 +16,14 @@ shared_examples_for 'component_option' do
     describe '#to_rpc_data' do
         let(:data) { subject.to_rpc_data }
 
-        %w(name description default value type class).each do |attribute|
+        %w(name description default value type).each do |attribute|
             it "includes '#{attribute}'" do
                 data[attribute].should == subject.send( attribute )
             end
+        end
+
+        it "includes 'class'" do
+            data['class'].should == subject.class.to_s
         end
 
         it "includes 'required'" do

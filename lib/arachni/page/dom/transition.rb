@@ -247,7 +247,9 @@ class Transition
     # @return   [Hash]
     #   Data representing this instance that are suitable the RPC transmission.
     def to_rpc_data
-        to_hash.stringify_keys(false)
+        h = to_hash.stringify_keys(false)
+        h['element'] = element.to_rpc_data_or_self
+        h
     end
 
     # @param    [Hash]  data    {#to_rpc_data}

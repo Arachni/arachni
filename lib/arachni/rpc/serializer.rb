@@ -3,9 +3,7 @@
     All rights reserved.
 =end
 
-if RUBY_PLATFORM != 'java'
-    require 'msgpack'
-end
+require 'msgpack'
 
 module Arachni
 module RPC
@@ -25,7 +23,8 @@ module Serializer
     # @return   [String]
     #   {#compress Compressed} `object` dump.
     def dump( object )
-        compress( serializer.dump( object ) )
+        # ap object
+        compress( serializer.dump( object.to_rpc_data_or_self ) )
     end
 
     # @param    [String]   dump
@@ -77,7 +76,7 @@ module Serializer
     end
 
     def serializer
-        @serializer ||= (RUBY_PLATFORM != 'java' ? MessagePack : Marshal)
+        MessagePack
     end
 
     extend self

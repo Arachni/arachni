@@ -396,8 +396,19 @@ class Issue
     def to_rpc_data
         data = {}
         instance_variables.each do |ivar|
-            data[ivar.to_s.gsub('@','')] = instance_variable_get( ivar )
+            data[ivar.to_s.gsub('@','')] = instance_variable_get( ivar ).to_rpc_data_or_self
         end
+
+
+        if data['check'] && data['check'][:elements]
+            data['check'] = data['check'].dup
+            data['check'][:elements] = data['check'][:elements].map(&:to_s)
+        end
+
+        if data['variations']
+            data['variations'] = data['variations'].map(&:to_rpc_data)
+        end
+
         data['digest']   = digest
         data['severity'] = data['severity'].to_s
 
