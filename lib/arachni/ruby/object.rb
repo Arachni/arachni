@@ -19,14 +19,6 @@ class Object
         Marshal.load( Marshal.dump( self ) )
     end
 
-    def to_msgpack( *args )
-        if respond_to? :to_rpc_data
-            return to_rpc_data.to_msgpack( *args )
-        end
-
-        super
-    end
-
     def to_rpc_data_or_self
         respond_to?( :to_rpc_data ) ? to_rpc_data : self
     end
