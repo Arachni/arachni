@@ -190,7 +190,7 @@ class Worker < Arachni::Browser
         # browser otherwise we'll get Selenium errors and zombie processes.
         @done_signal.pop
         kill_check.join
-        @consumer.kill
+        @consumer.kill if @consumer
 
         super(*[])
     end
