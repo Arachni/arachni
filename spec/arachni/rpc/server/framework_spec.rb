@@ -118,7 +118,7 @@ describe 'Arachni::RPC::Server::Framework' do
             instance = @instance_clean
             instance.options.url = web_server_url_for( :framework )
             instance.checks.load( 'test' )
-            instance.framework.run.should be_true
+            instance.framework.run
             sleep( 1 ) while instance.framework.busy?
             instance.framework.issues.should be_any
         end
@@ -131,7 +131,7 @@ describe 'Arachni::RPC::Server::Framework' do
             instance.options.set audit: { elements: [:links, :forms, :cookies] }
             instance.checks.load :taint
 
-            instance.framework.run.should be_true
+            instance.framework.run
             sleep 0.1 while instance.framework.busy?
 
             instance.framework.issues.
@@ -147,7 +147,7 @@ describe 'Arachni::RPC::Server::Framework' do
             instance.options.set audit: { elements: [:links, :forms, :cookies] }
             instance.checks.load :taint
 
-            instance.framework.run.should be_true
+            instance.framework.run
             sleep 0.1 while instance.framework.busy?
 
             instance.framework.issues.
