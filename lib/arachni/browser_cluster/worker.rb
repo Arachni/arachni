@@ -116,15 +116,12 @@ class Worker < Arachni::Browser
             phantomjs_respawn
         end
 
+        decrease_time_to_live
         phantomjs_respawn_if_necessary
 
         true
     ensure
-        decrease_time_to_live
         @job = nil
-
-        return if !master
-        master.decrease_pending_job job
     end
 
     # @return   [Support::LookUp::HashSet]
@@ -204,8 +201,10 @@ class Worker < Arachni::Browser
     def start
         @consumer ||= Thread.new do
             while !@shutdown
-                exception_jail do
-                    run_job master.pop
+                exception_jail false do
+                    j = master.pop
+                    exception_jail( false ) { run_job j }
+                    master.decrease_pending_job j
                 end
             end
             @done_signal << nil
