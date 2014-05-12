@@ -46,13 +46,13 @@ describe 'Arachni::RPC::Server::Instance' do
                     checks: :test
                 )
 
-                Timeout.timeout 10 do
+                Timeout.timeout 20 do
                     sleep 1 while @instance.service.status != :scanning
                 end
 
                 @instance.service.suspend
 
-                Timeout.timeout 10 do
+                Timeout.timeout 20 do
                     sleep 1 while @instance.service.status != :suspended
                 end
 
@@ -71,13 +71,13 @@ describe 'Arachni::RPC::Server::Instance' do
                 checks: :test
             )
 
-            Timeout.timeout 10 do
+            Timeout.timeout 20 do
                 sleep 1 while @instance.service.status != :scanning
             end
 
             @instance.service.suspend
 
-            Timeout.timeout 10 do
+            Timeout.timeout 20 do
                 sleep 1 while @instance.service.status != :suspended
             end
 
@@ -95,7 +95,7 @@ describe 'Arachni::RPC::Server::Instance' do
                     spawns: 2
                 )
 
-                Timeout.timeout 10 do
+                Timeout.timeout 20 do
                     sleep 1 while @instance.service.status != :scanning
                 end
 
@@ -121,13 +121,13 @@ describe 'Arachni::RPC::Server::Instance' do
                     checks: :test
                 )
 
-                Timeout.timeout 10 do
+                Timeout.timeout 20 do
                     sleep 1 while @instance.service.status != :scanning
                 end
 
                 @instance.service.suspend
 
-                Timeout.timeout 10 do
+                Timeout.timeout 20 do
                     sleep 1 while @instance.service.status != :suspended
                 end
 
@@ -146,7 +146,7 @@ describe 'Arachni::RPC::Server::Instance' do
                 checks: :test
             )
 
-            Timeout.timeout 10 do
+            Timeout.timeout 20 do
                 sleep 1 while @instance.service.status != :scanning
             end
 
@@ -154,7 +154,7 @@ describe 'Arachni::RPC::Server::Instance' do
 
             @instance.service.suspend
 
-            Timeout.timeout 10 do
+            Timeout.timeout 20 do
                 sleep 1 while @instance.service.status != :suspended
             end
 

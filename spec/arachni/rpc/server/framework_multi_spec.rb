@@ -164,7 +164,7 @@ describe 'Arachni::RPC::Server::Framework' do
                 instance = @instance_clean
                 instance.framework.pause
 
-                Timeout.timeout 5 do
+                Timeout.timeout 20 do
                     sleep 1 while !instance.framework.paused?
                 end
 
@@ -177,14 +177,14 @@ describe 'Arachni::RPC::Server::Framework' do
             instance = @instance_clean
             instance.framework.pause
 
-            Timeout.timeout 5 do
+            Timeout.timeout 20 do
                 sleep 1 while !instance.framework.paused?
             end
 
             instance.framework.paused?.should be_true
             instance.framework.resume.should be_true
 
-            Timeout.timeout 5 do
+            Timeout.timeout 20 do
                 sleep 1 while instance.framework.paused?
             end
 
