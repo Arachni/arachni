@@ -119,15 +119,16 @@ module Slave
     def slave_perform_browser_analysis( *args )
     end
 
-    def sitrep( data, &block )
-        block ||= proc{}
-
+    def sitrep( data )
         if data[:issues]
             data[:issues] = data[:issues].map(&:to_rpc_data)
+            data.delete(:issues) if data[:issues].empty?
         end
 
-        @master.framework.slave_sitrep( data, multi_self_url, master_priv_token, &block )
-        nil
+        return if data.empty?
+
+        @master.framework.slave_sitrep( data, multi_self_url, master_priv_token ){}
+        true
     end
 
     # @return   [String]
