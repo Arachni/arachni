@@ -36,7 +36,7 @@ class WebServerManager
         Process.detach server_info[:pid]
 
         begin
-            Timeout::timeout( 10 ) { sleep 0.1 while !up?( name ) }
+            Timeout::timeout( 30 ) { sleep 0.1 while !up?( name ) }
         rescue Timeout::Error
             abort "Server '#{name}' never started!"
         end
