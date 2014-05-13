@@ -144,7 +144,8 @@ class Instances
             )
         end
 
-        info = last_member.dispatch
+        info = nil
+        info = last_member.dispatch while !info && sleep( 0.1 )
 
         instance = connect( info['url'], info['token'] )
         instance.framework.set_as_master
