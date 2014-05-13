@@ -5,7 +5,6 @@
 
 lib = Arachni::Options.paths.lib
 require lib + 'ruby/object'
-require lib + 'ruby/class'
 require lib + 'ruby/hash'
 require lib + 'ruby/set'
 require lib + 'ruby/enumerable'

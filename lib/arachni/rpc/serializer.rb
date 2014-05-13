@@ -19,7 +19,7 @@ module Serializer
     # Compress object dumps larger than 1KB.
     COMPRESS_LARGER_THAN = 1_000
 
-    # @param    [#to_msgpack]   object
+    # @param    [#to_rpc_data]   object
     # @return   [String]
     #   {#compress Compressed} `object` dump.
     def dump( object )
