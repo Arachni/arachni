@@ -43,45 +43,46 @@ Gem::Specification.new do |s|
     s.add_dependency 'bundler'
 
     # For compressing/decompressing system state archives.
-    s.add_dependency 'rubyzip',         '1.1.3'
+    s.add_dependency 'rubyzip',           '1.1.3'
 
-    s.add_dependency 'childprocess',    '0.5.3'
+    s.add_dependency 'childprocess',      '0.5.3'
 
-    if RUBY_PLATFORM != 'java'
-        s.add_dependency 'msgpack',     '0.5.8'
+    # RPC serialization.
+    if RUBY_PLATFORM == 'java'
+        s.add_dependency 'msgpack-jruby', '1.4.0'
     else
-        s.add_dependency 'msgpack-jruby'
+        s.add_dependency 'msgpack',       '0.5.8'
     end
 
     # RPC client/server implementation.
-    s.add_dependency 'arachni-rpc',     '0.2.0'
+    s.add_dependency 'arachni-rpc',       '0.2.0'
 
     # HTTP client.
-    s.add_dependency 'typhoeus',        '0.6.8'
+    s.add_dependency 'typhoeus',          '0.6.8'
 
     # Fallback URI parsing and encoding utilities.
-    s.add_dependency 'addressable',     '2.3.6'
+    s.add_dependency 'addressable',       '2.3.6'
 
     # E-mail plugin.
-    s.add_dependency 'pony',            '1.8'
+    s.add_dependency 'pony',              '1.8'
 
     # Printing complex objects.
-    s.add_dependency 'awesome_print',   '1.2.0'
+    s.add_dependency 'awesome_print',     '1.2.0'
 
     # JSON report.
-    s.add_dependency 'json',            '1.8.1'
+    s.add_dependency 'json',              '1.8.1'
 
     # For the Arachni console (arachni_console).
-    s.add_dependency 'rb-readline',     '0.5.1'
+    s.add_dependency 'rb-readline',       '0.5.1'
 
     # Markup parsing.
-    s.add_dependency 'nokogiri',        '>= 1.6.1'
+    s.add_dependency 'nokogiri',          '>= 1.6.1'
 
     # Outputting data in table format (arachni_rpcd_monitor).
-    s.add_dependency 'terminal-table',  '1.4.5'
+    s.add_dependency 'terminal-table',    '1.4.5'
 
     # Browser support for DOM/JS/AJAX analysis stuff.
-    s.add_dependency 'watir-webdriver', '0.6.9'
+    s.add_dependency 'watir-webdriver',   '0.6.9'
 
     s.post_install_message = <<MSG
 
