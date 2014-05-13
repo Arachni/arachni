@@ -3,7 +3,7 @@
     All rights reserved.
 =end
 
-require 'highline/system_extensions'
+require 'io/console'
 
 module Arachni
 module Mixins
@@ -82,7 +82,7 @@ module Terminal
 
     def empty_screen
         move_to_home
-        cols, rows = HighLine::SystemExtensions.terminal_size
+        rows, cols = $stdin.winsize
         (rows - 1).times{ puts ' ' * cols }
         move_to_home
     end

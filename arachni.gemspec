@@ -47,7 +47,6 @@ Gem::Specification.new do |s|
 
     s.add_dependency 'childprocess',    '0.5.3'
 
-    # RPC serialization when not on JRuby.
     if RUBY_PLATFORM != 'java'
         s.add_dependency 'msgpack',     '0.5.8'
     else
@@ -80,9 +79,6 @@ Gem::Specification.new do |s|
 
     # Outputting data in table format (arachni_rpcd_monitor).
     s.add_dependency 'terminal-table',  '1.4.5'
-
-    # For CLI interfaces.
-    s.add_dependency 'highline',        '1.6.21'
 
     # Browser support for DOM/JS/AJAX analysis stuff.
     s.add_dependency 'watir-webdriver', '0.6.9'
