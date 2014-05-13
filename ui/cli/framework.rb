@@ -60,11 +60,13 @@ class Framework
 
             @scan.join
 
-            # If the user requested to abort the scan, wait for the thread that
-            # takes care of the clean-up to finish.
-            @cleanup_handler.join if @cleanup_handler
-
-            @framework.reports.run :stdout, @framework.auditstore
+            # If the user requested to abort the scan, wait for the thread
+            # that takes care of the clean-up to finish.
+            if @cleanup_handler
+                @cleanup_handler.join
+            else
+                generate_reports
+            end
 
             print_statistics
         rescue Component::Options::Error::Invalid => e
@@ -136,7 +138,7 @@ class Framework
             get_user_command
             mute
 
-            while sleep 0.3
+            loop do
                 empty_screen
 
                 refresh_info 'Results thus far:'
@@ -174,6 +176,8 @@ class Framework
                 end
 
                 flush
+                mute
+                sleep 1
             end
         end
     end
