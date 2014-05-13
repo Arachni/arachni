@@ -12,13 +12,20 @@ describe Arachni::RPC::Server::Dispatcher::Node do
 
             Arachni::Processes::Manager.spawn( :node )
 
-            sleep 1
-
             c = Arachni::RPC::Client::Base.new(
                 Arachni::Options,
                 "#{Arachni::Options.rpc.server_address}:#{port}"
             )
-            Arachni::RPC::Proxy.new( c, 'node' )
+            c = Arachni::RPC::Proxy.new( c, 'node' )
+
+            begin
+                c.alive?
+            rescue Arachni::RPC::Exceptions::ConnectionError
+                sleep 0.1
+                retry
+            end
+
+            c
         end
 
         @node = @get_node.call
