@@ -173,7 +173,9 @@ class Instances
         pids = []
         each do |instance|
             begin
-                pids |= instance.service.consumed_pids
+                Timeout.timeout 5 do
+                    pids |= instance.service.consumed_pids
+                end
             rescue => e
                 #ap e
                 #ap e.backtrace
@@ -182,7 +184,9 @@ class Instances
 
         each do |instance|
             begin
-                instance.service.shutdown
+                Timeout.timeout 5 do
+                    instance.service.shutdown
+                end
             rescue => e
                 #ap e
                 #ap e.backtrace
