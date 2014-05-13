@@ -77,7 +77,7 @@ module Slave
 
         # Thread.abort_on_exception = true
         Thread.new do
-            exception_jail { audit }
+            exception_jail( false ) { audit }
 
             sitrep( issues: @issue_buffer.dup, audit_done: true )
             @issue_buffer.clear
