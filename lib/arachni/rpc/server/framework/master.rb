@@ -108,8 +108,8 @@ module Master
         return false if master? && !valid_token?( token )
 
         issues = (data['issues'] || []).map { |i| Arachni::Issue.from_rpc_data i }
-        update_issues( issues, token )
-        slave_done( url, token ) if data['audit_done']
+        update_issues( issues )
+        slave_done( url ) if data['audit_done']
 
         true
     end
@@ -120,14 +120,9 @@ module Master
     # when it finishes its job.
     #
     # @param    [String]    slave_url   URL of the calling slave.
-    # @param    [String]    token
-    #   Privileged token, prevents this method from being called by 3rd parties
-    #   when this instance is a master. If this instance is not a master one
-    #   the token needn't be provided.
     #
     # @return   [Bool]  `true` on success, `false` on invalid `token`.
-    def slave_done( slave_url, token = nil )
-        return false if master? && !valid_token?( token )
+    def slave_done( slave_url )
         mark_slave_as_done slave_url
 
         print_status "Slave done: #{slave_url}"
@@ -141,14 +136,9 @@ module Master
     # Used by slaves to register the issues they find.
     #
     # @param    [Array<Arachni::Issue>]    issues
-    # @param    [String]    token
-    #   Privileged token, prevents this method from being called by 3rd parties
-    #   when this instance is a master. If this instance is not a master one
-    #   the token needn't be provided.
     #
     # @return   [Bool]  `true` on success, `false` on invalid `token`.
-    def update_issues( issues, token = nil )
-        return false if master? && !valid_token?( token )
+    def update_issues( issues )
         issues.each { |issue| Data.issues << issue }
         true
     end
