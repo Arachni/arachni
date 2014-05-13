@@ -237,9 +237,10 @@ class Framework < ::Arachni::Framework
     alias :audit_store_as_hash :report
     alias :auditstore_as_hash :report
 
-    # @return  [Array<Arachni::Issue>]
+    # @return  [Array<Hash>]
     #   First variations of all discovered issues with generic info filled in
-    #   from the parent.
+    #   from the parent as {Arachni::Issue#to_rpc_data RPC data}.
+    # @private
     def issues
         Data.issues.map { |issue| issue.variations.first.to_solo( issue ).to_rpc_data }
     end
@@ -247,7 +248,6 @@ class Framework < ::Arachni::Framework
     # @return   [Array<Hash>]   {#issues} as an array of Hashes.
     # @see #issues
     def issues_as_hash
-        # issues.map( &:to_h )
         Data.issues.map { |issue| issue.variations.first.to_solo( issue ).to_h }
     end
 
