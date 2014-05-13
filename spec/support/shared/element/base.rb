@@ -25,7 +25,10 @@ shared_examples_for 'element' do
         if rpc_attributes.include? 'initialization_options'
             it "includes 'initialization_options'" do
                 init = subject.initialization_options.dup
-                init[:transition] = init[:transition].to_rpc_data if init[:transition]
+
+                if init.is_a?( Hash ) && init[:transition]
+                    init[:transition] = init[:transition].to_rpc_data
+                end
 
                 data['initialization_options'].should == init
             end
