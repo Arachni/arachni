@@ -37,17 +37,20 @@ class Manager
 
     # @param    [Integer]   pid PID of the process to kill.
     def kill( pid )
-        while sleep 0.1 do
-            begin
-                # I'd rather this be an INT but WEBrick's INT traps write to the
-                # Logger and multiple INT signals force it to write to a closed
-                # logger and crash.
-                Process.kill( 'KILL', pid )
-            rescue Errno::ESRCH
-                @pids.delete pid
-                return
+        Timeout.timeout 10 do
+            while sleep 0.1 do
+                begin
+                    # I'd rather this be an INT but WEBrick's INT traps write to
+                    # the Logger and multiple INT signals force it to write to a
+                    # closed logger and crash.
+                    Process.kill( 'KILL', pid )
+                rescue Errno::ESRCH
+                    @pids.delete pid
+                    return
+                end
             end
         end
+    rescue Timeout::Error
     end
 
     # @param    [Array<Integer>]   pids PIDs of the process to {#kill}.
