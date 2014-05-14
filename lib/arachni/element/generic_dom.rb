@@ -79,6 +79,9 @@ class GenericDOM < Base
         element.tag_name
     end
 
+    # @return   [Hash]
+    #   Data representing the state and data of the element to be passed to
+    #   {.from_rpc_data}.
     def to_rpc_data
         data = super
         data['initialization_options'] = data['initialization_options'].dup
@@ -87,26 +90,34 @@ class GenericDOM < Base
         data
     end
 
-    def self.from_rpc_data( data )
-        instance = allocate
-        data.each do |name, value|
-            value = case name
-                        when 'transition'
-                            Arachni::Page::DOM::Transition.from_rpc_data( value )
+    class <<self
 
-                        when 'initialization_options'
-                            value = value.is_a?( Hash ) ? value.symbolize_keys(false) : value
-                            value[:transition] =
-                                Arachni::Page::DOM::Transition.from_rpc_data( value[:transition] )
-                            value
+        # @param    [Hash]  data
+        #   Data returned from {#to_rpc_data}.
+        # @return   [GenericDOM]
+        #   Restored element.
+        def from_rpc_data( data )
+            instance = allocate
+            data.each do |name, value|
+                value = case name
+                            when 'transition'
+                                Arachni::Page::DOM::Transition.from_rpc_data( value )
 
-                        else
-                            value
-                    end
+                            when 'initialization_options'
+                                value = value.is_a?( Hash ) ? value.symbolize_keys(false) : value
+                                value[:transition] =
+                                    Arachni::Page::DOM::Transition.from_rpc_data( value[:transition] )
+                                value
 
-            instance.instance_variable_set( "@#{name}", value )
+                            else
+                                value
+                        end
+
+                instance.instance_variable_set( "@#{name}", value )
+            end
+            instance
         end
-        instance
+
     end
 
 end
