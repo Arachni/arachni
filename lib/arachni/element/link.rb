@@ -7,15 +7,20 @@ require_relative 'base'
 
 module Arachni::Element
 
+# Represents an auditable link element
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Link < Base
     include Capabilities::Analyzable
     include Capabilities::Refreshable
 
     require_relative 'link/dom'
 
-    # @return   [DOM]
+    # @return     [DOM]
     attr_accessor :dom
 
+    # @return     [String]
+    #   Original HTML code for that element.
     attr_accessor :html
 
     # @param    [Hash]    options
@@ -41,6 +46,7 @@ class Link < Base
         @default_inputs = self.inputs.dup.freeze
     end
 
+    # @return   [DOM]
     def dom
         return @dom if @dom
         return if !@html || @skip_dom
@@ -56,6 +62,7 @@ class Link < Base
         @dom
     end
 
+    # @return [Nokogiri::XML::Element]
     def node
         return if !@html
         Nokogiri::HTML.fragment( @html.dup ).children.first
@@ -77,6 +84,8 @@ class Link < Base
             "#{@query_vars.merge( self.send( type ) ).keys.compact.sort.to_s}"
     end
 
+    # @param    (see Capabilities::Submittable#action=)
+    # @@return  (see Capabilities::Submittable#action=)
     def action=( url )
         v = super( url )
         @query_vars = parse_url_vars( v )
@@ -97,89 +106,12 @@ class Link < Base
         self.class.encode_query_params( *args )
     end
 
-    def self.encode_query_params( param )
-        encode( encode( param ), '=' )
-    end
-
     def encode( *args )
         self.class.encode( *args )
     end
 
-    def self.encode( *args )
-        URI.encode( *args )
-    end
-
     def decode( *args )
         self.class.decode( *args )
-    end
-
-    def self.decode( *args )
-        URI.decode( *args )
-    end
-
-    #
-    # Extracts links from an HTTP response.
-    #
-    # @param   [Arachni::HTTP::Response]    response
-    #
-    # @return   [Array<Link>]
-    #
-    def self.from_response( response )
-        url = response.url
-        [new( url: url, inputs: parse_query_vars( url ) )] | from_document( url, response.body )
-    end
-
-    #
-    # Extracts links from a document.
-    #
-    # @param    [String]    url
-    #   URL of the document -- used for path normalization purposes.
-    # @param    [String, Nokogiri::HTML::Document]    document
-    #
-    # @return   [Array<Link>]
-    #
-    def self.from_document( url, document )
-        document = Nokogiri::HTML( document.to_s ) if !document.is_a?( Nokogiri::HTML::Document )
-        base_url =  begin
-            document.search( '//base[@href]' )[0]['href']
-        rescue
-            url
-        end
-
-        document.search( '//a' ).map do |link|
-            href = to_absolute( link['href'], base_url )
-            next if !href
-
-            new(
-                url:    url.freeze,
-                action: href.freeze,
-                inputs: parse_query_vars( href ),
-                html:   link.to_html.freeze
-            )
-        end.compact
-    end
-
-    #
-    # Extracts inputs from a URL query.
-    #
-    # @param    [String]    url
-    #
-    # @return   [Hash]
-    #
-    def self.parse_query_vars( url )
-        return {} if !url
-
-        parsed = uri_parse( url )
-        return {} if !parsed
-
-        query = parsed.query
-        return {} if !query || query.empty?
-
-        query.to_s.split( '&' ).inject( {} ) do |h, pair|
-            name, value = pair.split( '=', 2 )
-            h[name.to_s] = value.to_s
-            h
-        end
     end
 
     def audit_id( injection_str = '', opts = {} )
@@ -205,6 +137,81 @@ class Link < Base
     def hash
         "#{action}:#{method}:#{inputs.hash}}#{dom.hash}".hash
     end
+
+    class <<self
+
+        # Extracts links from an HTTP response.
+        #
+        # @param   [Arachni::HTTP::Response]    response
+        #
+        # @return   [Array<Link>]
+        def from_response( response )
+            url = response.url
+            [new( url: url, inputs: parse_query_vars( url ) )] | from_document( url, response.body )
+        end
+
+        # Extracts links from a document.
+        #
+        # @param    [String]    url
+        #   URL of the document -- used for path normalization purposes.
+        # @param    [String, Nokogiri::HTML::Document]    document
+        #
+        # @return   [Array<Link>]
+        def from_document( url, document )
+            document = Nokogiri::HTML( document.to_s ) if !document.is_a?( Nokogiri::HTML::Document )
+            base_url =  begin
+                document.search( '//base[@href]' )[0]['href']
+            rescue
+                url
+            end
+
+            document.search( '//a' ).map do |link|
+                href = to_absolute( link['href'], base_url )
+                next if !href
+
+                new(
+                    url:    url.freeze,
+                    action: href.freeze,
+                    inputs: parse_query_vars( href ),
+                    html:   link.to_html.freeze
+                )
+            end.compact
+        end
+
+        # Extracts inputs from a URL query.
+        #
+        # @param    [String]    url
+        #
+        # @return   [Hash]
+        def parse_query_vars( url )
+            return {} if !url
+
+            parsed = uri_parse( url )
+            return {} if !parsed
+
+            query = parsed.query
+            return {} if !query || query.empty?
+
+            query.to_s.split( '&' ).inject( {} ) do |h, pair|
+                name, value = pair.split( '=', 2 )
+                h[name.to_s] = value.to_s
+                h
+            end
+        end
+
+        def encode_query_params( param )
+            encode( encode( param ), '=' )
+        end
+
+        def encode( *args )
+            URI.encode( *args )
+        end
+
+        def decode( *args )
+            URI.decode( *args )
+        end
+    end
+
 
     private
 
