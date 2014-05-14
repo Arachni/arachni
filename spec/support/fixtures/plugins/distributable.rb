@@ -9,11 +9,11 @@ class Arachni::Plugins::Distributable < Arachni::Plugin::Base
 
     def run
         wait_while_framework_running
-        register_results( stuff: 1 )
+        register_results( 'stuff' => 1 )
     end
 
     def self.merge( results )
-        { stuff: results.map { |res| res[:stuff] }.inject( :+ ) }
+        { 'stuff' => results.map { |res| res['stuff'] }.inject( :+ ) }
     end
 
     def self.info
