@@ -122,7 +122,6 @@ class Cookie < Base
         expires_at != nil && time > expires_at
     end
 
-    #
     # @example
     #    p Cookie.from_set_cookie( 'http://owner-url.com', 'session=stuffstuffstuff' ).first.simple
     #    #=> {"session"=>"stuffstuffstuff"}
@@ -221,7 +220,6 @@ class Cookie < Base
         super( sym, *args, &block )
     end
 
-    #
     # Used by {#method_missing} to determine if it should process the call.
     #
     # @return   [Bool]
@@ -248,219 +246,220 @@ class Cookie < Base
         set_cookie
     end
 
-    # Parses a Netscape Cookie-jar into an Array of {Cookie}.
-    #
-    # @param   [String]    url          request URL
-    # @param   [String]    filepath     Netscape HTTP cookiejar file
-    #
-    # @return   [Array<Cookie>]
-    #
-    # @see http://curl.haxx.se/rfc/cookie_spec.html
-    def self.from_file( url, filepath )
-        File.open( filepath, 'r' ).map do |line|
-            # skip empty lines
-            next if (line = line.strip).empty? || line[0] == '#'
-
-            c = {}
-            c['domain'], foo, c['path'], c['secure'], c['expires'], c['name'],
-                c['value'] = *line.split( "\t" )
-
-            # expiry date is optional so if we don't have one push everything back
-            begin
-                c['expires'] = expires_to_time( c['expires'] )
-            rescue
-                c['value'] = c['name'].dup
-                c['name'] = c['expires'].dup
-                c['expires'] = nil
-            end
-            c['secure'] = (c['secure'] == 'TRUE') ? true : false
-            new( { url: url }.merge( c.symbolize_keys ) )
-        end.flatten.compact
-    end
-
-    # Converts a cookie's expiration date to a Ruby `Time` object.
-    #
-    # @example String time format
-    #    p Cookie.expires_to_time "Tue, 02 Oct 2012 19:25:57 GMT"
-    #    #=> 2012-10-02 22:25:57 +0300
-    #
-    # @example Seconds since Epoch
-    #    p Cookie.expires_to_time "1596981560"
-    #    #=> 2020-08-09 16:59:20 +0300
-    #
-    #    p Cookie.expires_to_time 1596981560
-    #    #=> 2020-08-09 16:59:20 +0300
-    #
-    # @param    [String]    expires
-    #
-    # @return   [Time]
-    def self.expires_to_time( expires )
-        return nil if expires == '0'
-        (expires_to_i = expires.to_i) > 0 ? Time.at( expires_to_i ) : Time.parse( expires )
-    end
-
-    # Extracts cookies from an HTTP {Arachni::HTTP::Response response}.
-    #
-    # @param   [Arachni::HTTP::Response]    response
-    #
-    # @return   [Array<Cookie>]
-    #
-    # @see .from_document
-    # @see .from_headers
-    def self.from_response( response )
-        ( from_document( response.url, response.body ) |
-         from_headers( response.url, response.headers ) )
-    end
-
-    # Extracts cookies from a document based on `Set-Cookie` `http-equiv` meta tags.
-    #
-    # @param    [String]    url     Owner URL.
-    # @param    [String, Nokogiri::HTML::Document]    document
-    #
-    # @return   [Array<Cookie>]
-    #
-    # @see .parse_set_cookie
-    def self.from_document( url, document )
-        # optimizations in case there are no cookies in the doc,
-        # avoid parsing unless absolutely necessary!
-        if !document.is_a?( Nokogiri::HTML::Document )
-            # get get the head in order to check if it has an http-equiv for set-cookie
-            head = document.to_s.match( /<head(.*)<\/head>/imx )
-
-            # if it does feed the head to the parser in order to extract the cookies
-            return [] if !head || !head.to_s.downcase.substring?( 'set-cookie' )
-
-            document = Nokogiri::HTML( head.to_s )
-        end
-
-        Arachni::Utilities.exception_jail {
-            document.search( "//meta[@http-equiv]" ).map do |elem|
-                next if elem['http-equiv'].downcase != 'set-cookie'
-                from_set_cookie( url, elem['content'] )
-            end.flatten.compact
-        } rescue []
-    end
-
-    # Extracts cookies from the `Set-Cookie` HTTP response header field.
-    #
-    # @param    [String]    url     request URL
-    # @param    [Hash]      headers
-    #
-    # @return   [Array<Cookie>]
-    #
-    # @see .forms_set_cookie
-    def self.from_headers( url, headers )
-        headers = Arachni::HTTP::Headers.new( headers )
-        return [] if headers.set_cookie.empty?
-
-        exception_jail {
-            headers.set_cookie.map { |c| from_set_cookie( url, c ) }.flatten
-        } rescue []
-    end
-
-    # Parses the `Set-Cookie` header value into cookie elements.
-    #
-    #
-    # @param    [String]    url     Request URL.
-    # @param    [Hash]      str     `Set-Cookie` string
-    #
-    # @return   [Array<Cookie>]
-    def self.from_set_cookie( url, str )
-        WEBrick::Cookie.parse_set_cookies( str ).flatten.uniq.map do |cookie|
-            cookie_hash = {}
-            cookie.instance_variables.each do |var|
-                cookie_hash[var.to_s.gsub( /@/, '' )] = cookie.instance_variable_get( var )
-            end
-            cookie_hash['expires'] = cookie.expires
-
-            cookie_hash['path'] ||= '/'
-            cookie_hash['name']  = decode( cookie.name )
-            cookie_hash['value'] = decode( cookie.value )
-
-            new( { url: url }.merge( cookie_hash.symbolize_keys ) )
-        end.flatten.compact
-    end
-    def self.parse_set_cookie( *args )
-        from_set_cookie( *args )
-    end
-
-    # Parses a string formatted for the `Cookie` HTTP request header field
-    # into cookie elements.
-    #
-    # @param    [String]    url     Request URL.
-    # @param    [Hash]      string  `Cookie` string.
-    #
-    # @return   [Array<Cookie>]
-    def self.from_string( url, string )
-        return [] if string.empty?
-        string.split( ';' ).map do |cookie_pair|
-            k, v = *cookie_pair.split( '=', 2 )
-            new( url: url, inputs: { decode( k.strip ) => decode( v.strip ) } )
-        end.flatten.compact
-    end
-
-    #
-    # Encodes a {String}'s reserved characters in order to prepare it for
-    # the `Cookie` header field.
-    #
-    # @example
-    #    p Cookie.encode "+;%=\0 "
-    #    #=> "%2B%3B%25%3D%00+"
-    #
-    # @param    [String]    str
-    #
-    # @return   [String]
-    #
-    def self.encode( str, type = :value )
-        reserved = "+;%\0"
-        reserved << '=' if type == :name
-
-        URI.encode( str, reserved ).recode.gsub( ' ', '+' )
-    end
     # @see .encode
     def encode( *args )
         self.class.encode( *args )
     end
 
-    #
-    # Decodes a {String} encoded for the `Cookie` header field.
-    #
-    # @example
-    #    p Cookie.decode "%2B%3B%25%3D%00+"
-    #    #=> "+;%=\x00 "
-    #
-    # @param    [String]    str
-    #
-    # @return   [String]
-    #
-    def self.decode( str )
-        URI.decode( str.to_s.recode.gsub( '+', ' ' ) )
-    end
     # @see .decode
     def decode( str )
         self.class.decode( str )
     end
 
+    class <<self
+
+        # Parses a Netscape Cookie-jar into an Array of {Cookie}.
+        #
+        # @param   [String]    url          request URL
+        # @param   [String]    filepath     Netscape HTTP cookiejar file
+        #
+        # @return   [Array<Cookie>]
+        #
+        # @see http://curl.haxx.se/rfc/cookie_spec.html
+        def from_file( url, filepath )
+            File.open( filepath, 'r' ).map do |line|
+                # skip empty lines
+                next if (line = line.strip).empty? || line[0] == '#'
+
+                c = {}
+                c['domain'], foo, c['path'], c['secure'], c['expires'], c['name'],
+                    c['value'] = *line.split( "\t" )
+
+                # expiry date is optional so if we don't have one push everything back
+                begin
+                    c['expires'] = expires_to_time( c['expires'] )
+                rescue
+                    c['value'] = c['name'].dup
+                    c['name'] = c['expires'].dup
+                    c['expires'] = nil
+                end
+                c['secure'] = (c['secure'] == 'TRUE') ? true : false
+                new( { url: url }.merge( c.symbolize_keys ) )
+            end.flatten.compact
+        end
+
+        # Converts a cookie's expiration date to a Ruby `Time` object.
+        #
+        # @example String time format
+        #    p Cookie.expires_to_time "Tue, 02 Oct 2012 19:25:57 GMT"
+        #    #=> 2012-10-02 22:25:57 +0300
+        #
+        # @example Seconds since Epoch
+        #    p Cookie.expires_to_time "1596981560"
+        #    #=> 2020-08-09 16:59:20 +0300
+        #
+        #    p Cookie.expires_to_time 1596981560
+        #    #=> 2020-08-09 16:59:20 +0300
+        #
+        # @param    [String]    expires
+        #
+        # @return   [Time]
+        def expires_to_time( expires )
+            return nil if expires == '0'
+            (expires_to_i = expires.to_i) > 0 ? Time.at( expires_to_i ) : Time.parse( expires )
+        end
+
+        # Extracts cookies from an HTTP {Arachni::HTTP::Response response}.
+        #
+        # @param   [Arachni::HTTP::Response]    response
+        #
+        # @return   [Array<Cookie>]
+        #
+        # @see .from_document
+        # @see .from_headers
+        def from_response( response )
+            ( from_document( response.url, response.body ) |
+                from_headers( response.url, response.headers ) )
+        end
+
+        # Extracts cookies from a document based on `Set-Cookie` `http-equiv` meta tags.
+        #
+        # @param    [String]    url     Owner URL.
+        # @param    [String, Nokogiri::HTML::Document]    document
+        #
+        # @return   [Array<Cookie>]
+        #
+        # @see .parse_set_cookie
+        def from_document( url, document )
+            # optimizations in case there are no cookies in the doc,
+            # avoid parsing unless absolutely necessary!
+            if !document.is_a?( Nokogiri::HTML::Document )
+                # get get the head in order to check if it has an http-equiv for set-cookie
+                head = document.to_s.match( /<head(.*)<\/head>/imx )
+
+                # if it does feed the head to the parser in order to extract the cookies
+                return [] if !head || !head.to_s.downcase.substring?( 'set-cookie' )
+
+                document = Nokogiri::HTML( head.to_s )
+            end
+
+            Arachni::Utilities.exception_jail {
+                document.search( "//meta[@http-equiv]" ).map do |elem|
+                    next if elem['http-equiv'].downcase != 'set-cookie'
+                    from_set_cookie( url, elem['content'] )
+                end.flatten.compact
+            } rescue []
+        end
+
+        # Extracts cookies from the `Set-Cookie` HTTP response header field.
+        #
+        # @param    [String]    url     request URL
+        # @param    [Hash]      headers
+        #
+        # @return   [Array<Cookie>]
+        #
+        # @see .forms_set_cookie
+        def from_headers( url, headers )
+            headers = Arachni::HTTP::Headers.new( headers )
+            return [] if headers.set_cookie.empty?
+
+            exception_jail {
+                headers.set_cookie.map { |c| from_set_cookie( url, c ) }.flatten
+            } rescue []
+        end
+
+        # Parses the `Set-Cookie` header value into cookie elements.
+        #
+        #
+        # @param    [String]    url     Request URL.
+        # @param    [Hash]      str     `Set-Cookie` string
+        #
+        # @return   [Array<Cookie>]
+        def from_set_cookie( url, str )
+            WEBrick::Cookie.parse_set_cookies( str ).flatten.uniq.map do |cookie|
+                cookie_hash = {}
+                cookie.instance_variables.each do |var|
+                    cookie_hash[var.to_s.gsub( /@/, '' )] = cookie.instance_variable_get( var )
+                end
+                cookie_hash['expires'] = cookie.expires
+
+                cookie_hash['path'] ||= '/'
+                cookie_hash['name']  = decode( cookie.name )
+                cookie_hash['value'] = decode( cookie.value )
+
+                new( { url: url }.merge( cookie_hash.symbolize_keys ) )
+            end.flatten.compact
+        end
+        alias :parse_set_cookie :from_set_cookie
+
+        # Parses a string formatted for the `Cookie` HTTP request header field
+        # into cookie elements.
+        #
+        # @param    [String]    url     Request URL.
+        # @param    [Hash]      string  `Cookie` string.
+        #
+        # @return   [Array<Cookie>]
+        def from_string( url, string )
+            return [] if string.empty?
+            string.split( ';' ).map do |cookie_pair|
+                k, v = *cookie_pair.split( '=', 2 )
+                new( url: url, inputs: { decode( k.strip ) => decode( v.strip ) } )
+            end.flatten.compact
+        end
+
+        # Encodes a {String}'s reserved characters in order to prepare it for
+        # the `Cookie` header field.
+        #
+        # @example
+        #    p Cookie.encode "+;%=\0 "
+        #    #=> "%2B%3B%25%3D%00+"
+        #
+        # @param    [String]    str
+        #
+        # @return   [String]
+        def encode( str, type = :value )
+            reserved = "+;%\0"
+            reserved << '=' if type == :name
+
+            URI.encode( str, reserved ).recode.gsub( ' ', '+' )
+        end
+
+        # Decodes a {String} encoded for the `Cookie` header field.
+        #
+        # @example
+        #    p Cookie.decode "%2B%3B%25%3D%00+"
+        #    #=> "+;%=\x00 "
+        #
+        # @param    [String]    str
+        #
+        # @return   [String]
+        def decode( str )
+            URI.decode( str.to_s.recode.gsub( '+', ' ' ) )
+        end
+
+        def keep_for_set_cookie
+            return @keep if @keep
+
+            @keep = Set.new( DEFAULT.keys )
+            @keep.delete( :name )
+            @keep.delete( :value )
+            @keep.delete( :url )
+            @keep.delete( :secure )
+            @keep.delete( :httponly )
+            @keep.delete( :version )
+            @keep
+        end
+
+    end
+
     private
+
     def http_request( opts = {}, &block )
         opts[:cookies] = opts.delete( :parameters )
 
         self.method == :get ?
             http.get( self.action, opts, &block ) :
             http.post( self.action, opts, &block )
-    end
-
-    def self.keep_for_set_cookie
-        return @keep if @keep
-
-        @keep = Set.new( DEFAULT.keys )
-        @keep.delete( :name )
-        @keep.delete( :value )
-        @keep.delete( :url )
-        @keep.delete( :secure )
-        @keep.delete( :httponly )
-        @keep.delete( :version )
-        @keep
     end
 
 end
