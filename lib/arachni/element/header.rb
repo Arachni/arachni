@@ -7,6 +7,9 @@ require Arachni::Options.paths.lib + 'element/base'
 
 module Arachni::Element
 
+# Represents an auditable request header element
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Header < Base
     include Capabilities::Analyzable
 
@@ -59,21 +62,26 @@ class Header < Base
         @inputs.first.last
     end
 
-    def self.encode( header )
-        ::URI.encode( header, "\0\r\n" )
+    class <<self
+        def encode( header )
+            ::URI.encode( header, "\0\r\n" )
+        end
+
+        def decode( header )
+            ::URI.decode( header )
+        end
     end
+
     def encode( header )
         self.class.encode( header )
     end
 
-    def self.decode( header )
-        ::URI.decode( header )
-    end
     def decode( header )
         self.class.decode( header )
     end
 
     private
+
     def http_request( opts, &block )
         http.header( @action, opts, &block )
     end
