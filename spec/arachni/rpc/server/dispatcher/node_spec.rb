@@ -100,11 +100,7 @@ describe Arachni::RPC::Server::Dispatcher::Node do
             c.neighbours.should == [n.url]
             n.neighbours.should == [c.url]
 
-            begin
-                n.shutdown
-            rescue => e
-                ap e
-            end
+            n.shutdown rescue Arachni::RPC::Exceptions::ConnectionError
 
             sleep 4
 
