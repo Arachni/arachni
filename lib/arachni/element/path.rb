@@ -6,6 +6,11 @@
 require Arachni::Options.paths.lib + 'element/base'
 
 module Arachni::Element
+
+# Represents an auditable path element, currently a placeholder for a vulnerable
+# path vector.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Path < Base
     include Capabilities::WithAuditor
 
