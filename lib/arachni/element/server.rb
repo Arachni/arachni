@@ -6,6 +6,10 @@
 require Arachni::Options.paths.lib + 'element/base'
 
 module Arachni::Element
+
+# Represents a remote server, mainly by checking for and logging remote resources.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Server < Base
     include Capabilities::WithAuditor
 
