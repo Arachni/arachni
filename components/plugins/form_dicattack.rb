@@ -8,7 +8,7 @@
 class Arachni::Plugins::FormDicattack < Arachni::Plugin::Base
 
     def prepare
-        framework.pause
+        framework_pause
         print_info 'System paused.'
 
         @url = framework.options.url
@@ -78,7 +78,7 @@ class Arachni::Plugins::FormDicattack < Arachni::Plugin::Base
     end
 
     def clean_up
-        framework.resume
+        framework_resume
     end
 
     def self.info

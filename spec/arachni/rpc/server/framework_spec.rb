@@ -173,56 +173,6 @@ describe 'Arachni::RPC::Server::Framework' do
             instance.framework.statistics.should be_kind_of Hash
         end
     end
-    describe '#paused?' do
-        context 'when not paused' do
-            it 'returns false' do
-                instance = @instance_clean
-                instance.framework.paused?.should be_false
-            end
-        end
-        context 'when paused' do
-            it 'returns true' do
-                instance = instance_spawn
-                instance.options.url = web_server_url_for( :framework )
-                instance.checks.load( 'test' )
-                instance.framework.run
-
-                instance.framework.pause
-                instance.framework.status.should == :pausing
-
-                Timeout.timeout 20 do
-                    sleep 1 while !instance.framework.paused?
-                end
-
-                instance.framework.paused?.should be_true
-            end
-        end
-    end
-    describe '#resume' do
-        it 'resumes the scan' do
-            instance = instance_spawn
-            instance.options.url = web_server_url_for( :framework )
-            instance.checks.load( 'test' )
-            instance.framework.run
-
-            instance.framework.pause
-
-            instance.framework.status.should == :pausing
-
-            Timeout.timeout 20 do
-                sleep 1 while !instance.framework.paused?
-            end
-
-            instance.framework.paused?.should be_true
-            instance.framework.resume.should be_true
-
-            Timeout.timeout 20 do
-                sleep 1 while instance.framework.paused?
-            end
-
-            instance.framework.paused?.should be_false
-        end
-    end
     describe '#status' do
         before( :all ) do
             @instance = instance_spawn

@@ -35,7 +35,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
     def prepare
         # don't let the framework run just yet
-        framework.pause
+        framework_pause
         print_info 'System paused.'
 
         require_relative 'proxy/template_scope'
@@ -70,7 +70,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
     def clean_up
         @pages.each { |p| framework.push_to_page_queue( p ) }
-        framework.resume
+        framework_resume
     end
 
     def prepare_pages_for_inspection

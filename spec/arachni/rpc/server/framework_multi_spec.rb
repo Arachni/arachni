@@ -152,59 +152,22 @@ describe 'Arachni::RPC::Server::Framework' do
             keys.each { |k| statistics[k].should be_true }
         end
     end
-    describe '#paused?' do
-        context 'when not paused' do
-            it 'returns false' do
-                instance = @instance_clean
-                instance.framework.paused?.should be_false
-            end
-        end
-        context 'when paused' do
-            it 'returns true' do
-                instance = @instance_clean
-                instance.framework.pause
-
-                Timeout.timeout 20 do
-                    sleep 1 while !instance.framework.paused?
-                end
-
-                instance.framework.paused?.should be_true
-            end
-        end
-    end
-    describe '#resume' do
-        it 'resumes the scan' do
-            instance = @instance_clean
-            instance.framework.pause
-
-            Timeout.timeout 20 do
-                sleep 1 while !instance.framework.paused?
-            end
-
-            instance.framework.paused?.should be_true
-            instance.framework.resume.should be_true
-
-            Timeout.timeout 20 do
-                sleep 1 while instance.framework.paused?
-            end
-
-            instance.framework.paused?.should be_false
-        end
-    end
     describe '#clean_up' do
         it 'sets the framework state to finished, waits for plugins to finish and merges their results' do
-            instance = instance_light_grid_spawn
+            @instance = instance = instance_light_grid_spawn
             instance.options.url = web_server_url_for( :framework_multi )
             instance.checks.load( 'taint' )
             instance.plugins.load( { 'wait' => {}, 'distributable' => {} } )
             instance.framework.run.should be_true
             instance.framework.auditstore.plugins.should be_empty
-            instance.framework.busy?.should be_true
+
+            # Wait till the slaves join the scan.
+            sleep 0.1 while instance.framework.progress[:instances].size != 3
+
             instance.framework.clean_up.should be_true
 
             instance_count = instance.framework.progress[:instances].size
             auditstore     = instance.framework.auditstore
-            instance.service.shutdown
 
             results = auditstore.plugins
             results.should be_any

@@ -60,9 +60,9 @@ class Framework < ::Arachni::Framework
     end
 
     # Make these inherited methods public again (i.e. accessible over RPC).
-    [ :statistics, :paused?, :list_checks, :list_checks, :list_plugins,
-      :list_plugins, :list_reports, :list_reports, :version, :status, :report_as,
-      :list_platforms, :list_platforms ].each do |m|
+    [ :statistics, :list_checks, :list_checks, :list_plugins, :list_plugins,
+      :list_reports, :list_reports, :version, :status, :report_as, :list_platforms,
+      :list_platforms ].each do |m|
         private m
         public  m
     end
@@ -198,35 +198,6 @@ class Framework < ::Arachni::Framework
             block.call true
         end
         map_slaves( foreach, after )
-    end
-
-    # Pauses the running scan on a best effort basis.
-    def pause( &block )
-        # Send the pause request but don't block.
-        r = super( false )
-        return r if !block_given?
-
-        if !has_slaves?
-            block.call true
-            return
-        end
-
-        each = proc { |instance, iter| instance.framework.pause { iter.next } }
-        each_slave( each, proc { block.call true } )
-    end
-
-    # Resumes a paused scan right away.
-    def resume( &block )
-        r = super
-        return r if !block_given?
-
-        if !has_slaves?
-            block.call true
-            return
-        end
-
-        each = proc { |instance, iter| instance.framework.resume { iter.next } }
-        each_slave( each, proc { block.call true } )
     end
 
     # @return   [Hash]  Audit results as a {AuditStore#to_h hash}.

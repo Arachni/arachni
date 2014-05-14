@@ -202,26 +202,55 @@ describe 'Arachni::RPC::Server::Instance' do
                 @shared_instance.service.alive?.should == true
             end
         end
-
         describe '#paused?' do
             context 'when not paused' do
                 it 'returns false' do
-                    @shared_instance.framework.paused?.should be_false
+                    @instance = instance_spawn
+                    @instance.service.paused?.should be_false
                 end
             end
             context 'when paused' do
                 it 'returns true' do
-                    @shared_instance.framework.pause
-                    @shared_instance.framework.paused?.should be_true
+                    @instance = instance = instance_spawn
+                    instance.service.scan(
+                        url:    web_server_url_for( :framework ),
+                        checks: :test
+                    )
+
+                    instance.service.pause
+                    instance.service.status.should == :pausing
+
+                    Timeout.timeout 20 do
+                        sleep 1 while !instance.service.paused?
+                    end
+
+                    instance.service.paused?.should be_true
                 end
             end
         end
         describe '#resume' do
             it 'resumes the scan' do
-                @shared_instance.framework.pause
-                @shared_instance.framework.paused?.should be_true
-                @shared_instance.framework.resume.should be_true
-                @shared_instance.framework.paused?.should be_false
+                @instance = instance = instance_spawn
+                instance.service.scan(
+                    url:    web_server_url_for( :framework ),
+                    checks: :test
+                )
+
+                instance.service.pause
+                instance.service.status.should == :pausing
+
+                Timeout.timeout 20 do
+                    sleep 1 while !instance.service.paused?
+                end
+
+                instance.service.paused?.should be_true
+                instance.service.resume.should be_true
+
+                Timeout.timeout 20 do
+                    sleep 1 while instance.service.paused?
+                end
+
+                instance.service.paused?.should be_false
             end
         end
 

@@ -39,6 +39,10 @@ module Master
         true
     end
 
+    def has_slaves?
+        @slaves && @slaves.any?
+    end
+
     # @return   [Bool]
     #   `true` if running in HPG (High Performance Grid) mode and instance is
     #   the master, false otherwise.
@@ -317,10 +321,6 @@ module Master
         # We pass a block because we want to perform a grid cleanup, not just a
         # local one.
         clean_up{}
-    end
-
-    def has_slaves?
-        @slaves && @slaves.any?
     end
 
 end

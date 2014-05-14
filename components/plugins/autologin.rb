@@ -21,7 +21,7 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
     }
 
     def prepare
-        framework.pause
+        framework_pause
         print_info 'System paused.'
 
         @parameters = form_parse_request_body( options[:parameters] )
@@ -79,7 +79,7 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
             return
         end
 
-        framework.resume
+        framework_resume
     end
 
     def self.info

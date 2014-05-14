@@ -214,12 +214,13 @@ class Framework
                 when 'p'
                     return if !@framework.scanning?
 
-                    @framework.pause
+                    @pause_id = @framework.pause
 
                 # Resume
                 when 'r'
-                    return if !@framework.pause?
-                    @framework.resume
+                    return if !@pause_id
+                    @framework.resume @pause_id
+                    @pause_id = nil
 
                 # Suspend
                 when 's'

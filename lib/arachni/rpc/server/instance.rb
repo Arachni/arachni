@@ -234,14 +234,44 @@ class Instance
         @framework.list_reports
     end
 
-    # Pauses the running scan on a best effort basis.
-    def pause( &block )
-        @framework.pause( &block )
+    # @return (see Arachni::Framework#paused?)
+    def paused?
+        @framework.paused?
     end
 
-    # Resumes a paused scan.
+    # Pauses the running scan on a best effort basis.
+    def pause( &block )
+        if @rpc_pause_request
+            block.call( true )
+            return
+        end
+
+        # Send the pause request but don't block.
+        r = @framework.pause( false )
+        @rpc_pause_request ||= r
+
+        if !@framework.has_slaves?
+            block.call( true )
+            return
+        end
+
+        each = proc { |instance, iter| instance.service.pause { iter.next } }
+        each_slave( each, proc { block.call true } )
+    end
+
+    # Resumes a paused scan right away.
     def resume( &block )
-        @framework.resume( &block )
+        return block.call( false ) if !@rpc_pause_request
+
+        @framework.resume( @rpc_pause_request )
+
+        if !@framework.has_slaves?
+            block.call true
+            return
+        end
+
+        each = proc { |instance, iter| instance.service.resume { iter.next } }
+        each_slave( each, proc { block.call true } )
     end
 
     # @note Don't forget to {#shutdown} the instance once you get the report.

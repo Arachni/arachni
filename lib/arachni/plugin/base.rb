@@ -99,6 +99,17 @@ class Base < Component::Base
     def suspend
     end
 
+    # Pauses the {#framework}.
+    def framework_pause
+        @pause_id ||= framework.pause
+    end
+
+    # Resumes the {#framework}.
+    def framework_resume
+        return if !@pause_id
+        framework.resume @pause_id
+    end
+
     # @note **OPTIONAL**
     #
     # Only used when in Grid mode.

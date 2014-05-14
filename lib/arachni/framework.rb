@@ -610,8 +610,13 @@ class Framework
     # Pauses the framework on a best effort basis.
     #
     # @param    [Bool]  wait    Wait until the system has been paused.
+    #
+    # @return   [Integer]
+    #   ID identifying this pause request.
     def pause( wait = true )
-        state.pause caller_name, wait
+        id = generate_token.hash
+        state.pause id, wait
+        id
     end
 
     # @note Each call from a unique caller is counted as a pause request
@@ -619,8 +624,11 @@ class Framework
     #   {#resume} it.
     #
     # Removes a {#pause} request for the current caller.
-    def resume
-        state.resume caller_name
+    #
+    # @param    [Integer]   id
+    #   ID of the {#pause} request.
+    def resume( id )
+        state.resume id
     end
 
     # Writes a {Snapshot.dump} to disk and aborts the scan.

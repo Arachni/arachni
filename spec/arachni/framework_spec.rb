@@ -686,6 +686,25 @@ describe Arachni::Framework do
             end
         end
 
+        it 'returns an Integer request ID' do
+            described_class.new do |f|
+                f.options.url = @url + '/elem_combo'
+                f.options.audit.elements :links, :forms, :cookies
+                f.checks.load :taint
+
+                t = Thread.new do
+                    f.run
+                end
+
+                f.pause.should be_kind_of Integer
+
+                sleep 10
+
+                f.running?.should be_true
+                t.kill
+            end
+        end
+
         it 'sets #status to :paused' do
             described_class.new do |f|
                 f.options.url = @url + '/elem_combo'
@@ -716,12 +735,12 @@ describe Arachni::Framework do
                     f.run
                 end
 
-                f.pause
+                id = f.pause
 
                 sleep 10
 
                 f.running?.should be_true
-                f.resume
+                f.resume id
                 t.join
             end
         end
@@ -736,10 +755,10 @@ describe Arachni::Framework do
                     f.run
                 end
 
-                f.pause
+                id = f.pause
                 f.status.should == :paused
 
-                f.resume
+                f.resume id
                 Timeout.timeout( 5 ) do
                     sleep 0.1 while f.status != :scanning
                 end

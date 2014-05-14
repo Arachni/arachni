@@ -25,7 +25,7 @@ class Arachni::Plugins::WAFDetector < Arachni::Plugin::Base
     }
 
     def prepare
-        framework.pause
+        framework_pause
 
         @precision = options[:precision]
 
@@ -86,7 +86,7 @@ class Arachni::Plugins::WAFDetector < Arachni::Plugin::Base
     end
 
     def clean_up
-        framework.resume
+        framework_resume
     end
 
     def found

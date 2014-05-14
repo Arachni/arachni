@@ -14,7 +14,7 @@
 class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
 
     def prepare
-        framework.pause
+        framework_pause
         print_status 'System paused.'
     end
 
@@ -139,7 +139,7 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
     end
 
     def clean_up
-        framework.resume
+        framework_resume
         print_status 'System resumed.'
     end
 
