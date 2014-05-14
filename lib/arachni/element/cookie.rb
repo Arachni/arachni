@@ -10,7 +10,8 @@ require Arachni::Options.paths.lib + 'element/base'
 
 module Arachni::Element
 
-# Represents a Cookie object and provides helper class methods for parsing, encoding, etc.
+# Represents a Cookie object and provides helper class methods for parsing,
+# encoding, etc.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Cookie < Base
@@ -35,7 +36,7 @@ class Cookie < Base
         httponly:    false
     }
 
-    # @return   [DOM]
+    # @return       [DOM]
     attr_accessor   :dom
 
     # @param    [Hash]  options
@@ -78,6 +79,7 @@ class Cookie < Base
         @default_inputs = self.inputs.dup.freeze
     end
 
+    # @return   [DOM]
     def dom
         return if inputs.empty?
         @dom ||= DOM.new( parent: self )
