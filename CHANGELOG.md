@@ -2,6 +2,9 @@
 
 ## _Under development_
 
+- `Element::Form`
+    - `#submit` - Updated to refresh multiple nonce fields instead of just one.
+
 ## 0.4.7 _(April 12, 2014)_
 
 - `Spider`

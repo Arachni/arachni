@@ -347,21 +347,28 @@ describe Arachni::Element::Form do
                 body_should.should == body
             end
         end
-        context 'when the form has a nonce' do
-            it 'refreshes its value before submitting it' do
-                f = Arachni::Element::Form.new( @url + 'with_nonce',
-                    @inputs.merge( method: 'get', action: @url + 'get_nonce') )
+        context 'when the form has nonces' do
+            it 'refreshes their values before submitting' do
+                f = described_class.from_response(
+                    Arachni::HTTP.get( @url + 'with_nonce', async: false ).response
+                ).find { |form| form.auditable.include? 'nonce' }
 
-                f.update 'nonce' => rand( 999 )
+                new_value = 'new value'
+                f.update( param_name: new_value )
                 f.nonce_name = 'nonce'
 
-                body_should = f.method + f.auditable.to_s
                 body = nil
 
                 f.submit { |res| body = res.body }
                 @http.run
-                body.should_not == f.auditable['nonce']
-                body.to_i.should > 0
+
+                submitted = YAML.load( body )
+
+                submitted['param_name'].should == new_value
+                %w(nonce nonce2).each do |nonce|
+                    f.original[nonce].should_not == f.auditable[nonce]
+                    submitted[nonce].should == f.auditable[nonce]
+                end
             end
         end
 

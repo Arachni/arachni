@@ -937,20 +937,16 @@ class Form < Arachni::Element::Base
         opts[:method] = self.method.downcase.to_s.to_sym
 
         if has_nonce?
+            # This will actually refresh all nonces, not just the one.
             print_info "Refreshing nonce for '#{nonce_name}'."
 
-            f = self.class.from_response( http.get( @url, async: false ).response ).
-                    select { |f| f.auditable.keys == auditable.keys }.first
-
-            if !f
+            if !(f = self.refresh)
                 print_bad 'Could not refresh nonce because the form could not be found.'
             else
-                nonce = f.auditable[nonce_name]
+                print_info "Got new nonce '#{f.auditable[nonce_name]}'."
 
-                print_info "Got new nonce '#{nonce}'."
-
-                opts[:params][nonce_name] = nonce
-                opts[:async] = false
+                opts[:params] = f.auditable
+                opts[:async]  = false
             end
         end
 
