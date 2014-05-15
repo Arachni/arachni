@@ -5,14 +5,63 @@
 
 require 'zlib'
 
-#
 # Overloads the {String} class.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class String
 
+    # @param    [Regexp]    regexp
+    #   Regular expression with named groups.
     #
+    # @return   [Hash]
+    #   Grouped matches.
+    def scan_in_groups( regexp )
+        raise ArgumentError, 'Regexp does not contain any names.' if regexp.names.empty?
+
+        captures = regexp.names.inject( {} ){ |h, n| h[n] = []; h }
+
+        scan( regexp ).each do |match|
+            captures.keys.zip( match ).each do |group, gmatch|
+                next if !gmatch
+                captures[group] << gmatch
+            end
+        end
+
+        captures.reject { |_, v| v.empty? }
+    end
+
+    # @param    [Regexp]    regexp
+    #   Regular expression with named groups.
+    # @param    [Hash]    substitutions
+    #   Hash (with groups names as keys) with which to replace the `regexp`
+    #   matches.
+    #
+    # @return   [String]
+    #   Updated copy of self.
+    def sub_in_groups( regexp, substitutions )
+        dup.sub_in_groups!( regexp, substitutions )
+    end
+
+    # @param    [Regexp]    regexp
+    #   Regular expression with named groups.
+    # @param    [Hash]    updates
+    #   Hash (with groups names as keys) with which to replace the `regexp`
+    #   matches.
+    #
+    # @return   [String]
+    #   Updated self.
+    def sub_in_groups!( regexp, updates )
+        return if !(match = regexp.match( self ))
+
+        keys_in_order = updates.keys.sort_by { |k| match.offset( k ) }.reverse
+        keys_in_order.each do |k|
+            offsets_for_group = match.offset( k )
+            self[offsets_for_group.first...offsets_for_group.last] = updates[k]
+        end
+
+        self
+    end
+
     # Gets the reverse diff between self and str on a word level.
     #
     #
@@ -34,7 +83,6 @@ class String
     # @param [String] other
     #
     # @return [String]
-    #
     def rdiff( other )
         return self if self == other
 
@@ -45,13 +93,11 @@ class String
         (s_words - (s_words - other.words)).join
     end
 
-    #
     # Calculates the difference ratio (at a word level) between `self` and `other`
     #
     # @param    [String]    other
     #
     # @return   [Float]     `0.0` (identical strings) to `1.0` (completely different)
-    #
     def diff_ratio( other )
         return 0.0 if self == other
         return 1.0 if empty? || other.empty?
@@ -65,13 +111,11 @@ class String
         (union - common) / union
     end
 
-    #
     # Returns the words in `self`.
     #
     # @param    [Bool]  strict  include *only* words, no boundary characters (like spaces, etc.)
     #
     # @return   [Array<String>]
-    #
     def words( strict = false )
         splits = split( /\b/ )
         splits.reject! { |w| !(w =~ /\w/) } if strict

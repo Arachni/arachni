@@ -2,6 +2,62 @@ require 'spec_helper'
 
 describe String do
 
+    let(:path) { '/book/12/blahahaha/test/chapter-3/stuff4/12' }
+    let(:regex_with_names) do
+        /
+            \/(?<category>\w+)         # matches category type
+            \/                         # path separator
+            (?<book-id>\d+)            # matches book ID numbers
+            \/                         # path separator
+            .*                         # irrelevant
+            \/                         # path separator
+            chapter-(?<chapter-id>\d+) # matches chapter ID numbers
+            \/                         # path separator
+            stuff(?<stuff-id>\d+)      # matches stuff ID numbers
+        /x
+    end
+    let(:grouped_substitutions) do
+        {
+            'category'   => 'new-category',
+            'book-id'    => 'new-book-id',
+            'chapter-id' => 'new-chapter-id',
+            'stuff-id'   => '-new-stuff-id'
+        }
+    end
+
+    describe '#scan_in_groups' do
+        it 'returns regexp matches in named groups' do
+            path.scan_in_groups( regex_with_names ).should == {
+                'category'   => ['book'],
+                'book-id'    => ['12'],
+                'chapter-id' => ['3'],
+                'stuff-id'   => ['4']
+            }
+        end
+
+        context 'when the regexp does not contain names' do
+            it 'raises ArgumentError' do
+                expect { 'test'.scan_in_groups( /./ ) }.to raise_error ArgumentError
+            end
+        end
+    end
+
+    describe '#sub_in_groups' do
+        it 'substitutes the named matches' do
+            path.sub_in_groups(
+                regex_with_names,
+                grouped_substitutions
+            ).should == '/new-category/new-book-id/blahahaha/test/chapter-new-chapter-id/stuff-new-stuff-id/12'
+        end
+    end
+
+    describe '#sub_in_groups!' do
+        it 'substitutes the named matches in place' do
+            path.sub_in_groups!( regex_with_names, grouped_substitutions )
+            path.should == '/new-category/new-book-id/blahahaha/test/chapter-new-chapter-id/stuff-new-stuff-id/12'
+        end
+    end
+
     describe '#rdiff' do
         it 'should return the common parts between self and another string' do
             str = <<-END
