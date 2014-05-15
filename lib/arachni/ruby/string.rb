@@ -17,17 +17,7 @@ class String
     #   Grouped matches.
     def scan_in_groups( regexp )
         raise ArgumentError, 'Regexp does not contain any names.' if regexp.names.empty?
-
-        captures = regexp.names.inject( {} ){ |h, n| h[n] = []; h }
-
-        scan( regexp ).each do |match|
-            captures.keys.zip( match ).each do |group, gmatch|
-                next if !gmatch
-                captures[group] << gmatch
-            end
-        end
-
-        captures.reject { |_, v| v.empty? }
+        Hash[regexp.names.zip( scan( regexp ).first )].reject { |_, v| v.empty? }
     end
 
     # @param    [Regexp]    regexp
@@ -52,6 +42,8 @@ class String
     #   Updated self.
     def sub_in_groups!( regexp, updates )
         return if !(match = regexp.match( self ))
+
+        # updates.reject! { |k| !(match.offset( k ) rescue nil) }
 
         keys_in_order = updates.keys.sort_by { |k| match.offset( k ) }.reverse
         keys_in_order.each do |k|

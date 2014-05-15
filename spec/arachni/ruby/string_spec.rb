@@ -28,10 +28,10 @@ describe String do
     describe '#scan_in_groups' do
         it 'returns regexp matches in named groups' do
             path.scan_in_groups( regex_with_names ).should == {
-                'category'   => ['book'],
-                'book-id'    => ['12'],
-                'chapter-id' => ['3'],
-                'stuff-id'   => ['4']
+                'category'   => 'book',
+                'book-id'    => '12',
+                'chapter-id' => '3',
+                'stuff-id'   => '4'
             }
         end
 
@@ -49,6 +49,16 @@ describe String do
                 grouped_substitutions
             ).should == '/new-category/new-book-id/blahahaha/test/chapter-new-chapter-id/stuff-new-stuff-id/12'
         end
+
+        context 'when using invalid group names' do
+            it 'raises IndexError' do
+                grouped_substitutions['blah'] = 'blah2'
+
+                expect do
+                    path.sub_in_groups!( regex_with_names, grouped_substitutions )
+                end.to raise_error IndexError
+            end
+        end
     end
 
     describe '#sub_in_groups!' do
@@ -56,6 +66,17 @@ describe String do
             path.sub_in_groups!( regex_with_names, grouped_substitutions )
             path.should == '/new-category/new-book-id/blahahaha/test/chapter-new-chapter-id/stuff-new-stuff-id/12'
         end
+
+        context 'when using invalid group names' do
+            it 'raises IndexError' do
+                grouped_substitutions['blah'] = 'blah2'
+
+                expect do
+                    path.sub_in_groups!( regex_with_names, grouped_substitutions )
+                end.to raise_error IndexError
+            end
+        end
+
     end
 
     describe '#rdiff' do
