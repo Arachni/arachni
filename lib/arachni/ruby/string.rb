@@ -11,7 +11,7 @@ require 'zlib'
 class String
 
     # @param    [Regexp]    regexp
-    #   Regular expression with named groups.
+    #   Regular expression with named captures.
     #
     # @return   [Hash]
     #   Grouped matches.
@@ -21,9 +21,9 @@ class String
     end
 
     # @param    [Regexp]    regexp
-    #   Regular expression with named groups.
+    #   Regular expression with named captures.
     # @param    [Hash]    substitutions
-    #   Hash (with groups names as keys) with which to replace the `regexp`
+    #   Hash (with capture names as keys) with which to replace the `regexp`
     #   matches.
     #
     # @return   [String]
@@ -33,9 +33,9 @@ class String
     end
 
     # @param    [Regexp]    regexp
-    #   Regular expression with named groups.
+    #   Regular expression with named captures.
     # @param    [Hash]    updates
-    #   Hash (with groups names as keys) with which to replace the `regexp`
+    #   Hash (with capture names as keys) with which to replace the `regexp`
     #   matches.
     #
     # @return   [String]
