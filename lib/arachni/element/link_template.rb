@@ -56,6 +56,8 @@ class LinkTemplate < Base
             end
         end
 
+        fail ArgumentError, 'Missing :template.' if !@template
+
         self.html   = options[:html]
         self.method = :get
 
@@ -84,6 +86,16 @@ class LinkTemplate < Base
         Nokogiri::HTML.fragment( @html.dup ).children.first
     end
 
+    # @note Will ignore `:param_flip`.
+    #
+    # @param    (see Capabilities::Mutable#each_mutation)
+    #
+    # @see Capabilities::Mutable#each_mutation
+    def each_mutation( injection_str, opts = {} )
+        opts.delete( :param_flip )
+        super( injection_str, opts )
+    end
+
     # @return   [Hash]
     #   Simple representation of self in the form of `{ {#action} => {#inputs} }`.
     def simple
@@ -93,8 +105,6 @@ class LinkTemplate < Base
     # @return   [String]
     #   URL updated with the configured {#inputs}.
     def to_s
-        return self.action if !@template
-
         self.action.sub_in_groups(
             @template,
             inputs.inject({}) { |h, (k, v)| h[k] = encode(v); h }
@@ -216,10 +226,7 @@ class LinkTemplate < Base
         end
 
         def encode( string )
-            URI.encode(
-                URI.encode( string, ';/' ),
-                "a-zA-Z0-9\\-\\.\\_\\~\\!\\$\\&\\'\\(\\)\\*\\+\\,\\=\\:\\@\\%"
-            )
+            URI.encode( URI.encode( string, ';/' ) )
         end
 
         def decode( *args )
