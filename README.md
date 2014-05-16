@@ -217,6 +217,7 @@ you with its findings.
     - Forms
         - Can refresh nonce tokens.
     - Links
+        - Supporting custom templates to handle cases like ModRewrite.
     - Cookies
     - Headers
  - Can ignore binary/non-text pages.

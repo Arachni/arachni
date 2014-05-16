@@ -94,10 +94,16 @@ class Page
         new data
     end
 
-    # @return   [DOM]   DOM snapshot.
+    ELEMENTS = [
+        :links, :forms, :cookies, :headers, :link_templates
+    ]
+
+    # @return   [DOM]
+    #   DOM snapshot.
     attr_accessor :dom
 
-    # @return    [HTTP::Response]    HTTP response.
+    # @return    [HTTP::Response]
+    #   HTTP response.
     attr_reader :response
 
     # @return    [Hash]
@@ -177,6 +183,7 @@ class Page
     # @param    [Array<Element::Capabilities::Auditable, Integer>]    list
     #   Audit whitelist based on {Element::Capabilities::Auditable elements} or
     #   {Element::Capabilities::Auditable#audit_scope_id}s.
+    #
     # @return   [Set]   {#element_audit_whitelist}
     #
     # @see  #element_audit_whitelist
@@ -189,6 +196,7 @@ class Page
 
     # @param    [Element::Capabilities::Auditable, Integer]    element
     #   Element or {Element::Capabilities::Auditable#audit_scope_id}.
+    #
     # @return   [Bool]
     #   `true` if the element should be audited, `false` otherwise.
     #
@@ -207,34 +215,40 @@ class Page
         @do_not_audit_elements = true
     end
 
-    # @return    [HTTP::Request]    HTTP request.
+    # @return    [HTTP::Request]
+    #   HTTP request.
     def request
         response.request
     end
 
-    # @return    [String]    URL of the page.
+    # @return    [String]
+    #   URL of the page.
     def url
         @url ||= @response.url
     end
 
-    # @return    [String]    URL of the page.
+    # @return    [String]
+    #   URL of the page.
     def code
         return 0 if !@code && !response
         @code ||= response.code
     end
 
-    # @return    [Hash]    {#url URL} query parameters.
+    # @return    [Hash]
+    #   {#url URL} query parameters.
     def query_vars
         @cache[:query_vars] ||= Link.parse_query_vars( url )
     end
 
-    # @return    [String]    HTTP response body.
+    # @return    [String]
+    #   HTTP response body.
     def body
         return '' if !@body && !@response
         @body ||= response.body
     end
 
-    # @param    [String]    string  Page body.
+    # @param    [String]    string
+    #   Page body.
     def body=( string )
         @has_javascript = nil
         clear_cache
@@ -242,7 +256,7 @@ class Page
         @body = string.to_s.dup.freeze
     end
 
-    [:links, :forms, :cookies, :headers].each do |type|
+    ELEMENTS.each do |type|
         parser_method = type
         parser_method = :cookies_to_be_audited if type == :cookies
 
@@ -263,37 +277,45 @@ class Page
         @cookiejar ||= (parser ? parser.cookie_jar : [])
     end
 
-    # @return    [Array<String>]    Paths contained in this page.
+    # @return    [Array<String>]
+    #   Paths contained in this page.
+    #
     # @see Parser#paths
     def paths
         @cache[:paths] ||= parser ? parser.paths : []
     end
 
-    # @return   [Platform] Applicable platforms for the page.
+    # @return   [Platform]
+    #   Applicable platforms for the page.
     def platforms
         Platform::Manager[url]
     end
 
-    # @return   [Array] All page elements.
+    # @return   [Array]
+    #   All page elements.
     def elements
-        links | forms | cookies | headers
+        ELEMENTS.map { |type| send( type ) }.flatten
     end
 
-    # @return    [String]    the request method that returned the page
+    # @return    [String]
+    #   The request method that returned the page
     def method( *args )
         return super( *args ) if args.any?
         response.request.method
     end
 
-    # @return   [Nokogiri::HTML]    Parsed {#body HTML} document.
+    # @return   [Nokogiri::HTML]
+    #   Parsed {#body HTML} document.
     def document
         @cache[:document] ||= (parser.nil? ? Nokogiri::HTML( body ) : parser.document)
     end
 
     # @note Will preserve caches for elements which have been externally modified.
-    # @return   [Page]  `self` with caches cleared.
+    #
+    # @return   [Page]
+    #   `self` with caches cleared.
     def clear_cache
-        [:links, :forms, :cookies, :headers ].each do |type|
+        ELEMENTS.each do |type|
             next if @has_custom_elements.include? type
             # Remove the association to this page before clearing the elements
             # from cache to make it easier on the GC.
@@ -361,12 +383,14 @@ class Page
         response.text?
     end
 
-    # @return   [String]    Title of the page.
+    # @return   [String]
+    #   Title of the page.
     def title
         document.css( 'title' ).first.text rescue nil
     end
 
-    # @return   [Hash]  Converts the page data to a hash.
+    # @return   [Hash]
+    #   Converts the page data to a hash.
     def to_h
         instance_variables.reduce({}) do |h, iv|
             next h if iv == :@document
@@ -403,7 +427,7 @@ class Page
             h.delete( m ) if !h[m]
         end
 
-        [:links, :forms, :cookies, :headers ].each do |type|
+        ELEMENTS.each do |type|
             next if !@has_custom_elements.include?( type )
             h[type] = @cache[type]
 
@@ -441,6 +465,7 @@ class Page
     end
 
     # @param    [Hash]  data    {#to_rpc_data}
+    #
     # @return   [Page]
     def self.from_rpc_data( data )
         dom = data.delete('dom')
@@ -490,7 +515,7 @@ class Page
 
     def digest
         element_hashes = []
-        [:links, :forms, :cookies, :headers].each do |type|
+        ELEMENTS.each do |type|
             next if !@has_custom_elements.include?( type ) || !(list = @cache[type])
             element_hashes |= list.map(&:hash)
         end

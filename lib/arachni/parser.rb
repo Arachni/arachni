@@ -14,20 +14,14 @@ require lib + 'page'
 require lib + 'utilities'
 require lib + 'component/manager'
 
-#
-# HTML Parser
-#
-# Analyzes HTML code extracting forms, links and cookies depending on user opts.
-#
-# ignored.
+# Analyzes HTML code extracting inputs vectors and supporting information.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-#
 class Parser
     include UI::Output
     include Utilities
 
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
     module Extractors
 
         # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
@@ -49,10 +43,10 @@ class Parser
 
     alias :skip? :skip_path?
 
-    # @return    [String]    The url of the page.
+    # @return    [String]
     attr_reader :url
 
-    # @param  [HTTP::Response] response
+    # @return   [HTTP::Response]
     attr_reader :response
 
     # @param  [HTTP::Response, Array<HTTP::Response>] response
@@ -82,15 +76,18 @@ class Parser
 
     # Converts a relative URL to an absolute one.
     #
-    # @param    [String]    relative_url    URL to convert to absolute.
+    # @param    [String]    relative_url
+    #   URL to convert to absolute.
     #
-    # @return   [String]    Absolute URL.
+    # @return   [String]
+    #   Absolute URL.
     def to_absolute( relative_url )
-        if url = base
+        if (url = base)
             base_url = url
         else
             base_url = @url
         end
+
         super( relative_url, base_url )
     end
 
@@ -129,7 +126,8 @@ class Parser
     #   It's a long shot that any of these will be vulnerable but better be safe
     #   than sorry.
     #
-    # @return    [Hash]    List of valid auditable HTTP header fields.
+    # @return    [Hash]
+    #   List of valid auditable HTTP header fields.
     def headers
         @headers ||= {
             'Accept'          => 'text/html,application/xhtml+xml,application' +
@@ -143,7 +141,8 @@ class Parser
         }.map { |k, v| Header.new( url: @url, inputs: { k => v } ) }.freeze
     end
 
-    # @return [Array<Element::Form>]    Forms from {#document}.
+    # @return [Array<Element::Form>]
+    #   Forms from {#document}.
     def forms
         return @forms.freeze if @forms
         return [] if !text?
@@ -172,13 +171,29 @@ class Parser
         @forms = f
     end
 
-    # @return [Element::Link]   Link to the page.
+    # @return [Element::Link]
+    #   Link to the page.
     def link
         return if link_vars.empty? && !@response.redirection?
         Link.new( url: @url, inputs: link_vars )
     end
 
-    # @return [Array<Element::Link>] Links in {#document}.
+    # @return [Element::LinkTemplate]
+    #   LinkTemplate for the current page.
+    def link_template
+        template, inputs = LinkTemplate.extract_inputs( @url )
+        return if !template
+
+        LinkTemplate.new(
+            url:      @url.freeze,
+            action:   @url.freeze,
+            inputs:   inputs,
+            template: template
+        )
+    end
+
+    # @return [Array<Element::Link>]
+    #   Links in {#document}.
     def links
         return @links.freeze if @links
         return @links = [link].compact if !text?
@@ -186,7 +201,18 @@ class Parser
         @links = [link].compact | Link.from_document( @url, document )
     end
 
-    # @return   [Hash]    Parameters found in {#url}.
+    # @return [Array<Element::LinkTemplate>]
+    #   Links matching {OptionsGroups::Audit#link_templates} in {#document}.
+    def link_templates
+        return @link_templates.freeze if @link_templates
+        return @link_templates = [link_template].compact if !text?
+
+        @link_templates =
+            [link_template].compact | LinkTemplate.from_document( @url, document )
+    end
+
+    # @return   [Hash]
+    #   Parameters found in {#url}.
     def link_vars
         @link_vars ||= Link.parse_query_vars( @url ).freeze
     end
@@ -202,7 +228,8 @@ class Parser
         @cookies |= Cookie.from_document( @url, document )
     end
 
-    # @return   [Array<Element::Cookie>] Cookies to be audited.
+    # @return   [Array<Element::Cookie>]
+    #   Cookies to be audited.
     def cookies_to_be_audited
         return @cookies_to_be_audited.freeze if @cookies_to_be_audited
         return [] if !text?
@@ -237,7 +264,9 @@ class Parser
 
         # If there's a Netscape cookiejar file load cookies from it but only
         # new ones, i.e. only if they weren't already in the response.
-        if @options.http.cookie_jar_filepath.is_a?( String ) && File.exists?( @options.http.cookie_jar_filepath )
+        if @options.http.cookie_jar_filepath.is_a?( String ) &&
+            File.exists?( @options.http.cookie_jar_filepath )
+
             from_jar |= cookies_from_file( @url, @options.http.cookie_jar_filepath ).
                 reject { |c| cookie_names.include?( c.name ) }
         end
@@ -254,7 +283,8 @@ class Parser
         @cookie_jar = (cookies | from_jar)
     end
 
-    # @return   [Array<String>] Distinct links to follow.
+    # @return   [Array<String>]
+    #   Distinct links to follow.
     def paths
       return @paths if @paths
       @paths = []
@@ -263,7 +293,8 @@ class Parser
       @paths = run_extractors.freeze
     end
 
-    # @return   [String]    `base href`, if there is one.
+    # @return   [String]
+    #   Base `href`, if there is one.
     def base
         @base ||= document.search( '//base[@href]' ).first['href'] rescue nil
     end

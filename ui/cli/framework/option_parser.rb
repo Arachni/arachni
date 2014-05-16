@@ -190,6 +190,15 @@ class OptionParser < UI::CLI::OptionParser
         ) do
             options.audit.exclude_binaries = true
         end
+
+        on( '--audit-link-template TEMPLATE', Regexp,
+            'Regular expression with named captures to use to extract input information from generic paths.',
+            '(Can be used multiple times.)'
+        ) do |pattern|
+            # We merge this way to enforce validation from the options group.
+            options.audit.link_templates |= [pattern]
+        end
+
     end
 
     def http
@@ -453,8 +462,8 @@ class OptionParser < UI::CLI::OptionParser
 
         on( '--snapshot-save-path PATH', String,
             'Directory or file path where to store the scan snapshot.',
-            'You can use the generated file to resume the scan at a later time ' +
-                "with the 'arachni_restore' executable."
+            'You can use the generated file to resume a suspended scan at a' +
+                " later time with the 'arachni_restore' executable."
         ) do |path|
             options.snapshot.save_path = path
         end

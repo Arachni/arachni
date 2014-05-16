@@ -5,9 +5,43 @@ describe Arachni::OptionGroups::Audit do
     subject { described_class.new }
 
     %w(with_both_http_methods exclude_binaries exclude_vectors links forms
-        cookies cookies_extensively headers).each do |method|
+        cookies cookies_extensively headers link_templates).each do |method|
         it { should respond_to method }
         it { should respond_to "#{method}=" }
+    end
+
+    describe '#link_templates=' do
+        it 'converts its param to an Array of Regexp' do
+            templates = %w(/param\/(?<param>\w+)/ /param2\/(?<param2>\w+)/)
+
+            subject.link_templates = templates.first
+            subject.link_templates.should == [Regexp.new( templates.first )]
+
+            subject.link_templates = templates
+            subject.link_templates.should == templates.map { |p| Regexp.new( p ) }
+        end
+
+        context 'when given an invalid template' do
+            it "raises #{described_class::Error::InvalidLinkTemplate}" do
+                expect { subject.link_templates = /(.*)/ }.to raise_error
+                described_class::Error::InvalidLinkTemplate
+            end
+        end
+    end
+
+    describe '#link_templates?' do
+        context 'when templates are available' do
+            it 'returns true' do
+                subject.link_templates << /param\/(?<param>\w+)/
+                subject.link_templates?.should == true
+            end
+        end
+
+        context 'when templates not available' do
+            it 'returns false' do
+                subject.link_templates?.should == false
+            end
+        end
     end
 
     [:links, :forms, :cookies, :headers, :cookies_extensively,
@@ -99,6 +133,7 @@ describe Arachni::OptionGroups::Audit do
         context 'if the given element is to be audited' do
             it 'returns true' do
                 subject.elements :links, :forms, :cookies, :headers
+                subject.link_templates << /param\/(?<param>\w+)/
 
                 subject.links.should be_true
                 subject.elements?( :links ).should be_true
@@ -124,8 +159,14 @@ describe Arachni::OptionGroups::Audit do
                 subject.elements?( 'headers' ).should be_true
                 subject.elements?( 'header' ).should be_true
 
-                subject.elements?( :header, :link, :form, :cookie ).should be_true
-                subject.elements?( [:header, :link, :form, :cookie] ).should be_true
+                subject.link_templates.should be_any
+                subject.elements?( :link_templates ).should be_true
+                subject.elements?( :link_template ).should be_true
+                subject.elements?( 'link_templates' ).should be_true
+                subject.elements?( 'link_template' ).should be_true
+
+                subject.elements?( :header, :link, :form, :cookie, :link_template ).should be_true
+                subject.elements?( [:header, :link, :form, :cookie, :link_template] ).should be_true
             end
         end
         context 'if the given element is not to be audited' do
@@ -154,8 +195,14 @@ describe Arachni::OptionGroups::Audit do
                 subject.elements?( 'headers' ).should be_false
                 subject.elements?( 'header' ).should be_false
 
-                subject.elements?( :header, :link, :form, :cookie ).should be_false
-                subject.elements?( [:header, :link, :form, :cookie] ).should be_false
+                subject.link_templates.should be_empty
+                subject.elements?( :link_templates ).should be_false
+                subject.elements?( :link_template ).should be_false
+                subject.elements?( 'link_templates' ).should be_false
+                subject.elements?( 'link_template' ).should be_false
+
+                subject.elements?( :header, :link, :form, :cookie, :link_templates ).should be_false
+                subject.elements?( [:header, :link, :form, :cookie, :link_templates] ).should be_false
             end
         end
     end

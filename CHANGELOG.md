@@ -47,6 +47,9 @@
     - Added `GenericDOM`
         - Provides an interface similar to traditional elements in order for
             generic DOM elements to be logged and assigned as vectors to issues.
+    - Added `LinkTemplate`
+        - Basing its vector identification and manipulation to a user-provided
+            template to satisfy cases like ModRewrite and similar.
     - `Form`
         - Added `#dom` pointing to a `Auditable::DOM` object handling browser-based
             form submissions/audits.

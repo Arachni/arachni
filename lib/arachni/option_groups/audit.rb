@@ -11,6 +11,11 @@ module Arachni::OptionGroups
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Audit < Arachni::OptionGroup
 
+    class Error < Error
+        class InvalidLinkTemplate < Error
+        end
+    end
+
     # @note Default is `false`.
     # @return   [Bool]
     #   If enabled, all element audits will be performed with both `GET` and
@@ -75,7 +80,35 @@ class Audit < Arachni::OptionGroup
     # @return    [Bool] Audit HTTP request headers.
     attr_accessor :headers
 
-    set_defaults exclude_vectors: []
+    # @return   [Array<Regexp>]
+    #   Regular expressions with named captures, serving as templates used to
+    #   extract input vectors from paths.
+    #
+    # @see Element::LinkTemplate
+    attr_accessor :link_templates
+
+    set_defaults(
+        exclude_vectors: [],
+        link_templates:  []
+    )
+    # @param    [Array<Regexp>]
+    #   Regular expressions with named captures, serving as templates used to
+    #   extract input vectors from paths.
+    #
+    # @see Element::LinkTemplate
+    def link_templates=( named_regexps )
+        @link_templates = [named_regexps].flatten.compact.
+            map do |s|
+            template = s.is_a?( Regexp ) ? s : Regexp.new( s.to_s )
+
+            if template.names.empty?
+                fail Error::InvalidLinkTemplate,
+                     "Template '#{template}' includes no named captured."
+            end
+
+            template
+        end
+    end
 
     def exclude_vectors=( vectors )
         @exclude_vectors = [vectors].flatten.compact.map(&:to_s)
@@ -130,7 +163,7 @@ class Audit < Arachni::OptionGroup
     # @return   [Bool]
     def elements?( *element_types )
         !(element_types.flatten.compact.map do |type|
-            !!(self.send( type ) rescue self.send( "#{type}s" ))
+            !!(self.send( "#{type}?" ) rescue self.send( "#{type}s?" ))
         end.uniq.include?( false ))
     end
     alias :element? :elements?
@@ -138,8 +171,12 @@ class Audit < Arachni::OptionGroup
     [:links, :forms, :cookies, :headers, :cookies_extensively,
      :with_both_http_methods, :exclude_binaries].each do |attribute|
         define_method "#{attribute}?" do
-            !!send(attribute)
+            !!send( attribute )
         end
+    end
+
+    def link_templates?
+        @link_templates.any?
     end
 
 end

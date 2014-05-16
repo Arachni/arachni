@@ -8,6 +8,10 @@ module Arachni
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class OptionGroup
 
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    class Error < Options::Error
+    end
+
     class <<self
         # @return   [Hash]  Specified default values for attribute readers.
         def defaults
