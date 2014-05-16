@@ -46,7 +46,7 @@ class Audit < Arachni::OptionGroup
     # @see Element::Link
     # @see Element::Capabilities::Auditable#audit
     attr_accessor :links
-    alias :link_doms :links
+    alias :link_doms  :links
     alias :link_doms= :links=
 
     # @note Default is `false`.
@@ -55,7 +55,7 @@ class Audit < Arachni::OptionGroup
     # @see Element::Form
     # @see Element::Capabilities::Auditable#audit
     attr_accessor :forms
-    alias :form_doms :forms
+    alias :form_doms  :forms
     alias :form_doms= :forms=
 
     # @note Default is `false`.
@@ -64,7 +64,7 @@ class Audit < Arachni::OptionGroup
     # @see Element::Cookie
     # @see Element::Capabilities::Auditable#audit
     attr_accessor :cookies
-    alias :cookie_doms :cookies
+    alias :cookie_doms  :cookies
     alias :cookie_doms= :cookies=
 
     # @note Default is `false`.
@@ -97,6 +97,10 @@ class Audit < Arachni::OptionGroup
     #
     # @see Element::LinkTemplate
     def link_templates=( named_regexps )
+        if !named_regexps
+            return @link_templates = []
+        end
+
         @link_templates = [named_regexps].flatten.compact.
             map do |s|
             template = s.is_a?( Regexp ) ? s : Regexp.new( s.to_s )
@@ -130,8 +134,8 @@ class Audit < Arachni::OptionGroup
         true
     end
     alias :elements= :elements
-    alias :element :elements
-    alias :element= :element
+    alias :element   :elements
+    alias :element=  :element
 
     # Disables auditing of element types.
     #
@@ -169,7 +173,8 @@ class Audit < Arachni::OptionGroup
     alias :element? :elements?
 
     [:links, :forms, :cookies, :headers, :cookies_extensively,
-     :with_both_http_methods, :exclude_binaries].each do |attribute|
+     :with_both_http_methods, :exclude_binaries, :link_doms, :form_doms,
+     :cookie_doms].each do |attribute|
         define_method "#{attribute}?" do
             !!send( attribute )
         end

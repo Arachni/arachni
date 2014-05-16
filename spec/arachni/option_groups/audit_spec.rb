@@ -21,6 +21,24 @@ describe Arachni::OptionGroups::Audit do
             subject.link_templates.should == templates.map { |p| Regexp.new( p ) }
         end
 
+        context 'when given nil' do
+            it 'empties the templates' do
+                subject.link_templates = /param\/(?<param>\w+)/
+                subject.link_templates.should be_any
+                subject.link_templates = nil
+                subject.link_templates.should be_empty
+            end
+        end
+
+        context 'when given false' do
+            it 'empties the templates' do
+                subject.link_templates = /param\/(?<param>\w+)/
+                subject.link_templates.should be_any
+                subject.link_templates = false
+                subject.link_templates.should be_empty
+            end
+        end
+
         context 'when given an invalid template' do
             it "raises #{described_class::Error::InvalidLinkTemplate}" do
                 expect { subject.link_templates = /(.*)/ }.to raise_error
@@ -45,7 +63,8 @@ describe Arachni::OptionGroups::Audit do
     end
 
     [:links, :forms, :cookies, :headers, :cookies_extensively,
-     :with_both_http_methods, :exclude_binaries].each do |attribute|
+     :with_both_http_methods, :exclude_binaries, :link_doms, :form_doms,
+     :cookie_doms].each do |attribute|
         describe "#{attribute}?" do
             context "when ##{attribute} is" do
                 context true do
@@ -114,18 +133,21 @@ describe Arachni::OptionGroups::Audit do
     describe '#skip_elements' do
         it 'enables auditing of the given element types' do
             subject.elements :links, :forms, :cookies, :headers
+            subject.link_templates = /param\/(?<param>\w+)/
 
-            subject.links.should be_true
-            subject.forms.should be_true
-            subject.cookies.should be_true
-            subject.headers.should be_true
+            subject.links?.should be_true
+            subject.forms?.should be_true
+            subject.cookies?.should be_true
+            subject.headers?.should be_true
+            subject.link_templates?.should be_true
 
-            subject.skip_elements :links, :forms, :cookies, :headers
+            subject.skip_elements :links, :forms, :cookies, :headers, :link_templates
 
-            subject.links.should be_false
-            subject.forms.should be_false
-            subject.cookies.should be_false
-            subject.headers.should be_false
+            subject.links?.should be_false
+            subject.forms?.should be_false
+            subject.cookies?.should be_false
+            subject.headers?.should be_false
+            subject.link_templates?.should be_false
         end
     end
 
