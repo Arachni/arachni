@@ -14,15 +14,13 @@ describe Arachni::Element::LinkTemplate do
 
     subject do
         described_class.new(
-            url:      "#{url}param/blah",
-            inputs:   { 'param' => 'val' },
+            url:      "#{url}param/val",
             template: /param\/(?<param>\w+)/
         )
     end
     let(:inputable) do
         described_class.new(
-            url:      "#{url}input1/blah/input2/blah",
-            inputs:   { 'input1' => 'value1', 'input2' => 'value2' },
+            url:      "#{url}input1/value1/input2/value2",
             template: /input1\/(?<input1>\w+)\/input2\/(?<input1>\w+)/
         )
     end
@@ -30,4 +28,13 @@ describe Arachni::Element::LinkTemplate do
     let(:http) { Arachni::HTTP::Client }
     let(:utilities) { Arachni::Utilities }
 
+    describe '.encode' do
+        it "double encodes ';'" do
+            described_class.encode( 'test;' ).should == 'test%253B'
+        end
+
+        it "double encodes '/'" do
+            described_class.encode( 'test/' ).should == 'test%252F'
+        end
+    end
 end

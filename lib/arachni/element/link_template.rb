@@ -97,12 +97,12 @@ class LinkTemplate < Base
 
         self.action.sub_in_groups(
             @template,
-            inputs.inject({}) { |h, (k, v)| h[encode(k)] = encode(v); h }
+            inputs.inject({}) { |h, (k, v)| h[k] = encode(v); h }
         )
     end
 
-    def encode( *args )
-        self.class.encode( *args )
+    def encode( string )
+        self.class.encode( string )
     end
 
     def decode( *args )
@@ -217,9 +217,9 @@ class LinkTemplate < Base
 
         def encode( string )
             URI.encode(
-                string,
-                "a-zA-Z0-9\\-\\.\\_\\~\\!\\$\\&\\'\\(\\)\\*\\+\\,\\=\\:\\@\\/"
-            ).gsub( '%3B', '%253B' )
+                URI.encode( string, ';/' ),
+                "a-zA-Z0-9\\-\\.\\_\\~\\!\\$\\&\\'\\(\\)\\*\\+\\,\\=\\:\\@\\%"
+            )
         end
 
         def decode( *args )
