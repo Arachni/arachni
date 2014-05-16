@@ -119,7 +119,7 @@ class Scope < Arachni::OptionGroup
     #   a insecure link.
     attr_accessor :https_only
     alias :https_only? :https_only
-    
+
     set_defaults(
         redundant_path_patterns: {},
         dom_depth_limit:         10,
@@ -138,7 +138,7 @@ class Scope < Arachni::OptionGroup
         end
     end
 
-    # these options need to contain Array<Regexp>
+    # These options need to contain Array<Regexp>.
     [ :exclude_page_patterns, :include_path_patterns, :exclude_path_patterns ].each do |m|
         define_method( "#{m}=".to_sym ) do |arg|
             arg = [arg].flatten.compact.
