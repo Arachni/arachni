@@ -225,6 +225,10 @@ class LinkTemplate < Base
         def decode( *args )
             URI.decode( *args )
         end
+
+        def type
+            :link_template
+        end
     end
 
     private

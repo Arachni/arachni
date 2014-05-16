@@ -37,4 +37,10 @@ describe Arachni::Element::LinkTemplate do
             described_class.encode( 'test/' ).should == 'test%252F'
         end
     end
+
+    describe '.type' do
+        it 'returns :link_template' do
+            described_class.type.should == :link_template
+        end
+    end
 end
