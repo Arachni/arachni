@@ -111,7 +111,7 @@ describe Arachni::Check::Auditor do
         element_classes = [Arachni::Element::Link, Arachni::Element::Link::DOM,
                            Arachni::Element::Form, Arachni::Element::Form::DOM,
                            Arachni::Element::Cookie, Arachni::Element::Cookie::DOM,
-                           Arachni::Element::Header ]
+                           Arachni::Element::Header, Arachni::Element::LinkTemplate ]
 
         element_classes.each do |element|
             context "when #{Arachni::OptionGroups::Audit}##{element.type.to_s.gsub( '_dom', '')}? is" do
@@ -124,7 +124,14 @@ describe Arachni::Check::Auditor do
                 before(:each) { auditor.class.info[:elements] = [element] }
 
                 context true do
-                    before(:each) { Arachni::Options.audit.elements element.type }
+                    before(:each) do
+                        if element.type == :link_template
+                            ap Factory[element.type].template
+                            Arachni::Options.audit.link_templates = Factory[element.type].template
+                        else
+                            Arachni::Options.audit.elements element.type
+                        end
+                    end
 
                     context "and the page contains #{element}" do
                         context 'and the check supports it' do

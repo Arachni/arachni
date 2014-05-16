@@ -80,17 +80,18 @@ module Auditor
                 {
                     # We use procs to make the decision, to avoid loading the page
                     # element caches unless it's absolutely necessary.
-                    Element::Link        => proc { audit.links?   && !!page.links.find { |e| e.inputs.any? } },
-                    Element::Link::DOM   => proc { audit.links?   && !!page.links.find(&:dom) },
-                    Element::Form        => proc { audit.forms?   && !!page.forms.find { |e| e.inputs.any? } },
-                    Element::Form::DOM   => proc { audit.forms?   && page.has_script? && !!page.forms.find(&:dom) },
-                    Element::Cookie      => proc { audit.cookies? && page.cookies.any? },
-                    Element::Cookie::DOM => proc { audit.cookies? && page.has_script? && page.cookies.any? },
-                    Element::Header      => proc { audit.headers? && page.headers.any? },
-                    Element::Body        => !page.body.empty?,
-                    Element::GenericDOM  => page.has_script?,
-                    Element::Path        => true,
-                    Element::Server      => true
+                    Element::Link         => proc { audit.links?   && !!page.links.find { |e| e.inputs.any? } },
+                    Element::Link::DOM    => proc { audit.links?   && !!page.links.find(&:dom) },
+                    Element::Form         => proc { audit.forms?   && !!page.forms.find { |e| e.inputs.any? } },
+                    Element::Form::DOM    => proc { audit.forms?   && page.has_script? && !!page.forms.find(&:dom) },
+                    Element::Cookie       => proc { audit.cookies? && page.cookies.any? },
+                    Element::Cookie::DOM  => proc { audit.cookies? && page.has_script? && page.cookies.any? },
+                    Element::Header       => proc { audit.headers? && page.headers.any? },
+                    Element::LinkTemplate => proc { audit.link_templates? && page.link_templates.any? },
+                    Element::Body         => !page.body.empty?,
+                    Element::GenericDOM   => page.has_script?,
+                    Element::Path         => true,
+                    Element::Server       => true
                 }.each do |type, decider|
                     return true if elements.include?( type ) &&
                         (decider.is_a?( Proc ) ? decider.call : decider)
