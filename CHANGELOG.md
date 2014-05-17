@@ -50,6 +50,8 @@
     - Added `LinkTemplate`
         - Basing its vector identification and manipulation to a user-provided
             template to satisfy cases like ModRewrite and similar.
+        - Including `#dom` pointing to a `Auditable::DOM` object handling browser-based
+            link submissions/audits.
     - `Form`
         - Added `#dom` pointing to a `Auditable::DOM` object handling browser-based
             form submissions/audits.

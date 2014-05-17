@@ -82,15 +82,18 @@ class Audit < Arachni::OptionGroup
 
     # @return   [Array<Regexp>]
     #   Regular expressions with named captures, serving as templates used to
-    #   extract input vectors from paths.
+    #   extract input vectors from links.
     #
     # @see Element::LinkTemplate
     attr_accessor :link_templates
+    alias :link_template_doms  :link_templates
+    alias :link_template_doms= :link_templates=
 
     set_defaults(
         exclude_vectors: [],
         link_templates:  []
     )
+
     # @param    [Array<Regexp>]
     #   Regular expressions with named captures, serving as templates used to
     #   extract input vectors from paths.
@@ -183,6 +186,7 @@ class Audit < Arachni::OptionGroup
     def link_templates?
         @link_templates.any?
     end
+    alias :link_template_doms? :link_templates?
 
 end
 end

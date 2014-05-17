@@ -19,10 +19,10 @@ class LinkTemplate < Base
     #   identify and manipulate inputs in {#action}.
     attr_reader   :template
 
-    # require_relative 'link_template/dom'
-    #
-    # # @return     [DOM]
-    # attr_accessor :dom
+    require_relative 'link_template/dom'
+
+    # @return     [DOM]
+    attr_accessor :dom
 
     # @return     [String]
     #   Original HTML code for that element.
@@ -56,7 +56,7 @@ class LinkTemplate < Base
             end
         end
 
-        fail ArgumentError, 'Missing :template.' if !@template
+        # fail ArgumentError, 'Missing :template.' if !@template
 
         self.html   = options[:html]
         self.method = :get
@@ -64,21 +64,21 @@ class LinkTemplate < Base
         @default_inputs = self.inputs.dup.freeze
     end
 
-    # # @return   [DOM]
-    # def dom
-    #     return @dom if @dom
-    #     return if !@html || @skip_dom
-    #
-    #     # Check if the DOM has any auditable inputs and only initialize it
-    #     # if it does.
-    #     if DOM.data_from_node( node )
-    #         @dom = DOM.new( parent: self )
-    #     else
-    #         @skip_dom = true
-    #     end
-    #
-    #     @dom
-    # end
+    # @return   [DOM]
+    def dom
+        return @dom if @dom
+        return if !@html || @skip_dom
+
+        # Check if the DOM has any auditable inputs and only initialize it
+        # if it does.
+        if DOM.data_from_node( node )
+            @dom = DOM.new( parent: self )
+        else
+            @skip_dom = true
+        end
+
+        @dom
+    end
 
     # @return [Nokogiri::XML::Element]
     def node
@@ -105,6 +105,8 @@ class LinkTemplate < Base
     # @return   [String]
     #   URL updated with the configured {#inputs}.
     def to_s
+        return self.action if self.inputs.empty?
+
         self.action.sub_in_groups(
             @template,
             inputs.inject({}) { |h, (k, v)| h[k] = encode(v); h }
@@ -122,17 +124,19 @@ class LinkTemplate < Base
     def dup
         new = super
         new.page = page
-        # new.dom  = dom.dup.tap { |d| d.parent = new } if @dom
+        new.dom  = dom.dup.tap { |d| d.parent = new } if @dom
         new
     end
 
     def hash
-        # "#{action}:#{method}:#{inputs.hash}}#{dom.hash}".hash
-        "#{action}:#{method}:#{inputs.hash}}".hash
+        "#{action}:#{method}:#{inputs.hash}}#{dom.hash}".hash
     end
 
     def to_rpc_data
-        data = super.merge( 'template' => @template.source )
+        data = super
+        return data if !@template
+
+        data.merge!( 'template' => @template.source )
         data['initialization_options'][:template] = data['template']
         data
     end
@@ -140,7 +144,7 @@ class LinkTemplate < Base
     class <<self
 
         def from_rpc_data( data )
-            data['template'] = Regexp.new( data['template'] )
+            data['template'] = Regexp.new( data['template'] ) if data['template']
             super data
         end
 
@@ -189,15 +193,15 @@ class LinkTemplate < Base
             end
 
             document.search( '//a' ).map do |link|
-                next if (href = to_absolute( link['href'], base_url ))
+                next if !(href = to_absolute( link['href'], base_url ))
 
                 template, inputs = extract_inputs( href, templates )
-                next if !template
+                next if !template && !DOM.data_from_node( link )
 
                 new(
                     url:      url.freeze,
                     action:   href.freeze,
-                    inputs:   inputs,
+                    inputs:   inputs || {},
                     template: template,
                     html:     link.to_html.freeze
                 )
@@ -214,13 +218,13 @@ class LinkTemplate < Base
         def extract_inputs( url, templates = Arachni::Options.audit.link_templates )
             return [] if !url || templates.empty?
 
-            exception_jail false do
+            # exception_jail false do
                 templates.each do |template|
                     if (match = url.scan_in_groups( template )).any?
                         return [template, match]
                     end
                 end
-            end
+            # end
 
             []
         end

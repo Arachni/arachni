@@ -75,12 +75,6 @@ describe Arachni::Element::LinkTemplate do
                 end
             end
         end
-
-        context 'when no #template could be determined' do
-            it 'raises ArgumentError' do
-                expect { described_class.new( url: url_with_inputs ) }.to raise_error ArgumentError
-            end
-        end
     end
 
     describe '#to_s' do
