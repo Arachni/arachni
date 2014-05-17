@@ -20,9 +20,13 @@ shared_examples_for 'mutable' do |options = {}|
 
     let(:seed) { 'my_seed' }
     let(:mutable) do
-        s = subject.dup
-        s.inputs = inputs
-        s
+        if defined? super
+            super *[]
+        else
+            s = subject.dup
+            s.inputs = inputs
+            s
+        end
     end
     let(:mutation) do
         mutable.mutations( seed ).find { |m| m.mutation? }
@@ -120,20 +124,17 @@ shared_examples_for 'mutable' do |options = {}|
         end
 
         describe '#immutables' do
-            it 'skips parameters contained parameters' do
-                mutable.inputs = {
-                    'input_one' => 'value 1',
-                    'input_two' => 'value 2'
-                }
+            it 'skips contained inputs' do
+                input = mutable.inputs.first.first
 
-                mutable.immutables << 'input_one'
+                mutable.immutables << input
                 mutable.mutations( seed ).
-                    reject { |e| e.affected_input_name != 'input_one' }.
+                    reject { |e| e.affected_input_name != input }.
                     should be_empty
 
                 mutable.immutables.clear
                 mutable.mutations( seed ).
-                    reject { |e| e.affected_input_name != 'input_one' }.
+                    reject { |e| e.affected_input_name != input }.
                     should be_any
             end
         end

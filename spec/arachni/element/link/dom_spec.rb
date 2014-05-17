@@ -12,8 +12,8 @@ describe Arachni::Element::Link::DOM do
         @page      = Arachni::Page.from_url( "#{url}/link" )
         @auditor   = Auditor.new( @page, @framework )
 
-        @link = @page.links.first
-        @link.dom.auditor = @auditor
+        @link = @page.links.first.dom
+        @link.auditor = @auditor
     end
 
     after :each do
@@ -21,13 +21,13 @@ describe Arachni::Element::Link::DOM do
         @framework.reset
     end
 
-    subject { @link.dom }
-    let(:parent) { @link }
+    subject { @link }
+    let(:parent) { @link.parent }
     let(:url) { web_server_url_for( :link_dom ) }
     let(:auditor) { @auditor }
     let(:inputable) do
-        l = Arachni::Page.from_url( "#{url}/link/inputable" ).links.first
-        l.dom.auditor = auditor
+        l = Arachni::Page.from_url( "#{url}/link/inputable" ).links.first.dom
+        l.auditor = auditor
         l
     end
 
@@ -83,7 +83,10 @@ describe Arachni::Element::Link::DOM do
                 element = subject.locate
                 element.should be_kind_of Watir::Anchor
 
-                parent.class.from_document(parent.url, Nokogiri::HTML(element.html)).first.should == parent
+                parent.class.from_document(
+                    parent.url, Nokogiri::HTML(element.html)
+                ).first.should == parent
+
                 called = true
             end
 

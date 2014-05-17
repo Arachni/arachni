@@ -41,7 +41,7 @@ describe Arachni::Element::Cookie::DOM do
         ).tap do |c|
             c.page = @page
             c.dom.auditor = auditor
-        end
+        end.dom
     end
 
     describe '#type' do

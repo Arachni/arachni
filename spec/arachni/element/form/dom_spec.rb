@@ -12,8 +12,8 @@ describe Arachni::Element::Form::DOM do
         @page      = Arachni::Page.from_url( "#{url}/form" )
         @auditor   = Auditor.new( @page, @framework )
 
-        @form = @page.forms.first
-        @form.dom.auditor = auditor
+        @form = @page.forms.first.dom
+        @form.auditor = auditor
     end
 
     after :each do
@@ -21,13 +21,13 @@ describe Arachni::Element::Form::DOM do
         @framework.reset
     end
 
-    subject { @form.dom }
-    let(:parent) { @form }
+    subject { @form }
+    let(:parent) { @form.parent }
     let(:url) { web_server_url_for( :form_dom ) }
     let(:auditor) { @auditor }
     let(:inputable) do
-        f = Arachni::Page.from_url( "#{url}/form/inputable" ).forms.first
-        f.dom.auditor = auditor
+        f = Arachni::Page.from_url( "#{url}/form/inputable" ).forms.first.dom
+        f.auditor = auditor
         f
     end
 
@@ -65,7 +65,10 @@ describe Arachni::Element::Form::DOM do
                 element = subject.locate
                 element.should be_kind_of Watir::Form
 
-                parent.class.from_document(parent.url, Nokogiri::HTML(element.html)).first.should == parent
+                parent.class.from_document(
+                    parent.url, Nokogiri::HTML(element.html)
+                ).first.should == parent
+
                 called = true
             end
 

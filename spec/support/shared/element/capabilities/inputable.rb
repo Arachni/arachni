@@ -162,7 +162,6 @@ shared_examples_for 'inputable' do |options = {}|
             a = subject.dup
             a.inputs = { 'param1' => 'val1' }
             a.inputs.should == { 'param1' => 'val1' }
-            a.should_not == subject
         end
 
         it 'converts all inputs to strings' do
@@ -274,13 +273,11 @@ shared_examples_for 'inputable' do |options = {}|
             if opts[:single_input]
                 dup[:input1] = 'blah'
                 subject.inputs['input1'].should_not == 'blah'
-                dup.should_not == subject
 
                 dup.dup[:input1].should == 'blah'
             else
                 dup[:stuff] = 'blah'
                 subject.inputs.should_not include :stuff
-                dup.should_not == subject
 
                 dup.dup[:stuff].should == 'blah'
             end
