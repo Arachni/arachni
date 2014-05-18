@@ -56,11 +56,10 @@ class LinkTemplate < Base
             end
         end
 
-        # fail ArgumentError, 'Missing :template.' if !@template
-
         self.html   = options[:html]
         self.method = :get
 
+        self.inputs   ||= {}
         @default_inputs = self.inputs.dup.freeze
     end
 

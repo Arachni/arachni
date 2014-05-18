@@ -111,7 +111,8 @@ describe Arachni::Check::Auditor do
         element_classes = [Arachni::Element::Link, Arachni::Element::Link::DOM,
                            Arachni::Element::Form, Arachni::Element::Form::DOM,
                            Arachni::Element::Cookie, Arachni::Element::Cookie::DOM,
-                           Arachni::Element::Header, Arachni::Element::LinkTemplate ]
+                           Arachni::Element::Header, Arachni::Element::LinkTemplate,
+                           Arachni::Element::LinkTemplate::DOM ]
 
         element_classes.each do |element|
             context "when #{Arachni::OptionGroups::Audit}##{element.type.to_s.gsub( '_dom', '')}? is" do
@@ -125,9 +126,11 @@ describe Arachni::Check::Auditor do
 
                 context true do
                     before(:each) do
-                        if element.type == :link_template
-                            ap Factory[element.type].template
-                            Arachni::Options.audit.link_templates = Factory[element.type].template
+                        if element.type.to_s.start_with? 'link_template'
+                            Arachni::Options.audit.link_templates =
+                                Factory[element.type].template ||
+                                    /input1\/(?<input1>\w+)\/input2\/(?<input2>\w+)/
+
                         else
                             Arachni::Options.audit.elements element.type
                         end

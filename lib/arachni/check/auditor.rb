@@ -80,18 +80,28 @@ module Auditor
                 {
                     # We use procs to make the decision, to avoid loading the page
                     # element caches unless it's absolutely necessary.
-                    Element::Link         => proc { audit.links?   && !!page.links.find { |e| e.inputs.any? } },
-                    Element::Link::DOM    => proc { audit.links?   && !!page.links.find(&:dom) },
-                    Element::Form         => proc { audit.forms?   && !!page.forms.find { |e| e.inputs.any? } },
-                    Element::Form::DOM    => proc { audit.forms?   && page.has_script? && !!page.forms.find(&:dom) },
-                    Element::Cookie       => proc { audit.cookies? && page.cookies.any? },
-                    Element::Cookie::DOM  => proc { audit.cookies? && page.has_script? && page.cookies.any? },
-                    Element::Header       => proc { audit.headers? && page.headers.any? },
-                    Element::LinkTemplate => proc { audit.link_templates? && page.link_templates.any? },
-                    Element::Body         => !page.body.empty?,
-                    Element::GenericDOM   => page.has_script?,
-                    Element::Path         => true,
-                    Element::Server       => true
+                    Element::Link              =>
+                        proc { audit.links?     && !!page.links.find { |e| e.inputs.any? } },
+                    Element::Link::DOM         =>
+                        proc { audit.link_doms? && !!page.links.find(&:dom) },
+                    Element::Form              =>
+                        proc { audit.forms? && !!page.forms.find { |e| e.inputs.any? } },
+                    Element::Form::DOM         =>
+                        proc { audit.form_doms? && page.has_script? && !!page.forms.find(&:dom) },
+                    Element::Cookie            =>
+                        proc { audit.cookies? && page.cookies.any? },
+                    Element::Cookie::DOM       =>
+                        proc { audit.cookie_doms? && page.has_script? && page.cookies.any? },
+                    Element::Header            =>
+                        proc { audit.headers? && page.headers.any? },
+                    Element::LinkTemplate      =>
+                        proc { audit.link_templates? && page.link_templates.find { |e| e.inputs.any? } },
+                    Element::LinkTemplate::DOM =>
+                        proc { audit.link_template_doms? && !!page.link_templates.find(&:dom) },
+                    Element::Body              => !page.body.empty?,
+                    Element::GenericDOM        => page.has_script?,
+                    Element::Path              => true,
+                    Element::Server            => true
                 }.each do |type, decider|
                     return true if elements.include?( type ) &&
                         (decider.is_a?( Proc ) ? decider.call : decider)
@@ -154,9 +164,10 @@ module Auditor
         # determined by {#each_candidate_element}.
         elements:     [Element::Link, Element::Form,
                         Element::Cookie, Element::Header,
-                        Element::Body],
+                        Element::Body, Element::LinkTemplate],
 
-        dom_elements: [Element::Link::DOM, Element::Form::DOM, Element::Cookie::DOM],
+        dom_elements: [Element::Link::DOM, Element::Form::DOM,
+                       Element::Cookie::DOM, Element::LinkTemplate::DOM],
 
         # If set to `true` the HTTP response will be analyzed for new elements.
         # Be careful when enabling it, there'll be a performance penalty.
@@ -388,6 +399,9 @@ module Auditor
                 when Element::Header.type
                     prepare_each_element( page.headers, &block )
 
+                when Element::LinkTemplate.type
+                    prepare_each_element( page.link_templates, &block )
+
                 else
                     fail ArgumentError, "Unknown element: #{elem}"
             end
@@ -425,6 +439,12 @@ module Auditor
 
                 when Element::Cookie::DOM.type
                     prepare_each_dom_element( page.cookies, &block )
+
+                when Element::Cookie::DOM.type
+                    prepare_each_dom_element( page.cookies, &block )
+
+                when Element::LinkTemplate::DOM.type
+                    prepare_each_dom_element( page.link_templates, &block )
 
                 else
                     fail ArgumentError, "Unknown DOM element: #{elem}"

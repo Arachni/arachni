@@ -6,7 +6,6 @@ Factory.define :link, class: Arachni::Element::Link,
 
 Factory.define :link_dom, class: Arachni::Element::Link,
                options: {
-                   url:    'http://test.com',
-                   html:   '<a href="#/?link-dom-input=1">a</a>'
+                   url:  'http://test.com',
+                   html: '<a href="#/?link-dom-input=1">a</a>'
                }
-

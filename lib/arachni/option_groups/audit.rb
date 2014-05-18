@@ -87,7 +87,6 @@ class Audit < Arachni::OptionGroup
     # @see Element::LinkTemplate
     attr_accessor :link_templates
     alias :link_template_doms  :link_templates
-    alias :link_template_doms= :link_templates=
 
     set_defaults(
         exclude_vectors: [],
@@ -116,6 +115,7 @@ class Audit < Arachni::OptionGroup
             template
         end
     end
+    alias :link_template_doms= :link_templates=
 
     def exclude_vectors=( vectors )
         @exclude_vectors = [vectors].flatten.compact.map(&:to_s)
