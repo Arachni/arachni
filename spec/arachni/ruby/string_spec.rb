@@ -35,7 +35,13 @@ describe String do
             }
         end
 
-        context 'when the regexp does not contain names' do
+        context 'when there are no matches' do
+            it 'returns an empty hash' do
+                'test'.scan_in_groups( regex_with_names ).should == {}
+            end
+        end
+
+        context 'when the regexp does not contain named captures' do
             it 'raises ArgumentError' do
                 expect { 'test'.scan_in_groups( /./ ) }.to raise_error ArgumentError
             end

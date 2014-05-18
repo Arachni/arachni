@@ -17,7 +17,7 @@ class String
     #   Grouped matches.
     def scan_in_groups( regexp )
         raise ArgumentError, 'Regexp does not contain any names.' if regexp.names.empty?
-        return [] if !(matches = scan( regexp ).first)
+        return {} if !(matches = scan( regexp ).first)
 
         Hash[regexp.names.zip( matches )].reject { |_, v| v.empty? }
     end
