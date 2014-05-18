@@ -942,8 +942,9 @@ class Framework
     #
     # @param    [Page]  page    Page to analyze.
     def perform_browser_analysis( page )
-        return if Options.scope.dom_depth_limit.to_i < page.dom.depth + 1 ||
-            !host_has_browser? || !page.has_script?
+        return if !browser_cluster ||
+            Options.scope.dom_depth_limit.to_i < page.dom.depth + 1 ||
+            !page.has_script?
 
         browser_cluster.queue( browser_job.forward( resource: page ) ) do |response|
             handle_browser_page response.page
