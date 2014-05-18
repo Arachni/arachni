@@ -41,6 +41,7 @@ REGEXP.keys.each do |language|
             <a href="/#{language_str}/form">Form</a>
             <a href="/#{language_str}/cookie">Cookie</a>
             <a href="/#{language_str}/header">Header</a>
+            <a href="/#{language_str}/link-template">Link template</a>
         EOHTML
     end
 
@@ -63,6 +64,29 @@ REGEXP.keys.each do |language|
         return if !params['input'].start_with?( default )
 
         get_variations( language, params['input'].split( default ).last )
+    end
+
+    get "/#{language_str}/link-template" do
+        <<-EOHTML
+        <a href="/#{language_str}/link-template/straight/input/default/stuff">Link</a>
+        <a href="/#{language_str}/link-template/append/input/default/stuff">Link</a>
+        EOHTML
+    end
+
+    get "/#{language_str}/link-template/straight/input/*/stuff" do
+        val = URI.decode( params[:splat].first )
+        default = 'default'
+        return if val.start_with?( default )
+
+        get_variations( language, val.split( default ).last )
+    end
+
+    get "/#{language_str}/link-template/append/input/*/stuff" do
+        val = URI.decode( params[:splat].first )
+        default = 'default'
+        return if !val.start_with?( default )
+
+        get_variations( language, val.split( default ).last )
     end
 
     get "/#{language_str}/form" do
