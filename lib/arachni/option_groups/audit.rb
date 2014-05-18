@@ -99,21 +99,19 @@ class Audit < Arachni::OptionGroup
     #
     # @see Element::LinkTemplate
     def link_templates=( named_regexps )
-        if !named_regexps
-            return @link_templates = []
-        end
+        return @link_templates = [] if !named_regexps
 
         @link_templates = [named_regexps].flatten.compact.
             map do |s|
-            template = s.is_a?( Regexp ) ? s : Regexp.new( s.to_s )
+                template = s.is_a?( Regexp ) ? s : Regexp.new( s.to_s )
 
-            if template.names.empty?
-                fail Error::InvalidLinkTemplate,
-                     "Template '#{template}' includes no named captured."
+                if template.names.empty?
+                    fail Error::InvalidLinkTemplate,
+                         "Template '#{template}' includes no named captured."
+                end
+
+                template
             end
-
-            template
-        end
     end
     alias :link_template_doms= :link_templates=
 
