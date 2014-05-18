@@ -90,7 +90,8 @@ class Arachni::Checks::XSS < Arachni::Check::Base
                 Injects an HTML element into page inputs and then parses the HTML markup of
                 tainted responses to look for proof of vulnerability.
             },
-            elements:    [Element::Form, Element::Link, Element::Cookie, Element::Header],
+            elements:    [Element::Form, Element::Link, Element::Cookie,
+                          Element::Header, Element::LinkTemplate],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.4',
 
