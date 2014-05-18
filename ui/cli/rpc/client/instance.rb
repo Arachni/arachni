@@ -165,8 +165,9 @@ class Instance
             @options.checks = ['*']
         end
 
-        if !@options.audit.links && !@options.audit.forms &&
-            !@options.audit.cookies && !@options.audit.headers
+        if !@options.audit.links? && !@options.audit.forms? &&
+            !@options.audit.cookies? && !@options.audit.headers? &&
+            !@options.audit.link_templates?
 
             print_info 'No element audit options were specified, will audit ' <<
                            'links, forms and cookies.'
