@@ -229,7 +229,7 @@ class LinkTemplate < Base
         end
 
         def encode( string )
-            URI.encode( URI.encode( string, ';/' ) )
+            URI.encode( URI.encode( URI.encode( string, ';' ) ), '/' )
         end
 
         def decode( *args )
@@ -244,6 +244,7 @@ class LinkTemplate < Base
     private
 
     def http_request( opts, &block )
+        opts.delete :parameters
         self.method.downcase.to_s != 'get' ?
             http.post( to_s, opts, &block ) :
             http.get( to_s, opts, &block )

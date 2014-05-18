@@ -96,7 +96,7 @@ describe Arachni::Element::LinkTemplate do
         end
 
         it "double encodes '/'" do
-            described_class.encode( 'test/' ).should == 'test%252F'
+            described_class.encode( 'test/' ).should == 'test%2F'
         end
     end
 
