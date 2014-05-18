@@ -330,7 +330,7 @@ class Browser
 
     # @return   [String]    Current URL.
     def url
-        normalize_url watir.url
+        normalize_watir_url watir.url
     end
 
     # Explores the browser's DOM tree and captures page snapshots for each
@@ -872,7 +872,7 @@ class Browser
     private
 
     def prune_window_responses
-        open_windows_urls = watir.windows.map { |w| normalize_url w.url }
+        open_windows_urls = watir.windows.map { |w| normalize_watir_url w.url }
         synchronize do
             @window_responses.reject! do |url, _|
                 !open_windows_urls.include? url
@@ -1258,6 +1258,10 @@ class Browser
 
     def synchronize( &block )
         @mutex.synchronize( &block )
+    end
+
+    def normalize_watir_url( url )
+        normalize_url( ::URI.encode( url, ';' ) ).gsub( '%3B', '%253B' )
     end
 
 end
