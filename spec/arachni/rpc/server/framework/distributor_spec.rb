@@ -397,6 +397,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 },
                 audit:     {
                     exclude_vectors: @opts.audit.exclude_vectors,
+                    link_templates:  @opts.audit.link_templates,
                     links:           @opts.audit.links,
                     forms:           @opts.audit.forms
                 },
