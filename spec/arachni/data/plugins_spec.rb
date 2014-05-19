@@ -19,7 +19,7 @@ describe Arachni::Data::Plugins do
     describe '#statistics' do
         it 'includes plugin names' do
             plugins.load :distributable
-            result = { stuff: 1 }
+            result = { 'stuff' => 1 }
 
             subject.store( plugins.create(:distributable), result )
 
@@ -47,11 +47,11 @@ describe Arachni::Data::Plugins do
         it 'merges the results of the distributable plugins' do
             plugins.load :distributable
 
-            results = [ distributable: { results: { stuff: 2 } } ]
-            subject.store( plugins.create(:distributable), stuff: 1 )
+            results = [ distributable: { results: { 'stuff' => 2 } } ]
+            subject.store( plugins.create(:distributable), 'stuff' => 1 )
 
             subject.merge_results( plugins, results )
-            subject.results[:distributable][:results][:stuff].should == 3
+            subject.results[:distributable][:results]['stuff'].should == 3
         end
     end
 
