@@ -271,18 +271,20 @@ class URI
 
             if has_path
                 splits = url.split( '?', 2 )
-                if components[:path] = splits.shift
+                if (components[:path] = splits.shift)
                     components[:path] = '/' + components[:path] if components[:scheme]
                     components[:path].gsub!( /\/+/, '/' )
 
                     # Remove path params
                     components[:path] = components[:path].split( ';', 2 ).first
 
-                    components[:path] =
-                        encode( decode( components[:path] ),
-                                Addressable::URI::CharacterClasses::PATH )
+                    if components[:path]
+                        components[:path] =
+                            encode( decode( components[:path] ),
+                                    Addressable::URI::CharacterClasses::PATH )
 
-                    components[:path] = ::URI.encode( components[:path], ';' )
+                        components[:path] = ::URI.encode( components[:path], ';' )
+                    end
                 end
 
                 if c_url.include?( '?' ) && !(query = dupped_url.split( '?', 2 ).last).empty?
@@ -296,7 +298,7 @@ class URI
 
             components[:path] ||= components[:scheme] ? '/' : nil
 
-            components.values.each( &:freeze )
+            components.values.each(&:freeze)
 
             cache[c_url] = components.freeze
         rescue => e
