@@ -22,7 +22,7 @@ describe Arachni::Element::LinkTemplate do
             template: template
         )
     end
-    let(:inputable) do
+    let(:inputtable) do
         described_class.new(
             url:      "#{url}input1/value1/input2/value2",
             template: /input1\/(?<input1>\w+)\/input2\/(?<input2>\w+)/
@@ -79,14 +79,14 @@ describe Arachni::Element::LinkTemplate do
 
     describe '#to_s' do
         it 'returns the updated link' do
-            inputable.to_s.should == inputable.action
+            inputtable.to_s.should == inputtable.action
 
-            inputable.inputs = {
+            inputtable.inputs = {
                 'input1' => 'new value 1',
                 'input2' => 'new value 2'
             }
 
-            inputable.to_s.should == "#{url}input1/new%20value%201/input2/new%20value%202"
+            inputtable.to_s.should == "#{url}input1/new%20value%201/input2/new%20value%202"
         end
     end
 

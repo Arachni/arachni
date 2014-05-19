@@ -6,7 +6,7 @@
 module Arachni
 module Element
 
-module Capabilities::Inputable
+module Capabilities::Inputtable
 
     # Frozen version of {#inputs}, has all the original name/values.
     #
@@ -99,7 +99,7 @@ module Capabilities::Inputable
     end
 
     def dup
-        copy_inputable( super )
+        copy_inputtable( super )
     end
 
     def to_h
@@ -111,7 +111,7 @@ module Capabilities::Inputable
 
     private
 
-    def copy_inputable( other )
+    def copy_inputtable( other )
         other.inputs = self.inputs.dup
         other
     end

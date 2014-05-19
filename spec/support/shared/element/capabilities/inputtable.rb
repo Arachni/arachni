@@ -1,4 +1,4 @@
-shared_examples_for 'inputable' do |options = {}|
+shared_examples_for 'inputtable' do |options = {}|
 
     let( :opts ) do
         { single_input: false }.merge( options )
@@ -33,7 +33,7 @@ shared_examples_for 'inputable' do |options = {}|
 
     subject do
         begin
-            inputable
+            inputtable
         rescue
             described_class.new( url: url, inputs: inputs )
         end

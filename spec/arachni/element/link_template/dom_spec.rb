@@ -30,15 +30,15 @@ describe Arachni::Element::LinkTemplate::DOM do
     let(:parent) { @link.parent }
     let(:url) { web_server_url_for( :link_template_dom ) }
     let(:auditor) { @auditor }
-    let(:inputable) do
-        l = Arachni::Page.from_url( "#{url}/inputable" ).
+    let(:inputtable) do
+        l = Arachni::Page.from_url( "#{url}/inputtable" ).
             link_templates.first.dom
         l.auditor = auditor
         l
     end
 
     let(:mutable) do
-        inputable.dup
+        inputtable.dup
     end
 
     describe '#type' do

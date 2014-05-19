@@ -25,8 +25,8 @@ describe Arachni::Element::Link::DOM do
     let(:parent) { @link.parent }
     let(:url) { web_server_url_for( :link_dom ) }
     let(:auditor) { @auditor }
-    let(:inputable) do
-        l = Arachni::Page.from_url( "#{url}/link/inputable" ).links.first.dom
+    let(:inputtable) do
+        l = Arachni::Page.from_url( "#{url}/link/inputtable" ).links.first.dom
         l.auditor = auditor
         l
     end

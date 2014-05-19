@@ -3,7 +3,7 @@
     All rights reserved.
 =end
 
-require_relative 'inputable'
+require_relative 'inputtable'
 require_relative 'mutable'
 require_relative 'submittable'
 require_relative 'with_auditor'
@@ -17,7 +17,7 @@ module Element::Capabilities
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 module Auditable
     include Utilities
-    include Inputable
+    include Inputtable
     include Submittable
     include Mutable
     include WithAuditor

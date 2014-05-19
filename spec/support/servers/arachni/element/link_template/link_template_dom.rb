@@ -10,7 +10,7 @@ get '/' do
     EOHTML
 end
 
-get '/inputable' do
+get '/inputtable' do
     <<-EOHTML
     <html>
         <body>

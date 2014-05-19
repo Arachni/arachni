@@ -1,5 +1,5 @@
 shared_examples_for 'auditable' do |options = {}|
-    it_should_behave_like 'inputable', options
+    it_should_behave_like 'inputtable', options
     it_should_behave_like 'submittable'
     it_should_behave_like 'mutable', options
     it_should_behave_like 'with_auditor'

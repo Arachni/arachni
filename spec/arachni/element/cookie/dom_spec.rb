@@ -32,7 +32,7 @@ describe Arachni::Element::Cookie::DOM do
     end
     let(:url) { web_server_url_for( :cookie_dom ) }
     let(:auditor) { @auditor }
-    let(:inputable) do
+    let(:inputtable) do
         Arachni::Element::Cookie.new(
             action: "#{url}/",
             inputs: {

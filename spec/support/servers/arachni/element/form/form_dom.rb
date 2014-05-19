@@ -36,7 +36,7 @@ get '/form' do
     EOHTML
 end
 
-get '/form/inputable' do
+get '/form/inputtable' do
     <<-EOHTML
 <html>
     <body>

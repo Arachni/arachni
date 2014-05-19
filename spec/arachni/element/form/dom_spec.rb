@@ -25,8 +25,8 @@ describe Arachni::Element::Form::DOM do
     let(:parent) { @form.parent }
     let(:url) { web_server_url_for( :form_dom ) }
     let(:auditor) { @auditor }
-    let(:inputable) do
-        f = Arachni::Page.from_url( "#{url}/form/inputable" ).forms.first.dom
+    let(:inputtable) do
+        f = Arachni::Page.from_url( "#{url}/form/inputtable" ).forms.first.dom
         f.auditor = auditor
         f
     end
