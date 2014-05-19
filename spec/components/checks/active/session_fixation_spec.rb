@@ -4,11 +4,12 @@ describe name_from_filename do
     include_examples 'check'
 
     before :all do
-        session.set_login_check( url, /dear user/ )
+        options.login.check_url     = url
+        options.login.check_pattern = /dear user/
     end
 
     def self.elements
-        [ Element::Form, Element::Link ]
+        [ Element::Form, Element::Link, Element::LinkTemplate ]
     end
 
     def issue_count
