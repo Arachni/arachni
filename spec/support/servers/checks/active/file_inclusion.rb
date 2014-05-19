@@ -122,6 +122,7 @@ OUT.keys.each do |system|
             <a href="/#{system_str}/form">Form</a>
             <a href="/#{system_str}/cookie">Cookie</a>
             <a href="/#{system_str}/header">Header</a>
+            <a href="/#{system_str}/link-template">Link template</a>
         EOHTML
     end
 
@@ -140,6 +141,29 @@ OUT.keys.each do |system|
     get "/#{system_str}/link/with_null" do
         return if !params['input'].end_with?( "\00.html" )
         get_variations( system, params['input'].split( "\0.html" ).first )
+    end
+
+    get "/#{system_str}/link-template" do
+        <<-EOHTML
+        <a href="/#{system_str}/link-template/straight/input/default/stuff">Link</a>
+        <a href="/#{system_str}/link-template/with_null/input/default/stuff">Link</a>
+        EOHTML
+    end
+
+    get "/#{system_str}/link-template/straight/input/*/stuff" do
+        val = URI.decode( params[:splat].first )
+        default = 'default'
+        return if val.start_with?( default )
+
+        get_variations( system, val.split( default ).last )
+    end
+
+    get "/#{system_str}/link-template/with_null/input/*/stuff" do
+        val = URI.decode( params[:splat].first )
+        default = 'default'
+        return if !val.end_with?( "\00.html" )
+
+        get_variations( system, val.split( default ).last )
     end
 
     get "/#{system_str}/form" do
