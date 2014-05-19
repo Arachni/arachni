@@ -5,7 +5,7 @@
 
 module Arachni
 module Element
-module Capabilities::Submitable
+module Capabilities::Submittable
 
     def initialize( options )
         super

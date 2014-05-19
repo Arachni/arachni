@@ -1,6 +1,6 @@
-shared_examples_for 'submitable' do
+shared_examples_for 'submittable' do
 
-    let(:submitable) do
+    let(:submittable) do
         s = subject.dup
         s.auditor = auditor
         s
@@ -14,29 +14,29 @@ shared_examples_for 'submitable' do
                      end
 
     describe '#to_rpc_data' do
-        let(:data) { submitable.to_rpc_data }
+        let(:data) { submittable.to_rpc_data }
 
         rpc_attributes.each do |attribute|
             it "includes '#{attribute}'" do
-                data[attribute].should == submitable.send( attribute )
+                data[attribute].should == submittable.send( attribute )
             end
         end
     end
 
     describe '.from_rpc_data' do
-        let(:restored) { submitable.class.from_rpc_data data }
-        let(:data) { Arachni::RPC::Serializer.rpc_data( submitable ) }
+        let(:restored) { submittable.class.from_rpc_data data }
+        let(:data) { Arachni::RPC::Serializer.rpc_data( submittable ) }
 
         rpc_attributes.each do |attribute|
             it "restores '#{attribute}'" do
-                restored.send( attribute ).should == submitable.send( attribute )
+                restored.send( attribute ).should == submittable.send( attribute )
             end
         end
     end
 
     describe '#platforms' do
         it 'returns platforms for the given element' do
-            submitable.platforms.should be_kind_of Arachni::Platform::Manager
+            submittable.platforms.should be_kind_of Arachni::Platform::Manager
         end
     end
 
@@ -44,40 +44,40 @@ shared_examples_for 'submitable' do
         it 'submits the element using its auditable inputs as params' do
             submitted = nil
 
-            submitable.submit do |res|
+            submittable.submit do |res|
                 submitted = auditable_extract_parameters( res )
             end
 
             run
-            submitable.inputs.should == submitted
+            submittable.inputs.should == submitted
         end
 
         it 'assigns the auditable element as the request performer' do
             response = nil
-            submitable.submit { |res| response = res }
+            submittable.submit { |res| response = res }
 
             run
-            response.request.performer.should == submitable
+            response.request.performer.should == submittable
         end
     end
 
     describe '#dup' do
-        let(:dupped) { submitable.dup }
+        let(:dupped) { submittable.dup }
 
         it 'preserves #method' do
-            dupped.method.should == submitable.method
+            dupped.method.should == submittable.method
         end
         it 'preserves #action' do
-            dupped.action.should == submitable.action
+            dupped.action.should == submittable.action
         end
     end
 
     describe '#to_h' do
         it 'returns a hash representation of self' do
-            hash = submitable.to_h
-            hash[:url].should    == submitable.url
-            hash[:action].should == submitable.action
-            hash[:method].should == submitable.method
+            hash = submittable.to_h
+            hash[:url].should    == submittable.url
+            hash[:action].should == submittable.action
+            hash[:method].should == submittable.method
         end
     end
 end

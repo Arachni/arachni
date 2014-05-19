@@ -5,7 +5,7 @@
 
 require_relative 'inputable'
 require_relative 'mutable'
-require_relative 'submitable'
+require_relative 'submittable'
 require_relative 'with_auditor'
 
 module Arachni
@@ -18,7 +18,7 @@ module Element::Capabilities
 module Auditable
     include Utilities
     include Inputable
-    include Submitable
+    include Submittable
     include Mutable
     include WithAuditor
 
