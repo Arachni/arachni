@@ -4,14 +4,16 @@ describe name_from_filename do
     include_examples 'check'
 
     def self.elements
-        [ Element::Form::DOM, Element::Link::DOM, Element::Cookie::DOM ]
+        [ Element::Form::DOM, Element::Link::DOM, Element::Cookie::DOM,
+          Element::LinkTemplate::DOM]
     end
 
     def issue_count_per_element
         {
-            Element::Form::DOM   => 3,
-            Element::Link::DOM   => 3,
-            Element::Cookie::DOM => 2
+            Element::Form::DOM         => 3,
+            Element::Link::DOM         => 3,
+            Element::Cookie::DOM       => 2,
+            Element::LinkTemplate::DOM => 3
         }
     end
 
@@ -20,7 +22,7 @@ describe name_from_filename do
             issue.page.dom.execution_flow_sink.should be_any
             data_flow_sink = issue.page.dom.data_flow_sink
 
-            if issue.vector.is_a? Element::Link::DOM
+            if [Element::Link::DOM, Element::LinkTemplate::DOM].include? issue.vector.class
                 data_flow_sink.size.should == 2
             else
                 data_flow_sink.size.should == 1
@@ -44,6 +46,10 @@ describe name_from_filename do
                     trace.size.should == 2
                     trace.first[:source].should start_with 'function handleSubmit()'
                     trace.first[:function].should start_with 'handleSubmit'
+
+                when Element::LinkTemplate::DOM
+                    trace.size.should == 2
+                    trace.first[:url].should == issue.page.dom.url
 
                 when Element::Link::DOM
                     trace.size.should == 2

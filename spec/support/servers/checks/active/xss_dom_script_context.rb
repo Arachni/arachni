@@ -6,6 +6,7 @@ get '/' do
         <a href="/link">Link</a>
         <a href="/form">Form</a>
         <a href="/cookie">Cookie</a>
+        <a href="/link-template">Link template</a>
     EOHTML
 end
 
@@ -32,6 +33,34 @@ get '/link/straight' do
         </script>
 
         <body>
+            <script>
+                eval(getQueryVariable('input'));
+            </script>
+        </body>
+    </html>
+    EOHTML
+end
+
+get '/link-template' do
+    <<-EOHTML
+        <a href="/link-template/straight#|input|default">Link</a>
+    EOHTML
+end
+
+get '/link-template/straight' do
+    <<-EOHTML
+    <html>
+        <script>
+            function getQueryVariable(variable) {
+                var splits = decodeURI(window.location.hash).split('|');
+                return splits[splits.indexOf( variable ) + 1];
+            }
+        </script>
+
+        <body>
+            <div id="container">
+            </div>
+
             <script>
                 eval(getQueryVariable('input'));
             </script>
