@@ -23,11 +23,12 @@ OUT.keys.each do |language|
         cookies['cookie'] ||= default
 
         <<-EOHTML
-        <a href="/#{language}/link">Link</a>
-        <a href="/#{language}/form">Form</a>
-        <a href="/#{language}/cookie">Cookie</a>
-        <a href="/#{language}/header">Header</a>
-    EOHTML
+            <a href="/#{language}/link">Link</a>
+            <a href="/#{language}/form">Form</a>
+            <a href="/#{language}/cookie">Cookie</a>
+            <a href="/#{language}/header">Header</a>
+            <a href="/#{language}/link-template">Link template</a>
+        EOHTML
     end
 
     get "/#{language}/link" do
@@ -45,6 +46,27 @@ OUT.keys.each do |language|
     get "/#{language}/link/with_null.#{language}" do
         return if !params['input'].end_with?( "\00.html" )
         get_variations( language, params['input'].split( "\0.html" ).first )
+    end
+
+    get "/#{language}/link-template" do
+        <<-EOHTML
+        <a href="/#{language}/link-template/straight/input/default/stuff.#{language}">Link</a>
+        <a href="/#{language}/link-template/append/input/default/stuff.#{language}">Link</a>
+        EOHTML
+    end
+
+    get "/#{language}/link-template/straight/input/*/stuff.#{language}" do
+        val = params[:splat].first
+        default = 'default'
+        return if val.start_with?( default )
+
+        get_variations( language, val.split( default ).last )
+    end
+
+    get "/#{language}/link-template/with_null/input/*/stuff.#{language}" do
+        val = params[:splat].first
+        return if !val.end_with?( "\00.html" )
+        get_variations( language, val.split( "\0.html" ).first )
     end
 
     get "/#{language}/form" do
