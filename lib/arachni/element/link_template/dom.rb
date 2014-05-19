@@ -54,7 +54,7 @@ class DOM < Base
     end
 
     def encode( string )
-        encode( string )
+        self.class.encode( string )
     end
 
     def self.encode( string )
@@ -62,7 +62,7 @@ class DOM < Base
     end
 
     def decode( *args )
-        decode( *args )
+        self.class.decode( *args )
     end
 
     def self.decode( *args )
