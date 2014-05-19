@@ -39,10 +39,7 @@ class DOM < Base
     # @return   [String]
     #   {#action} updated with the the DOM {#inputs}.
     def to_s
-        "#{@action}#" + fragment.sub_in_groups(
-            @template,
-            inputs.inject({}) { |h, (k, v)| h[k] = encode(v); h }
-        )
+        "#{@action}#" + fragment.sub_in_groups( @template, inputs )
     end
 
     def action
@@ -57,11 +54,19 @@ class DOM < Base
     end
 
     def encode( string )
-        URI.encode( string, ';/' )
+        encode( string )
+    end
+
+    def self.encode( string )
+        string
     end
 
     def decode( *args )
-        LinkTemplate.decode( *args )
+        decode( *args )
+    end
+
+    def self.decode( *args )
+        Link.decode( *args )
     end
 
     def type
@@ -86,8 +91,9 @@ class DOM < Base
         fragment = node.attributes['href'].to_s.split( '#', 2 ).last.to_s
         return if fragment.empty?
 
+        fragment = Link.decode( fragment )
         template, inputs = extract_inputs( fragment )
-        return if !template
+        return if !template || inputs.empty?
 
         {
             inputs:   inputs,

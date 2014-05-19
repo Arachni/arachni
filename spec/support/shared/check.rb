@@ -166,7 +166,10 @@ shared_examples_for 'check' do
         options.audit.skip_elements :links, :forms, :cookies, :headers, :link_templates
 
         if element_type.to_s.start_with? 'link_template'
-            options.audit.link_templates = /\/input\/(?<input>.+)\//
+            options.audit.link_templates = [
+                /\/input\/(?<input>.+)\//,
+                /input\|(?<input>.+)/
+            ]
         else
             options.audit.elements element_type rescue NoMethodError
         end

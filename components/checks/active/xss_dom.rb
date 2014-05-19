@@ -57,7 +57,8 @@ class Arachni::Checks::XSSDOM < Arachni::Check::Base
             name:        'DOM XSS',
             description: %q{Injects an HTML element into page DOM inputs and then
                 parses the HTML markup of tainted responses to look for proof of vulnerability.},
-            elements:    [Element::Form::DOM, Element::Link::DOM, Element::Cookie::DOM],
+            elements:    [Element::Form::DOM, Element::Link::DOM,
+                          Element::Cookie::DOM, Element::LinkTemplate::DOM ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1',
 
