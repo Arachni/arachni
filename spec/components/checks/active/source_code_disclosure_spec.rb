@@ -14,7 +14,7 @@ describe name_from_filename do
     def issue_count_per_element
         {
             Element::Form   => 6,
-            Element::Link   => 10,
+            Element::Link   => 6,
             Element::Cookie => 3,
             Element::Header => 3
         }

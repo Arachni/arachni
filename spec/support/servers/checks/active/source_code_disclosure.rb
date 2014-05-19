@@ -20,6 +20,8 @@ end
 OUT.keys.each do |language|
 
     get "/#{language}" do
+        cookies['cookie'] ||= default
+
         <<-EOHTML
         <a href="/#{language}/link">Link</a>
         <a href="/#{language}/form">Form</a>
@@ -75,7 +77,6 @@ OUT.keys.each do |language|
     end
 
     get "/#{language}/cookie/straight.#{language}" do
-        cookies['cookie'] ||= default
         get_variations( language, cookies['cookie'] )
     end
 
