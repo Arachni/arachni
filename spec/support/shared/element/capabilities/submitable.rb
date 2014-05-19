@@ -6,7 +6,8 @@ shared_examples_for 'submitable' do
         s
     end
 
-    rpc_attributes = if described_class == Arachni::Element::Link::DOM
+    rpc_attributes = if [Arachni::Element::Link::DOM,
+                         Arachni::Element::LinkTemplate::DOM].include? described_class
                          %w(url method)
                      else
                          %w(url action method)
