@@ -15,6 +15,7 @@ get '/' do
         <a href="/form">Form</a>
         <a href="/cookie">Cookie</a>
         <a href="/header">Header</a>
+        <a href="/link-template">Link template</a>
     EOHTML
 end
 
@@ -29,6 +30,20 @@ get "/link/append" do
     return if !params['input'].start_with?( default )
 
     get_variations( params['input'].split( default ).last )
+end
+
+get '/link-template' do
+    <<-EOHTML
+        <a href="/link-template/append/input/default/stuff">Link</a>
+    EOHTML
+end
+
+get '/link-template/append/input/*/stuff' do
+    val = params[:splat].first
+    default = 'default'
+    return if !val.start_with?( default )
+
+    get_variations( val.split( default ).last )
 end
 
 get "/form" do

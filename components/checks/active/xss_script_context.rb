@@ -44,13 +44,13 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
 
     def self.strings
         @strings ||= [
-            "javascript:#{seed}//",
-            "1;#{seed}//",
-            "';#{seed}//",
-            "\";#{seed}//",
-            "1;\n#{seed}//",
+            "javascript:#{seed}",
+            "1;#{seed}",
+            "';#{seed}",
+            "\";#{seed}",
+            "1;\n#{seed}",
             "*/;\n#{seed}/*"
-        ]
+        ].map { |s| [s, "#{s}//"] }.flatten
     end
 
     def self.options
@@ -119,7 +119,8 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
             name:        'XSS in script context',
             description: %q{Injects JS taint code and check to see if it gets
                 executed as proof of vulnerability.},
-            elements:    [Element::Form, Element::Link, Element::Cookie, Element::Header],
+            elements:    [ Element::Form, Element::Link, Element::Cookie,
+                           Element::Header, Element::LinkTemplate ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.2',
 
