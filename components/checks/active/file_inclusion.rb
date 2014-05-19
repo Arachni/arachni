@@ -90,8 +90,7 @@ class Arachni::Checks::FileInclusion < Arachni::Check::Base
             description: %q{It injects paths of common files (/etc/passwd and boot.ini)
                 and evaluates the existence of a file inclusion vulnerability
                 based on the presence of relevant content or errors in the HTTP responses.},
-            elements:    [ Element::Form, Element::Link, Element::Cookie,
-                           Element::Header, Element::LinkTemplate ],
+            elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.1.1',
             platforms:   options[:regexp].keys,
