@@ -42,6 +42,7 @@ STRINGS.keys.each do |platform|
             <a href="/#{platform_str}/form">Form</a>
             <a href="/#{platform_str}/cookie">Cookie</a>
             <a href="/#{platform_str}/header">Header</a>
+            <a href="/#{platform_str}/link-template">Link template</a>
         EOHTML
     end
 
@@ -64,6 +65,29 @@ STRINGS.keys.each do |platform|
         return if !params['input'].start_with?( default )
 
         get_variations( platform, params['input'].split( default ).last )
+    end
+
+    get "/#{platform_str}/link-template" do
+        <<-EOHTML
+        <a href="/#{platform_str}/link-template/straight/input/default/stuff">Link</a>
+        <a href="/#{platform_str}/link-template/append/input/default/stuff">Link</a>
+        EOHTML
+    end
+
+    get "/#{platform_str}/link-template/straight/input/*/stuff" do
+        val = URI.decode( params[:splat].first )
+        default = 'default'
+        return if val.start_with?( default )
+
+        get_variations( platform, val.split( default ).last )
+    end
+
+    get "/#{platform_str}/link-template/append/input/*/stuff" do
+        val = URI.decode( params[:splat].first )
+        default = 'default'
+        return if !val.start_with?( default )
+
+        get_variations( platform, val.split( default ).last )
     end
 
     get "/#{platform_str}/form" do

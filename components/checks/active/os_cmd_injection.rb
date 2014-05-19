@@ -51,7 +51,8 @@ class Arachni::Checks::OSCmdInjection < Arachni::Check::Base
         {
             name:        'OS command injection',
             description: %q{Tries to find operating system command injections.},
-            elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
+            elements:    [ Element::Form, Element::Link, Element::Cookie,
+                           Element::Header, Element::LinkTemplate ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.2.1',
             platforms:   payloads.keys,
