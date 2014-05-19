@@ -229,7 +229,7 @@ class LinkTemplate < Base
         end
 
         def encode( string )
-            URI.encode( URI.encode( URI.encode( string, ';/' ) ), '/' )
+            URI.encode( URI.encode( URI.encode( string, ';' ) ), '/' )
         end
 
         def decode( *args )
