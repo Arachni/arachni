@@ -230,8 +230,8 @@ module Timeout
     #   * {Hash} -- Expects {Platform} (as `Symbol`s ) for keys and {Array} of
     #       `payloads` for values. The applicable `payloads` will be
     #       {Platform::Manager#pick picked} from the hash based on
-    #       {Element::Capabilities::Submitable#platforms applicable platforms}
-    #       for the {Element::Capabilities::Submitable#action resource} to be audited.
+    #       {Element::Capabilities::Submittable#platforms applicable platforms}
+    #       for the {Element::Capabilities::Submittable#action resource} to be audited.
     #
     #   Delay placeholder `__TIME__` will be substituted with `timeout / timeout_divider`.
     # @param   [Hash]      opts

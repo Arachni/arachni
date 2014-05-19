@@ -51,7 +51,7 @@ module Capabilities::Submittable
     # @note Sets `self` as the {HTTP::Request#performer}.
     #
     # Submits `self` to the {#action} URL with the appropriate
-    # {Capabilities::Inputable#inputs parameters}.
+    # {Capabilities::Inputtable#inputs parameters}.
     #
     # @param  [Hash]  options
     # @param  [Block]  block    Callback to be passed the {HTTP::Response}.

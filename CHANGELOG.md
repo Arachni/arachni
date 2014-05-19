@@ -77,8 +77,8 @@
                     - Updated the algorithm to ensure server responsiveness before each phase.
                 - `RDiff` => `Differential`
                 - `Taint`
-            - `Submitable`
-            - `Inputable`
+            - `Submittable`
+            - `Inputtable`
 - `RPC`
     - `Serializer` -- Replaced `Marshal` and `YAML` as RPC serialization providers.
         - Delegates to `MessagePack`.
