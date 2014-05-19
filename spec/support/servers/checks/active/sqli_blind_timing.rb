@@ -24,6 +24,7 @@ REGEXP.keys.each do |platform|
             <a href="/#{platform}/form">Form</a>
             <a href="/#{platform}/cookie">Cookie</a>
             <a href="/#{platform}/header">Header</a>
+            <a href="/#{platform}/link-template">Link template</a>
         EOHTML
     end
 
@@ -46,6 +47,29 @@ REGEXP.keys.each do |platform|
         return if !params['input'].start_with?( default )
 
         get_variations( platform, params['input'] )
+    end
+
+    get "/#{platform}/link-template" do
+        <<-EOHTML
+            <a href="/#{platform}/link-template/straight/input/default/stuff">Link</a>
+            <a href="/#{platform}/link-template/append/input/default/stuff">Link</a>
+        EOHTML
+    end
+
+    get "/#{platform}/link-template/straight/input/*/stuff" do
+        val = params[:splat].first
+        default = 'default'
+        return if val.start_with?( default )
+
+        get_variations( platform, val.split( default ).last )
+    end
+
+    get "/#{platform}/link-template/append/input/*/stuff" do
+        val = params[:splat].first
+        default = 'default'
+        return if !val.start_with?( default )
+
+        get_variations( platform, val.split( default ).last )
     end
 
     get "/#{platform}/form" do
