@@ -32,7 +32,8 @@ class Arachni::Checks::LDAPInjection < Arachni::Check::Base
             description: %q{It tries to force the web application to
                 return LDAP error messages in order to discover failures
                 in user input validation.},
-            elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
+            elements:    [ Element::Form, Element::Link, Element::Cookie,
+                           Element::Header, Element::LinkTemplate ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.2',
 
