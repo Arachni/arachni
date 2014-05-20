@@ -1,9 +1,9 @@
 require 'spec_helper'
 
 describe Arachni::Element::Link do
-    it_should_behave_like 'element'
-    it_should_behave_like 'refreshable'
-    it_should_behave_like 'auditable'
+    # it_should_behave_like 'element'
+    # it_should_behave_like 'refreshable'
+    # it_should_behave_like 'auditable'
 
     def auditable_extract_parameters( resource )
         YAML.load( resource.body )
@@ -13,11 +13,20 @@ describe Arachni::Element::Link do
         http.run
     end
 
+    before :each do
+        reset_options
+    end
+
     subject { described_class.new( url: "#{url}submit", inputs: inputs ) }
     let(:inputs) { { 'name1' => 'value1', 'name2' => 'value2' } }
     let(:url) { utilities.normalize_url( web_server_url_for( :link ) ) }
     let(:http) { Arachni::HTTP::Client }
     let(:utilities) { Arachni::Utilities }
+    let(:rewrite_rules) do
+        {
+            /articles\/[\w-]+\/(\d+)/ => 'articles.php?id=\1'
+        }
+    end
 
     let(:html) do
         '<html>
@@ -36,22 +45,33 @@ describe Arachni::Element::Link do
 
     describe '#initialize' do
         context 'when only a url is provided' do
-            it 'is used for both the owner #url and #action and be parsed in order to extract #auditable inputs' do
-                url = 'http://test.com/?one=2&three=4'
-                e = described_class.new( url: url )
-                e.url.should == url
-                e.action.should == url
-                e.inputs.should == { 'one' => '2', 'three' => '4' }
+            let(:url) { 'http://test.com/?one=2&three=4' }
+            let(:link) { described_class.new( url: url ) }
+
+            it 'is used for owner #url' do
+                link.url.should == url
+            end
+
+            it 'is used for the #action' do
+                link.action.should == url
+            end
+
+            it 'is parsed in order to extract #inputs' do
+                link.inputs.should == { 'one' => '2', 'three' => '4' }
             end
         end
-        context 'when the raw option is a string' do
-            it 'is treated as an #action URL and parsed in order to extract #auditable inputs' do
-                url    = 'http://test.com/test'
-                action = '?one=2&three=4'
-                e = described_class.new( url: url, action: action )
-                e.url.should == url
-                e.action.should == url + action
-                e.inputs.should == { 'one' => '2', 'three' => '4' }
+
+        context "when there are #{Arachni::OptionGroups::Scope}#link_rewrites" do
+            it 'rewrites the #action' do
+                Arachni::Options.scope.link_rewrites = rewrite_rules
+
+                link = described_class.new(
+                    url:    url,
+                    action: "#{url}/articles/some-stuff/23"
+                )
+                link.action.should == url + 'articles.php?id=23'
+                link.url.should == url
+                link.inputs.should == { 'id'  => '23' }
             end
         end
     end
@@ -101,6 +121,24 @@ describe Arachni::Element::Link do
     describe '#type' do
         it 'should be "link"' do
             subject.type.should == :link
+        end
+    end
+
+    describe '.rewrite' do
+        let(:url) { 'http://test.com/articles/some-stuff/23' }
+
+        it 'rewrites a URL based on the given rules' do
+            described_class.rewrite( url, rewrite_rules ).should ==
+                'http://test.com/articles.php?id=23'
+        end
+
+        context 'when no rules are provided' do
+            it "uses the ones in #{Arachni::OptionGroups::Scope}#link_rewrites" do
+                Arachni::Options.scope.link_rewrites = rewrite_rules
+
+                described_class.rewrite( url ).should ==
+                    'http://test.com/articles.php?id=23'
+            end
         end
     end
 

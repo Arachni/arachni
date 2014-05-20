@@ -413,7 +413,8 @@ describe Arachni::RPC::Server::Framework::Distributor do
                     exclude_page_patterns:   [],
                     include_path_patterns:   [],
                     restrict_paths:          [],
-                    extend_paths:            []
+                    extend_paths:            [],
+                    link_rewrites:           {}
                 },
                 checks:    [],
                 platforms: [],

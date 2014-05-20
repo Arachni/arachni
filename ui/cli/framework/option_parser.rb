@@ -91,6 +91,14 @@ class OptionParser < UI::CLI::OptionParser
             options.scope.auto_redundant_paths = counter || 10
         end
 
+        on( '--scope-link-rewrite PATTERN:SUBSTITUTION',
+            'Rewrite links based on the given PATTERN and SUBSTITUTION.'
+        ) do |rule|
+            pattern, substitution = rule.split( ':', 2 )
+            options.scope.link_rewrites[ Regexp.new( pattern ) ] =
+                substitution
+        end
+
         on( '--scope-include-subdomains', 'Follow links to subdomains.',
                "(Default: #{options.scope.include_subdomains})"
         ) do

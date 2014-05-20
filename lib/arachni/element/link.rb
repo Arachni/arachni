@@ -34,6 +34,8 @@ class Link < Base
     def initialize( options )
         super( options )
 
+        self.action = self.class.rewrite( self.action )
+
         if options[:inputs]
             self.inputs = options[:inputs]
         else
@@ -147,7 +149,7 @@ class Link < Base
         # @return   [Array<Link>]
         def from_response( response )
             url = response.url
-            [new( url: url, inputs: parse_query_vars( url ) )] | from_document( url, response.body )
+            [new( url: url )] | from_document( url, response.body )
         end
 
         # Extracts links from a document.
@@ -172,7 +174,6 @@ class Link < Base
                 new(
                     url:    url.freeze,
                     action: href.freeze,
-                    inputs: parse_query_vars( href ),
                     html:   link.to_html.freeze
                 )
             end.compact
@@ -199,6 +200,22 @@ class Link < Base
             end
         end
 
+        # @param    [String]    url
+        # @param    [Hash<Regexp => String>]    rules
+        #   Regular expression and substitution pairs.
+        #
+        # @return  [String]
+        #   Rewritten URL.
+        def rewrite( url, rules = Arachni::Options.scope.link_rewrites )
+            rules.each do |args|
+                if (rewritten = url.gsub( *args )) != url
+                    return rewritten
+                end
+            end
+
+            url
+        end
+
         def encode_query_params( param )
             encode( encode( param ), '=' )
         end
@@ -217,7 +234,8 @@ class Link < Base
 
     def http_request( opts, &block )
         self.method.downcase.to_s != 'get' ?
-            http.post( self.action, opts, &block ) : http.get( self.action, opts, &block )
+            http.post( self.action, opts, &block ) :
+            http.get( self.action, opts, &block )
     end
 
 end

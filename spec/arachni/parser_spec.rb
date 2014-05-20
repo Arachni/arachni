@@ -381,7 +381,20 @@ describe Arachni::Parser do
 
     describe '#link_vars' do
         it 'returns a hash of link query inputs' do
-            @parser.link_vars.should == { "query_var_input" => "query_var_val" }
+            @parser.link_vars.should == { 'query_var_input' => 'query_var_val' }
+        end
+
+        context "when there are #{Arachni::OptionGroups::Scope}#link_rewrites" do
+            it 'rewrites the url' do
+                Arachni::Options.scope.link_rewrites = {
+                    'stuff\/(\d+)' => '/stuff?id=\1'
+                }
+
+                url    = "#{@opts.url}/stuff/13"
+                parser = described_class.new( Arachni::HTTP::Client.get( url, mode: :sync ) )
+
+                parser.link_vars.should == { 'id' => '13' }
+            end
         end
     end
 

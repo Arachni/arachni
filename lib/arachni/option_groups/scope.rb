@@ -120,6 +120,12 @@ class Scope < Arachni::OptionGroup
     attr_accessor :https_only
     alias :https_only? :https_only
 
+    # @return   [Hash<Regexp => String>]
+    #   Regular expression and substitution pairs, used to rewrite {Link#action}.
+    #
+    # @see Element::Link
+    attr_accessor :link_rewrites
+
     set_defaults(
         redundant_path_patterns: {},
         dom_depth_limit:         10,
@@ -127,8 +133,22 @@ class Scope < Arachni::OptionGroup
         exclude_page_patterns:   [],
         include_path_patterns:   [],
         restrict_paths:          [],
-        extend_paths:            []
+        extend_paths:            [],
+        link_rewrites:           {}
     )
+
+    def link_rewrites=( filters )
+        if !filters
+            return @redundant_path_patterns = defaults[:redundant_path_patterns].dup
+        end
+
+        @link_rewrites =
+            filters.inject({}) do |h, (regexp, counter)|
+                regexp = regexp.is_a?( Regexp ) ? regexp : Regexp.new( regexp.to_s )
+                h.merge!( regexp => counter )
+                h
+            end
+    end
 
     # These options need to contain Array<String>.
     [ :restrict_paths, :extend_paths ].each do |m|

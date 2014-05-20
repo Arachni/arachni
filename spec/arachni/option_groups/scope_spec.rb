@@ -8,9 +8,22 @@ describe Arachni::OptionGroups::Scope do
         restrict_paths_filepath extend_paths extend_paths_filepath
         redundant_path_patterns auto_redundant_paths include_path_patterns
         exclude_path_patterns exclude_page_patterns include_subdomains https_only
+        link_rewrites
     ).each do |method|
         it { should respond_to method }
         it { should respond_to "#{method}=" }
+    end
+
+    describe '#link_rewrites' do
+        it 'converts the keys to Regexp' do
+            subject.link_rewrites = {
+                '/article/(\d+)' => 'articles?id=\1'
+            }
+
+            subject.link_rewrites.should == {
+                /\/article\/(\d+)/ => 'articles?id=\1'
+            }
+        end
     end
 
     describe '#https_only?' do
