@@ -168,7 +168,9 @@ class Framework
                         's'     => 'suspend the scan to disk',
                         'g'     => 'generate a report',
                         'v'     => "#{verbose? ? 'dis' : 'en'}able verbose messages",
-                        'd'     => "#{debug? ? 'dis' : 'en'}able debugging messages"
+                        'd'     => "#{debug? ? 'dis' : 'en'}able debugging messages.\n" <<
+                            "#{' ' * 11}(You can also to a different level by sending d[1-3]," <<
+                            " current level is #{debug_level})"
                     }.each do |key, action|
                         next if %w(Enter s p).include?( key ) && !@framework.scanning?
                         next if key == 'r' && !(@framework.paused? || @framework.pausing?)
@@ -198,7 +200,7 @@ class Framework
 
     def get_user_command
         Thread.new do
-            command = gets[0].strip
+            command = gets.strip
 
             get_user_command
 
@@ -242,10 +244,15 @@ class Framework
                     verbose? ? verbose_off : verbose_on
 
                 # Toggle debugging messages.
-                when 'd'
+                when /d(\d?)/
                     hide_command_screen
                     restore_output
-                    debug? ? debug_off : debug_on
+
+                    if (level = Regexp.last_match[1]).empty?
+                        debug? ? debug_off : debug_on
+                    else
+                        debug_on( level.to_i )
+                    end
 
                 # Toggle between status messages and command screens.
                 when ''
