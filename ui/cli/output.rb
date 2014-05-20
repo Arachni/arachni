@@ -251,8 +251,13 @@ module Output
     #
     # @return    [void]
     #
-    def verbose
+    def verbose_on
         @@verbose = true
+    end
+    alias :verbose :verbose_on
+
+    def verbose_off
+        @@verbose = false
     end
 
     # Returns the {@@verbose} flag

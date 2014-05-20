@@ -166,7 +166,9 @@ class Framework
                         'r'     => 'resume the scan',
                         'a'     => 'abort the scan',
                         's'     => 'suspend the scan to disk',
-                        'g'     => 'generate a report'
+                        'g'     => 'generate a report',
+                        'v'     => "#{verbose? ? 'dis' : 'en'}able verbose messages",
+                        'd'     => "#{debug? ? 'dis' : 'en'}able debugging messages"
                     }.each do |key, action|
                         next if %w(Enter s p).include?( key ) && !@framework.scanning?
                         next if key == 'r' && !(@framework.paused? || @framework.pausing?)
@@ -232,6 +234,18 @@ class Framework
                     hide_command_screen
                     restore_output
                     generate_reports
+
+                # Toggle verbosity.
+                when 'v'
+                    hide_command_screen
+                    restore_output
+                    verbose? ? verbose_off : verbose_on
+
+                # Toggle debugging messages.
+                when 'd'
+                    hide_command_screen
+                    restore_output
+                    debug? ? debug_off : debug_on
 
                 # Toggle between status messages and command screens.
                 when ''
