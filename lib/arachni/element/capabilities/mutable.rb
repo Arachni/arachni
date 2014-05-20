@@ -118,6 +118,9 @@ module Mutable
     def each_mutation( injection_str, opts = {} )
         return [] if self.inputs.empty?
 
+        print_debug_trainer( opts )
+        print_debug_formatting( opts )
+
         opts = MUTATION_OPTIONS.merge( opts )
         opts[:respect_method] = !Options.audit.with_both_http_methods? if opts[:respect_method].nil?
 
@@ -139,13 +142,20 @@ module Mutable
                 elem.inputs              = cinputs.merge( k => str )
                 elem.format              = format
 
-                yield elem if !generated.include?( elem )
+                if !generated.include?( elem )
+                    print_debug_mutation elem
+                    yield elem
+                end
+
                 generated << elem
 
                 next if opts[:respect_method]
 
                 celem = elem.switch_method
-                yield celem if !generated.include?( celem )
+                if !generated.include?( celem )
+                    print_debug_mutation elem
+                    yield celem
+                end
                 generated << celem
             end
         end
@@ -158,13 +168,19 @@ module Mutable
         elem[injection_str]      = seed
         elem.seed                = injection_str
 
-        yield elem if !generated.include?( elem )
+        if !generated.include?( elem )
+            print_debug_mutation elem
+            yield elem
+        end
         generated << elem
 
         return if opts[:respect_method]
 
         elem = elem.switch_method
-        yield elem if !generated.include?( elem )
+        if !generated.include?( elem )
+            print_debug_mutation elem
+            yield elem
+        end
         generated << elem
 
         nil
@@ -229,18 +245,19 @@ module Mutable
         other
     end
 
-    #
     # Prepares an injection string following the specified formatting options
     # as contained in the format bitfield.
     #
-    # @see Format
     # @param  [String]  injection_str
-    # @param  [String]  default_str  default value to be appended by the
-    #                                 injection string if {Format::APPEND} is set in 'format'
-    # @param  [Integer]  format     bitfield describing formating preferencies
+    # @param  [String]  default_str
+    #   Default value to be appended by the injection string if {Format::APPEND}
+    #   is set in 'format'.
+    # @param  [Integer]  format
+    #   Bitfield describing formatting preferences.
     #
     # @return  [String]
     #
+    # @see Format
     def format_str( injection_str, default_str, format  )
         semicolon = null = append = ''
 
@@ -252,20 +269,22 @@ module Mutable
         semicolon + append + injection_str.to_s + null
     end
 
-    def print_debug_injection_set( var_combo, opts )
-        return if !debug?
+    def print_debug_injection_set( mutations, opts )
+        return if !debug_level_2?
 
-        print_debug
+        print_debug_level_2
         print_debug_trainer( opts )
         print_debug_formatting( opts )
-        print_debug_combos( var_combo )
+        print_debug_combos( mutations )
     end
 
     def print_debug_formatting( opts )
-        print_debug '------------'
+        return if !opts[:format] || !debug_level_2?
 
-        print_debug 'Injection string format combinations set to:'
-        print_debug '|'
+        print_debug_level_2
+
+        print_debug_level_2 'Formatting set to:'
+        print_debug_level_2 '|'
         msg = []
         opts[:format].each do |format|
             if( format & Format::NULL ) != 0
@@ -280,41 +299,48 @@ module Mutable
                 msg << 'straight, leave as is (Format::STRAIGHT)'
             end
 
-            prep = msg.join( ' and ' ).capitalize + ". [Combo mask: #{format}]"
+            prep = msg.join( ' and ' ).capitalize + ". [Format mask: #{format}]"
             prep.gsub!( 'format::null', "Format::NULL [#{Format::NULL}]" )
             prep.gsub!( 'format::append', "Format::APPEND [#{Format::APPEND}]" )
             prep.gsub!( 'format::straight', "Format::STRAIGHT [#{Format::STRAIGHT}]" )
 
-            print_debug "|----> #{prep}"
+            print_debug_level_2 "|----> #{prep}"
 
             msg.clear
         end
         nil
     end
 
-    def print_debug_combos( combos )
-        print_debug
-        print_debug 'Prepared combinations:'
-        print_debug '|'
+    def print_debug_combos( mutations )
+        return if !debug_level_2?
 
-        combos.each do |elem|
-          altered = elem.affected_input_name
-          combo   = elem.inputs
+        print_debug_level_2
+        print_debug_level_2 'Prepared mutations:'
+        print_debug_level_2 '|'
 
-          print_debug '|'
-          print_debug "|--> Auditing: #{altered}"
-          print_debug '|--> Combo: '
-
-          combo.each { |c_combo| print_debug "|------> #{c_combo}" }
+        mutations.each do |mutation|
+            print_debug_mutation mutation
         end
 
-        print_debug
-        print_debug '------------'
-        print_debug
+        print_debug_level_2
+        print_debug_level_2 '------------'
+        print_debug_level_2
+    end
+
+    def print_debug_mutation( mutation )
+        return if !debug_level_2?
+
+        print_debug_level_2 '|'
+        print_debug_level_2 "|--> Auditing: #{mutation.affected_input_name}"
+
+        print_debug_level_2 '|--> Inputs: '
+        mutation.inputs.each do |k, v|
+            print_debug_level_2 "|----> #{k.inspect} => #{v.inspect}"
+        end
     end
 
     def print_debug_trainer( opts )
-        print_debug 'Trainer set to: ' + ( opts[:train] ? 'ON' : 'OFF' )
+        print_debug_level_2 "Trainer set to: #{opts[:train] ? 'ON' : 'OFF'}"
     end
 
 end

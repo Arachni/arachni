@@ -4,17 +4,14 @@
 =end
 
 module Arachni
-
 module UI
 
+# CLI Output module.
 #
-# CLI Output module
-#
-# Provides a command line output interface to the framework.<br/>
-# All UIs should provide an Arachni::UI::Output module with these methods.
+# Provides a command line output interface to the framework.
+# All UIs should provide an `Arachni::UI::Output` module with these methods.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 module Output
 
     def self.included( base )
@@ -32,23 +29,11 @@ module Output
     end
 
     def self.reset_output_options
-        # verbosity flag
-        #
-        # if it's on verbose messages will be enabled
+        @@debug   = 0
         @@verbose = false
+        @@mute    = false
 
-        # debug flag
-        #
-        # if it's on debugging messages will be enabled
-        @@debug   = false
-
-        @@mute = false
-
-        # only_positives flag
-        #
-        # if it's on status messages will be disabled
         @@only_positives  = false
-
         @@reroute_to_file = false
 
         @@opened = false
@@ -58,26 +43,36 @@ module Output
 
     reset_output_options
 
+    # @param    [String]    logfile
+    #   Location of the error log file.
     def set_error_logfile( logfile )
         @@error_logfile = logfile
     end
 
+    # @return  [String]
+    #   Location of the error log file.
     def error_logfile
         @@error_logfile
     end
 
-    # Prints an error message
-    #
-    # It ignores all flags, error messages will be output under all
-    # circumstances.
+    # Prints and logs an error message.
     #
     # @param    [String]    str
-    #
     def print_error( str = '' )
         print_color( '[-]', 31, str, $stderr )
         log_error( str )
     end
 
+    # Prints the backtrace of an exception as error messages.
+    #
+    # @param    [Exception] e
+    def print_error_backtrace( e )
+        e.backtrace.each{ |line| print_error( line ) }
+    end
+
+    # Logs an error message to the error log file.
+    #
+    # @param    [String]    str
     def log_error( str = '' )
         File.open( @@error_logfile, 'a' ) do |f|
             if !@@opened
@@ -105,228 +100,192 @@ module Output
         @@opened = true
     end
 
-    #
-    # Same as print_error but the message won't be printed to stderr.
-    #
-    # Used mainly to draw attention.
+    # Used to draw attention to a bad situation which isn't an error.
     #
     # @param    [String]    str
-    # @param    [Bool]    unmute    override mute
-    #
+    # @param    [Bool]    unmute
     def print_bad( str = '', unmute = false )
         return if muted? && !unmute
         print_color( '[-]', 31, str, $stdout, unmute )
     end
 
-    # Prints a status message
-    #
-    # Obeys {@@only_positives}
-    #
-    # @see #only_positives?
-    # @see #only_positives!
+    # Prints a status message.
     #
     # @param    [String]    str
     # @param    [Bool]    unmute    override mute
-    #
     def print_status( str = '', unmute = false )
         return if only_positives?
         print_color( '[*]', 34, str, $stdout, unmute )
     end
 
-    # Prints an info message
-    #
-    # Obeys {@@only_positives}
-    #
-    # @see #only_positives?
-    # @see #only_positives!
+    # Prints an info message.
     #
     # @param    [String]    str
-    # @param    [Bool]    unmute    override mute
-    #
+    # @param    [Bool]    unmute
     def print_info( str = '', unmute = false )
         return if only_positives?
         print_color( '[~]', 30, str, $stdout, unmute )
     end
 
-    # Prints a good message, something that went very very right,
-    # like the discovery of a vulnerability
-    #
-    # Disregards all flags.
+    # Prints a good message, something that went very very right, like the
+    # discovery of an issue.
     #
     # @param    [String]    str
-    # @param    [Bool]    unmute    override mute
-    #
+    # @param    [Bool]    unmute
     def print_ok( str = '', unmute = false )
         print_color( '[+]', 32, str, $stdout, unmute )
     end
 
-    # Prints a debugging message
-    #
-    # Obeys {@@output_debug}
-    #
-    # @see #debug?
-    # @see #debug
+    # Prints a debugging message.
     #
     # @param    [String]    str
-    # @param    [Bool]    unmute    override mute
-    #
-    def print_debug( str = '', unmute = false )
-        return if !debug?
-        print_color( '[!]', 36, str, $stderr, unmute )
-    end
-
-    # Pretty prints an object, used for debugging,
-    # needs some improvement but it'll do for now
-    #
-    # Obeys {@@output_debug}
     #
     # @see #debug?
-    # @see #debug
-    #
-    # @param    [Object]    obj
-    #
-    def print_debug_pp( obj = nil )
-        return if !debug?
-        pp obj
+    def print_debug( str = '', level = 1 )
+        return if !debug?( level )
+        print_color( '[!]', 36, str, $stderr )
     end
 
-    # Prints the backtrace of an exception
-    #
-    # Obeys {@@output_debug}
-    #
-    # @see #debug?
-    # @see #debug
+    def print_debug_level_1( str = '' )
+        print_debug( str, 1 )
+    end
+
+    def print_debug_level_2( str = '' )
+        print_debug( str, 2 )
+    end
+
+    def print_debug_level_3( str = '' )
+        print_debug( str, 3 )
+    end
+
+    # Prints the backtrace of an exception as debugging messages.
     #
     # @param    [Exception] e
     #
+    # @see #debug?
+    # @see #debug
     def print_debug_backtrace( e )
         return if !debug?
         e.backtrace.each{ |line| print_debug( line ) }
     end
 
-    def print_error_backtrace( e )
-        e.backtrace.each{ |line| print_error( line ) }
-    end
-
-
-    # Prints a verbose message
+    # Prints a verbose message.
     #
-    # Obeys {@@verbose}
+    # @param    [String]    str
+    # @param    [Bool]    unmute
     #
     # @see #verbose?
     # @see #verbose!
-    #
-    # @param    [String]    str
-    # @param    [Bool]    unmute    override mute
-    #
     def print_verbose( str = '', unmute = false )
         return if !verbose?
         print_color( '[v]', 37, str, $stdout, unmute )
     end
 
-    # Prints a line of message
-    #
-    # Obeys {@@only_positives}
-    #
-    # @see #only_positives?
-    # @see #only_positives!
+    # Prints an unclassified message.
     #
     # @param    [String]    str
-    # @param    [Bool]    unmute    override mute
-    #
+    # @param    [Bool]    unmute
     def print_line( str = '', unmute = false )
         return if only_positives?
         return if muted? && !unmute
 
-        # we may get IO errors...freaky stuff...
+        # We may get IO errors...freaky stuff...
         begin
             puts str
         rescue
         end
     end
 
-    # Sets the {@@verbose} flag to true
+    # Enables {#print_verbose} messages.
     #
     # @see #verbose?
-    #
-    # @return    [void]
-    #
     def verbose_on
         @@verbose = true
     end
     alias :verbose :verbose_on
 
+    # Disables {#print_verbose} messages.
+    #
+    # @see #verbose?
     def verbose_off
         @@verbose = false
     end
 
-    # Returns the {@@verbose} flag
-    #
-    # @see #verbose
-    #
-    # @return    [Bool]    @@verbose
-    #
+    # @return    [Bool]
     def verbose?
         @@verbose
     end
 
-    # Sets the {@@output_debug} flag to true
+    # Enables {#print_debug} messages.
+    #
+    # @param    [Integer]   level
+    #   Sets the debugging level.
     #
     # @see #debug?
-    #
-    # @return    [void]
-    #
-    def debug_on
-        @@debug = true
+    def debug_on( level = 1 )
+        @@debug = level
     end
     alias :debug :debug_on
 
+    # Disables {#print_debug} messages.
+    #
+    # @see #debug?
     def debug_off
-        @@debug = false
+        @@debug = 0
     end
 
-    # Returns the {@@output_debug} flag
-    #
-    # @see #debug
-    #
-    # @return    [Bool]    @@output_debug
-    #
-    def debug?
+    # @return   [Integer]
+    #   Debugging level.
+    def debug_level
         @@debug
     end
 
-    # Sets the {@@only_positives} flag to true
+    # @param    [Integer]   level
+    #   Checks against this level.
     #
-    # @see #only_positives?
+    # @return   [Bool]
     #
-    # @return    [void]
-    #
+    # @see #debug
+    def debug?( level = 1 )
+        @@debug >= level
+    end
+
+    def debug_level_1?
+        debug? 1
+    end
+    def debug_level_2?
+        debug? 2
+    end
+    def debug_level_3?
+        debug? 3
+    end
+
+    # Mutes everything but {#print_ok} messages.
     def only_positives
         @@only_positives = true
     end
 
+    # Undoes {#only_positives}.
     def disable_only_positives
         @@only_positives = false
     end
 
-    # Returns the {@@only_positives} flag
-    #
-    # @see #only_positives!
-    #
-    # @return    [Bool]    @@only_positives
-    #
+    # @return    [Bool]
     def only_positives?
         @@only_positives
     end
 
+    # Mutes all output messages, unless they explicitly override the mute status.
     def mute
         @@mute = true
     end
 
+    # Unmutes output messages.
     def unmute
         @@mute = false
     end
 
+    # @return   [Bool]
     def muted?
         @@mute
     end
@@ -340,23 +299,18 @@ module Output
 
     # Prints a message prefixed with a colored sign.
     #
-    # Disregards all flags.
-    #
     # @param    [String]    sign
     # @param    [Integer]   color     shell color number
     # @param    [String]    string    the string to output
     # @param    [IO]        out        output stream
     # @param    [Bool]      unmute    override mute
-    #
-    # @return    [void]
-    #
     def print_color( sign, color, string, out = $stdout, unmute = false )
         return if muted? && !unmute
 
         str = intercept_print_message( string )
         str = add_resource_usage_statistics( str ) if Arachni.profile?
 
-        # we may get IO errors...freaky stuff...
+        # We may get IO errors...freaky stuff...
         begin
             if out.tty?
                 out.print "\033[1;#{color.to_s}m #{sign}\033[1;00m #{str}\n"

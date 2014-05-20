@@ -68,7 +68,8 @@ module Taint
         return false if self.inputs.empty?
 
         if skip_path? self.action
-            print_debug "Element's action matches skip rule, bailing out."
+            print_debug "Taint analysis: Element's action matches skip rule," <<
+                            " bailing out: #{audit_id}"
             return false
         end
 

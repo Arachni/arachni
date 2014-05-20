@@ -251,30 +251,34 @@ module Auditable
 
         @audit_options = OPTIONS.merge( opts )
 
-        print_debug "About to audit: #{audit_id}"
-        print_debug "Payload platform: #{@audit_options[:platform]}" if opts.include?( :platform )
+        print_debug_level_2 "About to audit: #{audit_id}"
 
         # If we don't have any inputs elements just return.
         if inputs.empty?
-            print_debug 'The element has no inputs inputs.'
+            print_debug_level_2 'The element has no inputs inputs.'
             return false
         end
 
         if self.action && skip_path?( self.action )
-            print_debug "Element's action matches skip rule, bailing out."
+            print_debug_level_2 "Element's action matches skip rule, bailing out."
             return false
         end
 
         self.auditor ||= @audit_options.delete( :auditor )
 
         audit_id = audit_id( injection_str, @audit_options )
-        return false if !@audit_options[:redundant] && audited?( audit_id )
+        if !@audit_options[:redundant] && audited?( audit_id )
+            print_debug_level_2 'Skipping, already audited.'
+            return false
+        end
         audited audit_id
 
         if matches_skip_like_blocks?
-            print_debug 'Element matches one or more skip_like blocks, skipping.'
+            print_debug_level_2 'Element matches one or more skip_like blocks, skipping.'
             return false
         end
+
+        print_debug_level_2 "Payload platform: #{@audit_options[:platform]}" if opts.include?( :platform )
 
         # Options will eventually be serialized so remove non-serializeable
         # objects. Also, blocks are expensive, they should not be kept in the
@@ -292,19 +296,19 @@ module Auditable
             end
 
             if elem.matches_skip_like_blocks?
-                print_debug 'Element matches one or more skip_like blocks, skipping.'
+                print_debug_level_2 'Element matches one or more skip_like blocks, skipping.'
                 next
             end
 
             if !orphan? && auditor.skip?( elem )
                 mid = elem.audit_id( injection_str, @audit_options )
-                print_debug "Auditor's #skip? method returned true for mutation, skipping: #{mid}"
+                print_debug_level_2 "Auditor's #skip? method returned true for mutation, skipping: #{mid}"
                 next
             end
 
             if skip?( elem )
                 mid = elem.audit_id( injection_str, @audit_options )
-                print_debug "Self's #skip? method returned true for mutation, skipping: #{mid}"
+                print_debug_level_2 "Self's #skip? method returned true for mutation, skipping: #{mid}"
                 next
             end
 
@@ -374,12 +378,7 @@ module Auditable
     #
     # @see #audited
     def audited?( elem_audit_id )
-        if State.audit.include?( elem_audit_id )
-            print_debug 'Skipping, already audited.'
-            true
-        else
-            false
-        end
+        State.audit.include?( elem_audit_id )
     end
 
     # Registers an audited element to avoid duplicate audits.

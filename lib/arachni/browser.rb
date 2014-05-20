@@ -535,12 +535,7 @@ class Browser
             return
         end
 
-        capture_snapshot( transition ).each do |snapshot|
-            print_debug "Found new page variation by triggering '#{event}' on: #{element}"
-            print_debug 'Page transitions:'
-            snapshot.dom.transitions.each { |t| print_debug "-- #{t}" }
-        end
-
+        capture_snapshot( transition )
         restore page
     end
 
@@ -587,10 +582,14 @@ class Browser
                 sleep 0.1 while !element.exists?
             end
         rescue Timeout::Error
+            print_debug_level_2 "#{locator} did not appear in #{ELEMENT_APPEARANCE_TIMEOUT}."
             return
         end
 
-        return if !element.visible?
+        if !element.visible?
+            print_debug_level_2 "#{locator} is not visible, skipping..."
+            return
+        end
 
         if locator
             opening_tag = locator.to_s
@@ -600,6 +599,8 @@ class Browser
             tag_name    = element.tag_name
             locator     = ElementLocator.from_html( opening_tag )
         end
+
+        print_debug_level_2 "#{__method__}: #{event} (#{options}) #{locator}"
 
         tag_name = tag_name.to_sym
 

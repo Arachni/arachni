@@ -180,13 +180,6 @@ describe Arachni::UI::Output do
                 end
             end
 
-            describe '#print_debug_pp' do
-                it 'does not log anything' do
-                    @out.print_debug_pp( @msg )
-                    @out.flush_buffer.should be_empty
-                end
-            end
-
             describe '#print_debug_backtrace' do
                 it 'does not log anything' do
                     @out.print_debug_backtrace( @e )
@@ -207,13 +200,6 @@ describe Arachni::UI::Output do
             describe '#print_debug' do
                 it 'does not log anything' do
                     @out.print_debug( @msg )
-                    @out.flush_buffer.should be_empty
-                end
-            end
-
-            describe '#print_debug_pp' do
-                it 'does not log anything' do
-                    @out.print_debug_pp( @msg )
                     @out.flush_buffer.should be_empty
                 end
             end

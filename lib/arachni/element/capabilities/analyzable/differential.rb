@@ -49,7 +49,6 @@ module Differential
         false:          '-1'
     }
 
-    #
     # Performs differential analysis and logs an issue should there be one.
     #
     #     opts = {
@@ -92,7 +91,6 @@ module Differential
     # @return   [Bool]
     #   `true` if the audit was scheduled successfully, `false` otherwise (like
     #   if the resource is out of scope or already audited).
-    #
     def differential_analysis( opts = {} )
         return if self.inputs.empty?
 
@@ -100,7 +98,8 @@ module Differential
         audited audit_id
 
         if skip_path? self.action
-            print_debug "Element's action matches skip rule, bailing out."
+            print_debug "Differential analysis: Element's action matches " <<
+                            "skip rule, bailing out: #{audit_id}"
             return false
         end
 

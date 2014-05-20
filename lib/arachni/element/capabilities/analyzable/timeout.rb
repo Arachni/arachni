@@ -252,12 +252,11 @@ module Timeout
         return false if self.inputs.empty?
 
         if skip_path? self.action
-            print_debug "Element's action matches skip rule, bailing out."
+            print_debug "Timeout analysis: Element's action matches " <<
+                            "skip rule, bailing out: #{audit_id}"
             return false
         end
 
-        delay = opts[:timeout]
-        audit_timeout_debug_msg( 1, delay )
         timing_attack( payloads, opts ) do |elem|
             elem.auditor = @auditor
 
@@ -310,13 +309,6 @@ module Timeout
     end
 
     private
-
-    def audit_timeout_debug_msg( phase, delay )
-        print_debug '---------------------------------------------'
-        print_debug "Running phase #{phase.to_s} of timing attack."
-        print_debug "Delay set to: #{delay.to_s} milliseconds"
-        print_debug '---------------------------------------------'
-    end
 
     # Audits elements using a timing attack.
     #

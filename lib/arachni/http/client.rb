@@ -610,17 +610,17 @@ class Client
     def forward_request( request )
         request.id = @request_count
 
-        if debug?
-            print_debug '------------'
-            print_debug 'Queued request.'
-            print_debug "ID#: #{request.id}"
-            print_debug "URL: #{request.url}"
-            print_debug "Method: #{request.method}"
-            print_debug "Params: #{request.parameters}"
-            print_debug "Body: #{request.body}"
-            print_debug "Headers: #{request.headers}"
-            print_debug "Train?: #{request.train?}"
-            print_debug  '------------'
+        if debug_level_3?
+            print_debug_level_3 '------------'
+            print_debug_level_3 'Queued request.'
+            print_debug_level_3 "ID#: #{request.id}"
+            print_debug_level_3 "URL: #{request.url}"
+            print_debug_level_3 "Method: #{request.method}"
+            print_debug_level_3 "Params: #{request.parameters}"
+            print_debug_level_3 "Body: #{request.body}"
+            print_debug_level_3 "Headers: #{request.headers}"
+            print_debug_level_3 "Train?: #{request.train?}"
+            print_debug_level_3  '------------'
         end
 
         request.on_complete do |response|
@@ -639,22 +639,22 @@ class Client
 
                 parse_and_set_cookies( response ) if request.update_cookies?
 
-                if debug?
-                    print_debug '------------'
-                    print_debug "Got response for request ID#: #{response.request.id}"
-                    print_debug "Status: #{response.code}"
-                    print_debug "Error msg: #{response.return_message}"
-                    print_debug "URL: #{response.url}"
-                    print_debug "Headers:\n#{response.headers_string}"
-                    print_debug "Parsed headers: #{response.headers}"
+                if debug_level_3?
+                    print_debug_level_3 '------------'
+                    print_debug_level_3 "Got response for request ID#: #{response.request.id}"
+                    print_debug_level_3 "Status: #{response.code}"
+                    print_debug_level_3 "Error msg: #{response.return_message}"
+                    print_debug_level_3 "URL: #{response.url}"
+                    print_debug_level_3 "Headers:\n#{response.headers_string}"
+                    print_debug_level_3 "Parsed headers: #{response.headers}"
                 end
 
                 if response.timed_out?
-                    print_debug "Request timed-out! -- ID# #{response.request.id}"
+                    print_debug_level_3 "Request timed-out! -- ID# #{response.request.id}"
                     @time_out_count += 1
                 end
 
-                print_debug '------------'
+                print_debug_level_3 '------------'
             end
         end
 
