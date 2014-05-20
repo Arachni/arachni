@@ -81,8 +81,9 @@ module Output
     def print_line(*)
     end
 
-    def verbose
+    def verbose_on
     end
+    alias :verbose :verbose_on
 
     def verbose?
     end
