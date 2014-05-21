@@ -125,7 +125,7 @@ module Mutable
         opts[:respect_method] = !Options.audit.with_both_http_methods? if opts[:respect_method].nil?
 
         dinputs = inputs.dup
-        cinputs = Support::KeyFiller.fill( inputs )
+        cinputs = Options.input.fill( inputs )
 
         generated = Support::LookUp::HashSet.new
 

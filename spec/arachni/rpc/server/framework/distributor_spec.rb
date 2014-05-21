@@ -416,6 +416,11 @@ describe Arachni::RPC::Server::Framework::Distributor do
                     extend_paths:            [],
                     link_rewrites:           {}
                 },
+                input: {
+                    values:           {},
+                    without_defaults: false,
+                    force:            false
+                },
                 checks:    [],
                 platforms: [],
                 plugins:   {},

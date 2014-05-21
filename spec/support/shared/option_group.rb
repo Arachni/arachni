@@ -36,7 +36,7 @@ shared_examples_for 'option_group' do
                 next
             end
 
-            subject.send( method, 'stuff' )
+            subject.send( method, subject.defaults[method.to_s[0..-1].to_sym] )
 
             hash = subject.to_h
             hash.should be_any
@@ -52,10 +52,10 @@ shared_examples_for 'option_group' do
             next if method == :=== || method == :==
 
             method = method.to_s[0...-1].to_sym
-            value  = 'stuff'
+            value  = subject.defaults[method.to_s[0..-1].to_sym]
 
             subject.update( { method => value } )
-            subject.send( method ).should include value
+            subject.send( method ).should == value
         end
 
         it 'returns self' do
@@ -69,13 +69,13 @@ shared_examples_for 'option_group' do
             next if method == :=== || method == :==
 
             method = method.to_s[0...-1].to_sym
-            value  = 'stuff'
+            value  = subject.defaults[method.to_s[0..-1].to_sym]
 
             group = described_class.new
             group.update( { method => value } )
 
             subject.merge( group )
-            subject.send( method ).should include value
+            subject.send( method ).should == value
         end
 
         it 'returns self' do

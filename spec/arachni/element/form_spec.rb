@@ -267,7 +267,7 @@ describe Arachni::Element::Form do
 
                         if m.mutation_with_sample_values?
                             m.affected_input_name.should == described_class::SAMPLE_VALUES
-                            m.inputs.should == Arachni::Support::KeyFiller.fill( e.inputs )
+                            m.inputs.should == Arachni::Options.input.fill( e.inputs )
                             has_sample ||= true
                         end
                     end
