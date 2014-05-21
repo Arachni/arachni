@@ -31,16 +31,16 @@ class <<self
     # Tries to fill a hash with values of appropriate type based on the key of
     # the parameter.
     #
-    # @param  [Hash]  parameters   Parameters hash.
-    # @param  [String]  default   Default value to use if no match was found.
+    # @param  [Hash]  parameters
+    #   Parameters hash.
+    # @param  [String]  default
+    #   Default value to use if no match was found.
     #
     # @return   [Hash]
     def fill( parameters, default = '1' )
         parameters = parameters.dup
         parameters.each do |k, v|
             next if !v.to_s.empty?
-            # moronic default value...
-            # will figure  out something better in the future...
             parameters[k] = name_to_value( k, default )
         end
         parameters
