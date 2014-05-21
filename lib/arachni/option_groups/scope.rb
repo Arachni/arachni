@@ -143,9 +143,9 @@ class Scope < Arachni::OptionGroup
         end
 
         @link_rewrites =
-            filters.inject({}) do |h, (regexp, counter)|
+            filters.inject({}) do |h, (regexp, value)|
                 regexp = regexp.is_a?( Regexp ) ? regexp : Regexp.new( regexp.to_s )
-                h.merge!( regexp => counter )
+                h.merge!( regexp => value )
                 h
             end
     end
