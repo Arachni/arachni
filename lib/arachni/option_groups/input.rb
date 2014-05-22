@@ -67,7 +67,7 @@ class Input < Arachni::OptionGroup
 
             value = value_for_name( k, false )
 
-            # Don't overwrite the default values of the paremeters unless we've
+            # Don't overwrite the default values of the parameters unless we've
             # fot a value, even if #force? is in effect.
             if parameters[k].to_s.empty?
                 parameters[k] = value || DEFAULT
