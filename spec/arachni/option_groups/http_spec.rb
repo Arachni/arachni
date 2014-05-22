@@ -30,4 +30,13 @@ describe Arachni::OptionGroups::HTTP do
             subject.response_max_size.should be_nil
         end
     end
+
+    describe '#to_rpc_data' do
+        let(:data) { subject.to_rpc_data }
+
+        it "does not include 'cookie_jar_filepath'" do
+            subject.cookie_jar_filepath = 'stuff'
+            data.should_not include 'cookie_jar_filepath'
+        end
+    end
 end

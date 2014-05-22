@@ -931,9 +931,9 @@ describe Arachni::Browser do
                                 @browser.fire_event @browser.watir.form, :submit
 
                                 @browser.watir.div( id: 'container-name' ).text.should ==
-                                    Arachni::Support::KeyFiller.name_to_value( 'name' )
+                                    Arachni::Options.input.value_for_name( 'name' )
                                 @browser.watir.div( id: 'container-email' ).text.should ==
-                                    Arachni::Support::KeyFiller.name_to_value( 'email' )
+                                    Arachni::Options.input.value_for_name( 'email' )
                             end
 
                             it 'returns a playable transition' do
@@ -948,9 +948,9 @@ describe Arachni::Browser do
                                 transition.play @browser
 
                                 @browser.watir.div( id: 'container-name' ).text.should ==
-                                    Arachni::Support::KeyFiller.name_to_value( 'name' )
+                                    Arachni::Options.input.value_for_name( 'name' )
                                 @browser.watir.div( id: 'container-email' ).text.should ==
-                                    Arachni::Support::KeyFiller.name_to_value( 'email' )
+                                    Arachni::Options.input.value_for_name( 'email' )
                             end
                         end
                     end
@@ -1057,7 +1057,7 @@ describe Arachni::Browser do
                                     @browser.fire_event @browser.watir.input, event
 
                                     @browser.watir.div( id: 'container' ).text.should ==
-                                        calculate_expectation.call( Arachni::Support::KeyFiller.name_to_value( 'name' ) )
+                                        calculate_expectation.call( Arachni::Options.input.value_for_name( 'name' ) )
                                 end
 
                                 it 'returns a playable transition' do
@@ -1069,7 +1069,7 @@ describe Arachni::Browser do
 
                                     transition.play @browser
                                     @browser.watir.div( id: 'container' ).text.should ==
-                                        calculate_expectation.call( Arachni::Support::KeyFiller.name_to_value( 'name' ) )
+                                        calculate_expectation.call( Arachni::Options.input.value_for_name( 'name' ) )
                                 end
                             end
                         end

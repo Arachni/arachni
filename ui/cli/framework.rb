@@ -347,6 +347,7 @@ class Framework
         parser.output
         parser.scope
         parser.audit
+        parser.input
         parser.http
         parser.checks
         parser.plugins

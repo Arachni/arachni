@@ -228,4 +228,13 @@ describe Arachni::OptionGroups::Audit do
             end
         end
     end
+
+    describe '#to_rpc_data' do
+        let(:data) { subject.to_rpc_data }
+
+        it "converts 'link_templates' to strings" do
+            subject.link_templates << /param\/(?<param>\w+)/
+            data['link_templates'].should == subject.link_templates.map(&:to_s)
+        end
+    end
 end

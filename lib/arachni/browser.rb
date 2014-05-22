@@ -547,7 +547,7 @@ class Browser
     # @option options [Hash<Symbol,String=>String>]  :inputs
     #   Values to use to fill-in inputs. Keys should be input names or ids.
     #
-    #   Defaults to using {Support::KeyFiller} if not specified.
+    #   Defaults to using {OptionGroups::Input} if not specified.
     #
     # @return   [Page::DOM::Transition, false]
     #   Transition if the operation was successful, `nil` otherwise.
@@ -905,9 +905,9 @@ class Browser
     # @return   [String]
     #   Value to use to fill-in the input.
     #
-    # @see Support::KeyFiller.name_to_value
+    # @see OptionGroups::Input.value_for_name
     def value_for( element )
-        Support::KeyFiller.name_to_value( name_or_id_for( element ), '1' )
+        Options.input.value_for_name( name_or_id_for( element ) )
     end
 
     def spawn_phantomjs

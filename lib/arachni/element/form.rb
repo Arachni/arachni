@@ -157,9 +157,9 @@ class Form < Base
 
     # @return   [Bool]
     #   `true` if the element has been populated with sample
-    #   ({Support::KeyFiller}) values, `false` otherwise.
+    #   ({Arachni::OptionGroups::Input.fill}) values, `false` otherwise.
     #
-    # @see Arachni::Support::KeyFiller.fill
+    # @see Arachni::OptionGroups::Input
     def mutation_with_sample_values?
         self.affected_input_name == SAMPLE_VALUES
     end
@@ -183,7 +183,7 @@ class Form < Base
     # Overrides {Arachni::Element::Mutable#each_mutation} adding support
     # for mutations with:
     #
-    # * Sample values (filled by {Arachni::Support::KeyFiller.fill}).
+    # * Sample values (filled by {Arachni::OptionGroups::Input.fill}).
     # * Original values.
     # * Password fields requiring identical values (in order to pass
     #   server-side validation)
@@ -200,7 +200,7 @@ class Form < Base
     # @yieldparam (see Capabilities::Mutable#each_mutation)
     #
     # @see Capabilities::Mutable#each_mutation
-    # @see Support::KeyFiller.fill
+    # @see Arachni::OptionGroups::Input.fill
     def each_mutation( seed, opts = {} )
         opts = MUTATION_OPTIONS.merge( opts )
 
@@ -222,7 +222,7 @@ class Form < Base
         generated << elem
 
         elem = self.dup
-        elem.inputs = Arachni::Support::KeyFiller.fill( inputs.dup )
+        elem.inputs = Arachni::Options.input.fill( inputs.dup )
         elem.affected_input_name = SAMPLE_VALUES
         yield elem if !generated.include?( elem )
         generated << elem

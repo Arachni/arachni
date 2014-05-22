@@ -146,5 +146,11 @@ class HTTP < Arachni::OptionGroup
         cookies:                {}
     )
 
+    def to_rpc_data
+        d = super
+        d.delete 'cookie_jar_filepath'
+        d
+    end
+
 end
 end

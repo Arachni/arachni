@@ -360,11 +360,6 @@ module Distributor
     def initialize_slaves( &block )
         slave_options = prepare_slave_options
 
-        [:exclude_path_patterns, :include_path_patterns].each do |k|
-            (slave_options[:scope][k] || {}).
-                each_with_index { |v, i| slave_options[k][i] = v.source }
-        end
-
         foreach = proc do |slave, iterator|
             slave.service.scan( slave_options ) do
                 # Workload will actually be distributed later on so mark it as
@@ -385,18 +380,17 @@ module Distributor
     #   Finally, it sets the master's privilege token so that the slave can
     #   report back to us.
     def prepare_slave_options
-        options = @options.to_h.deep_clone
-
-        %w(instance rpc dispatcher paths spawns snapshot).each { |k| options.delete k.to_sym }
-        options[:http].delete :cookie_jar_filepath
+        options = @options.to_rpc_data
 
         # Don't let the slaves run plugins that are not meant to be distributed.
-        options[:plugins].reject! { |k, _| !@plugins[k].distributable? } if options[:plugins]
+        if options['plugins']
+            options['plugins'].reject! { |k, _| !@plugins[k].distributable? }
+        end
 
-        options[:datastore].delete( :dispatcher_url )
-        options[:datastore].delete( :token )
+        options['datastore'].delete( 'dispatcher_url' )
+        options['datastore'].delete( 'token' )
 
-        options[:datastore][:master_priv_token] = @local_token
+        options['datastore']['master_priv_token'] = @local_token
 
         options
     end

@@ -26,6 +26,7 @@ class Local
         parser.authorized_by
         parser.scope
         parser.audit
+        parser.input
         parser.http
         parser.checks
         parser.plugins

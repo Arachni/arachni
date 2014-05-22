@@ -6,6 +6,8 @@ describe Arachni::Options do
     end
 
     subject { reset_options; described_class.instance }
+    groups = [:audit, :datastore, :dispatcher, :http, :login, :output, :paths,
+              :rpc, :scope, :input]
 
     it 'proxies missing class methods to instance methods' do
         url = 'http://test.com/'
@@ -19,7 +21,7 @@ describe Arachni::Options do
         it { should respond_to "#{method}=" }
     end
 
-    %w(audit datastore dispatcher http login output paths rpc scope).each do |group|
+    groups.each do |group|
         describe "##{group}" do
             it 'is an OptionGroup' do
                 subject.send( group ).should be_kind_of Arachni::OptionGroup
@@ -228,6 +230,35 @@ describe Arachni::Options do
                 raised = true
             end
             raised.should be_false
+        end
+    end
+
+    describe '#to_rpc_data' do
+        let(:data) { subject.to_rpc_data }
+        ignore = [:instance, :rpc, :dispatcher, :paths, :spawns, :snapshot]
+
+        it 'converts self to a serializable hash' do
+            data.should be_kind_of Hash
+
+            Arachni::RPC::Serializer.load(
+                Arachni::RPC::Serializer.dump( data )
+            ).should == data
+        end
+
+        (groups - ignore).each do |k|
+            k = k.to_s
+
+            it "includes the '#{k}' group" do
+                data[k].should == subject.send(k).to_rpc_data
+            end
+        end
+
+        ignore.each do |k|
+            k = k.to_s
+
+            it "does not include the '#{k}' group" do
+                subject.to_rpc_data.should_not include k
+            end
         end
     end
 

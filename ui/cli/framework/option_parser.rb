@@ -406,6 +406,34 @@ class OptionParser < UI::CLI::OptionParser
         end
     end
 
+    def input
+        separator ''
+        separator 'Input'
+
+        on( '--input-value PATTERN:VALUE',
+            'PATTERN to match against input names and VALUE to use for them.',
+            '(Can be used multiple times.)'
+        ) do |url|
+            pattern, value = rule.split( ':', 2 )
+            options.input.values[Regexp.new(pattern)] = value
+        end
+
+        on( '--input-values-file FILE',
+            'YAML file containing a Hash object with regular expressions,' <<
+                ' to match against input names, as keys and input values as values.'
+        ) do |file|
+            options.login.update_values_from_file( file )
+        end
+
+        on( '--input-without-defaults', 'Do not use the system default input values.' ) do
+            options.login.without_defaults = true
+        end
+
+        on( '--input-force', 'Fill-in even non-empty inputs.' ) do
+            options.login.force = true
+        end
+    end
+
     def browser_cluster
         separator ''
         separator 'Browser cluster'

@@ -143,9 +143,9 @@ class Scope < Arachni::OptionGroup
         end
 
         @link_rewrites =
-            filters.inject({}) do |h, (regexp, counter)|
+            filters.inject({}) do |h, (regexp, value)|
                 regexp = regexp.is_a?( Regexp ) ? regexp : Regexp.new( regexp.to_s )
-                h.merge!( regexp => counter )
+                h.merge!( regexp => value )
                 h
             end
     end
@@ -266,6 +266,20 @@ class Scope < Arachni::OptionGroup
                  h.merge!( regexp => Integer( counter ) )
                  h
              end
+    end
+
+    def to_rpc_data
+        d = super
+
+        %w(redundant_path_patterns link_rewrites).each do |k|
+            d[k] = d[k].inject({}){ |h, (ck, v)| h[ck.source] = v; h }
+        end
+
+        %w(exclude_path_patterns exclude_page_patterns include_path_patterns).each do |k|
+            d[k] = d[k].map(&:source)
+        end
+
+        d
     end
 
 end

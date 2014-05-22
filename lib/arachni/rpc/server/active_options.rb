@@ -18,8 +18,9 @@ class ActiveOptions
 
         %w( url http_request_concurrency http_request_timeout http_user_agent
             http_request_redirect_limit http_proxy_username http_proxy_password
-            http_proxy_type http_proxy_host http_proxy_port authorized_by http_cookies
-            http_cookie_string http_authentication_username http_authentication_password ).each do |m|
+            http_proxy_type http_proxy_host http_proxy_port authorized_by
+            http_cookies http_cookie_string http_authentication_username
+            http_authentication_password ).each do |m|
             m = "#{m}=".to_sym
             self.class.class_eval do
                 define_method m do |v|
@@ -57,17 +58,7 @@ class ActiveOptions
 
     # @private
     def to_h
-        h = @options.to_h
-        %w(exclude_path_patterns exclude_page_patterns include_path_patterns).each do |k|
-            h[:scope][k.to_sym] = h[:scope][k.to_sym].map(&:source)
-        end
-
-        h[:scope][:redundant_path_patterns] = h[:scope][:redundant_path_patterns].inject({}) do |o, (k, v)|
-            o[k.source] = v
-            o
-        end
-
-        h
+        @options.to_rpc_data
     end
 
 end
