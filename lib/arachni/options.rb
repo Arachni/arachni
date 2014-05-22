@@ -302,25 +302,41 @@ class Options
         update( YAML.load_file( filepath ) )
     end
 
-    # @return    [Hash] `self` converted to a Hash.
-    def to_hash
+    # @return    [Hash]
+    #   `self` converted to a Hash suitable for RPC transmission.
+    def to_rpc_data
+        ignore = Set.new([:instance, :rpc, :dispatcher, :paths, :spawns, :snapshot])
+
         hash = {}
         instance_variables.each do |var|
             val = instance_variable_get( var )
             var = normalize_name( var )
 
-            next if var == :instance
+            next if ignore.include?( var )
 
-            if val.is_a? OptionGroup
-                hash[var] = val.to_h
-            else
-                hash[var] = val
-            end
+            hash[var.to_s] = (val.is_a? OptionGroup) ? val.to_rpc_data : val
+        end
+        hash = hash.deep_clone
+
+        hash.delete( 'url' ) if !hash['url']
+
+        hash
+    end
+
+    # @return    [Hash]
+    #   `self` converted to a Hash.
+    def to_hash
+        hash = {}
+        instance_variables.each do |var|
+            val = instance_variable_get( var )
+            next if (var = normalize_name( var )) == :instance
+
+            hash[var] = (val.is_a? OptionGroup) ? val.to_h : val
         end
 
         hash.delete( :url ) if !hash[:url]
 
-        hash
+        hash.deep_clone
     end
     alias :to_h :to_hash
 

@@ -39,4 +39,13 @@ describe Arachni::OptionGroups::Login do
             end
         end
     end
+
+    describe '#to_rpc_data' do
+        let(:data) { subject.to_rpc_data }
+
+        it "converts 'check_pattern' to strings" do
+            subject.check_pattern = /test/
+            data['check_pattern'].should == subject.check_pattern.source
+        end
+    end
 end

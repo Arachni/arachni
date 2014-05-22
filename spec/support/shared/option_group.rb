@@ -1,6 +1,18 @@
 shared_examples_for 'option_group' do
     it { should respond_to :to_h }
 
+    describe '#to_rpc_data' do
+        let(:data) { subject.to_rpc_data }
+
+        it 'converts self to a serializable hash' do
+            data.should be_kind_of Hash
+
+            Arachni::RPC::Serializer.load(
+                Arachni::RPC::Serializer.dump( data )
+            ).should == data
+        end
+    end
+
     described_class.defaults.each do |k, v|
         describe "##{k}" do
             it "defaults to #{v}" do

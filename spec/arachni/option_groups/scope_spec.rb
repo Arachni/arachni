@@ -279,4 +279,34 @@ describe Arachni::OptionGroups::Scope do
             end
         end
     end
+
+    describe '#to_rpc_data' do
+        let(:data) { subject.to_rpc_data }
+
+        it "converts 'redundant_path_patterns' to strings" do
+            values = { /redundant_path_patterns/ => 1 }
+            subject.redundant_path_patterns = values
+
+            data['redundant_path_patterns'].should =={
+                'redundant_path_patterns' => 1
+            }
+        end
+
+        it "converts 'link_rewrites' to strings" do
+            values = { /link_rewrites/ => 'test' }
+            subject.link_rewrites = values
+
+            data['link_rewrites'].should == { 'link_rewrites' => 'test' }
+        end
+
+        %w(exclude_path_patterns exclude_page_patterns include_path_patterns).each do |k|
+            it "converts '#{k}' to strings" do
+                values = [/#{k}/]
+                subject.send( "#{k}=", values )
+
+                data[k].should == [k]
+            end
+        end
+    end
+
 end

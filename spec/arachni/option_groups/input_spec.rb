@@ -107,4 +107,20 @@ describe Arachni::OptionGroups::Input do
         end
     end
 
+    describe '#to_rpc_data' do
+        let(:data) { subject.to_rpc_data }
+
+        it "converts 'values' to strings" do
+            values = { /article/ => 'my article' }
+            subject.values = values
+
+            data['values'].should == { 'article' => 'my article' }
+        end
+
+        it "converts 'default_values' to strings" do
+            data['default_values'].keys.should ==
+                subject.default_values.keys.map(&:source)
+        end
+    end
+
 end

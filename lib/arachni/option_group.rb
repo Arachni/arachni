@@ -47,6 +47,10 @@ class OptionGroup
         end
     end
 
+    def to_rpc_data
+        to_h.stringify_keys(false)
+    end
+
     # @return   [Hash]
     #   Values for all attribute accessors which aren't the defaults.
     def to_h
@@ -60,9 +64,11 @@ class OptionGroup
 
             h[sym] = value
         end
-        h
+        h.deep_clone
     end
-    alias :to_hash :to_h
+    def to_hash
+        to_h
+    end
 
     # @return   [Hash]
     #   Hash of errors with the name of the invalid options as the keys.

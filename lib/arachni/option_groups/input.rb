@@ -30,11 +30,11 @@ class Input < Arachni::OptionGroup
     #   Patterns used to match input names and value to use to fill it in.
     attr_accessor :values
 
-    # # @return    [Hash<Regexp => String>]
-    # #   Default values for {#values}.
-    # #
-    # # @see DEFAULT_VALUES
-    # attr_accessor :default_values
+    # @return    [Hash<Regexp => String>]
+    #   Default values for {#values}.
+    #
+    # @see DEFAULT_VALUES
+    attr_accessor :default_values
 
     # @return   [Bool]
     #   `true` if {#default_values} should be used, `false` otherwise.
@@ -46,7 +46,7 @@ class Input < Arachni::OptionGroup
 
     set_defaults(
         values:           {},
-        # default_values:   DEFAULT_VALUES,
+        default_values:   DEFAULT_VALUES,
         without_defaults: false,
         force:            false
     )
@@ -88,10 +88,6 @@ class Input < Arachni::OptionGroup
         without_defaults? ? @values : default_values.merge( @values )
     end
 
-    def default_values
-        DEFAULT_VALUES
-    end
-
     # @param    [String]
     #   Location of a YAML file used to fill in {#values}.
     def update_values_from_file( location )
@@ -116,9 +112,9 @@ class Input < Arachni::OptionGroup
     end
 
     # @private
-    # def default_values=( v )
-    #     @default_values = format_values( v ) || defaults[:default_values]
-    # end
+    def default_values=( v )
+        @default_values = format_values( v ) || defaults[:default_values]
+    end
 
     # @private
     def format_values( values )
@@ -129,6 +125,14 @@ class Input < Arachni::OptionGroup
             h.merge!( regexp => value )
             h
         end
+    end
+
+    def to_rpc_data
+        d = super
+        %w(values default_values).each do |k|
+            d[k] = d[k].inject({}){ |h, (ck, v)| h[ck.source] = v; h }
+        end
+        d
     end
 
 end

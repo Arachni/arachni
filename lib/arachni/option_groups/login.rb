@@ -18,13 +18,19 @@ class Login < Arachni::OptionGroup
     # @see Session
     attr_accessor :check_url
 
-    # @return   [String]
+    # @return   [Regexp]
     #   Pattern which should match the {#check_url} {Arachni::HTTP::Response response}
     #   {Arachni::HTTP::Response#body} when a valid webapp {Session session} has
     #   been established.
     #
     # @see Session
     attr_accessor :check_pattern
+
+    def check_pattern=( pattern )
+        return @check_pattern = nil if !pattern
+
+        @check_pattern = Regexp.new( pattern )
+    end
 
     def validate
         return {} if (check_url && check_pattern) || (!check_url && !check_pattern)
@@ -33,6 +39,12 @@ class Login < Arachni::OptionGroup
             (check_url ? :check_pattern : :check_url) =>
                 'Option is missing.'
         }
+    end
+
+    def to_rpc_data
+        d = super
+        d['check_pattern'] = d['check_pattern'].source if d['check_pattern']
+        d
     end
 
 end

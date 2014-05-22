@@ -68,6 +68,9 @@ module Serializer
     # @return   [String]
     #   Decompressed string.
     def decompress( string )
+        # Just an ID representing a serialized, empty data structure.
+        return string if string.size == 1
+
         begin
             Zlib::Inflate.inflate string
         rescue Zlib::DataError

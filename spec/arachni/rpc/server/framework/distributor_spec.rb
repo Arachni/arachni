@@ -385,55 +385,11 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
     describe '#prepare_slave_options' do
         it 'returns a hash with options suitable for passing to slaves' do
-            @distributor.prepare_slave_options.should == {
-                http:      {
-                    user_agent:             @opts.http.user_agent,
-                    request_timeout:        @opts.http.request_timeout,
-                    request_redirect_limit: @opts.http.request_redirect_limit,
-                    request_concurrency:    @opts.http.request_concurrency,
-                    request_queue_size:     @opts.http.request_queue_size,
-                    request_headers:        @opts.http.request_headers,
-                    cookies:                @opts.http.cookies
-                },
-                audit:     {
-                    exclude_vectors: @opts.audit.exclude_vectors,
-                    link_templates:  @opts.audit.link_templates,
-                    links:           @opts.audit.links,
-                    forms:           @opts.audit.forms
-                },
-                login:     {},
-                datastore: {
-                    master_priv_token: 'secret'
-                },
-                output:    {},
-                scope:     {
-                    redundant_path_patterns: {},
-                    dom_depth_limit:         @opts.scope.dom_depth_limit,
-                    exclude_path_patterns:   [],
-                    exclude_page_patterns:   [],
-                    include_path_patterns:   [],
-                    restrict_paths:          [],
-                    extend_paths:            [],
-                    link_rewrites:           {}
-                },
-                input: {
-                    values:           {},
-                    without_defaults: false,
-                    force:            false
-                },
-                checks:    [],
-                platforms: [],
-                plugins:   {},
-                no_fingerprinting: false,
-                authorized_by:     nil,
-                browser_cluster: {
-                    pool_size:           @opts.browser_cluster.pool_size,
-                    job_timeout:         @opts.browser_cluster.job_timeout,
-                    worker_time_to_live: @opts.browser_cluster.worker_time_to_live,
-                    ignore_images:       @opts.browser_cluster.ignore_images
-                }
-            }
+            h = @distributor.prepare_slave_options
+            h['datastore'].should == { 'master_priv_token' => 'secret' }
         end
+
+        it 'removes plugins which are not distributable'
     end
 
     describe '#map_slaves' do
