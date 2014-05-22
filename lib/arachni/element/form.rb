@@ -92,6 +92,10 @@ class Form < Base
         @default_inputs = self.inputs.dup.freeze
     end
 
+    def force_train?
+        mutation_with_original_values || mutation_with_sample_values
+    end
+
     # @return   [DOM]
     def dom
         return if !@html || inputs.empty?
@@ -152,7 +156,11 @@ class Form < Base
     # @return   [Bool]
     #   `true` if the element has not been mutated, `false` otherwise.
     def mutation_with_original_values?
-        self.affected_input_name == ORIGINAL_VALUES
+        !!@mutation_with_original_values
+    end
+
+    def mutation_with_original_values
+        @mutation_with_original_values = true
     end
 
     # @return   [Bool]
@@ -161,7 +169,11 @@ class Form < Base
     #
     # @see Arachni::OptionGroups::Input
     def mutation_with_sample_values?
-        self.affected_input_name == SAMPLE_VALUES
+        !!@mutation_with_sample_values
+    end
+
+    def mutation_with_sample_values
+        @mutation_with_sample_values = true
     end
 
     # @param    (see Capabilities::Auditable#audit_id)
@@ -214,16 +226,33 @@ class Form < Base
 
         return if opts[:skip_original]
 
-        # this is the original hash, in case the default values
-        # are valid and present us with new attack vectors
         elem = self.dup
-        elem.affected_input_name = ORIGINAL_VALUES
+        elem.mutation_with_original_values
+        elem.affected_input_name  = ORIGINAL_VALUES
         yield elem if !generated.include?( elem )
         generated << elem
 
+        # Default values, in case they reveal new resources.
+        if node
+            inputs.keys.each do |input|
+                next if field_type_for( input ) != :select
+
+                node.xpath( "select[@name=\"#{input}\"]" ).css('option').each do |option|
+                    elem = self.dup
+                    elem.mutation_with_original_values
+                    elem.affected_input_name  = input
+                    elem.affected_input_value = option['value'] || option.text
+                    yield elem if !generated.include?( elem )
+                    generated << elem
+                end
+            end
+        end
+
+        # Sample values, in case they reveal new resources.
         elem = self.dup
         elem.inputs = Arachni::Options.input.fill( inputs.dup )
         elem.affected_input_name = SAMPLE_VALUES
+        elem.mutation_with_sample_values
         yield elem if !generated.include?( elem )
         generated << elem
     end
@@ -327,7 +356,11 @@ class Form < Base
 
     def dup
         super.tap do |f|
-            f.nonce_name = nonce_name.dup if nonce_name
+            f.nonce_name  = nonce_name.dup if nonce_name
+
+            f.mutation_with_original_values if mutation_with_original_values?
+            f.mutation_with_sample_values   if mutation_with_sample_values?
+
             f.requires_password = requires_password?
             f.page = page
             f.dom  = dom.dup.tap { |d| d.parent = f } if @dom
@@ -483,11 +516,9 @@ class Form < Base
     end
 
     def http_request( options, &block )
-        if (mutation_with_original_values? || mutation_with_sample_values?) &&
-            options[:train] != false
-
-            state = mutation_with_original_values? ? 'original' : 'sample'
-            print_debug "Submitting form with #{state} values; overriding trainer option."
+        if force_train? && options[:train] != false
+            print_debug 'Submitting form with default or sample values,' <<
+                            ' overriding trainer option.'
             options[:train] = true
             print_debug_trainer( options )
         end

@@ -236,7 +236,6 @@ describe Arachni::Element::Form do
                         m.action.should == e.action
 
                         if m.mutation_with_original_values?
-                            m.affected_input_name.should == described_class::ORIGINAL_VALUES
                             m.inputs.should  == e.inputs
                             has_original ||= true
                         end
@@ -337,6 +336,42 @@ describe Arachni::Element::Form do
                 e.mutations( 'seed' ).select do |m|
                     m.inputs['my_pass'] == m.inputs['my_pass_validation']
                 end.should be_any
+            end
+        end
+
+        context 'when it contains select inputs with multiple values' do
+            it 'includes mutations with all of them' do
+                html = '
+                        <html>
+                            <body>
+                                <form method="get" action="form_action" name="my_form">
+                                    <select name="manufacturer">
+                                        <option value="volvo">Volvo</option>
+                                        <option>Saab</option>
+                                        <option value="mercedes">Mercedes</option>
+                                        <option value="audi">Audi</option>
+                                    </select>
+                                    <select name="numbers">
+                                        <option value="33">33</option>
+                                        <option>22</option>
+                                    </select>
+                                </form>
+
+                            </body>
+                        </html>'
+
+                form = described_class.from_document( url, html ).first
+
+                mutations = form.mutations( '' )
+
+                manufacturers = mutations.map { |f| f['manufacturer'] }
+                numbers       = mutations.map { |f| f['numbers'] }
+
+                include = %w(volvo Saab mercedes audi)
+                (manufacturers & include).should == include
+
+                include = %w(33 22)
+                (numbers & include).should == include
             end
         end
 
