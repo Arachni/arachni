@@ -1,0 +1,2 @@
+!ruby/regexp /test/: blah
+other-test: blah2

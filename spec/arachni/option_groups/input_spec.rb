@@ -57,7 +57,15 @@ describe Arachni::OptionGroups::Input do
     end
 
     describe '#update_values_from_file' do
-        it 'updates #values from the given file'
+        let(:file) { "#{fixtures_path}option_groups/input.yml" }
+
+        it 'updates #values from the given file' do
+            subject.update_values_from_file( file )
+            subject.values.should == {
+                /test/       => 'blah',
+                /other-test/ => 'blah2'
+            }
+        end
     end
 
     describe '#value_for_name' do
