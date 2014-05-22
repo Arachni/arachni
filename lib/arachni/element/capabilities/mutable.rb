@@ -258,14 +258,14 @@ module Mutable
     #
     # @see Format
     def format_str( injection_str, default_str, format  )
-        semicolon = null = append = ''
+        semicolon = null = append = nil
 
-        null   = "\0"        if ( format & Format::NULL )     != 0
-        semicolon   = ';'    if ( format & Format::SEMICOLON )   != 0
-        append = default_str if ( format & Format::APPEND )   != 0
-        semicolon = append = null = ''   if ( format & Format::STRAIGHT ) != 0
+        null      = "\0"               if (format & Format::NULL)      != 0
+        semicolon = ';'                if (format & Format::SEMICOLON) != 0
+        append    = default_str        if (format & Format::APPEND)    != 0
+        semicolon = append = null = '' if (format & Format::STRAIGHT)  != 0
 
-        semicolon + append + injection_str.to_s + null
+        "#{semicolon}#{append}#{injection_str}#{null}"
     end
 
     def print_debug_injection_set( mutations, opts )
