@@ -213,7 +213,6 @@ module Mutable
     def mutations( injection_str, opts = {} )
         combo = []
         each_mutation( injection_str, opts ) { |m| combo << m }
-        print_debug_injection_set( combo, opts )
         combo
     end
 
