@@ -61,7 +61,36 @@ describe Arachni::OptionGroups::Input do
     end
 
     describe '#value_for_name' do
-        it 'returns the value that matches the given name'
+        it 'returns the value that matches the given name' do
+            subject.without_defaults = true
+            subject.values = { /name/ => 'John Doe' }
+
+            subject.value_for_name( 'name' ).should == 'John Doe'
+        end
+
+        context 'when no match could be found' do
+            context "and 'use_default' is set to" do
+                context true do
+                    it 'returns the default' do
+                        subject.value_for_name( 'blahblah', true ).should ==
+                            described_class::DEFAULT
+                    end
+                end
+
+                context false do
+                    it 'returns nil' do
+                        subject.value_for_name( 'blahblah', false ).should == nil
+                    end
+                end
+
+                context 'by default' do
+                    it 'returns the default' do
+                        subject.value_for_name( 'blahblah' ).should ==
+                            described_class::DEFAULT
+                    end
+                end
+            end
+        end
     end
 
     describe '#fill' do
@@ -78,6 +107,7 @@ describe Arachni::OptionGroups::Input do
                 'AmoUnt'  => nil,
                 'mAIL'    => nil,
                 'aCcouNt' => nil,
+                'stuff'   => 'stuff value',
                 'iD'      => nil
             ).should == {
                 'nAMe'    => 'arachni_name',
@@ -89,8 +119,19 @@ describe Arachni::OptionGroups::Input do
                 'AmoUnt'  => '100',
                 'mAIL'    => 'arachni@email.gr',
                 'aCcouNt' => '12',
+                'stuff'   => 'stuff value',
                 'iD'      => '1'
             }
+        end
+
+        context 'when no match could be found' do
+            let(:inputs) { { 'stuff' => '' } }
+
+            it 'does not overwrite it' do
+                subject.fill( inputs ).should == {
+                    'stuff' => described_class::DEFAULT
+                }
+            end
         end
 
         context 'when there is a value' do
@@ -102,6 +143,15 @@ describe Arachni::OptionGroups::Input do
                 it 'overwrites it' do
                     subject.force = true
                     subject.fill( inputs ).should == { 'name' => 'arachni_name' }
+                end
+
+                context 'when no value could be found' do
+                    let(:inputs) { { 'stuff' => 'test' } }
+
+                    it 'does not overwrite it' do
+                        subject.force = true
+                        subject.fill( inputs ).should == inputs
+                    end
                 end
             end
         end

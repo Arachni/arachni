@@ -21,10 +21,9 @@ class Input < Arachni::OptionGroup
         /mail/i    => 'arachni@email.gr',
         /account/i => '12',
         /id/i      => '1',
-
-        # Catch-all
-        //         => '1'
     }
+
+    DEFAULT = '1'
 
     # @return    [Hash<Regexp => String>]
     #   Patterns used to match input names and value to use to fill it in.
@@ -66,7 +65,15 @@ class Input < Arachni::OptionGroup
         parameters.each do |k, v|
             next if !force? && !v.to_s.empty?
 
-            parameters[k] = value_for_name( k )
+            value = value_for_name( k, false )
+
+            # Don't overwrite the default values of the paremeters unless we've
+            # fot a value, even if #force? is in effect.
+            if parameters[k].to_s.empty?
+                parameters[k] = value || DEFAULT
+            elsif value
+                parameters[k] = value
+            end
         end
 
         parameters
@@ -77,9 +84,9 @@ class Input < Arachni::OptionGroup
     #
     # @return   [String, nil]
     #   Value for the `name` or `nil` if none could be found.
-    def value_for_name( name )
+    def value_for_name( name, use_default = true )
         effective_values.each { |k, v| return v if name =~ k }
-        nil
+        use_default ? DEFAULT : nil
     end
 
     # @return    [Hash<Regexp => String>]
