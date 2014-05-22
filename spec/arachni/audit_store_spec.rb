@@ -79,13 +79,19 @@ describe Arachni::AuditStore do
         end
     end
 
+    describe '#url' do
+        it 'returns the targeted URL' do
+            audit_store.url.should == audit_store.options['url']
+        end
+    end
+
     describe '#options' do
         it 'returns Arachni::Options as a hash' do
-           audit_store.options.should == Arachni::Options.to_h
+           audit_store.options.should == Arachni::Options.to_rpc_data
         end
 
-        it 'defaults to Arachni::Options.to_h' do
-            described_class.new.options.should == Arachni::Options.to_h
+        it 'defaults to Arachni::Options#to_rpc_data' do
+            described_class.new.options.should == Arachni::Options.to_rpc_data
         end
     end
 

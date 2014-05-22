@@ -28,7 +28,9 @@ class Hash
     def symbolize_keys( recursively = true )
         symbolize = {}
         each do |k, v|
-            symbolize[k.to_s.to_sym] = (recursively && v.is_a?( Hash ) ?
+            k = k.respond_to?(:to_sym) ? k.to_sym : k
+
+            symbolize[k] = (recursively && v.is_a?( Hash ) ?
                 v.symbolize_keys : v)
         end
         symbolize

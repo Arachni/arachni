@@ -43,6 +43,10 @@ class AuditStore
         @finish_datetime ||= Time.now
     end
 
+    def url
+        @options['url']
+    end
+
     # @note If no {#finish_datetime} has been provided, it will use `Time.now`.
     # @return   [String]
     #   `{#start_datetime} - {#finish_datetime}` in `00:00:00`
@@ -96,7 +100,7 @@ class AuditStore
     # @return   [String]
     #   Absolute location of the report.
     def save( location = nil )
-        default_filename = "#{URI(options[:url]).host} #{@finish_datetime.to_s.gsub( ':', '.' )}.afr"
+        default_filename = "#{URI(url).host} #{@finish_datetime.to_s.gsub( ':', '.' )}.afr"
 
         if !location
             location = default_filename
@@ -194,7 +198,7 @@ class AuditStore
 
     private
 
-    # Prepares the hash to be stored in {AuditStore#options}
+    # Prepares the hash to be stored in {AuditStore#options}.
     #
     # The value of the 'options' key of the hash that initializes AuditObjects
     # needs some more processing before being saved in {AuditStore#options}.
@@ -202,7 +206,7 @@ class AuditStore
     # @param    [Hash]  options
     # @return    [Hash]
     def prepare_options( options )
-        options.to_hash.symbolize_keys
+        options.to_rpc_data_or_self
     end
 
 end
