@@ -110,6 +110,11 @@ class Manager
         # have a fallback ready.
         if Process.respond_to? :fork
             pid = Process.fork do
+                if discard_output?
+                    $stdout.reopen( Arachni.null_device, 'w' )
+                    $stderr.reopen( Arachni.null_device, 'w' )
+                end
+
                 # Careful, Framework.reset will remove objects from Data
                 # structures which off-load to disk, those files however belong
                 # to our parent and should not be touched, thus, we remove
