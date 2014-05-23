@@ -9,27 +9,60 @@ module Element
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 module Capabilities::Inputtable
 
-    # Frozen version of {#inputs}, has all the original name/values.
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    class Error < Capabilities::Error
+
+        # On invalid input data.
+        #
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        class InvalidData < Error
+
+            # @see Inputtable#valid_input_name?
+            #
+            # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+            class Name < InvalidData
+            end
+
+            # @see Inputtable#valid_input_value?
+            #
+            # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+            class Value < InvalidData
+            end
+
+        end
+    end
+
+    # Frozen version of {#inputs}, has all the original names and values.
     #
     # @return   [Hash]
     attr_reader :default_inputs
 
-    # Frozen inputs.
-    #
-    # If you want to change it you'll either have to use {#update} or the
-    # {#inputs=} attr_writer and pass a new hash -- the new hash will also be
-    # frozen.
+    # @note Can be modified via {#update}, {#[]=} or {#inputs=}.
     #
     # @return   [Hash]
+    #   Frozen effective inputs.
     attr_reader :inputs
 
-    # @param  [Hash]  hash Inputs/params.
-    #
     # @note Will convert keys and values to strings.
     #
-    # @see #inputs
+    # @param  [Hash]  hash
+    #   Inputs data.
+    #
+    # @raise   [Error::InvalidData::Name]
+    # @raise   [Error::InvalidData::Value]
     def inputs=( hash )
-        @inputs = (hash || {}).stringify_recursively_and_freeze
+        sanitized = {}
+
+        (hash || {}).each do |name, value|
+            name  = name.to_s
+            value = value.to_s
+
+            fail_if_invalid( name, value )
+
+            sanitized[name.freeze] = value.freeze
+        end
+
+        @inputs = sanitized.freeze
     end
 
     # Checks whether or not the given inputs match the inputs ones.
@@ -43,28 +76,17 @@ module Capabilities::Inputtable
             h.each { |k, v| return false if self[k] != v }
             true
         else
-            keys = args.flatten.compact.map { |a| [a].map( &:to_s ) }.flatten
-            (self.inputs.keys & keys).size == keys.size
+            keys = args.flatten.compact.map { |a| [a].map(&:to_s) }.flatten
+            (@inputs.keys & keys).size == keys.size
         end
     end
 
-    # @param    [Hash]  hash
-    #   Inputs with which to update the {#inputs} inputs.
-    #
-    # @return   [Auditable]   self
-    #
-    # @see #inputs
-    # @see #inputs=
-    def update( hash )
-        self.inputs = self.inputs.merge( hash )
-        self
-    end
-
-    # @return   [Hash]  Returns changes make to the {#inputs}'s inputs.
+    # @return   [Hash]
+    #   Returns changes make to the {#inputs}'s inputs.
     def changes
-        (self.default_inputs.keys | self.inputs.keys).inject( {} ) do |h, k|
-            if self.default_inputs[k] != self.inputs[k]
-                h[k] = self.inputs[k]
+        (@default_inputs.keys | @inputs.keys).inject( {} ) do |h, k|
+            if @default_inputs[k] != @inputs[k]
+                h[k] = @inputs[k]
             end
             h
         end
@@ -79,22 +101,80 @@ module Capabilities::Inputtable
 
     # Shorthand {#inputs} reader.
     #
-    # @param    [#to_s] k   key
+    # @param    [#to_s] k
+    #   Name.
     #
     # @return   [String]
-    def []( k )
-        self.inputs[k.to_s]
+    def []( name )
+        @inputs[name.to_s]
     end
 
     # Shorthand {#inputs} writer.
     #
-    # @param    [#to_s] k   key
-    # @param    [#to_s] v   value
+    # @param    [#to_s] name
+    #   Name.
+    # @param    [#to_s] value
+    #   Value.
     #
-    # @see #update
-    def []=( k, v )
-        update( { k.to_s => v } )
-        self[k]
+    # @raise   [Error::InvalidData::Name]
+    # @raise   [Error::InvalidData::Value]
+    def []=( name, value )
+        update( name.to_s => value.to_s )
+        self[name]
+    end
+
+    # @param    [Hash]  hash
+    #   Inputs with which to update the {#inputs} inputs.
+    #
+    # @return   [Auditable]   `self`
+    #
+    # @raise   [Error::InvalidData::Name]
+    # @raise   [Error::InvalidData::Value]
+    def update( hash )
+        self.inputs = @inputs.merge( hash )
+        self
+    end
+
+    # @param    [String]    name
+    #   Name data to check.
+    #
+    # @return   [Bool]
+    #   `true` if the name can be carried by the element's inputs, `false`
+    #   otherwise.
+    #
+    # @abstract
+    def valid_input_name?( name )
+        true
+    end
+
+    # @param    [String]    value
+    #   Value data to check.
+    #
+    # @return   [Bool]
+    #   `true` if the value can be carried by the element's inputs, `false`
+    #   otherwise.
+    #
+    # @abstract
+    def valid_input_value?( value )
+        true
+    end
+
+    # Performs an input operation and silently handles {Error::InvalidData}.
+    #
+    # @param    [Block] block
+    #   Input operation to try to perform.
+    #
+    # @return   [Bool]
+    #   `true` if the operation was successful, `false` otherwise.
+    def try_input( &block )
+        block.call
+        true
+    rescue Error::InvalidData => e
+        return false if !respond_to?( :print_debug_level_1 )
+
+        print_debug_level_1 e.to_s
+        e.backtrace.each { |l| print_debug_level_1 l }
+        false
     end
 
     def dup
@@ -109,6 +189,19 @@ module Capabilities::Inputtable
     end
 
     private
+
+    def fail_if_invalid( name, value )
+        if !valid_input_name?( name.to_s )
+            fail Error::InvalidData::Name,
+                 "Invalid name by #{self.class}: #{name.inspect}"
+        end
+
+        if !valid_input_value?( value.to_s )
+            fail Error::InvalidData::Value,
+                 "Invalid value by #{self.class}: #{value.inspect}"
+        end
+
+    end
 
     def copy_inputtable( other )
         other.inputs = self.inputs.dup

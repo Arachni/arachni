@@ -181,11 +181,13 @@ class Cookie < Base
         end
 
         return if !flip
-        elem = self.dup
 
-        elem.affected_input_name = 'Parameter flip'
-        elem.inputs = { injection_str => seed }
-        yield elem if block_given?
+        try_input do
+            elem = self.dup
+            elem.affected_input_name = 'Parameter flip'
+            elem.inputs = { injection_str => seed }
+            yield elem if block_given?
+        end
     end
 
     def each_extensive_mutation( mutation )

@@ -138,11 +138,14 @@ module Mutable
             opts[:format].each do |format|
                 str = format_str( injection_str, cinputs[k], format )
 
-                elem                     = self.dup
-                elem.seed                = injection_str
-                elem.affected_input_name = k.dup
-                elem.inputs              = cinputs.merge( k => str )
-                elem.format              = format
+                elem = self.dup
+
+                next if !try_input do
+                    elem.seed                = injection_str
+                    elem.affected_input_name = k.dup
+                    elem.inputs              = cinputs.merge( k => str )
+                    elem.format              = format
+                end
 
                 if !generated.include?( elem )
                     print_debug_mutation elem
@@ -166,9 +169,11 @@ module Mutable
 
         elem = self.dup
 
-        elem.affected_input_name = 'Parameter flip'
-        elem[injection_str]      = seed
-        elem.seed                = injection_str
+        return if !try_input do
+            elem.affected_input_name = 'Parameter flip'
+            elem[injection_str]      = seed
+            elem.seed                = injection_str
+        end
 
         if !generated.include?( elem )
             print_debug_mutation elem

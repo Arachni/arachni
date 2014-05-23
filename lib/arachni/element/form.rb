@@ -230,23 +230,28 @@ class Form < Base
                 next if field_type_for( input ) != :select
 
                 node.xpath( "select[@name=\"#{input}\"]" ).css('option').each do |option|
-                    elem = self.dup
-                    elem.mutation_with_original_values
-                    elem.affected_input_name  = input
-                    elem.affected_input_value = option['value'] || option.text
-                    yield elem if !generated.include?( elem )
-                    generated << elem
+                    try_input do
+                        elem = self.dup
+                        elem.mutation_with_original_values
+                        elem.affected_input_name  = input
+                        elem.affected_input_value = option['value'] || option.text
+                        yield elem if !generated.include?( elem )
+                        generated << elem
+                    end
                 end
+
             end
         end
 
-        # Sample values, in case they reveal new resources.
-        elem = self.dup
-        elem.inputs = Arachni::Options.input.fill( inputs.dup )
-        elem.affected_input_name = SAMPLE_VALUES
-        elem.mutation_with_sample_values
-        yield elem if !generated.include?( elem )
-        generated << elem
+        try_input do
+            # Sample values, in case they reveal new resources.
+            elem = self.dup
+            elem.inputs = Arachni::Options.input.fill( inputs.dup )
+            elem.affected_input_name = SAMPLE_VALUES
+            elem.mutation_with_sample_values
+            yield elem if !generated.include?( elem )
+            generated << elem
+        end
     end
 
     def mirror_password_fields

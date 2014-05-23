@@ -10,7 +10,16 @@ require Options.paths.lib + 'nokogiri/xml/node'
 
 module Element
 
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+class Error < Arachni::Error
+end
+
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 module Capabilities
+
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    class Error < Element::Error
+    end
 end
 
 # load and include all available capabilities

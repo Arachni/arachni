@@ -72,14 +72,15 @@ class LinkTemplate < Base
         nil
     end
 
-    # @note Will ignore `:param_flip`.
+    # @param    [String]    name
+    #   Input name.
     #
-    # @param    (see Capabilities::Mutable#each_mutation)
-    #
-    # @see Capabilities::Mutable#each_mutation
-    def each_mutation( injection_str, opts = {} )
-        opts.delete( :param_flip )
-        super( injection_str, opts )
+    # @return   [Bool]
+    #   `true` if the `name` can be found as a named capture in {#template},
+    #   `false` otherwise.
+    def valid_input_name?( name )
+        return if !@template
+        @template.names.include? name
     end
 
     # @return   [Hash]

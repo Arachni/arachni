@@ -36,6 +36,7 @@ describe Arachni::Element::LinkTemplate do
             template: /input1\/(?<input1>\w+)\/input2\/(?<input2>\w+)/
         )
     end
+    let(:mutable){ inputtable }
     let(:url_with_inputs) { "#{url}param/val" }
     let(:template) { /param\/(?<param>\w+)/ }
     let(:inputs) { { 'param' => 'val' } }

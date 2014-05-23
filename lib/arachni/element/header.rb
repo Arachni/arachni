@@ -44,11 +44,13 @@ class Header < Base
         end
 
         return if !flip
-        elem = self.dup
 
-        elem.affected_input_name = 'Parameter flip'
-        elem.inputs  = { injection_str => seed }
-        yield elem
+        try_input do
+            elem = self.dup
+            elem.affected_input_name = 'Parameter flip'
+            elem.inputs = { injection_str => seed }
+            yield elem
+        end
     end
 
     # @return   [String]    Header name.

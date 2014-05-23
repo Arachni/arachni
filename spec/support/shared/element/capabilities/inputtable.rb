@@ -152,7 +152,7 @@ shared_examples_for 'inputtable' do |options = {}|
     end
 
     describe '#inputs' do
-        it 'returns a frozen hash of auditable inputs' do
+        it 'is frozen' do
             subject.inputs.should be_frozen
         end
     end
@@ -160,13 +160,33 @@ shared_examples_for 'inputtable' do |options = {}|
     describe '#inputs=' do
         it 'assigns a hash of auditable inputs' do
             a = subject.dup
-            a.inputs = { 'param1' => 'val1' }
-            a.inputs.should == { 'param1' => 'val1' }
+            a.inputs = { 'input1' => 'val1' }
+            a.inputs.should == { 'input1' => 'val1' }
         end
 
         it 'converts all inputs to strings' do
-            subject.inputs = { key: nil }
-            subject.inputs.should == { 'key' => '' }
+            subject.inputs = { input1: nil }
+            subject.inputs.should == { 'input1' => '' }
+        end
+
+        context 'when the input name is invalid' do
+            it "raises #{Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Name}" do
+                subject.stub(:valid_input_name?) { false }
+
+                expect do
+                    subject.inputs = { 'input1' => 'blah' }
+                end.to raise_error Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Name
+            end
+        end
+
+        context 'when the input value is invalid' do
+            it "raises #{Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Value}" do
+                subject.stub(:valid_input_value?) { false }
+
+                expect do
+                    subject.inputs = { 'input1' => 'blah' }
+                end.to raise_error Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Value
+            end
         end
     end
 
@@ -185,20 +205,40 @@ shared_examples_for 'inputtable' do |options = {}|
 
             if !opts[:single_input]
                 c = a.dup
-                c.update( stuff: '1' ).update( other_stuff: '2' )
-                c['stuff'].should == '1'
-                c['other_stuff'].should == '2'
+                c.update( input1: '1' ).update( input2: '2' )
+                c['input1'].should == '1'
+                c['input2'].should == '2'
             end
         end
 
         it 'converts all inputs to strings' do
-            subject.inputs = { 'key' => 'stuff' }
-            subject.update( { 'key' => nil } )
-            subject.inputs.should == { 'key' => '' }
+            subject.inputs = { 'input1' => 'stuff' }
+            subject.update( { 'input1' => nil } )
+            subject.inputs.should == { 'input1' => '' }
         end
 
         it 'returns self' do
             subject.update({}).should == subject
+        end
+
+        context 'when the input name is invalid' do
+            it "raises #{Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Name}" do
+                subject.stub(:valid_input_name?) { false }
+
+                expect do
+                    subject.update 'input1' => 'blah'
+                end.to raise_error Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Name
+            end
+        end
+
+        context 'when the input value is invalid' do
+            it "raises #{Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Value}" do
+                subject.stub(:valid_input_value?) { false }
+
+                expect do
+                    subject.update 'input1' => 'blah'
+                end.to raise_error Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Value
+            end
         end
     end
 
@@ -208,8 +248,6 @@ shared_examples_for 'inputtable' do |options = {}|
                 [
                     { 'input1' => 'val1', 'input2' => 'val2' },
                     { 'input2' => 'val3' },
-                    { 'new stuff' => 'houa!' },
-                    { 'new stuff' => 'houa!' },
                     {}
                 ].each do |updates|
                     d = subject.dup
@@ -242,6 +280,60 @@ shared_examples_for 'inputtable' do |options = {}|
             subject['input1'].should == 'val1'
             subject['input1'].should == subject.inputs['input1']
         end
+
+        context 'when the input name is invalid' do
+            it "raises #{Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Name}" do
+                subject.stub(:valid_input_name?) { false }
+
+                expect do
+                    subject['input1'] = 'blah'
+                end.to raise_error Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Name
+            end
+        end
+
+        context 'when the input value is invalid' do
+            it "raises #{Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Value}" do
+                subject.stub(:valid_input_value?) { false }
+
+                expect do
+                    subject['input1'] = 'blah'
+                end.to raise_error Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Value
+            end
+        end
+    end
+
+    describe '#try_input' do
+        context 'when the operation is successful' do
+            it 'returns true' do
+                subject.try_input do
+                    subject.inputs = inputs
+                    nil
+                end.should be_true
+            end
+        end
+
+        context 'when the operation fails' do
+            context 'due to an invalid name' do
+                it 'returns false' do
+                    subject.stub(:valid_input_name?) { false }
+
+                    subject.try_input do
+                        subject.inputs = inputs
+                        true
+                    end.should be_false
+                end
+            end
+            context 'due to an invalid value' do
+                it 'returns false' do
+                    subject.stub(:valid_input_value?) { false }
+
+                    subject.try_input do
+                        subject.inputs = inputs
+                        true
+                    end.should be_false
+                end
+            end
+        end
     end
 
     describe '#default_inputs' do
@@ -270,17 +362,10 @@ shared_examples_for 'inputtable' do |options = {}|
             dup = subject.dup
             dup.inputs.should == subject.inputs
 
-            if opts[:single_input]
-                dup[:input1] = 'blah'
-                subject.inputs['input1'].should_not == 'blah'
+            dup[:input1] = 'blah'
+            subject.inputs['input1'].should_not == 'blah'
 
-                dup.dup[:input1].should == 'blah'
-            else
-                dup[:stuff] = 'blah'
-                subject.inputs.should_not include :stuff
-
-                dup.dup[:stuff].should == 'blah'
-            end
+            dup.dup[:input1].should == 'blah'
         end
     end
 
