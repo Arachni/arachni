@@ -190,11 +190,11 @@ class Instance
         end
 
         if @options.http.cookie_jar_filepath
-            cookies = parse_cookie_jar( @options.http.cookie_jar_filepath )
+            @options.http.cookies =
+                parse_cookie_jar( @options.http.cookie_jar_filepath )
         end
 
         opts = @options.to_rpc_data.deep_clone
-        opts['http']['cookies'] = cookies
 
         @framework.plugins.default.each do |plugin|
             opts['plugins'][plugin.to_s] ||= {}
