@@ -178,7 +178,7 @@ module Capabilities::Inputtable
     #   `true` if `value` is both a {#valid_input_value?} and contains
     #   {#valid_input_data?}.
     def valid_input_value_data?( value )
-        valid_input_value?( name ) && valid_input_data?( name )
+        valid_input_value?( value ) && valid_input_data?( value )
     end
 
     # @param    [String]    data
