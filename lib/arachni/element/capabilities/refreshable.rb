@@ -4,6 +4,8 @@
 =end
 
 module Arachni::Element
+
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 module Capabilities::Refreshable
 
     # Refreshes the form's inputs and re-applies user updates.

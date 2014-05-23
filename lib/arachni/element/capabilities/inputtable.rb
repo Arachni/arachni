@@ -6,23 +6,22 @@
 module Arachni
 module Element
 
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 module Capabilities::Inputtable
 
     # Frozen version of {#inputs}, has all the original name/values.
     #
     # @return   [Hash]
-    attr_reader     :default_inputs
+    attr_reader :default_inputs
 
     # Frozen inputs.
     #
-    # If you want to change it you'll either have to use {#update}
-    # or the {#inputs=} attr_writer and pass a new hash -- the new hash
-    # will also be frozen.
+    # If you want to change it you'll either have to use {#update} or the
+    # {#inputs=} attr_writer and pass a new hash -- the new hash will also be
+    # frozen.
     #
     # @return   [Hash]
-    def inputs
-        @inputs
-    end
+    attr_reader :inputs
 
     # @param  [Hash]  hash Inputs/params.
     #

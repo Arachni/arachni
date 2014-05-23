@@ -5,6 +5,8 @@
 
 module Arachni
 module Element::Capabilities
+
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 module Mutable
 
     # @return   [String]    Name of the mutated parameter.
