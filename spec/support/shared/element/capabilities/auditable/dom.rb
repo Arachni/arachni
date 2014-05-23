@@ -28,7 +28,6 @@ shared_examples_for 'element_dom' do |options = {}|
         end
     end
 
-
     describe '#marshal_dump' do
         [:@parent, :@page, :@browser, :@element].each do |ivar|
             it "excludes #{ivar}" do
@@ -238,7 +237,7 @@ shared_examples_for 'element_dom' do |options = {}|
         it 'submits all element mutations' do
             called = false
             subject.audit 'seed' do |page, element|
-                element.inputs.should == auditable_extract_parameters( page )
+                auditable_extract_parameters( page ).should == element.inputs
                 called = true
             end
 

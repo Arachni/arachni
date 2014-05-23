@@ -17,6 +17,8 @@ module DOM
     include Auditable
     extend Forwardable
 
+    INVALID_INPUT_DATA = [ "\0" ]
+
     # @return   [Element::Base]
     attr_accessor :parent
 
@@ -58,6 +60,10 @@ module DOM
         # NOP
     end
 
+    def valid_input_data?( data )
+        !INVALID_INPUT_DATA.find { |c| data.include? c }
+    end
+
     def page
         return @page if @page
         @page = parent.page if parent
@@ -66,22 +72,6 @@ module DOM
     # @return   [Watir::HTMLElement]
     def element
         @element ||= locate
-    end
-
-    # Overrides {Capabilities::Mutable#each_mutation} to handle DOM limitations.
-    #
-    # @param (see Capabilities::Mutable#each_mutation)
-    # @return (see Capabilities::Mutable#each_mutation)
-    # @yield (see Capabilities::Mutable#each_mutation)
-    # @yieldparam (see Capabilities::Mutable#each_mutation)
-    #
-    # @see Capabilities::Mutable#each_mutation
-    def each_mutation( injection_str, opts = {} )
-        super( injection_str, opts ) do |mutation|
-            # DOM operations don't support nulls.
-            next if (mutation.format & Format::NULL) != 0
-            yield mutation
-        end
     end
 
     # @param  [Hash]  options

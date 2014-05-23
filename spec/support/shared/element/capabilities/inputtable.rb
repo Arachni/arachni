@@ -169,23 +169,91 @@ shared_examples_for 'inputtable' do |options = {}|
             subject.inputs.should == { 'input1' => '' }
         end
 
-        context 'when the input name is invalid' do
-            it "raises #{Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Name}" do
-                subject.stub(:valid_input_name?) { false }
+        context 'when the input name' do
+            context 'contains invalid data' do
+                it "raises #{Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Name}" do
+                    subject.stub(:valid_input_data?) { |data| data != 'input1' }
 
-                expect do
-                    subject.inputs = { 'input1' => 'blah' }
-                end.to raise_error Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Name
+                    expect do
+                        subject.inputs = { 'input1' => 'blah' }
+                    end.to raise_error Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Name
+                end
+            end
+
+            context 'is invalid' do
+                it "raises #{Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Name}" do
+                    subject.stub(:valid_input_name?) { false }
+
+                    expect do
+                        subject.inputs = { 'input1' => 'blah' }
+                    end.to raise_error Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Name
+                end
             end
         end
 
-        context 'when the input value is invalid' do
-            it "raises #{Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Value}" do
-                subject.stub(:valid_input_value?) { false }
+        context 'when the input value' do
+            context 'contains invalid data' do
+                it "raises #{Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Value}" do
+                    subject.stub(:valid_input_data?) { |data| data != 'blah' }
 
-                expect do
-                    subject.inputs = { 'input1' => 'blah' }
-                end.to raise_error Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Value
+                    expect do
+                        subject.inputs = { 'input1' => 'blah' }
+                    end.to raise_error Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Value
+                end
+            end
+
+            context 'is invalid' do
+                it "raises #{Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Value}" do
+                    subject.stub(:valid_input_value?) { false }
+
+                    expect do
+                        subject.inputs = { 'input1' => 'blah' }
+                    end.to raise_error Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Value
+                end
+            end
+        end
+    end
+
+    describe '#valid_input_name_data?' do
+        it 'returns true' do
+            subject.valid_input_name_data?( 'input1' ).should be_true
+        end
+
+        context 'when the input name' do
+            context 'contains invalid data' do
+                it 'returns false' do
+                    subject.stub(:valid_input_data?) { false }
+                    subject.valid_input_name_data?( 'input1' ).should be_false
+                end
+            end
+
+            context 'is invalid' do
+                it 'returns false' do
+                    subject.stub(:valid_input_name?) { false }
+                    subject.valid_input_name_data?( 'input1' ).should be_false
+                end
+            end
+        end
+    end
+
+    describe '#valid_input_value_data?' do
+        it 'returns true' do
+            subject.valid_input_value_data?( 'blah' ).should be_true
+        end
+
+        context 'when the input value' do
+            context 'contains invalid data' do
+                it 'returns false' do
+                    subject.stub(:valid_input_data?) { false }
+                    subject.valid_input_value_data?( 'blah' ).should be_false
+                end
+            end
+
+            context 'is invalid' do
+                it 'returns false' do
+                    subject.stub(:valid_input_value?) { false }
+                    subject.valid_input_value_data?( 'blah' ).should be_false
+                end
             end
         end
     end

@@ -36,6 +36,17 @@ class DOM < Base
         browser.goto to_s, take_snapshot: false
     end
 
+    # @param    [String]    name
+    #   Input name.
+    #
+    # @return   [Bool]
+    #   `true` if the `name` can be found as a named capture in {#template},
+    #   `false` otherwise.
+    def valid_input_name?( name )
+        return if !@template
+        @template.names.include? name
+    end
+
     # @return   [String]
     #   {#action} updated with the the DOM {#inputs}.
     def to_s
@@ -80,8 +91,8 @@ class DOM < Base
     def prepare_data_from_node
         return if !(data = self.class.data_from_node( node ))
 
-        self.inputs = data[:inputs]
         @template   = data[:template]
+        self.inputs = data[:inputs]
         @fragment   = data[:fragment]
 
         @default_inputs = self.inputs.dup.freeze

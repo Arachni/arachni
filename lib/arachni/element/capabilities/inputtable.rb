@@ -17,12 +17,14 @@ module Capabilities::Inputtable
         # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
         class InvalidData < Error
 
+            # @see Inputtable#valid_input_data?
             # @see Inputtable#valid_input_name?
             #
             # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
             class Name < InvalidData
             end
 
+            # @see Inputtable#valid_input_data?
             # @see Inputtable#valid_input_value?
             #
             # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
@@ -136,7 +138,7 @@ module Capabilities::Inputtable
     end
 
     # @param    [String]    name
-    #   Name data to check.
+    #   Name to check.
     #
     # @return   [Bool]
     #   `true` if the name can be carried by the element's inputs, `false`
@@ -147,8 +149,18 @@ module Capabilities::Inputtable
         true
     end
 
+    # @param    [String]    name
+    #   Name to check.
+    #
+    # @return   [Bool]
+    #   `true` if `name` is both a {#valid_input_name?} and contains
+    #   {#valid_input_data?}.
+    def valid_input_name_data?( name )
+        valid_input_name?( name ) && valid_input_data?( name )
+    end
+
     # @param    [String]    value
-    #   Value data to check.
+    #   Value to check.
     #
     # @return   [Bool]
     #   `true` if the value can be carried by the element's inputs, `false`
@@ -156,6 +168,28 @@ module Capabilities::Inputtable
     #
     # @abstract
     def valid_input_value?( value )
+        true
+    end
+
+    # @param    [String]    value
+    #   Value to check.
+    #
+    # @return   [Bool]
+    #   `true` if `value` is both a {#valid_input_value?} and contains
+    #   {#valid_input_data?}.
+    def valid_input_value_data?( value )
+        valid_input_value?( name ) && valid_input_data?( name )
+    end
+
+    # @param    [String]    data
+    #   Data to check.
+    #
+    # @return   [Bool]
+    #   `true` if the data can be carried by the element's inputs, `false`
+    #   otherwise.
+    #
+    # @abstract
+    def valid_input_data?( data )
         true
     end
 
@@ -191,14 +225,24 @@ module Capabilities::Inputtable
     private
 
     def fail_if_invalid( name, value )
+        if !valid_input_data?( name.to_s )
+            fail Error::InvalidData::Name,
+                 "Invalid data in input name for #{self.class}: #{name.inspect}"
+        end
+
+        if !valid_input_data?( value.to_s )
+            fail Error::InvalidData::Value,
+                 "Invalid data in input value for #{self.class}: #{value.inspect}"
+        end
+
         if !valid_input_name?( name.to_s )
             fail Error::InvalidData::Name,
-                 "Invalid name by #{self.class}: #{name.inspect}"
+                 "Invalid name for #{self.class}: #{name.inspect}"
         end
 
         if !valid_input_value?( value.to_s )
             fail Error::InvalidData::Value,
-                 "Invalid value by #{self.class}: #{value.inspect}"
+                 "Invalid value for #{self.class}: #{value.inspect}"
         end
 
     end

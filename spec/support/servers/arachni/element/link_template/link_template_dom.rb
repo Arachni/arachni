@@ -26,7 +26,7 @@ get '/dom/' do
         <script>
             function getQueryVariable(variable) {
                 var splits = window.location.hash.split('/');
-                return splits[splits.indexOf( variable ) + 1];
+                return decodeURI( splits[splits.indexOf( variable ) + 1] );
             }
         </script>
 

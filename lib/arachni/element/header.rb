@@ -13,6 +13,8 @@ module Arachni::Element
 class Header < Base
     include Capabilities::Analyzable
 
+    INVALID_INPUT_DATA = [ "\0", "\r", "\n" ]
+
     def initialize( options )
         super( options )
 
@@ -34,14 +36,9 @@ class Header < Base
     # @yieldparam (see Capabilities::Mutable#each_mutation)
     #
     # @see Capabilities::Mutable#each_mutation
-    def each_mutation( injection_str, opts = {} )
+    def each_mutation( injection_str, opts = {}, &block )
         flip = opts.delete( :param_flip )
-
-        super( injection_str, opts ) do |mutation|
-            # Headers don't support nulls.
-            next if (mutation.format & Format::NULL) != 0
-            yield mutation
-        end
+        super( injection_str, opts, &block )
 
         return if !flip
 
@@ -51,6 +48,10 @@ class Header < Base
             elem.inputs = { injection_str => seed }
             yield elem
         end
+    end
+
+    def valid_input_data?( data )
+        !INVALID_INPUT_DATA.find { |c| data.include? c }
     end
 
     # @return   [String]    Header name.
@@ -65,11 +66,11 @@ class Header < Base
 
     class <<self
         def encode( header )
-            ::URI.encode( header, "\0\r\n" )
+            header
         end
 
         def decode( header )
-            ::URI.decode( header )
+            header
         end
     end
 
