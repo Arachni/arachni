@@ -36,11 +36,13 @@ class Form < Base
     ORIGINAL_VALUES = '__original_values__'
     SAMPLE_VALUES   = '__sample_values__'
 
-    # @return       [String] the name of the input name that holds the nonce
-    attr_reader     :nonce_name
+    # @return     [String]
+    #   The name of the input name that holds the nonce.
+    attr_reader   :nonce_name
 
-    # @return       [String, nil]   Name of the form, if it has one.
-    attr_accessor   :name
+    # @return     [String, nil]
+    #   Name of the form, if it has one.
+    attr_accessor :name
 
     # @param    [Hash]    options
     # @option   options [String]    :name
@@ -87,6 +89,7 @@ class Form < Base
         @default_inputs = self.inputs.dup.freeze
     end
 
+    # @return   [DOM]
     def dom
         return @dom if @dom
         return if !node || inputs.empty?

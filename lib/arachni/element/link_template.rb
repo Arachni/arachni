@@ -19,7 +19,7 @@ class LinkTemplate < Base
     include Capabilities::WithDOM
     include Capabilities::Analyzable
 
-    # @return   []Regexp]
+    # @return   [Regexp]
     #   Regular expressions with named captures, serving as templates used to
     #   identify and manipulate inputs in {#action}.
     attr_reader :template

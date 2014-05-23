@@ -30,12 +30,7 @@ class Link < Base
     def initialize( options )
         super( options )
 
-        if options[:inputs]
-            self.inputs = options[:inputs]
-        else
-            self.inputs = self.class.parse_query_vars( self.action )
-        end
-
+        self.inputs = options[:inputs] || self.class.parse_query_vars( self.action )
         @default_inputs = self.inputs.dup.freeze
     end
 

@@ -25,10 +25,10 @@ class Base
     include Utilities
     extend Utilities
 
-    # @return   [Page]  Page this element belongs to.
+    # @return     [Page]  Page this element belongs to.
     attr_accessor :page
 
-    # @return   [Object]
+    # @return     [Object]
     #   Options used to initialize an identical element.
     attr_reader   :initialization_options
 
