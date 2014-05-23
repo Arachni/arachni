@@ -12,11 +12,12 @@ module Arachni::Element
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Form < Base
+    require_relative 'form/dom'
+
     include Capabilities::WithNode
+    include Capabilities::WithDOM
     include Capabilities::Analyzable
     include Capabilities::Refreshable
-
-    require_relative 'form/dom'
 
     # {Form} error namespace.
     #
@@ -40,9 +41,6 @@ class Form < Base
 
     # @return       [String, nil]   Name of the form, if it has one.
     attr_accessor   :name
-
-    # @return       [DOM]
-    attr_accessor   :dom
 
     # @param    [Hash]    options
     # @option   options [String]    :name
@@ -89,14 +87,14 @@ class Form < Base
         @default_inputs = self.inputs.dup.freeze
     end
 
-    def force_train?
-        mutation_with_original_values || mutation_with_sample_values
+    def dom
+        return @dom if @dom
+        return if !node || inputs.empty?
+        super
     end
 
-    # @return   [DOM]
-    def dom
-        return if !@html || inputs.empty?
-        @dom ||= DOM.new( parent: self )
+    def force_train?
+        mutation_with_original_values || mutation_with_sample_values
     end
 
     # @param    (see Capabilities::Submittable#action=)
@@ -347,19 +345,14 @@ class Form < Base
 
     def dup
         super.tap do |f|
-            f.nonce_name  = nonce_name.dup if nonce_name
+            f.nonce_name = nonce_name.dup if nonce_name
 
             f.mutation_with_original_values if mutation_with_original_values?
             f.mutation_with_sample_values   if mutation_with_sample_values?
 
             f.requires_password = requires_password?
             f.page = page
-            f.dom  = dom.dup.tap { |d| d.parent = f } if @dom
         end
-    end
-
-    def hash
-        "#{action}:#{method}:#{inputs.hash}#{dom.hash}".hash
     end
 
     class <<self

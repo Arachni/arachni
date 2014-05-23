@@ -4,7 +4,7 @@
 =end
 
 require_relative 'base'
-require_relative 'capabilities/with_node'
+require_relative 'capabilities/with_dom'
 
 module Arachni::Element
 
@@ -13,18 +13,16 @@ module Arachni::Element
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class LinkTemplate < Base
-    include Capabilities::WithNode
-    include Capabilities::Analyzable
-
     require_relative 'link_template/dom'
 
-    # @return    [Regexp]
+    include Capabilities::WithNode
+    include Capabilities::WithDOM
+    include Capabilities::Analyzable
+
+    # @return   []Regexp]
     #   Regular expressions with named captures, serving as templates used to
     #   identify and manipulate inputs in {#action}.
-    attr_reader   :template
-
-    # @return     [DOM]
-    attr_accessor :dom
+    attr_reader :template
 
     # @param    [Hash]    options
     # @option   options [String]    :url
@@ -61,23 +59,17 @@ class LinkTemplate < Base
     # @return   [DOM]
     def dom
         return @dom if @dom
-        return if !@html || @skip_dom
+        return if !node || !@html || @skip_dom
 
         # Check if the DOM has any auditable inputs and only initialize it
         # if it does.
         if DOM.data_from_node( node )
-            @dom = DOM.new( parent: self )
+            return super
         else
             @skip_dom = true
         end
 
-        @dom
-    end
-
-    # @return [Nokogiri::XML::Element]
-    def node
-        return if !@html
-        Nokogiri::HTML.fragment( @html.dup ).children.first
+        nil
     end
 
     # @note Will ignore `:param_flip`.
@@ -118,12 +110,7 @@ class LinkTemplate < Base
     def dup
         new = super
         new.page = page
-        new.dom  = dom.dup.tap { |d| d.parent = new } if @dom
         new
-    end
-
-    def hash
-        "#{action}:#{method}:#{inputs.hash}}#{dom.hash}".hash
     end
 
     def to_rpc_data

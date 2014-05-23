@@ -5,6 +5,8 @@
 
 module Arachni
 module Element
+
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 module Capabilities::Submittable
 
     def initialize( options )
@@ -96,7 +98,7 @@ module Capabilities::Submittable
     alias :eql? :==
 
     def hash
-        "#{type}:#{action}:#{method}:#{inputs}}".hash
+        "#{type}:#{action}:#{method}:#{inputs.hash}}".hash
     end
 
     def dup

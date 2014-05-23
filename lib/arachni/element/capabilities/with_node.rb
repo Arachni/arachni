@@ -3,11 +3,10 @@
     All rights reserved.
 =end
 
-require_relative 'with_auditor/output'
-
 module Arachni
 module Element::Capabilities
 
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 module WithNode
 
     # @return   [String]

@@ -1,8 +1,11 @@
 require 'spec_helper'
 
 describe Arachni::Element::Link do
+    html = '<a href="/stuff#?stuff=blah">Bla</a>'
+
     it_should_behave_like 'element'
-    it_should_behave_like 'with_node'
+    it_should_behave_like 'with_node', html
+    it_should_behave_like 'with_dom',  html
     it_should_behave_like 'refreshable'
     it_should_behave_like 'auditable'
 
@@ -27,17 +30,6 @@ describe Arachni::Element::Link do
         {
             /articles\/[\w-]+\/(\d+)/ => 'articles.php?id=\1'
         }
-    end
-
-    let(:html) do
-        '<html>
-            <body>
-                <a href="/stuff#?stuff=blah">Bla</a>
-            </body>
-        </html>'
-    end
-    let(:with_node) do
-        described_class.from_document( url, html ).first
     end
 
     it 'is assigned to Arachni::Link for easy access' do
@@ -73,20 +65,6 @@ describe Arachni::Element::Link do
                 link.action.should == url + 'articles.php?id=23'
                 link.url.should == url
                 link.inputs.should == { 'id'  => '23' }
-            end
-        end
-    end
-
-    describe '#dom' do
-        context 'when #html has been assigned' do
-            it "returns #{described_class::DOM}" do
-                with_node.dom.should be_kind_of described_class::DOM
-            end
-        end
-
-        context 'when a #node has not been assigned' do
-            it 'returns nil' do
-                subject.dom.should be_nil
             end
         end
     end

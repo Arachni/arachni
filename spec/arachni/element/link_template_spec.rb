@@ -1,9 +1,16 @@
 require 'spec_helper'
 
 describe Arachni::Element::LinkTemplate do
+    html = "<a href='http://test.com/param/val'>stuff</a>"
+
     it_should_behave_like 'element'
-    it_should_behave_like 'with_node'
+    it_should_behave_like 'with_node', html
+    it_should_behave_like 'with_dom',  html
     it_should_behave_like 'auditable'
+
+    before :each do
+        Arachni::Options.audit.link_templates = /param\/(?<param>\w+)/
+    end
 
     def auditable_extract_parameters( resource )
         YAML.load( resource.body )
@@ -13,7 +20,7 @@ describe Arachni::Element::LinkTemplate do
         http.run
     end
 
-    before :each do
+    after :each do
         reset_options
     end
 

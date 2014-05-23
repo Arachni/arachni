@@ -12,14 +12,12 @@ module Arachni::Element
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Link < Base
-    include Capabilities::WithNode
-    include Capabilities::Analyzable
-    include Capabilities::Refreshable
-
     require_relative 'link/dom'
 
-    # @return     [DOM]
-    attr_accessor :dom
+    include Capabilities::WithNode
+    include Capabilities::WithDOM
+    include Capabilities::Analyzable
+    include Capabilities::Refreshable
 
     # @param    [Hash]    options
     # @option   options [String]    :url
@@ -31,8 +29,6 @@ class Link < Base
     #   they will automatically be extracted from {#action}.
     def initialize( options )
         super( options )
-
-        self.action = self.class.rewrite( self.action )
 
         if options[:inputs]
             self.inputs = options[:inputs]
@@ -46,17 +42,17 @@ class Link < Base
     # @return   [DOM]
     def dom
         return @dom if @dom
-        return if !@html || @skip_dom
+        return if !node || @skip_dom
 
         # Check if the DOM has any auditable inputs and only initialize it
         # if it does.
         if DOM.data_from_node( node )
-            @dom = DOM.new( parent: self )
+            return super
         else
             @skip_dom = true
         end
 
-        @dom
+        nil
     end
 
     # @return   [Hash]
@@ -75,10 +71,13 @@ class Link < Base
             "#{@query_vars.merge( self.send( type ) ).keys.compact.sort.to_s}"
     end
 
+    # @note Will {.rewrite} the `url`.
+    #
     # @param    (see Capabilities::Submittable#action=)
     # @@return  (see Capabilities::Submittable#action=)
     def action=( url )
-        v = super( url )
+        v = super( self.class.rewrite( url ) )
+
         @query_vars = parse_url_vars( v )
         @audit_id_url = v.split( '?' ).first.to_s
     end
@@ -121,12 +120,7 @@ class Link < Base
     def dup
         new = super
         new.page = page
-        new.dom  = dom.dup.tap { |d| d.parent = new } if @dom
         new
-    end
-
-    def hash
-        "#{action}:#{method}:#{inputs.hash}}#{dom.hash}".hash
     end
 
     class <<self

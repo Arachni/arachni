@@ -1,8 +1,14 @@
 require 'spec_helper'
 
 describe Arachni::Element::Form do
+    html = '<form method="get" action="form_action" name="my_form">
+                <input type=password name="my_first_input" value="my_first_value"" />
+                <input type=radio name="my_second_input" value="my_second_value"" />
+            </form>'
+
     it_should_behave_like 'element'
-    it_should_behave_like 'with_node'
+    it_should_behave_like 'with_node', html
+    it_should_behave_like 'with_dom',  html
     it_should_behave_like 'refreshable'
     it_should_behave_like 'auditable'
 
@@ -29,20 +35,6 @@ describe Arachni::Element::Form do
             }
         }
     end
-    let(:html) do
-        '<html>
-            <body>
-                <form method="get" action="form_action" name="my_form">
-                    <input type=password name="my_first_input" value="my_first_value"" />
-                    <input type=radio name="my_second_input" value="my_second_value"" />
-                </form>
-
-            </body>
-        </html>'
-    end
-    let(:with_node) do
-        described_class.from_document( url, html ).first
-    end
 
     it 'assigned to Arachni::Form for easy access' do
         Arachni::Form.should == described_class
@@ -62,20 +54,6 @@ describe Arachni::Element::Form do
         context 'when passed options without inputs or any other expected option' do
             it 'uses the contents of the opts hash as inputs inputs' do
                 subject.inputs.should eq( 'user' => 'joe', 'password' => 's3cr3t', 'hidden_field' => 'hidden-value' )
-            end
-        end
-    end
-
-    describe '#dom' do
-        context 'when a #node has been assigned' do
-            it "returns #{described_class::DOM}" do
-                with_node.dom.should be_kind_of described_class::DOM
-            end
-        end
-
-        context 'when a #node has not been assigned' do
-            it 'returns nil' do
-                subject.dom.should be_nil
             end
         end
     end
@@ -156,21 +134,6 @@ describe Arachni::Element::Form do
             e = described_class.new( options )
             e.field_type_for( 'password' ).should     == :password
             e.field_type_for( 'hidden_field' ).should == :hidden
-        end
-    end
-
-    describe '#to_html' do
-        context 'when there is a node' do
-            it 'returns the original form as HTML' do
-                f2 = described_class.from_document( url, with_node.to_html ).first
-                f2.should == with_node
-            end
-        end
-
-        context 'when there is no node' do
-            it 'returns nil' do
-                subject.to_html.should be_nil
-            end
         end
     end
 

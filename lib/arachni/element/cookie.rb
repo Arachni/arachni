@@ -15,9 +15,10 @@ module Arachni::Element
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Cookie < Base
-    include Capabilities::Analyzable
-
     require_relative 'cookie/dom'
+
+    include Capabilities::WithDOM
+    include Capabilities::Analyzable
 
     # Default cookie values
     DEFAULT = {
@@ -35,9 +36,6 @@ class Cookie < Base
         domain:      nil,
         httponly:    false
     }
-
-    # @return       [DOM]
-    attr_accessor   :dom
 
     # @param    [Hash]  options
     #   For options see {DEFAULT}, with the following extras:
@@ -80,7 +78,7 @@ class Cookie < Base
     # @return   [DOM]
     def dom
         return if inputs.empty?
-        @dom ||= DOM.new( parent: self )
+        super
     end
 
     # Indicates whether the cookie must be only sent over an encrypted channel.
@@ -132,13 +130,6 @@ class Cookie < Base
     #   `key` and the cookie value as `value`.
     def simple
         self.inputs.dup
-    end
-
-    def dup
-        super.tap do |c|
-            c.action = self.action
-            c.dom    = dom.dup.tap { |d| d.parent = c } if @dom
-        end
     end
 
     # @example

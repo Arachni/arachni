@@ -1,21 +1,5 @@
-shared_examples_for 'with_node' do
-    before :each do
-        @framework ||= Arachni::Framework.new
-        @auditor   = Auditor.new( nil, @framework )
-    end
+shared_examples_for 'with_node' do |html|
 
-    after :each do
-        @framework.clean_up
-        @framework.reset
-        reset_options
-    end
-
-    let(:html) do
-        '<form method="get" action="form_action" name="my_form">
-            <input type=password name="my_first_input" value="my_first_value"" />
-            <input type=radio name="my_second_input" value="my_second_value"" />
-        </form>'
-    end
     let(:with_node) do
         dupped = subject.dup
         dupped.html = html
@@ -32,11 +16,9 @@ shared_examples_for 'with_node' do
 
     describe '#node' do
         it 'returns the set node' do
-            ap node = with_node.node
-            ap with_node.html
-            ap node.to_s
+            node = with_node.node
             node.is_a?( Nokogiri::XML::Element ).should be_true
-            node.css( 'input' ).first['name'].should == 'my_first_input'
+            node.to_s.should == Nokogiri::HTML.fragment( html ).to_s
         end
     end
 
