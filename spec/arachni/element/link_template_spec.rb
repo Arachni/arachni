@@ -86,6 +86,38 @@ describe Arachni::Element::LinkTemplate do
         end
     end
 
+    describe '#valid_input_name?' do
+        context 'when the name can be found in the #template named captures' do
+            it 'returns true' do
+                subject.template.names.should be_any
+
+                subject.template.names.each do |name|
+                    subject.valid_input_name?( name ).should be_true
+                end
+            end
+        end
+
+        context 'when the name cannot be found in the #template named captures' do
+            it 'returns false' do
+                subject.valid_input_name?( 'stuff' ).should be_false
+            end
+        end
+    end
+
+    describe '#valid_input_data?' do
+        it 'returns true' do
+            subject.valid_input_data?( 'stuff' ).should be_true
+        end
+
+        described_class::INVALID_INPUT_DATA.each do |invalid_data|
+            context "when the value contains #{invalid_data.inspect}" do
+                it 'returns false' do
+                    subject.valid_input_data?( "stuff #{invalid_data}" ).should be_false
+                end
+            end
+        end
+    end
+
     describe '#to_s' do
         it 'returns the updated link' do
             inputtable.to_s.should == inputtable.action

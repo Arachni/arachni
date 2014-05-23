@@ -19,6 +19,8 @@ class LinkTemplate < Base
     include Capabilities::WithDOM
     include Capabilities::Analyzable
 
+    INVALID_INPUT_DATA = [ '//' ]
+
     # @return   [Regexp]
     #   Regular expressions with named captures, serving as templates used to
     #   identify and manipulate inputs in {#action}.
@@ -81,6 +83,18 @@ class LinkTemplate < Base
     def valid_input_name?( name )
         return if !@template
         @template.names.include? name
+    end
+
+    # @param    [String]    data
+    #   Input data.
+    #
+    # @return   [Bool]
+    #   `true` if the `data` don't contain strings specified in
+    #   #{INVALID_INPUT_DATA}, `false` otherwise.
+    #
+    # @see INVALID_INPUT_DATA
+    def valid_input_data?( data )
+        !INVALID_INPUT_DATA.find { |c| data.include? c }
     end
 
     # @return   [Hash]
