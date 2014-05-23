@@ -168,6 +168,22 @@ class Form < Base
         @mutation_with_sample_values = true
     end
 
+    def status_string
+        override = nil
+        if mutation_with_original_values?
+            override = 'original'
+        elsif mutation_with_sample_values?
+            override = 'sample'
+        end
+
+        if override
+            "Submitting form with #{override} values for #{inputs.keys.join(', ')}" <<
+                " at '#{@action}'."
+        else
+            super
+        end
+    end
+
     # @param    (see Capabilities::Auditable#audit_id)
     # @@return  (see Capabilities::Auditable#audit_id)
     def audit_id( injection_str = '', opts = {} )
@@ -220,7 +236,7 @@ class Form < Base
 
         elem = self.dup
         elem.mutation_with_original_values
-        elem.affected_input_name  = ORIGINAL_VALUES
+        elem.affected_input_name = ORIGINAL_VALUES
         yield elem if !generated.include?( elem )
         generated << elem
 

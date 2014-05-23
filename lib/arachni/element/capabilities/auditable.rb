@@ -175,10 +175,9 @@ module Auditable
     #
     #   The string contains the name of the input that is being audited,
     #   the url and the type of the input (form, link, cookie...).
-    #
     def status_string
-        "Auditing #{self.type} variable '#{self.affected_input_name}' with" <<
-            " action '#{self.action}'."
+        "Auditing #{self.type} input '#{@affected_input_name}' with" <<
+            " action '#{@action}'."
     end
 
     # Returns an audit ID string used to identify the audit of `self` by its
