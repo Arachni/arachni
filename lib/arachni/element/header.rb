@@ -13,7 +13,7 @@ module Arachni::Element
 class Header < Base
     include Capabilities::Analyzable
 
-    INVALID_INPUT_DATA = [ "\0", "\r", "\n" ]
+    INVALID_INPUT_DATA = [ "\0" ]
 
     def initialize( options )
         super( options )
@@ -66,11 +66,11 @@ class Header < Base
 
     class <<self
         def encode( header )
-            header
+            ::URI.encode( header, "\r\n" )
         end
 
         def decode( header )
-            header
+            ::URI.decode( header )
         end
     end
 
