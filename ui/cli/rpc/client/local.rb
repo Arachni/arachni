@@ -36,6 +36,7 @@ class Local
         parser.browser_cluster
         parser.distribution
         parser.report
+        parser.timeout
         parser.parse
 
         options = parser.options
@@ -50,7 +51,7 @@ class Local
         instance = Processes::Instances.spawn( socket: socket )
 
         # Let the Instance UI manage the Instance from now on.
-        Instance.new( options, instance ).run
+        Instance.new( options, instance, parser.get_timeout ).run
 
         # Make sure the Instance processes are killed.
         Processes::Instances.kill( socket )

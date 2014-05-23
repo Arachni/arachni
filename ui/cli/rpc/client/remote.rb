@@ -39,9 +39,12 @@ class Remote
         parser.distribution
         parser.ssl
         parser.report
+        parser.timeout
         parser.parse
 
         options = parser.options
+
+        Arachni::Reactor.global.run_in_thread
 
         begin
             dispatcher = Arachni::RPC::Client::Dispatcher.new( options, options.dispatcher.url )
@@ -68,7 +71,7 @@ class Remote
         end
 
         # Let the Instance UI manage the Instance from now on.
-        Instance.new( Arachni::Options.instance, instance ).run
+        Instance.new( Arachni::Options.instance, instance, parser.get_timeout ).run
     end
 
 end

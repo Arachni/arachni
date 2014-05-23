@@ -505,11 +505,41 @@ class OptionParser < UI::CLI::OptionParser
         end
     end
 
+    def timeout
+        separator ''
+        separator 'Timeout'
+
+        on( '--timeout HOURS:MINUTES:SECONDS',
+            'Stop the scan after the given duration is exceeded.'
+        ) do |time|
+            @timeout = time_to_seconds( time )
+        end
+    end
+
+    def timeout_suspend
+        on( '--timeout-suspend',
+            'Suspend after the timeout.',
+            'You can use the generated file to resume a suspended scan at a' +
+                " later time with the 'arachni_restore' executable."
+        ) do |time|
+            @timeout_suspend = true
+        end
+    end
+
+    def timeout_suspend?
+        !!@timeout_suspend
+    end
+
+    def get_timeout
+        @timeout
+    end
+
     def after_parse
         options.url = ARGV.shift
     end
 
     def validate
+        validate_timeout
         validate_report_path
         validate_snapshot_save_path
         validate_login
@@ -520,6 +550,13 @@ class OptionParser < UI::CLI::OptionParser
         return if options.url
 
         print_error 'Missing URL argument.'
+        exit 1
+    end
+
+    def validate_timeout
+        return if !@timeout || @timeout > 0
+
+        print_error 'Invalid timeout value.'
         exit 1
     end
 
@@ -554,6 +591,13 @@ class OptionParser < UI::CLI::OptionParser
 
     def banner
         "#{super} URL"
+    end
+
+    def time_to_seconds( time )
+        a = [1, 60, 3600] * 2
+        time.split( /[:\.]/ ).map { |t| t.to_i * a.pop }.inject(&:+)
+    rescue
+        0
     end
 
 end

@@ -42,9 +42,11 @@ class Instance
 
     # @param    [Arachni::Options]  options
     # @param    [RPC::Client::Instance] instance    Instance to control.
-    def initialize( options, instance )
+    # @param    [Integer]  timeout
+    def initialize( options, instance, timeout = nil )
         @options  = options
         @instance = instance
+        @timeout  = timeout
 
         clear_screen
         move_to_home
@@ -56,11 +58,19 @@ class Instance
     end
 
     def run
+        timeout_time = Time.now + @timeout
+        timed_out    = false
+
         begin
             # Start the show!
             @instance.service.scan prepare_rpc_options
 
             while busy?
+                if @timeout && Time.now >= timeout_time
+                    timed_out = true
+                    break
+                end
+
                 print_progress
                 sleep 5
                 refresh_progress
@@ -72,6 +82,9 @@ class Instance
         end
 
         report_and_shutdown
+
+        return if !timed_out
+        print_error 'Timeout was reached.'
     end
 
     private
@@ -176,16 +189,15 @@ class Instance
             @options.audit.elements :links, :forms, :cookies
         end
 
-        opts = @options.to_h.deep_clone
-        %w(paths rpc dispatcher datastore).each { |k| opts.delete( k.to_sym ) }
-
-        if opts[:http][:cookie_jar_filepath]
-            opts[:http][:cookies] =
-                parse_cookie_jar( opts[:http].delete( :cookie_jar_filepath ) )
+        if @options.http.cookie_jar_filepath
+            cookies = parse_cookie_jar( @options.http.cookie_jar_filepath )
         end
 
+        opts = @options.to_rpc_data.deep_clone
+        opts['http']['cookies'] = cookies
+
         @framework.plugins.default.each do |plugin|
-            opts[:plugins][plugin] ||= {}
+            opts['plugins'][plugin.to_s] ||= {}
         end
 
         opts

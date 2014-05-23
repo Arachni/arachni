@@ -49,6 +49,8 @@ class Framework
         get_user_command
 
         begin
+            timeout_supervisor = nil
+
             # We may need to kill the audit so put it in a thread.
             @scan = Thread.new do
                 @framework.run do
@@ -56,8 +58,25 @@ class Framework
                     restore_output
                     clear_screen
                 end
+
+                timeout_supervisor.kill if timeout_supervisor
             end
 
+            if @timeout
+                timeout_supervisor = Thread.new do
+                    sleep @timeout
+
+                    if @timeout_suspend
+                        print_error 'Timeout has been reached, suspending.'
+                        suspend
+                    else
+                        print_error 'Timeout has been reached, shutting down.'
+                        shutdown
+                    end
+                end
+            end
+
+            timeout_supervisor.join if timeout_supervisor
             @scan.join
 
             # If the user requested to abort the scan, wait for the thread
@@ -287,18 +306,20 @@ class Framework
 
     def suspend
         @cleanup_handler = Thread.new do
-            @framework.suspend
+            exception_jail do
+                @framework.suspend
 
-            hide_command_screen
-            restore_output
-            clear_screen
+                hide_command_screen
+                restore_output
+                clear_screen
 
-            generate_reports
+                generate_reports
 
-            filesize = (File.size( @framework.snapshot_path ).to_f / 2**20).round(2)
-            print_info "Snapshot saved at: #{@framework.snapshot_path} [#{filesize}MB]"
+                filesize = (File.size( @framework.snapshot_path ).to_f / 2**20).round(2)
+                print_info "Snapshot saved at: #{@framework.snapshot_path} [#{filesize}MB]"
 
-            print_line
+                print_line
+            end
         end
     end
 
@@ -310,15 +331,17 @@ class Framework
 
         killed = Queue.new
         @cleanup_handler = Thread.new do
-            killed.pop
+            exception_jail do
+                killed.pop
 
-            @framework.clean_up
+                @framework.clean_up
 
-            hide_command_screen
-            restore_output
-            clear_screen
+                hide_command_screen
+                restore_output
+                clear_screen
 
-            generate_reports
+                generate_reports
+            end
         end
 
         @scan.kill
@@ -357,7 +380,12 @@ class Framework
         parser.browser_cluster
         parser.report
         parser.snapshot
+        parser.timeout
+        parser.timeout_suspend
         parser.parse
+
+        @timeout         = parser.get_timeout
+        @timeout_suspend = parser.timeout_suspend?
 
         if options.checks.any?
             begin
