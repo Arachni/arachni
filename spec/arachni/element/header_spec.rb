@@ -60,6 +60,20 @@ describe Arachni::Element::Header do
         end
     end
 
+    describe '#valid_input_data?' do
+        it 'returns true' do
+            subject.valid_input_data?( 'stuff' ).should be_true
+        end
+
+        described_class::INVALID_INPUT_DATA.each do |invalid_data|
+            context "when the value contains #{invalid_data.inspect}" do
+                it 'returns false' do
+                    subject.valid_input_data?( "stuff #{invalid_data}" ).should be_false
+                end
+            end
+        end
+    end
+
     describe '#type' do
         it 'is "header"' do
             subject.type.should == :header
