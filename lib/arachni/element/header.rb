@@ -16,7 +16,6 @@ class Header < Base
     def initialize( options )
         super( options )
 
-        self.method = :get
         self.inputs = options[:inputs]
 
         @default_inputs = self.inputs.dup.freeze

@@ -4,6 +4,7 @@
 =end
 
 require_relative 'base'
+require_relative 'capabilities/with_node'
 
 module Arachni::Element
 
@@ -11,6 +12,7 @@ module Arachni::Element
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Form < Base
+    include Capabilities::WithNode
     include Capabilities::Analyzable
     include Capabilities::Refreshable
 
@@ -41,8 +43,6 @@ class Form < Base
 
     # @return       [DOM]
     attr_accessor   :dom
-
-    attr_accessor   :html
 
     # @param    [Hash]    options
     # @option   options [String]    :name
@@ -86,9 +86,6 @@ class Form < Base
                 h
             end
 
-        self.html   = options[:html].freeze
-        self.method = options[:method] || :get
-
         @default_inputs = self.inputs.dup.freeze
     end
 
@@ -100,12 +97,6 @@ class Form < Base
     def dom
         return if !@html || inputs.empty?
         @dom ||= DOM.new( parent: self )
-    end
-
-    # @return [Nokogiri::XML::Element]
-    def node
-        return if !@html
-        Nokogiri::HTML.fragment( @html.dup ).children.first
     end
 
     # @param    (see Capabilities::Submittable#action=)

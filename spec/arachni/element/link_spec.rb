@@ -1,9 +1,10 @@
 require 'spec_helper'
 
 describe Arachni::Element::Link do
-    # it_should_behave_like 'element'
-    # it_should_behave_like 'refreshable'
-    # it_should_behave_like 'auditable'
+    it_should_behave_like 'element'
+    it_should_behave_like 'with_node'
+    it_should_behave_like 'refreshable'
+    it_should_behave_like 'auditable'
 
     def auditable_extract_parameters( resource )
         YAML.load( resource.body )
@@ -87,12 +88,6 @@ describe Arachni::Element::Link do
             it 'returns nil' do
                 subject.dom.should be_nil
             end
-        end
-    end
-
-    describe '#node' do
-        it 'returns the original Nokogiri node' do
-            with_node.node.is_a?( Nokogiri::XML::Element ).should be_true
         end
     end
 

@@ -52,8 +52,6 @@ class Cookie < Base
         @data = {}
         super( options )
 
-        self.method = :get
-
         if options[:name] && options[:value]
             options[:name]  = options[:name].to_s.recode
             options[:value] = options[:value].to_s.recode

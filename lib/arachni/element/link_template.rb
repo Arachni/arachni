@@ -3,7 +3,8 @@
     All rights reserved.
 =end
 
-require Arachni::Options.paths.lib + 'element/base'
+require_relative 'base'
+require_relative 'capabilities/with_node'
 
 module Arachni::Element
 
@@ -12,21 +13,18 @@ module Arachni::Element
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class LinkTemplate < Base
+    include Capabilities::WithNode
     include Capabilities::Analyzable
+
+    require_relative 'link_template/dom'
 
     # @return    [Regexp]
     #   Regular expressions with named captures, serving as templates used to
     #   identify and manipulate inputs in {#action}.
     attr_reader   :template
 
-    require_relative 'link_template/dom'
-
     # @return     [DOM]
     attr_accessor :dom
-
-    # @return     [String]
-    #   Original HTML code for that element.
-    attr_accessor :html
 
     # @param    [Hash]    options
     # @option   options [String]    :url
@@ -56,10 +54,7 @@ class LinkTemplate < Base
             end
         end
 
-        self.html   = options[:html]
-        self.method = :get
-
-        self.inputs   ||= {}
+        self.inputs ||= {}
         @default_inputs = self.inputs.dup.freeze
     end
 

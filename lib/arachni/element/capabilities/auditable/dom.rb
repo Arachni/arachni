@@ -3,6 +3,8 @@
     All rights reserved.
 =end
 
+require_relative '../with_node'
+
 module Arachni
 module Element::Capabilities
 module Auditable
@@ -11,6 +13,7 @@ module Auditable
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 module DOM
+    include WithNode
     include Auditable
     extend Forwardable
 
@@ -21,8 +24,6 @@ module DOM
     attr_accessor :browser
 
     attr_reader   :action
-
-    attr_accessor :html
 
     # @!method with_browser_cluster( &block )
     def_delegator :auditor, :with_browser_cluster
@@ -47,11 +48,6 @@ module DOM
         end
 
         @audit_options = {}
-    end
-
-    def node
-        return if !@html
-        Nokogiri::HTML.fragment( @html.dup ).children.first
     end
 
     def url=(*)

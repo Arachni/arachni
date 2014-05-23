@@ -2,6 +2,7 @@ require 'spec_helper'
 
 describe Arachni::Element::LinkTemplate do
     it_should_behave_like 'element'
+    it_should_behave_like 'with_node'
     it_should_behave_like 'auditable'
 
     def auditable_extract_parameters( resource )

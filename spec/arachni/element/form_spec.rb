@@ -2,6 +2,7 @@ require 'spec_helper'
 
 describe Arachni::Element::Form do
     it_should_behave_like 'element'
+    it_should_behave_like 'with_node'
     it_should_behave_like 'refreshable'
     it_should_behave_like 'auditable'
 
@@ -155,14 +156,6 @@ describe Arachni::Element::Form do
             e = described_class.new( options )
             e.field_type_for( 'password' ).should     == :password
             e.field_type_for( 'hidden_field' ).should == :hidden
-        end
-    end
-
-    describe '#node' do
-        it 'returns the original Nokogiri node' do
-            node = with_node.node
-            node.is_a?( Nokogiri::XML::Element ).should be_true
-            node.css( 'input' ).first['name'].should == 'my_first_input'
         end
     end
 

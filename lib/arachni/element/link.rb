@@ -4,6 +4,7 @@
 =end
 
 require_relative 'base'
+require_relative 'capabilities/with_node'
 
 module Arachni::Element
 
@@ -11,6 +12,7 @@ module Arachni::Element
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Link < Base
+    include Capabilities::WithNode
     include Capabilities::Analyzable
     include Capabilities::Refreshable
 
@@ -18,10 +20,6 @@ class Link < Base
 
     # @return     [DOM]
     attr_accessor :dom
-
-    # @return     [String]
-    #   Original HTML code for that element.
-    attr_accessor :html
 
     # @param    [Hash]    options
     # @option   options [String]    :url
@@ -42,9 +40,6 @@ class Link < Base
             self.inputs = self.class.parse_query_vars( self.action )
         end
 
-        self.html   = options[:html]
-        self.method = :get
-
         @default_inputs = self.inputs.dup.freeze
     end
 
@@ -62,12 +57,6 @@ class Link < Base
         end
 
         @dom
-    end
-
-    # @return [Nokogiri::XML::Element]
-    def node
-        return if !@html
-        Nokogiri::HTML.fragment( @html.dup ).children.first
     end
 
     # @return   [Hash]
