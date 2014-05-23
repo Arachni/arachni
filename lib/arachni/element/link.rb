@@ -117,12 +117,6 @@ class Link < Base
         str
     end
 
-    def dup
-        new = super
-        new.page = page
-        new
-    end
-
     class <<self
 
         # Extracts links from an HTTP response.

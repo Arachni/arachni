@@ -6,7 +6,7 @@
 require 'webrick'
 require 'uri'
 
-require Arachni::Options.paths.lib + 'element/base'
+require_relative 'base'
 
 module Arachni::Element
 

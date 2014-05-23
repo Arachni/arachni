@@ -1,9 +1,10 @@
 require 'spec_helper'
 
 shared_examples_for 'element' do
-    let( :normalized_url ) do
+    let :normalized_url do
         Arachni::Utilities.normalize_url( 'http://test.com' )
     end
+    let(:page) { Factory[:page].dup }
 
     it "supports #{Arachni::RPC::Serializer}" do
         subject.should == Arachni::RPC::Serializer.deep_clone( subject )
@@ -62,7 +63,7 @@ shared_examples_for 'element' do
 
     describe '#marshal_dump' do
         it 'excludes #page' do
-            subject.page = Factory[:page]
+            subject.page = page
             subject.marshal_dump.should_not include :page
         end
     end
@@ -78,14 +79,19 @@ shared_examples_for 'element' do
 
     describe '#page=' do
         it 'sets the associated page' do
-            subject.page = Factory[:page]
-            subject.page.should == Factory[:page]
+            subject.page = page
+            subject.page.should == page
         end
     end
 
     describe '#dup' do
         it 'returns a copy of self' do
             subject.dup.should == subject
+        end
+
+        it 'copies #page' do
+            subject.page = page
+            subject.dup.page.should == page
         end
     end
 

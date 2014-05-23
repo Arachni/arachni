@@ -107,12 +107,6 @@ class LinkTemplate < Base
         self.class.decode( *args )
     end
 
-    def dup
-        new = super
-        new.page = page
-        new
-    end
-
     def to_rpc_data
         data = super
         return data if !@template

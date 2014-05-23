@@ -351,7 +351,6 @@ class Form < Base
             f.mutation_with_sample_values   if mutation_with_sample_values?
 
             f.requires_password = requires_password?
-            f.page = page
         end
     end
 

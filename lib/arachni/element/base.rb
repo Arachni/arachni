@@ -104,7 +104,9 @@ class Base
     end
 
     def dup
-        self.class.new self.initialization_options
+        dupped = self.class.new( self.initialization_options )
+        dupped.page = page
+        dupped
     end
 
     def marshal_dump
