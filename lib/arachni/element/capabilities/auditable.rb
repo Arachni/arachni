@@ -248,6 +248,11 @@ module Auditable
     def audit_single( injection_str, opts = { }, &block )
         fail ArgumentError, 'Missing block.' if !block_given?
 
+        if !valid_input_data?( injection_str )
+            print_debug_level_2 "Payload not supported by #{self}: #{injection_str.inspect}"
+            return false
+        end
+
         @audit_options = OPTIONS.merge( opts )
 
         print_debug_level_2 "About to audit: #{audit_id}"

@@ -9,16 +9,19 @@ module Element::Capabilities
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 module Mutable
 
-    # @return   [String]    Name of the mutated parameter.
+    # @return     [String]
+    #   Name of the mutated parameter.
     attr_accessor :affected_input_name
 
-    # @return   [String]    Original seed used for the {#mutations}.
+    # @return     [String]
+    #   Original seed used for the {#mutations}.
     attr_accessor :seed
 
     attr_accessor :format
 
-    # Holds constant bitfields that describe the preferred formatting
-    # of injection strings.
+    # Bitfields that describe the common payload formatting options.
+    #
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
     module Format
 
       # Leaves the injection string as is.
@@ -45,18 +48,14 @@ module Mutable
         #
         # Values can be OR'ed bitfields of all available constants of {Format}.
         #
-        format:     [ Format::STRAIGHT, Format::APPEND,
-                     Format::NULL, Format::APPEND | Format::NULL ],
-
-        # Skip mutation with default/original values
-        # (for {Arachni::Element::Form} elements).
-        skip_original:  false,
+        format:         [ Format::STRAIGHT, Format::APPEND,
+                            Format::NULL, Format::APPEND | Format::NULL ],
 
         # Flip injection value and input name.
-        param_flip: false,
+        param_flip:     false,
 
         # Array of parameter names remain untouched.
-        skip:       [],
+        skip:           [],
 
         # `nil`:   Use system settings (!Options.audit.with_both_http_methods).
         # `true`:  Don't create mutations with other methods (GET/POST).
@@ -80,27 +79,32 @@ module Mutable
         self[affected_input_name].to_s
     end
 
-    # @param    [String]    value   Sets the value for the fuzzed input.
+    # @param    [String]    value
+    #   Sets the value for the fuzzed input.
     def affected_input_value=( value )
         self[affected_input_name] = value
     end
 
-    # @param    [String]    value   Sets the name of the fuzzed input.
+    # @param    [String]    value
+    #   Sets the name of the fuzzed input.
     def affected_input_name=( value )
         @affected_input_name = value.to_s
     end
 
-    # @param    [String]    value   Sets the value for the fuzzed input.
+    # @param    [String]    value
+    #   Sets the value for the fuzzed input.
     def seed=( value )
         @seed = value.to_s
     end
 
-    # @return   [Bool]  `true` if the element has been mutated, `false` otherwise.
+    # @return   [Bool]
+    #   `true` if the element has been mutated, `false` otherwise.
     def mutation?
-        !self.affected_input_name.nil?
+        !!self.affected_input_name
     end
 
-    # @return   [Set]   Names of input vectors to be excluded from {#mutations}.
+    # @return   [Set]
+    #   Names of input vectors to be excluded from {#mutations}.
     def immutables
         @immutables ||= Set.new
     end
@@ -110,15 +114,23 @@ module Mutable
     #
     # Vector names in {#immutables} will be excluded.
     #
-    # @param    [String]  injection_str  The string to inject.
-    # @param    [Hash]    opts           {MUTATION_OPTIONS}
+    # @param    [String]  injection_str
+    #   The string to inject.
+    # @param    [Hash]    opts
+    #   {MUTATION_OPTIONS}
     #
-    # @yield       [mutation]  Each generated mutation.
+    # @yield       [mutation]
+    #   Each generated mutation.
     # @yieldparam [Mutable]
     #
     # @see #immutables
     def each_mutation( injection_str, opts = {} )
-        return [] if self.inputs.empty?
+        return if self.inputs.empty?
+
+        if !valid_input_data?( injection_str )
+            print_debug_level_2 "Payload not supported by #{self}: #{injection_str.inspect}"
+            return
+        end
 
         print_debug_trainer( opts )
         print_debug_formatting( opts )
@@ -138,14 +150,17 @@ module Mutable
             opts[:format].each do |format|
                 str = format_str( injection_str, cinputs[k], format )
 
-                elem = self.dup
-
-                next if !try_input do
-                    elem.seed                = injection_str
-                    elem.affected_input_name = k.dup
-                    elem.inputs              = cinputs.merge( k => str )
-                    elem.format              = format
+                if !valid_input_data?( str )
+                    print_debug_level_2 'Payload not supported as input value by' <<
+                                            " #{audit_id}: #{str.inspect}"
+                    next
                 end
+
+                elem                     = self.dup
+                elem.seed                = injection_str
+                elem.affected_input_name = k.dup
+                elem.inputs              = cinputs.merge( k => str )
+                elem.format              = format
 
                 if !generated.include?( elem )
                     print_debug_mutation elem
@@ -167,13 +182,16 @@ module Mutable
 
         return if !opts[:param_flip]
 
-        elem = self.dup
-
-        return if !try_input do
-            elem.affected_input_name = 'Parameter flip'
-            elem[injection_str]      = seed
-            elem.seed                = injection_str
+        if !valid_input_data?( injection_str )
+            print_debug_level_2 'Payload not supported as input name by' <<
+                                    " #{audit_id}: #{injection_str.inspect}"
+            return
         end
+
+        elem                     = self.dup
+        elem.affected_input_name = 'Parameter flip'
+        elem[injection_str]      = seed
+        elem.seed                = injection_str
 
         if !generated.include?( elem )
             print_debug_mutation elem
@@ -194,16 +212,7 @@ module Mutable
     end
 
     def switch_method
-        c = self.dup
-        if c.method.to_s.downcase.to_sym == :get
-            # Strip the query from the action if we're fuzzing a link
-            # otherwise the GET params might get precedence.
-            c.action = c.action.split( '?' ).first if c.is_a? Link
-            c.method = 'post'
-        else
-            c.method = 'get'
-        end
-        c
+        self.dup.tap { |c| c.method = (c.method == :get ? :post : :get) }
     end
 
     # Injects the `injection_str` in self's values according to formatting
@@ -211,8 +220,10 @@ module Mutable
     #
     # Vector names in {#immutables} will be excluded.
     #
-    # @param    [String]  injection_str  The string to inject.
-    # @param    [Hash]    opts           {MUTATION_OPTIONS}
+    # @param    [String]  injection_str
+    #   The string to inject.
+    # @param    [Hash]    opts
+    #   {MUTATION_OPTIONS}
     #
     # @return    [Array]
     #
@@ -246,8 +257,8 @@ module Mutable
             other.affected_input_name = self.affected_input_name.dup
         end
 
-        other.seed    = self.seed.dup if self.seed
-        other.format  = self.format
+        other.seed   = self.seed.dup if self.seed
+        other.format = self.format
         other
     end
 

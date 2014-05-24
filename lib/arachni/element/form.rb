@@ -208,8 +208,10 @@ class Form < Base
     # * Password fields requiring identical values (in order to pass
     #   server-side validation)
     #
-    # @param    [String]    seed    Seed to inject.
-    # @param    [Hash]      opts    Mutation options.
+    # @param    [String]    seed
+    #   Seed to inject.
+    # @param    [Hash]      opts
+    #   Mutation options.
     # @option   opts    [Bool]  :skip_original
     #   Whether or not to skip adding a mutation holding original values and
     #   sample values.
