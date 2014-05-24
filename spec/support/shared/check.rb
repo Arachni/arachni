@@ -182,9 +182,8 @@ shared_examples_for 'check' do
         e = element_type.to_s
         e = e[0...-1] if element_type.to_s[-1] == 's'
 
-        if logs_issues
+        if issues.any?
             # make sure we ONLY got results for the requested element type
-            issues.should be_any
             issues.map { |i| i.vector.class.type }.uniq.should == [e.to_sym]
 
             if current_check.info[:issue]
