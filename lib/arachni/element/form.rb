@@ -97,7 +97,7 @@ class Form < Base
     end
 
     def force_train?
-        mutation_with_original_values || mutation_with_sample_values
+        mutation_with_original_values? || mutation_with_sample_values?
     end
 
     # @param    (see Capabilities::Submittable#action=)
