@@ -236,7 +236,8 @@ class LinkTemplate < Base
 
     def http_request( opts, &block )
         opts.delete :parameters
-        self.method.downcase.to_s != 'get' ?
+
+        self.method != :get ?
             http.post( to_s, opts, &block ) :
             http.get( to_s, opts, &block )
     end

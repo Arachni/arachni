@@ -196,7 +196,7 @@ class Link < Base
     private
 
     def http_request( opts, &block )
-        self.method.downcase.to_s != 'get' ?
+        self.method != :get ?
             http.post( self.action, opts, &block ) :
             http.get( self.action, opts, &block )
     end
