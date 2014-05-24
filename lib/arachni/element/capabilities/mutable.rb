@@ -109,13 +109,13 @@ module Mutable
         @immutables ||= Set.new
     end
 
-    # Injects the `injection_str` in self's values according to formatting
-    # options and returns an array of mutations of self.
+    # @note Vector names in {#immutables} will be excluded.
     #
-    # Vector names in {#immutables} will be excluded.
+    # Injects the `payload` in self's values according to formatting options
+    # and returns an array of mutations of self.
     #
-    # @param    [String]  injection_str
-    #   The string to inject.
+    # @param    [String]  payload
+    #   String to inject.
     # @param    [Hash]    opts
     #   {MUTATION_OPTIONS}
     #
@@ -124,11 +124,11 @@ module Mutable
     # @yieldparam [Mutable]
     #
     # @see #immutables
-    def each_mutation( injection_str, opts = {} )
+    def each_mutation( payload, opts = {} )
         return if self.inputs.empty?
 
-        if !valid_input_data?( injection_str )
-            print_debug_level_2 "Payload not supported by #{self}: #{injection_str.inspect}"
+        if !valid_input_data?( payload )
+            print_debug_level_2 "Payload not supported by #{self}: #{payload.inspect}"
             return
         end
 
@@ -148,7 +148,7 @@ module Mutable
             next if dinputs[k] == seed || immutables.include?( k )
 
             opts[:format].each do |format|
-                str = format_str( injection_str, cinputs[k], format )
+                str = format_str( payload, cinputs[k], format )
 
                 if !valid_input_data?( str )
                     print_debug_level_2 'Payload not supported as input value by' <<
@@ -157,7 +157,7 @@ module Mutable
                 end
 
                 elem                     = self.dup
-                elem.seed                = injection_str
+                elem.seed                = payload
                 elem.affected_input_name = k.dup
                 elem.inputs              = cinputs.merge( k => str )
                 elem.format              = format
@@ -182,16 +182,16 @@ module Mutable
 
         return if !opts[:param_flip]
 
-        if !valid_input_data?( injection_str )
+        if !valid_input_data?( payload )
             print_debug_level_2 'Payload not supported as input name by' <<
-                                    " #{audit_id}: #{injection_str.inspect}"
+                                    " #{audit_id}: #{payload.inspect}"
             return
         end
 
         elem                     = self.dup
         elem.affected_input_name = 'Parameter flip'
-        elem[injection_str]      = seed
-        elem.seed                = injection_str
+        elem[payload]      = seed
+        elem.seed                = payload
 
         if !generated.include?( elem )
             print_debug_mutation elem
@@ -215,12 +215,12 @@ module Mutable
         self.dup.tap { |c| c.method = (c.method == :get ? :post : :get) }
     end
 
-    # Injects the `injection_str` in self's values according to formatting
+    # Injects the `payload` in self's values according to formatting
     # options and returns an array of mutations of self.
     #
     # Vector names in {#immutables} will be excluded.
     #
-    # @param    [String]  injection_str
+    # @param    [String]  payload
     #   The string to inject.
     # @param    [Hash]    opts
     #   {MUTATION_OPTIONS}
@@ -228,9 +228,9 @@ module Mutable
     # @return    [Array]
     #
     # @see #immutables
-    def mutations( injection_str, opts = {} )
+    def mutations( payload, opts = {} )
         combo = []
-        each_mutation( injection_str, opts ) { |m| combo << m }
+        each_mutation( payload, opts ) { |m| combo << m }
         combo
     end
 
@@ -265,7 +265,7 @@ module Mutable
     # Prepares an injection string following the specified formatting options
     # as contained in the format bitfield.
     #
-    # @param  [String]  injection_str
+    # @param  [String]  payload
     # @param  [String]  default_str
     #   Default value to be appended by the injection string if {Format::APPEND}
     #   is set in 'format'.
@@ -275,7 +275,7 @@ module Mutable
     # @return  [String]
     #
     # @see Format
-    def format_str( injection_str, default_str, format  )
+    def format_str( payload, default_str, format  )
         semicolon = null = append = nil
 
         null      = "\0"               if (format & Format::NULL)      != 0
@@ -283,7 +283,7 @@ module Mutable
         append    = default_str        if (format & Format::APPEND)    != 0
         semicolon = append = null = '' if (format & Format::STRAIGHT)  != 0
 
-        "#{semicolon}#{append}#{injection_str}#{null}"
+        "#{semicolon}#{append}#{payload}#{null}"
     end
 
     def print_debug_injection_set( mutations, opts )

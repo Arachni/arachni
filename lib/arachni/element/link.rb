@@ -106,7 +106,7 @@ class Link < Base
         str << "#{@auditor.class.name}:" if !opts[:no_auditor] && !orphan?
 
         str << "#{@audit_id_url}:" + "#{self.type}:#{vars}"
-        str << "=#{injection_str.to_s}" if !opts[:no_injection_str]
+        str << "=#{injection_str.to_s}" if !opts[:no_payload]
         str << ":timeout=#{opts[:timeout]}" if !opts[:no_timeout]
 
         str

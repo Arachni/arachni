@@ -25,7 +25,8 @@ module Auditable
     # Load and include all available analysis/audit techniques.
     Dir.glob( File.dirname( __FILE__ ) + '/auditable/**/*.rb' ).each { |f| require f }
 
-    # @return   [Hash]  Audit and general options for convenience's sake.
+    # @return      [Hash]
+    #   Audit and general options for convenience's sake.
     attr_accessor :audit_options
 
     # Default audit options.
@@ -43,8 +44,8 @@ module Auditable
 
     # Empties the de-duplication/uniqueness look-up table.
     #
-    # Unless you're sure you need this, set the :redundant flag to true
-    # when calling audit methods to bypass it.
+    # Unless you're sure you need this, set the :redundant flag to true when
+    # calling audit methods to bypass it.
     def Auditable.reset
         State.audit.clear
         @@skip_like_blocks = []
@@ -67,12 +68,13 @@ module Auditable
     end
 
     # Provides a more generalized audit ID which does not take into account
-    # the auditor's name nor timeout value of injection string.
+    # the auditor's name nor timeout value of the payload.
     #
     # Right now only used when in multi-Instance mode to generate a white-list
     # of element IDs that are allowed to be audited.
     #
-    # @param    [Hash]  opts    {#audit}    opts
+    # @param    [Hash]  opts
+    #   {#audit} options.
     #
     # @return   [Integer]   Hash ID.
     def audit_scope_id( opts = {} )
@@ -80,13 +82,13 @@ module Auditable
         audit_id( nil, opts.merge(
             no_auditor:       true,
             no_timeout:       true,
-            no_injection_str: true
+            no_payload: true
         )).persistent_hash
     end
 
-    # Submits mutations of self and calls the block to handle the responses.
-    #
     # @note Requires an {#auditor}.
+    #
+    # Submits mutations of `self` and calls the `block` to handle the results.
     #
     # @param  [String, Array<String>, Hash{Symbol => <String, Array<String>>}]  payloads
     #   Payloads to inject, if given:
@@ -98,7 +100,8 @@ module Auditable
     #       {Platform::Manager#pick picked} from the hash based on
     #       {#platforms applicable platforms} for the {#action resource} to be
     #       audited.
-    # @param  [Hash]    opts             Options as described in {OPTIONS}.
+    # @param  [Hash]    opts
+    #   Options as described in {OPTIONS}.
     # @param  [Block]   block
     #   Block to be used for analysis of responses, will be passed each
     #   {HTTP::Response response} and mutation.
@@ -180,24 +183,24 @@ module Auditable
             " action '#{@action}'."
     end
 
-    # Returns an audit ID string used to identify the audit of `self` by its
-    # {#auditor}.
-    #
     # @note Mostly used to keep track of what audits have been perform in order
     #   to prevent redundancies.
     #
-    # @param  [String]  injection_str
+    # Returns an audit ID string used to identify the audit of `self` by its
+    # {#auditor}.
+    #
+    # @param  [String]  payload
     # @param  [Hash]    opts
     #
     # @return  [String]
-    def audit_id( injection_str = '', opts = {} )
+    def audit_id( payload = nil, opts = {} )
         vars = inputs.keys.sort.to_s
 
         str = ''
         str << "#{auditor.class.name}:" if !opts[:no_auditor] && !orphan?
 
         str << "#{@action}:#{type}:#{vars}"
-        str << "=#{injection_str}" if !opts[:no_injection_str]
+        str << "=#{payload}" if !opts[:no_payload]
         str << ":timeout=#{opts[:timeout]}" if !opts[:no_timeout]
 
         str
@@ -223,12 +226,14 @@ module Auditable
         other
     end
 
-    # Submits mutations of self and calls the block to handle the responses.
-    #
     # @note Requires an {#auditor}.
     #
-    # @param  [String]  injection_str  The string to be injected.
-    # @param  [Hash]    opts             Options as described in {OPTIONS}.
+    # Submits mutations of self and calls the block to handle the responses.
+    #
+    # @param  [String]  payload
+    #   The string to be injected.
+    # @param  [Hash]    opts
+    #   Options as described in {OPTIONS}.
     # @param  [Block]   block
     #   Block to be used for analysis of responses, will be passed each
     #   {HTTP::Response response} and mutation.
@@ -236,20 +241,23 @@ module Auditable
     # @return   [Boolean]
     #   `true` if the audit was successful, `false` if:
     #
+    #    * The `payload` contains {Inputtable#valid_input_data? invalid} data
+    #       for this element type.
     #    * There are no {#inputs} inputs.
     #    * The {Element::Base#action} matches a {#skip_path? skip} rule.
     #    * The element has already been audited and the `:redundant` option
     #       is `false` -- the default.
     #    * The element matches a {.skip_like} block.
     #
-    # @raise    ArgumentError   On missing `block`.
+    # @raise    [ArgumentError]
+    #   On missing `block`.
     #
     # @see #submit
-    def audit_single( injection_str, opts = { }, &block )
+    def audit_single( payload, opts = { }, &block )
         fail ArgumentError, 'Missing block.' if !block_given?
 
-        if !valid_input_data?( injection_str )
-            print_debug_level_2 "Payload not supported by #{self}: #{injection_str.inspect}"
+        if !valid_input_data?( payload )
+            print_debug_level_2 "Payload not supported by #{self}: #{payload.inspect}"
             return false
         end
 
@@ -270,7 +278,7 @@ module Auditable
 
         self.auditor ||= @audit_options.delete( :auditor )
 
-        audit_id = audit_id( injection_str, @audit_options )
+        audit_id = audit_id( payload, @audit_options )
         if !@audit_options[:redundant] && audited?( audit_id )
             print_debug_level_2 "Skipping, already audited: #{audit_id}"
             return false
@@ -293,7 +301,7 @@ module Auditable
         submit_options = @audit_options[:submit] || {}
 
         # Iterate over all fuzz variations and audit each one.
-        each_mutation( injection_str, @audit_options ) do |elem|
+        each_mutation( payload, @audit_options ) do |elem|
             if Options.audit.exclude_vectors.include?( elem.affected_input_name )
                 print_info "Skipping audit of '#{elem.affected_input_name}' #{type} vector."
                 next
@@ -305,13 +313,13 @@ module Auditable
             end
 
             if !orphan? && auditor.skip?( elem )
-                mid = elem.audit_id( injection_str, @audit_options )
+                mid = elem.audit_id( payload, @audit_options )
                 print_debug_level_2 "Auditor's #skip? method returned true for mutation, skipping: #{mid}"
                 next
             end
 
             if skip?( elem )
-                mid = elem.audit_id( injection_str, @audit_options )
+                mid = elem.audit_id( payload, @audit_options )
                 print_debug_level_2 "Self's #skip? method returned true for mutation, skipping: #{mid}"
                 next
             end
