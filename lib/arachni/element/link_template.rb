@@ -19,7 +19,10 @@ class LinkTemplate < Base
     include Capabilities::WithDOM
     include Capabilities::Analyzable
 
-    INVALID_INPUT_DATA = [ '//' ]
+    INVALID_INPUT_DATA = [
+        # Protocol URLs require a // which we can't preserve.
+        '://'
+    ]
 
     # @return   [Regexp]
     #   Regular expressions with named captures, serving as templates used to
