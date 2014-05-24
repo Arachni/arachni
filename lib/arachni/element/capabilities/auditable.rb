@@ -67,25 +67,6 @@ module Auditable
         @audit_options = {}
     end
 
-    # Provides a more generalized audit ID which does not take into account
-    # the auditor's name nor timeout value of the payload.
-    #
-    # Right now only used when in multi-Instance mode to generate a white-list
-    # of element IDs that are allowed to be audited.
-    #
-    # @param    [Hash]  opts
-    #   {#audit} options.
-    #
-    # @return   [Integer]   Hash ID.
-    def audit_scope_id( opts = {} )
-        opts = {} if !opts
-        audit_id( nil, opts.merge(
-            no_auditor:       true,
-            no_timeout:       true,
-            no_payload: true
-        )).persistent_hash
-    end
-
     # @note Requires an {#auditor}.
     #
     # Submits mutations of `self` and calls the `block` to handle the results.
@@ -199,11 +180,28 @@ module Auditable
         str = ''
         str << "#{auditor.class.name}:" if !opts[:no_auditor] && !orphan?
 
-        str << "#{@action}:#{type}:#{vars}"
+        str << "#{audit_id_action}:#{type}:#{vars}"
         str << "=#{payload}" if !opts[:no_payload]
-        str << ":timeout=#{opts[:timeout]}" if !opts[:no_timeout]
 
         str
+    end
+
+    def audit_id_action
+        @action
+    end
+
+    # @note Used when in multi-Instance mode, to generate a white-list of
+    #   element IDs that are allowed to be audited.
+    #
+    # Provides a more generalized audit ID which does not take into account
+    # the auditor's name.
+    #
+    # @param    [Hash]  opts
+    #   {#audit} options.
+    #
+    # @return   [Integer]   Hash ID.
+    def audit_scope_id( opts = {} )
+        audit_id( nil, opts.merge( no_auditor: true, no_payload: true ) ).persistent_hash
     end
 
     # @return [Boolean]

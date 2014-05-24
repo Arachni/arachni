@@ -99,17 +99,8 @@ class Link < Base
         self.class.decode( *args )
     end
 
-    def audit_id( injection_str = '', opts = {} )
-        vars = inputs.keys.compact.sort.to_s
-
-        str = ''
-        str << "#{@auditor.class.name}:" if !opts[:no_auditor] && !orphan?
-
-        str << "#{@audit_id_url}:" + "#{self.type}:#{vars}"
-        str << "=#{injection_str.to_s}" if !opts[:no_payload]
-        str << ":timeout=#{opts[:timeout]}" if !opts[:no_timeout]
-
-        str
+    def audit_id_action
+        @audit_id_url
     end
 
     class <<self
