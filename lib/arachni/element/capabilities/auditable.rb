@@ -267,7 +267,7 @@ module Auditable
 
         audit_id = audit_id( injection_str, @audit_options )
         if !@audit_options[:redundant] && audited?( audit_id )
-            print_debug_level_2 'Skipping, already audited.'
+            print_debug_level_2 "Skipping, already audited: #{audit_id}"
             return false
         end
         audited audit_id
