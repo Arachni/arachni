@@ -51,6 +51,12 @@ class Arachni::Checks::PathTraversal < Arachni::Check::Base
 
                 # Pass our new element back to be audited.
                 m
+            end,
+
+            skip_like: proc do |m|
+                # Tomcat payloads begin with a traversal which won't be preserved
+                # via LinkTemplate injections so don't bother.
+                m.is_a?( LinkTemplate ) && m.audit_options[:platform] == :tomcat
             end
         }
     end
@@ -97,7 +103,8 @@ class Arachni::Checks::PathTraversal < Arachni::Check::Base
             description: %q{It injects paths of common files (/etc/passwd and boot.ini)
                 and evaluates the existence of a path traversal vulnerability
                 based on the presence of relevant content in the HTML responses.},
-            elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
+            elements:    [ Element::Form, Element::Link, Element::Cookie,
+                           Element::Header, Element::LinkTemplate ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.4.1',
             platforms:   payloads.keys,
