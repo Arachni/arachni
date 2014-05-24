@@ -198,7 +198,17 @@ shared_examples_for 'check' do
     end
 
     def url
-        @url ||= (web_server_url_for( "#{name}_check" ) rescue web_server_url_for( name ))  + '/'
+        @url ||= (
+                begin
+                    web_server_url_for( "#{name}_check" )
+                rescue
+                    begin
+                        web_server_url_for( name )
+                    rescue
+                        web_server_url_for( "#{name}_https" )
+                    end
+                end
+        )  + '/'
     end
 
 end

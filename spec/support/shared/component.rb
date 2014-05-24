@@ -9,7 +9,8 @@ shared_examples_for "component" do
     after( :all ) { framework.reset }
 
     def self.use_https
-        before( :all ) { options.url.gsub!( 'http', 'https' ) }
+        # before( :all ) { options.url.gsub!( 'http', 'https' ) }
+        @use_https = true
     end
 
     def name
@@ -21,7 +22,7 @@ shared_examples_for "component" do
     end
 
     def url
-        @url ||= web_server_url_for( name ) + '/'
+        @url ||= web_server_url_for( @use_https ? "#{name}_https" : name ) + '/'
     rescue
         raise "Could not find server for '#{name}' component."
     end
