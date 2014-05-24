@@ -107,7 +107,7 @@ def get_variations( system, str )
     str = str.split( 'file:/' ).last
     str = str.split( 'c:' ).last
 
-    file = str.gsub( /[\/\\]+/, '/' ).gsub( /\.{2,}/, '' )
+    file = str.gsub( /\.{2,}/, '' ).gsub( '\\', '/' ).gsub( /\/+/, '/' )
     file = "/#{file}" if file[0] != '/'
 
     return if system != FILE_TO_PLATFORM[file] && system != :php && system != :perl
@@ -153,7 +153,7 @@ OUT.keys.each do |system|
     end
 
     get "/#{system_str}/link-template/straight/input/*/stuff" do
-        val = URI.decode( params[:splat].first )
+        val = params[:splat].first
         default = 'default'
         return if val.start_with?( default )
 
@@ -161,7 +161,7 @@ OUT.keys.each do |system|
     end
 
     get "/#{system_str}/link-template/with_null/input/*/stuff" do
-        val = URI.decode( params[:splat].first )
+        val = params[:splat].first
         default = 'default'
         return if !val.end_with?( "\00.html" )
 
