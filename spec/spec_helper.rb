@@ -17,7 +17,8 @@ require_relative 'support/helpers/requires'
 
 Dir.glob( "#{support_path}/{lib,helpers,shared,factories}/**/*.rb" ).each { |f| require f }
 
-# Arachni::UI::Output.verbose
+# Arachni::UI::Output.verbose_on
+# Arachni::UI::Output.debug_on( 2 )
 
 # Uncomment to show output from spawned processes.
 Arachni::Processes::Manager.preserve_output
