@@ -110,13 +110,16 @@ module Timeout
         # Runs phase 2 of the timing attack auditing an individual element
         # (which passed phase 1) with a higher delay and timeout.
         #
-        # * Liveness check: Element is submitted as is to make sure that the page is alive and responsive
+        # * Liveness check: Element is submitted as is to make sure that the
+        #   page is alive and responsive.
         #   * If liveness check fails then phase 2 is aborted
         #   * If liveness check succeeds it progresses to verification
-        # * Verification: Element is submitted with an increased delay to verify the vulnerability
+        # * Verification: Element is submitted with an increased delay to verify
+        #   the vulnerability.
         #   * If verification fails it aborts
         #   * If verification succeeds the issue is logged
-        # * Stabilize responsiveness: Wait for the effects of the timing attack to wear off
+        # * Stabilize responsiveness: Wait for the effects of the timing attack
+        #   to wear off.
         def analysis_phase_2( elem )
             opts          = elem.audit_options
             opts[:delay] *= 2
@@ -149,9 +152,11 @@ module Timeout
                 elem.print_info '* Liveness check was successful, progressing' <<
                                     ' to verification.'
 
-                opts[:skip_like] = proc { |m| m.affected_input_name != elem.affected_input_name }
-                opts[:format]    = [Mutable::Format::STRAIGHT]
-                opts[:silent]    = true
+                opts[:skip_like] = proc do |m|
+                        m.affected_input_name != elem.affected_input_name
+                end
+                opts[:format]        = [Mutable::Format::STRAIGHT]
+                opts[:silent]        = true
 
                 elem.audit( str, opts ) do |c_res|
                     if c_res.app_time.round < (opts[:delay] + opts[:add]) / 1000.0
@@ -200,9 +205,11 @@ module Timeout
                 elem.print_info '* Liveness check was successful, progressing' <<
                                     ' to verification.'
 
-                opts[:skip_like] = proc { |m| m.affected_input_name != elem.affected_input_name }
-                opts[:format]    = [Mutable::Format::STRAIGHT]
-                opts[:silent]    = true
+                opts[:skip_like] = proc do |m|
+                    m.affected_input_name != elem.affected_input_name
+                end
+                opts[:format]        = [Mutable::Format::STRAIGHT]
+                opts[:silent]        = true
 
                 elem.audit( str, opts ) do |c_res, c_elem|
                     if c_res.app_time.round < (opts[:delay] + opts[:add]) / 1000.0
