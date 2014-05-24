@@ -17,6 +17,9 @@ class Arachni::Checks::CodeExecutionPHPInputWrapper < Arachni::Check::Base
             # Add one more mutation (on the fly) which will include the extension
             # of the original value (if that value was a filename) after a null byte.
             each_mutation: proc do |mutation|
+                # Don't bother if the current element type can't carry nulls.
+                next if !mutation.valid_input_value_data?( "\0" )
+
                 m = mutation.dup
 
                 # Figure out the extension of the default value, if it has one.
@@ -24,7 +27,7 @@ class Arachni::Checks::CodeExecutionPHPInputWrapper < Arachni::Check::Base
                 ext = ext.size > 1 ? ext.last : nil
 
                 # Null-terminate the injected value and append the ext.
-                m.affected_input_value += "\x00.#{ext}"
+                m.affected_input_value += "\0.#{ext}"
 
                 # Pass our new element back to be audited.
                 m

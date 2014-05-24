@@ -23,7 +23,7 @@ describe name_from_filename do
                 Element::Form   => 168,
                 Element::Link   => 168,
                 Element::Cookie => 168,
-                Element::Header => 82
+                Element::Header => 84
             },
             tomcat:  {
                 Element::Form   => 6,

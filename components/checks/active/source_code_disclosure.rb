@@ -40,6 +40,9 @@ class Arachni::Checks::SourceCodeDisclosure < Arachni::Check::Base
                     (mutation.mutation_with_original_values? ||
                         mutation.mutation_with_sample_values?)
 
+                # Don't bother if the current element type can't carry nulls.
+                next if !mutation.valid_input_value_data?( "\0" )
+
                 m = mutation.dup
 
                 # Figure out the extension of the default value, if it has one.
@@ -51,7 +54,7 @@ class Arachni::Checks::SourceCodeDisclosure < Arachni::Check::Base
                 next if ext == mutation.affected_input_value.split( '.' ).last
 
                 # Null-terminate the injected value and append the ext.
-                m.affected_input_value += "\x00.#{ext}"
+                m.affected_input_value += "\0.#{ext}"
 
                 # Pass our new element back to be audited.
                 m
