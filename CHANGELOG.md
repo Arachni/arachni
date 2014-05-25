@@ -171,6 +171,9 @@
         - `xss` -- Added support for Browser-based taint-analysis.
         - `xss_script_context` -- Added support for Browser-based taint-analysis.
             - Renamed from `xss_script_tag`.
+    - Passive
+        - New
+            - Cookie set for parent domain (`cookie_set_for_parent_domain`)
 
 ## 0.4.6 _(January 1, 2014)_
 

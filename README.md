@@ -390,6 +390,7 @@ Passive checks look for the existence of files, folders and signatures.
 - X-Forwarded-For Access Restriction Bypass (`x_forwarded_for_access_restriction_bypass`)
 - Form-based upload (`form_upload`)
 - localstart.asp (`localstart_asp`)
+- Cookie set for parent domain (`cookie_set_for_parent_domain`)
 
 ### Report Management
 
