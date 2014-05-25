@@ -140,6 +140,23 @@ shared_examples_for 'auditable' do |options = {}|
                     run
                     injected.should == payload
                 end
+
+                context 'with invalid data' do
+                    it 'is ignored' do
+                        payload = 'stuff-here'
+                        called  = 0
+
+                        described_class.any_instance.stub(:valid_input_data?) { |i| i != payload }
+
+                        auditable.audit( payload,
+                                         format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
+                                         skip_original: true
+                        ) { |_, element| ap element.inputs; called += 1 }
+                        run
+
+                        called.should == 0
+                    end
+                end
             end
             context Array do
                 it 'injects all supplied payload' do

@@ -36,18 +36,22 @@ class Header < Base
     # @yieldparam (see Capabilities::Mutable#each_mutation)
     #
     # @see Capabilities::Mutable#each_mutation
-    def each_mutation( injection_str, opts = {}, &block )
+    def each_mutation( payload, opts = {}, &block )
         flip = opts.delete( :param_flip )
-        super( injection_str, opts, &block )
+        super( payload, opts, &block )
 
         return if !flip
 
-        try_input do
-            elem = self.dup
-            elem.affected_input_name = 'Parameter flip'
-            elem.inputs = { injection_str => seed }
-            yield elem
+        if !valid_input_name_data?( payload )
+            print_debug_level_2 'Payload not supported as input value by' <<
+                                    " #{audit_id}: #{payload.inspect}"
+            return
         end
+        
+        elem = self.dup
+        elem.affected_input_name = 'Parameter flip'
+        elem.inputs = { payload => seed }
+        yield elem
     end
 
     def valid_input_data?( data )

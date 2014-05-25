@@ -150,7 +150,7 @@ module Mutable
             opts[:format].each do |format|
                 str = format_str( payload, cinputs[k], format )
 
-                if !valid_input_data?( str )
+                if !valid_input_value_data?( str )
                     print_debug_level_2 'Payload not supported as input value by' <<
                                             " #{audit_id}: #{str.inspect}"
                     next
@@ -180,33 +180,33 @@ module Mutable
             end
         end
 
-        return if !opts[:param_flip]
+        if opts[:param_flip]
+            if valid_input_name_data?( payload )
+                elem                     = self.dup
+                elem.affected_input_name = 'Parameter flip'
+                elem[payload]            = seed
+                elem.seed                = payload
 
-        if !valid_input_data?( payload )
-            print_debug_level_2 'Payload not supported as input name by' <<
-                                    " #{audit_id}: #{payload.inspect}"
-            return
+                if !generated.include?( elem )
+                    print_debug_mutation elem
+                    yield elem
+                end
+                generated << elem
+            else
+                print_debug_level_2 'Payload not supported as input name by' <<
+                                        " #{audit_id}: #{payload.inspect}"
+                return
+            end
         end
 
-        elem                     = self.dup
-        elem.affected_input_name = 'Parameter flip'
-        elem[payload]      = seed
-        elem.seed                = payload
-
-        if !generated.include?( elem )
-            print_debug_mutation elem
-            yield elem
+        if !opts[:respect_method]
+            elem = switch_method
+            if !generated.include?( elem )
+                print_debug_mutation elem
+                yield elem
+            end
+            generated << elem
         end
-        generated << elem
-
-        return if opts[:respect_method]
-
-        elem = elem.switch_method
-        if !generated.include?( elem )
-            print_debug_mutation elem
-            yield elem
-        end
-        generated << elem
 
         nil
     end

@@ -92,6 +92,22 @@ shared_examples_for 'mutable' do |options = {}|
         end
     end
 
+    describe '#immutables' do
+        it 'skips contained inputs' do
+            input = mutable.inputs.first.first
+
+            mutable.immutables << input
+            mutable.mutations( seed ).
+                reject { |e| e.affected_input_name != input }.
+                should be_empty
+
+            mutable.immutables.clear
+            mutable.mutations( seed ).
+                reject { |e| e.affected_input_name != input }.
+                should be_any
+        end
+    end
+
     describe '#mutations' do
         it 'mutates #inputs' do
             mutable.mutations( seed, skip_original: true ).each do |m|
@@ -123,25 +139,11 @@ shared_examples_for 'mutable' do |options = {}|
             end
         end
 
-        describe '#immutables' do
-            it 'skips contained inputs' do
-                input = mutable.inputs.first.first
-
-                mutable.immutables << input
-                mutable.mutations( seed ).
-                    reject { |e| e.affected_input_name != input }.
-                    should be_empty
-
-                mutable.immutables.clear
-                mutable.mutations( seed ).
-                    reject { |e| e.affected_input_name != input }.
-                    should be_any
-            end
-        end
-
         context 'with option' do
             describe :respect_method,
-                     if: described_class.is_a?( Arachni::Element::Capabilities::Auditable::DOM ) do
+                     if: !described_class.ancestors.include?(
+                         Arachni::Element::Capabilities::Auditable::DOM
+                     ) do
 
                 describe true do
                     it 'does not fuzz methods' do
@@ -163,7 +165,9 @@ shared_examples_for 'mutable' do |options = {}|
                 end
             end
             describe 'Options.audit.with_both_http_methods',
-                     if: described_class.is_a?( Arachni::Element::Capabilities::Auditable::DOM ) do
+                     if: !described_class.ancestors.include?(
+                         Arachni::Element::Capabilities::Auditable::DOM
+                     ) do
 
                 it 'serves as the default value of :respect_method' do
                     Arachni::Options.audit.with_both_http_methods = true
@@ -187,18 +191,15 @@ shared_examples_for 'mutable' do |options = {}|
             describe :param_flip,
                      if: !described_class.ancestors.include?(
                          Arachni::Element::Capabilities::Auditable::DOM
-                     ) && !described_class == Arachni::Element::LinkTemplate do
+                     ) && described_class != Arachni::Element::LinkTemplate do
 
                 it 'uses the seed as a param name' do
-                    mutables = mutable.mutations(
+                    mutable.mutations(
                         seed,
                         format:        [Arachni::Element::Capabilities::Mutable::Format::STRAIGHT],
                         param_flip:    true,
                         skip_original: true
-                    )
-
-                    mutables.select { |m| m.inputs.keys.include? seed }.
-                        size.should > 0
+                    ).select { |m| m.inputs.include? seed }.size.should > 0
                 end
             end
 
@@ -253,6 +254,12 @@ shared_examples_for 'mutable' do |options = {}|
         end
 
         context 'when the payload is not supported' do
+            it 'returns an empty array' do
+                described_class.any_instance.stub(:valid_input_data?) { |i| i != '1' }
+
+                mutable.mutations('1', skip_original: true ).size.should == 0
+            end
+
             context 'as a value' do
                 it 'skips the mutation' do
                     mutable.mutations(seed).
@@ -260,7 +267,7 @@ shared_examples_for 'mutable' do |options = {}|
                         size.should > 0
 
                     described_class.any_instance.
-                        stub(:valid_input_value?) { |value| !value.include? seed }
+                        stub(:valid_input_value_data?) { |value| value.include? seed }
 
                     mutable.mutations('1').
                         select { |m| m.affected_input_value.include? seed }.
@@ -271,7 +278,7 @@ shared_examples_for 'mutable' do |options = {}|
             context 'as a name',
                     if: !described_class.ancestors.include?(
                         Arachni::Element::Capabilities::Auditable::DOM
-                    ) && !described_class == Arachni::Element::LinkTemplate do
+                    ) && described_class != Arachni::Element::LinkTemplate do
 
                 it 'skips the mutation' do
                     seed = 'payload'
@@ -281,7 +288,7 @@ shared_examples_for 'mutable' do |options = {}|
                         size.should > 0
 
                     described_class.any_instance.
-                        stub(:valid_input_name?) { |name| name != seed }
+                        stub(:valid_input_name_data?) { |name| name != seed }
 
                     mutable.mutations( seed, param_flip: true ).
                         select { |m| m.inputs.keys.include? seed }.

@@ -208,8 +208,8 @@ class Form < Base
     # * Password fields requiring identical values (in order to pass
     #   server-side validation)
     #
-    # @param    [String]    seed
-    #   Seed to inject.
+    # @param    [String]    payload
+    #   Payload to inject.
     # @param    [Hash]      opts
     #   Mutation options.
     # @option   opts    [Bool]  :skip_original
@@ -223,12 +223,12 @@ class Form < Base
     #
     # @see Capabilities::Mutable#each_mutation
     # @see Arachni::OptionGroups::Input.fill
-    def each_mutation( seed, opts = {} )
+    def each_mutation( payload, opts = {} )
         opts = MUTATION_OPTIONS.merge( opts )
 
         generated = Arachni::Support::LookUp::HashSet.new
 
-        super( seed, opts ) do |elem|
+        super( payload, opts ) do |elem|
             elem.mirror_password_fields
             yield elem if !generated.include?( elem )
             generated << elem
