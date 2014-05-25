@@ -66,6 +66,33 @@ describe Arachni::OptionGroups::Scope do
         end
     end
 
+    describe '#redundant?' do
+        context 'when the counter reaches 0' do
+            it 'returns true' do
+                subject.redundant_path_patterns = { /match_this/ => 10 }
+
+                url = 'http://stuff.com/match_this'
+                10.times do
+                    subject.redundant?( url ).should be_false
+                end
+
+                subject.redundant?( url ).should be_true
+            end
+        end
+        context 'when the counter has not reached 0' do
+            it 'returns false' do
+                subject.redundant_path_patterns = { /match_this/ => 11 }
+
+                url = 'http://stuff.com/match_this'
+                10.times do
+                    subject.redundant?( url ).should be_false
+                end
+
+                subject.redundant?( url ).should be_false
+            end
+        end
+    end
+
     describe '#auto_redundant_path?' do
         context 'when #auto_redundant_paths limit has been reached' do
             it 'returns true' do

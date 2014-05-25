@@ -177,8 +177,6 @@ class Scope < Arachni::OptionGroup
     #   To be called for each match and be passed the count, regexp and url.
     #
     # @return   [Bool]  true if the url is redundant, false otherwise
-    #
-    # @see #redundant
     def redundant?( url, &block )
         redundant_path_patterns.each do |regexp, count|
             next if !(url =~ regexp)
