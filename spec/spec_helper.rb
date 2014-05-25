@@ -3,6 +3,7 @@
     All rights reserved.
 =end
 
+require 'simplecov'
 require 'faker'
 
 # Uncomment to show output from the Framework.

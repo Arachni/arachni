@@ -11,3 +11,4 @@ error.log
 /lib/arachni/ui/web/server/public/reports/*
 TODO
 .rvmrc
+coverage/
