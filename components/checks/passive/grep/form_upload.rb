@@ -14,7 +14,7 @@ class Arachni::Checks::FileUpload < Arachni::Check::Base
         page.forms.each do |form|
             form.inputs.keys.each do |name|
                 next if form.details_for( name )[:type] != :file
-                log( proof: form.to_html, vector: form )
+                log( proof: form.html, vector: form )
             end
         end
     end

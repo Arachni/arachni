@@ -52,7 +52,8 @@ class Base
         self.url = options[:url] || options[:action]
     end
 
-    # @return  [Element::Base] Reset the element to its original state.
+    # @return  [Element::Base]
+    #   Reset the element to its original state.
     # @abstract
     def reset
         self
@@ -62,9 +63,10 @@ class Base
     def prepare_for_report
     end
 
-    # @return  [String] String uniquely identifying self.
+    # @return  [String]
+    #   String uniquely identifying self.
     def id
-        "#{action}:#{method}:#{inputs.keys.sort}"
+        defined? super ? super : "#{action}:#{type}"
     end
 
     # @return   [Hash] Simple representation of self.
@@ -80,7 +82,11 @@ class Base
     end
 
     def hash
-        to_h.hash
+        id.hash
+    end
+
+    def persistent_hash
+        id.persistent_hash
     end
 
     def ==( other )

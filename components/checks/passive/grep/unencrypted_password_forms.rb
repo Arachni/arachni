@@ -25,7 +25,7 @@ class Arachni::Checks::UnencryptedPasswordForms < Arachni::Check::Base
 
             cform = form.dup
             cform.affected_input_name = name
-            log( vector: cform, proof: form.to_html )
+            log( vector: cform, proof: form.html )
 
             print_ok( "Found unprotected password field '#{name}' at #{page.url}" )
             audited form.id

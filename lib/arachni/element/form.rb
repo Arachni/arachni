@@ -73,9 +73,7 @@ class Form < Base
 
         @input_details = {}
 
-        self.inputs = (options[:inputs] || {}).
-            inject({}) do |h, (name, value_or_info)|
-
+        cinputs = (options[:inputs] || {}).inject({}) do |h, (name, value_or_info)|
              if value_or_info.is_a? Hash
                  value_or_info             = value_or_info.symbolize_keys
                  h[name]                   = value_or_info[:value]
@@ -85,6 +83,9 @@ class Form < Base
              end
                 h
             end
+
+        self.inputs = (method == :get ?
+            (self.inputs || {}).merge(cinputs) : cinputs )
 
         @default_inputs = self.inputs.dup.freeze
     end
@@ -103,10 +104,14 @@ class Form < Base
     # @param    (see Capabilities::Submittable#action=)
     # @@return  (see Capabilities::Submittable#action=)
     def action=( url )
-        v = super( url )
-        @query_vars   = parse_url_vars( v )
-        @audit_id_url = v.split( '?' ).first.to_s
-        v
+        if self.method == :get
+            rewritten   = Link.rewrite( url )
+            self.inputs = parse_url_vars( rewritten ).merge( self.inputs || {} )
+
+            super rewritten.split( '?' ).first.to_s
+        else
+            super url
+        end
     end
 
     # @param    [String]    input
@@ -118,25 +123,9 @@ class Form < Base
     end
 
     # @return   [String]
-    def to_html
-        @html
-    end
-
-    # @return   [String]
     #   Name of ID HTML attributes for this form.
     def name_or_id
         name || @id
-    end
-
-    # @return   [String]
-    #   Unique form ID.
-    def id
-        id_from :inputs
-    end
-
-    def id_from( type = :inputs )
-        "#{@audit_id_url}:#{self.method}:" <<
-            "#{@query_vars.merge( self.send( type ) ).keys.compact.sort.to_s}"
     end
 
     # @return   [Hash]
@@ -186,18 +175,8 @@ class Form < Base
 
     # @param    (see Capabilities::Auditable#audit_id)
     # @@return  (see Capabilities::Auditable#audit_id)
-    def audit_id( injection_str = '', opts = {} )
-        str = if mutation_with_original_values?
-                  opts[:no_auditor] = true
-                  ORIGINAL_VALUES
-              elsif mutation_with_sample_values?
-                  opts[:no_auditor] = true
-                  SAMPLE_VALUES
-              else
-                  injection_str
-              end
-
-        super( str, opts )
+    def audit_id( payload = nil )
+        force_train? ? mutation_id : super( payload )
     end
 
     # Overrides {Arachni::Element::Mutable#each_mutation} adding support
@@ -226,7 +205,7 @@ class Form < Base
     def each_mutation( payload, opts = {} )
         opts = MUTATION_OPTIONS.merge( opts )
 
-        generated = Arachni::Support::LookUp::HashSet.new
+        generated = Arachni::Support::LookUp::HashSet.new( hasher: :mutation_id )
 
         super( payload, opts ) do |elem|
             elem.mirror_password_fields
@@ -313,7 +292,7 @@ class Form < Base
     #
     # @example
     #   Form.new( 'http://stuff.com', { nonce_input: '' } ).nonce_name = 'blah'
-    #   #=> #<RuntimeError: Could not find field named 'blah'.>
+    #   #=> #<Error::FieldNotFound: Could not find field named 'blah'.>
     #
     # @param    [String]    field_name  Name of the field holding the nonce.
     #
@@ -351,19 +330,20 @@ class Form < Base
     #
     # @return   [String]
     def field_type_for( name )
-        details_for( name )[:type]
+        details_for( name )[:type] || :text
     end
 
-    # @see .parse_request_body
-    def parse_request_body( body )
-        self.class.parse_request_body( body )
-    end
-
+    # @param   (see .encode)
+    # @return  (see .encode)
+    #
     # @see .encode
     def encode( str )
         self.class.encode( str )
     end
 
+    # @param   (see .decode)
+    # @return  (see .decode)
+    #
     # @see .decode
     def decode( str )
         self.class.decode( str )

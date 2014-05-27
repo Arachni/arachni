@@ -118,6 +118,22 @@ describe Arachni::Element::LinkTemplate do
         end
     end
 
+    describe '#dom' do
+        context 'when there are no DOM#inputs' do
+            it 'returns nil' do
+                subject.html = '<a href="/stuff">Bla</a>'
+                subject.dom.should be_nil
+            end
+        end
+
+        context 'when there is no #node' do
+            it 'returns nil' do
+                subject.html = nil
+                subject.dom.should be_nil
+            end
+        end
+    end
+
     describe '#to_s' do
         it 'returns the updated link' do
             inputtable.to_s.should == inputtable.action

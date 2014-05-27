@@ -169,6 +169,14 @@ describe Arachni::Element::Cookie do
         end
     end
 
+    describe '#dom' do
+        context 'when there are no #inputs' do
+            it 'returns nil' do
+                subject.inputs = {}
+                subject.dom.should be_nil
+            end
+        end
+    end
 
     describe '#name' do
         it 'returns the name of the cookie' do

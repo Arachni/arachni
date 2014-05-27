@@ -23,8 +23,10 @@ module Capabilities::Refreshable
     def refresh( http_opts = {}, &block )
         updated = nil
         http.get( url.to_s, http_opts.merge( mode: block_given? ? :async : :sync ) ) do |res|
-            # find ourselves
-            f = self.class.from_response( res ).select { |f| f.id == id_from( :default_inputs ) }.first
+
+            # Find the original version of self in the response.
+            f = self.class.from_response( res ).
+                find { |f| f.refresh_id == refresh_id }
 
             if !f
                 block.call if block_given?
@@ -38,6 +40,18 @@ module Capabilities::Refreshable
             block.call( updated ) if block_given?
         end
         updated
+    end
+
+    # @return   [String]
+    #   Unique string identifying this element while disregarding any applied
+    #   runtime modifications (usually to its {#inputs}).
+    #
+    #   Basically, a modified element and a fresh element should both return
+    #   the same value while uniquely identifying the pair.
+    #
+    # @abstract
+    def refresh_id
+        "#{action}:#{type}:#{default_inputs.keys.sort}"
     end
 
 end

@@ -30,7 +30,7 @@ class Link < Base
     def initialize( options )
         super( options )
 
-        self.inputs = options[:inputs] || self.class.parse_query_vars( self.action )
+        self.inputs     = (self.inputs || {}).merge( options[:inputs] || {} )
         @default_inputs = self.inputs.dup.freeze
     end
 
@@ -56,51 +56,50 @@ class Link < Base
         { self.action => self.inputs }
     end
 
-    # @return   [String]    Unique link ID.
-    def id
-        id_from :inputs
-    end
-
-    def id_from( type = :inputs )
-        "#{@audit_id_url}:#{self.method}:" <<
-            "#{@query_vars.merge( self.send( type ) ).keys.compact.sort.to_s}"
-    end
-
     # @note Will {.rewrite} the `url`.
+    # @note Will update the {#inputs} from the URL query.
     #
-    # @param    (see Capabilities::Submittable#action=)
-    # @@return  (see Capabilities::Submittable#action=)
+    # @param   (see Capabilities::Submittable#action=)
+    # @return  (see Capabilities::Submittable#action=)
     def action=( url )
-        v = super( self.class.rewrite( url ) )
+        rewritten   = self.class.rewrite( url )
+        self.inputs = parse_url_vars( rewritten ).merge( self.inputs || {} )
 
-        @query_vars = parse_url_vars( v )
-        @audit_id_url = v.split( '?' ).first.to_s
+        super rewritten.split( '?' ).first.to_s
     end
 
     # @return   [String]
     #   Absolute URL with a merged version of {#action} and {#inputs} as a query.
     def to_s
         uri = uri_parse( self.action ).dup
-        uri.query = @query_vars.merge( self.inputs ).
+        uri.query = self.inputs.
             map { |k, v| "#{encode_query_params(k)}=#{encode_query_params(v)}" }.
             join( '&' )
         uri.to_s
     end
 
+    # @param   (see .encode_query_params)
+    # @return  (see .encode_query_params)
+    #
+    # @see .encode_query_params
     def encode_query_params( *args )
         self.class.encode_query_params( *args )
     end
 
+    # @param   (see .encode)
+    # @return  (see .encode)
+    #
+    # @see .encode
     def encode( *args )
         self.class.encode( *args )
     end
 
+    # @param   (see .decode)
+    # @return  (see .decode)
+    #
+    # @see .decode
     def decode( *args )
         self.class.decode( *args )
-    end
-
-    def audit_id_action
-        @audit_id_url
     end
 
     class <<self
@@ -184,11 +183,11 @@ class Link < Base
         end
 
         def encode( *args )
-            URI.encode( *args )
+            ::URI.encode( *args )
         end
 
         def decode( *args )
-            URI.decode( *args )
+            ::URI.decode( *args )
         end
     end
 

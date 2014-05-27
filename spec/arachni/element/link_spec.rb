@@ -21,7 +21,7 @@ describe Arachni::Element::Link do
         reset_options
     end
 
-    subject { described_class.new( url: "#{url}submit", inputs: inputs ) }
+    subject { described_class.new( url: "#{url}submit", inputs: inputs, html: html ) }
     let(:inputs) { { 'name1' => 'value1', 'name2' => 'value2' } }
     let(:url) { utilities.normalize_url( web_server_url_for( :link ) ) }
     let(:http) { Arachni::HTTP::Client }
@@ -37,20 +37,60 @@ describe Arachni::Element::Link do
     end
 
     describe '#initialize' do
-        context 'when only a url is provided' do
-            let(:url) { 'http://test.com/?one=2&three=4' }
-            let(:link) { described_class.new( url: url ) }
-
-            it 'is used for owner #url' do
-                link.url.should == url
+        describe :action do
+            it 'sets #action' do
+                action = "#{url}stuff"
+                described_class.new( url: url, action: action ).action.should == action
             end
 
-            it 'is used for the #action' do
-                link.action.should == url
+            context 'when nil' do
+                it 'defaults to :url' do
+                    described_class.new( url: url ).action.should == url
+                end
+            end
+        end
+    end
+
+    describe '#action=' do
+        let(:action) { action = "#{url}?stuff=here&and=here2" }
+        let(:query_inputs) do
+            {
+                'stuff' => 'here',
+                'and'   => 'here2'
+            }
+        end
+        let(:option_inputs) do
+            {
+                'more-stuff'     => 'here3',
+                'yet-more-stuff' => 'here4'
+            }
+        end
+        subject do
+            described_class.new(
+                url:    url,
+                action: action,
+                inputs: option_inputs
+            )
+        end
+
+        it 'removes the URL query' do
+            subject.action.should == url
+        end
+
+        it 'merges the URL query parameters with the given :inputs' do
+            subject.inputs.should == query_inputs.merge( option_inputs )
+        end
+
+        context 'when URL query parameters and :inputs have the same name' do
+            let(:option_inputs) do
+                {
+                    'stuff'          => 'here3',
+                    'yet-more-stuff' => 'here4'
+                }
             end
 
-            it 'is parsed in order to extract #inputs' do
-                link.inputs.should == { 'one' => '2', 'three' => '4' }
+            it 'it gives precedence to the :inputs' do
+                subject.inputs.should == query_inputs.merge( option_inputs )
             end
         end
 
@@ -62,19 +102,25 @@ describe Arachni::Element::Link do
                     url:    url,
                     action: "#{url}/articles/some-stuff/23"
                 )
-                link.action.should == url + 'articles.php?id=23'
+                link.action.should == url + 'articles.php'
                 link.url.should == url
                 link.inputs.should == { 'id'  => '23' }
             end
         end
     end
 
-    describe '#id' do
-        context 'when the action it contains path parameters' do
-            it 'ignores them' do
-                e = described_class.new( url: 'http://test.com/path;p=v?p1=v1&p2=v2', inputs: inputs )
-                c = described_class.new( url: 'http://test.com/path?p1=v1&p2=v2', inputs: inputs )
-                e.id.should == c.id
+    describe '#dom' do
+        context 'when there are no DOM#inputs' do
+            it 'returns nil' do
+                subject.html = '<a href="/stuff">Bla</a>'
+                subject.dom.should be_nil
+            end
+        end
+
+        context 'when there is no #node' do
+            it 'returns nil' do
+                subject.html = nil
+                subject.dom.should be_nil
             end
         end
     end
@@ -131,7 +177,7 @@ describe Arachni::Element::Link do
                 </html>'
 
                 link = described_class.from_document( url, html ).first
-                link.action.should == url + 'test2?param_one=value_one&param_two=value_two'
+                link.action.should == url + 'test2'
                 link.url.should == url
                 link.inputs.should == {
                     'param_one'  => 'value_one',
@@ -152,7 +198,7 @@ describe Arachni::Element::Link do
                     </html>'
 
                     link = described_class.from_document( url, html ).first
-                    link.action.should == base_url + 'test?param_one=value_one&param_two=value_two'
+                    link.action.should == base_url + 'test'
                     link.url.should == url
                     link.inputs.should == {
                         'param_one'  => 'value_one',
@@ -160,6 +206,46 @@ describe Arachni::Element::Link do
                     }
                 end
             end
+        end
+    end
+
+    describe '.encode_query_params' do
+        it "encodes '='" do
+            v = 'stuff='
+            described_class.encode_query_params( v ).should == 'stuff%3D'
+        end
+    end
+    describe '#encode_query_params' do
+        it "encodes '='" do
+            v = 'stuff='
+            subject.encode_query_params( v ).should ==
+                described_class.encode_query_params( v )
+        end
+    end
+
+    describe '.encode' do
+        it 'form-encodes the passed string' do
+            v = '% value\ +=&;'
+            described_class.encode( v ).should == URI.encode( v )
+        end
+    end
+    describe '#encode' do
+        it 'form-encodes the passed string' do
+            v = '% value\ +=&;'
+            subject.encode( v ).should == described_class.encode( v )
+        end
+    end
+
+    describe '.decode' do
+        it 'form-decodes the passed string' do
+            v = '%25+value%5C+%2B%3D%26%3B'
+            described_class.decode( v ).should == URI.decode( v )
+        end
+    end
+    describe '#decode' do
+        it 'form-decodes the passed string' do
+            v = '%25+value%5C+%2B%3D%26%3B'
+            subject.decode( v ).should == described_class.decode( v )
         end
     end
 

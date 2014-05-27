@@ -64,7 +64,7 @@ class LinkTemplate < Base
     # @return   [DOM]
     def dom
         return @dom if @dom
-        return if !node || !@html || @skip_dom
+        return if !node || @skip_dom
 
         # Check if the DOM has any auditable inputs and only initialize it
         # if it does.

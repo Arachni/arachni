@@ -141,7 +141,7 @@ module Mutable
         dinputs = inputs.dup
         cinputs = Options.input.fill( inputs )
 
-        generated = Support::LookUp::HashSet.new
+        generated = Support::LookUp::HashSet.new( hasher: :mutation_id )
 
         dinputs.keys.each do |k|
             # Don't audit parameter flips.
@@ -209,6 +209,10 @@ module Mutable
         end
 
         nil
+    end
+
+    def mutation_id
+        id + ":#{inputs}"
     end
 
     def switch_method

@@ -61,6 +61,47 @@ shared_examples_for 'submittable' do
         end
     end
 
+    describe '#id' do
+        let(:action) { "#{url}/action" }
+
+        it 'uniquely identifies the element based on #action' do
+            e = submittable.dup
+            e.stub(:action) { action }
+
+            c = submittable.dup
+            c.stub(:action) { "#{action}2" }
+
+            e.id.should_not == c.id
+        end
+
+        it 'uniquely identifies the element based on #method' do
+            e = submittable.dup
+            e.stub(:method) { :get }
+
+            c = submittable.dup
+            c.stub(:method) { :post }
+
+            e.id.should_not == c.id
+        end
+
+        it 'uniquely identifies the element based on #inputs names' do
+            e = submittable.dup
+            e.stub(:inputs) { {input1: 'stuff' } }
+
+            c = submittable.dup
+            c.stub(:inputs) { {input1: 'stuff2' } }
+            e.id.should == c.id
+
+            e = submittable.dup
+            e.stub(:inputs) { {input1: 'stuff' } }
+
+            c = submittable.dup
+            c.stub(:inputs) { {input2: 'stuff' } }
+
+            e.id.should_not == c.id
+        end
+    end
+
     describe '#dup' do
         let(:dupped) { submittable.dup }
 

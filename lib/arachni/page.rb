@@ -116,7 +116,7 @@ class Page
     attr_reader :metadata
 
     # @return   [Set<Integer>]
-    #   Audit whitelist based on {Element::Capabilities::Auditable#audit_scope_id}.
+    #   Audit whitelist based on {Element::Capabilities::Auditable#persistent_hash}.
     #
     # @see  #update_element_audit_whitelist
     # @see  #audit_element?
@@ -182,7 +182,7 @@ class Page
 
     # @param    [Array<Element::Capabilities::Auditable, Integer>]    list
     #   Audit whitelist based on {Element::Capabilities::Auditable elements} or
-    #   {Element::Capabilities::Auditable#audit_scope_id}s.
+    #   {Element::Capabilities::Auditable#persistent_hash}s.
     #
     # @return   [Set]   {#element_audit_whitelist}
     #
@@ -190,12 +190,12 @@ class Page
     # @see  Check::Auditor#skip?
     def update_element_audit_whitelist( list )
         [list].flatten.each do |e|
-            @element_audit_whitelist << (e.is_a?( Integer ) ? e : e.audit_scope_id )
+            @element_audit_whitelist << (e.is_a?( Integer ) ? e : e.persistent_hash )
         end
     end
 
     # @param    [Element::Capabilities::Auditable, Integer]    element
-    #   Element or {Element::Capabilities::Auditable#audit_scope_id}.
+    #   Element or {Element::Capabilities::Auditable#persistent_hash}.
     #
     # @return   [Bool]
     #   `true` if the element should be audited, `false` otherwise.
@@ -206,7 +206,7 @@ class Page
         return if @do_not_audit_elements
         return true if @element_audit_whitelist.empty?
         @element_audit_whitelist.include?(
-            element.is_a?( Integer ) ? element : element.audit_scope_id
+            element.is_a?( Integer ) ? element : element.persistent_hash
         )
     end
 

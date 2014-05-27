@@ -117,6 +117,10 @@ shared_examples_for 'auditable' do |options = {}|
         end
     end
 
+    describe '#audit_id' do
+        it 'uniquely identifies an audit operation'
+    end
+
     describe '#audit' do
         context 'when no block is given' do
             it 'raises ArgumentError' do

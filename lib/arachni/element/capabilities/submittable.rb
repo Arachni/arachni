@@ -11,8 +11,8 @@ module Capabilities::Submittable
 
     def initialize( options )
         super
-        self.action = options[:action] || self.url
         self.method = options[:method] || :get
+        self.action = options[:action] || self.url
     end
 
     # @return   [Platform]
@@ -97,8 +97,10 @@ module Capabilities::Submittable
     end
     alias :eql? :==
 
-    def hash
-        "#{type}:#{action}:#{method}:#{inputs.hash}}".hash
+    # @return  [String]
+    #   String uniquely identifying self.
+    def id
+        "#{action}:#{method}:#{inputs.keys.sort}"
     end
 
     def dup

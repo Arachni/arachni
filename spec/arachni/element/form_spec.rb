@@ -32,7 +32,8 @@ describe Arachni::Element::Form do
                 'user'         => 'joe',
                 'hidden_field' => 'hidden-value',
                 'password'     => 's3cr3t'
-            }
+            },
+            html: html
         }
     end
 
@@ -46,14 +47,180 @@ describe Arachni::Element::Form do
                 described_class.new( url: url ).method.should == :get
             end
         end
-        context 'when passed options without an action URL' do
-            it 'defaults to the owner URL' do
-                described_class.new( url: url ).action.should == url
+        describe :name do
+            it 'sets #name' do
+                described_class.new( url: url, name: 'john' ).name.should == 'john'
             end
         end
-        context 'when passed options without inputs or any other expected option' do
-            it 'uses the contents of the opts hash as inputs inputs' do
-                subject.inputs.should eq( 'user' => 'joe', 'password' => 's3cr3t', 'hidden_field' => 'hidden-value' )
+        describe :action do
+            it 'sets #action' do
+                action = "#{url}stuff"
+                described_class.new( url: url, action: action ).action.should == action
+            end
+
+            context 'when nil' do
+                it 'defaults to :url' do
+                    described_class.new( url: url ).action.should == url
+                end
+            end
+        end
+    end
+
+    describe '#mutation_with_original_values?' do
+        it 'returns false' do
+            subject.mutation_with_original_values?.should be_false
+        end
+
+        context 'when #mutation_with_original_values' do
+            it 'returns true' do
+                subject.mutation_with_original_values
+                subject.mutation_with_original_values?.should be_true
+            end
+        end
+    end
+
+    describe '#mutation_with_sample_values?' do
+        it 'returns false' do
+            subject.mutation_with_sample_values?.should be_false
+        end
+
+        context 'when #mutation_with_sample_values' do
+            it 'returns true' do
+                subject.mutation_with_sample_values
+                subject.mutation_with_sample_values?.should be_true
+            end
+        end
+    end
+
+    describe '#audit_id' do
+        context 'when #force_train?' do
+            it 'returns #mutation_id' do
+                subject.mutation_with_original_values
+                subject.audit_id( 'stuff' ).should == subject.mutation_id
+            end
+        end
+    end
+
+    describe '#name_or_id' do
+        context 'when a #name is available' do
+            it 'returns it' do
+                described_class.new( url: url, name: 'john' ).
+                    name_or_id.should == 'john'
+            end
+        end
+
+        context 'when a #name is not available' do
+            subject { described_class.new( url: url, id: 'john' ) }
+
+            it 'returns the configured :id' do
+                subject.name.should be_nil
+                subject.name_or_id.should == 'john'
+            end
+        end
+
+        context 'when no #name nor :id are available' do
+            subject { described_class.new( url: url ) }
+
+            it 'returns nil' do
+                subject.name_or_id.should be_nil
+            end
+        end
+    end
+
+    describe '#dom' do
+        context 'when there are no #inputs' do
+            it 'returns nil' do
+                subject.inputs = {}
+                subject.dom.should be_nil
+            end
+        end
+
+        context 'when there is no #node' do
+            it 'returns nil' do
+                subject.html = nil
+                subject.dom.should be_nil
+            end
+        end
+    end
+
+    describe '#force_train?' do
+        it 'returns false' do
+            subject.force_train?.should be_false
+        end
+
+        context 'when #mutation_with_original_values?' do
+            it 'returns true' do
+                subject.mutation_with_original_values
+                subject.force_train?.should be_true
+            end
+        end
+        context 'when #mutation_with_sample_values?' do
+            it 'returns true' do
+                subject.mutation_with_sample_values
+                subject.force_train?.should be_true
+            end
+        end
+    end
+
+    describe '#action=' do
+        let(:action) { action = "#{url}?stuff=here&and=here2" }
+        let(:query_inputs) do
+            {
+                'stuff' => 'here',
+                'and'   => 'here2'
+            }
+        end
+        let(:option_inputs) do
+            {
+                'more-stuff'     => 'here3',
+                'yet-more-stuff' => 'here4'
+            }
+        end
+        subject do
+            described_class.new(
+                url:    url,
+                action: action,
+                inputs: option_inputs,
+                method: method
+            )
+        end
+
+        context 'when #method is' do
+            describe :get do
+                let(:method) { :get }
+
+                it 'removes the URL query' do
+                    subject.action.should == url
+                end
+
+                it 'merges the URL query parameters with the given :inputs' do
+                    subject.inputs.should == query_inputs.merge( option_inputs )
+                end
+
+                context 'when URL query parameters and :inputs have the same name' do
+                    let(:option_inputs) do
+                        {
+                            'stuff'          => 'here3',
+                            'yet-more-stuff' => 'here4'
+                        }
+                    end
+
+                    it 'it gives precedence to the :inputs' do
+                        subject.inputs.should == query_inputs.merge( option_inputs )
+                    end
+                end
+            end
+
+            describe :post do
+                let(:method) { :post }
+
+                it 'preserves the URL query' do
+                    subject.action.should == action
+                end
+
+                it 'ignores the URL query parameters' do
+                    subject.inputs.should == option_inputs
+                end
             end
         end
     end
@@ -92,22 +259,6 @@ describe Arachni::Element::Form do
         describe 'when no data is available' do
             it 'return nil' do
                 described_class.new( url: options[:url] ).name.should be_nil
-            end
-        end
-    end
-
-    describe '#id' do
-        context 'when the action it contains path parameters' do
-            it 'ignores them' do
-                e = described_class.new(
-                    url: 'http://test.com/path;p=v?p1=v1&p2=v2',
-                    inputs: options[:inputs]
-                )
-                c = described_class.new(
-                    url: 'http://test.com/path?p1=v1&p2=v2',
-                    inputs: options[:inputs]
-                )
-                e.id.should == c.id
             end
         end
     end
@@ -335,7 +486,6 @@ describe Arachni::Element::Form do
             it 'does not add mutations with original nor default values' do
                 e = described_class.new( options )
                 mutations = e.mutations( @seed, skip_original: true )
-                mutations.size.should == 10
                 mutations.select { |m| m.mutation? }.size.should == 10
             end
         end
@@ -448,7 +598,8 @@ describe Arachni::Element::Form do
                     'user'         => 'blah',
                     'hidden_field' => 'hidden-value',
                     'password'     => 's3cr3t'
-                }
+                },
+                html: html
             }
         end
     end
@@ -729,11 +880,14 @@ describe Arachni::Element::Form do
                     forms.size.should == 2
 
                     form = forms.shift
-                    form.action.should == utilities.normalize_url( base_url + 'form_action/is/here?ha=hoo')
+                    form.action.should == utilities.normalize_url( base_url + 'form_action/is/here')
                     form.name.should == 'my_form!'
                     form.url.should == url
                     form.method.should == :get
-                    form.inputs.should == { 'text_here' => '' }
+                    form.inputs.should == {
+                        'text_here' => '',
+                        'ha'        => 'hoo'
+                    }
                     form.inputs.keys.each do |input|
                         form.field_type_for( input ).should == :text
                     end
@@ -822,7 +976,8 @@ describe Arachni::Element::Form do
     end
     describe '#encode' do
         it 'form-encodes the passed string' do
-            described_class.encode( '% value\ +=&;' ).should == '%25+value%5C+%2B%3D%26%3B'
+            v = '% value\ +=&;'
+            subject.encode( v ).should == described_class.encode( v )
         end
     end
 
@@ -833,7 +988,8 @@ describe Arachni::Element::Form do
     end
     describe '#decode' do
         it 'form-decodes the passed string' do
-            described_class.decode( '%25+value%5C+%2B%3D%26%3B' ).should == '% value\ +=&;'
+            v = '%25+value%5C+%2B%3D%26%3B'
+            subject.decode( v ).should == described_class.decode( v )
         end
     end
 

@@ -175,33 +175,10 @@ module Auditable
     #
     # @return  [String]
     def audit_id( payload = nil, opts = {} )
-        vars = inputs.keys.sort.to_s
-
         str = ''
         str << "#{auditor.class.name}:" if !opts[:no_auditor] && !orphan?
-
-        str << "#{audit_id_action}:#{type}:#{vars}"
+        str << id
         str << "=#{payload}" if !opts[:no_payload]
-
-        str
-    end
-
-    def audit_id_action
-        @action
-    end
-
-    # @note Used when in multi-Instance mode, to generate a white-list of
-    #   element IDs that are allowed to be audited.
-    #
-    # Provides a more generalized audit ID which does not take into account
-    # the auditor's name.
-    #
-    # @param    [Hash]  opts
-    #   {#audit} options.
-    #
-    # @return   [Integer]   Hash ID.
-    def audit_scope_id( opts = {} )
-        audit_id( nil, opts.merge( no_auditor: true, no_payload: true ) ).persistent_hash
     end
 
     # @return [Boolean]
@@ -215,6 +192,21 @@ module Auditable
 
     def dup
         copy_auditable( super )
+    end
+
+    protected
+
+    # @param  [Block]   block
+    #   Block to be used for analysis of the response.
+    def submit_and_process( options = {}, &block )
+        submit( options ) do |response|
+            element = response.request.performer
+            if !element.audit_options[:silent]
+                print_status "Analyzing response ##{response.request.id}..."
+            end
+
+            exception_jail( false ){ block.call( response, element ) }
+        end
     end
 
     private
@@ -263,12 +255,6 @@ module Auditable
 
         print_debug_level_2 "About to audit: #{audit_id}"
 
-        # If we don't have any inputs elements just return.
-        if inputs.empty?
-            print_debug_level_2 'The element has no inputs inputs.'
-            return false
-        end
-
         if self.action && skip_path?( self.action )
             print_debug_level_2 "Element's action matches skip rule, bailing out."
             return false
@@ -276,7 +262,7 @@ module Auditable
 
         self.auditor ||= @audit_options.delete( :auditor )
 
-        audit_id = audit_id( payload, @audit_options )
+        audit_id = audit_id( payload )
         if !@audit_options[:redundant] && audited?( audit_id )
             print_debug_level_2 "Skipping, already audited: #{audit_id}"
             return false
@@ -311,13 +297,13 @@ module Auditable
             end
 
             if !orphan? && auditor.skip?( elem )
-                mid = elem.audit_id( payload, @audit_options )
+                mid = elem.audit_id( payload )
                 print_debug_level_2 "Auditor's #skip? method returned true for mutation, skipping: #{mid}"
                 next
             end
 
             if skip?( elem )
-                mid = elem.audit_id( payload, @audit_options )
+                mid = elem.audit_id( payload  )
                 print_debug_level_2 "Self's #skip? method returned true for mutation, skipping: #{mid}"
                 next
             end
@@ -338,12 +324,12 @@ module Auditable
             if each_mutation && (elements = each_mutation.call( elem ))
                 [elements].flatten.compact.each do |e|
                     next if !e.is_a?( self.class )
-                    e.submit( submit_options ) { |response| on_complete( response, &block ) }
+                    e.submit_and_process( submit_options, &block )
                 end
             end
 
             # Submit the element with the injection values.
-            elem.submit( submit_options ) { |response| on_complete( response, &block ) }
+            elem.submit_and_process( submit_options, &block )
         end
 
         true
@@ -351,35 +337,6 @@ module Auditable
 
     def skip_path?( url )
         super || redundant_path?( url )
-    end
-
-    # Registers a block to be executed as soon as the {Request} has been
-    # completed and a {HTTP::Response} is available.
-    #
-    # @param  [Arachni::HTTP::Request]  request
-    # @param  [Block]   block
-    #   Block to be used for analysis of responses; will be passed the HTTP
-    #   response as soon as it is received.
-    def on_complete( request, &block )
-        return if !request
-
-        # If we're in blocking mode the passed object will be a response not
-        # a request.
-        if request.is_a? HTTP::Response
-            after_complete( request, &block )
-            return
-        end
-
-        request.on_complete { |response| after_complete( response, &block ) }
-    end
-
-    def after_complete( response, &block )
-        element = response.request.performer
-        if !element.audit_options[:silent]
-            print_status "Analyzing response ##{response.request.id}..."
-        end
-
-        exception_jail( false ){ block.call( response, response.request.performer )}
     end
 
     # Checks whether or not an audit has been already performed.

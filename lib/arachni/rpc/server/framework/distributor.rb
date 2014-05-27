@@ -185,7 +185,7 @@ module Distributor
 
     def dump_workload_to_console( workload )
         find_by_id = proc do |page, id|
-            page.elements.find { |e| e.audit_scope_id == id }
+            page.elements.find { |e| e.persistent_hash == id }
         end
 
         distributed = []
@@ -277,7 +277,7 @@ module Distributor
         elements.map do |e|
             next if e.inputs.empty?
 
-            id = e.audit_scope_id
+            id = e.persistent_hash
             next if distributed_elements.include?( id )
             distributed_elements << id
 
