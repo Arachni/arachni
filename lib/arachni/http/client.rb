@@ -90,6 +90,7 @@ class Client
     attr_reader :burst_response_count
 
     def initialize
+        super
         reset
     end
 
@@ -210,8 +211,7 @@ class Client
             h[iv] = val.deep_clone rescue val.dup rescue val
         end
 
-        hooks = {}
-        @__hooks.each { |k, v| hooks[k] = v.dup } if @__hooks
+        saved_observers = dup_observers
 
         pre_cookies = cookies.deep_clone
         pre_headers = headers.deep_clone
@@ -225,7 +225,7 @@ class Client
         headers.merge! pre_headers
 
         h.each { |iv, val| instance_variable_set( iv, val ) }
-        @__hooks = hooks
+        set_observers( saved_observers )
 
         ret
     end

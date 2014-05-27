@@ -6,69 +6,68 @@
 module Arachni
 module Mixins
 
+# Provides a flexible way to make any `Class` observable for multiple events.
 #
-# Provides a flexible way to make any Class observable via callbacks/hooks
-# using simple dynamic programming with the help of "method_missing()".
+# The observable classes use:
 #
-# The observable classes (those which include this module) use:
-#
-#    * call_<hookname>( *args )
+#    * `call_<event>( *args )`
 #
 # to call specific hooks.
 #
 # The observers set hooks using:
 #
-#    * observer_instance.add_<hookname>( &block )
-#    * observer_instance.on_<hookname>( &block )
-#
+#    * `observable.on_<event>( &block )`
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 module Observable
-    include Arachni::Utilities
+    include Utilities
 
-    def clear_observers
-        @__hooks.clear if @__hooks
+    def self.included( base )
+        base.extend ClassMethods
     end
 
-    def method_missing( sym, *args, &block )
-        # grab the action (add/call) and the hook name
-        action, hook = sym.to_s.split( '_', 2 )
+    module ClassMethods
+        def advertise( *ad_events )
+            ad_events.each do |event|
+                define_method "on_#{event}" do |&block|
+                    observers_for( event ) << block
+                end
 
-        @__hooks       ||= {}
-        @__hooks[hook] ||= []
+                define_method "call_#{event}" do |*args|
+                    observers_for( event ).each do |block|
+                        exception_jail do
+                            block.call( *args )
+                        end
+                    end
+                end
 
-        if action && hook
-            case action
-                when 'add', 'on'
-                    add_block( hook, &block )
-                    return
-
-                 when 'call'
-                    call_blocks( hook, args )
-                    return
+                private "call_#{event}"
             end
-        end
 
-        fail NoMethodError.new( "Undefined method '#{sym.to_s}'.", sym, args )
+            nil
+        end
     end
 
     private
 
-    def add_block( hook, &block )
-        @__hooks[hook] << block
+    def observers
+        @__observers ||= {}
     end
 
-    def call_blocks( hook, *args )
-        @__hooks[hook].each do |block|
-            exception_jail {
-                if args.first.size == 1
-                    block.call( args.flatten[0] )
-                else
-                    block.call( *args )
-                end
-            }
-        end
+    def dup_observers
+        observers.inject({}) { |h, (k, v)| h[k] = v.dup; h }
+    end
+
+    def set_observers( obs )
+        @__observers = obs
+    end
+
+    def observers_for( event )
+        observers[event.to_sym] ||= []
+    end
+
+    def clear_observers
+        observers.clear
     end
 
 end
