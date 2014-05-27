@@ -27,7 +27,9 @@ class Node < Arachni::RPC::Server::Dispatcher::Node
     end
 
     def shutdown
-        Arachni::Processes::Manager.kill Process.pid
+        Reactor.global.delay 1 do
+            Arachni::Processes::Manager.kill Process.pid
+        end
     end
 
     def connect_to_peer( url )
