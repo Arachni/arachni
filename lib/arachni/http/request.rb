@@ -55,7 +55,16 @@ class Request < Message
     # @see MODES
     attr_reader :mode
 
+    # @note Available only via completed {Response#request}.
+    #
+    # @return   [String]
+    #   Transmitted HTTP request headers.
     attr_accessor :headers_string
+
+    # @note Available only via completed {Response#request}.
+    #
+    # @return   [String]
+    #   Transmitted HTTP request body.
     attr_accessor :effective_body
 
     # Entity which performed the request -- mostly used to track which response
@@ -175,6 +184,12 @@ class Request < Message
             h[cookie.name] = cookie.value
             h
         end.merge( cookies )
+    end
+
+    # @return   [String]
+    #   HTTP request string.
+    def to_s
+        "#{headers_string}#{effective_body}"
     end
 
     # @note Can be invoked multiple times.

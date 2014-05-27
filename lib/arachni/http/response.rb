@@ -71,6 +71,12 @@ class Response < Message
         @status_line ||= headers_string.lines.first.to_s.chomp.freeze
     end
 
+    # @return   [String]
+    #   HTTP response string.
+    def to_s
+        "#{headers_string}#{body}"
+    end
+
     # @return [Boolean]
     #   `true` if the response is a `3xx` redirect **and** there is a `Location`
     #   header field.

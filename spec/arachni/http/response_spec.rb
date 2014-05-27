@@ -69,6 +69,12 @@ describe Arachni::HTTP::Response do
         end
     end
 
+    describe '#to_s' do
+        it 'returns the HTTP response as a string' do
+            subject.to_s.should == "#{subject.headers_string}#{subject.body}"
+        end
+    end
+
     describe '#platforms' do
         it 'returns the platform manager for the resource' do
             Factory[:response].platforms.should be_kind_of Arachni::Platform::Manager

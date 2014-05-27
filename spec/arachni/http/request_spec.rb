@@ -98,6 +98,13 @@ describe Arachni::HTTP::Request do
         end
     end
 
+    describe '#to_s' do
+        it 'returns the HTTP request as a string' do
+            request = described_class.new( url: @url ).run.request
+            request.to_s.should == "#{request.headers_string}#{request.effective_body}"
+        end
+    end
+
     describe '#run' do
         it 'performs the request' do
             request  = described_class.new( url: @url )
