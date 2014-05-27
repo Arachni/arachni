@@ -155,30 +155,32 @@ module Auditable
     end
 
     # @return  [String]
-    #   Status string explaining what's being audited.
-    #
-    #   The string contains the name of the input that is being audited,
-    #   the url and the type of the input (form, link, cookie...).
+    #   Status message explaining what input vector is being audited, containing
+    #   its name, {#type} and {#action}.
     def status_string
-        "Auditing #{self.type} input '#{@affected_input_name}' with" <<
-            " action '#{@action}'."
+        "Auditing #{self.type} input '#{@affected_input_name}'" <<
+            " pointing to: '#{@action}'"
     end
 
-    # @note Mostly used to keep track of what audits have been perform in order
-    #   to prevent redundancies.
-    #
-    # Returns an audit ID string used to identify the audit of `self` by its
-    # {#auditor}.
-    #
+    # @return  [String]
+    #   Verbose message including the payload used to audit the current vector.
+    def verbose_string
+        s = "With: #{seed.inspect}"
+
+        if seed != affected_input_value
+            s << " -> #{affected_input_value.inspect}"
+        end
+
+        s
+    end
+
     # @param  [String]  payload
-    # @param  [Hash]    opts
+    #   Payload about to be used for the {#audit}.
     #
     # @return  [String]
-    def audit_id( payload = nil, opts = {} )
-        str = ''
-        str << "#{auditor.class.name}:" if !opts[:no_auditor] && !orphan?
-        str << id
-        str << "=#{payload}" if !opts[:no_payload]
+    #   ID string used to identify the {#audit} of `self` by its {#auditor}.
+    def audit_id( payload = nil )
+        "#{auditor.class.name}:#{id}:#{payload}"
     end
 
     # @return [Boolean]
@@ -196,13 +198,16 @@ module Auditable
 
     protected
 
+    # Calls {#submit} and does some internal processing (prints messages etc.)
+    # before forwarding the response and performer element to the `block`.
+    #
     # @param  [Block]   block
     #   Block to be used for analysis of the response.
     def submit_and_process( options = {}, &block )
         submit( options ) do |response|
             element = response.request.performer
             if !element.audit_options[:silent]
-                print_status "Analyzing response ##{response.request.id}..."
+                print_status  "Analyzing response ##{response.request.id}..."
             end
 
             exception_jail( false ){ block.call( response, element ) }
@@ -316,19 +321,21 @@ module Auditable
                 next if should_skip
             end
 
-            # Inform the user about what we're auditing.
-            print_status( elem.status_string ) if !@audit_options[:silent]
+            if !@audit_options[:silent]
+                print_status elem.status_string
+                print_verbose "--> #{elem.verbose_string}"
+            end
 
-            # Process each mutation via the supplied block if we have one and
+            # Process each mutation via the supplied block, if we have one, and
             # submit new mutations returned by that block, if any.
             if each_mutation && (elements = each_mutation.call( elem ))
                 [elements].flatten.compact.each do |e|
                     next if !e.is_a?( self.class )
+
                     e.submit_and_process( submit_options, &block )
                 end
             end
 
-            # Submit the element with the injection values.
             elem.submit_and_process( submit_options, &block )
         end
 
