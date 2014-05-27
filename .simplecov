@@ -1,3 +1,8 @@
+pid = Process.pid
+SimpleCov.at_exit do
+  SimpleCov.result.format! if Process.pid == pid
+end
+
 SimpleCov.start do
     add_filter do |source_file|
         path = source_file.filename
