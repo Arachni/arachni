@@ -21,7 +21,7 @@ shared_examples_for 'mutable' do |options = {}|
     let(:seed) { 'my_seed' }
     let(:mutable) do
         if defined? super
-            super *[]
+            super()
         else
             s = subject.dup
             s.inputs = inputs

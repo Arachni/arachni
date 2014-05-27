@@ -189,7 +189,7 @@ class Worker < Arachni::Browser
         kill_check.join
         @consumer.kill if @consumer
 
-        super(*[])
+        super()
     end
 
     def self.name
