@@ -1042,7 +1042,7 @@ describe Arachni::Framework do
             subject.push_to_page_queue( page ).should be_true
             subject.run
 
-            subject.auditstore.issues.size.should == 2
+            subject.auditstore.issues.size.should == 1
             subject.page_queue_total_size.should > 0
         end
 

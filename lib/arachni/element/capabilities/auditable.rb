@@ -180,7 +180,15 @@ module Auditable
     # @return  [String]
     #   ID string used to identify the {#audit} of `self` by its {#auditor}.
     def audit_id( payload = nil )
-        "#{auditor.class.name}:#{id}:#{payload}"
+        "#{auditor.class.name}:#{coverage_id}:#{payload}"
+    end
+
+    # @note Differences in input values will not be taken into consideration.
+    #
+    # @return  [String]
+    #   String identifying self's coverage of the web application's input surface.
+    def coverage_id
+        "#{action}:#{type}:#{inputs.keys.sort}"
     end
 
     # @return [Boolean]

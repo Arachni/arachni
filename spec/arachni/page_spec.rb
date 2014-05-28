@@ -221,14 +221,14 @@ describe Arachni::Page do
             context Arachni::Element::Capabilities::Auditable do
                 it 'updates the #element_audit_whitelist' do
                     subject.update_element_audit_whitelist subject.elements.first
-                    subject.element_audit_whitelist.should include subject.elements.first.persistent_hash
+                    subject.element_audit_whitelist.should include subject.elements.first.coverage_id.persistent_hash
                 end
             end
 
             context Integer do
                 it 'updates the #element_audit_whitelist' do
-                    subject.update_element_audit_whitelist subject.elements.first.persistent_hash
-                    subject.element_audit_whitelist.should include subject.elements.first.persistent_hash
+                    subject.update_element_audit_whitelist subject.elements.first.coverage_id.persistent_hash
+                    subject.element_audit_whitelist.should include subject.elements.first.coverage_id.persistent_hash
                 end
             end
 
@@ -236,16 +236,16 @@ describe Arachni::Page do
                 context Arachni::Element::Capabilities::Auditable do
                     it 'updates the #element_audit_whitelist' do
                         subject.update_element_audit_whitelist [subject.elements[0],subject.elements[1]]
-                        subject.element_audit_whitelist.should include subject.elements[0].persistent_hash
-                        subject.element_audit_whitelist.should include subject.elements[1].persistent_hash
+                        subject.element_audit_whitelist.should include subject.elements[0].coverage_id.persistent_hash
+                        subject.element_audit_whitelist.should include subject.elements[1].coverage_id.persistent_hash
                     end
                 end
 
                 context Integer do
                     it 'updates the #element_audit_whitelist' do
-                        subject.update_element_audit_whitelist [subject.elements[0].persistent_hash, subject.elements[1].persistent_hash]
-                        subject.element_audit_whitelist.should include subject.elements[0].persistent_hash
-                        subject.element_audit_whitelist.should include subject.elements[1].persistent_hash
+                        subject.update_element_audit_whitelist [subject.elements[0].coverage_id.persistent_hash, subject.elements[1].coverage_id.persistent_hash]
+                        subject.element_audit_whitelist.should include subject.elements[0].coverage_id.persistent_hash
+                        subject.element_audit_whitelist.should include subject.elements[1].coverage_id.persistent_hash
                     end
                 end
             end
@@ -277,7 +277,7 @@ describe Arachni::Page do
                     context Integer do
                         it 'returns true' do
                             subject.update_element_audit_whitelist subject.elements.first
-                            subject.audit_element?( subject.elements.first.persistent_hash ).should be_true
+                            subject.audit_element?( subject.elements.first.coverage_id.persistent_hash ).should be_true
                         end
                     end
 
@@ -294,7 +294,7 @@ describe Arachni::Page do
                     context Integer do
                         it 'returns false' do
                             subject.update_element_audit_whitelist subject.elements.first
-                            subject.audit_element?( subject.elements.last.persistent_hash ).should be_false
+                            subject.audit_element?( subject.elements.last.coverage_id.persistent_hash ).should be_false
                         end
                     end
 
@@ -727,7 +727,7 @@ describe Arachni::Page do
             it 'preserves #element_audit_whitelist' do
                 subject.update_element_audit_whitelist subject.elements.first
                 dupped = subject.send(method)
-                dupped.element_audit_whitelist.should include subject.elements.first.persistent_hash
+                dupped.element_audit_whitelist.should include subject.elements.first.coverage_id.persistent_hash
             end
 
             it 'preserves Arachni::Element::Form#node of #forms' do

@@ -1831,7 +1831,7 @@ describe Arachni::Browser do
                 form = page.forms.find { |form| form.inputs.include? 'ajax-token' }
 
                 form.url.should == @url + 'with-ajax'
-                form.action.should == @url + 'get-ajax?ajax-token=my-token'
+                form.action.should == @url + 'get-ajax'
                 form.inputs.should == { 'ajax-token' => 'my-token' }
                 form.method.should == :get
             end

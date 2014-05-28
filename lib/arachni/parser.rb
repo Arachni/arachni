@@ -155,8 +155,8 @@ class Parser
 
             Form.from_document( @url, response.body ).each do |form2|
                 f.each do |form|
-                    next if "#{form.id}:#{form.name_or_id}" !=
-                        "#{form2.id}:#{form2.name_or_id}"
+                    next if "#{form.coverage_id}:#{form.name_or_id}" !=
+                        "#{form2.coverage_id}:#{form2.name_or_id}"
 
                     form.inputs.each do |k, v|
                         next if !(v != form2.inputs[k] &&

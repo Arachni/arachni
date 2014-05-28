@@ -92,21 +92,18 @@ module Capabilities::Submittable
         HTTP::Client
     end
 
-    def ==( e )
-        hash == e.hash
-    end
-    alias :eql? :==
-
+    # @note Differences in input values will be taken into consideration.
+    #
     # @return  [String]
     #   String uniquely identifying self.
     def id
-        "#{action}:#{method}:#{inputs.keys.sort}"
+        "#{type}:#{method}:#{action}:#{inputs.sort_by { |k,_| k }}"
     end
 
     def dup
         new = super
-        new.action = self.action
         new.method = self.method
+        new.action = self.action
         new
     end
 

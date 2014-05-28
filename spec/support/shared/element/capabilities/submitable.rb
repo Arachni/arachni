@@ -84,19 +84,22 @@ shared_examples_for 'submittable' do
             e.id.should_not == c.id
         end
 
-        it 'uniquely identifies the element based on #inputs names' do
+        it 'uniquely identifies the element based on #type' do
+            e = submittable.dup
+            e.stub(:type) { :stuff }
+
+            c = submittable.dup
+            c.stub(:type) { :stoof }
+
+            e.id.should_not == c.id
+        end
+
+        it 'uniquely identifies the element based on #inputs' do
             e = submittable.dup
             e.stub(:inputs) { {input1: 'stuff' } }
 
             c = submittable.dup
             c.stub(:inputs) { {input1: 'stuff2' } }
-            e.id.should == c.id
-
-            e = submittable.dup
-            e.stub(:inputs) { {input1: 'stuff' } }
-
-            c = submittable.dup
-            c.stub(:inputs) { {input2: 'stuff' } }
 
             e.id.should_not == c.id
         end

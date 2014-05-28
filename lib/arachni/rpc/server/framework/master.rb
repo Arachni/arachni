@@ -281,11 +281,12 @@ module Master
                 end
 
                 if pages.empty?
-                    # Don't be selfish, if there's no extra workload to share then
+                    # Don't be selfish, if there's no extra workload to share,
                     # share the one page we do have.
-                    pages = [page]
+                    distribute_page_workload( [page] ) { |next_page| page = next_page }
+                else
+                    distribute_page_workload( pages )
                 end
-                distribute_page_workload( pages ) { |next_page| page = next_page }
             end
 
             audit_page( page )

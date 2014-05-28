@@ -173,10 +173,10 @@ class Form < Base
         end
     end
 
-    # @param    (see Capabilities::Auditable#audit_id)
-    # @@return  (see Capabilities::Auditable#audit_id)
+    # @param   (see Capabilities::Auditable#audit_id)
+    # @return  (see Capabilities::Auditable#audit_id)
     def audit_id( payload = nil )
-        force_train? ? mutation_id : super( payload )
+        force_train? ? id : super( payload )
     end
 
     # Overrides {Arachni::Element::Mutable#each_mutation} adding support
@@ -205,7 +205,7 @@ class Form < Base
     def each_mutation( payload, opts = {} )
         opts = MUTATION_OPTIONS.merge( opts )
 
-        generated = Arachni::Support::LookUp::HashSet.new( hasher: :mutation_id )
+        generated = Arachni::Support::LookUp::HashSet.new( hasher: :id )
 
         super( payload, opts ) do |elem|
             elem.mirror_password_fields

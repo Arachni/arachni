@@ -96,7 +96,7 @@ describe Arachni::Element::Form do
         context 'when #force_train?' do
             it 'returns #mutation_id' do
                 subject.mutation_with_original_values
-                subject.audit_id( 'stuff' ).should == subject.mutation_id
+                subject.audit_id( 'stuff' ).should == subject.id
             end
         end
     end
