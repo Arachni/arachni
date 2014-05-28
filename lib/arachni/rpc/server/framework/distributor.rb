@@ -193,7 +193,7 @@ module Distributor
             c = page_chunks.map do |p|
                 elements = p.audit_whitelist.to_a.map do |id|
                     e = find_by_id.call( p, id )
-                    { id => (e.id if e) }
+                    { id => (e.coverage_id if e) }
                 end
 
                 [p.url, elements]

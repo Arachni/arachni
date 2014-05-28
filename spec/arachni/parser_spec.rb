@@ -24,7 +24,7 @@ describe Arachni::Parser do
 
     describe '#link' do
         it 'returns the URL of the response as a Link' do
-            @parser.link.action.should == @url
+            @parser.link.action.should == @opts.url
             @parser.link.inputs.should == { 'query_var_input' => 'query_var_val' }
         end
     end
@@ -297,13 +297,13 @@ describe Arachni::Parser do
                 links.size.should == 2
 
                 link = links.first
-                link.action.should == @utils.normalize_url( @url )
+                link.action.should == @opts.url
                 link.inputs.should == { 'query_var_input' => 'query_var_val' }
                 link.method.should == :get
                 link.url.should == @url
 
                 link = links.last
-                link.action.should == @utils.normalize_url( @opts.url + '/link?link_input=link_val' )
+                link.action.should == @utils.normalize_url( @opts.url + '/link' )
                 link.inputs.should == { 'link_input' => 'link_val' }
                 link.method.should == :get
                 link.url.should == @url
@@ -338,7 +338,8 @@ describe Arachni::Parser do
 
         describe '#to_absolute' do
             it 'converts a relative path to absolute' do
-                @parser_with_base.to_absolute( 'relative/path' ).should == @utils.normalize_url( "#{@parser_with_base.base}relative/path" )
+                @parser_with_base.to_absolute( 'relative/path' ).should ==
+                    @utils.normalize_url( "#{@parser_with_base.base}relative/path" )
             end
         end
 
@@ -348,13 +349,13 @@ describe Arachni::Parser do
                 links.size.should == 2
 
                 link = links.first
-                link.action.should == @url_with_base
+                link.action.should == @opts.url + 'with_base'
                 link.inputs.should ==  { 'stuff' => 'ha' }
                 link.method.should == :get
                 link.url.should == @url_with_base
 
                 link = links.last
-                link.action.should == @parser_with_base.base + 'link_with_base?link_input=link_val'
+                link.action.should == @parser_with_base.base + 'link_with_base'
                 link.inputs.should == { 'link_input' => 'link_val' }
                 link.method.should == :get
                 link.url.should == @url_with_base

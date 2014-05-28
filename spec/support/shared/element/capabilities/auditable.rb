@@ -121,6 +121,47 @@ shared_examples_for 'auditable' do |options = {}|
         it 'uniquely identifies an audit operation'
     end
 
+    describe '#coverage_id' do
+        let(:action) { "#{url}/action" }
+
+        it 'takes into account #action' do
+            e = auditable.dup
+            e.stub(:action) { action }
+
+            c = auditable.dup
+            c.stub(:action) { "#{action}2" }
+
+            e.coverage_id.should_not == c.coverage_id
+        end
+
+        it 'takes into account #type' do
+            e = auditable.dup
+            e.stub(:type) { :blah }
+
+            c = auditable.dup
+            c.stub(:type) { :blooh }
+
+            e.coverage_id.should_not == c.coverage_id
+        end
+
+        it 'takes into account #inputs names' do
+            e = auditable.dup
+            e.stub(:inputs) { {input1: 'stuff' } }
+
+            c = auditable.dup
+            c.stub(:inputs) { {input1: 'stuff2' } }
+            e.coverage_id.should == c.coverage_id
+
+            e = auditable.dup
+            e.stub(:inputs) { {input1: 'stuff' } }
+
+            c = auditable.dup
+            c.stub(:inputs) { {input2: 'stuff' } }
+
+            e.coverage_id.should_not == c.coverage_id
+        end
+    end
+
     describe '#audit' do
         context 'when no block is given' do
             it 'raises ArgumentError' do

@@ -253,24 +253,24 @@ describe Arachni::Session do
     end
 
     describe '#find_login_form' do
-        before { @id = "#{@url}/login:post:[\"password\", \"token\", \"username\"]" }
+        before { @id = "#{@url}/login:form:[\"password\", \"token\", \"username\"]" }
         context 'when passed an array of :pages' do
             it 'should go through its forms and locate the login one' do
                 p = Arachni::Page.from_url( @url + '/login' )
-                subject.find_login_form( pages: [ p, p ] ).id.should == @id
+                subject.find_login_form( pages: [ p, p ] ).coverage_id.should == @id
             end
         end
         context 'when passed an array of :forms' do
             it 'should go through its forms and locate the login one' do
                 p = Arachni::Page.from_url( @url + '/login' )
-                subject.find_login_form( forms: p.forms ).id.should == @id
+                subject.find_login_form( forms: p.forms ).coverage_id.should == @id
             end
         end
         context 'when passed a url' do
             it 'store the cookies set by that url' do
                 Arachni::HTTP::Client.cookies.should be_empty
 
-                subject.find_login_form( url: @url + '/login' ).id.should == @id
+                subject.find_login_form( url: @url + '/login' ).coverage_id.should == @id
 
                 Arachni::HTTP::Client.cookies.find do |c|
                     c.name == 'you_need_to' && c.value == 'preserve this'
@@ -279,7 +279,7 @@ describe Arachni::Session do
 
             context 'and called without a block' do
                 it 'should operate in blocking mode, go through its forms and locate the login one' do
-                    subject.find_login_form( url: @url + '/login' ).id.should == @id
+                    subject.find_login_form( url: @url + '/login' ).coverage_id.should == @id
                 end
             end
             context 'and called with a block' do
@@ -289,7 +289,7 @@ describe Arachni::Session do
                     subject.find_login_form( url: @url + '/login' ) { |f| form = f }
                     subject.http.run
 
-                    form.id.should == @id
+                    form.coverage_id.should == @id
                 end
             end
         end
@@ -298,7 +298,7 @@ describe Arachni::Session do
                 subject.find_login_form(
                     url:    @url + '/multiple',
                     inputs: :token
-                ).id.should == @id
+                ).coverage_id.should == @id
             end
         end
         context 'when passed an :action' do
@@ -307,7 +307,7 @@ describe Arachni::Session do
                     subject.find_login_form(
                         url:    @url + '/multiple',
                         action: /login/
-                    ).id.should == @id
+                    ).coverage_id.should == @id
                 end
             end
             context String do
@@ -315,7 +315,7 @@ describe Arachni::Session do
                     subject.find_login_form(
                         url:    @url + '/multiple',
                         action: "#{@url}/login"
-                    ).id.should == @id
+                    ).coverage_id.should == @id
                 end
             end
         end

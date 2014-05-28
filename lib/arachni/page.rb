@@ -190,7 +190,8 @@ class Page
     # @see  Check::Auditor#skip?
     def update_element_audit_whitelist( list )
         [list].flatten.each do |e|
-            @element_audit_whitelist << (e.is_a?( Integer ) ? e : e.persistent_hash )
+            @element_audit_whitelist <<
+                (e.is_a?( Integer ) ? e : e.coverage_id.persistent_hash )
         end
     end
 
@@ -206,7 +207,7 @@ class Page
         return if @do_not_audit_elements
         return true if @element_audit_whitelist.empty?
         @element_audit_whitelist.include?(
-            element.is_a?( Integer ) ? element : element.persistent_hash
+            element.is_a?( Integer ) ? element : element.coverage_id.persistent_hash
         )
     end
 
@@ -545,7 +546,7 @@ class Page
 
         return if !element.respond_to?(:has_nonce?) || !element.has_nonce?
 
-        @metadata[element.type][:nonces][element.id.persistent_hash] =
+        @metadata[element.type][:nonces][element.coverage_id.persistent_hash] =
             element.nonce_name
     end
 
@@ -554,7 +555,7 @@ class Page
 
         return if !element.respond_to?(:nonce_name=) || element.has_nonce?
 
-        element.nonce_name = @metadata[element.type][:nonces][element.id.persistent_hash]
+        element.nonce_name = @metadata[element.type][:nonces][element.coverage_id.persistent_hash]
     end
 
     def ensure_metadata_nonces( element )

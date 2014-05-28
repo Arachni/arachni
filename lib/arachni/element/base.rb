@@ -92,6 +92,7 @@ class Base
     def ==( other )
         hash == other.hash
     end
+    alias :eql? :==
 
     # @return  [String]
     #   URL of the page that owns the element.
