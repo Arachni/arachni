@@ -88,24 +88,12 @@ class DOM < Base
         :link_template_dom
     end
 
-    def prepare_data_from_node
-        return if !(data = self.class.data_from_node( node ))
-
-        @template   = data[:template]
-        self.inputs = data[:inputs]
-        @fragment   = data[:fragment]
-
-        @default_inputs = self.inputs.dup.freeze
-    end
-
     def self.data_from_node( node )
         href = node.attributes['href'].to_s
         return if !href.include? '#'
 
-        fragment = href.split( '#', 2 ).last.to_s
-        return if fragment.empty?
+        fragment = Link.decode( href.split( '#', 2 ).last.to_s )
 
-        fragment = Link.decode( fragment )
         template, inputs = extract_inputs( fragment )
         return if !template || inputs.empty?
 
@@ -121,7 +109,7 @@ class DOM < Base
     end
 
     def to_rpc_data
-        super.merge( 'template' => @template.to_s )
+        super.merge( 'template' => @template.source )
     end
 
     def self.from_rpc_data( data )
@@ -129,6 +117,16 @@ class DOM < Base
     end
 
     private
+
+    def prepare_data_from_node
+        return if !(data = self.class.data_from_node( node ))
+
+        @template   = data[:template]
+        self.inputs = data[:inputs]
+        @fragment   = data[:fragment]
+
+        @default_inputs = self.inputs.dup.freeze
+    end
 
     def prepare_browser( browser, options )
         @browser = browser

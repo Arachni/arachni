@@ -148,4 +148,54 @@ describe Arachni::Element::LinkTemplate::DOM do
         end
     end
 
+    describe '.to_rpc_data' do
+        it 'converts the #template to a string' do
+            subject.to_rpc_data['template'].should == subject.template.source
+        end
+    end
+
+    describe '.data_from_node' do
+        let(:node) { subject.node }
+        let(:data) { described_class.data_from_node( node ) }
+
+        it 'returns a hash with DOM data' do
+            data.should == {
+                inputs:   subject.inputs,
+                fragment: subject.fragment,
+                template: subject.template
+            }
+        end
+
+        it 'decodes the fragment before extracting inputs' do
+            html = "<a href='#/param/bl%20ah'>Stuff</a>"
+            node = Nokogiri::HTML.fragment(html).children.first
+
+            described_class.data_from_node( node )[:inputs].should == {
+                'param' => 'bl ah'
+            }
+        end
+
+        context 'when there is no URL fragment' do
+            let(:node) do
+                Nokogiri::HTML.fragment( "<a href='/stuff/here'>Stuff</a>" ).
+                    children.first
+            end
+
+            it 'return nil' do
+                described_class.data_from_node( node ).should be_nil
+            end
+        end
+
+        context 'when there are no inputs' do
+            let(:node) do
+                Nokogiri::HTML.fragment( "<a href='#/param2/val'>Stuff</a>" ).
+                    children.first
+            end
+
+            it 'return nil' do
+                described_class.data_from_node( node ).should be_nil
+            end
+        end
+    end
+
 end
