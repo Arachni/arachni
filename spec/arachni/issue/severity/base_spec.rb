@@ -9,7 +9,7 @@ describe Arachni::Issue::Severity::Base do
 
     describe '#to_s' do
         it 'returns the severity as a String' do
-            described_class.new( :test ).to_sym == 'test'
+            described_class.new( :test ).to_s == 'test'
         end
     end
 end
