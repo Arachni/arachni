@@ -118,7 +118,32 @@ shared_examples_for 'auditable' do |options = {}|
     end
 
     describe '#audit_id' do
-        it 'uniquely identifies an audit operation'
+        it 'takes into account the #auditor class' do
+            auditable.auditor = 1
+            id = auditable.audit_id
+
+            auditable.auditor = '2'
+            auditable.audit_id.should_not == id
+
+            auditable.auditor = 1
+            id = auditable.audit_id
+
+            auditable.auditor = 2
+            auditable.audit_id.should == id
+        end
+
+        it 'takes into account the #coverage_id' do
+            auditable.stub(:coverage_id) { 'blah' }
+            id = auditable.audit_id
+
+            auditable.stub(:coverage_id) { 'bloo' }
+            auditable.audit_id.should_not == id
+        end
+
+        it 'takes into account the given payload' do
+            id = auditable.audit_id( '1' )
+            auditable.audit_id( '2' ).should_not == id
+        end
     end
 
     describe '#coverage_id' do
