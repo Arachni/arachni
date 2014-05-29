@@ -99,7 +99,10 @@ class DOM < Base
     end
 
     def self.data_from_node( node )
-        fragment = node.attributes['href'].to_s.split( '#', 2 ).last.to_s
+        href = node.attributes['href'].to_s
+        return if !href.include? '#'
+
+        fragment = href.split( '#', 2 ).last.to_s
         return if fragment.empty?
 
         fragment = Link.decode( fragment )
