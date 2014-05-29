@@ -94,6 +94,10 @@ class Link < Base
         self.class.decode( *args )
     end
 
+    def coverage_id
+        dom_data ? "#{super}:#{dom_data[:inputs].keys.sort}" : super
+    end
+
     def id
         dom_data ? "#{super}:#{dom_data[:inputs].sort_by { |k,_| k }}" : super
     end

@@ -143,6 +143,10 @@ describe Arachni::Element::Link do
         end
     end
 
+    describe '#coverage_id' do
+        it "takes into account #{described_class::DOM}#inputs.keys"
+    end
+
     describe '#id' do
         it "takes into account #{described_class::DOM}#inputs"
     end
