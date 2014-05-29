@@ -210,7 +210,7 @@ class Client
                 duped_after_run.each { |block| block.call }
             end while @queue_size > 0
 
-            call_after_each_run
+            notify_after_each_run
 
             # Prune the custom 404 cache after callbacks have been called.
             prune_custom_404_cache
@@ -436,7 +436,7 @@ class Client
     #
     # @param  [Request]  request  the request to queue
     def queue( request )
-        call_on_queue( request )
+        notify_on_queue( request )
         forward_request( request )
     end
 
@@ -456,7 +456,7 @@ class Client
         cookies = Cookie.from_response( response )
         update_cookies( cookies )
 
-        call_on_new_cookies( cookies, response )
+        notify_on_new_cookies( cookies, response )
     end
 
     # @param  [Response]  response
@@ -633,7 +633,7 @@ class Client
                     response.to_page
                 end
 
-                call_on_complete( response )
+                notify_on_complete( response )
 
                 parse_and_set_cookies( response ) if request.update_cookies?
 

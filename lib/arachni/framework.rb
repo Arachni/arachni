@@ -279,7 +279,7 @@ class Framework
             end
         end
 
-        call_on_page_audit( page )
+        notify_on_page_audit( page )
 
         @current_url = page.dom.url.to_s
 
@@ -317,7 +317,7 @@ class Framework
         # Makes it easier on the GC.
         page.clear_cache
 
-        call_after_page_audit( page )
+        notify_after_page_audit( page )
         run_http
     end
 

@@ -6,17 +6,17 @@
 module Arachni
 module Mixins
 
-# Provides a flexible way to make any `Class` observable for multiple events.
+# Provides a flexible way to make any object observable for multiple events.
 #
 # The observable classes use:
 #
-#    * `call_<event>( *args )`
+#    * `notify_<event>( *args )`
 #
-# to call specific hooks.
+# to notify observers of events.
 #
-# The observers set hooks using:
+# The observers request notifications using:
 #
-#    * `observable.on_<event>( &block )`
+#    * `observable.<event>( &block )`
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 module Observable
@@ -35,7 +35,7 @@ module Observable
                     self
                 end
 
-                define_method "call_#{event}" do |*args|
+                define_method "notify_#{event}" do |*args|
                     observers_for( event ).each do |block|
                         exception_jail { block.call( *args ) }
                     end
@@ -43,7 +43,7 @@ module Observable
                     nil
                 end
 
-                private "call_#{event}"
+                private "notify_#{event}"
             end
 
             nil

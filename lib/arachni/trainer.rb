@@ -126,7 +126,7 @@ class Trainer
         if has_new_elements
             @trainings_per_url[incoming_page.url] += 1
 
-            call_on_new_page incoming_page
+            notify_on_new_page incoming_page
             @framework.push_to_page_queue( incoming_page )
         end
 

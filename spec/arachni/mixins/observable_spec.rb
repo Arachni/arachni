@@ -7,8 +7,8 @@ class ObservableTest
 
     advertise :my_event, :my_other_event
 
-    def call( event, *args )
-        send "call_#{event}", *args
+    def notify( event, *args )
+        send "notify_#{event}", *args
     end
 
 end
@@ -21,7 +21,7 @@ describe Arachni::Mixins::Observable do
         it 'adds an observer' do
             called = false
             subject.my_event { called = true }
-            subject.call :my_event
+            subject.notify :my_event
 
             called.should be_true
         end
@@ -44,7 +44,7 @@ describe Arachni::Mixins::Observable do
                 subject.my_other_event do |one, two, three|
                     received_args = [one, two, three]
                 end
-                subject.call :my_other_event, sent_args
+                subject.notify :my_other_event, sent_args
 
                 received_args.should == sent_args
             end
@@ -60,7 +60,7 @@ describe Arachni::Mixins::Observable do
     describe '#call_<event>' do
         it 'returns nil' do
             subject.my_event { }
-            subject.call( :my_event ).should be_nil
+            subject.notify( :my_event ).should be_nil
         end
     end
 
@@ -71,7 +71,7 @@ describe Arachni::Mixins::Observable do
             subject.my_event { called = true }
             subject.clear_observers
 
-            subject.call :my_event
+            subject.notify :my_event
 
             called.should be_false
 
