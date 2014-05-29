@@ -8,8 +8,7 @@ require 'singleton'
 
 module Arachni
 
-lib = Options.paths.lib
-require lib + 'typhoeus/hydra'
+require_relative '../ethon/easy'
 
 module HTTP
 
