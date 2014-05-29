@@ -150,11 +150,6 @@ module Utilities
         URI.normalize( url )
     end
 
-    # @see normalize_url
-    def url_sanitize( url )
-        normalize_url( url )
-    end
-
     #
     # @param   [String]   url
     #
