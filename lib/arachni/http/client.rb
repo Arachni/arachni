@@ -10,7 +10,6 @@ module Arachni
 
 lib = Options.paths.lib
 require lib + 'typhoeus/hydra'
-require lib + 'mixins/observable'
 
 module HTTP
 
