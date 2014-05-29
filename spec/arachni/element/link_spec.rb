@@ -144,11 +144,43 @@ describe Arachni::Element::Link do
     end
 
     describe '#coverage_id' do
-        it "takes into account #{described_class::DOM}#inputs.keys"
+        it "takes into account #{described_class::DOM}#inputs.keys" do
+            e = subject.dup
+            e.html = '<a href="/stuff#?stuff=blah">Bla</a>'
+
+            c = subject.dup
+            c.html = '<a href="/stuff#?stuff=blooh">Bla</a>'
+
+            c.coverage_id.should == e.coverage_id
+
+            e = subject.dup
+            e.html = '<a href="/stuff#?stuff=blah">Bla</a>'
+
+            c = subject.dup
+            c.html = '<a href="/stuff#?stuff2=blooh">Bla</a>'
+
+            c.coverage_id.should_not == e.coverage_id
+        end
     end
 
     describe '#id' do
-        it "takes into account #{described_class::DOM}#inputs"
+        it "takes into account #{described_class::DOM}#inputs" do
+            e = subject.dup
+            e.html = '<a href="/stuff#?stuff=blah">Bla</a>'
+
+            c = subject.dup
+            c.html = '<a href="/stuff#?stuff=blah">Bla</a>'
+
+            c.id.should == e.id
+
+            e = subject.dup
+            e.html = '<a href="/stuff#?stuff=blah">Bla</a>'
+
+            c = subject.dup
+            c.html = '<a href="/stuff#?stuff=blooh">Bla</a>'
+
+            c.id.should_not == e.id
+        end
     end
 
     describe '#to_rpc_data' do
