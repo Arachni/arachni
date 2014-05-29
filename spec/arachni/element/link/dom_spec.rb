@@ -151,7 +151,16 @@ describe Arachni::Element::Link::DOM do
     end
 
     describe '.data_from_node' do
-        it 'returns a hash with DOM data'
+        it 'returns a hash with DOM data' do
+            described_class.data_from_node( subject.node ).should == {
+                inputs:         {
+                    'param' => 'some-name'
+                },
+                fragment:       '/test/?param=some-name',
+                fragment_path:  '/test/',
+                fragment_query: 'param=some-name'
+            }
+        end
 
         it 'decodes inputs' do
             html = "<a href='#/?stuff%20here=bl%20ah'>Stuff</a>"
