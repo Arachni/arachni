@@ -160,9 +160,11 @@ describe Arachni::Element::LinkTemplate::DOM do
 
         it 'returns a hash with DOM data' do
             data.should == {
-                inputs:   subject.inputs,
-                fragment: subject.fragment,
-                template: subject.template
+                inputs:   {
+                    'param' => 'some-name'
+                },
+                template: /param\/(?<param>.+)/,
+                fragment: '/param/some-name'
             }
         end
 
