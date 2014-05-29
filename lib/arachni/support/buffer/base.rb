@@ -14,8 +14,16 @@ module Support::Buffer
 class Base
     include Mixins::Observable
 
+    # @!method on_flush( &block )
+    #   @param    [Block] block   block to call on {#push}
     advertise :on_push
+
+    # @!method on_flush( &block )
+    #   @param    [Block] block   block to call on {#batch_push}
     advertise :on_batch_push
+
+    # @!method on_flush( &block )
+    #   @param    [Block] block   block to call on {#flush}
     advertise :on_flush
 
     # @return   [Integer]   Maximum buffer size.
