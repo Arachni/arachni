@@ -141,7 +141,7 @@ module Mutable
         dinputs = inputs.dup
         cinputs = Options.input.fill( inputs )
 
-        generated = Support::LookUp::HashSet.new( hasher: :inputtable_id )
+        generated = Support::LookUp::HashSet.new( hasher: :mutable_id )
 
         dinputs.keys.each do |k|
             # Don't audit parameter flips.
@@ -248,6 +248,12 @@ module Mutable
 
     def dup
         copy_mutable( super )
+    end
+
+    protected
+
+    def mutable_id
+        "#{self.method}:#{inputtable_id}"
     end
 
     private

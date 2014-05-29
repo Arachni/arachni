@@ -205,7 +205,7 @@ class Form < Base
     def each_mutation( payload, opts = {} )
         opts = MUTATION_OPTIONS.merge( opts )
 
-        generated = Arachni::Support::LookUp::HashSet.new( hasher: :inputtable_id )
+        generated = Arachni::Support::LookUp::HashSet.new( hasher: :mutable_id )
 
         super( payload, opts ) do |elem|
             elem.mirror_password_fields
