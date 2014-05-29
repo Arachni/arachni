@@ -150,4 +150,39 @@ describe Arachni::Element::Link::DOM do
         end
     end
 
+    describe '.data_from_node' do
+        it 'returns a hash with DOM data'
+
+        it 'decodes inputs' do
+            html = "<a href='#/?stuff%20here=bl%20ah'>Stuff</a>"
+            node = Nokogiri::HTML.fragment(html).children.first
+
+            described_class.data_from_node( node )[:inputs].should == {
+                'stuff here' => 'bl ah'
+            }
+        end
+
+        context 'when there is no URL fragment' do
+            let(:node) do
+                Nokogiri::HTML.fragment( "<a href='/stuff/here'>Stuff</a>" ).
+                    children.first
+            end
+
+            it 'return nil' do
+                described_class.data_from_node( node ).should be_nil
+            end
+        end
+
+        context 'when there are no inputs' do
+            let(:node) do
+                Nokogiri::HTML.fragment( "<a href='/stuff/here#blah'>Stuff</a>" ).
+                    children.first
+            end
+
+            it 'return nil' do
+                described_class.data_from_node( node ).should be_nil
+            end
+        end
+    end
+
 end
