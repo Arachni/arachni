@@ -42,6 +42,35 @@ class Client
 
     personalize_output
 
+    # @!method after_run( &block )
+    #
+    #   @param    [Block] block
+    #       Called after the next {#run}.
+    #
+    #   @return   [Arachni::HTTP::Client]
+    #       `self`
+    advertise :after_run
+
+    # @!method after_each_run( &block )
+    #
+    #   @param    [Block] block
+    #       Called after each {#run}.
+    #
+    #   @return   [Arachni::HTTP] self
+    advertise :after_each_run
+
+    # @!method on_queue( &block )
+    advertise :on_queue
+
+    # @!method on_new_cookies( &block )
+    #
+    #   @param    [Block] block
+    #       To be passed the new cookies and the response that set them
+    advertise :on_new_cookies
+
+    # @!method on_complete( &block )
+    advertise :on_complete
+
     #
     # {Client} error namespace.
     #
@@ -130,8 +159,6 @@ class Client
 
         @queue_size = 0
 
-        @after_run = []
-
         @with_regular_404_handler = Support::LookUp::HashSet.new
         @_404  = Hash.new
         @mutex = Monitor.new
@@ -172,26 +199,26 @@ class Client
 
     # Runs all queued requests
     def run
-        exception_jail {
+        exception_jail do
             @burst_runtime = nil
 
             begin
                 hydra_run
 
-                duped_after_run = @after_run.dup
-                @after_run.clear
+                duped_after_run = observers_for( :after_run ).dup
+                observers_for( :after_run ).clear
                 duped_after_run.each { |block| block.call }
             end while @queue_size > 0
 
-            call_after_run_persistent
+            call_after_each_run
 
             # Prune the custom 404 cache after callbacks have been called.
             prune_custom_404_cache
 
             @curr_res_time = 0
-            @curr_res_cnt = 0
+            @curr_res_cnt  = 0
             true
-        }
+        end
     rescue SystemExit
         raise
     rescue
@@ -294,26 +321,6 @@ class Client
     # @return   [Array<Arachni::Element::Cookie>]   All cookies in the jar.
     def cookies
         cookie_jar.cookies
-    end
-
-    # Gets called each time a hydra {#run} completes.
-    #
-    # @param    [Block] block   Callback.
-    #
-    # @return   [Arachni::HTTP] self
-    def after_run( &block )
-        @after_run << block
-        self
-    end
-
-    # Like {#after_run} but will not be removed after it has been called.
-    #
-    # @param    [Block] block   Callback.
-    #
-    # @return   [Arachni::HTTP] self
-    def after_run_persistent( &block )
-        add_after_run_persistent( &block )
-        self
     end
 
     # Queues/performs a generic request.
@@ -429,11 +436,8 @@ class Client
     #
     # @param  [Request]  request  the request to queue
     def queue( request )
-        requests   = call_on_queue( request )
-        requests ||= request
-
-        [requests].flatten.reject { |p| !p.is_a?( Request ) }.
-            each { |request| forward_request( request ) }
+        call_on_queue( request )
+        forward_request( request )
     end
 
     # @param    [Array<String, Hash, Arachni::Element::Cookie>]   cookies
@@ -444,7 +448,7 @@ class Client
     end
     alias :set_cookies :update_cookies
 
-    # @note Executes callbacks added with `add_on_new_cookies( &block )`.
+    # @note Runs {#on_new_cookies} callbacks.
     #
     # @param    [Response]    response
     #   Extracts cookies from `response` and updates the cookie-jar.
@@ -453,12 +457,6 @@ class Client
         update_cookies( cookies )
 
         call_on_new_cookies( cookies, response )
-    end
-
-    # @param    [Block] block
-    #   To be passed the new cookies and the response that set them
-    def on_new_cookies( &block )
-        add_on_new_cookies( &block )
     end
 
     # @param  [Response]  response

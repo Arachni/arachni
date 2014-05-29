@@ -231,7 +231,7 @@ describe Arachni::HTTP::Client do
             headers = subject.headers.dup
 
             signals = []
-            subject.add_on_complete do |r|
+            subject.on_complete do |r|
                 signals << :out
             end
 
@@ -246,7 +246,7 @@ describe Arachni::HTTP::Client do
                 subject.headers['X-Custom'] = 'stuff'
                 subject.headers.include?( 'X-Custom' ).should be_true
 
-                subject.add_on_complete do |r|
+                subject.on_complete do |r|
                     signals << :in
                 end
 
@@ -403,10 +403,9 @@ describe Arachni::HTTP::Client do
             subject.run
         end
 
-
-        it 'calls the after_run_persistent callbacks EVERY TIME' do
+        it 'calls the after_each_run callbacks EVERY TIME' do
             called = false
-            subject.after_run_persistent { called = true }
+            subject.after_each_run { called = true }
             subject.run
             called.should be_true
             called = false
