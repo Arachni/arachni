@@ -12,6 +12,11 @@ module Support::Buffer
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Base
+    include Mixins::Observable
+
+    advertise :on_push
+    advertise :on_batch_push
+    advertise :on_flush
 
     # @return   [Integer]   Maximum buffer size.
     attr_reader :max_size
@@ -23,10 +28,6 @@ class Base
     def initialize( max_size = nil, type = Array )
         @buffer    = type.new
         @max_size  = max_size
-
-        @on_flush_blocks      = []
-        @on_push_blocks       = []
-        @on_batch_push_blocks = []
     end
 
     #
@@ -35,7 +36,7 @@ class Base
     # @param    [Object]    obj object to push
     #
     def <<( obj )
-        call_on_push_blocks obj
+        notify_on_push obj
         @buffer << obj
         self
     end
@@ -48,7 +49,7 @@ class Base
     # @param    [#|]    list list of objects
     #
     def batch_push( list )
-        call_on_batch_push_blocks list
+        notify_on_batch_push list
         @buffer |= list
         self
     end
@@ -75,41 +76,10 @@ class Base
     #
     def flush
         buffer = @buffer.dup
-        call_on_flush_blocks buffer
+        notify_on_flush buffer
         buffer
     ensure
         @buffer.clear
-    end
-
-    # @param    [Block] block   block to call on {#push}
-    def on_push( &block )
-        @on_push_blocks << block
-        self
-    end
-
-    # @param    [Block] block   block to call on {#batch_push}
-    def on_batch_push( &block )
-        @on_batch_push_blocks << block
-        self
-    end
-
-    # @param    [Block] block   block to call on {#flush}
-    def on_flush( &block )
-        @on_flush_blocks << block
-        self
-    end
-
-    private
-    def call_on_flush_blocks( *args )
-        @on_flush_blocks.each { |b| b.call *args }
-    end
-
-    def call_on_push_blocks( *args )
-        @on_push_blocks.each { |b| b.call *args }
-    end
-
-    def call_on_batch_push_blocks( *args )
-        @on_batch_push_blocks.each { |b| b.call *args }
     end
 
 end
