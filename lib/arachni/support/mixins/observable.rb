@@ -22,6 +22,7 @@ module Mixins
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 module Observable
     include Utilities
+    include MonitorMixin
 
     def self.included( base )
         base.extend ClassMethods
@@ -31,17 +32,11 @@ module Observable
         def advertise( *ad_events )
             ad_events.each do |event|
                 define_method event do |&block|
-                    fail ArgumentError, 'Missing block' if !block
-                    observers_for( event ) << block
-                    self
+                    add_observer( event, &block )
                 end
 
                 define_method "notify_#{event}" do |*args|
-                    observers_for( event ).each do |block|
-                        exception_jail { block.call( *args ) }
-                    end
-
-                    nil
+                    notify_observers( event, *args )
                 end
 
                 private "notify_#{event}"
@@ -51,10 +46,35 @@ module Observable
         end
     end
 
+    def initialize
+        super
+
+        @__observers = {}
+    end
+
     private
 
     def observers
-        @__observers ||= {}
+        @__observers
+    end
+
+    def add_observer( event, &block )
+        fail ArgumentError, 'Missing block' if !block
+        synchronize do
+            observers_for( event ) << block
+        end
+
+        self
+    end
+
+    def notify_observers( event, *args )
+        synchronize do
+            observers_for( event ).each do |block|
+                exception_jail { block.call( *args ) }
+            end
+        end
+
+        nil
     end
 
     def dup_observers
@@ -70,7 +90,9 @@ module Observable
     end
 
     def clear_observers
-        observers.clear
+        synchronize do
+            observers.clear
+        end
     end
 
 end

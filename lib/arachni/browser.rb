@@ -113,8 +113,8 @@ class Browser
     # @option   options [Bool] :store_pages  (true)
     #   Whether to store pages in addition to just passing them to {#on_new_page}.
     def initialize( options = {} )
+        super()
         @options = options.dup
-        @mutex   = Mutex.new
 
         @proxy = HTTP::ProxyServer.new(
             concurrency:      @options[:concurrency],
@@ -1227,10 +1227,6 @@ class Browser
 
     def get_response( url )
         synchronize { @window_responses[url] }
-    end
-
-    def synchronize( &block )
-        @mutex.synchronize( &block )
     end
 
     def normalize_watir_url( url )

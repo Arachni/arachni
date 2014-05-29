@@ -26,6 +26,8 @@ class Trainer
 
     # @param    [Arachni::Framework]  framework
     def initialize( framework )
+        super()
+
         @framework  = framework
         @updated    = false
 

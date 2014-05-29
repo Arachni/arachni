@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 class ObservableTest
-    include Arachni::Mixins::Observable
+    include Arachni::Support::Mixins::Observable
 
     public :clear_observers
 
@@ -13,7 +13,7 @@ class ObservableTest
 
 end
 
-describe Arachni::Mixins::Observable do
+describe Arachni::Support::Mixins::Observable do
 
     subject{ ObservableTest.new }
 

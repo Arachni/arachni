@@ -1,5 +1,11 @@
 require 'spec_helper'
 
+class Arachni::BrowserCluster::Worker
+    def observer_count_for( event )
+        observers_for( event ).size
+    end
+end
+
 describe Arachni::BrowserCluster::Worker do
     before( :each ) do
         @cluster = Arachni::BrowserCluster.new( pool_size: 1 )
@@ -187,7 +193,7 @@ describe Arachni::BrowserCluster::Worker do
                 @cluster.queue( custom_job ) {}
                 @cluster.wait
 
-                (subject.on_new_page{}).size.should == 1
+                subject.observer_count_for(:on_new_page).should == 0
             end
 
             it 'clears #on_new_page_with_sink callbacks' do
@@ -196,7 +202,7 @@ describe Arachni::BrowserCluster::Worker do
                 @cluster.queue( custom_job ){}
                 @cluster.wait
 
-                (subject.on_new_page_with_sink{}).size.should == 1
+                subject.observer_count_for(:on_new_page_with_sink).should == 0
             end
 
             it 'clears #on_response callbacks' do
@@ -205,7 +211,7 @@ describe Arachni::BrowserCluster::Worker do
                 @cluster.queue( custom_job ){}
                 @cluster.wait
 
-                (subject.on_response{}).size.should == 1
+                subject.observer_count_for(:on_response).should == 0
             end
 
             it 'clears #on_fire_event callbacks' do
@@ -214,7 +220,7 @@ describe Arachni::BrowserCluster::Worker do
                 @cluster.queue( custom_job ){}
                 @cluster.wait
 
-                (subject.on_fire_event{}).size.should == 1
+                subject.observer_count_for(:on_fire_event).should == 0
             end
 
             it 'removes #job' do

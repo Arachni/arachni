@@ -160,7 +160,6 @@ class Client
 
         @with_regular_404_handler = Support::LookUp::HashSet.new
         @_404  = Hash.new
-        @mutex = Monitor.new
 
         self
     end
@@ -684,11 +683,6 @@ class Client
     def random_string
         Digest::SHA1.hexdigest( rand( 9999999 ).to_s )
     end
-
-    def synchronize( &block )
-        @mutex.synchronize( &block )
-    end
-
 
     def self.info
         { name: 'HTTP' }

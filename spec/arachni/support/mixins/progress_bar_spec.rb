@@ -2,10 +2,10 @@ require 'spec_helper'
 require_testee
 
 class ProgressBarTest
-    include Arachni::Mixins::ProgressBar
+    include Arachni::Support::Mixins::ProgressBar
 end
 
-describe Arachni::Mixins::ProgressBar do
+describe Arachni::Support::Mixins::ProgressBar do
 
     before :all do
         @pb = ProgressBarTest.new

@@ -124,6 +124,8 @@ class Framework
     # @param    [Block]      block
     #   Block to be passed a {Framework} instance which will then be {#reset}.
     def initialize( options = Arachni::Options.instance, &block )
+        super()
+
         Encoding.default_external = 'BINARY'
         Encoding.default_internal = 'BINARY'
 
@@ -151,7 +153,6 @@ class Framework
         @retries  = {}
 
         @after_page_audit_blocks = []
-        @mutex = Monitor.new
 
         # Little helper to run a piece of code and reset the framework to be
         # ready to be reused.
@@ -1173,10 +1174,6 @@ class Framework
         cnt = 0
         regexps.each { |filter| cnt += 1 if str =~ filter }
         cnt == regexps.size
-    end
-
-    def synchronize( &block )
-        @mutex.synchronize( &block )
     end
 
 end

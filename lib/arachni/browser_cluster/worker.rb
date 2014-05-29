@@ -104,10 +104,7 @@ class Worker < Arachni::Browser
 
         # The jobs may have configured callbacks to capture pages etc.,
         # remove them.
-        @on_new_page_blocks.clear
-        @on_new_page_with_sink_blocks.clear
-        @on_response_blocks.clear
-        @on_fire_event_blocks.clear
+        clear_observers
 
         begin
             watir.cookies.clear

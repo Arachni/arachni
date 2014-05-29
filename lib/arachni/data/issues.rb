@@ -12,7 +12,13 @@ class Data
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Issues
-    include MonitorMixin
+    include Support::Mixins::Observable
+
+    # @!method on_new_pre_deduplication( &block )
+    #   @param    [Block] block
+    #       Block to be passed each issue passed to {#<<}.
+    advertise :on_new_pre_deduplication
+    advertise :on_new
 
     # @return   [Hash{Integer=>Issue}]  Issues by their {Issue#digest}.
     attr_reader :collection
@@ -30,12 +36,6 @@ class Issues
         # We also use this Set for deduplication in case #do_not_store has been
         # called.
         @digests = Set.new
-
-        # Called when a new issue is logged.
-        @on_new_blocks = []
-
-        # Called whenever #<< is called.
-        @on_new_pre_deduplication_blocks = []
 
         store
     end
@@ -123,7 +123,7 @@ class Issues
     # @param    [Issue] issue   Issue to push to the collection.
     # @return   [Issues]    `self`
     def <<( issue )
-        call_on_new_pre_deduplication_blocks( issue )
+        notify_on_new_pre_deduplication( issue )
 
         # Only allow passive issues to have variations.
         return self if include?( issue ) && issue.active?
@@ -131,7 +131,7 @@ class Issues
         @digests << issue.digest
 
         synchronize do
-            call_on_new_blocks( issue )
+            notify_on_new( issue )
 
             if store?
                 id = issue.digest
@@ -152,20 +152,6 @@ class Issues
     # @return   [Array<Issue>]  Sorted array of {Issue}s.
     def sort
         all.sort_by(&:severity).reverse
-    end
-
-    # @param    [Block] block
-    #   Block to be passed each new issue as it is logged by {#<<}.
-    def on_new( &block )
-        synchronize { @on_new_blocks << block }
-        true
-    end
-
-    # @param    [Block] block
-    #   Block to be passed each issue passed to {#<<}.
-    def on_new_pre_deduplication( &block )
-        synchronize { @on_new_pre_deduplication_blocks << block }
-        true
     end
 
     def first
@@ -222,18 +208,7 @@ class Issues
     def clear
         @digests.clear
         @collection.clear
-        @on_new_blocks.clear
-        @on_new_pre_deduplication_blocks.clear
-    end
-
-    private
-
-    def call_on_new_blocks( issue )
-        @on_new_blocks.each { |block| block.call issue }
-    end
-
-    def call_on_new_pre_deduplication_blocks( issue )
-        @on_new_pre_deduplication_blocks.each { |block| block.call issue }
+        clear_observers
     end
 
 end

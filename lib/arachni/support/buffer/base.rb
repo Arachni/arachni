@@ -34,6 +34,7 @@ class Base
     # @param    [#<<, #|, #clear, #size, #empty?]   type      Internal storage class to use.
     #
     def initialize( max_size = nil, type = Array )
+        super()
         @buffer    = type.new
         @max_size  = max_size
     end
