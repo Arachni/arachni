@@ -83,16 +83,6 @@ class DOM < Base
         :link_dom
     end
 
-    def prepare_data_from_node
-        return if !(data = self.class.data_from_node( node ))
-
-        self.inputs     = data[:inputs]
-        @default_inputs = self.inputs.dup.freeze
-        @fragment       = data[:fragment]
-        @fragment_path  = data[:fragment_path]
-        @fragment_query = data[:fragment_query]
-    end
-
     def self.data_from_node( node )
         fragment_path = fragment = nil
 
@@ -118,6 +108,16 @@ class DOM < Base
     end
 
     private
+
+    def prepare_data_from_node
+        return if !(data = self.class.data_from_node( node ))
+
+        self.inputs     = data[:inputs]
+        @default_inputs = self.inputs.dup.freeze
+        @fragment       = data[:fragment]
+        @fragment_path  = data[:fragment_path]
+        @fragment_query = data[:fragment_query]
+    end
 
     def prepare_browser( browser, options )
         @browser = browser
