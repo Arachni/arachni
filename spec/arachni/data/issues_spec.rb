@@ -199,6 +199,22 @@ describe Arachni::Data::Issues do
         end
     end
 
+    describe '#first' do
+        it 'returns the first issue' do
+            subject << issue_low_severity
+            subject << issue_high_severity
+            subject.first.should == issue_low_severity
+        end
+    end
+
+    describe '#last' do
+        it 'returns the last issue' do
+            subject << issue_low_severity
+            subject << issue_high_severity
+            subject.last.should == issue_high_severity
+        end
+    end
+
     describe '#include?' do
         context 'when #do_not_store' do
             before(:each) { subject.do_not_store }

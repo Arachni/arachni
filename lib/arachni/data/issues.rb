@@ -155,11 +155,11 @@ class Issues
     end
 
     def first
-        @collection.first.last
+        @collection.values.first
     end
 
     def last
-        @collection.last.last
+        @collection.values.last
     end
 
     def any?
