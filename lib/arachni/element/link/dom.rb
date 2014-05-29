@@ -97,12 +97,10 @@ class DOM < Base
         fragment_path = fragment = nil
 
         href = node.attributes['href'].to_s
-        if href.include? '#'
-            fragment = href.split( '#', 2 ).last
-            fragment_path, fragment_query = fragment.split( '?', 2 )
-        else
-            return
-        end
+        return if !href.include? '#'
+
+        fragment = href.split( '#', 2 ).last
+        fragment_path, fragment_query = fragment.split( '?', 2 )
 
         inputs = parse_query( "?#{fragment_query}" )
         return if inputs.empty?
