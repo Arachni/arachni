@@ -145,6 +145,7 @@ class HTTP
             max_redirects:                 opts.redirect_limit,
             disable_ssl_peer_verification: true,
             disable_ssl_host_verification: true,
+            auth_method:                   :auto,
             timeout:                       opts.http_timeout || HTTP_TIMEOUT,
             username:                      opts.http_username,
             password:                      opts.http_password
