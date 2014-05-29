@@ -321,9 +321,6 @@ describe Arachni::State::Framework do
 
         context 'when not #running?' do
             it "raises #{described_class::Error::StateNotSuspendable}" do
-                subject.pause( :caller, false )
-                subject.paused
-
                 expect{ subject.suspend }.to raise_error described_class::Error::StateNotSuspendable
             end
         end
