@@ -52,6 +52,12 @@ class Framework
     include Utilities
     include Mixins::Observable
 
+    # @!method on_page_audit( &block )
+    advertise :on_page_audit
+
+    # @!method after_page_audit( &block )
+    advertise :after_page_audit
+
     # {Framework} error namespace.
     #
     # All {Framework} errors inherit from and live under it.
@@ -273,7 +279,7 @@ class Framework
             end
         end
 
-        call_on_audit_page( page )
+        call_on_page_audit( page )
 
         @current_url = page.dom.url.to_s
 
@@ -311,18 +317,8 @@ class Framework
         # Makes it easier on the GC.
         page.clear_cache
 
-        call_after_page_audit_blocks( page )
+        call_after_page_audit( page )
         run_http
-    end
-
-    def after_page_audit( &block )
-        fail ArgumentError, 'Missing block.' if !block_given?
-        @after_page_audit_blocks << block
-        nil
-    end
-
-    def on_audit_page( &block )
-        add_on_audit_page( &block )
     end
 
     # @return   [Bool]
@@ -870,10 +866,6 @@ class Framework
     def wait_if_paused
         state.paused if pause?
         sleep 0.2 while pause?
-    end
-
-    def call_after_page_audit_blocks( page )
-        @after_page_audit_blocks.each { |c| c.call page }
     end
 
     def print_page_transitions( page, indent = '' )

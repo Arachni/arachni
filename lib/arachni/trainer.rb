@@ -29,9 +29,9 @@ class Trainer
         @trainings_per_url  = Hash.new( 0 )
 
         # get us setup using the page that is being audited as a seed page
-        framework.on_audit_page { |page| self.page = page }
+        framework.on_page_audit { |page| self.page = page }
 
-        framework.http.add_on_complete do |response|
+        framework.http.on_complete do |response|
             next if !response.request.train?
 
             if response.redirect?

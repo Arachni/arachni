@@ -58,12 +58,12 @@ describe Arachni::Framework do
         end
     end
 
-    describe '#on_audit_page' do
+    describe '#on_page_audit' do
         it 'calls the given block before each page is audited' do
             ok = false
             Arachni::Framework.new do |f|
                 f.options.url = @url
-                f.on_audit_page { ok = true }
+                f.on_page_audit { ok = true }
 
                 f.audit_page Arachni::Page.from_url( @url + '/link' )
             end
@@ -181,7 +181,7 @@ describe Arachni::Framework do
                     f.options.audit.elements :links, :forms, :cookies
                     f.checks.load :taint
 
-                    f.on_audit_page { |p| audited << p.url }
+                    f.on_page_audit { |p| audited << p.url }
                     f.run
                 end
                 audited.sort.should == ["#{@url}/", @url + '/binary'].sort
@@ -193,7 +193,7 @@ describe Arachni::Framework do
                     f.options.audit.exclude_binaries = true
                     f.checks.load :taint
 
-                    f.on_audit_page { |p| audited << p.url }
+                    f.on_page_audit { |p| audited << p.url }
                     f.run
                 end
                 audited.should == ["#{@url}/"]
