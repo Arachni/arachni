@@ -562,7 +562,7 @@ describe Arachni::Element::Form do
             end
         end
         context 'when the form has a nonce' do
-            it 'refreshes its value before submitting it' do
+            subject do
                 f = described_class.new(
                     url:    url + 'with_nonce',
                     action: url + 'get_nonce',
@@ -571,19 +571,33 @@ describe Arachni::Element::Form do
                         'param_name' => 'stuff'
                     }
                 )
-
                 f.update 'nonce' => rand( 999 )
                 f.nonce_name = 'nonce'
+                f
+            end
 
+            it 'refreshes its value before submitting it' do
                 body = nil
 
-                f.submit { |res| body = res.body }
+                subject.submit { |res| body = res.body }
                 http.run
-                body.should_not == f.default_inputs['nonce']
+                body.should_not == subject.default_inputs['nonce']
                 body.to_i.should > 0
             end
-        end
 
+            context 'and it could not refresh it' do
+                it 'submits it anyway' do
+                    body = nil
+
+                    subject.stub(:refresh) { nil }
+                    subject.submit { |res| body = res.body }
+                    http.run
+
+                    body.should_not == subject.default_inputs['nonce']
+                    body.to_i.should > 0
+                end
+            end
+        end
     end
 
     describe '#simple' do
