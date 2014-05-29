@@ -163,7 +163,7 @@ class Link < Base
 
             query.to_s.split( '&' ).inject( {} ) do |h, pair|
                 name, value = pair.split( '=', 2 )
-                h[name.to_s] = value.to_s
+                h[decode( name.to_s )] = decode( value.to_s )
                 h
             end
         end

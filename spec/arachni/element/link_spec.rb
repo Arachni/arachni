@@ -273,26 +273,26 @@ describe Arachni::Element::Link do
     end
 
     describe '.encode' do
-        it 'form-encodes the passed string' do
+        it 'URL-encodes the passed string' do
             v = '% value\ +=&;'
             described_class.encode( v ).should == URI.encode( v )
         end
     end
     describe '#encode' do
-        it 'form-encodes the passed string' do
+        it 'URL-encodes the passed string' do
             v = '% value\ +=&;'
             subject.encode( v ).should == described_class.encode( v )
         end
     end
 
     describe '.decode' do
-        it 'form-decodes the passed string' do
+        it 'URL-decodes the passed string' do
             v = '%25+value%5C+%2B%3D%26%3B'
             described_class.decode( v ).should == URI.decode( v )
         end
     end
     describe '#decode' do
-        it 'form-decodes the passed string' do
+        it 'URL-decodes the passed string' do
             v = '%25+value%5C+%2B%3D%26%3B'
             subject.decode( v ).should == described_class.decode( v )
         end
@@ -301,7 +301,7 @@ describe Arachni::Element::Link do
     describe '.from_response' do
         it 'returns all available links from an HTTP response' do
             res = Arachni::HTTP::Response.new(
-                url: url + '/?param=val',
+                url:  url + '/?param=val',
                 body: '<a href="test?param_one=value_one&param_two=value_two"></a>'
             )
             described_class.from_response( res ).size.should == 2
@@ -316,6 +316,14 @@ describe Arachni::Element::Link do
                 'param_two' => 'value_two'
             }
         end
+
+        it 'decodes the parameters' do
+            url = 'http://test/?stuff%20here=bl%20ah'
+            described_class.parse_query_vars( url ).should == {
+                'stuff here' => 'bl ah'
+            }
+        end
+
         context 'when passed' do
             describe 'nil' do
                 it 'returns an empty Hash' do
