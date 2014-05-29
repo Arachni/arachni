@@ -15,6 +15,10 @@ require Options.paths.lib + 'element_filter'
 class Trainer
     include UI::Output
     include Utilities
+    include Mixins::Observable
+
+    # @!method on_new_page( &block )
+    advertise :on_new_page
 
     personalize_output
 
@@ -25,8 +29,7 @@ class Trainer
         @framework  = framework
         @updated    = false
 
-        @on_new_page_blocks = []
-        @trainings_per_url  = Hash.new( 0 )
+        @trainings_per_url = Hash.new( 0 )
 
         # get us setup using the page that is being audited as a seed page
         framework.on_page_audit { |page| self.page = page }
@@ -99,10 +102,6 @@ class Trainer
         @page = page.dup
     end
 
-    def on_new_page( &block )
-        @on_new_page_blocks << block
-    end
-
     private
 
     # Analyzes a response looking for new links, forms and cookies.
@@ -127,7 +126,7 @@ class Trainer
         if has_new_elements
             @trainings_per_url[incoming_page.url] += 1
 
-            @on_new_page_blocks.each { |block| block.call incoming_page }
+            call_on_new_page incoming_page
             @framework.push_to_page_queue( incoming_page )
         end
 

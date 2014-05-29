@@ -10,7 +10,7 @@ class TrainerMockFramework
     def initialize( page = nil )
         @page        = page
         @pages       = []
-        @on_audit_page = []
+        @on_page_audit = []
 
         http.reset
         @trainer = Arachni::Trainer.new( self )
@@ -26,7 +26,7 @@ class TrainerMockFramework
     end
 
     def run
-        @on_audit_page.each do |b|
+        @on_page_audit.each do |b|
             b.call @page
         end
 
@@ -37,8 +37,8 @@ class TrainerMockFramework
         Arachni::HTTP::Client
     end
 
-    def on_audit_page( &block )
-        @on_audit_page << block
+    def on_page_audit( &block )
+        @on_page_audit << block
     end
 
     def push_to_page_queue( page )
