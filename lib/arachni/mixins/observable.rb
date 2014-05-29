@@ -29,16 +29,18 @@ module Observable
     module ClassMethods
         def advertise( *ad_events )
             ad_events.each do |event|
-                define_method "on_#{event}" do |&block|
+                define_method event do |&block|
+                    fail ArgumentError, 'Missing block' if !block
                     observers_for( event ) << block
+                    self
                 end
 
                 define_method "call_#{event}" do |*args|
                     observers_for( event ).each do |block|
-                        exception_jail do
-                            block.call( *args )
-                        end
+                        exception_jail { block.call( *args ) }
                     end
+
+                    nil
                 end
 
                 private "call_#{event}"

@@ -17,13 +17,23 @@ describe Arachni::Mixins::Observable do
 
     subject{ ObservableTest.new }
 
-    describe '#on_<event>' do
+    describe '#<event>' do
         it 'adds an observer' do
             called = false
-            subject.on_my_event { called = true }
+            subject.my_event { called = true }
             subject.call :my_event
 
             called.should be_true
+        end
+
+        it 'returns self' do
+            subject.my_event { }.should == subject
+        end
+
+        context 'when no block is given' do
+            it 'raises ArgumentError' do
+                expect { subject.my_event }.to raise_error ArgumentError
+            end
         end
 
         context 'when the observer expects arguments' do
@@ -31,7 +41,7 @@ describe Arachni::Mixins::Observable do
                 received_args = nil
                 sent_args     = [ 1, 2, 3]
 
-                subject.on_my_other_event do |one, two, three|
+                subject.my_other_event do |one, two, three|
                     received_args = [one, two, three]
                 end
                 subject.call :my_other_event, sent_args
@@ -42,8 +52,15 @@ describe Arachni::Mixins::Observable do
 
         describe 'when the event does not exist' do
             it "raises #{NoMethodError}" do
-                expect { subject.on_blah_event }.to raise_error NoMethodError
+                expect { subject.blah_event }.to raise_error NoMethodError
             end
+        end
+    end
+
+    describe '#call_<event>' do
+        it 'returns nil' do
+            subject.my_event { }
+            subject.call( :my_event ).should be_nil
         end
     end
 
@@ -51,7 +68,7 @@ describe Arachni::Mixins::Observable do
         it 'removes all observers' do
             called = false
 
-            subject.on_my_event { called = true }
+            subject.my_event { called = true }
             subject.clear_observers
 
             subject.call :my_event
