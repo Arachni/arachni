@@ -21,6 +21,19 @@ module Arachni
 class Browser
     include UI::Output
     include Utilities
+    include Mixins::Observable
+
+    # @!method on_fire_event( &block )
+    advertise :on_fire_event
+
+    # @!method on_new_page( &block )
+    advertise :on_new_page
+
+    # @!method on_new_page_with_sink( &block )
+    advertise :on_new_page_with_sink
+
+    # @!method on_response( &block )
+    advertise :on_response
 
     personalize_output
 
@@ -148,11 +161,6 @@ class Browser
         @request_transitions = []
         @add_request_transitions = true
 
-        @on_new_page_blocks = []
-        @on_new_page_with_sink_blocks = []
-        @on_response_blocks = []
-        @on_fire_event_blocks = []
-
         # Last loaded URL.
         @last_url = nil
 
@@ -165,26 +173,6 @@ class Browser
         source.lines.map.with_index do |line, i|
             "#{i+1} - #{line}"
         end.join
-    end
-
-    def on_new_page( &block )
-        fail ArgumentError, 'Missing block.' if !block_given?
-        @on_new_page_blocks << block
-    end
-
-    def on_new_page_with_sink( &block )
-        fail ArgumentError, 'Missing block.' if !block_given?
-        @on_new_page_with_sink_blocks << block
-    end
-
-    def on_fire_event( &block )
-        fail ArgumentError, 'Missing block.' if !block_given?
-        @on_fire_event_blocks << block
-    end
-
-    def on_response( &block )
-        fail ArgumentError, 'Missing block.' if !block_given?
-        @on_response_blocks << block
     end
 
     # @param    [String, HTTP::Response, Page]  resource
@@ -604,7 +592,7 @@ class Browser
 
         tag_name = tag_name.to_sym
 
-        call_on_fire_event_blocks( element, event )
+        notify_on_fire_event( element, event )
 
         tries = 0
         begin
@@ -752,7 +740,7 @@ class Browser
                     next if skip_state? unique_id
                     skip_state unique_id
 
-                    call_on_new_page_blocks( page )
+                    notify_on_new_page( page )
 
                     if store_pages?
                         @page_snapshots[unique_id.hash] = page
@@ -977,22 +965,6 @@ class Browser
         !!@options[:store_pages]
     end
 
-    def call_on_new_page_blocks( page )
-        @on_new_page_blocks.each { |b| b.call page }
-    end
-
-    def call_on_new_page_with_sink_blocks( page )
-        @on_new_page_with_sink_blocks.each { |b| b.call page }
-    end
-
-    def call_on_response_blocks( page )
-        @on_response_blocks.each { |b| b.call page }
-    end
-
-    def call_on_fire_event_blocks( element, event )
-        @on_fire_event_blocks.each { |b| b.call element, event }
-    end
-
     # Loads `page` without taking a snapshot, used for restoring  the root page
     # after manipulation.
     def restore( page )
@@ -1003,7 +975,7 @@ class Browser
         return if page.dom.data_flow_sink.empty? &&
             page.dom.execution_flow_sink.empty?
 
-        call_on_new_page_with_sink_blocks( page )
+        notify_on_new_page_with_sink( page )
 
         return if !store_pages?
         @page_snapshots_with_sinks << page
@@ -1211,7 +1183,7 @@ class Browser
         page.dom.push_transition Page::DOM::Transition.new( request.url, :request )
 
         @captured_pages << page if store_pages?
-        call_on_new_page_blocks( page )
+        notify_on_new_page( page )
     end
 
     def from_preloads( request, response )
@@ -1248,7 +1220,7 @@ class Browser
     end
 
     def save_response( response )
-        call_on_response_blocks response
+        notify_on_response response
         return response if !response.text?
         @window_responses[response.url] = response
     end
