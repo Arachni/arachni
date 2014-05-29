@@ -34,8 +34,8 @@ class Instance
     include Arachni::UI::Output
     include UI::CLI::Utilities
 
-    include Arachni::Mixins::Terminal
-    include Arachni::Mixins::ProgressBar
+    include Support::Mixins::Terminal
+    include Support::Mixins::ProgressBar
 
     attr_reader :error_log_file
     attr_reader :framework

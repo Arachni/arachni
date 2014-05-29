@@ -14,8 +14,8 @@ module UI::CLI
 module Utilities
     include Arachni::Utilities
 
-    include Mixins::Terminal
-    include Mixins::ProgressBar
+    include Support::Mixins::Terminal
+    include Support::Mixins::ProgressBar
 
     def print_issues( issues, unmute = false, &interceptor )
         interceptor ||= proc { |s| s }
