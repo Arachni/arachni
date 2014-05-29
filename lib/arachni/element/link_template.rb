@@ -212,13 +212,14 @@ class LinkTemplate < Base
         def extract_inputs( url, templates = Arachni::Options.audit.link_templates )
             return [] if !url || templates.empty?
 
-            # exception_jail false do
-                templates.each do |template|
-                    if (match = url.scan_in_groups( template )).any?
-                        return [template, match]
-                    end
+            templates.each do |template|
+                if (match = url.scan_in_groups( template )).any?
+                    return [
+                        template,
+                        match.inject({}){ |h, (k, v)| h[k] = decode(v); h }
+                    ]
                 end
-            # end
+            end
 
             []
         end

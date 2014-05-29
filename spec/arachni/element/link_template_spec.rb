@@ -216,6 +216,76 @@ describe Arachni::Element::LinkTemplate do
         end
     end
 
+    describe '.decode' do
+        it 'URL-decodes the passed string' do
+            v = '%25+value%5C+%2B%3D%26%3B'
+            described_class.decode( v ).should == URI.decode( v )
+        end
+    end
+    describe '#decode' do
+        it 'URL-decodes the passed string' do
+            v = '%25+value%5C+%2B%3D%26%3B'
+            subject.decode( v ).should == described_class.decode( v )
+        end
+    end
+
+    describe '.extract_inputs' do
+        it 'returns a hash of inputs and the matching template' do
+            url       = "#{url}input1/value1/input2/value2"
+            templates = [/input1\/(?<input1>\w+)\/input2\/(?<input2>\w+)/]
+
+            template, inputs = described_class.extract_inputs( url, templates )
+            templates.should == [template]
+            inputs.should == {
+                'input1' => 'value1',
+                'input2' => 'value2'
+            }
+        end
+
+        it 'decodes the input values' do
+            url       = "#{url}input1/val%20ue1/input2/val%20ue2"
+            templates = [/input1\/(?<input1>.+)\/input2\/(?<input2>.+)/]
+
+            _, inputs = described_class.extract_inputs( url, templates )
+            inputs.should == {
+                'input1' => 'val ue1',
+                'input2' => 'val ue2'
+            }
+        end
+
+        context 'when no URL is given' do
+            it 'returns an empty array' do
+                described_class.extract_inputs( nil ).should == []
+            end
+        end
+
+        context 'when no templates are given' do
+            it "defaults to #{Arachni::OptionGroups::Audit}#link_templates" do
+                url       = "#{url}input1/value1/input2/value2"
+                templates = [/input1\/(?<input1>\w+)\/input2\/(?<input2>\w+)/]
+
+                Arachni::Options.audit.link_templates = templates
+
+                template, inputs = described_class.extract_inputs( url )
+                inputs.should == {
+                    'input1' => 'value1',
+                    'input2' => 'value2'
+                }
+
+                [templates].should == [Arachni::Options.audit.link_templates]
+            end
+        end
+
+        context 'when no matches are found' do
+            it 'returns an empty array' do
+                url       = "#{url}input3/value1/input4/value2"
+                templates = [/input1\/(?<input1>\w+)\/input2\/(?<input2>\w+)/]
+
+                described_class.extract_inputs( url, templates ).should == []
+            end
+        end
+    end
+
     describe '.type' do
         it 'returns :link_template' do
             described_class.type.should == :link_template
