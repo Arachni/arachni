@@ -157,6 +157,54 @@ shared_examples_for 'inputtable' do |options = {}|
         end
     end
 
+    describe '#inputtable_id' do
+        it 'takes into account input names' do
+            e = subject.dup
+            e.stub(:inputs) { { 1 => 2 } }
+
+            c = subject.dup
+            c.stub(:inputs) { { 1 => 2 } }
+
+            e.inputtable_id.should == c.inputtable_id
+
+            e = subject.dup
+            e.stub(:inputs) { { 1 => 2 } }
+
+            c = subject.dup
+            c.stub(:inputs) { { 2 => 2 } }
+
+            e.inputtable_id.should_not == c.inputtable_id
+        end
+
+        it 'takes into account input values' do
+            e = subject.dup
+            e.stub(:inputs) { { 1 => 2 } }
+
+            c = subject.dup
+            c.stub(:inputs) { { 1 => 2 } }
+
+            e.inputtable_id.should == c.inputtable_id
+
+            e = subject.dup
+            e.stub(:inputs) { { 1 => 1 } }
+
+            c = subject.dup
+            c.stub(:inputs) { { 1 => 2 } }
+
+            e.inputtable_id.should_not == c.inputtable_id
+        end
+
+        it 'ignores input order' do
+            e = subject.dup
+            e.stub(:inputs) { { 1 => 2, 3 => 4 } }
+
+            c = subject.dup
+            c.stub(:inputs) { { 3 => 4, 1 => 2 } }
+
+            e.inputtable_id.should == c.inputtable_id
+        end
+    end
+
     describe '#inputs=' do
         it 'assigns a hash of auditable inputs' do
             a = subject.dup

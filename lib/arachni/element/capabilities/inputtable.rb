@@ -215,6 +215,12 @@ module Capabilities::Inputtable
         copy_inputtable( super )
     end
 
+    # @return   [String]
+    #   Uniquely identifies the {#inputs}.
+    def inputtable_id
+        inputs.sort_by { |k,_| k }.to_s
+    end
+
     def to_h
         (defined?( super ) ? super : {}).merge(
             inputs:         inputs,

@@ -97,7 +97,7 @@ module Capabilities::Submittable
     # @return  [String]
     #   String uniquely identifying self.
     def id
-        "#{type}:#{method}:#{action}:#{inputs.sort_by { |k,_| k }}"
+        "#{type}:#{method}:#{action}:#{inputtable_id}"
     end
 
     def dup

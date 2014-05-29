@@ -141,7 +141,7 @@ module Mutable
         dinputs = inputs.dup
         cinputs = Options.input.fill( inputs )
 
-        generated = Support::LookUp::HashSet.new( hasher: :id )
+        generated = Support::LookUp::HashSet.new( hasher: :inputtable_id )
 
         dinputs.keys.each do |k|
             # Don't audit parameter flips.
