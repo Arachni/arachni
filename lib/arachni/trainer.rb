@@ -15,7 +15,7 @@ require Options.paths.lib + 'element_filter'
 class Trainer
     include UI::Output
     include Utilities
-    include Mixins::Observable
+    include Support::Mixins::Observable
 
     # @!method on_new_page( &block )
     advertise :on_new_page

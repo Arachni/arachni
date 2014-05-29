@@ -12,7 +12,7 @@ module Support::Buffer
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Base
-    include Mixins::Observable
+    include Support::Mixins::Observable
 
     # @!method on_flush( &block )
     #   @param    [Block] block   block to call on {#push}

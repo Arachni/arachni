@@ -7,6 +7,7 @@ module Arachni::Support
 end
 
 lib = Arachni::Options.paths.support
+require lib + 'mixins'
 require lib + 'buffer'
 require lib + 'cache'
 require lib + 'crypto'

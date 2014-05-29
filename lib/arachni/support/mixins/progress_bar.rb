@@ -4,7 +4,7 @@
 =end
 
 module Arachni
-
+module Support
 module Mixins
 
 #
@@ -72,5 +72,6 @@ module ProgressBar
     extend self
 end
 
+end
 end
 end

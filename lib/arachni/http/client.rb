@@ -37,7 +37,7 @@ class Client
     include Singleton
     include UI::Output
     include Utilities
-    include Mixins::Observable
+    include Support::Mixins::Observable
 
     personalize_output
 

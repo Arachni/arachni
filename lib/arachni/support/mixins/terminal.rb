@@ -6,6 +6,7 @@
 require 'io/console'
 
 module Arachni
+module Support
 module Mixins
 
 #
@@ -104,5 +105,6 @@ module Terminal
     extend self
 end
 
+end
 end
 end

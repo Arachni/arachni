@@ -21,7 +21,7 @@ module Arachni
 class Browser
     include UI::Output
     include Utilities
-    include Mixins::Observable
+    include Support::Mixins::Observable
 
     # @!method on_fire_event( &block )
     advertise :on_fire_event

@@ -21,7 +21,6 @@ require lib + 'version'
 require lib + 'ruby'
 require lib + 'error'
 require lib + 'utilities'
-require lib + 'mixins'
 require lib + 'support'
 require lib + 'uri'
 require lib + 'component'
@@ -51,7 +50,7 @@ class Framework
     include UI::Output
 
     include Utilities
-    include Mixins::Observable
+    include Support::Mixins::Observable
 
     # @!method on_page_audit( &block )
     advertise :on_page_audit

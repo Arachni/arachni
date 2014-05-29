@@ -4,6 +4,7 @@
 =end
 
 module Arachni
+module Support
 module Mixins
 
 # Provides a flexible way to make any object observable for multiple events.
@@ -74,5 +75,6 @@ module Observable
 
 end
 
+end
 end
 end

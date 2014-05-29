@@ -47,7 +47,7 @@ class Paths < Arachni::OptionGroup
 
         @executables = @lib + 'processes/executables/'
         @support     = @lib + 'support/'
-        @mixins      = @lib + 'mixins/'
+        @mixins      = @support + 'mixins/'
         @arachni     = @lib[0...-1]
     end
 
