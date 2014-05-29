@@ -147,6 +147,19 @@ describe Arachni::Element::LinkTemplate do
         end
     end
 
+    describe '#id' do
+        it "takes into account #{described_class::DOM}#inputs"
+    end
+
+    describe '#to_rpc_data' do
+        it "does not include 'dom_data'" do
+            subject.html = html
+            subject.dom.should be_true
+
+            subject.to_rpc_data.should_not include 'dom_data'
+        end
+    end
+
     describe '.encode' do
         it "double encodes ';'" do
             described_class.encode( 'test;' ).should == 'test%253B'

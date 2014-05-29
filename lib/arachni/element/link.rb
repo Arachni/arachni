@@ -37,17 +37,9 @@ class Link < Base
     # @return   [DOM]
     def dom
         return @dom if @dom
-        return if !node || @skip_dom
+        return if !dom_data
 
-        # Check if the DOM has any auditable inputs and only initialize it
-        # if it does.
-        if DOM.data_from_node( node )
-            return super
-        else
-            @skip_dom = true
-        end
-
-        nil
+        super
     end
 
     # @return   [Hash]
@@ -100,6 +92,16 @@ class Link < Base
     # @see .decode
     def decode( *args )
         self.class.decode( *args )
+    end
+
+    def id
+        dom_data ? "#{super}:#{dom_data[:inputs].sort_by { |k,_| k }}" : super
+    end
+
+    def to_rpc_data
+        data = super
+        data.delete 'dom_data'
+        data
     end
 
     class <<self
@@ -193,6 +195,14 @@ class Link < Base
 
 
     private
+
+    def dom_data
+        return @dom_data if @dom_data
+        return if @dom_data == false
+        return if !node
+
+        @dom_data ||= (DOM.data_from_node( node ) || false)
+    end
 
     def http_request( opts, &block )
         self.method != :get ?

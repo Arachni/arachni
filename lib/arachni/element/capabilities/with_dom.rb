@@ -22,10 +22,6 @@ module WithDOM
         copy_with_dom( super )
     end
 
-    def hash
-        "#{super}:#{dom.hash}".hash
-    end
-
     private
 
     def copy_with_dom( other )

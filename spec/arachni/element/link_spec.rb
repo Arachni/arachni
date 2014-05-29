@@ -143,6 +143,19 @@ describe Arachni::Element::Link do
         end
     end
 
+    describe '#id' do
+        it "takes into account #{described_class::DOM}#inputs"
+    end
+
+    describe '#to_rpc_data' do
+        it "does not include 'dom_data'" do
+            subject.html = html
+            subject.dom.should be_true
+
+            subject.to_rpc_data.should_not include 'dom_data'
+        end
+    end
+
     describe '.rewrite' do
         let(:url) { 'http://test.com/articles/some-stuff/23' }
 
