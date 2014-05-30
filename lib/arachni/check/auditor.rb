@@ -446,9 +446,6 @@ module Auditor
                 when Element::Cookie::DOM.type
                     prepare_each_dom_element( page.cookies, &block )
 
-                when Element::Cookie::DOM.type
-                    prepare_each_dom_element( page.cookies, &block )
-
                 when Element::LinkTemplate::DOM.type
                     prepare_each_dom_element( page.link_templates, &block )
 
