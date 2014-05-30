@@ -214,7 +214,7 @@ class Parser
     # @return   [Hash]
     #   Parameters found in {#url}.
     def link_vars
-        @link_vars ||= Link.parse_query_vars( Link.rewrite( @url ) ).freeze
+        @link_vars ||= Link.parse_query( Link.rewrite( @url ) ).freeze
     end
 
     # @return   [Array<Element::Cookie>]
