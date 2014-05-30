@@ -18,8 +18,11 @@ require_relative 'support/helpers/requires'
 
 Dir.glob( "#{support_path}/{lib,helpers,shared,factories}/**/*.rb" ).each { |f| require f }
 
-# Arachni::UI::Output.verbose_on
-# Arachni::UI::Output.debug_on( 3 )
+# Enable extra output options in order to get full coverage...
+Arachni::UI::Output.verbose_on
+Arachni::UI::Output.debug_on( 3 )
+# ...but don't actually print anything.
+Arachni::UI::Output.mute
 
 # Uncomment to show output from spawned processes.
 Arachni::Processes::Manager.preserve_output
@@ -31,9 +34,6 @@ RSpec.configure do |config|
     config.add_formatter :documentation
 
     config.before( :all ) do
-        #Arachni::UI::Output.mute
-        #Arachni::UI::Output.debug_on
-
         killall
         reset_all
     end
