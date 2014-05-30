@@ -45,15 +45,15 @@ module Output
         push_to_output_buffer( debug: str )
     end
 
-    def print_debug_level_1( str )
+    def print_debug_level_1( str = '' )
         print_debug( str, 1 )
     end
 
-    def print_debug_level_2( str )
+    def print_debug_level_2( str = '' )
         print_debug( str, 2 )
     end
 
-    def print_debug_level_3( str )
+    def print_debug_level_3( str = '' )
         print_debug( str, 3 )
     end
 
