@@ -53,9 +53,7 @@ describe Arachni::Check::Auditor do
         @url      = @opts.url
 
         @framework = Arachni::Framework.new( @opts )
-
         AuditorTest.clear_info_cache
-        @auditor = AuditorTest.new( @framework )
     end
 
     after :each do
@@ -63,10 +61,61 @@ describe Arachni::Check::Auditor do
         @framework.reset
     end
 
-    let(:auditor) { @auditor }
+    let(:auditor) { AuditorTest.new( @framework ) }
     let(:url) { @url }
     let(:issue) { Factory[:issue] }
     let(:issue_data) { Factory[:issue_data].tap { |d| d.delete :check } }
+    subject { auditor }
+
+    describe '.has_timeout_candidates?' do
+        it "delegates to #{Arachni::Element::Capabilities::Analyzable}.has_timeout_candidates?" do
+            Arachni::Element::Capabilities::Analyzable.should receive(:has_timeout_candidates?)
+            described_class.has_timeout_candidates?
+        end
+    end
+
+    describe '.timeout_audit_run' do
+        it "delegates to #{Arachni::Element::Capabilities::Analyzable}.timeout_audit_run" do
+            Arachni::Element::Capabilities::Analyzable.should receive(:timeout_audit_run)
+            described_class.timeout_audit_run
+        end
+    end
+
+    describe '.max_issues' do
+        it 'returns the maximum amount of issues the auditor is allowed to log' do
+            subject.class.info[:max_issues] = 1
+            subject.max_issues.should == 1
+        end
+    end
+
+    describe '.increment_issue_counter' do
+        it 'increments the issue counter' do
+            i = subject.class.issue_counter
+            subject.increment_issue_counter
+            subject.class.issue_counter.should == i + 1
+        end
+    end
+
+    describe '#issue_limit_reached?' do
+        it 'returns false' do
+            subject.issue_limit_reached?.should be_false
+        end
+
+        context 'when the issue counter reaches the limit' do
+            it 'returns true' do
+                subject.class.info[:max_issues] = 1
+                subject.increment_issue_counter
+                subject.issue_limit_reached?.should be_true
+            end
+        end
+    end
+
+    describe '.audited' do
+        it 'marks the given task as audited' do
+            subject.audited 'stuff'
+            subject.audited?( 'stuff' ).should be_true
+        end
+    end
 
     describe '.check?' do
         context Arachni::Element::Body do
@@ -247,6 +296,54 @@ describe Arachni::Check::Auditor do
         end
     end
 
+    describe '#log_remote_file_if_exists' do
+        it "delegates to #{Arachni::Element::Server}#log_remote_file_if_exists" do
+            sent     = [:stuff, false]
+            received = nil
+            b        = proc {}
+
+            Arachni::Element::Server.any_instance.stub(:log_remote_file_if_exists) { |args, &block| received = [args, block]}
+
+            subject.log_remote_file_if_exists( *sent, &b ).should == received
+        end
+    end
+
+    describe '#match_and_log' do
+        it "delegates to #{Arachni::Element::Body}#match_and_log" do
+            sent     = [:stuff]
+            received = nil
+            b        = proc {}
+
+            Arachni::Element::Body.any_instance.stub(:match_and_log) { |args, &block| received = [args, block]}
+
+            subject.match_and_log( *sent, &b ).should == received
+        end
+    end
+
+    describe '#log_remote_file' do
+        let(:page) { Arachni::Page.from_url @url }
+        let(:issue) { Arachni::Data.issues.last.variations.last }
+        let(:vector) { Arachni::Element::Server.new( page.url ) }
+
+        context 'given a' do
+            describe Arachni::Page do
+                it 'logs it' do
+                    subject.log_remote_file( page )
+                    issue.page.should == page
+                    issue.vector.should == vector
+                end
+            end
+
+            describe Arachni::HTTP::Response do
+                it "logs it as a #{Arachni::Page}" do
+                    subject.log_remote_file( page.response )
+                    issue.page.should == page
+                    issue.vector.should == vector
+                end
+            end
+        end
+    end
+
     describe '#each_candidate_element' do
         before(:each) { auditor.load_page_from "#{@url}each_candidate_element" }
 
@@ -364,7 +461,7 @@ describe Arachni::Check::Auditor do
                 it 'passes it to the given block' do
                     worker = nil
 
-                    @auditor.with_browser_cluster do |cluster|
+                    auditor.with_browser_cluster do |cluster|
                         worker = cluster
                     end.should be_true
 
@@ -380,7 +477,7 @@ describe Arachni::Check::Auditor do
                 it 'passes a BrowserCluster::Worker to the given block' do
                     worker = nil
 
-                    @auditor.with_browser do |browser|
+                    auditor.with_browser do |browser|
                         worker = browser
                     end.should be_true
                     @framework.browser_cluster.wait
@@ -394,85 +491,102 @@ describe Arachni::Check::Auditor do
     describe '#skip?' do
         context 'when there is no Arachni::Page#element_audit_whitelist' do
             it 'returns false' do
-                @auditor.page.element_audit_whitelist.should be_empty
-                @auditor.skip?( @auditor.page.elements.first ).should be_false
+                auditor.page.element_audit_whitelist.should be_empty
+                auditor.skip?( auditor.page.elements.first ).should be_false
             end
         end
 
         context 'when there is Arachni::Page#element_audit_whitelist' do
             context 'and the element is in it' do
                 it 'returns false' do
-                    @auditor.page.update_element_audit_whitelist @auditor.page.elements.first
-                    @auditor.skip?( @auditor.page.elements.first ).should be_false
+                    auditor.page.update_element_audit_whitelist auditor.page.elements.first
+                    auditor.skip?( auditor.page.elements.first ).should be_false
                 end
             end
 
             context 'and the element is not in it' do
                 it 'returns true' do
-                    @auditor.page.update_element_audit_whitelist @auditor.page.elements.first
-                    @auditor.skip?( @auditor.page.elements.last ).should be_true
+                    auditor.page.update_element_audit_whitelist auditor.page.elements.first
+                    auditor.skip?( auditor.page.elements.last ).should be_true
                 end
             end
+        end
+
+        context 'when a we have already logged the same vector' do
+            it 'returns true'
+        end
+
+        context 'when a preferred auditor has already logged the same vector' do
+            it 'returns true'
         end
     end
 
     describe '#create_issue' do
         it 'creates an issue' do
-            @auditor.class.create_issue( vector: issue.vector ).should == issue
+            auditor.class.create_issue( vector: issue.vector ).should == issue
         end
     end
 
     describe '#log_issue' do
         it 'logs an issue' do
-            @auditor.log_issue( issue_data )
+            auditor.log_issue( issue_data )
 
             logged_issue = Arachni::Data.issues.flatten.first
 
             logged_issue.to_h.tap do |h|
                 h[:page][:dom][:transitions].first.delete :time
             end.should eq issue.to_h.merge( referring_page: {
-                body: @auditor.page.body,
-                dom:  @auditor.page.dom.to_h.tap do |h|
+                body: auditor.page.body,
+                dom:  auditor.page.dom.to_h.tap do |h|
                     h.delete :skip_states
                 end
             }).tap { |h| h[:page][:dom][:transitions].first.delete :time }
         end
 
         it 'assigns a #referring_page' do
-            @auditor.log_issue( issue_data )
+            auditor.log_issue( issue_data )
 
             logged_issue = Arachni::Data.issues.flatten.first
-            logged_issue.referring_page.should == @auditor.page
+            logged_issue.referring_page.should == auditor.page
         end
 
         it 'returns the issue' do
-            @auditor.log_issue( issue_data ).should be_kind_of Arachni::Issue
+            auditor.log_issue( issue_data ).should be_kind_of Arachni::Issue
+        end
+
+        context 'when #issue_limit_reached?' do
+            it 'does not log the issue' do
+                subject.stub(:issue_limit_reached?) { true }
+
+                auditor.log_issue( issue_data ).should be_false
+                Arachni::Data.issues.should be_empty
+            end
         end
     end
 
     describe '#log' do
         it 'preserves the given remarks' do
-            @auditor.log( issue_data )
+            auditor.log( issue_data )
 
             logged_issue = Arachni::Data.issues.flatten.first
             logged_issue.remarks.first.should be_any
         end
 
         it 'returns the issue' do
-            @auditor.log( issue_data ).should be_kind_of Arachni::Issue
+            auditor.log( issue_data ).should be_kind_of Arachni::Issue
         end
 
         context 'when given a page' do
             after { @framework.http.run }
 
             it 'includes response data' do
-                @auditor.log( issue_data )
+                auditor.log( issue_data )
                 Arachni::Data.issues.flatten.first.response.should ==
                     issue_data[:page].response
             end
 
             it 'includes request data' do
-                @auditor.log( issue_data )
+                auditor.log( issue_data )
                 Arachni::Data.issues.flatten.first.request.should ==
                     issue_data[:page].request
             end
@@ -481,12 +595,12 @@ describe Arachni::Check::Auditor do
         context 'when not given a page' do
             it 'uses the current page' do
                 issue_data.delete(:page)
-                @auditor.log( issue_data )
+                auditor.log( issue_data )
 
                 issue = Arachni::Data.issues.flatten.first
-                issue.page.body.should == @auditor.page.body
-                issue.response.should == @auditor.page.response
-                issue.request.should == @auditor.page.request
+                issue.page.body.should == auditor.page.body
+                issue.response.should == auditor.page.response
+                issue.request.should == auditor.page.request
             end
         end
     end
@@ -501,8 +615,8 @@ describe Arachni::Check::Auditor do
 
         context 'when called with no options' do
             it 'uses the defaults' do
-                @auditor.load_page_from( @url + '/link' )
-                @auditor.audit( @seed )
+                auditor.load_page_from( @url + '/link' )
+                auditor.audit( @seed )
                 @framework.http.run
                 Arachni::Data.issues.size.should == 1
             end
@@ -510,8 +624,8 @@ describe Arachni::Check::Auditor do
 
         context 'when the payloads are per platform' do
             it 'assigns the platform of the payload to the issue' do
-                @auditor.load_page_from( @url + '/link' )
-                @auditor.audit( { unix: @seed }, substring: @seed )
+                auditor.load_page_from( @url + '/link' )
+                auditor.audit( { unix: @seed }, substring: @seed )
                 @framework.http.run
                 Arachni::Data.issues.size.should == 1
                 issue = Arachni::Data.issues.flatten.first
@@ -523,11 +637,11 @@ describe Arachni::Check::Auditor do
         context 'when called with options' do
             describe :elements do
 
-                before { @auditor.load_page_from( @url + '/elem_combo' ) }
+                before { auditor.load_page_from( @url + '/elem_combo' ) }
 
                 describe 'Arachni::Element::Link' do
                     it 'audits links' do
-                        @auditor.audit( @seed,
+                        auditor.audit( @seed,
                             format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
                             elements: [ Arachni::Element::Link ]
                          )
@@ -540,7 +654,7 @@ describe Arachni::Check::Auditor do
                 end
                 describe 'Arachni::Element::Form' do
                     it 'audits forms' do
-                        @auditor.audit( @seed,
+                        auditor.audit( @seed,
                             format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
                             elements: [ Arachni::Element::Form ]
                          )
@@ -553,7 +667,7 @@ describe Arachni::Check::Auditor do
                 end
                 describe 'Arachni::Element::Cookie' do
                     it 'audits cookies' do
-                        @auditor.audit( @seed,
+                        auditor.audit( @seed,
                             format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
                             elements: [ Arachni::Element::Cookie ]
                          )
@@ -564,8 +678,8 @@ describe Arachni::Check::Auditor do
                         issue.vector.affected_input_name.should == 'cookie_input'
                     end
                     it 'maintains the session while auditing cookies' do
-                        @auditor.load_page_from( @url + '/session' )
-                        @auditor.audit( @seed,
+                        auditor.load_page_from( @url + '/session' )
+                        auditor.audit( @seed,
                                         format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
                                         elements: [ Arachni::Element::Cookie ]
                         )
@@ -579,7 +693,7 @@ describe Arachni::Check::Auditor do
                 end
                 describe 'Arachni::Element::Header' do
                     it 'audits headers' do
-                        @auditor.audit( @seed,
+                        auditor.audit( @seed,
                             format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
                             elements: [ Arachni::Element::Header ]
                          )
@@ -593,7 +707,7 @@ describe Arachni::Check::Auditor do
 
                 context 'when using default options' do
                     it 'audits all element types' do
-                        @auditor.audit( @seed,
+                        auditor.audit( @seed,
                             format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                          )
                         @framework.http.run
@@ -688,11 +802,11 @@ describe Arachni::Check::Auditor do
                 context String do
                     it 'loads the URL and traces the taint' do
                         pages = []
-                        @auditor.trace_taint( url, taint: taint ) do |page|
+                        auditor.trace_taint( url, taint: taint ) do |page|
                             pages << page
                             false
                         end
-                        @auditor.browser_cluster.wait
+                        auditor.browser_cluster.wait
 
                         browser_cluster_job_taint_tracer_data_flow_check_pages  pages
                     end
@@ -702,12 +816,12 @@ describe Arachni::Check::Auditor do
                     it 'loads it and traces the taint' do
                         pages = []
 
-                        @auditor.trace_taint( Arachni::HTTP::Client.get( url, mode: :sync ),
+                        auditor.trace_taint( Arachni::HTTP::Client.get( url, mode: :sync ),
                                               taint: taint ) do |page|
                             pages << page
                             false
                         end
-                        @auditor.browser_cluster.wait
+                        auditor.browser_cluster.wait
 
                         browser_cluster_job_taint_tracer_data_flow_check_pages  pages
                     end
@@ -717,12 +831,12 @@ describe Arachni::Check::Auditor do
                     it 'loads it and traces the taint' do
                         pages = []
 
-                        @auditor.trace_taint( Arachni::Page.from_url( url ),
+                        auditor.trace_taint( Arachni::Page.from_url( url ),
                                               taint: taint ) do |page|
                             pages << page
                             false
                         end
-                        @auditor.browser_cluster.wait
+                        auditor.browser_cluster.wait
 
                         browser_cluster_job_taint_tracer_data_flow_check_pages  pages
                     end
@@ -740,13 +854,13 @@ describe Arachni::Check::Auditor do
                     context String do
                         it 'loads the URL and traces the taint' do
                             pages = []
-                            @auditor.trace_taint( url,
+                            auditor.trace_taint( url,
                                                   taint: taint,
                                                   injector: injector ) do |page|
                                 pages << page
                                 false
                             end
-                            @auditor.browser_cluster.wait
+                            auditor.browser_cluster.wait
 
                             browser_cluster_job_taint_tracer_data_flow_with_injector_check_pages  pages
                         end
@@ -755,13 +869,13 @@ describe Arachni::Check::Auditor do
                     context Arachni::HTTP::Response do
                         it 'loads it and traces the taint' do
                             pages = []
-                            @auditor.trace_taint( Arachni::HTTP::Client.get( url, mode: :sync ),
+                            auditor.trace_taint( Arachni::HTTP::Client.get( url, mode: :sync ),
                                                   taint: taint,
                                                   injector: injector ) do |page|
                                 pages << page
                                 false
                             end
-                            @auditor.browser_cluster.wait
+                            auditor.browser_cluster.wait
 
                             browser_cluster_job_taint_tracer_data_flow_with_injector_check_pages  pages
                         end
@@ -770,13 +884,13 @@ describe Arachni::Check::Auditor do
                     context Arachni::Page do
                         it 'loads it and traces the taint' do
                             pages = []
-                            @auditor.trace_taint( Arachni::Page.from_url( url ),
+                            auditor.trace_taint( Arachni::Page.from_url( url ),
                                                   taint: taint,
                                                   injector: injector ) do |page|
                                 pages << page
                                 false
                             end
-                            @auditor.browser_cluster.wait
+                            auditor.browser_cluster.wait
 
                             browser_cluster_job_taint_tracer_data_flow_with_injector_check_pages  pages
                         end
@@ -788,18 +902,18 @@ describe Arachni::Check::Auditor do
         context 'when tracing the execution-flow' do
             let(:url) do
                 Arachni::Utilities.normalize_url( web_server_url_for( :taint_tracer ) ) +
-                    "debug?input=_#{@auditor.browser_cluster.javascript_token}TaintTracer.log_execution_flow_sink()"
+                    "debug?input=_#{auditor.browser_cluster.javascript_token}TaintTracer.log_execution_flow_sink()"
             end
 
             context 'and the resource is a' do
                 context String do
                     it 'loads the URL and traces the taint' do
                         pages = []
-                        @auditor.trace_taint( url ) do |page|
+                        auditor.trace_taint( url ) do |page|
                             pages << page
                             false
                         end
-                        @auditor.browser_cluster.wait
+                        auditor.browser_cluster.wait
 
                         browser_cluster_job_taint_tracer_execution_flow_check_pages pages
                     end
@@ -808,11 +922,11 @@ describe Arachni::Check::Auditor do
                 context Arachni::HTTP::Response do
                     it 'loads it and traces the taint' do
                         pages = []
-                        @auditor.trace_taint( Arachni::HTTP::Client.get( url, mode: :sync ) ) do |page|
+                        auditor.trace_taint( Arachni::HTTP::Client.get( url, mode: :sync ) ) do |page|
                             pages << page
                             false
                         end
-                        @auditor.browser_cluster.wait
+                        auditor.browser_cluster.wait
 
                         browser_cluster_job_taint_tracer_execution_flow_check_pages pages
                     end
@@ -821,11 +935,11 @@ describe Arachni::Check::Auditor do
                 context Arachni::Page do
                     it 'loads it and traces the taint' do
                         pages = []
-                        @auditor.trace_taint( Arachni::Page.from_url( url ) ) do |page|
+                        auditor.trace_taint( Arachni::Page.from_url( url ) ) do |page|
                             pages << page
                             false
                         end
-                        @auditor.browser_cluster.wait
+                        auditor.browser_cluster.wait
 
                         browser_cluster_job_taint_tracer_execution_flow_check_pages pages
                     end
@@ -839,11 +953,11 @@ describe Arachni::Check::Auditor do
             context true do
                 it 'marks the job as done' do
                     calls = 0
-                    @auditor.trace_taint( url ) do
+                    auditor.trace_taint( url ) do
                         calls += 1
                         true
                     end
-                    @auditor.browser_cluster.wait
+                    auditor.browser_cluster.wait
                     calls.should == 1
                 end
             end
@@ -851,11 +965,11 @@ describe Arachni::Check::Auditor do
             context false do
                 it 'allows the job to continue' do
                     calls = 0
-                    @auditor.trace_taint( url ) do
+                    auditor.trace_taint( url ) do
                         calls += 1
                         false
                     end
-                    @auditor.browser_cluster.wait
+                    auditor.browser_cluster.wait
                     calls.should > 1
                 end
             end
