@@ -55,6 +55,30 @@ describe Arachni::Browser do
         pages_should_have_form_with_input( pages, 'by-ajax' )
     end
 
+    describe '.has_executable?' do
+        context 'when there is no executable browser' do
+            it 'returns false' do
+                Selenium::WebDriver::PhantomJS.stub(:path){ false }
+                described_class.has_executable?.should be_false
+            end
+        end
+
+        context 'when there is an executable browser' do
+            it 'returns true' do
+                Selenium::WebDriver::PhantomJS.stub(:path){ __FILE__ }
+                described_class.has_executable?.should be_true
+            end
+        end
+    end
+
+    describe '.executable' do
+        it 'returns the path to the browser executable' do
+            stub = __FILE__
+            Selenium::WebDriver::PhantomJS.stub(:path){ stub }
+            described_class.executable.should == stub
+        end
+    end
+
     describe '#initialize' do
         describe :concurrency do
             it 'sets the HTTP request concurrency'
