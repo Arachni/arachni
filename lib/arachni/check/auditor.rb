@@ -158,6 +158,7 @@ module Auditor
 
     # Default audit options.
     OPTIONS = {
+
         # Elements to audit.
         #
         # If no elements have been passed to audit methods, candidates will be
@@ -428,8 +429,8 @@ module Auditor
     # @yield       [element]  Each candidate element.
     # @yieldparam [Arachni::Element]
     def each_candidate_dom_element( types = [], &block )
-        types = self.class.info[:elements] if types.empty?
-        types = OPTIONS[:dom_elements]     if types.empty?
+        types = self.class.info[:elements]    if types.empty?
+        types = OPTIONS[:dom_elements]        if types.empty?
 
         types.each do |elem|
             elem = elem.type
