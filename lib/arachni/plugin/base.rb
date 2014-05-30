@@ -3,32 +3,10 @@
     All rights reserved.
 =end
 
+require_relative 'formatter'
+
 module Arachni
 module Plugin
-
-# Will be extended by plugin formatters which provide plugin data formatting
-# for the reports.
-#
-# Plugin formatters will be in turn ran by [Arachni::Report::Bas#format_plugin_results].
-#
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-class Formatter
-    include UI::Output
-
-    attr_reader :auditstore
-    attr_reader :results
-    attr_reader :description
-
-    def initialize( auditstore, plugin_data )
-        @auditstore  = auditstore
-        @results     = plugin_data[:results]
-        @description = plugin_data[:description]
-    end
-
-    def run
-    end
-
-end
 
 # An abstract class which all plugins must extend.
 #
@@ -36,6 +14,7 @@ end
 # @abstract
 class Base < Component::Base
     include Component
+    include MonitorMixin
 
     # @return   [Hash]  Plugin options.
     attr_reader :options
@@ -186,19 +165,6 @@ class Base < Component::Base
     def http
         framework.http
     end
-
-    # Provides plugin-wide synchronization.
-    def self.synchronize( &block )
-        @mutex.synchronize( &block )
-    end
-    def synchronize( &block )
-        self.class.synchronize( &block )
-    end
-
-    def self.initialize_mutex
-        @mutex ||= Mutex.new
-    end
-    initialize_mutex
 
     # Registers the plugin's results to {Data::Plugins}.
     #

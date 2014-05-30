@@ -6,12 +6,14 @@ describe Arachni::Plugin::Manager do
         @framework = Arachni::Framework.new
         @framework.state.running = true
     end
-    subject { @framework.plugins }
-    let(:framework) { @framework }
+
     after( :each ) do
         @framework.reset
         Arachni::Options.reset
     end
+
+    subject { @framework.plugins }
+    let(:framework) { @framework }
 
     describe '#suspend' do
         before :each do
