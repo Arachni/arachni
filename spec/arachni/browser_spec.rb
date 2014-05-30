@@ -1974,6 +1974,14 @@ describe Arachni::Browser do
                     end
                 end
             end
+
+            context 'and the href is empty' do
+                let(:url) { @url + '/each_element_with_events/a/href/empty' }
+
+                it 'takes it into account' do
+                    snapshot_id.should_not == empty_snapshot_id
+                end
+            end
         end
 
         context :form do

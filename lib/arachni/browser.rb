@@ -99,10 +99,11 @@ class Browser
     # @return   [Bool]
     #   `true` if `phantomjs` is in the OS PATH, `false` otherwise.
     def self.has_executable?
-        return @has_executable if !@has_executable.nil?
-        @has_executable = !!executable
+        !!executable
     end
 
+    # @return   [String]
+    #   Path to the PhantomJS executable.
     def self.executable
         Selenium::WebDriver::PhantomJS.path
     end

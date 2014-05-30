@@ -66,6 +66,16 @@ get '/each_element_with_events/a/href/out-of-scope' do
     EOHTML
 end
 
+get '/each_element_with_events/a/href/empty' do
+    <<-EOHTML
+    <html>
+        <body>
+            <a href="">Click me!</a>
+        </body>
+    </html>
+    EOHTML
+end
+
 get '/each_element_with_events/form/input/image' do
     <<-EOHTML
     <html>
