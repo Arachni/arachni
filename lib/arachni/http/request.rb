@@ -287,7 +287,7 @@ class Request < Message
             method:          method,
             headers:         headers,
             body:            body,
-            params:          Arachni::Utilities.parse_url_vars( url ).
+            params:          Arachni::Utilities.link_parse_query( url ).
                                  merge( parameters || {} ),
             userpwd:         userpwd,
             followlocation:  follow_location?,

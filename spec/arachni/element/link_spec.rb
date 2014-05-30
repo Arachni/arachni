@@ -308,10 +308,10 @@ describe Arachni::Element::Link do
         end
     end
 
-    describe '.parse_query_vars' do
+    describe '.parse_query' do
         it 'returns the query parameters as a Hash' do
             url = 'http://test/?param_one=value_one&param_two=value_two'
-            described_class.parse_query_vars( url ).should == {
+            described_class.parse_query( url ).should == {
                 'param_one' => 'value_one',
                 'param_two' => 'value_two'
             }
@@ -319,7 +319,7 @@ describe Arachni::Element::Link do
 
         it 'decodes the parameters' do
             url = 'http://test/?stuff%20here=bl%20ah'
-            described_class.parse_query_vars( url ).should == {
+            described_class.parse_query( url ).should == {
                 'stuff here' => 'bl ah'
             }
         end
@@ -327,13 +327,13 @@ describe Arachni::Element::Link do
         context 'when passed' do
             describe 'nil' do
                 it 'returns an empty Hash' do
-                    described_class.parse_query_vars( nil ).should == {}
+                    described_class.parse_query( nil ).should == {}
                 end
             end
             describe 'an unparsable URL' do
                 it 'returns an empty Hash' do
                     url = '$#%^$6#5436#$%^'
-                    described_class.parse_query_vars( url ).should == {}
+                    described_class.parse_query( url ).should == {}
                 end
             end
         end

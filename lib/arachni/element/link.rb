@@ -55,7 +55,7 @@ class Link < Base
     # @return  (see Capabilities::Submittable#action=)
     def action=( url )
         rewritten   = self.class.rewrite( url )
-        self.inputs = parse_url_vars( rewritten ).merge( self.inputs || {} )
+        self.inputs = self.class.parse_query( rewritten ).merge( self.inputs || {} )
 
         super rewritten.split( '?' ).first.to_s
     end
@@ -152,7 +152,7 @@ class Link < Base
         # @param    [String]    url
         #
         # @return   [Hash]
-        def parse_query_vars( url )
+        def parse_query( url )
             return {} if !url
 
             parsed = uri_parse( url )

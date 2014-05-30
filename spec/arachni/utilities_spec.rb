@@ -5,12 +5,64 @@ describe Arachni::Utilities do
 
     before( :each ) do
         @opts = Arachni::Options.reset
-        @utils = Arachni::Utilities
+    end
+
+    subject { Arachni::Utilities }
+
+    describe '#caller_name' do
+        it 'returns the filename of the caller' do
+            subject.caller_name.should == 'example'
+        end
+    end
+
+    describe '#caller_path' do
+        it 'returns the filepath of the caller' do
+            subject.caller_path.should == Kernel.caller.first.match( /^(.+):\d/ )[1]
+        end
+    end
+
+    {
+        forms_from_response:     [Arachni::Element::Form, :from_response],
+        forms_from_document:     [Arachni::Element::Form, :from_document],
+        form_encode:             [Arachni::Element::Form, :encode],
+        form_decode:             [Arachni::Element::Form, :decode],
+        form_parse_request_body: [Arachni::Element::Form, :parse_request_body],
+        links_from_response:     [Arachni::Element::Link, :from_response],
+        links_from_document:     [Arachni::Element::Link, :from_document],
+        link_parse_query:        [Arachni::Element::Link, :parse_query],
+        cookies_from_response:   [Arachni::Element::Cookie, :from_response],
+        cookies_from_document:   [Arachni::Element::Cookie, :from_document],
+        cookies_from_file:       [Arachni::Element::Cookie, :from_file],
+        cookie_encode:           [Arachni::Element::Cookie, :encode],
+        cookie_decode:           [Arachni::Element::Cookie, :decode],
+        parse_set_cookie:        [Arachni::Element::Cookie, :parse_set_cookie],
+        page_from_response:      [Arachni::Page, :from_response],
+        page_from_url:           [Arachni::Page, :from_url],
+        html_decode:             [CGI, :unescapeHTML],
+        html_unescape:           [CGI, :unescapeHTML],
+        html_encode:             [CGI, :escapeHTML],
+        html_escape:             [CGI, :escapeHTML],
+        uri_parse:               [Arachni::URI, :parse],
+        uri_encode:              [Arachni::URI, :encode],
+        uri_decode:              [Arachni::URI, :decode],
+        normalize_url:           [Arachni::URI, :normalize]
+    }.each do |m, (klass, delegated)|
+        describe "##{m}" do
+            it "delegates to #{klass}.#{delegated}" do
+                ret = :blah
+                arg = 'stuff'
+
+                klass.should receive(delegated).with(arg)
+                klass.stub(delegated){ ret }
+
+                subject.send( m, arg ).should == ret
+            end
+        end
     end
 
     describe '#uri_parser' do
         it 'returns a URI::Parser' do
-            @utils.uri_parser.class.should == ::URI::Parser
+            subject.uri_parser.class.should == ::URI::Parser
         end
     end
 
@@ -26,7 +78,7 @@ describe Arachni::Utilities do
 
             uri = "#{scheme}://#{user}:#{password}@#{host}#{path}?#{query}"
 
-            parsed_uri = @utils.uri_parse( uri )
+            parsed_uri = subject.uri_parse( uri )
 
             parsed_uri.to_s.should == uri
 
@@ -42,7 +94,7 @@ describe Arachni::Utilities do
     describe '#uri_decode' do
         it 'decodes a URI' do
             uri = 'my%20test.asp?name=st%C3%A5le&car=saab'
-            @utils.uri_decode( uri ).should == "my test.asp?name=ståle&car=saab"
+            subject.uri_decode( uri ).should == "my test.asp?name=ståle&car=saab"
         end
     end
 
@@ -51,8 +103,8 @@ describe Arachni::Utilities do
             @opts.url  = 'http://test2.com/blah/ha'
             rel  = '/test'
             rel2 = 'test2'
-            @utils.to_absolute( rel ).should == "http://test2.com" + rel
-            @utils.to_absolute( rel2 ).should == "http://test2.com/blah/" + rel2
+            subject.to_absolute( rel ).should == "http://test2.com" + rel
+            subject.to_absolute( rel2 ).should == "http://test2.com/blah/" + rel2
         end
 
         context 'when called with a 2nd parameter' do
@@ -60,9 +112,9 @@ describe Arachni::Utilities do
                 abs  = 'http://test.com/blah/ha'
                 rel  = '/test'
                 rel2 = 'test2'
-                @utils.to_absolute( rel, abs ).should == "http://test.com" + rel
-                @utils.to_absolute( rel2, abs ).should == "http://test.com/blah/" + rel2
-                @utils.to_absolute( rel2, abs + '/' ).should == "http://test.com/blah/ha/" + rel2
+                subject.to_absolute( rel, abs ).should == "http://test.com" + rel
+                subject.to_absolute( rel2, abs ).should == "http://test.com/blah/" + rel2
+                subject.to_absolute( rel2, abs + '/' ).should == "http://test.com/blah/ha/" + rel2
             end
         end
     end
@@ -74,10 +126,10 @@ describe Arachni::Utilities do
 
                 url = 'http://stuff.com/match_this'
                 10.times do
-                    @utils.redundant_path?( url ).should be_false
+                    subject.redundant_path?( url ).should be_false
                 end
 
-                @utils.redundant_path?( url ).should be_true
+                subject.redundant_path?( url ).should be_true
             end
         end
         context "when a URL's counter has not reached 0" do
@@ -86,10 +138,10 @@ describe Arachni::Utilities do
 
                 url = 'http://stuff.com/match_this'
                 10.times do
-                    @utils.redundant_path?( url ).should be_false
+                    subject.redundant_path?( url ).should be_false
                 end
 
-                @utils.redundant_path?( url ).should be_false
+                subject.redundant_path?( url ).should be_false
             end
         end
     end
@@ -100,12 +152,12 @@ describe Arachni::Utilities do
         context 'when a second argument (reference URL) is provided' do
             context 'with a path that is in the domain' do
                 it 'returns true' do
-                    @utils.path_in_domain?( 'http://yes.com/foo', 'http://yes.com' ).should be_true
+                    subject.path_in_domain?( 'http://yes.com/foo', 'http://yes.com' ).should be_true
                 end
             end
             context 'with a path that is outside the domain' do
                 it 'returns true' do
-                    @utils.path_in_domain?( 'http://no.com/foo', 'http://yes.com' ).should be_false
+                    subject.path_in_domain?( 'http://no.com/foo', 'http://yes.com' ).should be_false
                 end
             end
         end
@@ -115,23 +167,23 @@ describe Arachni::Utilities do
 
             context 'with a URL with a different domain' do
                 it 'returns false' do
-                    @utils.path_in_domain?( 'http://google.com' ).should be_false
-                    @utils.skip_path?( 'http://google.com' ).should be_true
+                    subject.path_in_domain?( 'http://google.com' ).should be_false
+                    subject.skip_path?( 'http://google.com' ).should be_true
                 end
             end
 
             context 'with a URL with the same domain' do
                 it 'returns true' do
-                    @utils.path_in_domain?( 'http://bar.com/test/' ).should be_true
-                    @utils.skip_path?( 'http://bar.com/test/' ).should be_false
+                    subject.path_in_domain?( 'http://bar.com/test/' ).should be_true
+                    subject.skip_path?( 'http://bar.com/test/' ).should be_false
                 end
             end
 
 
             context 'with a URL with a different subdomain' do
                 it 'returns false' do
-                    @utils.path_in_domain?( 'http://test.bar.com/test' ).should be_false
-                    @utils.skip_path?( 'http://test.bar.com/test' ).should be_true
+                    subject.path_in_domain?( 'http://test.bar.com/test' ).should be_false
+                    subject.skip_path?( 'http://test.bar.com/test' ).should be_true
                 end
             end
         end
@@ -141,23 +193,23 @@ describe Arachni::Utilities do
 
             context 'with a URL with a different domain' do
                 it 'returns false' do
-                    @utils.path_in_domain?( 'http://google.com' ).should be_false
-                    @utils.skip_path?( 'http://google.com' ).should be_true
+                    subject.path_in_domain?( 'http://google.com' ).should be_false
+                    subject.skip_path?( 'http://google.com' ).should be_true
                 end
             end
 
             context 'with a URL with the same domain' do
                 it 'returns true' do
-                    @utils.path_in_domain?( 'http://bar.com/test/' ).should be_true
-                    @utils.skip_path?( 'http://bar.com/test/' ).should be_false
+                    subject.path_in_domain?( 'http://bar.com/test/' ).should be_true
+                    subject.skip_path?( 'http://bar.com/test/' ).should be_false
                 end
             end
 
 
             context 'with a URL with a different subdomain' do
                 it 'returns true' do
-                    @utils.path_in_domain?( 'http://test.bar.com/test' ).should be_true
-                    @utils.skip_path?( 'http://test.bar.com/test' ).should be_false
+                    subject.path_in_domain?( 'http://test.bar.com/test' ).should be_true
+                    subject.skip_path?( 'http://test.bar.com/test' ).should be_false
                 end
             end
         end
@@ -168,15 +220,15 @@ describe Arachni::Utilities do
 
         context 'when a path matches an exclude rule' do
             it 'returns true' do
-                @utils.exclude_path?( 'skip_me' ).should be_true
-                @utils.skip_path?( 'http://bar.com/skip_me' ).should be_true
+                subject.exclude_path?( 'skip_me' ).should be_true
+                subject.skip_path?( 'http://bar.com/skip_me' ).should be_true
             end
         end
 
         context 'when a path does not match an exclude rule' do
             it 'returns false' do
-                @utils.exclude_path?( 'not_me' ).should be_false
-                @utils.skip_path?( 'http://bar.com/not_me' ).should be_false
+                subject.exclude_path?( 'not_me' ).should be_false
+                subject.skip_path?( 'http://bar.com/not_me' ).should be_false
             end
         end
     end
@@ -196,17 +248,17 @@ describe Arachni::Utilities do
                          ].map { |t| Arachni::Page::DOM::Transition.new *t.first }
                     }
                 )
-                @utils.skip_page?( page ).should be_false
+                subject.skip_page?( page ).should be_false
 
                 @opts.scope.dom_depth_limit = 2
-                @utils.skip_page?( page ).should be_true
+                subject.skip_page?( page ).should be_true
             end
         end
 
         context 'when the body matches an ignore rule' do
             it 'returns true' do
                 page = Arachni::Page.from_data( url: 'http://test/', body: 'ignore me' )
-                @utils.skip_page?( page ).should be_true
+                subject.skip_page?( page ).should be_true
             end
         end
 
@@ -216,7 +268,7 @@ describe Arachni::Utilities do
                     url: 'http://test/',
                     body: 'not me'
                 )
-                @utils.skip_page?( page ).should be_false
+                subject.skip_page?( page ).should be_false
             end
         end
     end
@@ -227,7 +279,7 @@ describe Arachni::Utilities do
         context 'when the body matches an ignore rule' do
             it 'returns true' do
                 res = Arachni::HTTP::Response.new( url: 'http://stuff/', body: 'ignore me' )
-                @utils.skip_response?( res ).should be_true
+                subject.skip_response?( res ).should be_true
             end
         end
 
@@ -237,7 +289,7 @@ describe Arachni::Utilities do
                     url: 'http://test/',
                     body: 'not me'
                 )
-                @utils.skip_response?( res ).should be_false
+                subject.skip_response?( res ).should be_false
             end
         end
     end
@@ -247,15 +299,15 @@ describe Arachni::Utilities do
 
         context 'when a path matches an include rule' do
             it 'returns true' do
-                @utils.include_path?( 'include_me' ).should be_true
-                @utils.skip_path?( 'http://bar.com/include_me' ).should be_false
+                subject.include_path?( 'include_me' ).should be_true
+                subject.skip_path?( 'http://bar.com/include_me' ).should be_false
             end
         end
 
         context 'when a path does not match an include rule' do
             it 'returns false' do
-                @utils.include_path?( 'not_me' ).should be_false
-                @utils.skip_path?( 'http://bar.com/not_me' ).should be_true
+                subject.include_path?( 'not_me' ).should be_false
+                subject.skip_path?( 'http://bar.com/not_me' ).should be_true
             end
         end
     end
@@ -275,7 +327,7 @@ describe Arachni::Utilities do
                             url: 'http://stuff/here',
                             body: 'ignore me'
                         )
-                        @utils.skip_resource?( res ).should be_true
+                        subject.skip_resource?( res ).should be_true
                     end
                 end
 
@@ -285,7 +337,7 @@ describe Arachni::Utilities do
                             url: 'http://stuff/here',
                             body: 'stuff'
                         )
-                        @utils.skip_resource?( res ).should be_false
+                        subject.skip_resource?( res ).should be_false
                     end
                 end
 
@@ -295,7 +347,7 @@ describe Arachni::Utilities do
                             url: 'http://stuff/here/to/ignore/',
                             body: 'ignore me'
                         )
-                        @utils.skip_resource?( res ).should be_true
+                        subject.skip_resource?( res ).should be_true
                     end
                 end
 
@@ -305,7 +357,7 @@ describe Arachni::Utilities do
                             url: 'http://stuff/here',
                             body: 'stuff'
                         )
-                        @utils.skip_resource?( res ).should be_false
+                        subject.skip_resource?( res ).should be_false
                     end
                 end
             end
@@ -317,7 +369,7 @@ describe Arachni::Utilities do
                             url:   'http://stuff/here',
                             body: 'ignore me'
                         )
-                        @utils.skip_resource?( page ).should be_true
+                        subject.skip_resource?( page ).should be_true
                     end
                 end
 
@@ -327,7 +379,7 @@ describe Arachni::Utilities do
                             url:   'http://stuff/here',
                             body: 'stuff'
                         )
-                        @utils.skip_resource?( page ).should be_false
+                        subject.skip_resource?( page ).should be_false
                     end
                 end
 
@@ -337,7 +389,7 @@ describe Arachni::Utilities do
                             url:   'http://stuff/here/to/ignore/',
                             body: 'ignore me'
                         )
-                        @utils.skip_resource?( res ).should be_true
+                        subject.skip_resource?( res ).should be_true
                     end
                 end
 
@@ -347,7 +399,7 @@ describe Arachni::Utilities do
                             url:  'http://stuff/here',
                             body: 'stuff'
                         )
-                        @utils.skip_resource?( res ).should be_false
+                        subject.skip_resource?( res ).should be_false
                     end
                 end
 
@@ -358,14 +410,14 @@ describe Arachni::Utilities do
                     context 'which matches an ignore rule' do
                         it 'returns true' do
                             s = "ignore \n me"
-                            @utils.skip_resource?( s ).should be_true
+                            subject.skip_resource?( s ).should be_true
                         end
                     end
 
                     context 'which does not match an ignore rule' do
                         it 'returns false' do
                             s = "multi \n line \n stuff here"
-                            @utils.skip_resource?( s ).should be_false
+                            subject.skip_resource?( s ).should be_false
                         end
                     end
                 end
@@ -374,14 +426,14 @@ describe Arachni::Utilities do
                     context 'which matches an exclude rule' do
                         it 'returns true' do
                             s = 'ignore/this/path'
-                            @utils.skip_resource?( s ).should be_true
+                            subject.skip_resource?( s ).should be_true
                         end
                     end
 
                     context 'which does not match an exclude rule' do
                         it 'returns false' do
                             s = 'stuf/here/'
-                            @utils.skip_resource?( s ).should be_false
+                            subject.skip_resource?( s ).should be_false
                         end
                     end
 
@@ -399,8 +451,8 @@ describe Arachni::Utilities do
 
                     url = 'https://test2.com/blah/ha'
 
-                    @utils.follow_protocol?( url ).should be_true
-                    @utils.skip_path?( url ).should be_false
+                    subject.follow_protocol?( url ).should be_true
+                    subject.skip_path?( url ).should be_false
                 end
             end
             context 'HTTPS' do
@@ -410,8 +462,8 @@ describe Arachni::Utilities do
 
                     url = 'https://test2.com/blah/ha'
 
-                    @utils.follow_protocol?( url ).should be_true
-                    @utils.skip_path?( url ).should be_false
+                    subject.follow_protocol?( url ).should be_true
+                    subject.skip_path?( url ).should be_false
                 end
             end
             context 'other' do
@@ -421,8 +473,8 @@ describe Arachni::Utilities do
 
                     url = 'stuff://test2.com/blah/ha'
 
-                    @utils.follow_protocol?( url ).should be_false
-                    @utils.skip_path?( url ).should be_true
+                    subject.follow_protocol?( url ).should be_false
+                    subject.skip_path?( url ).should be_true
                 end
             end
         end
@@ -438,8 +490,8 @@ describe Arachni::Utilities do
 
                                     url = 'https://test2.com/blah/ha'
 
-                                    @utils.follow_protocol?( url ).should be_true
-                                    @utils.skip_path?( url ).should be_false
+                                    subject.follow_protocol?( url ).should be_true
+                                    subject.skip_path?( url ).should be_false
                                 end
                             end
 
@@ -450,8 +502,8 @@ describe Arachni::Utilities do
 
                                     url = 'https://test2.com/blah/ha'
 
-                                    @utils.follow_protocol?( url ).should be_true
-                                    @utils.skip_path?( url ).should be_false
+                                    subject.follow_protocol?( url ).should be_true
+                                    subject.skip_path?( url ).should be_false
                                 end
                             end
                         end
@@ -465,8 +517,8 @@ describe Arachni::Utilities do
 
                                     url = 'http://test2.com/blah/ha'
 
-                                    @utils.follow_protocol?( url ).should be_false
-                                    @utils.skip_path?( url ).should be_true
+                                    subject.follow_protocol?( url ).should be_false
+                                    subject.skip_path?( url ).should be_true
                                 end
                             end
 
@@ -477,8 +529,8 @@ describe Arachni::Utilities do
 
                                     url = 'http://test2.com/blah/ha'
 
-                                    @utils.follow_protocol?( url ).should be_true
-                                    @utils.skip_path?( url ).should be_false
+                                    subject.follow_protocol?( url ).should be_true
+                                    subject.skip_path?( url ).should be_false
                                 end
                             end
                         end
@@ -497,8 +549,8 @@ describe Arachni::Utilities do
 
                                     url = 'https://test2.com/blah/ha'
 
-                                    @utils.follow_protocol?( url ).should be_true
-                                    @utils.skip_path?( url ).should be_false
+                                    subject.follow_protocol?( url ).should be_true
+                                    subject.skip_path?( url ).should be_false
                                 end
                             end
 
@@ -509,8 +561,8 @@ describe Arachni::Utilities do
 
                                     url = 'https://test2.com/blah/ha'
 
-                                    @utils.follow_protocol?( url ).should be_true
-                                    @utils.skip_path?( url ).should be_false
+                                    subject.follow_protocol?( url ).should be_true
+                                    subject.skip_path?( url ).should be_false
                                 end
                             end
                         end
@@ -524,8 +576,8 @@ describe Arachni::Utilities do
 
                                     url = 'http://test2.com/blah/ha'
 
-                                    @utils.follow_protocol?( url ).should be_true
-                                    @utils.skip_path?( url ).should be_false
+                                    subject.follow_protocol?( url ).should be_true
+                                    subject.skip_path?( url ).should be_false
                                 end
                             end
 
@@ -536,8 +588,8 @@ describe Arachni::Utilities do
 
                                     url = 'http://test2.com/blah/ha'
 
-                                    @utils.follow_protocol?( url ).should be_true
-                                    @utils.skip_path?( url ).should be_false
+                                    subject.follow_protocol?( url ).should be_true
+                                    subject.skip_path?( url ).should be_false
                                 end
                             end
                         end
@@ -551,14 +603,14 @@ describe Arachni::Utilities do
         context 'when the url only has a path' do
             it 'does not change it' do
                 uri_with_path = 'http://test.com/some/path/'
-                @utils.get_path( uri_with_path ).should == uri_with_path
+                subject.get_path( uri_with_path ).should == uri_with_path
             end
         end
 
         context 'when the url only has a path without a terminating slash' do
             it 'appends a slash to it' do
                 uri_with_path = 'http://test.com/some/path'
-                @utils.get_path( uri_with_path ).should == uri_with_path + '/'
+                subject.get_path( uri_with_path ).should == uri_with_path + '/'
             end
         end
 
@@ -567,7 +619,7 @@ describe Arachni::Utilities do
                 it 'only returns it up to its path with a terminating slash' do
                     uri = 'http://test.com/some/path/'
                     uri2 = uri + '?query=val&var=val2#frag'
-                    @utils.get_path( uri2 ).should == uri
+                    subject.get_path( uri2 ).should == uri
                 end
             end
 
@@ -575,7 +627,7 @@ describe Arachni::Utilities do
                 it 'only returns it up to its path with a terminating slash' do
                     uri = 'http://test.com/some/path'
                     uri2 = uri + '?query=val&var=val2#frag'
-                    @utils.get_path( uri2 ).should == uri + '/'
+                    subject.get_path( uri2 ).should == uri + '/'
                 end
             end
         end
@@ -583,59 +635,43 @@ describe Arachni::Utilities do
 
     describe '#seed' do
         it 'returns a random string' do
-            @utils.seed.class.should == String
+            subject.seed.class.should == String
         end
     end
 
-    describe '#normalize_url' do
-        it 'should clean the URL' do
-            [
-                'another/path',
-                '/some/path',
-                'http://test.com',
-                'style.css',
-                'http://test.com/path/here',
-                'http://user@test.com/path/here',
-                'http://user:pass@test.com/path/here',
-                'http://user:pass@test.com:80/path/here',
-                'http://user:pass@test.com:81/path/here',
-                'http://user:pass@test.com:81/path/here?query=here&with=more vars',
-                'http://user:pass@test.com:81/path/here?query=here&with=more vars#and-fragment',
-                'http://localhost:4567',
-                'http://localhost:4567/',
-                'http://testfire.net/default.aspx',
-                'http://testfire.net/Privacypolicy.aspx?sec=Careers&template=US',
-                'http://testfire.net/disclaimer.htm?url=http://dd.d',
-                'hTTp://user:password@tEsT.com:81///with/////path/another weird '+
-                    'path %"&*[$)?query=crap&other=$54$5466][(\'"#fragment',
-                'http://test.com/login.php?goto?=domain.tld/index.php'
-            ].each { |p| @utils.normalize_url( p ).should == Arachni::URI.normalize( p ) }
+    describe '#secs_to_hms' do
+        it 'converts seconds to HOURS:MINUTES:SECONDS' do
+            subject.secs_to_hms( 0 ).should == '00:00:00'
+            subject.secs_to_hms( 1 ).should == '00:00:01'
+            subject.secs_to_hms( 60 ).should == '00:01:00'
+            subject.secs_to_hms( 60*60 ).should == '01:00:00'
+            subject.secs_to_hms( 60*60 + 60 + 1 ).should == '01:01:01'
         end
     end
 
     describe '#exception_jail' do
-        context 'when raise_exception = true' do
-            it 'should forward exceptions' do
-                begin
-                    @utils.exception_jail( true ) {
-                        raise 'Exception!'
-                    }
-                    false.should be_true
-                rescue RuntimeError => e
-                    true.should be_true
+        context 'when raise_exception' do
+            context 'default' do
+                it 're-raises the exception' do
+                    expect do
+                        subject.exception_jail { raise 'Exception!' }
+                    end.to raise_error RuntimeError
                 end
             end
-        end
 
-        context 'when raise_exception = false' do
-            it 'should discard exceptions' do
-                begin
-                    @utils.exception_jail( false ) {
-                        raise 'Exception!'
-                    }
-                    true.should be_true
-                rescue RuntimeError => e
-                    false.should be_true
+            context true do
+                it 're-raises the exception' do
+                    expect do
+                        subject.exception_jail( true ) { raise 'Exception!' }
+                    end.to raise_error RuntimeError
+                end
+            end
+
+            context false do
+                it 'does not re-raises the exception' do
+                    expect do
+                        subject.exception_jail( false ) { raise 'Exception!' }
+                    end.to_not raise_error
                 end
             end
         end

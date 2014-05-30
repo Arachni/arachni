@@ -193,7 +193,7 @@ class Scope < Arachni::OptionGroup
         return false if !auto_redundant?
         @auto_redundant_h ||= Hash.new( 0 )
 
-        h = "#{url.split( '?' ).first}#{Arachni::Link.parse_query_vars( url ).keys.sort}".hash
+        h = "#{url.split( '?' ).first}#{Arachni::Link.parse_query( url ).keys.sort}".hash
 
         if @auto_redundant_h[h] >= auto_redundant_paths
             block.call( @auto_redundant_h[h] ) if block_given?

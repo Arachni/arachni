@@ -106,7 +106,7 @@ class Form < Base
     def action=( url )
         if self.method == :get
             rewritten   = Link.rewrite( url )
-            self.inputs = parse_url_vars( rewritten ).merge( self.inputs || {} )
+            self.inputs = link_parse_query( rewritten ).merge( self.inputs || {} )
 
             super rewritten.split( '?' ).first.to_s
         else

@@ -55,7 +55,6 @@ module Utilities
     def form_parse_request_body( *args )
         Form.parse_request_body( *args )
     end
-    alias :parse_request_body :form_parse_request_body
 
     # @see Arachni::Element::Link.from_response
     def links_from_response( *args )
@@ -67,12 +66,9 @@ module Utilities
         Link.from_document( *args )
     end
 
-    # @see Arachni::Element::Link.parse_query_vars
-    def parse_url_vars( *args )
-        Link.parse_query_vars( *args )
-    end
-    def parse_query( *args )
-        Link.parse_query_vars( *args )
+    # @see Arachni::Element::Link.parse_query
+    def link_parse_query( *args )
+        Link.parse_query( *args )
     end
 
     # @see Arachni::Element::Cookie.from_response
@@ -98,6 +94,11 @@ module Utilities
     # @see Arachni::Element::Cookie.encode
     def cookie_encode( *args )
         Cookie.encode( *args )
+    end
+
+    # @see Arachni::Element::Cookie.decode
+    def cookie_decode( *args )
+        Cookie.decode( *args )
     end
 
     # @see Arachni::Page.from_response
@@ -131,8 +132,8 @@ module Utilities
     end
 
     # @see URI.encode
-    def uri_encode( string, bad_characters = nil )
-        URI.encode( string, bad_characters )
+    def uri_encode( *args )
+        URI.encode( *args )
     end
 
     # @see URI.encode
@@ -160,17 +161,6 @@ module Utilities
     #
     def get_path( url )
         uri_parse( url ).up_to_path
-    end
-
-    #
-    # @param    [String] url
-    #
-    # @return   [String]  Domain name.
-    #
-    # @see URI.domain
-    #
-    def extract_domain( url )
-        uri_parse( url ).domain
     end
 
     #
@@ -426,7 +416,7 @@ module Utilities
     def exception_jail( raise_exception = true, &block )
         block.call
     rescue Exception => e
-        begin
+        if respond_to?( :print_error ) && respond_to?( :print_error_backtrace )
             print_error e.inspect
             print_error_backtrace e
             print_error
@@ -439,8 +429,8 @@ module Utilities
             print_error 'Caller:'
             ::Kernel.caller.each { |l| print_error l }
             print_error '-' * 80
-        rescue
         end
+
         raise e if raise_exception
     end
 
