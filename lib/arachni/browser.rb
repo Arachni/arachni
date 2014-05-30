@@ -300,16 +300,6 @@ class Browser
         transition
     end
 
-    def close_windows
-        watir.cookies.clear
-        clear_responses
-
-        @javascript.run( 'window.open()' )
-        watir.windows.last.use
-
-        watir.windows[0...-1].each { |w| w.close rescue nil }
-    end
-
     def shutdown
         watir.close if @process.alive?
         kill_phantomjs
@@ -803,10 +793,6 @@ class Browser
         watir.html
     end
 
-    def html?
-        response.headers.content_type.to_s.start_with? 'text/html'
-    end
-
     def load_delay
         #(intervals + timeouts).map { |t| t.last }.max
         @javascript.timeouts.map { |t| t.last }.max
@@ -859,15 +845,6 @@ class Browser
     end
 
     private
-
-    def prune_window_responses
-        open_windows_urls = watir.windows.map { |w| normalize_watir_url w.url }
-        synchronize do
-            @window_responses.reject! do |url, _|
-                !open_windows_urls.include? url
-            end
-        end
-    end
 
     def name_or_id_for( element )
         name = element.attribute_value(:name).to_s
@@ -1042,18 +1019,18 @@ class Browser
         [selenium]
     end
 
-    # Firefox driver, only used for debugging.
-    def firefox
-        profile = Selenium::WebDriver::Firefox::Profile.new
-        profile.proxy = Selenium::WebDriver::Proxy.new http: @proxy.address,
-                                                       ssl: @proxy.address
-        [:firefox, profile: profile]
-    end
-
-    # Chrome driver, only used for debugging.
-    def chrome
-        [ :chrome, switches: [ "--proxy-server=#{@proxy.address}" ] ]
-    end
+    # # Firefox driver, only used for debugging.
+    # def firefox
+    #     profile = Selenium::WebDriver::Firefox::Profile.new
+    #     profile.proxy = Selenium::WebDriver::Proxy.new http: @proxy.address,
+    #                                                    ssl: @proxy.address
+    #     [:firefox, profile: profile]
+    # end
+    #
+    # # Chrome driver, only used for debugging.
+    # def chrome
+    #     [ :chrome, switches: [ "--proxy-server=#{@proxy.address}" ] ]
+    # end
 
     def capabilities
         Selenium::WebDriver::Remote::Capabilities.phantomjs(
@@ -1213,10 +1190,6 @@ class Browser
 
         intercept destination
         nil
-    end
-
-    def clear_responses
-        synchronize { @window_responses.clear }
     end
 
     def save_response( response )
