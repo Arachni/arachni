@@ -292,15 +292,6 @@ module Mutable
         "#{semicolon}#{append}#{payload}#{null}"
     end
 
-    def print_debug_injection_set( mutations, opts )
-        return if !debug_level_2?
-
-        print_debug_level_2
-        print_debug_trainer( opts )
-        print_debug_formatting( opts )
-        print_debug_combos( mutations )
-    end
-
     def print_debug_formatting( opts )
         return if !opts[:format] || !debug_level_2?
 
@@ -322,7 +313,7 @@ module Mutable
                 msg << 'straight, leave as is (Format::STRAIGHT)'
             end
 
-            prep = msg.join( ' and ' ).capitalize + ". [Format mask: #{format}]"
+            prep = "#{msg.join( ' and ' ).capitalize}. [Format mask: #{format}]"
             prep.gsub!( 'format::null', "Format::NULL [#{Format::NULL}]" )
             prep.gsub!( 'format::append', "Format::APPEND [#{Format::APPEND}]" )
             prep.gsub!( 'format::straight', "Format::STRAIGHT [#{Format::STRAIGHT}]" )
@@ -332,22 +323,6 @@ module Mutable
             msg.clear
         end
         nil
-    end
-
-    def print_debug_combos( mutations )
-        return if !debug_level_2?
-
-        print_debug_level_2
-        print_debug_level_2 'Prepared mutations:'
-        print_debug_level_2 '|'
-
-        mutations.each do |mutation|
-            print_debug_mutation mutation
-        end
-
-        print_debug_level_2
-        print_debug_level_2 '------------'
-        print_debug_level_2
     end
 
     def print_debug_mutation( mutation )
