@@ -13,6 +13,7 @@ get '/each_candidate_element' do
     <html>
         <body>
             <a href="?link-input=blah">Click me</a>
+            <a href="link-template/input/blah">Click me</a>
             <form>
                 <input name='form-input'>
             </form>
@@ -32,6 +33,8 @@ get '/each_candidate_dom_element' do
             <form>
                 <input name='form-input'>
             </form>
+
+            <a href="#/dom-link-template/input/blah">Click me</a>
         </body>
     </html>
 HTML

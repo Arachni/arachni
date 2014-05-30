@@ -345,7 +345,10 @@ describe Arachni::Check::Auditor do
     end
 
     describe '#each_candidate_element' do
-        before(:each) { auditor.load_page_from "#{@url}each_candidate_element" }
+        before(:each) do
+            Arachni::Options.audit.link_templates = /link-template\/input\/(?<input>.+)/
+            auditor.load_page_from "#{@url}each_candidate_element"
+        end
 
         it 'sets the auditor' do
             auditor.each_candidate_element do |element|
@@ -360,7 +363,8 @@ describe Arachni::Check::Auditor do
                     elements << element
                 end
 
-                elements.should == auditor.page.links | auditor.page.headers
+                elements.should == (auditor.page.links | auditor.page.headers).
+                    select { |e| e.inputs.any? }
             end
 
             context 'and are not supported' do
@@ -379,7 +383,8 @@ describe Arachni::Check::Auditor do
                 end
 
                 auditor.class.elements.should == [Arachni::Link, Arachni::Form]
-                elements.should == auditor.page.links | auditor.page.forms
+                elements.should == (auditor.page.links | auditor.page.forms).
+                    select { |e| e.inputs.any? }
             end
 
             context 'and no types are specified by the check' do
@@ -391,18 +396,25 @@ describe Arachni::Check::Auditor do
                         elements << element
                     end
 
-                    elements.should == auditor.page.elements
+                    elements.map { |e| "#{e.type}s".to_sym }.uniq.should == Arachni::Page::ELEMENTS
+                    elements.should == (auditor.page.elements).
+                        select { |e| e.inputs.any? }
                 end
             end
         end
     end
 
     describe '#each_candidate_dom_element' do
-        before(:each) { auditor.load_page_from "#{@url}each_candidate_dom_element" }
+        before(:each) do
+            Arachni::Options.audit.link_templates = /dom-link-template\/input\/(?<input>.+)/
+            auditor.load_page_from "#{@url}each_candidate_dom_element"
+        end
 
         it 'sets the auditor' do
-            auditor.each_candidate_element do |element|
-                element.auditor.should == auditor
+            auditor.class.info[:elements].clear
+
+            auditor.each_candidate_dom_element do |element|
+                element.dom.auditor.should == auditor
             end
         end
 
@@ -449,7 +461,8 @@ describe Arachni::Check::Auditor do
 
                     elements.should ==
                         auditor.page.links.select { |l| l.dom } |
-                            auditor.page.forms | auditor.page.cookies
+                            auditor.page.forms | auditor.page.cookies |
+                            auditor.page.link_templates
                 end
             end
         end
