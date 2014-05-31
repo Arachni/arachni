@@ -24,4 +24,10 @@ describe Arachni::Element::Path do
     end
 
     subject { described_class.new response.url }
+
+    describe '#action' do
+        it 'delegates to #url' do
+            subject.action.should == subject.url
+        end
+    end
 end
