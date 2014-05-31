@@ -34,6 +34,12 @@ describe Arachni::Browser::Javascript::TaintTracer do
         end
     end
 
+    describe '#class' do
+        it "returns #{described_class}" do
+            subject.class.should == described_class
+        end
+    end
+
     it 'is aliased to _token_taint_tracer' do
         load "debug?input=_#{@javascript.token}_taint_tracer.log_execution_flow_sink()"
         @browser.watir.form.submit

@@ -33,6 +33,12 @@ describe Arachni::Browser::Javascript::Proxy do
         subject.my_function( 1, '2', data ).should == [1, '2', data]
     end
 
+    describe '#class' do
+        it "returns #{described_class}" do
+            subject.class.should == described_class
+        end
+    end
+
     describe '#stub' do
         it 'returns the Stub instance' do
             subject.stub.to_s.should end_with 'ProxyTest>'
