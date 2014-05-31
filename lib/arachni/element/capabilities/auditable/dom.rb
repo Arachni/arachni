@@ -145,10 +145,6 @@ module DOM
         browser.load page
     end
 
-    def on_complete( page, &block )
-        block.call page, page.request.performer
-    end
-
 end
 
 end
