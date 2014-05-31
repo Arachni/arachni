@@ -15,12 +15,12 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
         @negative.auditor.page = Arachni::Page.from_url( @url )
     end
 
-    describe '.taint' do
+    describe '#taint_analysis' do
 
         before do
             @seed = 'my_seed'
             Arachni::Framework.reset
-         end
+        end
 
         context 'when the element action matches a skip rule' do
             it 'returns false' do
@@ -332,37 +332,36 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                         issue.should be_untrusted
                         issue.remarks[:auditor].should be_any
                     end
+                end
 
-                    context 'when there is not a payload for the substring platform' do
-                        it 'matches against all payload responses and assigns the pattern platform to the issue' do
-                            payloads = {
-                                windows: "#{@seed} windows",
-                                php:     "#{@seed} php",
-                            }
+                context 'when there is not a payload for the substring platform' do
+                    it 'matches against all payload responses and assigns the pattern platform to the issue' do
+                        payloads = {
+                            windows: "#{@seed} windows",
+                            php:     "#{@seed} php",
+                        }
 
-                            substrings = {
-                                # Can match all but should only match
-                                # against responses of the ASP payload.
-                                asp: @seed
-                            }
+                        substrings = {
+                            # Can match all but should only match
+                            # against responses of the ASP payload.
+                            asp: @seed
+                        }
 
-                            @positive.taint_analysis(
-                                payloads.dup,
-                                substring: substrings.dup,
-                                format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
-                            )
+                        @positive.taint_analysis(
+                            payloads.dup,
+                            substring: substrings.dup,
+                            format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
+                        )
 
-                            @auditor.http.run
+                        @auditor.http.run
 
-                            issues.size.should == 1
-                            issue = issues.first
+                        issues.size.should == 1
+                        issue = issues.first
 
-                            issue.platform_name.should == :asp
-                            issue.signature.should == substrings[:asp].to_s
-                            issue.should be_trusted
-                        end
+                        issue.platform_name.should == :asp
+                        issue.signature.should == substrings[:asp].to_s
+                        issue.should be_trusted
                     end
-
                 end
             end
 
@@ -377,6 +376,19 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                     issues.should be_empty
                 end
             end
+
+            describe :longest_word_optimization do
+                it 'optimizes the pattern matching process by first matching against the largest word in the regexp' do
+                    @positive.taint_analysis(
+                        @seed,
+                        regexp: @seed,
+                        longest_word_optimization: true
+                    )
+                    @auditor.http.run
+                    issues.should be_any
+                end
+            end
+
         end
 
     end

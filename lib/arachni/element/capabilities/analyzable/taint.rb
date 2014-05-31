@@ -171,9 +171,6 @@ module Taint
             vector:    response.request.performer
         ).digest
         setup_verification_callbacks
-    rescue => e
-        ap e
-        ap e.backtrace
     end
 
     def ignore?( res, opts )
