@@ -29,7 +29,7 @@ module Arachni
 #
 # * {.normalize Normalization}.
 # * Parsing to {.parse Arachni::URI} (see also {.URI}), {.ruby_parse ::URI} or
-#   {.cheap_parse Hash} objects.
+#   {.fast_parse Hash} objects.
 # * Conversion to {.to_absolute absolute URLs}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
@@ -54,7 +54,7 @@ class URI
     CACHE_SIZES = {
         parse:       600,
         ruby_parse:  600,
-        cheap_parse: 600,
+        fast_parse: 600,
         normalize:   1000,
         to_absolute: 1000
     }
@@ -63,7 +63,7 @@ class URI
         parser:      ::URI::Parser.new,
         ruby_parse:  Support::Cache::RandomReplacement.new( CACHE_SIZES[:ruby_parse] ),
         parse:       Support::Cache::RandomReplacement.new( CACHE_SIZES[:parse] ),
-        cheap_parse: Support::Cache::RandomReplacement.new( CACHE_SIZES[:cheap_parse] ),
+        fast_parse: Support::Cache::RandomReplacement.new( CACHE_SIZES[:fast_parse] ),
         normalize:   Support::Cache::RandomReplacement.new( CACHE_SIZES[:normalize] ),
         to_absolute: Support::Cache::RandomReplacement.new( CACHE_SIZES[:to_absolute] )
     }
@@ -136,7 +136,7 @@ class URI
         return if url.start_with? 'javascript:'
 
         CACHE[__method__][url] ||= begin
-            ::URI::Generic.build( cheap_parse( url ) )
+            ::URI::Generic.build( fast_parse( url ) )
         rescue
             begin
                 parser.parse( normalize( url ).dup )
@@ -175,7 +175,7 @@ class URI
     #   {.ruby_parse} which does the same thing and caches the results for some
     #   extra schnell.
     #
-    def self.cheap_parse( url )
+    def self.fast_parse( url )
         return if !url || url.empty?
         return if url.start_with? 'javascript:'
 
@@ -311,7 +311,7 @@ class URI
     # Performs a parse using the `URI::Addressable` lib while normalizing the
     # URL (will also discard the fragment).
     #
-    # This method is not cached and solely exists as a fallback used by {.cheap_parse}.
+    # This method is not cached and solely exists as a fallback used by {.fast_parse}.
     #
     # @param    [String]  url
     #
@@ -383,7 +383,7 @@ class URI
     end
 
     #
-    # Uses {.cheap_parse} to parse and normalize the URL and then converts
+    # Uses {.fast_parse} to parse and normalize the URL and then converts
     # it to a common {String} format.
     #
     # @note This method's results are cached for performance reasons.
@@ -409,7 +409,7 @@ class URI
                 return v
             end
 
-            components = cheap_parse( url )
+            components = fast_parse( url )
 
             normalized = ''
             normalized << components[:scheme] + '://' if components[:scheme]

@@ -166,7 +166,7 @@ describe Arachni::URI do
         end
     end
 
-    describe '.cheap_parse' do
+    describe '.fast_parse' do
         it 'parses a URI and return its components as a hash' do
             scheme   = 'http'
             user     = 'user'
@@ -177,7 +177,7 @@ describe Arachni::URI do
 
             uri = "#{scheme}://#{user}:#{password}@#{host}/#{path}?#{query}"
 
-            parsed_uri = @uri.cheap_parse( uri )
+            parsed_uri = @uri.fast_parse( uri )
 
             parsed_uri[:scheme].should == scheme
             parsed_uri[:userinfo].should == user + ':' + password
@@ -185,7 +185,7 @@ describe Arachni::URI do
             parsed_uri[:path].should == path
             parsed_uri[:query].should == query
 
-            parsed_uri = @uri.cheap_parse( "//#{user}:#{password}@#{host}/#{path}?#{query}" )
+            parsed_uri = @uri.fast_parse( "//#{user}:#{password}@#{host}/#{path}?#{query}" )
 
             parsed_uri[:scheme].should be_nil
             parsed_uri[:userinfo].should == user + ':' + password
@@ -195,14 +195,14 @@ describe Arachni::URI do
         end
 
         it 'returns a frozen hash (with frozen values)' do
-            h = @uri.cheap_parse( 'http://test.com/stuff/' )
+            h = @uri.fast_parse( 'http://test.com/stuff/' )
 
             expect { h[:stuff] = 0 }.to raise_error
             expect { h[:path] << '/' }.to raise_error
         end
 
         it 'ignores javascript: URLs' do
-            @uri.cheap_parse( 'javascript:stuff()' ).should be_nil
+            @uri.fast_parse( 'javascript:stuff()' ).should be_nil
         end
     end
 
@@ -244,7 +244,7 @@ describe Arachni::URI do
         context Hash do
             it 'normalizes and construct a URI from a Hash of components' do
                 @urls.each do |url|
-                    uri = @uri.new( @uri.cheap_parse( url ) )
+                    uri = @uri.new( @uri.fast_parse( url ) )
                     uri.is_a?( Arachni::URI ).should be_true
                     uri.to_s.should == @ref_normalizer.call( url )
                 end
@@ -487,13 +487,13 @@ describe Arachni::URI do
         context Hash do
             context true do
                 it 'includes subdomains in the comparison' do
-                    h = @uri.cheap_parse( 'http://boo.test.com' )
+                    h = @uri.fast_parse( 'http://boo.test.com' )
                     @in_domain_url.in_domain?( true, h ).should be_false
                 end
             end
             context false do
                 it 'does not include subdomains in the comparison' do
-                    h = @uri.cheap_parse( 'http://boo.test.com' )
+                    h = @uri.fast_parse( 'http://boo.test.com' )
                     @in_domain_url.in_domain?( false, h ).should be_true
                 end
             end
