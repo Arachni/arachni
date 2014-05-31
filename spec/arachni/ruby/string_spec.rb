@@ -150,12 +150,35 @@ describe String do
         end
     end
 
-    describe '#substring?' do
-        it 'returns true if the substring exists in self' do
-            str = 'my string'
-            str.substring?( 'my' ).should be_true
-            str.substring?( 'myt' ).should be_false
-            str.substring?( 'my ' ).should be_true
+    describe '#recode!' do
+        subject { "abc\u3042\x81" }
+
+        it 'removes invalid characters' do
+            subject.recode!
+            subject.should == "abcあ�"
+        end
+
+        context 'when String#scrub! is not available' do
+            it 'uses a workaround' do
+                subject.stub(:respond_to?).with(:scrub!) { false }
+                subject.recode!
+                subject.should == "abcあ�"
+            end
+        end
+    end
+
+    describe '#recode' do
+        subject { "abc\u3042\x81" }
+
+        it 'returns a copy of the String without invalid characters' do
+            subject.recode.should == "abcあ�"
+        end
+
+        context 'when String#scrub is not available' do
+            it 'uses a workaround' do
+                subject.stub(:respond_to?).with(:scrub) { false }
+                subject.recode.should == "abcあ�"
+            end
         end
     end
 

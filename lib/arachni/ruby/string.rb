@@ -134,33 +134,22 @@ class String
     #   It basically has the same function as Ruby's `#hash` method, but does
     #   not use a random seed per Ruby process -- making it suitable for use
     #   in distributed systems.
-    #
     def persistent_hash
         Zlib.crc32 self
     end
 
-    def substring?( string )
-        begin
-            cmatch = match( Regexp.new( Regexp.escape( string ) ) )
-            cmatch && !cmatch.to_s.empty?
-        rescue
-            nil
-        end
-    end
-
-    def repack
-        unpack( 'C*' ).pack( 'U*' )
-    end
-
     def recode!
+        return scrub! if respond_to? :scrub!
+
         force_encoding( 'utf-8' )
-        encode!( 'utf-16be', invalid: :replace, undef: :replace ).encode( 'utf-8' )
+        encode!( 'utf-16be', invalid: :replace, undef: :replace )
+        encode!( 'utf-8' )
     end
 
     def recode
+        return scrub if respond_to? :scrub
         dup.recode!
     end
-
 
     def binary?
         # Stolen from YAML.

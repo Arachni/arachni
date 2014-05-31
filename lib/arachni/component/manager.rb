@@ -251,7 +251,7 @@ class Manager < Hash
 
             components.each do |component|
 
-                if component.substring?( WILDCARD )
+                if component.include?( WILDCARD )
                     load |= wilcard_to_names( component )
                 else
 
