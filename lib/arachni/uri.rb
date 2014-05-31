@@ -54,7 +54,7 @@ class URI
     CACHE_SIZES = {
         parse:       600,
         ruby_parse:  600,
-        fast_parse: 600,
+        fast_parse:  600,
         normalize:   1000,
         to_absolute: 1000
     }
@@ -63,7 +63,7 @@ class URI
         parser:      ::URI::Parser.new,
         ruby_parse:  Support::Cache::RandomReplacement.new( CACHE_SIZES[:ruby_parse] ),
         parse:       Support::Cache::RandomReplacement.new( CACHE_SIZES[:parse] ),
-        fast_parse: Support::Cache::RandomReplacement.new( CACHE_SIZES[:fast_parse] ),
+        fast_parse:  Support::Cache::RandomReplacement.new( CACHE_SIZES[:fast_parse] ),
         normalize:   Support::Cache::RandomReplacement.new( CACHE_SIZES[:normalize] ),
         to_absolute: Support::Cache::RandomReplacement.new( CACHE_SIZES[:to_absolute] )
     }
