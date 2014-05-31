@@ -94,8 +94,6 @@ describe Arachni::URI do
 
     before { @opts = Arachni::Options.instance.reset }
 
-    subject { Arachni::URI }
-
     describe '.URI' do
         it 'parses and normalize the give string' do
             @urls.each do |url|
@@ -109,20 +107,20 @@ describe Arachni::URI do
     describe '.encode' do
         it 'decodes a URI' do
             uri = "my test.asp?name=ståle&car=saab"
-            subject.encode( uri ).should == 'my%20test.asp?name=st%C3%A5le&car=saab'
+            described_class.encode( uri ).should == 'my%20test.asp?name=st%C3%A5le&car=saab'
         end
     end
 
     describe '.decode' do
         it 'decodes a URI' do
             uri = 'my%20test.asp?name=st%C3%A5le&car=saab'
-            subject.decode( uri ).should == "my test.asp?name=ståle&car=saab"
+            described_class.decode( uri ).should == "my test.asp?name=ståle&car=saab"
         end
     end
 
     describe '.parser' do
         it 'returns a URI::Parser' do
-            subject.parser.class.should == ::URI::Parser
+            described_class.parser.class.should == ::URI::Parser
         end
     end
 
@@ -137,7 +135,7 @@ describe Arachni::URI do
 
             uri = "#{scheme}://#{user}:#{password}@#{host}#{path}?#{query}"
 
-            parsed_uri = subject.parse( uri )
+            parsed_uri = described_class.parse( uri )
 
             parsed_uri.to_s.should == uri
 
@@ -150,19 +148,19 @@ describe Arachni::URI do
         end
 
         it 'ignores javascript: URLs' do
-            subject.parse( 'javascript:stuff()' ).should be_nil
+            described_class.parse( 'javascript:stuff()' ).should be_nil
         end
     end
 
     describe '.ruby_parse' do
         it 'cleans the URL' do
             @urls.each do |url|
-                subject.ruby_parse( url ).to_s.should == @ref_normalizer.call( url )
+                described_class.ruby_parse( url ).to_s.should == @ref_normalizer.call( url )
             end
         end
 
         it 'ignores javascript: URLs' do
-            subject.ruby_parse( 'javascript:stuff()' ).should be_nil
+            described_class.ruby_parse( 'javascript:stuff()' ).should be_nil
         end
 
         context 'when an error occurs' do
@@ -170,7 +168,7 @@ describe Arachni::URI do
                 described_class.stub(:fast_parse){ raise }
                 described_class.stub(:normalize){ raise }
 
-                subject.ruby_parse( 'http://test.com/222' ).should be_nil
+                described_class.ruby_parse( 'http://test.com/222' ).should be_nil
             end
         end
     end
@@ -186,7 +184,7 @@ describe Arachni::URI do
 
             uri = "#{scheme}://#{user}:#{password}@#{host}/#{path}?#{query}"
 
-            parsed_uri = subject.fast_parse( uri )
+            parsed_uri = described_class.fast_parse( uri )
 
             parsed_uri[:scheme].should == scheme
             parsed_uri[:userinfo].should == user + ':' + password
@@ -194,7 +192,7 @@ describe Arachni::URI do
             parsed_uri[:path].should == path
             parsed_uri[:query].should == query
 
-            parsed_uri = subject.fast_parse( "//#{user}:#{password}@#{host}/#{path}?#{query}" )
+            parsed_uri = described_class.fast_parse( "//#{user}:#{password}@#{host}/#{path}?#{query}" )
 
             parsed_uri[:scheme].should be_nil
             parsed_uri[:userinfo].should == user + ':' + password
@@ -204,14 +202,14 @@ describe Arachni::URI do
         end
 
         it 'returns a frozen hash (with frozen values)' do
-            h = subject.fast_parse( 'http://test.com/stuff/' )
+            h = described_class.fast_parse( 'http://test.com/stuff/' )
 
             expect { h[:stuff] = 0 }.to raise_error
             expect { h[:path] << '/' }.to raise_error
         end
 
         it 'ignores javascript: URLs' do
-            subject.fast_parse( 'javascript:stuff()' ).should be_nil
+            described_class.fast_parse( 'javascript:stuff()' ).should be_nil
         end
     end
 
@@ -220,22 +218,22 @@ describe Arachni::URI do
             abs  = 'http://test.com/blah/ha'
             rel  = '/test'
             rel2 = 'test2'
-            subject.to_absolute( rel, abs ).should == "http://test.com" + rel
-            subject.to_absolute( rel2, abs ).should == "http://test.com/blah/" + rel2
-            subject.to_absolute( rel2, abs + '/' ).should == "http://test.com/blah/ha/" + rel2
+            described_class.to_absolute( rel, abs ).should == "http://test.com" + rel
+            described_class.to_absolute( rel2, abs ).should == "http://test.com/blah/" + rel2
+            described_class.to_absolute( rel2, abs + '/' ).should == "http://test.com/blah/ha/" + rel2
 
             rel = '//domain-name.com/stuff'
-            subject.to_absolute( rel, abs ).should == "http:" + rel
+            described_class.to_absolute( rel, abs ).should == "http:" + rel
         end
     end
 
     describe '.normalize' do
         it 'cleans the URL' do
             @urls.each do |url|
-                subject.normalize( url ).should == @ref_normalizer.call( url )
+                described_class.normalize( url ).should == @ref_normalizer.call( url )
             end
             with_whitespace = 'http://test.com/stuff '
-            subject.normalize( with_whitespace ).to_s.should == with_whitespace.strip
+            described_class.normalize( with_whitespace ).to_s.should == with_whitespace.strip
         end
     end
 
@@ -243,7 +241,7 @@ describe Arachni::URI do
         context String do
             it 'normalizes and parse the string' do
                 @urls.each do |url|
-                    uri = subject.new( url )
+                    uri = described_class.new( url )
                     uri.is_a?( Arachni::URI ).should be_true
                     uri.to_s.should == @ref_normalizer.call( url )
                 end
@@ -253,7 +251,7 @@ describe Arachni::URI do
         context Hash do
             it 'normalizes and construct a URI from a Hash of components' do
                 @urls.each do |url|
-                    uri = subject.new( subject.fast_parse( url ) )
+                    uri = described_class.new( described_class.fast_parse( url ) )
                     uri.is_a?( Arachni::URI ).should be_true
                     uri.to_s.should == @ref_normalizer.call( url )
                 end
@@ -263,10 +261,10 @@ describe Arachni::URI do
         context URI do
             it 'normalizes and construct a URI from a Hash of components' do
                 @urls.each do |url|
-                    uri = ::URI.parse( subject.normalize( url ) )
+                    uri = ::URI.parse( described_class.normalize( url ) )
                     uri.is_a?( ::URI ).should be_true
 
-                    a_uri = subject.new( url )
+                    a_uri = described_class.new( url )
                     a_uri.is_a?( Arachni::URI ).should be_true
                     a_uri.to_s.should == @ref_normalizer.call( url )
                 end
@@ -276,8 +274,8 @@ describe Arachni::URI do
         context Arachni::URI do
             it 'normalizes and construct a URI from a Hash of components' do
                 @urls.each do |url|
-                    uri = subject.new( url )
-                    a_uri = subject.new( uri )
+                    uri = described_class.new( url )
+                    a_uri = described_class.new( uri )
                     a_uri.is_a?( Arachni::URI ).should be_true
                     a_uri.should == uri
                 end
@@ -286,7 +284,7 @@ describe Arachni::URI do
 
         context 'else' do
             it 'raises a TypeError' do
-                expect { subject.new( [] ) }.to raise_error TypeError
+                expect { described_class.new( [] ) }.to raise_error TypeError
             end
         end
     end
@@ -294,11 +292,11 @@ describe Arachni::URI do
     describe '#==' do
         it 'converts both objects to strings and compare them' do
             @urls.each do |url|
-                normalized_str = subject.normalize( url )
+                normalized_str = described_class.normalize( url )
                 uri = ::URI.parse( normalized_str )
                 uri.is_a?( ::URI ).should be_true
 
-                a_uri = subject.new( url )
+                a_uri = described_class.new( url )
                 a_uri.is_a?( Arachni::URI ).should be_true
 
                 a_uri.should == uri
@@ -313,44 +311,44 @@ describe Arachni::URI do
             abs  = 'http://test.com/blah/ha'
             rel  = '/test'
             rel2 = 'test2'
-            subject.parse( rel ).to_absolute( abs ).should == "http://test.com" + rel
-            subject.parse( rel2 ).to_absolute( abs ).should == "http://test.com/blah/" + rel2
-            subject.parse( rel2 ).to_absolute( abs + '/' ).should == "http://test.com/blah/ha/" + rel2
+            described_class.parse( rel ).to_absolute( abs ).should == "http://test.com" + rel
+            described_class.parse( rel2 ).to_absolute( abs ).should == "http://test.com/blah/" + rel2
+            described_class.parse( rel2 ).to_absolute( abs + '/' ).should == "http://test.com/blah/ha/" + rel2
         end
     end
 
     describe '#up_p_to_path' do
         it 'returns the URL up to its path component (no resource name, query, fragment, etc)' do
             url = 'http://test.com/path/goes/here.php?query=goes&here=.!#frag'
-            subject.parse( url ).up_to_path.should == 'http://test.com/path/goes/'
+            described_class.parse( url ).up_to_path.should == 'http://test.com/path/goes/'
 
             url = 'http://test.com/path/goes/here/?query=goes&here=.!#frag'
-            subject.parse( url ).up_to_path.should == 'http://test.com/path/goes/here/'
+            described_class.parse( url ).up_to_path.should == 'http://test.com/path/goes/here/'
 
             url = 'http://test.com/path/goes/here?query=goes&here=.!#frag'
-            subject.parse( url ).up_to_path.should == 'http://test.com/path/goes/here/'
+            described_class.parse( url ).up_to_path.should == 'http://test.com/path/goes/here/'
 
             url = 'http://test.com'
-            subject.parse( url ).up_to_path.should == 'http://test.com/'
+            described_class.parse( url ).up_to_path.should == 'http://test.com/'
 
             url = 'http://test.com/'
-            subject.parse( url ).up_to_path.should == 'http://test.com/'
+            described_class.parse( url ).up_to_path.should == 'http://test.com/'
         end
     end
 
     describe '#domain' do
         it 'removes the deepest subdomain from the host' do
             url = 'http://test.com/'
-            subject.parse( url ).domain.should == 'test.com'
+            described_class.parse( url ).domain.should == 'test.com'
 
             url = 'http://test/'
-            subject.parse( url ).domain.should == 'test'
+            described_class.parse( url ).domain.should == 'test'
 
             url = 'http://subdomain.test.com/'
-            subject.parse( url ).domain.should == 'test.com'
+            described_class.parse( url ).domain.should == 'test.com'
 
             url = 'http://deep.subdomain.test.com/'
-            subject.parse( url ).domain.should == 'subdomain.test.com'
+            described_class.parse( url ).domain.should == 'subdomain.test.com'
         end
     end
 
@@ -358,20 +356,20 @@ describe Arachni::URI do
         context 'when passed a URL with' do
             context 'a domain name' do
                 it 'returns false' do
-                    subject.parse( 'http://stuff.com/blah' ).ip_address?.should be_false
+                    described_class.parse( 'http://stuff.com/blah' ).ip_address?.should be_false
                 end
             end
 
             context 'an IP address' do
                 it 'returns the IP address' do
-                    subject.parse( 'http://127.0.0.1/blah/' ).ip_address?.should be_true
+                    described_class.parse( 'http://127.0.0.1/blah/' ).ip_address?.should be_true
                 end
             end
         end
     end
 
     describe '#too_deep?' do
-        before { @deep_url = subject.parse( '/very/very/very/very/deep' ) }
+        before { @deep_url = described_class.parse( '/very/very/very/very/deep' ) }
 
         context 'when the directory depth of the URL\'s path is' do
             context 'not greater than the provided depth' do
@@ -392,7 +390,7 @@ describe Arachni::URI do
     end
 
     describe '#exclude?' do
-        before { @exclude_url = subject.parse( 'http://test.com/exclude/' ) }
+        before { @exclude_url = described_class.parse( 'http://test.com/exclude/' ) }
 
         context 'when self matches the provided exclude rules' do
             it 'returns true' do
@@ -421,7 +419,7 @@ describe Arachni::URI do
     end
 
     describe '#include?' do
-        before { @include_url = subject.parse( 'http://test.com/include/' ) }
+        before { @include_url = described_class.parse( 'http://test.com/include/' ) }
 
         context 'when self matches the provided include rules in' do
             it 'returns true' do
@@ -455,24 +453,24 @@ describe Arachni::URI do
     end
 
     describe '#in_domain?' do
-        before { @in_domain_url = subject.parse( 'http://test.com' ) }
+        before { @in_domain_url = described_class.parse( 'http://test.com' ) }
 
         context Arachni::URI do
             context true do
                 it 'includes subdomains in the comparison' do
-                    u = subject.parse( 'http://boo.test.com' )
+                    u = described_class.parse( 'http://boo.test.com' )
                     @in_domain_url.in_domain?( true, u ).should be_false
 
-                    u = subject.parse( 'http://test.com' )
+                    u = described_class.parse( 'http://test.com' )
                     @in_domain_url.in_domain?( true, u ).should be_true
                 end
             end
             context false do
                 it 'does not include subdomains in the comparison' do
-                    u = subject.parse( 'http://boo.test.com' )
+                    u = described_class.parse( 'http://boo.test.com' )
                     @in_domain_url.in_domain?( false, u ).should be_true
 
-                    u = subject.parse( 'http://test.com' )
+                    u = described_class.parse( 'http://test.com' )
                     @in_domain_url.in_domain?( true, u ).should be_true
                 end
             end
@@ -496,13 +494,13 @@ describe Arachni::URI do
         context Hash do
             context true do
                 it 'includes subdomains in the comparison' do
-                    h = subject.fast_parse( 'http://boo.test.com' )
+                    h = described_class.fast_parse( 'http://boo.test.com' )
                     @in_domain_url.in_domain?( true, h ).should be_false
                 end
             end
             context false do
                 it 'does not include subdomains in the comparison' do
-                    h = subject.fast_parse( 'http://boo.test.com' )
+                    h = described_class.fast_parse( 'http://boo.test.com' )
                     @in_domain_url.in_domain?( false, h ).should be_true
                 end
             end
@@ -550,12 +548,12 @@ describe Arachni::URI do
     describe '#mailto?' do
         context 'when the URI has a mailto scheme' do
             it 'returns true' do
-                subject.new( 'mailto:stuff@blah.com' ).mailto?.should be_true
+                described_class.new( 'mailto:stuff@blah.com' ).mailto?.should be_true
             end
         end
         context 'when the URI does not have a mailto scheme' do
             it 'returns false' do
-                subject.new( 'blah.com' ).mailto?.should be_false
+                described_class.new( 'blah.com' ).mailto?.should be_false
             end
         end
     end
