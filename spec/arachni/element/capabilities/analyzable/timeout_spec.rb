@@ -41,6 +41,21 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
         end
     end
 
+    describe '#has_candidates?' do
+        context 'when there are candidates' do
+            it 'returns true' do
+                described_class.add_phase_2_candidate @positive
+                described_class.has_candidates?.should be_true
+            end
+        end
+
+        context 'when there are no candidates' do
+            it 'returns false' do
+                described_class.has_candidates?.should be_false
+            end
+        end
+    end
+
     describe '#timeout_analysis' do
         before do
             @timeout_opts = {
