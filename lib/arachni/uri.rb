@@ -211,7 +211,7 @@ class URI
                 return cache[c_url] = addressable_parse( c_url ).freeze
             end
 
-            url = url.encode( 'UTF-8', undef: :replace, invalid: :replace )
+            url = url.recode
             url = html_decode( url )
 
             dupped_url = url.dup
