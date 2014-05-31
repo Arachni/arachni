@@ -15,7 +15,7 @@ describe Arachni::Plugin::Base do
         Arachni::Options.reset
     end
 
-    subject { Arachni::Plugin::Base.new( framework, {} ) }
+    subject { described_class.new( framework, {} ) }
     let(:framework) { @framework }
 
     describe '.distributable?' do
