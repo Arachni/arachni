@@ -340,7 +340,7 @@ class Cookie < Base
                 head = document.to_s.match( /<head(.*)<\/head>/imx )
 
                 # if it does feed the head to the parser in order to extract the cookies
-                return [] if !head || !head.to_s.downcase.substring?( 'set-cookie' )
+                return [] if !head || !head.to_s.downcase.include?( 'set-cookie' )
 
                 document = Nokogiri::HTML( head.to_s )
             end
