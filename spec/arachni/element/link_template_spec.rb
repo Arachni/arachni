@@ -86,6 +86,14 @@ describe Arachni::Element::LinkTemplate do
         end
     end
 
+    describe '#simple' do
+        it 'returns a simple hash representation' do
+            subject.simple.should == {
+                subject.action => subject.inputs
+            }
+        end
+    end
+
     describe '#valid_input_name?' do
         context 'when the name can be found in the #template named captures' do
             it 'returns true' do
@@ -289,6 +297,94 @@ describe Arachni::Element::LinkTemplate do
     describe '.type' do
         it 'returns :link_template' do
             described_class.type.should == :link_template
+        end
+    end
+
+    describe '.from_response' do
+        it 'returns an array of link template from the response' do
+            response = Arachni::HTTP::Response.new(
+                url: url,
+                body: '
+                <html>
+                    <body>
+                        <a href="' + url + '/test2/param/myvalue"></a>
+                    </body>
+                </html>'
+            )
+
+            link = described_class.from_response( response ).first
+            link.action.should == url + 'test2/param/myvalue'
+            link.url.should == url
+            link.inputs.should == {
+                'param'  => 'myvalue'
+            }
+        end
+
+        context 'when the URL matches a link template' do
+            it 'includes it' do
+                response = Arachni::HTTP::Response.new(
+                    url: url + '/test2/param/myvalue',
+                    body: '
+                <html>
+                    <body>
+                    </body>
+                </html>'
+                )
+
+                link = described_class.from_response( response ).first
+                link.action.should == url + 'test2/param/myvalue'
+                link.url.should == link.action
+                link.inputs.should == {
+                    'param'  => 'myvalue'
+                }
+            end
+        end
+    end
+
+    describe '.from_document' do
+        context 'when the response does not contain any link templates' do
+            it 'returns an empty array' do
+                described_class.from_document( '', '' ).should be_empty
+            end
+        end
+        context 'when the response contains link templates' do
+            it 'returns an array of link templates' do
+                html = '
+                <html>
+                    <body>
+                        <a href="' + url + '/test2/param/myvalue"></a>
+                    </body>
+                </html>'
+
+                link = described_class.from_document( url, html ).first
+                link.action.should == url + 'test2/param/myvalue'
+                link.url.should == url
+                link.inputs.should == {
+                    'param'  => 'myvalue'
+                }
+            end
+
+            context 'and includes a base attribute' do
+                it 'should return an array of link templates with adjusted URIs' do
+                    base_url = "#{url}this_is_the_base/"
+                    html = '
+                    <html>
+                        <head>
+                            <base href="' + base_url + '" />
+                        </head>
+                        <body>
+                            <a href="test/param/myvalue"></a>
+                        </body>
+                    </html>'
+
+                    link = described_class.from_document( url, html ).first
+                    link.action.should == base_url + 'test/param/myvalue'
+                    link.url.should == url
+                    link.inputs.should == {
+                        'param'  => 'myvalue'
+                    }
+                end
+            end
         end
     end
 end
