@@ -3,52 +3,11 @@
     All rights reserved.
 =end
 
+require_relative 'options'
+require_relative 'formatter_manager'
+
 module Arachni
 module Report
-
-#
-# Provides some common options for the reports.
-#
-#
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-module Options
-    include Component::Options
-
-    # Returns a string option named `outfile`.
-    #
-    # Default value is:
-    #   year-month-day hour.minute.second +timezone.extension
-    #
-    # @param    [String]    extension     Extension for the outfile.
-    # @param    [String]    description   Description of the option.
-    #
-    # @return   [Arachni::OptString]
-    def outfile( extension = '', description = 'Where to save the report.' )
-        Options::String.new( :outfile,
-            description: description,
-            default:     Time.now.to_s.gsub( ':', '.' ) + extension
-        )
-    end
-
-    def skip_responses
-        Options::Bool.new( :skip_responses,
-             description: "Don't include the bodies of the HTTP " +
-                 'responses of the issues in the report' +
-                 ' -- will lead to a greatly decreased report file-size.',
-             default:     false
-        )
-    end
-
-    extend self
-end
-
-
-class FormatterManager < Component::Manager
-    def paths
-        Dir.glob( File.join( "#{@lib}", '*.rb' ) ).reject { |path| helper?( path ) }
-    end
-end
 
 # An abstract class for the reports, all reports must extend this.
 #
