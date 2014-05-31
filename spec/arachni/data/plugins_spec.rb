@@ -53,6 +53,20 @@ describe Arachni::Data::Plugins do
             subject.merge_results( plugins, results )
             subject.results[:distributable][:results]['stuff'].should == 3
         end
+
+        context 'when a merge error occurs' do
+            it 'defaults to only using the local results' do
+                plugins.load :distributable
+
+                results = [ distributable: { results: { 'stuff' => 2 } } ]
+                subject.store( plugins.create(:distributable), 'stuff' => 1 )
+
+                plugins[:distributable].stub(:merge) { raise }
+
+                subject.merge_results( plugins, results )
+                subject.results[:distributable][:results]['stuff'].should == 1
+            end
+        end
     end
 
     describe '#dump' do
