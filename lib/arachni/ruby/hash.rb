@@ -56,20 +56,6 @@ class Hash
         modified.freeze
     end
 
-    def apply( method, *args )
-        modified = {}
-
-        each do |k, v|
-            if v.is_a?( Hash )
-                modified[k.send(method, *args)] = v
-            else
-                modified[k.send(method, *args)] = v.send(method, *args)
-            end
-        end
-
-        modified
-    end
-
     def apply_recursively( method, *args )
         modified = {}
 
