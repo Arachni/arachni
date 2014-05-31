@@ -99,18 +99,6 @@ class URI
     end
 
     #
-    # Iteratively {.decode URL decodes} a {String} until there are no more
-    # characters to be unescaped.
-    #
-    # @param [String] string
-    #
-    # @return   [String]
-    #
-    def self.deep_decode( string )
-        string = decode( string ) while string =~ /%[a-fA-F0-9]{2}/
-    end
-
-    #
     # Cached version of {URI#initialize}, if there's a chance that the same
     # URL will be needed to be parsed multiple times you should use this method.
     #
