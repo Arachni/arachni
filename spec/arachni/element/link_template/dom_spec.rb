@@ -53,6 +53,21 @@ describe Arachni::Element::LinkTemplate::DOM do
         end
     end
 
+    describe '#extract_inputs' do
+        it "delegates to #{Arachni::Element::LinkTemplate}.extract_inputs" do
+            Arachni::Element::LinkTemplate.stub(:extract_inputs) { |arg| "#{arg}1" }
+            subject.extract_inputs( 'blah' ).should == 'blah1'
+        end
+    end
+
+    %w(encode decode).each do |m|
+        describe "##{m}" do
+            it 'returns the string as is' do
+                subject.send( m, 'blah' ).should == 'blah'
+            end
+        end
+    end
+
     describe '#parent' do
         it 'returns the parent element' do
             subject.parent.should be_kind_of Arachni::Element::LinkTemplate
