@@ -72,6 +72,15 @@ describe Arachni::Platform::Manager do
         end
     end
 
+    describe '.clear' do
+        it 'clear all platforms' do
+            described_class.update( 'http://test/', [:unix, :jsp] )
+            described_class.should be_any
+            described_class.clear
+            described_class.should be_empty
+        end
+    end
+
     describe '.fingerprint?' do
         Arachni::Options.do_not_fingerprint
         page = Arachni::Page.from_url( "#{web_server_url_for( :auditor )}/s.php" )
@@ -203,14 +212,14 @@ describe Arachni::Platform::Manager do
         context 'with valid platforms' do
             it 'updates self with the given platforms' do
                 described_class['http://test.com/'] << :unix
-                described_class['http://test.com/'].update( [:jsp] )
+                described_class.update( 'http://test.com/', [:jsp] )
                 described_class['http://test.com/'].sort.should == [:unix, :jsp].sort
             end
         end
         context 'with invalid platforms' do
             it 'raises Arachni::Platform::Error::Invalid' do
                 expect {
-                    described_class['http://test.com/'].update( [:blah] )
+                    described_class.update( 'http://test.com/', [:blah] )
                 }.to raise_error Arachni::Platform::Error::Invalid
             end
         end
