@@ -93,6 +93,8 @@ class Trainer
     rescue => e
         print_error e.to_s
         print_error_backtrace e
+
+        nil
     end
 
     # Sets the current working page and {ElementFilter.update_from_page updates}

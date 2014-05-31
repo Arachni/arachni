@@ -211,73 +211,94 @@ describe Arachni::Trainer do
         end
     end
 
-    context 'when the content-type is' do
-        context 'text-based' do
-            it 'returns true' do
+    describe '#push' do
+        context 'when an error occurs' do
+            it 'returns nil' do
                 @trainer.page = @page
-                @trainer.push( request( @url ) ).should be_true
+
+                @trainer.stub(:analyze) { raise }
+
+                @trainer.push( request( @url ) ).should be_nil
             end
         end
 
-        context 'not text-based' do
+        context 'when the resource is out-of-scope' do
             it 'returns false' do
-                ct = @url + '/non_text_content_type'
-                @trainer.push( request( ct ) ).should be_false
-            end
-        end
-    end
-
-    context 'when the response contains a new' do
-        context 'form' do
-            it 'returns a page with the new form' do
-                url = @url + '/new_form'
                 @trainer.page = @page
-                @trainer.push( request( url ) ).should be_true
 
-                pages = @framework.pages
-                pages.size.should == 1
-
-                page = pages.pop
-                new_forms = (page.forms - @page.forms)
-                new_forms.size.should == 1
-                new_forms.first.inputs.include?( 'input2' ).should be_true
+                Arachni::Options.scope.exclude_path_patterns = @url
+                @trainer.push( request( @url ) ).should be_false
             end
         end
 
-        context 'link' do
-            it 'returns a page with the new link' do
-                url = @url + '/new_link'
+        context 'when the content-type is' do
+            context 'text-based' do
+                it 'returns true' do
+                    @trainer.page = @page
+                    @trainer.push( request( @url ) ).should be_true
+                end
+            end
+
+            context 'not text-based' do
+                it 'returns false' do
+                    ct = @url + '/non_text_content_type'
+                    @trainer.push( request( ct ) ).should be_false
+                end
+            end
+        end
+
+        context 'when the response contains a new' do
+            context 'form' do
+                it 'returns a page with the new form' do
+                    url = @url + '/new_form'
+                    @trainer.page = @page
+                    @trainer.push( request( url ) ).should be_true
+
+                    pages = @framework.pages
+                    pages.size.should == 1
+
+                    page = pages.pop
+                    new_forms = (page.forms - @page.forms)
+                    new_forms.size.should == 1
+                    new_forms.first.inputs.include?( 'input2' ).should be_true
+                end
+            end
+
+            context 'link' do
+                it 'returns a page with the new link' do
+                    url = @url + '/new_link'
+                    @trainer.page = @page
+                    @trainer.push( request( url ) ).should be_true
+
+                    page = @framework.pages.first
+
+                    new_links = (page.links - @page.links)
+                    new_links.size.should == 1
+                    new_links.select { |l| l.inputs.include?( 'link_param' ) }.should be_any
+                end
+            end
+
+            context 'cookie' do
+                it 'returns a page with the new cookie appended' do
+                    url = @url + '/new_cookie'
+                    @trainer.page = @page
+                    @trainer.push( request( url ) ).should be_true
+
+                    page = @framework.pages.first
+                    page.cookies.size.should == 2
+                    page.cookies.select { |l| l.inputs.include?( 'new_cookie' ) }.should be_any
+                end
+            end
+        end
+
+        context 'when the response is the result of a redirection' do
+            it 'extracts query vars from the effective url' do
+                url = @url + '/redirect?redirected=true'
                 @trainer.page = @page
                 @trainer.push( request( url ) ).should be_true
-
                 page = @framework.pages.first
-
-                new_links = (page.links - @page.links)
-                new_links.size.should == 1
-                new_links.select { |l| l.inputs.include?( 'link_param' ) }.should be_any
+                page.links.last.inputs['redirected'].should == 'true'
             end
-        end
-
-        context 'cookie' do
-            it 'returns a page with the new cookie appended' do
-                url = @url + '/new_cookie'
-                @trainer.page = @page
-                @trainer.push( request( url ) ).should be_true
-
-                page = @framework.pages.first
-                page.cookies.size.should == 2
-                page.cookies.select { |l| l.inputs.include?( 'new_cookie' ) }.should be_any
-            end
-        end
-    end
-
-    context 'when the response is the result of a redirection' do
-        it 'extracts query vars from the effective url' do
-            url = @url + '/redirect?redirected=true'
-            @trainer.page = @page
-            @trainer.push( request( url ) ).should be_true
-            page = @framework.pages.first
-            page.links.last.inputs['redirected'].should == 'true'
         end
     end
 
