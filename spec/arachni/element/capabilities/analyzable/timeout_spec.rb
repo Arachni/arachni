@@ -2,41 +2,46 @@ require 'spec_helper'
 
 describe Arachni::Element::Capabilities::Analyzable::Timeout do
 
-    before :all do
-        Arachni::Options.url = @url = web_server_url_for( :timeout )
-        @auditor = Auditor.new( Arachni::Page.from_url( @url ), Arachni::Framework.new )
-
-        @inputs = { 'sleep' => '' }
-
-        @positive = Arachni::Element::Link.new( url: @url + '/true', inputs: @inputs )
-        @positive.auditor = @auditor
-
-        @positive_high_res = Arachni::Element::Link.new(
-            url: @url + '/high_response_time',
-            inputs: @inputs
-        )
-        @positive_high_res.auditor = @auditor
-
-        @negative = Arachni::Element::Link.new( url: @url + '/false', inputs: @inputs )
-        @negative.auditor = @auditor
-
-        @run = proc do
-            Arachni::HTTP::Client.run
-            Arachni::Element::Capabilities::Analyzable.timeout_audit_run
-        end
+    def run
+        Arachni::HTTP::Client.run
+        Arachni::Element::Capabilities::Analyzable.timeout_audit_run
     end
 
-    before { Arachni::Framework.reset }
+    before :all do
+        Arachni::Options.url = @url = web_server_url_for( :timeout )
+        @framework = Arachni::Framework.new
+    end
+
+    after :each do
+        @framework.reset
+    end
+
+    let(:framework) { @framework }
+    let(:page) { Arachni::Page.from_url( @url ) }
+    let(:inputs) { { 'sleep' => '' } }
+    let(:auditor) { Auditor.new( page, framework ) }
+    let(:subject) do
+        e = Arachni::Element::Link.new( url: @url + '/true', inputs: inputs )
+        e.auditor = auditor
+        e
+    end
+    let(:options) do
+        {
+            format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
+            elements: [ Arachni::Element::Link ]
+        }
+    end
 
     describe '#responsive?' do
         context 'when the server is responsive' do
             it 'returns true' do
-                Arachni::Element::Link.new( url: @url + '/true' ).responsive?.should be_true
+                subject.responsive?.should be_true
             end
         end
         context 'when the server is not responsive' do
             it 'returns false' do
-                Arachni::Element::Link.new( url: @url + '/sleep' ).responsive?( 1 ).should be_false
+                Arachni::Element::Link.new( url: @url + '/sleep' ).
+                    responsive?( 1 ).should be_false
             end
         end
     end
@@ -44,7 +49,7 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
     describe '#has_candidates?' do
         context 'when there are candidates' do
             it 'returns true' do
-                described_class.add_phase_2_candidate @positive
+                described_class.add_phase_2_candidate subject
                 described_class.has_candidates?.should be_true
             end
         end
@@ -56,22 +61,147 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
         end
     end
 
-    describe '#timeout_analysis' do
-        before do
-            @timeout_opts = {
-                format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
-                elements: [ Arachni::Element::Link ]
-            }
-            issues.clear
+    describe '#timing_attack_probe' do
+        let(:options) do
+            super().merge!(
+                timeout_divider: 1000,
+                timeout:         2000
+            )
         end
 
+        context 'when element submission results in a response with a response time' do
+            context 'higher than the given delay' do
+                it 'passes it to the block' do
+                    candidate = nil
+                    subject.timing_attack_probe( '__TIME__', options ) do |element|
+                        candidate ||= element
+                    end
+                    run
+
+                    candidate.should be_true
+                end
+            end
+
+            context 'lower than the given delay' do
+                subject do
+                    Arachni::Element::Link.new(
+                        url:    @url,
+                        inputs: inputs
+                    )
+                end
+
+                it 'ignores it' do
+                    candidate = nil
+                    subject.timing_attack_probe( '__TIME__', options ) do |element|
+                        candidate ||= element
+                    end
+                    run
+
+                    candidate.should be_nil
+                end
+            end
+        end
+    end
+
+    describe '#timing_attack_verify' do
+        let(:options) do
+            super().merge!(
+                timeout_divider: 1000,
+                timeout:         2000
+            )
+        end
+
+        context 'when the delay could not be verified' do
+            subject do
+                e = Arachni::Element::Link.new(
+                    url:    "#{@url}/verification_fail",
+                    inputs: inputs
+                )
+                e.auditor = auditor
+                e
+            end
+
+            it 'does not call the given block' do
+                candidate = nil
+                subject.timing_attack_probe( '__TIME__', options ) do |element|
+                    candidate ||= element
+                end
+                run
+
+                candidate.should be_true
+
+                verified = nil
+                candidate.timing_attack_verify( 1000 ) do
+                    verified = true
+                end
+
+                verified.should be_nil
+            end
+        end
+
+        context 'when the delay could be verified' do
+            it 'passes the element and response to the given block' do
+                candidate = nil
+                subject.timing_attack_probe( '__TIME__', options ) do |element|
+                    candidate ||= element
+                end
+                run
+
+                response = nil
+                mutation = nil
+                candidate.timing_attack_verify( 4000 ) do |m, r|
+                    response = r
+                    mutation = m
+                end
+
+                mutation.should be_kind_of candidate.class
+                response.should be_kind_of Arachni::HTTP::Response
+            end
+        end
+
+        context 'when the request times out by default' do
+            subject do
+                e = Arachni::Element::Link.new(
+                    url:    @url + '/sleep',
+                    inputs: inputs
+                )
+                e.auditor = auditor
+                e
+            end
+
+            it 'does not call the given block' do
+                candidate = nil
+                subject.timing_attack_probe( '__TIME__', options ) do |element|
+                    candidate ||= element
+                end
+                run
+
+                candidate.should be_true
+
+                verified = nil
+                candidate.timing_attack_verify( 1000 ) do
+                    verified = true
+                end
+
+                verified.should be_nil
+            end
+        end
+    end
+
+    describe '#timeout_analysis' do
         context 'when the element action matches a skip rule' do
-            it 'returns false' do
-                auditable = Arachni::Element::Link.new(
-                    url: 'http://stuff.com/',
+            subject do
+                Arachni::Element::Link.new(
+                    url:    'http://stuff.com/',
                     inputs: { 'input' => '' }
                 )
-                auditable.timeout_analysis( '__TIME__', @timeout_opts.merge( timeout: 2000 ) ).should be_false
+            end
+
+            it 'returns false' do
+                subject.timeout_analysis(
+                    '__TIME__',
+                    options.merge( timeout: 2000 )
+                ).should be_false
             end
         end
 
@@ -82,13 +212,14 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
                     php:     'seed',
                 }
 
-                @positive.timeout_analysis( payloads,
-                                            @timeout_opts.merge(
-                                                timeout_divider: 1000,
-                                                timeout:         2000
-                                            )
+                subject.timeout_analysis(
+                    payloads,
+                    options.merge(
+                        timeout_divider: 1000,
+                        timeout:         2000
+                    )
                 )
-                @run.call
+                run
 
                 issue = issues.first
                 issue.platform_name.should == :windows
@@ -99,14 +230,14 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
         describe :timeout do
             it 'sets the delay' do
                 c = Arachni::Element::Link.new(
-                    url: @url + '/true',
-                    inputs: @inputs.merge( mili: true )
+                    url:    @url + '/true',
+                    inputs: inputs.merge( mili: true )
                 )
-                c.auditor = @auditor
-                c.audit_options[:skip_like] = proc { |m| m.affected_input_name == 'multi' }
+                c.auditor = auditor
+                c.immutables << 'multi'
 
-                c.timeout_analysis( '__TIME__', @timeout_opts.merge( timeout: 2000 ) )
-                @run.call
+                c.timeout_analysis( '__TIME__', options.merge( timeout: 2000 ) )
+                run
 
                 issues.should be_any
                 issues.flatten.first.vector.seed.should == '8000'
@@ -115,13 +246,13 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
 
         describe :timeout_divider do
             it 'modifies the final timeout value' do
-                @positive.timeout_analysis( '__TIME__',
-                                            @timeout_opts.merge(
+                subject.timeout_analysis( '__TIME__',
+                                            options.merge(
                                                 timeout_divider: 1000,
                                                 timeout:         2000
                                             )
                 )
-                @run.call
+                run
 
                 issues.should be_any
                 issues.flatten.first.vector.seed.should == '8'
@@ -130,42 +261,21 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
 
         describe :add do
             it 'adds the given integer to the expected webapp delay' do
-                c = Arachni::Element::Link.new( url: @url + '/add', inputs: @inputs )
-                c.auditor = @auditor
+                c = Arachni::Element::Link.new( url: @url + '/add', inputs: inputs )
+                c.auditor = auditor
 
                 c.timeout_analysis(
                     '__TIME__',
-                    @timeout_opts.merge( timeout: 3000, timeout_divider: 1000, add: -1000 )
+                    options.merge(
+                        timeout:         3000,
+                        timeout_divider: 1000,
+                        add:             -1000
+                    )
                 )
-                @run.call
+                run
 
                 issues.should be_any
                 issues.flatten.first.response.time.to_i.should == 11
-            end
-        end
-
-        context 'when a page has a high response time' do
-            before do
-                @delay_opts = {
-                    timeout_divider: 1000,
-                    timeout:         4000
-                }.merge( @timeout_opts )
-            end
-
-            context 'but isn\'t vulnerable' do
-                it 'does not log an issue' do
-                    @negative.timeout_analysis( '__TIME__', @delay_opts )
-                    @run.call
-                    issues.should be_empty
-                end
-            end
-
-            context 'and is vulnerable' do
-                it 'logs an issue' do
-                    @positive_high_res.timeout_analysis( '__TIME__', @delay_opts )
-                    @run.call
-                    issues.should be_any
-                end
             end
         end
     end

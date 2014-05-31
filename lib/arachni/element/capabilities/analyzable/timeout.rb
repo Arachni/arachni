@@ -18,15 +18,18 @@ module Analyzable
 # Here's how it works:
 #
 # * Phase 1 ({#timeout_analysis}) -- We're picking the low hanging
-#   fruit here so we can run this in larger concurrent bursts which cause *lots* of noise.
-#   - Initial probing for candidates -- If element times-out it is added to the Phase 2 queue.
-#   - Stabilization ({#responsive?}) -- The element is submitted with its default values in
-#     order to wait until the effects of the timing attack have worn off.
-# * Phase 2 ({.analysis_phase_2}) -- Verifies the candidates. This is much more delicate so the
-#   concurrent requests are lowered to pairs.
-#   - Liveness test -- Ensures that the webapp is alive and not just timing-out by default
-#   - Verification using an increased timeout delay -- Any elements that time out again are logged.
-#   - Stabilization ({#responsive?})
+#   fruit here so we can run this in larger concurrent bursts which cause *lots*
+#   of noise.
+#   - Initial probing for candidates -- If element times-out it is added to the
+#       Phase 2 queue.
+# * Phase 2 ({.analysis_phase_2}) -- {#timing_attack_verify Verifies} the
+#   candidates. This is much more delicate so the concurrent requests are lowered
+#   to pairs.
+#   - Liveness test -- Ensures that the webapp is alive and not just timing-out
+#       by default.
+#   - Verification using an increased timeout delay -- Any elements that time out
+#       again are logged.
+#   - Stabilization ({#responsive?}).
 # * Phase 3 ({.analysis_phase_3}) -- Same as phase 2 but with a higher
 #   delay to ensure that false-positives are truly weeded out.
 #
@@ -91,125 +94,34 @@ module Timeout
             end
         end
 
-        # (Called by {Timeout.run}, do *NOT* call manually.)
+        # (Called by {.run}, do *NOT* call manually.)
         #
         # Runs phase 2 of the timing attack auditing an individual element
         # (which passed phase 1) with a higher delay and timeout.
-        #
-        # * Liveness check: Element is submitted as is to make sure that the
-        #   page is alive and responsive.
-        #   * If liveness check fails then phase 2 is aborted
-        #   * If liveness check succeeds it progresses to verification
-        # * Verification: Element is submitted with an increased delay to verify
-        #   the vulnerability.
-        #   * If verification fails it aborts
-        #   * If verification succeeds the issue is logged
-        # * Stabilize responsiveness: Wait for the effects of the timing attack
-        #   to wear off.
         def analysis_phase_2( elem )
-            opts          = elem.audit_options
-            opts[:delay] *= 2
+            delay = elem.audit_options[:delay] * 2
 
-            str = opts[:timing_string].dup
-            str.gsub!( '__TIME__', (opts[:delay] / opts[:timeout_divider]).to_s )
+            elem.print_status "Phase 2 for #{elem.type} input '#{elem.affected_input_name}' " <<
+                             "with action #{elem.action}"
 
-            elem.inputs = elem.default_inputs
+            elem.timing_attack_verify( delay ) do |mutation|
+                elem.print_info '* Verification was successful, candidate can ' <<
+                                    'progress to Phase 2.'
 
-            elem.print_status "Phase 2 for #{elem.type} input '#{elem.affected_input_name}'" <<
-                                  " with action #{elem.action}"
-
-            # Make sure we're starting off with a clean slate.
-            elem.responsive?
-
-            elem.print_info '* Performing liveness check.'
-
-            # This is the control; request the URL of the element to make sure
-            # that the web page is responsive i.e won't time-out by default.
-            elem.submit( response_max_size: 0, timeout: opts[:delay] ) do |res|
-                # Remove the timeout option set by the liveness check in order
-                # to now affect later requests.
-                elem.audit_options.delete( :timeout )
-
-                if res.timed_out?
-                    elem.print_info '* Liveness check failed, aborting.'
-                    next
-                end
-
-                elem.print_info '* Liveness check was successful, progressing' <<
-                                    ' to verification.'
-
-                opts[:skip_like] = proc do |m|
-                        m.affected_input_name != elem.affected_input_name
-                end
-                opts[:format]        = [Mutable::Format::STRAIGHT]
-                opts[:silent]        = true
-
-                elem.audit( str, opts ) do |c_res|
-                    if c_res.app_time.round < (opts[:delay] + opts[:add]) / 1000.0
-                        elem.print_info '* Verification failed.'
-                        next
-                    end
-
-                    elem.audit_options[:delay] = opts[:delay]
-
-                    elem.print_info '* Verification was successful, ' <<
-                                        'candidate can progress to Phase 3.'
-
-                    add_phase3_candidate( elem )
-                    elem.responsive?
-                end
+                add_phase3_candidate( mutation )
             end
-
-            elem.http.run
         end
 
         def analysis_phase_3( elem )
-            opts          = elem.audit_options
-            opts[:delay] *= 2
+            delay = elem.audit_options[:delay] * 2
 
-            str = opts[:timing_string].dup
-            str.gsub!( '__TIME__', (opts[:delay] / opts[:timeout_divider]).to_s )
+            elem.print_status "Phase 3 for #{elem.type} input '#{elem.affected_input_name}' " <<
+                             "with action #{elem.action}"
 
-            elem.inputs = elem.default_inputs
-
-            elem.print_status "Phase 3 for #{elem.type} input '#{elem.affected_input_name}'" <<
-                                  " with action #{elem.action}"
-
-            # Make sure we're starting off with a clean slate.
-            elem.responsive?
-
-            elem.print_info '* Performing liveness check.'
-
-            # This is the control; request the URL of the element to make sure
-            # that the web page is alive i.e won't time-out by default.
-            elem.submit( response_max_size: 0, timeout: opts[:delay] ) do |res|
-                if res.timed_out?
-                    elem.print_info '* Liveness check failed.'
-                    next
-                end
-
-                elem.print_info '* Liveness check was successful, progressing' <<
-                                    ' to verification.'
-
-                opts[:skip_like] = proc do |m|
-                    m.affected_input_name != elem.affected_input_name
-                end
-                opts[:format]        = [Mutable::Format::STRAIGHT]
-                opts[:silent]        = true
-
-                elem.audit( str, opts ) do |c_res, c_elem|
-                    if c_res.app_time.round < (opts[:delay] + opts[:add]) / 1000.0
-                        elem.print_info '* Verification failed.'
-                        next
-                    end
-
-                    elem.print_info '* Verification was successful.'
-                    elem.auditor.log vector: c_elem, response: c_res
-                    elem.responsive?
-                end
+            elem.timing_attack_verify( delay ) do |mutation, response|
+                elem.print_info '* Verification was successful.'
+                elem.auditor.log vector: mutation, response: response
             end
-
-            elem.http.run
         end
     end
 
@@ -250,7 +162,7 @@ module Timeout
             return false
         end
 
-        timing_attack( payloads, opts ) do |elem|
+        timing_attack_probe( payloads, opts ) do |elem|
             elem.auditor = @auditor
 
             next if Timeout.candidates_include?( elem )
@@ -264,8 +176,9 @@ module Timeout
     end
 
     # Submits self with a high timeout value and blocks until it gets a response.
+    #
     # This is to make sure that responsiveness has been restored before
-    # progressing further.
+    # progressing further in the timeout analysis.
     #
     # @param    [Integer] limit
     #   How many milliseconds to afford the server to respond.
@@ -301,30 +214,19 @@ module Timeout
         end
     end
 
-    private
-
-    # Audits elements using a timing attack.
+    # Performs a simple probe for elements whose submission results in a
+    # response time that matches the delay criteria in `options`.
     #
-    # 'opts' needs to contain a :timeout value in milliseconds.</br>
-    # Optionally, you can add a :timeout_divider.
-    #
-    # @param   [String, Array, Hash{Symbol => String, Array<String>}]     payloads
-    #   Injection strings (`__TIME__` will be substituted with
-    #   `timeout / timeout_divider`).
-    # @param    [Hash]      opts
-    #   Options as described in {Arachni::Element::Mutable::OPTIONS}.
-    # @param    [Block]     block
-    #   Block to call if a timeout occurs, it will be passed the
-    #   {Arachni::HTTP::Response response} and element mutation.
-    def timing_attack( payloads, opts, &block )
-        opts                     = opts.dup
-        opts[:delay]             = opts.delete(:timeout)
-        opts[:timeout_divider] ||= 1
-        opts[:add]             ||= 0
+    # @param    (see #timeout_analysis)
+    def timing_attack_probe( payloads, options, &block )
+        options                     = options.dup
+        options[:delay]             = options.delete(:timeout)
+        options[:timeout_divider] ||= 1
+        options[:add]             ||= 0
 
         # Ignore response bodies to preserve bandwidth since we don't care
         # about them anyways.
-        opts[:submit] = { response_max_size: 0 }
+        options[:submit] = { response_max_size: 0 }
 
         # Intercept each element mutation prior to it being submitted and replace
         # the '__TIME__' placeholder with the actual delay value.
@@ -336,16 +238,85 @@ module Timeout
             mutation.audit_options[:timing_string] = injected
 
             mutation.affected_input_value = injected.
-                gsub( '__TIME__', (opts[:delay] / opts[:timeout_divider]).to_s )
+                gsub( '__TIME__', (options[:delay] / options[:timeout_divider]).to_s )
         end
 
-        opts.merge!( each_mutation: each_mutation, skip_original: true )
+        options.merge!( each_mutation: each_mutation, skip_original: true )
 
-        audit( payloads, opts ) do |res, elem|
-            next if !block || res.app_time < (opts[:delay] + opts[:add]) / 1000.0
+        audit( payloads, options ) do |res, elem|
+            next if !block || res.app_time < (options[:delay] + options[:add]) / 1000.0
 
             block.call( elem )
         end
+    end
+
+    # Verifies that response times are controllable for elements picked by
+    # {#timing_attack_probe}.
+    #
+    # * Liveness check: Element is submitted as is with a  very high timeout
+    #   value, to make sure that (or wait until) the server is alive and {#responsive}.
+    # * Control check: Element is, again,  submitted as is, although this time
+    #   with a timeout value of `delay` to ensure that the server is stable
+    #   enough to be checked.
+    #   * If this fails the check is aborted.
+    # * Verification: Element is submitted with an increased delay to verify
+    #   the vulnerability.
+    #   * If verification succeeds the `block` is called.
+    # * Stabilize responsiveness: Wait for the effects of the timing attack
+    #   to wear off by calling {#responsive}.
+    #
+    # @param    [Integer]   delay
+    # @param    [Block]     block
+    def timing_attack_verify( delay, &block )
+        opts         = self.audit_options
+        opts[:delay] = delay
+
+        payload = opts[:timing_string].dup
+        payload.gsub!( '__TIME__', (opts[:delay] / opts[:timeout_divider]).to_s )
+
+        self.inputs = self.default_inputs
+
+        # Make sure we're starting off with a clean slate.
+        responsive?
+
+        print_info '* Performing liveness check.'
+
+        # This is the control; request the URL of the element to make sure
+        # that the web page is responsive i.e won't time-out by default.
+        submit( response_max_size: 0, timeout: opts[:delay] ) do |control_response|
+            # Remove the timeout option set by the liveness check in order
+            # to now affect later requests.
+            self.audit_options.delete( :timeout )
+
+            if control_response.timed_out?
+                print_info '* Liveness check failed, aborting.'
+                next
+            end
+
+            print_info '* Liveness check was successful, progressing' <<
+                                ' to verification.'
+
+            opts.merge!(
+                skip_like: proc do |m|
+                    m.affected_input_name != affected_input_name
+                end,
+                format:    [Mutable::Format::STRAIGHT],
+                silent:    true
+            )
+
+            audit( payload, opts ) do |response, mutation|
+                if response.app_time.round < (opts[:delay] + opts[:add]) / 1000.0
+                    print_info '* Verification failed.'
+                    next
+                end
+
+                block.call( mutation, response )
+
+                responsive?
+            end
+        end
+
+        http.run
     end
 
 end

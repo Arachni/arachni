@@ -1,12 +1,6 @@
 require 'sinatra'
-set :logging, false
 
-get '/false' do
-    sleep 2
-<<-EOHTML
-    <a href='?sleep=0'>Inject here</a>
-    #{params[:input]}
-EOHTML
+get '/' do
 end
 
 get '/true' do
@@ -24,11 +18,16 @@ get '/add' do
     sleep( params[:sleep].to_f - 1 ).to_s
 end
 
-get '/high_response_time' do
-    sleep( params[:sleep].to_i + 2 )
-    <<-EOHTML
-        <a href='?sleep=0'>Inject here</a>
-EOHTML
+get '/sleep' do
+    sleep 10
 end
 
-get( '/sleep' ) { sleep 10 }
+get '/verification_fail' do
+    @@called ||= false
+
+    if !@@called
+        sleep params[:sleep].to_f
+        @@called = true
+    end
+
+end
