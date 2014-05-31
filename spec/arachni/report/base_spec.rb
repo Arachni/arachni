@@ -9,9 +9,10 @@ describe Arachni::Report::Base do
         @reports   = @framework.reports
     end
 
+    let(:auditstore) { @framework.auditstore }
+
     describe '#auditstore' do
         it 'returns the provided auditstore' do
-            auditstore = @framework.auditstore
             @reports.run( :with_outfile, auditstore ).auditstore.
                 should == auditstore
         end
@@ -30,6 +31,34 @@ describe Arachni::Report::Base do
                 @reports.run( :with_outfile, @framework.auditstore,
                                   'outfile' => '.'
                 ).outfile.start_with?( File.expand_path( "." ) ).should be_true
+            end
+        end
+    end
+
+    describe '#skip_responses?' do
+        context 'when the :skip_responses option is' do
+            context true do
+                it 'returns true' do
+                    described_class.new(
+                        auditstore,
+                        skip_responses: true
+                    ).skip_responses?.should be_true
+                end
+            end
+
+            context false do
+                it 'returns false' do
+                    described_class.new(
+                        auditstore,
+                        skip_responses: false
+                    ).skip_responses?.should be_false
+                end
+            end
+
+            context 'not set' do
+                it 'returns false' do
+                    described_class.new( auditstore, {} ).skip_responses?.should be_false
+                end
             end
         end
     end
