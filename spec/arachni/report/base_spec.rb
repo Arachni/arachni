@@ -87,4 +87,11 @@ describe Arachni::Report::Base do
         end
     end
 
+    describe '#has_outfile?' do
+        it "delegates to #{described_class}.has_outfile?" do
+            described_class.stub(:has_outfile?) { :stuff }
+            described_class.new( auditstore, {} ).has_outfile?.should == :stuff
+        end
+    end
+
 end
