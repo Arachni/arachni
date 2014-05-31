@@ -29,4 +29,11 @@ describe Arachni::Report::Manager do
         end
     end
 
+    describe '#reset' do
+        it "delegates to #{described_class}.reset" do
+            described_class.stub(:reset) { :stuff }
+            @reports.reset.should == :stuff
+        end
+    end
+
 end
