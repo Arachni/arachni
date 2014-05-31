@@ -262,15 +262,6 @@ class Parser
         # Make a list of the response cookie names.
         cookie_names = Set.new( cookies.map( &:name ) )
 
-        # If there's a Netscape cookiejar file load cookies from it but only
-        # new ones, i.e. only if they weren't already in the response.
-        if @options.http.cookie_jar_filepath.is_a?( String ) &&
-            File.exists?( @options.http.cookie_jar_filepath )
-
-            from_jar |= cookies_from_file( @url, @options.http.cookie_jar_filepath ).
-                reject { |c| cookie_names.include?( c.name ) }
-        end
-
         # If we somehow have runtime configuration cookies load them too, but
         # only if they haven't already been seen.
         if @options.http.cookies && !@options.http.cookies.empty?
