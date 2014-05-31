@@ -323,12 +323,7 @@ describe Arachni::Element::LinkTemplate do
         context 'when the URL matches a link template' do
             it 'includes it' do
                 response = Arachni::HTTP::Response.new(
-                    url: url + '/test2/param/myvalue',
-                    body: '
-                <html>
-                    <body>
-                    </body>
-                </html>'
+                    url: url + '/test2/param/myvalue'
                 )
 
                 link = described_class.from_response( response ).first
