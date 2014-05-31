@@ -27,6 +27,57 @@ get '/' do
 HTML
 end
 
+get '/ajax_sleep' do
+    <<HTML
+    <html>
+    <head>
+        <script>
+            level1_ajax = new XMLHttpRequest();
+            level1_ajax.onreadystatechange = function() {
+                if( level1_ajax.readyState == 4 && level1_ajax.status == 200 ) {
+                    document.getElementById( "sleep" ).innerHTML = level1_ajax.responseText;
+                }
+            }
+
+            level1_ajax.open( "GET", "/sleep?sleep=#{params[:sleep]}", true );
+            level1_ajax.send();
+        </script>
+    <head>
+
+    <body>
+        <div id="sleep">
+        </div>
+    </body>
+</html>
+
+HTML
+end
+
+get '/sleep' do
+    sleep params[:sleep].to_i
+    'slept'
+end
+
+get '/load_delay' do
+        <<HTML
+    <script>
+        document.cookie = "timeout=pre"
+
+        setTimeout( function( name, value ){
+            document.cookie = name + "=post-" + value
+        }, 1000, 'timeout1', 1000 )
+
+        setTimeout( function( name, value ){
+            document.cookie = name + "=post-" + value
+        }, 2000, 'timeout3', 2000 )
+
+        setTimeout( function( name, value ){
+            document.cookie = name + "=post-" + value
+        }, 1500, 'timeout2', 1500 )
+    </script>
+HTML
+end
+
 get '/snapshot_id/default' do
     <<-EOHTML
     <html>

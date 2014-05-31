@@ -967,7 +967,10 @@ class Browser
         sleep 0.1
 
         # Wait for pending requests to complete.
-        with_timeout Options.http.request_timeout do
+        #
+        # The HTTP timeout option already guards us against this but I don't
+        # fully trust the proxy so we're using #with_timeout as a fallback.
+        with_timeout Options.http.request_timeout / 1_000 do
             sleep 0.1 while @proxy.has_connections?
         end
 

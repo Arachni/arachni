@@ -133,6 +133,38 @@ describe Arachni::Browser do
         end
     end
 
+    describe '#load_delay' do
+        it 'returns nil' do
+            subject.load @url
+            subject.load_delay.should be_nil
+        end
+
+        context 'when the page has JS timeouts' do
+            it 'returns the maximum time the browser should wait for the page based on Timeout' do
+                subject.load( "#{@url}load_delay" )
+                subject.load_delay.should == 2000
+            end
+        end
+    end
+
+    describe '#wait_for_timers' do
+        it 'returns' do
+            subject.load @url
+            subject.wait_for_timers.should be_nil
+        end
+
+        context 'when the page has JS timeouts' do
+            it 'waits for them to complete' do
+                subject.load( "#{@url}load_delay" )
+                seconds = subject.load_delay / 1000
+
+                time = Time.now
+                subject.wait_for_timers
+                (Time.now - time).should > seconds
+            end
+        end
+    end
+
     describe '#capture_snapshot' do
         let(:sink_url) do
             "#{@url}script_sink?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}"
@@ -882,6 +914,10 @@ describe Arachni::Browser do
             end
         end
 
+        context "when the response takes more than #{Arachni::OptionGroups::HTTP}#request_timeout" do
+            it 'returns nil'
+        end
+
         context 'when the resource is out-of-scope' do
             it 'returns nil' do
                 Arachni::Options.url = @url
@@ -1595,6 +1631,42 @@ describe Arachni::Browser do
             ua.should_not be_empty
 
             @browser.source.should include( ua )
+        end
+
+        context 'when the page has JS timeouts' do
+            it 'waits for them to complete' do
+                time = Time.now
+                subject.goto "#{@url}load_delay"
+                waited = Time.now - time
+
+                waited.should >= subject.load_delay / 1000.0
+            end
+        end
+
+
+        context 'when there are outstanding HTTP requests' do
+            it 'waits for them to complete' do
+                sleep_time = 5
+                time = Time.now
+
+                subject.goto "#{@url}/ajax_sleep?sleep=#{sleep_time}"
+
+                (Time.now - time).should >= sleep_time
+            end
+
+            context "when requests takes more than #{Arachni::OptionGroups::HTTP}#request_timeout" do
+                it 'returns false' do
+                    sleep_time = 5
+                    Arachni::Options.http.request_timeout = 1_000
+
+                    Arachni::HTTP::ProxyServer.any_instance.stub(:has_connections?){ true }
+
+                    time = Time.now
+                    subject.goto "#{@url}/ajax_sleep?sleep=#{sleep_time}"
+
+                    (Time.now - time).should < sleep_time
+                end
+            end
         end
 
         context "#{Arachni::OptionGroups::BrowserCluster}#ignore_images" do
