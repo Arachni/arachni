@@ -278,6 +278,50 @@ describe Arachni::Parser do
         end
     end
 
+    describe '#link_template' do
+        context 'when the response url matches a link template' do
+            it "returns a #{Arachni::Element::LinkTemplate}" do
+                Arachni::Options.audit.link_templates = /param\/(?<param>\w+)/
+
+                url = @opts.url + 'test2/param/myvalue'
+                response = Arachni::HTTP::Response.new( url: url )
+
+                link = described_class.new( response ).link_template
+                link.action.should == url
+                link.url.should == url
+                link.inputs.should == {
+                    'param'  => 'myvalue'
+                }
+            end
+        end
+    end
+
+    describe '#link_templates' do
+        context 'when the response url matches a link template' do
+            it "returns a #{Arachni::Element::LinkTemplate}" do
+                Arachni::Options.audit.link_templates = /param\/(?<param>\w+)/
+
+                url = @opts.url
+                response = Arachni::HTTP::Response.new(
+                    url: url,
+                    body: '
+                <html>
+                    <body>
+                        <a href="' + url + '/test2/param/myvalue"></a>
+                    </body>
+                </html>'
+                )
+
+                link = described_class.new( response ).link_templates.first
+                link.action.should == url + 'test2/param/myvalue'
+                link.url.should == url
+                link.inputs.should == {
+                    'param'  => 'myvalue'
+                }
+            end
+        end
+    end
+
     context 'without base' do
         describe '#base' do
             it 'returns nil' do
