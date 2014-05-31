@@ -63,6 +63,21 @@ module Timeout
 
             @candidates_phase_3    = []
             @phase_3_candidate_ids = Support::LookUp::HashSet.new
+
+            deduplicate
+        end
+
+        def deduplicate?
+            @deduplicate
+        end
+
+        def deduplicate
+            @deduplicate = true
+        end
+
+        # Used just for specs of timing-attack checks.
+        def do_not_deduplicate
+            @deduplicate = false
         end
 
         def has_candidates?
@@ -165,7 +180,7 @@ module Timeout
         timing_attack_probe( payloads, opts ) do |elem|
             elem.auditor = @auditor
 
-            next if Timeout.candidates_include?( elem )
+            next if Timeout.deduplicate? && Timeout.candidates_include?( elem )
 
             print_info 'Found a candidate for Phase 2 -- ' <<
                 "#{elem.type.capitalize} input '#{elem.affected_input_name}' at #{elem.action}"
