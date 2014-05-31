@@ -155,14 +155,6 @@ class Base
         @cache
     end
 
-    def duplicate( v )
-        if v.respond_to?( :dup )
-            v.dup rescue v
-        else
-            v
-        end
-    end
-
     #
     # Called to make room when the cache is about to reach its maximum size.
     #
