@@ -610,7 +610,9 @@ class URI
     end
 
     def query=( q )
-        return if q.to_s.empty?
+        q = q.to_s
+        q = nil if q.empty?
+
         @parsed_url.query = q
     end
 
@@ -620,7 +622,6 @@ class URI
     end
 
     def dup
-        return if to_s.empty?
         self.class.new( to_s )
     end
 

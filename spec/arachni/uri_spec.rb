@@ -306,6 +306,56 @@ describe Arachni::URI do
         end
     end
 
+    describe '#query=' do
+        subject { described_class.new( 'http://test.com/?my=val' ) }
+
+        it 'sets the URL query' do
+            subject.query = 'my2=val2'
+            subject.query.should == 'my2=val2'
+        end
+
+        context 'when given an empty string' do
+            it 'removes the query' do
+                subject.query = ''
+                subject.query.should be_nil
+            end
+        end
+
+        context 'when given nil' do
+            it 'removes the query' do
+                subject.query = ''
+                subject.query.should be_nil
+            end
+        end
+    end
+
+    describe '#dup' do
+        subject { described_class.new( 'http://test.com/?my=val' ) }
+
+        it 'return a duplicate object' do
+            dupped = subject.dup
+
+            subject.should == dupped
+            subject.object_id.should_not == dupped.object_id
+        end
+    end
+
+    describe '#_dump' do
+        it 'returns the URL as a string' do
+            uri = 'http://test.com/?my=val'
+            described_class.new( uri )._dump(nil).should == uri
+        end
+    end
+
+    describe '._load' do
+        it 'restores the original object from #_dump' do
+            uri    = 'http://test.com/?my=val'
+            parsed = described_class.new( uri )
+
+            described_class._load( parsed._dump(nil) ).should == parsed
+        end
+    end
+
     describe '#to_absolute' do
         it 'converts a self to absolute using the reference URL' do
             abs  = 'http://test.com/blah/ha'
