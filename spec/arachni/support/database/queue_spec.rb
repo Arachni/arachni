@@ -195,6 +195,18 @@ describe Arachni::Support::Database::Queue do
         end
     end
 
+    describe '#num_waiting' do
+        it 'returns the amount of threads waiting to pop' do
+            subject.num_waiting.should == 0
+
+            2.times do
+                Thread.new { subject.pop }
+            end
+            sleep 0.1
+
+            subject.num_waiting.should == 2
+        end
+    end
 
     describe '#clear' do
         it 'empties the queue' do
