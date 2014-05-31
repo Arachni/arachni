@@ -64,7 +64,7 @@ describe Arachni::Element::Cookie::DOM do
 
     %w(encode decode).each do |m|
         describe "##{m}" do
-            it "delegated to #{Arachni::Element::Cookie}.#{m}" do
+            it "delegates to #{Arachni::Element::Cookie}.#{m}" do
                 Arachni::Element::Cookie.stub(m) { |arg| "#{arg}1" }
                 subject.send( m, 'blah' ).should == 'blah1'
             end
