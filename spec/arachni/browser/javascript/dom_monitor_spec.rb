@@ -25,6 +25,12 @@ describe Arachni::Browser::Javascript::DOMMonitor do
         @browser.shutdown
     end
 
+    describe '#class' do
+        it "returns #{described_class}" do
+            subject.class.should == described_class
+        end
+    end
+
     describe '#initialized' do
         it 'returns true' do
             subject.initialized.should be_true
