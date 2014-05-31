@@ -225,6 +225,16 @@ get '/lots_of_sinks' do
     EOHTML
 end
 
+get '/script_sink' do
+    <<-EOHTML
+    <html>
+        <script>
+            #{params[:input]};
+        </script>
+    </html>
+    EOHTML
+end
+
 get '/skip-invisible-elements' do
     <<HTML
     <html>

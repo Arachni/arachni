@@ -18,7 +18,8 @@ describe Arachni::Browser do
         clear_hit_count
     end
 
-    let( :ua ) { Arachni::Options.http.user_agent }
+    let(:subject) { @browser }
+    let(:ua) { Arachni::Options.http.user_agent }
 
     def transitions_from_array( transitions )
         transitions.map do |t|
@@ -128,6 +129,159 @@ describe Arachni::Browser do
                     @browser.start_capture
                     @browser.load( @url + '/with-ajax' ).flush_pages.should be_empty
                 end
+            end
+        end
+    end
+
+    describe '#capture_snapshot' do
+        let(:sink_url) do
+            "#{@url}script_sink?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}"
+        end
+        let(:ajax_url) do
+            "#{@url}with-ajax"
+        end
+        let(:captured) { subject.capture_snapshot }
+
+        context 'when a snapshot has not been previously seen' do
+            before :each do
+                subject.load( @url + '/with-ajax', take_snapshot: false )
+            end
+
+            it 'calls #on_new_page callbacks' do
+                received = []
+                subject.on_new_page do |page|
+                    received << page
+                end
+
+                captured.should == received
+            end
+
+            context '#store_pages?' do
+                context true do
+                    subject { @browser = described_class.new( store_pages: true )}
+
+                    it 'stores it in #page_snapshots' do
+                        captured = subject.capture_snapshot
+
+                        subject.page_snapshots.should == captured
+                    end
+
+                    it 'returns it' do
+                        captured.size.should == 1
+                        captured.first.should == subject.to_page
+                    end
+                end
+
+                context false do
+                    subject { @browser = described_class.new( store_pages: false )}
+
+                    it 'does not store it' do
+                        subject.capture_snapshot
+
+                        subject.page_snapshots.should be_empty
+                    end
+
+                    it 'returns an empty array' do
+                        captured.should be_empty
+                    end
+                end
+            end
+        end
+
+        context 'when a snapshot has already been seen' do
+            before :each do
+                subject.load( @url + '/with-ajax', take_snapshot: false )
+            end
+
+            it 'ignores it' do
+                subject.capture_snapshot.should be_any
+                subject.capture_snapshot.should be_empty
+            end
+        end
+
+        context 'when a snapshot has sink data' do
+            before :each do
+                subject.load sink_url, take_snapshot: false
+            end
+
+            it 'calls #on_new_page_with_sink callbacks' do
+                sinks = []
+                subject.on_new_page_with_sink do |page|
+                    sinks << page.dom.execution_flow_sink
+                end
+
+                subject.capture_snapshot
+
+                sinks.size.should == 1
+            end
+
+            context 'and has already been seen' do
+                it 'calls #on_new_page_with_sink callbacks' do
+                    sinks = []
+                    subject.on_new_page_with_sink do |page|
+                        sinks << page.dom.execution_flow_sink
+                    end
+
+                    subject.capture_snapshot
+                    subject.capture_snapshot
+
+                    sinks.size.should == 2
+                end
+            end
+
+            context '#store_pages?' do
+                context true do
+                    subject { @browser = described_class.new( store_pages: true )}
+
+                    it 'stores it in #page_snapshots_with_sinks' do
+                        subject.capture_snapshot
+                        subject.page_snapshots_with_sinks.should be_any
+                    end
+                end
+
+                context false do
+                    subject { @browser = described_class.new( store_pages: false )}
+
+                    it 'does not store it in #page_snapshots_with_sinks' do
+                        subject.capture_snapshot
+                        subject.page_snapshots_with_sinks.should be_empty
+                    end
+                end
+            end
+        end
+
+        context 'when a transition has been given' do
+            before :each do
+                subject.load( ajax_url, take_snapshot: false )
+            end
+
+            it 'pushes it to the existing transitions' do
+                transition = { stuff: :here }
+                captured = subject.capture_snapshot( stuff: :here )
+
+                captured.first.dom.transitions.should include transition
+            end
+        end
+
+        context 'when there are multiple windows open' do
+            before :each do
+                subject.load( ajax_url, take_snapshot: false )
+            end
+
+            it 'captures snapshots from all windows' do
+                subject.javascript.run( 'window.open()' )
+                subject.watir.windows.last.use
+                subject.load sink_url, take_snapshot: false
+
+                subject.capture_snapshot.map(&:url).sort.should ==
+                    [ajax_url, sink_url].sort
+            end
+        end
+
+        context 'when an error occurs' do
+            it 'ignores it' do
+                subject.watir.stub(:windows) { raise }
+                subject.capture_snapshot( blah: :stuff ).should be_empty
             end
         end
     end
@@ -850,6 +1004,61 @@ describe Arachni::Browser do
 
             transition.play @browser
             pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
+        end
+
+        context 'when the element is not visible' do
+            it 'returns nil' do
+                element = @browser.watir.div( id: 'my-div' )
+
+                element.stub(:visible?) { false }
+
+                @browser.fire_event( element, :click ).should be_nil
+            end
+        end
+
+        context "when the element is an #{described_class::ElementLocator}" do
+            context 'and could not be located' do
+                it 'returns nil' do
+                    element = described_class::ElementLocator.new(
+                        tag_name:   'body',
+                        attributes: { 'id' => 'blahblah' }
+                    )
+
+                    element.stub(:locate){ raise Selenium::WebDriver::Error::UnknownError }
+                    @browser.fire_event( element, :click ).should be_nil
+
+                    element.stub(:locate){ raise Watir::Exception::UnknownObjectException }
+                    @browser.fire_event( element, :click ).should be_nil
+                end
+            end
+        end
+
+        context 'when the element never appears' do
+            it 'returns nil' do
+                element = @browser.watir.div( id: 'my-div' )
+
+                element.stub(:exists?) { false }
+
+                @browser.fire_event( element, :click ).should be_nil
+            end
+        end
+
+        context 'when the trigger fails with' do
+            let(:element) { @browser.watir.div( id: 'my-div' ) }
+
+            context Selenium::WebDriver::Error::UnknownError do
+                it 'returns nil' do
+                    element.stub(:fire_event){ raise Selenium::WebDriver::Error::UnknownError }
+                    @browser.fire_event( element, :click ).should be_nil
+                end
+            end
+
+            context Watir::Exception::UnknownObjectException do
+                it 'returns nil' do
+                    element.stub(:fire_event){ raise Watir::Exception::UnknownObjectException }
+                    @browser.fire_event( element, :click ).should be_nil
+                end
+            end
         end
 
         context 'form' do

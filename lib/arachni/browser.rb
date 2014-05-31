@@ -544,12 +544,10 @@ class Browser
             rescue Selenium::WebDriver::Error::UnknownError,
                 Watir::Exception::UnknownObjectException => e
 
-                print_error "Element '#{locator}' disappeared while triggering '#{event}'."
+                print_error "Element '#{locator}' could not be located for triggering '#{event}'."
                 print_error
                 print_error e
                 print_error_backtrace e
-
-                print_info 'Could not trigger event because the page has changed.'
                 return
             end
         end
