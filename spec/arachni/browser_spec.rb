@@ -133,6 +133,19 @@ describe Arachni::Browser do
         end
     end
 
+    describe '#source_with_line_numbers' do
+        it 'prefixes each source code line with a number' do
+            subject.load @url
+
+            lines = subject.source.lines
+
+            lines.should be_any
+            subject.source_with_line_numbers.lines.each.with_index do |l, i|
+                l.should == "#{i+1} - #{lines[i]}"
+            end
+        end
+    end
+
     describe '#load_delay' do
         it 'returns nil' do
             subject.load @url

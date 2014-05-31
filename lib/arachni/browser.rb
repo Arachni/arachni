@@ -170,6 +170,8 @@ class Browser
         ensure_open_window
     end
 
+    # @return   [String]
+    #   Prefixes each source line with a number.
     def source_with_line_numbers
         source.lines.map.with_index do |line, i|
             "#{i+1} - #{line}"
