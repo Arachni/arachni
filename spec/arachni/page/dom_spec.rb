@@ -251,7 +251,6 @@ describe Arachni::Page::DOM do
                 pages = browser.explore_and_flush
                 page  = pages.last
 
-
                 page.url.should == url
                 page.dom.url.should == "#{url}#destination"
                 page.body.should include 'final-vector'
@@ -283,6 +282,17 @@ describe Arachni::Page::DOM do
 
                 browser.load page
                 browser.source.should_not include 'final-vector'
+            end
+        end
+
+        context 'when a transition could not be replayed' do
+            it 'returns nil' do
+                Arachni::Page::DOM::Transition.any_instance.stub(:play){ false }
+
+                browser.load "#{@url}restore/by-transitions"
+                page = browser.explore_and_flush.last
+
+                page.dom.restore( browser ).should be_nil
             end
         end
     end
