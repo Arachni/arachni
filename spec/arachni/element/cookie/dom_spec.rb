@@ -50,7 +50,7 @@ describe Arachni::Element::Cookie::DOM do
         end
     end
 
-    describe '#name' do
+    describe '#value' do
         it 'returns the cookie value' do
             subject.value.should == parent.value
         end
