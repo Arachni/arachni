@@ -44,6 +44,33 @@ describe Arachni::Element::Cookie::DOM do
         end.dom
     end
 
+    describe '#name' do
+        it 'returns the cookie name' do
+            subject.name.should == parent.name
+        end
+    end
+
+    describe '#name' do
+        it 'returns the cookie value' do
+            subject.value.should == parent.value
+        end
+    end
+
+    describe '#to_set_cookie' do
+        it 'returns a string in a Set-Cookie response header format' do
+            subject.to_set_cookie.should == parent.to_set_cookie
+        end
+    end
+
+    %w(encode decode).each do |m|
+        describe "##{m}" do
+            it "delegated to #{Arachni::Element::Cookie}.#{m}" do
+                Arachni::Element::Cookie.stub(m) { |arg| "#{arg}1" }
+                subject.send( m, 'blah' ).should == 'blah1'
+            end
+        end
+    end
+
     describe '#type' do
         it 'returns :link_dom' do
             subject.type.should == :cookie_dom

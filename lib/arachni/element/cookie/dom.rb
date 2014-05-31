@@ -25,11 +25,11 @@ class DOM < Base
     end
 
     def name
-        inputs.to_a.first.first
+        inputs.keys.first
     end
 
     def value
-        inputs.to_a.first.last
+        inputs.values.first
     end
 
     def to_set_cookie
