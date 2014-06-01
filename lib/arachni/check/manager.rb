@@ -75,7 +75,7 @@ class Manager < Arachni::Component::Manager
             update = {}
             preferred.each do |name, klass|
                 schedule << klass
-                preferred_over.select { |_, v| v.include?( name ) }.each do |k, v|
+                preferred_over.select { |_, v| v.include?( name.to_sym ) }.each do |k, v|
                     schedule << (update[k] = self[k])
                 end
             end
