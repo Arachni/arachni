@@ -61,6 +61,13 @@ describe Arachni::Check::Auditor do
         @framework.reset
     end
 
+    after :all do
+        $audit_timeout_called      = nil
+        $audit_differential_called = nil
+        $audit_taint_called        = nil
+        $audit_called              = nil
+    end
+
     let(:auditor) { AuditorTest.new( @framework ) }
     let(:url) { @url }
     let(:issue) { Factory[:issue] }
@@ -647,6 +654,32 @@ describe Arachni::Check::Auditor do
             end
         end
 
+        context 'when called with a block' do
+            it "delegates to #{Arachni::Element::Capabilities::Auditable}#audit" do
+                auditor.load_page_from( @url + '/link' )
+
+                $audit_called = []
+                auditor.page.elements.each do |element|
+                    element.class.class_eval do
+                        def audit( *args, &block )
+                            $audit_called << self.class if $audit_called
+                            super( *args, &block )
+                        end
+                    end
+                end
+
+                auditor.audit( @seed ){}
+                $audit_called.should == auditor.page.elements.map(&:class)
+            end
+        end
+
+        context 'when called without a block' do
+            it 'delegates to #audit_taint' do
+                auditor.should receive(:audit_taint).with( @seed, described_class::OPTIONS )
+                auditor.audit( @seed )
+            end
+        end
+
         context 'when called with options' do
             describe :elements do
 
@@ -800,6 +833,63 @@ describe Arachni::Check::Auditor do
                     end
                 end
             end
+        end
+    end
+
+    describe '#audit_taint' do
+        it "delegates to #{Arachni::Element::Capabilities::Analyzable::Taint}#taint_analysis" do
+            auditor.load_page_from( @url + '/link' )
+
+            $audit_taint_called = []
+            auditor.page.elements.each do |element|
+                element.class.class_eval do
+                    def taint_analysis( *args, &block )
+                        $audit_taint_called << self.class if $audit_taint_called
+                        super( *args, &block )
+                    end
+                end
+            end
+
+            auditor.audit_taint( 'seed' )
+            $audit_taint_called.should == auditor.page.elements.map(&:class)
+        end
+    end
+
+    describe '#audit_differential' do
+        it "delegates to #{Arachni::Element::Capabilities::Analyzable::Differential}#differential_analysis" do
+            auditor.load_page_from( @url + '/link' )
+
+            $audit_differential_called = []
+            auditor.page.elements.each do |element|
+                element.class.class_eval do
+                    def differential_analysis( *args, &block )
+                        $audit_differential_called << self.class if $audit_differential_called
+                        super( *args, &block )
+                    end
+                end
+            end
+
+            auditor.audit_differential( { false: '0', pairs: { '1' => '2' } } )
+            $audit_differential_called.should == auditor.page.elements.map(&:class)
+        end
+    end
+
+    describe '#audit_timeout' do
+        it "delegates to #{Arachni::Element::Capabilities::Analyzable::Timeout}#timeout_analysis" do
+            auditor.load_page_from( @url + '/link' )
+
+            $audit_timeout_called = []
+            auditor.page.elements.each do |element|
+                element.class.class_eval do
+                    def timeout_analysis( *args, &block )
+                        $audit_timeout_called << self.class if $audit_timeout_called
+                        super( *args, &block )
+                    end
+                end
+            end
+
+            auditor.audit_timeout( 'seed', timeout: 1 )
+            $audit_timeout_called.should == auditor.page.elements.map(&:class)
         end
     end
 
