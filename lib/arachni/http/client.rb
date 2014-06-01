@@ -460,7 +460,7 @@ class Client
     def custom_404?( response, &block )
         path = get_path( response.url )
 
-        return block.call( is_404?( path, response.body ) ) if has_custom_404_signature?( path )
+        return block.call( is_404?( path, response.body ) ) if checked_for_custom_404?( path )
 
         precision = 2
         generators = custom_404_probe_generators( response.url, precision )
@@ -486,7 +486,7 @@ class Client
 
                         next if gathered_responses != expected_responses
 
-                        has_custom_404_signature( path )
+                        checked_for_custom_404( path )
                         block.call is_404?( path, response.body )
                     else
                         _404_signatures_for_path( path )[i][:body] =
@@ -501,12 +501,35 @@ class Client
         nil
     end
 
-    def has_custom_404_signature?( path )
+    # @param    [String]    path
+    #   Path to check.
+    #
+    # @return   [Bool]
+    #   `true` if the given path has been checked for the existence of a
+    #   custom-404 handler, `false` otherwise.
+    def checked_for_custom_404?( path )
         _404_data_for_path( path )[:analyzed]
     end
 
-    def has_custom_404_handler?( path )
-        !@with_regular_404_handler.include?( path )
+    # @param    [String]    path
+    #   Path to check.
+    #
+    # @return   [Bool]
+    #   `true` if the given path has been checked for the existence of a
+    #   custom-404 handler but none was identified, `false` otherwise.
+    def checked_but_not_custom_404?( path )
+        @with_regular_404_handler.include?( path )
+    end
+
+    # @param    [String]    url
+    #   URL to check.
+    #
+    # @return   [Bool]
+    #   `true` if the given URL needs to be checked for a {#custom_404?}, `false`
+    #   otherwise.
+    def needs_custom_404_check?( url )
+        path = get_path( url )
+        !checked_for_custom_404?( path ) || !checked_but_not_custom_404?( path )
     end
 
     def self.method_missing( sym, *args, &block )
@@ -575,7 +598,7 @@ class Client
         _404_data_for_path( path )[:signatures]
     end
 
-    def has_custom_404_signature( path )
+    def checked_for_custom_404( path )
         _404_data_for_path( path )[:analyzed] = true
     end
 

@@ -15,6 +15,7 @@ describe Arachni::HTTP::Client do
     end
 
     subject { Arachni::HTTP::Client }
+    let(:custom_404_url) { @url + '/custom_404/' }
 
     it 'supports gzip content-encoding' do
         body = nil
@@ -1239,6 +1240,132 @@ describe Arachni::HTTP::Client do
 
         context "when the 404 cache exceeds #{described_class::CUSTOM_404_CACHE_SIZE} entries" do
             it 'removes the oldest entries'
+        end
+    end
+
+    describe '#checked_but_not_custom_404?' do
+        let(:url) { custom_404_url + 'combo/crap' }
+        let(:path) { subject.get_path( url ) }
+
+        context 'when the page has been fingerprinted for a custom 404 handler' do
+            context 'and it has a custom handler' do
+                it 'returns false' do
+                    subject.get( url ) do |response|
+                        subject.custom_404?( response ) {}
+                    end
+                    subject.run
+
+                    subject.checked_but_not_custom_404?( path ).should be_false
+                end
+            end
+
+            context 'and it does not have a custom handler' do
+                it 'returns true' do
+                    subject.get( @url ) do |response|
+                        subject.custom_404?( response ) {}
+                    end
+                    subject.run
+
+                    subject.checked_but_not_custom_404?( subject.get_path( @url ) ).should be_true
+                end
+            end
+        end
+
+        context 'when the page has not been fingerprinted for a custom 404 handler' do
+            it 'returns false' do
+                subject.checked_but_not_custom_404?( path ).should be_false
+            end
+        end
+    end
+
+    describe '#checked_for_custom_404?' do
+        let(:url) { custom_404_url + 'combo/crap' }
+        let(:path) { subject.get_path( url ) }
+
+        context 'when the page has been fingerprinted for a custom 404 handler' do
+            context 'and it has a custom handler' do
+                it 'returns true' do
+                    subject.get( url ) do |response|
+                        subject.custom_404?( response ) {}
+                    end
+                    subject.run
+
+                    subject.checked_for_custom_404?( path ).should be_true
+                end
+            end
+
+            context 'and it does not have a custom handler' do
+                it 'returns true' do
+                    subject.get( @url ) do |response|
+                        subject.custom_404?( response ) {}
+                    end
+                    subject.run
+
+                    subject.checked_for_custom_404?( subject.get_path( @url ) ).should be_true
+                end
+            end
+        end
+
+        context 'when the page has not been fingerprinted for a custom 404 handler' do
+            it 'returns false' do
+                subject.checked_for_custom_404?( path ).should be_false
+            end
+        end
+    end
+
+    describe 'needs_custom_404_check?' do
+        context 'when #checked_for_custom_404?' do
+            context false do
+                before(:each) { subject.instance.stub(:checked_for_custom_404?) { false } }
+
+                it 'returns true' do
+                    subject.needs_custom_404_check?( @url ).should be_true
+                end
+
+                context 'and #checked_but_not_custom_404?' do
+                    context false do
+                        before(:each) { subject.instance.stub(:checked_but_not_custom_404?) { false } }
+
+                        it 'returns true' do
+                            subject.needs_custom_404_check?( @url ).should be_true
+                        end
+                    end
+
+                    context true do
+                        before(:each) { subject.instance.stub(:checked_but_not_custom_404?) { true } }
+
+                        it 'returns true' do
+                            subject.needs_custom_404_check?( @url ).should be_true
+                        end
+                    end
+                end
+            end
+
+            context true do
+                before(:each) { subject.instance.stub(:checked_for_custom_404?) { true } }
+
+                it 'returns true' do
+                    subject.needs_custom_404_check?( @url ).should be_true
+                end
+
+                context 'and #checked_but_not_custom_404?' do
+                    context true do
+                        before(:each) { subject.instance.stub(:checked_but_not_custom_404?) { true } }
+
+                        it 'returns false' do
+                            subject.needs_custom_404_check?( @url ).should be_false
+                        end
+                    end
+
+                    context false do
+                        before(:each) { subject.instance.stub(:checked_but_not_custom_404?) { false } }
+
+                        it 'returns true' do
+                            subject.needs_custom_404_check?( @url ).should be_true
+                        end
+                    end
+                end
+            end
         end
     end
 
