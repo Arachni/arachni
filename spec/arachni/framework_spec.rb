@@ -56,6 +56,12 @@ describe Arachni::Framework do
         end
     end
 
+    describe '#version' do
+        it "returns #{Arachni::VERSION}" do
+            subject.version.should == Arachni::VERSION
+        end
+    end
+
     describe '#browser_cluster' do
         it "returns #{Arachni::BrowserCluster}" do
             subject.browser_cluster.should be_kind_of Arachni::BrowserCluster
