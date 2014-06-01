@@ -196,7 +196,7 @@ class Client
 
     # Runs all queued requests
     def run
-        exception_jail do
+        exception_jail false do
             @burst_runtime = nil
 
             begin
@@ -214,12 +214,9 @@ class Client
 
             @curr_res_time = 0
             @curr_res_cnt  = 0
+
             true
         end
-    rescue SystemExit
-        raise
-    rescue
-        nil
     end
 
     # @note Cookies or new callbacks set as a result of the block won't affect
@@ -516,6 +513,11 @@ class Client
         instance.send( sym, *args, &block )
     end
 
+    # @private
+    def _404_cache
+        @_404
+    end
+
     private
 
     def prune_custom_404_cache
@@ -524,7 +526,7 @@ class Client
         @_404.keys.each do |path|
             # If the path hasn't been analyzed yet don't even consider
             # removing it. Technically, at this point (after #hydra_run) there
-            # should not be any non analyzed paths but better be sure.
+            # should not be any non-analyzed paths but better be sure.
             next if !@_404[path][:analyzed]
 
             # We've done enough...

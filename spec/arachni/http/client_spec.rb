@@ -46,7 +46,7 @@ describe Arachni::HTTP::Client do
                 statistics[k].should == subject.send(k)
             end
         end
-        
+
     end
 
     describe Arachni::Options do
@@ -420,8 +420,17 @@ describe Arachni::HTTP::Client do
     end
 
     describe '#run' do
-        it 'performs the queues requests' do
+        it 'performs the queued requests' do
+            response = nil
+            subject.request { |r| response = r }
+
             subject.run
+
+            response.should be_kind_of Arachni::HTTP::Response
+        end
+
+        it 'returns true' do
+            subject.run.should be_true
         end
 
         it 'calls the after_each_run callbacks EVERY TIME' do
@@ -484,6 +493,14 @@ describe Arachni::HTTP::Client do
             burst_average_response_time.should > 0
             burst_responses_per_second.should  > 0
         end
+
+        context "when a #{RuntimeError} occurs" do
+            it 'returns nil' do
+                subject.instance.stub(:hydra_run){ raise }
+
+                subject.run.should be_nil
+            end
+        end
     end
 
     describe '#abort' do
@@ -491,10 +508,10 @@ describe Arachni::HTTP::Client do
             cnt = 0
             n = 50
             n.times do |i|
-                subject.get {
+                subject.get do
                     cnt += 1
                     subject.abort
-                }
+                end
             end
             subject.run
             cnt.should < n
