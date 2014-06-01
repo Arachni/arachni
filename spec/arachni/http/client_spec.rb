@@ -34,7 +34,6 @@ describe Arachni::HTTP::Client do
         YAML.load( body ).should == { 'stuff' => "=stuf \00 here==" }
     end
 
-
     describe '#statistics' do
         let(:statistics) { subject.statistics }
 
@@ -50,7 +49,7 @@ describe Arachni::HTTP::Client do
         
     end
 
-    describe 'Arachni::Options' do
+    describe Arachni::Options do
         describe '#url' do
             context 'when the target URL includes auth credentials' do
                 it 'uses them globally' do
@@ -69,126 +68,6 @@ describe Arachni::HTTP::Client do
                     subject.get( @opts.url ) { |res| body = res.body }
                     subject.run
                     body.should == 'authenticated!'
-                end
-            end
-        end
-
-        describe '#http.request_concurrency' do
-            context Integer do
-                it 'uses it as a max_concurrency' do
-                    @opts.http.request_concurrency = 34
-                    subject.reset
-                    subject.max_concurrency.should == 34
-                end
-            end
-            context 'nil' do
-                it 'uses a default max concurrency setting' do
-                    @opts.http.request_concurrency = nil
-                    subject.reset
-                    subject.max_concurrency.should == Arachni::HTTP::Client::MAX_CONCURRENCY
-                end
-            end
-        end
-
-        describe '#http.request_timeout' do
-            context Integer do
-                it 'uses it as an HTTP timeout' do
-                    @opts.http.request_timeout = 10000000000
-                    timed_out = false
-                    subject.request( @url + '/sleep' ) { |res| timed_out = res.timed_out? }
-                    subject.run
-                    timed_out.should be_false
-
-                    @opts.http.request_timeout = 1
-                    subject.reset
-                    timed_out = false
-                    subject.request( @url + '/sleep' ) { |res| timed_out = res.timed_out? }
-                    subject.run
-                    timed_out.should be_true
-                end
-            end
-            context 'nil' do
-                it 'uses a default timeout setting' do
-                    timed_out = false
-                    subject.request( @url + '/sleep' ) { |res| timed_out = res.timed_out? }
-                    subject.run
-                    timed_out.should be_false
-                end
-            end
-        end
-
-        describe '#http.authentication_username and #http.authentication_password' do
-            it 'uses them globally' do
-                Arachni::Options.http.authentication_username = 'username1'
-                Arachni::Options.http.authentication_password = 'password1'
-
-                # first fail to make sure that our test server is actually working properly
-                code = 0
-                subject.get( @opts.url + 'auth/weird-chars' ) { |res| code = res.code }
-                subject.run
-                code.should == 401
-
-                Arachni::Options.http.authentication_username,
-                    Arachni::Options.http.authentication_password =
-                        ['u se rname$@#@#%$3#@%@#', 'p a  :wo\'rd$@#@#%$3#@%@#' ]
-
-                response = nil
-                subject.get( @opts.url + 'auth/weird-chars' ) { |res| response = res }
-                subject.run
-                response.code.should == 200
-                response.body.should == 'authenticated!'
-            end
-        end
-
-        describe 'Options#http.user_agent' do
-            it 'uses the default user-agent setting' do
-                body = nil
-                subject.get( @opts.url + 'user-agent' ) { |res| body = res.body }
-                subject.run
-
-                body.should == @opts.http.user_agent
-                @opts.http.user_agent.should == Arachni::OptionGroups::HTTP.defaults[:user_agent]
-            end
-            context String do
-                it 'uses it as a user-agent' do
-                    ua = 'my user agent'
-                    @opts.http.user_agent = ua.dup
-                    subject.reset
-
-                    body = nil
-                    subject.get( @opts.url + 'user-agent' ) { |res| body = res.body }
-                    subject.run
-                    body.should == ua
-                end
-            end
-        end
-
-        describe '#http.request_redirect_limit' do
-            context Integer do
-                it 'should not exceed that amount of redirects' do
-                    @opts.http.request_redirect_limit = 2
-                    code = nil
-                    subject.get( @opts.url + 'redirect', follow_location: true ) { |res| code = res.code }
-                    subject.run
-                    code.should == 302
-
-                    @opts.http.request_redirect_limit = 10
-                    subject.reset
-
-                    body = nil
-                    subject.get( @opts.url + 'redirect', follow_location: true ) { |res| body = res.body }
-                    subject.run
-                    body.should == 'This is the end.'
-                end
-            end
-            context 'nil' do
-                it 'uses a default setting' do
-                    subject.reset
-
-                    body = nil
-                    subject.get( @opts.url + 'redirect', follow_location: true ) { |res| body = res.body }
-                    subject.run
-                    body.should == 'This is the end.'
                 end
             end
         end
@@ -216,6 +95,148 @@ describe Arachni::HTTP::Client do
                     subject.run
 
                     res.platforms.should be_empty
+                end
+            end
+        end
+    end
+
+    describe Arachni::OptionGroups::HTTP do
+        describe '#request_concurrency' do
+            context Integer do
+                it 'uses it as a max_concurrency' do
+                    @opts.http.request_concurrency = 34
+                    subject.reset
+                    subject.max_concurrency.should == 34
+                end
+            end
+            context 'nil' do
+                it 'uses a default max concurrency setting' do
+                    @opts.http.request_concurrency = nil
+                    subject.reset
+                    subject.max_concurrency.should == Arachni::HTTP::Client::MAX_CONCURRENCY
+                end
+            end
+        end
+
+        describe '#request_queue_size' do
+            context 'when reached' do
+                it 'performs an emergency run' do
+                    Arachni::Options.http.request_queue_size = 10
+
+                    responses = []
+                    11.times do
+                        subject.request do |response|
+                            responses << response
+                        end
+                    end
+
+                    responses.size.should == 10
+
+                    subject.run
+                    responses.size.should == 11
+                end
+            end
+        end
+
+        describe '#request_timeout' do
+            context Integer do
+                it 'uses it as an HTTP timeout' do
+                    @opts.http.request_timeout = 10000000000
+                    timed_out = false
+                    subject.request( @url + '/sleep' ) { |res| timed_out = res.timed_out? }
+                    subject.run
+                    timed_out.should be_false
+
+                    @opts.http.request_timeout = 1
+                    subject.reset
+                    timed_out = false
+                    subject.request( @url + '/sleep' ) { |res| timed_out = res.timed_out? }
+                    subject.run
+                    timed_out.should be_true
+                end
+            end
+            context 'nil' do
+                it 'uses a default timeout setting' do
+                    timed_out = false
+                    subject.request( @url + '/sleep' ) { |res| timed_out = res.timed_out? }
+                    subject.run
+                    timed_out.should be_false
+                end
+            end
+        end
+
+        describe '#authentication_username and #authentication_password' do
+            it 'uses them globally' do
+                Arachni::Options.http.authentication_username = 'username1'
+                Arachni::Options.http.authentication_password = 'password1'
+
+                # first fail to make sure that our test server is actually working properly
+                code = 0
+                subject.get( @opts.url + 'auth/weird-chars' ) { |res| code = res.code }
+                subject.run
+                code.should == 401
+
+                Arachni::Options.http.authentication_username,
+                    Arachni::Options.http.authentication_password =
+                        ['u se rname$@#@#%$3#@%@#', 'p a  :wo\'rd$@#@#%$3#@%@#' ]
+
+                response = nil
+                subject.get( @opts.url + 'auth/weird-chars' ) { |res| response = res }
+                subject.run
+                response.code.should == 200
+                response.body.should == 'authenticated!'
+            end
+        end
+
+        describe 'user_agent' do
+            it 'uses the default user-agent setting' do
+                body = nil
+                subject.get( @opts.url + 'user-agent' ) { |res| body = res.body }
+                subject.run
+
+                body.should == @opts.http.user_agent
+                @opts.http.user_agent.should == Arachni::OptionGroups::HTTP.defaults[:user_agent]
+            end
+            context String do
+                it 'uses it as a user-agent' do
+                    ua = 'my user agent'
+                    @opts.http.user_agent = ua.dup
+                    subject.reset
+
+                    body = nil
+                    subject.get( @opts.url + 'user-agent' ) { |res| body = res.body }
+                    subject.run
+                    body.should == ua
+                end
+            end
+        end
+
+        describe '#request_redirect_limit' do
+            context Integer do
+                it 'should not exceed that amount of redirects' do
+                    @opts.http.request_redirect_limit = 2
+                    code = nil
+                    subject.get( @opts.url + 'redirect', follow_location: true ) { |res| code = res.code }
+                    subject.run
+                    code.should == 302
+
+                    @opts.http.request_redirect_limit = 10
+                    subject.reset
+
+                    body = nil
+                    subject.get( @opts.url + 'redirect', follow_location: true ) { |res| body = res.body }
+                    subject.run
+                    body.should == 'This is the end.'
+                end
+            end
+            context 'nil' do
+                it 'uses a default setting' do
+                    subject.reset
+
+                    body = nil
+                    subject.get( @opts.url + 'redirect', follow_location: true ) { |res| body = res.body }
+                    subject.run
+                    body.should == 'This is the end.'
                 end
             end
         end
@@ -276,7 +297,7 @@ describe Arachni::HTTP::Client do
             headers['User-Agent'].should == 'Arachni/v' + Arachni::VERSION
         end
 
-        context 'when Options#http_request_headers is set' do
+        context "when #{Arachni::OptionGroups::HTTP}#request_headers is set" do
             it 'includes them' do
                 @opts.http.request_headers = {
                     'User-Agent' => 'My UA',
@@ -304,7 +325,7 @@ describe Arachni::HTTP::Client do
             subject.cookie_jar.is_a?( Arachni::HTTP::CookieJar ).should be_true
         end
 
-        context 'when Options#http_cookie_jar_filepath is set' do
+        context "when #{Arachni::OptionGroups::HTTP}#cookie_jar_filepath is set" do
             it 'adds the contained cookies to the CookieJar' do
                 @opts.http.cookie_jar_filepath = fixtures_path + 'cookies.txt'
                 subject.cookie_jar.cookies.should be_empty
@@ -333,7 +354,7 @@ describe Arachni::HTTP::Client do
             end
         end
 
-        context 'when Options#http_cookie_string is set' do
+        context "when #{Arachni::OptionGroups::HTTP}#cookie_string is set" do
             it 'parses the string and add those cookies to the CookieJar' do
                 @opts.http.cookie_string = 'my_cookie_name=val1;blah_name=val2; stuff=%25blah; another_name=another_val'
                 subject.cookie_jar.cookies.should be_empty
@@ -500,7 +521,7 @@ describe Arachni::HTTP::Client do
     end
 
     describe '#request' do
-        it 'uses the URL in Arachni::Options.instance.url as a default' do
+        it "uses the URL in #{Arachni::Options}#url as a default" do
             url = nil
             subject.request{ |res| url = res.url }
             subject.run
@@ -533,7 +554,7 @@ describe Arachni::HTTP::Client do
         end
 
         describe :response_max_size do
-            context 'when Options#http_response_max_size is specified' do
+            context "when #{Arachni::OptionGroups::HTTP}#response_max_size is specified" do
                 it 'ignores bodies of responses which are larger than specified' do
                     @opts.http.response_max_size = 0
                     subject.request( @url + '/http_response_max_size',
@@ -1197,6 +1218,10 @@ describe Arachni::HTTP::Client do
                     bool.should be_true
                 end
             end
+        end
+
+        context "when the 404 cache exceeds #{described_class::CUSTOM_404_CACHE_SIZE} entries" do
+            it 'removes the oldest entries'
         end
     end
 
