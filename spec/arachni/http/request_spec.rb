@@ -499,21 +499,30 @@ describe Arachni::HTTP::Request do
             it 'forwards it' do
                 subject.options[:userpwd].should == 'name:secret'
             end
+
+            it 'sets authentication type to :auto' do
+                subject.options[:httpauth].should == :auto
+            end
         end
 
         context "and #{Arachni::OptionGroups::HTTP}#authentication_username/#{Arachni::OptionGroups::HTTP}#authentication_password" do
+            before :each do
+                Arachni::Options.http.authentication_username = 'name'
+                Arachni::Options.http.authentication_password = 'secret'
+            end
+
             let(:request) do
                 described_class.new( url: url )
             end
 
             it 'forwards it' do
-                Arachni::Options.http.authentication_username = 'name'
-                Arachni::Options.http.authentication_password = 'secret'
-
                 subject.options[:userpwd].should == 'name:secret'
             end
-        end
 
+            it 'sets authentication type to :auto' do
+                subject.options[:httpauth].should == :auto
+            end
+        end
     end
 
     describe '#to_h' do

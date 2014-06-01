@@ -305,6 +305,7 @@ class Request < Message
         }
 
         options[:timeout_ms] = timeout if timeout
+        options[:httpauth]   = :auto   if userpwd
 
         if proxy
             options.merge!(
