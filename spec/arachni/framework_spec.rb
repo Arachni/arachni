@@ -274,6 +274,20 @@ describe Arachni::Framework do
         end
     end
 
+    describe '#scanning?' do
+        it "delegates to #{Arachni::State::Framework}#scanning?" do
+            subject.state.stub(:scanning?) { :stuff }
+            subject.scanning?.should == :stuff
+        end
+    end
+
+    describe '#paused?' do
+        it "delegates to #{Arachni::State::Framework}#paused?" do
+            subject.state.stub(:paused?) { :stuff }
+            subject.paused?.should == :stuff
+        end
+    end
+
     describe '#run' do
         it 'performs the audit' do
             subject.options.url = @url + '/elem_combo'
