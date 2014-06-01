@@ -1225,4 +1225,10 @@ describe Arachni::HTTP::Client do
         end
     end
 
+    describe '.info' do
+        it 'returns a hash with an output name' do
+            described_class.info[:name].should == 'HTTP'
+        end
+    end
+
 end
