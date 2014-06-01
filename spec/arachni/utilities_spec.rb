@@ -233,6 +233,16 @@ describe Arachni::Utilities do
         end
     end
 
+    describe '#skip_path?' do
+        context 'when an error occurs' do
+            it 'returns true' do
+                subject.skip_path?( 'http://test.com/' ).should be_false
+                subject.stub(:follow_protocol?) { raise }
+                subject.skip_path?( 'http://test.com/' ).should be_true
+            end
+        end
+    end
+
     describe '#skip_page?' do
         before { @opts.scope.exclude_page_patterns << /ignore me/ }
 
