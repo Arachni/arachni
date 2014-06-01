@@ -1034,6 +1034,29 @@ describe Arachni::Framework do
                 subject.audit_page( Arachni::Page.from_url( @url + '/link' ) )
             end
         end
+
+        context 'when a check fails with an exception' do
+            it 'moves to the next one' do
+                @options.paths.checks  = fixtures_path + '/checks/'
+
+                described_class.new do |f|
+                    f.checks.load_all
+
+                    f.checks[:test].any_instance.stub(:run) { raise }
+
+                    page = Arachni::Page.from_url( @url + '/link' )
+
+                    responses = []
+                    f.http.on_complete do |response|
+                        responses << response.url
+                    end
+
+                    f.audit_page page
+
+                    responses.should == %w(http://localhost/test3 http://localhost/test2)
+                end
+            end
+        end
     end
 
     describe '#page_limit_reached?' do
