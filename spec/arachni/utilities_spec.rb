@@ -243,6 +243,22 @@ describe Arachni::Utilities do
         end
     end
 
+    describe '#port_available?' do
+        context 'when a port is available' do
+            it 'returns true' do
+                subject.port_available?( 7777 ).should be_true
+            end
+        end
+
+        context 'when a port is not available' do
+            it 'returns true' do
+                s = TCPServer.new( 7777 )
+                subject.port_available?( 7777 ).should be_false
+                s.close
+            end
+        end
+    end
+
     describe '#skip_page?' do
         before { @opts.scope.exclude_page_patterns << /ignore me/ }
 
