@@ -24,7 +24,7 @@ shared_examples_for 'inputtable' do |options = {}|
     let(:sym_keys) do
         keys.map(&:to_sym)
     end
-    
+
     let(:non_existent_keys) do
         inputs.keys.map { |k| "#{k}1" }
     end
