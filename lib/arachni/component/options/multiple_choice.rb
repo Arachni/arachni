@@ -23,7 +23,7 @@ class Arachni::Component::Options::MultipleChoice < Arachni::Component::Options:
 
     def valid?
         return false if !super
-        choices.include?( value )
+        choices.include?( effective_value )
     end
 
     def description
