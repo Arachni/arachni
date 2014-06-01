@@ -105,6 +105,34 @@ describe Arachni::HTTP::Request do
         end
     end
 
+    describe '#asynchronous?' do
+        context 'when the mode is :async' do
+            it 'returns true' do
+                described_class.new( url: @url, mode: :async ).should be_asynchronous
+            end
+        end
+
+        context 'when the mode is :sync' do
+            it 'returns false' do
+                described_class.new( url: @url, mode: :sync ).should_not be_asynchronous
+            end
+        end
+    end
+
+    describe '#blocking?' do
+        context 'when the mode is :async' do
+            it 'returns false' do
+                described_class.new( url: @url, mode: :async ).should_not be_blocking
+            end
+        end
+
+        context 'when the mode is :sync' do
+            it 'returns true' do
+                described_class.new( url: @url, mode: :sync ).should be_blocking
+            end
+        end
+    end
+
     describe '#run' do
         it 'performs the request' do
             request  = described_class.new( url: @url )
