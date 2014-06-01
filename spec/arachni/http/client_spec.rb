@@ -1103,7 +1103,7 @@ describe Arachni::HTTP::Client do
     end
 
     describe '#get' do
-        it 'performs a GET request' do
+        it 'queues a GET request' do
             body = nil
             subject.get { |res| body = res.body }
             subject.run
@@ -1111,8 +1111,14 @@ describe Arachni::HTTP::Client do
         end
     end
 
+    describe '#trace' do
+        it 'queues a TRACE request' do
+            subject.trace.method.should == :trace
+        end
+    end
+
     describe '#post' do
-        it 'performs a POST request' do
+        it 'queues a POST request' do
             body = nil
             subject.post { |res| body = res.body }
             subject.run
@@ -1129,7 +1135,7 @@ describe Arachni::HTTP::Client do
     end
 
     describe '#cookie' do
-        it 'performs a GET request' do
+        it 'queues a GET request' do
             body = nil
             cookies = { 'name' => "v%+;al\00=" }
             subject.cookie( @url + '/cookies', parameters: cookies ) { |res| body = res.body }
@@ -1139,7 +1145,7 @@ describe Arachni::HTTP::Client do
     end
 
     describe '#headers' do
-        it 'performs a GET request' do
+        it 'queues a GET request' do
             body = nil
             headers = { 'name' => 'val' }
             subject.header( @url + '/headers', parameters: headers ) { |res| body = res.body }
