@@ -26,6 +26,36 @@ describe Arachni::Framework do
 
     subject { @f }
 
+    describe '#initialize' do
+        context 'when passed a block' do
+            it 'executes it' do
+                ran = false
+                Arachni::Framework.new do |f|
+                    ran = true
+                end
+
+                ran.should be_true
+            end
+
+            it 'resets the framework' do
+                Arachni::Checks.constants.include?( :Taint ).should be_false
+
+                Arachni::Framework.new do |f|
+                    f.checks.load_all.should == %w(taint)
+                    Arachni::Checks.constants.include?( :Taint ).should be_true
+                end
+
+                Arachni::Checks.constants.include?( :Taint ).should be_false
+            end
+
+            context 'when an exception is raised' do
+                it 'raises it' do
+                    expect { Arachni::Framework.new { |f| raise } }.to raise_error
+                end
+            end
+        end
+    end
+
     describe '#browser_cluster' do
         it "returns #{Arachni::BrowserCluster}" do
             subject.browser_cluster.should be_kind_of Arachni::BrowserCluster
@@ -81,28 +111,6 @@ describe Arachni::Framework do
                 f.audit_page Arachni::Page.from_url( @url + '/link' )
             end
             ok.should be_true
-        end
-    end
-
-    context 'when passed a block' do
-        it 'executes it' do
-            ran = false
-            Arachni::Framework.new do |f|
-                ran = true
-            end
-
-            ran.should be_true
-        end
-
-        it 'resets the framework' do
-            Arachni::Checks.constants.include?( :Taint ).should be_false
-
-            Arachni::Framework.new do |f|
-                f.checks.load_all.should == %w(taint)
-                Arachni::Checks.constants.include?( :Taint ).should be_true
-            end
-
-            Arachni::Checks.constants.include?( :Taint ).should be_false
         end
     end
 
@@ -976,6 +984,15 @@ describe Arachni::Framework do
             it 'returns false' do
                 subject.options.scope.exclude_path_patterns << /link/
                 subject.audit_page( Arachni::Page.from_url( @url + '/link' ) ).should be_false
+            end
+        end
+
+        context "when #{Arachni::Check::Auditor}.has_timeout_candidates?" do
+            it "calls #{Arachni::Check::Auditor}.timeout_audit_run" do
+                Arachni::Check::Auditor.stub(:has_timeout_candidates?){ true }
+
+                Arachni::Check::Auditor.should receive(:timeout_audit_run)
+                subject.audit_page( Arachni::Page.from_url( @url + '/link' ) )
             end
         end
     end

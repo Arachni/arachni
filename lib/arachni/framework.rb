@@ -109,8 +109,6 @@ class Framework
         if block_given?
             begin
                 block.call framework
-            rescue
-                raise
             ensure
                 framework.clean_up
                 framework.reset
@@ -159,8 +157,6 @@ class Framework
         if block_given?
             begin
                 block.call self
-            rescue
-                raise
             ensure
                 clean_up
                 reset
