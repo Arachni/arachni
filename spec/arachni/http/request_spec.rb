@@ -414,6 +414,78 @@ describe Arachni::HTTP::Request do
                 subject.options[:headers]['Cookie'].should == 'na+me=stu+ff;na+me2=stu+ff2'
             end
         end
+
+        context 'context when configured with a #proxy' do
+            let(:request) do
+                described_class.new(
+                    url:   url,
+                    proxy: 'http://stuff/'
+                )
+            end
+
+            it 'forwards it' do
+                subject.options[:proxy].should == 'http://stuff/'
+            end
+
+            context 'and #proxy_user_password' do
+                let(:request) do
+                    described_class.new(
+                        url:   url,
+                        proxy: 'http://stuff/',
+                        proxy_user_password: 'name:secret'
+                    )
+                end
+
+                it 'forwards it' do
+                    subject.options[:proxyuserpwd].should == 'name:secret'
+                end
+            end
+
+            context 'and #proxy_type' do
+                let(:request) do
+                    described_class.new(
+                        url:   url,
+                        proxy: 'http://stuff/',
+                        proxy_type: 'http'
+                    )
+                end
+
+                it 'forwards it' do
+                    subject.options[:proxytype].should == 'http'
+                end
+            end
+        end
+
+        context "context when configured with a #{Arachni::OptionGroups::HTTP}#proxy_host/#{Arachni::OptionGroups::HTTP}#proxy_port" do
+            before :each do
+                Arachni::Options.http.proxy_host = 'stuff'
+                Arachni::Options.http.proxy_port = '8080'
+            end
+
+            let(:request) do
+                described_class.new( url: url )
+            end
+
+            it 'forwards it' do
+                subject.options[:proxy].should == 'stuff:8080'
+            end
+
+            context "and #{Arachni::OptionGroups::HTTP}#proxy_username/#{Arachni::OptionGroups::HTTP}#proxy_password" do
+                it 'forwards it' do
+                    Arachni::Options.http.proxy_username = 'name'
+                    Arachni::Options.http.proxy_password = 'secret'
+
+                    subject.options[:proxyuserpwd].should == 'name:secret'
+                end
+            end
+
+            context "and #{Arachni::OptionGroups::HTTP}#proxy_type" do
+                it 'forwards it' do
+                    Arachni::Options.http.proxy_type = 'http'
+                    subject.options[:proxytype].should == 'http'
+                end
+            end
+        end
     end
 
     describe '#to_h' do

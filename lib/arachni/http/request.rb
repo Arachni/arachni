@@ -75,10 +75,10 @@ class Request < Message
     attr_accessor :proxy
 
     # @return   [String]    `user:password`
-    attr_accessor :proxyuserpwd
+    attr_accessor :proxy_user_password
 
     # @return   [String]
-    attr_accessor :proxytype
+    attr_accessor :proxy_type
 
     # @private
     attr_accessor :root_redirect_id
@@ -306,13 +306,13 @@ class Request < Message
 
         options[:timeout_ms] = timeout if timeout
 
-        if @proxy
+        if proxy
             options.merge!(
                 proxy:        proxy,
-                proxyuserpwd: proxyuserpwd,
-                proxytype:    proxytype
+                proxyuserpwd: proxy_user_password,
+                proxytype:    proxy_type
             )
-        elsif Arachni::Options.http.proxy_host
+        elsif Arachni::Options.http.proxy_host && Arachni::Options.http.proxy_port
             options.merge!(
                 proxy:        "#{Arachni::Options.http.proxy_host}:#{Arachni::Options.http.proxy_port}",
                 proxyuserpwd: "#{Arachni::Options.http.proxy_username}:#{Arachni::Options.http.proxy_password}",
