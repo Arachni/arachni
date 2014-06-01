@@ -12,6 +12,8 @@ class Arachni::Checks::Test < Arachni::Check::Base
     def run
         return if !@prepared
         @ran = true
+
+        Arachni::HTTP::Client.get( "http://localhost/#{shortname}" ){}
     end
 
     def clean_up

@@ -887,6 +887,27 @@ describe Arachni::Framework do
             subject.sitemap.should include @url + '/link/#/stuff'
         end
 
+        it "runs #{Arachni::Check::Manager}#without_platforms before #{Arachni::Check::Manager}#with_platforms" do
+            @options.paths.checks  = fixtures_path + '/checks/'
+
+            described_class.new do |f|
+                f.checks.load_all
+
+                page = Arachni::Page.from_url( @url + '/link' )
+
+                responses = []
+                f.http.on_complete do |response|
+                    responses << response.url
+                end
+
+                f.audit_page page
+
+                responses.should ==
+                    %w(http://localhost/test3 http://localhost/test
+                        http://localhost/test2)
+            end
+        end
+
         context 'when checks were' do
             context 'ran against the page' do
                 it 'returns true' do

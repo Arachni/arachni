@@ -7,6 +7,10 @@ class Arachni::Checks::Test2 < Arachni::Check::Base
 
     prefer :test
 
+    def run
+        Arachni::HTTP::Client.get( "http://localhost/#{shortname}" ){}
+    end
+
     def self.info
         {
             name:        'Test2 check',
