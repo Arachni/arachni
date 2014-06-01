@@ -48,6 +48,22 @@ describe Arachni::HTTP::Response do
         end
     end
 
+    describe '#modified?' do
+        context 'when the #code is' do
+            describe 200 do
+                it 'returns false' do
+                    described_class.new( url: @url, code: 200 ).should be_modified
+                end
+            end
+
+            describe 304 do
+                it 'returns true' do
+                    described_class.new( url: @url, code: 304 ).should_not be_modified
+                end
+            end
+        end
+    end
+
     describe '#redirection?' do
         context 'when the response is a redirection' do
             it 'returns true' do
