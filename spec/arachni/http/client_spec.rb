@@ -1238,6 +1238,41 @@ describe Arachni::HTTP::Client do
             end
         end
 
+        context 'when checking for an already checked URL' do
+            it 'returns the cached result' do
+                res = nil
+                subject.get( @custom_404 + 'static/crap' ) { |c_res| res = c_res }
+                subject.run
+
+                bool = false
+                subject.custom_404?( res ) { |c_bool| bool = c_bool }
+                subject.run
+                bool.should be_true
+
+                fingerprints = 0
+                subject.on_complete do
+                    fingerprints += 1
+                end
+
+                res = nil
+                subject.get( @custom_404 + 'static/crap' ) { |c_res| res = c_res }
+                subject.run
+                fingerprints.should > 0
+
+                overhead = 0
+                subject.on_complete do
+                    overhead += 1
+                end
+
+                bool = false
+                subject.custom_404?( res ) { |c_bool| bool = c_bool }
+                subject.run
+                bool.should be_true
+
+                overhead.should == 0
+            end
+        end
+
         context "when the 404 cache exceeds #{described_class::CUSTOM_404_CACHE_SIZE} entries" do
             it 'removes the oldest entries'
         end
@@ -1280,7 +1315,6 @@ describe Arachni::HTTP::Client do
 
     describe '#checked_for_custom_404?' do
         let(:url) { custom_404_url + 'combo/crap' }
-        let(:path) { subject.get_path( url ) }
 
         context 'when the page has been fingerprinted for a custom 404 handler' do
             context 'and it has a custom handler' do
@@ -1290,7 +1324,7 @@ describe Arachni::HTTP::Client do
                     end
                     subject.run
 
-                    subject.checked_for_custom_404?( path ).should be_true
+                    subject.checked_for_custom_404?( url ).should be_true
                 end
             end
 
@@ -1301,14 +1335,14 @@ describe Arachni::HTTP::Client do
                     end
                     subject.run
 
-                    subject.checked_for_custom_404?( subject.get_path( @url ) ).should be_true
+                    subject.checked_for_custom_404?( @url ).should be_true
                 end
             end
         end
 
         context 'when the page has not been fingerprinted for a custom 404 handler' do
             it 'returns false' do
-                subject.checked_for_custom_404?( path ).should be_false
+                subject.checked_for_custom_404?( url ).should be_false
             end
         end
     end

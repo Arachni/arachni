@@ -458,38 +458,40 @@ class Client
     # @param  [Block]   block
     #   To be passed true or false depending on the result.
     def custom_404?( response, &block )
-        path = get_path( response.url )
+        url = response.url
 
-        return block.call( is_404?( path, response.body ) ) if checked_for_custom_404?( path )
+        if checked_for_custom_404?( url )
+            return block.call( is_404?( url, response.body ) )
+        end
 
-        precision = 2
-        generators = custom_404_probe_generators( response.url, precision )
+        precision  = 2
+        generators = custom_404_probe_generators( url, precision )
 
         gathered_responses = 0
         expected_responses = generators.size * precision
 
         generators.each.with_index do |generator, i|
-            _404_signatures_for_path( path )[i] ||= {}
+            _404_signatures_for_url( url )[i] ||= {}
 
             precision.times do
                 get( generator.call, follow_location: true ) do |c_res|
                     gathered_responses += 1
 
                     if c_res.code == 404
-                        @with_regular_404_handler << path
+                        @with_regular_404_handler << url
                     end
 
-                    if _404_signatures_for_path( path )[i][:body]
-                        _404_signatures_for_path( path )[i][:rdiff] =
-                            _404_signatures_for_path( path )[i][:body].
+                    if _404_signatures_for_url( url )[i][:body]
+                        _404_signatures_for_url( url )[i][:rdiff] =
+                            _404_signatures_for_url( url )[i][:body].
                                 refine( c_res.body )
 
                         next if gathered_responses != expected_responses
 
-                        checked_for_custom_404( path )
-                        block.call is_404?( path, response.body )
+                        checked_for_custom_404( url )
+                        block.call is_404?( url, response.body )
                     else
-                        _404_signatures_for_path( path )[i][:body] =
+                        _404_signatures_for_url( url )[i][:body] =
                             Support::Signature.new(
                                 c_res.body, threshold: CUSTOM_404_SIGNATURE_THRESHOLD
                             )
@@ -501,35 +503,34 @@ class Client
         nil
     end
 
-    # @param    [String]    path
-    #   Path to check.
+    # @param    [String]    url
+    #   URL to check.
     #
     # @return   [Bool]
-    #   `true` if the given path has been checked for the existence of a
-    #   custom-404 handler, `false` otherwise.
-    def checked_for_custom_404?( path )
-        _404_data_for_path( path )[:analyzed]
-    end
-
-    # @param    [String]    path
-    #   Path to check.
-    #
-    # @return   [Bool]
-    #   `true` if the given path has been checked for the existence of a
-    #   custom-404 handler but none was identified, `false` otherwise.
-    def checked_but_not_custom_404?( path )
-        @with_regular_404_handler.include?( path )
+    #   `true` if the `url` has been checked for the existence of a custom-404
+    #   handler, `false` otherwise.
+    def checked_for_custom_404?( url )
+        _404_data_for_url( url )[:analyzed]
     end
 
     # @param    [String]    url
     #   URL to check.
     #
     # @return   [Bool]
-    #   `true` if the given URL needs to be checked for a {#custom_404?}, `false`
+    #   `true` if the `url` has been checked for the existence of a custom-404
+    #   handler but none was identified, `false` otherwise.
+    def checked_but_not_custom_404?( url )
+        @with_regular_404_handler.include?( url )
+    end
+
+    # @param    [String]    url
+    #   URL to check.
+    #
+    # @return   [Bool]
+    #   `true` if the `url` needs to be checked for a {#custom_404?}, `false`
     #   otherwise.
     def needs_custom_404_check?( url )
-        path = get_path( url )
-        !checked_for_custom_404?( path ) || !checked_but_not_custom_404?( path )
+        !checked_for_custom_404?( url ) || !checked_but_not_custom_404?( url )
     end
 
     def self.method_missing( sym, *args, &block )
@@ -546,24 +547,24 @@ class Client
     def prune_custom_404_cache
         return if @_404.size <= CUSTOM_404_CACHE_SIZE
 
-        @_404.keys.each do |path|
+        @_404.keys.each do |url|
             # If the path hasn't been analyzed yet don't even consider
             # removing it. Technically, at this point (after #hydra_run) there
             # should not be any non-analyzed paths but better be sure.
-            next if !@_404[path][:analyzed]
+            next if !@_404[url][:analyzed]
 
             # We've done enough...
             return if @_404.size < CUSTOM_404_CACHE_SIZE
 
-            @_404.delete( path )
+            @_404.delete( url )
         end
     end
 
     # @return [Array<Proc>]
-    # Generators for paths which should elicit a 404 response.
+    #   Generators for URLs which should elicit a 404 response.
     def custom_404_probe_generators( url, precision )
-        uri = uri_parse( url )
-        path = uri.up_to_path
+        uri        = uri_parse( url )
+        up_to_path = uri.up_to_path
 
         trv_back = File.dirname( uri.path )
         trv_back_url = uri.scheme + '://' + uri.host + ':' + uri.port.to_s + trv_back
@@ -571,10 +572,10 @@ class Client
 
         [
             # Get a random path with an extension.
-            proc { path + random_string + '.' + random_string[0..precision] },
+            proc { up_to_path + random_string + '.' + random_string[0..precision] },
 
             # Get a random path without an extension.
-            proc { path + random_string },
+            proc { up_to_path + random_string },
 
             # Move up a dir and get a random file.
             proc { trv_back_url + random_string },
@@ -583,23 +584,30 @@ class Client
             proc { trv_back_url + random_string + '.' + random_string[0..precision] },
 
             # Get a random directory.
-            proc { path + random_string + '/' }
+            proc { up_to_path + random_string + '/' }
         ]
     end
 
-    def _404_data_for_path( path )
-        @_404[path] ||= {
+    def _404_data_for_url( url )
+        @_404[URI.normalize(url)] ||= {
             analyzed:   false,
             signatures: []
         }
     end
 
-    def _404_signatures_for_path( path )
-        _404_data_for_path( path )[:signatures]
+    def _404_signatures_for_url( url )
+        _404_data_for_url( url )[:signatures]
     end
 
-    def checked_for_custom_404( path )
-        _404_data_for_path( path )[:analyzed] = true
+    def checked_for_custom_404( url )
+        _404_data_for_url( url )[:analyzed] = true
+    end
+
+    def is_404?( url, body )
+        _404_data_for_url( url )[:signatures].each do |_404|
+            return true if _404[:rdiff].similar? _404[:body].refine( body )
+        end
+        false
     end
 
     def hydra_run
@@ -695,13 +703,6 @@ class Client
 
     def emergency_run?
         @queue_size >= Options.http.request_queue_size && !@running
-    end
-
-    def is_404?( path, body )
-        @_404[path][:signatures].each do |_404|
-            return true if _404[:rdiff].similar? _404[:body].refine( body )
-        end
-        false
     end
 
     def random_string
