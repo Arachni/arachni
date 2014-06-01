@@ -729,7 +729,7 @@ class Framework
 
     def browser_job_skip_states
         return if !@browser_cluster
-        browser_cluster.skip_states_for( browser_job.id )
+        browser_cluster.skip_states( browser_job.id )
     end
 
     # @return    [String]   Returns the version of the framework.
@@ -800,7 +800,7 @@ class Framework
 
     def browser_job_update_skip_states( states )
         return if states.empty?
-        browser_cluster.update_skip_states_for browser_job.id, states
+        browser_cluster.update_skip_states browser_job.id, states
     end
 
     def reset_trainer
