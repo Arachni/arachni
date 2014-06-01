@@ -50,6 +50,11 @@ begin
             t.pattern = FileList[ 'spec/components/path_extractors/**/*_spec.rb' ]
         end
 
+        desc 'Run fingerprinter tests.'
+        RSpec::Core::RakeTask.new( :fingerprinters ) do |t|
+            t.pattern = FileList[ 'spec/components/fingerprinters/**/*_spec.rb' ]
+        end
+
         desc 'Run external test suites.'
         RSpec::Core::RakeTask.new( :external ) do |t|
             t.pattern = FileList[ 'spec/external/**/*_spec.rb' ]
