@@ -650,28 +650,62 @@ describe Arachni::Utilities do
     end
 
     describe '#exception_jail' do
-        context 'when raise_exception' do
-            context 'default' do
-                it 're-raises the exception' do
-                    expect do
-                        subject.exception_jail { raise 'Exception!' }
-                    end.to raise_error RuntimeError
+        context 'when no error occurs' do
+            it 'returns the return value of the block' do
+                subject.exception_jail { :stuff }.should == :stuff
+            end
+        end
+
+        context "when a #{RuntimeError} occurs" do
+            context 'and raise_exception is' do
+                context 'default' do
+                    it 're-raises the exception' do
+                        expect do
+                            subject.exception_jail { raise }
+                        end.to raise_error RuntimeError
+                    end
+                end
+
+                context true do
+                    it 're-raises the exception' do
+                        expect do
+                            subject.exception_jail( true ) { raise }
+                        end.to raise_error RuntimeError
+                    end
+                end
+
+                context false do
+                    it 'returns nil' do
+                        subject.exception_jail( false ) { raise }.should be_nil
+                    end
                 end
             end
+        end
 
-            context true do
-                it 're-raises the exception' do
-                    expect do
-                        subject.exception_jail( true ) { raise 'Exception!' }
-                    end.to raise_error RuntimeError
+        context "when an #{Exception} occurs" do
+            context 'and raise_exception is' do
+                context 'default' do
+                    it 'does not rescue it' do
+                        expect do
+                            subject.exception_jail { raise Exception }
+                        end.to raise_error Exception
+                    end
                 end
-            end
 
-            context false do
-                it 'does not re-raises the exception' do
-                    expect do
-                        subject.exception_jail( false ) { raise 'Exception!' }
-                    end.to_not raise_error
+                context true do
+                    it 'does not rescue it' do
+                        expect do
+                            subject.exception_jail( true ) { raise Exception }
+                        end.to raise_error Exception
+                    end
+                end
+
+                context false do
+                    it 'does not rescue it' do
+                        expect do
+                            subject.exception_jail( false ) { raise Exception }
+                        end.to raise_error Exception
+                    end
                 end
             end
         end

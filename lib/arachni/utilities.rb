@@ -407,15 +407,13 @@ module Utilities
             map { |t| t.to_s.rjust( 2, '0' ) }.join( ':' )
     end
 
-    #
     # Wraps the "block" in exception handling code and runs it.
     #
     # @param    [Bool]  raise_exception  re-raise exception
     # @param    [Block]     block   to call
-    #
     def exception_jail( raise_exception = true, &block )
         block.call
-    rescue Exception => e
+    rescue => e
         if respond_to?( :print_error ) && respond_to?( :print_error_backtrace )
             print_error e.inspect
             print_error_backtrace e
@@ -432,6 +430,8 @@ module Utilities
         end
 
         raise e if raise_exception
+
+        nil
     end
 
     def remove_constants( mod, skip = [], children_only = true )
