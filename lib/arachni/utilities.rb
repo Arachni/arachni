@@ -432,7 +432,7 @@ module Utilities
         nil
     end
 
-    def remove_constants( mod, skip = [], children_only = true )
+    def remove_constants( mod, skip = [] )
         return if skip.include?( mod )
         return if !(mod.is_a?( Class ) || mod.is_a?( Module )) ||
             !mod.to_s.start_with?( 'Arachni' )
@@ -443,9 +443,7 @@ module Utilities
         end
 
         mod.constants.each { |m| mod.send( :remove_const, m ) }
-
-        return if children_only
-        parent.send( :remove_const, mod.to_s.split( ':' ).last.to_sym )
+        nil
     end
 
     extend self
