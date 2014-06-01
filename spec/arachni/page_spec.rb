@@ -216,6 +216,13 @@ describe Arachni::Page do
         end
     end
 
+    describe '#performer' do
+        it "returns the #{Arachni::HTTP::Request}#performer" do
+            page.request.stub(:performer){ :stuff }
+            subject.performer.should == :stuff
+        end
+    end
+
     describe '#update_element_audit_whitelist' do
         context 'when passed a' do
             context Arachni::Element::Capabilities::Auditable do
