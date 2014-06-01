@@ -88,14 +88,14 @@ describe Arachni::Check::Auditor do
         end
     end
 
-    describe '.max_issues' do
+    describe '#max_issues' do
         it 'returns the maximum amount of issues the auditor is allowed to log' do
             subject.class.info[:max_issues] = 1
             subject.max_issues.should == 1
         end
     end
 
-    describe '.increment_issue_counter' do
+    describe '#increment_issue_counter' do
         it 'increments the issue counter' do
             i = subject.class.issue_counter
             subject.increment_issue_counter
@@ -117,7 +117,7 @@ describe Arachni::Check::Auditor do
         end
     end
 
-    describe '.audited' do
+    describe '#audited' do
         it 'marks the given task as audited' do
             subject.audited 'stuff'
             subject.audited?( 'stuff' ).should be_true
