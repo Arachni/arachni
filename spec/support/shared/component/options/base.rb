@@ -46,6 +46,14 @@ shared_examples_for 'component_option' do
         end
     end
 
+    describe '#initialize' do
+        context 'when passed invalid options' do
+            it "raises #{ArgumentError}" do
+                expect { described_class.new( :myname, stuff: 1 ) }.to raise_error ArgumentError
+            end
+        end
+    end
+
     describe '#name' do
         it 'returns the name of the option' do
             name = 'myname'
