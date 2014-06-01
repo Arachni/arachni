@@ -2,14 +2,13 @@ require 'spec_helper'
 
 describe Arachni::Plugin::Manager do
     before( :each ) do
-        reset_options
         @framework = Arachni::Framework.new
         @framework.state.running = true
     end
 
     after( :each ) do
         @framework.reset
-        Arachni::Options.reset
+        reset_options
     end
 
     subject { @framework.plugins }
@@ -75,7 +74,7 @@ describe Arachni::Plugin::Manager do
         end
 
         context 'when a loaded plugin has no associated state' do
-            it 'calls #prepare instead of #restore' do
+            it "calls #{Arachni::Plugin::Base}#prepare instead of #{Arachni::Plugin::Base}#restore" do
                 subject.state.delete :suspendable
                 subject.restore
                 subject.jobs[:suspendable][:instance].counter.should == 1
@@ -107,29 +106,45 @@ describe Arachni::Plugin::Manager do
     end
 
     describe '#run' do
-        context 'when gem dependencies are met' do
-            it 'runs loaded plugins' do
-                subject.load_default
-                subject.run
-                subject.block
-                subject.results[:default][:results].should be_true
-            end
+        it 'runs loaded plugins' do
+            subject.load_default
+            subject.run
+            subject.block
+            subject.results[:default][:results].should be_true
         end
+    end
+
+    describe '#schedule' do
+        it 'returns scheduled plugins' do
+            subject.load_default
+            subject.schedule.should == {
+                default: {
+                    int_opt: 4
+                }
+            }
+        end
+
+        context 'when plugins have :priority' do
+            before( :each ) do
+                @framework.reset
+
+                Arachni::Options.paths.plugins = "#{fixtures_path}/plugins_with_priorities/"
+
+                @framework = Arachni::Framework.new
+                @framework.state.running = true
+            end
+
+            it 'orders them based on priority' do
+                subject.load '*'
+                subject.schedule.keys.should == [:p0, :p00, :p1, :p22, :p222, :p2, :p_nil, :p_nil2]
+            end
+
+        end
+
         context 'when gem dependencies are not met' do
             it "raises #{Arachni::Plugin::Error::UnsatisfiedDependency}" do
-                trigger = proc do
-                    begin
-                        subject.load :bad
-                        subject.run
-                        subject.block
-                    ensure
-                        subject.clear
-                    end
-                end
-
-                expect { trigger.call }.to raise_error Arachni::Error
-                expect { trigger.call }.to raise_error Arachni::Plugin::Error
-                expect { trigger.call }.to raise_error Arachni::Plugin::Error::UnsatisfiedDependency
+                subject.load :bad
+                expect { subject.schedule }.to raise_error Arachni::Plugin::Error::UnsatisfiedDependency
             end
         end
     end
@@ -240,6 +255,23 @@ describe Arachni::Plugin::Manager do
         it "delegates to ##{Arachni::Data::Plugins}#results" do
             Arachni::Data.plugins.results.object_id.should ==
                 subject.results.object_id
+        end
+    end
+
+    describe '#reset' do
+        it 'calls #kill' do
+            subject.should receive(:killall).at_least(1).times
+            subject.reset
+        end
+
+        it 'calls #clear' do
+            subject.should receive(:clear).at_least(1).times
+            subject.reset
+        end
+
+        it 'calls .reset' do
+            described_class.should receive(:reset).at_least(1).times
+            subject.reset
         end
     end
 

@@ -59,7 +59,7 @@ class Manager < Arachni::Component::Manager
     # @raise [Error::UnsatisfiedDependency]
     #   If the environment is {#sane_env? not sane}.
     def run
-        prepare.each do |name, options|
+        schedule.each do |name, options|
             @jobs[name] = Thread.new do
                 exception_jail( false ) do
                     Thread.current[:instance] = create( name, options )
@@ -85,7 +85,7 @@ class Manager < Arachni::Component::Manager
     #
     # @raise [Error::UnsatisfiedDependency]
     #   If the environment is not {#sane_env? sane}.
-    def prepare
+    def schedule
         ordered   = []
         unordered = []
 
@@ -186,7 +186,7 @@ class Manager < Arachni::Component::Manager
     end
 
     def restore
-        prepare.each do |name, options|
+        schedule.each do |name, options|
             @jobs[name] = Thread.new do
                 exception_jail( false ) do
                     if state.include? name
