@@ -962,30 +962,28 @@ describe Arachni::Framework do
                         f.url_queue_total_size.should == 0
                     end
                 end
-            end
-        end
 
-        context 'when the page DOM depth limit has been exceeded' do
-            it 'returns false' do
-                page = Arachni::Page.from_data(
-                    url:         @url,
-                    dom:         {
-                        transitions: [
-                            { page: :load },
-                            { "<a href='javascript:click();'>" => :click },
-                            { "<button dblclick='javascript:doubleClick();'>" => :ondblclick }
-                        ].map { |t| Arachni::Page::DOM::Transition.new *t.first }
-                    }
-                )
+                it 'returns false' do
+                    page = Arachni::Page.from_data(
+                        url:         @url,
+                        dom:         {
+                            transitions: [
+                                             { page: :load },
+                                             { "<a href='javascript:click();'>" => :click },
+                                             { "<button dblclick='javascript:doubleClick();'>" => :ondblclick }
+                                         ].map { |t| Arachni::Page::DOM::Transition.new *t.first }
+                        }
+                    )
 
-                Arachni::Framework.new do |f|
-                    f.checks.load :taint
+                    Arachni::Framework.new do |f|
+                        f.checks.load :taint
 
-                    f.options.scope.dom_depth_limit = 10
-                    f.audit_page( page ).should be_true
+                        f.options.scope.dom_depth_limit = 10
+                        f.audit_page( page ).should be_true
 
-                    f.options.scope.dom_depth_limit = 2
-                    f.audit_page( page ).should be_false
+                        f.options.scope.dom_depth_limit = 2
+                        f.audit_page( page ).should be_false
+                    end
                 end
             end
         end
