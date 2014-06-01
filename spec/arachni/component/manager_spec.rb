@@ -290,7 +290,7 @@ describe Arachni::Component::Manager do
 
             @components.load( c )
             @components.prepare_options( c, @components[c],
-                { 'req_opt' => 'my value'}
+                { 'req_opt' => 'my value' }
             ).should == {
                 req_opt:     'my value',
                 default_opt: 'value'
@@ -299,18 +299,40 @@ describe Arachni::Component::Manager do
             opts = {
                 'req_opt'     => 'req_opt value',
                 'opt_opt'     => 'opt_opt value',
-                'default_opt' => 'default_opt value'
+                'default_opt' => 'value2'
             }
             @components.prepare_options( c, @components[c], opts ).should == opts.symbolize_keys
         end
 
-        context 'with invalid options' do
+        context 'with missing options' do
             it "raises #{Arachni::Component::Options::Error::Invalid}" do
                 trigger = proc do
                     begin
                         c = 'with_options'
                         @components.load( c )
                         @components.prepare_options( c, @components[c], {} )
+                    ensure
+                        @components.clear
+                    end
+                end
+
+                expect { trigger.call }.to raise_error Arachni::Component::Options::Error::Invalid
+            end
+        end
+
+        context 'with invalid options' do
+            it "raises #{Arachni::Component::Options::Error::Invalid}" do
+                opts = {
+                    'req_opt'     => 'req_opt value',
+                    'opt_opt'     => 'opt_opt value',
+                    'default_opt' => 'default_opt value'
+                }
+
+                trigger = proc do
+                    begin
+                        c = 'with_options'
+                        @components.load( c )
+                        @components.prepare_options( c, @components[c], opts )
                     ensure
                         @components.clear
                     end
