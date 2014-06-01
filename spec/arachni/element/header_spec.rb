@@ -74,6 +74,32 @@ describe Arachni::Element::Header do
         end
     end
 
+    describe '.encode' do
+        it 'encodes the passed string' do
+            v = "stuff \r\n"
+            described_class.encode( v ).should == URI.encode( v, "\r\n" )
+        end
+    end
+    describe '#encode' do
+        it 'encodes the passed string' do
+            v = "stuff \r\n"
+            subject.encode( v ).should == described_class.encode( v )
+        end
+    end
+
+    describe '.decode' do
+        it 'URL-decodes the passed string' do
+            v = '%25+value%5C+%2B%3D%26%3B'
+            described_class.decode( v ).should == URI.decode( v )
+        end
+    end
+    describe '#decode' do
+        it 'URL-decodes the passed string' do
+            v = '%25+value%5C+%2B%3D%26%3B'
+            subject.decode( v ).should == described_class.decode( v )
+        end
+    end
+
     describe '#type' do
         it 'is "header"' do
             subject.type.should == :header
