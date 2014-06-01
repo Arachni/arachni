@@ -367,21 +367,42 @@ describe Arachni::HTTP::Request do
     end
 
     describe '#to_typhoeus' do
+        let(:request) { described_class.new( url: url ) }
+        subject { request.to_typhoeus }
+
         it "converts #{described_class} to #{Typhoeus::Request}" do
-            described_class.new( url: url ).to_typhoeus.should be_kind_of Typhoeus::Request
+            subject.should be_kind_of Typhoeus::Request
         end
 
         context 'when the request is blocking' do
+            let(:request) { described_class.new( url: url, mode: :sync ) }
+
             it 'forbids socket reuse' do
-                described_class.new( url: url, mode: :sync ).to_typhoeus.
-                    options[:forbid_reuse].should be_true
+                subject.options[:forbid_reuse].should be_true
             end
         end
 
         context 'when the request is non-blocking' do
+            let(:request) { described_class.new( url: url, mode: :async ) }
+
             it 'reuses sockets' do
-                described_class.new( url: url, mode: :async ).to_typhoeus.
-                    options[:forbid_reuse].should be_false
+                subject.options[:forbid_reuse].should be_false
+            end
+        end
+
+        context 'when cookies are available' do
+            let(:request) do
+                described_class.new(
+                    url:     url,
+                    cookies: {
+                        'na me' => 'stu ff',
+                        'na me2' => 'stu ff2'
+                    }
+                )
+            end
+
+            it 'encodes and puts them in the Cookie header' do
+                subject.options[:headers]['Cookie'].should == 'na+me=stu+ff;na+me2=stu+ff2'
             end
         end
     end
