@@ -293,7 +293,7 @@ class BrowserCluster
     # @private
     def skip_state?( job_id, state )
         synchronize do
-            skip_states_for( job_id ).include? state
+            skip_states( job_id ).include? state
         end
     end
 
@@ -304,7 +304,7 @@ class BrowserCluster
     #
     # @private
     def skip_state( job_id, state )
-        synchronize { skip_states_for( job_id ) << state }
+        synchronize { skip_states( job_id ) << state }
     end
 
     # @private
@@ -313,12 +313,12 @@ class BrowserCluster
     end
 
     # @private
-    def update_skip_states_for( id, lookups )
-        synchronize { skip_states_for( id ).merge lookups }
+    def update_skip_states( id, lookups )
+        synchronize { skip_states( id ).merge lookups }
     end
 
     # @private
-    def skip_states_for( id )
+    def skip_states( id )
         synchronize do
             @skip_states_per_job[id] ||=
                 Support::LookUp::HashSet.new( hasher: :persistent_hash )

@@ -197,7 +197,7 @@ class Browser
                 HTTP::Client.update_cookies resource.cookiejar
 
                 @transitions = resource.dom.transitions.dup
-                skip_states.merge resource.dom.skip_states
+                update_skip_states resource.dom.skip_states
 
                 @last_dom_url = resource.dom.url
 
@@ -339,27 +339,19 @@ class Browser
         pages.compact
     end
 
-    def skip_state?( state )
-        skip_states.include? state
-    end
-
-    def skip_state( state )
-        skip_states << state
-    end
-
     # @note Will skip non-visible elements as they can't be manipulated.
     #
     # Iterates over all elements which have events and passes their info to the
     # given block.
     #
-    # @param    [Bool]  skip_states
+    # @param    [Bool]  mark_state
     #   Mark each element/events as visited and skip it if it has already been
     #   seen.
     #
     # @yield [ElementLocator,Array<Symbol>]
     #   Hash with information about the element, its tag name, applicable events
     #   along with their handlers and attributes.
-    def each_element_with_events( skip_states = true )
+    def each_element_with_events( mark_state = true )
         current_url = url
 
         javascript.dom_elements_with_events.each do |element|
@@ -397,8 +389,8 @@ class Browser
             end
 
             state = "#{tag_name}#{attributes}#{events}"
-            next if events.empty? || (skip_states && skip_state?( state ))
-            skip_state state if skip_states
+            next if events.empty? || (mark_state && skip_state?( state ))
+            skip_state state if mark_state
 
             yield ElementLocator.new( tag_name: tag_name, attributes: attributes ),
                     events
@@ -701,7 +693,7 @@ class Browser
         page.dom.execution_flow_sink = @javascript.execution_flow_sink
         page.dom.data_flow_sink      = @javascript.data_flow_sink
         page.dom.transitions         = @transitions.dup
-        page.dom.skip_states         = @skip_states.dup
+        page.dom.skip_states         = skip_states.dup
 
         page
     end
@@ -846,6 +838,18 @@ class Browser
     end
 
     private
+
+    def skip_state?( state )
+        self.skip_states.include? state
+    end
+
+    def skip_state( state )
+        self.skip_states << state
+    end
+
+    def update_skip_states( states )
+        self.skip_states.merge states
+    end
 
     def name_or_id_for( element )
         name = element.attribute_value(:name).to_s

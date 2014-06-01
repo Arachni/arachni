@@ -121,16 +121,6 @@ class Worker < Arachni::Browser
         @job = nil
     end
 
-    # @return   [Support::LookUp::HashSet]
-    #   States that have been visited and should be skipped, for the given
-    #   {#job}.
-    #
-    # @see #skip_state
-    # @see #skip_state?
-    def skip_states
-        master.skip_states_for( job.id )
-    end
-
     # We change the default scheduling to distribute elements and events
     # to all available browsers ASAP, instead of building a list and then
     # consuming it, since we're don't have to worry about messing up our
@@ -194,6 +184,28 @@ class Worker < Arachni::Browser
     end
 
     private
+
+    # @return   [Support::LookUp::HashSet]
+    #   States that have been visited and should be skipped, for the given
+    #   {#job}.
+    #
+    # @see #skip_state
+    # @see #skip_state?
+    def skip_states
+        master.skip_states job.id
+    end
+
+    def skip_state?( state )
+        master.skip_state? job.id, state
+    end
+
+    def skip_state( state )
+        master.skip_state job.id, state
+    end
+
+    def update_skip_states( states )
+        master.update_skip_states job.id, states
+    end
 
     def start
         @consumer ||= Thread.new do
