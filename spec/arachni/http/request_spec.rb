@@ -36,7 +36,16 @@ describe Arachni::HTTP::Request do
             password:   'pass'
         }
     end
-    subject { described_class.new( options ) }
+    subject do
+        r = described_class.new( options )
+        r.on_complete {}
+        r
+    end
+
+    it "supports #{Marshal} serialization" do
+        subject = described_class.new( options )
+        subject.should == Marshal.load( Marshal.dump( subject ) )
+    end
 
     it "supports #{Arachni::RPC::Serializer}" do
         subject = described_class.new( options )
@@ -395,7 +404,7 @@ describe Arachni::HTTP::Request do
                 described_class.new(
                     url:     url,
                     cookies: {
-                        'na me' => 'stu ff',
+                        'na me'  => 'stu ff',
                         'na me2' => 'stu ff2'
                     }
                 )
