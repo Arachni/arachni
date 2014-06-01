@@ -393,11 +393,14 @@ class Page
     # @return   [Hash]
     #   Converts the page data to a hash.
     def to_h
-        instance_variables.reduce({}) do |h, iv|
-            next h if iv == :@document
+        skip = [:@document, :@do_not_audit_elements, :@has_custom_elements]
+
+        instance_variables.inject({}) do |h, iv|
+            next h if skip.include? iv
+
             h[iv.to_s.gsub( '@', '').to_sym] = try_dup( instance_variable_get( iv ) )
             h
-        end.merge(@cache)
+        end.merge(@cache).tap { |h| h.delete :parser }
     end
     alias :to_hash :to_h
 

@@ -701,6 +701,22 @@ describe Arachni::Page do
         end
     end
 
+    describe '#to_h' do
+        it 'converts the page to a hash' do
+            subject.to_h.should be_kind_of Hash
+
+            subject.to_h.each do |k, v|
+                v.should == subject.send(k)
+            end
+        end
+
+        [:document, :do_not_audit_elements, :has_custom_elements, :parser].each do |k|
+            it "does not include ':#{k}'" do
+                subject.to_h.should_not include k
+            end
+        end
+    end
+
     [:dup, :deep_clone].each do |method|
         describe "##{method}" do
             it 'returns a copy of the page' do
