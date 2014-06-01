@@ -279,18 +279,16 @@ module Utilities
 
         parsed = uri_parse( path.to_s )
 
-        begin
+        exception_jail false do
             return true if !follow_protocol?( parsed )
             return true if !path_in_domain?( parsed )
             return true if path_too_deep?( parsed )
             return true if !include_path?( parsed )
             return true if exclude_path?( parsed )
-            false
-        rescue => e
-            ap e
-            ap e.backtrace
-            true
+            return false
         end
+
+        true
     end
 
     # Determines whether or not the given {Arachni::HTTP::Response} should be
