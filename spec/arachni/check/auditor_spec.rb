@@ -88,6 +88,12 @@ describe Arachni::Check::Auditor do
         end
     end
 
+    describe '#preferred' do
+        it 'returns an empty array' do
+            subject.preferred.should == []
+        end
+    end
+
     describe '#max_issues' do
         it 'returns the maximum amount of issues the auditor is allowed to log' do
             subject.class.info[:max_issues] = 1
