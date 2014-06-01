@@ -149,6 +149,27 @@ describe Arachni::Options do
                     described_class::Error::InvalidURL
             end
         end
+
+        context "when #{Arachni::OptionGroups::Scope}#https_only?" do
+            before :each do
+                subject.scope.https_only = true
+            end
+
+            context 'and an HTTPS url is provided' do
+                it 'accepts the HTTPS scheme' do
+                    subject.url = 'https://test.com'
+                    subject.url.should == 'https://test.com/'
+                end
+            end
+
+            context 'and an HTTP url is provided' do
+                it "raises #{described_class::Error::InvalidURL}" do
+                    expect do
+                        subject.url = 'http://test.com/'
+                    end.to raise_error described_class::Error::InvalidURL
+                end
+            end
+        end
     end
 
     describe '#update' do
