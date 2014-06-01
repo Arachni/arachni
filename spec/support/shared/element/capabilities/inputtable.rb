@@ -15,6 +15,8 @@ shared_examples_for 'inputtable' do |options = {}|
         end
     end
 
+    let(:sym_key_inputs) { inputs.symbolize_keys }
+
     let(:keys) do
         subject.inputs.keys
     end
@@ -64,38 +66,38 @@ shared_examples_for 'inputtable' do |options = {}|
         end
     end
 
-    describe '#has_inputs?' do
-        describe '#reset' do
-            it 'returns the element to its original state' do
-                orig = subject.dup
+    describe '#reset' do
+        it 'returns the element to its original state' do
+            orig = subject.dup
 
-                k, v = orig.inputs.keys.first, 'value'
+            k, v = orig.inputs.keys.first, 'value'
 
-                subject.update( k => v )
-                subject.affected_input_name = k
-                subject.affected_input_value = v
-                subject.seed = v
+            subject.update( k => v )
+            subject.affected_input_name = k
+            subject.affected_input_value = v
+            subject.seed = v
 
-                subject.inputs.should_not == orig.inputs
-                subject.affected_input_name.should_not == orig.affected_input_name
-                subject.affected_input_value.should_not == orig.affected_input_value
-                subject.seed.should_not == orig.seed
+            subject.inputs.should_not == orig.inputs
+            subject.affected_input_name.should_not == orig.affected_input_name
+            subject.affected_input_value.should_not == orig.affected_input_value
+            subject.seed.should_not == orig.seed
 
-                subject.reset
+            subject.reset
 
-                subject.inputs.should == orig.inputs
+            subject.inputs.should == orig.inputs
 
-                subject.affected_input_name.should == orig.affected_input_name
-                subject.affected_input_name.should be_nil
+            subject.affected_input_name.should == orig.affected_input_name
+            subject.affected_input_name.should be_nil
 
-                subject.affected_input_value.should == orig.affected_input_value
-                subject.affected_input_value.should be_nil
+            subject.affected_input_value.should == orig.affected_input_value
+            subject.affected_input_value.should be_nil
 
-                subject.seed.should == orig.seed
-                subject.seed.should be_nil
-            end
+            subject.seed.should == orig.seed
+            subject.seed.should be_nil
         end
+    end
 
+    describe '#has_inputs?' do
         context 'when the given inputs are' do
             context 'variable arguments' do
                 context 'when it has the given inputs' do
@@ -137,14 +139,15 @@ shared_examples_for 'inputtable' do |options = {}|
             context Hash do
                 context 'when it has the given inputs (names and values)' do
                     it 'returns true' do
-                        subject.has_inputs?( sym_keys ).should be_true
-                        subject.has_inputs?( keys ).should be_true
+                        subject.has_inputs?( inputs ).should be_true
+                        subject.has_inputs?( sym_key_inputs ).should be_true
                     end
                 end
                 context 'when it does not have the given inputs' do
                     it 'returns false' do
-                        subject.has_inputs?( non_existent_sym_keys ).should be_false
-                        subject.has_inputs?( non_existent_keys ).should be_false
+                        subject.has_inputs?(
+                            inputs.keys.first => "#{inputs.values.first} 1"
+                        ).should be_false
                     end
                 end
             end
