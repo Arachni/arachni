@@ -322,6 +322,15 @@ describe Arachni::Parser do
         end
     end
 
+    describe '#paths' do
+        context 'when an error occurs' do
+            it 'returns an empty array' do
+                described_class.stub(:extractors){ raise }
+                described_class.new( @response ).paths.should == []
+            end
+        end
+    end
+
     context 'without base' do
         describe '#base' do
             it 'returns nil' do

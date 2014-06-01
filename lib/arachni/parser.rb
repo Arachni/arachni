@@ -297,14 +297,15 @@ class Parser
     # @return   [Array<String>]   Paths.
     def run_extractors
         begin
-            return self.class.extractors.available.map do |name|
-                    exception_jail( false ){ self.class.extractors[name].new.run( document ) }
-                end.flatten.uniq.compact.
+            self.class.extractors.available.map do |name|
+                exception_jail( false ){ self.class.extractors[name].new.run( document ) }
+            end.flatten.uniq.compact.
                 map { |path| to_absolute( path ) }.compact.uniq.
                 reject { |path| skip?( path ) }
         rescue => e
             print_error e.to_s
             print_error_backtrace e
+            []
         end
     end
 
