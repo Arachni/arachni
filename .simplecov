@@ -6,7 +6,9 @@ end
 SimpleCov.start do
     add_filter do |source_file|
         path = source_file.filename
-        path.start_with?( "#{Dir.pwd}/spec" )
+        path.start_with?( "#{Dir.pwd}/spec" ) ||
+            # We can't monitor the server, they're forked.
+            path.start_with?( "#{Dir.pwd}/lib/arachni/rpc/server" )
     end
 
     add_group 'Core' do |source_file|
@@ -27,5 +29,5 @@ SimpleCov.start do
     add_group 'Fingerprinters',  'components/fingerprinters'
     add_group 'RPCD Handlers',   'components/rpcd_handlers'
 
-    add_group 'CLI', 'ui/'
+    add_group 'UI', 'ui/'
 end
