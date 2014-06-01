@@ -490,6 +490,7 @@ class Client
 
                         checked_for_custom_404( url )
                         block.call is_404?( url, response.body )
+                        prune_custom_404_cache
                     else
                         _404_signatures_for_url( url )[i][:body] =
                             Support::Signature.new(
@@ -548,13 +549,11 @@ class Client
         return if @_404.size <= CUSTOM_404_CACHE_SIZE
 
         @_404.keys.each do |url|
-            # If the path hasn't been analyzed yet don't even consider
-            # removing it. Technically, at this point (after #hydra_run) there
-            # should not be any non-analyzed paths but better be sure.
+            # If the path hasn't been analyzed yet skip it.
             next if !@_404[url][:analyzed]
 
             # We've done enough...
-            return if @_404.size < CUSTOM_404_CACHE_SIZE
+            return if @_404.size <= CUSTOM_404_CACHE_SIZE
 
             @_404.delete( url )
         end

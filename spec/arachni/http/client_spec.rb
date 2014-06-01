@@ -1321,7 +1321,18 @@ describe Arachni::HTTP::Client do
         end
 
         context "when the 404 cache exceeds #{described_class::CUSTOM_404_CACHE_SIZE} entries" do
-            it 'removes the oldest entries'
+            it 'it is pruned as soon as possible' do
+                subject._404_cache.should be_empty
+
+                (2 * described_class::CUSTOM_404_CACHE_SIZE).times do |i|
+                    subject.get( @custom_404 + "static/#{i}/" ) do |response|
+                        subject.custom_404?( response ) {}
+                    end
+                end
+                subject.run
+
+                subject._404_cache.size.should == described_class::CUSTOM_404_CACHE_SIZE
+            end
         end
     end
 
