@@ -14,10 +14,7 @@ describe Arachni::Platform::Fingerprinters::ASP do
     context 'when there is a ASPSESSIONID query parameter' do
         it 'identifies it as ASP' do
             page = Arachni::Page.from_data(
-                url:        'http://stuff.com/blah?ASPSESSIONID=stuff',
-                query_vars: {
-                    'ASPSESSIONID' => 'stuff'
-                }
+                url: 'http://stuff.com/blah?ASPSESSIONID=stuff'
             )
             platforms_for( page ).should include :asp
             platforms_for( page ).should include :windows
