@@ -139,8 +139,8 @@ shared_examples_for 'inputtable' do |options = {}|
             context Hash do
                 context 'when it has the given inputs (names and values)' do
                     it 'returns true' do
-                        subject.has_inputs?( inputs ).should be_true
-                        subject.has_inputs?( sym_key_inputs ).should be_true
+                        subject.has_inputs?( subject.inputs ).should be_true
+                        subject.has_inputs?( subject.inputs.symbolize_keys ).should be_true
                     end
                 end
                 context 'when it does not have the given inputs' do
