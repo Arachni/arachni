@@ -82,6 +82,14 @@ describe Arachni::BrowserCluster::Worker do
                 Process.getpgid( subject.phantomjs_pid ).should be_true
             end
         end
+
+        context 'when a job fails' do
+            it 'ignores it' do
+                custom_job.stub(:configure_and_run){ raise 'stuff' }
+                subject.run_job( custom_job ).should be_true
+            end
+        end
+
         context 'when the job finishes' do
             let(:page) { Arachni::Page.from_url(url) }
 
@@ -254,6 +262,23 @@ describe Arachni::BrowserCluster::Worker do
                     phantomjs_pid.should_not == subject.phantomjs_pid
                 end
             end
+
+            context "when cookie clearing raises #{Selenium::WebDriver::Error::NoSuchWindowError}" do
+                it 'respawns' do
+                    subject.watir.stub(:cookies) do
+                        raise Selenium::WebDriver::Error::NoSuchWindowError
+                    end
+
+                    watir         = subject.watir
+                    phantomjs_pid = subject.phantomjs_pid
+
+                    subject.run_job( custom_job )
+
+                    watir.should_not == subject.watir
+                    phantomjs_pid.should_not == subject.phantomjs_pid
+                end
+            end
+
         end
 
         context 'when the job takes more than #job_timeout' do
