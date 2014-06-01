@@ -1138,8 +1138,6 @@ class Framework
     def check_page( check, page )
         begin
             @checks.run_one( check, page )
-        rescue SystemExit
-            raise
         rescue => e
             print_error "Error in #{check.to_s}: #{e.to_s}"
             print_error_backtrace e
