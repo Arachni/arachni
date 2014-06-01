@@ -1,13 +1,18 @@
 # encoding: utf-8
 require 'spec_helper'
 
+class Subject
+    include Arachni::UI::Output
+    include Arachni::Utilities
+end
+
 describe Arachni::Utilities do
 
     before( :each ) do
         @opts = Arachni::Options.reset
     end
 
-    subject { Arachni::Utilities }
+    subject { Subject.new }
 
     describe '#caller_name' do
         it 'returns the filename of the caller' do
