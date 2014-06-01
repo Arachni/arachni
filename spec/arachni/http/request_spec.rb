@@ -415,7 +415,7 @@ describe Arachni::HTTP::Request do
             end
         end
 
-        context 'context when configured with a #proxy' do
+        context 'when configured with a #proxy' do
             let(:request) do
                 described_class.new(
                     url:   url,
@@ -456,7 +456,7 @@ describe Arachni::HTTP::Request do
             end
         end
 
-        context "context when configured with a #{Arachni::OptionGroups::HTTP}#proxy_host/#{Arachni::OptionGroups::HTTP}#proxy_port" do
+        context "when configured with a #{Arachni::OptionGroups::HTTP}#proxy_host/#{Arachni::OptionGroups::HTTP}#proxy_port" do
             before :each do
                 Arachni::Options.http.proxy_host = 'stuff'
                 Arachni::Options.http.proxy_port = '8080'
@@ -486,6 +486,34 @@ describe Arachni::HTTP::Request do
                 end
             end
         end
+
+        context 'when configured with a #username and #password' do
+            let(:request) do
+                described_class.new(
+                    url:   url,
+                    username: 'name',
+                    password: 'secret'
+                )
+            end
+
+            it 'forwards it' do
+                subject.options[:userpwd].should == 'name:secret'
+            end
+        end
+
+        context "and #{Arachni::OptionGroups::HTTP}#authentication_username/#{Arachni::OptionGroups::HTTP}#authentication_password" do
+            let(:request) do
+                described_class.new( url: url )
+            end
+
+            it 'forwards it' do
+                Arachni::Options.http.authentication_username = 'name'
+                Arachni::Options.http.authentication_password = 'secret'
+
+                subject.options[:userpwd].should == 'name:secret'
+            end
+        end
+
     end
 
     describe '#to_h' do
