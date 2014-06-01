@@ -336,7 +336,7 @@ class Client
 
         cookies = options.delete( :cookies ) || {}
 
-        exception_jail( false ) {
+        exception_jail false do
             if !options.delete( :no_cookiejar )
                 cookies = begin
                     cookie_jar.for_url( url ).inject({}) do |h, c|
@@ -363,7 +363,7 @@ class Client
             queue( request )
             return request.run if request.blocking?
             request
-        }
+        end
     end
 
     # Performs a `GET` {Request request}.

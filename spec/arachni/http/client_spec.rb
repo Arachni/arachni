@@ -849,6 +849,14 @@ describe Arachni::HTTP::Client do
         end
 
         describe :cookies do
+            it 'preserves nullbytess' do
+                cookies = { "name\0" => "val\0" }
+                body = nil
+                subject.request( @url + '/cookies', cookies: cookies ) { |res| body = res.body }
+                subject.run
+                YAML.load( body ).should == cookies
+            end
+
             describe 'nil' do
                 it 'uses te cookies in the CookieJar' do
                     @opts.http.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
@@ -883,6 +891,7 @@ describe Arachni::HTTP::Client do
                     YAML.load( body ).should == { 'key2' => 'val2' }
                 end
             end
+
             describe Hash do
                 it 'uses the key-value pairs as cookies' do
                     cookies = { 'name' => 'val' }
@@ -890,6 +899,27 @@ describe Arachni::HTTP::Client do
                     subject.request( @url + '/cookies', cookies: cookies ) { |res| body = res.body }
                     subject.run
                     YAML.load( body ).should == cookies
+                end
+
+                it 'merges them with the cookie-jar' do
+                    @opts.http.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
+                    subject.cookie_jar.cookies.should be_empty
+                    subject.reset
+
+                    body = nil
+                    subject.request(
+                        @url + '/cookies',
+                        cookies: {
+                            'my_cookie_name' => 'updated_val'
+                        }
+                    ) { |res| body = res.body }
+                    subject.run
+
+                    YAML.load( body ).should == {
+                        'my_cookie_name' => 'updated_val',
+                        'blah_name' => 'val2',
+                        'another_name' => 'another_val'
+                    }
                 end
 
                 context 'when also given a Cookie header' do
@@ -910,15 +940,6 @@ describe Arachni::HTTP::Client do
                     end
                 end
             end
-
-            it 'preserves nullbytess' do
-                cookies = { "name\0" => "val\0" }
-                body = nil
-                subject.request( @url + '/cookies', cookies: cookies ) { |res| body = res.body }
-                subject.run
-                YAML.load( body ).should == cookies
-            end
-
         end
 
         describe :mode do
@@ -1057,6 +1078,26 @@ describe Arachni::HTTP::Client do
                     res.url.should == @url + '/redir_2'
                     res.body.should == "Welcome to redir_2!"
                 end
+            end
+        end
+
+        context 'when cookie-jar lookup fails' do
+            it 'only uses the given cookies' do
+                @opts.http.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
+                subject.cookie_jar.cookies.should be_empty
+                subject.reset
+                subject.cookie_jar.cookies.should be_any
+
+                subject.cookie_jar.stub(:for_url) { raise }
+
+                body = nil
+                subject.request(
+                    @url + '/cookies',
+                    cookies: { 'blah' => 'val' }
+                ) { |res| body = res.body }
+                subject.run
+
+                YAML.load( body ).should == { 'blah' => 'val' }
             end
         end
     end
