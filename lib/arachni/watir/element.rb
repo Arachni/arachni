@@ -6,10 +6,6 @@
 module Watir
 class Element
 
-    def submit
-        @element.submit
-    end
-
     def opening_tag
         html.match( /<#{tag_name}.*?>/im )[0]
     end
