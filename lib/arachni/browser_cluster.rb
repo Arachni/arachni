@@ -378,7 +378,9 @@ class BrowserCluster
             Thread.new do
                 workers << Worker.new(
                     javascript_token: @javascript_token,
-                    master:           self
+                    master:           self,
+                    width:            Options.browser_cluster.screen_width,
+                    height:           Options.browser_cluster.screen_height
                     #concurrency:      concurrency
                 )
             end

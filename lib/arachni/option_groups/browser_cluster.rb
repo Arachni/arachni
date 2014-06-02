@@ -26,11 +26,21 @@ class BrowserCluster < Arachni::OptionGroup
     #   Should the browser's avoid loading images?
     attr_accessor :ignore_images
 
+    # @return   [Bool]
+    #   Screen width.
+    attr_accessor :screen_width
+
+    # @return   [Bool]
+    #   Screen height.
+    attr_accessor :screen_height
+
     set_defaults(
         pool_size:           6,
         job_timeout:         120,
         worker_time_to_live: 100,
-        ignore_images:       false
+        ignore_images:       false,
+        screen_width:        1600,
+        screen_height:       1200
     )
 
 end

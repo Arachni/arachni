@@ -459,6 +459,16 @@ class OptionParser < UI::CLI::OptionParser
         on( '--browser-cluster-ignore-images', 'Do not load images.' ) do |ignore_images|
             options.browser_cluster.ignore_images = ignore_images
         end
+
+        on( '--browser-cluster-screen-width', Integer,
+            'Browser screen width.' ) do |width|
+            options.browser_cluster.screen_width = width
+        end
+
+        on( '--browser-cluster-screen-height', Integer,
+            'Browser screen height.' ) do |height|
+            options.browser_cluster.screen_height = height
+        end
     end
 
     def profiles

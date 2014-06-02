@@ -30,6 +30,24 @@ describe Arachni::BrowserCluster do
                 @cluster.workers.size.should == 10
             end
         end
+
+        it "sets window width to #{Arachni::OptionGroups::BrowserCluster}#screen_width" do
+            Arachni::Options.browser_cluster.screen_width = 100
+
+            @cluster = described_class.new
+            @cluster.workers.each do |browser|
+                browser.javascript.run('return window.innerWidth').should == 100
+            end
+        end
+
+        it "sets window height to #{Arachni::OptionGroups::BrowserCluster}#screen_height" do
+            Arachni::Options.browser_cluster.screen_height = 200
+
+            @cluster = described_class.new
+            @cluster.workers.each do |browser|
+                browser.javascript.run('return window.innerHeight').should == 200
+            end
+        end
     end
 
     describe '#with_browser' do
