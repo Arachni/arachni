@@ -31,7 +31,7 @@ class DOM < Base
         @method = :get
     end
 
-    # Loads #{to_s}.
+    # Loads {#to_s}.
     def trigger
         browser.goto to_s, take_snapshot: false
     end
