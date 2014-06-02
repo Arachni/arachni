@@ -156,7 +156,7 @@ module Auditable
 
     # @return  [String]
     #   Status message explaining what input vector is being audited, containing
-    #   its name, {#type} and {#action}.
+    #   its name, {Element::Base#type} and {#action}.
     def status_string
         "Auditing #{self.type} input '#{@affected_input_name}'" <<
             " pointing to: '#{@action}'"
