@@ -202,7 +202,7 @@ class Parser
     end
 
     # @return [Array<Element::LinkTemplate>]
-    #   Links matching {OptionsGroups::Audit#link_templates} in {#document}.
+    #   Links matching {Arachni::OptionsGroups::Audit#link_templates} in {#document}.
     def link_templates
         return @link_templates.freeze if @link_templates
         return @link_templates = [link_template].compact if !text?
