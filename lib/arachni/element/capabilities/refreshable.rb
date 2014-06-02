@@ -44,7 +44,7 @@ module Capabilities::Refreshable
 
     # @return   [String]
     #   Unique string identifying this element while disregarding any applied
-    #   runtime modifications (usually to its {#inputs}).
+    #   runtime modifications (usually to its {Inputtable#inputs}).
     #
     #   Basically, a modified element and a fresh element should both return
     #   the same value while uniquely identifying the pair.
