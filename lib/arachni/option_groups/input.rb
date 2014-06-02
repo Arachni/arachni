@@ -91,7 +91,7 @@ class Input < Arachni::OptionGroup
     end
 
     # @return    [Hash<Regexp => String>]
-    #   {#values}, merged with #{default_values} if {#without_defaults?}
+    #   {#values}, merged with {#default_values} if {#without_defaults?}
     def effective_values
         without_defaults? ? @values : default_values.merge( @values )
     end
