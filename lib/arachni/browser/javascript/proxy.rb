@@ -6,7 +6,7 @@
 module Arachni
 class Browser::Javascript
 
-# @note Extends {BasicObject} because we don't want any baggage to avoid
+# @note Extends `BasicObject` because we don't want any baggage to avoid
 #   method-name clashes with the Javascript-side objects.
 #
 # Provides a proxy to a Javascript object.
