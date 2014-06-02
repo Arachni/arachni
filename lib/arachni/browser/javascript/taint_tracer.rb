@@ -19,6 +19,31 @@ class TaintTracer < Proxy
         super javascript, 'TaintTracer'
     end
 
+    # @!method  debugging_data
+    #
+    #   @return [Hash]
+    #       JS debugging information.
+
+    # @!method  execution_flow_sink
+    #
+    #   @return [Hash]
+    #       JS execution flow sink data.
+
+    # @!method  data_flow_sink
+    #
+    #   @return [Hash]
+    #       JS data flow sink data.
+
+    # @!method  flush_execution_flow_sink
+    #
+    #   @return [Hash]
+    #       Returns and clears {#execution_flow_sink}.
+
+    # @!method  flush_data_flow_sink
+    #
+    #   @return [Hash]
+    #       Returns and clears {#data_flow_sink}.
+
     %w(debugging_data execution_flow_sink data_flow_sink flush_execution_flow_sink
         flush_data_flow_sink).each do |m|
         define_method m do

@@ -11,6 +11,7 @@ class Page
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class DOM
 
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
     class Error < Page::Error
     end
 
@@ -28,11 +29,11 @@ class DOM
     attr_accessor :transitions
 
     # @return   [Array]
-    #   {JavaScript::TaintTracer#data_flow_sink} data.
+    #   {Browser::Javascript::TaintTracer#data_flow_sink} data.
     attr_accessor :data_flow_sink
 
     # @return   [Array]
-    #   {JavaScript::TaintTracer#execution_flow_sink} data.
+    #   {Browser::Javascript::TaintTracer#execution_flow_sink} data.
     attr_accessor :execution_flow_sink
 
     # @return   [String]

@@ -182,28 +182,28 @@ class Javascript
         @browser.watir.execute_script script
     end
 
-    # @return   [Array<Object>]
+    # @return   [Hash]
     #   Data logged by function `TaintTracer.debug`.
     def debugging_data
         return [] if !supported?
         taint_tracer.debugging_data
     end
 
-    # @return   [Array<Object>]
+    # @return   [Hash]
     #   Data logged by function `TaintTracer.log_execution_flow_sink`.
     def execution_flow_sink
         return [] if !supported?
         taint_tracer.execution_flow_sink
     end
 
-    # @return   [Array<Object>]
+    # @return   [Hash]
     #   Data logged by function `TaintTracer.data_flow_sink`.
     def data_flow_sink
         return [] if !supported?
         taint_tracer.data_flow_sink
     end
 
-    # @return   [Array<Object>]
+    # @return   [Hash]
     #   Returns {#execution_flow_sink} data and empties the
     #   `TaintTracer.execution_flow_sink`.
     def flush_execution_flow_sink
@@ -211,7 +211,7 @@ class Javascript
         taint_tracer.flush_execution_flow_sink
     end
 
-    # @return   [Array<Object>]
+    # @return   [Hash]
     #   Returns {#data_flow_sink} data and empties the
     #   `TaintTracer.data_flow_sink`.
     def flush_data_flow_sink
