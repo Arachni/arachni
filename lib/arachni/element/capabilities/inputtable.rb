@@ -103,7 +103,7 @@ module Capabilities::Inputtable
 
     # Shorthand {#inputs} reader.
     #
-    # @param    [#to_s] k
+    # @param    [#to_s] name
     #   Name.
     #
     # @return   [String]
