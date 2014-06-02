@@ -558,7 +558,8 @@ class Framework
     #   * `:suspending` -- The instance is being {#suspend suspended} (if applicable).
     #   * `:suspended` -- The instance has being {#suspend suspended} (if applicable).
     #   * `:cleanup` -- The scan has completed and the instance is
-    #       {#clean_up cleaning up} after itself (i.e. waiting for plugins to finish etc.).
+    #       {Framework#clean_up cleaning up} after itself (i.e. waiting for
+    #       plugins to finish etc.).
     #   * `:done` -- The scan has completed, you can grab the report and shutdown.
     def status
         state.status
