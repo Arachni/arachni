@@ -69,7 +69,7 @@ class Base < Component::Base
     # @note **OPTIONAL**
     #
     # Gets called right before killing the plugin and should return state data
-    # to be {{State::Plugins.store stored} and passed to {#restore}.
+    # to be {{Arachni::State::Plugins#store stored} and passed to {#restore}.
     #
     # @return   [Object]    State to store.
     #
