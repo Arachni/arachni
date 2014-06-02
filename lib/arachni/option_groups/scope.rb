@@ -121,7 +121,8 @@ class Scope < Arachni::OptionGroup
     alias :https_only? :https_only
 
     # @return   [Hash<Regexp => String>]
-    #   Regular expression and substitution pairs, used to rewrite {Link#action}.
+    #   Regular expression and substitution pairs, used to rewrite
+    #   {Element::Capabilities::Submittable#action}.
     #
     # @see Element::Link
     attr_accessor :link_rewrites
