@@ -191,6 +191,12 @@ module Auditable
         "#{action}:#{type}:#{inputs.keys.sort}"
     end
 
+    # @return  [Integer]
+    #   Digest of {#coverage_id}.
+    def coverage_hash
+        coverage_id.persistent_hash
+    end
+
     # @return [Boolean]
     #   `true` if the element matches one or more {.skip_like_blocks},
     #   `false` otherwise.

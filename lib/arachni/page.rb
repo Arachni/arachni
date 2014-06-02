@@ -116,7 +116,7 @@ class Page
     attr_reader :metadata
 
     # @return   [Set<Integer>]
-    #   Audit whitelist based on {Element::Capabilities::Auditable#persistent_hash}.
+    #   Audit whitelist based on {Element::Capabilities::Auditable#coverage_hash}.
     #
     # @see  #update_element_audit_whitelist
     # @see  #audit_element?
@@ -182,7 +182,7 @@ class Page
 
     # @param    [Array<Element::Capabilities::Auditable, Integer>]    list
     #   Audit whitelist based on {Element::Capabilities::Auditable elements} or
-    #   {Element::Capabilities::Auditable#persistent_hash}s.
+    #   {Element::Capabilities::Auditable#coverage_hash}s.
     #
     # @return   [Set]   {#element_audit_whitelist}
     #
@@ -191,12 +191,12 @@ class Page
     def update_element_audit_whitelist( list )
         [list].flatten.each do |e|
             @element_audit_whitelist <<
-                (e.is_a?( Integer ) ? e : e.coverage_id.persistent_hash )
+                (e.is_a?( Integer ) ? e : e.coverage_hash )
         end
     end
 
     # @param    [Element::Capabilities::Auditable, Integer]    element
-    #   Element or {Element::Capabilities::Auditable#persistent_hash}.
+    #   Element or {Element::Capabilities::Auditable#coverage_hash}.
     #
     # @return   [Bool]
     #   `true` if the element should be audited, `false` otherwise.
@@ -207,7 +207,7 @@ class Page
         return if @do_not_audit_elements
         return true if @element_audit_whitelist.empty?
         @element_audit_whitelist.include?(
-            element.is_a?( Integer ) ? element : element.coverage_id.persistent_hash
+            element.is_a?( Integer ) ? element : element.coverage_hash
         )
     end
 
@@ -549,7 +549,7 @@ class Page
 
         return if !element.respond_to?(:has_nonce?) || !element.has_nonce?
 
-        @metadata[element.type][:nonces][element.coverage_id.persistent_hash] =
+        @metadata[element.type][:nonces][element.coverage_hash] =
             element.nonce_name
     end
 
@@ -558,7 +558,7 @@ class Page
 
         return if !element.respond_to?(:nonce_name=) || element.has_nonce?
 
-        element.nonce_name = @metadata[element.type][:nonces][element.coverage_id.persistent_hash]
+        element.nonce_name = @metadata[element.type][:nonces][element.coverage_hash]
     end
 
     def ensure_metadata_nonces( element )

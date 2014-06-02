@@ -187,6 +187,12 @@ shared_examples_for 'auditable' do |options = {}|
         end
     end
 
+    describe '#coverage_hash' do
+        it 'returns the String#persistent_hash of #coverage_id' do
+            subject.coverage_hash.should == subject.coverage_id.persistent_hash
+        end
+    end
+
     describe '#audit' do
         context 'when no block is given' do
             it 'raises ArgumentError' do
