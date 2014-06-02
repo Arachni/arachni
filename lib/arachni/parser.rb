@@ -235,9 +235,10 @@ class Parser
         return [] if !text?
 
         # Make a list of the response cookie names.
-        cookie_names = Set.new( cookies.map { |c| c.name } )
+        cookie_names = Set.new( cookies.map(&:name) )
 
-        # grab cookies from the HTTP cookiejar and filter out old ones, as usual
+        # Grab all cookies from the cookiejar giving preferrence to the ones
+        # specified by the current page, if there are any.
         from_http_jar = HTTP::Client.cookie_jar.cookies.reject do |c|
             cookie_names.include?( c.name )
         end
@@ -246,7 +247,7 @@ class Parser
         # so they have to contain even cookies completely irrelevant to the
         # current page. I.e. it contains all cookies that have been observed
         # since the beginning of the scan
-        @cookies_to_be_audited = (cookie_jar | from_http_jar).map do |c|
+        @cookies_to_be_audited = (cookies | from_http_jar).map do |c|
             dc = c.dup
             dc.action = @url
             dc
@@ -262,14 +263,8 @@ class Parser
         # Make a list of the response cookie names.
         cookie_names = Set.new( cookies.map( &:name ) )
 
-        # If we somehow have runtime configuration cookies load them too, but
-        # only if they haven't already been seen.
-        if @options.http.cookies && !@options.http.cookies.empty?
-            from_jar |= @options.http.cookies.
-                reject { |k, _| cookie_names.include?( k ) }.map do |cookie|
-                    Cookie.new( url: @url, inputs: Hash[[cookie]] )
-                end
-        end
+        from_jar |= HTTP::Client.cookie_jar.for_url( @url ).
+            reject { |cookie| cookie_names.include?( cookie.name ) }
 
         @cookie_jar = (cookies | from_jar)
     end
