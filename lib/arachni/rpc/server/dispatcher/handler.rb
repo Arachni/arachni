@@ -49,7 +49,7 @@ class Server::Dispatcher::Handler
     # Performs an asynchronous map operation over all running instances.
     #
     # @param [Proc]  each
-    #   Block to be passed {Client::Instance} and {Arachni::Reactor::Iterator}.
+    #   Block to be passed {Client::Instance} and `Arachni::Reactor::Iterator`.
     # @param [Proc]  after
     #   Block to be passed the Array of results.
     def map_instances( each, after )
@@ -62,7 +62,7 @@ class Server::Dispatcher::Handler
     # Performs an asynchronous iteration over all running instances.
     #
     # @param [Proc]  block
-    #   Block to be passed {Client::Instance} and {Arachni::Reactor::Iterator}.
+    #   Block to be passed {Client::Instance} and `Arachni::Reactor::Iterator`.
     def each_instance( &block )
         wrap = proc do |instance, iterator|
             block.call( connect_to_instance( instance ), iterator )
