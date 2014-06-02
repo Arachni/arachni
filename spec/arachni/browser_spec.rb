@@ -46,15 +46,15 @@ describe Arachni::Browser do
         Typhoeus::Request.get( "#{@url}/clear-hit-count" )
     end
 
-    it 'supports HTTPS' do
-        url = web_server_url_for( :browser_https )
-
-        @browser.start_capture
-        pages = @browser.load( url ).flush_pages
-
-        pages_should_have_form_with_input( pages, 'ajax-token' )
-        pages_should_have_form_with_input( pages, 'by-ajax' )
-    end
+    # it 'supports HTTPS' do
+    #     url = web_server_url_for( :browser_https )
+    #
+    #     @browser.start_capture
+    #     pages = @browser.load( url ).flush_pages
+    #
+    #     pages_should_have_form_with_input( pages, 'ajax-token' )
+    #     pages_should_have_form_with_input( pages, 'by-ajax' )
+    # end
 
     describe '.has_executable?' do
         context 'when there is no executable browser' do
@@ -83,6 +83,34 @@ describe Arachni::Browser do
     describe '#initialize' do
         describe :concurrency do
             it 'sets the HTTP request concurrency'
+        end
+
+        describe :width do
+            it 'sets the window width' do
+                @browser.shutdown
+
+                width = 100
+                @browser = described_class.new( width: width )
+                subject.javascript.run('return window.innerWidth').should == width
+            end
+
+            it 'defaults to 1600' do
+                subject.javascript.run('return window.innerWidth').should == 1600
+            end
+        end
+
+        describe :height do
+            it 'sets the window height' do
+                @browser.shutdown
+
+                height = 100
+                @browser = described_class.new( height: height )
+                subject.javascript.run('return window.innerHeight').should == height
+            end
+
+            it 'defaults to 1200' do
+                subject.javascript.run('return window.innerHeight').should == 1200
+            end
         end
 
         describe :store_pages do

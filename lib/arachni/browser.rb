@@ -113,9 +113,16 @@ class Browser
     #   Maximum number of concurrent connections.
     # @option   options [Bool] :store_pages  (true)
     #   Whether to store pages in addition to just passing them to {#on_new_page}.
+    # @option   options [Integer] :width  (1600)
+    #   Window width.
+    # @option   options [Integer] :height  (1200)
+    #   Window height.
     def initialize( options = {} )
         super()
         @options = options.dup
+
+        @width  = options[:width]  || 1600
+        @height = options[:height] || 1200
 
         @proxy = HTTP::ProxyServer.new(
             concurrency:      @options[:concurrency],
@@ -1017,7 +1024,7 @@ class Browser
         return if watir.windows.size > 1
 
         watir.windows.last.use
-        watir.window.resize_to( 1600, 1200 )
+        watir.window.resize_to( @width, @height )
 
         @javascript.run( 'window.open()' )
     end
