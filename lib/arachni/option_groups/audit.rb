@@ -11,12 +11,16 @@ module Arachni::OptionGroups
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Audit < Arachni::OptionGroup
 
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
     class Error < Error
+
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
         class InvalidLinkTemplate < Error
         end
     end
 
     # @note Default is `false`.
+    #
     # @return   [Bool]
     #   If enabled, all element audits will be performed with both `GET` and
     #   `POST` HTTP methods.
@@ -27,6 +31,7 @@ class Audit < Arachni::OptionGroup
     attr_accessor :with_both_http_methods
 
     # @note Default is `false`.
+    #
     # @return   [Bool]
     #   Exclude pages with binary content from the audit. Mainly used to avoid
     #   having grep checks confused by random binary content.
@@ -41,7 +46,9 @@ class Audit < Arachni::OptionGroup
     attr_accessor :exclude_vectors
 
     # @note Default is `false`.
-    # @return    [Bool] Audit links.
+    #
+    # @return    [Bool]
+    #   Audit links.
     #
     # @see Element::Link
     # @see Element::Capabilities::Auditable#audit
@@ -50,7 +57,9 @@ class Audit < Arachni::OptionGroup
     alias :link_doms= :links=
 
     # @note Default is `false`.
-    # @return    [Bool] Audit forms.
+    #
+    # @return    [Bool]
+    #   Audit forms.
     #
     # @see Element::Form
     # @see Element::Capabilities::Auditable#audit
@@ -59,7 +68,9 @@ class Audit < Arachni::OptionGroup
     alias :form_doms= :forms=
 
     # @note Default is `false`.
-    # @return    [Bool] Audit cookies.
+    #
+    # @return    [Bool]
+    #   Audit cookies.
     #
     # @see Element::Cookie
     # @see Element::Capabilities::Auditable#audit
@@ -68,6 +79,7 @@ class Audit < Arachni::OptionGroup
     alias :cookie_doms= :cookies=
 
     # @note Default is `false`.
+    #
     # @return    [Bool]
     #   Like {#cookies} but all cookie audits are submitted along with any other
     #   available element on the page.
@@ -77,7 +89,9 @@ class Audit < Arachni::OptionGroup
     attr_accessor :cookies_extensively
 
     # @note Default is `false`.
-    # @return    [Bool] Audit HTTP request headers.
+    #
+    # @return    [Bool]
+    #   Audit HTTP request headers.
     attr_accessor :headers
 
     # @return   [Array<Regexp>]
@@ -93,25 +107,24 @@ class Audit < Arachni::OptionGroup
         link_templates:  []
     )
 
-    # @param    [Array<Regexp>]
+    # @param    [Array<Regexp>] templates
     #   Regular expressions with named captures, serving as templates used to
     #   extract input vectors from paths.
     #
     # @see Element::LinkTemplate
-    def link_templates=( named_regexps )
-        return @link_templates = [] if !named_regexps
+    def link_templates=( templates )
+        return @link_templates = [] if !templates
 
-        @link_templates = [named_regexps].flatten.compact.
-            map do |s|
-                template = s.is_a?( Regexp ) ? s : Regexp.new( s.to_s )
+        @link_templates = [templates].flatten.compact.map do |s|
+            template = s.is_a?( Regexp ) ? s : Regexp.new( s.to_s )
 
-                if template.names.empty?
-                    fail Error::InvalidLinkTemplate,
-                         "Template '#{template}' includes no named captured."
-                end
-
-                template
+            if template.names.empty?
+                fail Error::InvalidLinkTemplate,
+                     "Template '#{template}' includes no named captured."
             end
+
+            template
+        end
     end
     alias :link_template_doms= :link_templates=
 
@@ -181,6 +194,8 @@ class Audit < Arachni::OptionGroup
         end
     end
 
+    # @return   [Bool]
+    #   `true` if link templates have been specified, `false` otherwise.
     def link_templates?
         @link_templates.any?
     end
