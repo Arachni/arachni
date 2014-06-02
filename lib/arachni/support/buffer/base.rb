@@ -14,11 +14,11 @@ module Support::Buffer
 class Base
     include Support::Mixins::Observable
 
-    # @!method on_flush( &block )
+    # @!method on_push( &block )
     #   @param    [Block] block   block to call on {#push}
     advertise :on_push
 
-    # @!method on_flush( &block )
+    # @!method on_batch_push( &block )
     #   @param    [Block] block   block to call on {#batch_push}
     advertise :on_batch_push
 
