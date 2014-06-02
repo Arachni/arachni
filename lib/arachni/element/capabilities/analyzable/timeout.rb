@@ -269,7 +269,7 @@ module Timeout
     # {#timing_attack_probe}.
     #
     # * Liveness check: Element is submitted as is with a  very high timeout
-    #   value, to make sure that (or wait until) the server is alive and {#responsive}.
+    #   value, to make sure that (or wait until) the server is alive and {#responsive?}.
     # * Control check: Element is, again,  submitted as is, although this time
     #   with a timeout value of `delay` to ensure that the server is stable
     #   enough to be checked.
@@ -278,7 +278,7 @@ module Timeout
     #   the vulnerability.
     #   * If verification succeeds the `block` is called.
     # * Stabilize responsiveness: Wait for the effects of the timing attack
-    #   to wear off by calling {#responsive}.
+    #   to wear off by calling {#responsive?}.
     #
     # @param    [Integer]   delay
     # @param    [Block]     block
