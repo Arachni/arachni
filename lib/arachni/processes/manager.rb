@@ -53,7 +53,8 @@ class Manager
     rescue Timeout::Error
     end
 
-    # @param    [Array<Integer>]   pids PIDs of the process to {#kill}.
+    # @param    [Array<Integer>]   pids
+    #   PIDs of the process to {Arachni::Processes::Manager#kill}.
     def kill_many( pids )
         pids.each { |pid| kill pid }
     end
