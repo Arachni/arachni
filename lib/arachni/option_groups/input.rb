@@ -10,6 +10,7 @@ module Arachni::OptionGroups
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Input < Arachni::OptionGroup
 
+    # System default input values.
     DEFAULT_VALUES = {
         /name/i    => 'arachni_name',
         /user/i    => 'arachni_user',
@@ -95,7 +96,7 @@ class Input < Arachni::OptionGroup
         without_defaults? ? @values : default_values.merge( @values )
     end
 
-    # @param    [String]
+    # @param    [String]    location
     #   Location of a YAML file used to fill in {#values}.
     def update_values_from_file( location )
         @values.merge!( format_values( YAML.load_file( location ) ) )
