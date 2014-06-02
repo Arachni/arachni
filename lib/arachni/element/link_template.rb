@@ -167,7 +167,7 @@ class LinkTemplate < Base
         end
 
         # Extracts link with inputs based on the provided
-        # {Arachni::OptionGroups::Scope#path_input_templates templates} from a
+        # {Arachni::OptionGroups::Audit#link_templates templates} from a
         # document.
         #
         # @param    [String]    url
