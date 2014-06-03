@@ -1,6 +1,6 @@
 Factory.define :audit_store_data do
     {
-        options:  Arachni::Options.to_rpc_data,
+        options:  Arachni::Options.to_hash,
         sitemap:  { Arachni::Options.url => 200 },
         issues:   (0..10).map do |i|
             [

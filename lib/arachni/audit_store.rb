@@ -49,7 +49,7 @@ class AuditStore
     end
 
     def url
-        @options['url']
+        @options[:url]
     end
 
     # @note If no {#finish_datetime} has been provided, it will use `Time.now`.
@@ -134,7 +134,7 @@ class AuditStore
     def to_h
         h = {
             version:         @version,
-            options:         @options,
+            options:         Arachni::Options.hash_to_rpc_data( @options ),
             sitemap:         @sitemap,
             start_datetime:  @start_datetime.to_s,
             finish_datetime: @finish_datetime.to_s,
@@ -161,6 +161,8 @@ class AuditStore
         instance_variables.each do |ivar|
             data[ivar.to_s.gsub('@','')] = instance_variable_get( ivar )
         end
+
+        data['options'] = Arachni::Options.hash_to_rpc_data( data['options'] )
 
         data['plugins'].each do |plugin, d|
             next if !d[:options]
@@ -196,6 +198,7 @@ class AuditStore
             end
             h
         end
+
         new data
     end
 
@@ -221,7 +224,7 @@ class AuditStore
     # @param    [Hash]  options
     # @return    [Hash]
     def prepare_options( options )
-        options.to_rpc_data_or_self
+        Arachni::Options.rpc_data_to_hash( options.to_rpc_data_or_self )
     end
 
 end

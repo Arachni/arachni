@@ -18,17 +18,27 @@ describe Arachni::AuditStore do
     let( :active_issue ) { Factory[:active_issue] }
 
     it "supports #{Arachni::RPC::Serializer}" do
-        audit_store.should == Arachni::RPC::Serializer.deep_clone( audit_store )
+        audit_store.options.delete :input
+
+        cloned = Arachni::RPC::Serializer.deep_clone( audit_store )
+        cloned.options.delete :input
+
+        audit_store.should == cloned
     end
 
     describe '#to_rpc_data' do
         let(:subject) { audit_store }
         let(:data) { subject.to_rpc_data }
 
-        %w(options sitemap version).each do |attribute|
+        %w(sitemap version).each do |attribute|
             it "includes '#{attribute}'" do
                 data[attribute].should == subject.send( attribute )
             end
+        end
+
+        it "includes 'options'" do
+            data['options'].should ==
+                Arachni::Options.update( subject.options ).to_rpc_data
         end
 
         it "includes 'plugins'" do
@@ -59,10 +69,17 @@ describe Arachni::AuditStore do
         let(:restored) { described_class.from_rpc_data data }
         let(:data) { Arachni::RPC::Serializer.rpc_data( subject ) }
 
-        %w(options sitemap issues plugins version).each do |attribute|
+        %w(sitemap issues plugins version).each do |attribute|
             it "restores '#{attribute}'" do
                 restored.send( attribute ).should == subject.send( attribute )
             end
+        end
+
+        it "restores 'options'" do
+            restored.options.delete :input
+            subject.options.delete :input
+
+            restored.options.should == subject.options
         end
 
         %w(start_datetime finish_datetime).each do |attribute|
@@ -81,17 +98,23 @@ describe Arachni::AuditStore do
 
     describe '#url' do
         it 'returns the targeted URL' do
-            audit_store.url.should == audit_store.options['url']
+            audit_store.url.should == audit_store.options[:url]
         end
     end
 
     describe '#options' do
         it 'returns Arachni::Options as a hash' do
-           audit_store.options.should == Arachni::Options.to_rpc_data
+           audit_store.options.should == Arachni::Options.to_hash
         end
 
-        it 'defaults to Arachni::Options#to_rpc_data' do
-            described_class.new.options.should == Arachni::Options.to_rpc_data
+        it 'defaults to Arachni::Options#to_hash' do
+            new  = described_class.new.options
+            hash = Arachni::Options.to_hash
+
+            new.delete :input
+            hash.delete :input
+
+            new.should == hash
         end
     end
 
@@ -194,7 +217,7 @@ describe Arachni::AuditStore do
         it 'returns the object as a hash' do
             audit_store.to_h.should == {
                 version:         audit_store.version,
-                options:         audit_store.options,
+                options:         Arachni::Options.hash_to_rpc_data( audit_store.options ),
                 sitemap:         audit_store.sitemap,
                 start_datetime:  audit_store.start_datetime.to_s,
                 finish_datetime: audit_store.finish_datetime.to_s,
@@ -235,7 +258,7 @@ describe Arachni::AuditStore do
         context 'when the auditstores are not equal' do
             it 'returns false' do
                 a = audit_store.deep_clone
-                a.options['url'] = ''
+                a.options[:url] = 'http://stuff/'
                 a.should_not == audit_store
             end
         end
