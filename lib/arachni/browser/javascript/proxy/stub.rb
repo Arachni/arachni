@@ -9,20 +9,24 @@ class Browser::Javascript::Proxy
 # @note Extends `BasicObject` because we don't want any baggage to avoid
 #   method clashes with the Javascript-side objects.
 #
-# Prepares JS calls for the given object based on property type.
+# Prepares JS calls for the given object based on prBrowser::Javascript::Proxyoperty type.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Stub < BasicObject
 
-    # @param    [Proxy]    proxy    Parent {Proxy}.
+    # @param    [Proxy]    proxy
+    #   Parent {Proxy}.
     def initialize( proxy )
         @proxy = proxy
     end
 
-    # @param    [#to_sym] name    Function name.
+    # @param    [#to_sym] name
+    #   Function name.
     # @param    [Array] arguments
+    #   Arguments to pass to the JS function.
     #
-    # @return   [String]    JS code to call the given function.
+    # @return   [String]
+    #   JS code to call the given function.
     def function( name, *arguments )
         arguments = arguments.map { |arg| arg.to_json }.join( ', ' )
 
@@ -33,14 +37,19 @@ class Stub < BasicObject
         end
     end
 
-    # @param    [#to_sym] name    Function name.
-    # @return   [String]    JS code to retrieve the given property.
+    # @param    [#to_sym] name
+    #   Function name.
+    #
+    # @return   [String]
+    #   JS code to retrieve the given property.
     def property( name )
         "#{@proxy.js_object}.#{name}"
     end
 
-    # @param    [#to_sym] name    Function/property name.
+    # @param    [#to_sym] name
+    #   Function/property name.
     # @param    [Array] arguments
+    #   Arguments to pass to the JS function.
     #
     # @return   [String]
     #   JS code to call the given function or retrieve the given property.
@@ -61,6 +70,7 @@ class Stub < BasicObject
     end
 
     # @param    [Symbol]    property
+    #
     # @return   [Bool]
     #   `true` if `self` of the JS object responds to `property`,
     #   `false` otherwise.
