@@ -322,7 +322,7 @@ class Browser
     # @return   [String]
     #   Current URL.
     def url
-        normalize_watir_url watir.url
+        normalize_url watir.url
     end
 
     # Explores the browser's DOM tree and captures page snapshots for each
@@ -362,7 +362,7 @@ class Browser
     #   Mark each element/events as visited and skip it if it has already been
     #   seen.
     #
-    # @yield [ElementLocator,Array<Symbol>]
+    # @yield    [ElementLocator,Array<Symbol>]
     #   Hash with information about the element, its tag name, applicable events
     #   along with their handlers and attributes.
     def each_element_with_events( mark_state = true )
@@ -820,13 +820,13 @@ class Browser
     end
 
     def response
-        u = url
+        u = watir.url
 
         return if skip_path?( u )
 
         begin
             with_timeout Options.http.request_timeout / 1_000 do
-                while !(r = get_response( u ))
+                while !(r = get_response(u))
                     sleep 0.1
                 end
 
@@ -1226,11 +1226,15 @@ class Browser
     def save_response( response )
         notify_on_response response
         return response if !response.text?
+
         @window_responses[response.url] = response
     end
 
     def get_response( url )
-        synchronize { @window_responses[url] }
+        synchronize do
+            @window_responses[normalize_watir_url( url )] ||
+                @window_responses[normalize_url( url )]
+        end
     end
 
     def normalize_watir_url( url )
