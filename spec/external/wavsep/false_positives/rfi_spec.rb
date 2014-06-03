@@ -11,7 +11,7 @@ describe 'WAVSEP false-positive Remote File Inclusion' do
         {
             'Remote File Inclusion' => {
                 url:        "RFI-FalsePositives-#{http_method}/",
-                checks:    :rfi,
+                checks:     :rfi,
                 vulnerable: []
             }
         }

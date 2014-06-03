@@ -65,13 +65,13 @@ shared_examples_for 'wavsep' do
                                 it "logs #{info[:vulnerable].size} unique resources using #{[info[:checks]].flatten.join( ', ' )}" do
                                     pending "'WAVSEP_URL' env variable has not been set." if !wavsep_url
 
-                                    @framework.checks.issues.should be_empty
+                                    Arachni::Data.issues.should be_empty
 
                                     @framework.options.url = "#{url}/#{info[:url]}"
                                     @framework.checks.load info[:checks]
                                     @framework.run
 
-                                    urls      = @framework.checks.issues.map { |i| i.vector.action }.uniq.sort
+                                    urls      = Arachni::Data.issues.map { |i| i.vector.action }.uniq.sort
                                     resources = urls.map { |url| url.split('?').first }.uniq.sort
                                     expected  = info[:vulnerable].map { |resource| @framework.options.url + resource }
 
