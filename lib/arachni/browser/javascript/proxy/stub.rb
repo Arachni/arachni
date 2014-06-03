@@ -9,7 +9,7 @@ class Browser::Javascript::Proxy
 # @note Extends `BasicObject` because we don't want any baggage to avoid
 #   method clashes with the Javascript-side objects.
 #
-# Prepares JS calls for the given object based on prBrowser::Javascript::Proxyoperty type.
+# Prepares JS calls for the given object based on property type.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Stub < BasicObject
