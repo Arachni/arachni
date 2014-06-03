@@ -1,6 +1,7 @@
 require 'sinatra'
 
 get '/' do
+    'Stuff'
 end
 
 get '/true' do
@@ -16,10 +17,12 @@ end
 
 get '/add' do
     sleep( params[:sleep].to_f - 1 ).to_s
+    'Stuff'
 end
 
 get '/sleep' do
     sleep 10
+    'Stuff'
 end
 
 get '/verification_fail' do
@@ -30,4 +33,5 @@ get '/verification_fail' do
         @@called = true
     end
 
+    'Stuff'
 end

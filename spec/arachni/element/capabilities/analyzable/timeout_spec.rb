@@ -12,12 +12,21 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
         @framework = Arachni::Framework.new
     end
 
+    before :each do
+        # Timing attacks should not download any content.
+        Arachni::HTTP::Client.on_complete do |response|
+            next if response.url.include? 'ignore'
+
+            response.body.should be_empty
+        end
+    end
+
     after :each do
         @framework.reset
     end
 
     let(:framework) { @framework }
-    let(:page) { Arachni::Page.from_url( @url ) }
+    let(:page) { Arachni::Page.from_url( "#{@url}?ignore" ) }
     let(:inputs) { { 'sleep' => '' } }
     let(:auditor) { Auditor.new( page, framework ) }
     let(:subject) do
@@ -69,6 +78,16 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
             )
         end
 
+        it 'does not download response bodies' do
+            response = nil
+            subject.timing_attack_probe( '__TIME__', options ) do |_, r|
+                response ||= r
+            end
+            run
+
+            response.body.should be_empty
+        end
+
         context 'when element submission results in a response with a response time' do
             context 'higher than the given delay' do
                 it 'passes it to the block' do
@@ -99,6 +118,12 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
 
                     candidate.should be_nil
                 end
+            end
+        end
+
+        context 'when no block has been given' do
+            it 'raises ArgumentError' do
+                expect { subject.timing_attack_probe( '1' ) }.to raise_error ArgumentError
             end
         end
     end
@@ -184,6 +209,12 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
                 end
 
                 verified.should be_nil
+            end
+        end
+
+        context 'when no block has been given' do
+            it 'raises ArgumentError' do
+                expect { subject.timing_attack_probe( '1' ) }.to raise_error ArgumentError
             end
         end
     end

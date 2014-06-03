@@ -234,6 +234,8 @@ module Timeout
     #
     # @param    (see #timeout_analysis)
     def timing_attack_probe( payloads, options, &block )
+        fail ArgumentError, 'Missing block' if !block_given?
+
         options                     = options.dup
         options[:delay]             = options.delete(:timeout)
         options[:timeout_divider] ||= 1
@@ -258,10 +260,9 @@ module Timeout
 
         options.merge!( each_mutation: each_mutation, skip_original: true )
 
-        audit( payloads, options ) do |res, elem|
-            next if !block || res.app_time < (options[:delay] + options[:add]) / 1000.0
-
-            block.call( elem )
+        audit( payloads, options ) do |response, mutation|
+            next if response.app_time < (options[:delay] + options[:add]) / 1000.0
+            block.call( mutation, response )
         end
     end
 
@@ -283,6 +284,8 @@ module Timeout
     # @param    [Integer]   delay
     # @param    [Block]     block
     def timing_attack_verify( delay, &block )
+        fail ArgumentError, 'Missing block' if !block_given?
+
         opts         = self.audit_options
         opts[:delay] = delay
 
