@@ -6,22 +6,28 @@
 module Arachni
 class Browser
 
+# Lazy-loaded, {Browser} element representation.
+#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class ElementLocator
 
     # @return   [Symbol]
+    #   Tag name of the element.
     attr_accessor :tag_name
 
     # @return   [Hash]
+    #   Attributes of the element.
     attr_accessor :attributes
 
-    # @param    [Hash]  options     Data used to set attributes via setters.
+    # @param    [Hash]  options
+    #   Data used to set attributes via setters.
     def initialize( options = {} )
         options.each { |k, v| send( "#{k}=", v ) }
         @attributes ||= {}
     end
 
     # @param    [String, Symbol]    name
+    #
     # @return   [Symbol]
     def tag_name=( name )
         @tag_name = name.to_sym
@@ -29,6 +35,7 @@ class ElementLocator
 
     # @param    [Hash]  attributes
     #   Attributes used to locate the element.
+    #
     # @return   [Hash]
     #   Frozen and stringified version of the hash.
     def attributes=( attributes )
@@ -36,7 +43,7 @@ class ElementLocator
     end
 
     # @return   [Hash]
-    #   Hash with attributes supported by Watir when locating elements.
+    #   Hash with attributes supported by `Watir` when locating elements.
     def locatable_attributes
         attributes.inject({}) do |h, (k, v)|
             string_key = k.to_s
@@ -53,11 +60,13 @@ class ElementLocator
     end
 
     # @return   [Watir::HTMLElement]
+    #   Locates and returns the element based on {#tag_name} and {#attributes}.
     def locate( browser )
         browser.watir.send( tag_name, locatable_attributes )
     end
 
-    # @return   [String]    Locator as an HTML opening tag.
+    # @return   [String]
+    #   Locator as an HTML opening tag.
     def to_s
         "<#{tag_name}#{' ' if attributes.any?}" <<
             attributes.map { |k, v| "#{k}=#{v.inspect}" }.join( ' ' ) << '>'

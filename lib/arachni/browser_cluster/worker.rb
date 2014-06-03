@@ -27,7 +27,8 @@ class Worker < Arachni::Browser
     # @return    [BrowserCluster]
     attr_reader   :master
 
-    # @return    [Job] Currently assigned job.
+    # @return    [Job]
+    #   Currently assigned job.
     attr_reader   :job
 
     # @return   [Integer]
@@ -36,7 +37,8 @@ class Worker < Arachni::Browser
     # @return    [Integer]
     attr_accessor :max_time_to_live
 
-    # @return    [Integer] Remaining time-to-live measured in jobs.
+    # @return    [Integer]
+    #   Remaining time-to-live measured in jobs.
     attr_reader   :time_to_live
 
     def initialize( options = {} )
@@ -121,10 +123,10 @@ class Worker < Arachni::Browser
         @job = nil
     end
 
-    # We change the default scheduling to distribute elements and events
-    # to all available browsers ASAP, instead of building a list and then
-    # consuming it, since we're don't have to worry about messing up our
-    # page's state in this setup.
+    # We change the default scheduling to distribute elements and events to all
+    # available browsers ASAP, instead of building a list and then consuming it,
+    # since we're don't have to worry about messing up our page's state in this
+    # setup.
     #
     # @see Browser#trigger_events
     def trigger_events

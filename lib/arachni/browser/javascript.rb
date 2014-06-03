@@ -18,10 +18,12 @@ class Javascript
     require_relative 'javascript/taint_tracer'
     require_relative 'javascript/dom_monitor'
 
-    # @return   [String]    URL to use when requesting our custom JS scripts.
+    # @return   [String]
+    #   URL to use when requesting our custom JS scripts.
     SCRIPT_BASE_URL = 'http://javascript.browser.arachni/'
 
-    # @return   [String]    Filesystem directory containing the JS scripts.
+    # @return   [String]
+    #   Filesystem directory containing the JS scripts.
     SCRIPT_LIBRARY  = "#{File.dirname( __FILE__ )}/javascript/scripts/"
 
     NO_EVENTS_FOR_ELEMENTS = Set.new([
@@ -96,7 +98,8 @@ class Javascript
     #   Token used to namespace the injected JS code and avoid clashes.
     attr_accessor :token
 
-    # @return   [String]    Taint to look for and trace in the JS data flow.
+    # @return   [String]
+    #   Taint to look for and trace in the JS data flow.
     attr_accessor :taint
 
     # @return   [String]
@@ -104,10 +107,12 @@ class Javascript
     #   JS interfaces.
     attr_accessor :custom_code
 
-    # @return   [DOMMonitor] {Proxy} for the `DOMMonitor` JS interface.
+    # @return   [DOMMonitor]
+    #   {Proxy} for the `DOMMonitor` JS interface.
     attr_reader :dom_monitor
 
-    # @return   [TaintTracer] {Proxy} for the `TaintTracer` JS interface.
+    # @return   [TaintTracer]
+    #   {Proxy} for the `TaintTracer` JS interface.
     attr_reader :taint_tracer
 
     def self.events
@@ -135,6 +140,7 @@ class Javascript
 
     # @param    [HTTP::Response]    response
     #   Response whose {HTTP::Message#body} to check.
+    #
     # @return   [Bool]
     #   `true` if the {HTTP::Response response} {HTTP::Message#body} contains
     #   the code for the JS environment.
@@ -149,18 +155,21 @@ class Javascript
     end
 
     # @return   [String]
-    #   JS code which will call the `log_execution_flow_sink` JS function.
+    #   JS code which will call the `TaintTracer.log_execution_flow_sink`,
+    #   browser-side, JS function.
     def log_execution_flow_sink_stub( *args )
         taint_tracer.stub.function( :log_execution_flow_sink, *args )
     end
 
     # @return   [String]
-    #   JS code which will call the `data_flow_sink` JS function.
+    #   JS code which will call the `TaintTracer.data_flow_sink`, browser-side,
+    #   JS function.
     def log_data_flow_sink_stub( *args )
         taint_tracer.stub.function( :log_data_flow_sink, *args )
     end
 
-    # @return   [String]    JS code which will call the `debug` JS function.
+    # @return   [String]
+    #   JS code which will call the `TaintTracer.debug`, browser-side JS function.
     def debug_stub( *args )
         taint_tracer.stub.function( :debug, *args )
     end
@@ -171,49 +180,46 @@ class Javascript
         sleep 0.1 while !ready?
     end
 
-    # @return   [Bool] `true` if the page is ready.
+    # @return   [Bool]
+    #   `true` if our custom JS environment has been initialized.
     def ready?
         !!run( "return window._#{token}" ) rescue false
     end
 
-    # @param    [String]    script  JS code to execute.
-    # @return   [Object]    Result of `script`.
+    # @param    [String]    script
+    #   JS code to execute.
+    #
+    # @return   [Object]
+    #   Result of `script`.
     def run( script )
         @browser.watir.execute_script script
     end
 
-    # @return   [Hash]
-    #   Data logged by function `TaintTracer.debug`.
+    # @return   (see TaintTracer#debug)
     def debugging_data
         return [] if !supported?
         taint_tracer.debugging_data
     end
 
-    # @return   [Hash]
-    #   Data logged by function `TaintTracer.log_execution_flow_sink`.
+    # @return   (see TaintTracer#log_execution_flow_sink)
     def execution_flow_sink
         return [] if !supported?
         taint_tracer.execution_flow_sink
     end
 
-    # @return   [Hash]
-    #   Data logged by function `TaintTracer.data_flow_sink`.
+    # @return   (see TaintTracer#data_flow_sink)
     def data_flow_sink
         return [] if !supported?
         taint_tracer.data_flow_sink
     end
 
-    # @return   [Hash]
-    #   Returns {#execution_flow_sink} data and empties the
-    #   `TaintTracer.execution_flow_sink`.
+    # @return   (see TaintTracer#execution_flow_sink)
     def flush_execution_flow_sink
         return [] if !supported?
         taint_tracer.flush_execution_flow_sink
     end
 
-    # @return   [Hash]
-    #   Returns {#data_flow_sink} data and empties the
-    #   `TaintTracer.data_flow_sink`.
+    # @return   (see TaintTracer#flush_data_flow_sink)
     def flush_data_flow_sink
         return [] if !supported?
         taint_tracer.flush_data_flow_sink
@@ -245,20 +251,24 @@ class Javascript
         end.compact
     end
 
-    # @return   [Array<Array>] Arguments for JS `setTimeout` calls.
+    # @return   [Array<Array>]
+    #   Arguments for JS `setTimeout` calls.
     def timeouts
         return [] if !supported?
         dom_monitor.timeouts
     end
 
-    # @return   [Array<Array>] Arguments for JS `setInterval` calls.
+    # @return   [Array<Array>]
+    #   Arguments for JS `setInterval` calls.
     def intervals
         return [] if !supported?
         dom_monitor.intervals
     end
 
-    # @param    [HTTP::Request]     request Request to process.
-    # @param    [HTTP::Response]    response Response to populate.
+    # @param    [HTTP::Request]     request
+    #   Request to process.
+    # @param    [HTTP::Response]    response
+    #   Response to populate.
     #
     # @return   [Bool]
     #   `true` if the request corresponded to a JS file and was served,
@@ -278,8 +288,10 @@ class Javascript
     end
 
     # @note Will update the `Content-Length` header field.
+    #
     # @param    [HTTP::Response]    response
     #   Installs our custom JS interfaces in the given `response`.
+    #
     # @return   [Bool]
     #   `true` if injection was performed, `false` otherwise (in case our code
     #   is already present).

@@ -59,13 +59,16 @@ class Job
     def run
     end
 
-    # @return   [Bool]  `true` if this job never ends, `false` otherwise.
+    # @return   [Bool]
+    #   `true` if this job never ends, `false` otherwise.
+    #
     # @see #never_ending
     def never_ending?
         !!@never_ending
     end
 
-    # @return   [Bool]  `true` if this job never ends, `false` otherwise.
+    # @return   [Bool]
+    #   `true` if this job never ends, `false` otherwise.
     def never_ending=( bool )
         @options[:never_ending] = bool
         @never_ending = bool
@@ -92,7 +95,8 @@ class Job
     # If the job is of type `MyJob`, `MyJob::Result` will be used, the default
     # if {Result}.
     #
-    # @param    [Hash]  data    Used to initialize the {Result}.
+    # @param    [Hash]  data
+    #   Used to initialize the {Result}.
     def save_result( data )
         browser.master.handle_job_result(
             self.class::Result.new( data.merge( job: self.clean_copy ) )
@@ -107,12 +111,15 @@ class Job
         dup.tap { |j| j.remove_resources }
     end
 
-    # @return   [Job]   Copy of `self`
+    # @return   [Job]
+    #   Copy of `self`
     def dup
         self.class.new add_id( @options )
     end
 
-    # @param    [Hash]  options See {#initialize}.
+    # @param    [Hash]  options
+    #   See {#initialize}.
+    #
     # @return   [Job]
     #   Re-used request (mainly its {#id} and thus its callback as well),
     #   configured with the given `options`.
@@ -120,8 +127,11 @@ class Job
         self.class.new forward_options( options )
     end
 
-    # @param    [Job]  job_type Job class under {Jobs}.
-    # @param    [Hash]  options Initialization options for `job_type`.
+    # @param    [Job]  job_type
+    #   Job class under {Jobs}.
+    # @param    [Hash]  options
+    #   Initialization options for `job_type`.
+    #
     # @return   [Job]
     #   Forwarded request (preserving its {#id} and thus its callback as well),
     #   configured with the given `options`.

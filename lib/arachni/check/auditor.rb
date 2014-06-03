@@ -46,16 +46,19 @@ module Auditor
         Element::Capabilities::Analyzable.timeout_audit_run
     end
 
-    # @param    [#to_s]  id  Identifier of the object to be marked as audited.
+    # @param    [#to_s]  id
+    #   Identifier of the object to be marked as audited.
     #
     # @see #audited?
     def audited( id )
         Auditor.audited << "#{self.class}-#{id}"
     end
 
-    # @param    [#to_s] id  Identifier of the object to be checked.
+    # @param    [#to_s] id
+    #   Identifier of the object to be checked.
     #
-    # @return   [Bool]  `true` if audited, `false` otherwise.
+    # @return   [Bool]
+    #   `true` if audited, `false` otherwise.
     #
     # @see #audited
     def audited?( id )
@@ -64,9 +67,10 @@ module Auditor
 
     def self.included( m )
         m.class_eval do
+
             # Determines whether or not to run the check against the given page
-            # depending on which elements exist in the page, which elements the check
-            # is configured to audit and user options.
+            # depending on which elements exist in the page, which elements the
+            # check is configured to audit and user options.
             #
             # @param    [Page]    page
             #
@@ -136,7 +140,8 @@ module Auditor
 
             # Helper method for creating an issue.
             #
-            # @param    [Hash]  options {Issue} options.
+            # @param    [Hash]  options
+            #   {Issue} options.
             def self.create_issue( options )
                 check_info = self.info.dup
                 check_info.delete( :issue )
@@ -152,8 +157,8 @@ module Auditor
         self.class.max_issues
     end
 
-    # Holds constant bitfields that describe the preferred formatting
-    # of injection strings.
+    # Holds constant bitfields that describe the preferred formatting of
+    # injection strings.
     Format = Element::Capabilities::Mutable::Format
 
     # Default audit options.
@@ -180,7 +185,8 @@ module Auditor
         train:        nil
     }
 
-    # @return   [Arachni::Page]  Page object to be audited.
+    # @return   [Arachni::Page]
+    #   Page object to be audited.
     attr_reader :page
 
     # @return   [Arachni::Framework]
@@ -238,7 +244,9 @@ module Auditor
 
     # Populates and logs an {Arachni::Issue}.
     #
-    # @param    [Hash]  options {Arachni::Issue} initialization options.
+    # @param    [Hash]  options
+    #   {Arachni::Issue} initialization options.
+    #
     # @return   [Issue]
     def log( options )
         options       = options.dup
@@ -320,7 +328,9 @@ module Auditor
 
     # Helper method for issue logging.
     #
-    # @param    [Hash]  options {Issue} options.
+    # @param    [Hash]  options
+    #   {Issue} options.
+    #
     # @return   [Issue]
     #
     # @see .create_issue
@@ -381,7 +391,8 @@ module Auditor
     # @param  [Array]    types
     #   Element types to audit (see {OPTIONS}`[:elements]`).
     #
-    # @yield       [element]  Each candidate element.
+    # @yield       [element]
+    #   Each candidate element.
     # @yieldparam [Arachni::Element]
     def each_candidate_element( types = [], &block )
         types = self.class.info[:elements] if types.empty?
@@ -426,7 +437,8 @@ module Auditor
     # @param  [Array]    types
     #   Element types to audit (see {OPTIONS}`[:elements]`).
     #
-    # @yield       [element]  Each candidate element.
+    # @yield       [element]
+    #   Each candidate element.
     # @yieldparam [Arachni::Element]
     def each_candidate_dom_element( types = [], &block )
         types = self.class.info[:elements]    if types.empty?
@@ -513,7 +525,8 @@ module Auditor
     # @param    [Page, String, HTTP::Response] resource
     #   Resource to load and whose environment to trace, if given a `String` it
     #   will be treated it as a URL and will be loaded.
-    # @param    [Hash]  options See {BrowserCluster::Jobs::TaintTrace} accessors.
+    # @param    [Hash]  options
+    #   See {BrowserCluster::Jobs::TaintTrace} accessors.
     # @param    [Block] block
     #   Block to handle each page snapshot. If the `block` returns a `true` value,
     #   further analysis will be aborted.

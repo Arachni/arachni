@@ -5,7 +5,6 @@
 
 module Arachni
 class Browser
-
 class Javascript
 
 # Provides access to the `DOMMonitor` JS interface.
@@ -13,7 +12,8 @@ class Javascript
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class DOMMonitor < Proxy
 
-    # @param    [Javascript]    javascript  Active {Javascript} interface.
+    # @param    [Javascript]    javascript
+    #   Active {Javascript} interface.
     def initialize( javascript )
         super javascript, 'DOMMonitor'
     end

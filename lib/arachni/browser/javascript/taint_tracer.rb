@@ -21,27 +21,27 @@ class TaintTracer < Proxy
 
     # @!method  debugging_data
     #
-    #   @return [Hash]
+    #   @return [Array<Hash>]
     #       JS debugging information.
 
     # @!method  execution_flow_sink
     #
-    #   @return [Hash]
+    #   @return [Array<Hash>]
     #       JS execution flow sink data.
 
     # @!method  data_flow_sink
     #
-    #   @return [Hash]
+    #   @return [Array<Hash>]
     #       JS data flow sink data.
 
     # @!method  flush_execution_flow_sink
     #
-    #   @return [Hash]
+    #   @return [Array<Hash>]
     #       Returns and clears {#execution_flow_sink}.
 
     # @!method  flush_data_flow_sink
     #
-    #   @return [Hash]
+    #   @return [Array<Hash>]
     #       Returns and clears {#data_flow_sink}.
 
     %w(debugging_data execution_flow_sink data_flow_sink flush_execution_flow_sink

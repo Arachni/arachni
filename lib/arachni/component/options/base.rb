@@ -24,8 +24,10 @@ class Arachni::Component::Options::Base
     # Initializes a named option with the supplied attribute array.
     # The array is composed of three values.
     #
-    # @param    [Symbol]    name    the name of the options
-    # @param    [Hash]     options   option attributes
+    # @param    [Symbol]    name
+    #   Name of the option.
+    # @param    [Hash]     options
+    #   Option attributes.
     # @option   options [String, Symbol]    :name
     #   {#name Name} for this option.
     # @option   options [String]    :description

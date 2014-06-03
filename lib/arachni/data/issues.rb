@@ -20,10 +20,12 @@ class Issues
     advertise :on_new_pre_deduplication
     advertise :on_new
 
-    # @return   [Hash{Integer=>Issue}]  Issues by their {Issue#digest}.
+    # @return   [Hash{Integer=>Issue}]
+    #   Issues by their {Issue#digest}.
     attr_reader :collection
 
-    # @return   [Set<Integer>]    {Issue#digest}s.
+    # @return   [Set<Integer>]
+    #   {Issue#digest}s.
     attr_reader :digests
 
     def initialize
@@ -59,6 +61,7 @@ class Issues
     end
 
     # @note Defaults to `true`.
+    #
     # @return   [Bool]
     #   `true` if {#<<} is configured to store issues, `false` otherwise.
     #
@@ -120,8 +123,10 @@ class Issues
 
     # @note Will deduplicate and group issues as variations.
     #
-    # @param    [Issue] issue   Issue to push to the collection.
-    # @return   [Issues]    `self`
+    # @param    [Issue] issue
+    #   Issue to push to the collection.
+    # @return   [Issues]
+    #   `self`
     def <<( issue )
         notify_on_new_pre_deduplication( issue )
 
@@ -143,13 +148,15 @@ class Issues
         self
     end
 
-    # @param    [Integer]   digest    {Issue#digest}
+    # @param    [Integer]   digest
+    #   {Issue#digest}
     # @return   [Issue]
     def []( digest )
         @collection[digest]
     end
 
-    # @return   [Array<Issue>]  Sorted array of {Issue}s.
+    # @return   [Array<Issue>]
+    #   Sorted array of {Issue}s.
     def sort
         all.sort_by(&:severity).reverse
     end

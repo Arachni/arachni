@@ -5,18 +5,17 @@
 
 module Arachni
 
-#
 # The namespace under which all checks exist.
-#
 module Checks
 end
 
 module Check
 
-# Holds and manages the checks and their results.
+# Manages and runs {Checks} against {Page}s.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Manager < Arachni::Component::Manager
+
     # Namespace under which all checks reside.
     NAMESPACE = ::Arachni::Checks
 
@@ -41,13 +40,19 @@ class Manager < Arachni::Component::Manager
         super( @framework.options.paths.checks, NAMESPACE )
     end
 
-    # Runs all checks against 'page'.
-    #
-    # @param    [Arachni::Page]   page    Page to audit.
+    # @param    [Arachni::Page]   page
+    #   Page to audit.
     def run( page )
         schedule.each { |mod| exception_jail( false ){ run_one( mod, page ) } }
     end
 
+    # @param    [Symbol, String]    name
+    #   Name of the check to retrieve.
+    #
+    # @return   [Check::Base]
+    #
+    # @raise    [Error::InvalidPlatforms]
+    #   On invalid check platforms.
     def []( name )
         check = super( name )
 
@@ -60,7 +65,9 @@ class Manager < Arachni::Component::Manager
         check
     end
 
-    # @return   [Array] Checks in proper running order.
+    # @return   [Array]
+    #   Checks in proper running order, taking account their declared
+    #   {Check::Base.prefer preferences}.
     def schedule
         schedule       = Set.new
         preferred_over = Hash.new([])
@@ -88,20 +95,24 @@ class Manager < Arachni::Component::Manager
         schedule.to_a
     end
 
-    # @return   [Hash]  Checks which target specific platforms.
+    # @return   [Hash]
+    #   Checks targeting specific platforms.
     def with_platforms
         select { |k, v| v.has_platforms? }
     end
 
-    # @return   [Hash]  Checks which don't target specific platforms.
+    # @return   [Hash]
+    #   Platform-agnostic checks.
     def without_platforms
         select { |k, v| !v.has_platforms? }
     end
 
-    # Runs a single check against 'page'.
+    # Runs a single `check` against `page`.
     #
-    # @param    [::Arachni::Check::Base]   check    Check to run as a class.
-    # @param    [::Arachni::Page]   page    Page to audit.
+    # @param    [Check::Base]   check
+    #   Check to run as a class.
+    # @param    [Page]   page
+    #   Page to audit.
     def run_one( check, page )
         return false if !check.check?( page )
 

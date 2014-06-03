@@ -7,27 +7,22 @@ module Arachni
 
 module Component
 
-#
 # {Component} error namespace.
 #
 # All {Component} errors inherit from and live under it.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Error < Arachni::Error
 
-    #
     # Raised when a specified component could not be found/does not exist.
     #
     # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-    #
     class NotFound < Error
     end
 end
 
 require Options.paths.lib + 'component/options'
 
-#
 # Handles checks, reports, path extractor checks, plug-ins, pretty much
 # every modular aspect of the framework.
 #
@@ -83,7 +78,6 @@ require Options.paths.lib + 'component/options'
 #
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Manager < Hash
     include UI::Output
     include Utilities
@@ -92,52 +86,50 @@ class Manager < Hash
     WILDCARD = '*'
     EXCLUDE  = '-'
 
-    # @return   [String]    The path to the component library/directory.
+    # @return   [String]
+    #   The path to the component library/directory.
     attr_reader :lib
 
     # @return [Module]
     #   Namespace under which all components are directly defined.
     attr_reader :namespace
 
-    #
-    # @param    [String]    lib    The path to the component library/directory.
+    # @param    [String]    lib
+    #   The path to the component library/directory.
     # @param    [Module,Class]    namespace
     #   Namespace under which all components are directly defined.
-    #
     def initialize( lib, namespace )
         @lib       = lib
         @namespace = namespace
     end
 
-    #
     # Loads components.
     #
     # @param    [Array<String,Symbol>]    components
     #   Components to load.
     #
-    # @return   [Array] Names of loaded components.
-    #
+    # @return   [Array]
+    #   Names of loaded components.
     def load( *components )
         parse( [components].flatten ).each { |component| self.[]( component ) }
     end
 
-    #
     # Loads all components, equivalent of `load '*'`.
     #
-    # @return   [Array] Names of loaded components.
-    #
+    # @return   [Array]
+    #   Names of loaded components.
     def load_all
         load '*'
     end
 
+    # Loads components by the tags found in the `Hash` returned by their `.info`
+    # method (tags should be in either: `:tags` or `:issue[:tags]`).
     #
-    # Loads components by the tags found in the `Hash` returned by their `.info` method
-    # (tags should be in either: `:tags` or `:issue[:tags]`).
+    # @param    [Array] tags
+    #   Tags to look for in components.
     #
-    # @param    [Array] tags    Tags to look for in components.
-    #
-    # @return   [Array] Components loaded.
-    #
+    # @return   [Array]
+    #   Components loaded.
     def load_by_tags( tags )
         return [] if !tags
 
@@ -160,11 +152,15 @@ class Manager < Hash
 
     # Validates and prepares options for a given component.
     #
-    # @param    [String]    component_name    Name of the component.
-    # @param    [Class]     component         Component.
-    # @param    [Hash]      user_opts         User options.
+    # @param    [String]    component_name
+    #   Name of the component.
+    # @param    [Component::Base]     component
+    #   Component.
+    # @param    [Hash]      user_opts
+    #   User options.
     #
-    # @return   [Hash]   Prepared options to be passed to the component.
+    # @return   [Hash]
+    #   Prepared options to be passed to the component.
     #
     # @raise    [Component::Options::Error::Invalid]
     #   If given options are invalid.
@@ -213,15 +209,15 @@ class Manager < Hash
         options.symbolize_keys( false )
     end
 
-    #
     # It parses the component array making sure that its structure is valid
     # and takes into consideration {WILDCARD wildcard} and {EXCLUDE exclusion}
     # modifiers.
     #
-    # @param    [Array<String,Symbol>]    components   Component names.
+    # @param    [Array<String,Symbol>]    components
+    #   Component names.
     #
-    # @return   [Array]    Components to load.
-    #
+    # @return   [Array]
+    #   Components to load.
     def parse( components )
         unload = []
         load   = []
@@ -272,13 +268,13 @@ class Manager < Hash
         load - unload
     end
 
-    #
     # Fetches a component's class by name, loading it on the fly if need be.
     #
-    # @param    [String, Symbol]    name    Component name.
+    # @param    [String, Symbol]    name
+    #   Component name.
     #
-    # @return   [Class] Component.
-    #
+    # @return   [Component::Base]
+    #   Component.
     def []( name )
         name = name.to_s
         return fetch( name ) if include?( name )
@@ -296,11 +292,10 @@ class Manager < Hash
     end
     alias :unload_all :clear
 
-    #
     # Unloads a component by name.
     #
-    # @param    [String, Symbol]    name   Component name.
-    #
+    # @param    [String, Symbol]    name
+    #   Component name.
     def delete( name )
         name = name.to_s
         begin
@@ -311,35 +306,37 @@ class Manager < Hash
     end
     alias :unload :delete
 
-    # @return    [Array]    Names of available components.
+    # @return    [Array]
+    #   Names of available components.
     def available
         paths.map{ |path| path_to_name( path ) }
     end
 
-    # @return    [Array]    Names of loaded components.
+    # @return    [Array]
+    #   Names of loaded components.
     def loaded
         keys
     end
 
-    #
     # Converts the name of a component to a its file's path.
     #
-    # @param    [String]    name    Name of the component.
+    # @param    [String]    name
+    #   Name of the component.
     #
-    # @return   [String]    Path to component file.
-    #
+    # @return   [String]
+    #   Path to component file.
     def name_to_path( name )
         paths.each { |path| return path if name.to_s == path_to_name( path ) }
         nil
     end
 
-    #
     # Converts the path of a component to a component name.
     #
-    # @param    [String]    path    File-path of the component.
+    # @param    [String]    path
+    #   File-path of the component.
     #
-    # @return   [String]    Component name.
-    #
+    # @return   [String]
+    #   Component name.
     def path_to_name( path )
         File.basename( path, '.rb' )
     end

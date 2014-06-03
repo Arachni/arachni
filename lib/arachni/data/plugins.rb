@@ -31,7 +31,8 @@ class Plugins
 
     # Registers plugin results.
     #
-    # @param    [Arachni::Plugin::Base]    plugin   Instance of a plugin.
+    # @param    [Arachni::Plugin::Base]    plugin
+    #   Instance of a plugin.
     # @param    [Object]    results
     def store( plugin, results )
         synchronize do

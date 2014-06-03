@@ -15,13 +15,16 @@ class Browser::Javascript
 class Proxy < BasicObject
     require_relative 'proxy/stub'
 
-    # @return   [Stub]  Stub interface for JS code.
+    # @return   [Stub]
+    #   Stub interface for JS code.
     attr_reader :stub
 
-    # @return   [Javascript]    javascript  Active {Javascript} interface.
+    # @return   [Javascript]
+    #   Active {Javascript} interface.
     attr_reader :javascript
 
-    # @param    [Javascript]    javascript  Active {Javascript} interface.
+    # @param    [Javascript]    javascript
+    #   Active {Javascript} interface.
     # @param    [String]    object
     #   Name of the JS-side object -- will be prefixed with a generated '_token'.
     def initialize( javascript, object )
@@ -31,7 +34,9 @@ class Proxy < BasicObject
         @isFunction = {}
     end
 
-    # @param    [#to_sym] name  Function name to check.
+    # @param    [#to_sym] name
+    #   Function name to check.
+    #
     # @return   [Bool]
     #   `true` if the `name` property of the current object points to a function,
     #   `false` otherwise.
@@ -58,7 +63,8 @@ class Proxy < BasicObject
         "_#{@javascript.token}#{@object}"
     end
 
-    # @param    [Symbol]    function    Javascript property/function.
+    # @param    [Symbol]    function
+    #   Javascript property/function.
     # @param    [Array]    arguments
     def call( function, *arguments )
         @javascript.run "return #{stub.write( function, *arguments )}"
@@ -66,6 +72,7 @@ class Proxy < BasicObject
     alias :method_missing :call
 
     # @param    [Symbol]    property
+    #
     # @return   [Bool]
     #   `true` if `self` of the JS object responds to `property`,
     #   `false` otherwise.
