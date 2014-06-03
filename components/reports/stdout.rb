@@ -92,10 +92,7 @@ class Arachni::Reports::Stdout < Arachni::Report::Base
         print_line
 
         auditstore.issues.each_with_index do |issue, i|
-
-            trusted = issue.trusted? ? 'Trusted' : 'Untrusted'
-
-            print_ok "[#{i+1}] #{trusted} -- #{issue.name}"
+            print_ok "[#{i+1}] #{issue.name}"
             print_info '~~~~~~~~~~~~~~~~~~~~'
 
             print_info "Digest:     #{issue.digest}"
@@ -154,7 +151,9 @@ class Arachni::Reports::Stdout < Arachni::Report::Base
         print_info '----------'
 
         issue.variations.each_with_index do |var, i|
-            print_info "Variation #{i+1}:"
+            trusted = var.trusted? ? 'Trusted' : 'Untrusted'
+
+            print_info "Variation #{i+1} (#{trusted}):"
 
             if var.active?
                 print_info "Seed:      #{var.vector.seed.inspect}"
