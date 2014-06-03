@@ -33,9 +33,14 @@ describe Arachni::RPC::Server::ActiveOptions do
             h = @instance.options.to_h
 
             h['url'].to_s.should == @utils.normalize_url( opts['url'] )
-            h['scope']['exclude_path_patterns'].should == opts['scope']['exclude_path_patterns']
-            h['scope']['include_path_patterns'].should == opts['scope']['include_path_patterns']
-            h['scope']['redundant_path_patterns'].should == opts['scope']['redundant_path_patterns']
+            h['scope']['exclude_path_patterns'].should ==
+                opts['scope']['exclude_path_patterns'].map { |s| Regexp.new(s).to_s }
+            h['scope']['include_path_patterns'].should ==
+                opts['scope']['include_path_patterns'].map { |s| Regexp.new(s).to_s }
+            h['scope']['redundant_path_patterns'].should ==
+                opts['scope']['redundant_path_patterns'].
+                    inject({}) { |hh, (k, v)| hh[Regexp.new(k).to_s] = v.to_s; hh }
+
             h['datastore'].should == opts['datastore']
 
             @instance.service.cookies.map { |c| Arachni::Cookie.from_rpc_data c }.should == [
