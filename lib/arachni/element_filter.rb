@@ -14,54 +14,101 @@ module Arachni
 class ElementFilter
 class <<self
 
+    TYPES = [:links, :forms, :cookies]
+
     def reset
         @mutex = Mutex.new
         State.element_filter.clear
         nil
     end
 
-    # @return    [Support::LookUp::HashSet]
-    def forms
-        State.element_filter.forms
-    end
-
-    # @return    [Support::LookUp::HashSet]
-    def links
-        State.element_filter.links
-    end
-
-    # @return    [Support::LookUp::HashSet]
-    def cookies
-        State.element_filter.cookies
-    end
-
-    # @param    [Element::Form] form
+    # @!method links
     #
-    # @return   [Bool]
-    def forms_include?( form )
-        forms.include? form.id
-    end
+    #   @return    [Support::LookUp::HashSet]
 
-    # @param    [Element::Link] link
+    # @!method forms
     #
-    # @return   [Bool]
-    def links_include?( link )
-        links.include? link.id
-    end
+    #   @return    [Support::LookUp::HashSet]
 
-    # @param    [Element::Cookie] cookie
+    # @!method cookies
     #
-    # @return   [Bool]
-    def cookies_include?( cookie )
-        cookies.include? cookie.id
+    #   @return    [Support::LookUp::HashSet]
+
+    # @!method forms_include?( form )
+    #
+    #   @param    [Element::Form] form
+    #
+    #   @return   [Bool]
+
+    # @!method links_include?( link )
+    #
+    #   @param    [Element::Link] link
+    #
+    #   @return   [Bool]
+
+    # @!method cookies_include?( cookie )
+    #
+    #   @param    [Element::Cookie] cookie
+    #
+    #   @return   [Bool]
+
+    # @!method update_links( links )
+    #
+    #   @param    [Array<Element::Link>] links
+    #
+    #   @return   [Integer]
+    #       Amount of new links.
+
+    # @!method update_forms( forms )
+    #
+    #   @param    [Array<Element::Form>] forms
+    #
+    #   @return   [Integer]
+    #       Amount of new forms.
+
+    # @!method update_cookie( cookies )
+    #
+    #   @param    [Array<Element::Cookie>] cookies
+    #
+    #   @return   [Integer]
+    #       Amount of new cookies.
+
+    TYPES.each do |type|
+        define_method type do
+            State.element_filter.send type
+        end
+
+        define_method "#{type}_include?" do |element|
+            send(type).include? element.id
+        end
+
+        define_method "update_#{type}" do |elements|
+            elements = [elements].flatten.compact
+            return 0 if elements.size == 0
+
+            synchronize do
+                new_element_cnt = 0
+                elements.each do |element|
+                    next if send( "#{type}_include?", element )
+
+                    send( "#{type}" ) << element.id
+                    new_element_cnt += 1
+                end
+                new_element_cnt
+            end
+        end
+
     end
 
     # @param    [Element::Base] element
     #
     # @return   [Bool]
     def include?( element )
-        forms_include?( element ) || links_include?( element ) ||
-            cookies_include?( element )
+        TYPES.each do |type|
+            return true if send( "#{type}_include?", element )
+        end
+
+        false
     end
 
     # @param    [Page]  page
@@ -69,8 +116,7 @@ class <<self
     # @return   [Integer]
     #   Amount of new elements.
     def update_from_page( page )
-        update_links( page.links ) + update_forms( page.forms ) +
-            update_cookies( page.cookies )
+        TYPES.map { |type| send( "update_#{type}", page.send( type ) ) }.inject(&:+)
     end
 
     # Updates the elements from the {Page#cache}, useful in situations where
@@ -79,67 +125,10 @@ class <<self
     #
     # @param    [Page]  page
     #
-    # @return   [Integer]   Amount of new elements.
+    # @return   [Integer]
+    #   Amount of new elements.
     def update_from_page_cache( page )
-        update_links( page.cache[:links] ) + update_forms( page.cache[:forms] ) +
-            update_cookies( page.cache[:cookies] )
-    end
-
-    # @param    [Array<Element::Form>] elements
-    #
-    # @return   [Integer]
-    #   Amount of new forms.
-    def update_forms( elements )
-        elements = [elements].flatten.compact
-        return 0 if elements.size == 0
-
-        synchronize do
-            new_form_cnt = 0
-            elements.each do |form|
-                next if forms.include?( form.id )
-                forms << form.id
-                new_form_cnt += 1
-            end
-            new_form_cnt
-        end
-    end
-
-    # @param    [Array<Element::Link>]    elements
-    #
-    # @return   [Integer]
-    #   Amount of new links.
-    def update_links( elements )
-        elements = [elements].flatten.compact
-        return 0 if elements.size == 0
-
-        synchronize do
-            new_link_cnt = 0
-            elements.each do |link|
-                next if links.include?( link.id )
-                links << link.id
-                new_link_cnt += 1
-            end
-            new_link_cnt
-        end
-    end
-
-    # @param    [Array<Element::Cookie>]   elements
-    #
-    # @return   [Integer]
-    #   Amount of new cookies.
-    def update_cookies( elements )
-        elements = [elements].flatten.compact
-        return 0 if elements.size == 0
-
-        synchronize do
-            new_cookie_cnt = 0
-            elements.each do |cookie|
-                next if cookies.include? cookie.id
-                cookies << cookie.id
-                new_cookie_cnt += 1
-            end
-            new_cookie_cnt
-        end
+        TYPES.map { |type| send( "update_#{type}", page.cache[type] ) }.inject(&:+)
     end
 
     private
