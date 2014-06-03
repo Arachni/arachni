@@ -57,7 +57,7 @@ describe 'WAVSEP SQL Injection' do
             },
             '200 Responses With Differentiation' => {
                 checks:    'sqli_blind_*',
-                url:        "SInjection-Detection-Evaluation-#{http_method}-200Valid/",
+                url:        "SQL-Injection/SInjection-Detection-Evaluation-#{http_method}-200Valid/",
                 vulnerable: [
                     'Case01-InjectionInLogin-String-LoginBypass-WithDifferent200Responses.jsp',
                     'Case02-InjectionInSearch-String-UnionExploit-WithDifferent200Responses.jsp',
@@ -82,7 +82,7 @@ describe 'WAVSEP SQL Injection' do
             },
             'Identical 200 Responses' => {
                 checks: 'sqli_blind_timing',
-                url:     "SInjection-Detection-Evaluation-#{http_method}-200Identical/",
+                url:     "SQL-Injection/SInjection-Detection-Evaluation-#{http_method}-200Identical/",
                 vulnerable: [
                      'Case01-InjectionInView-Numeric-Blind-200ValidResponseWithDefaultOnException.jsp',
                      'Case02-InjectionInView-String-Blind-200ValidResponseWithDefaultOnException.jsp',
@@ -98,11 +98,13 @@ describe 'WAVSEP SQL Injection' do
     end
 
     easy_test do
-        @framework.checks.issues.each do |issue|
+        Arachni::Data.issues.each do |issue|
             # Timing attack issues can be marked as untrusted sometimes to
             # indicate the possibility of a false positive, make sure we've only
             # got trusted issues.
-            issue.trusted?.should be_true
+            issue.should be_trusted
+
+            issue.variations.each { |v| v.should be_trusted }
         end
     end
 end
