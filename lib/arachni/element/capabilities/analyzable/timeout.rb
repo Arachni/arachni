@@ -204,7 +204,7 @@ module Timeout
         d_opts = {
             skip_original:     true,
             redundant:         true,
-            timeout:           limit * 1000,
+            timeout:           limit,
             silent:            true,
             mode:              :sync,
             response_max_size: 0
