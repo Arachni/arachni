@@ -9,4 +9,3 @@ end
 lib = Arachni::Options.paths.mixins
 require lib + 'observable'
 require lib + 'terminal'
-require lib + 'progress_bar'

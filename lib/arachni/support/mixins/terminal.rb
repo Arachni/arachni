@@ -9,45 +9,7 @@ module Arachni
 module Support
 module Mixins
 
-# Terminal manipulation methods
-#
-#
-# Driver/demo code
-#
-#
-#        require_relative 'terminal'
-#        require_relative 'progress_bar'
-#
-#        include Terminal
-#        include ProgressBar
-#
-#        # clear the screen
-#        clear_screen
-#
-#        start_time = Time.now
-#
-#        MAX = 5000
-#        (1..MAX).each {
-#            |i|
-#
-#            # move the cursor to its home, top-left of the screen.
-#            move_to_home
-#
-#            prog =  i / Float( MAX ) * 100
-#
-#            reputs "Counting to #{MAX}..."
-#            reputs "Progress:   #{prog}%"
-#            reputs "Current:    #{i}"
-#
-#            reputs
-#            reprint eta( prog, start_time ) + "    "
-#            reputs progress_bar( prog.ceil )
-#
-#
-#            # make sure that everything is sent out on time
-#            flush
-#            sleep 0.003
-#        }
+# Terminal manipulation methods.
 module Terminal
 
     # Clears the line before printing using `puts`.

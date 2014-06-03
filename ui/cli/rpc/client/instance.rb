@@ -6,7 +6,6 @@
 module Arachni
 
 require Options.paths.mixins + 'terminal'
-require Options.paths.mixins + 'progress_bar'
 require Options.paths.lib + 'rpc/client/instance'
 require Options.paths.lib + 'utilities'
 require_relative '../../utilities'
@@ -35,7 +34,6 @@ class Instance
     include UI::CLI::Utilities
 
     include Support::Mixins::Terminal
-    include Support::Mixins::ProgressBar
 
     attr_reader :error_log_file
     attr_reader :framework

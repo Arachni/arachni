@@ -7,7 +7,6 @@ module Arachni
 
 require_relative 'output'
 require Options.paths.mixins + 'terminal'
-require Options.paths.mixins + 'progress_bar'
 
 module UI::CLI
 
@@ -15,7 +14,6 @@ module Utilities
     include Arachni::Utilities
 
     include Support::Mixins::Terminal
-    include Support::Mixins::ProgressBar
 
     def print_issues( issues, unmute = false, &interceptor )
         interceptor ||= proc { |s| s }

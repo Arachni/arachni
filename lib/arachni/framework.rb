@@ -37,8 +37,6 @@ require lib + 'session'
 require lib + 'trainer'
 require lib + 'browser_cluster'
 
-require Options.paths.mixins + 'progress_bar'
-
 # The Framework class ties together all the systems.
 #
 # It's the brains of the operation, it bosses the rest of the subsystems around.
