@@ -61,8 +61,7 @@ class Options
             super || instance.respond_to?( *args )
         end
 
-        # Ruby 2.0 or YAML doesn't like my class-level method_missing for some
-        # reason.
+        # Ruby 2.0 doesn't like my class-level method_missing for some reason.
         # @private
         public :allocate
 
@@ -346,10 +345,29 @@ class Options
         end
 
         hash.delete( :url ) if !hash[:url]
+        hash.delete(:paths)
 
         hash.deep_clone
     end
     alias :to_h :to_hash
+
+    # @param    [Hash]  hash
+    #   Hash to convert into {#to_hash} format.
+    #
+    # @return   [Hash]
+    #   `hash` in {#to_hash} format.
+    def rpc_data_to_hash( hash )
+        self.class.allocate.reset.update( hash ).to_hash
+    end
+
+    # @param    [Hash]  hash
+    #   Hash to convert into {#to_rpc_data} format.
+    #
+    # @return   [Hash]
+    #   `hash` in {#to_rpc_data} format.
+    def hash_to_rpc_data( hash )
+        self.class.allocate.reset.update( hash ).to_rpc_data
+    end
 
     private
 

@@ -316,4 +316,28 @@ describe Arachni::Options do
         end
     end
 
+    describe '#rpc_data_to_hash' do
+        it 'normalizes the given hash into #to_hash format' do
+            normalized = subject.rpc_data_to_hash(
+                'http' => {
+                    'request_timeout' => 10_000
+                }
+            )
+
+            normalized[:http][:request_timeout].should == 10_000
+            subject.http.request_timeout.should_not == 10_000
+        end
+    end
+
+    describe '#hash_to_rpc_data' do
+        it 'normalizes the given hash into #to_rpc_data format' do
+            normalized = subject.hash_to_rpc_data(
+                http: { request_timeout: 10_000 }
+            )
+
+            normalized['http']['request_timeout'].should == 10_000
+            subject.http.request_timeout.should_not == 10_000
+        end
+    end
+
 end
