@@ -24,7 +24,7 @@ class Arachni::Checks::InterestingResponses < Arachni::Check::Base
         return if self.class.ran?
 
         # tell the HTTP interface to call this block every-time a request completes
-        http.add_on_complete { |response| check_and_log( response ) }
+        http.on_complete { |response| check_and_log( response ) }
     end
 
     def clean_up
