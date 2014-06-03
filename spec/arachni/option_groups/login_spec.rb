@@ -45,7 +45,7 @@ describe Arachni::OptionGroups::Login do
 
         it "converts 'check_pattern' to strings" do
             subject.check_pattern = /test/
-            data['check_pattern'].should == subject.check_pattern.source
+            data['check_pattern'].should == subject.check_pattern.to_s
         end
     end
 end

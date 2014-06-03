@@ -282,11 +282,11 @@ class Scope < Arachni::OptionGroup
         d = super
 
         %w(redundant_path_patterns link_rewrites).each do |k|
-            d[k] = d[k].inject({}){ |h, (ck, v)| h[ck.source] = v; h }
+            d[k] = d[k].stringify
         end
 
         %w(exclude_path_patterns exclude_page_patterns include_path_patterns).each do |k|
-            d[k] = d[k].map(&:source)
+            d[k] = d[k].map(&:to_s)
         end
 
         d

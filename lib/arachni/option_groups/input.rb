@@ -138,7 +138,7 @@ class Input < Arachni::OptionGroup
     def to_rpc_data
         d = super
         %w(values default_values).each do |k|
-            d[k] = d[k].inject({}){ |h, (ck, v)| h[ck.source] = v; h }
+            d[k] = d[k].stringify
         end
         d
     end

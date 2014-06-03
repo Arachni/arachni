@@ -314,16 +314,14 @@ describe Arachni::OptionGroups::Scope do
             values = { /redundant_path_patterns/ => 1 }
             subject.redundant_path_patterns = values
 
-            data['redundant_path_patterns'].should =={
-                'redundant_path_patterns' => 1
-            }
+            data['redundant_path_patterns'].should == values.stringify
         end
 
         it "converts 'link_rewrites' to strings" do
             values = { /link_rewrites/ => 'test' }
             subject.link_rewrites = values
 
-            data['link_rewrites'].should == { 'link_rewrites' => 'test' }
+            data['link_rewrites'].should == values.stringify
         end
 
         %w(exclude_path_patterns exclude_page_patterns include_path_patterns).each do |k|
@@ -331,7 +329,7 @@ describe Arachni::OptionGroups::Scope do
                 values = [/#{k}/]
                 subject.send( "#{k}=", values )
 
-                data[k].should == [k]
+                data[k].should == [/#{k}/.to_s]
             end
         end
     end

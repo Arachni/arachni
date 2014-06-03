@@ -172,12 +172,12 @@ describe Arachni::OptionGroups::Input do
             values = { /article/ => 'my article' }
             subject.values = values
 
-            data['values'].should == { 'article' => 'my article' }
+            data['values'].should == { /article/.to_s => 'my article' }
         end
 
         it "converts 'default_values' to strings" do
             data['default_values'].keys.should ==
-                subject.default_values.keys.map(&:source)
+                subject.default_values.keys.map(&:to_s)
         end
     end
 

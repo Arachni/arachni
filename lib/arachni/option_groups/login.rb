@@ -43,7 +43,7 @@ class Login < Arachni::OptionGroup
 
     def to_rpc_data
         d = super
-        d['check_pattern'] = d['check_pattern'].source if d['check_pattern']
+        d['check_pattern'] = d['check_pattern'].to_s if d['check_pattern']
         d
     end
 
