@@ -335,17 +335,13 @@ class Browser
     #   Page snapshots for each state.
     def explore_and_flush( depth = nil )
         pages         = [ to_page ]
-        done          = false
         current_depth = 0
 
-        while !done do
+        loop do
             bcnt   = pages.size
             pages |= pages.map { |p| load( p ).trigger_events.flush_pages }.flatten
 
-            if pages.size == bcnt || (depth && depth >= current_depth)
-                done = true
-                break
-            end
+            break if pages.size == bcnt || (depth && depth >= current_depth)
 
             current_depth += 1
         end
