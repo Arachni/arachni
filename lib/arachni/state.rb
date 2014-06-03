@@ -64,6 +64,7 @@ class <<self
 
     # @param    [String]    directory
     #   Location of the dump directory.
+    #
     # @return   [String]
     #   Location of the directory.
     def dump( directory )
@@ -78,7 +79,9 @@ class <<self
 
     # @param    [String]    directory
     #   Location of the dump directory.
-    # @return   [State]     `self`
+    #
+    # @return   [State]
+    #   `self`
     def load( directory )
         each do |name, state|
             send( "#{name}=", state.class.load( "#{directory}/#{name}/" ) )

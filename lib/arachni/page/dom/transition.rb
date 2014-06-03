@@ -153,7 +153,8 @@ class Transition
     #
     # Marks the transition as finished.
     #
-    # @return   [Transition]    `self`
+    # @return   [Transition]
+    #   `self`
     #
     # @raise    [Error::Completed]
     #   When the transition has already been marked as completed.
@@ -169,7 +170,8 @@ class Transition
         self
     end
 
-    # @return   [Integer]   Depth for this transition.
+    # @return   [Integer]
+    #   Depth for this transition.
     #
     # @see ZERO_DEPTH
     def depth

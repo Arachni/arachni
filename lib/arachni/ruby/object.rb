@@ -10,7 +10,8 @@ class Object
 
     # Deep-clones self using a Marshal dump-load.
     #
-    # @return   [Object]    Duplicate of self.
+    # @return   [Object]
+    #   Duplicate of self.
     def deep_clone
         Marshal.load( Marshal.dump( self ) )
     end

@@ -11,7 +11,6 @@ module Platform
 module Fingerprinters
 end
 
-#
 # Provides utility methods for fingerprinter components as well as
 # the {Page} object to be fingerprinted
 #
@@ -20,7 +19,8 @@ end
 class Fingerprinter
     include Utilities
 
-    # @return   [Page]  Page to fingerprint.
+    # @return   [Page]
+    #   Page to fingerprint.
     attr_reader :page
 
     def initialize( page )
@@ -28,11 +28,13 @@ class Fingerprinter
     end
 
     # Executes the payload of the fingerprinter.
+    #
     # @abstract
     def run
     end
 
     # @param    [String]    string
+    #
     # @return   [Boolean]
     #   `true` if either {#server} or {#powered_by} include `string`,
     #   `false` otherwise.
@@ -40,38 +42,45 @@ class Fingerprinter
         server.include?( string.downcase ) || powered_by.include?( string.downcase )
     end
 
-    # @return   [Arachni::URI]  Parsed URL of the {#page}.
+    # @return   [Arachni::URI]
+    #   Parsed URL of the {#page}.
     def uri
         uri_parse( page.url )
     end
 
-    # @return   [Hash]  URI parameters with keys and values downcased.
+    # @return   [Hash]
+    #   URI parameters with keys and values downcased.
     def parameters
         @parameters ||= page.query_vars.downcase
     end
 
-    # @return   [Hash]  Cookies as headers with keys and values downcased.
+    # @return   [Hash]
+    #   Cookies as headers with keys and values downcased.
     def cookies
         @cookies ||= page.cookies.
             inject({}) { |h, c| h.merge! c.simple }.downcase
     end
 
-    # @return   [Hash]  Response headers with keys and values downcased.
+    # @return   [Hash]
+    #   Response headers with keys and values downcased.
     def headers
         @headers ||= page.response.headers.downcase
     end
 
-    # @return   [String. nil] Downcased value of the `X-Powered-By` header.
+    # @return   [String. nil]
+    #   Downcased value of the `X-Powered-By` header.
     def powered_by
         headers['x-powered-by'].to_s.downcase
     end
 
-    # @return   [String. nil] Downcased value of the `Server` header.
+    # @return   [String. nil]
+    #   Downcased value of the `Server` header.
     def server
         headers['server'].to_s.downcase
     end
 
-    # @return   [String] Downcased file extension of the page.
+    # @return   [String]
+    #   Downcased file extension of the page.
     def extension
         @extension ||= uri_parse( page.url ).resource_extension.to_s.downcase
     end

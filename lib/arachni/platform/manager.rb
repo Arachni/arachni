@@ -7,16 +7,13 @@ require_relative 'list'
 require_relative 'fingerprinter'
 
 module Arachni
-
 module Platform
 
-#
 # {Platform} error namespace.
 #
 # All {Platform} errors inherit from and live under it.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Error < Arachni::Error
 
     # Raised on {Manager#invalid?} platform names.
@@ -26,14 +23,12 @@ class Error < Arachni::Error
     end
 end
 
-#
 # Represents a collection of platform {List lists}.
 #
 # It also holds a DB of all fingerprints per URI as a class variable and
 # provides helper method for accessing and manipulating it.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Manager
     include Enumerable
     include Utilities
@@ -218,6 +213,7 @@ class Manager
     fingerprinters.load_all
 
     # @param    [HTTP::Response, Page]  resource
+    #
     # @return   [Bool]
     #   `true` if the resource should be fingerprinted, `false` otherwise.
     def self.fingerprint?( resource )
@@ -227,8 +223,11 @@ class Manager
 
     # Runs all fingerprinters against the given `page`.
     #
-    # @param    [Page]  page    Page to fingerprint.
-    # @return   [Manager]   Updated `self`.
+    # @param    [Page]  page
+    #   Page to fingerprint.
+    #
+    # @return   [Manager]
+    #   Updated `self`.
     def self.fingerprint( page )
         return page if !fingerprint? page
 
@@ -240,14 +239,15 @@ class Manager
         page
     end
 
-    #
     # Sets platform manager for the given `uri`.
     #
     # @param    [String, URI]   uri
     # @param    [Enumerable] platforms
     #
     # @return   [Manager]
-    # @raise    [Error::Invalid]  On {#invalid?} platforms.
+    #
+    # @raise    [Error::Invalid]
+    #   On {#invalid?} platforms.
     def self.[]=( uri, platforms )
         return new( platforms ) if !(key = make_key( uri ))
 
@@ -271,8 +271,11 @@ class Manager
     # @param    [String, URI]   uri
     # @param    [Manager] platforms
     #
-    # @return   [Manager] Updated manager.
-    # @raise    [Error::Invalid]  On {#invalid?} platforms.
+    # @return   [Manager]
+    #   Updated manager.
+    #
+    # @raise    [Error::Invalid]
+    #   On {#invalid?} platforms.
     def self.update( uri, platforms )
         synchronize do
             self[uri].update platforms
@@ -280,7 +283,9 @@ class Manager
     end
 
     # @param    [String, URI]   uri
-    # @return   [Manager] Platform for the given `uri`
+    #
+    # @return   [Manager]
+    #   Platform for the given `uri`
     def self.[]( uri )
         return new if !(key = make_key( uri ))
         synchronize { @platforms[key] ||= new }
@@ -316,23 +321,33 @@ class Manager
     end
 
     # @!method os
-    #   @return [List] Platform list for operating systems.
+    #   @return [List]
+    #       Platform list for operating systems.
+    #
     #   @see OS
 
     # @!method db
-    #   @return [List] Platform list for databases.
+    #   @return [List]
+    #       Platform list for databases.
+    #
     #   @see DB
 
     # @!method servers
-    #   @return [List] Platform list for web servers.
+    #   @return [List]
+    #       Platform list for web servers.
+    #
     #   @see SERVERS
 
     # @!method languages
-    #   @return [List] Platform list for languages.
+    #   @return [List]
+    #       Platform list for languages.
+    #
     #   @see LANGUAGES
 
     # @!method frameworks
-    #   @return [List] Platform list for frameworks.
+    #   @return [List]
+    #       Platform list for frameworks.
+    #
     #   @see FRAMEWORKS
 
     [:os, :db, :servers, :languages, :frameworks].each do |type|
@@ -346,8 +361,11 @@ class Manager
     # @param    [String, Symbol]   platform
     #   Platform shortname.
     #
-    # @return   [String]    Full name.
-    # @raise    [Error::Invalid]  On {#invalid?} platforms.
+    # @return   [String]
+    #   Full name.
+    #
+    # @raise    [Error::Invalid]
+    #   On {#invalid?} platforms.
     def fullname( platform )
         PLATFORM_NAMES[normalize( platform )]
     end
@@ -361,7 +379,9 @@ class Manager
     # @return   [Hash]
     #   `data_per_platform` with non-applicable entries (for non-empty platform
     #   lists) removed. Data for platforms whose list is empty will not be removed.
-    # @raise    [Error::Invalid]  On {#invalid?} platforms.
+    #
+    # @raise    [Error::Invalid]
+    #   On {#invalid?} platforms.
     def pick( data_per_platform )
         data_per_list = {}
         data_per_platform.each do |platform, value|
@@ -385,28 +405,37 @@ class Manager
         picked
     end
 
-    # @return   [Set<Symbol>]   List of valid platforms.
+    # @return   [Set<Symbol>]
+    #   List of valid platforms.
     def valid
         self.class.valid
     end
 
-    # @param    [Symbol, String]  platform Platform to check.
+    # @param    [Symbol, String]  platform
+    #   Platform to check.
+    #
     # @return   [Boolean]
     #   `true` if platform is valid (i.e. in {#valid}), `false` otherwise.
+    #
     # @see #invalid?
     def valid?( platform )
         valid.include? platform
     end
 
-    # @param    [Symbol, String]  platform Platform to check.
+    # @param    [Symbol, String]  platform
+    #   Platform to check.
+    #
     # @return   [Boolean]
     #   `true` if platform is invalid (i.e. not in {#valid}), `false` otherwise.
+    #
     # @see #invalid?
     def invalid?( platform )
         !valid?( platform )
     end
 
-    # @param    [Block] block   Block to be passed each platform.
+    # @param    [Block] block
+    #   Block to be passed each platform.
+    #
     # @return   [Enumerator, Manager]
     #   `Enumerator` if no `block` is given, `self` otherwise.
     def each( &block )
@@ -415,10 +444,14 @@ class Manager
         self
     end
 
-    # @param    [Symbol, String]    platform    Platform to check.
+    # @param    [Symbol, String]    platform
+    #   Platform to check.
+    #
     # @return   [Boolean]
     #   `true` if one of the lists contains the `platform`, `false` otherwise.
-    # @raise    [Error::Invalid]  On {#invalid?} `platforms`.
+    #
+    # @raise    [Error::Invalid]
+    #   On {#invalid?} `platforms`.
     def include?( platform )
         find_list( platform ).include?( platform )
     end
@@ -439,9 +472,14 @@ class Manager
         @platforms.clear
     end
 
-    # @param    [Enumerable] enum Enumerable object containing platforms.
-    # @return   [Manager] Updated `self`.
-    # @raise    [Error::Invalid]  On {#invalid?} platforms.
+    # @param    [Enumerable] enum
+    #   Enumerable object containing platforms.
+    #
+    # @return   [Manager]
+    #   Updated `self`.
+    #
+    # @raise    [Error::Invalid]
+    #   On {#invalid?} platforms.
     def update( enum )
         enum.each { |p| self << p }
         self
@@ -449,8 +487,12 @@ class Manager
 
     # @param    [Symbol, String]    platform
     #   Platform to add to the appropriate list.
-    # @return   [Manager] `self`
-    # @raise    [Error::Invalid]  On {#invalid?} platforms.
+    #
+    # @return   [Manager]
+    #   `self`
+    #
+    # @raise    [Error::Invalid]
+    #   On {#invalid?} platforms.
     def <<( platform )
         find_list( platform ) << platform
         self
@@ -458,13 +500,17 @@ class Manager
 
     # @param    [String, Symbol]    platform
     #   Platform whose type to find
+    #
     # @return   [Symbol]    Platform type.
     def find_type( platform )
         self.class.find_type( platform )
     end
 
-    # @param    [String, Symbol]    platform Platform whose list to find.
-    # @return   [List]    Platform list.
+    # @param    [String, Symbol]    platform
+    #   Platform whose list to find.
+    #
+    # @return   [List]
+    #   Platform list.
     def find_list( platform )
         @platforms[find_type( normalize( platform ) )]
     end

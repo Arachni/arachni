@@ -20,8 +20,10 @@ class Base < Client
     #     * {OptionGroups::RPC#ssl_ca}
     #     * {OptionGroups::RPC#client_ssl_private_key}
     #     * {OptionGroups::RPC#client_ssl_certificate}
-    # @param    [String]    url       Server URL in `address:port` format.
-    # @param    [String]    token     Optional authentication token.
+    # @param    [String]    url
+    #   Server URL in `address:port` format.
+    # @param    [String]    token
+    #   Optional authentication token.
     def initialize( options, url, token = nil )
         @url = url
 

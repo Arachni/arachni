@@ -20,7 +20,8 @@ class List
         @platforms       = []
     end
 
-    # @return   [Array<Symbol>] Supported platforms.
+    # @return   [Array<Symbol>]
+    #   Supported platforms.
     def valid
         hierarchical? ? @valid_platforms.find_symbol_keys_recursively : @valid_platforms
     end
@@ -31,8 +32,11 @@ class List
     # @param    [Hash{<Symbol, String> => Object}]   data_per_platform
     #   Hash with platform names as keys and arbitrary data as values.
     #
-    # @return   [Hash]  `data_per_platform` with non-applicable entries removed.
-    # @raise    [Error::Invalid]  On {#invalid?} platforms.
+    # @return   [Hash]
+    #   `data_per_platform` with non-applicable entries removed.
+    #
+    # @raise    [Error::Invalid]
+    #   On {#invalid?} platforms.
     def pick( data_per_platform )
         orig_data_per_platform = data_per_platform.dup
         data_per_platform      = data_per_platform.dup
@@ -80,8 +84,10 @@ class List
 
     # @param    [Array<Symbol, String> Symbol, String]  platforms
     #   Platform(s) to check.
+    #
     # @return   [Boolean]
     #   `true` if platforms are valid (i.e. in {#valid}), `false` otherwise.
+    #
     # @see #invalid?
     def valid?( platforms )
         normalize( platforms )
@@ -92,8 +98,10 @@ class List
 
     # @param    [Array<Symbol, String> Symbol, String]  platforms
     #   Platform(s) to check.
+    #
     # @return   [Boolean]
     #   `true` if platforms are invalid (i.e. not in {#valid}), `false` otherwise.
+    #
     # @see #valid?
     def invalid?( platforms )
         !valid?( platforms )
@@ -111,9 +119,13 @@ class List
         !empty?
     end
 
-    # @param    [Symbol, String]    platform    Platform to add to the list.
+    # @param    [Symbol, String]    platform
+    #   Platform to add to the list.
+    #
     # @return   [Platform] `self`
-    # @raise    [Error::Invalid]  On {#invalid?} platforms.
+    #
+    # @raise    [Error::Invalid]
+    #   On {#invalid?} platforms.
     def <<( platform )
         @platforms |= [normalize( platform )]
         self
@@ -123,7 +135,9 @@ class List
     #   Enumerable object containing platforms.
     #   New {Platform} built by merging `self` and the elements of the
     #   given enumerable object.
-    # @raise    [Error::Invalid]  On {#invalid?} platforms.
+    #
+    # @raise    [Error::Invalid]
+    #   On {#invalid?} platforms.
     def merge( enum )
         dup.merge!( enum )
     end
@@ -132,15 +146,21 @@ class List
 
     # @param    [Enumerable] enum
     #   Enumerable object containing platforms.
-    # @return   [Platform] Updated `self`.
-    # @raise    [Error::Invalid]  On {#invalid?} platforms.
+    #
+    # @return   [Platform]
+    #   Updated `self`.
+    #
+    # @raise    [Error::Invalid]
+    #   On {#invalid?} platforms.
     def merge!( enum )
         @platforms |= normalize( enum )
         self
     end
     alias update merge!
 
-    # @param    [Block] block   Block to be passed each platform.
+    # @param    [Block] block
+    #   Block to be passed each platform.
+    #
     # @return   [Enumerator, Platform]
     #   `Enumerator` if no `block` is given, `self` otherwise.
     def each( &block )
@@ -149,19 +169,27 @@ class List
         self
     end
 
-    # @param    [Symbol, String]    platform    Platform to check.
+    # @param    [Symbol, String]    platform
+    #   Platform to check.
+    #
     # @return   [Boolean]
     #   `true` if `platform` applies to the given resource, `false` otherwise.
-    # @raise    [Error::Invalid]  On {#invalid?} `platforms`.
+    #
+    # @raise    [Error::Invalid]
+    #   On {#invalid?} `platforms`.
     def include?( platform )
         @platforms.include? normalize( platform )
     end
 
-    # @param    [Array<Symbol, String>]    platforms    Platform to check.
+    # @param    [Array<Symbol, String>]    platforms
+    #   Platform to check.
+    #
     # @return   [Boolean]
     #   `true` if any platform in `platforms` applies to the given resource,
     #   `false` otherwise.
-    # @raise    [Error::Invalid]  On {#invalid?} `platforms`.
+    #
+    # @raise    [Error::Invalid]
+    #   On {#invalid?} `platforms`.
     def include_any?( platforms )
         (@platforms & normalize( platforms )).any?
     end
@@ -171,7 +199,8 @@ class List
         @platforms.clear
     end
 
-    # @return   [Platform] Copy of `self`.
+    # @return   [Platform]
+    #   Copy of `self`.
     def dup
         self.class.new( @valid_platforms ).tap { |p| p.platforms = @platforms }
     end

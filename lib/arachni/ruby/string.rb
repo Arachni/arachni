@@ -91,7 +91,8 @@ class String
     #
     # @param    [String]    other
     #
-    # @return   [Float]     `0.0` (identical strings) to `1.0` (completely different)
+    # @return   [Float]
+    #   `0.0` (identical strings) to `1.0` (completely different)
     def diff_ratio( other )
         return 0.0 if self == other
         return 1.0 if empty? || other.empty?
@@ -107,7 +108,8 @@ class String
 
     # Returns the words in `self`.
     #
-    # @param    [Bool]  strict  include *only* words, no boundary characters (like spaces, etc.)
+    # @param    [Bool]  strict
+    #   Include *only* words, no boundary characters (like spaces, etc.).
     #
     # @return   [Array<String>]
     def words( strict = false )
@@ -116,12 +118,14 @@ class String
         splits
     end
 
-    # @return [String] Shortest word.
+    # @return [String]
+    #   Shortest word.
     def shortest_word
         words( true ).sort_by { |w| w.size }.first
     end
 
-    # @return [String] Longest word.
+    # @return [String]
+    #   Longest word.
     def longest_word
         words( true ).sort_by { |w| w.size }.last
     end

@@ -25,7 +25,8 @@ class Base < Server
     #     * {OptionGroups::RPC#ssl_ca}
     #     * {OptionGroups::RPC#client_ssl_private_key}
     #     * {OptionGroups::RPC#client_ssl_certificate}
-    # @param    [String]    token     Optional authentication token.
+    # @param    [String]    token
+    #   Optional authentication token.
     def initialize( options, token = nil )
         if options.is_a?( Hash )
             original_options = options

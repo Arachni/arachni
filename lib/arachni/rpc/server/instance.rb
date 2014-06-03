@@ -110,7 +110,8 @@ class Instance
     # Initializes the RPC interface and the framework.
     #
     # @param    [Options]    options
-    # @param    [String]    token   Authentication token.
+    # @param    [String]    token
+    #   Authentication token.
     def initialize( options, token )
         @options = options
         @token   = token
@@ -293,12 +294,12 @@ class Instance
         @framework.clean_up { auditstore( &block ) }
     end
 
+    # @note Don't forget to {#shutdown} the instance once you get the report.
+    #
     # Cleans up and delegates to {#report_as}.
     #
     # @param (see #report_as)
     # @return (see #report_as)
-    #
-    # @note Don't forget to {#shutdown} the instance once you get the report.
     #
     # @see #abort_and_report
     # @see #report_as
@@ -757,8 +758,10 @@ class Instance
     # Spawns will listen on a UNIX socket and the master will expose itself
     # over a UNIX socket as well so that IPC won't have to go over TCP/IP.
     #
-    # @param    [Integer]   num Amount of Instances to return.
-    # @return   [Array<Hash>]   Instance info (urls and tokens).
+    # @param    [Integer]   num
+    #   Amount of Instances to return.
+    # @return   [Array<Hash>]
+    #   Instance info (urls and tokens).
     def spawn( num, &block )
         if num <= 0
             block.call []

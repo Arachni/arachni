@@ -93,10 +93,9 @@ module Master
     # the master as well as for signaling.
     #
     # @param    [Hash]     data
-    # @option data [Boolean] audit_done
+    # @option data [Boolean] :audit_done
     #   `true` if the slave has finished auditing, `false` otherwise.
-    # @option data [Array<Arachni::Issue>]    issues
-    #
+    # @option data [Array<Arachni::Issue>]    :issues
     # @param    [String]    url
     #   URL of the slave.
     # @param    [String]    token
@@ -123,9 +122,11 @@ module Master
     # Signals that a slave has finished auditing -- each slave must call this
     # when it finishes its job.
     #
-    # @param    [String]    slave_url   URL of the calling slave.
+    # @param    [String]    slave_url
+    #   URL of the calling slave.
     #
-    # @return   [Bool]  `true` on success, `false` on invalid `token`.
+    # @return   [Bool]
+    #   `true` on success, `false` on invalid `token`.
     def slave_done( slave_url )
         mark_slave_as_done slave_url
 
@@ -141,7 +142,8 @@ module Master
     #
     # @param    [Array<Arachni::Issue>]    issues
     #
-    # @return   [Bool]  `true` on success, `false` on invalid `token`.
+    # @return   [Bool]
+    #   `true` on success, `false` on invalid `token`.
     def update_issues( issues )
         issues.each { |issue| Data.issues << issue }
         true

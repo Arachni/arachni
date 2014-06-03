@@ -26,10 +26,12 @@ class Queue < Base
     #   How many entries to keep in memory before starting to off-load to disk.
     attr_accessor :max_buffer_size
 
-    # @return   [Array<Object>] Objects stored in the memory buffer.
+    # @return   [Array<Object>]
+    #   Objects stored in the memory buffer.
     attr_reader :buffer
 
-    # @return   [Array<String>] Paths to files stored to disk.
+    # @return   [Array<String>]
+    #   Paths to files stored to disk.
     attr_reader :disk
 
     # @see Arachni::Database::Base#initialize
@@ -49,7 +51,8 @@ class Queue < Base
         @max_buffer_size || DEFAULT_MAX_BUFFER_SIZE
     end
 
-    # @param    [Object]    obj Object to add to the queue.
+    # @param    [Object]    obj
+    #   Object to add to the queue.
     def <<( obj )
         synchronize do
             if @buffer.size < max_buffer_size
@@ -69,7 +72,8 @@ class Queue < Base
     alias :push :<<
     alias :enq :<<
 
-    # @return   [Object] Removes an object from the queue and returns it.
+    # @return   [Object]
+    #   Removes an object from the queue and returns it.
     def pop( non_block = false )
         synchronize do
             loop do
@@ -101,7 +105,8 @@ class Queue < Base
         @disk.size
     end
 
-    # @return   [Bool] `true` if the queue if empty, `false` otherwise.
+    # @return   [Bool]
+    #   `true` if the queue if empty, `false` otherwise.
     def empty?
         @buffer.empty? && @disk.empty?
     end

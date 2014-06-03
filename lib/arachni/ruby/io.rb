@@ -6,7 +6,6 @@
 class IO
     TAIL_BUF_LENGTH = 1 << 16
 
-    #
     # @param    [Integer]   n
     #   Amount of lines to return from the bottom of the file.
     #
@@ -14,7 +13,6 @@ class IO
     #   `n` amount of lines from the bottom of the file.
     #
     # @see http://stackoverflow.com/questions/3024372/how-to-read-a-file-from-bottom-to-top-in-ruby/3024704#3024704
-    #
     def tail( n )
         return [] if n < 1
 

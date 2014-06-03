@@ -11,23 +11,28 @@ module Arachni
 class AuditStore
     include Utilities
 
-    # @return    [String]    {Arachni::VERSION}
+    # @return    [String]
+    #   {Arachni::VERSION}
     attr_accessor :version
 
-    # @return    [Hash]    {Options#to_h}
+    # @return    [Hash]
+    #   {Options#to_h}
     attr_reader   :options
 
     # @return   [Hash<String, Integer>]
     #   List of crawled URLs with their HTTP codes.
     attr_accessor :sitemap
 
-    # @return    [Hash]  Plugin results.
+    # @return    [Hash]
+    #   Plugin results.
     attr_accessor :plugins
 
-    # @return    [Time]    The date and time when the scan started.
+    # @return    [Time]
+    #   The date and time when the scan started.
     attr_accessor :start_datetime
 
-    # @return    [Time]    The date and time when the scan finished.
+    # @return    [Time]
+    #   The date and time when the scan finished.
     attr_accessor :finish_datetime
 
     def initialize( options = {} )
@@ -48,6 +53,7 @@ class AuditStore
     end
 
     # @note If no {#finish_datetime} has been provided, it will use `Time.now`.
+    #
     # @return   [String]
     #   `{#start_datetime} - {#finish_datetime}` in `00:00:00`
     #   (`hours:minutes:seconds`) format.
@@ -55,14 +61,19 @@ class AuditStore
         secs_to_hms( (@finish_datetime || Time.now) - @start_datetime )
     end
 
-    # @param    [Options, Hash] options Scan {Options options}.
+    # @param    [Options, Hash] options
+    #   Scan {Options options}.
+    #
     # @return   [Hash]
     def options=( options )
         @options = prepare_options( options )
     end
 
-    # @param    [Array<Issue>]  issues  Logged issues.
-    # @return    [Array<Issue>]  Logged issues.
+    # @param    [Array<Issue>]  issues
+    #   Logged issues.
+    #
+    # @return    [Array<Issue>]
+    #   Logged issues.
     def issues=( issues )
         @issues = {}
         issues.each do |issue|
@@ -71,12 +82,14 @@ class AuditStore
         self.issues
     end
 
-    # @return    [Array<Issue>]  Logged issues.
+    # @return    [Array<Issue>]
+    #   Logged issues.
     def issues
         @issues.values
     end
 
     # @param    [Issue#digest]  digest
+    #
     # @return    [Issue]
     def issue_by_digest( digest )
         @issues[digest]
@@ -97,6 +110,7 @@ class AuditStore
 
     # @param    [String]    location
     #   Location for the dumped report file.
+    #
     # @return   [String]
     #   Absolute location of the report.
     def save( location = nil )
@@ -115,7 +129,8 @@ class AuditStore
         File.expand_path( location )
     end
 
-    # @return   [Hash]  Hash representation of `self`.
+    # @return   [Hash]
+    #   Hash representation of `self`.
     def to_h
         h = {
             version:         @version,

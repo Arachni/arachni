@@ -9,36 +9,33 @@ require "base64"
 module Arachni
 module Support::Crypto
 
-#
 # Simple hybrid crypto class using RSA for public key encryption and AES with CBC
 # for bulk data encryption/decryption.
 #
 # RSA is used to encrypt the AES primitives which are used to encrypt the plaintext.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class RSA_AES_CBC
 
-    #
     # If only encryption is required the private key parameter can be omitted.
     #
-    # @param  [String]  public_pem   location of the Public key in PEM format
-    # @param  [String]  private_pem  location of the Private key in PEM format
-    #
+    # @param  [String]  public_pem
+    #   Location of the Public key in PEM format.
+    # @param  [String]  private_pem
+    #   Location of the Private key in PEM format.
     def initialize( public_pem, private_pem = nil )
         @public_pem  = public_pem
         @private_pem = private_pem
     end
 
-    #
     # Encrypts data and returns a Base64 representation of the ciphertext
     # and AES CBC primitives encrypted using the public key.
     #
     # @param  [String]  data
     #
-    # @return  [String]   Base64 representation of the ciphertext
-    #                       and AES CBC primitives encrypted using the public key.
-    #
+    # @return  [String]
+    #   Base64 representation of the ciphertext and AES CBC primitives encrypted
+    #   using the public key.
     def encrypt( data )
         rsa = OpenSSL::PKey::RSA.new( File.read( @public_pem ) )
 
@@ -63,13 +60,12 @@ class RSA_AES_CBC
         Base64.encode64( primitives.to_yaml )
     end
 
-    #
     # Decrypts data.
     #
     # @param  [String]  data
     #
-    # @return  [String]   plaintext
-    #
+    # @return  [String]
+    #   Plaintext.
     def decrypt( data )
         rsa = OpenSSL::PKey::RSA.new( File.read( @private_pem ) )
 
@@ -86,7 +82,7 @@ class RSA_AES_CBC
         plaintext = aes.update( primitives['ciphertext'] )
         plaintext << aes.final
 
-        return plaintext
+        plaintext
     end
 
 end

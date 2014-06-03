@@ -5,9 +5,7 @@
 
 module Arachni
 
-#
 # The namespace under which all plugins exist.
-#
 module Plugins
 end
 
@@ -18,11 +16,9 @@ class Error < Arachni::Error
     end
 end
 
-#
-# Holds and manages the plugins.
+# Holds and manages the {Plugins}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Manager < Arachni::Component::Manager
     include MonitorMixin
 
@@ -32,7 +28,8 @@ class Manager < Arachni::Component::Manager
     # Expressions matching default plugins.
     DEFAULT   = %w(defaults/*)
 
-    # @param    [Arachni::Framework]    framework   Framework instance.
+    # @param    [Arachni::Framework]    framework
+    #   Framework instance.
     def initialize( framework )
         super( framework.options.paths.plugins, NAMESPACE )
         @framework = framework
@@ -48,7 +45,8 @@ class Manager < Arachni::Component::Manager
     end
     alias :load_defaults :load_default
 
-    # @return   [Array<String>] Components to load, by name.
+    # @return   [Array<String>]
+    #   Components to load, by name.
     def default
         parse DEFAULT
     end
@@ -221,12 +219,14 @@ class Manager < Arachni::Component::Manager
         @jobs.any?
     end
 
-    # @return   [Array] Names of all running plug-ins.
+    # @return   [Array]
+    #   Names of all running plug-ins.
     def job_names
         @jobs.keys
     end
 
-    # @return   [Hash{String=>Thread}] All the running threads.
+    # @return   [Hash{String=>Thread}]
+    #   All the running threads.
     def jobs
         @jobs
     end

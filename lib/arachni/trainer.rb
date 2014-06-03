@@ -51,7 +51,6 @@ class Trainer
         end
     end
 
-    #
     # Passes the response on for analysis.
     #
     # If the response contains new elements it creates a new page
@@ -60,7 +59,6 @@ class Trainer
     # These new pages can then be retrieved by flushing the buffer (#flush).
     #
     # @param  [Arachni::HTTP::Response]  response
-    #
     def push( response )
         if !@page
             print_debug 'No seed page assigned yet.'

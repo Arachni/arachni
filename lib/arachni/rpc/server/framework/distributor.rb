@@ -22,7 +22,7 @@ module Distributor
     #
     # @param    [Hash]  instance
     #   The hash must hold the `'url'` and the `'token'`. In subsequent calls
-    #  the `'token'` can be omitted.
+    #   the `'token'` can be omitted.
     def connect_to_instance( instance )
         instance = instance.symbolize_keys
         @instance_connections ||= {}
@@ -37,11 +37,10 @@ module Distributor
             RPC::Client::Instance.new( options, instance[:url], @tokens[instance[:url]] )
     end
 
-    #
     # @param    [Proc]  foreach
     #   Invoked once for each slave instance and an array from the returned values.
-    # @param    [Proc]  after  To handle the resulting array.
-    #
+    # @param    [Proc]  after
+    #   To handle the resulting array.
     def map_slaves( foreach, after )
         wrap = proc do |instance, iterator|
             foreach.call( connect_to_instance( instance ), iterator )
@@ -49,9 +48,12 @@ module Distributor
         slave_iterator.map( wrap, after )
     end
 
-    # @param    [Proc]  foreach     Invoked once for each slave instance.
-    # @param    [Proc]  after       Invoked after the iteration has completed.
-    # @param    [Proc]  block       Invoked once for each slave instance.
+    # @param    [Proc]  foreach
+    #   Invoked once for each slave instance.
+    # @param    [Proc]  after
+    #   Invoked after the iteration has completed.
+    # @param    [Proc]  block
+    #   Invoked once for each slave instance.
     def each_slave( foreach = nil, after = nil, &block )
         foreach ||= block
         wrapped_foreach = proc do |instance, iterator|
@@ -449,24 +451,6 @@ module Distributor
         merged_statistics.delete :current_page
 
         merged_statistics
-    end
-
-    # @param    [String]    eta1    In the form of `hours:minutes:seconds`.
-    # @param    [String]    eta2    In the form of `hours:minutes:seconds`.
-    #
-    # @return   [String]    Returns the longest ETA of the two.
-    def max_eta( eta1, eta2 )
-        return eta1 if eta1 == eta2
-
-        # splits them into hours, mins and secs
-        eta1_splits = eta1.split( ':' )
-        eta2_splits = eta2.split( ':' )
-
-        # go through and compare the hours, mins, sec
-        eta1_splits.size.times do |i|
-            return eta1 if eta1_splits[i].to_i > eta2_splits[i].to_i
-            return eta2 if eta1_splits[i].to_i < eta2_splits[i].to_i
-        end
     end
 
     def connect_to_dispatcher( url )

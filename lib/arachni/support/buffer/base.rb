@@ -29,21 +29,21 @@ class Base
     # @return   [Integer]   Maximum buffer size.
     attr_reader :max_size
 
-    #
-    # @param    [Integer]  max_size  Maximum buffer size -- won't be enforced.
-    # @param    [#<<, #|, #clear, #size, #empty?]   type      Internal storage class to use.
-    #
+    # @param    [Integer]  max_size
+    #   Maximum buffer size -- won't be enforced.
+    # @param    [#<<, #|, #clear, #size, #empty?]   type
+    #   Internal storage class to use.
     def initialize( max_size = nil, type = Array )
         super()
         @buffer    = type.new
         @max_size  = max_size
     end
 
+    # @note Calls {#on_push} blocks with the given object and pushes an object
+    #   to the buffer.
     #
-    # Calls {#on_push} blocks with the given object and pushes an object to the buffer.
-    #
-    # @param    [Object]    obj object to push
-    #
+    # @param    [Object]    obj
+    #   Object to push.
     def <<( obj )
         notify_on_push obj
         @buffer << obj
@@ -51,38 +51,38 @@ class Base
     end
     alias :push :<<
 
+    # @note Calls {#on_batch_push} blocks with the given list and merges the
+    #   buffer with the contents of a list.
     #
-    # Calls {#on_batch_push} blocks with the given list and merges the buffer
-    # with the contents of a list.
-    #
-    # @param    [#|]    list list of objects
-    #
+    # @param    [#|]    list
+    #   List of objects
     def batch_push( list )
         notify_on_batch_push list
         @buffer |= list
         self
     end
 
-    # @return   [Integer]   amount of object in the buffer
+    # @return   [Integer]
+    #   Number of object in the buffer.
     def size
         @buffer.size
     end
 
-    # @return   [Bool]  `true` if the buffer is empty, `false` otherwise
+    # @return   [Bool]
+    #   `true` if the buffer is empty, `false` otherwise.
     def empty?
         @buffer.empty?
     end
 
-    # @return   [Bool]  `true` if the buffer is full, `false` otherwise
+    # @return   [Bool]
+    #   `true` if the buffer is full, `false` otherwise.
     def full?
         !!(max_size && size >= max_size)
     end
 
-    #
-    # Calls {#on_flush} blocks with the buffer and then empties it.
+    # @note Calls {#on_flush} blocks with the buffer and then empties it.
     #
     # @return   current buffer
-    #
     def flush
         buffer = @buffer.dup
         notify_on_flush buffer

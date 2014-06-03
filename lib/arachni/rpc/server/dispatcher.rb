@@ -97,7 +97,8 @@ class Dispatcher
         _handlers.keys
     end
 
-    # @return   [TrueClass]   true
+    # @return   [TrueClass]
+    #   true
     def alive?
         @server.alive?
     end
@@ -128,8 +129,10 @@ class Dispatcher
 
     # Dispatches an {Instance} from the pool.
     #
-    # @param    [String]  owner     An owner to assign to the {Instance}.
-    # @param    [Hash]    helpers   Hash of helper data to be added to the job.
+    # @param    [String]  owner
+    #   An owner to assign to the {Instance}.
+    # @param    [Hash]    helpers
+    #   Hash of helper data to be added to the job.
     # @param    [Boolean]    load_balance
     #   Return an {Instance} from the least burdened {Dispatcher} (when in Grid mode)
     #   or from this one directly?
@@ -193,19 +196,22 @@ class Dispatcher
         end
     end
 
-    # @return   [Array<Hash>]   Returns info for all jobs.
+    # @return   [Array<Hash>]
+    #   Returns info for all jobs.
     def jobs
         @jobs.map { |cjob| job( cjob['pid'] ) }.compact
     end
 
-    # @return   [Array<Hash>]   Returns info for all running jobs.
+    # @return   [Array<Hash>]
+    #   Returns info for all running jobs.
     #
     # @see #jobs
     def running_jobs
         jobs.select { |job| job['alive'] }
     end
 
-    # @return   [Array<Hash>]   Returns info for all finished jobs.
+    # @return   [Array<Hash>]
+    #   Returns info for all finished jobs.
     #
     # @see #jobs
     def finished_jobs
@@ -240,7 +246,8 @@ class Dispatcher
         stats_h
     end
 
-    # @return   [String]    contents of the log file
+    # @return   [String]
+    #   Contents of the log file
     def log
         IO.read prep_logging
     end

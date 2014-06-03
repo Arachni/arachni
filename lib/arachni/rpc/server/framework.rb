@@ -15,7 +15,6 @@ require lib + 'rpc/server/plugin/manager'
 module RPC
 class Server
 
-#
 # Wraps the framework of the local instance and the frameworks of all its slaves
 # (when it is a Master in multi-Instance mode) into a neat, easy to handle package.
 #
@@ -27,7 +26,6 @@ class Server
 #       perform asynchronous operations.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Framework < ::Arachni::Framework
     require Options.paths.lib + 'rpc/server/framework/multi_instance'
 
@@ -40,13 +38,11 @@ class Framework < ::Arachni::Framework
         public  m
     end
 
-    #
     # {RPC::Server::Framework} error namespace.
     #
     # All {RPC::Server::Framework} errors inherit from and live under it.
     #
     # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-    #
     class Error < Arachni::Framework::Error
 
         # Raised when an option is nor supported for whatever reason.
@@ -124,11 +120,10 @@ class Framework < ::Arachni::Framework
         !!@extended_running
     end
 
-    #
     # Starts the scan.
     #
-    # @return   [Bool]  `false` if already running, `true` otherwise.
-    #
+    # @return   [Bool]
+    #   `false` if already running, `true` otherwise.
     def run
         # Return if we're already running.
         return false if busy?
@@ -151,7 +146,6 @@ class Framework < ::Arachni::Framework
         true
     end
 
-    #
     # If the scan needs to be aborted abruptly this method takes care of any
     # unfinished business (like signaling running plug-ins to finish).
     #
@@ -160,7 +154,6 @@ class Framework < ::Arachni::Framework
     # of all instances.
     #
     # You don't need to call this if you've let the scan complete.
-    #
     def clean_up( &block )
         if @rpc_cleaned_up
             # Don't shutdown the BrowserCluster here, its termination will be
@@ -200,7 +193,9 @@ class Framework < ::Arachni::Framework
         map_slaves( foreach, after )
     end
 
-    # @return   [Hash]  Audit results as a {AuditStore#to_h hash}.
+    # @return   [Hash]
+    #   Audit results as a {AuditStore#to_h hash}.
+    #
     # @see AuditStore#to_h
     def report
         audit_store.to_h
@@ -211,18 +206,23 @@ class Framework < ::Arachni::Framework
     # @return  [Array<Hash>]
     #   First variations of all discovered issues with generic info filled in
     #   from the parent as {Arachni::Issue#to_rpc_data RPC data}.
+    #
     # @private
     def issues
         Data.issues.map { |issue| issue.variations.first.to_solo( issue ).to_rpc_data }
     end
 
-    # @return   [Array<Hash>]   {#issues} as an array of Hashes.
+    # @return   [Array<Hash>]
+    #   {#issues} as an array of Hashes.
+    #
     # @see #issues
     def issues_as_hash
         Data.issues.map { |issue| issue.variations.first.to_solo( issue ).to_h }
     end
 
-    # @return   [String]  URL of this instance.
+    # @return   [String]
+    #   URL of this instance.
+    #
     # @private
     def self_url
         options.dispatcher.external_address ||= options.rpc.server_address
@@ -232,7 +232,8 @@ class Framework < ::Arachni::Framework
             options.rpc.server_socket
     end
 
-    # @return   [String]  This instance's RPC token.
+    # @return   [String]
+    #   This instance's RPC token.
     def token
         options.datastore.token
     end

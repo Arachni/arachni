@@ -9,16 +9,13 @@ require 'addressable/uri'
 
 module Arachni
 
-    #
     # Helper method which parses a URL using {Arachni::URI.parse}.
     #
     # @see Arachni::URI.parse
-    #
     def self.URI( uri )
         Arachni::URI.parse( uri )
     end
 
-#
 # The URI class automatically normalizes the URLs it is passed to parse
 # while maintaining compatibility with Ruby's URI core class by delegating
 # missing methods to it -- thus, you can treat it like a Ruby URI and enjoy some
@@ -33,7 +30,6 @@ module Arachni
 # * Conversion to {.to_absolute absolute URLs}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class URI
     include UI::Output
     extend  UI::Output
@@ -41,13 +37,11 @@ class URI
     include Utilities
     extend  Utilities
 
-    #
     # {URI} error namespace.
     #
     # All {URI} errors inherit from and live under it.
     #
     # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-    #
     class Error < Arachni::Error
     end
 
@@ -73,7 +67,6 @@ class URI
         CACHE[__method__]
     end
 
-    #
     # URL encodes a string.
     #
     # @param [String] string
@@ -81,33 +74,29 @@ class URI
     #   Class of characters to encode -- if {String} is passed, it should
     #   formatted as a regexp (for `Regexp.new`).
     #
-    # @return   [String]    encoded string
-    #
+    # @return   [String]
+    #   Encoded string.
     def self.encode( string, bad_characters = nil )
         Addressable::URI.encode_component( *[string, bad_characters].compact )
     end
 
-    #
     # URL decodes a string.
     #
     # @param [String] string
     #
     # @return   [String]
-    #
     def self.decode( string )
         Addressable::URI.unencode( string )
     end
 
-    #
-    # Cached version of {URI#initialize}, if there's a chance that the same
-    # URL will be needed to be parsed multiple times you should use this method.
-    #
     # @note This method's results are cached for performance reasons.
     #   If you plan on doing something destructive with its return value duplicate
     #   it first because there may be references to it elsewhere.
     #
-    # @see URI#initialize
+    # Cached version of {URI#initialize}, if there's a chance that the same
+    # URL will be needed to be parsed multiple times you should use this method.
     #
+    # @see URI#initialize
     def self.parse( url )
         return url if !url || url.is_a?( Arachni::URI )
         CACHE[__method__][url] ||= begin
@@ -120,17 +109,16 @@ class URI
         end
     end
 
-    #
-    # {.normalize Normalizes} `url` and uses Ruby's core URI lib to parse it.
-    #
     # @note This method's results are cached for performance reasons.
     #   If you plan on doing something destructive with its return value duplicate
     #   it first because there may be references to it elsewhere.
     #
-    # @param    [String]    url     URL to parse
+    # {.normalize Normalizes} `url` and uses Ruby's core URI lib to parse it.
+    #
+    # @param    [String]    url
+    #   URL to parse
     #
     # @return   [URI]
-    #
     def self.ruby_parse( url )
         return url if url.to_s.empty? || url.is_a?( ::URI )
         return if url.start_with? 'javascript:'
@@ -149,6 +137,14 @@ class URI
         end
     end
 
+    # @note This method's results are cached for performance reasons.
+    #   If you plan on doing something destructive with its return value duplicate
+    #   it first because there may be references to it elsewhere.
+    #
+    # @note The Hash is suitable for passing to `::URI::Generic.build` -- if
+    #   however you plan on doing that you'll be better off just using
+    #   {.ruby_parse} which does the same thing and caches the results for some
+    #   extra schnell.
     #
     # Performs a parse that is less resource intensive than Ruby's URI lib's
     # method while normalizing the URL (will also discard the fragment and
@@ -165,16 +161,6 @@ class URI
     #     * `:port`
     #     * `:path`
     #     * `:query`
-    #
-    # @note This method's results are cached for performance reasons.
-    #   If you plan on doing something destructive with its return value duplicate
-    #   it first because there may be references to it elsewhere.
-    #
-    # @note The Hash is suitable for passing to `::URI::Generic.build` -- if
-    #   however you plan on doing that you'll be better off just using
-    #   {.ruby_parse} which does the same thing and caches the results for some
-    #   extra schnell.
-    #
     def self.fast_parse( url )
         return if !url || url.empty?
         return if url.start_with? 'javascript:'
@@ -307,6 +293,10 @@ class URI
         end
     end
 
+    # @note The Hash is suitable for passing to `::URI::Generic.build` -- if
+    #   however you plan on doing that you'll be better off just using
+    #   {.ruby_parse} which does the same thing and caches the results for some
+    #   extra schnell.
     #
     # Performs a parse using the `URI::Addressable` lib while normalizing the
     # URL (will also discard the fragment).
@@ -325,11 +315,6 @@ class URI
     #     * `:path`
     #     * `:query`
     #
-    # @note The Hash is suitable for passing to `::URI::Generic.build` -- if
-    #   however you plan on doing that you'll be better off just using
-    #   {.ruby_parse} which does the same thing and caches the results for some
-    #   extra schnell.
-    #
     def self.addressable_parse( url )
         u = Addressable::URI.parse( html_decode( url.to_s ) ).normalize
         u.fragment = nil
@@ -343,21 +328,21 @@ class URI
         h
     end
 
+    # @note This method's results are cached for performance reasons.
+    #   If you plan on doing something destructive with its return value duplicate
+    #   it first because there may be references to it elsewhere.
     #
     # {.normalize Normalizes} and converts a `relative` URL to an absolute one
     # by merging in with a `reference` URL.
     #
     # Pretty much a cached version of {#to_absolute}.
     #
-    # @note This method's results are cached for performance reasons.
-    #   If you plan on doing something destructive with its return value duplicate
-    #   it first because there may be references to it elsewhere.
-    #
     # @param    [String]    relative
-    # @param    [String]    reference    absolute url to use as a reference
+    # @param    [String]    reference
+    #   Absolute url to use as a reference.
     #
-    # @return   [String]  absolute URL (frozen)
-    #
+    # @return   [String]
+    #   Absolute URL (frozen).
     def self.to_absolute( relative, reference = Options.instance.url.to_s )
         return reference if !relative || relative.empty?
         key = relative + ' :: ' + reference
@@ -382,18 +367,17 @@ class URI
         end
     end
 
-    #
-    # Uses {.fast_parse} to parse and normalize the URL and then converts
-    # it to a common {String} format.
-    #
     # @note This method's results are cached for performance reasons.
     #   If you plan on doing something destructive with its return value duplicate
     #   it first because there may be references to it elsewhere.
     #
+    # Uses {.fast_parse} to parse and normalize the URL and then converts
+    # it to a common {String} format.
+    #
     # @param    [String]    url
     #
-    # @return   [String]    Normalized URL (frozen).
-    #
+    # @return   [String]
+    #   Normalized URL (frozen).
     def self.normalize( url )
         return if !url || url.empty?
 
@@ -438,15 +422,13 @@ class URI
         end
     end
 
+    # @note Will discard the fragment component, if there is one.
     #
     # {.normalize Normalizes} and parses the provided URL.
-    #
-    # Will discard the fragment component, if there is one.
     #
     # @param    [Arachni::URI, String, URI, Hash]    url
     #   {String} URL to parse, `URI` to convert, or a `Hash` holding URL components
     #   (for `URI::Generic.build`). Also accepts {Arachni::URI} for convenience.
-    #
     def initialize( url )
         @parsed_url = case url
                           when String
@@ -479,13 +461,14 @@ class URI
         to_s == other.to_s
     end
 
+    # Converts self into an absolute URL using `reference` to fill in the
+    # missing data.
     #
-    # Converts self into an absolute URL using `reference` to fill in the missing data.
+    # @param    [Arachni::URI, URI, String]    reference
+    #   Full, absolute URL.
     #
-    # @param    [Arachni::URI, URI, String]    reference    Full, absolute URL.
-    #
-    # @return   [Arachni::URI]  Self, as an absolute URL.
-    #
+    # @return   [Arachni::URI]
+    #   Self, as an absolute URL.
     def to_absolute( reference )
         absolute = case reference
                        when Arachni::URI
@@ -527,7 +510,8 @@ class URI
         uri_str << uri_path
     end
 
-    # @return [String]  domain_name.tld
+    # @return [String]
+    #   `domain_name.tld`
     def domain
         return host if ip_address?
 
@@ -544,31 +528,29 @@ class URI
         !(IPAddr.new( host ) rescue nil).nil?
     end
 
-    #
     # Checks if self exceeds a given directory `depth`.
     #
-    # @param    [Integer]   depth   Depth to check for.
+    # @param    [Integer]   depth
+    #   Depth to check for.
     #
-    # @return   [Bool]  `true` if self is deeper than `depth`, `false` otherwise.
-    #
+    # @return   [Bool]
+    #   `true` if self is deeper than `depth`, `false` otherwise.
     def too_deep?( depth )
         depth.to_i > 0 && (depth + 1) <= path.to_s.count( '/' )
     end
 
-    #
     # Checks if self should be excluded based on the provided `patterns`.
     #
     # @param    [Array<Regexp,String>] patterns
     #
-    # @return   [Bool]  `true` if self matches a pattern, `false` otherwise.
-    #
+    # @return   [Bool]
+    #   `true` if self matches a pattern, `false` otherwise.
     def exclude?( patterns )
         fail TypeError.new( 'Array<Regexp,String> expected, got nil instead' ) if patterns.nil?
         ensure_patterns( patterns ).each { |pattern| return true if to_s =~ pattern }
         false
     end
 
-    #
     # Checks if self should be included based on the provided `patterns`.
     #
     # @param    [Array<Regexp,String>] patterns
@@ -576,7 +558,6 @@ class URI
     # @return   [Bool]
     #   `true` if self matches a pattern (or `patterns` are `nil` or empty),
     #   `false` otherwise.
-    #
     def include?( patterns )
         fail TypeError.new( 'Array<Regexp,String> expected, got nil instead' ) if patterns.nil?
 
@@ -587,15 +568,14 @@ class URI
         false
     end
 
-    #
     # @param    [Bool]  include_subdomain Match subdomains too?
     #   If true will compare full hostnames, otherwise will discard subdomains.
     #
-    # @param    [Arachni::URI, URI, Hash, String]    other  Reference URL.
+    # @param    [Arachni::URI, URI, Hash, String]    other
+    #   Reference URL.
     #
     # @return   [Bool]
     #   `true` if self is in the same domain as the `other` URL, false otherwise.
-    #
     def in_domain?( include_subdomain, other )
         return true if !other
 
@@ -661,10 +641,8 @@ class URI
         end.compact.map { |p| p.is_a?( Regexp ) ? p : Regexp.new( p.to_s ) }
     end
 
-    #
     # Delegates unimplemented methods to Ruby's `URI::Generic` class for
     # compatibility.
-    #
     def method_missing( sym, *args, &block )
         if @parsed_url.respond_to?( sym )
             @parsed_url.send( sym, *args, &block )

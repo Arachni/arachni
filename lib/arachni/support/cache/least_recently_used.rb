@@ -6,14 +6,12 @@
 module Arachni
 module Support::Cache
 
-#
 # Least Recently Used cache implementation.
 #
 # Generally, the most desired mode under most circumstances.
 # Discards the least recently used entries in order to make room for newer ones.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class LeastRecentlyUsed < Base
 
     # @see Arachni::Cache::Base#[]

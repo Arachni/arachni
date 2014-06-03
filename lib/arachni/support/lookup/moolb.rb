@@ -8,13 +8,11 @@ require_relative '../cache'
 module Arachni
 module Support::LookUp
 
-#
 # Opposite of Bloom a filter, ergo Moolb.
 #
 # Basically a cache used for look-up operations.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Moolb < Base
 
     DEFAULT_OPTIONS = {
@@ -30,7 +28,6 @@ class Moolb < Base
     #   Maximum size of the cache.
     #
     # @see DEFAULT_OPTIONS
-    #
     def initialize( options = {} )
         super( options )
 
@@ -38,11 +35,11 @@ class Moolb < Base
         @collection = @options[:strategy].new( @options[:max_size] )
     end
 
+    # @param    [#persistent_hash] item
+    #   Item to insert.
     #
-    # @param    [#persistent_hash] item item to insert.
-    #
-    # @return   [HashSet]  self
-    #
+    # @return   [HashSet]
+    #   `self`
     def <<( item )
         @collection[calculate_hash( item )] = true
         self

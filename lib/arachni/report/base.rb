@@ -17,7 +17,7 @@ module Report
 class Base < Component::Base
     include Report
 
-    # where to report false positives info about this should be included in all templates
+    # Where to report false positives.
     REPORT_FP = 'http://github.com/Arachni/arachni/issues'
 
     module PluginFormatters
@@ -26,27 +26,25 @@ class Base < Component::Base
     attr_reader :options
     attr_reader :auditstore
 
-    #
     # @param    [AuditStore]  auditstore
-    # @param    [Hash]        options       options passed to the report
-    #
+    # @param    [Hash]        options
+    #   Options to pass to the report.
     def initialize( auditstore, options )
         @auditstore = auditstore
         @options    = options
     end
 
+    # @note **REQUIRED**
     #
-    # REQUIRED
-    #
+    # @abstract
     def run
     end
 
-    #
     # Runs plugin formatters for the running report and returns a hash
     # with the prepared/formatted results.
     #
-    # @param    [AuditStore#plugins]      plugins   plugin data/results
-    #
+    # @param    [AuditStore#plugins]      plugins
+    #   Plugin data/results.
     def format_plugin_results( plugins = auditstore.plugins, &block )
         formatted = {}
         return formatted if !plugins
@@ -105,11 +103,9 @@ class Base < Component::Base
         self.class.has_outfile?
     end
 
-    #
-    # REQUIRED
+    # @note **REQUIRED**
     #
     # Do not omit any of the info.
-    #
     def self.info
         {
             name:        'Report abstract class.',

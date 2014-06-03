@@ -151,19 +151,16 @@ module Utilities
         URI.normalize( url )
     end
 
-    #
     # @param   [String]   url
     #
     # @return  [String]   path
     #   Full URL up to the path component (no resource, query etc.).
     #
     # @see URI.up_to_path
-    #
     def get_path( url )
         uri_parse( url ).up_to_path
     end
 
-    #
     # @param    [String] url
     #
     # @return   [Bool]
@@ -171,12 +168,10 @@ module Utilities
     #
     # @see URI.too_deep?
     # @see OptionGroups::Scope#directory_depth_limit
-    #
     def path_too_deep?( url )
         uri_parse( url ).too_deep?( Options.scope.directory_depth_limit )
     end
 
-    #
     # Compares 2 urls in order to decide whether or not they belong to the same domain.
     #
     # @param    [String]    url
@@ -187,12 +182,10 @@ module Utilities
     #
     # @see URI.in_domain?
     # @see OptionGroups::Scope#include_subdomains
-    #
     def path_in_domain?( url, reference = Options.url )
         uri_parse( url ).in_domain?( !Options.scope.include_subdomains, reference )
     end
 
-    #
     # Decides whether the given `url` matches any framework exclusion rules.
     #
     # @param    [String]    url
@@ -201,12 +194,10 @@ module Utilities
     #
     # @see URI.exclude?
     # @see OptionGroups::Scope#exclude_path_patterns
-    #
     def exclude_path?( url )
         uri_parse( url ).exclude?( Options.scope.exclude_path_patterns )
     end
 
-    #
     # Decides whether the given `url` matches any framework inclusion rules.
     #
     # @param    [String]    url
@@ -215,23 +206,21 @@ module Utilities
     #
     # @see URI.include?
     # @see Options#include
-    #
     def include_path?( url )
         uri_parse( url ).include?( Options.scope.include_path_patterns )
     end
 
-    #
-    # Checks if the provided URL matches a redundant filter
-    # and decreases its counter if so.
+    # Checks if the provided URL matches a redundant filter and decreases its
+    # counter if so.
     #
     # If a filter's counter has reached 0 the method returns true.
     #
     # @param    [String]  url
     #
-    # @return   [Bool]    `true` if the `url` is redundant, `false` otherwise.
+    # @return   [Bool]
+    #   `true` if the `url` is redundant, `false` otherwise.
     #
     # @see OptionGroups::Scope#redundant_path_patterns?
-    #
     def redundant_path?( url, &block )
         Options.scope.redundant?( url, &block )
     end
@@ -260,6 +249,7 @@ module Utilities
         !Options.scope.https_only?
     end
 
+    # @note Does **not** call {#redundant_path?}.
     #
     # Decides whether or not the provided `path` should be skipped based on:
     #
@@ -268,12 +258,9 @@ module Utilities
     # * {#path_too_deep?}
     # * {#path_in_domain?}
     #
-    # @note Does **not** call {#redundant_path?}.
-    #
     # @param    [Arachni::URI, ::URI, Hash, String] path
     #
     # @return   [Bool]
-    #
     def skip_path?( path )
         return true if !path
 
@@ -363,13 +350,16 @@ module Utilities
         end
     end
 
-    # @return   [Fixnum]  Random available port number.
+    # @return   [Fixnum]
+    #   Random available port number.
     def available_port
         nil while !port_available?( port = rand_port )
         port
     end
 
-    # @return   [Integer]   Random port within the user specified range.
+    # @return   [Integer]
+    #   Random port within the user specified range.
+    #
     # @see OptionGroups::Dispatcher#instance_port_range
     def rand_port
         first, last = Options.dispatcher.instance_port_range
@@ -397,6 +387,7 @@ module Utilities
     end
 
     # @param    [String, Float, Integer]    seconds
+    #
     # @return    [String]
     #   Time in `00:00:00` (`hours:minutes:seconds`) format.
     def secs_to_hms( seconds )
@@ -405,10 +396,11 @@ module Utilities
             map { |t| t.to_s.rjust( 2, '0' ) }.join( ':' )
     end
 
-    # Wraps the "block" in exception handling code and runs it.
+    # Wraps the `block` in exception handling code and runs it.
     #
-    # @param    [Bool]  raise_exception  re-raise exception
-    # @param    [Block]     block   to call
+    # @param    [Bool]  raise_exception
+    #   Re-raise exception?
+    # @param    [Block]     block
     def exception_jail( raise_exception = true, &block )
         block.call
     rescue => e

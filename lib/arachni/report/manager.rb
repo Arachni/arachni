@@ -5,15 +5,13 @@
 
 module Arachni
 
-#
 # The namespace under which all reports exist.
-#
 module Reports
 end
 
 module Report
 
-# Holds and manages the registry of the reports.
+# Holds and manages {Reports}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Manager < Arachni::Component::Manager

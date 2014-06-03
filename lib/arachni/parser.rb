@@ -289,7 +289,8 @@ class Parser
 
     # Runs all path extraction components and returns an array of paths.
     #
-    # @return   [Array<String>]   Paths.
+    # @return   [Array<String>]
+    #   Paths.
     def run_extractors
         begin
             self.class.extractors.available.map do |name|

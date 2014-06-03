@@ -72,7 +72,8 @@ class Framework
     # How many times to request a page upon failure.
     AUDIT_PAGE_MAX_TRIES = 5
 
-    # @return   [Options] Instance options
+    # @return   [Options]
+    #   System options
     attr_reader :options
 
     # @return   [Arachni::Report::Manager]
@@ -84,7 +85,8 @@ class Framework
     # @return   [Arachni::Plugin::Manager]
     attr_reader :plugins
 
-    # @return   [Session]   Web application session manager.
+    # @return   [Session]
+    #   Web application session manager.
     attr_reader :session
 
     # @return   [Arachni::HTTP]
@@ -101,7 +103,8 @@ class Framework
     # @param   [String]    afs
     #   Path to an `.afs.` (Arachni Framework Snapshot) file created by {#suspend}.
     #
-    # @return   [Framework] Restored instance.
+    # @return   [Framework]
+    #   Restored instance.
     def self.restore( afs, &block )
         framework = new
         framework.restore( afs )
@@ -403,7 +406,8 @@ class Framework
         true
     end
 
-    # @return    [AuditStore]   Scan results.
+    # @return    [AuditStore]
+    #   Scan results.
     def audit_store
         opts = options.to_hash.deep_clone
 
@@ -431,7 +435,8 @@ class Framework
     # @param    [AuditStore]    external_report
     #   Report to use -- defaults to the local one.
     #
-    # @return   [String]    Scan report.
+    # @return   [String]
+    #   Scan report.
     #
     # @raise    [Component::Error::NotFound]
     #   If the given report name doesn't correspond to a valid report component.
@@ -463,7 +468,8 @@ class Framework
         end
     end
 
-    # @return    [Array<Hash>]  Information about all available checks.
+    # @return    [Array<Hash>]
+    #   Information about all available {Checks}.
     def list_checks( patterns = nil )
         loaded = @checks.loaded
 
@@ -488,7 +494,8 @@ class Framework
         end
     end
 
-    # @return    [Array<Hash>]  Information about all available reports.
+    # @return    [Array<Hash>]
+    #   Information about all available {Reports}.
     def list_reports( patterns = nil )
         loaded = @reports.loaded
 
@@ -512,7 +519,8 @@ class Framework
         end
     end
 
-    # @return    [Array<Hash>]  Information about all available plugins.
+    # @return    [Array<Hash>]
+    #   Information about all available {Plugins}.
     def list_plugins( patterns = nil )
         loaded = @plugins.loaded
 
@@ -536,7 +544,8 @@ class Framework
         end
     end
 
-    # @return    [Array<Hash>]  Information about all available platforms.
+    # @return    [Array<Hash>]
+    #   Information about all available platforms.
     def list_platforms
         platforms = Platform::Manager.new
         platforms.valid.inject({}) do |h, platform|
@@ -603,7 +612,8 @@ class Framework
     #
     # Pauses the framework on a best effort basis.
     #
-    # @param    [Bool]  wait    Wait until the system has been paused.
+    # @param    [Bool]  wait
+    #   Wait until the system has been paused.
     #
     # @return   [Integer]
     #   ID identifying this pause request.
@@ -673,7 +683,8 @@ class Framework
     # @param   [String]    afs
     #   Path to an `.afs.` (Arachni Framework Snapshot) file created by {#suspend}.
     #
-    # @return   [Framework] Restored instance.
+    # @return   [Framework]
+    #   Restored instance.
     def restore( afs )
         Snapshot.load afs
 
@@ -733,7 +744,8 @@ class Framework
         browser_cluster.skip_states( browser_job.id )
     end
 
-    # @return    [String]   Returns the version of the framework.
+    # @return    [String]
+    #   Returns the version of the framework.
     def version
         Arachni::VERSION
     end
@@ -930,7 +942,8 @@ class Framework
     # Passes the `page` to {BrowserCluster#queue} and then pushes
     # the resulting pages to {#push_to_page_queue}.
     #
-    # @param    [Page]  page    Page to analyze.
+    # @param    [Page]  page
+    #   Page to analyze.
     def perform_browser_analysis( page )
         return if !browser_cluster ||
             Options.scope.dom_depth_limit.to_i < page.dom.depth + 1 ||
@@ -1132,9 +1145,8 @@ class Framework
     # Passes a page to the check and runs it.
     # It also handles any exceptions thrown by the check at runtime.
     #
-    # @see Page
-    #
-    # @param    [Arachni::Check::Base]   check  The check to run.
+    # @param    [Check::Base]   check
+    #   Check to run.
     # @param    [Page]    page
     def check_page( check, page )
         begin

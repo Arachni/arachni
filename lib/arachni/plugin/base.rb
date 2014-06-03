@@ -16,14 +16,16 @@ class Base < Component::Base
     include Component
     include MonitorMixin
 
-    # @return   [Hash]  Plugin options.
+    # @return   [Hash]
+    #   Plugin options.
     attr_reader :options
 
     # @return   [Framework]
     attr_reader :framework
 
     # @param    [Framework]   framework
-    # @param    [Hash]        options    options passed to the plugin
+    # @param    [Hash]        options
+    #   Options to pass to the plugin.
     def initialize( framework, options )
         @framework = framework
         @options   = options

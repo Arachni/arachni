@@ -10,11 +10,9 @@ require Options.paths.lib + 'rpc/client/base'
 module RPC
 class Client
 
-#
 # RPC Dispatcher client
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Dispatcher
 
     attr_reader :node
@@ -42,9 +40,7 @@ class Dispatcher
 
     private
 
-    #
     # Used to provide the illusion of locality for remote methods
-    #
     def method_missing( sym, *args, &block )
         @client.call( "dispatcher.#{sym.to_s}", *args, &block )
     end

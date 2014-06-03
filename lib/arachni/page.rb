@@ -16,16 +16,19 @@ class Page
 
     require_relative 'page/dom'
 
-    # @param    [String]    url URL to fetch.
+    # @param    [String]    url
+    #   URL to fetch.
     # @param    [Hash]  opts
     # @option  opts    [Integer]   :precision  (2)
     #   How many times to request the page and examine changes between requests.
     #   Used tp identify nonce tokens etc.
-    # @option  opts    [Hash]  :http   HTTP {HTTP::Client#get request} options.
+    # @option  opts    [Hash]  :http
+    #   HTTP {HTTP::Client#get request} options.
     # @param    [Block] block
     #   Block to which to pass the page object. If given, the request will be
     #   performed asynchronously. If no block is given, the page will be fetched
     #   synchronously and be returned by this method.
+    #
     # @return   [Page]
     def self.from_url( url, opts = {}, &block )
         responses = []
@@ -45,7 +48,9 @@ class Page
         end
     end
 
-    # @param    [HTTP::Response]    response    HTTP response to parse.
+    # @param    [HTTP::Response]    response
+    #   HTTP response to parse.
+    #
     # @return   [Page]
     def self.from_response( response )
         Parser.new( response ).page
@@ -107,6 +112,7 @@ class Page
     attr_reader :response
 
     # @return    [Hash]
+    #
     # @private
     attr_reader :cache
 
@@ -125,7 +131,8 @@ class Page
 
     # Needs either a `:parser` or a `:response` or user provided data.
     #
-    # @param    [Hash]  options    Hash from which to set instance attributes.
+    # @param    [Hash]  options
+    #   Hash from which to set instance attributes.
     # @option options  [Array<HTTP::Response>, HTTP::Response]    :response
     #   HTTP response of the page -- or array of responses for the page for
     #   content refinement.
@@ -468,7 +475,8 @@ class Page
         data
     end
 
-    # @param    [Hash]  data    {#to_rpc_data}
+    # @param    [Hash]  data
+    #   {#to_rpc_data}
     #
     # @return   [Page]
     def self.from_rpc_data( data )

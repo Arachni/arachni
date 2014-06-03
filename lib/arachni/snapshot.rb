@@ -51,7 +51,8 @@ class <<self
         !!location
     end
 
-    # @return   [Hash]  Snapshot summary information.
+    # @return   [Hash]
+    #   Snapshot summary information.
     def summary
         {
             data:  Data.statistics,
@@ -61,6 +62,7 @@ class <<self
 
     # @param    [String]    location
     #   Location of the snapshot.
+    #
     # @return   [String]
     #   Location of the snapshot.
     def dump( location )
@@ -91,7 +93,9 @@ class <<self
 
     # @param    [String]    snapshot
     #   Location of the snapshot to load.
-    # @return   [Snapshot]     `self`
+    #
+    # @return   [Snapshot]
+    #   `self`
     #
     # @raise    [Error::InvalidFile]
     #   When trying to read an invalid file.
@@ -111,6 +115,7 @@ class <<self
 
     # @param    [String]    snapshot
     #   Location of the snapshot.
+    #
     # @return   [Hash]
     #   Metadata associated with the given snapshot.
     #

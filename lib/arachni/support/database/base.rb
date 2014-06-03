@@ -8,7 +8,6 @@ require 'tmpdir'
 module Arachni
 module Support::Database
 
-#
 # Base class for Database data structures
 #
 # Provides helper methods for data structures to be implemented related to
@@ -17,7 +16,6 @@ module Support::Database
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 # @abstract
-#
 class Base
 
     # @param    [Object]    serializer
@@ -29,7 +27,6 @@ class Base
 
     private
 
-    #
     # Dumps the object to a unique file and returns its path.
     #
     # The path can be used as a reference to the original value
@@ -37,8 +34,8 @@ class Base
     #
     # @param    [Object]    obj
     #
-    # @return   [String]    filepath
-    #
+    # @return   [String]
+    #   Filepath
     def dump( obj, &block )
         File.open( get_unique_filename, 'wb' ) do |f|
             serialized = serialize( obj )
@@ -50,33 +47,27 @@ class Base
         end
     end
 
-    #
     # Loads the object stored in filepath.
     #
     # @param    [String]    filepath
     #
     # @return   [Object]
-    #
     def load( filepath )
         unserialize( IO.binread( filepath ) )
     end
 
-    #
     # Deletes a file.
     #
     # @param    [String]    filepath
-    #
     def delete_file( filepath )
         File.delete( filepath ) if File.exist?( filepath )
     end
 
-    #
     # Loads the object in file and then removes it from the file-system.
     #
     # @param    [String]    filepath
     #
     # @return   [Object]
-    #
     def load_and_delete_file( filepath )
         obj = load( filepath )
         delete_file( filepath )

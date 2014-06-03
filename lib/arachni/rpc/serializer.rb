@@ -20,6 +20,7 @@ module Serializer
     COMPRESS_LARGER_THAN = 1_000
 
     # @param    [#to_rpc_data]   object
+    #
     # @return   [String]
     #   {#compress Compressed} `object` dump.
     def dump( object )
@@ -29,6 +30,7 @@ module Serializer
 
     # @param    [String]   dump
     #   {#dump Dumped} object.
+    #
     # @return   [Object]
     def load( dump )
         serializer.load( decompress( dump ) )
@@ -38,6 +40,7 @@ module Serializer
     # and then {#load loading}.
     #
     # @param    [#to_rpc_data,.from_rpc_data]   object
+    #
     # @return   [Object]
     #   Data that the peer would receive.
     def rpc_data( object )
@@ -45,6 +48,7 @@ module Serializer
     end
 
     # @param    [#to_rpc_data,.from_rpc_data]   object
+    #
     # @return   [Object]
     def deep_clone( object )
         object.class.from_rpc_data rpc_data( object )
@@ -54,6 +58,7 @@ module Serializer
     #
     # @param    [String]    string
     #   String to compress.
+    #
     # @return   [String]
     #   Compressed (or not) `string`.
     def compress( string )
@@ -65,6 +70,7 @@ module Serializer
     #
     # @param    [String]    string
     #   String to decompress.
+    #
     # @return   [String]
     #   Decompressed string.
     def decompress( string )

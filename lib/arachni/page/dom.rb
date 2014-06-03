@@ -165,7 +165,8 @@ class DOM
         data
     end
 
-    # @param    [Hash]  data    {#to_rpc_data}
+    # @param    [Hash]  data
+    #   {#to_rpc_data}
     # @return   [DOM]
     def self.from_rpc_data( data )
         instance = allocate

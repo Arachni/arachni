@@ -13,7 +13,9 @@ class OptionGroup
     end
 
     class <<self
-        # @return   [Hash]  Specified default values for attribute readers.
+
+        # @return   [Hash]
+        #   Specified default values for attribute readers.
         def defaults
             @defaults ||= {}
         end
@@ -21,7 +23,8 @@ class OptionGroup
         # Sets default values for attribute readers, when an attribute reader
         # returns `nil` the default values will be returned instead.
         #
-        # @param    [Hash]  default_values  Default values for attributes.
+        # @param    [Hash]  default_values
+        #   Default values for attributes.
         def set_defaults( default_values )
             defaults.merge! default_values
 
@@ -88,14 +91,18 @@ class OptionGroup
 
     # @param    [Hash]  options
     #   Data to use to update the group's attributes.
-    # @return   [OptionGroup]   `self`
+    #
+    # @return   [OptionGroup]
+    #   `self`
     def update( options )
         options.to_hash.each { |k, v| send( "#{k}=", v ) }
         self
     end
 
     # @param    [OptionGroup]  other
-    # @return   [OptionGroup]   `self`
+    #
+    # @return   [OptionGroup]
+    #   `self`
     def merge( other )
         update( other.to_h )
     end

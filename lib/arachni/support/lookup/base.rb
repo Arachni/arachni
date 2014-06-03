@@ -26,32 +26,31 @@ class Base
         @hasher  = @options[:hasher].to_sym
     end
 
+    # @param    [#persistent_hash] item
+    #   Item to insert.
     #
-    # @param    [#persistent_hash] item Item to insert.
-    #
-    # @return   [HashSet]  self
-    #
+    # @return   [HashSet]
+    #   `self`
     def <<( item )
         @collection << calculate_hash( item )
         self
     end
     alias :add :<<
 
+    # @param    [#persistent_hash] item
+    #   Item to delete.
     #
-    # @param    [#persistent_hash] item Item to delete.
-    #
-    # @return   [HashSet]  self
-    #
+    # @return   [HashSet]
+    #   `self`
     def delete( item )
         @collection.delete( calculate_hash( item ) )
         self
     end
 
-    #
-    # @param    [#persistent_hash] item Item to check.
+    # @param    [#persistent_hash] item
+    #   Item to check.
     #
     # @return   [Bool]
-    #
     def include?( item )
         @collection.include? calculate_hash( item )
     end

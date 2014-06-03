@@ -90,10 +90,12 @@ class Options
     # Load all {OptionGroups}.
     require_relative 'option_groups'
 
-    # @return    [String]   The URL to audit.
+    # @return    [String]
+    #   The URL to audit.
     attr_reader   :url
 
-    # @return    [Array<String, Symbol>]    Checks to load, by name.
+    # @return    [Array<String, Symbol>]
+    #   Checks to load, by name.
     #
     # @see Checks
     # @see Check::Base
@@ -124,7 +126,8 @@ class Options
     # @see HTTP::Client#headers
     attr_accessor :authorized_by
 
-    # @return   [Bool]   Disable platform fingeprinting.
+    # @return   [Bool]
+    #   Disable platform fingeprinting.
     #
     # @see Platform::Fingerprinter
     # @see Platform::Fingerprinters
@@ -144,6 +147,7 @@ class Options
     end
 
     # Restores everything to their default values.
+    #
     # @return [Options] `self`
     def reset
         # nil everything out.
@@ -166,6 +170,7 @@ class Options
     end
 
     # @param    [Integer]   spawns
+    #
     # @see #spawns
     def spawns=( spawns )
         @spawns = spawns.to_i
@@ -191,9 +196,12 @@ class Options
     #
     # @param    [String]    url
     #   Absolute URL of the targeted web app.
-    # @return   [String]    Normalized `url`
     #
-    # @raise    [Error::InvalidURL] If the given `url` is not valid.
+    # @return   [String]
+    #   Normalized `url`
+    #
+    # @raise    [Error::InvalidURL]
+    #   If the given `url` is not valid.
     def url=( url )
         return @url = nil if !url
 
@@ -253,6 +261,7 @@ class Options
     #   the given value, if it refers to one of the {OptionGroups} the value
     #   should be a hash with data to update that {OptionGroup group} using
     #   {OptionGroup#update}.
+    #
     # @return   [Options]
     #
     # @see OptionGroups
@@ -281,7 +290,8 @@ class Options
         errors
     end
 
-    # @param    [String]    file    Saves `self` to `file` using YAML.
+    # @param    [String]    file
+    #   Saves `self` to `file` using YAML.
     def save( file )
         as_hash = to_h
         as_hash.delete :paths
@@ -295,7 +305,8 @@ class Options
 
     # Loads a file created by {#save}.
     #
-    # @param    [String]    filepath    Path to the file created by {#save}.
+    # @param    [String]    filepath
+    #   Path to the file created by {#save}.
     #
     # @return   [Arachni::Options]
     def load( filepath )

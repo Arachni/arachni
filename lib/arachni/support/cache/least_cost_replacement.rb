@@ -6,14 +6,12 @@
 module Arachni
 module Support::Cache
 
-#
 # Least Cost Replacement cache implementation.
 #
 # Maintains 3 cost classes (low, medium, high) ) and discards entries from the
 # lowest cost classes in order to make room for new ones.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class LeastCostReplacement < Base
 
     VALID_COSTS = [ :low, :medium, :high ]
@@ -24,17 +22,17 @@ class LeastCostReplacement < Base
         reset_costs
     end
 
-    #
     # Storage method
     #
-    # @param    [Object]    k   entry key
-    # @param    [Object]    v   object to store
+    # @param    [Object]    k
+    #   Entry key.
+    # @param    [Object]    v
+    #   Object to store.
     # @param    [Symbol]    cost
     #
     # @return   [Object]    `v`
     #
     # @see VALID_COSTS
-    #
     def store( k, v, cost = :low )
         fail( "invalid cost: #{cost}" ) if !valid_cost?( cost )
 

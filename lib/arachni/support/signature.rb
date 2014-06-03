@@ -14,6 +14,7 @@ class Signature
     attr_reader :tokens
 
     # @note The string will be tokenized based on whitespace.
+    #
     # @param    [String, Signature]    data
     #   Seed data to use to initialize the signature.
     # @param    [Hash]    options
@@ -30,16 +31,24 @@ class Signature
     end
 
     # @note The string will be tokenized based on whitespace.
-    # @param    [String, Signature]    data    Data to use to refine the signature.
-    # @return   [Signature] `self`
+    #
+    # @param    [String, Signature]    data
+    #   Data to use to refine the signature.
+    #
+    # @return   [Signature]
+    #   `self`
     def refine!( data )
         @tokens &= tokenize( data )
         self
     end
 
     # @note The string will be tokenized based on whitespace.
-    # @param    [String, Signature]    data    Data to use to refine the signature.
-    # @return   [Signature] New, refined signature.
+    #
+    # @param    [String, Signature]    data
+    #   Data to use to refine the signature.
+    #
+    # @return   [Signature]
+    #   New, refined signature.
     def refine( data )
         dup.refine!( data )
     end
@@ -47,11 +56,15 @@ class Signature
     # @note **Very** expensive, use {#differences} when possible.
     #
     # @param    [Signature] other
-    # @param    [Integer]   ins Cost of an `insert` operation.
-    # @param    [Integer]   del Cost of a `delete` operation.
-    # @param    [Integer]   sub Cost of a `substitute` operation.
+    # @param    [Integer]   ins
+    #   Cost of an `insert` operation.
+    # @param    [Integer]   del
+    #   Cost of a `delete` operation.
+    # @param    [Integer]   sub
+    #   Cost of a `substitute` operation.
     #
-    # @return   [Integer]   Levenshtein distance
+    # @return   [Integer]
+    #   Levenshtein distance
     #
     # @see http://www.informit.com/articles/article.aspx?p=683059&seqNum=36
     def distance( other, ins = 2, del = 2, sub = 1 )
@@ -87,7 +100,9 @@ class Signature
     end
 
     # @param    [Signature] other
-    # @return   [Integer]   Amount of differences between signatures.
+    #
+    # @return   [Integer]
+    #   Amount of differences between signatures.
     def differences( other )
         return nil if other.nil?
         return 0   if self == other
@@ -105,7 +120,8 @@ class Signature
         self == other || differences( other ) < threshold
     end
 
-    # @return [Signature]   Copy of `self`.
+    # @return [Signature]
+    #   Copy of `self`.
     def dup
         self.class.new( '' ).tap { |s| s.copy( tokens, @options ) }
     end

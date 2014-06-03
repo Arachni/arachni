@@ -9,10 +9,12 @@ class State
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class HTTP
 
-    # @return   [Hash]  HTTP headers for the {Arachni::HTTP::Client#headers}.
+    # @return   [Hash]
+    #   HTTP headers for the {Arachni::HTTP::Client#headers}.
     attr_reader :headers
 
-    # @return   [CookieJar]  Cookie-jar for {Arachni::HTTP::Client#cookie_jar}.
+    # @return   [CookieJar]
+    #   Cookie-jar for {Arachni::HTTP::Client#cookie_jar}.
     attr_reader :cookiejar
 
     def initialize

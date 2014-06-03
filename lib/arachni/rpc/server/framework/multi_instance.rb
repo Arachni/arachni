@@ -70,15 +70,21 @@ module MultiInstance
     # * overall scan status
     # * statistics of all instances individually
     #
-    # @param    [Hash]  opts    Options about what data to include:
-    # @option opts [Bool] :slaves   (true) Slave statistics.
-    # @option opts [Bool] :issues   (true) Issue summaries.
-    # @option opts [Bool] :statistics   (true) Master/merged statistics.
-    # @option opts [Integer] :errors   (false) Logged errors.
+    # @param    [Hash]  opts
+    #   Options about what data to include:
+    # @option opts [Bool] :slaves   (true)
+    #   Slave statistics.
+    # @option opts [Bool] :issues   (true)
+    #   Issue summaries.
+    # @option opts [Bool] :statistics   (true)
+    #   Master/merged statistics.
+    # @option opts [Integer] :errors   (false)
+    #   Logged errors.
     # @option opts [Bool] :as_hash  (false)
     #   If set to `true`, will convert issues to hashes before returning them.
     #
-    # @return    [Hash]  Progress data.
+    # @return    [Hash]
+    #   Progress data.
     def progress( opts = {}, &block )
         opts = opts.symbolize_keys
 
@@ -165,13 +171,15 @@ module MultiInstance
 
     # Updates the page queue with the provided pages.
     #
-    # @param    [Array<Arachni::Page>]     pages   List of pages.
+    # @param    [Array<Arachni::Page>]     pages
+    #   List of pages.
     # @param    [String]    token
     #   Privileged token, prevents this method from being called by 3rd parties
     #   when this instance is a master. If this instance is not a master one
     #   the token needn't be provided.
     #
-    # @return   [Bool]  `true` on success, `false` on invalid `token`.
+    # @return   [Bool]
+    #   `true` on success, `false` on invalid `token`.
     def update_page_queue( pages, token = nil )
         return false if master? && !valid_token?( token )
         [pages].flatten.each { |page| push_to_page_queue( page )}

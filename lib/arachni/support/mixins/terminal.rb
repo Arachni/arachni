@@ -9,7 +9,6 @@ module Arachni
 module Support
 module Mixins
 
-#
 # Terminal manipulation methods
 #
 #
@@ -49,23 +48,20 @@ module Mixins
 #            flush
 #            sleep 0.003
 #        }
-#
 module Terminal
 
+    # Clears the line before printing using `puts`.
     #
-    # Clears the line before printing using 'puts'
-    #
-    # @param    [String]    str  string to output
-    #
+    # @param    [String]    str
+    #   String to output
     def reputs( str = '' )
         reprint str + "\n"
     end
 
+    # Clears the line before printing.
     #
-    # Clears the line before printing
-    #
-    # @param    [String]    str  string to output
-    #
+    # @param    [String]    str
+    #   String to output.
     def reprint( str = '' )
         print restr( str )
     end
@@ -74,9 +70,7 @@ module Terminal
         "\e[0K" + str
     end
 
-    #
     # Clear the bottom of the screen
-    #
     def clear_screen
         print "\e[2J"
     end
@@ -88,16 +82,12 @@ module Terminal
         move_to_home
     end
 
-    #
     # Moves cursor top left to its home
-    #
     def move_to_home
         print "\e[H"
     end
 
-    #
     # Flushes the STDOUT buffer
-    #
     def flush
         $stdout.flush
     end

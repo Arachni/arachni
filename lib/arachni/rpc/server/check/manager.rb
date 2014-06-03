@@ -11,12 +11,10 @@ module RPC
 class Server
 module Check
 
-#
 # We need to extend the original Manager and re-declare its inherited methods
 # which are required over RPC.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Manager < ::Arachni::Check::Manager
 
     # make these inherited methods visible again

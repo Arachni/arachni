@@ -14,8 +14,10 @@ module Slave
     # Sets the URL and authentication token required to connect to this
     # Instance's master and makes this Instance a slave.
     #
-    # @param    [String]    url         Master's URL in `hostname:port` form.
-    # @param    [String]    token       Master's authentication token.
+    # @param    [String]    url
+    #   Master's URL in `hostname:port` form.
+    # @param    [String]    token
+    #   Master's authentication token.
     #
     # @return   [Bool]
     #   `true` on success, `false` if the instance is already part of a
@@ -59,7 +61,8 @@ module Slave
         true
     end
 
-    # @return   [Bool]  `true` if this instance is a slave, `false` otherwise.
+    # @return   [Bool]
+    #   `true` if this instance is a slave, `false` otherwise.
     def slave?
         # If we don't have a connection to the master then we're not a slave.
         !!@master

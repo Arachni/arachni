@@ -6,12 +6,10 @@
 module Arachni
 module Support::Buffer
 
-#
 # A buffer implementation which flushes itself when it gets full or a number
 # of push attempts is reached between flushes.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class AutoFlush < Base
 
     attr_reader :max_pushes

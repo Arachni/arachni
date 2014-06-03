@@ -52,7 +52,8 @@ class BrowserCluster
     # Load all job types.
     Dir[lib + 'browser_cluster/jobs/*'].each { |j| require j }
 
-    # @return   [Integer]   Amount of browser instances in the pool.
+    # @return   [Integer]
+    #   Amount of browser instances in the pool.
     attr_reader :pool_size
 
     # @return   [Hash<String, Integer>]
@@ -67,7 +68,8 @@ class BrowserCluster
     #   Worker pool.
     attr_reader :workers
 
-    # @return   [Integer]   Number of pending jobs.
+    # @return   [Integer]
+    #   Number of pending jobs.
     attr_reader :pending_job_counter
 
     attr_reader :consumed_pids
@@ -133,7 +135,8 @@ class BrowserCluster
     end
 
     # @param    [Job]  job
-    # @param    [Block]  block Callback to be passed the {Job::Result}.
+    # @param    [Block]  block
+    #   Callback to be passed the {Job::Result}.
     #
     # @raise    [AlreadyShutdown]
     # @raise    [Job::Error::AlreadyDone]
@@ -161,8 +164,10 @@ class BrowserCluster
     # @param    [Page, String, HTTP::Response]  resource
     #   Resource to explore, if given a `String` it will be treated it as a URL
     #   and will be loaded.
-    # @param    [Hash]  options See {Jobs::ResourceExploration} accessors.
-    # @param    [Block]  block Callback to be passed the {Job::Result}.
+    # @param    [Hash]  options
+    #   See {Jobs::ResourceExploration} accessors.
+    # @param    [Block]  block
+    #   Callback to be passed the {Job::Result}.
     #
     # @see Jobs::ResourceExploration
     # @see #queue
@@ -176,8 +181,10 @@ class BrowserCluster
     # @param    [Page, String, HTTP::Response] resource
     #   Resource to load and whose environment to trace, if given a `String` it
     #   will be treated it as a URL and will be loaded.
-    # @param    [Hash]  options See {Jobs::TaintTrace} accessors.
-    # @param    [Block]  block Callback to be passed the {Job::Result}.
+    # @param    [Hash]  options
+    #   See {Jobs::TaintTrace} accessors.
+    # @param    [Block]  block
+    #   Callback to be passed the {Job::Result}.
     #
     # @see Jobs::TaintTrace
     # @see #queue
@@ -274,9 +281,10 @@ class BrowserCluster
         true
     end
 
-    # @return    [Job]  Pops a job from the queue.
-    # @see #queue
+    # @return    [Job]
+    # #Pops a job from the queue.
     #
+    # @see #queue
     # @private
     def pop
         {} while job_done?( job = @jobs.pop )
@@ -285,10 +293,13 @@ class BrowserCluster
 
     # Used to sync operations between browser workers.
     #
-    # @param    [Integer]   job_id  Job ID.
-    # @param    [String]    state  Should the given state be skipped?
+    # @param    [Integer]   job_id
+    #   Job ID.
+    # @param    [String]    state
+    #   Should the given state be skipped?
     #
-    # @raise    [Error::JobNotFound]  Raised when `job` could not be found.
+    # @raise    [Error::JobNotFound]
+    #   Raised when `job` could not be found.
     #
     # @private
     def skip_state?( job_id, state )
@@ -299,8 +310,10 @@ class BrowserCluster
 
     # Used to sync operations between browser workers.
     #
-    # @param    [Integer]   job_id  Job ID.
-    # @param    [String]    state  State to skip in the future.
+    # @param    [Integer]   job_id
+    #   Job ID.
+    # @param    [String]    state
+    #   State to skip in the future.
     #
     # @private
     def skip_state( job_id, state )

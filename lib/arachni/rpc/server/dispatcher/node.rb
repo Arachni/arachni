@@ -32,7 +32,8 @@ class Server::Dispatcher::Node
     #     to the others.
     #
     # @param    [Arachni::Options]    options
-    # @param    [String]              logfile   Where to send the output.
+    # @param    [String]              logfile
+    #   Where to send the output.
     def initialize( options, logfile = nil )
         @options = options
         @options.dispatcher.external_address ||= @options.rpc.server_address
@@ -68,14 +69,16 @@ class Server::Dispatcher::Node
         end
     end
 
-    # @return   [Boolean]   `true` if grid member, `false` otherwise.
+    # @return   [Boolean]
+    #   `true` if grid member, `false` otherwise.
     def grid_member?
         @neighbours.any?
     end
 
     # Adds a neighbour to the peer list.
     #
-    # @param    [String]    node_url    URL of a neighbouring node.
+    # @param    [String]    node_url
+    #   URL of a neighbouring node.
     # @param    [Boolean]   propagate
     #   Whether or not to announce the new node to the peers.
     def add_neighbour( node_url, propagate = false )
@@ -97,7 +100,8 @@ class Server::Dispatcher::Node
         true
     end
 
-    # @return   [Array] Neighbour/node/peer URLs.
+    # @return   [Array]
+    #   Neighbour/node/peer URLs.
     def neighbours
         @neighbours.to_a
     end
@@ -206,7 +210,8 @@ class Server::Dispatcher::Node
 
     # Announces the node to the ones in the peer list
     #
-    # @param    [String]    node    URL
+    # @param    [String]    node
+    #   URL
     def announce( node )
         print_status "Advertising: #{node}"
 

@@ -25,26 +25,34 @@ class Plugins
 
     # Registers plugin states.
     #
-    # @param    [String,Symbol]    plugin   Plugin {Component::Base.shortname}.
+    # @param    [String,Symbol]    plugin
+    #   Plugin {Component::Base.shortname}.
+    #
     # @param    [Object]    state
     def store( plugin, state )
         @runtime[plugin.to_sym] = state
     end
     alias :[]= :store
 
-    # @param    [String,Symbol]    plugin   Plugin {Component::Base.shortname}.
+    # @param    [String,Symbol]    plugin
+    #   Plugin {Component::Base.shortname}.
+    #
     # @return    [Object]
     def []( plugin )
         @runtime[plugin.to_sym]
     end
 
-    # @param    [String,Symbol]    plugin   Plugin {Component::Base.shortname}.
+    # @param    [String,Symbol]    plugin
+    #   Plugin {Component::Base.shortname}.
+    #
     # @return    [Object]
     def delete( plugin )
         @runtime.delete( plugin.to_sym )
     end
 
-    # @param    [String,Symbol]    plugin   Plugin {Component::Base.shortname}.
+    # @param    [String,Symbol]    plugin
+    #   Plugin {Component::Base.shortname}.
+    #
     # @return    [Bool]
     def include?( plugin )
         @runtime.include?( plugin.to_sym )

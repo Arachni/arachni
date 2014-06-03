@@ -41,7 +41,8 @@ class Server::Dispatcher::Handler
         @dispatcher = dispatcher
     end
 
-    # @return   [Server::Dispatcher::Node]  Local node.
+    # @return   [Server::Dispatcher::Node]
+    #   Local node.
     def node
         dispatcher.instance_eval { @node }
     end
@@ -77,10 +78,13 @@ class Server::Dispatcher::Handler
     # Accepts either 2 parameters (an `operation` and a `callback` or an operation
     # as a block.
     #
-    # @param    [Proc]  operation   Operation to defer.
-    # @param    [Proc]  callback    Block to call with the results of the operation.
+    # @param    [Proc]  operation
+    #   Operation to defer.
+    # @param    [Proc]  callback
+    #   Block to call with the results of the operation.
     #
-    # @param    [Block]  block      Operation to defer.
+    # @param    [Block]  block
+    #   Operation to defer.
     def defer( operation = nil, callback = nil, &block )
         Thread.new( *[operation, callback].compact, &block )
     end
@@ -100,24 +104,22 @@ class Server::Dispatcher::Handler
         Reactor.global.create_iterator( list, max_concurrency )
     end
 
-    # @return   [Array<Hash>]   Alive instances.
+    # @return   [Array<Hash>]
+    #   Alive instances.
     def instances
         dispatcher.running_jobs
     end
 
-    #
     # Connects to a Dispatcher by `url`
     #
     # @param    [String]    url
     #
     # @return   [Client::Dispatcher]
-    #
     def connect_to_dispatcher( url )
         @dispatcher_connections ||= {}
         @dispatcher_connections[url] ||= Client::Dispatcher.new( options, url )
     end
 
-    #
     # Connects to an Instance by `url`.
     #
     # @example
@@ -128,7 +130,6 @@ class Server::Dispatcher::Handler
     # @param    [Vararg]    args
     #
     # @return   [Client::Instance]
-    #
     def connect_to_instance( *args )
         url = token = nil
 

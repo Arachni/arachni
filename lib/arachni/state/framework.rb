@@ -133,6 +133,7 @@ class Framework
     end
 
     # @param    [Page]  page
+    #
     # @return    [Bool]
     #   `true` if the `page` has already been seen (based on the
     #   {#page_queue_filter}), `false` otherwise.
@@ -151,6 +152,7 @@ class Framework
     end
 
     # @param    [String]  url
+    #
     # @return    [Bool]
     #   `true` if the `url` has already been seen (based on the
     #   {#url_queue_filter}), `false` otherwise.
@@ -245,7 +247,8 @@ class Framework
     #   `false` otherwise.
     #
     # @return   [TrueClass]
-    #   Pauses the framework on a best effort basis, might take a while to take effect.
+    #   Pauses the framework on a best effort basis, might take a while to take
+    #   effect.
     def pause( caller, block = true )
         @pre_pause_status ||= @status if !paused? && !pausing?
 

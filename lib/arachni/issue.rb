@@ -18,39 +18,51 @@ class Issue
         :@page, :@referring_page, :@proof, :@signature, :@remarks, :@trusted
     ])
 
-    # @return    [String]   The name of the issue.
+    # @return    [String]
+    #   Name.
     attr_accessor :name
 
-    # @return    [String]   Brief description of the issue.
+    # @return    [String]
+    #   Brief description.
     attr_accessor :description
 
     # @return    [String]
-    #   A brief text informing the user how to remedy the Issue.
+    #   Brief text explaining how to remedy the issue.
     attr_accessor :remedy_guidance
 
     # @return    [String]
-    #   A code snippet showing the user how to remedy the Issue.
+    #   Code snippet demonstrating how to remedy the Issue.
     attr_accessor :remedy_code
 
-    # @return    [String]   Severity of the issue.
+    # @return    [String]
+    #   Severity of the issue.
+    #
     # @see Severity
     attr_accessor :severity
 
-    # @return [Array<String>]   Tags categorizing the issue.
+    # @return [Array<String>]
+    #   Tags categorizing the issue.
     attr_accessor :tags
 
-    # @return    [Hash]     References related to the issue.
+    # @return    [Hash]
+    #   References related to the issue.
     attr_accessor :references
 
-    # @return    [String]   The CWE ID number of the issue.
+    # @return    [String]
+    #   The CWE ID number of the issue.
+    #
     # @see http://cwe.mitre.org/
     attr_accessor :cwe
 
-    # @return    [Symbol]   Name of the vulnerable platform.
+    # @return    [Symbol]
+    #   Name of the vulnerable platform.
+    #
     # @see Platform::Manager
     attr_accessor :platform_name
 
-    # @return    [Symbol]   Type of the vulnerable platform.
+    # @return    [Symbol]
+    #   Type of the vulnerable platform.
+    #
     # @see Platform::Manager
     attr_accessor :platform_type
 
@@ -60,19 +72,23 @@ class Issue
 
     # @return   [Page]
     #   Page containing the {#vector} and whose audit resulted in the discovery
-    #   of the vulnerability.
+    #   of the issue.
     attr_accessor :referring_page
 
-    # @return   [Page]  Vulnerable page.
+    # @return   [Page]
+    #   Page proving the issue.
     attr_accessor :page
 
-    # @return   [Hash]  Information regarding the check that logged the issue.
+    # @return   [Hash]
+    #   {Check::Base.info Information} about the check that logged the issue.
     attr_accessor :check
 
-    # @return    [String]   The signature that identified the issue.
+    # @return    [String]
+    #   The signature/pattern that identified the issue.
     attr_accessor :signature
 
-    # @return    [String]   Data that was matched by the {#signature}.
+    # @return    [String]
+    #   Data that was matched by the {#signature}.
     attr_accessor :proof
 
     # @return   [Bool]
@@ -85,7 +101,8 @@ class Issue
     #   made the remark, value is an `Array` of remarks.
     attr_accessor :remarks
 
-    # @return   [Array<Issue>]  Variations of this issue.
+    # @return   [Array<Issue>]
+    #   Variations of this issue.
     attr_accessor :variations
 
     # @param    [Hash]    options
@@ -122,8 +139,10 @@ class Issue
 
     # Adds a remark as a heads-up to the end user.
     #
-    # @param    [String, Symbol]    author  Component which made the remark.
-    # @param    [String]    string  Remark.
+    # @param    [String, Symbol]    author
+    #   Component which made the remark.
+    # @param    [String]    string
+    #   Remark.
     def add_remark( author, string )
         fail ArgumentError, 'Author cannot be blank.' if author.to_s.empty?
         fail ArgumentError, 'String cannot be blank.' if string.to_s.empty?
@@ -186,7 +205,8 @@ class Issue
         @cwe = id
     end
 
-    # @return   [String]    {#cwe CWE} reference URL.
+    # @return   [String]
+    #   {#cwe CWE} reference URL.
     def cwe_url
         return if !cwe
         @cwe_url ||= "http://cwe.mitre.org/data/definitions/#{cwe}.html".freeze
@@ -286,7 +306,8 @@ class Issue
     end
     alias :to_hash :to_h
 
-    # @return   [String]    A string uniquely identifying this issue.
+    # @return   [String]
+    #   A string uniquely identifying this issue.
     def unique_id
         return @unique_id if @unique_id
         vector_info = active? ? "#{vector.method}:#{vector.affected_input_name}:" : nil
@@ -294,7 +315,7 @@ class Issue
     end
 
     # @return   [Integer]
-    #   An Integer hash uniquely identifying this issue.
+    #   A hash uniquely identifying this issue.
     #
     # @see #unique_id
     def digest
@@ -307,7 +328,8 @@ class Issue
         @variation.nil?
     end
 
-    # @return   [Bool] `true` if `self` is a variation.
+    # @return   [Bool]
+    #   `true` if `self` is a variation.
     def variation?
         !!@variation
     end
@@ -354,7 +376,8 @@ class Issue
 
     # Converts `self` to a solo issue, in place.
     #
-    # @param    [Issue] issue   Parent issue.
+    # @param    [Issue] issue
+    #   Parent issue.
     # @return   [Issue]
     #   Solo issue, with generic vulnerability data filled in from `issue`.
     def to_solo!( issue )
@@ -372,7 +395,8 @@ class Issue
 
     # Copy of `self` as a solo issue.
     #
-    # @param    [Issue] issue   Parent issue.
+    # @param    [Issue] issue
+    #   Parent issue.
     # @return   [Issue]
     #   Solo issue, with generic vulnerability data filled in from `issue`.
     def to_solo( issue )
@@ -415,7 +439,8 @@ class Issue
         data
     end
 
-    # @param    [Hash]  data    {#to_rpc_data}
+    # @param    [Hash]  data
+    #   {#to_rpc_data}
     # @return   [Issue]
     def self.from_rpc_data( data )
         instance = allocate

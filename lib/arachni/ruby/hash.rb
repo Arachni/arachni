@@ -7,7 +7,8 @@ class Hash
 
     # Converts the hash keys to strings.
     #
-    # @param    [Boolean]    recursively    Go through the Hash recursively?
+    # @param    [Boolean]    recursively
+    #   Go through the Hash recursively?
     #
     # @return [Hash]
     #   Hash with +self+'s keys recursively converted to strings.
@@ -21,7 +22,8 @@ class Hash
 
     # Converts the hash keys to symbols.
     #
-    # @param    [Boolean]    recursively    Go through the Hash recursively?
+    # @param    [Boolean]    recursively
+    #   Go through the Hash recursively?
     #
     # @return [Hash]
     #   Hash with +self+'s keys recursively converted to symbols.

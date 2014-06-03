@@ -66,10 +66,12 @@ class Browser
     # @return   [Array<Page::DOM::Transition>]
     attr_reader :transitions
 
-    # @return   [Hash]   Preloaded resources, by URL.
+    # @return   [Hash]
+    #   Preloaded resources, by URL.
     attr_reader :preloads
 
-    # @return   [Watir::Browser]   Watir driver interface.
+    # @return   [Watir::Browser]
+    #   Watir driver interface.
     attr_reader :watir
 
     # @return   [Array<Page>]
@@ -189,7 +191,8 @@ class Browser
     #   Loads the given resource in the browser. If it is a string it will be
     #   treated like a URL.
     #
-    # @return   [Browser]   `self`
+    # @return   [Browser]
+    #   `self`
     def load( resource, options = {} )
         @last_dom_url = nil
 
@@ -316,7 +319,8 @@ class Browser
         @proxy.shutdown
     end
 
-    # @return   [String]    Current URL.
+    # @return   [String]
+    #   Current URL.
     def url
         normalize_watir_url watir.url
     end
@@ -324,8 +328,11 @@ class Browser
     # Explores the browser's DOM tree and captures page snapshots for each
     # state change until there are no more available.
     #
-    # @param    [Integer]   depth How deep to go into the DOM tree.
-    # @return   [Array<Page>]   Page snapshots for each state.
+    # @param    [Integer]   depth
+    #   How deep to go into the DOM tree.
+    #
+    # @return   [Array<Page>]
+    #   Page snapshots for each state.
     def explore_and_flush( depth = nil )
         pages         = [ to_page ]
         done          = false
@@ -468,7 +475,8 @@ class Browser
     # Triggers all events on all elements (**once**) and captures
     # {#page_snapshots page snapshots}.
     #
-    # @return   [Browser]   `self`
+    # @return   [Browser]
+    #   `self`
     def trigger_events
         root_page = to_page
 
@@ -498,9 +506,11 @@ class Browser
     #
     # Triggers `event` on the element described by `tag` on `page`.
     #
-    # @param    [Page]    page  Page containing the element's `tag`.
+    # @param    [Page]    page
+    #   Page containing the element's `tag`.
     # @param    [ElementLocator]  element
-    # @param    [Symbol]  event Event to trigger.
+    # @param    [Symbol]  event
+    #   Event to trigger.
     def trigger_event( page, element, event )
         event = event.to_sym
         transition = fire_event( element, event )
@@ -642,7 +652,8 @@ class Browser
     # Starts capturing requests and parses them into elements of pages,
     # accessible via {#captured_pages}.
     #
-    # @return   [Browser]   `self`
+    # @return   [Browser]
+    #   `self`
     #
     # @see #stop_capture
     # @see #capture?
@@ -655,7 +666,8 @@ class Browser
 
     # Stops the {HTTP::Request} capture.
     #
-    # @return   [Browser]   `self`
+    # @return   [Browser]
+    #   `self`
     #
     # @see #start_capture
     # @see #capture?
@@ -688,7 +700,8 @@ class Browser
         @captured_pages
     end
 
-    # @return   [Page]  Converts the current browser window to a {Page page}.
+    # @return   [Page]
+    #   Converts the current browser window to a {Page page}.
     def to_page
         return if !(r = response)
 
@@ -777,7 +790,8 @@ class Browser
         @page_snapshots.clear
     end
 
-    # @return   [Array<Cookie>]   Browser cookies.
+    # @return   [Array<Cookie>]
+    #   Browser cookies.
     def cookies
         watir.cookies.to_a.map do |c|
             c[:path]  = '/' if c[:path] == '//'
@@ -788,7 +802,8 @@ class Browser
         end
     end
 
-    # @return   [String]   HTML code of the evaluated (DOM/JS/AJAX) page.
+    # @return   [String]
+    #   HTML code of the evaluated (DOM/JS/AJAX) page.
     def source
         watir.html
     end
@@ -826,7 +841,8 @@ class Browser
         nil
     end
 
-    # @return   [Selenium::WebDriver::Driver]   Selenium driver interface.
+    # @return   [Selenium::WebDriver::Driver]
+    #   Selenium driver interface.
     def selenium
         return @selenium if @selenium
 
