@@ -28,7 +28,7 @@ class Arachni::Plugins::AutoThrottle < Arachni::Plugin::Base
         http = framework.http
 
         # run for each response as it arrives
-        http.add_on_complete do
+        http.on_complete do
             # adjust on a per-burst basis
             next if http.burst_response_count == 0 ||
                 http.burst_response_count % http.max_concurrency != 0

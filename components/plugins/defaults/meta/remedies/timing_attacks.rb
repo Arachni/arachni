@@ -35,7 +35,7 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
 
     def run
         # Run for each response as it arrives.
-        http.add_on_complete do |response|
+        http.on_complete do |response|
             # We don't care about non OK responses.
             next if response.code != 200
 

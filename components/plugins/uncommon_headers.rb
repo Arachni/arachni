@@ -48,7 +48,7 @@ class Arachni::Plugins::UncommonHeaders < Arachni::Plugin::Base
     end
 
     def run
-        http.add_on_complete do |response|
+        http.on_complete do |response|
             headers = response.headers.
                 select { |name, _| !COMMON.include?( name.to_s.downcase ) }
             next if headers.empty?

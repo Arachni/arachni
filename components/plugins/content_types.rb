@@ -26,7 +26,7 @@ class Arachni::Plugins::ContentTypes < Arachni::Plugin::Base
     end
 
     def run
-        framework.http.add_on_complete do |response|
+        framework.http.on_complete do |response|
             next if skip?( response )
 
             type = response.headers.content_type
