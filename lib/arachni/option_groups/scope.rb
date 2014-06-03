@@ -12,7 +12,9 @@ module Arachni::OptionGroups
 class Scope < Arachni::OptionGroup
 
     # @note `nil` is infinite -- default is `nil`.
-    # @return    [Integer]  How deep to go into the site's directory tree.
+    #
+    # @return    [Integer]
+    #   How deep to go into the site's directory tree.
     #
     # @see Utilities#skip_resource?
     # @see Trainer#push
@@ -23,7 +25,9 @@ class Scope < Arachni::OptionGroup
     attr_accessor :directory_depth_limit
 
     # @note `nil` is infinite -- default is `10`.
-    # @return    [Integer]  How deep to go into each page's DOM tree.
+    #
+    # @return    [Integer]
+    #   How deep to go into each page's DOM tree.
     #
     # @see Browser
     # @see Framework#push_to_page_queue
@@ -32,7 +36,9 @@ class Scope < Arachni::OptionGroup
     attr_accessor :dom_depth_limit
 
     # @note `nil` is infinite -- default is `nil`.
-    # @return    [Integer]  How many pages to consider (crawl/audit)?
+    #
+    # @return    [Integer]
+    #   How many pages to consider (crawl/audit)?
     #
     # @see Framework#push_to_page_queue
     # @see Framework#push_to_url_queue
@@ -40,22 +46,26 @@ class Scope < Arachni::OptionGroup
     # @see Trainer#push
     attr_accessor :page_limit
 
-    # @return   [Array<String>] Paths to use instead of crawling.
+    # @return   [Array<String>]
+    #   Paths to use instead of crawling.
     #
     # @see Framework#push_to_url_queue
     # @see Framework#audit
     attr_accessor :restrict_paths
 
-    # @return   [String]    Path to file containing {#restrict_paths}.
+    # @return   [String]
+    #   Path to file containing {#restrict_paths}.
     attr_accessor :restrict_paths_filepath
 
-    # @return   [Array<String>] Paths to use in addition to crawling.
+    # @return   [Array<String>]
+    #   Paths to use in addition to crawling.
     #
     # @see Framework#push_to_page_queue
     # @see Framework#push_to_url_queue
     attr_accessor :extend_paths
 
-    # @return   [String] Path to file containing {#extend_paths}.
+    # @return   [String]
+    #   Path to file containing {#extend_paths}.
     attr_accessor :extend_paths_filepath
 
     # @return    [Hash{Regexp => Integer}]
@@ -109,6 +119,7 @@ class Scope < Arachni::OptionGroup
     attr_accessor :exclude_page_patterns
 
     # @note Default if `false`.
+    #
     # @return    [Bool]
     #   Take into consideration URLs pointing to different subdomains from the
     #   {Options#url seed URL}.

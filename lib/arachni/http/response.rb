@@ -11,29 +11,36 @@ module HTTP
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Response < Message
 
-    # @return [Integer] HTTP response status code.
+    # @return   [Integer]
+    #   HTTP response status code.
     attr_accessor :code
 
-    # @return [String] IP address of the server.
+    # @return   [String]
+    #   IP address of the server.
     attr_accessor :ip_address
 
-    # @return [String] HTTP response status message.
+    # @return   [String]
+    #   HTTP response status message.
     attr_accessor :message
 
-    # @return [Request] HTTP {Request} which triggered this {Response}.
+    # @return   [Request]
+    #   HTTP {Request} which triggered this {Response}.
     attr_accessor :request
 
-    # @return [Array<Response>]
+    # @return   [Array<Response>]
     #   Automatically followed redirections that eventually led to this response.
     attr_accessor :redirections
 
-    # @return   [Symbol]    `libcurl` return code.
+    # @return   [Symbol]
+    #   `libcurl` return code.
     attr_accessor :return_code
 
-    # @return [String]  `libcurl` return code.
+    # @return   [String]
+    #   `libcurl` return code.
     attr_accessor :return_message
 
-    # @return   [String]    Raw headers.
+    # @return   [String]
+    #   Raw headers.
     attr_accessor :headers_string
 
     # @return   [Float]
@@ -60,12 +67,14 @@ class Response < Message
         @redirections ||= []
     end
 
-    # @return   [Platform] Applicable platforms for the page.
+    # @return   [Platform]
+    #   Applicable platforms for the page.
     def platforms
         Platform::Manager[url]
     end
 
-    # @return   [String]    First line of the response.
+    # @return   [String]
+    #   First line of the response.
     def status_line
         return if !headers_string
         @status_line ||= headers_string.lines.first.to_s.chomp.freeze
@@ -116,7 +125,8 @@ class Response < Message
         !@body.binary?
     end
 
-    # @return [Boolean] `true` if timed out, `false` otherwise.
+    # @return   [Boolean]
+    #   `true` if timed out, `false` otherwise.
     def timed_out?
         [:operation_timedout, :couldnt_connect].include? return_code
     end

@@ -17,21 +17,17 @@ require_relative 'message'
 require_relative 'request'
 require_relative 'response'
 
-#
 # {HTTP} error namespace.
 #
 # All {HTTP} errors inherit from and live under it.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Error < Arachni::Error
 end
 
-#
 # Provides a system-wide, simple and high-performance HTTP client.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Client
     include Singleton
     include UI::Output
@@ -69,13 +65,11 @@ class Client
     # @!method on_complete( &block )
     advertise :on_complete
 
-    #
     # {Client} error namespace.
     #
     # All {Client} errors inherit from and live under it.
     #
     # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-    #
     class Error < Arachni::HTTP::Error
     end
 
@@ -93,19 +87,24 @@ class Client
     # Maximum allowed difference (in tokens) when comparing custom 404 signatures.
     CUSTOM_404_SIGNATURE_THRESHOLD = 25
 
-    # @return   [String]    Framework target URL, used as reference.
+    # @return   [String]
+    #   Framework target URL, used as reference.
     attr_reader :url
 
-    # @return    [Hash]     Default headers for {Request requests}.
+    # @return    [Hash]
+    #   Default headers for {Request requests}.
     attr_reader :headers
 
-    # @return   [Integer]   Amount of performed requests.
+    # @return   [Integer]
+    #   Amount of performed requests.
     attr_reader :request_count
 
-    # @return   [Integer]   Amount of received responses.
+    # @return   [Integer]
+    #   Amount of received responses.
     attr_reader :response_count
 
-    # @return   [Integer]   Amount of timed-out requests.
+    # @return   [Integer]
+    #   Amount of timed-out requests.
     attr_reader :time_out_count
 
     # @return   [Integer]
@@ -121,9 +120,8 @@ class Client
         reset
     end
 
-    # Re-initializes the singleton
-    #
-    # @return   [Arachni::HTTP] self
+    # @return   [Arachni::HTTP]
+    #   Reset `self`.
     def reset( hooks_too = true )
         clear_observers if hooks_too
         State.http.clear
@@ -222,9 +220,11 @@ class Client
     # @note Cookies or new callbacks set as a result of the block won't affect
     #   the HTTP singleton.
     #
-    # @param    [Block] block   Block to executes  inside a sandbox.
+    # @param    [Block] block
+    #   Block to executes  inside a sandbox.
     #
-    # @return   [Object]    Return value of the block.
+    # @return   [Object]
+    #   Return value of the block.
     def sandbox( &block )
         h = {}
         instance_variables.each do |iv|
@@ -307,19 +307,22 @@ class Client
         @hydra.max_concurrency = concurrency
     end
 
-    # @return   [Integer]   Current maximum concurrency of HTTP requests.
+    # @return   [Integer]
+    #   Current maximum concurrency of HTTP requests.
     def max_concurrency
         @hydra.max_concurrency
     end
 
-    # @return   [Array<Arachni::Element::Cookie>]   All cookies in the jar.
+    # @return   [Array<Arachni::Element::Cookie>]
+    #   All cookies in the jar.
     def cookies
         cookie_jar.cookies
     end
 
     # Queues/performs a generic request.
     #
-    # @param  [String]   url   URL to request.
+    # @param  [String]   url
+    #   URL to request.
     # @param  [Hash]  options
     #   {Request#initialize Request options} with the following extras:
     # @option options [Hash]  :cookies   ({})
@@ -421,14 +424,8 @@ class Client
         request( url, options, &block )
     end
 
-    # Queues a {Request} and calls the following callbacks:
-    #
-    # * `#on_queue` -- intersects a queued request and gets passed the original
-    #       and the async method. If the block returns one or more request
-    #       objects these will be queued instead of the original request.
-    # * `#on_complete` -- calls the block with the each requests as it arrives.
-    #
-    # @param  [Request]  request  the request to queue
+    # @param  [Request]  request
+    #   Request to queue.
     def queue( request )
         notify_on_queue( request )
         forward_request( request )

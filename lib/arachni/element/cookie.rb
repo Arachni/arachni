@@ -118,7 +118,8 @@ class Cookie < Base
 
     # Indicates whether or not the cookie has expired.
     #
-    # @param    [Time]    time    To compare against.
+    # @param    [Time]    time
+    #   To compare against.
     #
     # @return [Boolean]
     def expired?( time = Time.now )
@@ -150,8 +151,8 @@ class Cookie < Base
     #    p c
     #    #=> new-name=new-value
     #
-    #
-    # @param    [Hash]  inputs   Sets inputs.
+    # @param    [Hash]  inputs
+    #   Sets inputs.
     def inputs=( inputs )
         k = inputs.keys.first.to_s
         v = inputs.values.first.to_s
@@ -230,12 +231,14 @@ class Cookie < Base
         (@data && @data.include?( args.first )) || super
     end
 
-    # @return   [String]    To be used in a `Cookie` HTTP request header.
+    # @return   [String]
+    #   To be used in a `Cookie` HTTP request header.
     def to_s
         "#{encode( name, :name )}=#{encode( value )}"
     end
 
-    # @return   [String]    Converts self to a `Set-Cookie` string.
+    # @return   [String]
+    #   Converts self to a `Set-Cookie` string.
     def to_set_cookie
         set_cookie = "#{self.to_s}; "
         set_cookie << @data.map do |k, v|
@@ -262,8 +265,10 @@ class Cookie < Base
 
         # Parses a Netscape Cookie-jar into an Array of {Cookie}.
         #
-        # @param   [String]    url          request URL
-        # @param   [String]    filepath     Netscape HTTP cookiejar file
+        # @param   [String]    url
+        #   {HTTP::Request} URL.
+        # @param   [String]    filepath
+        #   Netscape HTTP cookiejar file.
         #
         # @return   [Array<Cookie>]
         #
@@ -324,9 +329,11 @@ class Cookie < Base
                 from_headers( response.url, response.headers ) )
         end
 
-        # Extracts cookies from a document based on `Set-Cookie` `http-equiv` meta tags.
+        # Extracts cookies from a document based on `Set-Cookie` `http-equiv`
+        # meta tags.
         #
-        # @param    [String]    url     Owner URL.
+        # @param    [String]    url
+        #   Owner URL.
         # @param    [String, Nokogiri::HTML::Document]    document
         #
         # @return   [Array<Cookie>]
@@ -355,7 +362,8 @@ class Cookie < Base
 
         # Extracts cookies from the `Set-Cookie` HTTP response header field.
         #
-        # @param    [String]    url     request URL
+        # @param    [String]    url
+        #   {HTTP::Request} URL.
         # @param    [Hash]      headers
         #
         # @return   [Array<Cookie>]
@@ -372,9 +380,10 @@ class Cookie < Base
 
         # Parses the `Set-Cookie` header value into cookie elements.
         #
-        #
-        # @param    [String]    url     Request URL.
-        # @param    [Hash]      str     `Set-Cookie` string
+        # @param    [String]    url
+        #   {HTTP::Request} URL.
+        # @param    [Hash]      str
+        #   `Set-Cookie` string
         #
         # @return   [Array<Cookie>]
         def from_set_cookie( url, str )
@@ -397,8 +406,10 @@ class Cookie < Base
         # Parses a string formatted for the `Cookie` HTTP request header field
         # into cookie elements.
         #
-        # @param    [String]    url     Request URL.
-        # @param    [Hash]      string  `Cookie` string.
+        # @param    [String]    url
+        #   {HTTP::Request} URL.
+        # @param    [Hash]      string
+        #   `Cookie` string.
         #
         # @return   [Array<Cookie>]
         def from_string( url, string )

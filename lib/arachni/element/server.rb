@@ -22,7 +22,8 @@ class Server < Base
     #
     # Logs a remote file or directory if it exists.
     #
-    # @param    [String]    url Resource to check.
+    # @param    [String]    url
+    #   Resource to check.
     # @param    [Bool]      silent
     #   If `false`, a message will be printed to stdout containing the status of
     #   the operation.
@@ -59,7 +60,8 @@ class Server < Base
     #
     # Checks whether or not a remote resource exists.
     #
-    # @param    [String]    url Resource to check.
+    # @param    [String]    url
+    #   Resource to check.
     # @param    [Block] block
     #   Block to be passed  `true` if the resource exists or `false` otherwise
     #   and the response for the resource check.

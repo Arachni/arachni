@@ -12,7 +12,7 @@ module HTTP
 #
 # For convenience, Hash-like getters and setters provide case-insensitive access.
 #
-# @author Tasos Laskos <tasos_laskos@rapid7.com>
+# @author Tasos Laskos <tasos.laskos@gmail.com>
 class Headers < Hash
 
     # @param  [Headers, Hash] headers
@@ -21,52 +21,73 @@ class Headers < Hash
     end
 
     # @note `field` will be capitalized appropriately before storing.
-    # @param  [String]  field Field name
-    # @return [String]  Field value.
+    #
+    # @param    [String]  field
+    #   Field name
+    #
+    # @return   [String]
+    #   Field value.
     def delete( field )
         super format_field_name( field.to_s.downcase )
     end
 
     # @note `field` will be capitalized appropriately before storing.
-    # @param  [String]  field Field name
-    # @return [String]  Field value.
+    #
+    # @param    [String]  field
+    #   Field name
+    #
+    # @return   [String]
+    #   Field value.
     def include?( field )
         super format_field_name( field.to_s.downcase )
     end
 
     # @note `field` will be capitalized appropriately before storing.
-    # @param  [String]  field Field name
-    # @return [String]  Field value.
+    #
+    # @param    [String]  field
+    #   Field name
+    #
+    # @return   [String]
+    #   Field value.
     def []( field )
         super format_field_name( field.to_s.downcase ).freeze
     end
 
     # @note `field` will be capitalized appropriately before storing.
-    # @param  [String]  field Field name
-    # @param  [Array<String>, String]  value Field value.
-    # @return [String]  Field `value`.
+    #
+    # @param    [String]  field
+    #   Field name
+    # @param    [Array<String>, String]  value
+    #   Field value.
+    #
+    # @return   [String]
+    #   Field `value`.
     def []=( field, value )
         super format_field_name( field.to_s.downcase ).freeze,
               value.is_a?( Array ) ? value : value.to_s.freeze
     end
 
-    # @return   [String, nil]   Value of the `Content-Type` field.
+    # @return   [String, nil]
+    #   Value of the `Content-Type` field.
     def content_type
         self['content-type']
     end
 
-    # @return   [String, nil]   Value of the `Location` field.
+    # @return   [String, nil]
+    #   Value of the `Location` field.
     def location
         self['location']
     end
 
-    # @return [Array<String>]   Set-cookie strings.
+    # @return   [Array<String>]
+    #   Set-cookie strings.
     def set_cookie
         return [] if self['set-cookie'].to_s.empty?
         [self['set-cookie']].flatten
     end
 
-    # @return [Array<Hash>]   Cookies as hashes.
+    # @return   [Array<Hash>]
+    #   Cookies as hashes.
     def cookies
         return [] if set_cookie.empty?
 

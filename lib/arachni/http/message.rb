@@ -5,28 +5,39 @@
 
 module Arachni
 module HTTP
+
+# @author Tasos Laskos <tasos.laskos@gmail.com>
 class Message
 
-    # @return   [String]    Resource location.
+    # @return   [String]
+    #   Resource location.
     attr_accessor :url
 
-    # @return [String]  HTTP version.
+    # @return   [String]
+    #   HTTP version.
     attr_accessor :version
 
-    # @return [Headers<String, String>]  HTTP headers as a Hash-like object.
+    # @return   [Headers<String, String>]
+    #   HTTP headers as a Hash-like object.
     attr_accessor :headers
 
-    # @return [String]  {Request}/{Response} body.
+    # @return   [String]
+    #   {Request}/{Response} body.
     attr_accessor :body
 
     # @note All options will be sent through the class setters whenever
     #   possible to allow for normalization.
     #
-    # @param  [Hash]  options Message options.
-    # @option options [String] :url URL.
-    # @option options [Hash] :headers HTTP headers.
-    # @option options [String] :body Body.
-    # @option options [String] :version (1.1) HTTP version.
+    # @param    [Hash]  options
+    #   Message options.
+    # @option   options [String]    :url
+    #   URL.
+    # @option   options [Hash]      :headers
+    #   HTTP headers.
+    # @option   options [String]    :body
+    #   Body.
+    # @option   options [String]    :version (1.1)
+    #   HTTP version.
     def initialize( options = {} )
         options.each do |k, v|
             v = my_dup( v )

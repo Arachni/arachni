@@ -116,6 +116,7 @@ class Form < Base
 
     # @param    [String]    input
     #   Input name.
+    #
     # @return   [Hash]
     #   Information about the given input's attributes.
     def details_for( input )
@@ -277,7 +278,8 @@ class Form < Base
         @requires_password = false
     end
 
-    # @return   [Bool]  `true` if the form contains a nonce, `false` otherwise.
+    # @return   [Bool]
+    #   `true` if the form contains a nonce, `false` otherwise.
     def has_nonce?
         !!nonce_name
     end
@@ -294,9 +296,11 @@ class Form < Base
     #   Form.new( 'http://stuff.com', { nonce_input: '' } ).nonce_name = 'blah'
     #   #=> #<Error::FieldNotFound: Could not find field named 'blah'.>
     #
-    # @param    [String]    field_name  Name of the field holding the nonce.
+    # @param    [String]    field_name
+    #   Name of the field holding the nonce.
     #
-    # @raise    [Error::FieldNotFound]  If `field_name` is not a form input.
+    # @raise    [Error::FieldNotFound]
+    #   If `field_name` is not a form input.
     def nonce_name=( field_name )
         if !has_inputs?( field_name )
             fail Error::FieldNotFound, "Could not find field named '#{field_name}'."
@@ -326,7 +330,8 @@ class Form < Base
     #    p f.field_type_for 'cant-see-this'
     #    #=> :hidden
     #
-    # @param    [String]    name    Field name.
+    # @param    [String]    name
+    #   Field name.
     #
     # @return   [String]
     def field_type_for( name )
@@ -397,7 +402,8 @@ class Form < Base
         #
         # @param    [String]    body
         #
-        # @return   [Hash]      Parameters.
+        # @return   [Hash]
+        #   Parameters.
         def parse_request_body( body )
             body.to_s.split( '&' ).inject( {} ) do |h, pair|
                 name, value = pair.split( '=', 2 )

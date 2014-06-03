@@ -14,6 +14,7 @@ class HTTP < Arachni::OptionGroup
     PROXY_TYPES = %w(http http_1_0 socks4 socks5 socks4a)
 
     # @note Default is '5'.
+    #
     # @return    [Integer]
     #   Amount of redirects to follow when performing HTTP
     #   {HTTP::Request requests}.
@@ -22,6 +23,7 @@ class HTTP < Arachni::OptionGroup
     attr_accessor :request_redirect_limit
 
     # @note Default is `20`.
+    #
     # @return    [Integer]
     #   Maximum HTTP {HTTP::Request request} concurrency. Be careful not to set
     #   this too high or you may kill the server.
@@ -32,6 +34,7 @@ class HTTP < Arachni::OptionGroup
     attr_accessor :request_concurrency
 
     # @note Default is `500`.
+    #
     # @return    [Integer]
     #   Maximum amount of {HTTP::Request requests} to keep in the
     #   {HTTP::Client client} queue.
@@ -44,6 +47,7 @@ class HTTP < Arachni::OptionGroup
     attr_accessor :request_queue_size
 
     # @note Default is '50_000'.
+    #
     # @return   [Integer]
     #   HTTP {HTTP::Request request} timeout in milliseconds.
     #
@@ -51,12 +55,14 @@ class HTTP < Arachni::OptionGroup
     # @see HTTP::Client
     attr_accessor :request_timeout
 
-    # @return   [String]   Username to use for HTTP authentication.
+    # @return   [String]
+    #   Username to use for HTTP authentication.
     #
     # @see HTTP::Client
     attr_accessor :authentication_username
 
-    # @return   [String]   Password to use for HTTP authentication.
+    # @return   [String]
+    #   Password to use for HTTP authentication.
     #
     # @see HTTP::Client
     attr_accessor :authentication_password
@@ -74,22 +80,26 @@ class HTTP < Arachni::OptionGroup
     # @see HTTP::Client
     attr_accessor :proxy_host
 
-    # @return    [Integer]   Port of the HTTP proxy server.
+    # @return    [Integer]
+    #   Port of the HTTP proxy server.
     #
     # @see HTTP::Client
     attr_accessor :proxy_port
 
-    # @return    [String]   Proxy username to use.
+    # @return    [String]
+    #   Proxy username to use.
     #
     # @see HTTP::Client
     attr_accessor :proxy_username
 
-    # @return    [String]   Proxy password to use.
+    # @return    [String]
+    #   Proxy password to use.
     #
     # @see HTTP::Client
     attr_accessor :proxy_password
 
     # @note Default is `auto`.
+    #
     # @return    [String]
     #   HTTP proxy type, available options are:
     #
@@ -99,18 +109,21 @@ class HTTP < Arachni::OptionGroup
     # @see HTTP::Client
     attr_accessor :proxy_type
 
-    # @return    [String]     Proxy URL (`host:port`).
+    # @return    [String]
+    #   Proxy URL (`host:port`).
     #
     # @see HTTP::Client
     attr_accessor :proxy
 
-    # @return    [Hash]     Cookies as `name=>value` pairs.
+    # @return    [Hash]
+    #   Cookies as `name=>value` pairs.
     #
     # @see HTTP::Client
     # @see HTTP::CookieJar
     attr_accessor :cookies
 
-    # @return    [String]   Location of the Netscape-style cookie-jar file.
+    # @return    [String]
+    #   Location of the Netscape-style cookie-jar file.
     #
     # @see HTTP::Client
     # @see HTTP::CookieJar
@@ -125,7 +138,9 @@ class HTTP < Arachni::OptionGroup
     attr_accessor :cookie_string
 
     # @note Default is "Arachni/v#{Arachni::VERSION}".
-    # @return    [String]   HTTP User-Agent to use.
+    #
+    # @return    [String]
+    #   HTTP User-Agent to use.
     #
     # @see HTTP::Client
     attr_accessor :user_agent

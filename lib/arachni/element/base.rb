@@ -34,7 +34,8 @@ class Base
     include Utilities
     extend Utilities
 
-    # @return     [Page]  Page this element belongs to.
+    # @return     [Page]
+    #   Page this element belongs to.
     attr_accessor :page
 
     # @return     [Object]
@@ -69,7 +70,8 @@ class Base
         defined? super ? super : "#{action}:#{type}"
     end
 
-    # @return   [Hash] Simple representation of self.
+    # @return   [Hash]
+    #   Simple representation of self.
     def to_h
         {
             class: self.class.to_s,
@@ -109,12 +111,14 @@ class Base
         @url = normalize_url( url ).freeze
     end
 
-    # @return [Symbol]  Element type.
+    # @return   [Symbol]
+    #   Element type.
     def type
         self.class.type
     end
 
-    # @return [Symbol]  Element type.
+    # @return   [Symbol]
+    #   Element type.
     def self.type
         name.split( ':' ).last.downcase.to_sym
     end

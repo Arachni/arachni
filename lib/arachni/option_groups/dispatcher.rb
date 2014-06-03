@@ -55,7 +55,8 @@ class Dispatcher < Arachni::OptionGroup
     #   How soon to check for {OptionGroups::Dispatcher#neighbour} node status.
     attr_accessor :node_ping_interval
 
-    # @return   [Float] Cost of using this Dispatcher node.
+    # @return   [Float]
+    #   Cost of using this Dispatcher node.
     attr_accessor :node_cost
 
     # @return   [String]
@@ -66,7 +67,8 @@ class Dispatcher < Arachni::OptionGroup
     #   Weight used to calculate the score of this Dispatcher node.
     attr_accessor :node_weight
 
-    # @return   [String]     Dispatcher node nickname.
+    # @return   [String]
+    #   Dispatcher node nickname.
     attr_accessor :node_nickname
 
     set_defaults(
@@ -75,7 +77,8 @@ class Dispatcher < Arachni::OptionGroup
         pool_size:           5
     )
 
-    # @return   [Bool]  `true` if the Grid should be used, `false` otherwise.
+    # @return   [Bool]
+    #   `true` if the Grid should be used, `false` otherwise.
     def grid?
         !!@grid_mode
     end
@@ -97,7 +100,8 @@ class Dispatcher < Arachni::OptionGroup
     #       Will only request Instances from Grid members with different
     #       {OptionGroups::Dispatcher#node_pipe_id Pipe-IDs}.
     #
-    # @raise    ArgumentError   On invalid mode.
+    # @raise    [ArgumentError]
+    #   On invalid mode.
     def grid_mode=( mode )
         return @grid_mode = nil if !mode
 

@@ -30,7 +30,8 @@ module WithAuditor
         remove_auditor
     end
 
-    # @return   [Bool]  `true` if it has no auditor, `false` otherwise.
+    # @return   [Bool]
+    #   `true` if it has no auditor, `false` otherwise.
     def orphan?
         !auditor
     end

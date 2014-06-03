@@ -16,12 +16,14 @@ class RPC < Arachni::OptionGroup
     # @see RPC::Server::Base
     attr_accessor :server_socket
 
-    # @return   [String]   Hostname or IP address for the RPC server.
+    # @return   [String]
+    #   Hostname or IP address for the RPC server.
     #
     # @see RPC::Server::Base
     attr_accessor :server_address
 
-    # @return   [Integer]   RPC server port.
+    # @return   [Integer]
+    #   RPC server port.
     #
     # @see RPC::Server::Base
     attr_accessor :server_port
@@ -57,7 +59,8 @@ class RPC < Arachni::OptionGroup
     # @see RPC::Client::Base
     attr_accessor :client_ssl_certificate
 
-    # @return [Integer] Maximum retries for failed RPC calls.
+    # @return [Integer]
+    #   Maximum retries for failed RPC calls.
     #
     # @see RPC::Client::Base
     attr_accessor :client_max_retries

@@ -58,12 +58,14 @@ class Header < Base
         !INVALID_INPUT_DATA.find { |c| data.include? c }
     end
 
-    # @return   [String]    Header name.
+    # @return   [String]
+    #   Header name.
     def name
         @inputs.first.first
     end
 
-    # @return   [String]    Header value.
+    # @return   [String]
+    #   Header value.
     def value
         @inputs.first.last
     end

@@ -96,7 +96,8 @@ class ProxyServer < WEBrick::HTTPProxyServer
         active_connections != 0
     end
 
-    # @return   [Integer]   Amount of active connections.
+    # @return   [Integer]
+    #   Amount of active connections.
     def active_connections
         @tokens.max - @tokens.size
     end
@@ -268,8 +269,10 @@ class ProxyServer < WEBrick::HTTPProxyServer
 
     # Transfers headers from the webapp HTTP response to the Proxy HTTP response.
     #
-    # @param    [#[], #each]    src     headers of the webapp response
-    # @param    [#[]=]    dst     headers of the forwarded/proxy response
+    # @param    [#[], #each]    src
+    #   Headers of the webapp response.
+    # @param    [#[]=]    dst
+    #   Headers of the forwarded/proxy response.
     def choose_header( src, dst )
         connections = split_field( [src['connection']].flatten.first )
 

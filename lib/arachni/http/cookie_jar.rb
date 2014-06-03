@@ -6,55 +6,48 @@
 module Arachni
 module HTTP
 
-#
 # Basic CookieJar implementation.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class CookieJar
     include Utilities
 
-    #
     # {CookieJar} error namespace.
     #
     # All {CookieJar} errors inherit from and live under it.
     #
     # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-    #
     class Error < Arachni::HTTP::Error
 
-        #
         # Raised when a CookieJar file could not be found at the specified location.
         #
         # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-        #
         class CookieJarFileNotFound < Error
         end
     end
 
-    #
     # Same as {#initialize}.
     #
     # @return   [Arachni::HTTP::CookieJar]
-    #
     def self.from_file( *args )
         new.load( *args )
     end
 
-    # @param    [String]    cookie_jar_file path to a Netscape cookie-jar
+    # @param    [String]    cookie_jar_file
+    #   Path to a Netscape cookie-jar.
     def initialize( cookie_jar_file = nil )
         @domains = {}
         load( cookie_jar_file ) if cookie_jar_file
     end
 
+    # Loads cookies from a Netscape cookiejar file.
     #
-    # Loads cookies from a Netscape cookiejar file
-    #
-    # @param    [String]    cookie_jar_file path to a Netscape cookie-jar
-    # @param    [String]    url     cookie owner
+    # @param    [String]    cookie_jar_file
+    #   Path to a Netscape cookie-jar.
+    # @param    [String]    url
+    #   Cookie owner.
     #
     # @return   [CookieJar]  self
-    #
     def load( cookie_jar_file, url = '' )
         # make sure that the provided cookie-jar file exists
         if !File.exist?( cookie_jar_file )
@@ -64,13 +57,11 @@ class CookieJar
         self
     end
 
-    #
-    # Updates the jar with +cookie+.
-    #
     # @param    [Cookie, Array<Cookie>]  cookies
+    #   Cookies with which to update the cookie-jar.
     #
-    # @return   [CookieJar]  self
-    #
+    # @return   [CookieJar]
+    #   `self`
     def <<( cookies )
         [cookies].flatten.compact.each do |cookie|
             ((@domains[cookie.domain] ||= {})[cookie.path] ||= {})[cookie.name] = cookie.dup
@@ -78,13 +69,12 @@ class CookieJar
         self
     end
 
-    #
-    # Updates the jar with +cookies+.
+    # Updates the jar with `cookies`.
     #
     # @param    [Array<String, Hash, Cookie>]  cookies
+    #   Cookies with which to update the cookie-jar.
     #
     # @return   [CookieJar]  self
-    #
     def update( cookies )
         [cookies].flatten.compact.each do |c|
             self << case c
@@ -110,13 +100,11 @@ class CookieJar
         self
     end
 
-    #
-    # Gets cookies for a specific +url+.
-    #
     # @param    [String]    url
+    #   URL for which to retrieve cookies.
     #
     # @return   [Array<Cookie>]
-    #
+    #   URL which should be sent to the resource at `url`.
     def for_url( url )
         uri = to_uri( url )
         request_path   = uri.path
@@ -137,13 +125,11 @@ class CookieJar
         end
     end
 
-    #
-    # Returns all cookies
-    #
-    # @param    [Bool]  include_expired    include expired cookies
+    # @param    [Bool]  include_expired
+    #   Include expired cookies.
     #
     # @return   [Array<Cookie>]
-    #
+    #   All cookies.
     def cookies( include_expired = false )
         @domains.values.map do |paths|
             paths.values.map do |cookies|
@@ -161,17 +147,19 @@ class CookieJar
         update other.cookies
     end
 
-    # Empties the cookiejar
+    # Empties the cookiejar.
     def clear
         @domains.clear
     end
 
-    # @return   [Bool]  +true+ if cookiejar is empty, +false+ otherwise
+    # @return   [Bool]
+    #   `true` if cookiejar is empty, `false` otherwise.
     def empty?
         @domains.empty?
     end
 
-    # @return   [Bool]  +true+ if cookiejar is not empty, +false+ otherwise
+    # @return   [Bool]
+    #   `true` if cookiejar is not empty, `false` otherwise.
     def any?
         !empty?
     end

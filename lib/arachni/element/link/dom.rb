@@ -45,7 +45,8 @@ class DOM < Base
         browser.goto to_s, take_snapshot: false
     end
 
-    # @return   [String]    URL including the DOM {#inputs}.
+    # @return   [String]
+    #   URL including the DOM {#inputs}.
     def to_s
         "#{@action}##{fragment_path}?" << inputs.
             map { |k, v| "#{encode_query_params(k)}=#{encode_query_params(v)}" }.

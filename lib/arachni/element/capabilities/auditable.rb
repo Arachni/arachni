@@ -362,7 +362,8 @@ module Auditable
 
     # Checks whether or not an audit has been already performed.
     #
-    # @param  [String]  elem_audit_id  a string returned by {#audit_id}
+    # @param  [String]  elem_audit_id
+    #   A string returned by {#audit_id}.
     #
     # @see #audited
     def audited?( elem_audit_id )
@@ -371,7 +372,8 @@ module Auditable
 
     # Registers an audited element to avoid duplicate audits.
     #
-    # @param  [String]  audit_id  {#audit_id Audit ID}.
+    # @param  [String]  audit_id
+    #   {#audit_id Audit ID}.
     #
     # @see #audited?
     def audited( audit_id )

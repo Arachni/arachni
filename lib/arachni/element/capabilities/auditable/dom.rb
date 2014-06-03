@@ -75,7 +75,8 @@ module DOM
     end
 
     # @param  [Hash]  options
-    # @param  [Block]  block    Callback to be passed the evaluated {Page}.
+    # @param  [Block]  block
+    #   Callback to be passed the evaluated {Page}.
     def submit( options = {}, &block )
         with_browser do |browser|
             prepare_browser( browser, options )

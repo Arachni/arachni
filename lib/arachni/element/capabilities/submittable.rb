@@ -27,7 +27,8 @@ module Capabilities::Submittable
     #
     # @see Arachni::Check::HTTP
     #
-    # @return [Symbol]  HTTP request method for the element.
+    # @return   [Symbol]
+    #   HTTP request method for the element.
     def method( *args )
         return super( *args ) if args.any?
         @method.freeze
@@ -57,7 +58,8 @@ module Capabilities::Submittable
     # {Capabilities::Inputtable#inputs parameters}.
     #
     # @param  [Hash]  options
-    # @param  [Block]  block    Callback to be passed the {HTTP::Response}.
+    # @param  [Block]  block
+    #   Callback to be passed the {HTTP::Response}.
     #
     # @see #http_request
     def submit( options = {}, &block )
@@ -77,7 +79,8 @@ module Capabilities::Submittable
     # Invoked by {#submit} to submit the object.
     #
     # @param    [Hash]      opts
-    # @param    [Block]     block    Callback to be passed the HTTP response.
+    # @param    [Block]     block
+    #   Callback to be passed the HTTP response.
     #
     # @return   [HTTP::Request]
     #

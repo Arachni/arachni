@@ -31,7 +31,9 @@ class GenericDOM < Base
         @initialization_options = options
     end
 
-    # @return   [Symbol]    DOM event.
+    # @return   [Symbol]
+    #   DOM event.
+    #
     # @see Page::DOM::Transition#event
     def event
         transition.event
@@ -40,6 +42,7 @@ class GenericDOM < Base
 
     # @return   [Browser::Element::Locator]
     #   Locator for the logged element.
+    #
     # @see Page::DOM::Transition#element
     def element
         transition.element
@@ -47,6 +50,7 @@ class GenericDOM < Base
 
     # @return   [Hash]
     #   Element attributes.
+    #
     # @see Browser::Element::Locator#attributes
     def attributes
         element.attributes
@@ -74,6 +78,7 @@ class GenericDOM < Base
 
     # @return   [Symbol]
     #   Element tag name.
+    #
     # @see Browser::Element::Locator#tag_name
     def type
         element.tag_name
@@ -94,6 +99,7 @@ class GenericDOM < Base
 
         # @param    [Hash]  data
         #   Data returned from {#to_rpc_data}.
+        #
         # @return   [GenericDOM]
         #   Restored element.
         def from_rpc_data( data )

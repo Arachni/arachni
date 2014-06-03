@@ -6,6 +6,8 @@
 require Arachni::Options.paths.lib + 'element/base'
 
 module Arachni::Element
+
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Body < Base
     include Capabilities::WithAuditor
 

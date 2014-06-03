@@ -23,37 +23,45 @@ class Request < Message
         :sync
     ]
 
-    # @return   [Integer]
+    # @return     [Integer]
     #   Auto-incremented ID for this request (set by {Client#request}).
     attr_accessor :id
 
-    # @return [Hash]  Request parameters.
-    attr_reader :parameters
+    # @return   [Hash]
+    #   Request parameters.
+    attr_reader   :parameters
 
-    # @return [Integer] Timeout in milliseconds.
+    # @return   [Integer]
+    #   Timeout in milliseconds.
     attr_accessor :timeout
 
-    # @return   [Bool]  Follow `Location` headers.
+    # @return   [Bool]
+    #   Follow `Location` headers.
     attr_accessor :follow_location
 
-    # @return   [Integer]   Maximum number of redirects to follow.
+    # @return   [Integer]
+    #   Maximum number of redirects to follow.
+    #
     # @see #follow_location
     attr_accessor :max_redirects
 
-    # @return   [String]   HTTP username.
+    # @return   [String]
+    #   HTTP username.
     attr_accessor :username
 
-    # @return   [String]   HTTP password.
+    # @return   [String]
+    #   HTTP password.
     attr_accessor :password
 
-    # @return   [Hash]  Cookies set for this request.
-    attr_reader :cookies
+    # @return   [Hash]
+    #   Cookies set for this request.
+    attr_reader   :cookies
 
     # @return   [Symbol]
     #   Mode of operation for the request.
     #
     # @see MODES
-    attr_reader :mode
+    attr_reader   :mode
 
     # @note Available only via completed {Response#request}.
     #
@@ -71,10 +79,12 @@ class Request < Message
     # was a result of which submitted element.
     attr_accessor :performer
 
-    # @return   [String]    `host:port`
+    # @return   [String]
+    #   `host:port`
     attr_accessor :proxy
 
-    # @return   [String]    `user:password`
+    # @return   [String]
+    #   `user:password`
     attr_accessor :proxy_user_password
 
     # @return   [String]
@@ -83,8 +93,10 @@ class Request < Message
     # @private
     attr_accessor :root_redirect_id
 
-    # @param  [Hash]  options    Request options.
-    # @option options [String] :url URL.
+    # @param  [Hash]  options
+    #   Request options.
+    # @option options [String] :url
+    #   URL.
     # @option options [Hash]  :parameters ({})
     #   Request parameters.
     # @option options [String]  :body ({})
@@ -129,12 +141,13 @@ class Request < Message
 
     # @note All keys and values will be recursively converted to strings.
     #
-    # @param  [Hash]  params
+    # @param    [Hash]  params
     #   Parameters to assign to this request.
     #   If performing a GET request and the URL has parameters of its own they
     #   will be merged and overwritten.
     #
-    # @return [Hash]  Normalized parameters.
+    # @return   [Hash]
+    #   Normalized parameters.
     def parameters=( params )
         @parameters = params.stringify_recursively_and_freeze
     end
@@ -151,7 +164,8 @@ class Request < Message
         mode == :sync
     end
 
-    # @return [Symbol]  HTTP method.
+    # @return   [Symbol]
+    #   HTTP method.
     def method( *args )
         return super( *args ) if args.any? # Preserve Object#method.
         @method
@@ -161,9 +175,11 @@ class Request < Message
     #
     # Sets the request HTTP method.
     #
-    # @param  [#to_s] verb HTTP method.
+    # @param    [#to_s] verb
+    #   HTTP method.
     #
-    # @return [Symbol]  HTTP method.
+    # @return   [Symbol]
+    #   HTTP method.
     def method=( verb )
         @method = verb.to_s.downcase.to_sym
     end
@@ -260,7 +276,8 @@ class Request < Message
         response
     end
 
-    # @return [Typhoeus::Response] Converts self to a `Typhoeus::Response`.
+    # @return   [Typhoeus::Response]
+    #   `self` converted to a `Typhoeus::Request`.
     def to_typhoeus
         headers['Cookie'] = effective_cookies.
             map { |k, v| "#{Cookie.encode( k )}=#{Cookie.encode( v )}" }.
