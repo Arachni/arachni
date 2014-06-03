@@ -65,7 +65,6 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
         end
 
         context 'when called with option' do
-
             describe :regexp do
                 context String do
                     it 'tries to match the provided pattern' do
@@ -76,7 +75,6 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                         @auditor.http.run
                         issues.size.should == 1
                         issues.first.vector.seed.should == @seed
-                        issues.first.trusted?.should be_true
                     end
                 end
 
@@ -89,7 +87,6 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                         @auditor.http.run
                         issues.size.should == 1
                         issues.first.vector.seed.should == @seed
-                        issues.first.trusted?.should be_true
                     end
                 end
 
@@ -111,7 +108,6 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                         issues.size.should == 1
                         issues[0].platform_name.should == :windows
                         issues[0].signature.should == regexps[:windows].to_s
-                        issues[0].should be_trusted
                     end
 
                     context 'when the payloads are per platform' do
@@ -151,7 +147,6 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                                 issue.vector.seed.should == payloads[platform]
                                 issue.platform_name.should == platform
                                 issue.signature.should == regexps[platform].to_s
-                                issue.should be_trusted
                             end
                         end
 
@@ -181,50 +176,24 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
 
                                 issue.platform_name.should == :asp
                                 issue.signature.should == regexps[:asp].to_s
-                                issue.should be_trusted
                             end
                         end
                     end
                 end
 
                 context 'when the page matches the regexp even before we audit it' do
-                    it 'flags the issue as requiring manual verification' do
-                        seed = 'Inject here'
-
+                    it 'does not log an issue' do
                         @positive.taint_analysis( 'Inject here',
                             regexp: 'Inject he[er]',
                             format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
                         @auditor.http.run
-                        issues.size.should == 1
-
-                        issue = issues.first
-
-                        issue.vector.seed.should == seed
-                        issue.should be_untrusted
-                        issue.remarks[:auditor].should be_any
-                    end
-                    it 'adds a remark' do
-                        seed = 'Inject here'
-
-                        @positive.taint_analysis( 'Inject here',
-                                                  regexp: 'Inject he[er]',
-                                                  format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
-                        )
-                        @auditor.http.run
-                        issues.size.should == 1
-
-                        issue = issues.first
-
-                        issue.vector.seed.should == seed
-                        issue.should be_untrusted
-                        issue.remarks[:auditor].should be_any
+                        issues.should be_empty
                     end
                 end
             end
 
             describe :substring do
-
                 context String do
                     it 'tries to match the provided pattern' do
                         @positive.taint_analysis( @seed,
@@ -316,21 +285,13 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                 end
 
                 context 'when the page includes the substring even before we audit it' do
-                    it 'flags the issue as requiring manual verification' do
-                        seed = 'Inject here'
-
+                    it 'does not log any issues' do
                         @positive.taint_analysis( 'Inject here',
                             regexp: 'Inject here',
                             format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
                         @auditor.http.run
-                        issues.size.should == 1
-
-                        issue = issues.first
-
-                        issue.vector.seed.should == seed
-                        issue.should be_untrusted
-                        issue.remarks[:auditor].should be_any
+                        issues.should be_empty
                     end
                 end
 
@@ -388,9 +349,7 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                     issues.should be_any
                 end
             end
-
         end
-
     end
 
 end

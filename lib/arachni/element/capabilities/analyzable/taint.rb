@@ -36,9 +36,6 @@ module Taint
         longest_word_optimization: false
     }
 
-    REMARK = 'This issue was identified by a pattern but the pattern matched ' <<
-            'the page\'s response body even before auditing the logged element.'
-
     # Performs taint analysis and logs an issue should there be one.
     #
     # It logs an issue when:
@@ -73,8 +70,9 @@ module Taint
             return false
         end
 
-        # We'll have to keep track of logged issues for analysis a bit down the line.
-        @logged_issues = []
+        # Buffer possible issues, we'll only register them with the system once
+        # we've evaluated our control response.
+        @candidate_issues = []
 
         # Perform the taint analysis.
         opts = self.class::OPTIONS.merge( TAINT_OPTIONS.merge( opts ) )
@@ -142,13 +140,13 @@ module Taint
         return if substring.to_s.empty?
         return if !response.body.include?( substring ) || ignore?( response, opts )
 
-        @logged_issues << @auditor.log(
+        @candidate_issues << {
             response:  response,
             platform:  opts[:platform],
             proof:     substring,
             signature: substring,
             vector:    response.request.performer
-        ).digest
+        }
         setup_verification_callbacks
     end
 
@@ -163,13 +161,13 @@ module Taint
         match_data = response.body.scan( regexp ).flatten.first.to_s
         return if match_data.to_s.empty? || ignore?( response, opts )
 
-        @logged_issues << @auditor.log(
+        @candidate_issues << {
             response:  response,
             platform:  opts[:platform],
             proof:     match_data,
             signature: regexp,
             vector:    response.request.performer
-        ).digest
+        }
         setup_verification_callbacks
     end
 
@@ -189,26 +187,18 @@ module Taint
         # caused them to be logged matches the untainted response.
         http.after_run do
             @setup_verification_callbacks = false
-
-            # Someone must have emptied the stored issues or issue storage is
-            # turned off.
-            if Data.issues.empty?
-                @logged_issues = []
-                next
-            end
+            next if @candidate_issues.empty?
 
             # Grab an untainted response.
             submit do |response|
-                @logged_issues.each do |hash|
-                    Data.issues[hash].variations.each do |v|
-                        next if !response.body.include?( v.proof )
+                while (issue = @candidate_issues.pop)
+                    # If the body of the control response matches the proof
+                    # of the current issue don't bother, it'll be a coincidence
+                    # causing a false positive.
+                    next if response.body.include?( issue[:proof] )
 
-                        v.trusted = false
-                        v.add_remark :auditor, REMARK
-                    end
+                    @auditor.log( issue )
                 end
-
-                @logged_issues = []
             end
         end
     end
