@@ -124,8 +124,6 @@ class Instance
 
         @options.datastore.token = token
 
-        debug if @options.output.debug
-
         if @options.output.reroute_to_logfile
             reroute_to_file "#{@options.paths.logs}/Instance - #{Process.pid}" <<
                                 "-#{@options.rpc.server_port}.log"

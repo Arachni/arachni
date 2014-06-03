@@ -63,20 +63,20 @@ class OptionParser < UI::CLI::OptionParser
             options.output.reroute_to_logfile = true
         end
 
-        on( '-v', '--verbose', 'Show verbose output.',
-               "(Only applicable when '--reroute-to-logfile' is enabled.)"
+        on( '--verbose', 'Show verbose output.',
+            "(Only applicable when '--reroute-to-logfile' is enabled.)"
         ) do
-            verbose
+            verbose_on
         end
 
-        on( '-d', '--debug', 'Show debugging information.',
-               "(Only applicable when '--reroute-to-logfile' is enabled.)"
-        ) do
-            debug
+        on( '--debug [LEVEL 1-3]', Integer, 'Show debugging information.',
+            "(Only applicable when '--reroute-to-logfile' is enabled.)"
+        ) do |level|
+            debug_on( level || 1 )
         end
 
         on( '--only-positives', 'Only output positive results.',
-               "(Only applicable when '--reroute-to-logfile' is enabled.)"
+            "(Only applicable when '--reroute-to-logfile' is enabled.)"
         ) do
             only_positives
         end
