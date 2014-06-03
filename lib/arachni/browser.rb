@@ -1228,6 +1228,10 @@ class Browser
 
     def get_response( url )
         synchronize do
+            # Order is important, #normalize_url by can get confused and remove
+            # everything after ';' by treating it as a path parameter.
+            # Rightly so...but we need to bypass it when auditing LinkTemplate
+            # elements.
             @window_responses[normalize_watir_url( url )] ||
                 @window_responses[normalize_url( url )]
         end
