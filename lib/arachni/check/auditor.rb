@@ -270,18 +270,26 @@ module Auditor
             msg << " input '#{vector.affected_input_name}'"
         end
 
-        print_ok "#{msg} ( #{vector.action} )"
+        print_ok "#{msg} with action #{vector.action}"
 
         if verbose?
-            print_verbose( "Injected:\t#{vector.affected_input_value}" ) if active
-            print_verbose( "Signature:\t#{options[:signature]}" ) if options[:signature]
-            print_verbose( "Proof:\t#{options[:proof]}" )         if options[:proof]
+            if active
+                print_verbose "Injected:  #{vector.affected_input_value.inspect}"
+            end
+
+            if options[:signature]
+                print_verbose "Signature: #{options[:signature]}"
+            end
+
+            if options[:proof]
+                print_verbose "Proof:     #{options[:proof]}"
+            end
 
             if !(request_dump = page.request.to_s).empty?
                 print_verbose "Request: \n#{request_dump}"
             end
 
-            print_verbose( '---------' )                          if only_positives?
+            print_verbose( '---------' ) if only_positives?
         end
 
         # Platform identification by vulnerability.
