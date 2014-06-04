@@ -667,7 +667,8 @@ class Client
                     print_debug_level_3 '------------'
                     print_debug_level_3 "Got response for request ID#: #{response.request.id}"
                     print_debug_level_3 "Status: #{response.code}"
-                    print_debug_level_3 "Error msg: #{response.return_message}"
+                    print_debug_level_3 "Code: #{response.return_code}"
+                    print_debug_level_3 "Message: #{response.return_message}"
                     print_debug_level_3 "URL: #{response.url}"
                     print_debug_level_3 "Headers:\n#{response.headers_string}"
                     print_debug_level_3 "Parsed headers: #{response.headers}"
