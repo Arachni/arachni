@@ -67,6 +67,13 @@ module Auditable
         @audit_options = {}
     end
 
+    # Resets the audit options to their original values.
+    def reset
+        super if defined?( super )
+        @audit_options = {}
+        self
+    end
+
     # @note Requires an {#auditor}.
     #
     # Submits mutations of `self` and calls the `block` to handle the results.

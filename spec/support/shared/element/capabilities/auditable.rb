@@ -62,6 +62,14 @@ shared_examples_for 'auditable' do |options = {}|
         end
     end
 
+    describe '#reset' do
+        it 'clears #audit_options' do
+            auditable.audit_options[:stuff] = true
+            auditable.reset
+            auditable.audit_options.should be_empty
+        end
+    end
+
     describe '#dup' do
         let(:dupped) { auditable.dup }
 
