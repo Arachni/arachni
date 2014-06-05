@@ -7,7 +7,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.8
+# @version 0.1.9
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -45,19 +45,19 @@ class Arachni::Checks::XSSPath < Arachni::Check::Base
             url  = path + str
             print_status "Checking for: #{url}"
 
-            http.get( url, parameters: parameters ) do |response|
-                check_and_log( response )
-            end
+            http.get( url, parameters: parameters, &method(:check_and_log) )
         end
     end
 
     def check_and_log( response )
+        body = response.body.downcase
+
         # check for the existence of the tag name in the response before
         # parsing to verify, no reason to waste resources...
-        return if !response.body || !response.body.include?( self.class.string )
+        return if !body.include?( self.class.string )
 
         # see if we managed to successfully inject our element
-        return if Nokogiri::HTML( response.body ).css( self.class.tag ).empty?
+        return if Nokogiri::HTML( body ).css( self.class.tag ).empty?
 
         log vector: Element::Path.new( response.url ),
             proof: self.class.string, response: response
@@ -70,7 +70,7 @@ class Arachni::Checks::XSSPath < Arachni::Check::Base
             description: %q{Cross-Site Scripting check for path injection},
             elements:    [ Element::Path ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.1.8',
+            version:     '0.1.9',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS) in path},

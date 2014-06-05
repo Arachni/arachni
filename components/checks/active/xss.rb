@@ -53,7 +53,7 @@ class Arachni::Checks::XSS < Arachni::Check::Base
 
     def check_and_log( response, element )
         # if the body doesn't include the tag at all bail out early
-        return if !response.body || !response.body.include?( self.class.tag )
+        return if !response.body.downcase.include?( self.class.tag )
 
         print_info 'Response is tainted, looking for proof of vulnerability.'
 

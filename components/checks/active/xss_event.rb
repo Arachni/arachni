@@ -57,10 +57,10 @@ class Arachni::Checks::XSSEvent < Arachni::Check::Base
     end
 
     def check_and_log( response, element )
-        return if element.seed.to_s.empty? ||
-            !response.body.to_s.include?( element.seed )
+        body = response.body.downcase
+        return if element.seed.to_s.empty? || !body.include?( element.seed )
 
-        doc  = Nokogiri::HTML( response.body )
+        doc  = Nokogiri::HTML( body )
         seed = element.seed.dup
 
         EVENT_ATTRS.each do |attribute|

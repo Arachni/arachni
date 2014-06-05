@@ -2,7 +2,7 @@ require 'sinatra'
 require 'sinatra/contrib'
 
 def get_variations( str )
-    str
+    str.to_s.upcase
 end
 
 def get_dom_case( input )

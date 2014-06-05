@@ -8,7 +8,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.5
+# @version 0.1.6
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -29,16 +29,18 @@ class Arachni::Checks::XSSHTMLTag < Arachni::Check::Base
     end
 
     def check_and_log( response, element )
+        body = response.body.downcase
+
         # if we have no body or it doesn't contain the TAG_NAME under any
         # context there's no point in parsing the HTML to verify the vulnerability
-        return if !response.body || !response.body.include?( TAG_NAME )
+        return if !body.include?( TAG_NAME )
 
         # see if we managed to inject a working HTML attribute to any
         # elements
-        Nokogiri::HTML( response.body ).xpath( "//*[@#{TAG_NAME}]" ).each do |node|
+        Nokogiri::HTML( body ).xpath( "//*[@#{TAG_NAME}]" ).each do |node|
             next if node[TAG_NAME] != seed
 
-            proof = (payload = find_included_payload( response.body )) ? payload : node.to_s
+            proof = (payload = find_included_payload( body )) ? payload : node.to_s
             log vector: element, proof: proof, response: response
         end
     end
@@ -56,7 +58,7 @@ class Arachni::Checks::XSSHTMLTag < Arachni::Check::Base
             description: %q{Cross-Site Scripting in HTML tag.},
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.1.5',
+            version:     '0.1.6',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS) in HTML tag},

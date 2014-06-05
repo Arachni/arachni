@@ -8,7 +8,7 @@ end
 
 def get_variations( str )
     attribute = env['PATH_INFO'].split( '/' ).last
-    [ '', '"', "'" ].map { |q| "<a href='/' #{attribute}=#{q}#{str}#{q}>#{attribute}</a>" }.join
+    [ '', '"', "'" ].map { |q| "<a href='/' #{attribute}=#{q}#{str.to_s.upcase}#{q}>#{attribute}</a>" }.join
 end
 
 get '/' do
