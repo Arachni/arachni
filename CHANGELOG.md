@@ -6,6 +6,9 @@
     - `#submit` - Updated to refresh multiple nonce fields instead of just one.
 - HTTP
     - Authentication method set to `:auto`.
+- Modules
+    - Active
+        - `xss` - Preliminary taint check should be case insensitive.
 
 ## 0.4.7 _(April 12, 2014)_
 

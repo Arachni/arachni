@@ -60,7 +60,7 @@ class Arachni::Modules::XSS < Arachni::Module::Base
 
     def check_and_log( res, opts )
         # if the body doesn't include the tag name at all bail out early
-        return if !res.body || !res.body.include?( self.class.tag )
+        return if !res.body || !res.body.downcase.include?( self.class.tag )
 
         # see if we managed to successfully inject our element in the doc tree
         return if Nokogiri::HTML( res.body ).css( self.class.tag ).empty?

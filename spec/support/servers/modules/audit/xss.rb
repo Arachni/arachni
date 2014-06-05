@@ -2,7 +2,7 @@ require 'sinatra'
 require 'sinatra/contrib'
 
 def get_variations( str )
-    str
+    str.upcase
 end
 
 get '/' do
