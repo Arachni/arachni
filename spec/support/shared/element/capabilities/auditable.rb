@@ -126,6 +126,8 @@ shared_examples_for 'auditable' do |options = {}|
     end
 
     describe '#audit_id' do
+        let(:action) { "#{url}/action" }
+
         it 'takes into account the #auditor class' do
             auditable.auditor = 1
             id = auditable.audit_id
@@ -140,12 +142,41 @@ shared_examples_for 'auditable' do |options = {}|
             auditable.audit_id.should == id
         end
 
-        it 'takes into account the #coverage_id' do
-            auditable.stub(:coverage_id) { 'blah' }
-            id = auditable.audit_id
+        it 'takes into account #action' do
+            e = auditable.dup
+            e.stub(:action) { action }
 
-            auditable.stub(:coverage_id) { 'bloo' }
-            auditable.audit_id.should_not == id
+            c = auditable.dup
+            c.stub(:action) { "#{action}2" }
+
+            e.audit_id.should_not == c.audit_id
+        end
+
+        it 'takes into account #type' do
+            e = auditable.dup
+            e.stub(:type) { :blah }
+
+            c = auditable.dup
+            c.stub(:type) { :blooh }
+
+            e.audit_id.should_not == c.audit_id
+        end
+
+        it 'takes into account #inputs names' do
+            e = auditable.dup
+            e.stub(:inputs) { {input1: 'stuff' } }
+
+            c = auditable.dup
+            c.stub(:inputs) { {input1: 'stuff2' } }
+            e.audit_id.should == c.audit_id
+
+            e = auditable.dup
+            e.stub(:inputs) { {input1: 'stuff' } }
+
+            c = auditable.dup
+            c.stub(:inputs) { {input2: 'stuff' } }
+
+            e.audit_id.should_not == c.audit_id
         end
 
         it 'takes into account the given payload' do
