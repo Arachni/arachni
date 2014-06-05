@@ -1151,7 +1151,7 @@ class Browser
 
         case request.method
             when :get
-                inputs = link_parse_query( request.url )
+                inputs =  request.parsed_url.query_parameters
                 return if inputs.empty?
 
                 # Make this a Link.

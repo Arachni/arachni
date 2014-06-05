@@ -34,7 +34,6 @@ describe Arachni::Utilities do
         form_parse_request_body: [Arachni::Element::Form, :parse_request_body],
         links_from_response:     [Arachni::Element::Link, :from_response],
         links_from_document:     [Arachni::Element::Link, :from_document],
-        link_parse_query:        [Arachni::Element::Link, :parse_query],
         cookies_from_response:   [Arachni::Element::Cookie, :from_response],
         cookies_from_document:   [Arachni::Element::Cookie, :from_document],
         cookies_from_file:       [Arachni::Element::Cookie, :from_file],
@@ -48,6 +47,7 @@ describe Arachni::Utilities do
         html_encode:             [CGI, :escapeHTML],
         html_escape:             [CGI, :escapeHTML],
         uri_parse:               [Arachni::URI, :parse],
+        uri_parse_query:         [Arachni::URI, :parse_query],
         uri_encode:              [Arachni::URI, :encode],
         uri_decode:              [Arachni::URI, :decode],
         normalize_url:           [Arachni::URI, :normalize]

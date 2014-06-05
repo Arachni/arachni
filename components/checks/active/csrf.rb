@@ -80,7 +80,7 @@ class Arachni::Checks::CSRF < Arachni::Check::Base
 
         return false if found_token
 
-        link_vars = link_parse_query( form.action )
+        link_vars = uri_parse_query( form.action )
         if link_vars.any?
             # and we also need to check for a token in the form action.
             found_token = link_vars.to_a.flatten.

@@ -293,6 +293,8 @@ module Output
     private
 
     def intercept_print_message( message )
+        return message if !self.class.respond_to?( :personalize_output? )
+
         self.class.personalize_output? ?
             "#{self.class.name.split('::').last}: #{message}" : message
     end

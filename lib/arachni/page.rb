@@ -245,7 +245,7 @@ class Page
     # @return    [Hash]
     #   {#url URL} query parameters.
     def query_vars
-        @cache[:query_vars] ||= Link.parse_query( url )
+        @cache[:query_vars] ||= uri_parse_query( url )
     end
 
     # @return    [String]

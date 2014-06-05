@@ -55,10 +55,10 @@ class Link < Base
     #
     # @return  (see Capabilities::Submittable#action=)
     def action=( url )
-        rewritten   = uri_rewrite( url )
-        self.inputs = self.class.parse_query( rewritten ).merge( self.inputs || {} )
+        rewritten   = uri_parse( url ).rewrite
+        self.inputs = rewritten.query_parameters.merge( self.inputs || {} )
 
-        super rewritten.split( '?' ).first.to_s
+        super rewritten.without_query
     end
 
     # @return   [String]
@@ -146,27 +146,6 @@ class Link < Base
                     html:   link.to_html.freeze
                 )
             end.compact
-        end
-
-        # Extracts inputs from a URL query.
-        #
-        # @param    [String]    url
-        #
-        # @return   [Hash]
-        def parse_query( url )
-            return {} if !url
-
-            parsed = uri_parse( url )
-            return {} if !parsed
-
-            query = parsed.query
-            return {} if !query || query.empty?
-
-            query.to_s.split( '&' ).inject( {} ) do |h, pair|
-                name, value = pair.split( '=', 2 )
-                h[decode( name.to_s )] = decode( value.to_s )
-                h
-            end
         end
 
         def encode_query_params( param )

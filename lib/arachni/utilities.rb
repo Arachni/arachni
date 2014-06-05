@@ -66,11 +66,6 @@ module Utilities
         Link.from_document( *args )
     end
 
-    # @see Arachni::Element::Link.parse_query
-    def link_parse_query( *args )
-        Link.parse_query( *args )
-    end
-
     # @see Arachni::Element::Cookie.from_response
     def cookies_from_response( *args )
         Cookie.from_response( *args )
@@ -143,6 +138,11 @@ module Utilities
 
     def uri_rewrite( *args )
         URI.rewrite( *args )
+    end
+
+    # @see Arachni::URI.parse_query
+    def uri_parse_query( url )
+        URI.parse_query( url )
     end
 
     # @see URI.to_absolute

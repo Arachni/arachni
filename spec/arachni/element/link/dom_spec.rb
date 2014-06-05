@@ -43,7 +43,7 @@ describe Arachni::Element::Link::DOM do
         end
     end
 
-    %w(parse_query encode decode).each do |m|
+    %w(encode decode).each do |m|
         describe "##{m}" do
             it "delegates to #{Arachni::Element::Link}.#{m}" do
                 Arachni::Element::Link.stub(m) { |arg| "#{arg}1" }

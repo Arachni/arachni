@@ -57,13 +57,6 @@ class DOM < Base
         "#{@action}##{fragment}"
     end
 
-    def parse_query( *args )
-        self.class.parse_query( *args )
-    end
-    def self.parse_query( *args )
-        Link.parse_query( *args )
-    end
-
     def encode_query_params( *args )
         Link.encode_query_params( *args )
     end
@@ -93,7 +86,7 @@ class DOM < Base
         fragment = href.split( '#', 2 ).last
         fragment_path, fragment_query = fragment.split( '?', 2 )
 
-        inputs = parse_query( "?#{fragment_query}" )
+        inputs = uri_parse_query( "?#{fragment_query}" )
         return if inputs.empty?
 
         {

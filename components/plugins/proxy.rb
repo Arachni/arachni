@@ -126,7 +126,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         TemplateScope.get.set :sign_in_url, sign_in_url
 
         params = form_parse_request_body( req.body.to_s ).
-            merge( link_parse_query( url ) ) || {}
+            merge( uri_parse_query( url ) ) || {}
 
         print_status "Requesting #{url}"
 
