@@ -75,6 +75,8 @@
                 - `Timeout`
                     - General refactoring and code cleanup.
                     - Updated the algorithm to ensure server responsiveness before each phase.
+                    - Lowered the amount of performed requests.
+                    - No longer downloads response bodies.
                 - `RDiff` => `Differential`
                 - `Taint`
             - `Submittable`
