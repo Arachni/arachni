@@ -11,6 +11,7 @@
         - `xss` - Preliminary taint check should be case insensitive.
         - `xss_event` - Preliminary taint check should be case insensitive.
         - `xss_path` - Preliminary taint check should be case insensitive.
+        - `xss_script_tag` - Preliminary taint check should be case insensitive.
         - `unvalidated_redirect` - URL check should be case insensitive.
 
 ## 0.4.7 _(April 12, 2014)_

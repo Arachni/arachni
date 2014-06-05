@@ -45,11 +45,13 @@ class Arachni::Modules::XSSScriptTag < Arachni::Module::Base
     end
 
     def check_and_log( res, injected, opts )
+        body = res.body.to_s.downcase
+
         # if we have no body or it doesn't contain the injected string under any
         # context there's no point in parsing the HTML to verify the vulnerability
-        return if !res.body || !res.body.include?( injected )
+        return if !body.include?( injected )
 
-        Nokogiri::HTML( res.body ).css( 'script' ).each do |script|
+        Nokogiri::HTML( body ).css( 'script' ).each do |script|
             next if !script.to_s.include?( injected )
 
             opts[:match]        = script.to_s
@@ -67,7 +69,7 @@ class Arachni::Modules::XSSScriptTag < Arachni::Module::Base
             description: %q{Injects strings and checks if they appear inside HTML 'script' tags.},
             elements:    [Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.1.5',
+            version:     '0.1.6',
             references:  {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/',

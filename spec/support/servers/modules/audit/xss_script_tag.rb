@@ -3,7 +3,7 @@ require 'sinatra/contrib'
 
 def get_variations( str )
     <<-EOHTML
-        <script>#{str}</script>
+        <script>#{str.upcase}</script>
     EOHTML
 end
 
