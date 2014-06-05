@@ -41,6 +41,81 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
         }
     end
 
+    describe '#timeout_id' do
+        let(:action) { "#{@url}/action" }
+
+        it 'takes into account the #auditor class' do
+            subject.auditor = 1
+            id = subject.timeout_id
+
+            subject.auditor = '2'
+            subject.timeout_id.should_not == id
+
+            subject.auditor = 1
+            id = subject.timeout_id
+
+            subject.auditor = 2
+            subject.timeout_id.should == id
+        end
+
+        it 'takes into account #action' do
+            e = subject.dup
+            e.stub(:action) { action }
+
+            c = subject.dup
+            c.stub(:action) { "#{action}2" }
+
+            e.timeout_id.should_not == c.timeout_id
+        end
+
+        it 'takes into account #type' do
+            e = subject.dup
+            e.stub(:type) { :blah }
+
+            c = subject.dup
+            c.stub(:type) { :blooh }
+
+            e.timeout_id.should_not == c.timeout_id
+        end
+
+        it 'takes into account #inputs names' do
+            e = subject.dup
+            e.stub(:inputs) { {input1: 'stuff' } }
+
+            c = subject.dup
+            c.stub(:inputs) { {input1: 'stuff2' } }
+            e.timeout_id.should == c.timeout_id
+
+            e = subject.dup
+            e.stub(:inputs) { {input1: 'stuff' } }
+
+            c = subject.dup
+            c.stub(:inputs) { {input2: 'stuff' } }
+
+            e.timeout_id.should_not == c.timeout_id
+        end
+
+        it 'takes into account the #affected_input_value' do
+            e = subject.dup
+            e.stub(:affected_input_value) { :blah }
+
+            c = subject.dup
+            c.stub(:affected_input_value) { :blooh }
+
+            e.timeout_id.should_not == c.timeout_id
+        end
+
+        it 'takes into account the #affected_input_name' do
+            e = subject.dup
+            e.stub(:affected_input_name) { :blah }
+
+            c = subject.dup
+            c.stub(:affected_input_name) { :blooh }
+
+            e.timeout_id.should_not == c.timeout_id
+        end
+    end
+
     describe '#ensure_responsiveness' do
         context 'when the server is responsive' do
             it 'returns true' do
