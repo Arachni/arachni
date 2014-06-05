@@ -27,9 +27,7 @@ describe Arachni::Element::Link do
     let(:http) { Arachni::HTTP::Client }
     let(:utilities) { Arachni::Utilities }
     let(:rewrite_rules) do
-        {
-            /articles\/[\w-]+\/(\d+)/ => 'articles.php?id=\1'
-        }
+        { /articles\/[\w-]+\/(\d+)/ => 'articles.php?id=\1' }
     end
 
     it 'is assigned to Arachni::Link for easy access' do
@@ -94,9 +92,9 @@ describe Arachni::Element::Link do
             end
         end
 
-        context "when there are #{Arachni::OptionGroups::Scope}#link_rewrites" do
+        context "when there are #{Arachni::OptionGroups::Scope}#url_rewrites" do
             it 'rewrites the #action' do
-                Arachni::Options.scope.link_rewrites = rewrite_rules
+                Arachni::Options.scope.url_rewrites = rewrite_rules
 
                 link = described_class.new(
                     url:    url,
@@ -189,24 +187,6 @@ describe Arachni::Element::Link do
             subject.dom.should be_true
 
             subject.to_rpc_data.should_not include 'dom_data'
-        end
-    end
-
-    describe '.rewrite' do
-        let(:url) { 'http://test.com/articles/some-stuff/23' }
-
-        it 'rewrites a URL based on the given rules' do
-            described_class.rewrite( url, rewrite_rules ).should ==
-                'http://test.com/articles.php?id=23'
-        end
-
-        context 'when no rules are provided' do
-            it "uses the ones in #{Arachni::OptionGroups::Scope}#link_rewrites" do
-                Arachni::Options.scope.link_rewrites = rewrite_rules
-
-                described_class.rewrite( url ).should ==
-                    'http://test.com/articles.php?id=23'
-            end
         end
     end
 

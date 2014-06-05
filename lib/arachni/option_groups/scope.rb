@@ -135,8 +135,11 @@ class Scope < Arachni::OptionGroup
     #   Regular expression and substitution pairs, used to rewrite
     #   {Element::Capabilities::Submittable#action}.
     #
+    # @see URI.rewrite
+    # @see URI#rewrite
     # @see Element::Link
-    attr_accessor :link_rewrites
+    # @see Element::Form
+    attr_accessor :url_rewrites
 
     set_defaults(
         redundant_path_patterns: {},
@@ -146,20 +149,17 @@ class Scope < Arachni::OptionGroup
         include_path_patterns:   [],
         restrict_paths:          [],
         extend_paths:            [],
-        link_rewrites:           {}
+        url_rewrites:            {}
     )
 
-    def link_rewrites=( filters )
-        if !filters
-            return @redundant_path_patterns = defaults[:redundant_path_patterns].dup
-        end
+    def url_rewrites=( rules )
+        return @url_rewrites = defaults[:url_rewrites].dup if !rules
 
-        @link_rewrites =
-            filters.inject({}) do |h, (regexp, value)|
-                regexp = regexp.is_a?( Regexp ) ? regexp : Regexp.new( regexp.to_s )
-                h.merge!( regexp => value )
-                h
-            end
+        @url_rewrites = rules.inject({}) do |h, (regexp, value)|
+            regexp = regexp.is_a?( Regexp ) ? regexp : Regexp.new( regexp.to_s )
+            h.merge!( regexp => value )
+            h
+        end
     end
 
     # These options need to contain Array<String>.
@@ -281,7 +281,7 @@ class Scope < Arachni::OptionGroup
     def to_rpc_data
         d = super
 
-        %w(redundant_path_patterns link_rewrites).each do |k|
+        %w(redundant_path_patterns url_rewrites).each do |k|
             d[k] = d[k].stringify
         end
 

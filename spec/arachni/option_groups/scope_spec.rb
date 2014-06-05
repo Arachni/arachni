@@ -8,19 +8,19 @@ describe Arachni::OptionGroups::Scope do
         restrict_paths_filepath extend_paths extend_paths_filepath
         redundant_path_patterns auto_redundant_paths include_path_patterns
         exclude_path_patterns exclude_page_patterns include_subdomains https_only
-        link_rewrites
+        url_rewrites
     ).each do |method|
         it { should respond_to method }
         it { should respond_to "#{method}=" }
     end
 
-    describe '#link_rewrites' do
+    describe '#url_rewrites' do
         it 'converts the keys to Regexp' do
-            subject.link_rewrites = {
+            subject.url_rewrites = {
                 '/article/(\d+)' => 'articles?id=\1'
             }
 
-            subject.link_rewrites.should == {
+            subject.url_rewrites.should == {
                 /\/article\/(\d+)/ => 'articles?id=\1'
             }
         end
@@ -317,11 +317,11 @@ describe Arachni::OptionGroups::Scope do
             data['redundant_path_patterns'].should == values.stringify
         end
 
-        it "converts 'link_rewrites' to strings" do
-            values = { /link_rewrites/ => 'test' }
-            subject.link_rewrites = values
+        it "converts 'url_rewrites' to strings" do
+            values = { /url_rewrites/ => 'test' }
+            subject.url_rewrites = values
 
-            data['link_rewrites'].should == values.stringify
+            data['url_rewrites'].should == values.stringify
         end
 
         %w(exclude_path_patterns exclude_page_patterns include_path_patterns).each do |k|

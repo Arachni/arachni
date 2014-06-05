@@ -141,6 +141,10 @@ module Utilities
         URI.decode( url )
     end
 
+    def uri_rewrite( *args )
+        URI.rewrite( *args )
+    end
+
     # @see URI.to_absolute
     def to_absolute( relative_url, reference_url = Options.instance.url.to_s )
         URI.to_absolute( relative_url, reference_url )

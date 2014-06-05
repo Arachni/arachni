@@ -105,7 +105,7 @@ class Form < Base
     # @@return  (see Capabilities::Submittable#action=)
     def action=( url )
         if self.method == :get
-            rewritten   = Link.rewrite( url )
+            rewritten   = uri_rewrite( url )
             self.inputs = link_parse_query( rewritten ).merge( self.inputs || {} )
 
             super rewritten.split( '?' ).first.to_s

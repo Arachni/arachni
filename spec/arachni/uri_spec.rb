@@ -92,7 +92,11 @@ describe Arachni::URI do
         end
     end
 
-    before { @opts = Arachni::Options.instance.reset }
+    before(:each) { @opts = Arachni::Options.instance.reset }
+
+    let(:rewrite_rules) do
+        { /articles\/[\w-]+\/(\d+)/ => 'articles.php?id=\1' }
+    end
 
     describe '.URI' do
         it 'parses and normalize the give string' do
@@ -100,6 +104,24 @@ describe Arachni::URI do
                 uri = Arachni::URI( url )
                 uri.is_a?( Arachni::URI ).should be_true
                 uri.to_s.should == @ref_normalizer.call( url )
+            end
+        end
+    end
+
+    describe '.rewrite' do
+        let(:url) { 'http://test.com/articles/some-stuff/23' }
+
+        it 'rewrites a URL based on the given rules' do
+            described_class.rewrite( url, rewrite_rules ).should ==
+                'http://test.com/articles.php?id=23'
+        end
+
+        context 'when no rules are provided' do
+            it "uses the ones in #{Arachni::OptionGroups::Scope}#url_rewrites" do
+                Arachni::Options.scope.url_rewrites = rewrite_rules
+
+                described_class.rewrite( url ).should ==
+                    'http://test.com/articles.php?id=23'
             end
         end
     end
@@ -580,6 +602,32 @@ describe Arachni::URI do
         it 'returns the URI up to its resource component without the query' do
             expected = 'http://test.com/directory/resource.php'
             described_class.new( "#{expected}?param=1&param2=2" ).without_query.should == expected
+        end
+    end
+
+    describe '#rewrite' do
+        let(:url) { described_class.new( 'http://test.com/articles/some-stuff/23' ) }
+        let(:rewritten) { described_class.new( 'http://test.com/articles.php?id=23' ) }
+
+        it 'rewrites a URL based on the given rules' do
+            url.rewrite( rewrite_rules ).should == rewritten
+        end
+
+        context 'when no rules are provided' do
+            it "uses the ones in #{Arachni::OptionGroups::Scope}#url_rewrites" do
+                Arachni::Options.scope.url_rewrites = rewrite_rules
+
+                url.rewrite.should == rewritten
+            end
+        end
+
+        context 'when no rules match' do
+            let(:url) { described_class.new( 'http://blahblah/more.blah' ) }
+
+            it 'returns a copy of self' do
+                url.rewrite.should == url
+                url.rewrite.object_id.should_not == url.object_id
+            end
         end
     end
 

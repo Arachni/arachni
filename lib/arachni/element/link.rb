@@ -48,13 +48,14 @@ class Link < Base
         { self.action => self.inputs }
     end
 
-    # @note Will {.rewrite} the `url`.
+    # @note Will {Arachni::Options.rewrite} the `url`.
     # @note Will update the {#inputs} from the URL query.
     #
     # @param   (see Capabilities::Submittable#action=)
+    #
     # @return  (see Capabilities::Submittable#action=)
     def action=( url )
-        rewritten   = self.class.rewrite( url )
+        rewritten   = uri_rewrite( url )
         self.inputs = self.class.parse_query( rewritten ).merge( self.inputs || {} )
 
         super rewritten.split( '?' ).first.to_s
@@ -166,22 +167,6 @@ class Link < Base
                 h[decode( name.to_s )] = decode( value.to_s )
                 h
             end
-        end
-
-        # @param    [String]    url
-        # @param    [Hash<Regexp => String>]    rules
-        #   Regular expression and substitution pairs.
-        #
-        # @return  [String]
-        #   Rewritten URL.
-        def rewrite( url, rules = Arachni::Options.scope.link_rewrites )
-            rules.each do |args|
-                if (rewritten = url.gsub( *args )) != url
-                    return rewritten
-                end
-            end
-
-            url
         end
 
         def encode_query_params( param )

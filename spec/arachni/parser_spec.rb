@@ -503,9 +503,9 @@ describe Arachni::Parser do
             subject.link_vars.should == { 'query_var_input' => 'query_var_val' }
         end
 
-        context "when there are #{Arachni::OptionGroups::Scope}#link_rewrites" do
+        context "when there are #{Arachni::OptionGroups::Scope}#url_rewrites" do
             before :each do
-                Arachni::Options.scope.link_rewrites = {
+                Arachni::Options.scope.url_rewrites = {
                     'stuff\/(\d+)' => '/stuff?id=\1'
                 }
             end

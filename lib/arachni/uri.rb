@@ -422,6 +422,16 @@ class URI
         end
     end
 
+    # @param    [String]    url
+    # @param    [Hash<Regexp => String>]    rules
+    #   Regular expression and substitution pairs.
+    #
+    # @return  [String]
+    #   Rewritten URL.
+    def self.rewrite( url, rules = Arachni::Options.scope.url_rewrites )
+        parse( url ).rewrite( rules ).to_s
+    end
+
     # @note Will discard the fragment component, if there is one.
     #
     # {.normalize Normalizes} and parses the provided URL.
@@ -583,6 +593,23 @@ class URI
         include_subdomain ? other.host == host : other.domain == domain
     rescue
         false
+    end
+
+    # @param    [Hash<Regexp => String>]    rules
+    #   Regular expression and substitution pairs.
+    #
+    # @return  [URI]
+    #   Rewritten URL.
+    def rewrite( rules = Arachni::Options.scope.url_rewrites )
+        as_string = self.to_s
+
+        rules.each do |args|
+            if (rewritten = as_string.gsub( *args )) != as_string
+                return self.class.parse( rewritten )
+            end
+        end
+
+        self.dup
     end
 
     def mailto?
