@@ -20,34 +20,35 @@ module Analyzable
 # * Phase 1 ({#timeout_analysis}) -- We're picking the low hanging
 #   fruit here so we can run this in larger concurrent bursts which cause *lots*
 #   of noise.
-#   - Initial probing for candidates -- If element times-out it is added to the
-#       Phase 2 queue.
+#   - Initial {#timing_attack_probe probing} for candidates, if element submission
+#       times-out it is added to the Phase 2 queue.
 # * Phase 2 ({.analysis_phase_2}) -- {#timing_attack_verify Verifies} the
 #   candidates. This is much more delicate so the concurrent requests are lowered
 #   to pairs.
-#   - Liveness test -- Ensures that the webapp is alive and not just timing-out
+#   - Control check -- Ensures that the webapp is alive and not just timing-out
 #       by default.
-#   - Verification using an increased timeout delay -- Any elements that time out
-#       again are logged.
-#   - Stabilization ({#responsive?}).
+#   - {#timing_attack_verify Verification} using an increased timeout delay --
+#       Any elements that time out again are logged.
+#   - Stabilization ({#ensure_responsiveness}).
 # * Phase 3 ({.analysis_phase_3}) -- Same as phase 2 but with a higher
 #   delay to ensure that false-positives are truly weeded out.
 #
 # Ideally, all requests involved with timing attacks would be run in sync mode
-# but the performance penalties are too high, thus we compromise and make the best of it
-# by running as little an amount of concurrent requests as possible for any given phase.
+# but the performance penalties are too high, thus we compromise and make the
+# best of it by running as little an amount of blocking requests as possible
+# for any given phase.
 #
 # # Usage
 #
 # * Call {#timeout_analysis} to schedule requests for Phase 1.
 # * Call {Arachni::HTTP::Client#run} to run the Phase 1 requests which will populate
 #   the Phase 2 queue with candidates -- if there are any.
-# * Call {timeout_audit_run} to filter the candidates through Phases 2 and 3
-#   to ensure that false-positives are weeded out.
+# * Call {.run} to filter the candidates through Phases 2 and 3 to ensure that
+#   false-positives are weeded out.
 #
-# Be sure to call {timeout_audit_run} as soon as possible after Phase 1 as the
-# candidate elements keep a reference to their auditor which will prevent it
-# from being reaped by the garbage collector.
+# Be sure to call {.run} as soon as possible after Phase 1, as the candidate
+# elements keep a reference to their auditor which will prevent it from being
+# garbage collected.
 #
 # This deviates from the normal framework structure because it is preferable
 # to run timeout audits separately in order to avoid interference by other
@@ -59,10 +60,12 @@ module Timeout
     class <<self
         def reset
             @candidates_phase_2    = []
-            @phase_2_candidate_ids = Support::LookUp::HashSet.new
+            @phase_2_candidate_ids = Support::LookUp::HashSet.new( hasher: :timeout_id )
 
             @candidates_phase_3    = []
-            @phase_3_candidate_ids = Support::LookUp::HashSet.new
+            @phase_3_candidate_ids = Support::LookUp::HashSet.new( hasher: :timeout_id )
+
+            @logged = Support::LookUp::HashSet.new( hasher: :audit_id )
 
             deduplicate
         end
@@ -85,17 +88,12 @@ module Timeout
         end
 
         def candidates_include?( candidate )
-            @phase_2_candidate_ids.include? candidate.audit_id
+            @phase_2_candidate_ids.include? candidate
         end
 
         def add_phase_2_candidate( elem )
-            @phase_2_candidate_ids << elem.audit_id
+            @phase_2_candidate_ids << elem
             @candidates_phase_2    << elem
-        end
-
-        def add_phase3_candidate( elem )
-            @phase_3_candidate_ids << elem.audit_id
-            @candidates_phase_3    << elem
         end
 
         # Verifies and logs candidate elements.
@@ -104,40 +102,87 @@ module Timeout
                 analysis_phase_2( @candidates_phase_2.pop )
             end
 
-            while !@candidates_phase_3.empty?
-                analysis_phase_3( @candidates_phase_3.pop )
+            while (candidate = @candidates_phase_3.pop)
+
+                # We've allowed multiple variations of the same element in
+                # previous operations because, during the audit, the payload
+                # that hit could have made the server unresponsive and fooled us
+                # into thinking that other valid variations exist too.
+                #
+                # That's why Phase 3 is here, to shift through these possible
+                # issues and verify them once again, however, if a variation
+                # is logged, it's game over for that input vector.
+                next if Timeout.deduplicate? && logged?( candidate )
+
+                analysis_phase_3( candidate )
+            end
+        end
+
+        def payload_delay_from_options( options )
+            (options[:delay] / options[:timeout_divider]).to_s
+        end
+
+        def timeout_from_options( options )
+            options[:delay] + options[:add]
+        end
+
+        private
+
+        # (Called by {.run}, do *NOT* call manually.)
+        #
+        # Runs phase 2 of the timing attacks, auditing an individual element
+        # (which passed phase 1) with a higher delay and timeout.
+        def analysis_phase_2( elem )
+            delay = elem.audit_options[:delay] * 2
+
+            elem.print_status "Phase 2 for #{elem.type} input " <<
+                "'#{elem.affected_input_name}' with action #{elem.action}"
+
+            elem.timing_attack_verify( delay ) do
+                elem.print_info '* Verification was successful, candidate can ' <<
+                                    'progress to Phase 3.'
+
+                add_phase3_candidate( elem )
             end
         end
 
         # (Called by {.run}, do *NOT* call manually.)
         #
-        # Runs phase 2 of the timing attack auditing an individual element
-        # (which passed phase 1) with a higher delay and timeout.
-        def analysis_phase_2( elem )
-            delay = elem.audit_options[:delay] * 2
-
-            elem.print_status "Phase 2 for #{elem.type} input '#{elem.affected_input_name}' " <<
-                             "with action #{elem.action}"
-
-            elem.timing_attack_verify( delay ) do |mutation|
-                elem.print_info '* Verification was successful, candidate can ' <<
-                                    'progress to Phase 2.'
-
-                add_phase3_candidate( mutation )
-            end
-        end
-
+        # Runs phase e of the timing attacks, auditing an individual element
+        # (which passed phase 2) with a higher delay and timeout.
         def analysis_phase_3( elem )
             delay = elem.audit_options[:delay] * 2
 
-            elem.print_status "Phase 3 for #{elem.type} input '#{elem.affected_input_name}' " <<
-                             "with action #{elem.action}"
+            elem.print_status "Phase 3 for #{elem.type} input " <<
+                "'#{elem.affected_input_name}' with action #{elem.action}"
 
-            elem.timing_attack_verify( delay ) do |mutation, response|
+            elem.timing_attack_verify( delay ) do |response|
+                # Update the payload stub with a real value, for the user's
+                # sake at this point.
+                elem.seed = elem.seed.gsub(
+                    '__TIME__', payload_delay_from_options( elem.audit_options )
+                )
+
+                @logged << elem
+
                 elem.print_info '* Verification was successful.'
-                elem.auditor.log vector: mutation, response: response
+                elem.auditor.log vector: elem, response: response
             end
         end
+
+        def add_phase3_candidate( elem )
+            @phase_3_candidate_ids << elem
+            @candidates_phase_3    << elem
+        end
+
+        # @param    [Element::Capabilities::Analyzable::Timeout]    element
+        #
+        # @return   [Bool]
+        #   `true` if the element has logged an issue, `false` otherwise.
+        def logged?( element )
+            @logged.include? element
+        end
+
     end
 
     # Performs timeout/time-delay analysis and logs an issue should there be one.
@@ -153,7 +198,7 @@ module Timeout
     #       {Element::Capabilities::Submittable#platforms applicable platforms}
     #       for the {Element::Capabilities::Submittable#action resource} to be audited.
     #
-    #   Delay placeholder `__TIME__` will be substituted with `timeout / timeout_divider`.
+    #   Delay stub `__TIME__` will be substituted with `timeout / timeout_divider`.
     # @param   [Hash]      opts
     #   Options as described in {Element::Capabilities::Mutable::MUTATION_OPTIONS}
     #   with the specified extras.
@@ -178,16 +223,21 @@ module Timeout
         end
 
         timing_attack_probe( payloads, opts ) do |elem|
-            elem.auditor = @auditor
-
             next if Timeout.deduplicate? && Timeout.candidates_include?( elem )
 
             print_info 'Found a candidate for Phase 2 -- ' <<
-                "#{elem.type.capitalize} input '#{elem.affected_input_name}' at #{elem.action}"
+                "#{elem.type.capitalize} input '#{elem.affected_input_name}' " <<
+                "pointing to: #{elem.action}"
+            print_verbose "Using: #{elem.affected_input_value.inspect}"
+
             Timeout.add_phase_2_candidate( elem )
         end
 
         true
+    end
+
+    def timeout_id
+        "#{audit_id( self.affected_input_value )}:#{self.affected_input_name}"
     end
 
     # Submits self with a high timeout value and blocks until it gets a response.
@@ -200,31 +250,22 @@ module Timeout
     #
     # @return   [Bool]
     #   `true` if server responds within the given time limit, `false` otherwise.
-    def responsive?( limit = 120_000, prepend = '* ' )
-        d_opts = {
-            skip_original:     true,
-            redundant:         true,
+    def ensure_responsiveness( limit = 120_000, prepend = '* ' )
+        options = {
             timeout:           limit,
-            silent:            true,
             mode:              :sync,
             response_max_size: 0
         }
 
-        orig_opts = @audit_options.dup
-
         print_info "#{prepend}Waiting for the effects of the timing attack to " <<
             'wear off, this may take a while (max waiting time is ' <<
-             "#{d_opts[:timeout] / 1000.0} seconds)."
+             "#{options[:timeout] / 1000.0} seconds)."
 
-        @auditable = @default_inputs.dup
-        res = submit( d_opts )
-
-        @audit_options.merge!( orig_opts )
-
-        if res.timed_out?
+        if (response = timeout_control.submit( options )).timed_out?
             print_bad "#{prepend}Max waiting time exceeded."
             false
         else
+            print_info "#{prepend}OK, got a response after #{response.time} seconds."
             true
         end
     end
@@ -241,27 +282,39 @@ module Timeout
         options[:timeout_divider] ||= 1
         options[:add]             ||= 0
 
+        options.merge!(
+            # Don't submit the form with its original values, we don't want
+            # any interference during timing attacks.
+            skip_original:     true,
+
+            # Intercept each element mutation prior to it being submitted and
+            # replace the '__TIME__' stub with the actual delay value.
+            each_mutation:     proc do |mutation|
+                injected = mutation.affected_input_value
+
+                # Preserve the placeholder (__TIME__) payload because it's going to
+                # be needed for the verification phases...
+                mutation.audit_options[:timing_string] = injected
+
+                # ...but update it to use a real payload for this audit.
+                mutation.affected_input_value = injected.
+                    gsub( '__TIME__', payload_delay_from_options( options ) )
+            end
+        )
+
         # Ignore response bodies to preserve bandwidth since we don't care
         # about them anyways.
-        options[:submit] = { response_max_size: 0 }
+        options[:submit] = {
+            response_max_size: 0,
+            timeout:           timeout_from_options( options ),
+        }
 
-        # Intercept each element mutation prior to it being submitted and replace
-        # the '__TIME__' placeholder with the actual delay value.
-        each_mutation = proc do |mutation|
-            injected = mutation.affected_input_value
-
-            # Preserve the original because it's going to be needed for the
-            # verification phases.
-            mutation.audit_options[:timing_string] = injected
-
-            mutation.affected_input_value = injected.
-                gsub( '__TIME__', (options[:delay] / options[:timeout_divider]).to_s )
+        if debug_level_2?
+            print_debug_level_2 "#{__method__}: #{options}"
         end
 
-        options.merge!( each_mutation: each_mutation, skip_original: true )
-
         audit( payloads, options ) do |response, mutation|
-            next if response.app_time < (options[:delay] + options[:add]) / 1000.0
+            next if !response.timed_out?
             block.call( mutation, response )
         end
     end
@@ -270,7 +323,8 @@ module Timeout
     # {#timing_attack_probe}.
     #
     # * Liveness check: Element is submitted as is with a  very high timeout
-    #   value, to make sure that (or wait until) the server is alive and {#responsive?}.
+    #   value, to make sure that (or wait until) the server is alive to
+    #   {#ensure_responsiveness}.
     # * Control check: Element is, again,  submitted as is, although this time
     #   with a timeout value of `delay` to ensure that the server is stable
     #   enough to be checked.
@@ -279,62 +333,86 @@ module Timeout
     #   the vulnerability.
     #   * If verification succeeds the `block` is called.
     # * Stabilize responsiveness: Wait for the effects of the timing attack
-    #   to wear off by calling {#responsive?}.
+    #   to wear off by calling {#ensure_responsiveness}.
     #
     # @param    [Integer]   delay
     # @param    [Block]     block
     def timing_attack_verify( delay, &block )
         fail ArgumentError, 'Missing block' if !block_given?
 
-        opts         = self.audit_options
-        opts[:delay] = delay
+        options         = self.audit_options
+        options[:delay] = delay
 
-        payload = opts[:timing_string].dup
-        payload.gsub!( '__TIME__', (opts[:delay] / opts[:timeout_divider]).to_s )
+        # Actual value to use for the server-side delay operation.
+        payload_delay = payload_delay_from_options( options )
 
-        self.inputs = self.default_inputs
+        # Prepared payload, which will hopefully introduce a server-side delay.
+        payload = options[:timing_string].gsub( '__TIME__', payload_delay )
+
+        # Timeout value (in milliseconds) for the HTTP request.
+        timeout = timeout_from_options( options )
 
         # Make sure we're starting off with a clean slate.
-        responsive?
+        ensure_responsiveness
 
-        print_info '* Performing liveness check.'
+        # This is the control; submits the element with its default (or sample,
+        # if its defaults are empty) values and ensures that element submission
+        # doesn't time out by default.
+        #
+        # If it does, then there's no way for us to test it reliably.
+        if_timeout_control_check_ok timeout do
 
-        # This is the control; request the URL of the element to make sure
-        # that the web page is responsive i.e won't time-out by default.
-        submit( response_max_size: 0, timeout: opts[:delay] ) do |control_response|
-            # Remove the timeout option set by the liveness check in order
-            # to now affect later requests.
-            self.audit_options.delete( :timeout )
+            # Update our candidate mutation's affected input with the new payload.
+            self.affected_input_value = payload
 
-            if control_response.timed_out?
-                print_info '* Liveness check failed, aborting.'
-                next
-            end
+            print_verbose "  * Payload delay:   #{payload_delay}"
+            print_verbose "  * Request timeout: #{timeout}"
+            print_verbose "  * Payload:         #{payload.inspect}"
 
-            print_info '* Liveness check was successful, progressing' <<
-                                ' to verification.'
-
-            opts.merge!(
-                skip_like: proc do |m|
-                    m.affected_input_name != affected_input_name
-                end,
-                format:    [Mutable::Format::STRAIGHT],
-                silent:    true
-            )
-
-            audit( payload, opts ) do |response, mutation|
-                if response.app_time.round < (opts[:delay] + opts[:add]) / 1000.0
+            submit( response_max_size: 0, timeout: timeout ) do |response|
+                if !response.timed_out?
                     print_info '* Verification failed.'
+                    print_verbose "  * Server responded in #{response.time} seconds."
                     next
                 end
 
-                block.call( mutation, response )
+                block.call( response )
 
-                responsive?
+                ensure_responsiveness
             end
         end
 
         http.run
+    end
+
+    private
+
+    def if_timeout_control_check_ok( timeout, &block )
+        print_info '* Performing control check.'
+
+        timeout_control.submit( response_max_size: 0, timeout: timeout ) do |control|
+            if control.timed_out?
+                print_info '* Control check failed, aborting.'
+                next
+            end
+
+            print_info '* Control check was successful, progressing' <<
+                           ' to verification.'
+
+            block.call
+        end
+    end
+
+    def timeout_control
+        self.dup.reset.tap { |e| e.inputs = Options.input.fill( e.inputs ) }
+    end
+
+    def payload_delay_from_options( *args )
+        Timeout.payload_delay_from_options( *args )
+    end
+
+    def timeout_from_options( *args )
+        Timeout.timeout_from_options( *args )
     end
 
 end

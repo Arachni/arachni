@@ -41,16 +41,16 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
         }
     end
 
-    describe '#responsive?' do
+    describe '#ensure_responsiveness' do
         context 'when the server is responsive' do
             it 'returns true' do
-                subject.responsive?.should be_true
+                subject.ensure_responsiveness.should be_true
             end
         end
         context 'when the server is not responsive' do
             it 'returns false' do
                 Arachni::Element::Link.new( url: @url + '/sleep' ).
-                    responsive?( 1 ).should be_false
+                    ensure_responsiveness( 1 ).should be_false
             end
         end
     end
@@ -165,7 +165,7 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
         end
 
         context 'when the delay could be verified' do
-            it 'passes the element and response to the given block' do
+            it 'passes the response to the given block' do
                 candidate = nil
                 subject.timing_attack_probe( '__TIME__', options ) do |element|
                     candidate ||= element
@@ -173,13 +173,10 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
                 run
 
                 response = nil
-                mutation = nil
-                candidate.timing_attack_verify( 4000 ) do |m, r|
+                candidate.timing_attack_verify( 4000 ) do |r|
                     response = r
-                    mutation = m
                 end
 
-                mutation.should be_kind_of candidate.class
                 response.should be_kind_of Arachni::HTTP::Response
             end
         end
