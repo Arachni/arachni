@@ -64,7 +64,7 @@ class Arachni::Modules::XSSPath < Arachni::Module::Base
     def check_and_log( res, str )
         # check for the existence of the tag name in the response before
         # parsing to verify, no reason to waste resources...
-        return if !res.body || !res.body.include?( self.class.string )
+        return if !res.body || !res.body.downcase.include?( self.class.string )
 
         # see if we managed to successfully inject our element
         return if Nokogiri::HTML( res.body ).css( self.class.tag ).empty?
