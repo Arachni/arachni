@@ -64,9 +64,10 @@ class Arachni::Modules::XSSEvent < Arachni::Module::Base
     end
 
     def check_and_log( res, injected, opts )
-        return if !res.body || !res.body.include?( injected )
+        body = res.body.to_s.downcase
+        return if !body.downcase.include?( injected )
 
-        doc = Nokogiri::HTML( res.body )
+        doc = Nokogiri::HTML( body )
         EVENT_ATTRS.each do |attr|
             doc.xpath( "//*[@#{attr}]" ).each do |elem|
                 if elem.attributes[attr].to_s.include?( injected )
@@ -82,7 +83,7 @@ class Arachni::Modules::XSSEvent < Arachni::Module::Base
             description: %q{Cross-Site Scripting in event tag of HTML element.},
             elements:    [Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.1.4',
+            version:     '0.1.5',
             references:  {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/',
