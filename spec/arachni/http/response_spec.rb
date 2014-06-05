@@ -167,7 +167,7 @@ describe Arachni::HTTP::Response do
                                 url:  'http://test.com',
                                 body: "\00\00\00"
                             }
-                            described_class.new( h ).text?.should be_false
+                            described_class.new( h ).text?.should == false
                         end
                     end
 
@@ -178,6 +178,16 @@ describe Arachni::HTTP::Response do
                                 body: 'stuff'
                             }
                             described_class.new( h ).text?.should be_true
+                        end
+                    end
+
+                    context 'inconclusive' do
+                        it 'returns nil' do
+                            r = described_class.new(
+                                url:  'http://test.com',
+                                body: "abc\u3042\x81"
+                            )
+                            r.text?.should be_nil
                         end
                     end
                 end
@@ -237,16 +247,52 @@ describe Arachni::HTTP::Response do
             r.body.should == body
         end
 
-        it 'it freezes it' do
+        it 'freezes it' do
             r = described_class.new( url: url )
             r.body = 'Stuff...'
             r.body.should be_frozen
         end
 
-        it 'it forces it to a string' do
+        it 'forces it to a string' do
             r = described_class.new( url: url )
             r.body = nil
             r.body.should == ''
+        end
+
+        context 'when content-length is' do
+            let(:body) { "abc\u3042\x81" }
+
+            context 'text-based' do
+                it 'removes invalid characters' do
+                    r = described_class.new(
+                        url:     'http://test.com',
+                        headers: { 'Content-Type' => 'text/stuff' },
+                        body:    'stuff'
+                    )
+                    r.body = body
+                    r.body.should == "abcあ�"
+                end
+            end
+
+            context 'not text-based' do
+                it 'preserves invalid characters' do
+                    r = described_class.new(
+                        url:     'http://test.com',
+                        headers: { 'Content-Type' => 'application/stuff' },
+                        body:    'stuff'
+                    )
+                    r.body = body
+                    r.body.should == body
+                end
+            end
+
+            context 'not available' do
+                it 'removes invalid characters' do
+                    r = described_class.new( url:  'http://test.com' )
+                    r.body = body
+                    r.body.should == "abcあ�"
+                end
+            end
         end
     end
 

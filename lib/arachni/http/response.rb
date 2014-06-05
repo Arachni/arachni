@@ -108,21 +108,25 @@ class Response < Message
     end
 
     # @return [Bool]
-    #   `true` if the response body is textual in nature, `false` otherwise
-    #   (if binary).
+    #   `true` if the response body is textual in nature, `false` if binary,
+    #   `nil` if could not be determined.
     def text?
         return if !@body
 
         if (type = headers.content_type)
             return true if type.start_with?( 'text/' )
 
-            # Non "application/" content types will surely not be text-based
-            # so bail out early.
+            # Non "test/" nor "application/" content types will surely not be
+            # text-based so bail out early.
             return false if !type.start_with?( 'application/' )
         end
 
         # Last resort, more resource intensive binary detection.
-        !@body.binary?
+        begin
+            !@body.binary?
+        rescue ArgumentError
+            nil
+        end
     end
 
     # @return   [Boolean]
@@ -133,7 +137,10 @@ class Response < Message
 
     def body=( body )
         @body = body.to_s
-        @body = @body.recode if text?
+
+        text_check = text?
+        @body.recode! if text_check.nil? || text_check
+
         @body.freeze
     end
 
