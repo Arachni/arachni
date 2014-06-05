@@ -28,6 +28,9 @@ class Framework
 
         parse_options
 
+        # Reset the framework's HTTP interface so that options will take effect.
+        @framework.http.reset
+
         @show_command_screen = nil
         @cleanup_handler     = nil
 
