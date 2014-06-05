@@ -42,7 +42,7 @@ get '/timeouts' do
 
         setTimeout( function( name, value ){
             document.cookie = name + "=post-" + value
-        }, 1500, 'timeout2', 1500 )
+        }, '1500', 'timeout2', 1500 )
 
         setTimeout( function( name, value ){
             document.cookie = name + "=post-" + value
