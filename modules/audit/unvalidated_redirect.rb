@@ -21,7 +21,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.6
+# @version 0.1.7
 #
 # @see http://www.owasp.org/index.php/Top_10_2010-A10-Unvalidated_Redirects_and_Forwards
 class Arachni::Modules::UnvalidatedRedirect < Arachni::Module::Base
@@ -48,7 +48,7 @@ class Arachni::Modules::UnvalidatedRedirect < Arachni::Module::Base
                 to determnine whether the attack was successful.},
             elements:    [Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.6',
+            version:     '0.1.7',
             references:  {
                 'OWASP' => 'http://www.owasp.org/index.php/Top_10_2010-A10-Unvalidated_Redirects_and_Forwards',
                 'WASC' => 'http://projects.webappsec.org/w/page/13246981/URL%20Redirector%20Abuse'

@@ -21,7 +21,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.3.4
+# @version 0.3.5
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -85,7 +85,7 @@ class Arachni::Modules::XSS < Arachni::Module::Base
             },
             elements:    [Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.3.4',
+            version:     '0.3.5',
             references:  {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/',

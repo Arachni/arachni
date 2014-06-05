@@ -18,7 +18,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.9
+# @version 0.1.10
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -79,7 +79,7 @@ class Arachni::Modules::XSSPath < Arachni::Module::Base
             description: %q{Cross-Site Scripting module for path injection},
             elements:    [ Element::PATH ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.1.9',
+            version:     '0.1.10',
             references:  {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/',
