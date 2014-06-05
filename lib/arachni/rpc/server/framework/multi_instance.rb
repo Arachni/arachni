@@ -61,14 +61,7 @@ module MultiInstance
         map_slaves( foreach, after )
     end
 
-    # Returns aggregated progress data and helps to limit the amount of calls
-    # required in order to get an accurate depiction of a scan's progress and
-    # includes:
-    #
-    # * discovered issues
-    # * overall statistics
-    # * overall scan status
-    # * statistics of all instances individually
+    # Provides aggregated progress data.
     #
     # @param    [Hash]  opts
     #   Options about what data to include:
@@ -78,8 +71,12 @@ module MultiInstance
     #   Issue summaries.
     # @option opts [Bool] :statistics   (true)
     #   Master/merged statistics.
-    # @option opts [Integer] :errors   (false)
-    #   Logged errors.
+    # @option opts [Bool, Integer] :errors   (false)
+    #   Logged errors. If an integer is provided it will return errors past that
+    #   index.
+    # @option opts [Bool, Integer] :sitemap   (false)
+    #   Scan sitemap. If an integer is provided it will return entries past that
+    #   index.
     # @option opts [Bool] :as_hash  (false)
     #   If set to `true`, will convert issues to hashes before returning them.
     #
@@ -91,7 +88,10 @@ module MultiInstance
         include_statistics = opts[:statistics].nil? ? true : opts[:statistics]
         include_slaves     = opts[:slaves].nil?     ? true : opts[:slaves]
         include_issues     = opts[:issues].nil?     ? true : opts[:issues]
-        include_errors     = opts.include?( :errors ) ? (opts[:errors] || 0) : false
+        include_sitemap    = opts.include?( :sitemap ) ?
+            (opts[:sitemap] || 0) : false
+        include_errors     = opts.include?( :errors ) ?
+            (opts[:errors] || 0) : false
 
         as_hash = opts[:as_hash] ? true : opts[:as_hash]
 
@@ -108,8 +108,14 @@ module MultiInstance
             data[:statistics] = self.statistics
         end
 
+        if include_sitemap
+            data[:sitemap] =
+                sitemap_entries( include_sitemap.is_a?( Integer ) ? include_sitemap : 0 )
+        end
+
         if include_errors
-            data[:errors] = errors( include_errors.is_a?( Integer ) ? include_errors : 0 )
+            data[:errors] =
+                errors( include_errors.is_a?( Integer ) ? include_errors : 0 )
         end
 
         if solo? || slave? || !include_slaves

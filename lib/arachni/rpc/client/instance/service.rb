@@ -40,26 +40,44 @@ class Service < Proxy
     end
 
     translate :progress do |data|
+        sitemap = data.delete('sitemap')
+        issues  = data.delete('issues')
+
         data = data.symbolize_keys
         data[:status] = data[:status].to_sym
 
         if data[:instances]
             data[:instances] = data[:instances].map(&:symbolize_keys)
+        end
+
+        if issues
+            data[:issues] = issues
+        end
+
+        if sitemap
+            data[:sitemap] = sitemap
         end
 
         data
     end
 
     translate :native_progress do |data|
+        sitemap = data.delete('sitemap')
+        issues  = data.delete('issues')
+
         data = data.symbolize_keys
         data[:status] = data[:status].to_sym
 
-        if data[:issues]
-            data[:issues] = data[:issues].map { |i| Arachni::Issue.from_rpc_data i }
+        if issues
+            data[:issues] = issues.map { |i| Arachni::Issue.from_rpc_data i }
         end
 
         if data[:instances]
             data[:instances] = data[:instances].map(&:symbolize_keys)
+        end
+
+        if sitemap
+            data[:sitemap] = sitemap
         end
 
         data

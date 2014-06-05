@@ -596,11 +596,15 @@ describe 'Arachni::RPC::Server::Instance' do
             before( :all ) do
                 @progress_instance = instance_spawn
                 @progress_instance.service.scan(
-                    url:    web_server_url_for( :framework ),
+                    url: web_server_url_for( :framework_multi ),
+                    scope: {
+                        page_limit: 50
+                    },
                     audit:  { elements: [:links, :forms] },
                     checks: :test,
                     spawns: 1
                 )
+
                 sleep 1 while @progress_instance.service.busy?
             end
             after :all do
@@ -683,6 +687,28 @@ describe 'Arachni::RPC::Server::Instance' do
 
                         stats1.size.should == 2
                         stats1.should == stats2
+                    end
+                end
+
+                describe :sitemap do
+                    context 'when set to true' do
+                        it 'returns entire sitemap' do
+                            instance = @progress_instance
+
+                            instance.service.
+                                progress( with: { sitemap: true } )[:sitemap].should ==
+                                    instance.service.sitemap
+                        end
+                    end
+
+                    context 'when an index has been provided' do
+                        it 'returns all entries after that line' do
+                            instance = @progress_instance
+
+                            instance.service.
+                                progress( with: { sitemap: 10 } )[:sitemap].should ==
+                                    instance.service.sitemap( 10 )
+                        end
                     end
                 end
 

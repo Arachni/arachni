@@ -58,7 +58,7 @@ class Framework < ::Arachni::Framework
     # Make these inherited methods public again (i.e. accessible over RPC).
     [ :statistics, :list_checks, :list_checks, :list_plugins, :list_plugins,
       :list_reports, :list_reports, :version, :status, :report_as, :list_platforms,
-      :list_platforms ].each do |m|
+      :list_platforms, :sitemap ].each do |m|
         private m
         public  m
     end
@@ -118,6 +118,14 @@ class Framework < ::Arachni::Framework
         end
 
         !!@extended_running
+    end
+
+    # @param    [Integer]   from_index
+    #   Get sitemap entries after this index.
+    #
+    # @return   [Hash<String=>Integer>]
+    def sitemap_entries( from_index = 0 )
+        Hash[sitemap.to_a[from_index..-1] || {}]
     end
 
     # Starts the scan.

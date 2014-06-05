@@ -239,6 +239,24 @@ describe 'Arachni::RPC::Server::Framework' do
                     end
                 end
             end
+
+            describe :sitemap do
+                context 'when set to true' do
+                    it 'returns entire sitemap' do
+                        @instance_clean.framework.
+                            progress( sitemap: true )[:sitemap].should ==
+                                @instance_clean.framework.sitemap
+                    end
+                end
+
+                context 'when an index has been provided' do
+                    it 'returns all entries after that line' do
+                        @instance_clean.framework.progress( sitemap: 10 )[:sitemap].should ==
+                            @instance_clean.framework.sitemap_entries( 10 )
+                    end
+                end
+            end
+
             describe :statistics do
                 context 'when set to false' do
                     it 'excludes statistics' do
@@ -277,6 +295,24 @@ describe 'Arachni::RPC::Server::Framework' do
             end
         end
     end
+
+    describe '#sitemap_entries' do
+        context 'when no argument has been provided' do
+            it 'returns entire sitemap' do
+                @instance_clean.framework.sitemap_entries.should ==
+                    @instance_clean.framework.sitemap
+            end
+        end
+
+        context 'when an index has been provided' do
+            it 'returns all entries after that line' do
+                sitemap = @instance_clean.framework.sitemap
+                @instance_clean.framework.sitemap_entries( 10 ).should ==
+                    Hash[sitemap.to_a[10..-1]]
+            end
+        end
+    end
+
     describe '#report' do
         it 'returns a hash report of the scan' do
             report = @instance_clean.framework.report

@@ -213,6 +213,12 @@ class Instance
         @framework.errors( starting_line, &block )
     end
 
+    # @param (see Arachni::RPC::Server::Framework::MultiInstance#sitemap_entries)
+    # @return (see Arachni::RPC::Server::Framework::MultiInstance#sitemap_entries)
+    def sitemap( index = 0 )
+        @framework.sitemap_entries( index )
+    end
+
     # @return (see Arachni::Framework#list_platforms)
     def list_platforms
         @framework.list_platforms
@@ -413,6 +419,7 @@ class Instance
     #   * `instances` -- Raw `stats` for each running instance (only when part
     #       of Grid) (disabled by default)
     #   * `errors` -- {#errors} (disabled by default)
+    #   * `sitemap` -- {#sitemap} (disabled by default)
     def progress( options = {}, &block )
         progress_handler( options.merge( as_hash: true ), &block )
     end
@@ -706,6 +713,10 @@ class Instance
 
         if with[:errors]
             options[:errors] = with[:errors]
+        end
+
+        if with[:sitemap]
+            options[:sitemap] = with[:sitemap]
         end
 
         @framework.progress( options ) do |data|

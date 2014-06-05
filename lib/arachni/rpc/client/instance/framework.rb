@@ -44,15 +44,26 @@ class Framework < Proxy
     end
 
     translate :progress do |data, options = {}|
+        sitemap = data.delete('sitemap')
+        issues  = data.delete('issues')
+
         data = data.symbolize_keys
         data[:status] = data[:status].to_sym
 
-        if data[:issues] && !options[:as_hash]
-            data[:issues] = data[:issues].map { |i| Arachni::Issue.from_rpc_data i }
+        if issues
+            if options[:as_hash]
+                data[:issues] = issues
+            else
+                data[:issues] = issues.map { |i| Arachni::Issue.from_rpc_data i }
+            end
         end
 
         if data[:instances]
             data[:instances] = data[:instances].map(&:symbolize_keys)
+        end
+
+        if sitemap
+            data[:sitemap] = sitemap
         end
 
         data
