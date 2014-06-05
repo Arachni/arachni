@@ -59,6 +59,15 @@ module Timeout
 
     class <<self
         def reset
+
+            # We can track out own candidate state here, without registering it
+            # with the global system State, because everything that happens
+            # here is green-lit by #timing_attack_probe, which does register
+            # its state as it uses #audit.
+            #
+            # Also, candidates will be consumed prior to a suspension, so when
+            # we suspend and restore scans there will be no issue.
+
             @candidates_phase_2    = []
             @phase_2_candidate_ids = Support::LookUp::HashSet.new( hasher: :timeout_id )
 
