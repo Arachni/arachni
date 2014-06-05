@@ -9,7 +9,7 @@ def get_variations( str )
     return if !str
 
     str = "http://#{str}" if !(str.start_with?( 'http://' ) || str.start_with?( 'https://' ))
-    redirect( str.split( "\0" ).first ) rescue nil
+    redirect( str.split( "\0" ).first.upcase ) rescue nil
 end
 
 get '/' do
