@@ -40,16 +40,18 @@ class Arachni::Modules::XSSHTMLTag < Arachni::Module::Base
     end
 
     def check_and_log( res, opts )
+        body = res.body.to_s.downcase
+
         # if we have no body or it doesn't contain the TAG_NAME under any
         # context there's no point in parsing the HTML to verify the vulnerability
-        return if !res.body || !res.body.include?( TAG_NAME )
+        return if !body.include?( TAG_NAME )
 
         # see if we managed to inject a working HTML attribute to any
         # elements
-        Nokogiri::HTML( res.body ).xpath( "//*[@#{TAG_NAME}]" ).each do |element|
+        Nokogiri::HTML( body ).xpath( "//*[@#{TAG_NAME}]" ).each do |element|
             next if element[TAG_NAME] != seed
 
-            opts[:match] = (payload = find_included_payload( res.body )) ? payload : element.to_s
+            opts[:match] = (payload = find_included_payload( body )) ? payload : element.to_s
             log( opts, res )
         end
     end
@@ -67,7 +69,7 @@ class Arachni::Modules::XSSHTMLTag < Arachni::Module::Base
             description: %q{Cross-Site Scripting in HTML tag.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.1.6',
+            version:     '0.1.7',
             references:  {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/',
