@@ -400,7 +400,7 @@ class BrowserCluster
         end
 
         pool_size.times do
-            @workers << workers.pop.tap { |b| @consumed_pids << b.phantomjs_pid }
+            @workers << workers.pop.tap { |b| @consumed_pids << b.pid }
         end
         @consumed_pids.compact!
 

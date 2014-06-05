@@ -96,10 +96,10 @@ class Browser
     attr_reader :skip_states
 
     # @return   [Integer]
-    attr_reader :phantomjs_pid
+    attr_reader :pid
 
     # @return   [Bool]
-    #   `true` if `phantomjs` is in the OS PATH, `false` otherwise.
+    #   `true` if a supported browser is in the OS PATH, `false` otherwise.
     def self.has_executable?
         !!executable
     end
@@ -141,7 +141,7 @@ class Browser
 
         @proxy.start_async
 
-        @watir = ::Watir::Browser.new( *phantomjs )
+        @watir = ::Watir::Browser.new( selenium )
 
         # User-controlled response cache, by URL.
         @cache = Support::Cache::LeastRecentlyUsed.new( 200 )
@@ -315,7 +315,7 @@ class Browser
 
     def shutdown
         watir.close if @process.alive?
-        kill_phantomjs
+        kill_process
         @proxy.shutdown
     end
 
@@ -850,7 +850,7 @@ class Browser
 
             # We need to spawn our own PhantomJS process because Selenium's
             # way sometimes gives us zombies.
-            url:                  spawn_phantomjs,
+            url:                  spawn_browser,
             desired_capabilities: capabilities,
             http_client:          client
         )
@@ -899,8 +899,12 @@ class Browser
         Options.input.value_for_name( name_or_id_for( element ) )
     end
 
+    def spawn_browser
+        spawn_phantomjs
+    end
+
     def spawn_phantomjs
-        return @phantomjs_url if @phantomjs_url
+        return @browser_url if @browser_url
 
         ChildProcess.posix_spawn = true
 
@@ -940,26 +944,26 @@ class Browser
 
             break if done
 
-            kill_phantomjs
+            kill_process
         end
 
         begin
-            @phantomjs_pid = @process.pid
+            @pid = @process.pid
         # Not supported on JRuby on MS Windows.
         rescue NotImplementedError
         end
 
-        @phantomjs_url = "http://127.0.0.1:#{port}"
+        @browser_url = "http://127.0.0.1:#{port}"
     end
 
-    def kill_phantomjs
+    def kill_process
         if @process
             @process.stop
             @process.io.close rescue nil
         end
 
-        @phantomjs_pid = nil
-        @phantomjs_url = nil
+        @pid = nil
+        @browser_url = nil
     end
 
     def store_pages?
@@ -1039,11 +1043,6 @@ class Browser
         watir.window.resize_to( @width, @height )
 
         @javascript.run( 'window.open()' )
-    end
-
-    # PhantomJS driver, the default.
-    def phantomjs
-        [selenium]
     end
 
     # # Firefox driver, only used for debugging.

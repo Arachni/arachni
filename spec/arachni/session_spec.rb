@@ -66,7 +66,7 @@ describe Arachni::Session do
 
             browser = configured.browser
             configured.clean_up
-            browser.phantomjs_pid.should be_nil
+            browser.pid.should be_nil
         end
 
         it 'clears the #configuration' do

@@ -71,15 +71,15 @@ describe Arachni::BrowserCluster::Worker do
 
         context 'before running the job' do
             it 'ensures that there is a live PhantomJS process' do
-                Arachni::Processes::Manager.kill subject.phantomjs_pid
-                expect{ Process.getpgid( subject.phantomjs_pid ) }.to raise_error Errno::ESRCH
-                dead_pid = subject.phantomjs_pid
+                Arachni::Processes::Manager.kill subject.pid
+                expect{ Process.getpgid( subject.pid ) }.to raise_error Errno::ESRCH
+                dead_pid = subject.pid
 
                 @cluster.queue( custom_job ){}
                 @cluster.wait
 
-                subject.phantomjs_pid.should_not == dead_pid
-                Process.getpgid( subject.phantomjs_pid ).should be_true
+                subject.pid.should_not == dead_pid
+                Process.getpgid( subject.pid ).should be_true
             end
         end
 
@@ -102,14 +102,14 @@ describe Arachni::BrowserCluster::Worker do
 
                 it 'respawns PhantomJS' do
                     watir         = subject.watir
-                    phantomjs_pid = subject.phantomjs_pid
+                    pid = subject.pid
 
                     subject.watir.windows.size.should > 5
                     @cluster.explore( page ) {}
                     @cluster.wait
 
                     watir.should_not == subject.watir
-                    phantomjs_pid.should_not == subject.phantomjs_pid
+                    pid.should_not == subject.pid
                     subject.watir.windows.size.should == 2
                 end
 
@@ -253,13 +253,13 @@ describe Arachni::BrowserCluster::Worker do
                     subject.max_time_to_live = 1
 
                     watir         = subject.watir
-                    phantomjs_pid = subject.phantomjs_pid
+                    pid = subject.pid
 
                     @cluster.queue( custom_job ) {}
                     @cluster.wait
 
                     watir.should_not == subject.watir
-                    phantomjs_pid.should_not == subject.phantomjs_pid
+                    pid.should_not == subject.pid
                 end
             end
 
@@ -270,12 +270,12 @@ describe Arachni::BrowserCluster::Worker do
                     end
 
                     watir         = subject.watir
-                    phantomjs_pid = subject.phantomjs_pid
+                    pid = subject.pid
 
                     subject.run_job( custom_job )
 
                     watir.should_not == subject.watir
-                    phantomjs_pid.should_not == subject.phantomjs_pid
+                    pid.should_not == subject.pid
                 end
             end
 

@@ -78,7 +78,7 @@ class Worker < Arachni::Browser
 
         # PhantomJS may have crashed (it happens sometimes) so make sure that
         # we've got a live one before running the job.
-        phantomjs_respawn_if_necessary
+        browser_respawn_if_necessary
 
         begin
             with_timeout @job_timeout do
@@ -93,7 +93,7 @@ class Worker < Arachni::Browser
             print_error "Job timed-out after #{@job_timeout} seconds: #{job}"
 
             # Could have left us with a broken browser.
-            phantomjs_respawn
+            browser_respawn
         end
 
         @javascript.taint = nil
@@ -112,11 +112,11 @@ class Worker < Arachni::Browser
             watir.cookies.clear
         # Working window was closed by JS (probably), start from scratch.
         rescue Selenium::WebDriver::Error::NoSuchWindowError
-            phantomjs_respawn
+            browser_respawn
         end
 
         decrease_time_to_live
-        phantomjs_respawn_if_necessary
+        browser_respawn_if_necessary
 
         true
     ensure
@@ -168,7 +168,7 @@ class Worker < Arachni::Browser
 
         # Keep checking to see if any of the 'done' criteria are true.
         kill_check = Thread.new do
-            sleep 0.1 while phantomjs_alive? && wait && @job
+            sleep 0.1 while browser_alive? && wait && @job
             @done_signal << nil
         end
 
@@ -222,34 +222,34 @@ class Worker < Arachni::Browser
         end
     end
 
-    def phantomjs_alive?
+    def browser_alive?
         @process.alive?
     rescue Errno::ECHILD
         false
     end
 
-    def phantomjs_respawn_if_necessary
-        return if !time_to_die? && phantomjs_alive? &&
+    def browser_respawn_if_necessary
+        return if !time_to_die? && browser_alive? &&
             watir.windows.size < RESPAWN_WHEN_WINDOW_COUNT_REACHES
 
-        phantomjs_respawn
+        browser_respawn
     end
 
-    def phantomjs_respawn
+    def browser_respawn
         @time_to_live = @max_time_to_live
 
         @window_responses.clear
 
         # If PhantomJS is already dead this will block for quite some time so
         # beware.
-        @watir.close if phantomjs_alive?
+        @watir.close if browser_alive?
 
-        kill_phantomjs
+        kill_process
 
         @watir    = nil
         @selenium = nil
 
-        @watir = ::Watir::Browser.new( *phantomjs )
+        @watir = ::Watir::Browser.new( selenium )
 
         ensure_open_window
     end
