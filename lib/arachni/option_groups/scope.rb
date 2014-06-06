@@ -188,45 +188,12 @@ class Scope < Arachni::OptionGroup
         end
     end
 
-    # Checks is the provided URL matches a redundant filter and decreases its
-    # counter if so.
-    #
-    # If a filter's counter has reached 0 the method returns true.
-    #
-    # @param    [String]    url
-    # @param    [Block]     block
-    #   To be called for each match and be passed the count, regexp and url.
-    #
-    # @return   [Bool]  true if the url is redundant, false otherwise
-    def redundant?( url, &block )
-        redundant_path_patterns.each do |regexp, count|
-            next if !(url =~ regexp)
-            return true if count == 0
-
-            block.call( count, regexp, url ) if block_given?
-
-            redundant_path_patterns[regexp] -= 1
-        end
-        false
-    end
-
-    def auto_redundant_path?( url, &block )
-        return false if !auto_redundant?
-        @auto_redundant_h ||= Hash.new( 0 )
-
-        h = "#{url.split( '?' ).first}#{Arachni::URI.parse_query( url ).keys.sort}".hash
-
-        if @auto_redundant_h[h] >= auto_redundant_paths
-            block.call( @auto_redundant_h[h] ) if block_given?
-            return true
-        end
-
-        @auto_redundant_h[h] += 1
-        false
-    end
-
     def auto_redundant?
         !!@auto_redundant_paths
+    end
+
+    def auto_redundant_counter
+        @auto_redundant_counter ||= Hash.new( 0 )
     end
 
     def do_not_crawl

@@ -8,10 +8,6 @@ class URI
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Scope
-    include UI::Output
-    include Utilities
-
-    personalize_output
 
     # {Scope} error namespace.
     #
@@ -33,7 +29,7 @@ class Scope
     #
     # @see OptionGroups::Scope#directory_depth_limit
     def too_deep?
-        depth = Options.scope.directory_depth_limit
+        depth = options.directory_depth_limit
         depth.to_i > 0 && (depth + 1) <= @url.path.to_s.count( '/' )
     end
 
@@ -42,7 +38,7 @@ class Scope
     # @return   [Bool]
     #   `true` if self matches a pattern, `false` otherwise.
     def exclude?
-        !!Options.scope.exclude_path_patterns.find { |pattern| @url.to_s =~ pattern }
+        !!options.exclude_path_patterns.find { |pattern| @url.to_s =~ pattern }
     end
 
     # Checks if self should be included based on the provided `patterns`.
@@ -51,7 +47,7 @@ class Scope
     #   `true` if self matches a pattern (or `patterns` are `nil` or empty),
     #   `false` otherwise.
     def include?
-        rules = Options.scope.include_path_patterns
+        rules = options.include_path_patterns
         return true if rules.empty?
 
         !!rules.find { |pattern| @url.to_s =~ pattern }
@@ -64,7 +60,7 @@ class Scope
 
         reference = Arachni::URI( Options.url )
 
-        Options.scope.include_subdomains ?
+        options.include_subdomains ?
             reference.domain == @url.domain : reference.host == @url.host
     end
 
@@ -89,9 +85,11 @@ class Scope
         return true if ref_scheme != 'https'
         return true if ref_scheme == check_scheme
 
-        !Options.scope.https_only?
+        !options.https_only?
     end
 
+    # @note Will first check with {#auto_redundant?}.
+    #
     # Checks if `self` matches a redundancy filter and decreases its counter if
     # so.
     #
@@ -99,8 +97,31 @@ class Scope
     #   `true` if `self` is redundant, `false` otherwise.
     #
     # @see OptionGroups::Scope#redundant_path_patterns?
-    def redundant?( &block )
-        Options.scope.redundant?( @url.to_s, &block )
+    def redundant?
+        return true if auto_redundant?
+        url_string = @url.to_s
+
+        options.redundant_path_patterns.each do |regexp, count|
+            next if !(url_string =~ regexp)
+            return true if count == 0
+
+            options.redundant_path_patterns[regexp] -= 1
+        end
+
+        false
+    end
+
+    def auto_redundant?
+        return false if !options.auto_redundant?
+
+        h = "#{@url.without_query}#{@url.query_parameters.keys.sort}".hash
+
+        if options.auto_redundant_counter[h] >= options.auto_redundant_paths
+            return true
+        end
+
+        options.auto_redundant_counter[h] += 1
+        false
     end
 
     # @note Does **not** call {#redundant_path?}.
@@ -139,6 +160,10 @@ class Scope
         return true if exclude?
 
         false
+    end
+
+    def options
+        Options.scope
     end
 
 end

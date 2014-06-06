@@ -59,6 +59,36 @@ describe Arachni::URI::Scope do
                 subject.redundant?.should be_false
             end
         end
+
+        context 'when #auto_redundant returns true' do
+            it 'returns true' do
+                subject.stub(:auto_redundant?) { true }
+                subject.should be_redundant
+            end
+        end
+    end
+
+    describe '#auto_redundant?' do
+        subject { Arachni::URI( 'http://test.com/?test=2&test2=2').scope }
+
+        context 'when #auto_redundant_paths limit has been reached' do
+            it 'returns true' do
+                scope.auto_redundant_paths = 10
+
+                subject.auto_redundant?.should be_false
+                9.times do
+                    subject.auto_redundant?.should be_false
+                end
+
+                subject.auto_redundant?.should be_true
+            end
+        end
+
+        describe 'by default' do
+            it 'returns false' do
+                subject.auto_redundant?.should be_false
+            end
+        end
     end
 
     describe '#exclude?' do

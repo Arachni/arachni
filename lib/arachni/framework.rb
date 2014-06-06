@@ -367,7 +367,8 @@ class Framework
     #   `true` if push was successful, `false` if the `page` matched any
     #   exclusion criteria or has already been seen.
     def push_to_page_queue( page )
-        return false if state.page_seen?( page ) || page.scope.out?
+        return false if state.page_seen?( page ) || page.scope.out? ||
+            page.scope.redundant?
 
         # We want to update from the already loaded page cache (if there is one)
         # as we have to store the page anyways (needs to go through Browser analysis)
@@ -396,7 +397,9 @@ class Framework
         return if page_limit_reached?
 
         url = to_absolute( url ) || url
-        return false if state.url_seen?( url ) || skip_path?( url )
+        if state.url_seen?( url ) || skip_path?( url ) || redundant_path?( url )
+            return false
+        end
 
         data.push_to_url_queue url
         state.url_seen url

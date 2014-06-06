@@ -55,8 +55,8 @@ describe Arachni::HTTP::Request do
     describe '#to_rpc_data' do
         let(:data) { subject.to_rpc_data }
 
-        %w(url method parameters body headers_string effective_body timeout
-            headers cookies username password).each do |attribute|
+        %w(method parameters headers_string effective_body timeout cookies
+            username password).each do |attribute|
             it "includes '#{attribute}'" do
                 data[attribute].should == subject.send( attribute )
             end

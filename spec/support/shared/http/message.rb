@@ -1,39 +1,50 @@
 shared_examples_for 'Arachni::HTTP::Message' do
 
+    subject { described_class.new( url: url ) }
     let(:url) { 'http://test.com' }
+
+    describe '#to_rpc_data' do
+        let(:data) { subject.scope; subject.to_rpc_data }
+
+        %w(url body headers_string headers).each do |attribute|
+            it "includes '#{attribute}'" do
+                data[attribute].should == subject.send( attribute )
+            end
+        end
+
+        it "does not include 'scope" do
+            data.should_not include 'scope'
+        end
+    end
 
     describe '#initialize' do
         it 'sets the instance attributes by the options' do
             options = {
                 url:     url,
-                version: '1.0',
                 headers: {
                     'X-Stuff' => 'Blah'
                 }
             }
             r = described_class.new(options)
-            r.version.should == options[:version]
             r.headers.should == options[:headers]
         end
     end
 
-    describe '#version' do
-        it 'defaults to 1.1' do
-            described_class.new(url: url).version.should == '1.1'
+    describe '#scope' do
+        it "returns #{described_class::Scope}" do
+            subject.scope.should be_kind_of described_class::Scope
         end
     end
 
     describe '#url=' do
         it 'sets the #url' do
-            r = described_class.new( url: url )
-            r.url = "#{url}/2"
-            r.url.should == "#{url}/2"
+            subject.url = "#{url}/2"
+            subject.url.should == "#{url}/2"
         end
 
         it 'forces it to a string' do
-            r = described_class.new( url: url )
-            r.url = nil
-            r.url.should == ''
+            subject.url = nil
+            subject.url.should == ''
         end
 
         it 'it freezes it' do
@@ -55,7 +66,7 @@ shared_examples_for 'Arachni::HTTP::Message' do
     describe '#headers' do
         context 'when not configured' do
             it 'defaults to an empty Hash' do
-                described_class.new(url: url).headers.should == {}
+                subject.headers.should == {}
             end
         end
 

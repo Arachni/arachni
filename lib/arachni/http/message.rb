@@ -8,14 +8,11 @@ module HTTP
 
 # @author Tasos Laskos <tasos.laskos@gmail.com>
 class Message
+    require_relative 'message/scope'
 
     # @return   [String]
     #   Resource location.
     attr_accessor :url
-
-    # @return   [String]
-    #   HTTP version.
-    attr_accessor :version
 
     # @return   [Headers<String, String>]
     #   HTTP headers as a Hash-like object.
@@ -36,8 +33,6 @@ class Message
     #   HTTP headers.
     # @option   options [String]    :body
     #   Body.
-    # @option   options [String]    :version (1.1)
-    #   HTTP version.
     def initialize( options = {} )
         options.each do |k, v|
             v = my_dup( v )
@@ -50,8 +45,12 @@ class Message
 
         fail ArgumentError, 'Missing :url.' if url.to_s.empty?
 
-        @headers  = Headers.new( @headers )
-        @version ||= '1.1'
+        @headers = Headers.new( @headers )
+    end
+
+    # @return   [Scope]
+    def scope
+        @scope ||= self.class::Scope.new( self )
     end
 
     def parsed_url

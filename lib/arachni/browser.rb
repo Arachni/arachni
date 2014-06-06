@@ -1142,8 +1142,7 @@ class Browser
     def ignore_request?( request )
         # Only allow CSS and JS resources to be loaded from out-of-scope domains.
         !['css', 'js'].include?( request.parsed_url.resource_extension ) &&
-            skip_path?( request.url ) || Options.scope.redundant?( request.url ) ||
-            Options.scope.auto_redundant_path?( request.url )
+            request.scope.out? || request.scope.redundant?
     end
 
     def capture( request )
@@ -1209,8 +1208,7 @@ class Browser
 
     def copy_response_data( source, destination )
         [:code, :url, :body, :headers, :ip_address, :return_code,
-         :return_message, :headers_string, :total_time, :time,
-         :version].each do |m|
+         :return_message, :headers_string, :total_time, :time].each do |m|
             destination.send "#{m}=", source.send( m )
         end
 

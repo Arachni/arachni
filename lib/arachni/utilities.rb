@@ -224,8 +224,8 @@ module Utilities
     #   `true` if the `url` is redundant, `false` otherwise.
     #
     # @see OptionGroups::Scope#redundant_path_patterns?
-    def redundant_path?( url, &block )
-        uri_parse( url ).scope.redundant?(&block)
+    def redundant_path?( url )
+        uri_parse( url ).scope.redundant?
     end
 
     #

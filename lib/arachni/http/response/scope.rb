@@ -8,19 +8,19 @@ module HTTP
 class Response
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-class Scope < URI::Scope
+class Scope < Message::Scope
 
     # {Scope} error namespace.
     #
     # All {Scope} errors inherit from and live under it.
     #
     # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-    class Error < Arachni::Error
+    class Error < Message::Scope::Error
     end
 
     # @param    [Arachni::HTTP::Response]  response
     def initialize( response )
-        super response.parsed_url
+        super response
 
         @response = response
     end

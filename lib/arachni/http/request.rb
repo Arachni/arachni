@@ -10,6 +10,7 @@ module HTTP
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Request < Message
+    require_relative 'request/scope'
 
     # Default redirect limit, RFC says 5 max.
     REDIRECT_LIMIT = 5
@@ -383,6 +384,7 @@ class Request < Message
         @on_complete = []
 
         instance_variables.inject( {} ) do |h, iv|
+            next h if iv == :@scope
             h[iv.to_s.gsub('@','')] = instance_variable_get( iv )
             h
         end

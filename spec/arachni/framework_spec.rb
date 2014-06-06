@@ -1111,6 +1111,8 @@ describe Arachni::Framework do
     end
 
     describe '#push_to_page_queue' do
+        let(:page) { Arachni::Page.from_url( @url + '/train/true' ) }
+
         it 'pushes it to the page audit queue and returns true' do
             page = Arachni::Page.from_url( @url + '/train/true' )
 
@@ -1168,31 +1170,27 @@ describe Arachni::Framework do
             end
         end
 
-        context 'when the page matches exclusion criteria' do
-            it 'ignores it' do
-                page = Arachni::Page.from_url( @url + '/train/true' )
-
-                subject.options.audit.elements :links, :forms, :cookies
-                subject.checks.load :taint
-
-                subject.options.scope.exclude_path_patterns << /train/
-
-                subject.page_queue_total_size.should == 0
-                subject.push_to_page_queue( page )
-                subject.run
-                subject.auditstore.issues.size.should == 0
-                subject.page_queue_total_size.should == 0
-                subject.checks.clear
-            end
-
+        context "when #{Arachni::URI::Scope}#out? is true" do
             it 'returns false' do
-                page = Arachni::Page.from_url( @url + '/train/true' )
-                subject.options.scope.exclude_path_patterns << /train/
-                subject.page_queue_total_size.should == 0
+                Arachni::URI::Scope.any_instance.stub(:out?) { true }
                 subject.push_to_page_queue( page ).should be_false
-                subject.page_queue_total_size.should == 0
             end
         end
+
+        context "when #{Arachni::URI::Scope}#redundant? is true" do
+            it 'returns false' do
+                Arachni::URI::Scope.any_instance.stub(:redundant?) { true }
+                subject.push_to_page_queue( page ).should be_false
+            end
+        end
+
+        context "when #{Arachni::URI::Scope}#auto_redundant? is true" do
+            it 'returns false' do
+                Arachni::URI::Scope.any_instance.stub(:auto_redundant?) { true }
+                subject.push_to_page_queue( page ).should be_false
+            end
+        end
+
     end
 
     describe '#push_to_url_queue' do
@@ -1220,6 +1218,27 @@ describe Arachni::Framework do
                 subject.push_to_url_queue(  @url + '/link' )
                 subject.push_to_url_queue(  @url + '/link' )
                 subject.url_queue_total_size.should == 1
+            end
+        end
+
+        context "when #{Arachni::URI::Scope}#out? is true" do
+            it 'returns false' do
+                Arachni::URI::Scope.any_instance.stub(:out?) { true }
+                subject.push_to_url_queue( @url ).should be_false
+            end
+        end
+
+        context "when #{Arachni::URI::Scope}#redundant? is true" do
+            it 'returns false' do
+                Arachni::URI::Scope.any_instance.stub(:redundant?) { true }
+                subject.push_to_url_queue( @url ).should be_false
+            end
+        end
+
+        context "when #{Arachni::URI::Scope}#auto_redundant? is true" do
+            it 'returns false' do
+                Arachni::URI::Scope.any_instance.stub(:auto_redundant?) { true }
+                subject.push_to_url_queue( @url ).should be_false
             end
         end
     end

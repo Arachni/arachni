@@ -68,10 +68,6 @@ class Response < Message
         @redirections ||= []
     end
 
-    def scope
-        @scope ||= Scope.new( self )
-    end
-
     # @return   [Platform]
     #   Applicable platforms for the page.
     def platforms
@@ -163,10 +159,10 @@ class Response < Message
 
         hash[:headers] = {}.merge( hash[:headers] )
 
+        hash.delete( :scope )
         hash.delete( :parsed_url )
         hash.delete( :redirections )
         hash.delete( :request )
-        hash.delete( :version )
         hash.delete( :scope )
 
         hash
