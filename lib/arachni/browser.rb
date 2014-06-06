@@ -1118,7 +1118,7 @@ class Browser
             transition.complete
         end
 
-        return if skip_path?( response.url )
+        return if response.scope.out?
 
         intercept response
         save_response response
