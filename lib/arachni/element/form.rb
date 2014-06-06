@@ -385,14 +385,10 @@ class Form < Base
         # @return   [Array<Form>]
         def from_document( url, document )
             document = Nokogiri::HTML( document.to_s ) if !document.is_a?( Nokogiri::HTML::Document )
-            base_url = url
-            begin
-                base_url = document.search( '//base[@href]' )[0]['href']
-            rescue
-                base_url = url
-            end
-            document.search( '//form' ).map do |cform|
-                next if !(form = form_from_element( base_url, cform ))
+            base_url = (document.search( '//base[@href]' )[0]['href'] rescue url)
+
+            document.search( '//form' ).map do |node|
+                next if !(form = from_node( base_url, node ))
                 form.url = url.freeze
                 form
             end.compact
@@ -412,16 +408,16 @@ class Form < Base
             end
         end
 
-        def form_from_element( url, form )
-            c_form          = attributes_to_hash( form.attributes )
-            c_form[:url]    = url.freeze
-            c_form[:action] = to_absolute( c_form[:action], url ).freeze
-            c_form[:inputs] = {}
-            c_form[:html]   = form.to_html.freeze
+        def from_node( url, node )
+            options          = attributes_to_hash( node.attributes )
+            options[:url]    = url.freeze
+            options[:action] = to_absolute( options[:action], url ).freeze
+            options[:inputs] = {}
+            options[:html]   = node.to_html.freeze
 
             %w(textarea input select button).each do |attr|
-                c_form[attr] ||= []
-                form.search( ".//#{attr}" ).each do |elem|
+                options[attr] ||= []
+                node.search( ".//#{attr}" ).each do |elem|
                     elem_attrs = attributes_to_hash( elem.attributes )
                     elem_attrs[:type] = elem_attrs[:type].to_sym if elem_attrs[:type]
 
@@ -430,9 +426,9 @@ class Form < Base
 
                     # Handle the easy stuff first...
                     if elem.name != 'select'
-                        c_form[:inputs][name]           = elem_attrs
-                        c_form[:inputs][name][:type]  ||= :text
-                        c_form[:inputs][name][:value] ||= ''
+                        options[:inputs][name]           = elem_attrs
+                        options[:inputs][name][:type]  ||= :text
+                        options[:inputs][name][:value] ||= ''
                         next
                     end
 
@@ -445,16 +441,16 @@ class Form < Base
                             # Prefer the selected or first option.
                             if h[:selected]
                                 h[:value] ||= child.text
-                                c_form[:inputs][name] = h
+                                options[:inputs][name] = h
                             else
                                 h[:value] ||= child.text
-                                c_form[:inputs][name] ||= h
+                                options[:inputs][name] ||= h
                             end
                         end
 
                         # The select has no options, use an empty string.
                     else
-                        c_form[:inputs][name] = {
+                        options[:inputs][name] = {
                             type:  :select,
                             value: ''
                         }
@@ -462,7 +458,7 @@ class Form < Base
                 end
             end
 
-            new c_form
+            new options
         end
 
         def attributes_to_hash( attributes )
