@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 shared_examples_for 'element' do
+    it_should_behave_like 'with_scope'
+
     let :normalized_url do
         Arachni::Utilities.normalize_url( 'http://test.com' )
     end

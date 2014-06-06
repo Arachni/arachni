@@ -225,9 +225,9 @@ module Timeout
     def timeout_analysis( payloads, opts )
         return false if self.inputs.empty?
 
-        if skip_path? self.action
-            print_debug "Timeout analysis: Element's action matches " <<
-                            "skip rule, bailing out: #{audit_id}"
+        if scope.out?
+            print_debug 'Timeout analysis: Element is out of scope,' <<
+                            " skipping: #{audit_id}"
             return false
         end
 

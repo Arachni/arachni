@@ -34,6 +34,8 @@ class Base
     include Utilities
     extend Utilities
 
+    include Capabilities::WithScope
+
     # @return     [Page]
     #   Page this element belongs to.
     attr_accessor :page
@@ -146,6 +148,7 @@ class Base
     def to_rpc_data
         data = marshal_dump.inject({}) { |h, (k, v)| h[k.to_s.gsub('@', '')] = v.to_rpc_data_or_self; h }
         data.delete 'audit_options'
+        data.delete 'scope'
         data['class'] = self.class.to_s
         data
     end

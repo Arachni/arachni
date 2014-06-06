@@ -99,7 +99,7 @@ module Auditable
     #   * `true` when the audit was successful.
     #   * `false` when:
     #       * There are no {#inputs} inputs.
-    #       * The {#action} matches a {#skip_path? skip} rule.
+    #       * The element is {WithScope::Scope#out? out} of {WithScope::Scope}.
     #       * The element has already been audited and the `:redundant` option
     #          is `false` -- the default.
     #       * The element matches a {.skip_like} block.
@@ -111,10 +111,16 @@ module Auditable
     #   On missing `block` or unsupported `payloads` type.
     #
     # @see #submit
-    def audit( payloads, opts = { }, &block )
+    def audit( payloads, opts = {}, &block )
         fail ArgumentError, 'Missing block.' if !block_given?
 
         return false if self.inputs.empty?
+
+        if scope.out?
+            print_debug_level_2 "#{__method__}: Element is out of scope, " <<
+                                    "skipping: #{audit_id}"
+            return false
+        end
 
         case payloads
             when String
@@ -260,7 +266,7 @@ module Auditable
     #    * The `payload` contains {Inputtable#valid_input_data? invalid} data
     #       for this element type.
     #    * There are no {#inputs} inputs.
-    #    * The {Element::Base#action} matches a {#skip_path? skip} rule.
+    #    * The element is {WithScope::Scope#out? out} of {WithScope::Scope}.
     #    * The element has already been audited and the `:redundant` option
     #       is `false` -- the default.
     #    * The element matches a {.skip_like} block.
@@ -281,19 +287,14 @@ module Auditable
 
         print_debug_level_2 "About to audit: #{audit_id}"
 
-        if self.action && skip_path?( self.action )
-            print_debug_level_2 "Element's action matches skip rule, bailing out."
-            return false
-        end
-
         self.auditor ||= @audit_options.delete( :auditor )
 
-        audit_id = audit_id( payload )
-        if !@audit_options[:redundant] && audited?( audit_id )
-            print_debug_level_2 "Skipping, already audited: #{audit_id}"
+        caudit_id = audit_id( payload )
+        if !@audit_options[:redundant] && audited?( caudit_id )
+            print_debug_level_2 "Skipping, already audited: #{caudit_id}"
             return false
         end
-        audited audit_id
+        audited caudit_id
 
         if matches_skip_like_blocks?
             print_debug_level_2 'Element matches one or more skip_like blocks, skipping.'
@@ -361,10 +362,6 @@ module Auditable
         end
 
         true
-    end
-
-    def skip_path?( url )
-        super || redundant_path?( url )
     end
 
     # Checks whether or not an audit has been already performed.

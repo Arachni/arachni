@@ -332,6 +332,11 @@ describe Arachni::URI::Scope do
             subject.should_not be_out
         end
 
+        it 'does not call #redundant?' do
+            subject.should_not receive(:redundant?)
+            subject.out?
+        end
+
         context 'when #follow_protocol?' do
             context 'is false' do
                 it 'returns true' do

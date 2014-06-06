@@ -674,31 +674,16 @@ shared_examples_for 'auditable' do |options = {}|
             end
         end
 
-        context 'when the action matches a #skip_path? rule' do
-            it 'returns immediately' do
-                ran = false
-                auditable.audit( seed ) { ran = true }
-                run
-                ran.should be_true
+        context "when #{described_class::Scope}#out?" do
+            context true do
+                it 'returns immediately' do
+                    described_class::Scope.any_instance.stub(:out?) { true }
 
-                Arachni::Element::Capabilities::Auditable.reset
-
-                opts = Arachni::Options.instance
-                opts.scope.exclude_path_patterns << /./
-
-                ran = false
-                auditable.audit( seed ) { ran = true }
-                run
-                ran.should be_false
-
-                opts.scope.exclude_path_patterns.clear
-
-                Arachni::Element::Capabilities::Auditable.reset
-
-                ran = false
-                auditable.audit( seed ) { ran = true }
-                run
-                ran.should be_true
+                    ran = false
+                    auditable.audit( seed ) { ran = true }.should be_false
+                    run
+                    ran.should be_false
+                end
             end
         end
 

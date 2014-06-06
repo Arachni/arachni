@@ -97,9 +97,9 @@ module Differential
         return false if audited? audit_id
         audited audit_id
 
-        if skip_path? self.action
-            print_debug "Differential analysis: Element's action matches " <<
-                            "skip rule, bailing out: #{audit_id}"
+        if scope.out?
+            print_debug 'Differential analysis: Element is out of scope,' <<
+                            " skipping: #{audit_id}"
             return false
         end
 
