@@ -33,7 +33,7 @@ describe Arachni::Utilities do
         forms_from_document:     [Arachni::Element::Form, :from_document],
         form_encode:             [Arachni::Element::Form, :encode],
         form_decode:             [Arachni::Element::Form, :decode],
-        form_parse_request_body: [Arachni::Element::Form, :parse_request_body],
+        request_parse_body:      [Arachni::HTTP::Request, :parse_body],
         links_from_response:     [Arachni::Element::Link, :from_response],
         links_from_document:     [Arachni::Element::Link, :from_document],
         cookies_from_response:   [Arachni::Element::Cookie, :from_response],

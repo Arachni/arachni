@@ -536,4 +536,58 @@ describe Arachni::HTTP::Request do
         end
     end
 
+    describe '#body_parameters' do
+        context 'when #method is' do
+            context :post do
+                context 'and there are #parameters' do
+                    it 'returns #parameters' do
+                        parameters = { 'stuff' => 'here' }
+                        described_class.new(
+                            url:        url,
+                            parameters: parameters,
+                            method:     :post
+                        ).body_parameters.should == parameters
+                    end
+                end
+
+                context 'and there are no #parameters' do
+                    it 'parses the #body' do
+                        body = 'stuff=here&and_here=too'
+                        described_class.new(
+                            url:    url,
+                            body:   body,
+                            method: :post
+                        ).body_parameters.should == {
+                            'stuff'    => 'here',
+                            'and_here' => 'too'
+                        }
+                    end
+                end
+            end
+
+            context 'other' do
+                it 'returns an empty Hash' do
+                    described_class.new( url: url ).body_parameters.should == {}
+                end
+            end
+        end
+    end
+
+    describe '.parse_body' do
+        it 'parses the request body into a Hash' do
+            described_class.parse_body( 'value%5C+%2B%3D%26%3B=value%5C+%2B%3D%26%3B&testID=53738&deliveryID=53618&testIDs=&deliveryIDs=&selectedRows=2&event=&section=&event%3Dmanage%26amp%3Bsection%3Dexam=Manage+selected+exam' ).should ==
+                {
+                    "value\\ +=&;" => "value\\ +=&;",
+                    "testID" => "53738",
+                    "deliveryID" => "53618",
+                    "testIDs" => "",
+                    "deliveryIDs" => "",
+                    "selectedRows" => "2",
+                    "event" => "",
+                    "section" => "",
+                    "event=manage&amp;section=exam" => "Manage selected exam"
+                }
+        end
+    end
+
 end

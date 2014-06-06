@@ -51,9 +51,9 @@ module Utilities
         Form.decode( *args )
     end
 
-    # @see Arachni::Element::Form.parse_request_body
-    def form_parse_request_body( *args )
-        Form.parse_request_body( *args )
+    # @see Arachni::HTTP::Request.parse_body
+    def request_parse_body( *args )
+        HTTP::Request.parse_body( *args )
     end
 
     # @see Arachni::Element::Link.from_response

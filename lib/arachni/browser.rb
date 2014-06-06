@@ -1163,7 +1163,7 @@ class Browser
                 )
 
             when :post
-                inputs = form_parse_request_body( request.body )
+                inputs = request.body_parameters
                 return if inputs.empty?
 
                 form = Form.new(

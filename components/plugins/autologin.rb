@@ -24,7 +24,7 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
         framework_pause
         print_info 'System paused.'
 
-        @parameters = form_parse_request_body( options[:parameters] )
+        @parameters = request_parse_body( options[:parameters] )
         @verifier   = Regexp.new( options[:check] )
         @url        = options[:url].to_s
         @errored    = false

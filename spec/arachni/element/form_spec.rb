@@ -1007,37 +1007,4 @@ describe Arachni::Element::Form do
         end
     end
 
-    describe '.parse_request_body' do
-        it 'form-decodes the passed string' do
-            described_class.parse_request_body( 'value%5C+%2B%3D%26%3B=value%5C+%2B%3D%26%3B&testID=53738&deliveryID=53618&testIDs=&deliveryIDs=&selectedRows=2&event=&section=&event%3Dmanage%26amp%3Bsection%3Dexam=Manage+selected+exam' ).should ==
-                {
-                    "value\\ +=&;" => "value\\ +=&;",
-                    "testID" => "53738",
-                    "deliveryID" => "53618",
-                    "testIDs" => "",
-                    "deliveryIDs" => "",
-                    "selectedRows" => "2",
-                    "event" => "",
-                    "section" => "",
-                    "event=manage&amp;section=exam" => "Manage selected exam"
-                }
-        end
-    end
-    describe '#parse_request_body' do
-        it 'form-decodes the passed string' do
-            described_class.parse_request_body( 'value%5C+%2B%3D%26%3B=value%5C+%2B%3D%26%3B&testID=53738&deliveryID=53618&testIDs=&deliveryIDs=&selectedRows=2&event=&section=&event%3Dmanage%26amp%3Bsection%3Dexam=Manage+selected+exam' ).should ==
-                {
-                    "value\\ +=&;" => "value\\ +=&;",
-                    "testID" => "53738",
-                    "deliveryID" => "53618",
-                    "testIDs" => "",
-                    "deliveryIDs" => "",
-                    "selectedRows" => "2",
-                    "event" => "",
-                    "section" => "",
-                    "event=manage&amp;section=exam" => "Manage selected exam"
-                }
-        end
-    end
-
 end

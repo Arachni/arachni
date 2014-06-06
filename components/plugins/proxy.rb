@@ -125,7 +125,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
         TemplateScope.get.set :sign_in_url, sign_in_url
 
-        params = form_parse_request_body( req.body.to_s ).
+        params = request_parse_body( req.body.to_s ).
             merge( uri_parse_query( url ) ) || {}
 
         print_status "Requesting #{url}"
@@ -304,7 +304,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     #
     # @see #forms_with_password
     def find_login_form_from_request( request )
-        return if (params = form_parse_request_body( request.body )).empty?
+        return if (params = request_parse_body( request.body )).empty?
 
         f = session.find_login_form(
             pages:  @pages.to_a,
@@ -380,7 +380,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
             url:    response.url,
             action: response.url,
             method: request.method,
-            inputs: form_parse_request_body( request.body )
+            inputs: request_parse_body( request.body )
         )]
         page
     end
