@@ -1,4 +1,3 @@
-# encoding: utf-8
 require 'spec_helper'
 
 class Subject
@@ -13,6 +12,9 @@ describe Arachni::Utilities do
     end
 
     subject { Subject.new }
+
+    let(:response) { Factory[:response] }
+    let(:page) { Factory[:page] }
 
     describe '#caller_name' do
         it 'returns the filename of the caller' do
@@ -114,191 +116,72 @@ describe Arachni::Utilities do
     end
 
     describe '#skip_page?' do
-        before { @opts.scope.exclude_page_patterns << /ignore me/ }
-
-        context 'when the page DOM depth limit has been exceeded' do
-            it 'returns false' do
-                page = Arachni::Page.from_data(
-                    url:         'http://test',
-                    dom:         {
-                        transitions: [
-                             { page: :load },
-                             { "<a href='javascript:click();'>" => :click },
-                             { "<button dblclick='javascript:doubleClick();'>" => :ondblclick }
-                         ].map { |t| Arachni::Page::DOM::Transition.new *t.first }
-                    }
-                )
-                subject.skip_page?( page ).should be_false
-
-                @opts.scope.dom_depth_limit = 2
-                subject.skip_page?( page ).should be_true
-            end
-        end
-
-        context 'when the body matches an ignore rule' do
-            it 'returns true' do
-                page = Arachni::Page.from_data( url: 'http://test/', body: 'ignore me' )
-                subject.skip_page?( page ).should be_true
-            end
-        end
-
-        context 'when the body does not match an ignore rule' do
-            it 'returns false' do
-                page = Arachni::Page.from_data(
-                    url: 'http://test/',
-                    body: 'not me'
-                )
-                subject.skip_page?( page ).should be_false
-            end
+        it "delegates to #{Arachni::Page::Scope}#out?" do
+            Arachni::Page::Scope.any_instance.stub(:out?) { :stuff }
+            subject.skip_page?( page ).should == :stuff
         end
     end
 
     describe '#skip_response?' do
-        before { @opts.scope.exclude_page_patterns << /ignore me/ }
-
-        context 'when the body matches an ignore rule' do
-            it 'returns true' do
-                res = Arachni::HTTP::Response.new( url: 'http://stuff/', body: 'ignore me' )
-                subject.skip_response?( res ).should be_true
-            end
-        end
-
-        context 'when the body does not match an ignore rule' do
-            it 'returns false' do
-                res = Arachni::HTTP::Response.new(
-                    url: 'http://test/',
-                    body: 'not me'
-                )
-                subject.skip_response?( res ).should be_false
-            end
+        it "delegates to #{Arachni::HTTP::Response::Scope}#out?" do
+            Arachni::HTTP::Response::Scope.any_instance.stub(:out?) { :stuff }
+            subject.skip_response?( response ).should == :stuff
         end
     end
 
     describe '#skip_resource?' do
-        before do
-            @opts.scope.exclude_page_patterns << /ignore\s+me/m
-            @opts.scope.exclude_path_patterns << /ignore/
-        end
-
         context 'when passed a' do
             context Arachni::HTTP::Response do
-
-                context 'whose body matches an ignore rule' do
-                    it 'returns true' do
-                        res = Arachni::HTTP::Response.new(
-                            url: 'http://stuff/here',
-                            body: 'ignore me'
-                        )
-                        subject.skip_resource?( res ).should be_true
+                context 'and #skip_response? returns' do
+                    context 'true' do
+                        it 'returns true' do
+                            subject.stub(:skip_response?){ true }
+                            subject.skip_resource?( response ).should be_true
+                        end
                     end
-                end
 
-                context 'whose the body does not match an ignore rule' do
-                    it 'returns false' do
-                        res = Arachni::HTTP::Response.new(
-                            url: 'http://stuff/here',
-                            body: 'stuff'
-                        )
-                        subject.skip_resource?( res ).should be_false
-                    end
-                end
-
-                context 'whose URL matches an exclude rule' do
-                    it 'returns true' do
-                        res = Arachni::HTTP::Response.new(
-                            url: 'http://stuff/here/to/ignore/',
-                            body: 'ignore me'
-                        )
-                        subject.skip_resource?( res ).should be_true
-                    end
-                end
-
-                context 'whose URL does not match an exclude rule' do
-                    it 'returns false' do
-                        res = Arachni::HTTP::Response.new(
-                            url: 'http://stuff/here',
-                            body: 'stuff'
-                        )
-                        subject.skip_resource?( res ).should be_false
+                    context 'false' do
+                        it 'returns false' do
+                            subject.stub(:skip_response?){ false }
+                            subject.skip_resource?( response ).should be_false
+                        end
                     end
                 end
             end
 
             context Arachni::Page do
-                context 'whose the body matches an ignore rule' do
-                    it 'returns true' do
-                        page = Arachni::Page.from_data(
-                            url:   'http://stuff/here',
-                            body: 'ignore me'
-                        )
-                        subject.skip_resource?( page ).should be_true
+                context 'and #skip_page? returns' do
+                    context 'true' do
+                        it 'returns true' do
+                            subject.stub(:skip_page?){ true }
+                            subject.skip_resource?( page ).should be_true
+                        end
+                    end
+
+                    context 'false' do
+                        it 'returns false' do
+                            subject.stub(:skip_page?){ false }
+                            subject.skip_resource?( page ).should be_false
+                        end
                     end
                 end
-
-                context 'whose the body does not match an ignore rule' do
-                    it 'returns false' do
-                        page = Arachni::Page.from_data(
-                            url:   'http://stuff/here',
-                            body: 'stuff'
-                        )
-                        subject.skip_resource?( page ).should be_false
-                    end
-                end
-
-                context 'whose URL matches an exclude rule' do
-                    it 'returns true' do
-                        res = Arachni::Page.from_data(
-                            url:   'http://stuff/here/to/ignore/',
-                            body: 'ignore me'
-                        )
-                        subject.skip_resource?( res ).should be_true
-                    end
-                end
-
-                context 'whose URL does not match an exclude rule' do
-                    it 'returns false' do
-                        res = Arachni::Page.from_data(
-                            url:  'http://stuff/here',
-                            body: 'stuff'
-                        )
-                        subject.skip_resource?( res ).should be_false
-                    end
-                end
-
             end
 
             context String do
-                context 'with multiple lines' do
-                    context 'which matches an ignore rule' do
+                context 'and #skip_path? returns' do
+                    context 'true' do
                         it 'returns true' do
-                            s = "ignore \n me"
-                            subject.skip_resource?( s ).should be_true
+                            subject.stub(:skip_path?){ true }
+                            subject.skip_resource?( 'stuff' ).should be_true
                         end
                     end
 
-                    context 'which does not match an ignore rule' do
+                    context 'false' do
                         it 'returns false' do
-                            s = "multi \n line \n stuff here"
-                            subject.skip_resource?( s ).should be_false
+                            subject.stub(:skip_path?){ false }
+                            subject.skip_resource?( 'stuff' ).should be_false
                         end
                     end
-                end
-
-                context 'with a single line' do
-                    context 'which matches an exclude rule' do
-                        it 'returns true' do
-                            s = 'ignore/this/path'
-                            subject.skip_resource?( s ).should be_true
-                        end
-                    end
-
-                    context 'which does not match an exclude rule' do
-                        it 'returns false' do
-                            s = 'stuf/here/'
-                            subject.skip_resource?( s ).should be_false
-                        end
-                    end
-
                 end
             end
         end

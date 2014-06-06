@@ -111,12 +111,21 @@ class Scope < Arachni::OptionGroup
     attr_accessor :exclude_path_patterns
 
     # @return    [Array<Regexp>]
-    #   Page bodies matching any of these patterns will be are ignored.
+    #   {Page}/{HTTP::Response} bodies matching any of these patterns will be are ignored.
     #
-    # @see #exclude_page?
     # @see Utilities#skip_resource?
     # @see Browser
-    attr_accessor :exclude_page_patterns
+    attr_accessor :exclude_content_patterns
+
+    # @note Default is `false`.
+    #
+    # @return   [Bool]
+    #   Exclude pages with binary content from the audit. Mainly used to avoid
+    #   having grep checks confused by random binary content.
+    #
+    # @see Framework#audit_page
+    attr_accessor :exclude_binaries
+    alias :exclude_binaries? :exclude_binaries
 
     # @note Default if `false`.
     #
@@ -145,7 +154,7 @@ class Scope < Arachni::OptionGroup
         redundant_path_patterns: {},
         dom_depth_limit:         10,
         exclude_path_patterns:   [],
-        exclude_page_patterns:   [],
+        exclude_content_patterns:   [],
         include_path_patterns:   [],
         restrict_paths:          [],
         extend_paths:            [],
@@ -171,7 +180,7 @@ class Scope < Arachni::OptionGroup
     end
 
     # These options need to contain Array<Regexp>.
-    [ :exclude_page_patterns, :include_path_patterns, :exclude_path_patterns ].each do |m|
+    [ :exclude_content_patterns, :include_path_patterns, :exclude_path_patterns ].each do |m|
         define_method( "#{m}=".to_sym ) do |arg|
             arg = [arg].flatten.compact.
                 map { |s| s.is_a?( Regexp ) ? s : Regexp.new( s.to_s ) }
@@ -213,24 +222,6 @@ class Scope < Arachni::OptionGroup
         end
 
         @auto_redundant_h[h] += 1
-        false
-    end
-
-    def dom_depth_limit_reached?( page )
-        dom_depth_limit && page.dom.depth > dom_depth_limit
-    end
-
-    # Checks if the given string matches one of the configured
-    # {#exclude_page_patterns} patterns.
-    #
-    # @param    [String]    body
-    # @return   [Bool]
-    #   `true` if `body` matches an {#exclude_page_patterns} pattern,
-    #   `false` otherwise.
-    #
-    # @see #exclude_page_patterns
-    def exclude_page?( body )
-        exclude_page_patterns.each { |i| return true if body.to_s =~ i }
         false
     end
 
@@ -285,7 +276,7 @@ class Scope < Arachni::OptionGroup
             d[k] = d[k].stringify
         end
 
-        %w(exclude_path_patterns exclude_page_patterns include_path_patterns).each do |k|
+        %w(exclude_path_patterns exclude_content_patterns include_path_patterns).each do |k|
             d[k] = d[k].map(&:to_s)
         end
 

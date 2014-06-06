@@ -30,15 +30,6 @@ class Audit < Arachni::OptionGroup
     # @see Element::Capabilities::Mutable#switch_method
     attr_accessor :with_both_http_methods
 
-    # @note Default is `false`.
-    #
-    # @return   [Bool]
-    #   Exclude pages with binary content from the audit. Mainly used to avoid
-    #   having grep checks confused by random binary content.
-    #
-    # @see Framework#audit_page
-    attr_accessor :exclude_binaries
-
     # @return    [Array<String>]
     #   Vectors to exclude from the audit, by name.
     #
@@ -187,8 +178,7 @@ class Audit < Arachni::OptionGroup
     alias :element? :elements?
 
     [:links, :forms, :cookies, :headers, :cookies_extensively,
-     :with_both_http_methods, :exclude_binaries, :link_doms, :form_doms,
-     :cookie_doms].each do |attribute|
+     :with_both_http_methods, :link_doms, :form_doms, :cookie_doms].each do |attribute|
         define_method "#{attribute}?" do
             !!send( attribute )
         end

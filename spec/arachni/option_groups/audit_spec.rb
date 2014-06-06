@@ -4,8 +4,8 @@ describe Arachni::OptionGroups::Audit do
     include_examples 'option_group'
     subject { described_class.new }
 
-    %w(with_both_http_methods exclude_binaries exclude_vectors links forms
-        cookies cookies_extensively headers link_templates).each do |method|
+    %w(with_both_http_methods exclude_vectors links forms cookies
+        cookies_extensively headers link_templates).each do |method|
         it { should respond_to method }
         it { should respond_to "#{method}=" }
     end
@@ -63,8 +63,7 @@ describe Arachni::OptionGroups::Audit do
     end
 
     [:links, :forms, :cookies, :headers, :cookies_extensively,
-     :with_both_http_methods, :exclude_binaries, :link_doms, :form_doms,
-     :cookie_doms].each do |attribute|
+     :with_both_http_methods, :link_doms, :form_doms, :cookie_doms].each do |attribute|
         describe "#{attribute}?" do
             context "when ##{attribute} is" do
                 context true do

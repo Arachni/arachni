@@ -217,8 +217,8 @@ class Manager
     # @return   [Bool]
     #   `true` if the resource should be fingerprinted, `false` otherwise.
     def self.fingerprint?( resource )
-        !(!Options.fingerprint? || !resource.text? || include?( resource.url ) ||
-            skip_resource?( resource ))
+        !(!Options.fingerprint? || !resource.text? ||
+        include?( resource.url ) || resource.scope.out?)
     end
 
     # Runs all fingerprinters against the given `page`.

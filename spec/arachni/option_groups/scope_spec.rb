@@ -7,8 +7,8 @@ describe Arachni::OptionGroups::Scope do
     %w(directory_depth_limit dom_depth_limit page_limit restrict_paths
         restrict_paths_filepath extend_paths extend_paths_filepath
         redundant_path_patterns auto_redundant_paths include_path_patterns
-        exclude_path_patterns exclude_page_patterns include_subdomains https_only
-        url_rewrites
+        exclude_path_patterns exclude_content_patterns include_subdomains https_only
+        url_rewrites exclude_binaries
     ).each do |method|
         it { should respond_to method }
         it { should respond_to "#{method}=" }
@@ -277,33 +277,18 @@ describe Arachni::OptionGroups::Scope do
         end
     end
 
-    describe '#exclude_page_patterns=' do
+    describe '#exclude_content_patterns=' do
         it 'converts its param to an Array of Regexp' do
             exclude_pages = %w(my_ignore my_other_ignore)
 
-            subject.exclude_page_patterns = /test/
-            subject.exclude_page_patterns.should == [/test/]
+            subject.exclude_content_patterns = /test/
+            subject.exclude_content_patterns.should == [/test/]
 
-            subject.exclude_page_patterns = exclude_pages.first
-            subject.exclude_page_patterns.should == [Regexp.new( exclude_pages.first )]
+            subject.exclude_content_patterns = exclude_pages.first
+            subject.exclude_content_patterns.should == [Regexp.new( exclude_pages.first )]
 
-            subject.exclude_page_patterns = exclude_pages
-            subject.exclude_page_patterns.should == exclude_pages.map { |p| Regexp.new( p ) }
-        end
-    end
-
-    describe '#exclude_page?' do
-        context 'when the string matches one of the #exclude_page_patterns' do
-            it 'returns true' do
-                subject.exclude_page_patterns = /test/
-                subject.exclude_page?( 'this is a test test test' ).should be_true
-            end
-        end
-        context 'when the string does not match one of the #exclude_page_patterns' do
-            it 'returns false' do
-                subject.exclude_page_patterns = /test/
-                subject.exclude_page?( 'this is a blah blah blah' ).should be_false
-            end
+            subject.exclude_content_patterns = exclude_pages
+            subject.exclude_content_patterns.should == exclude_pages.map { |p| Regexp.new( p ) }
         end
     end
 
@@ -324,7 +309,7 @@ describe Arachni::OptionGroups::Scope do
             data['url_rewrites'].should == values.stringify
         end
 
-        %w(exclude_path_patterns exclude_page_patterns include_path_patterns).each do |k|
+        %w(exclude_path_patterns exclude_content_patterns include_path_patterns).each do |k|
             it "converts '#{k}' to strings" do
                 values = [/#{k}/]
                 subject.send( "#{k}=", values )

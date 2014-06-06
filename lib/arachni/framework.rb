@@ -242,7 +242,7 @@ class Framework
     def audit_page( page )
         return if !page
 
-        if skip_page? page
+        if page.scope.out?
             print_info "Ignoring page due to exclusion criteria: #{page.dom.url}"
             return false
         end
@@ -367,7 +367,7 @@ class Framework
     #   `true` if push was successful, `false` if the `page` matched any
     #   exclusion criteria or has already been seen.
     def push_to_page_queue( page )
-        return false if state.page_seen?( page ) || skip_page?( page )
+        return false if state.page_seen?( page ) || page.scope.out?
 
         # We want to update from the already loaded page cache (if there is one)
         # as we have to store the page anyways (needs to go through Browser analysis)

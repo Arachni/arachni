@@ -28,76 +28,60 @@ class Scope
 
     # Checks if self exceeds a given directory `depth`.
     #
-    # @param    [Integer]   depth
-    #   Depth to check for.
-    #
     # @return   [Bool]
     #   `true` if self is deeper than `depth`, `false` otherwise.
-    def too_deep?( depth = Options.scope.directory_depth_limit )
+    #
+    # @see OptionGroups::Scope#directory_depth_limit
+    def too_deep?
+        depth = Options.scope.directory_depth_limit
         depth.to_i > 0 && (depth + 1) <= @url.path.to_s.count( '/' )
     end
 
     # Checks if self should be excluded based on the provided `patterns`.
     #
-    # @param    [Array<Regexp,String>] patterns
-    #
     # @return   [Bool]
     #   `true` if self matches a pattern, `false` otherwise.
-    def exclude?( patterns = Options.scope.exclude_path_patterns )
-        fail ArgumentError, 'Array<Regexp,String> expected, got nil instead' if !patterns
-
-        !!ensure_patterns( patterns ).find { |pattern| @url.to_s =~ pattern }
+    def exclude?
+        !!Options.scope.exclude_path_patterns.find { |pattern| @url.to_s =~ pattern }
     end
 
     # Checks if self should be included based on the provided `patterns`.
     #
-    # @param    [Array<Regexp,String>] patterns
-    #
     # @return   [Bool]
     #   `true` if self matches a pattern (or `patterns` are `nil` or empty),
     #   `false` otherwise.
-    def include?( patterns = Options.scope.include_path_patterns )
-        fail ArgumentError, 'Array<Regexp,String> expected, got nil instead' if !patterns
-
-        rules = ensure_patterns( patterns )
+    def include?
+        rules = Options.scope.include_path_patterns
         return true if rules.empty?
 
         !!rules.find { |pattern| @url.to_s =~ pattern }
     end
 
-    # @param    [Arachni::URI, URI, Hash, String]    other
-    #   Reference URL.
-    # @param    [Bool]  include_subdomain Match subdomains too?
-    #   If true will compare full hostnames, otherwise will discard subdomains.
-    #
     # @return   [Bool]
-    #   `true` if self is in the same domain as the `other` URL, false otherwise.
-    def in_domain?( other = Options.url, include_subdomain = !Options.scope.include_subdomains )
-        return true if !other
+    #   `true` if self is in the same domain as {Options#url}, `false` otherwise.
+    def in_domain?
+        return true if !Options.url
 
-        other = URI( other ) if !other.is_a?( Arachni::URI )
-        include_subdomain ? other.host == @url.host : other.domain == @url.domain
-    rescue ArgumentError
-        false
+        reference = Arachni::URI( Options.url )
+
+        Options.scope.include_subdomains ?
+            reference.domain == @url.domain : reference.host == @url.host
     end
 
     # Decides whether the given `url` has an acceptable protocol.
-    #
-    # @param    [String]    reference
-    #   Reference URL.
     #
     # @return   [Bool]
     #
     # @see OptionGroups::Scope#https_only
     # @see OptionGroups::Scope#https_only?
-    def follow_protocol?( reference = Options.url )
-        return true if !reference
+    def follow_protocol?
+        return true if !Options.url
 
         check_scheme = @url.scheme.to_s
 
         return false if !%(http https).include?( check_scheme )
 
-        parsed_ref = URI( reference )
+        parsed_ref = Arachni::URI( Options.url )
         return false if !parsed_ref
 
         ref_scheme = parsed_ref.scheme
@@ -155,16 +139,6 @@ class Scope
         return true if exclude?
 
         false
-    end
-
-    private
-
-    def ensure_patterns( arr )
-        if arr.is_a?( Array )
-            arr
-        else
-            [arr].flatten
-        end.compact.map { |p| p.is_a?( Regexp ) ? p : Regexp.new( p.to_s ) }
     end
 
 end

@@ -101,7 +101,7 @@ describe Arachni::Platform::Manager do
 
                                 context 'and is out of scope' do
                                     it 'returns false' do
-                                        Arachni::Options.scope.exclude_path_patterns << 's'
+                                        Arachni::Options.scope.exclude_path_patterns << /s/
                                         described_class.fingerprint?( page ).should be_false
                                     end
                                 end

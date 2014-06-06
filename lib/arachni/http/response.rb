@@ -10,6 +10,7 @@ module HTTP
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Response < Message
+    require_relative 'response/scope'
 
     # @return   [Integer]
     #   HTTP response status code.
@@ -65,6 +66,10 @@ class Response < Message
 
         # Holds the redirection responses that eventually led to this one.
         @redirections ||= []
+    end
+
+    def scope
+        @scope ||= Scope.new( self )
     end
 
     # @return   [Platform]
@@ -162,6 +167,7 @@ class Response < Message
         hash.delete( :redirections )
         hash.delete( :request )
         hash.delete( :version )
+        hash.delete( :scope )
 
         hash
     end

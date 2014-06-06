@@ -170,8 +170,7 @@ module Utilities
     # @return   [Bool]
     #   `true` is the path exceeds the framework limit, `false` otherwise.
     #
-    # @see URI.too_deep?
-    # @see OptionGroups::Scope#directory_depth_limit
+    # @see URI::Scope.too_deep?
     def path_too_deep?( url )
         uri_parse( url ).scope.too_deep?
     end
@@ -278,9 +277,7 @@ module Utilities
     # @see OptionGroups::Scope#exclude_binaries?
     # @see OptionGroups::Scope#exclude_page?
     def skip_response?( response )
-        (Options.audit.exclude_binaries? && !response.text?) ||
-            skip_path?( response.url ) ||
-            Options.scope.exclude_page?( response.body )
+        response.scope.out?
     end
 
     # Determines whether or not the given {Arachni::Page}.
@@ -297,7 +294,7 @@ module Utilities
     # @see OptionGroups::Scope#exclude_page?
     # @see OptionGroups::Scope#dom_depth_limit
     def skip_page?( page )
-        skip_response?( page.response ) || Options.scope.dom_depth_limit_reached?( page )
+        page.scope.out?
     end
 
     #
@@ -329,11 +326,7 @@ module Utilities
                 skip_response?( resource )
 
             else
-                if (s = resource.to_s) =~ /[\r\n]/
-                    Options.scope.exclude_page? s
-                else
-                    skip_path? s
-                end
+                skip_path? resource.to_s
         end
     end
 

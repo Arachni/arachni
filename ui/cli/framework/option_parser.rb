@@ -60,18 +60,18 @@ class OptionParser < UI::CLI::OptionParser
             options.scope.exclude_path_patterns << pattern
         end
 
-        on( '--scope-exclude-page-pattern PATTERN', Regexp,
+        on( '--scope-exclude-content-pattern PATTERN', Regexp,
                'Exclude pages whose content matches PATTERN.',
                '(Can be used multiple times.)'
         ) do |pattern|
-            options.scope.exclude_page_patterns << pattern
+            options.scope.exclude_content_patterns << pattern
         end
 
         on( '--scope-include-pattern PATTERN', Regexp,
                'Only include resources whose path/action matches PATTERN.',
                '(Can be used multiple times.)'
         ) do |pattern|
-            options.scope.include_page_patterns << pattern
+            options.scope.include_path_patterns << pattern
         end
 
         on( '--scope-redundant-path-pattern PATTERN:COUNTER',

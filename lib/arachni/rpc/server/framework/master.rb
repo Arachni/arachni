@@ -301,7 +301,7 @@ module Master
     end
 
     def push_to_distributed_page_queue( page )
-        return false if skip_page?( page )
+        return false if page.scope.out?
         distributed_page_queue << page.clear_cache
         true
     end

@@ -15,6 +15,7 @@ class Page
     end
 
     require_relative 'page/dom'
+    require_relative 'page/scope'
 
     # @param    [String]    url
     #   URL to fetch.
@@ -169,10 +170,20 @@ class Page
         @element_audit_whitelist   = Set.new( @element_audit_whitelist )
     end
 
+    # @return   [Scope]
+    def scope
+        @scope = Scope.new( self )
+    end
+
     # @return   [Object]
     #   Object which performed the {#request} which lead to this page.
     def performer
         request.performer
+    end
+
+    # @return   [Arachni::URI]
+    def parsed_url
+        Arachni::URI( url )
     end
 
     # @return   [Parser]
@@ -400,7 +411,7 @@ class Page
     # @return   [Hash]
     #   Converts the page data to a hash.
     def to_h
-        skip = [:@document, :@do_not_audit_elements, :@has_custom_elements]
+        skip = [:@document, :@do_not_audit_elements, :@has_custom_elements, :@scope]
 
         instance_variables.inject({}) do |h, iv|
             next h if skip.include? iv
