@@ -47,20 +47,19 @@ describe Arachni::Utilities do
         html_encode:             [CGI, :escapeHTML],
         html_escape:             [CGI, :escapeHTML],
         uri_parse:               [Arachni::URI, :parse],
+        uri_rewrite:             [Arachni::URI, :rewrite],
         uri_parse_query:         [Arachni::URI, :parse_query],
         uri_encode:              [Arachni::URI, :encode],
         uri_decode:              [Arachni::URI, :decode],
-        normalize_url:           [Arachni::URI, :normalize]
+        normalize_url:           [Arachni::URI, :normalize],
+        to_absolute:             [Arachni::URI, :to_absolute]
     }.each do |m, (klass, delegated)|
         describe "##{m}" do
             it "delegates to #{klass}.#{delegated}" do
                 ret = :blah
-                arg = 'stuff'
 
-                klass.should receive(delegated).with(arg)
                 klass.stub(delegated){ ret }
-
-                subject.send( m, arg ).should == ret
+                subject.send( m, 'stuff' ).should == ret
             end
         end
     end
@@ -71,179 +70,29 @@ describe Arachni::Utilities do
         end
     end
 
-    describe '#uri_parse' do
-        it 'parses a URI' do
-
-            scheme   = 'http'
-            user     = 'user'
-            password = 'password'
-            host     = 'subdomain.domainname.tld'
-            path     = '/some/path'
-            query    = 'param=val&param2=val2'
-
-            uri = "#{scheme}://#{user}:#{password}@#{host}#{path}?#{query}"
-
-            parsed_uri = subject.uri_parse( uri )
-
-            parsed_uri.to_s.should == uri
-
-            parsed_uri.scheme.should == scheme
-            parsed_uri.user.should == user
-            parsed_uri.password.should == password
-            parsed_uri.host.should == host
-            parsed_uri.path.should == path
-            parsed_uri.query.should == query
-        end
-    end
-
-    describe '#uri_decode' do
-        it 'decodes a URI' do
-            uri = 'my%20test.asp?name=st%C3%A5le&car=saab'
-            subject.uri_decode( uri ).should == "my test.asp?name=ståle&car=saab"
-        end
-    end
-
-    describe '#to_absolute' do
-        it 'converts a relative path to absolute' do
-            @opts.url  = 'http://test2.com/blah/ha'
-            rel  = '/test'
-            rel2 = 'test2'
-            subject.to_absolute( rel ).should == "http://test2.com" + rel
-            subject.to_absolute( rel2 ).should == "http://test2.com/blah/" + rel2
-        end
-
-        context 'when called with a 2nd parameter' do
-            it 'uses it as a reference for the conversion' do
-                abs  = 'http://test.com/blah/ha'
-                rel  = '/test'
-                rel2 = 'test2'
-                subject.to_absolute( rel, abs ).should == "http://test.com" + rel
-                subject.to_absolute( rel2, abs ).should == "http://test.com/blah/" + rel2
-                subject.to_absolute( rel2, abs + '/' ).should == "http://test.com/blah/ha/" + rel2
+    {
+        get_path: :up_to_path,
+    }.each do |k, v|
+        describe "##{k}" do
+            it "delegates to #{Arachni::URI}##{v}" do
+                Arachni::URI.any_instance.stub(v) { :stuff }
+                subject.send( k, 'http://url/' ).should == :stuff
             end
         end
     end
 
-    describe '#redundant_path?' do
-        context "when a URL's counter reaches 0" do
-            it 'returns true' do
-                Arachni::Options.scope.redundant_path_patterns = { /match_this/ => 10 }
-
-                url = 'http://stuff.com/match_this'
-                10.times do
-                    subject.redundant_path?( url ).should be_false
-                end
-
-                subject.redundant_path?( url ).should be_true
-            end
-        end
-        context "when a URL's counter has not reached 0" do
-            it 'returns false' do
-                Arachni::Options.scope.redundant_path_patterns = { /match_this/ => 11 }
-
-                url = 'http://stuff.com/match_this'
-                10.times do
-                    subject.redundant_path?( url ).should be_false
-                end
-
-                subject.redundant_path?( url ).should be_false
-            end
-        end
-    end
-
-    describe '#path_in_domain?' do
-        before { @opts.url = 'http://bar.com' }
-
-        context 'when a second argument (reference URL) is provided' do
-            context 'with a path that is in the domain' do
-                it 'returns true' do
-                    subject.path_in_domain?( 'http://yes.com/foo', 'http://yes.com' ).should be_true
-                end
-            end
-            context 'with a path that is outside the domain' do
-                it 'returns true' do
-                    subject.path_in_domain?( 'http://no.com/foo', 'http://yes.com' ).should be_false
-                end
-            end
-        end
-
-        context 'when follow subdomains is disabled' do
-            before { @opts.scope.include_subdomains = false }
-
-            context 'with a URL with a different domain' do
-                it 'returns false' do
-                    subject.path_in_domain?( 'http://google.com' ).should be_false
-                    subject.skip_path?( 'http://google.com' ).should be_true
-                end
-            end
-
-            context 'with a URL with the same domain' do
-                it 'returns true' do
-                    subject.path_in_domain?( 'http://bar.com/test/' ).should be_true
-                    subject.skip_path?( 'http://bar.com/test/' ).should be_false
-                end
-            end
-
-
-            context 'with a URL with a different subdomain' do
-                it 'returns false' do
-                    subject.path_in_domain?( 'http://test.bar.com/test' ).should be_false
-                    subject.skip_path?( 'http://test.bar.com/test' ).should be_true
-                end
-            end
-        end
-
-        context 'when follow subdomains is disabled' do
-            before { @opts.scope.include_subdomains = true }
-
-            context 'with a URL with a different domain' do
-                it 'returns false' do
-                    subject.path_in_domain?( 'http://google.com' ).should be_false
-                    subject.skip_path?( 'http://google.com' ).should be_true
-                end
-            end
-
-            context 'with a URL with the same domain' do
-                it 'returns true' do
-                    subject.path_in_domain?( 'http://bar.com/test/' ).should be_true
-                    subject.skip_path?( 'http://bar.com/test/' ).should be_false
-                end
-            end
-
-
-            context 'with a URL with a different subdomain' do
-                it 'returns true' do
-                    subject.path_in_domain?( 'http://test.bar.com/test' ).should be_true
-                    subject.skip_path?( 'http://test.bar.com/test' ).should be_false
-                end
-            end
-        end
-    end
-
-    describe '#exclude_path?' do
-        before { @opts.scope.exclude_path_patterns << /skip_me/ }
-
-        context 'when a path matches an exclude rule' do
-            it 'returns true' do
-                subject.exclude_path?( 'skip_me' ).should be_true
-                subject.skip_path?( 'http://bar.com/skip_me' ).should be_true
-            end
-        end
-
-        context 'when a path does not match an exclude rule' do
-            it 'returns false' do
-                subject.exclude_path?( 'not_me' ).should be_false
-                subject.skip_path?( 'http://bar.com/not_me' ).should be_false
-            end
-        end
-    end
-
-    describe '#skip_path?' do
-        context 'when an error occurs' do
-            it 'returns true' do
-                subject.skip_path?( 'http://test.com/' ).should be_false
-                subject.stub(:follow_protocol?) { raise }
-                subject.skip_path?( 'http://test.com/' ).should be_true
+    {
+        :redundant_path?  => :redundant?,
+        :path_in_domain?  => :in_domain?,
+        :path_too_deep?   => :too_deep?,
+        :exclude_path?    => :exclude?,
+        :include_path?    => :include?,
+        :follow_protocol? => :follow_protocol?,
+    }.each do |k, v|
+        describe "##{k}" do
+            it "delegates to #{Arachni::URI::Scope}##{v}" do
+                Arachni::URI::Scope.any_instance.stub(v) { :stuff }
+                subject.send( k, 'http://url/' ).should == :stuff
             end
         end
     end
@@ -321,24 +170,6 @@ describe Arachni::Utilities do
                     body: 'not me'
                 )
                 subject.skip_response?( res ).should be_false
-            end
-        end
-    end
-
-    describe '#include_path?' do
-        before { @opts.scope.include_path_patterns << /include_me/ }
-
-        context 'when a path matches an include rule' do
-            it 'returns true' do
-                subject.include_path?( 'include_me' ).should be_true
-                subject.skip_path?( 'http://bar.com/include_me' ).should be_false
-            end
-        end
-
-        context 'when a path does not match an include rule' do
-            it 'returns false' do
-                subject.include_path?( 'not_me' ).should be_false
-                subject.skip_path?( 'http://bar.com/not_me' ).should be_true
             end
         end
     end
@@ -468,197 +299,6 @@ describe Arachni::Utilities do
                         end
                     end
 
-                end
-            end
-        end
-    end
-
-    describe '#follow_protocol?' do
-        context 'when the scheme is' do
-            context 'HTTP' do
-                it 'returns true' do
-                    @opts.url = 'https://test2.com/blah/ha'
-                    @opts.scope.https_only = true
-
-                    url = 'https://test2.com/blah/ha'
-
-                    subject.follow_protocol?( url ).should be_true
-                    subject.skip_path?( url ).should be_false
-                end
-            end
-            context 'HTTPS' do
-                it 'returns true' do
-                    @opts.url = 'https://test2.com/blah/ha'
-                    @opts.scope.https_only = true
-
-                    url = 'https://test2.com/blah/ha'
-
-                    subject.follow_protocol?( url ).should be_true
-                    subject.skip_path?( url ).should be_false
-                end
-            end
-            context 'other' do
-                it 'returns false' do
-                    @opts.url = 'http://test2.com/blah/ha'
-                    @opts.scope.https_only = true
-
-                    url = 'stuff://test2.com/blah/ha'
-
-                    subject.follow_protocol?( url ).should be_false
-                    subject.skip_path?( url ).should be_true
-                end
-            end
-        end
-        context 'when the reference URL uses' do
-            context 'HTTPS' do
-                context 'and the checked URL uses' do
-                    context 'HTTPS' do
-                        context 'and Options#scope_https_only is' do
-                            context true do
-                                it 'returns true' do
-                                    @opts.url = 'https://test2.com/blah/ha'
-                                    @opts.scope.https_only = true
-
-                                    url = 'https://test2.com/blah/ha'
-
-                                    subject.follow_protocol?( url ).should be_true
-                                    subject.skip_path?( url ).should be_false
-                                end
-                            end
-
-                            context false do
-                                it 'returns true' do
-                                    @opts.url = 'https://test2.com/blah/ha'
-                                    @opts.scope.https_only = false
-
-                                    url = 'https://test2.com/blah/ha'
-
-                                    subject.follow_protocol?( url ).should be_true
-                                    subject.skip_path?( url ).should be_false
-                                end
-                            end
-                        end
-                    end
-                    context 'HTTP' do
-                        context 'and Options#scope_https_only is' do
-                            context true do
-                                it 'returns false' do
-                                    @opts.url = 'https://test2.com/blah/ha'
-                                    @opts.scope.https_only = true
-
-                                    url = 'http://test2.com/blah/ha'
-
-                                    subject.follow_protocol?( url ).should be_false
-                                    subject.skip_path?( url ).should be_true
-                                end
-                            end
-
-                            context false do
-                                it 'returns true' do
-                                    @opts.url = 'https://test2.com/blah/ha'
-                                    @opts.scope.https_only = false
-
-                                    url = 'http://test2.com/blah/ha'
-
-                                    subject.follow_protocol?( url ).should be_true
-                                    subject.skip_path?( url ).should be_false
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-
-            context 'HTTP' do
-                context 'and the checked URL uses' do
-                    context 'HTTPS' do
-                        context 'and Options#scope_https_only is' do
-                            context true do
-                                it 'returns true' do
-                                    @opts.url = 'http://test2.com/blah/ha'
-                                    @opts.scope.https_only = true
-
-                                    url = 'https://test2.com/blah/ha'
-
-                                    subject.follow_protocol?( url ).should be_true
-                                    subject.skip_path?( url ).should be_false
-                                end
-                            end
-
-                            context false do
-                                it 'returns true' do
-                                    @opts.url = 'http://test2.com/blah/ha'
-                                    @opts.scope.https_only = false
-
-                                    url = 'https://test2.com/blah/ha'
-
-                                    subject.follow_protocol?( url ).should be_true
-                                    subject.skip_path?( url ).should be_false
-                                end
-                            end
-                        end
-                    end
-                    context 'HTTP' do
-                        context 'and Options#scope_https_only is' do
-                            context true do
-                                it 'returns true' do
-                                    @opts.url = 'http://test2.com/blah/ha'
-                                    @opts.scope.https_only = true
-
-                                    url = 'http://test2.com/blah/ha'
-
-                                    subject.follow_protocol?( url ).should be_true
-                                    subject.skip_path?( url ).should be_false
-                                end
-                            end
-
-                            context false do
-                                it 'returns true' do
-                                    @opts.url = 'http://test2.com/blah/ha'
-                                    @opts.scope.https_only = false
-
-                                    url = 'http://test2.com/blah/ha'
-
-                                    subject.follow_protocol?( url ).should be_true
-                                    subject.skip_path?( url ).should be_false
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-
-    describe '#get_path' do
-        context 'when the url only has a path' do
-            it 'does not change it' do
-                uri_with_path = 'http://test.com/some/path/'
-                subject.get_path( uri_with_path ).should == uri_with_path
-            end
-        end
-
-        context 'when the url only has a path without a terminating slash' do
-            it 'appends a slash to it' do
-                uri_with_path = 'http://test.com/some/path'
-                subject.get_path( uri_with_path ).should == uri_with_path + '/'
-            end
-        end
-
-        context 'when the url has elements past its path' do
-            context 'with a slash after its path' do
-                it 'only returns it up to its path with a terminating slash' do
-                    uri = 'http://test.com/some/path/'
-                    uri2 = uri + '?query=val&var=val2#frag'
-                    subject.get_path( uri2 ).should == uri
-                end
-            end
-
-            context 'with aout slash after its path' do
-                it 'only returns it up to its path with a terminating slash' do
-                    uri = 'http://test.com/some/path'
-                    uri2 = uri + '?query=val&var=val2#frag'
-                    subject.get_path( uri2 ).should == uri + '/'
                 end
             end
         end

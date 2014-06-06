@@ -6,6 +6,7 @@
 require 'uri'
 require 'ipaddr'
 require 'addressable/uri'
+require_relative 'uri/scope'
 
 module Arachni
 
@@ -482,13 +483,13 @@ class URI
                               ::URI::Generic.build( url )
 
                           when Arachni::URI
-                              self.parsed_url = url.parsed_url
+                              self.parsed_url = url.parsed_url.dup
 
                           else
                               to_string = url.to_s rescue ''
                               msg = 'Argument must either be String, URI or Hash'
                               msg << " -- #{url.class.name} '#{to_string}' passed."
-                              fail TypeError.new( msg )
+                              fail ArgumentError.new( msg )
                       end
 
         # We probably got it from the cache, dup it to avoid corrupting the cache
@@ -496,6 +497,11 @@ class URI
         @parsed_url = @parsed_url.dup
 
         fail Error, 'Failed to parse URL.' if !@parsed_url
+    end
+
+    # @return   [Scope]
+    def scope
+        @scope ||= Scope.new( self )
     end
 
     def ==( other )
@@ -563,69 +569,6 @@ class URI
         s[1..-1].join( '.' )
     end
 
-    # @return   [Boolean]
-    #   `true` if the URI contains an IP address, `false` otherwise.
-    def ip_address?
-        !(IPAddr.new( host ) rescue nil).nil?
-    end
-
-    # Checks if self exceeds a given directory `depth`.
-    #
-    # @param    [Integer]   depth
-    #   Depth to check for.
-    #
-    # @return   [Bool]
-    #   `true` if self is deeper than `depth`, `false` otherwise.
-    def too_deep?( depth )
-        depth.to_i > 0 && (depth + 1) <= path.to_s.count( '/' )
-    end
-
-    # Checks if self should be excluded based on the provided `patterns`.
-    #
-    # @param    [Array<Regexp,String>] patterns
-    #
-    # @return   [Bool]
-    #   `true` if self matches a pattern, `false` otherwise.
-    def exclude?( patterns )
-        fail TypeError.new( 'Array<Regexp,String> expected, got nil instead' ) if patterns.nil?
-        ensure_patterns( patterns ).each { |pattern| return true if to_s =~ pattern }
-        false
-    end
-
-    # Checks if self should be included based on the provided `patterns`.
-    #
-    # @param    [Array<Regexp,String>] patterns
-    #
-    # @return   [Bool]
-    #   `true` if self matches a pattern (or `patterns` are `nil` or empty),
-    #   `false` otherwise.
-    def include?( patterns )
-        fail TypeError.new( 'Array<Regexp,String> expected, got nil instead' ) if patterns.nil?
-
-        rules = ensure_patterns( patterns )
-        return true if !rules || rules.empty?
-
-        rules.each { |pattern| return true if to_s =~ pattern }
-        false
-    end
-
-    # @param    [Bool]  include_subdomain Match subdomains too?
-    #   If true will compare full hostnames, otherwise will discard subdomains.
-    #
-    # @param    [Arachni::URI, URI, Hash, String]    other
-    #   Reference URL.
-    #
-    # @return   [Bool]
-    #   `true` if self is in the same domain as the `other` URL, false otherwise.
-    def in_domain?( include_subdomain, other )
-        return true if !other
-
-        other = self.class.new( other ) if !other.is_a?( Arachni::URI )
-        include_subdomain ? other.host == host : other.domain == domain
-    rescue
-        false
-    end
-
     # @param    [Hash<Regexp => String>]    rules
     #   Regular expression and substitution pairs.
     #
@@ -636,11 +579,17 @@ class URI
 
         rules.each do |args|
             if (rewritten = as_string.gsub( *args )) != as_string
-                return self.class.parse( rewritten )
+                return Arachni::URI( rewritten )
             end
         end
 
         self.dup
+    end
+
+    # @return   [Boolean]
+    #   `true` if the URI contains an IP address, `false` otherwise.
+    def ip_address?
+        !(IPAddr.new( host ) rescue nil).nil?
     end
 
     def mailto?
@@ -667,7 +616,7 @@ class URI
         end
     end
 
-    # @return   [String]    URL
+    # @return   [String]
     def to_s
         @parsed_url.to_s
     end
@@ -692,26 +641,6 @@ class URI
         to_s.persistent_hash
     end
 
-    protected
-
-    def parsed_url
-        @parsed_url
-    end
-
-    def parsed_url=( url )
-        @parsed_url = url
-    end
-
-    private
-
-    def ensure_patterns( arr )
-        if arr.is_a?( Array )
-            arr
-        else
-            [arr].flatten
-        end.compact.map { |p| p.is_a?( Regexp ) ? p : Regexp.new( p.to_s ) }
-    end
-
     # Delegates unimplemented methods to Ruby's `URI::Generic` class for
     # compatibility.
     def method_missing( sym, *args, &block )
@@ -724,6 +653,16 @@ class URI
 
     def respond_to?( *args )
         super || @parsed_url.respond_to?( *args )
+    end
+
+    protected
+
+    def parsed_url
+        @parsed_url
+    end
+
+    def parsed_url=( url )
+        @parsed_url = url
     end
 
 end

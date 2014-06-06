@@ -336,8 +336,8 @@ describe Arachni::URI do
         end
 
         context 'else' do
-            it 'raises a TypeError' do
-                expect { described_class.new( [] ) }.to raise_error TypeError
+            it 'raises a ArgumentError' do
+                expect { described_class.new( [] ) }.to raise_error ArgumentError
             end
         end
     end
@@ -420,7 +420,7 @@ describe Arachni::URI do
         end
     end
 
-    describe '#up_p_to_path' do
+    describe '#up_to_path' do
         it 'returns the URL up to its path component (no resource name, query, fragment, etc)' do
             url = 'http://test.com/path/goes/here.php?query=goes&here=.!#frag'
             described_class.parse( url ).up_to_path.should == 'http://test.com/path/goes/'
@@ -467,164 +467,6 @@ describe Arachni::URI do
                 it 'returns the IP address' do
                     described_class.parse( 'http://127.0.0.1/blah/' ).ip_address?.should be_true
                 end
-            end
-        end
-    end
-
-    describe '#too_deep?' do
-        before { @deep_url = described_class.parse( '/very/very/very/very/deep' ) }
-
-        context 'when the directory depth of the URL\'s path is' do
-            context 'not greater than the provided depth' do
-                it 'returns false' do
-                    @deep_url.too_deep?( -1 ).should be_false
-
-                    @opts.scope.directory_depth_limit = 100
-                    @deep_url.too_deep?( 100 ).should be_false
-                end
-            end
-
-            context 'greater than the provided depth' do
-                it 'returns true' do
-                    @deep_url.too_deep?( 2 ).should be_true
-                end
-            end
-        end
-    end
-
-    describe '#exclude?' do
-        before { @exclude_url = described_class.parse( 'http://test.com/exclude/' ) }
-
-        context 'when self matches the provided exclude rules' do
-            it 'returns true' do
-                rules = [ /exclude/ ]
-                @exclude_url.exclude?( rules ).should be_true
-
-                @exclude_url.exclude?( rules.first ).should be_true
-            end
-        end
-
-        context 'when self does not match the provided exclude rules' do
-            it 'returns false' do
-                rules = [ /boo/ ]
-                @exclude_url.exclude?( rules ).should be_false
-
-                @exclude_url.exclude?( rules.first ).should be_false
-            end
-        end
-
-        context 'when the provided rules are nil' do
-            it 'raises a TypeError' do
-                expect { @exclude_url.exclude?( nil ) }.to raise_error TypeError
-            end
-        end
-
-    end
-
-    describe '#include?' do
-        before { @include_url = described_class.parse( 'http://test.com/include/' ) }
-
-        context 'when self matches the provided include rules in' do
-            it 'returns true' do
-                rules = [ /include/ ]
-                @include_url.include?( rules ).should be_true
-
-                @include_url.include?( rules.first ).should be_true
-            end
-        end
-
-        context 'when self does not match the provided scope_include_path_patterns rules in' do
-            it 'returns false' do
-                rules = [ /boo/ ]
-                @include_url.include?( rules ).should be_false
-
-                @include_url.include?( rules.first ).should be_false
-            end
-        end
-
-        context 'when the provided rules are empty' do
-            it 'returns true' do
-                @include_url.include?( [] ).should be_true
-            end
-        end
-
-        context 'when the provided rules are nil' do
-            it 'raises a TypeError' do
-                expect { @include_url.include?( nil ) }.to raise_error TypeError
-            end
-        end
-    end
-
-    describe '#in_domain?' do
-        before { @in_domain_url = described_class.parse( 'http://test.com' ) }
-
-        context Arachni::URI do
-            context true do
-                it 'includes subdomains in the comparison' do
-                    u = described_class.parse( 'http://boo.test.com' )
-                    @in_domain_url.in_domain?( true, u ).should be_false
-
-                    u = described_class.parse( 'http://test.com' )
-                    @in_domain_url.in_domain?( true, u ).should be_true
-                end
-            end
-            context false do
-                it 'does not include subdomains in the comparison' do
-                    u = described_class.parse( 'http://boo.test.com' )
-                    @in_domain_url.in_domain?( false, u ).should be_true
-
-                    u = described_class.parse( 'http://test.com' )
-                    @in_domain_url.in_domain?( true, u ).should be_true
-                end
-            end
-        end
-
-        context URI do
-            context true do
-                it 'includes subdomains in the comparison' do
-                    u = URI( 'http://boo.test.com' )
-                    @in_domain_url.in_domain?( true, u ).should be_false
-                end
-            end
-            context false do
-                it 'does not include subdomains in the comparison' do
-                    u = URI( 'http://boo.test.com' )
-                    @in_domain_url.in_domain?( false, u ).should be_true
-                end
-            end
-        end
-
-        context Hash do
-            context true do
-                it 'includes subdomains in the comparison' do
-                    h = described_class.fast_parse( 'http://boo.test.com' )
-                    @in_domain_url.in_domain?( true, h ).should be_false
-                end
-            end
-            context false do
-                it 'does not include subdomains in the comparison' do
-                    h = described_class.fast_parse( 'http://boo.test.com' )
-                    @in_domain_url.in_domain?( false, h ).should be_true
-                end
-            end
-        end
-
-        context String do
-            context true do
-                it 'includes subdomains in the comparison' do
-                    @in_domain_url.in_domain?( true, 'http://boo.test.com' ).should be_false
-                end
-            end
-            context false do
-                it 'does not include subdomains in the comparison' do
-                    @in_domain_url.in_domain?( false, 'http://boo.test.com' ).should be_true
-                end
-            end
-        end
-
-        context 'else' do
-            it 'returns false' do
-                @in_domain_url.in_domain?( false, [] ).should be_false
             end
         end
     end

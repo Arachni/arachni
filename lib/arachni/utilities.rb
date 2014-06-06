@@ -173,7 +173,7 @@ module Utilities
     # @see URI.too_deep?
     # @see OptionGroups::Scope#directory_depth_limit
     def path_too_deep?( url )
-        uri_parse( url ).too_deep?( Options.scope.directory_depth_limit )
+        uri_parse( url ).scope.too_deep?
     end
 
     # Compares 2 urls in order to decide whether or not they belong to the same domain.
@@ -187,7 +187,7 @@ module Utilities
     # @see URI.in_domain?
     # @see OptionGroups::Scope#include_subdomains
     def path_in_domain?( url, reference = Options.url )
-        uri_parse( url ).in_domain?( !Options.scope.include_subdomains, reference )
+        uri_parse( url ).scope.in_domain?( reference )
     end
 
     # Decides whether the given `url` matches any framework exclusion rules.
@@ -199,7 +199,7 @@ module Utilities
     # @see URI.exclude?
     # @see OptionGroups::Scope#exclude_path_patterns
     def exclude_path?( url )
-        uri_parse( url ).exclude?( Options.scope.exclude_path_patterns )
+        uri_parse( url ).scope.exclude?
     end
 
     # Decides whether the given `url` matches any framework inclusion rules.
@@ -211,7 +211,7 @@ module Utilities
     # @see URI.include?
     # @see Options#include
     def include_path?( url )
-        uri_parse( url ).include?( Options.scope.include_path_patterns )
+        uri_parse( url ).scope.include?
     end
 
     # Checks if the provided URL matches a redundant filter and decreases its
@@ -226,7 +226,7 @@ module Utilities
     #
     # @see OptionGroups::Scope#redundant_path_patterns?
     def redundant_path?( url, &block )
-        Options.scope.redundant?( url, &block )
+        uri_parse( url ).scope.redundant?(&block)
     end
 
     #
@@ -241,16 +241,7 @@ module Utilities
     # @see OptionGroups::Scope#https_only?
     #
     def follow_protocol?( url, reference = Options.url )
-        return true if !reference
-        check_scheme = uri_parse( url ).scheme
-
-        return false if !%(http https).include?( check_scheme.to_s.downcase )
-
-        ref_scheme   = uri_parse( reference ).scheme
-        return true if ref_scheme && ref_scheme != 'https'
-        return true if ref_scheme == check_scheme
-
-        !Options.scope.https_only?
+        uri_parse( url ).scope.follow_protocol?( reference )
     end
 
     # @note Does **not** call {#redundant_path?}.
@@ -269,17 +260,9 @@ module Utilities
         return true if !path
 
         parsed = uri_parse( path.to_s )
+        return true if !parsed
 
-        exception_jail false do
-            return true if !follow_protocol?( parsed )
-            return true if !path_in_domain?( parsed )
-            return true if path_too_deep?( parsed )
-            return true if !include_path?( parsed )
-            return true if exclude_path?( parsed )
-            return false
-        end
-
-        true
+        parsed.scope.out?
     end
 
     # Determines whether or not the given {Arachni::HTTP::Response} should be
