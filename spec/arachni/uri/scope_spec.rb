@@ -251,4 +251,74 @@ describe Arachni::URI::Scope do
         end
     end
 
+    describe '#in?' do
+        subject { Arachni::URI.parse( 'http://stuff/' ).scope }
+
+        it 'returns true' do
+            subject.should be_in
+        end
+
+        context 'when #out?' do
+            context 'is true' do
+                it 'returns false' do
+                    subject.stub(:out?) { true }
+                    subject.should_not be_in
+                end
+            end
+        end
+    end
+
+    describe '#out?' do
+        subject { Arachni::URI.parse( 'http://stuff/' ).scope }
+
+        it 'returns false' do
+            subject.should_not be_out
+        end
+
+        context 'when #follow_protocol?' do
+            context 'is false' do
+                it 'returns true' do
+                    subject.stub(:follow_protocol?) { false }
+                    subject.should be_out
+                end
+            end
+        end
+
+        context 'when #in_domain?' do
+            context 'is false' do
+                it 'returns true' do
+                    subject.stub(:in_domain?) { false }
+                    subject.should be_out
+                end
+            end
+        end
+
+        context 'when #too_deep?' do
+            context 'is true' do
+                it 'returns true' do
+                    subject.stub(:too_deep?) { true }
+                    subject.should be_out
+                end
+            end
+        end
+
+        context 'when #include?' do
+            context 'is false' do
+                it 'returns true' do
+                    subject.stub(:include?) { false }
+                    subject.should be_out
+                end
+            end
+        end
+
+        context 'when #exclude?' do
+            context 'is true' do
+                it 'returns true' do
+                    subject.stub(:exclude?) { true }
+                    subject.should be_out
+                end
+            end
+        end
+    end
+
 end
