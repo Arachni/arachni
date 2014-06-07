@@ -158,7 +158,7 @@ class Form < Base
         @mutation_with_sample_values = true
     end
 
-    def status_string
+    def audit_status_message
         override = nil
         if mutation_with_original_values?
             override = 'original'

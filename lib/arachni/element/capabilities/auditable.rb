@@ -170,14 +170,22 @@ module Auditable
     # @return  [String]
     #   Status message explaining what input vector is being audited, containing
     #   its name, {Element::Base#type} and {#action}.
-    def status_string
-        "Auditing #{self.type} input '#{@affected_input_name}'" <<
-            " pointing to: '#{@action}'"
+    def audit_status_message
+        "Auditing #{self.type} input '#{affected_input_name}'" <<
+            " pointing to: '#{audit_status_message_action}'"
+    end
+
+    # Action URL to be used in {#audit_status_message} instead of
+    # {Submittable#action}.
+    #
+    # @abstract
+    def audit_status_message_action
+        self.action
     end
 
     # @return  [String]
     #   Verbose message including the payload used to audit the current vector.
-    def verbose_string
+    def audit_verbose_message
         s = "With: #{seed.inspect}"
 
         if seed != affected_input_value
@@ -344,8 +352,8 @@ module Auditable
             end
 
             if !@audit_options[:silent]
-                print_status elem.status_string
-                print_verbose "--> #{elem.verbose_string}"
+                print_status elem.audit_status_message
+                print_verbose "--> #{elem.audit_verbose_message}"
             end
 
             # Process each mutation via the supplied block, if we have one, and

@@ -53,7 +53,7 @@ class DOM < Base
             join( '&' )
     end
 
-    def action
+    def message_action
         "#{@action}##{fragment}"
     end
 

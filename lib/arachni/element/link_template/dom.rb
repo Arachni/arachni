@@ -53,7 +53,7 @@ class DOM < Base
         "#{@action}#" + fragment.sub_in_groups( @template, inputs )
     end
 
-    def action
+    def message_action
         "#{@action}##{fragment}"
     end
 
