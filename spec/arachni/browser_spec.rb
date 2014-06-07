@@ -1848,9 +1848,9 @@ describe Arachni::Browser do
             end
 
             describe false do
-                it 'does not pushes the page load to the transitions' do
+                it 'does not push the page load to the transitions' do
                     t = @browser.goto( @url, update_transitions: false )
-                    @browser.to_page.dom.transitions.should_not include t
+                    @browser.to_page.dom.transitions.should be_empty
                 end
             end
 

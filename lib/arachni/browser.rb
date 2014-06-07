@@ -286,6 +286,11 @@ class Browser
         update_transitions = options.include?(:update_transitions) ?
             options[:update_transitions] : true
 
+        pre_add_request_transitions = @add_request_transitions
+        if !update_transitions
+            @add_request_transitions = false
+        end
+
         @last_url = url
 
         ensure_open_window
@@ -303,9 +308,11 @@ class Browser
             wait_for_pending_requests
         end
 
-        if update_transitions && @add_request_transitions
+        if @add_request_transitions
             @transitions << transition
         end
+
+        @add_request_transitions = pre_add_request_transitions
 
         HTTP::Client.update_cookies cookies
 
