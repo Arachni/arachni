@@ -1684,7 +1684,6 @@ describe Arachni::Browser do
             end
         end
 
-
         context 'when there are outstanding HTTP requests' do
             it 'waits for them to complete' do
                 sleep_time = 5
@@ -1746,7 +1745,7 @@ describe Arachni::Browser do
             end
         end
 
-        context 'when Options#scope_exclude_path_patterns has bee configured' do
+        context "with #{Arachni::OptionGroups::Scope}#exclude_path_patterns" do
             it 'respects scope restrictions' do
                 pages = @browser.load( @url + '/explore' ).start_capture.trigger_events.page_snapshots
                 pages_should_have_form_with_input pages, 'by-ajax'
@@ -1761,7 +1760,7 @@ describe Arachni::Browser do
             end
         end
 
-        context 'when Options#scope_redundant_path_patterns has bee configured' do
+        context "with #{Arachni::OptionGroups::Scope}#redundant_path_patterns" do
             it 'respects scope restrictions' do
                 Arachni::Options.scope.redundant_path_patterns = { 'explore' => 3 }
 
@@ -1775,7 +1774,7 @@ describe Arachni::Browser do
             end
         end
 
-        context 'when Options#scope_auto_redundant_paths has bee configured' do
+        context "with #{Arachni::OptionGroups::Scope}#auto_redundant_paths has bee configured" do
             it 'respects scope restrictions' do
                 Arachni::Options.scope.auto_redundant_paths = 3
 
