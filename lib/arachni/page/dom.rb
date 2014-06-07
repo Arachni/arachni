@@ -88,6 +88,43 @@ class DOM
         transitions.select { |t| t.playable? }
     end
 
+    def print_transitions( printer, indent = '' )
+        longest_event_size = 0
+        page.dom.transitions.each do |t|
+            longest_event_size = [t.event.to_s.size, longest_event_size].max
+        end
+
+        page.dom.transitions.map do |t|
+            padding = longest_event_size - t.event.to_s.size + 1
+            time    = sprintf( '%.4f', t.time.to_f )
+
+            if t.event == :request
+                printer.call "#{indent * 2}* [#{time}s] #{t.event}#{' ' * padding} => #{t.element}"
+            else
+                url = nil
+                if t.options[:url]
+                    url = "(#{t.options[:url]})"
+                end
+
+                printer.call "#{indent}-- [#{time}s] #{t.event}#{' ' * padding} => #{t.element} #{url}"
+
+                if t.options[:cookies] && t.options[:cookies].any?
+                    printer.call "#{indent * 2}-- Cookies:"
+
+                    t.options[:cookies].each do |cookie|
+                        printer.call  "#{indent * 3}* #{cookie.name}\t=> #{cookie.value}\n"
+                    end
+                end
+
+                if t.options[:inputs] && t.options[:inputs].any?
+                    t.options[:inputs].each do |name, value|
+                        printer.call  "#{indent * 2}* #{name}\t=> #{value}\n"
+                    end
+                end
+            end
+        end
+    end
+
     # Loads the page and restores it to its captured state.
     #
     # @param    [Browser]   browser

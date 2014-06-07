@@ -273,7 +273,7 @@ class Framework
 
             if page.dom.transitions.any?
                 print_info '  Transitions:'
-                print_page_transitions( page, '    ' )
+                page.dom.print_transitions( method(:print_info), '    ' )
             end
         end
 
@@ -879,25 +879,6 @@ class Framework
         sleep 0.2 while pause?
     end
 
-    def print_page_transitions( page, indent = '' )
-        longest_event_size = 0
-        page.dom.transitions.each do |t|
-            longest_event_size = [t.event.to_s.size, longest_event_size].max
-        end
-
-        page.dom.transitions.each do |t|
-            padding = longest_event_size - t.event.to_s.size + 1
-            time    = sprintf( '%.4f', t.time.to_f )
-
-            if t.event == :request
-                print_info "#{indent * 2}* [#{time}s] #{t.event}#{' ' * padding} => #{t.element}"
-                next
-            end
-
-            print_info "#{indent}-- [#{time}s] #{t.event}#{' ' * padding} => #{t.element}"
-        end
-    end
-
     # @note Must be called before calling any audit methods.
     #
     # Prepares the framework for the audit.
@@ -927,7 +908,7 @@ class Framework
 
             if page.dom.transitions.any?
                 print_info '  Transitions:'
-                print_page_transitions( page, '    ' )
+                page.dom.print_transitions( method(:print_info), '    ' )
             end
 
             if pushed_paths
