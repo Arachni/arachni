@@ -280,9 +280,11 @@ class Browser
     # @return   [Page::DOM::Transition]
     #   Transition used to replay the resource visit.
     def goto( url, options = {} )
-        take_snapshot = options.include?(:take_snapshot) ?
+        take_snapshot      = options.include?(:take_snapshot) ?
             options[:take_snapshot] : true
-        extra_cookies = options[:cookies] || []
+        extra_cookies      = options[:cookies] || []
+        update_transitions = options.include?(:update_transitions) ?
+            options[:update_transitions] : true
 
         @last_url = url
 
@@ -301,7 +303,7 @@ class Browser
             wait_for_pending_requests
         end
 
-        if @add_request_transitions
+        if update_transitions && @add_request_transitions
             @transitions << transition
         end
 
