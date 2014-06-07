@@ -285,6 +285,11 @@ module Auditor
                 print_verbose "Proof:     #{options[:proof]}"
             end
 
+            if page.dom.transitions.any?
+                print_verbose 'DOM transitions:'
+                page.dom.print_transitions( method(:print_verbose), '    ' )
+            end
+
             if !(request_dump = page.request.to_s).empty?
                 print_verbose "Request: \n#{request_dump}"
             end
