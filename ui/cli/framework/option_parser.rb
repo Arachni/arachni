@@ -91,6 +91,13 @@ class OptionParser < UI::CLI::OptionParser
             options.scope.auto_redundant_paths = counter || 10
         end
 
+        on( '--scope-exclude-binaries',
+            'Exclude non text-based pages.',
+            '(Binary content can confuse passive checks that perform pattern matching.)'
+        ) do
+            options.scope.exclude_binaries = true
+        end
+
         on( '--scope-url-rewrite PATTERN:SUBSTITUTION',
             'Rewrite URLs based on the given PATTERN and SUBSTITUTION.'
         ) do |rule|
@@ -190,13 +197,6 @@ class OptionParser < UI::CLI::OptionParser
                'Input vector not to audit, by name.',
                '(Can be used multiple times.)' ) do |name|
             options.audit.exclude_vectors << name
-        end
-
-        on( '--audit-exclude-binaries',
-               'Exclude non text-based pages from the audit.',
-               '(Binary content can confuse passive checks that perform pattern matching.)'
-        ) do
-            options.audit.exclude_binaries = true
         end
 
         on( '--audit-link-template TEMPLATE', Regexp,
