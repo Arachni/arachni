@@ -7,6 +7,8 @@ module Arachni
 module HTTP
 class Response
 
+# Determines the {Scope scope} status of {Response}s.
+#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Scope < Message::Scope
 
@@ -25,19 +27,25 @@ class Scope < Message::Scope
         @response = response
     end
 
-    # Determines whether or not the {Arachni::HTTP::Response} should be
-    # ignored.
+    # @note Also takes into account the {URI::Scope} of the {Message#url}.
     #
     # @return   [Bool]
-    #   `true` if the {Message#body} or {Message#url} matches any of the
-    #   exclusion criteria, `false` otherwise.
+    #   `true` if the {Response} is out of {OptionGroups::Scope scope},
+    #   `false` otherwise.
     #
-    # @see #skip_path?
-    # @see OptionGroups::Scope#exclude_binaries?
-    # @see OptionGroups::Scope#exclude_page?
-    def exclude?
-        return true if super
-        (Options.scope.exclude_binaries? && !@response.text?) || exclude_content?
+    # @see #exclude_content?
+    # @see #exclude_as_binary?
+    def out?
+        super || exclude_as_binary? || exclude_content?
+    end
+
+    # @return   [Bool]
+    #   `true` if {OptionGroups::Scope#exclude_binaries?} and not {Response#text?},
+    #   `false` otherwise.
+    #
+    # @see OptionGroups::Scope#exclude_binaries
+    def exclude_as_binary?
+        options.exclude_binaries? && !@response.text?
     end
 
     # @return   [Bool]
@@ -46,7 +54,7 @@ class Scope < Message::Scope
     #
     # @see OptionGroups::Scope#exclude_content_patterns
     def exclude_content?
-        !!Options.scope.exclude_content_patterns.find { |i| @response.body =~ i }
+        !!options.exclude_content_patterns.find { |i| @response.body =~ i }
     end
 
 end

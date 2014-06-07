@@ -7,6 +7,8 @@ module Arachni
 module HTTP
 class Message
 
+# Determines the {Scope scope} status of {Message}s.
+#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Scope < URI::Scope
 

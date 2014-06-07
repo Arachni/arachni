@@ -20,7 +20,7 @@ module Arachni
 # The URI class automatically normalizes the URLs it is passed to parse
 # while maintaining compatibility with Ruby's URI core class by delegating
 # missing methods to it -- thus, you can treat it like a Ruby URI and enjoy some
-# extra perks along the line.
+# extra perks along the way.
 #
 # It also provides *cached* (to maintain a low latency) helper class methods to
 # ease common operations such as:

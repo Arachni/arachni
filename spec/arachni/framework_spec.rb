@@ -1170,23 +1170,23 @@ describe Arachni::Framework do
             end
         end
 
-        context "when #{Arachni::URI::Scope}#out? is true" do
+        context "when #{Arachni::Page::Scope}#out? is true" do
             it 'returns false' do
-                Arachni::URI::Scope.any_instance.stub(:out?) { true }
+                Arachni::Page::Scope.any_instance.stub(:out?) { true }
                 subject.push_to_page_queue( page ).should be_false
             end
         end
 
         context "when #{Arachni::URI::Scope}#redundant? is true" do
             it 'returns false' do
-                Arachni::URI::Scope.any_instance.stub(:redundant?) { true }
+                Arachni::Page::Scope.any_instance.stub(:redundant?) { true }
                 subject.push_to_page_queue( page ).should be_false
             end
         end
 
-        context "when #{Arachni::URI::Scope}#auto_redundant? is true" do
+        context "when #{Arachni::Page::Scope}#auto_redundant? is true" do
             it 'returns false' do
-                Arachni::URI::Scope.any_instance.stub(:auto_redundant?) { true }
+                Arachni::Page::Scope.any_instance.stub(:auto_redundant?) { true }
                 subject.push_to_page_queue( page ).should be_false
             end
         end

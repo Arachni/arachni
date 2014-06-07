@@ -10,7 +10,62 @@ describe Arachni::HTTP::Response::Scope do
     let(:response) { Factory[:response] }
     subject { response.scope }
 
-    describe '#exclude?' do
+    describe '#out?' do
+        it 'returns false' do
+            subject.out?.should be_false
+        end
+
+        context "when #{Arachni::URI::Scope}#out?" do
+            context true do
+                it 'returns true' do
+                    # We can't stub #out? because we also override it.
+                    Arachni::URI::Scope.any_instance.stub(:exclude?) { true }
+                    subject.out?.should be_true
+                end
+            end
+
+            context false do
+                it 'returns false' do
+                    Arachni::URI::Scope.any_instance.stub(:exclude?) { false }
+                    subject.out?.should be_false
+                end
+            end
+        end
+
+        context 'when #exclude_as_binary?' do
+            context true do
+                it 'returns true' do
+                    subject.stub(:exclude_as_binary?) { true }
+                    subject.out?.should be_true
+                end
+            end
+
+            context false do
+                it 'returns false' do
+                    subject.stub(:exclude_as_binary?) { false }
+                    subject.out?.should be_false
+                end
+            end
+        end
+
+        context 'when #exclude_content?' do
+            context true do
+                it 'returns true' do
+                    subject.stub(:exclude_content?) { true }
+                    subject.out?.should be_true
+                end
+            end
+
+            context false do
+                it 'returns false' do
+                    subject.stub(:exclude_content?) { false }
+                    subject.out?.should be_false
+                end
+            end
+        end
+    end
+
+    describe '#exclude_as_binary?' do
         context 'when #text?' do
             context true do
                 context "and #{Arachni::OptionGroups::Scope}#exclude_binaries?" do
@@ -19,7 +74,7 @@ describe Arachni::HTTP::Response::Scope do
                             scope.exclude_binaries = true
                             response.stub(:text?) { true }
 
-                            subject.exclude?.should be_false
+                            subject.exclude_as_binary?.should be_false
                         end
                     end
 
@@ -28,7 +83,7 @@ describe Arachni::HTTP::Response::Scope do
                             scope.exclude_binaries = false
                             response.stub(:text?) { true }
 
-                            subject.exclude?.should be_false
+                            subject.exclude_as_binary?.should be_false
                         end
                     end
                 end
@@ -41,7 +96,7 @@ describe Arachni::HTTP::Response::Scope do
                             scope.exclude_binaries = true
                             response.stub(:text?) { false }
 
-                            subject.exclude?.should be_true
+                            subject.exclude_as_binary?.should be_true
                         end
                     end
 
@@ -50,25 +105,9 @@ describe Arachni::HTTP::Response::Scope do
                             scope.exclude_binaries = false
                             response.stub(:text?) { false }
 
-                            subject.exclude?.should be_false
+                            subject.exclude_as_binary?.should be_false
                         end
                     end
-                end
-            end
-        end
-
-        context 'when #exclude_content?' do
-            context true do
-                it 'returns true' do
-                    subject.stub(:exclude_content?) { true }
-                    subject.exclude?.should be_true
-                end
-            end
-
-            context false do
-                it 'returns false' do
-                    subject.stub(:exclude_content?) { false }
-                    subject.exclude?.should be_false
                 end
             end
         end
@@ -79,16 +118,16 @@ describe Arachni::HTTP::Response::Scope do
             context 'match the #body' do
                 it 'returns true' do
                     scope.exclude_content_patterns = /<a/
-                    subject.exclude?.should be_true
+                    subject.exclude_content?.should be_true
                 end
             end
 
             context 'do not match the #body' do
                 it 'returns false' do
-                    subject.exclude?.should be_false
+                    subject.exclude_content?.should be_false
 
                     scope.exclude_content_patterns = /<blah/
-                    subject.exclude?.should be_false
+                    subject.exclude_content?.should be_false
                 end
             end
         end

@@ -20,6 +20,7 @@ lib = Options.paths.lib
 require lib + 'version'
 require lib + 'ruby'
 require lib + 'error'
+require lib + 'scope'
 require lib + 'utilities'
 require lib + 'support'
 require lib + 'uri'
@@ -233,7 +234,7 @@ class Framework
     #   discovered by the {Trainer} -- i.e. ignore any new elements that might
     #   appear as a result.
     # @note It will pass the `page` to the {BrowserCluster} for analysis if the
-    #   {OptionGroups::Scope#dom_depth_limit_reached? DOM depth limit} has
+    #   {Page::Scope#dom_depth_limit_reached? DOM depth limit} has
     #   not been reached and push resulting pages to {#push_to_page_queue} but
     #   will not audit those pages either.
     #

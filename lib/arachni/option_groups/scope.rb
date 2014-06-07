@@ -16,12 +16,7 @@ class Scope < Arachni::OptionGroup
     # @return    [Integer]
     #   How deep to go into the site's directory tree.
     #
-    # @see Utilities#skip_resource?
-    # @see Trainer#push
-    # @see Framework#push_to_page_queue
-    # @see Framework#push_to_url_queue
-    # @see Framework#audit_page
-    # @see Browser
+    # @see URI::Scope#too_deep?
     attr_accessor :directory_depth_limit
 
     # @note `nil` is infinite -- default is `10`.
@@ -29,10 +24,7 @@ class Scope < Arachni::OptionGroup
     # @return    [Integer]
     #   How deep to go into each page's DOM tree.
     #
-    # @see Browser
-    # @see Framework#push_to_page_queue
-    # @see Framework#push_to_url_queue
-    # @see Framework#audit_page
+    # @see Page::Scope#dom_depth_limit_reached?
     attr_accessor :dom_depth_limit
 
     # @note `nil` is infinite -- default is `nil`.
@@ -50,7 +42,6 @@ class Scope < Arachni::OptionGroup
     #   Paths to use instead of crawling.
     #
     # @see Framework#push_to_url_queue
-    # @see Framework#audit
     attr_accessor :restrict_paths
 
     # @return   [String]
@@ -76,10 +67,7 @@ class Scope < Arachni::OptionGroup
     #   Useful when scanning pages that dynamically generate a large number of
     #   pages like galleries and calendars.
     #
-    # @see #redundant?
-    # @see Utilities#redundant_path?
-    # @see Trainer#push
-    # @see Browser
+    # @see URI::Scope#redundant?
     attr_accessor :redundant_path_patterns
 
     # @return   [Bool]
@@ -87,34 +75,28 @@ class Scope < Arachni::OptionGroup
     #   process. Helps avoid processing redundant/identical resources like
     #   entries in calendars and catalogs.
     #
-    # @see #auto_redundant_path?
-    # @see Trainer#push
-    # @see Browser
+    # @see URI::Scope#redundant?
+    # @see URI::Scope#auto_redundant?
     attr_accessor :auto_redundant_paths
 
     # @return    [Array<Regexp>]
     #   Path inclusion patterns, only resources that match any of the specified
     #   patterns will be considered.
     #
-    # @see Utilities#include_path?
-    # @see Trainer#push
-    # @see Browser
+    # @see URI::Scope#include?
     attr_accessor :include_path_patterns
 
     # @return    [Array<Regexp>]
     #   Path exclusion patterns, resources that match any of the specified
     #   patterns will not be considered.
     #
-    # @see Utilities#exclude_path?
-    # @see Trainer#push
-    # @see Browser
+    # @see URI::Scope#exclude?
     attr_accessor :exclude_path_patterns
 
     # @return    [Array<Regexp>]
     #   {Page}/{HTTP::Response} bodies matching any of these patterns will be are ignored.
     #
-    # @see Utilities#skip_resource?
-    # @see Browser
+    # @see HTTP::Response::Scope#exclude_content?
     attr_accessor :exclude_content_patterns
 
     # @note Default is `false`.
@@ -123,7 +105,7 @@ class Scope < Arachni::OptionGroup
     #   Exclude pages with binary content from the audit. Mainly used to avoid
     #   having grep checks confused by random binary content.
     #
-    # @see Framework#audit_page
+    # @see HTTP::Response::Scope#exclude_as_binary?
     attr_accessor :exclude_binaries
     alias :exclude_binaries? :exclude_binaries
 
@@ -132,11 +114,15 @@ class Scope < Arachni::OptionGroup
     # @return    [Bool]
     #   Take into consideration URLs pointing to different subdomains from the
     #   {Options#url seed URL}.
+    #
+    # @see URI::Scope#in_domain?
     attr_accessor :include_subdomains
 
     # @return   [Bool]
     #   If an HTTPS {Options#url} has been provided, **do not** downgrade to to
     #   a insecure link.
+    #
+    # @see URI::Scope#follow_protocol?
     attr_accessor :https_only
     alias :https_only? :https_only
 
@@ -146,8 +132,6 @@ class Scope < Arachni::OptionGroup
     #
     # @see URI.rewrite
     # @see URI#rewrite
-    # @see Element::Link
-    # @see Element::Form
     attr_accessor :url_rewrites
 
     set_defaults(

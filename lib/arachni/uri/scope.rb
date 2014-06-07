@@ -6,15 +6,17 @@
 module Arachni
 class URI
 
+# Determines the {Scope scope} status of {Arachni::URI}s.
+#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-class Scope
+class Scope < Arachni::Scope
 
     # {Scope} error namespace.
     #
     # All {Scope} errors inherit from and live under it.
     #
     # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-    class Error < Arachni::Error
+    class Error < Arachni::Scope::Error
     end
 
     # @param    [Arachni::URI]  url
@@ -22,10 +24,8 @@ class Scope
         @url = url
     end
 
-    # Checks if self exceeds a given directory `depth`.
-    #
     # @return   [Bool]
-    #   `true` if self is deeper than `depth`, `false` otherwise.
+    #   `true` if the URL is deeper than `depth`, `false` otherwise.
     #
     # @see OptionGroups::Scope#directory_depth_limit
     def too_deep?
@@ -33,19 +33,20 @@ class Scope
         depth.to_i > 0 && (depth + 1) <= @url.path.to_s.count( '/' )
     end
 
-    # Checks if self should be excluded based on the provided `patterns`.
-    #
     # @return   [Bool]
-    #   `true` if self matches a pattern, `false` otherwise.
+    #   `true` if the URL matches any {OptionGroups::Scope#exclude_path_patterns},
+    #   `false` otherwise.
+    #
+    # @see OptionGroups::Scope#exclude_path_patterns
     def exclude?
         !!options.exclude_path_patterns.find { |pattern| @url.to_s =~ pattern }
     end
 
-    # Checks if self should be included based on the provided `patterns`.
-    #
     # @return   [Bool]
-    #   `true` if self matches a pattern (or `patterns` are `nil` or empty),
+    #   `true` if the URL matches any {OptionGroups::Scope#include_path_patterns},
     #   `false` otherwise.
+    #
+    # @see OptionGroups::Scope#include_path_patterns
     def include?
         rules = options.include_path_patterns
         return true if rules.empty?
@@ -55,6 +56,8 @@ class Scope
 
     # @return   [Bool]
     #   `true` if self is in the same domain as {Options#url}, `false` otherwise.
+    #
+    # @see OptionGroups::Scope#include_subdomains
     def in_domain?
         return true if !Options.url
 
@@ -64,12 +67,11 @@ class Scope
             reference.domain == @url.domain : reference.host == @url.host
     end
 
-    # Decides whether the given `url` has an acceptable protocol.
-    #
     # @return   [Bool]
+    #   `true` if the protocol is within scope based on
+    #   {OptionGroups::Scope#https_only}, `false` otherwise.
     #
     # @see OptionGroups::Scope#https_only
-    # @see OptionGroups::Scope#https_only?
     def follow_protocol?
         return true if !Options.url
 
@@ -88,15 +90,13 @@ class Scope
         !options.https_only?
     end
 
+    # @note Will decrease the redundancy counter.
     # @note Will first check with {#auto_redundant?}.
     #
-    # Checks if `self` matches a redundancy filter and decreases its counter if
-    # so.
-    #
     # @return   [Bool]
-    #   `true` if `self` is redundant, `false` otherwise.
+    #   `true` if the URL is redundant, `false` otherwise.
     #
-    # @see OptionGroups::Scope#redundant_path_patterns?
+    # @see OptionGroups::Scope#redundant_path_patterns
     def redundant?
         return true if auto_redundant?
         url_string = @url.to_s
@@ -111,6 +111,13 @@ class Scope
         false
     end
 
+    # @note Will decrease the redundancy counter.
+    #
+    # @return   [Bool]
+    #   `true` if the URL is redundant based on {OptionGroups::Scope#auto_redundant_paths},
+    #   `false` otherwise.
+    #
+    # @see OptionGroups::Scope#auto_redundant_paths
     def auto_redundant?
         return false if !options.auto_redundant?
 
@@ -124,18 +131,9 @@ class Scope
         false
     end
 
-    # @note Does **not** call {#redundant_path?}.
-    #
     # @return   [Bool]
-    #
-    #   `true` if the URL is within the scan scope, `false` otherwise. The
-    #   determination is based on:
-    #
-    #   * {#follow_protocol?}
-    #   * {#in_domain?}
-    #   * {#too_deep?}
-    #   * {#include?}
-    #   * {#exclude?}
+    #   `true` if the URL is not {#out?} of the scan {OptionGroups::Scope scope},
+    #   `false` otherwise.
     def in?
         !out?
     end
@@ -143,9 +141,8 @@ class Scope
     # @note Does **not** call {#redundant?}.
     #
     # @return   [Bool]
-    #
-    #   `false` if the URL is within the scan scope, `true` otherwise. The
-    #   determination is based on:
+    #   `true` if the URL out of the scan {OptionGroups::Scope scope}, `false`
+    #   otherwise. The determination is based on:
     #
     #   * {#follow_protocol?}
     #   * {#in_domain?}
@@ -161,11 +158,7 @@ class Scope
 
         false
     end
-
-    def options
-        Options.scope
-    end
-
+    
 end
 
 end
