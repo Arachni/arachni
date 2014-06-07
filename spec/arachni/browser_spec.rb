@@ -1838,6 +1838,30 @@ describe Arachni::Browser do
                 end
             end
         end
+
+        describe :update_transitions do
+            describe true do
+                it 'pushes the page load to the transitions' do
+                    t = @browser.goto( @url, update_transitions: true )
+                    @browser.to_page.dom.transitions.should include t
+                end
+            end
+
+            describe false do
+                it 'does not pushes the page load to the transitions' do
+                    t = @browser.goto( @url, update_transitions: false )
+                    @browser.to_page.dom.transitions.should_not include t
+                end
+            end
+
+            describe 'default' do
+                it 'pushes the page load to the transitions' do
+                    t = @browser.goto( @url )
+                    @browser.to_page.dom.transitions.should include t
+                end
+            end
+        end
+
     end
 
     describe '#load' do
