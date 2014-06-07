@@ -92,6 +92,10 @@ describe Arachni::Page do
             end
         end
 
+        it "restores #{described_class::DOM}#page" do
+            restored.dom.page.should == subject
+        end
+
         it "restores 'do_not_audit_elements'" do
             restored.instance_variable_get(:@do_not_audit_elements).should be_true
         end

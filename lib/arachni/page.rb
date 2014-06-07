@@ -522,7 +522,9 @@ class Page
         end
 
         instance = new( normalized_data )
-        instance.instance_variable_set( '@dom', DOM.from_rpc_data( dom ) )
+        instance.instance_variable_set(
+            '@dom', DOM.from_rpc_data( dom.merge( page: instance ) )
+        )
         instance
     end
 
