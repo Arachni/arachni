@@ -368,8 +368,8 @@ class Framework
     #   `true` if push was successful, `false` if the `page` matched any
     #   exclusion criteria or has already been seen.
     def push_to_page_queue( page )
-        return false if state.page_seen?( page ) || page.scope.out? ||
-            page.scope.redundant?
+        return false if page_limit_reached? || state.page_seen?( page ) ||
+            page.scope.out? || page.scope.redundant?
 
         # We want to update from the already loaded page cache (if there is one)
         # as we have to store the page anyways (needs to go through Browser analysis)
@@ -928,7 +928,7 @@ class Framework
     # @param    [Page]  page
     #   Page to analyze.
     def perform_browser_analysis( page )
-        return if !browser_cluster ||
+        return if !browser_cluster || page_limit_reached? ||
             Options.scope.dom_depth_limit.to_i < page.dom.depth + 1 ||
             !page.has_script?
 

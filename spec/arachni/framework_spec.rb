@@ -182,12 +182,12 @@ describe Arachni::Framework do
     end
 
     describe '#options' do
-        it 'provides access to the framework options' do
-            subject.options.is_a?( Arachni::Options ).should be_true
+        it "provides access to #{Arachni::Options}" do
+            subject.options.should be_kind_of Arachni::Options
         end
 
-        describe '#scope.exclude_binaries' do
-            it 'excludes binary pages from the audit' do
+        describe "#{Arachni::OptionGroups::Scope}#exclude_binaries" do
+            it 'excludes binary pages from the scan' do
                 audited = []
                 Arachni::Framework.new do |f|
                     f.options.url = @url
@@ -214,7 +214,7 @@ describe Arachni::Framework do
             end
         end
 
-        describe '#scope.restrict_paths' do
+        describe "#{Arachni::OptionGroups::Scope}#restrict_paths" do
             it 'serves as a replacement to crawling' do
                 Arachni::Framework.new do |f|
                     f.options.url = "#{@url}/elem_combo"
@@ -289,7 +289,7 @@ describe Arachni::Framework do
     end
 
     describe '#run' do
-        it 'performs the audit' do
+        it 'performs the scan' do
             subject.options.url = @url + '/elem_combo'
             subject.options.audit.elements :links, :forms, :cookies
             subject.checks.load :taint
@@ -469,7 +469,7 @@ describe Arachni::Framework do
 
         it 'waits for the BrowserCluster jobs to finish'
 
-        context 'when OptionGroups::Snapshot#save_path' do
+        context "when #{Arachni::OptionGroups::Snapshot}#save_path" do
             context 'is a directory' do
                 it 'stores the snapshot under it' do
                     @options.paths.checks       = fixtures_path + '/taint_check/'
@@ -989,10 +989,10 @@ describe Arachni::Framework do
                         url:         @url,
                         dom:         {
                             transitions: [
-                                             { page: :load },
-                                             { "<a href='javascript:click();'>" => :click },
-                                             { "<button dblclick='javascript:doubleClick();'>" => :ondblclick }
-                                         ].map { |t| Arachni::Page::DOM::Transition.new *t.first }
+                                 { page: :load },
+                                 { "<a href='javascript:click();'>" => :click },
+                                 { "<button dblclick='javascript:doubleClick();'>" => :ondblclick }
+                             ].map { |t| Arachni::Page::DOM::Transition.new *t.first }
                         }
                     )
 
@@ -1060,7 +1060,7 @@ describe Arachni::Framework do
     end
 
     describe '#page_limit_reached?' do
-        context 'when the Options#scope.page_limit has' do
+        context "when the #{Arachni::OptionGroups::Scope}#page_limit has" do
             context 'been reached' do
                 it 'returns true' do
                     Arachni::Framework.new do |f|
@@ -1140,7 +1140,7 @@ describe Arachni::Framework do
             subject.sitemap.should include @url + '/link/#/stuff'
         end
 
-        it 'passes it to ElementFilter#update_from_page_cache' do
+        it "passes it to #{Arachni::ElementFilter}#update_from_page_cache" do
             page = Arachni::Page.from_url( @url + '/link' )
 
             Arachni::ElementFilter.should receive(:update_from_page_cache).with(page)
@@ -1167,6 +1167,22 @@ describe Arachni::Framework do
                 subject.push_to_page_queue( page ).should be_false
                 subject.push_to_page_queue( page ).should be_false
                 subject.page_queue_total_size.should == 1
+            end
+        end
+
+        context 'when #page_limit_reached?' do
+            context true do
+                it 'returns false' do
+                    subject.stub(:page_limit_reached?) { true }
+                    subject.push_to_page_queue( page ).should be_false
+                end
+            end
+
+            context false do
+                it 'returns true' do
+                    subject.stub(:page_limit_reached?) { false }
+                    subject.push_to_page_queue( page ).should be_true
+                end
             end
         end
 
@@ -1208,16 +1224,32 @@ describe Arachni::Framework do
 
         context 'when the URL has already been seen' do
             it 'returns false' do
-                subject.push_to_url_queue(  @url + '/link' ).should be_true
-                subject.push_to_url_queue(  @url + '/link' ).should be_false
+                subject.push_to_url_queue( @url + '/link' ).should be_true
+                subject.push_to_url_queue( @url + '/link' ).should be_false
             end
 
             it 'ignores it' do
                 subject.url_queue_total_size.should == 0
-                subject.push_to_url_queue(  @url + '/link' )
-                subject.push_to_url_queue(  @url + '/link' )
-                subject.push_to_url_queue(  @url + '/link' )
+                subject.push_to_url_queue( @url + '/link' )
+                subject.push_to_url_queue( @url + '/link' )
+                subject.push_to_url_queue( @url + '/link' )
                 subject.url_queue_total_size.should == 1
+            end
+        end
+
+        context 'when #page_limit_reached?' do
+            context true do
+                it 'returns false' do
+                    subject.stub(:page_limit_reached?) { true }
+                    subject.push_to_url_queue( @url ).should be_false
+                end
+            end
+
+            context false do
+                it 'returns true' do
+                    subject.stub(:page_limit_reached?) { false }
+                    subject.push_to_url_queue( @url ).should be_true
+                end
             end
         end
 
