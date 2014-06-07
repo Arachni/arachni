@@ -487,7 +487,6 @@ class Client
 
                         checked_for_custom_404( url )
                         block.call is_404?( url, response.body )
-                        prune_custom_404_cache
                     else
                         _404_signatures_for_url( url )[i][:body] =
                             Support::Signature.new(
