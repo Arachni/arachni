@@ -46,15 +46,15 @@ describe Arachni::Browser do
         Typhoeus::Request.get( "#{@url}/clear-hit-count" )
     end
 
-    # it 'supports HTTPS' do
-    #     url = web_server_url_for( :browser_https )
-    #
-    #     @browser.start_capture
-    #     pages = @browser.load( url ).flush_pages
-    #
-    #     pages_should_have_form_with_input( pages, 'ajax-token' )
-    #     pages_should_have_form_with_input( pages, 'by-ajax' )
-    # end
+    it 'supports HTTPS' do
+        url = web_server_url_for( :browser_https )
+
+        @browser.start_capture
+        pages = @browser.load( url ).flush_pages
+
+        pages_should_have_form_with_input( pages, 'ajax-token' )
+        pages_should_have_form_with_input( pages, 'by-ajax' )
+    end
 
     describe '.has_executable?' do
         context 'when there is no executable browser' do
