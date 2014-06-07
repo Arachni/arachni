@@ -21,7 +21,8 @@ class DOM < Base
 
     # Submits the cookie using the configured {#inputs}.
     def trigger
-        browser.goto action, take_snapshot: false, cookies: [self]
+        browser.goto action, take_snapshot: false, cookies: [self],
+                     update_transitions: false
     end
 
     def name

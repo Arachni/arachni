@@ -42,7 +42,7 @@ class DOM < Base
 
     # Loads the page with the {#inputs} in the {#fragment}.
     def trigger
-        browser.goto to_s, take_snapshot: false
+        browser.goto to_s, take_snapshot: false, update_transitions: false
     end
 
     # @return   [String]

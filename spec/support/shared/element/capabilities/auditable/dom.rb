@@ -106,6 +106,24 @@ shared_examples_for 'element_dom' do |options = {}|
         end
     end
 
+    describe '#trigger' do
+        it 'does not update the page transitions' do
+            page = nil
+            pre_transitions = nil
+            subject.with_browser do |browser|
+                browser.load subject.page
+                subject.browser = browser
+                pre_transitions = browser.transitions.dup
+
+                subject.trigger
+                page = browser.to_page
+            end
+
+            subject.auditor.browser_cluster.wait
+            page.dom.transitions.should == pre_transitions
+        end
+    end
+
     describe '#submit' do
         it 'submits the element' do
             inputs = { 'param' => 'stuff' }
@@ -229,7 +247,6 @@ shared_examples_for 'element_dom' do |options = {}|
                     set_taint.should == taint
                 end
             end
-
         end
     end
 
