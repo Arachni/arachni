@@ -25,7 +25,7 @@ class Arachni::Reports::Text < Arachni::Report::Base
         stderr  = $stderr.dup
         $stderr = $stdout = File.new( outfile, 'w' )
 
-        Reports::Stdout.new( auditstore, options ).run
+        Reports::Stdout.new( report, options ).run
 
         $stdout.close
         $stdout = stdout.dup

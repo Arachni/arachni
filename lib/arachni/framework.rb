@@ -32,7 +32,7 @@ require lib + 'parser'
 require lib + 'issue'
 require lib + 'check'
 require lib + 'plugin'
-require lib + 'audit_store'
+require lib + 'scan_report'
 require lib + 'report'
 require lib + 'session'
 require lib + 'trainer'
@@ -408,15 +408,15 @@ class Framework
         true
     end
 
-    # @return    [AuditStore]
+    # @return    [ScanReport]
     #   Scan results.
-    def audit_store
+    def scan_report
         opts = options.to_hash.deep_clone
 
         # restore the original redundancy rules and their counters
         opts[:scope][:redundant_path_patterns] = @orig_redundant
 
-        AuditStore.new(
+        ScanReport.new(
             options:         options,
             sitemap:         sitemap,
             issues:          Data.issues.sort,
@@ -425,7 +425,6 @@ class Framework
             finish_datetime: @finish_datetime
         )
     end
-    alias :auditstore :audit_store
 
     # Runs a report component and returns the contents of the generated report.
     #
@@ -434,7 +433,7 @@ class Framework
     # @param    [String]    name
     #   Name of the report component to run, as presented by {#list_reports}'s
     #   `:shortname` key.
-    # @param    [AuditStore]    external_report
+    # @param    [ScanReport]    external_report
     #   Report to use -- defaults to the local one.
     #
     # @return   [String]
@@ -445,7 +444,7 @@ class Framework
     #
     # @raise    [Component::Options::Error::Invalid]
     #   If the requested report doesn't format the scan results as a String.
-    def report_as( name, external_report = auditstore )
+    def report_as( name, external_report = scan_report )
         if !@reports.available.include?( name.to_s )
             fail Component::Error::NotFound, "Report '#{name}' could not be found."
         end

@@ -278,16 +278,17 @@ describe 'Arachni::RPC::Server::Instance' do
 
         describe '#abort_and_report' do
             it 'cleans-up and returns the report as a Hash' do
-                @shared_instance.service.abort_and_report.should == @shared_instance.framework.report
+                @shared_instance.service.abort_and_report.should ==
+                    @shared_instance.framework.report
             end
         end
 
         describe '#native_abort_and_report' do
-            it "cleans-up and returns the report as #{Arachni::AuditStore}" do
-                @shared_instance.service.native_abort_and_report.should == @shared_instance.framework.auditstore
+            it "cleans-up and returns the report as #{Arachni::ScanReport}" do
+                @shared_instance.service.native_abort_and_report.should ==
+                    @shared_instance.framework.scan_report
             end
         end
-
 
         describe '#abort_and_report_as' do
             it 'cleans-up and delegate to #report_as' do

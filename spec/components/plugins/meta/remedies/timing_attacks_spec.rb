@@ -16,7 +16,7 @@ describe name_from_filename do
             run
 
             checked = 0
-            framework.auditstore.issues.each do |issue|
+            framework.scan_report.issues.each do |issue|
                 next if issue.vector.affected_input_name != 'untrusted_input'
 
                 checked += 1

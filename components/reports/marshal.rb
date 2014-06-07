@@ -15,7 +15,7 @@ class Arachni::Reports::Marshal < Arachni::Report::Base
         print_status "Dumping audit results in #{outfile}."
 
         File.open( outfile, 'w' ) do |f|
-            f.write ::Marshal::dump( auditstore.to_hash )
+            f.write ::Marshal::dump( report.to_hash )
         end
 
         print_status 'Done!'

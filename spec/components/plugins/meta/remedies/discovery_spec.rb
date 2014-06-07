@@ -13,7 +13,7 @@ describe name_from_filename do
     context 'when issues have similar response bodies' do
         it 'marks them as untrusted and adds remarks' do
             run
-            framework.auditstore.issues.each do |issue|
+            framework.scan_report.issues.each do |issue|
                 issue.variations.map( &:untrusted? ).uniq == [true]
                 issue.variations.first.remarks[:meta_analysis].should be_true
             end

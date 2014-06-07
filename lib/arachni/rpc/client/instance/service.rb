@@ -88,11 +88,11 @@ class Service < Proxy
     end
 
     translate :native_abort_and_report do |data|
-        AuditStore.from_rpc_data data
+        ScanReport.from_rpc_data data
     end
 
-    translate :auditstore do |data|
-        AuditStore.from_rpc_data data
+    translate :scan_report do |data|
+        ScanReport.from_rpc_data data
     end
 
 end

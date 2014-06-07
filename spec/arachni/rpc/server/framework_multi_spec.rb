@@ -135,11 +135,11 @@ describe 'Arachni::RPC::Server::Framework' do
             # dispatcher_kill_by_instance instance
         end
     end
-    describe '#auditstore' do
-        it 'returns an auditstore object' do
-            auditstore = @instance_clean.framework.auditstore
-            auditstore.is_a?( Arachni::AuditStore ).should be_true
-            auditstore.issues.should be_any
+    describe '#scan_report' do
+        it 'returns an scan_report object' do
+            scan_report = @instance_clean.framework.scan_report
+            scan_report.is_a?( Arachni::ScanReport ).should be_true
+            scan_report.issues.should be_any
         end
     end
     describe '#statistics' do
@@ -159,7 +159,7 @@ describe 'Arachni::RPC::Server::Framework' do
             instance.checks.load( 'taint' )
             instance.plugins.load( { 'wait' => {}, 'distributable' => {} } )
             instance.framework.run.should be_true
-            instance.framework.auditstore.plugins.should be_empty
+            instance.framework.scan_report.plugins.should be_empty
 
             # Wait till the slaves join the scan.
             sleep 0.1 while instance.framework.progress[:instances].size != 3
@@ -167,9 +167,9 @@ describe 'Arachni::RPC::Server::Framework' do
             instance.framework.clean_up.should be_true
 
             instance_count = instance.framework.progress[:instances].size
-            auditstore     = instance.framework.auditstore
+            scan_report     = instance.framework.scan_report
 
-            results = auditstore.plugins
+            results = scan_report.plugins
             results.should be_any
             results[:wait].should be_any
             results[:wait][:results].should == { 'stuff' => true }
@@ -318,15 +318,6 @@ describe 'Arachni::RPC::Server::Framework' do
             report = @instance_clean.framework.report
             report.is_a?( Hash ).should be_true
             report['issues'].should be_any
-        end
-
-        it 'aliased to #audit_store_as_hash' do
-            @instance_clean.framework.report.should ==
-                @instance_clean.framework.audit_store_as_hash
-        end
-        it 'aliased to #auditstore_as_hash' do
-            @instance_clean.framework.report.should ==
-                @instance_clean.framework.auditstore_as_hash
         end
     end
     describe '#issues' do

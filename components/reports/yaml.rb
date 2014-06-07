@@ -15,7 +15,7 @@ class Arachni::Reports::YAML < Arachni::Report::Base
         print_status "Dumping audit results in #{outfile}."
 
         File.open( options['outfile'], 'w' ) do |f|
-            f.write( auditstore.to_hash.to_yaml )
+            f.write( report.to_hash.to_yaml )
         end
 
         print_status 'Done!'

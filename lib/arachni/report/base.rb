@@ -24,14 +24,14 @@ class Base < Component::Base
     end
 
     attr_reader :options
-    attr_reader :auditstore
+    attr_reader :report
 
-    # @param    [AuditStore]  auditstore
+    # @param    [ScanReport]  report
     # @param    [Hash]        options
     #   Options to pass to the report.
-    def initialize( auditstore, options )
-        @auditstore = auditstore
-        @options    = options
+    def initialize( report, options )
+        @report  = report
+        @options = options
     end
 
     # @note **REQUIRED**
@@ -43,9 +43,9 @@ class Base < Component::Base
     # Runs plugin formatters for the running report and returns a hash
     # with the prepared/formatted results.
     #
-    # @param    [AuditStore#plugins]      plugins
+    # @param    [ScanReport#plugins]      plugins
     #   Plugin data/results.
-    def format_plugin_results( plugins = auditstore.plugins, &block )
+    def format_plugin_results( plugins = report.plugins, &block )
         formatted = {}
         return formatted if !plugins
 
@@ -60,12 +60,15 @@ class Base < Component::Base
         report_path = ::Kernel.caller.first.split( ':' ).first
 
         # prepare the directory of the formatters for the running report
-        lib = File.dirname( report_path ) + '/plugin_formatters/' + File.basename( report_path, '.rb' ) +  '/'
+        lib = File.dirname( report_path ) + '/plugin_formatters/' +
+            File.basename( report_path, '.rb' ) +  '/'
 
         @@formatters ||= {}
 
         # initialize a new component manager to handle the plugin formatters
-        @@formatters[ancestor] ||= FormatterManager.new( lib, ancestor.const_get( 'PluginFormatters' ) )
+        @@formatters[ancestor] ||= FormatterManager.new(
+            lib, ancestor.const_get( 'PluginFormatters' )
+        )
 
         # load all the formatters
         @@formatters[ancestor].load_all if @@formatters[ancestor].empty?
@@ -77,7 +80,7 @@ class Base < Component::Base
 
             cr = plugin_results.clone
             block.call( cr ) if block_given?
-            formatted[name] = formatter.new( auditstore, cr ).run
+            formatted[name] = formatter.new( report, cr ).run
         end
 
         formatted

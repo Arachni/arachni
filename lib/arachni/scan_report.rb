@@ -8,7 +8,7 @@ require 'zip'
 module Arachni
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-class AuditStore
+class ScanReport
     include Utilities
 
     # @return    [String]
@@ -95,12 +95,12 @@ class AuditStore
         @issues[digest]
     end
 
-    # Loads and a {#save saved} {AuditStore} object from file.
+    # Loads and a {#save saved} {ScanReport} object from file.
     #
     # @param    [String]    file
     #   File created by {#save}.
     #
-    # @return    [AuditStore]
+    # @return    [ScanReport]
     #   Loaded instance.
     def self.load( file )
         Zip::File.open( file ) do |zip_file|
@@ -216,10 +216,10 @@ class AuditStore
 
     private
 
-    # Prepares the hash to be stored in {AuditStore#options}.
+    # Prepares the hash to be stored in {ScanReport#options}.
     #
     # The value of the 'options' key of the hash that initializes AuditObjects
-    # needs some more processing before being saved in {AuditStore#options}.
+    # needs some more processing before being saved in {ScanReport#options}.
     #
     # @param    [Hash]  options
     # @return    [Hash]

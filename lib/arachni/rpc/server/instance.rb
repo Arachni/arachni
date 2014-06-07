@@ -291,11 +291,11 @@ class Instance
     end
 
     # Like {#abort_and_report} but returns a {Serializer.dump} representation
-    # of {AuditStore}.
+    # of {ScanReport}.
     #
     # @private
     def native_abort_and_report( &block )
-        @framework.clean_up { auditstore( &block ) }
+        @framework.clean_up { native_report( &block ) }
     end
 
     # @note Don't forget to {#shutdown} the instance once you get the report.
@@ -311,10 +311,10 @@ class Instance
         @framework.clean_up { block.call report_as( name ) }
     end
 
-    # @return (see Arachni::Framework#auditstore)
+    # @return (see Arachni::Framework#scan_report)
     # @private
-    def auditstore( &block )
-        @framework.auditstore( &block )
+    def native_report( &block )
+        @framework.scan_report( &block )
     end
 
     # @return (see Arachni::RPC::Server::Framework#report)

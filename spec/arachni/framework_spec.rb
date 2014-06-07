@@ -224,7 +224,7 @@ describe Arachni::Framework do
 
                     f.run
 
-                    sitemap = f.auditstore.sitemap.map { |u, _| u.split( '?' ).first }
+                    sitemap = f.scan_report.sitemap.map { |u, _| u.split( '?' ).first }
                     sitemap.sort.uniq.should ==
                         [f.options.url] + f.options.scope.restrict_paths.
                             map { |p| f.to_absolute( p ) }.sort
@@ -296,9 +296,9 @@ describe Arachni::Framework do
             subject.plugins.load :wait
 
             subject.run
-            subject.auditstore.issues.size.should == 3
+            subject.scan_report.issues.size.should == 3
 
-            subject.auditstore.plugins[:wait][:results].should == { 'stuff' => true }
+            subject.scan_report.plugins[:wait][:results].should == { 'stuff' => true }
         end
 
         it 'sets #status to scanning' do
@@ -325,7 +325,7 @@ describe Arachni::Framework do
                 f.checks.load :taint
 
                 f.run
-                f.auditstore.issues.size.should == 500
+                f.scan_report.issues.size.should == 500
             end
         end
 
@@ -337,7 +337,7 @@ describe Arachni::Framework do
                 f.checks.load :taint
                 f.run
 
-                f.auditstore.issues.
+                f.scan_report.issues.
                     map { |i| i.variations.first.vector.affected_input_name }.
                     uniq.sort.should == %w(link_input form_input cookie_input).sort
             end
@@ -351,7 +351,7 @@ describe Arachni::Framework do
                 f.checks.load :taint
                 f.run
 
-                f.auditstore.issues.
+                f.scan_report.issues.
                     map { |i| i.variations.first.vector.affected_input_name }.
                     uniq.sort.should == %w(link_input form_input cookie_taint).sort
             end
@@ -391,7 +391,7 @@ describe Arachni::Framework do
                     f.options.login.check_pattern = 'logged-in user'
 
                     f.run
-                    f.auditstore.issues.size.should == 1
+                    f.scan_report.issues.size.should == 1
                 end
             end
         end
@@ -572,7 +572,7 @@ describe Arachni::Framework do
                 # logged_issues.should == 500
                 Arachni::Data.issues.size.should == 500
 
-                f.auditstore.plugins[:wait][:results].should == { 'stuff' => true }
+                f.scan_report.plugins[:wait][:results].should == { 'stuff' => true }
             end
         end
 
@@ -856,7 +856,7 @@ describe Arachni::Framework do
         context 'when passed a valid report name' do
             it 'returns the report as a string' do
                 json = @new_framework.report_as( :json )
-                JSON.load( json )['issues'].size.should == @new_framework.auditstore.issues.size
+                JSON.load( json )['issues'].size.should == @new_framework.scan_report.issues.size
             end
 
             context 'which does not support the \'outfile\' option' do
@@ -1017,7 +1017,7 @@ describe Arachni::Framework do
                 subject.checks.load :taint
 
                 subject.audit_page( Arachni::Page.from_url( @url + '/link' ) )
-                subject.auditstore.issues.size.should == 0
+                subject.scan_report.issues.size.should == 0
             end
 
             it 'returns false' do
@@ -1123,7 +1123,7 @@ describe Arachni::Framework do
             subject.push_to_page_queue( page ).should be_true
             subject.run
 
-            subject.auditstore.issues.size.should == 1
+            subject.scan_report.issues.size.should == 1
             subject.page_queue_total_size.should > 0
         end
 
@@ -1218,7 +1218,7 @@ describe Arachni::Framework do
             subject.push_to_url_queue(  @url + '/link' ).should be_true
             subject.run
 
-            subject.auditstore.issues.size.should == 1
+            subject.scan_report.issues.size.should == 1
             subject.url_queue_total_size.should == 3
         end
 

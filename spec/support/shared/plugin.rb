@@ -36,7 +36,7 @@ shared_examples_for 'plugin' do
         # Make sure plugin formatters work as well.
         # framework.reports.load_all
         # framework.reports.each do |name, klass|
-        #     framework.reports.run_one name, framework.auditstore, 'outfile' => outfile
+        #     framework.reports.run_one name, framework.scan_report, 'outfile' => outfile
         #     File.delete( outfile ) rescue nil
         # end
     end

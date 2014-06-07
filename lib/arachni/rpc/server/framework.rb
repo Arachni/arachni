@@ -71,7 +71,7 @@ class Framework < ::Arachni::Framework
         @plugins = Plugin::Manager.new( self )
     end
 
-    def auditstore( &block )
+    def scan_report( &block )
         # If a block is given it means the call was form an RPC client.
         if block_given?
             block.call super.to_rpc_data
@@ -80,7 +80,6 @@ class Framework < ::Arachni::Framework
 
         super
     end
-    alias :audit_store :auditstore
 
     # @return (see Arachni::Framework#list_plugins)
     def list_plugins
@@ -157,8 +156,8 @@ class Framework < ::Arachni::Framework
     # If the scan needs to be aborted abruptly this method takes care of any
     # unfinished business (like signaling running plug-ins to finish).
     #
-    # Should be called before grabbing the {#auditstore}, especially when
-    # running in HPG mode as it will take care of merging the plug-in results
+    # Should be called before grabbing the {#report}, especially when running
+    # in multi-Instance mode, as it will take care of merging the plug-in results
     # of all instances.
     #
     # You don't need to call this if you've let the scan complete.
@@ -202,14 +201,12 @@ class Framework < ::Arachni::Framework
     end
 
     # @return   [Hash]
-    #   Audit results as a {AuditStore#to_h hash}.
+    #   Audit results as a {ScanReport#to_h hash}.
     #
-    # @see AuditStore#to_h
+    # @see ScanReport#to_h
     def report
-        audit_store.to_h
+        scan_report.to_h
     end
-    alias :audit_store_as_hash :report
-    alias :auditstore_as_hash :report
 
     # @return  [Array<Hash>]
     #   First variations of all discovered issues with generic info filled in

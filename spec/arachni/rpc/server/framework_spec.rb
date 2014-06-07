@@ -156,11 +156,11 @@ describe 'Arachni::RPC::Server::Framework' do
         end
 
     end
-    describe '#auditstore' do
-        it 'returns an auditstore object' do
-            auditstore = @instance_clean.framework.auditstore
-            auditstore.is_a?( Arachni::AuditStore ).should be_true
-            auditstore.issues.should be_any
+    describe '#scan_report' do
+        it 'returns an scan_report object' do
+            scan_report = @instance_clean.framework.scan_report
+            scan_report.is_a?( Arachni::ScanReport ).should be_true
+            scan_report.issues.should be_any
         end
     end
     describe '#statistics' do
@@ -210,9 +210,9 @@ describe 'Arachni::RPC::Server::Framework' do
             instance.plugins.load( { 'wait' => {} } )
             instance.framework.run.should be_true
             instance.framework.busy?.should be_true
-            instance.framework.auditstore.plugins.should be_empty
+            instance.framework.scan_report.plugins.should be_empty
             instance.framework.clean_up.should be_true
-            results = instance.framework.auditstore.plugins
+            results = instance.framework.scan_report.plugins
             results.should be_any
             results[:wait].should be_any
             results[:wait][:results].should == { 'stuff' => true }
@@ -348,15 +348,6 @@ describe 'Arachni::RPC::Server::Framework' do
             report.is_a?( Hash ).should be_true
             report['issues'].should be_any
         end
-
-        it 'aliased to #audit_store_as_hash' do
-            @instance_clean.framework.report.should ==
-                @instance_clean.framework.audit_store_as_hash
-        end
-        it 'aliased to #auditstore_as_hash' do
-            @instance_clean.framework.report.should ==
-                @instance_clean.framework.auditstore_as_hash
-        end
     end
 
     describe '#self_url' do
@@ -375,7 +366,8 @@ describe 'Arachni::RPC::Server::Framework' do
         context 'when passed a valid report name' do
             it 'returns the report as a string' do
                 json = @instance_clean.framework.report_as( :json )
-                JSON.load( json )['issues'].size.should == @instance_clean.framework.auditstore.issues.size
+                JSON.load( json )['issues'].size.should ==
+                    @instance_clean.framework.scan_report.issues.size
             end
 
             context 'which does not support the \'outfile\' option' do

@@ -18,7 +18,7 @@ class Arachni::Reports::AP < Arachni::Report::Base
         print_line
         print_status 'Awesome printing AuditStore as a Hash...'
 
-        ap auditstore.to_hash
+        ap report.to_hash
 
         print_status 'Done!'
     end

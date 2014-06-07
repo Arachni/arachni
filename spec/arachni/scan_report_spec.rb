@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::AuditStore do
+describe Arachni::ScanReport do
 
     before( :all ) do
         @opts = Arachni::Options.instance
@@ -11,23 +11,23 @@ describe Arachni::AuditStore do
         File.delete( @report_file ) rescue nil
     end
 
-    let( :audit_store_data ) { Factory[:audit_store_data] }
-    let( :audit_store ) { Factory[:audit_store] }
-    let( :audit_store_empty ) { Factory[:audit_store_empty] }
+    let( :scan_report_data ) { Factory[:scan_report_data] }
+    let( :scan_report ) { Factory[:scan_report] }
+    let( :scan_report_empty ) { Factory[:scan_report_empty] }
     let( :passive_issue ) { Factory[:passive_issue] }
     let( :active_issue ) { Factory[:active_issue] }
 
     it "supports #{Arachni::RPC::Serializer}" do
-        audit_store.options.delete :input
+        scan_report.options.delete :input
 
-        cloned = Arachni::RPC::Serializer.deep_clone( audit_store )
+        cloned = Arachni::RPC::Serializer.deep_clone( scan_report )
         cloned.options.delete :input
 
-        audit_store.should == cloned
+        scan_report.should == cloned
     end
 
     describe '#to_rpc_data' do
-        let(:subject) { audit_store }
+        let(:subject) { scan_report }
         let(:data) { subject.to_rpc_data }
 
         %w(sitemap version).each do |attribute|
@@ -64,7 +64,7 @@ describe Arachni::AuditStore do
     end
 
     describe '.from_rpc_data' do
-        let(:subject) { audit_store }
+        let(:subject) { scan_report }
 
         let(:restored) { described_class.from_rpc_data data }
         let(:data) { Arachni::RPC::Serializer.rpc_data( subject ) }
@@ -92,19 +92,19 @@ describe Arachni::AuditStore do
 
     describe '#version' do
         it 'returns the version number' do
-            audit_store.version.should == Arachni::VERSION
+            scan_report.version.should == Arachni::VERSION
         end
     end
 
     describe '#url' do
         it 'returns the targeted URL' do
-            audit_store.url.should == audit_store.options[:url]
+            scan_report.url.should == scan_report.options[:url]
         end
     end
 
     describe '#options' do
         it 'returns Arachni::Options as a hash' do
-           audit_store.options.should == Arachni::Options.to_hash
+           scan_report.options.should == Arachni::Options.to_hash
         end
 
         it 'defaults to Arachni::Options#to_hash' do
@@ -120,7 +120,7 @@ describe Arachni::AuditStore do
 
     describe '#sitemap' do
         it 'returns the sitemap' do
-            audit_store.sitemap.should == {@opts.url.to_s => 200}
+            scan_report.sitemap.should == {@opts.url.to_s => 200}
         end
     end
 
@@ -133,81 +133,81 @@ describe Arachni::AuditStore do
 
     describe '#issue_by_digest' do
         it 'returns an issue based on its digest' do
-            audit_store.issues.should be_any
+            scan_report.issues.should be_any
 
-            audit_store.issues.each do |issue|
-                audit_store.issue_by_digest( issue.digest ).should == issue
+            scan_report.issues.each do |issue|
+                scan_report.issue_by_digest( issue.digest ).should == issue
             end
         end
     end
 
     describe '#plugins' do
         it 'returns the plugin results' do
-            audit_store.plugins.should == Factory[:audit_store_data][:plugins]
+            scan_report.plugins.should == Factory[:scan_report_data][:plugins]
         end
     end
 
     describe '#start_datetime' do
         it 'returns a Time object' do
-            audit_store.start_datetime.should be_kind_of Time
+            scan_report.start_datetime.should be_kind_of Time
         end
         context 'when no start datetime info has been provided' do
             it 'falls-back to Time.now' do
-                audit_store_empty.start_datetime.should be_kind_of Time
+                scan_report_empty.start_datetime.should be_kind_of Time
             end
         end
     end
 
     describe '#finish_datetime' do
         it 'returns a Time object' do
-            audit_store.finish_datetime.should be_kind_of Time
+            scan_report.finish_datetime.should be_kind_of Time
         end
         it 'returns the start finish of the scan' do
-            audit_store.finish_datetime.to_s.should ==
-                Factory[:audit_store_data][:finish_datetime].to_s
+            scan_report.finish_datetime.to_s.should ==
+                Factory[:scan_report_data][:finish_datetime].to_s
         end
         context 'when no start datetime info has been provided' do
             it 'falls-back to Time.now' do
-                audit_store_empty.finish_datetime.should be_kind_of Time
+                scan_report_empty.finish_datetime.should be_kind_of Time
             end
         end
     end
 
     describe '#delta_time' do
         it 'returns the time difference between start and finish time' do
-            audit_store.delta_time.should == '02:46:40'
+            scan_report.delta_time.should == '02:46:40'
         end
         context 'when no #finish_datetime has been provided' do
             it 'uses Time.now for the calculation' do
-                audit_store_empty.start_datetime = Time.now - 2000
-                audit_store_empty.delta_time.to_s.should == '00:33:19'
+                scan_report_empty.start_datetime = Time.now - 2000
+                scan_report_empty.delta_time.to_s.should == '00:33:19'
             end
         end
     end
 
     describe '#save' do
         it 'dumps the object to a file' do
-            @report_file = audit_store.save
+            @report_file = scan_report.save
 
-            described_class.load( @report_file ).should == audit_store
+            described_class.load( @report_file ).should == scan_report
         end
 
         context 'when given a location' do
             context 'which is a filepath' do
                 it 'saves the object to that file' do
-                    @report_file = 'auditstore'
-                    audit_store.save( @report_file )
+                    @report_file = 'scan_report'
+                    scan_report.save( @report_file )
 
-                    described_class.load( @report_file ).should == audit_store
+                    described_class.load( @report_file ).should == scan_report
                 end
             end
 
             context 'which is a directory' do
                 it 'saves the object under that directory' do
                     directory = Dir.tmpdir
-                    @report_file = audit_store.save( directory )
+                    @report_file = scan_report.save( directory )
 
-                    described_class.load( @report_file ).should == audit_store
+                    described_class.load( @report_file ).should == scan_report
                 end
             end
         end
@@ -215,14 +215,14 @@ describe Arachni::AuditStore do
 
     describe '#to_h' do
         it 'returns the object as a hash' do
-            audit_store.to_h.should == {
-                version:         audit_store.version,
-                options:         Arachni::Options.hash_to_rpc_data( audit_store.options ),
-                sitemap:         audit_store.sitemap,
-                start_datetime:  audit_store.start_datetime.to_s,
-                finish_datetime: audit_store.finish_datetime.to_s,
-                delta_time:      audit_store.delta_time,
-                issues:          audit_store.issues.map(&:to_h),
+            scan_report.to_h.should == {
+                version:         scan_report.version,
+                options:         Arachni::Options.hash_to_rpc_data( scan_report.options ),
+                sitemap:         scan_report.sitemap,
+                start_datetime:  scan_report.start_datetime.to_s,
+                finish_datetime: scan_report.finish_datetime.to_s,
+                delta_time:      scan_report.delta_time,
+                issues:          scan_report.issues.map(&:to_h),
                 plugins:         {
                     plugin_name: {
                         results: 'stuff',
@@ -245,21 +245,21 @@ describe Arachni::AuditStore do
 
     describe '#to_hash' do
         it 'alias of #to_h' do
-            audit_store.to_h.should == audit_store.to_hash
+            scan_report.to_h.should == scan_report.to_hash
         end
     end
 
     describe '#==' do
-        context 'when the auditstores are equal' do
+        context 'when the scan_reports are equal' do
             it 'returns true' do
-                audit_store.deep_clone.should == audit_store
+                scan_report.deep_clone.should == scan_report
             end
         end
-        context 'when the auditstores are not equal' do
+        context 'when the scan_reports are not equal' do
             it 'returns false' do
-                a = audit_store.deep_clone
+                a = scan_report.deep_clone
                 a.options[:url] = 'http://stuff/'
-                a.should_not == audit_store
+                a.should_not == scan_report
             end
         end
     end

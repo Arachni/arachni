@@ -16,9 +16,9 @@ describe name_from_filename do
             # audit the current element type but don't expect any issues
             audit element, false
 
-            urls = framework.auditstore.sitemap
-            urls.should include  options.url + "#{element}/straight/trained"
-            urls.should include  options.url + "#{element}/append/trained"
+            urls = framework.sitemap
+            urls.should include options.url + "#{element}/straight/trained"
+            urls.should include options.url + "#{element}/append/trained"
         end
     end
 
@@ -27,9 +27,9 @@ describe name_from_filename do
             framework.options.scope.page_limit = 4
             audit :form, false
 
-            urls = framework.auditstore.sitemap
-            urls.should_not include  "#{options.url}form/straight/trained"
-            urls.should_not include  "#{options.url}form/append/trained"
+            urls = framework.sitemap
+            urls.should_not include "#{options.url}form/straight/trained"
+            urls.should_not include "#{options.url}form/append/trained"
         end
     end
 

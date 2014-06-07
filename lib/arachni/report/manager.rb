@@ -22,15 +22,16 @@ class Manager < Arachni::Component::Manager
     end
 
     # @param  [Symbol, String]  name
-    # @param  [AuditStore]      audit_store
-    # @param  [Hash]             options
+    # @param  [ScanReport]      scan_report
+    # @param  [Hash]            options
     #
-    # @see AuditStore
-    def run( name, audit_store, options = {} )
+    # @see ScanReport
+    def run( name, scan_report, options = {} )
         exception_jail false do
-            report = self[name].new( audit_store, prepare_options( name, self[name], options ) )
-            report.run
-            report
+            self[name].new(
+                scan_report,
+                prepare_options( name, self[name], options )
+            ).tap(&:run)
         end
     end
 

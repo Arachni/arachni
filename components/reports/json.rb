@@ -18,9 +18,9 @@ class Arachni::Reports::JSON < Arachni::Report::Base
 
         File.open( outfile, 'w' ) do |f|
             begin
-                f.write ::JSON::pretty_generate( auditstore.to_h )
+                f.write ::JSON::pretty_generate( report.to_h )
             rescue Encoding::UndefinedConversionError
-                f.write ::JSON::pretty_generate( auditstore.to_h.recode )
+                f.write ::JSON::pretty_generate( report.to_h.recode )
             end
         end
 

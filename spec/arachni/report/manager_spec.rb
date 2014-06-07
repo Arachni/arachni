@@ -9,11 +9,11 @@ describe Arachni::Report::Manager do
 
     after(:all) { @reports.clear }
     after(:each) { File.delete( 'foo' ) rescue nil }
-    let(:audit_store) { Factory[:audit_store] }
+    let(:scan_report) { Factory[:scan_report] }
 
     describe '#run' do
         it 'runs a report by name' do
-            @reports.run( 'foo', audit_store )
+            @reports.run( 'foo', scan_report )
 
             File.exist?( 'foo' ).should be_true
         end
@@ -22,7 +22,7 @@ describe Arachni::Report::Manager do
             it 'passes them to the report' do
                 options = { 'outfile' => 'stuff' }
 
-                report = @reports.run( :foo, audit_store, options )
+                report = @reports.run( :foo, scan_report, options )
 
                 report.options.should == options.symbolize_keys(false)
             end

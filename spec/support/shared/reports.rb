@@ -18,17 +18,17 @@ shared_examples_for 'report' do
         end
     end
 
-    def run( auditstore, opts = {} )
+    def run( scan_report, opts = {} )
         opts['outfile'] ||= outfile
-        framework.reports.run_one( name, auditstore, opts )
+        framework.reports.run_one( name, scan_report, opts )
     end
 
     def full_report
-        Arachni::AuditStore.load( fixtures_path + '/auditstore.afr' )
+        Arachni::ScanReport.load( fixtures_path + '/scan_report.afr' )
     end
 
     def empty_report
-        Arachni::AuditStore.new
+        Arachni::ScanReport.new
     end
 
     def outfile
