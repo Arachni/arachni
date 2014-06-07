@@ -138,7 +138,6 @@ class OptionParser < UI::CLI::OptionParser
                '(Can be used multiple times.)'
         ) do |file|
             options.scope.extend_paths |= paths_from_file( file )
-            options.scope.extend_paths_filepath = file
         end
 
         on( '--scope-restrict-paths FILE',
@@ -146,7 +145,6 @@ class OptionParser < UI::CLI::OptionParser
                '(Can be used multiple times.)'
         ) do |file|
             options.scope.restrict_paths |= paths_from_file( arg )
-            options.scope.restrict_paths_filepath = file
         end
 
         on( '--scope-dom-depth-limit LIMIT', Integer,

@@ -4,8 +4,7 @@ describe Arachni::OptionGroups::Scope do
     include_examples 'option_group'
     subject { described_class.new }
 
-    %w(directory_depth_limit dom_depth_limit page_limit restrict_paths
-        restrict_paths_filepath extend_paths extend_paths_filepath
+    %w(directory_depth_limit dom_depth_limit page_limit restrict_paths extend_paths
         redundant_path_patterns auto_redundant_paths include_path_patterns
         exclude_path_patterns exclude_content_patterns include_subdomains https_only
         url_rewrites exclude_binaries

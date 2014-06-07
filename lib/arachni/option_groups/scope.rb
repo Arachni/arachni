@@ -44,20 +44,12 @@ class Scope < Arachni::OptionGroup
     # @see Framework#push_to_url_queue
     attr_accessor :restrict_paths
 
-    # @return   [String]
-    #   Path to file containing {#restrict_paths}.
-    attr_accessor :restrict_paths_filepath
-
     # @return   [Array<String>]
     #   Paths to use in addition to crawling.
     #
     # @see Framework#push_to_page_queue
     # @see Framework#push_to_url_queue
     attr_accessor :extend_paths
-
-    # @return   [String]
-    #   Path to file containing {#extend_paths}.
-    attr_accessor :extend_paths_filepath
 
     # @return    [Hash{Regexp => Integer}]
     #   Filters for redundant paths in the form of `{ pattern => counter }`.
