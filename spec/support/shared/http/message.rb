@@ -3,20 +3,6 @@ shared_examples_for 'Arachni::HTTP::Message' do
     subject { described_class.new( url: url ) }
     let(:url) { 'http://test.com' }
 
-    describe '#to_rpc_data' do
-        let(:data) { subject.scope; subject.to_rpc_data }
-
-        %w(url body headers_string headers).each do |attribute|
-            it "includes '#{attribute}'" do
-                data[attribute].should == subject.send( attribute )
-            end
-        end
-
-        it "does not include 'scope" do
-            data.should_not include 'scope'
-        end
-    end
-
     describe '#initialize' do
         it 'sets the instance attributes by the options' do
             options = {

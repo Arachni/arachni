@@ -18,7 +18,7 @@ describe Arachni::HTTP::Response do
     describe '#to_rpc_data' do
         let(:data) { subject.to_rpc_data }
 
-        %w(code ip_address  time app_time total_time return_code
+        %w(url code ip_address headers body time app_time total_time return_code
             return_message).each do |attribute|
             it "includes '#{attribute}'" do
                 data[attribute].should == subject.send( attribute )
@@ -27,6 +27,10 @@ describe Arachni::HTTP::Response do
 
         it "includes 'request'" do
             data['request'].should == subject.request.to_rpc_data
+        end
+
+        it "does not include 'scope" do
+            data.should_not include 'scope'
         end
     end
 
