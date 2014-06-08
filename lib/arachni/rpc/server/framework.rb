@@ -71,7 +71,7 @@ class Framework < ::Arachni::Framework
     end
 
     # @return   [Report]
-    #   {Report.to_rpc_data}
+    #   {Report#to_rpc_data}
     def report( &block )
         # If a block is given it means the call was form an RPC client.
         if block_given?
