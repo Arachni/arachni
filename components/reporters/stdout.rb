@@ -163,6 +163,25 @@ class Arachni::Reporters::Stdout < Arachni::Reporter::Base
             print_info "Signature: #{var.signature}"     if var.signature
             print_info "Proof:     #{var.proof.inspect}" if var.proof
 
+            print_line
+            print_info "Referring page: #{var.referring_page.dom.url}"
+            if var.referring_page.dom.transitions.any?
+                print_info 'DOM transitions:'
+                var.referring_page.dom.print_transitions( method(:print_info), '    ' )
+            end
+
+            print_line
+            print_info "Affected page:  #{var.page.dom.url}"
+
+            if !var.request.to_s.empty?
+                print_info "HTTP request\n#{var.request}"
+            end
+
+            if var.page.dom.transitions.any?
+                print_info 'DOM transitions:'
+                var.page.dom.print_transitions( method(:print_info), '    ' )
+            end
+
             next if var.remarks.empty?
 
             print_line
