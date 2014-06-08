@@ -1234,7 +1234,18 @@ describe Arachni::Browser do
                                     @browser.watir.div( id: 'container-email' ).text.should be_empty
                                 end
                             end
+
+                            context 'and has disabled inputs' do
+                                let(:url) { "#{@url}/fire_event/form/disabled_inputs" }
+
+                                it 'is skips those inputs' do
+                                    @browser.watir.div( id: 'container-name' ).text.should ==
+                                        inputs[:name]
+                                    @browser.watir.div( id: 'container-email' ).text.should be_empty
+                                end
+                            end
                         end
+
                         context 'is not given' do
                             it 'fills in its inputs with sample values' do
                                 @browser.load url
@@ -1261,6 +1272,18 @@ describe Arachni::Browser do
                                     Arachni::Options.input.value_for_name( 'name' )
                                 @browser.watir.div( id: 'container-email' ).text.should ==
                                     Arachni::Options.input.value_for_name( 'email' )
+                            end
+
+                            context 'and has disabled inputs' do
+                                let(:url) { "#{@url}/fire_event/form/disabled_inputs" }
+
+                                it 'is skips those inputs' do
+                                    @browser.fire_event @browser.watir.form, :submit
+
+                                    @browser.watir.div( id: 'container-name' ).text.should ==
+                                        Arachni::Options.input.value_for_name( 'name' )
+                                    @browser.watir.div( id: 'container-email' ).text.should be_empty
+                                end
                             end
                         end
                     end

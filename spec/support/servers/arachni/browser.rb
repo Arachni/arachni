@@ -186,6 +186,35 @@ get '/each_element_with_events/form/action/out-of-scope' do
     EOHTML
 end
 
+get '/fire_event/form/disabled_inputs' do
+    <<-EOHTML
+<html>
+    <script>
+        function submitForm() {
+            document.getElementById("container-name").innerHTML =
+                document.getElementsByName("name")[0].value;
+
+            document.getElementById("container-email").innerHTML =
+                document.getElementById("email").value;
+        }
+    </script>
+
+    <body>
+        <form onsubmit="submitForm();return false;">
+            <textarea name="name" ></textarea>
+            <input disabled id="email"/>
+            <input/>
+        </fom>
+
+        <div id="container-name">
+        </div>
+        <div id="container-email">
+        </div>
+    </body>
+</html>
+    EOHTML
+end
+
 get '/fire_event/form/onsubmit' do
     <<-EOHTML
 <html>

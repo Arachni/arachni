@@ -605,13 +605,7 @@ class Browser
                 had_special_trigger = false
 
                 if tag_name == :form
-                    element.text_fields.each do |input|
-                        value = options[:inputs] ?
-                            options[:inputs][name_or_id_for( input )] :
-                            value_for( input )
-
-                        input.set( value.to_s )
-                    end
+                    fill_in_form_inputs( element, options[:inputs] )
 
                     if event == :submit
                         had_special_trigger = true
@@ -635,7 +629,8 @@ class Browser
                 element.fire_event( event ) if !had_special_trigger
                 wait_for_pending_requests
             end
-        rescue Selenium::WebDriver::Error::UnknownError,
+        rescue Selenium::WebDriver::Error::InvalidElementStateError,
+            Selenium::WebDriver::Error::UnknownError,
             Watir::Exception::UnknownObjectException => e
 
             sleep 0.1
@@ -866,6 +861,22 @@ class Browser
     end
 
     private
+
+    def fill_in_form_inputs( form, inputs = nil )
+        form.text_fields.each do |input|
+            name_or_id = name_or_id_for( input )
+            value      = inputs ? inputs[name_or_id] : value_for( input )
+
+            begin
+                input.set( value.to_s )
+                # Disabled inputs and such...
+            rescue Watir::Exception::ObjectDisabledException,
+                Selenium::WebDriver::Error::InvalidElementStateError => e
+                print_debug_level_2 "Could not fill in form input '#{name_or_id}'" <<
+                                        " because: #{e} [#{e.class}"
+            end
+        end
+    end
 
     def skip_state?( state )
         self.skip_states.include? state
