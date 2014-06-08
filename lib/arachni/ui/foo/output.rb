@@ -33,6 +33,9 @@ module Output
     def print_error(*)
     end
 
+    def print_exception(*)
+    end
+
     def print_bad(*)
     end
 

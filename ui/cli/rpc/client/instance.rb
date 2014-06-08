@@ -75,8 +75,7 @@ class Instance
             end
         rescue Interrupt
         rescue => e
-            print_error e
-            print_error_backtrace e
+            print_exception e
         end
 
         report_and_shutdown

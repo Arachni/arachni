@@ -89,9 +89,7 @@ class Trainer
         analyze response
         true
     rescue => e
-        print_error e.to_s
-        print_error_backtrace e
-
+        print_exception e
         nil
     end
 

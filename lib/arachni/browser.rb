@@ -562,8 +562,7 @@ class Browser
 
                 print_error "Element '#{locator}' could not be located for triggering '#{event}'."
                 print_error
-                print_error e
-                print_error_backtrace e
+                print_exception e
                 return
             end
         end
@@ -642,8 +641,7 @@ class Browser
             print_error "-- '#{event}' on: #{opening_tag}"
             print_error
             print_error
-            print_error e
-            print_error_backtrace e
+            print_exception e
 
             nil
         end
@@ -759,8 +757,7 @@ class Browser
             end
 
             print_error
-            print_error e
-            print_error_backtrace e
+            print_exception e
         end
 
         pages

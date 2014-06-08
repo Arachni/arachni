@@ -67,7 +67,12 @@ module Output
     #
     # @param    [Exception] e
     def print_error_backtrace( e )
-        e.backtrace.each{ |line| print_error( line ) }
+        e.backtrace.each { |line| print_error( line ) }
+    end
+
+    def print_exception( e )
+        print_error "[#{e.class}] #{e}"
+        print_error_backtrace( e )
     end
 
     # Logs an error message to the error log file.

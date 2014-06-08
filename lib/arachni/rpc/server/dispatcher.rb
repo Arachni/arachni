@@ -283,8 +283,7 @@ class Dispatcher
         print_status 'Ready'
         @server.start
     rescue => e
-        print_error e.to_s
-        print_error_backtrace e
+        print_exception e
 
         $stderr.puts "Could not start server, for details see: #{@logfile}"
 

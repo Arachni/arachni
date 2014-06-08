@@ -82,11 +82,8 @@ class Worker < Arachni::Browser
 
         begin
             with_timeout @job_timeout do
-                begin
+                exception_jail false do
                     @job.configure_and_run( self )
-                rescue => e
-                    print_error e
-                    print_error_backtrace e
                 end
             end
         rescue TimeoutError => e

@@ -384,9 +384,8 @@ module Utilities
     def exception_jail( raise_exception = true, &block )
         block.call
     rescue => e
-        if respond_to?( :print_error ) && respond_to?( :print_error_backtrace )
-            print_error e.inspect
-            print_error_backtrace e
+        if respond_to?( :print_error ) && respond_to?( :print_exception )
+            print_exception e
             print_error
             print_error 'Parent:'
             print_error  self.class.to_s

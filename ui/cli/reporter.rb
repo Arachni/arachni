@@ -40,8 +40,7 @@ class Reporter
                 @reporters.run( name, report, options )
             end
         rescue => e
-            print_error e
-            print_error_backtrace e
+            print_exception e
         end
     end
 

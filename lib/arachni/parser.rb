@@ -299,8 +299,7 @@ class Parser
                 map { |path| to_absolute( path ) }.compact.uniq.
                 reject { |path| skip?( path ) }
         rescue => e
-            print_error e.to_s
-            print_error_backtrace e
+            print_exception e
             []
         end
     end

@@ -101,8 +101,7 @@ class Framework
             print_line
             exit 1
         rescue Exception => e
-            print_error e
-            print_error_backtrace e
+            print_exception e
             exit 1
         end
     end
