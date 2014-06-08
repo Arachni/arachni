@@ -15,6 +15,19 @@ describe Arachni::HTTP::ProxyServer do
         )
     end
 
+    def post_via_proxy( proxy, url )
+        Typhoeus::Request.post(
+            url,
+            body: {
+                '1' => '2',
+                '3' => '4'
+            },
+            proxy: proxy.address,
+            ssl_verifypeer:  false,
+            ssl_verifyhost:  0
+        )
+    end
+
     def test_proxy( proxy )
         via_proxy( proxy, @url ).body.should == 'GET'
     end
@@ -132,6 +145,30 @@ describe Arachni::HTTP::ProxyServer do
                 test_proxy proxy
 
                 called.should be_true
+            end
+
+            it 'fills in raw request data' do
+                request = nil
+
+                proxy = described_class.new(
+                    request_handler: proc do |r, _|
+                        request = r
+                    end
+                )
+                proxy.start_async
+                post_via_proxy( proxy, @url )
+
+                request.headers_string.should ==
+                    "POST / HTTP/1.1\r\n" <<
+                    "Accept-Encoding: gzip, deflate\r\n" <<
+                    "User-Agent: Typhoeus - https://github.com/typhoeus/typhoeus\r\n" <<
+                        "Host: #{request.parsed_url.host}:#{request.parsed_url.port}\r\n" <<
+                        "Accept: */*\r\n" <<
+                        "Proxy-Connection: Keep-Alive\r\n" <<
+                        "Content-Type: application/x-www-form-urlencoded\r\n" <<
+                        "Content-Length: 7\r\n\r\n"
+
+                request.effective_body.should == '1=2&3=4'
             end
 
             context 'if the block returns false' do

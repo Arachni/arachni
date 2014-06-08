@@ -226,6 +226,9 @@ class ProxyServer < WEBrick::HTTPProxyServer
         request  = yield( req.request_uri.to_s, setup_proxy_header( req, res ) )
         response = nil
 
+        request.headers_string = "#{req.request_line}#{req.raw_header.join}"
+        request.effective_body = req.body
+
         if @options[:request_handler]
             # Provisional empty, response in case the request_handler wants us to
             # skip performing the request.
