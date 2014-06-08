@@ -13,6 +13,7 @@ class Server
 
 # RPC server class
 #
+# @private
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Base < Server
 

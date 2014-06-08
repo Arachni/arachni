@@ -25,6 +25,7 @@ class Server
 #   * `block` parameters, they are an RPC implementation detail for methods which
 #       perform asynchronous operations.
 #
+# @private
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Framework < ::Arachni::Framework
     require Options.paths.lib + 'rpc/server/framework/multi_instance'

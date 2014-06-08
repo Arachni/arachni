@@ -10,6 +10,7 @@ class Server
 # It, for the most part, forwards calls to {Arachni::Options} and intercepts
 # a few that need to be updated at other places throughout the framework.
 #
+# @private
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class ActiveOptions
 
@@ -56,7 +57,6 @@ class ActiveOptions
         @options.http.proxy = proxy_url
     end
 
-    # @private
     def to_h
         @options.to_rpc_data
     end

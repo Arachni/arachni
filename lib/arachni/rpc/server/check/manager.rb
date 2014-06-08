@@ -9,6 +9,8 @@ require Options.paths.lib + 'check/manager'
 
 module RPC
 class Server
+
+# @private
 module Check
 
 # We need to extend the original Manager and re-declare its inherited methods

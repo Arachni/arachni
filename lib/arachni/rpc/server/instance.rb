@@ -31,7 +31,7 @@ class Server
 # * Retrieving available components:
 #   * {#list_checks Checks}
 #   * {#list_plugins Plugins}
-#   * {#list_reporters Reports}
+#   * {#list_reporters Reporters}
 # * {#scan Configuring and running a scan}.
 # * Retrieving progress information:
 #   * {#progress in aggregate form} (which includes a multitude of information).
