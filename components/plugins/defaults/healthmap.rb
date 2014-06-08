@@ -13,10 +13,10 @@ class Arachni::Plugins::HealthMap < Arachni::Plugin::Base
     def run
         wait_while_framework_running
 
-        auditstore = framework.auditstore
+        report = framework.report
 
-        sitemap  = auditstore.sitemap.keys.map { |url| url.split( '?' ).first }.uniq
-        sitemap |= issue_urls = auditstore.issues.map { |issue| issue.vector.action }.uniq
+        sitemap  = report.sitemap.keys.map { |url| url.split( '?' ).first }.uniq
+        sitemap |= issue_urls = report.issues.map { |issue| issue.vector.action }.uniq
 
         return if sitemap.size == 0
 

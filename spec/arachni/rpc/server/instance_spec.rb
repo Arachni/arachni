@@ -263,9 +263,11 @@ describe 'Arachni::RPC::Server::Instance' do
         end
 
         describe '#report' do
-            it 'delegates to Framework#report' do
+            it "returns #{Arachni::Framework}#report as a Hash" do
                 instance_report  = @shared_instance.service.report
-                framework_report = @shared_instance.framework.report
+                framework_report = Arachni::RPC::Serializer.load(
+                    Arachni::RPC::Serializer.dump( @shared_instance.framework.report.to_h )
+                )
 
                 [:start_datetime, :finish_datetime, :delta_time].each do |k|
                     instance_report.delete k
@@ -279,14 +281,16 @@ describe 'Arachni::RPC::Server::Instance' do
         describe '#abort_and_report' do
             it 'cleans-up and returns the report as a Hash' do
                 @shared_instance.service.abort_and_report.should ==
-                    @shared_instance.framework.report
+                    Arachni::RPC::Serializer.load(
+                        Arachni::RPC::Serializer.dump( @shared_instance.framework.report.to_h )
+                    )
             end
         end
 
         describe '#native_abort_and_report' do
-            it "cleans-up and returns the report as #{Arachni::ScanReport}" do
+            it "cleans-up and returns the report as #{Arachni::Report}" do
                 @shared_instance.service.native_abort_and_report.should ==
-                    @shared_instance.framework.scan_report
+                    @shared_instance.framework.report
             end
         end
 
@@ -336,12 +340,7 @@ describe 'Arachni::RPC::Server::Instance' do
 
                 instance.service.busy?.should  == instance.framework.busy?
                 instance.service.status.should == instance.framework.status
-
-                i_report = instance.service.report
-                f_report = instance.framework.report
-
-                i_report.should == f_report
-                i_report['issues'].should be_any
+                instance.service.report['issues'].should be_any
             end
 
             context 'with invalid :platforms' do
@@ -382,12 +381,7 @@ describe 'Arachni::RPC::Server::Instance' do
 
                                     instance.service.busy?.should  == instance.framework.busy?
                                     instance.service.status.should == instance.framework.status
-
-                                    i_report = instance.service.report
-                                    f_report = instance.framework.report
-
-                                    i_report.should == f_report
-                                    i_report['issues'].should be_any
+                                    instance.service.report['issues'].should be_any
                                 end
                             end
                             context :balance do
@@ -413,12 +407,7 @@ describe 'Arachni::RPC::Server::Instance' do
 
                                     instance.service.busy?.should  == instance.framework.busy?
                                     instance.service.status.should == instance.framework.status
-
-                                    i_report = instance.service.report
-                                    f_report = instance.framework.report
-
-                                    i_report.should == f_report
-                                    i_report['issues'].should be_any
+                                    instance.service.report['issues'].should be_any
                                 end
                             end
 
@@ -463,12 +452,7 @@ describe 'Arachni::RPC::Server::Instance' do
 
                                     instance.service.busy?.should  == instance.framework.busy?
                                     instance.service.status.should == instance.framework.status
-
-                                    i_report = instance.service.report
-                                    f_report = instance.framework.report
-
-                                    i_report.should == f_report
-                                    i_report['issues'].should be_any
+                                    instance.service.report['issues'].should be_any
                                 end
                             end
                         end
@@ -582,12 +566,7 @@ describe 'Arachni::RPC::Server::Instance' do
 
                         instance.service.busy?.should  == instance.framework.busy?
                         instance.service.status.should == instance.framework.status
-
-                        i_report = instance.service.report
-                        f_report = instance.framework.report
-
-                        i_report.should == f_report
-                        i_report['issues'].should be_any
+                        instance.service.report['issues'].should be_any
                     end
                 end
             end

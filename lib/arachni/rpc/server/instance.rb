@@ -287,11 +287,11 @@ class Instance
     #
     # @see #report
     def abort_and_report( &block )
-        @framework.clean_up { block.call report }
+        @framework.clean_up { block.call report.to_h }
     end
 
     # Like {#abort_and_report} but returns a {Serializer.dump} representation
-    # of {ScanReport}.
+    # of {Report}.
     #
     # @private
     def native_abort_and_report( &block )
@@ -311,15 +311,16 @@ class Instance
         @framework.clean_up { block.call report_as( name ) }
     end
 
-    # @return (see Arachni::Framework#scan_report)
+    # @return (see Arachni::Framework#report)
     # @private
     def native_report( &block )
-        @framework.scan_report( &block )
+        @framework.report( &block )
     end
 
-    # @return (see Arachni::RPC::Server::Framework#report)
+    # @return [Hash]
+    #   {Report#to_h}
     def report
-        @framework.report
+        @framework.report.to_h
     end
 
     # @param    [String]    name

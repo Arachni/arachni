@@ -70,7 +70,9 @@ class Framework < ::Arachni::Framework
         @plugins = Plugin::Manager.new( self )
     end
 
-    def scan_report( &block )
+    # @return   [Report]
+    #   {Report.to_rpc_data}
+    def report( &block )
         # If a block is given it means the call was form an RPC client.
         if block_given?
             block.call super.to_rpc_data
@@ -197,14 +199,6 @@ class Framework < ::Arachni::Framework
             block.call true
         end
         map_slaves( foreach, after )
-    end
-
-    # @return   [Hash]
-    #   Audit results as a {ScanReport#to_h hash}.
-    #
-    # @see ScanReport#to_h
-    def report
-        scan_report.to_h
     end
 
     # @return  [Array<Hash>]

@@ -73,8 +73,8 @@ class Framework < Proxy
         issues.map { |i| Arachni::Issue.from_rpc_data i }
     end
 
-    translate :scan_report do |data|
-        ScanReport.from_rpc_data data
+    translate :report do |data|
+        Report.from_rpc_data data
     end
 
 end

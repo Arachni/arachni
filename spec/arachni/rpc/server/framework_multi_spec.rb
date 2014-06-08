@@ -135,11 +135,11 @@ describe 'Arachni::RPC::Server::Framework' do
             # dispatcher_kill_by_instance instance
         end
     end
-    describe '#scan_report' do
-        it 'returns an scan_report object' do
-            scan_report = @instance_clean.framework.scan_report
-            scan_report.is_a?( Arachni::ScanReport ).should be_true
-            scan_report.issues.should be_any
+    describe '#report' do
+        it 'returns an report object' do
+            report = @instance_clean.framework.report
+            report.is_a?( Arachni::Report ).should be_true
+            report.issues.should be_any
         end
     end
     describe '#statistics' do
@@ -159,7 +159,7 @@ describe 'Arachni::RPC::Server::Framework' do
             instance.checks.load( 'taint' )
             instance.plugins.load( { 'wait' => {}, 'distributable' => {} } )
             instance.framework.run.should be_true
-            instance.framework.scan_report.plugins.should be_empty
+            instance.framework.report.plugins.should be_empty
 
             # Wait till the slaves join the scan.
             sleep 0.1 while instance.framework.progress[:instances].size != 3
@@ -167,9 +167,9 @@ describe 'Arachni::RPC::Server::Framework' do
             instance.framework.clean_up.should be_true
 
             instance_count = instance.framework.progress[:instances].size
-            scan_report     = instance.framework.scan_report
+            report     = instance.framework.report
 
-            results = scan_report.plugins
+            results = report.plugins
             results.should be_any
             results[:wait].should be_any
             results[:wait][:results].should == { 'stuff' => true }
@@ -313,13 +313,6 @@ describe 'Arachni::RPC::Server::Framework' do
         end
     end
 
-    describe '#report' do
-        it 'returns a hash report of the scan' do
-            report = @instance_clean.framework.report
-            report.is_a?( Hash ).should be_true
-            report['issues'].should be_any
-        end
-    end
     describe '#issues' do
         it 'returns an array of issues without variations' do
             issues = @instance_clean.framework.issues

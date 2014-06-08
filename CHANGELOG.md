@@ -127,7 +127,7 @@
     `HTTP::Response` with which it was initialized -- no longer supports parsing
     data from external sources.
 - `Options` -- Rewritten with renamed option names and grouped relevant options together.
-- `ScanReport` (Renamed from `AuditStore`)
+- `Report` (Renamed from `AuditStore`)
     - `#save` -- Updated to store a compressed `Marshal` dump of the instance.
     - `.load` -- Updated to load the new `#save` format.
 - `Component::Options` -- Refactored initializers and API.

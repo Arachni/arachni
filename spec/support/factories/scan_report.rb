@@ -1,4 +1,4 @@
-Factory.define :scan_report_data do
+Factory.define :report_data do
     {
         options:  Arachni::Options.to_hash,
         sitemap:  { Arachni::Options.url => 200 },
@@ -26,10 +26,10 @@ Factory.define :scan_report_data do
     }
 end
 
-Factory.define :scan_report do
-    Arachni::ScanReport.new Factory[:scan_report_data]
+Factory.define :report do
+    Arachni::Report.new Factory[:report_data]
 end
 
-Factory.define :scan_report_empty do
-    Arachni::ScanReport.new
+Factory.define :report_empty do
+    Arachni::Report.new
 end

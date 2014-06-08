@@ -32,7 +32,7 @@ require lib + 'parser'
 require lib + 'issue'
 require lib + 'check'
 require lib + 'plugin'
-require lib + 'scan_report'
+require lib + 'report'
 require lib + 'reporter'
 require lib + 'session'
 require lib + 'trainer'
@@ -201,12 +201,13 @@ class Framework
     # Starts the scan.
     #
     # @param   [Block]  block
-    #   A block to call after the audit has finished but before running {#reports}.
+    #   A block to call after the audit has finished but before running {#reporters}.
     def run( &block )
         prepare
 
-        # catch exceptions so that if something breaks down or the user opted to
-        # exit the reports will still run with whatever results Arachni managed to gather
+        # Catch exceptions so that if something breaks down or the user opted to
+        # exit the reporters will still run with whatever results Arachni managed
+        # to gather.
         exception_jail( false ){ audit }
         # print_with_statistics
 
@@ -408,15 +409,15 @@ class Framework
         true
     end
 
-    # @return    [ScanReport]
+    # @return    [Report]
     #   Scan results.
-    def scan_report
+    def report
         opts = options.to_hash.deep_clone
 
         # restore the original redundancy rules and their counters
         opts[:scope][:redundant_path_patterns] = @orig_redundant
 
-        ScanReport.new(
+        Report.new(
             options:         options,
             sitemap:         sitemap,
             issues:          Data.issues.sort,
@@ -426,25 +427,25 @@ class Framework
         )
     end
 
-    # Runs a report component and returns the contents of the generated report.
+    # Runs a reporter component and returns the contents of the generated report.
     #
-    # Only accepts reports which support an `outfile` option.
+    # Only accepts reporters which support an `outfile` option.
     #
     # @param    [String]    name
     #   Name of the reporter component to run, as presented by {#list_reporters}'s
     #   `:shortname` key.
-    # @param    [ScanReport]    external_report
+    # @param    [Report]    external_report
     #   Report to use -- defaults to the local one.
     #
     # @return   [String]
     #   Scan report.
     #
     # @raise    [Component::Error::NotFound]
-    #   If the given report name doesn't correspond to a valid report component.
+    #   If the given reporter name doesn't correspond to a valid reporter component.
     #
     # @raise    [Component::Options::Error::Invalid]
-    #   If the requested report doesn't format the scan results as a String.
-    def report_as( name, external_report = scan_report )
+    #   If the requested reporter doesn't format the scan results as a String.
+    def report_as( name, external_report = report )
         if !@reporters.available.include?( name.to_s )
             fail Component::Error::NotFound, "Reporter '#{name}' could not be found."
         end
@@ -504,7 +505,7 @@ class Framework
             @reporters.clear
             @reporters.available.map do |report|
                 path = @reporters.name_to_path( report )
-                next if !list_report?( path, patterns )
+                next if !list_reporter?( path, patterns )
 
                 @reporters[report].info.merge(
                     options:   @reporters[report].info[:options] || [],
@@ -725,7 +726,7 @@ class Framework
         @finish_datetime  = Time.now
         @start_datetime ||= Time.now
 
-        # make sure this is disabled or it'll break report output
+        # Make sure this is disabled or it'll break reporter output.
         disable_only_positives
 
         state.running = false
@@ -1143,7 +1144,7 @@ class Framework
         data.add_page_to_sitemap( page )
     end
 
-    def list_report?( path, patterns = nil )
+    def list_reporter?( path, patterns = nil )
         regexp_array_match( patterns, path )
     end
 

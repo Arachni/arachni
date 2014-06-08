@@ -6,7 +6,7 @@
 require 'ap'
 
 #
-# Awesome prints an {ScanReport#to_hash} hash.
+# Awesome prints an {Report#to_hash} hash.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
@@ -16,7 +16,7 @@ class Arachni::Reporters::AP < Arachni::Reporter::Base
 
     def run
         print_line
-        print_status 'Awesome printing ScanReport as a Hash...'
+        print_status 'Awesome printing Report as a Hash...'
 
         ap report.to_hash
 

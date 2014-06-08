@@ -26,7 +26,7 @@ class Base < Component::Base
     attr_reader :options
     attr_reader :report
 
-    # @param    [ScanReport]  report
+    # @param    [Report]  report
     # @param    [Hash]        options
     #   Options to pass to the report.
     def initialize( report, options )
@@ -43,7 +43,7 @@ class Base < Component::Base
     # Runs plugin formatters for the running report and returns a hash
     # with the prepared/formatted results.
     #
-    # @param    [ScanReport#plugins]      plugins
+    # @param    [Report#plugins]      plugins
     #   Plugin data/results.
     def format_plugin_results( plugins = report.plugins, &block )
         formatted = {}

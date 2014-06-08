@@ -18,25 +18,25 @@ shared_examples_for 'reporter' do
         end
     end
 
-    def run( scan_report, opts = {} )
+    def run( report, opts = {} )
         opts['outfile'] ||= outfile
-        framework.reports.run_one( name, scan_report, opts )
+        reporters.run_one( name, report, opts )
     end
 
     def full_report
-        Arachni::ScanReport.load( fixtures_path + '/scan_report.afr' )
+        Arachni::Report.load( fixtures_path + '/report.afr' )
     end
 
     def empty_report
-        Arachni::ScanReport.new
+        Arachni::Report.new
     end
 
     def outfile
         @outfile ||= "#{Dir.tmpdir}/#{(0..10).map{ rand( 9 ).to_s }.join}"
     end
 
-    def reports
-        framework.reports
+    def reporters
+        framework.reporters
     end
 
 end

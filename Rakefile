@@ -151,7 +151,7 @@ begin
                     Arachni::Options.url = 'http://test.com'
                     Arachni::Options.audit :forms, :links, :cookies, :headers
 
-                    Arachni::ScanReport.new(
+                    Arachni::Report.new(
                         sitemap: { Arachni::Options.url => 200 },
                         issues:  issues.uniq
                     ). save( 'spec/support/fixtures/auditstore.afr' )

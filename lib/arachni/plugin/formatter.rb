@@ -19,8 +19,8 @@ class Formatter
     attr_reader :results
     attr_reader :description
 
-    def initialize( scan_report, plugin_data )
-        @report       = scan_report
+    def initialize( report, plugin_data )
+        @report       = report
         @results      = plugin_data[:results]
         @description  = plugin_data[:description]
     end

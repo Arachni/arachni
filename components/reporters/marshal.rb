@@ -3,7 +3,7 @@
     All rights reserved.
 =end
 
-# Converts the ScanReport to a Hash which it then dumps in Marshal format into a file.
+# Converts the Report to a Hash which it then dumps in Marshal format into a file.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #

@@ -9,11 +9,11 @@ describe Arachni::Reporter::Manager do
 
     after(:all) { @reporters.clear }
     after(:each) { File.delete( 'foo' ) rescue nil }
-    let(:scan_report) { Factory[:scan_report] }
+    let(:report) { Factory[:report] }
 
     describe '#run' do
         it 'runs a reporter by name' do
-            @reporters.run( 'foo', scan_report )
+            @reporters.run( 'foo', report )
 
             File.exist?( 'foo' ).should be_true
         end
@@ -21,7 +21,7 @@ describe Arachni::Reporter::Manager do
         context 'when options are given' do
             it 'passes them to the reporter' do
                 options = { 'outfile' => 'stuff' }
-                reporter = @reporters.run( :foo, scan_report, options )
+                reporter = @reporters.run( :foo, report, options )
 
                 reporter.options.should == options.symbolize_keys(false)
             end

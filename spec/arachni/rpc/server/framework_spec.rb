@@ -156,11 +156,11 @@ describe 'Arachni::RPC::Server::Framework' do
         end
 
     end
-    describe '#scan_report' do
-        it 'returns an scan_report object' do
-            scan_report = @instance_clean.framework.scan_report
-            scan_report.is_a?( Arachni::ScanReport ).should be_true
-            scan_report.issues.should be_any
+    describe '#report' do
+        it 'returns an report object' do
+            report = @instance_clean.framework.report
+            report.is_a?( Arachni::Report ).should be_true
+            report.issues.should be_any
         end
     end
     describe '#statistics' do
@@ -210,9 +210,9 @@ describe 'Arachni::RPC::Server::Framework' do
             instance.plugins.load( { 'wait' => {} } )
             instance.framework.run.should be_true
             instance.framework.busy?.should be_true
-            instance.framework.scan_report.plugins.should be_empty
+            instance.framework.report.plugins.should be_empty
             instance.framework.clean_up.should be_true
-            results = instance.framework.scan_report.plugins
+            results = instance.framework.report.plugins
             results.should be_any
             results[:wait].should be_any
             results[:wait][:results].should == { 'stuff' => true }
@@ -342,14 +342,6 @@ describe 'Arachni::RPC::Server::Framework' do
         end
     end
 
-    describe '#report' do
-        it 'returns a hash report of the scan' do
-            report = @instance_clean.framework.report
-            report.is_a?( Hash ).should be_true
-            report['issues'].should be_any
-        end
-    end
-
     describe '#self_url' do
         it 'returns the RPC URL' do
             @instance_clean.framework.self_url.should == @instance_clean.url
@@ -367,7 +359,7 @@ describe 'Arachni::RPC::Server::Framework' do
             it 'returns the report as a string' do
                 json = @instance_clean.framework.report_as( :json )
                 JSON.load( json )['issues'].size.should ==
-                    @instance_clean.framework.scan_report.issues.size
+                    @instance_clean.framework.report.issues.size
             end
 
             context 'which does not support the \'outfile\' option' do

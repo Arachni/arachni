@@ -34,7 +34,7 @@ class Reporter
         reporters = { 'stdout' => {} } if reporters.empty?
 
         begin
-            report = ScanReport.load( parser.report_path )
+            report = Report.load( parser.report_path )
 
             reports.each do |name, options|
                 @reporters.run( name, report, options )

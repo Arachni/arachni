@@ -17,11 +17,11 @@ class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
     end
 
     def clean_up
-        auditstore = framework.auditstore
+        report = framework.report
 
         opts = {
-            subject:     "Scan for #{framework.options.url} finished in #{auditstore.delta_time}",
-            body:        "Found #{auditstore.issues.size} unique issues.",
+            subject:     "Scan for #{framework.options.url} finished in #{report.delta_time}",
+            body:        "Found #{report.issues.size} unique issues.",
             to:          options[:to],
             cc:          options[:cc],
             bcc:         options[:bcc],

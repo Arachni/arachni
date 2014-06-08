@@ -5,29 +5,29 @@ describe Arachni::Reporter::Base do
         opts = Arachni::Options.instance
         opts.paths.reporters = fixtures_path + 'reporters/base_spec'
 
-        @framework = Arachni::Framework.new( Arachni::Options.instance )
+        @framework = Arachni::Framework.new
         @reporters = @framework.reporters
     end
 
-    let(:scan_report) { @framework.scan_report }
+    let(:report) { @framework.report }
 
     describe '#report' do
-        it 'returns the provided scan_report' do
-            @reporters.run( :with_outfile, scan_report ).report.should == scan_report
+        it 'returns the provided report' do
+            @reporters.run( :with_outfile, report ).report.should == report
         end
     end
 
     describe '#outfile' do
         it 'returns the outfile in options' do
             outfile = 'blahfile'
-            @reporters.run( :with_outfile, @framework.scan_report,
+            @reporters.run( :with_outfile, @framework.report,
                               'outfile' => outfile
             ).outfile.should == outfile
         end
 
         context 'when a directory is provided as an outfile option' do
             it 'returns the path of default outfile filename under that directory' do
-                @reporters.run( :with_outfile, @framework.scan_report,
+                @reporters.run( :with_outfile, @framework.report,
                                   'outfile' => '.'
                 ).outfile.start_with?( File.expand_path( "." ) ).should be_true
             end
@@ -39,7 +39,7 @@ describe Arachni::Reporter::Base do
             context true do
                 it 'returns true' do
                     described_class.new(
-                        scan_report,
+                        report,
                         skip_responses: true
                     ).skip_responses?.should be_true
                 end
@@ -48,7 +48,7 @@ describe Arachni::Reporter::Base do
             context false do
                 it 'returns false' do
                     described_class.new(
-                        scan_report,
+                        report,
                         skip_responses: false
                     ).skip_responses?.should be_false
                 end
@@ -56,7 +56,7 @@ describe Arachni::Reporter::Base do
 
             context 'not set' do
                 it 'returns false' do
-                    described_class.new( scan_report, {} ).skip_responses?.should be_false
+                    described_class.new( report, {} ).skip_responses?.should be_false
                 end
             end
         end
@@ -64,7 +64,7 @@ describe Arachni::Reporter::Base do
 
     describe '#format_plugin_results' do
         it 'runs the formatters of appropriate plugin' do
-            store = @framework.scan_report
+            store = @framework.report
             store.plugins[:foobar] = { :results => 'Blah!' }
 
             @reporters.run( 'with_formatters', store )
@@ -89,7 +89,7 @@ describe Arachni::Reporter::Base do
     describe '#has_outfile?' do
         it "delegates to #{described_class}.has_outfile?" do
             described_class.stub(:has_outfile?) { :stuff }
-            described_class.new( scan_report, {} ).has_outfile?.should == :stuff
+            described_class.new( report, {} ).has_outfile?.should == :stuff
         end
     end
 

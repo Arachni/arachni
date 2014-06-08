@@ -20,7 +20,7 @@ class Arachni::Plugins::Uniformity < Arachni::Plugin::Base
         wait_while_framework_running
 
         issue_digests = {}
-        framework.auditstore.issues.each do |issue|
+        framework.report.issues.each do |issue|
             next if issue.passive?
 
             id = "#{issue.check[:shortname]}:#{issue.vector.method}:" <<
