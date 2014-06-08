@@ -16,7 +16,7 @@ module Output
 
     def print_error( str = '' )
         log_error( str )
-        push_to_output_buffer( :error => str )
+        push_to_output_buffer( error: str )
     end
     def print_error_backtrace( e )
         e.backtrace.each { |line| print_error( line ) }
