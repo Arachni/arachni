@@ -542,6 +542,9 @@ class OptionParser < UI::CLI::OptionParser
 
     def after_parse
         options.url = ARGV.shift
+    rescue Options::Error::InvalidURL => e
+        print_bad e
+        exit
     end
 
     def validate
@@ -555,14 +558,14 @@ class OptionParser < UI::CLI::OptionParser
     def validate_url
         return if options.url
 
-        print_error 'Missing URL argument.'
+        print_bad 'Missing URL argument.'
         exit 1
     end
 
     def validate_timeout
         return if !@timeout || @timeout > 0
 
-        print_error 'Invalid timeout value.'
+        print_bad 'Invalid timeout value.'
         exit 1
     end
 
@@ -570,7 +573,7 @@ class OptionParser < UI::CLI::OptionParser
         snapshot_path = options.snapshot.save_path
         return if valid_save_path?( snapshot_path )
 
-        print_error "Snapshot path does not exist: #{snapshot_path}"
+        print_bad "Snapshot path does not exist: #{snapshot_path}"
         exit 1
     end
 
@@ -578,14 +581,14 @@ class OptionParser < UI::CLI::OptionParser
         report_path = options.datastore.report_path
         return if valid_save_path?( report_path )
 
-        print_error "Report path does not exist: #{report_path}"
+        print_bad "Report path does not exist: #{report_path}"
         exit 1
     end
 
     def validate_login
         if (!options.login.check_url && options.login.check_pattern) ||
             (options.login.check_url && !options.login.check_pattern)
-            print_error "Both '--login-check-url' and '--login-check-pattern'" <<
+            print_bad "Both '--login-check-url' and '--login-check-pattern'" <<
                             ' options are required.'
             exit 1
         end
