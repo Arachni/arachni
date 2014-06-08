@@ -17,7 +17,7 @@ class Paths < Arachni::OptionGroup
     attr_accessor :logs
     attr_accessor :executables
     attr_accessor :checks
-    attr_accessor :reports
+    attr_accessor :reporters
     attr_accessor :plugins
     attr_accessor :rpcd_handlers
     attr_accessor :path_extractors
@@ -37,7 +37,7 @@ class Paths < Arachni::OptionGroup
             "#{ENV['ARACHNI_FRAMEWORK_LOGDIR']}/" : @root + 'logs/'
 
         @checks          = @components + 'checks/'
-        @reports         = @components + 'reports/'
+        @reporters       = @components + 'reporters/'
         @plugins         = @components + 'plugins/'
         @rpcd_handlers   = @components + 'rpcd_handlers/'
         @path_extractors = @components + 'path_extractors/'

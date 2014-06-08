@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Arachni::OptionGroups::Paths do
-    %w(root arachni gfx components logs checks reports plugins rpcd_handlers
+    %w(root arachni gfx components logs checks reporters plugins rpcd_handlers
         path_extractors fingerprinters lib support mixins snapshots).each do |method|
 
         describe "##{method}" do

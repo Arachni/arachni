@@ -254,7 +254,7 @@ describe 'Arachni::RPC::Server::Instance' do
             end
         end
 
-        [:list_platforms, :list_checks, :list_plugins, :list_reports, :busy?].each do |m|
+        [:list_platforms, :list_checks, :list_plugins, :list_reporters, :busy?].each do |m|
             describe "##{m}" do
                 it "delegates to Framework##{m}" do
                     @shared_instance.service.send(m).should == @shared_instance.framework.send(m)

@@ -20,7 +20,7 @@ class Framework < Proxy
         status.to_sym if status
     end
 
-    %w(list_reports list_plugins).each do |m|
+    %w(list_reporters list_plugins).each do |m|
         translate m do |data|
             data.map do |c|
                 c = c.symbolize_keys

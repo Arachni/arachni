@@ -31,7 +31,7 @@ class Server
 # * Retrieving available components:
 #   * {#list_checks Checks}
 #   * {#list_plugins Plugins}
-#   * {#list_reports Reports}
+#   * {#list_reporters Reports}
 # * {#scan Configuring and running a scan}.
 # * Retrieving progress information:
 #   * {#progress in aggregate form} (which includes a multitude of information).
@@ -42,7 +42,7 @@ class Server
 # * Retrieving the scan report:
 #   * {#report as a Hash}.
 #   * {#report_as in one of the supported formats} (as made available by the
-#     {Reports report} components).
+#     {Reporters Reporter} components).
 # * {#shutdown Shutting down}.
 #
 # (A nice simple example can be found in the {UI::CLI::RPC RPC command-line client}
@@ -234,9 +234,9 @@ class Instance
         @framework.list_plugins
     end
 
-    # @return (see Arachni::Framework#list_reports)
-    def list_reports
-        @framework.list_reports
+    # @return (see Arachni::Framework#list_reporters)
+    def list_reporters
+        @framework.list_reporters
     end
 
     # @return (see Arachni::Framework#paused?)
@@ -323,7 +323,7 @@ class Instance
     end
 
     # @param    [String]    name
-    #   Name of the report component to run, as presented by {#list_reports}'s
+    #   Name of the report component to run, as presented by {#list_reporters}'s
     #   `:shortname` key.
     #
     # @return (see Arachni::Framework#report_as)

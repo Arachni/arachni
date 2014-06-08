@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe name_from_filename do
-    include_examples 'report'
+    include_examples 'reporter'
 
     test_with_full_report do
         full_report.should == Marshal.load( IO.read( outfile ) )

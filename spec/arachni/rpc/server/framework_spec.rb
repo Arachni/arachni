@@ -89,15 +89,15 @@ describe 'Arachni::RPC::Server::Framework' do
             opt[:type].should == :integer
         end
     end
-    describe '#list_reports' do
-        it 'lists all available reports' do
-            reports = @framework_clean.list_reports
-            reports.should be_any
-            report_with_opts = reports.select{ |r| r[:options].any? }.first
+    describe '#list_reporters' do
+        it 'lists all available reporters' do
+            reporters = @framework_clean.list_reporters
+            reporters.should be_any
+            report_with_opts = reporters.select{ |r| r[:options].any? }.first
             report_with_opts[:options].first.should be_kind_of( Hash )
         end
-        it 'aliased to #list_reports' do
-            @framework_clean.list_reports.should == @framework_clean.list_reports
+        it 'aliased to #list_reporters' do
+            @framework_clean.list_reporters.should == @framework_clean.list_reporters
         end
     end
 
@@ -363,7 +363,7 @@ describe 'Arachni::RPC::Server::Framework' do
     end
 
     describe '#report_as' do
-        context 'when passed a valid report name' do
+        context 'when passed a valid reporter name' do
             it 'returns the report as a string' do
                 json = @instance_clean.framework.report_as( :json )
                 JSON.load( json )['issues'].size.should ==
@@ -377,7 +377,7 @@ describe 'Arachni::RPC::Server::Framework' do
             end
         end
 
-        context 'when passed an invalid report name' do
+        context 'when passed an invalid reporter name' do
             it 'raises an exception' do
                 expect { @instance_clean.framework.report_as( :blah ) }.to raise_error
             end

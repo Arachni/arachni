@@ -33,7 +33,7 @@ require lib + 'issue'
 require lib + 'check'
 require lib + 'plugin'
 require lib + 'scan_report'
-require lib + 'report'
+require lib + 'reporter'
 require lib + 'session'
 require lib + 'trainer'
 require lib + 'browser_cluster'
@@ -75,8 +75,8 @@ class Framework
     #   System options
     attr_reader :options
 
-    # @return   [Arachni::Report::Manager]
-    attr_reader :reports
+    # @return   [Arachni::Reporter::Manager]
+    attr_reader :reporters
 
     # @return   [Arachni::Check::Manager]
     attr_reader :checks
@@ -131,9 +131,9 @@ class Framework
 
         @options = options
 
-        @checks  = Check::Manager.new( self )
-        @reports = Report::Manager.new
-        @plugins = Plugin::Manager.new( self )
+        @checks    = Check::Manager.new( self )
+        @reporters = Reporter::Manager.new
+        @plugins   = Plugin::Manager.new( self )
 
         reset_session
         @http = HTTP::Client.instance
@@ -431,7 +431,7 @@ class Framework
     # Only accepts reports which support an `outfile` option.
     #
     # @param    [String]    name
-    #   Name of the report component to run, as presented by {#list_reports}'s
+    #   Name of the reporter component to run, as presented by {#list_reporters}'s
     #   `:shortname` key.
     # @param    [ScanReport]    external_report
     #   Report to use -- defaults to the local one.
@@ -445,27 +445,27 @@ class Framework
     # @raise    [Component::Options::Error::Invalid]
     #   If the requested report doesn't format the scan results as a String.
     def report_as( name, external_report = scan_report )
-        if !@reports.available.include?( name.to_s )
-            fail Component::Error::NotFound, "Report '#{name}' could not be found."
+        if !@reporters.available.include?( name.to_s )
+            fail Component::Error::NotFound, "Reporter '#{name}' could not be found."
         end
 
-        loaded = @reports.loaded
+        loaded = @reporters.loaded
         begin
-            @reports.clear
+            @reporters.clear
 
-            if !@reports[name].has_outfile?
+            if !@reporters[name].has_outfile?
                 fail Component::Options::Error::Invalid,
-                     "Report '#{name}' cannot format the audit results as a String."
+                     "Reporter '#{name}' cannot format the audit results as a String."
             end
 
             outfile = "#{Dir.tmpdir}/arachni_report_as.#{name}"
-            @reports.run( name, external_report, outfile: outfile )
+            @reporters.run( name, external_report, outfile: outfile )
 
             IO.read( outfile )
         ensure
             File.delete( outfile ) if outfile
-            @reports.clear
-            @reports.load loaded
+            @reporters.clear
+            @reporters.load loaded
         end
     end
 
@@ -496,27 +496,27 @@ class Framework
     end
 
     # @return    [Array<Hash>]
-    #   Information about all available {Reports}.
-    def list_reports( patterns = nil )
-        loaded = @reports.loaded
+    #   Information about all available {Reporters}.
+    def list_reporters( patterns = nil )
+        loaded = @reporters.loaded
 
         begin
-            @reports.clear
-            @reports.available.map do |report|
-                path = @reports.name_to_path( report )
+            @reporters.clear
+            @reporters.available.map do |report|
+                path = @reporters.name_to_path( report )
                 next if !list_report?( path, patterns )
 
-                @reports[report].info.merge(
-                    options:   @reports[report].info[:options] || [],
+                @reporters[report].info.merge(
+                    options:   @reporters[report].info[:options] || [],
                     shortname: report,
                     path:      path,
-                    author:    [@reports[report].info[:author]].
+                    author:    [@reporters[report].info[:author]].
                                    flatten.map { |a| a.strip }
                 )
             end.compact
         ensure
-            @reports.clear
-            @reports.load loaded
+            @reporters.clear
+            @reporters.load loaded
         end
     end
 
@@ -770,7 +770,7 @@ class Framework
         reset_trainer
         reset_session
         @checks.clear
-        @reports.clear
+        @reporters.clear
         @plugins.clear
     end
 
@@ -788,7 +788,7 @@ class Framework
         Element::Capabilities::Analyzable.reset
         Check::Manager.reset
         Plugin::Manager.reset
-        Report::Manager.reset
+        Reporter::Manager.reset
         HTTP::Client.reset
     end
 

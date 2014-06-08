@@ -15,12 +15,12 @@ module Plugin
 class Formatter
     include UI::Output
 
-    attr_reader :scan_report
+    attr_reader :report
     attr_reader :results
     attr_reader :description
 
     def initialize( scan_report, plugin_data )
-        @scan_report  = scan_report
+        @report       = scan_report
         @results      = plugin_data[:results]
         @description  = plugin_data[:description]
     end

@@ -35,9 +35,9 @@ begin
             end
         end
 
-        desc 'Run report tests.'
-        RSpec::Core::RakeTask.new( :reports ) do |t|
-            t.pattern = FileList[ 'spec/components/reports/**/*_spec.rb' ]
+        desc 'Run reporter tests.'
+        RSpec::Core::RakeTask.new( :reporters ) do |t|
+            t.pattern = FileList[ 'spec/components/reporters/**/*_spec.rb' ]
         end
 
         desc 'Run plugin tests.'
@@ -126,12 +126,12 @@ begin
             end
         end
 
-        desc 'Generate an AFR report for the report tests.'
+        desc 'Generate an AFR reporter for the reporter tests.'
         namespace :generate do
             task :afr do
                 begin
                     # Run the check tests and save all the issues to put them in our
-                    # AFR report.
+                    # AFR reporter.
                     FileUtils.touch( "#{Dir.tmpdir}/save_issues" )
                     Rake::Task['spec:checks'].execute rescue nil
                     #RSpec::Core::Runner.run(['spec/components/checks/active/xss_spec.rb'])
@@ -229,7 +229,7 @@ task :profile do
 
 end
 
-desc 'Remove report and log files.'
+desc 'Remove reporter and log files.'
 task :clean do
     files = %w(error.log *.afr *.afs *.yaml *.json *.marshal *.gem pkg/*.gem
         logs/*.log spec/support/logs/*.log).map { |file| Dir.glob( file ) }.flatten

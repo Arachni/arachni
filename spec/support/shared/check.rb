@@ -38,7 +38,7 @@ shared_examples_for 'check' do
 
     after( :each ) do
         # Leave this here, helps us save every kind of issue in order to test
-        # the reports.
+        # the reporters.
         if File.exists?( "#{Dir.tmpdir}/save_issues" )
 
             File.open( "#{Dir.tmpdir}/issues.yaml", 'a' ) do |f|

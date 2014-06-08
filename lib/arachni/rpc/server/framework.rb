@@ -56,9 +56,8 @@ class Framework < ::Arachni::Framework
     end
 
     # Make these inherited methods public again (i.e. accessible over RPC).
-    [ :statistics, :list_checks, :list_checks, :list_plugins, :list_plugins,
-      :list_reports, :list_reports, :version, :status, :report_as, :list_platforms,
-      :list_platforms, :sitemap ].each do |m|
+    [ :statistics, :version, :status, :report_as, :list_platforms, :list_platforms,
+      :sitemap ].each do |m|
         private m
         public  m
     end
@@ -84,23 +83,23 @@ class Framework < ::Arachni::Framework
     # @return (see Arachni::Framework#list_plugins)
     def list_plugins
         super.map do |plugin|
-            plugin[:options]  = plugin[:options].map(&:to_h)
+            plugin[:options] = plugin[:options].map(&:to_h)
             plugin
         end
     end
 
-    # @return (see Arachni::Framework#list_reports)
-    def list_reports
-        super.map do |report|
-            report[:options]  = report[:options].map(&:to_h)
-            report
+    # @return (see Arachni::Framework#list_reporters)
+    def list_reporters
+        super.map do |reporter|
+            reporter[:options] = reporter[:options].map(&:to_h)
+            reporter
         end
     end
 
     # @return (see Arachni::Framework#list_checks)
     def list_checks
         super.map do |check|
-            check[:issue][:severity]  = check[:issue][:severity].to_s
+            check[:issue][:severity] = check[:issue][:severity].to_s
             check
         end
     end

@@ -1,11 +1,11 @@
-shared_examples_for 'report' do
+shared_examples_for 'reporter' do
     include_examples 'component'
 
     before( :all ) { framework.reports.load name }
     after( :each ) { File.delete( outfile ) rescue nil }
 
     def self.test_with_full_report( &block )
-        it 'formats a full report' do
+        it 'formats a full reporter' do
             run( full_report )
             instance_eval( &block ) if block_given?
         end

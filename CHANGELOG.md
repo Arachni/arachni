@@ -127,12 +127,12 @@
     `HTTP::Response` with which it was initialized -- no longer supports parsing
     data from external sources.
 - `Options` -- Rewritten with renamed option names and grouped relevant options together.
-- `AuditStore`
+- `ScanReport` (Renamed from `AuditStore`)
     - `#save` -- Updated to store a compressed `Marshal` dump of the instance.
     - `.load` -- Updated to load the new `#save` format.
 - `Component::Options` -- Refactored initializers and API.
     - `Enum` renamed to `MultipleChoice`.
-- Reports
+- `Reporters` (Renamed from `Reports`)
     - Removed `metareport`.
 - Plugins
     - `resolver` -- Removed as the report now contains that information in the

@@ -69,7 +69,7 @@ Gem::Specification.new do |s|
     # Printing complex objects.
     s.add_dependency 'awesome_print',     '1.2.0'
 
-    # JSON report.
+    # JSON reporter.
     s.add_dependency 'json',              '1.8.1'
 
     # For the Arachni console (arachni_console).

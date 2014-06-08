@@ -11,8 +11,8 @@ describe Arachni::Framework do
 
     before( :each ) do
         reset_options
-        @options.paths.reports = fixtures_path + '/reports/manager_spec/'
-        @options.paths.checks  = fixtures_path + '/taint_check/'
+        @options.paths.reporters = fixtures_path + '/reporters/manager_spec/'
+        @options.paths.checks    = fixtures_path + '/taint_check/'
 
         @f = Arachni::Framework.new
         @f.options.url = @url
@@ -246,10 +246,10 @@ describe Arachni::Framework do
         end
     end
 
-    describe '#reports' do
-        it 'provides access to the report manager' do
-            subject.reports.is_a?( Arachni::Report::Manager ).should be_true
-            subject.reports.available.sort.should == %w(afr foo).sort
+    describe '#reporters' do
+        it 'provides access to the reporter manager' do
+            subject.reporters.is_a?( Arachni::Reporter::Manager ).should be_true
+            subject.reporters.available.sort.should == %w(afr foo).sort
         end
     end
 
@@ -853,8 +853,8 @@ describe Arachni::Framework do
             @new_framework = Arachni::Framework.new
         end
 
-        context 'when passed a valid report name' do
-            it 'returns the report as a string' do
+        context 'when passed a valid reporter name' do
+            it 'returns the reporter as a string' do
                 json = @new_framework.report_as( :json )
                 JSON.load( json )['issues'].size.should == @new_framework.scan_report.issues.size
             end
@@ -866,7 +866,7 @@ describe Arachni::Framework do
             end
         end
 
-        context 'when passed an invalid report name' do
+        context 'when passed an invalid reporter name' do
             it 'raises Arachni::Component::Error::NotFound' do
                 expect { @new_framework.report_as( :blah ) }.to raise_error Arachni::Component::Error::NotFound
             end
@@ -1395,12 +1395,12 @@ describe Arachni::Framework do
         end
     end
 
-    describe '#list_reports' do
-        it 'returns info on all reports' do
-            subject.list_reports.size.should == subject.reports.available.size
+    describe '#list_reporters' do
+        it 'returns info on all reporters' do
+            subject.list_reporters.size.should == subject.reporters.available.size
 
-            info   = subject.list_reports.find { |p| p[:options].any? }
-            report = subject.reports[info[:shortname]]
+            info   = subject.list_reporters.find { |p| p[:options].any? }
+            report = subject.reporters[info[:shortname]]
 
             report.info.each do |k, v|
                 if k == :author
@@ -1415,9 +1415,9 @@ describe Arachni::Framework do
         end
 
         context 'when a pattern is given' do
-            it 'uses it to filter out reports that do not match it' do
-                subject.list_reports( 'foo' ).size == 1
-                subject.list_reports( 'boo' ).size == 0
+            it 'uses it to filter out reporters that do not match it' do
+                subject.list_reporters( 'foo' ).size == 1
+                subject.list_reporters( 'boo' ).size == 0
             end
         end
     end

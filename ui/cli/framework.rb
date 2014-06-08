@@ -352,9 +352,9 @@ class Framework
     end
 
     def generate_reports
-        report = @framework.audit_store
+        report = @framework.scan_report
 
-        @framework.reports.run :stdout, report
+        @framework.reporters.run :stdout, report
 
         filepath = report.save( options.datastore.report_path )
         filesize = (File.size( filepath ).to_f / 2**20).round(2)
