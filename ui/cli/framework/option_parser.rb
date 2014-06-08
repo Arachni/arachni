@@ -53,6 +53,19 @@ class OptionParser < UI::CLI::OptionParser
         separator ''
         separator 'Scope'
 
+        on( '--scope-include-pattern PATTERN', Regexp,
+            'Only include resources whose path/action matches PATTERN.',
+            '(Can be used multiple times.)'
+        ) do |pattern|
+            options.scope.include_path_patterns << pattern
+        end
+
+        on( '--scope-include-subdomains', 'Follow links to subdomains.',
+            "(Default: #{options.scope.include_subdomains})"
+        ) do
+            options.scope.include_subdomains = true
+        end
+
         on( '--scope-exclude-pattern PATTERN', Regexp,
                'Exclude resources whose path/action matches PATTERN.',
                '(Can be used multiple times.)'
@@ -67,11 +80,11 @@ class OptionParser < UI::CLI::OptionParser
             options.scope.exclude_content_patterns << pattern
         end
 
-        on( '--scope-include-pattern PATTERN', Regexp,
-               'Only include resources whose path/action matches PATTERN.',
-               '(Can be used multiple times.)'
-        ) do |pattern|
-            options.scope.include_path_patterns << pattern
+        on( '--scope-exclude-binaries',
+            'Exclude non text-based pages.',
+            '(Binary content can confuse passive checks that perform pattern matching.)'
+        ) do
+            options.scope.exclude_binaries = true
         end
 
         on( '--scope-redundant-path-pattern PATTERN:COUNTER',
@@ -89,33 +102,6 @@ class OptionParser < UI::CLI::OptionParser
                '(Default: 10)'
         ) do |counter|
             options.scope.auto_redundant_paths = counter || 10
-        end
-
-        on( '--scope-exclude-binaries',
-            'Exclude non text-based pages.',
-            '(Binary content can confuse passive checks that perform pattern matching.)'
-        ) do
-            options.scope.exclude_binaries = true
-        end
-
-        on( '--scope-url-rewrite PATTERN:SUBSTITUTION',
-            'Rewrite URLs based on the given PATTERN and SUBSTITUTION.'
-        ) do |rule|
-            pattern, substitution = rule.split( ':', 2 )
-            options.scope.url_rewrites[ Regexp.new( pattern ) ] =
-                substitution
-        end
-
-        on( '--scope-include-subdomains', 'Follow links to subdomains.',
-               "(Default: #{options.scope.include_subdomains})"
-        ) do
-            options.scope.include_subdomains = true
-        end
-
-        on( '--scope-https-only', 'Forces the system to only follow HTTPS URLs.',
-               "(Default: #{options.scope.https_only})"
-        ) do
-            options.scope.https_only = true
         end
 
         on( '--scope-directory-depth-limit LIMIT', Integer,
@@ -147,12 +133,26 @@ class OptionParser < UI::CLI::OptionParser
             options.scope.restrict_paths |= paths_from_file( arg )
         end
 
+        on( '--scope-url-rewrite PATTERN:SUBSTITUTION',
+            'Rewrite URLs based on the given PATTERN and SUBSTITUTION.'
+        ) do |rule|
+            pattern, substitution = rule.split( ':', 2 )
+            options.scope.url_rewrites[ Regexp.new( pattern ) ] =
+                substitution
+        end
+
         on( '--scope-dom-depth-limit LIMIT', Integer,
                'How deep to go into the DOM tree of each page, for pages with JavaScript code.',
                "(Default: #{options.scope.dom_depth_limit})",
                "(Setting it to '0' will skip DOM/JS/AJAX analysis.)"
         ) do |limit|
             options.scope.dom_depth_limit = limit
+        end
+
+        on( '--scope-https-only', 'Forces the system to only follow HTTPS URLs.',
+            "(Default: #{options.scope.https_only})"
+        ) do
+            options.scope.https_only = true
         end
     end
 
@@ -179,22 +179,8 @@ class OptionParser < UI::CLI::OptionParser
             options.audit.cookies_extensively = true
         end
 
-
         on( '--audit-headers', 'Audit headers.' ) do
             options.audit.headers = true
-        end
-
-        on( '--audit-with-both-methods',
-               'Audit links, forms and cookies using both GET and POST requests.',
-               '(*WARNING*: This will severely increase the scan-time.)'
-        ) do
-            options.audit.with_both_http_methods = true
-        end
-
-        on( '--audit-exclude-vector NAME',
-               'Input vector not to audit, by name.',
-               '(Can be used multiple times.)' ) do |name|
-            options.audit.exclude_vectors << name
         end
 
         on( '--audit-link-template TEMPLATE', Regexp,
@@ -205,24 +191,29 @@ class OptionParser < UI::CLI::OptionParser
             options.audit.link_templates |= [pattern]
         end
 
+        on( '--audit-with-both-methods',
+               'Audit elements with both GET and POST requests.',
+               '(*WARNING*: This will severely increase the scan-time.)'
+        ) do
+            options.audit.with_both_http_methods = true
+        end
+
+        on( '--audit-exclude-vector NAME',
+               'Input vector not to audit, by name.',
+               '(Can be used multiple times.)' ) do |name|
+            options.audit.exclude_vectors << name
+        end
     end
 
     def http
         separator ''
         separator 'HTTP'
 
-        on( '--http-request-timeout TIMEOUT', Integer,
-               'HTTP request timeout in milliseconds.',
-               "(Default: #{options.http.request_timeout})"
-        ) do |username|
-            options.http.request_timeout = username
-        end
-
-        on( '--http-request-redirect-limit LIMIT', Integer,
-               'Maximum amount of redirect to follow for each HTTP request.',
-               "(Default: #{options.http.request_redirect_limit})"
-        ) do |limit|
-            options.http.request_redirect_limit = limit
+        on( '--http-user-agent USER_AGENT',
+            "Value for the 'User-Agent' HTTP request header.",
+            "(Default: #{options.http.user_agent})"
+        ) do |user_agent|
+            options.http.user_agent = user_agent
         end
 
         on( '--http-request-concurrency MAX_CONCURRENCY', Integer,
@@ -234,6 +225,20 @@ class OptionParser < UI::CLI::OptionParser
             options.http.request_concurrency = concurrency
         end
 
+        on( '--http-request-timeout TIMEOUT', Integer,
+            'HTTP request timeout in milliseconds.',
+            "(Default: #{options.http.request_timeout})"
+        ) do |username|
+            options.http.request_timeout = username
+        end
+
+        on( '--http-request-redirect-limit LIMIT', Integer,
+            'Maximum amount of redirect to follow for each HTTP request.',
+            "(Default: #{options.http.request_redirect_limit})"
+        ) do |limit|
+            options.http.request_redirect_limit = limit
+        end
+
         on( '--http-request-queue-size QUEUE_SIZE', Integer,
                'Maximum amount of requests to keep in the queue.',
                'Bigger size means better scheduling and better performance',
@@ -241,6 +246,14 @@ class OptionParser < UI::CLI::OptionParser
                "(Default: #{options.http.request_queue_size})"
         ) do |size|
             options.http.request_queue_size = size
+        end
+
+        on( '--http-request-header NAME=VALUE',
+            'Specify custom headers to be included in the HTTP requests.',
+            '(Can be used multiple times.)'
+        ) do |user_agent|
+            header, val = user_agent.split( '=', 2 )
+            options.http.request_headers[header] = val
         end
 
         on( '--http-response-max-size RESPONSE_SIZE', Integer,
@@ -260,21 +273,6 @@ class OptionParser < UI::CLI::OptionParser
                "Cookie representation as an 'Cookie' HTTP request header."
         ) do |cookie|
             options.http.cookie_string = cookie
-        end
-
-        on( '--http-user-agent USER_AGENT',
-               "Value for the 'User-Agent' HTTP request header.",
-               "(Default: #{options.http.user_agent})"
-        ) do |user_agent|
-            options.http.user_agent = user_agent
-        end
-
-        on( '--http-request-header NAME=VALUE',
-               'Specify custom headers to be included in the HTTP requests.',
-               '(Can be used multiple times.)'
-        ) do |user_agent|
-            header, val = user_agent.split( '=', 2 )
-            options.http.request_headers[header] = val
         end
 
         on( '--http-authentication-username USERNAME',
@@ -366,12 +364,12 @@ class OptionParser < UI::CLI::OptionParser
             exit
         end
 
-        on( '--no-fingerprinting',
+        on( '--platforms-no-fingerprinting',
                'Disable platform fingerprinting.',
                '(By default, the system will try to identify the deployed server-side platforms automatically',
                'in order to avoid sending irrelevant payloads.)'
         ) do
-            options.platforms.no_fingerprinting = true
+            options.no_fingerprinting = true
         end
 
         on( '--platforms PLATFORM,PLATFORM2,...',
