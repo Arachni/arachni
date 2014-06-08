@@ -352,7 +352,7 @@ class Framework
     end
 
     def generate_reports
-        report = @framework.scan_report
+        report = @framework.report
 
         @framework.reporters.run :stdout, report
 
