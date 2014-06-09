@@ -214,7 +214,7 @@ class URI
                     components[:scheme].downcase! if components[:scheme]
     
                     if url = splits.shift
-                        splits = url.split( '?' ).first.split( '@', 2 )
+                        splits = url.to_s.split( '?' ).first.to_s.split( '@', 2 )
     
                         if splits.size > 1
                             components[:userinfo] = splits.first
@@ -492,11 +492,11 @@ class URI
                               fail ArgumentError.new( msg )
                       end
 
+        fail Error, 'Failed to parse URL.' if !@parsed_url
+
         # We probably got it from the cache, dup it to avoid corrupting the cache
         # entries.
         @parsed_url = @parsed_url.dup
-
-        fail Error, 'Failed to parse URL.' if !@parsed_url
     end
 
     # @return   [Scope]
