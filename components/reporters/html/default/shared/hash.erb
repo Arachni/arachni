@@ -1,0 +1,6 @@
+<dl class="dl-horizontal">
+    <% object.each do |k, v| %>
+        <dt><%= escapeHTML( k ) %></dt>
+        <dd><%= escapeHTML( v ) %></dd>
+    <% end %>
+</dl>

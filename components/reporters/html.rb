@@ -3,6 +3,7 @@
     All rights reserved.
 =end
 
+require 'coderay'
 require 'json'
 require 'erb'
 require 'base64'

@@ -14,7 +14,10 @@
     </div>
     <div id="<%= id %>-vector" class="panel-collapse collapse in">
         <div class="panel-body">
-            <pre class="code_container"><%= escapeHTML issue.vector.html %></pre>
+            <%=
+                return if !issue.vector.respond_to? :html
+                CodeRay.scan( issue.vector.html, :html ).div( line_numbers: :table )
+            %>
 
             <table class="table">
                 <tr>
@@ -27,20 +30,10 @@
                     <td><%= escapeHTML issue.vector.url %></td>
                     <td><%= escapeHTML issue.vector.action %></td>
                     <td>
-                        <dl class="dl-horizontal">
-                            <% issue.vector.default_inputs.each do |k, v| %>
-                                <dt><%= escapeHTML( k ) %></dt>
-                                <dd><%= escapeHTML( v ) %></dd>
-                            <% end %>
-                        </dl>
+                        <%= erb 'shared/hash.erb', object: issue.vector.default_inputs %>
                     </td>
                     <td>
-                        <dl class="dl-horizontal">
-                            <% issue.vector.inputs.each do |k, v| %>
-                                <dt><%= escapeHTML( k ) %></dt>
-                                <dd><%= escapeHTML( v ) %></dd>
-                            <% end %>
-                        </dl>
+                        <%= erb 'shared/hash.erb', object: issue.vector.inputs %>
                     </td>
                 </tr>
             </table>

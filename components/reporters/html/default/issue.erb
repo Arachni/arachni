@@ -116,7 +116,7 @@
         </div>
 
     <%=
-        erb (issue.active? ? :issue_details_active : :issue_details_passive),
+        erb (issue.active? ? 'issue/active.erb' : 'issue/passive.erb'),
             issue: issue,
             id:    issue_id
     %>
