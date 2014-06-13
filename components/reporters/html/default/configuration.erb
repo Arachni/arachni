@@ -1,125 +1,130 @@
-            <h2>Configuration</h2>
+<h2>Configuration</h2>
 
-            <div id="configuration-tabs">
-                <ul>
-                    <li><a href="#configuration_list">Settings</a></li>
-                </ul>
+<div id="configuration-tabs">
+    <ul>
+        <li><a href="#configuration_list">Settings</a></li>
+    </ul>
 
-                <div id='configuration_list'>
+    <div id='configuration_list'>
 
-                <strong>Version</strong>: <%=auditstore.version%><br />
-                <strong>Audit started on</strong>: <%=auditstore.start_datetime%><br />
-                <strong>Audit finished on</strong>: <%=auditstore.finish_datetime%><br />
-                <strong>Runtime</strong>: <%=auditstore.delta_time%><br />
+        <strong>Version</strong>: <%= report.version %>
+        <br/>
+        <strong>Audit started on</strong>: <%= report.start_datetime %>
+        <br/>
+        <strong>Audit finished on</strong>: <%= report.finish_datetime %>
+        <br/>
+        <strong>Runtime</strong>: <%= report.delta_time %>
+        <br/>
 
-                <p>&nbsp;</p>
-                <h3>Runtime options</h3>
+        <p>&nbsp;</p>
 
-                <strong>URL:</strong> <%=auditstore.options['url']%><br />
-                <strong>User agent:</strong> <%=escapeHTML( auditstore.options['http_user_agent'] )%><br />
+        <h3>Runtime options</h3>
 
-                <p>&nbsp;</p>
+        <strong>URL:</strong> <%= escapeHTML(report.url) %>
+        <br/>
+        <strong> User agent:</strong> <%= escapeHTML(report.options[:http][:user_agent]) %>
+        <br/>
 
-                <table>
-                    <tr>
-                        <th>Audited elements</th>
-                        <th>Checks</th>
-                        <th>Filters</th>
-                        <th>Cookies</th>
-                    </tr>
-                  <tr>
-                      <td>
-                          <ul>
+        <p>&nbsp;</p>
 
-                            <% if auditstore.options['audit_links']%>
+        <table>
+            <tr>
+                <th>Audited elements</th>
+                <th>Checks</th>
+                <th>Filters</th>
+                <th>Cookies</th>
+            </tr>
+            <tr>
+                <td>
+                    <ul>
+
+                        <% if report.options[:audit][:links] %>
                             <li>Links</li>
-                            <%end%>
+                        <% end %>
 
-                            <% if auditstore.options['audit_forms']%>
+                        <% if report.options[:audit][:forms] %>
                             <li>Forms</li>
-                            <%end%>
+                        <% end %>
 
-                            <% if auditstore.options['audit_cookies']%>
+                        <% if report.options[:audit][:cookies] %>
                             <li>Cookies</li>
-                            <%end%>
+                        <% end %>
 
-                            <% if auditstore.options['audit_headers']%>
+                        <% if report.options[:audit][:headers] %>
                             <li>Headers</li>
-                            <%end%>
+                        <% end %>
 
-                        </ul>
-                    </td>
+                    </ul>
+                </td>
 
-                    <td>
-                        <ul>
-                        <% auditstore.options['checks'].each do |mod|%>
-                            <li><%=mod%></li>
-                        <%end%>
-                        </ul>
-                    </td>
+                <td>
+                    <ul>
+                        <% report.options[:checks].each do |mod| %>
+                            <li><%= mod %></li>
+                        <% end %>
+                    </ul>
+                </td>
 
-                    <td>
-                        <ul>
+                <td>
+                    <ul>
 
-                            <li>Exclude:
-                                <ul>
-                                <% if !auditstore.options['scope_exclude_path_patterns'].empty?%>
-                                <% auditstore.options['scope_exclude_path_patterns'].each do |rule|%>
-
-                                    <li><%=escapeHTML( rule )%></li>
-
-                                <%end%>
-                                <% else %>
-                                    <li>N/A</li>
-                                <%end%>
-                                </ul>
-                            </li>
-
-                            <li>Include:
-
-                                <ul>
-                                <% if !auditstore.options['scope_include_path_patterns'].empty?%>
-                                <% auditstore.options['scope_include_path_patterns'].each do |rule|%>
-
-                                    <li><%=escapeHTML( rule )%></li>
-
-                                <%end%>
-                                <% else %>
-                                    <li>N/A</li>
-                                <%end%>
-                                </ul>
-                            </li>
-
-                            <li>Redundant:
-
-                                <ul>
-                                <% if !auditstore.options['scope_redundant_path_patterns'].empty?%>
-                                <% auditstore.options['scope_redundant_path_patterns'].each do |regexp, counter|%>
-
-                                    <li><%=escapeHTML( regexp )%> - Count: <%=counter%></li>
-
-                                <%end%>
-                                <% else %>
-                                    <li>N/A</li>
-                                <%end%>
-                                    </ul>
-                                </li>
-
-                            </ul>
-                        </td>
-
-                        <td>
+                        <li>Exclude:
                             <ul>
-                            <% if auditstore.options['cookies'] && !auditstore.options['cookies'].empty?%>
-                            <% auditstore.options['cookies'].each_pair do |name, val|%>
-                                <li><%=escapeHTML( name )%> = <%=escapeHTML( val )%></li>
-                            <%end%>
-                            <% else %>
-                                <li>N/A</li>
-                            <%end%>
-                          </ul>
+                                <% if report.options[:scope][:exclude_path_patterns].any? %>
+                                    <% report.options[:scope][:exclude_path_patterns].each do |rule| %>
+                                        <li><%= escapeHTML(rule) %></li>
+                                    <% end %>
+                                <% else %>
+                                    <li>N/A</li>
+                                <% end %>
+                            </ul>
+                        </li>
 
-                        </td>
-                    </tr>
-                </table>
-            </div>
+                        <li>Include:
+
+                            <ul>
+                                <% if report.options[:scope][:include_path_patterns].any? %>
+                                    <% report.options[:scope][:include_path_patterns].each do |rule| %>
+                                        <li><%= escapeHTML(rule) %></li>
+                                    <% end %>
+                                <% else %>
+                                    <li>N/A</li>
+                                <% end %>
+                            </ul>
+                        </li>
+
+                        <li>Redundant:
+
+                            <ul>
+                                <% if report.options[:scope][:redundant_path_patterns].any? %>
+                                    <% report.options[:scope][:redundant_path_patterns].each do |regexp, counter| %>
+                                        <li><%= escapeHTML(regexp) %> -
+                                            Count: <%= counter %></li>
+                                    <% end %>
+                                <% else %>
+                                    <li>N/A</li>
+                                <% end %>
+                            </ul>
+                        </li>
+
+                    </ul>
+                </td>
+
+                <td>
+                    <ul>
+                        <% if report.options[:http][:cookies].any? %>
+                            <% report.options[:cookies].each_pair do |name, val| %>
+                                <li><%= escapeHTML(name) %>
+                                    = <%= escapeHTML(val) %></li>
+                            <% end %>
+                        <% else %>
+                            <li>N/A</li>
+                        <% end %>
+                    </ul>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+
+</div>

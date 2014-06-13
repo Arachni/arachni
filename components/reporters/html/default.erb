@@ -1,81 +1,109 @@
 <%# Encoding: utf-8%>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>
+        <%= escapeHTML(report.url) %> ::
+        Arachni Web Application Security Report
+    </title>
 
-<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US" xml:lang="en-US">
-    <head>
-      <title><%= title_url %> :: Arachni Web Application Security Report</title>
+    <!--
+        Design by Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        Copyright (c) Arachni 2011-2014.
+     -->
 
-      <!--
-          Design by:
-            * Christos Chiotis <chris@survivetheinternet.com>
-            * Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    <script type="text/javascript">
+        //<![CDATA[
+        <%= erb 'js/lib/jquery.min.js' %>
+        <%= erb 'js/lib/bootstrap.js' %>
 
-          Copyright (c) Arachni 2011-2014.
-           -->
+        <%= erb 'js/helpers.js' %>
+        <%= erb 'js/init.js.erb', graph_data: graph_data %>
+        //]]>
+    </script>
 
-      <script type="text/javascript">
-      //<![CDATA[
-        <%=erb 'js/init.js', { graph_data: graph_data } %>
-      //]]>
-      </script>
-
-      <style type="text/css">
-      /*<![CDATA[*/
-        <%=erb 'css/jquery.jqplot.min.css' %>
-        <%=erb 'css/jquery-ui.css' %>
+    <style type="text/css">
+        /*<![CDATA[*/
+        <%=erb 'css/lib/font-awesome.css' %>
+        <%=erb 'css/lib/bootstrap.css' %>
         <%=erb 'css/main.css' %>
-      /*]]>*/
-      </style>
+        /*]]>*/
+    </style>
 
-    </head>
+</head>
 
-    <body>
+<body>
 
-        <div id="fp_report_msg" class="hidden" title="Reporting a false positive."></div>
+<div class="row">
+    <div class="col-md-12">
+        <header>
+            <nav class="navbar navbar-inverse navbar-default" role="navigation">
+                <div class="container">
+                    <a class="navbar-brand" href="http://www.arachni-scanner.com">
+                        Arachni <%= Arachni::VERSION %>
+                    </a>
 
-        <div id="contentreport">
-            <header>
-                <h1>Report for <%=escapeHTML(auditstore.options['url'])%> (Generated on <strong><%=Time.now%></strong>)</h1>
-                <span style="float: right">Found a false positive? <a href="<%=escapeHTML(ISSUES_URL)%>">Report it here</a>.</span>
-            </header>
+                    <div class="navbar-header">
+                        <ul class="nav navbar-nav">
+                            <li><a href="#summary" data-toggle="tab">Summary</a></li>
+                            <li><a href="#issues" data-toggle="tab">Issues</a></li>
+                            <li><a href="#plugins" data-toggle="tab">Plugin results</a></li>
+                            <li><a href="#sitemap" data-toggle="tab">Sitemap</a></li>
+                            <li><a href="#configuration" data-toggle="tab">Configuration</a></li>
+                        </ul>
+                    </div>
 
-            <nav>
-                <ul>
-                    <li><a href="#summary">Summary</a></li>
-                    <li><a href="#issues">Issues</a></li>
-                    <li><a href="#plugins">Plugin results</a></li>
-                    <li><a href="#sitemap">Sitemap</a></li>
-                    <li><a href="#configuration">Configuration</a></li>
-                </ul>
+                    <p class="navbar-text navbar-right">
+                        (Found a false positive?
+
+                        <a class="navbar-link" href="<%= escapeHTML(ISSUES_URL) %>">
+                            Please let us know.</a>)
+                    </p>
+                </div>
             </nav>
+        </header>
+    </div>
+</div>
 
-            <section class="tab" id="summary">
-                <%= erb :summary, { auditstore: auditstore } %>
-            </section>
+<div class="page-header">
+    <h1>
+        <%= escapeHTML(report.url) %>
+        <small>Generated on <%= Time.now %></small>
+    </h1>
+</div>
 
-            <section class="tab" id="configuration">
-                <%= erb :configuration, { auditstore: auditstore} %>
-            </section>
+<div class="row">
+    <div class="col-md-12">
+        <div class="tab-content">
+            <div class="tab-pane active" id="summary">
+                <%= erb :summary, report: report %>
+            </div>
 
-            <section class="tab" id="issues">
+            <div class="tab-pane" id="configuration">
+                <%= erb :configuration, report: report %>
+            </div>
+
+            <div class="tab-pane" id="issues">
                 <%= erb :issues, {
-                        auditstore:           auditstore,
+                        report:               report,
                         has_trusted_issues:   has_trusted_issues,
                         has_untrusted_issues: has_untrusted_issues
-                    }
+                }
                 %>
-            </section>
+            </div>
 
-            <section class="tab" id="plugins">
-                <%= erb :plugins, { auditstore: auditstore, plugins: plugins } %>
-            </section>
+            <div class="tab-pane" id="plugins">
+                <%= erb :plugins, report: report, plugins: plugins %>
+            </div>
 
-            <section class="tab" id="sitemap">
-                <%= erb :sitemap, { auditstore: auditstore } %>
-            </section>
+            <div class="tab-pane" id="sitemap">
+                <%= erb :sitemap, report: report %>
+            </div>
 
         </div>
-    </body>
+    </div>
+</div>
+
+</body>
 </html>

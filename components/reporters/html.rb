@@ -3,6 +3,7 @@
     All rights reserved.
 =end
 
+require 'json'
 require 'erb'
 require 'base64'
 require 'cgi'
@@ -13,15 +14,14 @@ require 'cgi'
 # @version 0.3.3
 class Arachni::Reporters::HTML < Arachni::Reporter::Base
 
-    module Utils
+    module TemplateUtilities
 
         def base64_encode( string )
             Base64.encode64( string ).gsub( /\n/, '' )
         end
 
         def normalize( str )
-            return '' if !str || str.empty?
-            str.encode( 'utf-8', 'binary', invalid: :replace, undef: :replace )
+            str.to_s.recode
         end
 
         # Carefully escapes HTML and converts to UTF-8 while removing
@@ -31,35 +31,38 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
         end
 
         def erb( tpl, params = {} )
-            scope = TemplateScope.new( params )
-            scope.add( :auditstore, auditstore )
+            scope = TemplateScope.new(
+                params.merge(
+                    report:        report,
+                    template_path: @template_path
+                )
+            )
 
             tpl = tpl.to_s + '.erb' if tpl.is_a?( Symbol )
 
-            @@base_path ||= @base_path
-
-            path = File.exist?( tpl ) ? tpl : @@base_path + tpl
+            ap tpl
+            path = File.exist?( tpl ) ? tpl : @template_path + tpl
             ERB.new( IO.read( path ) ).result( scope.get_binding )
         end
     end
 
-    include Utils
+    include TemplateUtilities
 
     class TemplateScope
-        include Utils
+        include TemplateUtilities
 
         ISSUES_URL = 'https://github.com/Arachni/arachni/issues'
 
         def initialize( params )
-            add_hash( params )
+            update( params )
         end
 
-        def add_hash( params )
-            params.each { |name, value| add( name, value ) }
+        def update( params )
+            params.each { |name, value| self[name] = value }
             self
         end
 
-        def add( name, value )
+        def []=( name, value )
             self.class.send( :attr_accessor, name )
             instance_variable_set( "@#{name.to_s}", value )
             self
@@ -69,12 +72,8 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
             Arachni::Reporters::HTML.prep_description( str )
         end
 
-        def get_meta_info( name )
-            auditstore.plugins['metamodules'][:results][name]
-        end
-
         def get_plugin_info( name )
-            auditstore.plugins[name]
+            report.plugins[name]
         end
 
         def js_multiline( str )
@@ -91,20 +90,18 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
         print_line
         print_status 'Creating HTML report...'
 
-        plugins    = format_plugin_results( auditstore.plugins )
-        @base_path = File.dirname( options['tpl'] ) + '/' +
-            File.basename( options['tpl'], '.erb' ) + '/'
-
-        title_url = uri_parse( auditstore.options['url'] ).host rescue auditstore.options['url']
+        # plugins    = format_plugin_results( report.plugins )
+        @template_path = File.dirname( options[:template] ) + '/' +
+            File.basename( options[:template], '.erb' ) + '/'
 
         params = prepare_data.merge(
-            title_url:   escapeHTML( title_url ),
-            audit_store: auditstore,
-            plugins:     plugins,
+            title_url:   uri_parse( report.url ).host,
+            audit_store: report,
+            plugins:     {},
             base_path:   @base_path
         )
 
-        File.open( outfile, 'w' ) { |f| f.write( erb( options['tpl'], params ) ) }
+        File.open( outfile, 'w' ) { |f| f.write( erb( options[:template], params ) ) }
 
         print_status "Saved in '#{outfile}'."
     end
@@ -117,7 +114,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
             author:       'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:      '0.3.2',
             options:      [
-                Options::Path.new( :tpl,
+                Options::Path.new( :template,
                     description: 'Template to use.',
                     default:     File.dirname( __FILE__ ) + '/html/default.erb'
                 ),
@@ -150,8 +147,13 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
             untrusted_issues: {},
             elements:         {
                 Element::Form.type   => 0,
+                Element::Form::DOM.type   => 0,
                 Element::Link.type   => 0,
+                Element::Link::DOM.type   => 0,
                 Element::Cookie.type => 0,
+                Element::Cookie::DOM.type => 0,
+                Element::LinkTemplate.type => 0,
+                Element::LinkTemplate::DOM.type => 0,
                 Element::Header.type => 0,
                 Element::Body.type   => 0,
                 Element::Path.type   => 0,
@@ -173,7 +175,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
         has_trusted_issues   = false
         has_untrusted_issues = false
 
-        auditstore.issues.each.with_index do |issue, i|
+        report.issues.each.with_index do |issue, i|
             graph_data[:severities][issue.severity.to_sym] += 1
             total_severities += 1
 

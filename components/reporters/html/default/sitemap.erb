@@ -1,15 +1,15 @@
-            <h2>Sitemap</h2>
+<h2>Sitemap</h2>
 
-            <div id="sitemap-tabs">
-                <ul>
-                    <li><a href="#sitemap_list">URL List</a></li>
-                </ul>
+<div id="sitemap-tabs">
+    <ul>
+        <li><a href="#sitemap_list">URL List</a></li>
+    </ul>
 
-                <div id='sitemap_list'>
-                    <h3><%=auditstore.sitemap.size%> pages</h3>
-                    <% auditstore.sitemap.each do |url, code| %>
-                      [<%=code%>] <a href="<%=escapeHTML(url)%>"><%=escapeHTML(url)%></a><br/>
-                    <%end%>
-                </div>
-
-            </div>
+    <div id='sitemap_list'>
+        <h3><%= report.sitemap.size %> pages</h3>
+        <% report.sitemap.each do |url, code| %>
+            [<%= code %>]
+            <a href="<%= escapeHTML(url) %>"><%= escapeHTML(url) %></a><br/>
+        <% end %>
+    </div>
+</div>

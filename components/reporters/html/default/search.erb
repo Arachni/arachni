@@ -1,8 +1,6 @@
-            <div>
-                <form action='javascript: return false;' onsubmit="searchIssues( $('#search_<%=id%>').val()); return false;">
-                    <p>
-                        <label>Search issues:</label> <input id="search_<%=id%>" name="search">
-                        <em>(Submit empty query to show all again.)</em>
-                    </p>
-                </form>
-            </div>
+<div class="form-group">
+    <input class="form-control" id="search_<%= id %>"
+           placeholder="Filter issues..." name="search"
+           onkeypress="searchIssues( $('#search_<%= id %>').val())"
+    />
+</div>

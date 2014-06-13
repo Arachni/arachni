@@ -1,19 +1,10 @@
 <td colspan="2">
-<% if headers.is_a? Hash %>
-        <table>
-    <% headers.each do |name, val| %>
-        <tr>
-        <% if val.is_a? Array %>
-            <% val.each do |value| %>
-                <tr>
-                    <td><strong><%= name %></strong></td><td><%= escapeHTML( value ) %></td>
-                </tr>
-            <% end %>
-        <% else %>
-            <td><strong><%= name %></strong></td><td><%= escapeHTML( val ) %></td>
+    <table>
+        <% headers.each do |name, val| %>
+            <tr>
+                <td><strong><%= name %></strong></td>
+                <td><%= escapeHTML(val) %></td>
+            </tr>
         <% end %>
-        </tr>
-    <% end %>
     </table>
-<% end %>
 </td>
