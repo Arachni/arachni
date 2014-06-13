@@ -11,32 +11,34 @@
                 </a>
             </h4>
         </div>
-    </div>
-    <div id="<%= id %>-vector" class="panel-collapse collapse in">
-        <div class="panel-body">
-            <%=
-                return if !issue.vector.respond_to? :html
-                CodeRay.scan( issue.vector.html, :html ).div( line_numbers: :table )
-            %>
+        <div id="<%= id %>-vector" class="panel-collapse collapse in">
+            <div class="panel-body">
+                <%=
+                    return if !issue.vector.respond_to? :html
+                    CodeRay.scan(issue.vector.html, :html).div(line_numbers: :table)
+                %>
 
-            <table class="table">
-                <tr>
-                    <th>In</th>
-                    <th>Action</th>
-                    <th>Default inputs</th>
-                    <th>Updated inputs</th>
-                </tr>
-                <tr>
-                    <td><%= escapeHTML issue.vector.url %></td>
-                    <td><%= escapeHTML issue.vector.action %></td>
-                    <td>
-                        <%= erb 'shared/hash.erb', object: issue.vector.default_inputs %>
-                    </td>
-                    <td>
-                        <%= erb 'shared/hash.erb', object: issue.vector.inputs %>
-                    </td>
-                </tr>
-            </table>
+                <table class="table">
+                    <tr>
+                        <th>Type</th>
+                        <th>In</th>
+                        <th>Action</th>
+                        <th>Default inputs</th>
+                        <th>Updated inputs</th>
+                    </tr>
+                    <tr>
+                        <td><code><%= issue.vector.type %></code></td>
+                        <td><%= escapeHTML issue.vector.url %></td>
+                        <td><%= escapeHTML issue.vector.action %></td>
+                        <td>
+                            <%= erb 'shared/hash.erb', object: issue.vector.default_inputs %>
+                        </td>
+                        <td>
+                            <%= erb 'shared/hash.erb', object: issue.vector.inputs %>
+                        </td>
+                    </tr>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -46,101 +48,13 @@
                 <a data-toggle="collapse" data-parent="#accordion" href="#<%= id %>-affected_page">
                     Affected page:
 
-                    <code><%= escapeHTML( variation.page.dom.url ) %></code>
+                    <code><%= escapeHTML(variation.page.dom.url) %></code>
                 </a>
             </h4>
         </div>
         <div id="<%= id %>-affected_page" class="panel-collapse collapse">
             <div class="panel-body">
-                <div class="row">
-                    <div class="col-md-12">
-                        <strong>Transitions</strong>
-
-                        <table class="table table-condensed">
-                            <tr>
-                                <th>Time</th>
-                                <th>Event</th>
-                                <th>Element</th>
-                                <th>Options</th>
-                            </tr>
-
-                            <% variation.page.dom.transitions.each do |transition| %>
-                            <tr>
-                                <td><%= transition.time %></td>
-                                <td><%= transition.event %></td>
-                                <td><%= escapeHTML( transition.element ) %></td>
-                                <td>
-                                    <table class="table table-condensed table-borderless well">
-                                        <% if (url = transition.options[:url]) %>
-                                            <tr>
-                                                <th>URL</th>
-                                                <td><%= url %></td>
-                                            </tr>
-                                        <% end %>
-
-                                        <% if (cookies = transition.options[:cookies] || {}).any? %>
-                                            <tr>
-                                                <th>Cookies</th>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <dl class="dl-horizontal">
-                                                        <% cookies.each do |k, v| %>
-                                                            <dt><%= escapeHTML( k ) %></dt>
-                                                            <dd><%= escapeHTML( v ) %></dd>
-                                                        <% end %>
-                                                    </dl>
-                                                </td>
-                                            </tr>
-                                        <% end %>
-
-                                        <% if (inputs = transition.options[:inputs] || {}).any? %>
-                                            <tr>
-                                                <th>Inputs</th>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <dl class="dl-horizontal">
-                                                        <% inputs.each do |k, v| %>
-                                                        <dt><%= escapeHTML( k ) %></dt>
-                                                        <dd><%= escapeHTML( v ) %></dd>
-                                                        <% end %>
-                                                    </dl>
-                                                </td>
-                                            </tr>
-                                        <% end %>
-                                    </table>
-                                </td>
-                            </tr>
-                            <% end %>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <strong>Data flow</strong>
-                        <hr/>
-
-                        <%= variation.page.dom.data_flow_sink %>
-                    </div>
-
-                    <div class="col-md-6">
-                        <strong>Execution flow</strong>
-                        <hr/>
-
-                        <%= variation.page.dom.execution_flow_sink %>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-12">
-                        <strong>Body</strong>
-                        <hr/>
-
-                        <pre id="<%= id %>_page_body" class="code_container"><%= highlight_issue_page_body( variation, 'proof' ) %></pre>
-                    </div>
-                </div>
+                <%= erb 'issue/shared/page.erb', page: variation.page %>
             </div>
         </div>
     </div>
@@ -151,31 +65,13 @@
                 <a data-toggle="collapse" data-parent="#accordion" href="#<%= id %>-referring_page">
                     Referring page:
 
-                    <code><%= escapeHTML( variation.referring_page.dom.url ) %></code>
+                    <code><%= escapeHTML(variation.referring_page.dom.url) %></code>
                 </a>
             </h4>
         </div>
-    </div>
-
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <h4 class="panel-title">
-                <a data-toggle="collapse" data-parent="#accordion" href="#<%= id %>-http">
-                    HTTP data
-                </a>
-            </h4>
-        </div>
-        <div id="<%= id %>-http" class="panel-collapse collapse">
+        <div id="<%= id %>-referring_page" class="panel-collapse collapse">
             <div class="panel-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <pre><%= escapeHTML(variation.request) %></pre>
-                    </div>
-
-                    <div class="col-md-6">
-                        <pre><%= escapeHTML(variation.response) %></pre>
-                    </div>
-                </div>
+                <%= erb 'issue/shared/page.erb', page: variation.referring_page %>
             </div>
         </div>
     </div>

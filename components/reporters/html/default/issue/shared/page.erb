@@ -1,0 +1,100 @@
+<% if page.dom.transitions.any? %>
+<div class="row">
+    <div class="col-md-12">
+        <strong>Transitions</strong>
+
+        <table class="table table-condensed">
+            <tr>
+                <th>Time</th>
+                <th>Event</th>
+                <th>Element</th>
+                <th>Options</th>
+            </tr>
+
+
+            <% page.dom.transitions.each do |transition| %>
+                <tr>
+                    <td><%= transition.time %></td>
+                    <td><%= transition.event %></td>
+                    <td><%= escapeHTML(transition.element) %></td>
+                    <td>
+                        <table class="table table-condensed table-borderless well">
+                            <% if (url = transition.options[:url]) %>
+                                <tr>
+                                    <th>URL</th>
+                                    <td><%= url %></td>
+                                </tr>
+                            <% end %>
+
+                            <% if (cookies = transition.options[:cookies] || {}).any? %>
+                                <tr>
+                                    <th>Cookies</th>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <%= erb 'shared/hash.erb', object: cookies %>
+                                    </td>
+                                </tr>
+                            <% end %>
+
+                            <% if (inputs = transition.options[:inputs] || {}).any? %>
+                                <tr>
+                                    <th>Inputs</th>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <%= erb 'shared/hash.erb', object: inputs %>
+                                    </td>
+                                </tr>
+                            <% end %>
+                        </table>
+                    </td>
+                </tr>
+            <% end %>
+        </table>
+    </div>
+</div>
+<% end %>
+
+<div class="row">
+    <% if page.dom.data_flow_sink.any? %>
+    <div class="col-md-6">
+        <strong>Data flow</strong>
+        <hr/>
+
+        <%= page.dom.data_flow_sink %>
+    </div>
+    <% end %>
+
+    <% if page.dom.execution_flow_sink.any? %>
+    <div class="col-md-6">
+        <strong>Execution flow</strong>
+        <hr/>
+
+        <%= page.dom.execution_flow_sink %>
+    </div>
+    <% end %>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <strong>Body</strong>
+        <hr/>
+
+        <%=
+            CodeRay.scan(page.body, :html).div(line_numbers: :table)
+        %>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <strong>HTTP request</strong>
+        <pre><%= escapeHTML(page.request) %></pre>
+    </div>
+
+    <div class="col-md-6">
+        <strong>HTTP response</strong>
+        <pre><%= escapeHTML(page.response) %></pre>
+    </div>
+</div>
