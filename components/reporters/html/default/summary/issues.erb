@@ -1,0 +1,77 @@
+<%
+   grouped = {}
+   Arachni::Issue::Severity::ORDER.each do |severity|
+       by_severity = report.issues.select { |i| i.severity.to_sym == severity }
+       next if by_severity.empty?
+
+       by_name = {}
+       by_severity.each do |issue|
+           by_name[issue.name] ||= []
+           by_name[issue.name] << issue
+       end
+
+       grouped[by_severity.first.severity] = by_name
+   end
+%>
+
+<div class="row">
+    <div class="col-md-6">
+        <%= erb :search, id: 'summary_issues_tab' %>
+    </div>
+</div>
+
+<% grouped.each do |severity, issues_by_name| %>
+    <h3><%= severity.to_s.capitalize %> severity</h3>
+
+    <div class="row">
+        <div class="col-md-6">
+            <% issues_by_name.each do |name, issues| %>
+
+                <div class="issue-summary">
+                    <h4>
+                        <%= name %>
+                    </h4>
+
+                    <p class="well">
+                        <%= escapeHTML( issues.first.description ) %>
+                    </p>
+
+                    <ul class="list-unstyled">
+                        <% issues.each do |issue| %>
+                            <li>
+
+                                <%
+                                   issue_id = "issues-#{issue.variations.first.trusted? ? 'trusted' : 'untrusted'}-#{issue.digest}"
+                                %>
+
+                                <a class="btn btn-xs btn-info"
+                                   href="#<%= issue_id %>"
+                                   title="Inspect issue"
+                                >
+                                    <i class="fa fa-eye"></i>
+                                </a>
+
+                                In <code><%= issue.vector.type %></code>
+
+                                <% if issue.active? %>
+                                    input <code><%= issue.affected_input_name %></code>
+                                <% end %>
+
+                                <% if issue.variations.first.request %>
+                                    using <code><%= issue.variations.first.request.method.to_s.upcase %></code>
+                                <% end %>
+
+                                at <a href="<%= escapeHTML( issue.vector.action )%>">
+                                <%= escapeHTML( issue.vector.action ) %>
+                            </a>.
+                            </li>
+                        <% end %>
+                    </ul>
+
+                </div>
+
+            <% end %>
+
+        </div>
+    </div>
+<% end %>

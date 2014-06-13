@@ -51,3 +51,27 @@ table.jqplot-table-legend {
 .severity-informational {
     background-color: #3A87AD;
 }
+
+.table .table-borderless td,
+.table .table-borderless th {
+    border: 0;
+}
+
+.table, .table .table-condensed {
+    margin-bottom: 0;
+}
+
+.code_container {
+    overflow: scroll;
+    max-height: 400px;
+    position: relative;
+}
+
+.proof {
+    color: red;
+    font-weight: bold;
+}
+
+.navbar {
+    border-radius: 0;
+}

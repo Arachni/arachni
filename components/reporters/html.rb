@@ -30,6 +30,18 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
             CGI.escapeHTML( normalize( str ) )
         end
 
+        def highlight_issue_page_body( issue, span_class )
+            return escapeHTML( issue.page.body ) if !issue.page.body.include?( issue.proof )
+
+            escaped_proof         = escapeHTML( issue.proof )
+            escaped_response_body = escapeHTML( issue.page.body )
+
+            escaped_response_body.gsub(
+                escaped_proof,
+                "<span class=\"#{span_class}\">#{escaped_proof}</span>"
+            )
+        end
+
         def erb( tpl, params = {} )
             scope = TemplateScope.new(
                 params.merge(
@@ -97,8 +109,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
         params = prepare_data.merge(
             title_url:   uri_parse( report.url ).host,
             audit_store: report,
-            plugins:     {},
-            base_path:   @base_path
+            plugins:     {}
         )
 
         File.open( outfile, 'w' ) { |f| f.write( erb( options[:template], params ) ) }
@@ -189,7 +200,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
             verification = issue.untrusted? ? 'Yes' : 'No'
             graph_data[:verification][verification] += 1
 
-            if issue.trusted?
+            if issue.variations.first.trusted?
                 has_trusted_issues = true
                 graph_data[:trust]['Trusted'] += 1
                 graph_data[:trusted_issues][issue.name]   ||= 0

@@ -51,3 +51,44 @@ function searchIssues( val ){
         $(".issue").show();
     }
 }
+
+function goTo( location ){
+    // Restore the last open tab from the URL fragment.
+    if( !location || location.length <= 0 ) return;
+
+    var splits     = location.split('-');
+    var breadcrumb = '';
+
+    for( var i = 0; i < splits.length; i++ ) {
+        breadcrumb += splits[i];
+        $('a[href="#' + breadcrumb + '"]').tab('show');
+        breadcrumb += '-';
+    }
+
+    $('html,body').scrollTop( $('#' + location).offset().top );
+}
+
+function openFromWindowLocation(){
+    goTo( window.location.hash.split('#')[1] );
+}
+
+// Parent must have 'position: relative;'
+function scrollToChild( parent, child ){
+    parent = $(parent);
+//    child  = $(child);
+
+//    if( !child.exists() ) return;
+
+    parent.scrollTo( child );
+
+//    alert( child.position().top );
+//    alert( child.position().top );
+
+//    parent.scrollTop( 1000 );
+//
+//    parent.scrollTop( parent.scrollTop() + child.position().top -
+//        parent.height() / 2 + child.height() / 2 );
+//
+//    parent.scrollTop( parent.scrollTop() + ( child.position().top -
+//        parent.position().top) - (parent.height()/2) + (child.height()/2) )
+}

@@ -1,27 +1,21 @@
+jQuery.fn.exists = function(){ return this.length > 0; };
+
 $.expr[':'].icontains = function(obj, index, meta, stack){
     return (obj.textContent || obj.innerText || jQuery(obj).text() || '').
         toLowerCase().indexOf(meta[3].toLowerCase()) >= 0;
 };
 
 jQuery(function ($) {
-
     // Restore the last open tab from the URL fragment.
-    var open_tab = window.location.hash.split('#')[1];
-    if( open_tab && open_tab.length > 0 ) {
+    openFromWindowLocation();
 
-        var splits     = open_tab.split('-');
-        var breadcrumb = '';
+    // Save the last open tab the user selected to the URL fragment.
+    $('*[data-toggle="tab"]').click(function (e) {
+        window.location.hash = this.hash;
+    });
 
-        for( var i = 0; i < splits.length; i++ ) {
-            breadcrumb += splits[i];
-            $('a[href="#' + breadcrumb + '"]').tab('show');
-            breadcrumb += '-';
-        }
-    }
+});
 
-    // Save the last open tab to the URL fragment.
-    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-        window.location.hash = $(e.target).attr('href');
-    })
-
+$(window).bind( "popstate", function () {
+    openFromWindowLocation();
 });

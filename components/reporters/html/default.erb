@@ -32,78 +32,72 @@
     </style>
 
 </head>
-
 <body>
 
-<div class="row">
-    <div class="col-md-12">
-        <header>
-            <nav class="navbar navbar-inverse navbar-default" role="navigation">
-                <div class="container">
-                    <a class="navbar-brand" href="http://www.arachni-scanner.com">
-                        Arachni <%= Arachni::VERSION %>
-                    </a>
+<nav class="navbar navbar-inverse navbar-default" role="navigation">
+    <div class="container">
+        <a class="navbar-brand" href="http://www.arachni-scanner.com">
+            Arachni <%= Arachni::VERSION %>
+        </a>
 
-                    <div class="navbar-header">
-                        <ul class="nav navbar-nav">
-                            <li><a href="#summary" data-toggle="tab">Summary</a></li>
-                            <li><a href="#issues" data-toggle="tab">Issues</a></li>
-                            <li><a href="#plugins" data-toggle="tab">Plugin results</a></li>
-                            <li><a href="#sitemap" data-toggle="tab">Sitemap</a></li>
-                            <li><a href="#configuration" data-toggle="tab">Configuration</a></li>
-                        </ul>
-                    </div>
-
-                    <p class="navbar-text navbar-right">
-                        (Found a false positive?
-
-                        <a class="navbar-link" href="<%= escapeHTML(ISSUES_URL) %>">
-                            Please let us know.</a>)
-                    </p>
-                </div>
-            </nav>
-        </header>
-    </div>
-</div>
-
-<div class="page-header">
-    <h1>
-        <%= escapeHTML(report.url) %>
-        <small>Generated on <%= Time.now %></small>
-    </h1>
-</div>
-
-<div class="row">
-    <div class="col-md-12">
-        <div class="tab-content">
-            <div class="tab-pane active" id="summary">
-                <%= erb :summary, report: report %>
-            </div>
-
-            <div class="tab-pane" id="configuration">
-                <%= erb :configuration, report: report %>
-            </div>
-
-            <div class="tab-pane" id="issues">
-                <%= erb :issues, {
-                        report:               report,
-                        has_trusted_issues:   has_trusted_issues,
-                        has_untrusted_issues: has_untrusted_issues
-                }
-                %>
-            </div>
-
-            <div class="tab-pane" id="plugins">
-                <%= erb :plugins, report: report, plugins: plugins %>
-            </div>
-
-            <div class="tab-pane" id="sitemap">
-                <%= erb :sitemap, report: report %>
-            </div>
-
+        <div class="navbar-header">
+            <ul class="nav navbar-nav">
+                <li><a href="#summary" data-toggle="tab">Summary</a></li>
+                <li><a href="#issues" data-toggle="tab">Issues</a></li>
+                <li><a href="#plugins" data-toggle="tab">Plugin results</a>
+                </li>
+                <li><a href="#sitemap" data-toggle="tab">Sitemap</a></li>
+                <li>
+                    <a href="#configuration" data-toggle="tab">Configuration</a>
+                </li>
+            </ul>
         </div>
+
+        <p class="navbar-text navbar-right">
+            (Found a false positive?
+
+            <a class="navbar-link" href="<%= escapeHTML(ISSUES_URL) %>">
+                Please let us know.</a>)
+        </p>
+    </div>
+</nav>
+
+<div class="container-fluid">
+
+    <div class="page-header">
+        <h1>
+            <%= escapeHTML(report.url) %>
+            <small>Generated on <%= Time.now %></small>
+        </h1>
+    </div>
+
+    <div class="tab-content">
+        <div class="tab-pane active" id="summary">
+            <%= erb :summary, report: report %>
+        </div>
+
+        <div class="tab-pane" id="configuration">
+            <%= erb :configuration, report: report %>
+        </div>
+
+        <div class="tab-pane" id="issues">
+            <%= erb :issues, {
+                    report:               report,
+                    has_trusted_issues:   has_trusted_issues,
+                    has_untrusted_issues: has_untrusted_issues
+            }
+            %>
+        </div>
+
+        <div class="tab-pane" id="plugins">
+            <%= erb :plugins, report: report, plugins: plugins %>
+        </div>
+
+        <div class="tab-pane" id="sitemap">
+            <%= erb :sitemap, report: report %>
+        </div>
+
     </div>
 </div>
-
 </body>
 </html>
