@@ -29,8 +29,6 @@ describe name_from_filename do
             end
 
             data = data_flow_sink.last[:data]
-            data.size.should == 1
-            data = data.first
             data['source'].should start_with 'function eval()'
             data['function'].should == 'eval'
             data['object'].should == 'DOMWindow'

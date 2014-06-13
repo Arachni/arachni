@@ -18,9 +18,7 @@ def browser_cluster_job_taint_tracer_data_flow_check_pages( pages )
     sink = page.dom.data_flow_sink
     sink.size.should == 1
 
-    data = sink.first[:data]
-    data.size.should == 1
-    data[0]['function'].should == 'process'
+    sink.first[:data]['function'].should == 'process'
 end
 
 def browser_cluster_job_taint_tracer_data_flow_with_injector_check_pages( pages )
@@ -30,7 +28,5 @@ def browser_cluster_job_taint_tracer_data_flow_with_injector_check_pages( pages 
     sink = page.dom.data_flow_sink
     sink.size.should == 1
 
-    data = sink.first[:data]
-    data.size.should == 1
-    data[0]['function'].should == 'onClick'
+    sink.first[:data]['function'].should == 'onClick'
 end

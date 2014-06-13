@@ -806,7 +806,7 @@ describe Arachni::Browser do
             doms[0].data_flow_sink.size.should == 2
 
             entry = doms[0].data_flow_sink[0]
-            entry[:data].should == [1]
+            entry[:data].should == 1
             entry[:trace].size.should == 3
 
             entry[:trace][0][:function].should == 'onClick'
@@ -830,7 +830,7 @@ describe Arachni::Browser do
             event['type'].should == 'mouseover'
 
             entry = doms[0].data_flow_sink[1]
-            entry[:data].should == [1]
+            entry[:data].should == 1
             entry[:trace].size.should == 4
 
             entry[:trace][0][:function].should == 'onClick3'
@@ -875,7 +875,7 @@ describe Arachni::Browser do
             doms[1].data_flow_sink.size.should == 2
 
             entry = doms[1].data_flow_sink[0]
-            entry[:data].should == [1]
+            entry[:data].should == 1
             entry[:trace].size.should == 2
 
             entry[:trace][0][:function].should == 'onClick'
@@ -895,7 +895,7 @@ describe Arachni::Browser do
             event['type'].should == 'submit'
 
             entry = doms[1].data_flow_sink[1]
-            entry[:data].should == [1]
+            entry[:data].should == 1
             entry[:trace].size.should == 3
 
             entry[:trace][0][:function].should == 'onClick3'
