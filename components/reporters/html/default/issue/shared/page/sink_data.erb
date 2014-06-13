@@ -1,0 +1,10 @@
+<dl class="dl-horizontal">
+    <% data.each do |k, v| %>
+        <dt>
+            <%= escapeHTML( k ) %>
+        </dt>
+        <dd>
+            <code><%= escapeHTML( v.to_s ) %></code>
+        </dd>
+    <% end %>
+</dl>

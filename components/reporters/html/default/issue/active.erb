@@ -11,7 +11,7 @@
                 </a>
             </h4>
         </div>
-        <div id="<%= id %>-vector" class="panel-collapse collapse in">
+        <div id="<%= id %>-vector" class="panel-collapse collapse">
             <div class="panel-body">
                 <%= erb 'issue/active/vector.erb', vector: variation.vector %>
             </div>
@@ -28,7 +28,7 @@
                 </a>
             </h4>
         </div>
-        <div id="<%= id %>-affected_page" class="panel-collapse collapse">
+        <div id="<%= id %>-affected_page" class="panel-collapse collapse in">
             <div class="panel-body">
                 <%= erb 'issue/shared/page.erb', page: variation.page %>
             </div>

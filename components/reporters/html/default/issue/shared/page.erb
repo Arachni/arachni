@@ -68,7 +68,24 @@
         <strong>Data flow</strong>
         <hr/>
 
-        <%= page.dom.data_flow_sink %>
+        <%= page.dom.data_flow_sink.ai(html:true) %>
+
+       <table class="table">
+            <% page.dom.data_flow_sink.each.with_index do |sink, i| %>
+                <tr>
+                    <td><%= i %></td>
+                    <td>Data</td>
+                    <td>
+                        <table>
+                        <% sink[:data].each do |data| %>
+                            <%= erb 'issue/shared/page/sink_data.erb', data: data %>
+                        <% end %>
+                        </table>
+                    </td>
+                </tr>
+
+            <% end %>
+        </table>
     </div>
     <% end %>
 
