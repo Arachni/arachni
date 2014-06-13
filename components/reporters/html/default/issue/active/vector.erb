@@ -1,6 +1,7 @@
 <%=
-    return if !vector.respond_to? :html
-    CodeRay.scan(vector.html, :html).div(line_numbers: :table)
+    if vector.respond_to?( :html ) && !vector.html.to_s.empty?
+        CodeRay.scan(vector.html, :html).div(line_numbers: :table)
+    end
 %>
 
 <table class="table">
@@ -13,8 +14,16 @@
     </tr>
     <tr>
         <td><code><%= vector.type %></code></td>
-        <td><%= escapeHTML vector.url %></td>
-        <td><%= escapeHTML vector.action %></td>
+        <td>
+            <a href="<%= escapeHTML vector.url %>">
+                <%= escapeHTML vector.url %>
+            </a>
+        </td>
+        <td>
+            <a href="<%= escapeHTML vector.action %>">
+                <%= escapeHTML vector.action %>
+            </a>
+        </td>
         <td>
             <%= erb 'shared/hash.erb', object: vector.default_inputs %>
         </td>

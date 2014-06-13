@@ -11,7 +11,6 @@
                 <th>Options</th>
             </tr>
 
-
             <% page.dom.transitions.each do |transition| %>
                 <tr>
                     <td><%= transition.time %></td>
@@ -22,17 +21,24 @@
                             <% if (url = transition.options[:url]) %>
                                 <tr>
                                     <th>URL</th>
-                                    <td><%= url %></td>
+                                    <td>
+                                        <a href="<%= escapeHTML url %>">
+                                            <%= escapeHTML url %>
+                                        </a>
+                                    </td>
                                 </tr>
                             <% end %>
 
-                            <% if (cookies = transition.options[:cookies] || {}).any? %>
+                            <% if (cookies = transition.options[:cookies] || []).any? %>
                                 <tr>
                                     <th>Cookies</th>
                                 </tr>
                                 <tr>
                                     <td>
-                                        <%= erb 'shared/hash.erb', object: cookies %>
+                                        <%=
+                                            erb 'shared/hash.erb',
+                                                object: cookies.inject({}) { |h, c| c.inputs }
+                                        %>
                                     </td>
                                 </tr>
                             <% end %>
