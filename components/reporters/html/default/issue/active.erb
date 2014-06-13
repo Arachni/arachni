@@ -13,31 +13,7 @@
         </div>
         <div id="<%= id %>-vector" class="panel-collapse collapse in">
             <div class="panel-body">
-                <%=
-                    return if !issue.vector.respond_to? :html
-                    CodeRay.scan(issue.vector.html, :html).div(line_numbers: :table)
-                %>
-
-                <table class="table">
-                    <tr>
-                        <th>Type</th>
-                        <th>In</th>
-                        <th>Action</th>
-                        <th>Default inputs</th>
-                        <th>Updated inputs</th>
-                    </tr>
-                    <tr>
-                        <td><code><%= issue.vector.type %></code></td>
-                        <td><%= escapeHTML issue.vector.url %></td>
-                        <td><%= escapeHTML issue.vector.action %></td>
-                        <td>
-                            <%= erb 'shared/hash.erb', object: issue.vector.default_inputs %>
-                        </td>
-                        <td>
-                            <%= erb 'shared/hash.erb', object: issue.vector.inputs %>
-                        </td>
-                    </tr>
-                </table>
+                <%= erb 'issue/active/vector.erb', vector: issue.vector %>
             </div>
         </div>
     </div>

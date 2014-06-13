@@ -1,0 +1,25 @@
+<%=
+    return if !vector.respond_to? :html
+    CodeRay.scan(vector.html, :html).div(line_numbers: :table)
+%>
+
+<table class="table">
+    <tr>
+        <th>Type</th>
+        <th>In</th>
+        <th>Action</th>
+        <th>Default inputs</th>
+        <th>Updated inputs</th>
+    </tr>
+    <tr>
+        <td><code><%= vector.type %></code></td>
+        <td><%= escapeHTML vector.url %></td>
+        <td><%= escapeHTML vector.action %></td>
+        <td>
+            <%= erb 'shared/hash.erb', object: vector.default_inputs %>
+        </td>
+        <td>
+            <%= erb 'shared/hash.erb', object: vector.inputs %>
+        </td>
+    </tr>
+</table>
