@@ -21,13 +21,13 @@
 <div id="summary-tabs">
     <% if report.issues.any? %>
         <ul class="nav nav-tabs">
-            <li><a data-toggle="tab" href="#charts">Graphs</a></li>
-            <li><a data-toggle="tab" href="#issue-list">Issues [<%= report.issues.size %>]</a>
+            <li><a data-toggle="tab" href="#summary-charts">Graphs</a></li>
+            <li><a data-toggle="tab" href="#summary-issues">Issues [<%= report.issues.size %>]</a>
             </li>
         </ul>
 
         <div class="tab-content">
-            <div class="tab-pane active" id="charts">
+            <div class="tab-pane active" id="summary-charts">
                 <div id='chart-issues-container' class="clear">
                     <div id='chart-issues' class="clear">
                         Issues
@@ -49,7 +49,7 @@
                 </div>
             </div>
 
-            <div class="tab-pane" id="issue-list">
+            <div class="tab-pane" id="summary-issues">
                 <div class="row">
                     <div class="col-md-6">
                         <%= erb :search, id: 'summary_issues_tab' %>

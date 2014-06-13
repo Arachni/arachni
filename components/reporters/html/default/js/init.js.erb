@@ -8,7 +8,15 @@ jQuery(function ($) {
     // Restore the last open tab from the URL fragment.
     var open_tab = window.location.hash.split('#')[1];
     if( open_tab && open_tab.length > 0 ) {
-        $('a[href="#' + open_tab + '"]').tab('show');
+
+        var splits     = open_tab.split('-');
+        var breadcrumb = '';
+
+        for( var i = 0; i < splits.length; i++ ) {
+            breadcrumb += splits[i];
+            $('a[href="#' + breadcrumb + '"]').tab('show');
+            breadcrumb += '-';
+        }
     }
 
     // Save the last open tab to the URL fragment.

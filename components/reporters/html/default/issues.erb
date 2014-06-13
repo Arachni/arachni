@@ -3,52 +3,55 @@
 <%= erb :search, { id: 'issues_tab' } %>
 
 <div id="issue-tabs">
-    <ul>
-        <li><a href="#trusted">Trusted</a></li>
-        <li><a href="#untrusted">Untrusted</a></li>
+    <ul class="nav nav-tabs">
+        <li><a data-toggle="tab" href="#issues-trusted">Trusted</a></li>
+        <li><a data-toggle="tab" href="#issues-untrusted">Untrusted</a></li>
     </ul>
 
-    <div id="trusted">
-        <h2>Trusted issues</h2>
-        <blockquote>
-            At the time these issues were logged there were no abnormal
-            interferences or anomalous server behavior.<br/>
-            These issues are considered trusted and fairly accurate.
-        </blockquote>
+    <div class="tab-content">
+        <div class="tab-pane active" id="issues-trusted">
+            <h2>Trusted issues</h2>
+            <blockquote>
+                At the time these issues were logged there were no abnormal
+                interferences or anomalous server behavior.<br/>
+                These issues are considered trusted and fairly accurate.
+            </blockquote>
 
-        <% if has_trusted_issues %>
-            <% report.issues.each_with_index do |issue, i| %>
-                <% next if issue.untrusted? %>
+            <% if has_trusted_issues %>
+                <% report.issues.each_with_index do |issue, i| %>
+                    <% next if issue.untrusted? %>
 
-                <%= erb :issue, idx: i+1, issue: issue %>
+                    <%= erb :issue, idx: i+1, issue: issue %>
+                <% end %>
+            <% else %>
+                <p class="notice">No trusted issues have been logged.</p>
             <% end %>
-        <% else %>
-            <p class="notice">No trusted issues have been logged.</p>
-        <% end %>
-    </div>
+        </div>
 
-    <div id="untrusted">
-        <h2>Untrusted</h2>
-        <blockquote>
-            These issues are considered untrusted (and may in fact be false
-            positives)
-            because at the time they were identified the server was exhibiting
-            some kind of anomalous behavior or there was third part
-            interference (like network latency for example).
-            <br/>
-            The listed issues need verification by a human.
-        </blockquote>
+        <div class="tab-pane" id="issues-untrusted">
+            <h2>Untrusted</h2>
+            <blockquote>
+                These issues are considered untrusted (and may in fact be false
+                positives)
+                because at the time they were identified the server was
+                exhibiting
+                some kind of anomalous behavior or there was third part
+                interference (like network latency for example).
+                <br/>
+                The listed issues need verification by a human.
+            </blockquote>
 
-        <% if has_untrusted_issues %>
-            <% report.issues.each_with_index do |issue, i| %>
-                <% next if issue.trusted? %>
+            <% if has_untrusted_issues %>
+                <% report.issues.each_with_index do |issue, i| %>
+                    <% next if issue.trusted? %>
 
-                <%= erb :issue, idx: i+1, issue: issue %>
+                    <%= erb :issue, idx: i+1, issue: issue %>
+                <% end %>
+            <% else %>
+                <p class="notice">No untrusted issues have been logged.</p>
             <% end %>
-        <% else %>
-            <p class="notice">No untrusted issues have been logged.</p>
-        <% end %>
 
+        </div>
     </div>
 
 </div>
