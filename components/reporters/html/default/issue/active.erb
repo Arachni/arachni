@@ -2,11 +2,11 @@
    variation = issue.variations.first
 %>
 
-<div class="panel-group" id="accordion">
+<div class="panel-group">
     <div class="panel panel-default">
         <div class="panel-heading">
             <h4 class="panel-title">
-                <a data-toggle="collapse" data-parent="#accordion" href="#<%= id %>-vector">
+                <a data-toggle="collapse" href="#<%= id %>-vector">
                     Vector information
                 </a>
             </h4>
@@ -21,7 +21,7 @@
     <div class="panel panel-default">
         <div class="panel-heading">
             <h4 class="panel-title">
-                <a data-toggle="collapse" data-parent="#accordion" href="#<%= id %>-affected_page">
+                <a data-toggle="collapse" href="#<%= id %>-affected_page">
                     Affected page:
 
                     <code><%= escapeHTML(variation.page.dom.url) %></code>
@@ -38,7 +38,7 @@
     <div class="panel panel-default">
         <div class="panel-heading">
             <h4 class="panel-title">
-                <a data-toggle="collapse" data-parent="#accordion" href="#<%= id %>-referring_page">
+                <a data-toggle="collapse" href="#<%= id %>-referring_page">
                     Referring page:
 
                     <code><%= escapeHTML(variation.referring_page.dom.url) %></code>
