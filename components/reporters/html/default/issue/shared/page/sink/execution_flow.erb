@@ -1,0 +1,41 @@
+<table class="table table-condensed">
+    <tr>
+        <th>#</th>
+        <th>URL</th>
+        <th>Line</th>
+        <th>Data</th>
+    </tr>
+    <% page.dom.execution_flow_sink.each.with_index do |sink, i| %>
+        <tr>
+            <td><%= i %></td>
+            <td>
+                <a href="<%= escapeHTML sink.trace.first.url %>">
+                    <%= escapeHTML sink.trace.first.url %>
+                </a>
+            </td>
+            <td>
+                <%= sink.trace.first.line %>
+            </td>
+            <td><%= data_dump sink.data %></td>
+        </tr>
+
+        <% if sink.trace.first.source %>
+        <tr>
+            <%= erb 'issue/shared/page/sink/source.erb',
+                    id:     "#{id}_execution_flow_#{i}",
+                    source: sink.trace.first.source
+            %>
+        </tr>
+        <% end %>
+
+        <tr>
+            <td colspan="5" class="borderless">
+                <%= erb 'issue/shared/page/sink/trace.erb',
+                        id:    "#{id}_execution_flow_#{i}",
+                        trace: sink.trace,
+                        page:  page
+                %>
+            </td>
+        </tr>
+    <% end %>
+</table>
