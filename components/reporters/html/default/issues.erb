@@ -41,7 +41,7 @@
                 These issues are considered trusted and accurate.
             </p>
 
-            <%= erb 'issues/grouped.erb', grouped: grouped_issues[:trusted] %>
+            <%= erb 'issues/grouped.erb', trust: :trusted, grouped: grouped_issues[:trusted] %>
         </div>
 
         <div class="tab-pane" id="issues-untrusted">
@@ -54,7 +54,7 @@
                 The listed issues need verification by a human.
             </p>
 
-            <%= erb 'issues/grouped.erb', grouped: grouped_issues[:untrusted] %>
+            <%= erb 'issues/grouped.erb', trust: :untrusted, grouped: grouped_issues[:untrusted] %>
         </div>
     </div>
 

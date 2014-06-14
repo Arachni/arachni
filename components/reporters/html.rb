@@ -270,20 +270,26 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
             verification = issue.untrusted? ? 'Yes' : 'No'
             graph_data[:verification][verification] += 1
 
+            graph_data[:untrusted_severities] ||= {}
+            graph_data[:untrusted_severities][issue.severity.to_sym] ||= 0
+
+            graph_data[:trusted_severities] ||= {}
+            graph_data[:trusted_severities][issue.severity.to_sym] ||= 0
+
+            graph_data[:trusted_issues][issue.name]   ||= 0
+            graph_data[:untrusted_issues][issue.name] ||= 0
+
             if issue.variations.first.trusted?
                 has_trusted_issues = true
                 graph_data[:trust]['Trusted'] += 1
-                graph_data[:trusted_issues][issue.name]   ||= 0
-                graph_data[:trusted_issues][issue.name]    += 1
-                graph_data[:untrusted_issues][issue.name] ||= 0
+                graph_data[:trusted_severities][issue.severity.to_sym] += 1
+                graph_data[:trusted_issues][issue.name] += 1
             else
                 has_untrusted_issues = true
                 graph_data[:trust]['Untrusted'] += 1
-                graph_data[:untrusted_issues][issue.name] ||= 0
+                graph_data[:untrusted_severities][issue.severity.to_sym] += 1
                 graph_data[:untrusted_issues][issue.name]  += 1
-                graph_data[:trusted_issues][issue.name]   ||= 0
             end
-
         end
 
         {
