@@ -26,8 +26,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
         end
 
         def code_highlight( code, language = :html, options = {} )
-            code = code.dup.encode( 'ascii-8bit', invalid: :replace, undef: :replace )
-            CodeRay.scan( code, language ).div( options )
+            CodeRay.scan( code.recode, language ).div( options )
         end
 
         def data_dump( data )
@@ -63,7 +62,8 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
             tpl = tpl.to_s + '.erb' if tpl.is_a?( Symbol )
 
             path = File.exist?( tpl ) ? tpl : scope.template_path + tpl
-            ERB.new( IO.read( path ) ).result( scope.get_binding )
+
+            ERB.new( IO.read( path ).recode ).result( scope.get_binding )
         rescue
             ap tpl
             raise
