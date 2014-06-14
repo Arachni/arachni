@@ -1,0 +1,40 @@
+<p class="alert alert-info">
+    Taint is:
+    <code><%= escapeHTML page.dom.data_flow_sink.first.taint.inspect %></code>
+</p>
+
+<table class="table table-condensed">
+    <tr>
+        <th>#</th>
+        <th>Object</th>
+        <th>Function</th>
+        <th>Arguments</th>
+        <th>Tainted argument</th>
+    </tr>
+    <% page.dom.data_flow_sink.each.with_index do |sink, i| %>
+        <tr>
+            <td><%= i %></td>
+            <td>
+                <code><%= sink.object %></code>
+            </td>
+            <td>
+                <code><%= sink.function %></code>
+            </td>
+            <td>
+                <code><%= escapeHTML sink.arguments.inspect %></code>
+            </td>
+
+            <td>
+                <code><%= escapeHTML sink.tainted.inspect %></code>
+            </td>
+        </tr>
+        <tr>
+            <%= erb 'issue/shared/page/sink/source.erb', id: "#{id}_data_flow_#{i}", source: sink.source %>
+        </tr>
+        <tr>
+            <td colspan="5" class="borderless">
+                <%= erb 'issue/shared/page/sink/trace.erb', id: "#{id}_data_flow_#{i}", trace: sink.trace, page: page %>
+            </td>
+        </tr>
+    <% end %>
+</table>

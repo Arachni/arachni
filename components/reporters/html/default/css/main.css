@@ -52,6 +52,20 @@ table.jqplot-table-legend {
     background-color: #3A87AD;
 }
 
+.table tr.borderless,
+.table td.borderless {
+    border:  0;
+}
+
+.table .panel-group {
+    margin:  0;
+    padding: 0;
+}
+
+.table .panel-group .panel-heading {
+    padding: 5px;
+}
+
 .table .table-borderless td,
 .table .table-borderless th {
     border: 0;

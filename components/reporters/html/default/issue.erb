@@ -86,15 +86,18 @@
                             <tr>
                                 <td class="wrap">
                                     <%= variation.vector.seed ?
-                                                escapeHTML(variation.vector.seed) : not_available %>
+                                            "<code>#{escapeHTML(variation.vector.seed)}</code>" :
+                                            not_available %>
                                 </td>
                                 <td class="wrap">
                                     <%= variation.signature ?
-                                                escapeHTML(variation.signature) : not_available %>
+                                            "<code>#{escapeHTML(variation.signature)}</code>" :
+                                            not_available %>
                                 </td>
                                 <td class="wrap">
                                     <%= variation.proof ?
-                                                escapeHTML(variation.proof) : not_available %>
+                                            "<code>#{escapeHTML(variation.proof)}</code>" :
+                                            not_available %>
                                 </td>
                             </tr>
                         </table>

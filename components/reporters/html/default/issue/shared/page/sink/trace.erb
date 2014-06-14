@@ -1,0 +1,59 @@
+<div class="panel-group">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <a data-toggle="collapse" href="#<%= id %>_stacktrace">
+                    Stacktrace
+                </a>
+            </h4>
+        </div>
+        <div id="<%= id %>_stacktrace" class="panel-collapse collapse">
+            <div class="panel-body">
+                <table class="table table-condensed">
+                    <tr>
+                        <th>
+                            #
+                        </th>
+                        <th>
+                            URL
+                        </th>
+                        <th>
+                            Line
+                        </th>
+                        <th>
+                            Function
+                        </th>
+                        <th>
+                            Arguments
+                        </th>
+                    </tr>
+                    <% trace.each.with_index do |frame, j| %>
+                        <tr>
+                            <td><%= j %></td>
+                            <td>
+                                <a href="<%= escapeHTML frame.url %>">
+                                    <%= escapeHTML frame.url %>
+                                </a>
+                            </td>
+                            <td>
+                                <%= frame.line %>
+                            </td>
+                            <td>
+                                <code><%= frame.function %></code>
+                            </td>
+                            <td>
+                                <code><%= escapeHTML frame.arguments.inspect %></code>
+                            </td>
+                        </tr>
+
+                        <% if !frame.source.to_s.empty? %>
+                            <tr>
+                                <%= erb 'issue/shared/page/sink/source.erb', id: "#{id}_stacktrace_#{j}", source: frame.source %>
+                            </tr>
+                        <% end %>
+                    <% end %>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
