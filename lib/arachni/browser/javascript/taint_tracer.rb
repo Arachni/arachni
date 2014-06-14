@@ -5,7 +5,6 @@
 
 module Arachni
 class Browser
-
 class Javascript
 
 # Provides access to the `TaintTracer` JS interface, with extra Ruby-side
@@ -14,40 +13,50 @@ class Javascript
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class TaintTracer < Proxy
 
+    require_relative 'taint_tracer/frame'
+    require_relative 'taint_tracer/sink/base'
+    require_relative 'taint_tracer/sink/data_flow'
+    require_relative 'taint_tracer/sink/execution_flow'
+
     # @param    [Javascript]    javascript  Active {Javascript} interface.
     def initialize( javascript )
         super javascript, 'TaintTracer'
     end
 
+    # @!method  data_flow_sink
+    #
+    #   @return [Array<Sink::DataFlow>]
+    #       JS data flow sink data.
+
+    # @!method  flush_data_flow_sink
+    #
+    #   @return [Array<Sink::DataFlow>]
+    #       Returns and clears {#data_flow_sink}.
+
+    %w(data_flow_sink flush_data_flow_sink).each do |m|
+        define_method m do
+            prepare_data_flow_sink_data call( m )
+        end
+    end
+
     # @!method  debugging_data
     #
-    #   @return [Array<Hash>]
+    #   @return [Array<Sink::ExecutionFlow>]
     #       JS debugging information.
 
     # @!method  execution_flow_sink
     #
-    #   @return [Array<Hash>]
+    #   @return [Array<Sink::ExecutionFlow>]
     #       JS execution flow sink data.
-
-    # @!method  data_flow_sink
-    #
-    #   @return [Array<Hash>]
-    #       JS data flow sink data.
 
     # @!method  flush_execution_flow_sink
     #
-    #   @return [Array<Hash>]
+    #   @return [Array<Sink::ExecutionFlow>]
     #       Returns and clears {#execution_flow_sink}.
 
-    # @!method  flush_data_flow_sink
-    #
-    #   @return [Array<Hash>]
-    #       Returns and clears {#data_flow_sink}.
-
-    %w(debugging_data execution_flow_sink data_flow_sink flush_execution_flow_sink
-        flush_data_flow_sink).each do |m|
+    %w(debugging_data execution_flow_sink flush_execution_flow_sink).each do |m|
         define_method m do
-            prepare_sink_data call( m )
+            prepare_execution_flow_sink_data call( m )
         end
     end
 
@@ -57,19 +66,32 @@ class TaintTracer < Proxy
 
     private
 
-    def prepare_sink_data( sink_data )
-        return [] if !sink_data
+    def prepare_data_flow_sink_data( data )
+        return [] if !data
 
-        sink_data.map do |entry|
-            {
-                data:  entry['data'],
+        data.map do |entry|
+            Sink::DataFlow.new( (entry['data'] || {}).merge(
                 trace: [entry['trace']].flatten.compact.
-                           map { |h| h.symbolize_keys( false ) }
-            }
+                          map { |h| Frame.new h.symbolize_keys( false ) }
+                )
+            )
+        end
+    end
+
+    def prepare_execution_flow_sink_data( data )
+        return [] if !data
+
+        data.map do |entry|
+            Sink::ExecutionFlow.new( entry.merge(
+                trace: [entry['trace']].flatten.compact.
+                           map { |h| Frame.new h.symbolize_keys( false ) }
+                )
+            )
         end
     end
 
 end
+
 end
 end
 end
