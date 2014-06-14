@@ -4,7 +4,14 @@
     <% if report.issues.any? %>
         <ul class="nav nav-tabs">
             <li class="active"><a data-toggle="tab" href="#summary-charts">Graphs</a></li>
-            <li><a data-toggle="tab" href="#summary-issues">Issues [<%= report.issues.size %>]</a>
+            <li>
+                <a data-toggle="tab" href="#summary-issues">
+                    Issues
+
+                    <span class="badge">
+                        <%= report.issues.size %>
+                    </span>
+                </a>
             </li>
         </ul>
 
@@ -17,9 +24,8 @@
                 <%= erb 'summary/issues.erb' %>
             </div>
         </div>
-
     <% else %>
-        <p>
+        <p class="alert alert-info">
             <em>No issues have been identified.</em>
         </p>
     <% end %>

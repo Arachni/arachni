@@ -5,6 +5,10 @@
             <li <%= 'class="active"' if i == 0 %> >
                 <a data-toggle="tab" href="#issues-trusted-severity-<%= severity %>">
                     <%= severity.to_s.capitalize %>
+
+                    <span class="badge">
+                        <%= graph_data[:severities][severity.to_sym] %>
+                    </span>
                 </a>
             </li>
         <% end %>

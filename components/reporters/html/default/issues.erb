@@ -11,6 +11,10 @@
                <%= 'data-toggle="tab" href="#issues-trusted"' if has_trusted_issues %>
             >
                 Trusted
+
+                <span class="badge">
+                    <%= graph_data[:trust]['Trusted'] %>
+                </span>
             </a>
         </li>
 
@@ -21,6 +25,10 @@
                <%= 'data-toggle="tab" href="#issues-untrusted"' if has_untrusted_issues %>
             >
                 Untrusted
+
+                <span class="badge">
+                    <%= graph_data[:trust]['Untrusted'] %>
+                </span>
             </a>
         </li>
     </ul>
