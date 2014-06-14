@@ -1,8 +1,8 @@
 <div id="issues-trusted-severities-tabs">
     <ul class="nav nav-tabs">
 
-        <% grouped.keys.each do |severity| %>
-            <li class="active">
+        <% grouped.keys.each.with_index do |severity, i| %>
+            <li <%= 'class="active"' if i == 0 %> >
                 <a data-toggle="tab" href="#issues-trusted-severity-<%= severity %>">
                     <%= severity.to_s.capitalize %>
                 </a>

@@ -1,17 +1,17 @@
 <%
-   issue_id = issue_location( issue )
+   issue_id = issue_location(issue)
    variation = issue.variations.first
    not_available = '<p class="alert alert-info">Not available</p>'
 %>
 
 <div id="<%= issue_id %>">
-        <div class="row">
-            <div class="col-md-12">
+    <div class="row">
+        <div class="col-md-12">
 
-                <div class="row">
-                    <div class="col-md-12">
-                        <h4>
-                            <a href="#<%= issue_id %>">
+            <div class="row">
+                <div class="col-md-12">
+                    <h4>
+                        <a href="#<%= issue_id %>">
                             In <code><%= issue.vector.type %></code>
 
                             <% if issue.active? %>
@@ -23,80 +23,95 @@
                                 using
                                 <code><%= issue.variations.first.request.method.to_s.upcase %></code>
                             <% end %>
-                            </a>
+                        </a>
 
-                            at
+                        at
 
-                            <a href="<%= escapeHTML(issue.vector.url) %>">
-                                <%= escapeHTML(issue.vector.url) %>
-                            </a>
+                        <a href="<%= escapeHTML(issue.vector.url) %>">
+                            <%= escapeHTML(issue.vector.url) %>
+                        </a>
 
-                            pointing to
-                            <a href="<%= escapeHTML(issue.vector.action) %>">
-                                <%= escapeHTML(issue.vector.action) %>
-                            </a>.
-                        </h4>
-                    </div>
+                        pointing to
+                        <a href="<%= escapeHTML(issue.vector.action) %>">
+                            <%= escapeHTML(issue.vector.action) %>
+                        </a>.
+                    </h4>
                 </div>
+            </div>
 
+            <% if variation.vector.seed || variation.signature || variation.proof %>
                 <div class="row">
                     <div class="col-md-12">
                         <table class="table">
                             <thead>
                             <tr>
-                                <th>
-                                    Injected seed
+                                <% if variation.vector.seed %>
+                                    <th>
+                                        Injected seed
 
-                                    <% if issue.active? && variation.vector.affected_input_value %>
                                         <a href="#" rel="tooltip"
                                            title="This seed uncovered the vulnerable vector during the audit.">
-                                            <i class="icon-info-sign"></i>
+                                            <i class="fa fa-info"></i>
                                         </a>
-                                    <% end %>
-                                </th>
-                                <th>
-                                    Signature
+                                    </th>
+                                <% end %>
 
-                                    <% if variation.signature %>
+                                <% if variation.signature %>
+                                    <th>
+                                        Signature
+
                                         <a href="#" rel="tooltip"
                                            title="This signature was used to detect the vulnerability.">
-                                            <i class="icon-info-sign"></i>
+                                            <i class="fa fa-info"></i>
                                         </a>
-                                    <% end %>
-                                </th>
-                                <th>
-                                    Proof
-                                    <% if variation.proof %>
-                                        <a href="#" rel="tooltip"
+                                    </th>
+                                <% end %>
+
+                                <% if variation.proof %>
+                                    <th>
+                                        Proof
+
+                                        <a data-toggle="tooltip" href="#" rel="tooltip"
                                            title="This string was used to verify the existence of the vulnerability.">
-                                            <i class="icon-info-sign"></i>
+                                            <i class="fa fa-info"></i>
                                         </a>
-                                    <% end %>
-                                </th>
+                                    </th>
+                                <% end %>
+
                             </tr>
                             </thead>
                             <tr>
-                                <td class="wrap">
-                                    <%= variation.vector.seed ?
-                                            "<pre>#{escapeHTML(variation.vector.seed)}</pre>" :
-                                            not_available %>
-                                </td>
-                                <td class="wrap">
-                                    <%= variation.signature ?
-                                            "<pre>#{escapeHTML(variation.signature)}</pre>" :
-                                            not_available %>
-                                </td>
-                                <td class="wrap">
-                                    <%= variation.proof ?
-                                            "<pre>#{escapeHTML(variation.proof)}</pre>" :
-                                            not_available %>
-                                </td>
+
+                                <% if variation.vector.seed %>
+                                    <td class="wrap">
+                                        <%= variation.vector.seed ?
+                                                    "<pre>#{escapeHTML(variation.vector.seed)}</pre>" :
+                                                    not_available %>
+                                    </td>
+                                <% end %>
+
+                                <% if variation.signature %>
+                                    <td class="wrap">
+                                        <%= variation.signature ?
+                                                    "<pre>#{escapeHTML(variation.signature)}</pre>" :
+                                                    not_available %>
+                                    </td>
+                                <% end %>
+
+                                <% if variation.proof %>
+                                    <td class="wrap">
+                                        <%= variation.proof ?
+                                                    "<pre class='code-container'>#{escapeHTML(variation.proof)}</pre>" :
+                                                    not_available %>
+                                    </td>
+                                <% end %>
                             </tr>
                         </table>
                     </div>
                 </div>
-            </div>
+            <% end %>
         </div>
+    </div>
 
     <%=
         erb 'issue/details.erb',

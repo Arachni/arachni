@@ -6,6 +6,9 @@ $.expr[':'].icontains = function(obj, index, meta, stack){
 };
 
 jQuery(function ($) {
+    // Init all tooltips.
+    $("[rel=tooltip]").tooltip();
+
     // Restore the last open tab from the URL fragment.
     openFromWindowLocation();
 
