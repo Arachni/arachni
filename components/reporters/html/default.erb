@@ -102,7 +102,23 @@
                     </ul>
                 </li>
 
-                <li><a href="#plugins" data-toggle="tab">Plugin results</a>
+                <li class="dropdown">
+                    <a href="#plugins" data-toggle="tab">
+                        Plugin results
+
+                        <span class="badge"><%= plugins.size %></span>
+                        <b class="fa fa-caret-down"></b>
+                    </a>
+
+                    <ul class="dropdown-menu">
+                        <% plugins.keys.each do |name| %>
+                            <li>
+                                <a href="#plugins-<%= name %>">
+                                    <%= escapeHTML get_plugin_info( name )[:name] %>
+                                </a>
+                            </li>
+                    <% end %>
+                    </ul>
                 </li>
                 <li>
                     <a href="#sitemap" data-toggle="tab">

@@ -21,29 +21,35 @@ class PluginFormatters::HealthMap < Arachni::Plugin::Formatter
         <<-HTML
             <style type="text/css">
                 a.without_issues {
-                    color: blue
+                    color: blue;
                 }
                 a.with_issues {
-                    color: red
+                    color: red;
                 }
             </style>
 
-            <% results['map'].each do |entry|
-                    state, url = entry.to_a.first
-                %>
+            <div class="row">
+                <div class="col-md-2">
+                    <strong>Total</strong>: <%= results['total'] %> <br/>
+                    <strong>Safe</strong>: <%= results['without_issues'] %> <br/>
+                    <strong>Unsafe</strong>: <%= results['with_issues'] %> <br/>
+                    <strong>Issue percentage</strong>: <%= results['issue_percentage'] %>%
+                </div>
 
-                <a class="<%= state %>" href="<%= escapeHTML url %>"><%= escapeHTML url %></a>
-                <br/>
-            <% end %>
+                <div class="col-md-10">
+                    <ul>
+                    <% results['map'].each do |entry|
+                            state, url = entry.to_a.first
+                        %>
 
-            <br/>
+                        <li>
+                            <a class="<%= state %>" href="<%= escapeHTML url %>"><%= escapeHTML url %></a>
+                        </li>
+                    <% end %>
 
-            <h3>Stats</h3>
-
-            <strong>Total</strong>: <%= results['total'] %> <br/>
-            <strong>Safe</strong>: <%= results['without_issues'] %> <br/>
-            <strong>Unsafe</strong>: <%= results['with_issues'] %> <br/>
-            <strong>Issue percentage</strong>: <%= results['issue_percentage'] %>%
+                    </ul>
+                </div>
+            </div>
         HTML
     end
 

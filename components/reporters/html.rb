@@ -94,7 +94,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
         end
 
         def prep_description( str )
-            Arachni::Reporters::HTML.prep_description( str )
+            escapeHTML Arachni::Reporters::HTML.prep_description( str )
         end
 
         def get_plugin_info( name )

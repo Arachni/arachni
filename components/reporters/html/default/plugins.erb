@@ -5,7 +5,7 @@
         <% plugins.keys.each do |name| %>
             <li>
                 <a data-toggle="tab" href="#plugins-<%= name %>">
-                    <%= get_plugin_info( name )[:name] %>
+                    <%= escapeHTML get_plugin_info( name )[:name] %>
                 </a>
             </li>
         <% end %>
@@ -13,7 +13,7 @@
 
     <div class="tab-content">
     <% plugins.each do |name, html| %>
-        <div class="tab-pane active" id="plugins-<%= name %>">
+        <div class="tab-pane" id="plugins-<%= name %>">
             <p class="well">
                 <%= prep_description( get_plugin_info(name)[:description] ) %>
             </p>
