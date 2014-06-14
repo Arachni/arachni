@@ -75,7 +75,7 @@ table.jqplot-table-legend {
     margin-bottom: 0;
 }
 
-.code_container {
+.code-container {
     overflow:   scroll;
     max-height: 400px;
     position:   relative;
