@@ -43,15 +43,21 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
             )
         end
 
+        def issue_location( issue )
+            "issues-#{'un' if issue.untrusted?}trusted-severity-" <<
+                "#{issue.severity}-#{issue.check[:shortname]}-#{issue.digest}"
+        end
+
         def erb( tpl, params = {} )
-            @@scope ||= TemplateScope.new
-            @@scope.update params
+            scope = TemplateScope.new( params )
 
             tpl = tpl.to_s + '.erb' if tpl.is_a?( Symbol )
 
+            path = File.exist?( tpl ) ? tpl : scope.template_path + tpl
+            ERB.new( IO.read( path ) ).result( scope.get_binding )
+        rescue
             ap tpl
-            path = File.exist?( tpl ) ? tpl : @@scope.template_path + tpl
-            ERB.new( IO.read( path ) ).result( @@scope.get_binding )
+            raise
         end
     end
 
@@ -63,7 +69,8 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
         ISSUES_URL = 'https://github.com/Arachni/arachni/issues'
 
         def initialize( params = {} )
-            update( params )
+            update params
+            update self.class.global_data
         end
 
         def update( params )
@@ -92,18 +99,26 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
         def get_binding
             binding
         end
+
+        def self.global_data=( data )
+            @global_data = data
+        end
+
+        def self.global_data
+            @global_data
+        end
     end
 
-    # Runs the HTML report.
-    def run
-        print_line
-        print_status 'Creating HTML report...'
-
+    def global_data
         # plugins    = format_plugin_results( report.plugins )
-        @template_path = File.dirname( options[:template] ) + '/' +
+        template_path = File.dirname( options[:template] ) + '/' +
             File.basename( options[:template], '.erb' ) + '/'
 
-        grouped_issues = {}
+        grouped_issues = {
+            trusted:   {},
+            untrusted: {}
+        }
+
         Arachni::Issue::Severity::ORDER.each do |severity|
             by_severity = report.issues.select { |i| i.severity.to_sym == severity }
             next if by_severity.empty?
@@ -113,18 +128,51 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
                 by_name[issue.name] ||= []
                 by_name[issue.name] << issue
             end
+            next if by_name.empty?
 
-            grouped_issues[by_severity.first.severity] = by_name
+            grouped_issues[:trusted][by_severity.first.severity] =
+                by_name.inject({}) do |h, (name, issues)|
+                    i = issues.select { |i| !i.variations.find(&:untrusted?) }
+                    next h if i.empty?
+
+                    h[name] = i
+                    h
+                end
+
+            grouped_issues[:untrusted][by_severity.first.severity] =
+                by_name.inject({}) do |h, (name, issues)|
+                    i = issues.select { |i| i.variations.find(&:untrusted?) }
+                    next h if i.empty?
+
+                    h[name] = i
+                    h
+                end
+
+            if grouped_issues[:trusted][by_severity.first.severity].empty?
+                grouped_issues[:trusted].delete by_severity.first.severity
+            end
+
+            if grouped_issues[:untrusted][by_severity.first.severity].empty?
+                grouped_issues[:untrusted].delete by_severity.first.severity
+            end
         end
 
-        params = prepare_data.merge(
+        prepare_data.merge(
             report:         report,
             grouped_issues: grouped_issues,
-            template_path:  @template_path,
+            template_path:  template_path,
             plugins:        {}
         )
+    end
 
-        File.open( outfile, 'w' ) { |f| f.write( erb( options[:template], params ) ) }
+    # Runs the HTML report.
+    def run
+        print_line
+        print_status 'Creating HTML report...'
+
+        TemplateScope.global_data = global_data
+
+        File.open( outfile, 'w' ) { |f| f.write( erb( options[:template] ) ) }
 
         print_status "Saved in '#{outfile}'."
     end

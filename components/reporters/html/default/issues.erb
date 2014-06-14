@@ -1,6 +1,6 @@
 <h2>Issues</h2>
 
-<%= erb :search, { id: 'issues_tab' } %>
+<%= erb :search, id: 'issues_tab' %>
 
 <div id="issue-tabs">
     <ul class="nav nav-tabs">
@@ -33,11 +33,7 @@
                 These issues are considered trusted and accurate.
             </p>
 
-            <% report.issues.each_with_index do |issue, i| %>
-                <% next if issue.variations.first.untrusted? %>
-
-                <%= erb :issue, issue: issue, id: 'issues-trusted' %>
-            <% end %>
+            <%= erb 'issues/grouped.erb', grouped: grouped_issues[:trusted] %>
         </div>
 
         <div class="tab-pane" id="issues-untrusted">
@@ -52,11 +48,7 @@
                 The listed issues need verification by a human.
             </p>
 
-            <% report.issues.each_with_index do |issue, i| %>
-                <% next if issue.variations.first.trusted? %>
-
-                <%= erb :issue, issue: issue, id: 'issues-untrusted' %>
-            <% end %>
+            <%= erb 'issues/grouped.erb', grouped: grouped_issues[:untrusted] %>
         </div>
     </div>
 

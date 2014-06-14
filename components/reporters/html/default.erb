@@ -19,7 +19,7 @@
         <%= erb 'js/lib/bootstrap.js' %>
 
         <%= erb 'js/helpers.js' %>
-        <%= erb 'js/init.js.erb', graph_data: graph_data %>
+        <%= erb 'js/init.js.erb' %>
         //]]>
     </script>
 
@@ -73,28 +73,23 @@
 
     <div class="tab-content">
         <div class="tab-pane active" id="summary">
-            <%= erb :summary, report: report %>
+            <%= erb :summary %>
         </div>
 
         <div class="tab-pane" id="configuration">
-            <%= erb :configuration, report: report %>
+            <%= erb :configuration %>
         </div>
 
         <div class="tab-pane" id="issues">
-            <%= erb :issues, {
-                    report:               report,
-                    has_trusted_issues:   has_trusted_issues,
-                    has_untrusted_issues: has_untrusted_issues
-            }
-            %>
+            <%= erb :issues %>
         </div>
 
         <div class="tab-pane" id="plugins">
-            <%= erb :plugins, report: report, plugins: plugins %>
+            <%= erb :plugins %>
         </div>
 
         <div class="tab-pane" id="sitemap">
-            <%= erb :sitemap, report: report %>
+            <%= erb :sitemap %>
         </div>
 
     </div>

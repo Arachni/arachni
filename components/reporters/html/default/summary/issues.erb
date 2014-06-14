@@ -4,58 +4,64 @@
     </div>
 </div>
 
-<% grouped_issues.each do |severity, issues_by_name| %>
-    <h3><%= severity.to_s.capitalize %> severity</h3>
+<% grouped_issues.each do |trust, by_severity| %>
+    <% next if by_severity.empty? %>
 
-    <div class="row">
-        <div class="col-md-6">
-            <% issues_by_name.each do |name, issues| %>
+    <h3><%= trust.to_s.capitalize %></h3>
 
-                <div class="issue-summary">
-                    <h4>
-                        <%= name %>
-                    </h4>
+    <% by_severity.each do |severity, issues_by_name| %>
 
-                    <p class="well">
-                        <%= escapeHTML( issues.first.description ) %>
-                    </p>
+        <h4><%= severity.to_s.capitalize %> severity</h4>
 
-                    <ul class="list-unstyled">
-                        <% issues.each do |issue| %>
-                            <li>
+        <div class="row">
+            <div class="col-md-6">
+                <% issues_by_name.each do |name, issues| %>
 
-                                <%
-                                   issue_id = "issues-#{issue.variations.first.trusted? ? 'trusted' : 'untrusted'}-#{issue.digest}"
-                                %>
+                    <div class="issue-summary">
+                        <strong><%= name %></strong>
 
-                                <a class="btn btn-xs btn-info"
-                                   href="#<%= issue_id %>"
-                                   title="Inspect issue"
-                                >
-                                    <i class="fa fa-eye"></i>
-                                </a>
+                        <p class="well">
+                            <%= escapeHTML(issues.first.description) %>
+                        </p>
 
-                                In <code><%= issue.vector.type %></code>
+                        <ul class="list-unstyled">
+                            <% issues.each do |issue| %>
+                                <li>
 
-                                <% if issue.active? %>
-                                    input <code><%= issue.affected_input_name %></code>
-                                <% end %>
+                                    <% issue_id = issue_location(issue) %>
 
-                                <% if issue.variations.first.request %>
-                                    using <code><%= issue.variations.first.request.method.to_s.upcase %></code>
-                                <% end %>
+                                    <a class="btn btn-xs btn-info"
+                                       href="#<%= issue_id %>"
+                                       title="Inspect issue"
+                                    >
+                                        <i class="fa fa-eye"></i>
+                                    </a>
 
-                                at <a href="<%= escapeHTML( issue.vector.action )%>">
-                                <%= escapeHTML( issue.vector.action ) %>
-                            </a>.
-                            </li>
-                        <% end %>
-                    </ul>
+                                    In <code><%= issue.vector.type %></code>
 
-                </div>
+                                    <% if issue.active? %>
+                                        input
+                                        <code><%= issue.affected_input_name %></code>
+                                    <% end %>
 
-            <% end %>
+                                    <% if issue.variations.first.request %>
+                                        using
+                                        <code><%= issue.variations.first.request.method.to_s.upcase %></code>
+                                    <% end %>
 
+                                    at
+                                    <a href="<%= escapeHTML(issue.vector.action) %>">
+                                        <%= escapeHTML(issue.vector.action) %>
+                                    </a>.
+                                </li>
+                            <% end %>
+                        </ul>
+
+                    </div>
+
+                <% end %>
+
+            </div>
         </div>
-    </div>
+    <% end %>
 <% end %>

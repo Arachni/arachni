@@ -1,0 +1,54 @@
+<div id="issues-trusted-severities-tabs">
+    <ul class="nav nav-tabs">
+
+        <% grouped.keys.each do |severity| %>
+            <li class="active">
+                <a data-toggle="tab" href="#issues-trusted-severity-<%= severity %>">
+                    <%= severity.to_s.capitalize %>
+                </a>
+            </li>
+        <% end %>
+    </ul>
+</div>
+
+<div class="tab-content">
+    <% grouped.each do |severity, issues_by_name| %>
+        <div class="tab-pane active" id="issues-trusted-severity-<%= severity %>">
+
+            <% issues_by_name.each do |name, issues| %>
+                <div class="row">
+                    <div class="col-md-10">
+                        <h3>
+                            <a id="issues-trusted-severity-<%= severity %>-<%= issues.first.check[:shortname] %>"
+                               href="#issues-trusted-severity-<%= severity %>-<%= issues.first.check[:shortname] %>">
+                                <%= name %>
+                            </a>
+                        </h3>
+
+                        <p>
+                            <%= escapeHTML issues.first.description %>
+                        </p>
+                    </div>
+
+                    <div class="col-md-2">
+                        <strong>References</strong>
+                        <hr/>
+                        <ul class="list-unstyled">
+                            <% issues.first.references.each do |ref_name, url| %>
+                                <li>
+                                    <a href="<%= url %>"> <%= ref_name %></a>
+                                </li>
+                            <% end %>
+                        </ul>
+                    </div>
+                </div>
+
+                <% issues.each do |issue| %>
+                    <%= erb :issue, issue: issue, id: "issues-trusted-severity-#{severity}-#{issues.first.check[:shortname]}" %>
+
+                    <hr/>
+                <% end %>
+            <% end %>
+        </div>
+    <% end %>
+</div>

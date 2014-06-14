@@ -1,49 +1,41 @@
 <%
-   issue_id = "#{id}-#{issue.digest}"
+   issue_id = issue_location( issue )
    variation = issue.variations.first
    not_available = '<p class="alert alert-info">Not available</p>'
 %>
 
 <div id="<%= issue_id %>">
         <div class="row">
-            <div class="col-md-10">
+            <div class="col-md-12">
 
                 <div class="row">
                     <div class="col-md-12">
-                        <h3>
+                        <h4>
                             <a href="#<%= issue_id %>">
-                                <%= issue.name %>
+                            In <code><%= issue.vector.type %></code>
+
+                            <% if issue.active? %>
+                                input
+                                <code><%= issue.affected_input_name %></code>
+                            <% end %>
+
+                            <% if issue.variations.first.request %>
+                                using
+                                <code><%= issue.variations.first.request.method.to_s.upcase %></code>
+                            <% end %>
                             </a>
 
-                            <small>
-                                In <code><%= issue.vector.type %></code>
+                            at
 
-                                <% if issue.active? %>
-                                    input
-                                    <code><%= issue.affected_input_name %></code>
-                                <% end %>
+                            <a href="<%= escapeHTML(issue.vector.url) %>">
+                                <%= escapeHTML(issue.vector.url) %>
+                            </a>
 
-                                <% if issue.variations.first.request %>
-                                    using
-                                    <code><%= issue.variations.first.request.method.to_s.upcase %></code>
-                                <% end %>
-
-                                at
-
-                                <a href="<%= escapeHTML(issue.vector.url) %>">
-                                    <%= escapeHTML(issue.vector.url) %>
-                                </a>
-
-                                pointing to
-                                <a href="<%= escapeHTML(issue.vector.action) %>">
-                                    <%= escapeHTML(issue.vector.action) %>
-                                </a>.
-                            </small>
-                        </h3>
-
-                        <p>
-                            <%= escapeHTML(issue.description) %>
-                        </p>
+                            pointing to
+                            <a href="<%= escapeHTML(issue.vector.action) %>">
+                                <%= escapeHTML(issue.vector.action) %>
+                            </a>.
+                        </h4>
                     </div>
                 </div>
 
@@ -103,18 +95,6 @@
                         </table>
                     </div>
                 </div>
-            </div>
-
-            <div class="col-md-2">
-                <strong>References</strong>
-                <hr/>
-                <ul class="list-unstyled">
-                    <% issue.references.each do |name, url| %>
-                        <li>
-                            <a href="<%= url %>"> <%= name %></a>
-                        </li>
-                    <% end %>
-                </ul>
             </div>
         </div>
 
