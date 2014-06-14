@@ -157,14 +157,6 @@ describe String do
             subject.recode!
             subject.should == "abcあ�"
         end
-
-        context 'when String#scrub! is not available' do
-            it 'uses a workaround' do
-                subject.stub(:respond_to?).with(:scrub!) { false }
-                subject.recode!
-                subject.should == "abcあ�"
-            end
-        end
     end
 
     describe '#recode' do
@@ -172,13 +164,6 @@ describe String do
 
         it 'returns a copy of the String without invalid characters' do
             subject.recode.should == "abcあ�"
-        end
-
-        context 'when String#scrub is not available' do
-            it 'uses a workaround' do
-                subject.stub(:respond_to?).with(:scrub) { false }
-                subject.recode.should == "abcあ�"
-            end
         end
     end
 
