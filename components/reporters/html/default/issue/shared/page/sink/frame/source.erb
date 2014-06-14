@@ -1,0 +1,45 @@
+<td colspan="5" class="borderless">
+    <div class="panel-group">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <a data-toggle="collapse" href="#<%= id %>_source">
+                        Source
+                    </a>
+                </h4>
+            </div>
+            <div id="<%= id %>_source" class="panel-collapse collapse">
+                <div class="panel-body">
+                        <strong>Page</strong>
+                        <%=
+                            lines = CodeRay.scan(page.body, :html).div.lines
+                            upto  = [lines.size, frame.line+5].min
+
+                            code = '<table class="CodeRay"><tbody><tr><td class="line-numbers"><pre>'
+
+                            (frame.line-5).upto(upto) do |i|
+                                code << (frame.line == i ? "<strong>#{i}</strong>\n" : "#{i}\n")
+                            end
+
+                            code << '</pre></td><td class="code"><pre>'
+
+                            (frame.line-5).upto(upto) do |i|
+                                line = lines[i]
+                                code << (frame.line == i ? "<strong>#{line}</strong>" : "#{line}")
+                            end
+
+                            code + '</pre></td></tr></tbody></table>'
+                        %>
+
+                    <% if !frame.source.to_s.empty? %>
+                        <strong>Function</strong>
+                        <%=
+                            CodeRay.scan(frame.source, :javascript).div( line_numbers: :table )
+                        %>
+                    <% end %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</td>

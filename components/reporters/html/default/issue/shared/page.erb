@@ -14,8 +14,8 @@
                 <% page.dom.transitions.each do |transition| %>
                     <tr>
                         <td><%= transition.time %></td>
-                        <td><%= transition.event %></td>
-                        <td><%= escapeHTML(transition.element) %></td>
+                        <td><code><%= transition.event %></code></td>
+                        <td><code><%= escapeHTML transition.element %></code></td>
                         <td>
                             <table class="table table-condensed table-borderless well">
                                 <% if (url = transition.options[:url]) %>
@@ -37,6 +37,7 @@
                                         <td>
                                             <%=
                                                 erb 'shared/hash.erb',
+                                                    code: true,
                                                     object: cookies.inject({}) { |h, c| c.inputs }
                                             %>
                                         </td>
@@ -49,7 +50,7 @@
                                     </tr>
                                     <tr>
                                         <td>
-                                            <%= erb 'shared/hash.erb', object: inputs %>
+                                            <%= erb 'shared/hash.erb', code: true, object: inputs %>
                                         </td>
                                     </tr>
                                 <% end %>

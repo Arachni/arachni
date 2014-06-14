@@ -39,18 +39,24 @@
                                 <%= frame.line %>
                             </td>
                             <td>
-                                <code><%= frame.function %></code>
+                                <% if frame.function %>
+                                    <code><%= frame.function %></code>
+                                <% end %>
                             </td>
                             <td>
-                                <code><%= escapeHTML frame.arguments.inspect %></code>
+                                <% if frame.function %>
+                                    <code><%= escapeHTML frame.arguments.inspect %></code>
+                                <% end %>
                             </td>
                         </tr>
 
-                        <% if !frame.source.to_s.empty? %>
                             <tr>
-                                <%= erb 'issue/shared/page/sink/source.erb', id: "#{id}_stacktrace_#{j}", source: frame.source %>
+                                <%= erb 'issue/shared/page/sink/frame/source.erb',
+                                        id:    "#{id}_stacktrace_#{j}",
+                                        frame: frame,
+                                        page:  page
+                                %>
                             </tr>
-                        <% end %>
                     <% end %>
                 </table>
             </div>
