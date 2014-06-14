@@ -14,7 +14,7 @@
                 <pre><%= prep_description(get_plugin_info(name)[:description]) %></pre>
             </blockquote>
 
-            <p><%= html.force_encoding('utf-8') %></p>
+            <p><%= html.recode %></p>
         </div>
 
     <% end %>

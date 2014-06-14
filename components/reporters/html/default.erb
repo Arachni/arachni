@@ -52,7 +52,7 @@
                             <%= report.issues.size %>
                         </span>
 
-                        <b class="caret"></b>
+                        <b class="fa fa-caret-down"></b>
                     </a>
 
                     <ul class="dropdown-menu">
@@ -64,6 +64,8 @@
                                     <span class="badge">
                                         <%= graph_data[:trust][trust.to_s.capitalize] %>
                                     </span>
+
+                                    <b class="fa fa-caret-right"></b>
                                 </a>
 
                                 <ul class="dropdown-menu">
@@ -75,6 +77,8 @@
                                                 <span class="badge">
                                                     <%= graph_data["#{trust}_severities".to_sym][severity.to_sym] %>
                                                 </span>
+
+                                                <b class="fa fa-caret-right"></b>
                                             </a>
 
                                             <ul class="dropdown-menu">
