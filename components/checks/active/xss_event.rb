@@ -42,9 +42,9 @@ class Arachni::Checks::XSSEvent < Arachni::Check::Base
 
     def self.strings
         @strings ||= [
-            ";arachni_xss_in_element_event=#{seed}//",
-            "\";arachni_xss_in_element_event=#{seed}//",
-            "';arachni_xss_in_element_event=#{seed}//"
+            ";arachni_xss_in_element_event=#{random_seed}//",
+            "\";arachni_xss_in_element_event=#{random_seed}//",
+            "';arachni_xss_in_element_event=#{random_seed}//"
         ].map { |s| [ "script:#{s}", s ] }.flatten
     end
 
