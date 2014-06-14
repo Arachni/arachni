@@ -10,9 +10,7 @@
             </div>
             <div id="<%= id %>_source" class="panel-collapse collapse">
                 <div class="panel-body">
-                    <%=
-                        CodeRay.scan(source, :javascript).div( line_numbers: :table )
-                    %>
+                    <%= code_highlight( source, :javascript ) %>
                 </div>
             </div>
         </div>

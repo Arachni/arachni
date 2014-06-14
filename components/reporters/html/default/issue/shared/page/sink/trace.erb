@@ -45,18 +45,17 @@
                             </td>
                             <td>
                                 <% if frame.function %>
-                                    <pre><%= escapeHTML frame.arguments.inspect %></pre>
+                                    <%= data_dump frame.arguments %>
                                 <% end %>
                             </td>
                         </tr>
-
-                            <tr>
-                                <%= erb 'issue/shared/page/sink/frame/source.erb',
-                                        id:    "#{id}_stacktrace_#{j}",
-                                        frame: frame,
-                                        page:  page
-                                %>
-                            </tr>
+                        <tr>
+                            <%= erb 'issue/shared/page/sink/frame/source.erb',
+                                    id:    "#{id}_stacktrace_#{j}",
+                                    frame: frame,
+                                    page:  page
+                            %>
+                        </tr>
                     <% end %>
                 </table>
             </div>

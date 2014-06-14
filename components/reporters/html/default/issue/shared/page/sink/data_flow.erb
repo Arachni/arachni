@@ -21,11 +21,11 @@
                 <code><%= sink.function %></code>
             </td>
             <td>
-                <code><%= escapeHTML sink.arguments.inspect %></code>
+                <%= data_dump sink.arguments %>
             </td>
 
             <td>
-                <code><%= escapeHTML sink.tainted.inspect %></code>
+                <%= data_dump sink.tainted %>
             </td>
         </tr>
         <tr>

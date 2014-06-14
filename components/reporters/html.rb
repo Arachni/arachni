@@ -25,6 +25,15 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
             str.to_s.recode
         end
 
+        def code_highlight( code, language = :html, options = {} )
+            code = code.dup.encode( 'ascii-8bit', invalid: :replace, undef: :replace )
+            CodeRay.scan( code, language ).div( options )
+        end
+
+        def data_dump( data )
+            "<div class='data-dump'>#{data.ai( plain: true, html: true )}</div>"
+        end
+
         # Carefully escapes HTML and converts to UTF-8 while removing
         # invalid character sequences.
         def escapeHTML( str )
