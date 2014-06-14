@@ -89,3 +89,20 @@ table.jqplot-table-legend {
 .navbar {
     border-radius: 0;
 }
+
+ul.nav li.dropdown:hover > ul.dropdown-menu {
+    display: block;
+}
+
+ul.dropdown-menu li.dropdown:hover > ul.dropdown-menu {
+    display: block;
+}
+
+ul.dropdown-menu ul.dropdown-menu {
+    margin-top: -20%;
+    margin-left: 100%;
+    position: absolute;
+}
+
+ul.nav .badge {
+}

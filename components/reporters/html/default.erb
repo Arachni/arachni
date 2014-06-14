@@ -43,7 +43,61 @@
         <div class="navbar-header">
             <ul class="nav navbar-nav">
                 <li><a href="#summary" data-toggle="tab">Summary</a></li>
-                <li><a href="#issues" data-toggle="tab">Issues</a></li>
+
+                <li class="dropdown">
+                    <a href="#issues" class="dropdown-toggle" data-toggle="tab">
+                        Issues
+
+                        <span class="badge">
+                            <%= report.issues.size %>
+                        </span>
+
+                        <b class="caret"></b>
+                    </a>
+
+                    <ul class="dropdown-menu">
+                        <% grouped_issues.each do |trust, by_severity| %>
+                            <li class="dropdown">
+                                <a href="#issues-<%= trust %>">
+                                    <%= trust.to_s.capitalize %>
+
+                                    <span class="badge">
+                                        <%= graph_data[:trust][trust.to_s.capitalize] %>
+                                    </span>
+                                </a>
+
+                                <ul class="dropdown-menu">
+                                    <% by_severity.each do |severity, by_name| %>
+                                        <li class="dropdown">
+                                            <a href="#issues-<%= trust %>-severity-<%= severity %>">
+                                                <%= severity.to_s.capitalize %>
+
+                                                <span class="badge">
+                                                    <%= graph_data["#{trust}_severities".to_sym][severity.to_sym] %>
+                                                </span>
+                                            </a>
+
+                                            <ul class="dropdown-menu">
+                                                <% by_name.each do |name, issues| %>
+                                                    <li class="dropdown">
+                                                        <a href="#issues-<%= trust %>-severity-<%= severity %>-<%= issues.first.check[:shortname] %>">
+                                                            <%= escapeHTML name %>
+
+                                                            <span class="badge">
+                                                                <%= issues.size %>
+                                                            </span>
+                                                        </a>
+                                                    </li>
+                                                <% end %>
+                                            </ul>
+                                        </li>
+                                    <% end %>
+                                </ul>
+                            </li>
+                        <% end %>
+                    </ul>
+                </li>
+
                 <li><a href="#plugins" data-toggle="tab">Plugin results</a>
                 </li>
                 <li><a href="#sitemap" data-toggle="tab">Sitemap</a></li>
