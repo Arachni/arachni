@@ -14,9 +14,9 @@
         <h4><%= severity.to_s.capitalize %> severity</h4>
 
         <div class="row">
-            <div class="col-md-6">
                 <% issues_by_name.each do |name, issues| %>
 
+                <div class="col-md-6">
                     <div class="issue-summary">
                         <strong><%= name %></strong>
 
@@ -58,10 +58,9 @@
                         </ul>
 
                     </div>
-
+                </div>
                 <% end %>
 
-            </div>
         </div>
     <% end %>
 <% end %>
