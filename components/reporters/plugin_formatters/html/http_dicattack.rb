@@ -11,7 +11,7 @@ class Arachni::Reporters::HTML
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class PluginFormatters::HTTPDicattack < Arachni::Plugin::Formatter
-    include Utils
+    include TemplateUtilities
 
     def run
         ERB.new( tpl ).result( binding )

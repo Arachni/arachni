@@ -9,7 +9,7 @@ class Arachni::Reporters::HTML
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class PluginFormatters::ContentTypes < Arachni::Plugin::Formatter
-    include Utils
+    include TemplateUtilities
 
     def run
         ERB.new( tpl ).result( binding )
@@ -19,35 +19,36 @@ class PluginFormatters::ContentTypes < Arachni::Plugin::Formatter
         <<-HTML
             <% results.each do |type, responses| %>
                 <ul>
-
                     <li>
-                        <%=type%>
+                        <%= type %>
                         <ul>
-                            <% responses.each do |res| %>
+                            <% responses.each do |response| %>
                             <li>
-                                URL: <a href="<%=escapeHTML(res[:url])%>"><%=escapeHTML(res[:url])%></a><br/>
-                                Method: <%=res[:method]%>
+                                URL:
+                                    <a href="<%= escapeHTML response['url'] %>">
+                                        <%= escapeHTML response['url'] %>
+                                    </a>
+                                <br/>
 
-                                <% if res[:parameters] && res[:method].downcase == 'post' %>
+                                Method: <%= response['method'] %>
+
+                                <% if response['parameters'] && response['method'] == :post %>
                                     <ul>
                                         <li>Parameters:</li>
-                                        <%res[:parameters].each do |name, val|%>
+                                        <% response['parameters'].each do |name, val| %>
                                         <li>
-                                            <%=name%> = <%=val%>
+                                            <%= name %> = <%= val %>
                                         </li>
-                                        <%end%>
+                                        <% end %>
                                     <ul>
-                                <%end%>
+                                <% end %>
                             </li>
-                            <%end%>
+                            <% end %>
                         </ul>
                     </li>
-
                 </ul>
-
-            <%end%>
+            <% end %>
         HTML
-
     end
 
 end

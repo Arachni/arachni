@@ -11,7 +11,7 @@ class Arachni::Reporters::HTML
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class PluginFormatters::HealthMap < Arachni::Plugin::Formatter
-    include Utils
+    include TemplateUtilities
 
     def run
         ERB.new( tpl ).result( binding )
@@ -20,28 +20,30 @@ class PluginFormatters::HealthMap < Arachni::Plugin::Formatter
     def tpl
         <<-HTML
             <style type="text/css">
-                a.safe {
+                a.without_issues {
                     color: blue
                 }
-                a.unsafe {
+                a.with_issues {
                     color: red
                 }
             </style>
 
-            <% results[:map].each do |entry| %>
-                <% state = entry.keys[0]%>
-                <% url   = entry.values[0]%>
+            <% results['map'].each do |entry|
+                    state, url = entry.to_a.first
+                %>
 
-                <a class="<%=state%>" href="<%=escapeHTML(url)%>"><%=escapeHTML(url)%></a> <br/>
-            <%end%>
+                <a class="<%= state %>" href="<%= escapeHTML url %>"><%= escapeHTML url %></a>
+                <br/>
+            <% end %>
 
             <br/>
 
             <h3>Stats</h3>
-            <strong>Total</strong>: <%=results[:total]%> <br/>
-            <strong>Safe</strong>: <%=results[:safe]%> <br/>
-            <strong>Unsafe</strong>: <%=results[:unsafe]%> <br/>
-            <strong>Issue percentage</strong>: <%=results[:issue_percentage]%>%
+
+            <strong>Total</strong>: <%= results['total'] %> <br/>
+            <strong>Safe</strong>: <%= results['without_issues'] %> <br/>
+            <strong>Unsafe</strong>: <%= results['with_issues'] %> <br/>
+            <strong>Issue percentage</strong>: <%= results['issue_percentage'] %>%
         HTML
     end
 

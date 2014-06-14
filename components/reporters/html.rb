@@ -98,7 +98,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
         end
 
         def get_plugin_info( name )
-            report.plugins[name]
+            report.plugins[name.to_sym]
         end
 
         def js_multiline( str )
@@ -119,7 +119,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
     end
 
     def global_data
-        # plugins    = format_plugin_results( report.plugins )
+        plugins       = format_plugin_results( report.plugins )
         template_path = File.dirname( options[:template] ) + '/' +
             File.basename( options[:template], '.erb' ) + '/'
 
@@ -170,7 +170,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
             report:         report,
             grouped_issues: grouped_issues,
             template_path:  template_path,
-            plugins:        {}
+            plugins:        plugins
         )
     end
 
