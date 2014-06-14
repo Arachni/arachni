@@ -76,9 +76,9 @@ table.jqplot-table-legend {
 }
 
 .code_container {
-    overflow: scroll;
+    overflow:   scroll;
     max-height: 400px;
-    position: relative;
+    position:   relative;
 }
 
 .proof {
