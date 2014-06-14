@@ -65,30 +65,12 @@ function goTo( location ){
         breadcrumb += '-';
     }
 
-    $('html,body').scrollTop( $('#' + location).offset().top );
+    var target = $('#' + location);
+    if( !target.hasClass('tab-pane') ) {
+        $('html,body').scrollTop( target.offset().top );
+    }
 }
 
 function openFromWindowLocation(){
     goTo( window.location.hash.split('#')[1] );
-}
-
-// Parent must have 'position: relative;'
-function scrollToChild( parent, child ){
-    parent = $(parent);
-//    child  = $(child);
-
-//    if( !child.exists() ) return;
-
-    parent.scrollTo( child );
-
-//    alert( child.position().top );
-//    alert( child.position().top );
-
-//    parent.scrollTop( 1000 );
-//
-//    parent.scrollTop( parent.scrollTop() + child.position().top -
-//        parent.height() / 2 + child.height() / 2 );
-//
-//    parent.scrollTop( parent.scrollTop() + ( child.position().top -
-//        parent.position().top) - (parent.height()/2) + (child.height()/2) )
 }
