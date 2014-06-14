@@ -51,38 +51,65 @@
                         </p>
                         <% end %>
 
-                        <ul class="list-unstyled">
+                        <table class="table table condensed">
+                            <tr>
+                                <th></th>
+                                <th>
+                                    Vector type
+                                </th>
+
+                                <% if issues.first.active? %>
+                                <th>
+                                    Input name
+                                </th>
+                                <% end %>
+
+                                <% if issues.first.variations.first.request %>
+                                <th>
+                                    HTTP method
+                                </th>
+                                <% end %>
+
+                                <th>
+                                    Action
+                                </th>
+                            </tr>
+
                             <% issues.each do |issue| %>
-                                <li>
-
-                                    <% issue_id = issue_location(issue) %>
-
-                                    <a class="btn btn-xs btn-info"
-                                       href="#<%= issue_id %>"
-                                       title="Inspect issue"
-                                    >
-                                        <i class="fa fa-eye"></i>
-                                    </a>
-
-                                    In <code><%= issue.vector.type %></code>
+                                <% issue_id = issue_location( issue ) %>
+                                <tr>
+                                    <td>
+                                        <a class="btn btn-xs btn-info"
+                                           href="#<%= issue_id %>"
+                                           title="Inspect issue"
+                                        >
+                                            <i class="fa fa-eye"></i>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <code><%= issue.vector.type %></code>
+                                    </td>
 
                                     <% if issue.active? %>
-                                        input
+                                    <td>
                                         <code><%= issue.affected_input_name %></code>
+                                    </td>
                                     <% end %>
 
                                     <% if issue.variations.first.request %>
-                                        using
+                                        <td>
                                         <code><%= issue.variations.first.request.method.to_s.upcase %></code>
+                                        </td>
                                     <% end %>
 
-                                    at
-                                    <a href="<%= escapeHTML(issue.vector.action) %>">
-                                        <%= escapeHTML(issue.vector.action) %>
-                                    </a>.
-                                </li>
+                                    <td>
+                                        <a href="<%= escapeHTML issue.vector.action %>">
+                                            <%= escapeHTML issue.vector.action %>
+                                        </a>
+                                    </td>
+                                </tr>
                             <% end %>
-                        </ul>
+                        </table>
 
                     </div>
                 </div>
