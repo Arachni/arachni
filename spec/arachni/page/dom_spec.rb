@@ -42,16 +42,17 @@ describe Arachni::Page::DOM do
     describe '#to_rpc_data' do
         let(:data) { subject.to_rpc_data }
 
-        %w(url digest data_flow_sink execution_flow_sink).each do |attribute|
+        %w(url digest).each do |attribute|
             it "includes '#{attribute}'" do
                 data[attribute].should == subject.send( attribute )
             end
         end
 
-        it "includes 'transitions'" do
-            data['transitions'].should == subject.transitions.map(&:to_rpc_data)
+        %w(data_flow_sink execution_flow_sink).each do |attribute|
+            it "includes '#{attribute}'" do
+                data[attribute].should == subject.send(attribute).map(&:to_rpc_data)
+            end
         end
-
 
         it "includes 'skip_states'" do
             data['skip_states'].should == subject.skip_states.collection.to_a
