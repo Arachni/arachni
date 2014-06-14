@@ -39,13 +39,13 @@
                 </div>
             </div>
 
-            <% if variation.vector.seed || variation.signature || variation.proof %>
+            <% if (variation.vector.respond_to?( :seed ) && variation.vector.seed) || variation.signature || variation.proof %>
                 <div class="row">
                     <div class="col-md-12">
                         <table class="table">
                             <thead>
                             <tr>
-                                <% if variation.vector.seed %>
+                                <% if variation.vector.respond_to?( :seed ) && variation.vector.seed %>
                                     <th>
                                         Injected seed
 
@@ -61,7 +61,7 @@
                                         Signature
 
                                         <a href="#" rel="tooltip"
-                                           title="This signature was used to detect the vulnerability.">
+                                           title="This signature was used to detect the issue.">
                                             <i class="fa fa-info"></i>
                                         </a>
                                     </th>
@@ -72,7 +72,7 @@
                                         Proof
 
                                         <a data-toggle="tooltip" href="#" rel="tooltip"
-                                           title="This string was used to verify the existence of the vulnerability.">
+                                           title="This string was used to verify the existence of the issue.">
                                             <i class="fa fa-info"></i>
                                         </a>
                                     </th>
@@ -82,7 +82,7 @@
                             </thead>
                             <tr>
 
-                                <% if variation.vector.seed %>
+                                <% if variation.vector.respond_to?( :seed ) && variation.vector.seed %>
                                     <td class="wrap">
                                         <%= variation.vector.seed ?
                                                     "<pre>#{escapeHTML(variation.vector.seed)}</pre>" :
