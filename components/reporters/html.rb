@@ -44,18 +44,14 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
         end
 
         def erb( tpl, params = {} )
-            scope = TemplateScope.new(
-                params.merge(
-                    report:        report,
-                    template_path: @template_path
-                )
-            )
+            @@scope ||= TemplateScope.new
+            @@scope.update params
 
             tpl = tpl.to_s + '.erb' if tpl.is_a?( Symbol )
 
             ap tpl
-            path = File.exist?( tpl ) ? tpl : @template_path + tpl
-            ERB.new( IO.read( path ) ).result( scope.get_binding )
+            path = File.exist?( tpl ) ? tpl : @@scope.template_path + tpl
+            ERB.new( IO.read( path ) ).result( @@scope.get_binding )
         end
     end
 
@@ -66,7 +62,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
 
         ISSUES_URL = 'https://github.com/Arachni/arachni/issues'
 
-        def initialize( params )
+        def initialize( params = {} )
             update( params )
         end
 
@@ -107,10 +103,25 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
         @template_path = File.dirname( options[:template] ) + '/' +
             File.basename( options[:template], '.erb' ) + '/'
 
+        grouped_issues = {}
+        Arachni::Issue::Severity::ORDER.each do |severity|
+            by_severity = report.issues.select { |i| i.severity.to_sym == severity }
+            next if by_severity.empty?
+
+            by_name = {}
+            by_severity.each do |issue|
+                by_name[issue.name] ||= []
+                by_name[issue.name] << issue
+            end
+
+            grouped_issues[by_severity.first.severity] = by_name
+        end
+
         params = prepare_data.merge(
-            title_url:   uri_parse( report.url ).host,
-            audit_store: report,
-            plugins:     {}
+            report:         report,
+            grouped_issues: grouped_issues,
+            template_path:  @template_path,
+            plugins:        {}
         )
 
         File.open( outfile, 'w' ) { |f| f.write( erb( options[:template], params ) ) }

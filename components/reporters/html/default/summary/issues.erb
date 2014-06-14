@@ -1,26 +1,10 @@
-<%
-   grouped = {}
-   Arachni::Issue::Severity::ORDER.each do |severity|
-       by_severity = report.issues.select { |i| i.severity.to_sym == severity }
-       next if by_severity.empty?
-
-       by_name = {}
-       by_severity.each do |issue|
-           by_name[issue.name] ||= []
-           by_name[issue.name] << issue
-       end
-
-       grouped[by_severity.first.severity] = by_name
-   end
-%>
-
 <div class="row">
     <div class="col-md-6">
         <%= erb :search, id: 'summary_issues_tab' %>
     </div>
 </div>
 
-<% grouped.each do |severity, issues_by_name| %>
+<% grouped_issues.each do |severity, issues_by_name| %>
     <h3><%= severity.to_s.capitalize %> severity</h3>
 
     <div class="row">
