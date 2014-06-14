@@ -30,6 +30,7 @@ class Base
             h
         end
     end
+    alias :to_hash :to_h
 
     def hash
         to_h.hash
