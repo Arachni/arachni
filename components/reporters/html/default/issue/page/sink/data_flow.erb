@@ -29,14 +29,14 @@
             </td>
         </tr>
         <tr>
-            <%= erb 'issue/shared/page/sink/source.erb',
+            <%= erb 'issue/page/sink/source.erb',
                     id:     "#{id}_data_flow_#{i}",
                     source: sink.source
             %>
         </tr>
         <tr>
             <td colspan="5" class="borderless">
-                <%= erb 'issue/shared/page/sink/trace.erb',
+                <%= erb 'issue/page/sink/trace.erb',
                         id:    "#{id}_data_flow_#{i}",
                         trace: sink.trace,
                         page:  page

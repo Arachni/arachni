@@ -47,7 +47,7 @@
                                 <th>
                                     Injected seed
 
-                                    <% if variation.vector.affected_input_value %>
+                                    <% if issue.active? && variation.vector.affected_input_value %>
                                         <a href="#" rel="tooltip"
                                            title="This seed uncovered the vulnerable vector during the audit.">
                                             <i class="icon-info-sign"></i>
@@ -99,7 +99,7 @@
         </div>
 
     <%=
-        erb (issue.active? ? 'issue/active.erb' : 'issue/passive.erb'),
+        erb 'issue/details.erb',
             issue: issue,
             id:    issue_id
     %>

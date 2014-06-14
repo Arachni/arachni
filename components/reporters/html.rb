@@ -237,7 +237,8 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
                 Element::Header.type => 0,
                 Element::Body.type   => 0,
                 Element::Path.type   => 0,
-                Element::Server.type => 0
+                Element::Server.type => 0,
+                Element::GenericDOM.type => 0
             },
             verification:     {
                 'Yes' => 0,
@@ -263,7 +264,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
             graph_data[:issues][issue.name] += 1
 
 
-            graph_data[:elements][issue.vector.type] += 1
+            graph_data[:elements][issue.vector.class.type] += 1
             total_elements += 1
 
             verification = issue.untrusted? ? 'Yes' : 'No'

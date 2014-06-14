@@ -13,7 +13,7 @@
         </div>
         <div id="<%= id %>-vector" class="panel-collapse collapse">
             <div class="panel-body">
-                <%= erb 'issue/active/vector.erb', vector: variation.vector %>
+                <%= erb 'issue/vector.erb', vector: variation.vector %>
             </div>
         </div>
     </div>
@@ -30,7 +30,7 @@
         </div>
         <div id="<%= id %>-affected_page" class="panel-collapse collapse">
             <div class="panel-body">
-                <%= erb 'issue/shared/page.erb', id: id, page: variation.page %>
+                <%= erb 'issue/page.erb', id: id, page: variation.page %>
             </div>
         </div>
     </div>
@@ -47,7 +47,7 @@
         </div>
         <div id="<%= id %>-referring_page" class="panel-collapse collapse">
             <div class="panel-body">
-                <%= erb 'issue/shared/page.erb', page: variation.referring_page %>
+                <%= erb 'issue/page.erb', page: variation.referring_page %>
             </div>
         </div>
     </div>

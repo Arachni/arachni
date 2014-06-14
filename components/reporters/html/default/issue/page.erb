@@ -54,6 +54,15 @@
                                         </td>
                                     </tr>
                                 <% end %>
+
+                                <% if (value = transition.options[:value])  %>
+                                    <tr>
+                                        <th>Value</th>
+                                        <td>
+                                            <code><%= escapeHTML value %></code>
+                                        </td>
+                                    </tr>
+                                <% end %>
                             </table>
                         </td>
                     </tr>
@@ -70,7 +79,7 @@
         <div class="col-md-12">
             <strong>Data flow sinks</strong>
 
-            <%= erb 'issue/shared/page/sink/data_flow.erb', id: id, page: page %>
+            <%= erb 'issue/page/sink/data_flow.erb', id: id, page: page %>
         </div>
     </div>
 
@@ -82,7 +91,7 @@
         <div class="col-md-12">
             <strong>Execution flow sinks</strong>
 
-            <%= erb 'issue/shared/page/sink/execution_flow.erb', id: id, page: page %>
+            <%= erb 'issue/page/sink/execution_flow.erb', id: id, page: page %>
         </div>
     </div>
 

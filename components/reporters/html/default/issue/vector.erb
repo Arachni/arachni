@@ -1,6 +1,6 @@
 <%=
     if vector.respond_to?( :html ) && !vector.html.to_s.empty?
-        CodeRay.scan(vector.html, :html).div(line_numbers: :table)
+        code_highlight( vector.html, :html )
     end
 %>
 
@@ -9,8 +9,11 @@
         <th>Type</th>
         <th>In</th>
         <th>Action</th>
+
+        <% if vector.respond_to? :inputs %>
         <th>Default inputs</th>
         <th>Updated inputs</th>
+        <% end %>
     </tr>
     <tr>
         <td><code><%= vector.type %></code></td>
@@ -24,11 +27,14 @@
                 <%= escapeHTML vector.action %>
             </a>
         </td>
+
+        <% if vector.respond_to? :inputs %>
         <td>
             <%= erb 'shared/hash.erb', object: vector.default_inputs, code: true %>
         </td>
         <td>
             <%= erb 'shared/hash.erb', object: vector.inputs, code: true %>
         </td>
+        <% end %>
     </tr>
 </table>
