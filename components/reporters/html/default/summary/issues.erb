@@ -10,6 +10,10 @@
     <h3>
         <a href="#issues-<%= trust %>">
             <%= trust.to_s.capitalize %>
+
+            <span class="badge">
+                <%= graph_data[:trust][trust.to_s.capitalize] %>
+            </span>
         </a>
     </h3>
 
@@ -18,6 +22,10 @@
         <h4>
             <a href="#issues-<%= trust %>-severity-<%= severity %>">
                 <%= severity.to_s.capitalize %> severity
+
+                <span class="badge">
+                    <%= graph_data["#{trust}_severities".to_sym][severity.to_sym] %>
+                </span>
             </a>
         </h4>
 
@@ -30,6 +38,10 @@
                         <strong>
                             <a href="#issues-<%= trust %>-severity-<%= severity %>-<%= issues.first.check[:shortname] %>">
                                 <%= name %>
+
+                                <span class="badge">
+                                    <%= issues.size %>
+                                </span>
                             </a>
                         </strong>
 
