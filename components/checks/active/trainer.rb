@@ -18,7 +18,7 @@ class Arachni::Checks::Trainer < Arachni::Check::Base
         # wasting bandwidth.
         return if framework.page_limit_reached?
 
-        audit( "_arachni_trainer_#{seed}", submit: { train: true }, param_flip: true ){}
+        audit( "_arachni_trainer_#{random_seed}", submit: { train: true }, param_flip: true ){}
     end
 
     def self.info

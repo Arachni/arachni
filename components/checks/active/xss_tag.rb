@@ -18,8 +18,8 @@ class Arachni::Checks::XSSHTMLTag < Arachni::Check::Base
     TAG_NAME = 'arachni_xss_in_tag'
 
     def self.strings
-        @strings ||= [ " #{TAG_NAME}=" + seed, "\" #{TAG_NAME}=\"" + seed,
-                       "' #{TAG_NAME}='" + seed ]
+        @strings ||= [ " #{TAG_NAME}=" + random_seed, "\" #{TAG_NAME}=\"" + random_seed,
+                       "' #{TAG_NAME}='" + random_seed ]
     end
 
     def run
@@ -38,7 +38,7 @@ class Arachni::Checks::XSSHTMLTag < Arachni::Check::Base
         # see if we managed to inject a working HTML attribute to any
         # elements
         Nokogiri::HTML( body ).xpath( "//*[@#{TAG_NAME}]" ).each do |node|
-            next if node[TAG_NAME] != seed
+            next if node[TAG_NAME] != random_seed
 
             proof = (payload = find_included_payload( body )) ? payload : node.to_s
             log vector: element, proof: proof, response: response

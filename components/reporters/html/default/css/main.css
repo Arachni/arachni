@@ -107,3 +107,13 @@ ul.dropdown-menu ul.dropdown-menu {
     margin-left: 100%;
     position: absolute;
 }
+
+.CodeRay .active {
+    font-weight: bold;
+    background-color: #BCE8F1;
+}
+
+.CodeRay .breakpoint {
+    font-weight: bold;
+    background-color: #F2DEDE;
+}

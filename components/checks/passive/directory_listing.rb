@@ -15,7 +15,7 @@ class Arachni::Checks::DirectoryListing < Arachni::Check::Base
     DIFF_THRESHOLD = 0.75
 
     def self.dirs
-        @dirs ||= [ "\\.#{seed}\\", "\\.\\", ".#{seed}/", "./" ]
+        @dirs ||= [ "\\.#{random_seed}\\", "\\.\\", ".#{random_seed}/", "./" ]
     end
 
     def run

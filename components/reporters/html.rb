@@ -26,6 +26,8 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
         end
 
         def code_highlight( code, language = :html, options = {} )
+            return if !code
+
             lines = CodeRay.scan( code.recode, language ).html( css: :style ).lines
 
             if options[:from]
@@ -44,12 +46,12 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
 
             from.upto(to) do |i|
                 if options[:anchor_id]
-                    line = "<a id='#{options[:anchor_id]}-#{i}' href='#{id_to_location "#{options[:anchor_id]}-#{i}"}'>#{i}</a>"
+                    line = "<a href='#{id_to_location "#{options[:anchor_id]}-#{i}"}'>#{i}</a>"
                 else
                     line = "#{i}"
                 end
 
-                if options[:emphasize] && options[:emphasize] == i
+                if options[:breakpoint] && options[:breakpoint] == i
                     code << "<strong>#{line}</strong>"
                 else
                     code << line
@@ -61,10 +63,10 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
             code << '</pre></td><td class="code"><pre>'
 
             from.upto(to) do |i|
-                line = lines[i]
+                line = "<span id='#{options[:anchor_id]}-#{i}'>#{lines[i]}</span>"
 
-                if options[:emphasize] && options[:emphasize] == i
-                    code << "<strong>#{line}</strong>"
+                if options[:breakpoint] && options[:breakpoint] == i
+                    code << "<span class='breakpoint'>#{line}</span>"
                 else
                     code << line.to_s
                 end

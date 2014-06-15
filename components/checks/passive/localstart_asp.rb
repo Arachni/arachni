@@ -14,7 +14,7 @@ class Arachni::Checks::LocalstartASP < Arachni::Check::Base
         return if audited?( path )
         audited path
 
-        http.get( "#{path}/#{seed}" ) do |response|
+        http.get( "#{path}/#{random_seed}" ) do |response|
             # If it needs auth by default then don't bother checking because
             # we'll get an FP.
             next if response.code == 401
