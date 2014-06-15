@@ -52,7 +52,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
         end
 
         def issue_location( issue )
-            "#!/#{issue_id( issue ).gsub( '-', '/' )}"
+            id_to_location( issue_id( issue ) )
         end
 
         def issue_id( issue )
@@ -60,6 +60,10 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
 
             "issues-#{'un' if issue.untrusted?}trusted-severity-" <<
                 "#{issue.severity}-#{issue.check[:shortname]}-#{issue.digest}"
+        end
+
+        def id_to_location( id )
+            "#!/#{id.gsub( '-', '/' )}"
         end
 
         def erb( tpl, params = {} )

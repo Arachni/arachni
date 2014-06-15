@@ -1,15 +1,26 @@
 <table class="table table-condensed">
     <tr>
+        <th>#</th>
         <th>Time</th>
         <th>Event</th>
         <th>Element</th>
         <th>Options</th>
     </tr>
 
-    <% page.dom.transitions.each do |transition|
+    <% page.dom.transitions.each.with_index do |transition, i|
            request = (transition.event == :request)
     %>
-        <tr <%= 'class="text-muted request-transition"' if request %>>
+        <tr
+            id="<%= id %>-transitions-<%= i %>"
+            <%= 'class="text-muted request-transition"' if request %>
+        >
+            <th>
+                <strong>
+                    <a href="<%= id_to_location id %>/transitions/<%= i %>">
+                        <%= i %>
+                    </a>
+                </strong>
+            </th>
             <td><%= transition.time %></td>
             <td><code><%= transition.event %></code></td>
             <td>

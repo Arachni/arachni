@@ -38,7 +38,7 @@
         </div>
         <div id="<%= id %>-affected_page" class="panel-collapse collapse">
             <div class="panel-body">
-                <%= erb 'issue/page.erb', id: id, page: variation.page %>
+                <%= erb 'issue/page.erb', id: "#{id}-affected_page", page: variation.page %>
             </div>
         </div>
     </div>
@@ -59,7 +59,7 @@
         </div>
         <div id="<%= id %>-referring_page" class="panel-collapse collapse">
             <div class="panel-body">
-                <%= erb 'issue/page.erb', page: variation.referring_page %>
+                <%= erb 'issue/page.erb', id: "#{id}-referring_page", page: variation.referring_page %>
             </div>
         </div>
     </div>
