@@ -49,7 +49,7 @@
                 <% end %>
             </td>
 
-            <% if frame.function && (frame.line.to_i > 0 && frame.url == page.dom.url) || !frame.source.to_s.empty? %>
+            <% if frame.function || (frame.line.to_i > 0 && frame.url == page.dom.url) || !frame.source.to_s.empty? %>
                 <td>
                     <a href="javascript:void(0);"
                        onclick="$('#<%= id %>-<%= i %>-inspect').toggle()"
@@ -60,7 +60,7 @@
             <% end %>
         </tr>
 
-        <% if frame.function && (frame.line.to_i > 0 && frame.url == page.dom.url) || !frame.source.to_s.empty? %>
+        <% if frame.function || (frame.line.to_i > 0 && frame.url == page.dom.url) || !frame.source.to_s.empty? %>
             <tr id="<%= id %>-<%= i %>-inspect" style="display: none">
                 <td colspan="5" class="borderless">
                     <ul class="nav nav-tabs">
