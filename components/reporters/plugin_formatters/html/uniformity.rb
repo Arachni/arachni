@@ -32,7 +32,7 @@ class PluginFormatters::Uniformity < Arachni::Plugin::Formatter
                     %>
                     <li>
                         <a class="btn btn-xs btn-info"
-                           href="#<%= issue_location( issue ) %>"
+                           href="<%= issue_location( issue ) %>"
                            title="Inspect issue"
                         >
                             <i class="fa fa-eye"></i>

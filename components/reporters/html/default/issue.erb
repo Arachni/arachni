@@ -1,17 +1,16 @@
 <%
-   issue_id = issue_location(issue)
    variation = issue.variations.first
    not_available = '<p class="alert alert-info">Not available</p>'
 %>
 
-<div id="<%= issue_id %>">
+<div id="<%= issue_id( issue ) %>">
     <div class="row">
         <div class="col-md-12">
 
             <div class="row">
                 <div class="col-md-12">
                     <h4>
-                        <a href="#<%= issue_id %>">
+                        <a href="<%= issue_location(issue) %>">
                             In <code><%= issue.vector.type %></code>
 
                             <% if issue.active? %>
@@ -71,7 +70,7 @@
                                     <th>
                                         Proof
 
-                                        <a data-toggle="tooltip" href="#" rel="tooltip"
+                                        <a href="#" rel="tooltip"
                                            title="This string was used to verify the existence of the issue.">
                                             <i class="fa fa-info"></i>
                                         </a>
@@ -116,7 +115,7 @@
     <%=
         erb 'issue/details.erb',
             issue: issue,
-            id:    issue_id
+            id:    issue_id( issue )
     %>
 </div>
 

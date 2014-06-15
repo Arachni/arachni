@@ -2,60 +2,57 @@
 
 <%= erb :search, id: 'issues_tab' %>
 
-<div id="issue-tabs">
-    <ul class="nav nav-tabs">
-        <li
-            <%= "class='#{has_trusted_issues ? 'active' : 'disabled' }'" %>
+<ul class="nav nav-tabs">
+    <li
+        <%= "class='#{has_trusted_issues ? 'active' : 'disabled' }'" %>
+    >
+        <a
+           <%= 'href="#!/issues/trusted"' if has_trusted_issues %>
         >
-            <a
-               <%= 'data-toggle="tab" href="#issues-trusted"' if has_trusted_issues %>
-            >
-                Trusted
+            Trusted
 
-                <span class="badge">
-                    <%= graph_data[:trust]['Trusted'] %>
-                </span>
-            </a>
-        </li>
+            <span class="badge">
+                <%= graph_data[:trust]['Trusted'] %>
+            </span>
+        </a>
+    </li>
 
-        <li
-            <%= 'class="disabled"' if !has_untrusted_issues %>
+    <li
+        <%= 'class="disabled"' if !has_untrusted_issues %>
+    >
+        <a
+           <%= 'href="#!/issues/untrusted"' if has_untrusted_issues %>
         >
-            <a
-               <%= 'data-toggle="tab" href="#issues-untrusted"' if has_untrusted_issues %>
-            >
-                Untrusted
+            Untrusted
 
-                <span class="badge">
-                    <%= graph_data[:trust]['Untrusted'] %>
-                </span>
-            </a>
-        </li>
-    </ul>
+            <span class="badge">
+                <%= graph_data[:trust]['Untrusted'] %>
+            </span>
+        </a>
+    </li>
+</ul>
 
-    <div class="tab-content">
-        <div class="tab-pane active" id="issues-trusted">
-            <p class="well">
-                At the time these issues were logged there were no abnormal
-                interferences or anomalous server behavior.<br/>
-                These issues are considered trusted and accurate.
-            </p>
+<div class="tab-content">
+    <div class="tab-pane active" id="issues-trusted">
+        <p class="well">
+            At the time these issues were logged there were no abnormal
+            interferences or anomalous server behavior.<br/>
+            These issues are considered trusted and accurate.
+        </p>
 
-            <%= erb 'issues/grouped.erb', trust: :trusted, grouped: grouped_issues[:trusted] %>
-        </div>
-
-        <div class="tab-pane" id="issues-untrusted">
-            <p class="well">
-                These issues are considered untrusted (and may in fact be false
-                positives) because at the time they were identified the server was
-                exhibiting some kind of anomalous behavior or there was third party
-                interference (like network latency for example).
-                <br/>
-                The listed issues need verification by a human.
-            </p>
-
-            <%= erb 'issues/grouped.erb', trust: :untrusted, grouped: grouped_issues[:untrusted] %>
-        </div>
+        <%= erb 'issues/grouped.erb', trust: :trusted, grouped: grouped_issues[:trusted] %>
     </div>
 
+    <div class="tab-pane" id="issues-untrusted">
+        <p class="well">
+            These issues are considered untrusted (and may in fact be false
+            positives) because at the time they were identified the server was
+            exhibiting some kind of anomalous behavior or there was third party
+            interference (like network latency for example).
+            <br/>
+            The listed issues need verification by a human.
+        </p>
+
+        <%= erb 'issues/grouped.erb', trust: :untrusted, grouped: grouped_issues[:untrusted] %>
+    </div>
 </div>

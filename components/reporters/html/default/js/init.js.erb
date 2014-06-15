@@ -11,12 +11,6 @@ jQuery(function ($) {
 
     // Restore the last open tab from the URL fragment.
     openFromWindowLocation();
-
-    // Save the last open tab the user selected to the URL fragment.
-    $('*[data-toggle="tab"]').click(function (e) {
-        window.location.hash = this.hash;
-    });
-
 });
 
 $(window).bind( "popstate", function () {

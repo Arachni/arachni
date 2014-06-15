@@ -59,27 +59,38 @@ function goTo( location ){
     // Clear the current active status of the navigation links.
     $("nav li").removeClass("active");
 
-    var splits     = location.split('-');
-    var breadcrumb = '';
+    var splits          = location.split('/');
+    var href_breadcrumb = '#!/';
+    var id_breadcrumb   = '';
 
     for( var i = 0; i < splits.length; i++ ) {
-        breadcrumb += splits[i];
+        href_breadcrumb += splits[i];
+        id_breadcrumb   += splits[i];
 
-        var target = $('a[href="#' + breadcrumb + '"]');
-        target.tab('show');
+        var tab_selector = $('a[href="' + href_breadcrumb + '"]');
+        var level        = $('#' + id_breadcrumb );
 
         // Mark all links in the navigation tree as active at every step.
-        target.parents('li').addClass('active');
+        tab_selector.parents('li').siblings().removeClass('active');
+        tab_selector.parents('li').addClass('active');
 
-        breadcrumb += '-';
+        // Mark all other tabs of this level as inactive...
+        level.siblings().removeClass('active');
+        //.. and activate the one we want.
+        level.addClass('active');
+
+        if( i != splits.length - 1) {
+            href_breadcrumb += '/';
+            id_breadcrumb   += '-';
+        }
     }
 
-    var target = $('#' + location);
+    var target = $('#' + id_breadcrumb);
     if( !target.hasClass('tab-pane') ) {
         $('html,body').scrollTop( target.offset().top );
     }
 }
 
 function openFromWindowLocation(){
-    goTo( window.location.hash.split('#')[1] );
+    goTo( window.location.hash.split('#!/')[1] );
 }

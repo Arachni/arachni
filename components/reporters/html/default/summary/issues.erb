@@ -8,8 +8,7 @@
     <% next if by_severity.empty? %>
 
     <h3>
-        <a href="#issues-<%= trust %>">
-            <%= trust.to_s.capitalize %>
+        <a href="#/issues/<%= trust %>">
 
             <span class="badge">
                 <%= graph_data[:trust][trust.to_s.capitalize] %>
@@ -20,7 +19,7 @@
     <% by_severity.each do |severity, issues_by_name| %>
 
         <h4>
-            <a href="#issues-<%= trust %>-severity-<%= severity %>">
+            <a href="#!/issues/<%= trust %>/severity/<%= severity %>">
                 <%= severity.to_s.capitalize %> severity
 
                 <span class="badge">
@@ -36,7 +35,7 @@
                     <div class="issue-summary">
 
                         <strong>
-                            <a href="#issues-<%= trust %>-severity-<%= severity %>-<%= issues.first.check[:shortname] %>">
+                            <a href="#!/issues/<%= trust %>/severity/<%= severity %>/<%= issues.first.check[:shortname] %>">
                                 <%= name %>
 
                                 <span class="badge">
@@ -76,11 +75,10 @@
                             </tr>
 
                             <% issues.each do |issue| %>
-                                <% issue_id = issue_location( issue ) %>
                                 <tr>
                                     <td>
                                         <a class="btn btn-xs btn-info"
-                                           href="#<%= issue_id %>"
+                                           href="<%= issue_location( issue ) %>"
                                            title="Inspect issue"
                                         >
                                             <i class="fa fa-eye"></i>

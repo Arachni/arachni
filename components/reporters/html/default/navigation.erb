@@ -7,7 +7,7 @@
         <div class="navbar-header">
             <ul class="nav navbar-nav">
                 <li class="dropdown">
-                    <a href="#summary" data-toggle="tab">
+                    <a href="#!/summary">
                         Summary
 
                         <b class="fa fa-caret-down"></b>
@@ -15,13 +15,13 @@
 
                     <ul class="dropdown-menu">
                         <li>
-                            <a href="#summary-charts">
+                            <a href="#!/summary/charts">
                                 Graphs
                             </a>
                         </li>
 
                         <li>
-                            <a href="#summary-issues">
+                            <a href="#!/summary/issues">
                                 Issues
                             </a>
                         </li>
@@ -29,7 +29,7 @@
                 </li>
 
                 <li class="dropdown">
-                    <a href="#issues" class="dropdown-toggle" data-toggle="tab">
+                    <a href="#!/issues" class="dropdown-toggle">
                         Issues
 
                         <span class="badge">
@@ -42,7 +42,7 @@
                     <ul class="dropdown-menu">
                         <% grouped_issues.each do |trust, by_severity| %>
                             <li class="dropdown">
-                                <a href="#issues-<%= trust %>">
+                                <a href="#!/issues/<%= trust %>">
                                     <%= trust.to_s.capitalize %>
 
                                     <span class="badge">
@@ -55,7 +55,7 @@
                                 <ul class="dropdown-menu">
                                     <% by_severity.each do |severity, by_name| %>
                                         <li class="dropdown">
-                                            <a href="#issues-<%= trust %>-severity-<%= severity %>">
+                                            <a href="#!/issues/<%= trust %>/severity/<%= severity %>">
                                                 <%= severity.to_s.capitalize %>
 
                                                 <span class="badge">
@@ -68,7 +68,7 @@
                                             <ul class="dropdown-menu">
                                                 <% by_name.each do |name, issues| %>
                                                     <li class="dropdown">
-                                                        <a href="#issues-<%= trust %>-severity-<%= severity %>-<%= issues.first.check[:shortname] %>">
+                                                        <a href="#!/issues/<%= trust %>/severity/<%= severity %>/<%= issues.first.check[:shortname] %>">
                                                             <%= escapeHTML name %>
 
                                                             <span class="badge">
@@ -87,7 +87,7 @@
                 </li>
 
                 <li class="dropdown">
-                    <a href="#plugins" data-toggle="tab">
+                    <a href="#!/plugins">
                         Plugin results
 
                         <span class="badge"><%= plugins.size %></span>
@@ -97,7 +97,7 @@
                     <ul class="dropdown-menu">
                         <% plugins.keys.each do |name| %>
                             <li>
-                                <a href="#plugins-<%= name %>">
+                                <a href="#!/plugins/<%= name %>">
                                     <%= escapeHTML get_plugin_info( name )[:name] %>
                                 </a>
                             </li>
@@ -105,14 +105,14 @@
                     </ul>
                 </li>
                 <li>
-                    <a href="#sitemap" data-toggle="tab">
+                    <a href="#!/sitemap">
                         Sitemap
 
                         <span class="badge"><%= report.sitemap.size %></span>
                     </a>
                 </li>
                 <li>
-                    <a href="#configuration" data-toggle="tab">Configuration</a>
+                    <a href="#!/configuration">Configuration</a>
                 </li>
             </ul>
         </div>

@@ -4,7 +4,7 @@
     <ul class="nav nav-tabs">
         <% plugins.keys.each do |name| %>
             <li>
-                <a data-toggle="tab" href="#plugins-<%= name %>">
+                <a href="#!/plugins/<%= name %>">
                     <%= escapeHTML get_plugin_info( name )[:name] %>
                 </a>
             </li>
