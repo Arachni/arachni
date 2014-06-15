@@ -75,6 +75,14 @@ table.jqplot-table-legend {
     margin-bottom: 0;
 }
 
+
+.table tr.request-transition td:first-child {
+    padding-left: 30px;
+}
+
+.table tr.request-transition td:first-child:before {
+}
+
 .code-container {
     overflow:   scroll;
     max-height: 400px;
