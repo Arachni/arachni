@@ -1,40 +1,48 @@
-<table class="table table-condensed">
+<table class="table table-condensed table-fixed">
     <tr>
         <th>#</th>
-        <th>URL</th>
-        <th>Line</th>
         <th>Data</th>
+        <th></th>
     </tr>
     <% page.dom.execution_flow_sink.each.with_index do |sink, i| %>
-        <tr>
-            <td><%= i %></td>
+        <tr id="<%= id %>-execution_flow_sinks-<%= i %>" >
             <td>
-                <a href="<%= escapeHTML sink.trace.first.url %>">
-                    <%= escapeHTML sink.trace.first.url %>
-                </a>
-            </td>
-            <td>
-                <%= sink.trace.first.line %>
+                <strong>
+                    <a href="<%= id_to_location id %>/execution_flow_sinks/<%= i %>">
+                        <%= i %>
+                    </a>
+                </strong>
             </td>
             <td><%= data_dump sink.data %></td>
+            <td>
+                <a href="javascript:void(0);"
+                   onclick="$('#<%= id %>-execution_flow_sinks-<%= i %>-inspect').toggle()"
+                   class="btn btn-info btn-xs">
+                    Inspect
+                </a>
+            </td>
         </tr>
 
-        <% if sink.trace.first.source %>
-        <tr>
-            <%= erb 'issue/page/sink/source.erb',
-                    id:     "#{id}_execution_flow_#{i}",
-                    source: sink.trace.first.source
-            %>
-        </tr>
-        <% end %>
+        <tr id="<%= id %>-execution_flow_sinks-<%= i %>-inspect" style="display: none">
+            <td colspan="3" class="borderless">
+                <ul class="nav nav-tabs">
 
-        <tr>
-            <td colspan="5" class="borderless">
-                <%= erb 'issue/page/sink/trace.erb',
-                        id:    "#{id}_execution_flow_#{i}",
-                        trace: sink.trace,
-                        page:  page
-                %>
+                    <li class="active">
+                        <a href="<%= id_to_location id %>/execution_flow_sinks/<%= i %>/inspect/stacktrace">
+                            Stacktrace
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane active" id="<%= id %>-execution_flow_sinks-<%= i %>-inspect-stacktrace">
+                        <%= erb 'issue/page/sink/trace/table.erb',
+                                id:    "#{id}-execution_flow_sinks-#{i}-inspect-stacktrace",
+                                trace: sink.trace,
+                                page:  page
+                        %>
+                    </div>
+                </div>
             </td>
         </tr>
     <% end %>

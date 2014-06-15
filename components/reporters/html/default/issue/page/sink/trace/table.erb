@@ -30,7 +30,7 @@
             </td>
             <td>
                 <% if frame.line.to_i > 0 && frame.url == page.dom.url %>
-                    <a href="<%= id_to_location id %>/<%= i %>/source/page/<% frame.line %>">
+                    <a href="<%= id_to_location id %>/<%= i %>/inspect/source/page/<%= frame.line %>">
                         <%= frame.line %>
                     </a>
                 <% else %>
@@ -43,30 +43,34 @@
                 <% end %>
             </td>
 
-            <% if (frame.line.to_i > 0 && frame.url == page.dom.url) || !frame.source.to_s.empty? %>
-            <td>
-                <a href="javascript:void(0);"
-                   onclick="$('#<%= id %>-<%= i %>-inspect').toggle()"
-                   class="btn btn-info btn-xs">
-                    Inspect
-                </a>
-            </td>
+            <% if frame.function && (frame.line.to_i > 0 && frame.url == page.dom.url) || !frame.source.to_s.empty? %>
+                <td>
+                    <a href="javascript:void(0);"
+                       onclick="$('#<%= id %>-<%= i %>-inspect').toggle()"
+                       class="btn btn-info btn-xs">
+                        Inspect
+                    </a>
+                </td>
             <% end %>
         </tr>
 
-        <% if (frame.line.to_i > 0 && frame.url == page.dom.url) || !frame.source.to_s.empty? %>
+        <% if frame.function && (frame.line.to_i > 0 && frame.url == page.dom.url) || !frame.source.to_s.empty? %>
             <tr id="<%= id %>-<%= i %>-inspect" style="display: none">
-                <td colspan="4" class="borderless">
+                <td colspan="5" class="borderless">
                     <ul class="nav nav-tabs">
 
-                        <li class="active">
-                            <a href="<%= id_to_location id %>/<%= i %>/inspect/arguments">
-                                Arguments
-                            </a>
-                        </li>
+                        <% has_active = false %>
+                        <% if frame.function %>
+                            <% has_active = true %>
+                            <li class="active">
+                                <a href="<%= id_to_location id %>/<%= i %>/inspect/arguments">
+                                    Arguments
+                                </a>
+                            </li>
+                        <% end %>
 
-                        <% if !frame.source.to_s.empty? %>
-                            <li>
+                        <% if (frame.line.to_i > 0 && frame.url == page.dom.url) || !frame.source.to_s.empty? %>
+                            <li <%= 'class="active"' if !has_active %> >
                                 <a href="<%= id_to_location id %>/<%= i %>/inspect/source">
                                     Source
                                 </a>
@@ -75,17 +79,24 @@
                     </ul>
 
                     <div class="tab-content">
-                        <div class="tab-pane active" id="<%= id %>-<%= i %>-inspect-arguments">
-                            <%= data_dump frame.arguments %>
-                        </div>
 
-                        <div class="tab-pane" id="<%= id %>-<%= i %>-inspect-source">
-                            <%= erb 'issue/page/sink/frame/source.erb',
-                                    id:    "#{id}-#{i}-inspect",
-                                    frame: frame,
-                                    page:  page
-                            %>
-                        </div>
+                        <% has_active = false %>
+                        <% if frame.function %>
+                            <% has_active = true %>
+                            <div class="tab-pane active" id="<%= id %>-<%= i %>-inspect-arguments">
+                                <%= data_dump frame.arguments %>
+                            </div>
+                        <% end %>
+
+                        <% if (frame.line.to_i > 0 && frame.url == page.dom.url) || !frame.source.to_s.empty? %>
+                            <div class="tab-pane <%= 'active' if !has_active %> " id="<%= id %>-<%= i %>-inspect-source">
+                                <%= erb 'issue/page/sink/frame/source.erb',
+                                        id:    "#{id}-#{i}-inspect",
+                                        frame: frame,
+                                        page:  page
+                                %>
+                            </div>
+                        <% end %>
                     </div>
 
                 </td>
