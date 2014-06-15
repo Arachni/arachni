@@ -4,15 +4,29 @@
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h4 class="panel-title">
-                        <a data-toggle="collapse" href="#<%= id %>_source">
+                        <a href="<%= id_to_location( "#{id}-source" ) %>">
+                            <i class="fa fa-link"></i>
+                        </a>
+
+                        <a data-toggle="collapse" href="#<%= id %>-source">
                             Source
                         </a>
                     </h4>
                 </div>
-                <div id="<%= id %>_source" class="panel-collapse collapse">
+
+                <div id="<%= id %>-source" class="panel-collapse collapse">
                     <div class="panel-body">
                         <% if frame.line.to_i > 0 && frame.url == page.dom.url %>
                             <strong>Page</strong>
+
+                            <strong>
+                                <a
+                                id="<%= id %>-source-page"
+                                href="<%= id_to_location id %>/source/page">
+                                    Page
+                                </a>
+                            </strong>
+
                             <%=
                                 lines = code_highlight( page.body, :html ).lines
                                 from = [0, frame.line-5].max
@@ -36,7 +50,14 @@
                         <% end %>
 
                         <% if !frame.source.to_s.empty? %>
-                            <strong>Function</strong>
+                            <strong>
+                                <a
+                                id="<%= id %>-source-function"
+                                href="<%= id_to_location id %>/source/function">
+                                    Function
+                                </a>
+                            </strong>
+
                             <%= code_highlight( frame.source, :javascript, line_numbers: :table ) %>
                         <% end %>
                     </div>

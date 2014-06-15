@@ -2,12 +2,17 @@
     <div class="panel panel-default">
         <div class="panel-heading">
             <h4 class="panel-title">
-                <a data-toggle="collapse" href="#<%= id %>_stacktrace">
+                <a href="<%= id_to_location( "#{id}-stacktrace" ) %>">
+                    <i class="fa fa-link"></i>
+                </a>
+
+                <a data-toggle="collapse" href="#<%= id %>-stacktrace">
                     Stacktrace
                 </a>
             </h4>
         </div>
-        <div id="<%= id %>_stacktrace" class="panel-collapse collapse">
+
+        <div id="<%= id %>-stacktrace" class="panel-collapse collapse">
             <div class="panel-body">
                 <table class="table table-condensed">
                     <tr>
@@ -27,9 +32,17 @@
                             Arguments
                         </th>
                     </tr>
-                    <% trace.each.with_index do |frame, j| %>
-                        <tr>
-                            <td><%= j %></td>
+                    <% trace.each.with_index do |frame, i| %>
+                        <tr
+                        id="<%= id %>-stacktrace-<%= i %>"
+                        >
+                            <th>
+                                <strong>
+                                    <a href="<%= id_to_location id %>/stacktrace/<%= i %>">
+                                        <%= i %>
+                                    </a>
+                                </strong>
+                            </th>
                             <td>
                                 <a href="<%= escapeHTML frame.url %>">
                                     <%= escapeHTML frame.url %>
@@ -51,7 +64,7 @@
                         </tr>
                         <tr>
                             <%= erb 'issue/page/sink/frame/source.erb',
-                                    id:    "#{id}_stacktrace_#{j}",
+                                    id:    "#{id}-stacktrace-#{i}",
                                     frame: frame,
                                     page:  page
                             %>
