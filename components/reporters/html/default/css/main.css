@@ -79,10 +79,13 @@ table.jqplot-table-legend {
     padding-left: 30px;
 }
 
+table.table-fixed {
+    table-layout: fixed
+}
+
 .data-dump {
     overflow-x: auto;
     max-height: 400px;
-    max-width:  94%;
     position:   relative;
 }
 

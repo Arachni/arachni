@@ -42,7 +42,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
                 to = lines.size - 1
             end
 
-            code = '<table class="CodeRay"><tbody><tr><td class="line-numbers"><pre>'
+            code = '<div class="code-container"><table class="CodeRay"><tbody><tr><td class="line-numbers"><pre>'
 
             from.upto(to) do |i|
                 if options[:anchor_id]
@@ -72,7 +72,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
                 end
             end
 
-            code + '</pre></td></tr></tbody></table>'
+            code + '</pre></td></tr></tbody></table></div>'
         end
 
         def data_dump( data )
