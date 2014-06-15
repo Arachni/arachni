@@ -56,12 +56,21 @@ function goTo( location ){
     // Restore the last open tab from the URL fragment.
     if( !location || location.length <= 0 ) return;
 
+    // Clear the current active status of the navigation links.
+    $("nav li").removeClass("active");
+
     var splits     = location.split('-');
     var breadcrumb = '';
 
     for( var i = 0; i < splits.length; i++ ) {
         breadcrumb += splits[i];
-        $('a[href="#' + breadcrumb + '"]').tab('show');
+
+        var target = $('a[href="#' + breadcrumb + '"]');
+        target.tab('show');
+
+        // Mark all links in the navigation tree as active at every step.
+        target.parents('li').addClass('active');
+
         breadcrumb += '-';
     }
 
