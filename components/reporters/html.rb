@@ -76,7 +76,8 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
         end
 
         def data_dump( data )
-            "<div class='data-dump'>#{data.ai( plain: true, html: true )}</div>"
+            ap = AwesomePrint::Inspector.new( plain: true, html: true )
+            "<pre class='data-dump'>#{ap.awesome( data )}</pre>"
         end
 
         # Carefully escapes HTML and converts to UTF-8 while removing

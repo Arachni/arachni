@@ -79,8 +79,15 @@ table.jqplot-table-legend {
     padding-left: 30px;
 }
 
+.data-dump {
+    overflow-x: auto;
+    max-height: 400px;
+    max-width:  94%;
+    position:   relative;
+}
+
 .code-container {
-    overflow:   scroll;
+    overflow-x: auto;
     max-height: 400px;
     position:   relative;
 }

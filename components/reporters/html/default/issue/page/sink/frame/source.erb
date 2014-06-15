@@ -1,57 +1,55 @@
 <% if (frame.line.to_i > 0 && frame.url == page.dom.url) || !frame.source.to_s.empty? %>
-    <td colspan="5" class="borderless">
-        <div class="panel-group">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h4 class="panel-title">
-                        <a href="<%= id_to_location( "#{id}-source" ) %>">
-                            <i class="fa fa-link"></i>
-                        </a>
+    <div class="panel-group">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <a href="<%= id_to_location( "#{id}-source" ) %>">
+                        <i class="fa fa-link"></i>
+                    </a>
 
-                        <a data-toggle="collapse" href="#<%= id %>-source">
-                            Source
-                        </a>
-                    </h4>
-                </div>
+                    <a data-toggle="collapse" href="#<%= id %>-source">
+                        Source
+                    </a>
+                </h4>
+            </div>
 
-                <div id="<%= id %>-source" class="panel-collapse collapse">
-                    <div class="panel-body">
+            <div id="<%= id %>-source" class="panel-collapse collapse">
+                <div class="panel-body">
 
-                        <% if frame.line.to_i > 0 && frame.url == page.dom.url %>
-                            <strong>
-                                <a
-                                id="<%= id %>-source-page"
-                                href="<%= id_to_location id %>/source/page">
-                                    Page
-                                </a>
-                            </strong>
+                    <% if frame.line.to_i > 0 && frame.url == page.dom.url %>
+                        <strong>
+                            <a
+                            id="<%= id %>-source-page"
+                            href="<%= id_to_location id %>/source/page">
+                                Page
+                            </a>
+                        </strong>
 
-                            <%=
-                                code_highlight(
-                                        page.body, :html,
-                                        from:      frame.line - 5,
-                                        to:        frame.line + 5,
-                                        anchor_id: "#{id}-source-page",
-                                        breakpoint: frame.line
-                                )
-                            %>
-                        <% end %>
+                        <%=
+                            code_highlight(
+                                    page.body, :html,
+                                    from:      frame.line - 5,
+                                    to:        frame.line + 5,
+                                    anchor_id: "#{id}-source-page",
+                                    breakpoint: frame.line
+                            )
+                        %>
+                    <% end %>
 
-                        <% if !frame.source.to_s.empty? %>
-                            <strong>
-                                <a
-                                id="<%= id %>-source-function"
-                                href="<%= id_to_location id %>/source/function">
-                                    Function
-                                </a>
-                            </strong>
+                    <% if !frame.source.to_s.empty? %>
+                        <strong>
+                            <a
+                            id="<%= id %>-source-function"
+                            href="<%= id_to_location id %>/source/function">
+                                Function
+                            </a>
+                        </strong>
 
-                            <%= code_highlight( frame.source, :javascript,
-                                                anchor_id: "#{id}-source-function" ) %>
-                        <% end %>
-                    </div>
+                        <%= code_highlight( frame.source, :javascript,
+                                            anchor_id: "#{id}-source-function" ) %>
+                    <% end %>
                 </div>
             </div>
         </div>
-    </td>
+    </div>
 <% end %>

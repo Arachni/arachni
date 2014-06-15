@@ -8,12 +8,11 @@
         <th>#</th>
         <th>Object</th>
         <th>Function</th>
-        <th>Arguments</th>
-        <th>Tainted argument</th>
+        <th></th>
     </tr>
     <% page.dom.data_flow_sink.each.with_index do |sink, i| %>
         <tr
-            id="<%= id %>-data_flow_sinks-<%= i %>"
+        id="<%= id %>-data_flow_sinks-<%= i %>"
         >
             <th>
                 <strong>
@@ -29,26 +28,67 @@
                 <code><%= sink.function %></code>
             </td>
             <td>
-                <%= data_dump sink.arguments %>
+                <a data-toggle="collapse" href="#<%= id %>-data_flow_sinks-<%= i %>-more"
+                   class="btn btn-info btn-xs">
+                    More
+                </a>
             </td>
+        </tr>
+        <tr id="<%= id %>-data_flow_sinks-<%= i %>-more" class="panel-collapse collapse">
+            <td colspan="4" class="borderless">
+                <ul class="nav nav-tabs">
+                    <li class="active">
+                        <a href="<%= id_to_location id %>/data_flow_sinks/<%= i %>/more/arguments">
+                            Arguments
+                        </a>
+                    </li>
 
-            <td>
-                <%= data_dump sink.tainted %>
-            </td>
-        </tr>
-        <tr>
-            <%= erb 'issue/page/sink/source.erb',
-                    id:     "#{id}-data_flow_sinks-#{i}",
-                    source: sink.source
-            %>
-        </tr>
-        <tr>
-            <td colspan="5" class="borderless">
-                <%= erb 'issue/page/sink/trace.erb',
-                        id:    "#{id}-data_flow_sinks-#{i}",
-                        trace: sink.trace,
-                        page:  page
-                %>
+                    <% if !sink.source.to_s.empty? %>
+                        <li>
+                            <a href="<%= id_to_location id %>/data_flow_sinks/<%= i %>/more/source">
+                                Source
+                            </a>
+                        </li>
+                    <% end %>
+
+                    <% if sink.trace.any? %>
+                        <li>
+                            <a href="<%= id_to_location id %>/data_flow_sinks/<%= i %>/more/stacktrace">
+                                Stacktrace
+                            </a>
+                        </li>
+                    <% end %>
+
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane active" id="<%= id %>-data_flow_sinks-<%= i %>-more-arguments">
+                        <%= erb 'issue/page/sink/data_flow/arguments.erb',
+                                id:   "#{id}-data_flow_sinks-#{i}-more",
+                                sink: sink
+                        %>
+                    </div>
+
+                    <% if !sink.source.to_s.empty? %>
+                        <div class="tab-pane" id="<%= id %>-data_flow_sinks-<%= i %>-more-source">
+                            <%= erb 'issue/page/sink/data_flow/source.erb',
+                                    id:     "#{id}-data_flow_sinks-#{i}-more",
+                                    source: sink.source
+                            %>
+                        </div>
+                    <% end %>
+
+                    <% if sink.trace.any? %>
+                        <div class="tab-pane" id="<%= id %>-data_flow_sinks-<%= i %>-more-stacktrace">
+                            <%= erb 'issue/page/sink/trace/table.erb',
+                                    id:    "#{id}-data_flow_sinks-#{i}-more",
+                                    trace: sink.trace,
+                                    page:  page
+                            %>
+                        </div>
+                    <% end %>
+                </div>
+
             </td>
         </tr>
     <% end %>
