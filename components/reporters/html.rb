@@ -26,7 +26,51 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
         end
 
         def code_highlight( code, language = :html, options = {} )
-            CodeRay.scan( code.recode, language ).div( options )
+            lines = CodeRay.scan( code.recode, language ).html( css: :style ).lines
+
+            if options[:from]
+                from = [0, options[:from]].max
+            else
+                from = 0
+            end
+
+            if options[:to]
+                to = [lines.size, options[:to]].min
+            else
+                to = lines.size - 1
+            end
+
+            code = '<table class="CodeRay"><tbody><tr><td class="line-numbers"><pre>'
+
+            from.upto(to) do |i|
+                if options[:anchor_id]
+                    line = "<a id='#{options[:anchor_id]}-#{i}' href='#{id_to_location "#{options[:anchor_id]}-#{i}"}'>#{i}</a>"
+                else
+                    line = "#{i}"
+                end
+
+                if options[:emphasize] && options[:emphasize] == i
+                    code << "<strong>#{line}</strong>"
+                else
+                    code << line
+                end
+
+                code << "\n"
+            end
+
+            code << '</pre></td><td class="code"><pre>'
+
+            from.upto(to) do |i|
+                line = lines[i]
+
+                if options[:emphasize] && options[:emphasize] == i
+                    code << "<strong>#{line}</strong>"
+                else
+                    code << line.to_s
+                end
+            end
+
+            code + '</pre></td></tr></tbody></table>'
         end
 
         def data_dump( data )

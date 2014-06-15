@@ -28,24 +28,12 @@
                             </strong>
 
                             <%=
-                                lines = code_highlight( page.body, :html ).lines
-                                from = [0, frame.line-5].max
-                                upto = [lines.size, frame.line+5].min
-
-                                code = '<table class="CodeRay"><tbody><tr><td class="line-numbers"><pre>'
-
-                                from.upto(upto) do |i|
-                                    code << (frame.line == i ? "<strong>#{i}</strong>\n" : "#{i}\n")
-                                end
-
-                                code << '</pre></td><td class="code"><pre>'
-
-                                from.upto(upto) do |i|
-                                    line = lines[i]
-                                    code << (frame.line == i ? "<strong>#{line}</strong>" : "#{line}")
-                                end
-
-                                code + '</pre></td></tr></tbody></table>'
+                                code_highlight(
+                                        frame.source, :html,
+                                        from:      frame.line - 5,
+                                        to:        frame.line + 5,
+                                        anchor_id: "#{id}-source-page"
+                                )
                             %>
                         <% end %>
 
@@ -58,7 +46,8 @@
                                 </a>
                             </strong>
 
-                            <%= code_highlight( frame.source, :javascript, line_numbers: :table ) %>
+                            <%= code_highlight( frame.source, :javascript,
+                                                anchor_id: "#{id}-source-function" ) %>
                         <% end %>
                     </div>
                 </div>
