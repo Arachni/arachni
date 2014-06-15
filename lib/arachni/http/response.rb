@@ -137,7 +137,7 @@ class Response < Message
     end
 
     def body=( body )
-        @body = body.to_s
+        @body = body.to_s.dup
 
         text_check = text?
         @body.recode! if text_check.nil? || text_check
