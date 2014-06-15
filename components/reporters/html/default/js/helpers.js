@@ -103,3 +103,11 @@ function goTo( location ){
 function openFromWindowLocation(){
     goTo( window.location.hash.split('#!/')[1] );
 }
+
+function idFromWindowLocation() {
+    return window.location.hash.split('#!/')[1].replace( /\//g, '-' )
+}
+
+function scrollToActiveElementFromWindowLocation() {
+    $('html,body').scrollTop( $('#' + idFromWindowLocation()).offset().top );
+}

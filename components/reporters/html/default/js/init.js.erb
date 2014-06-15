@@ -11,6 +11,7 @@ jQuery(function ($) {
 
     // Restore the last open tab from the URL fragment.
     openFromWindowLocation();
+    scrollToActiveElementFromWindowLocation();
 });
 
 $(window).bind( "popstate", function () {
