@@ -55,7 +55,14 @@
 <% if !page.body.empty? %>
 <div class="row">
     <div class="col-md-12">
-        <strong>Body</strong>
+        <strong>
+            <a
+            id="<%= id %>-body"
+            href="<%= id_to_location id %>/body">
+                Body
+            </a>
+        </strong>
+
         <%= code_highlight( page.body, :html, anchor_id: "#{id}-body" ) %>
     </div>
 </div>
@@ -65,12 +72,25 @@
 
 <div class="row">
     <div class="col-md-6">
-        <strong>HTTP request</strong>
+        <strong>
+            <a
+            id="<%= id %>-http_request"
+            href="<%= id_to_location id %>/http_request">
+                HTTP request
+            </a>
+        </strong>
+
         <pre class="code-container"><%= escapeHTML(page.request) %></pre>
     </div>
 
     <div class="col-md-6">
-        <strong>HTTP response</strong>
+        <strong>
+            <a
+            id="<%= id %>-http_response"
+            href="<%= id_to_location id %>/http_response">
+                HTTP response
+            </a>
+        </strong>
         <pre class="code-container"><%= escapeHTML(page.response) %></pre>
     </div>
 </div>
