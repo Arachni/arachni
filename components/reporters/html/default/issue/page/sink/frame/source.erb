@@ -16,9 +16,8 @@
 
                 <div id="<%= id %>-source" class="panel-collapse collapse">
                     <div class="panel-body">
-                        <% if frame.line.to_i > 0 && frame.url == page.dom.url %>
-                            <strong>Page</strong>
 
+                        <% if frame.line.to_i > 0 && frame.url == page.dom.url %>
                             <strong>
                                 <a
                                 id="<%= id %>-source-page"
@@ -29,10 +28,11 @@
 
                             <%=
                                 code_highlight(
-                                        frame.source, :html,
+                                        page.body, :html,
                                         from:      frame.line - 5,
                                         to:        frame.line + 5,
-                                        anchor_id: "#{id}-source-page"
+                                        anchor_id: "#{id}-source-page",
+                                        breakpoint: frame.line
                                 )
                             %>
                         <% end %>

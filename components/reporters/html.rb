@@ -52,7 +52,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
                 end
 
                 if options[:breakpoint] && options[:breakpoint] == i
-                    code << "<strong>#{line}</strong>"
+                    code << "<span class='breakpoint'>#{line}</span>"
                 else
                     code << line
                 end
