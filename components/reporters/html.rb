@@ -100,9 +100,14 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
         end
 
         def issue_id( issue )
+            # Trust evaluation needs to come from variations.
+            untrusted = issue.variation? ?
+                issue.untrusted? : issue.variations.first.untrusted?
+
+            # Generic issue data needs to come from the parent.
             issue = report.issue_by_digest( issue.digest ) if issue.variation?
 
-            "issues-#{'un' if issue.untrusted?}trusted-severity-" <<
+            "issues-#{'un' if untrusted}trusted-severity-" <<
                 "#{issue.severity}-#{issue.check[:shortname]}-#{issue.digest}"
         end
 
