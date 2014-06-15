@@ -28,24 +28,25 @@
                 <code><%= sink.function %></code>
             </td>
             <td>
-                <a data-toggle="collapse" href="#<%= id %>-data_flow_sinks-<%= i %>-more"
+                <a href="javascript:void(0);"
+                   onclick="$('#<%= id %>-data_flow_sinks-<%= i %>-advanced').toggle()"
                    class="btn btn-info btn-xs">
-                    More
+                    Advanced
                 </a>
             </td>
         </tr>
-        <tr id="<%= id %>-data_flow_sinks-<%= i %>-more" class="panel-collapse collapse">
-            <td colspan="4" class="borderless">
+        <tr id="<%= id %>-data_flow_sinks-<%= i %>-advanced" style="display: none">
+            <td colspan="4">
                 <ul class="nav nav-tabs">
                     <li class="active">
-                        <a href="<%= id_to_location id %>/data_flow_sinks/<%= i %>/more/arguments">
+                        <a href="<%= id_to_location id %>/data_flow_sinks/<%= i %>/advanced/arguments">
                             Arguments
                         </a>
                     </li>
 
                     <% if !sink.source.to_s.empty? %>
                         <li>
-                            <a href="<%= id_to_location id %>/data_flow_sinks/<%= i %>/more/source">
+                            <a href="<%= id_to_location id %>/data_flow_sinks/<%= i %>/advanced/source">
                                 Source
                             </a>
                         </li>
@@ -53,7 +54,7 @@
 
                     <% if sink.trace.any? %>
                         <li>
-                            <a href="<%= id_to_location id %>/data_flow_sinks/<%= i %>/more/stacktrace">
+                            <a href="<%= id_to_location id %>/data_flow_sinks/<%= i %>/advanced/stacktrace">
                                 Stacktrace
                             </a>
                         </li>
@@ -62,26 +63,26 @@
                 </ul>
 
                 <div class="tab-content">
-                    <div class="tab-pane active" id="<%= id %>-data_flow_sinks-<%= i %>-more-arguments">
+                    <div class="tab-pane active" id="<%= id %>-data_flow_sinks-<%= i %>-advanced-arguments">
                         <%= erb 'issue/page/sink/data_flow/arguments.erb',
-                                id:   "#{id}-data_flow_sinks-#{i}-more",
+                                id:   "#{id}-data_flow_sinks-#{i}-advanced",
                                 sink: sink
                         %>
                     </div>
 
                     <% if !sink.source.to_s.empty? %>
-                        <div class="tab-pane" id="<%= id %>-data_flow_sinks-<%= i %>-more-source">
+                        <div class="tab-pane" id="<%= id %>-data_flow_sinks-<%= i %>-advanced-source">
                             <%= erb 'issue/page/sink/data_flow/source.erb',
-                                    id:     "#{id}-data_flow_sinks-#{i}-more",
+                                    id:     "#{id}-data_flow_sinks-#{i}-advanced",
                                     source: sink.source
                             %>
                         </div>
                     <% end %>
 
                     <% if sink.trace.any? %>
-                        <div class="tab-pane" id="<%= id %>-data_flow_sinks-<%= i %>-more-stacktrace">
+                        <div class="tab-pane" id="<%= id %>-data_flow_sinks-<%= i %>-advanced-stacktrace">
                             <%= erb 'issue/page/sink/trace/table.erb',
-                                    id:    "#{id}-data_flow_sinks-#{i}-more",
+                                    id:    "#{id}-data_flow_sinks-#{i}-advanced-stacktrace",
                                     trace: sink.trace,
                                     page:  page
                             %>

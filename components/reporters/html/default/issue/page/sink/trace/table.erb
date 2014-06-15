@@ -17,12 +17,10 @@
         </th>
     </tr>
     <% trace.each.with_index do |frame, i| %>
-        <tr
-        id="<%= id %>-<%= i %>"
-        >
+        <tr id="<%= id %>-<%= i %>">
             <th>
                 <strong>
-                    <a href="<%= id_to_location id %>/stacktrace/<%= i %>">
+                    <a href="<%= id_to_location id %>/<%= i %>">
                         <%= i %>
                     </a>
                 </strong>
@@ -34,7 +32,7 @@
             </td>
             <td>
                 <% if frame.line.to_i > 0 && frame.url == page.dom.url %>
-                    <a href="<%= id_to_location id %>/stacktrace/<%= i %>/source/page/<% frame.line %>">
+                    <a href="<%= id_to_location id %>/<%= i %>/source/page/<% frame.line %>">
                         <%= frame.line %>
                     </a>
                 <% else %>
@@ -56,7 +54,7 @@
             <tr>
                 <td colspan="5" class="borderless">
                     <%= erb 'issue/page/sink/frame/source.erb',
-                            id:    "#{id}-stacktrace-#{i}",
+                            id:    "#{id}-#{i}",
                             frame: frame,
                             page:  page
                     %>

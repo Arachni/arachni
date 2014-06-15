@@ -78,8 +78,15 @@ function goTo( location ){
         level.siblings().removeClass('active');
         //.. and activate the one we want.
         level.addClass('active');
+
+        // In case it's hidden.
+        level.show();
+
         // In case it's a collapsible.
-        level.addClass('in');
+        if( level.hasClass('collapse') ) {
+            level.addClass('in');
+        }
+
 
         if( i != splits.length - 1) {
             href_breadcrumb += '/';
