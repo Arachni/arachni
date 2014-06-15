@@ -8,7 +8,9 @@
     <% next if by_severity.empty? %>
 
     <h3>
-        <a href="#/issues/<%= trust %>">
+        <a href="#!/issues/<%= trust %>">
+
+            <%= trust.to_s.capitalize %>
 
             <span class="badge">
                 <%= graph_data[:trust][trust.to_s.capitalize] %>
@@ -34,81 +36,86 @@
                 <div class="col-md-6">
                     <div class="issue-summary">
 
-                        <strong>
-                            <a href="#!/issues/<%= trust %>/severity/<%= severity %>/<%= issues.first.check[:shortname] %>">
-                                <%= name %>
+                        <div class="panel panel-info">
+                            <div class="panel-heading">
+                                <strong>
+                                    <a href="#!/issues/<%= trust %>/severity/<%= severity %>/<%= issues.first.check[:shortname] %>">
+                                        <%= name %>
 
-                                <span class="badge">
-                                    <%= issues.size %>
-                                </span>
-                            </a>
-                        </strong>
+                                        <span class="badge">
+                                            <%= issues.size %>
+                                        </span>
+                                    </a>
+                                </strong>
+                            </div>
 
-                        <% if !issues.first.description.to_s.empty? %>
-                        <p class="well">
-                            <%= escapeHTML(issues.first.description) %>
-                        </p>
-                        <% end %>
-
-                        <table class="table table condensed">
-                            <tr>
-                                <th></th>
-                                <th>
-                                    Vector type
-                                </th>
-
-                                <% if issues.first.active? %>
-                                <th>
-                                    Input name
-                                </th>
+                            <div class="panel-body">
+                                <% if !issues.first.description.to_s.empty? %>
+                                    <p class="well">
+                                        <%= escapeHTML(issues.first.description) %>
+                                    </p>
                                 <% end %>
 
-                                <% if issues.first.variations.first.request %>
-                                <th>
-                                    HTTP method
-                                </th>
-                                <% end %>
+                                <table class="table table condensed">
+                                    <tr>
+                                        <th></th>
+                                        <th>
+                                            Vector type
+                                        </th>
 
-                                <th>
-                                    Action
-                                </th>
-                            </tr>
+                                        <% if issues.first.active? %>
+                                            <th>
+                                                Input name
+                                            </th>
+                                        <% end %>
 
-                            <% issues.each do |issue| %>
-                                <tr>
-                                    <td>
-                                        <a class="btn btn-xs btn-info"
-                                           href="<%= issue_location( issue ) %>"
-                                           title="Inspect issue"
-                                        >
-                                            <i class="fa fa-eye"></i>
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <code><%= issue.vector.type %></code>
-                                    </td>
+                                        <% if issues.first.variations.first.request %>
+                                            <th>
+                                                HTTP method
+                                            </th>
+                                        <% end %>
 
-                                    <% if issue.active? %>
-                                    <td>
-                                        <code><%= issue.affected_input_name %></code>
-                                    </td>
+                                        <th>
+                                            Action
+                                        </th>
+                                    </tr>
+
+                                    <% issues.each do |issue| %>
+                                        <tr>
+                                            <td>
+                                                <a class="btn btn-xs btn-info"
+                                                   href="<%= issue_location(issue) %>"
+                                                   title="Inspect issue"
+                                                >
+                                                    <i class="fa fa-eye"></i>
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <code><%= issue.vector.type %></code>
+                                            </td>
+
+                                            <% if issue.active? %>
+                                                <td>
+                                                    <code><%= issue.affected_input_name %></code>
+                                                </td>
+                                            <% end %>
+
+                                            <% if issue.variations.first.request %>
+                                                <td>
+                                                    <code><%= issue.variations.first.request.method.to_s.upcase %></code>
+                                                </td>
+                                            <% end %>
+
+                                            <td>
+                                                <a href="<%= escapeHTML issue.vector.action %>">
+                                                    <%= escapeHTML issue.vector.action %>
+                                                </a>
+                                            </td>
+                                        </tr>
                                     <% end %>
-
-                                    <% if issue.variations.first.request %>
-                                        <td>
-                                        <code><%= issue.variations.first.request.method.to_s.upcase %></code>
-                                        </td>
-                                    <% end %>
-
-                                    <td>
-                                        <a href="<%= escapeHTML issue.vector.action %>">
-                                            <%= escapeHTML issue.vector.action %>
-                                        </a>
-                                    </td>
-                                </tr>
-                            <% end %>
-                        </table>
-
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             <% end %>

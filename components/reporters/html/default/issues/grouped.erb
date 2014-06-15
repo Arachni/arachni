@@ -53,8 +53,6 @@
 
                 <% issues.each do |issue| %>
                     <%= erb :issue, issue: issue, id: "issues-#{trust}-severity-#{severity}-#{issues.first.check[:shortname]}" %>
-
-                    <hr/>
                 <% end %>
             <% end %>
         </div>
