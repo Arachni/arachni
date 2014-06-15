@@ -56,6 +56,8 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
         end
 
         def issue_id( issue )
+            issue = report.issue_by_digest( issue.digest ) if issue.variation?
+
             "issues-#{'un' if issue.untrusted?}trusted-severity-" <<
                 "#{issue.severity}-#{issue.check[:shortname]}-#{issue.digest}"
         end
