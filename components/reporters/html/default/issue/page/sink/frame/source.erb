@@ -18,7 +18,7 @@
     %>
 <% end %>
 
-<% if !frame.source.to_s.empty? %>
+<% if !frame.function.source.to_s.empty? %>
     <strong>
         <a
         id="<%= id %>-source-function"
@@ -27,6 +27,6 @@
         </a>
     </strong>
 
-    <%= code_highlight( frame.source, :javascript,
+    <%= code_highlight( frame.function.source, :javascript,
                         anchor_id: "#{id}-source-function" ) %>
 <% end %>

@@ -44,13 +44,14 @@
                 <% end %>
             </td>
             <td>
-                <% if frame.function %>
-                    <code><%= frame.function %></code>
+                <% if frame.function.name %>
+                    <code><%= frame.function.name %></code>
                 <% end %>
             </td>
 
             <td>
-                <% if frame.arguments || (frame.line.to_i > 0 && frame.url == page.dom.url) || !frame.source.to_s.empty? %>
+                <% if (frame.line.to_i > 0 && frame.url == page.dom.url) ||
+                        !frame.function.source.to_s.empty? || frame.function.arguments %>
                     <a href="javascript:void(0);"
                        onclick="$('#<%= id %>-<%= i %>-inspect').toggle()"
                        class="btn btn-info btn-xs">
@@ -69,13 +70,14 @@
             </td>
         </tr>
 
-        <% if frame.arguments || (frame.line.to_i > 0 && frame.url == page.dom.url) || !frame.source.to_s.empty? %>
+        <% if (frame.line.to_i > 0 && frame.url == page.dom.url) ||
+                !frame.function.source.to_s.empty? || frame.function.arguments %>
         <tr id="<%= id %>-<%= i %>-inspect" style="display: none">
             <td colspan="5" class="borderless">
                 <ul class="nav nav-tabs">
 
                     <% has_active = false %>
-                    <% if frame.arguments %>
+                    <% if frame.function.arguments %>
                     <% has_active = true %>
 
                     <li class="active">
@@ -85,7 +87,7 @@
                     </li>
                     <% end %>
 
-                    <% if (frame.line.to_i > 0 && frame.url == page.dom.url) || !frame.source.to_s.empty? %>
+                    <% if (frame.line.to_i > 0 && frame.url == page.dom.url) || !frame.function.source.to_s.empty? %>
                         <li <%= 'class="active"' if !has_active %>>
                             <a href="<%= id_to_location id %>/<%= i %>/inspect/source">
                                 Source
@@ -97,14 +99,14 @@
                 <div class="tab-content">
 
                     <% has_active = false %>
-                    <% if frame.arguments %>
+                    <% if frame.function.arguments %>
                         <% has_active = true %>
                     <div class="tab-pane active" id="<%= id %>-<%= i %>-inspect-arguments">
-                        <%= data_dump frame.arguments %>
+                        <%= data_dump frame.function.arguments %>
                     </div>
                     <% end %>
 
-                    <% if (frame.line.to_i > 0 && frame.url == page.dom.url) || !frame.source.to_s.empty? %>
+                    <% if (frame.line.to_i > 0 && frame.url == page.dom.url) || !frame.function.source.to_s.empty? %>
                         <div class="tab-pane <%= 'active' if !has_active %>" id="<%= id %>-<%= i %>-inspect-source">
                             <%= erb 'issue/page/sink/frame/source.erb',
                                     id:    "#{id}-#{i}-inspect",

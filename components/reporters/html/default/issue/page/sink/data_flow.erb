@@ -23,7 +23,7 @@
                 <code><%= sink.object %></code>
             </td>
             <td>
-                <code><%= sink.function %></code>
+                <code><%= sink.function.name %></code>
             </td>
             <td>
                 <a href="javascript:void(0);"
@@ -42,7 +42,7 @@
                         </a>
                     </li>
 
-                    <% if !sink.source.to_s.empty? %>
+                    <% if !sink.function.source.to_s.empty? %>
                         <li>
                             <a href="<%= id_to_location id %>/data_flow_sinks/<%= i %>/inspect/source">
                                 Source
@@ -68,11 +68,11 @@
                         %>
                     </div>
 
-                    <% if !sink.source.to_s.empty? %>
+                    <% if !sink.function.source.to_s.empty? %>
                         <div class="tab-pane" id="<%= id %>-data_flow_sinks-<%= i %>-inspect-source">
                             <%= erb 'issue/page/sink/data_flow/source.erb',
                                     id:     "#{id}-data_flow_sinks-#{i}-inspect",
-                                    source: sink.source
+                                    source: sink.function.source
                             %>
                         </div>
                     <% end %>
