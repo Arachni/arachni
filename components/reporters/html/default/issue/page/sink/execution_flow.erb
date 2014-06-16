@@ -1,7 +1,14 @@
 <table class="table table-condensed table-fixed">
     <tr>
         <th>#</th>
-        <th>Data</th>
+        <th>
+            Data
+
+            <a href="#" rel="tooltip"
+               title="Helper data logged by the payload.">
+                <i class="fa fa-info"></i>
+            </a>
+        </th>
         <th></th>
     </tr>
     <% page.dom.execution_flow_sink.each.with_index do |sink, i| %>
@@ -13,7 +20,11 @@
                     </a>
                 </strong>
             </td>
-            <td><%= data_dump sink.data %></td>
+            <td>
+                <% if sink.data.any? %>
+                <%= data_dump sink.data %>
+                <% end %>
+            </td>
             <td>
                 <a href="javascript:void(0);"
                    onclick="$('#<%= id %>-execution_flow_sinks-<%= i %>-inspect').toggle()"
