@@ -219,13 +219,15 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
                     h
                 end
 
-            if grouped_issues[:trusted][by_severity.first.severity].empty?
-                grouped_issues[:trusted].delete by_severity.first.severity
+            [:trusted, :untrusted].each do |t|
+                if grouped_issues[t][by_severity.first.severity].empty?
+                    grouped_issues[t].delete by_severity.first.severity
+                end
             end
+        end
 
-            if grouped_issues[:untrusted][by_severity.first.severity].empty?
-                grouped_issues[:untrusted].delete by_severity.first.severity
-            end
+        [:trusted, :untrusted].each do |t|
+            grouped_issues.delete( t ) if grouped_issues[t].empty?
         end
 
         prepare_data.merge(

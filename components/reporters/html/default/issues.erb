@@ -3,36 +3,23 @@
 <%= erb :search, id: 'issues_tab' %>
 
 <ul class="nav nav-tabs">
+    <% grouped_issues.keys.each.with_index do |trust, i| %>
     <li
-        <%= "class='#{has_trusted_issues ? 'active' : 'disabled' }'" %>
+        <%= "class='active'" if i == 0 %>
     >
-        <a
-           <%= 'href="#!/issues/trusted"' if has_trusted_issues %>
-        >
-            Trusted
+        <a href="#!/issues/<%= trust %>" >
+            <%= trust.to_s.capitalize %>
 
             <span class="badge">
-                <%= graph_data[:trust]['Trusted'] %>
+                <%= graph_data[:trust][trust.to_s.capitalize] %>
             </span>
         </a>
     </li>
-
-    <li
-        <%= 'class="disabled"' if !has_untrusted_issues %>
-    >
-        <a
-           <%= 'href="#!/issues/untrusted"' if has_untrusted_issues %>
-        >
-            Untrusted
-
-            <span class="badge">
-                <%= graph_data[:trust]['Untrusted'] %>
-            </span>
-        </a>
-    </li>
+    <% end %>
 </ul>
 
 <div class="tab-content">
+    <% if grouped_issues[:trusted] %>
     <div class="tab-pane active" id="issues-trusted">
         <p class="well">
             At the time these issues were logged there were no abnormal
@@ -42,7 +29,9 @@
 
         <%= erb 'issues/grouped.erb', trust: :trusted, grouped: grouped_issues[:trusted] %>
     </div>
+    <% end %>
 
+    <% if grouped_issues[:untrusted] %>
     <div class="tab-pane" id="issues-untrusted">
         <p class="well">
             These issues are considered untrusted (and may in fact be false
@@ -55,4 +44,5 @@
 
         <%= erb 'issues/grouped.erb', trust: :untrusted, grouped: grouped_issues[:untrusted] %>
     </div>
+    <% end %>
 </div>
