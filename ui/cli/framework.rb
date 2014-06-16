@@ -58,7 +58,7 @@ class Framework
             @scan = Thread.new do
                 @framework.run do
                     hide_command_screen
-                    restore_output
+                    restore_output_options
                     clear_screen
                 end
 
@@ -150,9 +150,6 @@ class Framework
     # Handles Ctrl+C signals.
     def show_command_screen
         return if command_screen_shown?
-
-        @only_positives_opt = only_positives?
-        @@only_positives    = false
 
         @show_command_screen = Thread.new do
             clear_screen
@@ -255,19 +252,17 @@ class Framework
                 # Generate reports.
                 when 'g'
                     hide_command_screen
-                    restore_output
                     generate_reports
+                    restore_output_options
 
                 # Toggle verbosity.
                 when 'v'
                     hide_command_screen
-                    restore_output
                     verbose? ? verbose_off : verbose_on
 
                 # Toggle debugging messages.
                 when /d(\d?)/
                     hide_command_screen
-                    restore_output
 
                     if (level = Regexp.last_match[1]).empty?
                         debug? ? debug_off : debug_on
@@ -282,10 +277,10 @@ class Framework
                     if @show_command_screen
                         hide_command_screen
                     else
+                        capture_output_options
                         show_command_screen
                     end
 
-                    restore_output
                     empty_screen
             end
         end
@@ -299,9 +294,15 @@ class Framework
     def hide_command_screen
         @show_command_screen.kill if @show_command_screen
         @show_command_screen = nil
+        restore_output_options
     end
 
-    def restore_output
+    def capture_output_options
+        @only_positives_opt = only_positives?
+        @@only_positives    = false
+    end
+
+    def restore_output_options
         @@only_positives = @only_positives_opt
         unmute
     end
@@ -312,8 +313,9 @@ class Framework
                 @framework.suspend
 
                 hide_command_screen
-                restore_output
                 clear_screen
+
+                capture_output_options
 
                 generate_reports
 
@@ -326,7 +328,7 @@ class Framework
     end
 
     def shutdown
-        restore_output
+        capture_output_options
 
         print_status 'Aborting...'
         print_info 'Please wait while the system cleans up.'
@@ -339,7 +341,7 @@ class Framework
                 @framework.clean_up
 
                 hide_command_screen
-                restore_output
+                restore_output_options
                 clear_screen
 
                 generate_reports
@@ -351,6 +353,8 @@ class Framework
     end
 
     def generate_reports
+        capture_output_options
+
         report = @framework.report
 
         @framework.reporters.run :stdout, report
