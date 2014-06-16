@@ -14,29 +14,54 @@ class Sink
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class DataFlow < Base
 
-    # @return   [String, nil]
-    #   Source of the relevant function.
-    attr_accessor :source
-
-    # @return   [String]
-    #   Name of the relevant function.
+    # @return   [Frame::CalledFunction]
+    #   Relevant function.
     attr_accessor :function
 
     # @return   [String]
     #   Name of the object containing {#function}.
     attr_accessor :object
 
-    # @return   [Array]
-    #   Arguments passed to the relevant function.
-    attr_accessor :arguments
+    # @return   [Integer]
+    #   Index for the tainted argument in {#arguments}.
+    attr_accessor :tainted_argument_index
 
     # @return   [Object]
-    #   Tainted value in {#arguments}.
-    attr_accessor :tainted
+    #   Tainted value of {#tainted_argument_index}, located by traversing it
+    #   recursively.
+    attr_accessor :tainted_value
 
     # @return   [String]
     #   Active taint.
     attr_accessor :taint
+
+    def initialize( options = {} )
+        if options[:function].is_a? Hash
+            @function = Frame::CalledFunction.new( options.delete(:function) )
+        end
+
+        super
+    end
+
+    def tainted_argument
+        return if !function.arguments
+        function.arguments[tainted_argument_index]
+    end
+
+    def to_h
+        super.merge( function: function.to_h )
+    end
+
+    def to_rpc_data
+        h = to_h.merge( function: function.to_rpc_data )
+        h[:trace] = h[:trace].map(&:to_rpc_data)
+        h
+    end
+
+    def self.from_rpc_data( data )
+        data['function'] = Frame::CalledFunction.from_rpc_data( data['function'] )
+        super data
+    end
 
 end
 

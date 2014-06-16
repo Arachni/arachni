@@ -7,21 +7,37 @@ module Arachni
 class Browser
 class Javascript
 class TaintTracer
-class Sink
+class Frame
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-class Base
+class CalledFunction
 
-    # @return   [Array<Frame>]
-    #   Stacktrace.
-    attr_accessor :trace
+    # @return   [String, nil]
+    #   Source of the function.
+    attr_accessor :source
+
+    # @return   [String]
+    #   Name of the function.
+    attr_accessor :name
+
+    # @return   [Array]
+    #   Arguments passed to the relevant function.
+    attr_accessor :arguments
 
     def initialize( options = {} )
         options.symbolize_keys(false).each do |k, v|
             send( "#{k}=", v )
         end
+    end
 
-        @trace ||= []
+    def signature_arguments
+        return if !signature
+        signature.match( /\((.*)\)/ )[1].split( ',' ).map(&:strip)
+    end
+
+    def signature
+        return if !@source
+        @source.match( /function\s*(.*?)\s*\{/m )[1]
     end
 
     def to_h
@@ -41,18 +57,19 @@ class Base
     end
 
     def to_rpc_data
-        to_h.merge( trace: trace.map(&:to_rpc_data) )
+        to_h
     end
 
     def self.from_rpc_data( data )
-        data['trace'] = data['trace'].map { |d| Frame.from_rpc_data( d ) }
         new data
     end
 
 end
 
 end
+
 end
 end
 end
 end
+

@@ -70,7 +70,7 @@ class TaintTracer < Proxy
         return [] if !data
 
         data.map do |entry|
-            Sink::DataFlow.new( (entry['data'] || {}).merge(
+            Sink::DataFlow.new( (entry['data'] || {}).symbolize_keys( false ).merge(
                 trace: [entry['trace']].flatten.compact.
                           map { |h| Frame.new h.symbolize_keys( false ) }
                 )

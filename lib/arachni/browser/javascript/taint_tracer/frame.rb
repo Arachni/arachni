@@ -3,6 +3,8 @@
     All rights reserved.
 =end
 
+require_relative 'frame/called_function'
+
 module Arachni
 class Browser
 class Javascript
@@ -13,20 +15,12 @@ class TaintTracer
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Frame
 
-    # @return   [String, nil]
-    #   Source of the relevant function.
-    attr_accessor :source
-
-    # @return   [String]
-    #   Name of the relevant function.
+    # @return   [CalledFunction]
+    #   Relevant function.
     attr_accessor :function
 
-    # @return   [Array]
-    #   Arguments passed to the relevant function.
-    attr_accessor :arguments
-
     # @return   [String, nil]
-    #   Location of the file containing the relevant function.
+    #   Location of the file associated with the called frame.
     attr_accessor :url
 
     # @return   [Integer, nil]
@@ -34,6 +28,10 @@ class Frame
     attr_accessor :line
 
     def initialize( options = {} )
+        if options[:function].is_a? Hash
+            @function = CalledFunction.new( options.delete(:function) )
+        end
+
         options.symbolize_keys(false).each do |k, v|
             send( "#{k}=", v )
         end
@@ -43,7 +41,7 @@ class Frame
         instance_variables.inject({}) do |h, iv|
             h[iv.to_s.gsub('@', '').to_sym] = instance_variable_get( iv )
             h
-        end
+        end.merge( function: function.to_h )
     end
     alias :to_hash :to_h
 
@@ -56,10 +54,11 @@ class Frame
     end
 
     def to_rpc_data
-        to_h
+        to_h.merge( function: function.to_rpc_data )
     end
 
     def self.from_rpc_data( data )
+        data['function'] = Frame::CalledFunction.from_rpc_data( data['function'] )
         new data
     end
 

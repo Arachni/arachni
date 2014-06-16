@@ -4,7 +4,7 @@ describe Arachni::Browser::Javascript::TaintTracer::Frame do
 
     subject { Factory[:frame] }
 
-    %w(source function arguments url line).each do |m|
+    %w(function url line).each do |m|
         it { should respond_to m }
         it { should respond_to "#{m}=" }
     end
@@ -16,7 +16,7 @@ describe Arachni::Browser::Javascript::TaintTracer::Frame do
     describe '#to_rpc_data' do
         let(:data) { subject.to_rpc_data }
 
-        %w(source function arguments url line).each do |attribute|
+        %w(function url line).each do |attribute|
             it "includes '#{attribute}'" do
                 data[attribute.to_sym].should == subject.send( attribute )
             end
@@ -27,7 +27,7 @@ describe Arachni::Browser::Javascript::TaintTracer::Frame do
         let(:restored) { described_class.from_rpc_data data }
         let(:data) { Arachni::RPC::Serializer.rpc_data( subject ) }
 
-        %w(source function arguments url line).each do |attribute|
+        %w(function url line).each do |attribute|
             it "restores '#{attribute}'" do
                 restored.send( attribute ).should == subject.send( attribute )
             end

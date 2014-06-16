@@ -5,7 +5,7 @@ describe Arachni::Browser::Javascript::TaintTracer::Sink::DataFlow do
 
     subject { Factory[:data_flow] }
 
-    %w(source function arguments object tainted taint).each do |m|
+    %w(function object tainted_argument_index tainted_value taint).each do |m|
         it { should respond_to m }
         it { should respond_to "#{m}=" }
     end
@@ -17,7 +17,7 @@ describe Arachni::Browser::Javascript::TaintTracer::Sink::DataFlow do
     describe '#to_rpc_data' do
         let(:data) { subject.to_rpc_data }
 
-        %w(source function arguments object tainted taint).each do |attribute|
+        %w(function object tainted_argument_index tainted_value taint).each do |attribute|
             it "includes '#{attribute}'" do
                 data[attribute.to_sym].should == subject.send( attribute )
             end
@@ -28,9 +28,24 @@ describe Arachni::Browser::Javascript::TaintTracer::Sink::DataFlow do
         let(:restored) { described_class.from_rpc_data data }
         let(:data) { Arachni::RPC::Serializer.rpc_data( subject ) }
 
-        %w(source function arguments object tainted taint).each do |attribute|
+        %w(function object tainted_argument_index tainted_value taint).each do |attribute|
             it "restores '#{attribute}'" do
                 restored.send( attribute ).should == subject.send( attribute )
+            end
+        end
+    end
+
+    describe '#tainted_argument' do
+        context 'when there are #arguments' do
+            it 'returns the tainted argument' do
+                subject.tainted_argument.should == 'blah-val'
+            end
+        end
+
+        context 'when there are no #arguments' do
+            it 'returns nil' do
+                subject.function.arguments = nil
+                subject.tainted_argument.should be_nil
             end
         end
     end

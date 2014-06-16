@@ -70,15 +70,15 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                     entry = sink[0]
                     entry.object.should == 'DOMWindow'
-                    entry.function.should == 'process'
-                    entry.source.should start_with 'function process'
-                    entry.arguments.should == [
+                    entry.function.name.should == 'process'
+                    entry.function.source.should start_with 'function process'
+                    entry.function.arguments.should == [
                         {
                             'my_data' => 'blah',
                             'input'   => @javascript.taint
                         }
                     ]
-                    entry.tainted.should == @javascript.taint
+                    entry.tainted_value.should == @javascript.taint
                     entry.taint.should == @javascript.taint
                     @browser.source.split("\n")[entry.trace[0].line-1].should include 'process('
                 end
@@ -95,10 +95,10 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                             entry = sink[0]
                             entry.object.should == 'DOMWindow'
-                            entry.function.should == function
-                            entry.source.should start_with "function #{function}"
-                            entry.arguments.should == [ @javascript.taint ]
-                            entry.tainted.should == @javascript.taint
+                            entry.function.name.should == function
+                            entry.function.source.should start_with "function #{function}"
+                            entry.function.arguments.should == [ @javascript.taint ]
+                            entry.tainted_value.should == @javascript.taint
                             entry.taint.should == @javascript.taint
                             @browser.source.split("\n")[entry.trace[0].line].should include "#{function}("
                         end
@@ -116,11 +116,11 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[0]
                         entry.object.should == 'XMLHttpRequestPrototype'
-                        entry.function.should == 'open'
-                        entry.arguments.should == [
+                        entry.function.name.should == 'open'
+                        entry.function.arguments.should == [
                             'GET', "/?taint=#{@javascript.taint}", true
                         ]
-                        entry.tainted.should == "/?taint=#{@javascript.taint}"
+                        entry.tainted_value.should == "/?taint=#{@javascript.taint}"
                         entry.taint.should == @javascript.taint
 
                         trace = entry.trace[0]
@@ -138,9 +138,9 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[0]
                         entry.object.should == 'XMLHttpRequestPrototype'
-                        entry.function.should == 'send'
-                        entry.arguments.should == [ "taint=#{@javascript.taint}" ]
-                        entry.tainted.should == "taint=#{@javascript.taint}"
+                        entry.function.name.should == 'send'
+                        entry.function.arguments.should == [ "taint=#{@javascript.taint}" ]
+                        entry.tainted_value.should == "taint=#{@javascript.taint}"
                         entry.taint.should == @javascript.taint
 
                         trace = entry.trace[0]
@@ -158,9 +158,9 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[0]
                         entry.object.should == 'XMLHttpRequestPrototype'
-                        entry.function.should == 'setRequestHeader'
-                        entry.arguments.should == [ 'X-My-Header', "stuff-#{@javascript.taint}" ]
-                        entry.tainted.should == "stuff-#{@javascript.taint}"
+                        entry.function.name.should == 'setRequestHeader'
+                        entry.function.arguments.should == [ 'X-My-Header', "stuff-#{@javascript.taint}" ]
+                        entry.tainted_value.should == "stuff-#{@javascript.taint}"
                         entry.taint.should == @javascript.taint
 
                         trace = entry.trace[0]
@@ -180,9 +180,9 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[1]
                         entry.object.should == 'angular'
-                        entry.function.should == 'JQLite'
-                        entry.arguments.should == ["<div>Stuff #{@javascript.taint}</div>"]
-                        entry.tainted.should == "<div>Stuff #{@javascript.taint}</div>"
+                        entry.function.name.should == 'JQLite'
+                        entry.function.arguments.should == ["<div>Stuff #{@javascript.taint}</div>"]
+                        entry.tainted_value.should == "<div>Stuff #{@javascript.taint}</div>"
                         entry.taint.should == @javascript.taint
 
                         trace = entry.trace[0]
@@ -201,19 +201,19 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                             entry = sink[1]
                             entry.object.should == 'angular.$http'
-                            entry.function.should == 'delete'
-                            entry.arguments.should == [ "/#{@javascript.taint}" ]
-                            entry.tainted.should == "/#{@javascript.taint}"
+                            entry.function.name.should == 'delete'
+                            entry.function.arguments.should == [ "/#{@javascript.taint}" ]
+                            entry.tainted_value.should == "/#{@javascript.taint}"
                             entry.taint.should == @javascript.taint
                             entry.trace[0].url.should == @browser.url
 
                             entry = sink[3]
                             entry.object.should == 'XMLHttpRequestPrototype'
-                            entry.function.should == 'open'
-                            entry.arguments.should == [
+                            entry.function.name.should == 'open'
+                            entry.function.arguments.should == [
                                 'DELETE', "/#{@javascript.taint}", true
                             ]
-                            entry.tainted.should == "/#{@javascript.taint}"
+                            entry.tainted_value.should == "/#{@javascript.taint}"
                             entry.taint.should == @javascript.taint
                             entry.trace[0].url.should == "#{@url}angular.js"
                         end
@@ -228,19 +228,19 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                             entry = sink[1]
                             entry.object.should == 'angular.$http'
-                            entry.function.should == 'head'
-                            entry.arguments.should == [ "/#{@javascript.taint}" ]
-                            entry.tainted.should == "/#{@javascript.taint}"
+                            entry.function.name.should == 'head'
+                            entry.function.arguments.should == [ "/#{@javascript.taint}" ]
+                            entry.tainted_value.should == "/#{@javascript.taint}"
                             entry.taint.should == @javascript.taint
                             entry.trace[0].url.should == @browser.url
 
                             entry = sink[3]
                             entry.object.should == 'XMLHttpRequestPrototype'
-                            entry.function.should == 'open'
-                            entry.arguments.should == [
+                            entry.function.name.should == 'open'
+                            entry.function.arguments.should == [
                                 'HEAD', "/#{@javascript.taint}", true
                             ]
-                            entry.tainted.should == "/#{@javascript.taint}"
+                            entry.tainted_value.should == "/#{@javascript.taint}"
                             entry.taint.should == @javascript.taint
                             entry.trace[0].url.should == "#{@url}angular.js"
                         end
@@ -255,19 +255,19 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                             entry = sink[1]
                             entry.object.should == 'angular.$http'
-                            entry.function.should == 'jsonp'
-                            entry.arguments.should == [ "/jsonp-#{@javascript.taint}" ]
-                            entry.tainted.should == "/jsonp-#{@javascript.taint}"
+                            entry.function.name.should == 'jsonp'
+                            entry.function.arguments.should == [ "/jsonp-#{@javascript.taint}" ]
+                            entry.tainted_value.should == "/jsonp-#{@javascript.taint}"
                             entry.taint.should == @javascript.taint
                             entry.trace[0].url.should == @browser.url
 
                             entry = sink[2]
                             entry.object.should == 'ElementPrototype'
-                            entry.function.should == 'setAttribute'
-                            entry.arguments.should == [
+                            entry.function.name.should == 'setAttribute'
+                            entry.function.arguments.should == [
                                 'href', "/jsonp-#{@javascript.taint}"
                             ]
-                            entry.tainted.should == "/jsonp-#{@javascript.taint}"
+                            entry.tainted_value.should == "/jsonp-#{@javascript.taint}"
                             entry.taint.should == @javascript.taint
                             entry.trace[0].url.should == "#{@url}angular.js"
                         end
@@ -282,19 +282,19 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                             entry = sink[1]
                             entry.object.should == 'angular.$http'
-                            entry.function.should == 'put'
-                            entry.arguments.should == [
+                            entry.function.name.should == 'put'
+                            entry.function.arguments.should == [
                                 '/', "Stuff #{@javascript.taint}"
                             ]
-                            entry.tainted.should == "Stuff #{@javascript.taint}"
+                            entry.tainted_value.should == "Stuff #{@javascript.taint}"
                             entry.taint.should == @javascript.taint
                             entry.trace[0].url.should == @browser.url
 
                             entry = sink[2]
                             entry.object.should == 'XMLHttpRequestPrototype'
-                            entry.function.should == 'send'
-                            entry.arguments.should == [ "Stuff #{@javascript.taint}" ]
-                            entry.tainted.should == "Stuff #{@javascript.taint}"
+                            entry.function.name.should == 'send'
+                            entry.function.arguments.should == [ "Stuff #{@javascript.taint}" ]
+                            entry.tainted_value.should == "Stuff #{@javascript.taint}"
                             entry.taint.should == @javascript.taint
                             entry.trace[0].url.should == "#{@url}angular.js"
                         end
@@ -309,19 +309,19 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                             entry = sink[1]
                             entry.object.should == 'angular.$http'
-                            entry.function.should == 'get'
-                            entry.arguments.should == [ "/#{@javascript.taint}" ]
-                            entry.tainted.should == "/#{@javascript.taint}"
+                            entry.function.name.should == 'get'
+                            entry.function.arguments.should == [ "/#{@javascript.taint}" ]
+                            entry.tainted_value.should == "/#{@javascript.taint}"
                             entry.taint.should == @javascript.taint
                             entry.trace[0].url.should == @browser.url
 
                             entry = sink[3]
                             entry.object.should == 'XMLHttpRequestPrototype'
-                            entry.function.should == 'open'
-                            entry.arguments.should == [
+                            entry.function.name.should == 'open'
+                            entry.function.arguments.should == [
                                 'GET', "/#{@javascript.taint}", true
                             ]
-                            entry.tainted.should == "/#{@javascript.taint}"
+                            entry.tainted_value.should == "/#{@javascript.taint}"
                             entry.taint.should == @javascript.taint
                             entry.trace[0].url.should == "#{@url}angular.js"
                         end
@@ -336,8 +336,8 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                             entry = sink[1]
                             entry.object.should == 'angular.$http'
-                            entry.function.should == 'post'
-                            entry.arguments.should == [
+                            entry.function.name.should == 'post'
+                            entry.function.arguments.should == [
                                 '/', '',
                                 {
                                     'params' => {
@@ -348,17 +348,17 @@ describe Arachni::Browser::Javascript::TaintTracer do
                                     'data'   => ''
                                 }
                             ]
-                            entry.tainted.should == "Stuff #{@javascript.taint}"
+                            entry.tainted_value.should == "Stuff #{@javascript.taint}"
                             entry.taint.should == @javascript.taint
                             entry.trace[0].url.should == @browser.url
 
                             entry = sink[3]
                             entry.object.should == 'XMLHttpRequestPrototype'
-                            entry.function.should == 'open'
-                            entry.arguments.should == [
+                            entry.function.name.should == 'open'
+                            entry.function.arguments.should == [
                                 'POST', "/?stuff=Stuff+#{@javascript.taint}", true
                             ]
-                            entry.tainted.should == "/?stuff=Stuff+#{@javascript.taint}"
+                            entry.tainted_value.should == "/?stuff=Stuff+#{@javascript.taint}"
                             entry.taint.should == @javascript.taint
                             entry.trace[0].url.should == "#{@url}angular.js"
                         end
@@ -377,20 +377,20 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             # the template from the given 'templateUrl'...
                             entry = sink[4]
                             entry.object.should == 'XMLHttpRequestPrototype'
-                            entry.function.should == 'open'
-                            entry.arguments.should == [
+                            entry.function.name.should == 'open'
+                            entry.function.arguments.should == [
                                 'GET', "template.html?taint=#{@javascript.taint}", true
                             ]
-                            entry.tainted.should == "template.html?taint=#{@javascript.taint}"
+                            entry.tainted_value.should == "template.html?taint=#{@javascript.taint}"
                             entry.taint.should == @javascript.taint
                             entry.trace[0].url.should == "#{@url}angular.js"
 
                             #... and then updates the app with the (tainted) template content.
                             entry = sink[5]
                             entry.object.should == 'angular.element'
-                            entry.function.should == 'html'
-                            entry.arguments.should == ["Blah blah blah #{@javascript.taint}\n"]
-                            entry.tainted.should == "Blah blah blah #{@javascript.taint}\n"
+                            entry.function.name.should == 'html'
+                            entry.function.arguments.should == ["Blah blah blah #{@javascript.taint}\n"]
+                            entry.tainted_value.should == "Blah blah blah #{@javascript.taint}\n"
                             entry.taint.should == @javascript.taint
                             entry.trace[0].url.should == "#{@url}angular-route.js"
                         end
@@ -407,9 +407,9 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                             entry = sink[1]
                             entry.object.should == 'angular.element'
-                            entry.function.should == 'html'
-                            entry.arguments.should == ["Stuff #{@javascript.taint}"]
-                            entry.tainted.should == "Stuff #{@javascript.taint}"
+                            entry.function.name.should == 'html'
+                            entry.function.arguments.should == ["Stuff #{@javascript.taint}"]
+                            entry.tainted_value.should == "Stuff #{@javascript.taint}"
                             entry.taint.should == @javascript.taint
 
                             trace = entry.trace[0]
@@ -427,9 +427,9 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                             entry = sink[1]
                             entry.object.should == 'angular.element'
-                            entry.function.should == 'text'
-                            entry.arguments.should == ["Stuff #{@javascript.taint}"]
-                            entry.tainted.should == "Stuff #{@javascript.taint}"
+                            entry.function.name.should == 'text'
+                            entry.function.arguments.should == ["Stuff #{@javascript.taint}"]
+                            entry.tainted_value.should == "Stuff #{@javascript.taint}"
                             entry.taint.should == @javascript.taint
 
                             trace = entry.trace[0]
@@ -447,9 +447,9 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                             entry = sink[1]
                             entry.object.should == 'angular.element'
-                            entry.function.should == 'append'
-                            entry.arguments.should == ["Stuff #{@javascript.taint}"]
-                            entry.tainted.should == "Stuff #{@javascript.taint}"
+                            entry.function.name.should == 'append'
+                            entry.function.arguments.should == ["Stuff #{@javascript.taint}"]
+                            entry.tainted_value.should == "Stuff #{@javascript.taint}"
                             entry.taint.should == @javascript.taint
 
                             trace = entry.trace[0]
@@ -467,9 +467,9 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                             entry = sink[1]
                             entry.object.should == 'angular.element'
-                            entry.function.should == 'prepend'
-                            entry.arguments.should == ["Stuff #{@javascript.taint}"]
-                            entry.tainted.should == "Stuff #{@javascript.taint}"
+                            entry.function.name.should == 'prepend'
+                            entry.function.arguments.should == ["Stuff #{@javascript.taint}"]
+                            entry.tainted_value.should == "Stuff #{@javascript.taint}"
                             entry.taint.should == @javascript.taint
 
                             trace = entry.trace[0]
@@ -487,9 +487,9 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                             entry = sink[1]
                             entry.object.should == 'angular.element'
-                            entry.function.should == 'prop'
-                            entry.arguments.should == [ 'stuff', "Stuff #{@javascript.taint}"]
-                            entry.tainted.should == "Stuff #{@javascript.taint}"
+                            entry.function.name.should == 'prop'
+                            entry.function.arguments.should == [ 'stuff', "Stuff #{@javascript.taint}"]
+                            entry.tainted_value.should == "Stuff #{@javascript.taint}"
                             entry.taint.should == @javascript.taint
 
                             trace = entry.trace[0]
@@ -507,9 +507,9 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                             entry = sink[1]
                             entry.object.should == 'angular.element'
-                            entry.function.should == 'replaceWith'
-                            entry.arguments.should == [ "Stuff #{@javascript.taint}"]
-                            entry.tainted.should == "Stuff #{@javascript.taint}"
+                            entry.function.name.should == 'replaceWith'
+                            entry.function.arguments.should == [ "Stuff #{@javascript.taint}"]
+                            entry.tainted_value.should == "Stuff #{@javascript.taint}"
                             entry.taint.should == @javascript.taint
 
                             trace = entry.trace[0]
@@ -527,9 +527,9 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                             entry = sink[1]
                             entry.object.should == 'angular.element'
-                            entry.function.should == 'val'
-                            entry.arguments.should == [ "Stuff #{@javascript.taint}"]
-                            entry.tainted.should == "Stuff #{@javascript.taint}"
+                            entry.function.name.should == 'val'
+                            entry.function.arguments.should == [ "Stuff #{@javascript.taint}"]
+                            entry.tainted_value.should == "Stuff #{@javascript.taint}"
                             entry.taint.should == @javascript.taint
 
                             trace = entry.trace[0]
@@ -550,8 +550,8 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[0]
                         entry.object.should == 'jQuery'
-                        entry.function.should == 'ajax'
-                        entry.arguments.should == [
+                        entry.function.name.should == 'ajax'
+                        entry.function.arguments.should == [
                             {
                                 'url'  => '/',
                                 'data' => {
@@ -559,7 +559,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                                 }
                             }
                         ]
-                        entry.tainted.should == "mystuff #{@javascript.taint}"
+                        entry.tainted_value.should == "mystuff #{@javascript.taint}"
                         entry.taint.should == @javascript.taint
 
                         trace = entry.trace[0]
@@ -577,12 +577,12 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[0]
                         entry.object.should == 'jQuery'
-                        entry.function.should == 'get'
-                        entry.arguments.should == [
+                        entry.function.name.should == 'get'
+                        entry.function.arguments.should == [
                             '/',
                             { 'stuff' => "mystuff #{@javascript.taint}" }
                         ]
-                        entry.tainted.should == "mystuff #{@javascript.taint}"
+                        entry.tainted_value.should == "mystuff #{@javascript.taint}"
                         entry.taint.should == @javascript.taint
 
                         trace = entry.trace[0]
@@ -600,9 +600,9 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[0]
                         entry.object.should == 'jQuery'
-                        entry.function.should == 'post'
-                        entry.arguments.should == [ "/#{@javascript.taint}" ]
-                        entry.tainted.should == "/#{@javascript.taint}"
+                        entry.function.name.should == 'post'
+                        entry.function.arguments.should == [ "/#{@javascript.taint}" ]
+                        entry.tainted_value.should == "/#{@javascript.taint}"
                         entry.taint.should == @javascript.taint
 
                         trace = entry.trace[0]
@@ -620,9 +620,9 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[0]
                         entry.object.should == 'jQuery'
-                        entry.function.should == 'load'
-                        entry.arguments.should == [ "/#{@javascript.taint}" ]
-                        entry.tainted.should == "/#{@javascript.taint}"
+                        entry.function.name.should == 'load'
+                        entry.function.arguments.should == [ "/#{@javascript.taint}" ]
+                        entry.tainted_value.should == "/#{@javascript.taint}"
                         entry.taint.should == @javascript.taint
 
                         trace = entry.trace[0]
@@ -640,9 +640,9 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[0]
                         entry.object.should == 'jQuery'
-                        entry.function.should == 'html'
-                        entry.arguments.should == ["Stuff #{@javascript.taint}"]
-                        entry.tainted.should == "Stuff #{@javascript.taint}"
+                        entry.function.name.should == 'html'
+                        entry.function.arguments.should == ["Stuff #{@javascript.taint}"]
+                        entry.tainted_value.should == "Stuff #{@javascript.taint}"
                         entry.taint.should == @javascript.taint
 
                         trace = entry.trace[0]
@@ -660,9 +660,9 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[0]
                         entry.object.should == 'jQuery'
-                        entry.function.should == 'text'
-                        entry.arguments.should == ["Stuff #{@javascript.taint}"]
-                        entry.tainted.should == "Stuff #{@javascript.taint}"
+                        entry.function.name.should == 'text'
+                        entry.function.arguments.should == ["Stuff #{@javascript.taint}"]
+                        entry.tainted_value.should == "Stuff #{@javascript.taint}"
                         entry.taint.should == @javascript.taint
 
                         trace = entry.trace[0]
@@ -680,9 +680,9 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[0]
                         entry.object.should == 'jQuery'
-                        entry.function.should == 'append'
-                        entry.arguments.should == ["Stuff #{@javascript.taint}"]
-                        entry.tainted.should == "Stuff #{@javascript.taint}"
+                        entry.function.name.should == 'append'
+                        entry.function.arguments.should == ["Stuff #{@javascript.taint}"]
+                        entry.tainted_value.should == "Stuff #{@javascript.taint}"
                         entry.taint.should == @javascript.taint
 
                         trace = entry.trace[0]
@@ -700,9 +700,9 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[0]
                         entry.object.should == 'jQuery'
-                        entry.function.should == 'prepend'
-                        entry.arguments.should == ["Stuff #{@javascript.taint}"]
-                        entry.tainted.should == "Stuff #{@javascript.taint}"
+                        entry.function.name.should == 'prepend'
+                        entry.function.arguments.should == ["Stuff #{@javascript.taint}"]
+                        entry.tainted_value.should == "Stuff #{@javascript.taint}"
                         entry.taint.should == @javascript.taint
 
                         trace = entry.trace[0]
@@ -720,9 +720,9 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[0]
                         entry.object.should == 'jQuery'
-                        entry.function.should == 'before'
-                        entry.arguments.should == ["Stuff #{@javascript.taint}"]
-                        entry.tainted.should == "Stuff #{@javascript.taint}"
+                        entry.function.name.should == 'before'
+                        entry.function.arguments.should == ["Stuff #{@javascript.taint}"]
+                        entry.tainted_value.should == "Stuff #{@javascript.taint}"
                         entry.taint.should == @javascript.taint
 
                         trace = entry.trace[0]
@@ -740,9 +740,9 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[0]
                         entry.object.should == 'jQuery'
-                        entry.function.should == 'prop'
-                        entry.arguments.should == [ 'stuff', "Stuff #{@javascript.taint}"]
-                        entry.tainted.should == "Stuff #{@javascript.taint}"
+                        entry.function.name.should == 'prop'
+                        entry.function.arguments.should == [ 'stuff', "Stuff #{@javascript.taint}"]
+                        entry.tainted_value.should == "Stuff #{@javascript.taint}"
                         entry.taint.should == @javascript.taint
 
                         trace = entry.trace[0]
@@ -760,9 +760,9 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[0]
                         entry.object.should == 'jQuery'
-                        entry.function.should == 'replaceWith'
-                        entry.arguments.should == [ "Stuff #{@javascript.taint}"]
-                        entry.tainted.should == "Stuff #{@javascript.taint}"
+                        entry.function.name.should == 'replaceWith'
+                        entry.function.arguments.should == [ "Stuff #{@javascript.taint}"]
+                        entry.tainted_value.should == "Stuff #{@javascript.taint}"
                         entry.taint.should == @javascript.taint
 
                         trace = entry.trace[0]
@@ -780,9 +780,9 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[0]
                         entry.object.should == 'jQuery'
-                        entry.function.should == 'val'
-                        entry.arguments.should == [ "Stuff #{@javascript.taint}"]
-                        entry.tainted.should == "Stuff #{@javascript.taint}"
+                        entry.function.name.should == 'val'
+                        entry.function.arguments.should == [ "Stuff #{@javascript.taint}"]
+                        entry.tainted_value.should == "Stuff #{@javascript.taint}"
                         entry.taint.should == @javascript.taint
 
                         trace = entry.trace[0]
@@ -802,12 +802,12 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[0]
                         entry.object.should == 'String'
-                        entry.function.should == 'replace'
-                        entry.source.should start_with 'function replace'
-                        entry.arguments.should == [
+                        entry.function.name.should == 'replace'
+                        entry.function.source.should start_with 'function replace'
+                        entry.function.arguments.should == [
                             'my', @javascript.taint
                         ]
-                        entry.tainted.should == @javascript.taint
+                        entry.tainted_value.should == @javascript.taint
                         entry.taint.should == @javascript.taint
 
                         trace = entry.trace[0]
@@ -825,10 +825,10 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[0]
                         entry.object.should == 'String'
-                        entry.function.should == 'concat'
-                        entry.source.should start_with 'function concat'
-                        entry.arguments.should == [ "stuff #{@javascript.taint}" ]
-                        entry.tainted.should == "stuff #{@javascript.taint}"
+                        entry.function.name.should == 'concat'
+                        entry.function.source.should start_with 'function concat'
+                        entry.function.arguments.should == [ "stuff #{@javascript.taint}" ]
+                        entry.tainted_value.should == "stuff #{@javascript.taint}"
                         entry.taint.should == @javascript.taint
 
                         trace = entry.trace[0]
@@ -848,12 +848,12 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[0]
                         entry.object.should == 'HTMLElementPrototype'
-                        entry.function.should == 'insertAdjacentHTML'
-                        entry.source.should start_with 'function insertAdjacentHTML'
-                        entry.arguments.should == [
+                        entry.function.name.should == 'insertAdjacentHTML'
+                        entry.function.source.should start_with 'function insertAdjacentHTML'
+                        entry.function.arguments.should == [
                             'AfterBegin', "stuff #{@javascript.taint} more stuff"
                         ]
-                        entry.tainted.should == "stuff #{@javascript.taint} more stuff"
+                        entry.tainted_value.should == "stuff #{@javascript.taint} more stuff"
                         entry.taint.should == @javascript.taint
 
                         trace = entry.trace[0]
@@ -873,12 +873,12 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[0]
                         entry.object.should == 'ElementPrototype'
-                        entry.function.should == 'setAttribute'
-                        entry.source.should start_with 'function setAttribute'
-                        entry.arguments.should == [
+                        entry.function.name.should == 'setAttribute'
+                        entry.function.source.should start_with 'function setAttribute'
+                        entry.function.arguments.should == [
                             'my-attribute', "stuff #{@javascript.taint} more stuff"
                         ]
-                        entry.tainted.should == "stuff #{@javascript.taint} more stuff"
+                        entry.tainted_value.should == "stuff #{@javascript.taint} more stuff"
                         entry.taint.should == @javascript.taint
 
                         trace = entry.trace[0]
@@ -898,10 +898,10 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[0]
                         entry.object.should == 'DocumentPrototype'
-                        entry.function.should == 'createTextNode'
-                        entry.source.should start_with 'function createTextNode'
-                        entry.arguments.should == [ "node #{@javascript.taint}" ]
-                        entry.tainted.should == "node #{@javascript.taint}"
+                        entry.function.name.should == 'createTextNode'
+                        entry.function.source.should start_with 'function createTextNode'
+                        entry.function.arguments.should == [ "node #{@javascript.taint}" ]
+                        entry.tainted_value.should == "node #{@javascript.taint}"
                         entry.taint.should == @javascript.taint
 
                         trace = entry.trace[0]
@@ -921,10 +921,10 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[0]
                         entry.object.should == 'CharacterDataPrototype'
-                        entry.function.should == 'insertData'
-                        entry.source.should start_with 'function insertData'
-                        entry.arguments.should == [ "Stuff #{@javascript.taint}" ]
-                        entry.tainted.should == "Stuff #{@javascript.taint}"
+                        entry.function.name.should == 'insertData'
+                        entry.function.source.should start_with 'function insertData'
+                        entry.function.arguments.should == [ "Stuff #{@javascript.taint}" ]
+                        entry.tainted_value.should == "Stuff #{@javascript.taint}"
                         entry.taint.should == @javascript.taint
 
                         trace = entry.trace[0]
@@ -942,10 +942,10 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[0]
                         entry.object.should == 'CharacterDataPrototype'
-                        entry.function.should == 'appendData'
-                        entry.source.should start_with 'function appendData'
-                        entry.arguments.should == [ "Stuff #{@javascript.taint}" ]
-                        entry.tainted.should == "Stuff #{@javascript.taint}"
+                        entry.function.name.should == 'appendData'
+                        entry.function.source.should start_with 'function appendData'
+                        entry.function.arguments.should == [ "Stuff #{@javascript.taint}" ]
+                        entry.tainted_value.should == "Stuff #{@javascript.taint}"
                         entry.taint.should == @javascript.taint
 
                         trace = entry.trace[0]
@@ -963,10 +963,10 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[0]
                         entry.object.should == 'CharacterDataPrototype'
-                        entry.function.should == 'replaceData'
-                        entry.source.should start_with 'function replaceData'
-                        entry.arguments.should == [ 0, 0, "Stuff #{@javascript.taint}" ]
-                        entry.tainted.should == "Stuff #{@javascript.taint}"
+                        entry.function.name.should == 'replaceData'
+                        entry.function.source.should start_with 'function replaceData'
+                        entry.function.arguments.should == [ 0, 0, "Stuff #{@javascript.taint}" ]
+                        entry.tainted_value.should == "Stuff #{@javascript.taint}"
                         entry.taint.should == @javascript.taint
 
                         trace = entry.trace[0]
@@ -986,10 +986,10 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[0]
                         entry.object.should == 'TextPrototype'
-                        entry.function.should == 'replaceWholeText'
-                        entry.source.should start_with 'function replaceWholeText'
-                        entry.arguments.should == [ "Stuff #{@javascript.taint}" ]
-                        entry.tainted.should == "Stuff #{@javascript.taint}"
+                        entry.function.name.should == 'replaceWholeText'
+                        entry.function.source.should start_with 'function replaceWholeText'
+                        entry.function.arguments.should == [ "Stuff #{@javascript.taint}" ]
+                        entry.tainted_value.should == "Stuff #{@javascript.taint}"
                         entry.taint.should == @javascript.taint
 
                         trace = entry.trace[0]
@@ -1009,12 +1009,12 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[0]
                         entry.object.should == 'HTMLDocumentPrototype'
-                        entry.function.should == 'write'
-                        entry.source.should start_with 'function write'
-                        entry.arguments.should == [
+                        entry.function.name.should == 'write'
+                        entry.function.source.should start_with 'function write'
+                        entry.function.arguments.should == [
                             "Stuff here blah #{@javascript.taint} more stuff nlahblah..."
                         ]
-                        entry.tainted.should ==
+                        entry.tainted_value.should ==
                             "Stuff here blah #{@javascript.taint} more stuff nlahblah..."
                         entry.taint.should == @javascript.taint
 
@@ -1033,12 +1033,12 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         entry = sink[0]
                         entry.object.should == 'HTMLDocumentPrototype'
-                        entry.function.should == 'writeln'
-                        entry.source.should start_with 'function writeln'
-                        entry.arguments.should == [
+                        entry.function.name.should == 'writeln'
+                        entry.function.source.should start_with 'function writeln'
+                        entry.function.arguments.should == [
                             "Stuff here blah #{@javascript.taint} more stuff nlahblah..."
                         ]
-                        entry.tainted.should ==
+                        entry.tainted_value.should ==
                             "Stuff here blah #{@javascript.taint} more stuff nlahblah..."
                         entry.taint.should == @javascript.taint
 
@@ -1104,27 +1104,27 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
     describe '#flush_data_flow_sink' do
         it 'returns sink data' do
-            load "debug?input=#{subject.stub.function(:log_data_flow_sink, { function: 'blah' })}"
+            load "debug?input=#{subject.stub.function(:log_data_flow_sink, { function: { name: 'blah' } })}"
             @browser.watir.form.submit
             sink_data = subject.flush_data_flow_sink
 
             first_entry = sink_data.first
             sink_data.should == [first_entry]
 
-            first_entry.function.should == 'blah'
+            first_entry.function.name.should == 'blah'
             first_entry.trace.size.should == 2
 
-            first_entry.trace[0].function.should == 'onClick'
-            first_entry.trace[0].source.should start_with 'function onClick'
+            first_entry.trace[0].function.name.should == 'onClick'
+            first_entry.trace[0].function.source.should start_with 'function onClick'
             @browser.source.split("\n")[first_entry.trace[0].line].should include 'log_data_flow_sink'
-            first_entry.trace[0].arguments.should == %w(some-arg arguments-arg here-arg)
+            first_entry.trace[0].function.arguments.should == %w(some-arg arguments-arg here-arg)
 
-            first_entry.trace[1].function.should == 'onsubmit'
-            first_entry.trace[1].source.should start_with 'function onsubmit'
+            first_entry.trace[1].function.name.should == 'onsubmit'
+            first_entry.trace[1].function.source.should start_with 'function onsubmit'
             @browser.source.split("\n")[first_entry.trace[1].line].should include 'onsubmit'
-            first_entry.trace[1].arguments.size.should == 1
+            first_entry.trace[1].function.arguments.size.should == 1
 
-            event = first_entry.trace[1].arguments.first
+            event = first_entry.trace[1].function.arguments.first
 
             form = "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">\n        </form>"
             event['target'].should == form
@@ -1133,7 +1133,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
         end
 
         it 'empties the sink' do
-            load "debug?input=#{subject.stub.function(:log_data_flow_sink, { function: 'blah' })}"
+            load "debug?input=#{subject.stub.function(:log_data_flow_sink, { function: { name: 'blah' } })}"
             @browser.watir.form.submit
             subject.flush_data_flow_sink
             @javascript.flush_data_flow_sink.should be_empty
@@ -1152,17 +1152,17 @@ describe Arachni::Browser::Javascript::TaintTracer do
             first_entry.data.should == [1]
             first_entry.trace.size.should == 2
 
-            first_entry.trace[0].function.should == 'onClick'
-            first_entry.trace[0].source.should start_with 'function onClick'
+            first_entry.trace[0].function.name.should == 'onClick'
+            first_entry.trace[0].function.source.should start_with 'function onClick'
             @browser.source.split("\n")[first_entry.trace[0].line].should include 'log_execution_flow_sink(1)'
-            first_entry.trace[0].arguments.should == %w(some-arg arguments-arg here-arg)
+            first_entry.trace[0].function.arguments.should == %w(some-arg arguments-arg here-arg)
 
-            first_entry.trace[1].function.should == 'onsubmit'
-            first_entry.trace[1].source.should start_with 'function onsubmit'
+            first_entry.trace[1].function.name.should == 'onsubmit'
+            first_entry.trace[1].function.source.should start_with 'function onsubmit'
             @browser.source.split("\n")[first_entry.trace[1].line].should include 'onsubmit'
-            first_entry.trace[1].arguments.size.should == 1
+            first_entry.trace[1].function.arguments.size.should == 1
 
-            event = first_entry.trace[1].arguments.first
+            event = first_entry.trace[1].function.arguments.first
 
             form = "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">\n        </form>"
             event['target'].should == form
@@ -1190,17 +1190,17 @@ describe Arachni::Browser::Javascript::TaintTracer do
             first_entry.data.should == [1]
             first_entry.trace.size.should == 2
 
-            first_entry.trace[0].function.should  == 'onClick'
-            first_entry.trace[0].source.should start_with 'function onClick'
+            first_entry.trace[0].function.name.should  == 'onClick'
+            first_entry.trace[0].function.source.should start_with 'function onClick'
             @browser.source.split("\n")[first_entry.trace[0].line].should include 'log_execution_flow_sink(1)'
-            first_entry.trace[0].arguments.should == %w(some-arg arguments-arg here-arg)
+            first_entry.trace[0].function.arguments.should == %w(some-arg arguments-arg here-arg)
 
-            first_entry.trace[1].function.should == 'onsubmit'
-            first_entry.trace[1].source.should start_with 'function onsubmit'
+            first_entry.trace[1].function.name.should == 'onsubmit'
+            first_entry.trace[1].function.source.should start_with 'function onsubmit'
             @browser.source.split("\n")[first_entry.trace[1].line].should include 'onsubmit'
-            first_entry.trace[1].arguments.size.should == 1
+            first_entry.trace[1].function.arguments.size.should == 1
 
-            event = first_entry.trace[1].arguments.first
+            event = first_entry.trace[1].function.arguments.first
 
             form = "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">\n        </form>"
             event['target'].should == form
@@ -1211,27 +1211,27 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
     describe '#log_data_flow_sink' do
         it 'logs a sink' do
-            load "debug?input=#{subject.stub.function(:log_data_flow_sink, { function: 'blah' })}"
+            load "debug?input=#{subject.stub.function(:log_data_flow_sink, { function: { name: 'blah' } })}"
             @browser.watir.form.submit
             sink_data = subject.data_flow_sink
 
             first_entry = sink_data.first
             sink_data.should == [first_entry]
 
-            first_entry.function.should == 'blah'
+            first_entry.function.name.should == 'blah'
             first_entry.trace.size.should == 2
 
-            first_entry.trace[0].function.should  == 'onClick'
-            first_entry.trace[0].source.should start_with 'function onClick'
+            first_entry.trace[0].function.name.should  == 'onClick'
+            first_entry.trace[0].function.source.should start_with 'function onClick'
             @browser.source.split("\n")[first_entry.trace[0].line].should include 'log_data_flow_sink'
-            first_entry.trace[0].arguments.should == %w(some-arg arguments-arg here-arg)
+            first_entry.trace[0].function.arguments.should == %w(some-arg arguments-arg here-arg)
 
-            first_entry.trace[1].function.should == 'onsubmit'
-            first_entry.trace[1].source.should start_with 'function onsubmit'
+            first_entry.trace[1].function.name.should == 'onsubmit'
+            first_entry.trace[1].function.source.should start_with 'function onsubmit'
             @browser.source.split("\n")[first_entry.trace[1].line].should include 'onsubmit'
-            first_entry.trace[1].arguments.size.should == 1
+            first_entry.trace[1].function.arguments.size.should == 1
 
-            event = first_entry.trace[1].arguments.first
+            event = first_entry.trace[1].function.arguments.first
 
             form = "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">\n        </form>"
             event['target'].should == form
@@ -1270,17 +1270,17 @@ describe Arachni::Browser::Javascript::TaintTracer do
                 first_entry.data.should == [1]
                 first_entry.trace.size.should == 2
 
-                first_entry.trace[0].function.should == 'onClick'
-                first_entry.trace[0].source.should start_with 'function onClick'
+                first_entry.trace[0].function.name.should == 'onClick'
+                first_entry.trace[0].function.source.should start_with 'function onClick'
                 @browser.source.split("\n")[first_entry.trace[0].line].should include 'debug(1)'
-                first_entry.trace[0].arguments.should == %w(some-arg arguments-arg here-arg)
+                first_entry.trace[0].function.arguments.should == %w(some-arg arguments-arg here-arg)
 
-                first_entry.trace[1].function.should == 'onsubmit'
-                first_entry.trace[1].source.should start_with 'function onsubmit'
+                first_entry.trace[1].function.name.should == 'onsubmit'
+                first_entry.trace[1].function.source.should start_with 'function onsubmit'
                 @browser.source.split("\n")[first_entry.trace[1].line].should include 'onClick('
-                first_entry.trace[1].arguments.size.should == 1
+                first_entry.trace[1].function.arguments.size.should == 1
 
-                event = first_entry.trace[1].arguments.first
+                event = first_entry.trace[1].function.arguments.first
 
                 form = "<form id=\"my_form\" onsubmit=\"onClick('some-arg', 'arguments-arg', 'here-arg'); return false;\">\n        </form>"
                 event['target'].should == form

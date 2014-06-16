@@ -1,12 +1,11 @@
 Factory.define :data_flow_data do
     {
-        function: 'stuff',
-        source:   'function stuff( arg, arg2 ) {}',
-        arguments: %w(some-arg arguments-arg),
-        object:    '[object DOMWindow]',
-        tainted:   'arguments-arg',
-        taint:     'arguments',
-        trace:    [ Factory[:frame] ]
+        function:               Factory[:called_function],
+        object:                 '[object DOMWindow]',
+        tainted_value:          Factory[:called_function].arguments.first,
+        tainted_argument_index: 0,
+        taint:                  Factory[:called_function].arguments.first,
+        trace:                  [ Factory[:frame] ]
     }
 end
 
