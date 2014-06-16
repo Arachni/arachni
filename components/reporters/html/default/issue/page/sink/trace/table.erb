@@ -50,26 +50,43 @@
             </td>
 
             <td>
-                <a href="javascript:void(0);"
-                   onclick="$('#<%= id %>-<%= i %>-inspect').toggle()"
-                   class="btn btn-info btn-xs">
-                    Inspect
-                </a>
+                <% if frame.arguments || (frame.line.to_i > 0 && frame.url == page.dom.url) || !frame.source.to_s.empty? %>
+                    <a href="javascript:void(0);"
+                       onclick="$('#<%= id %>-<%= i %>-inspect').toggle()"
+                       class="btn btn-info btn-xs">
+                        Inspect
+                    </a>
+                <% else %>
+                    <span rel="tooltip" title="This call could not be inspected.
+                        It was probably performed under a strict-mode JS context.">
+
+                        <a href="javascript:void(0);"
+                           class="btn btn-info btn-xs disabled">
+                            Inspect
+                        </a>
+                    </span>
+                <% end %>
             </td>
         </tr>
 
+        <% if frame.arguments || (frame.line.to_i > 0 && frame.url == page.dom.url) || !frame.source.to_s.empty? %>
         <tr id="<%= id %>-<%= i %>-inspect" style="display: none">
             <td colspan="5" class="borderless">
                 <ul class="nav nav-tabs">
+
+                    <% has_active = false %>
+                    <% if frame.arguments %>
+                    <% has_active = true %>
 
                     <li class="active">
                         <a href="<%= id_to_location id %>/<%= i %>/inspect/arguments">
                             Arguments
                         </a>
                     </li>
+                    <% end %>
 
                     <% if (frame.line.to_i > 0 && frame.url == page.dom.url) || !frame.source.to_s.empty? %>
-                        <li>
+                        <li <%= 'class="active"' if !has_active %>>
                             <a href="<%= id_to_location id %>/<%= i %>/inspect/source">
                                 Source
                             </a>
@@ -79,12 +96,16 @@
 
                 <div class="tab-content">
 
+                    <% has_active = false %>
+                    <% if frame.arguments %>
+                        <% has_active = true %>
                     <div class="tab-pane active" id="<%= id %>-<%= i %>-inspect-arguments">
                         <%= data_dump frame.arguments %>
                     </div>
+                    <% end %>
 
                     <% if (frame.line.to_i > 0 && frame.url == page.dom.url) || !frame.source.to_s.empty? %>
-                        <div class="tab-pane" id="<%= id %>-<%= i %>-inspect-source">
+                        <div class="tab-pane <%= 'active' if !has_active %>" id="<%= id %>-<%= i %>-inspect-source">
                             <%= erb 'issue/page/sink/frame/source.erb',
                                     id:    "#{id}-#{i}-inspect",
                                     frame: frame,
@@ -96,5 +117,7 @@
 
             </td>
         </tr>
+        <% end %>
+
     <% end %>
 </table>
