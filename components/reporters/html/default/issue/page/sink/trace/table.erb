@@ -2,8 +2,8 @@
     <col width="5%" />
     <col width="70%" />
     <col width="5%" />
-    <col width="10%" />
-    <col width="10%" />
+    <col width="15%" />
+    <col width="5%" />
 
     <tr>
         <th>
@@ -44,8 +44,8 @@
                 <% end %>
             </td>
             <td>
-                <% if frame.function.name %>
-                    <code><%= frame.function.name %></code>
+                <% if frame.function.signature %>
+                    <code><%= frame.function.signature %></code>
                 <% end %>
             </td>
 
@@ -58,8 +58,8 @@
                         Inspect
                     </a>
                 <% else %>
-                    <span rel="tooltip" title="This call could not be inspected.
-                        It was probably performed under a strict-mode JS context.">
+                    <span rel="tooltip" title="This call lacks context.
+                        It was probably eval()'ed or performed under a strict-mode JS context.">
 
                         <a href="javascript:void(0);"
                            class="btn btn-info btn-xs disabled">

@@ -27,7 +27,7 @@ class DataFlow < Base
     attr_accessor :tainted_argument_index
 
     # @return   [Object]
-    #   Tainted value of {#tainted_argument_index}, located by traversing it
+    #   Tainted value of {#tainted_argument_value}, located by traversing it
     #   recursively.
     attr_accessor :tainted_value
 
@@ -43,9 +43,18 @@ class DataFlow < Base
         super
     end
 
-    def tainted_argument
+    # @return   [String, nil]
+    #   Value of the tainted argument.
+    def tainted_argument_value
         return if !function.arguments
         function.arguments[tainted_argument_index]
+    end
+
+    # @return   [String, nil]
+    #   Name of the tainted argument.
+    def tainted_argument_name
+        return if !function.signature_arguments
+        function.signature_arguments[tainted_argument_index]
     end
 
     def to_h

@@ -35,17 +35,32 @@ describe Arachni::Browser::Javascript::TaintTracer::Sink::DataFlow do
         end
     end
 
-    describe '#tainted_argument' do
+    describe '#tainted_argument_value' do
         context 'when there are #arguments' do
             it 'returns the tainted argument' do
-                subject.tainted_argument.should == 'blah-val'
+                subject.tainted_argument_value.should == 'blah-val'
             end
         end
 
         context 'when there are no #arguments' do
             it 'returns nil' do
                 subject.function.arguments = nil
-                subject.tainted_argument.should be_nil
+                subject.tainted_argument_value.should be_nil
+            end
+        end
+    end
+
+    describe '#tainted_argument_name' do
+        context 'when there are #arguments' do
+            it 'returns the tainted argument' do
+                subject.tainted_argument_name.should == 'blah'
+            end
+        end
+
+        context "when there are are no #{Arachni::Browser::Javascript::TaintTracer::Frame::CalledFunction}#signature_arguments" do
+            it 'returns nil' do
+                subject.function.stub(:signature_arguments){ nil }
+                subject.tainted_argument_name.should be_nil
             end
         end
     end
