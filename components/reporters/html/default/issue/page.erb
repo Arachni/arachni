@@ -3,15 +3,16 @@
         <div class="col-md-12">
             <strong>
                 <a
-                    id="<%= id %>-transitions"
-                    href="<%= id_to_location id %>/transitions">
+                id="<%= id %>-transitions"
+                href="<%= id_to_location id %>/transitions">
                     Transitions
                 </a>
             </strong>
 
             <p class="text-muted">
                 Transitions describe the steps required to restore the state
-                of the page, to the one it had when it was processes by the scanner,
+                of the page, to the one it had when it was processes by the
+                scanner,
                 as a series of events.
 
                 In essence, each transition represents a user interaction.
@@ -29,8 +30,8 @@
         <div class="col-md-12">
             <strong>
                 <a
-                    id="<%= id %>-data_flow_sinks"
-                    href="<%= id_to_location id %>/data_flow_sinks">
+                id="<%= id %>-data_flow_sinks"
+                href="<%= id_to_location id %>/data_flow_sinks">
                     Data-flow sinks
                 </a>
             </strong>
@@ -74,32 +75,7 @@
     <hr/>
 <% end %>
 
-<% if !page.body.empty? %>
-<div class="row">
-    <div class="col-md-12">
-        <strong>
-            <a
-            id="<%= id %>-body"
-            href="<%= id_to_location id %>/body">
-                Body
-            </a>
-        </strong>
-
-        <p class="text-muted">
-            Will be the browser-evaluated body if
-            <a href="<%= id_to_location id %>/transitions">transitions</a>
-            are available.
-
-            For the original HTTP response body please see the raw
-            <a href="<%= id_to_location id %>/http_request">HTTP response.</a>
-        </p>
-
-        <%= code_highlight( page.body, :html, anchor_id: "#{id}-body" ) %>
-    </div>
-</div>
-
-<hr/>
-<% end %>
+<%= erb 'issue/page/body.erb', id: id, page: page %>
 
 <div class="row">
     <div class="col-md-6">
