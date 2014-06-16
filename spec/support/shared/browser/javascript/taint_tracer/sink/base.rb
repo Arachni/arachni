@@ -27,4 +27,10 @@ shared_examples_for 'sink' do
         end
     end
 
+    describe '#to_h' do
+        it 'converts #trace data to hashes' do
+            subject.to_h[:trace].should == [Factory[:frame_data]]
+        end
+    end
+
 end

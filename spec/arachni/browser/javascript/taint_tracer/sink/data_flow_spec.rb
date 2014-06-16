@@ -70,6 +70,10 @@ describe Arachni::Browser::Javascript::TaintTracer::Sink::DataFlow do
             subject.to_h.should == Factory[:data_flow]
         end
 
+        it 'converts #function to hash' do
+            subject.to_h[:function].should == Factory[:called_function_data]
+        end
+
         it 'is aliased to #to_hash' do
             subject.to_h.should == subject.to_hash
         end

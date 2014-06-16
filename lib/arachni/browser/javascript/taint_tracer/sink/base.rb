@@ -28,7 +28,7 @@ class Base
         instance_variables.inject({}) do |h, iv|
             h[iv.to_s.gsub('@', '').to_sym] = instance_variable_get( iv )
             h
-        end
+        end.merge( trace: trace.map(&:to_h))
     end
     alias :to_hash :to_h
 

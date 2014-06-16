@@ -64,4 +64,9 @@ describe Arachni::Browser::Javascript::TaintTracer::Frame::CalledFunction do
         end
     end
 
+    describe '#to_h' do
+        it 'converts self to a hash' do
+            subject.to_h.should == Factory[:called_function_data]
+        end
+    end
 end

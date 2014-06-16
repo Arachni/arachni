@@ -62,9 +62,7 @@ class DataFlow < Base
     end
 
     def to_rpc_data
-        h = to_h.merge( function: function.to_rpc_data )
-        h[:trace] = h[:trace].map(&:to_rpc_data)
-        h
+        to_h.merge( function: function.to_rpc_data )
     end
 
     def self.from_rpc_data( data )
