@@ -31,6 +31,11 @@ describe name_from_filename do
                 'check'      => 'Hi there logged-in user'
             }
 
+            # The framework will call #clean_up which nil out the session...
+            session = framework.session
+            # ...in addition to removing its configuration.
+            session.stub(:clean_up)
+
             run
 
             session.logged_in?.should be_true
@@ -44,50 +49,48 @@ describe name_from_filename do
     end
 
     context 'when given invalid params' do
-        it 'complains about not being able to find the form' do
+        before do
             options.plugins[component_name] = {
                 'url'        => url + '/login',
                 'parameters' => 'username2=john&password=doe',
                 'check'      => 'Hi there logged-in user'
             }
+        end
 
-            t = Thread.new { run }
-            sleep 0.1 while !actual_results
-            t.kill
+        it 'complains about not being able to find the form' do
+            run
 
             actual_results['status'].should  == 'form_not_found'
             actual_results['message'].should == plugin::STATUSES[:form_not_found]
         end
 
-        it 'does not resume the scan' do
-            options.plugins[component_name] = {
-                'url'        => url + '/login',
-                'parameters' => 'username2=john&password=doe',
-                'check'      => 'Hi there logged-in user'
-            }
+        it 'aborts the scan' do
+            run
 
-            t = Thread.new { run }
-            sleep 0.1 while !actual_results
-
-            framework.status.to_s.should == 'paused'
-            t.kill
+            framework.status.should == :aborted
         end
     end
 
     context 'when the verifier does not match' do
-        it 'complains about not being able to verify the login' do
+        before do
             options.plugins[component_name] = {
                 'url'        => url + '/login',
                 'parameters' => 'username=john&password=doe',
                 'check'      => 'Hi there Jimbo'
             }
+        end
 
-            t = Thread.new { run }
-            sleep 0.1 while !actual_results
-            t.kill
+        it 'complains about not being able to verify the login' do
+            run
 
             actual_results['status'].should  == 'check_failed'
             actual_results['message'].should == plugin::STATUSES[:check_failed]
+        end
+
+        it 'aborts the scan' do
+            run
+
+            framework.status.should == :aborted
         end
     end
 end

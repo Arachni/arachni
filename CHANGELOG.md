@@ -143,6 +143,7 @@
         - `params` option renames to `parameters`.
         - Changed results to include `status` (`String`) and `message` (`String`)
             instead of `code` (`Integer`) and `msg` (`String`).
+        - Updated to abort the scan upon login failure.
     - `content_types`
         - Renamed `params` in logged results to `parameters`.
     - `cookie_collector`
