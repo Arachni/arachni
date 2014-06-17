@@ -30,20 +30,48 @@ class PluginFormatters::HealthMap < Arachni::Plugin::Formatter
 
             <div class="row">
                 <div class="col-md-2">
-                    <strong>Total</strong>: <%= results['total'] %> <br/>
-                    <strong>Safe</strong>: <%= results['without_issues'] %> <br/>
-                    <strong>Unsafe</strong>: <%= results['with_issues'] %> <br/>
-                    <strong>Issue percentage</strong>: <%= results['issue_percentage'] %>%
+                    <dl class="dl-horizontal">
+                        <dt>
+                            Total
+                        </dt>
+                        <dd>
+                            <%= results['total'] %>
+                        </dd>
+
+                        <dt>
+                            Without issues
+                        </dt>
+                        <dd>
+                            <%= results['without_issues'] %>
+                        </dd>
+
+                        <dt>
+                            With issues
+                        </dt>
+                        <dd>
+                            <%= results['with_issues'] %>
+                        </dd>
+
+                        <dt>
+                            Issue percentage
+                        </dt>
+                        <dd>
+                            <%= results['issue_percentage'] %>
+                        </dd>
+                    </dl>
                 </div>
 
                 <div class="col-md-10">
-                    <ul>
-                    <% results['map'].each do |entry|
+                    <ul class="list-unstyled">
+                    <% results['map'].sort_by { |entry| entry.keys.first }.each do |entry|
                             state, url = entry.to_a.first
                         %>
 
                         <li>
-                            <a class="<%= state %>" href="<%= escapeHTML url %>"><%= escapeHTML url %></a>
+                            <a class="<%= state == 'with_issues' ? 'text-danger' : 'text-success' %>"
+                                href="<%= escapeHTML url %>">
+                                <%= escapeHTML url %>
+                            </a>
                         </li>
                     <% end %>
 
