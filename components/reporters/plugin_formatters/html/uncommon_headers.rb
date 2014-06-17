@@ -18,16 +18,17 @@ class PluginFormatters::UncommonHeaders < Arachni::Plugin::Formatter
         <ul>
         <% results.each do |url, headers| %>
             <li>
-                <a href="<%= url %>"><%= escapeHTML( url ) %></a>
+                <a href="<%= escapeHTML url %>"><%= escapeHTML url %></a>
 
-            <ul>
-            <% headers.each do |name, value| %>
-                <li><%= name %>: <%= value %></li>
-            <%end%>
-            </ul>
+                <dl class="dl-horizontal">
+                    <% headers.each do |name, value| %>
+                        <dt><%= escapeHTML name %></dt>
+                        <dd><code><%= escapeHTML value %></code></dd>
+                    <% end %>
+                </dl>
 
             </li>
-        <%end%>
+        <% end %>
         </ul>
         HTML
     end

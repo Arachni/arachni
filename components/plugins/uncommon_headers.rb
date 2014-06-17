@@ -57,7 +57,10 @@ class Arachni::Plugins::UncommonHeaders < Arachni::Plugin::Base
         end
 
         wait_while_framework_running
-        register_results @headers_per_url
+
+        # The merge is here to remove the default hash Proc which cannot be
+        # serialized.
+        register_results( {}.merge( @headers_per_url ) )
     end
 
     def self.merge( results )
@@ -71,7 +74,7 @@ class Arachni::Plugins::UncommonHeaders < Arachni::Plugin::Base
             end
         end
 
-        merged
+        {}.merge( merged )
     end
 
     def self.info
