@@ -14,9 +14,7 @@
     <div class="tab-content">
     <% plugins.each do |name, html| %>
         <div class="tab-pane" id="plugins-<%= name %>">
-            <p class="well">
-                <%= prep_description( get_plugin_info(name)[:description] ) %>
-            </p>
+            <pre><%= prep_description( get_plugin_info(name)[:description] ) %></pre>
 
             <p><%= html.recode %></p>
         </div>
