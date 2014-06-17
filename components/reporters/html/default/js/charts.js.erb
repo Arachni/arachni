@@ -29,9 +29,9 @@ jQuery(function ($) {
                 var location;
 
                 if( d.name.toLowerCase() == 'severity' ) {
-                    location = 'issues/trusted/severity/' + index_to_severity(d.x);
+                    location = 'summary/issues/trusted/severity/' + index_to_severity(d.x);
                 } else {
-                    location = 'issues/' + d.name.toLowerCase() + '/severity/' +
+                    location = 'summary/issues/' + d.name.toLowerCase() + '/severity/' +
                         index_to_severity(d.x) + '/' + index_to_shortname(d.x);
                 }
 
@@ -76,7 +76,7 @@ jQuery(function ($) {
             columns: <%= graph_data[:trust].to_a.to_json %>
         },
         pie: {
-            onclick: function (d) { goToLocation( 'issues/' + d.id.toLowerCase() ) }
+            onclick: function (d) { goToLocation( 'summary/issues/' + d.id.toLowerCase() ) }
         },
         color: {
             pattern: [ '#1f77b4', '#d62728' ]
@@ -102,7 +102,7 @@ jQuery(function ($) {
         },
         pie: {
             onclick: function (d) {
-                goToLocation( 'issues/trusted/severity/' + d.id );
+                goToLocation( 'summary/issues/trusted/severity/' + d.id );
             }
         }
     });

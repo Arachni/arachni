@@ -8,7 +8,10 @@
     <% next if by_severity.empty? %>
 
     <h3>
-        <a href="#!/issues/<%= trust %>">
+        <a
+            id="summary-issues-<%= trust %>"
+            href="#!/summary/issues/<%= trust %>"
+        >
 
             <%= trust.to_s.capitalize %>
 
@@ -21,7 +24,10 @@
     <% by_severity.each do |severity, issues_by_name| %>
 
         <h4>
-            <a href="#!/issues/<%= trust %>/severity/<%= severity %>">
+            <a
+                id="summary-issues-<%= trust %>-severity-<%= severity %>"
+                href="#!/summary/issues/<%= trust %>/severity/<%= severity %>"
+            >
                 <%= severity.to_s.capitalize %> severity
 
                 <span class="badge">
@@ -39,7 +45,10 @@
                         <div class="panel panel-info">
                             <div class="panel-heading">
                                 <strong>
-                                    <a href="#!/issues/<%= trust %>/severity/<%= severity %>/<%= issues.first.check[:shortname] %>">
+                                    <a
+                                        id="summary-issues-<%= trust %>-severity-<%= severity %>-<%= issues.first.check[:shortname] %>"
+                                        href="#!/summary/issues/<%= trust %>/severity/<%= severity %>/<%= issues.first.check[:shortname] %>"
+                                    >
                                         <%= name %>
 
                                         <span class="badge">
