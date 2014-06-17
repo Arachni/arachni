@@ -2,6 +2,33 @@
    not_available = '<p class="alert alert-info">Not available</p>'
 %>
 
+<% if issue.remarks.any? %>
+    <div class="alert alert-info">
+        <p>
+            <i class="fa fa-info-circle"></i>
+            System components have attached some insights to this issue.
+        </p>
+
+        <hr/>
+
+        <ul>
+            <% issue.remarks.each do |commenter, remarks| %>
+                <li>
+                    <%= escapeHTML commenter.to_s.capitalize %>
+
+                    <ul>
+                        <% remarks.each do |remark| %>
+                            <li>
+                                <%= escapeHTML remark %>
+                            </li>
+                        <% end %>
+                    </ul>
+                </li>
+            <% end %>
+        </ul>
+    </div>
+<% end %>
+
 <% if parent_issue.platform_type %>
 <p class="alert alert-info">
     Affected platform type belongs to the
