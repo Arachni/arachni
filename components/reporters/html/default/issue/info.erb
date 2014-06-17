@@ -2,6 +2,15 @@
    not_available = '<p class="alert alert-info">Not available</p>'
 %>
 
+<% if parent_issue.platform_type %>
+<p class="alert alert-info">
+    Affected platform type belongs to the
+    <strong><%= Arachni::Platform::Manager::TYPES[parent_issue.platform_type] %></strong>
+    category, identified as
+    <strong><%= Arachni::Platform::Manager.new.fullname parent_issue.platform_name %></strong>.
+</p>
+<% end %>
+
 <table class="table">
     <thead>
     <tr>

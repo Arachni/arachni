@@ -43,6 +43,7 @@
                                     <%=
                                         erb 'issue/info.erb',
                                             issue: issue.variations.first,
+                                            parent_issue: issue,
                                             id:    issue_id( issue )
                                     %>
                                 </div>
@@ -64,6 +65,7 @@
                                         <%=
                                             erb 'issue/info.erb',
                                                 issue: v,
+                                                parent_issue: issue,
                                                 id:    issue_id( v )
                                         %>
                                     </div>
@@ -74,8 +76,9 @@
 
                     <%=
                         erb 'issue/details.erb',
-                            issue: issue.variations.first,
-                            id:    issue_id( issue )
+                            issue:        issue.variations.first,
+                            parent_issue: issue,
+                            id:           issue_id( issue )
                     %>
                 </div>
             </div>
