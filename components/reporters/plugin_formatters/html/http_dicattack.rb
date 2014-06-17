@@ -5,11 +5,9 @@
 
 class Arachni::Reporters::HTML
 
-#
-# XML formatter for the results of the HTTPDicattack plugin
+# HTML formatter for the results of the HTTPDicattack plugin.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class PluginFormatters::HTTPDicattack < Arachni::Plugin::Formatter
     include TemplateUtilities
 
@@ -20,8 +18,14 @@ class PluginFormatters::HTTPDicattack < Arachni::Plugin::Formatter
     def tpl
         <<-HTML
             <h3>Credentials</h3>
-            <strong>Username</strong>: <%=escapeHTML( results[:username] )%> <br/>
-            <strong>Password</strong>: <%=escapeHTML( results[:password] )%>
+
+            <dl class="dl-horizontal">
+                <dt>Username</dt>
+                <dd><kbd><%= escapeHTML results['username'] %></kbd></dd>
+
+                <dt>Password</dt>
+                <dd><kbd><%= escapeHTML results['password'] %><kbd></dd>
+            </dl>
         HTML
     end
 
