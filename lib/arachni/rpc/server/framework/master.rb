@@ -151,11 +151,9 @@ module Master
 
     def master_run
         # We need to take our cues from the local framework as some plug-ins may
-        # need the system to wait for them to finish before moving on.
-        sleep( 0.2 ) while paused?
-
-        # handle_signals
-        # return if aborted?
+        # have placed signals.
+        handle_signals
+        return master_finalize if aborted?
 
         # Grid-related operations.
         return master_scan_run if !options.dispatcher.grid?
@@ -209,12 +207,14 @@ module Master
             Thread.new do
                 # Start the master/local Instance's audit.
                 audit
-
-                @finished_auditing = true
-
-                cleanup_if_all_done
+                master_finalize
             end
         end
+    end
+
+    def master_finalize
+        @finished_auditing = true
+        cleanup_if_all_done
     end
 
     def master_audit_queues
