@@ -78,14 +78,14 @@ class OptionParser
     private
 
     def prepare_component_options( hash, argument )
-        component_name, options_string = argument.split( ':' )
+        component_name, options_string = argument.split( ':', 2 )
 
         hash[component_name] = { }
 
         return hash if !options_string
 
-        options_string.split( ',' ).each do |option|
-            name, val = option.split( '=' )
+        options_string.split( ',', ).each do |option|
+            name, val = option.split( '=', 2 )
             hash[component_name][name] = val
         end
 
