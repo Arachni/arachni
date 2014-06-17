@@ -24,7 +24,7 @@ class Arachni::Plugins::CookieCollector < Arachni::Plugin::Base
     end
 
     def run
-        http.add_on_new_cookies do |cookies, response|
+        http.on_new_cookies do |cookies, response|
             cookies_hash = cookies.inject({}) { |h, c| h.merge!( c.simple ); h }
             update( filter( cookies_hash ), response )
         end

@@ -5,11 +5,9 @@
 
 class Arachni::Reporters::HTML
 
-#
-# HTML formatter for the results of the CookieCollector plugin
+# HTML formatter for the results of the CookieCollector plugin.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class PluginFormatters::CookieCollector < Arachni::Plugin::Formatter
     include TemplateUtilities
 
@@ -19,20 +17,24 @@ class PluginFormatters::CookieCollector < Arachni::Plugin::Formatter
 
     def tpl
         <<-HTML
-            <h3>Cookies</h3>
             <ul>
             <% results.each do |entry| %>
                 <li>
-                    On <%=entry[:time].to_s%> @ <a href="<%=escapeHTML(entry[:res][:url])%>"><%=escapeHTML(entry[:res][:url])%></a>
-                    <br/>
-                    Cookies were forced to:
+                    On <strong><%= entry['time'] %></strong> by
+
+                    <a href="<%= escapeHTML entry['response']['url'] %>">
+                        <%= escapeHTML entry['response']['url'] %>
+                    </a>
+
                     <ul>
-                        <% entry[:cookies].each do |name, val| %>
-                            <li><%=escapeHTML(name)%> = <%=escapeHTML(val)%></li>
-                        <%end%>
+                        <% (entry['response']['headers']['Set-Cookie'] || []).each do |set_cookie| %>
+                            <li>
+                                <code><%= escapeHTML set_cookie %></code>
+                            </li>
+                        <% end %>
                     </ul>
                 </li>
-            <%end%>
+            <% end %>
             </ul>
         HTML
     end
