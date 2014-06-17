@@ -94,7 +94,7 @@ describe Arachni::Browser::Javascript do
 
             @browser.watir.form.submit
             subject.execution_flow_sink.should be_any
-            subject.execution_flow_sink.first[:data].should be_empty
+            subject.execution_flow_sink.first.data.should be_empty
         end
     end
 
@@ -162,7 +162,7 @@ describe Arachni::Browser::Javascript do
 
     describe '#data_flow_sink' do
         it 'returns sink data' do
-            @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_data_flow_sink_stub(1)}"
+            @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_data_flow_sink_stub( function: { name: 'blah' } )}"
             @browser.watir.form.submit
 
             subject.data_flow_sink.should be_any
@@ -172,17 +172,17 @@ describe Arachni::Browser::Javascript do
 
     describe '#flush_data_flow_sink' do
         it 'returns sink data' do
-            @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_data_flow_sink_stub(1)}"
+            @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_data_flow_sink_stub( function: { name: 'blah' } )}"
             @browser.watir.form.submit
 
             sink = subject.flush_data_flow_sink
-            sink[0][:trace][1][:arguments][0].delete( 'timeStamp' )
+            sink[0].trace[1].function.arguments[0].delete( 'timeStamp' )
 
-            @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_data_flow_sink_stub(1)}"
+            @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_data_flow_sink_stub( function: { name: 'blah' } )}"
             @browser.watir.form.submit
 
             sink2 = subject.taint_tracer.data_flow_sink
-            sink2[0][:trace][1][:arguments][0].delete( 'timeStamp' )
+            sink2[0].trace[1].function.arguments[0].delete( 'timeStamp' )
 
             sink.should == sink2
         end
@@ -202,13 +202,13 @@ describe Arachni::Browser::Javascript do
             @browser.watir.form.submit
 
             sink = subject.flush_execution_flow_sink
-            sink[0][:trace][1][:arguments][0].delete( 'timeStamp' )
+            sink[0].trace[1].function.arguments[0].delete( 'timeStamp' )
 
             @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_execution_flow_sink_stub(1)}"
             @browser.watir.form.submit
 
             sink2 = subject.taint_tracer.execution_flow_sink
-            sink2[0][:trace][1][:arguments][0].delete( 'timeStamp' )
+            sink2[0].trace[1].function.arguments[0].delete( 'timeStamp' )
 
             sink.should == sink2
         end

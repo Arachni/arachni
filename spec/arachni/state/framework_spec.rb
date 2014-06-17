@@ -390,6 +390,165 @@ describe Arachni::State::Framework do
         end
     end
 
+    describe '#abort' do
+        context 'when #running?' do
+            before(:each) { subject.running = true }
+
+            context 'when blocking' do
+                it 'waits for an #aborted signal' do
+                    t = Thread.new do
+                        sleep 1
+                        subject.aborted
+                    end
+
+                    time = Time.now
+                    subject.abort
+                    (Time.now - time).should > 1
+                    t.join
+                end
+
+                it 'sets the #status to :aborted' do
+                    t = Thread.new do
+                        sleep 1
+                        subject.aborted
+                    end
+                    subject.abort
+                    t.join
+
+                    subject.status.should == :aborted
+                end
+
+                it 'sets the status message to :aborting' do
+                    t = Thread.new do
+                        sleep 1
+                        subject.aborted
+                    end
+                    subject.abort
+                    t.join
+
+                    subject.status_messages.should ==
+                        [subject.available_status_messages[:aborting]]
+                end
+
+                it 'returns true' do
+                    t = Thread.new do
+                        sleep 1
+                        subject.aborted
+                    end
+                    subject.abort.should be_true
+                    t.join
+
+                    subject.status.should == :aborted
+                end
+            end
+
+            context 'when non-blocking' do
+                it 'sets the #status to :aborting' do
+                    subject.abort( false )
+                    subject.status.should == :aborting
+                end
+
+                it 'sets the status message to :aborting' do
+                    subject.abort( false )
+                    subject.status_messages.should ==
+                        [subject.available_status_messages[:aborting]]
+                end
+
+                it 'returns true' do
+                    subject.abort( false ).should be_true
+                end
+            end
+
+            context 'when already #aborting?' do
+                it 'returns false' do
+                    subject.abort( false ).should be_true
+                    subject.should be_aborting
+                    subject.abort.should be_false
+                end
+            end
+
+            context 'when already #aborted?' do
+                it 'returns false' do
+                    subject.abort( false ).should be_true
+                    subject.aborted
+                    subject.should be_aborted
+
+                    subject.abort.should be_false
+                end
+            end
+        end
+
+        context 'when not #running?' do
+            it "raises #{described_class::Error::StateNotAbortable}" do
+                expect{ subject.abort }.to raise_error described_class::Error::StateNotAbortable
+            end
+        end
+    end
+
+    describe '#aborted' do
+        it 'sets the #status to :aborted' do
+            subject.aborted
+            subject.status.should == :aborted
+        end
+    end
+
+    describe '#aborted?' do
+        context 'when #aborted' do
+            it 'returns true' do
+                subject.aborted
+                subject.should be_aborted
+            end
+        end
+
+        context 'when not #aborted' do
+            it 'returns false' do
+                subject.should_not be_aborted
+            end
+        end
+    end
+
+    describe '#aborting?' do
+        before(:each) { subject.running = true }
+
+        context 'while aborting' do
+            it 'returns true' do
+                subject.abort( false )
+                subject.should be_aborting
+            end
+        end
+
+        context 'while not aborting' do
+            it 'returns false' do
+                subject.should_not be_aborting
+
+                subject.abort( false )
+                subject.aborted
+                subject.should_not be_aborting
+            end
+        end
+    end
+
+    describe '#abort?' do
+        before(:each) { subject.running = true }
+
+        context 'when a #abort signal is in place' do
+            it 'returns true' do
+                subject.abort( false )
+                subject.should be_abort
+            end
+        end
+
+        context 'when a #abort signal is not in place' do
+            it 'returns false' do
+                subject.should_not be_abort
+
+                subject.abort( false )
+                subject.aborted
+                subject.should_not be_abort
+            end
+        end
+    end
+
     describe '#pause' do
         context 'when #running?' do
             before(:each) { subject.running = true }

@@ -38,9 +38,6 @@ describe name_from_filename do
                     data_flow_sink = data_flow_sink.first
 
                     data = data_flow_sink[:data]
-                    data.size.should == 1
-                    data = data.first
-
                     data['source'].should start_with 'function decodeURI()'
                     data['function'].should == 'decodeURI'
                     data['object'].should == 'DOMWindow'
@@ -55,9 +52,6 @@ describe name_from_filename do
                     data_flow_sink = data_flow_sink.first
 
                     data = data_flow_sink[:data]
-                    data.size.should == 1
-                    data = data.first
-
                     data['source'].should start_with 'function decodeURIComponent()'
                     data['function'].should == 'decodeURIComponent'
                     data['object'].should == 'DOMWindow'

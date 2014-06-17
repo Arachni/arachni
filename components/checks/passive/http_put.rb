@@ -10,7 +10,7 @@
 class Arachni::Checks::HTTP_PUT < Arachni::Check::Base
 
     def self.substring
-        @substring ||= 'PUT' + seed
+        @substring ||= 'PUT' + random_seed
     end
 
     def self.body
@@ -18,7 +18,7 @@ class Arachni::Checks::HTTP_PUT < Arachni::Check::Base
     end
 
     def run
-        path = get_path( page.url ) + 'Arachni-' + seed.to_s[0..4].to_s
+        path = get_path( page.url ) + 'Arachni-' + random_seed.to_s[0..4].to_s
         return if audited?( path )
         audited( path )
 

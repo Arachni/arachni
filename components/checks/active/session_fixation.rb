@@ -21,7 +21,7 @@
 class Arachni::Checks::SessionFixation < Arachni::Check::Base
 
     def token
-        "_arachni_sf_#{seed}"
+        "_arachni_sf_#{random_seed}"
     end
 
     def run

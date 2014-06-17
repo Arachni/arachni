@@ -9,7 +9,7 @@ class Arachni::Checks::XSSDOM < Arachni::Check::Base
     prefer :xss
 
     def self.tag_name
-        "some_dangerous_input_#{seed}"
+        "some_dangerous_input_#{random_seed}"
     end
 
     def self.tag

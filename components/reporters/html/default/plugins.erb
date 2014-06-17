@@ -1,22 +1,26 @@
-            <h2>Plugin results</h2>
+<h2>Plugin results</h2>
 
-                <div id="plugin-tabs">
-                    <ul>
-                    <% plugins.each_pair do |name, html|%>
-                        <li><a href="#<%=name%>"><%=get_plugin_info( name )[:name]%></a></li>
-                    <% end %>
-                    </ul>
+<div id="plugin-tabs">
+    <ul class="nav nav-tabs">
+        <% plugins.keys.each do |name| %>
+            <li>
+                <a href="#!/plugins/<%= name %>">
+                    <%= escapeHTML get_plugin_info( name )[:name] %>
+                </a>
+            </li>
+        <% end %>
+    </ul>
 
-                <% plugins.each_pair do |name, html|%>
-                    <div id="<%=name%>">
-                        <blockquote>
-                            <pre><%=prep_description( get_plugin_info( name )[:description] )%></pre>
-                        </blockquote>
+    <div class="tab-content">
+    <% plugins.each do |name, html| %>
+        <div class="tab-pane" id="plugins-<%= name %>">
+            <p class="well">
+                <%= prep_description( get_plugin_info(name)[:description] ) %>
+            </p>
 
-                        <p><%=html.force_encoding( 'utf-8' )%></p>
-                    </div>
+            <p><%= html.recode %></p>
+        </div>
+    <% end %>
+    </div>
 
-                <% end %>
-                </div>
-
-        </section>
+</div>

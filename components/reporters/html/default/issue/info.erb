@@ -1,0 +1,74 @@
+<%
+   not_available = '<p class="alert alert-info">Not available</p>'
+%>
+
+<%= erb 'issue/remarks.erb', issue: issue %>
+<%= erb 'issue/platform.erb', issue: parent_issue %>
+
+<% if (issue.vector.respond_to?(:seed) && issue.vector.seed) || issue.signature || issue.proof %>
+<table class="table">
+    <thead>
+    <tr>
+        <% if issue.vector.respond_to?(:seed) && issue.vector.seed %>
+            <th>
+                Injected seed
+
+                <a href="#" rel="tooltip"
+                   title="This seed uncovered the vulnerable vector during the audit.">
+                    <i class="fa fa-info"></i>
+                </a>
+            </th>
+        <% end %>
+
+        <% if issue.signature %>
+            <th>
+                Signature
+
+                <a href="#" rel="tooltip"
+                   title="This signature was used to detect the issue.">
+                    <i class="fa fa-info"></i>
+                </a>
+            </th>
+        <% end %>
+
+        <% if issue.proof %>
+            <th>
+                Proof
+
+                <a href="#" rel="tooltip"
+                   title="This string was used to verify the existence of the issue.">
+                    <i class="fa fa-info"></i>
+                </a>
+            </th>
+        <% end %>
+
+    </tr>
+    </thead>
+    <tr>
+
+        <% if issue.vector.respond_to?(:seed) && issue.vector.seed %>
+            <td class="wrap">
+                <%= issue.vector.seed ?
+                            "<pre>#{escapeHTML(issue.vector.seed)}</pre>" :
+                            not_available %>
+            </td>
+        <% end %>
+
+        <% if issue.signature %>
+            <td class="wrap">
+                <%= issue.signature ?
+                            "<pre>#{escapeHTML(issue.signature)}</pre>" :
+                            not_available %>
+            </td>
+        <% end %>
+
+        <% if issue.proof %>
+            <td class="wrap">
+                <%= issue.proof ?
+                            "<pre class='code-container'>#{escapeHTML(issue.proof)}</pre>" :
+                            not_available %>
+            </td>
+        <% end %>
+    </tr>
+</table>
+<% end %>

@@ -143,15 +143,12 @@ class String
     end
 
     def recode!
-        return scrub! if respond_to? :scrub!
-
         force_encoding( 'utf-8' )
         encode!( 'utf-16be', invalid: :replace, undef: :replace )
         encode!( 'utf-8' )
     end
 
     def recode
-        return scrub if respond_to? :scrub
         dup.recode!
     end
 

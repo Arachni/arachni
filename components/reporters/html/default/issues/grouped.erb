@@ -1,0 +1,130 @@
+<div id="issues-<%= trust %>-severities-tabs">
+    <ul class="nav nav-tabs">
+
+        <% grouped.keys.each.with_index do |severity, i| %>
+            <li <%= 'class="active"' if i == 0 %> >
+                <a href="#!/issues/<%= trust %>/severity/<%= severity %>">
+                    <%= severity.to_s.capitalize %>
+
+                    <span class="badge">
+                        <%= graph_data["#{trust}_severities".to_sym][severity.to_sym] %>
+                    </span>
+                </a>
+            </li>
+        <% end %>
+    </ul>
+</div>
+
+<div class="tab-content">
+    <% grouped.each do |severity, issues_by_name| %>
+        <div class="tab-pane active" id="issues-<%= trust %>-severity-<%= severity %>">
+
+            <% issues_by_name.each do |name, issues| %>
+                <%
+                   current_issue_id       = "issues-#{trust}-severity-#{severity}-#{issues.first.check[:shortname]}"
+                   current_issue_location = id_to_location( current_issue_id )
+                %>
+
+                <div class="row">
+                    <div class="col-md-10">
+                        <h3>
+                            <a id="<%= current_issue_id %>"
+                               href="<%= current_issue_location %>"
+                            >
+                                <%= name %>
+                            </a>
+
+                            <span class="badge">
+                                <%= issues.size %>
+                            </span>
+
+                            <small>
+                                <span class="label label-default">
+                                    <%= issues.first.check[:shortname] %>
+                                </span>
+                            </small>
+                        </h3>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <p>
+                                    <%= escapeHTML issues.first.description %>
+                                </p>
+                            </div>
+                        </div>
+
+                        <% if issues.first.remedy_guidance || issues.first.remedy_code %>
+                        <div class="row">
+
+                            <% if issues.first.remedy_guidance %>
+                            <div class="col-md-6">
+                                <h4>
+                                    <a id="<%= current_issue_id %>-remedy_guidance"
+                                       href="<%= current_issue_location %>/remedy_guidance"
+                                    >
+                                        Remediation guidance
+                                    </a>
+                                </h4>
+
+                                <p>
+                                    <%= escapeHTML issues.first.remedy_guidance %>
+                                </p>
+                            </div>
+                            <% end %>
+
+                            <% if issues.first.remedy_code %>
+                            <div class="col-md-6">
+                                <h4>
+                                    <a id="<%= current_issue_id %>-remedy_code"
+                                       href="<%= current_issue_location %>/remedy_code"
+                                    >
+                                        Remediation code
+                                    </a>
+                                </h4>
+
+                                <pre>
+                                    <%= escapeHTML issues.first.remedy_code %>
+                                </pre>
+                            </div>
+                            <% end %>
+                        </div>
+                        <% end %>
+                    </div>
+
+                    <div class="col-md-2">
+                        <h4>
+                            <a id="<%= current_issue_id %>-references"
+                               href="<%= current_issue_location %>/references"
+                            >
+                                References
+                            </a>
+                        </h4>
+
+                        <hr/>
+
+                        <ul class="list-unstyled">
+                            <li>
+                                <a href="<%= issues.first.cwe_url %>">
+                                    CWE-<%= issues.first.cwe %>
+                                </a>
+                            </li>
+                            <li>
+                                <hr/>
+                            </li>
+                            <% issues.first.references.each do |ref_name, url| %>
+                                <li>
+                                    <a href="<%= url %>"> <%= ref_name %></a>
+                                </li>
+                            <% end %>
+                        </ul>
+                    </div>
+                </div>
+
+                <% issues.each do |issue| %>
+                    <%= erb :issue, issue: issue,
+                            id: "issues-#{trust}-severity-#{severity}-#{issues.first.check[:shortname]}" %>
+                <% end %>
+            <% end %>
+        </div>
+    <% end %>
+</div>

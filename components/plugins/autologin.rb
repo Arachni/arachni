@@ -75,7 +75,8 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
 
     def clean_up
         if @errored
-            print_info 'The scan will not progress, you can safely abort the process.'
+            print_info 'Aborting the scan.'
+            framework_abort
             return
         end
 

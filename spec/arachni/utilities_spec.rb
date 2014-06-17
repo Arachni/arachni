@@ -187,9 +187,9 @@ describe Arachni::Utilities do
         end
     end
 
-    describe '#seed' do
+    describe '#random_seed' do
         it 'returns a random string' do
-            subject.seed.class.should == String
+            subject.random_seed.should be_kind_of String
         end
     end
 

@@ -9,6 +9,7 @@ class Arachni::Reporters::HTML
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class PluginFormatters::Uniformity < Arachni::Plugin::Formatter
+    include TemplateUtilities
 
     def run
         ERB.new( tpl ).result( binding )
@@ -18,18 +19,28 @@ class PluginFormatters::Uniformity < Arachni::Plugin::Formatter
         <<-HTML
         <ul>
         <% results.each do |digests| %>
-            <% issue = auditstore.issue_by_digest( digests.first ) %>
+            <% issue = report.issue_by_digest( digests.first ) %>
             <li>
-                <%= CGI.escapeHTML( issue.name ) %> in <%= issue.vector.type %> variable
-                '<%= issue.vector.affected_input_name %>' using <%= issue.vector.method.to_s.upcase %> at the following pages:
-                <ul>
+                <strong><%= escapeHTML issue.name %></strong> in <code><%= issue.vector.type %></code> input
+                <code><%= issue.affected_input_name %></code> using
+                <code><%= issue.vector.method.to_s.upcase %></code> at the following pages:
 
-                <% digests.each do |digest|%>
+                <ul class="list-unstyled">
+                    <% digests.each do |digest|
+                        issue = report.issue_by_digest( digest )
+                        url   = escapeHTML( issue.vector.action )
+                    %>
                     <li>
-                        <%= CGI.escapeHTML( auditstore.issue_by_digest( digest ).vector.action ) %>
-                    </li>
-                <%end%>
+                        <a class="btn btn-xs btn-info"
+                           href="<%= issue_location( issue ) %>"
+                           title="Inspect issue"
+                        >
+                            <i class="fa fa-eye"></i>
+                        </a>
 
+                        <a href="<%= url %>"><%= url %></a>
+                    </li>
+                    <% end %>
                 </ul>
             </li>
         <%end%>

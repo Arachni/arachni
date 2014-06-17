@@ -11,7 +11,7 @@ class Arachni::Reporters::HTML
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class PluginFormatters::HealthMap < Arachni::Plugin::Formatter
-    include Utils
+    include TemplateUtilities
 
     def run
         ERB.new( tpl ).result( binding )
@@ -20,28 +20,64 @@ class PluginFormatters::HealthMap < Arachni::Plugin::Formatter
     def tpl
         <<-HTML
             <style type="text/css">
-                a.safe {
-                    color: blue
+                a.without_issues {
+                    color: blue;
                 }
-                a.unsafe {
-                    color: red
+                a.with_issues {
+                    color: red;
                 }
             </style>
 
-            <% results[:map].each do |entry| %>
-                <% state = entry.keys[0]%>
-                <% url   = entry.values[0]%>
+            <div class="row">
+                <div class="col-md-2">
+                    <dl class="dl-horizontal">
+                        <dt>
+                            Total
+                        </dt>
+                        <dd>
+                            <%= results['total'] %>
+                        </dd>
 
-                <a class="<%=state%>" href="<%=escapeHTML(url)%>"><%=escapeHTML(url)%></a> <br/>
-            <%end%>
+                        <dt>
+                            Without issues
+                        </dt>
+                        <dd>
+                            <%= results['without_issues'] %>
+                        </dd>
 
-            <br/>
+                        <dt>
+                            With issues
+                        </dt>
+                        <dd>
+                            <%= results['with_issues'] %>
+                        </dd>
 
-            <h3>Stats</h3>
-            <strong>Total</strong>: <%=results[:total]%> <br/>
-            <strong>Safe</strong>: <%=results[:safe]%> <br/>
-            <strong>Unsafe</strong>: <%=results[:unsafe]%> <br/>
-            <strong>Issue percentage</strong>: <%=results[:issue_percentage]%>%
+                        <dt>
+                            Issue percentage
+                        </dt>
+                        <dd>
+                            <%= results['issue_percentage'] %>
+                        </dd>
+                    </dl>
+                </div>
+
+                <div class="col-md-10">
+                    <ul class="list-unstyled">
+                    <% results['map'].sort_by { |entry| entry.keys.first }.each do |entry|
+                            state, url = entry.to_a.first
+                        %>
+
+                        <li>
+                            <a class="<%= state == 'with_issues' ? 'text-danger' : 'text-success' %>"
+                                href="<%= escapeHTML url %>">
+                                <%= escapeHTML url %>
+                            </a>
+                        </li>
+                    <% end %>
+
+                    </ul>
+                </div>
+            </div>
         HTML
     end
 

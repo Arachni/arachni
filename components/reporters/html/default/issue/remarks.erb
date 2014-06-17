@@ -1,0 +1,28 @@
+<% if issue.remarks.any? %>
+    <div class="alert alert-info">
+        <p>
+            <i class="fa fa-info-circle"></i>
+            System components have attached some insights to this issue.
+        </p>
+
+        <hr/>
+
+        <ul class="list-unstyled">
+            <% issue.remarks.each do |commenter, remarks| %>
+                <li>
+                    <strong>
+                        <%= escapeHTML commenter.to_s.gsub( '_', ' ' ).capitalize %>
+                    </strong>
+
+                    <ul>
+                        <% remarks.each do |remark| %>
+                            <li>
+                                <%= escapeHTML remark %>
+                            </li>
+                        <% end %>
+                    </ul>
+                </li>
+            <% end %>
+        </ul>
+    </div>
+<% end %>

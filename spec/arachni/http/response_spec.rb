@@ -282,7 +282,7 @@ describe Arachni::HTTP::Response do
                 it 'preserves invalid characters' do
                     r = described_class.new(
                         url:     'http://test.com',
-                        headers: { 'Content-Type' => 'application/stuff' },
+                        headers: { 'Content-Type' => 'binary/stuff' },
                         body:    'stuff'
                     )
                     r.body = body

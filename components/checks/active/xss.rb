@@ -18,7 +18,7 @@
 class Arachni::Checks::XSS < Arachni::Check::Base
 
     def self.tag_name
-        "some_dangerous_input_#{seed}"
+        "some_dangerous_input_#{random_seed}"
     end
 
     def self.tag

@@ -1,0 +1,58 @@
+=begin
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    All rights reserved.
+=end
+
+module Arachni
+class Browser
+class Javascript
+class TaintTracer
+class Sink
+
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+class Base
+
+    # @return   [Array<Frame>]
+    #   Stacktrace.
+    attr_accessor :trace
+
+    def initialize( options = {} )
+        options.symbolize_keys(false).each do |k, v|
+            send( "#{k}=", v )
+        end
+
+        @trace ||= []
+    end
+
+    def to_h
+        instance_variables.inject({}) do |h, iv|
+            h[iv.to_s.gsub('@', '').to_sym] = instance_variable_get( iv )
+            h
+        end.merge( trace: trace.map(&:to_h))
+    end
+    alias :to_hash :to_h
+
+    def hash
+        to_h.hash
+    end
+
+    def ==( other )
+        hash == other.hash
+    end
+
+    def to_rpc_data
+        to_h.merge( trace: trace.map(&:to_rpc_data) )
+    end
+
+    def self.from_rpc_data( data )
+        data['trace'] = data['trace'].map { |d| Frame.from_rpc_data( d ) }
+        new data
+    end
+
+end
+
+end
+end
+end
+end
+end

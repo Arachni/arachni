@@ -397,6 +397,50 @@ describe Arachni::Framework do
         end
     end
 
+    describe '#abort' do
+        it 'aborts the system' do
+            @options.paths.checks  = fixtures_path + '/taint_check/'
+
+            described_class.new do |f|
+                f.options.url = web_server_url_for :framework_multi
+                f.options.audit.elements :links
+
+                f.plugins.load :wait
+                f.checks.load :taint
+
+                t = Thread.new do
+                    f.run
+                end
+
+                sleep 0.1 while Arachni::Data.issues.size < 2
+
+                f.abort
+                t.join
+
+                Arachni::Data.issues.size.should < 500
+            end
+        end
+
+        it 'sets #status to :aborted' do
+            described_class.new do |f|
+                f.options.url = web_server_url_for :framework_multi
+                f.options.audit.elements :links
+                f.checks.load :taint
+
+                t = Thread.new do
+                    f.run
+                end
+                sleep 0.1 while f.status != :scanning
+
+                f.abort
+                f.status.should == :aborted
+
+                t.join
+                f.status.should == :aborted
+            end
+        end
+    end
+
     describe '#suspend' do
         it 'suspends the system' do
             @options.paths.checks  = fixtures_path + '/taint_check/'

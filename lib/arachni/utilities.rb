@@ -27,8 +27,8 @@ module Utilities
     end
 
     # @return   [String]    random HEX (SHA2) string
-    def seed
-        @@seed ||= generate_token
+    def random_seed
+        @@random_seed ||= generate_token
     end
 
     # @see Arachni::Element::Form.from_response

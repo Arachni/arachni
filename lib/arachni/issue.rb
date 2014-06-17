@@ -278,6 +278,9 @@ class Issue
             if page
                 dom_h = page.dom.to_h
                 dom_h[:transitions] = dom_h[:transitions].map(&:to_hash)
+                dom_h[:data_flow_sink] = dom_h[:data_flow_sink].map(&:to_hash)
+                dom_h[:execution_flow_sink] = dom_h[:execution_flow_sink].map(&:to_hash)
+
                 dom_h.delete(:skip_states)
 
                 h[:page] = {
@@ -290,6 +293,12 @@ class Issue
                 referring_page_dom_h = referring_page.dom.to_h
                 referring_page_dom_h[:transitions] =
                     referring_page_dom_h[:transitions].map(&:to_hash)
+
+                referring_page_dom_h[:data_flow_sink] =
+                    referring_page_dom_h[:data_flow_sink].map(&:to_hash)
+                referring_page_dom_h[:execution_flow_sink] =
+                    referring_page_dom_h[:execution_flow_sink].map(&:to_hash)
+
                 referring_page_dom_h.delete(:skip_states)
 
                 h[:referring_page] = {

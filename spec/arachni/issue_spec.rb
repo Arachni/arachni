@@ -336,12 +336,20 @@ describe Arachni::Issue do
                     h.delete(:time)
                     h
                 end
+            issue_h[:page][:dom][:data_flow_sink] =
+                issue_h[:page][:dom][:data_flow_sink].map(&:to_h)
+            issue_h[:page][:dom][:execution_flow_sink] =
+                issue_h[:page][:dom][:execution_flow_sink].map(&:to_h)
 
             issue_h[:referring_page][:dom][:transitions] =
                 issue_h[:page][:dom][:transitions].map do |h|
                     h.delete(:time)
                     h
                 end
+            issue_h[:referring_page][:dom][:data_flow_sink] =
+                issue_h[:referring_page][:dom][:data_flow_sink].map(&:to_h)
+            issue_h[:referring_page][:dom][:execution_flow_sink] =
+                issue_h[:referring_page][:dom][:execution_flow_sink].map(&:to_h)
 
             issue_h.should == {
                 name:            "Check name \u2713",
@@ -451,17 +459,26 @@ describe Arachni::Issue do
                             h
                         end
 
+
                     variation[:page][:dom][:transitions] =
                         variation[:page][:dom][:transitions].map do |h|
                             h.delete(:time)
                             h
                         end
+                    variation[:page][:dom][:data_flow_sink] =
+                        variation[:page][:dom][:data_flow_sink].map(&:to_h)
+                    variation[:page][:dom][:execution_flow_sink] =
+                        variation[:page][:dom][:execution_flow_sink].map(&:to_h)
 
                     variation[:referring_page][:dom][:transitions] =
                         variation[:page][:dom][:transitions].map do |h|
                             h.delete(:time)
                             h
                         end
+                    variation[:referring_page][:dom][:data_flow_sink] =
+                        variation[:referring_page][:dom][:data_flow_sink].map(&:to_h)
+                    variation[:referring_page][:dom][:execution_flow_sink] =
+                        variation[:referring_page][:dom][:execution_flow_sink].map(&:to_h)
 
                     variation.should == {
                         vector:    {

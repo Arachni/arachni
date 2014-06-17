@@ -10,7 +10,7 @@ class Arachni::Checks::XSSDOMInputs < Arachni::Check::Base
     INPUTS = Set.new([:input, :textarea])
 
     def tag_name
-        "some_dangerous_input_#{seed}"
+        "some_dangerous_input_#{random_seed}"
     end
 
     def tag

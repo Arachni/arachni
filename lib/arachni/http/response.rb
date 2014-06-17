@@ -117,7 +117,7 @@ class Response < Message
         if (type = headers.content_type)
             return true if type.start_with?( 'text/' )
 
-            # Non "test/" nor "application/" content types will surely not be
+            # Non "text/" nor "application/" content types will surely not be
             # text-based so bail out early.
             return false if !type.start_with?( 'application/' )
         end
@@ -137,7 +137,7 @@ class Response < Message
     end
 
     def body=( body )
-        @body = body.to_s
+        @body = body.to_s.dup
 
         text_check = text?
         @body.recode! if text_check.nil? || text_check

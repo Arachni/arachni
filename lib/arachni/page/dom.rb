@@ -196,9 +196,13 @@ class DOM
     # @return   [Hash]
     #   Data representing this instance that are suitable the RPC transmission.
     def to_rpc_data
-        data = to_hash.stringify_keys
+        data = to_hash.stringify_keys(false)
         data['skip_states'] = data['skip_states'].collection.to_a if data['skip_states']
-        data['transitions'] = data['transitions'].map(&:to_rpc_data)
+
+        %w(transitions data_flow_sink execution_flow_sink).each do |k|
+            data[k] = data[k].map(&:to_rpc_data)
+        end
+
         data
     end
 
@@ -213,12 +217,15 @@ class DOM
                         when 'transitions'
                             value.map { |t| Transition.from_rpc_data t }
 
-                        when 'data_flow_sink', 'execution_flow_sink'
-                            (value.map do |entry|
-                                entry['trace'] = entry['trace'].
-                                    map { |o| o.map { |h| h.symbolize_keys( false ) } }
-                                entry.symbolize_keys( false )
-                            end)
+                        when 'data_flow_sink'
+                            value.map do |entry|
+                                Browser::Javascript::TaintTracer::Sink::DataFlow.from_rpc_data( entry )
+                            end.to_a
+
+                        when 'execution_flow_sink'
+                            value.map do |entry|
+                                Browser::Javascript::TaintTracer::Sink::ExecutionFlow.from_rpc_data( entry )
+                            end.to_a
 
                         when 'skip_states'
                             skip_states = Support::LookUp::HashSet.new(

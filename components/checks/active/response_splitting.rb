@@ -18,7 +18,7 @@
 class Arachni::Checks::ResponseSplitting < Arachni::Check::Base
 
     def run
-        header_name = "X-CRLF-Safe-#{seed}"
+        header_name = "X-CRLF-Safe-#{random_seed}"
 
         # the header to inject...
         # what we will check for in the response header

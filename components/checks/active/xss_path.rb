@@ -15,7 +15,7 @@
 class Arachni::Checks::XSSPath < Arachni::Check::Base
 
     def self.tag
-        @tag ||= 'my_tag_' + seed
+        @tag ||= 'my_tag_' + random_seed
     end
 
     def self.string

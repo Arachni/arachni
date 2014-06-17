@@ -1,171 +1,85 @@
-            <div class="issue">
+<%
+   variation = issue.variations.first
+%>
 
-                <h3 id="issue_<%=idx%>">
-                    <a href="#issue_<%=idx%>">[<%=idx%>] <%=escapeHTML(issue.name)%></a>
-                </h3>
+<div id="<%= issue_id(issue) %>">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        <a href="<%= issue_location(issue) %>">
+                            In <code><%= issue.vector.type %></code>
 
-                <div class="left">
-                    <ul>
-                        <li>
-                            <strong>Check name</strong>: <%=escapeHTML(issue.check[:shortname])%>
-                        </li>
-
-                        <% if issue.active? %>
-                        <li>
-                            <strong>Affected input</strong>: <%=escapeHTML(issue.vector.affected_input_name)%>
-                        </li>
-                        <%end%>
-
-                        <li>
-                            <strong>Affected URL</strong>:
-                            <a href="<%=escapeHTML(issue.vector.action)%>"><%=escapeHTML(issue.vector.action)%></a>
-                        </li>
-                        <li>
-                            <strong>Element type</strong>: <%= issue.vector.type %>
-                        </li>
-                        <hr/>
-
-                        <% if issue.cwe_url %>
-                        <li>
-                            <strong>CWE</strong>:
-                            <a target="_blank" href="<%=issue.cwe_url%>"><%=issue.cwe%></a>
-                        </li>
-                        <%end%>
-
-                        <li>
-                            <strong>Severity</strong>: <%=issue.severity%>
-                        </li>
-                    </ul>
-
-                    <p>
-                        <h3>References</h3>
-                        <ul>
-                            <% if issue.references.any? %>
-                                <% issue.references.each_pair do |source, url| %>
-
-                                    <li>
-                                        <%=escapeHTML(source)%> -
-                                        <a target="_blank" href="<%=url%>"><%=url%></a>
-                                    </li>
-
-                                <%end%>
-                            <%else%>
-                                <li>N/A</li>
-                            <%end%>
-                        </ul>
-                    </p>
-
-                </div>
-
-                <div class="right">
-                    <p>
-                        <h3>Description</h3>
-                        <blockquote><p><%=escapeHTML(issue.description)%></p></blockquote>
-                    </p>
-
-                    <% if !issue.remedy_guidance.to_s.empty? %>
-                    <p>
-                        <h3>Remedial guidance</h3>
-                        <blockquote><p><%=escapeHTML(issue.remedy_guidance)%></p></blockquote>
-                    </p>
-                    <%end%>
-
-                    <% if !issue.remedy_code.to_s.empty? %>
-                    <p>
-                        <h3>Remedial code</h3>
-                        <pre class="code notice"><%=escapeHTML(issue.remedy_code)%></pre>
-                    </p>
-                    <%end%>
-                </div>
-
-                <div class="clear variations" style="display: block;">
-                    <% issue.variations.each_with_index do |variation, j| %>
-                    <% var_idx = j + 1%>
-
-                    <h5 class="variation_header">
-                        <a href='javascript:toggleElem( "var_<%=var_idx%>_<%=idx%>" )'>
-                            <span id="var_<%=var_idx%>_<%=idx%>_sign">[+]</span>
-                            Variation <%=var_idx%>
-                        </a>
-                    </h5>
-
-                    <strong>Affected URL</strong>:
-                    <p class="notice"><a href="<%=escapeHTML(variation.vector.action)%>"><%=escapeHTML(variation.vector.action)%></a></p>
-
-                    <% if variation.signature %>
-                        <div class="hidden" id="inspection-dialog_<%=var_idx%>_<%=idx%>"
-                             title="Relevant content is shown in red. (Hit Esc to close)">
-                            <% match = escapeHTML( variation.proof )%>
-                            <pre><%=escapeHTML( variation.response.body ).gsub( match, '<strong style="color: red">' + match + '</strong>' ) %></pre>
-                        </div>
-
-                        <form style="display:inline" action="#">
-                            <input onclick="javascript:inspect( '#inspection-dialog_<%=var_idx%>_<%=idx%>')" type="button" value="Inspect" />
-                        </form>
-
-                    <%end%>
-
-                    <br/><br/>
-
-                    <div class="variation" id="var_<%=var_idx%>_<%=idx%>">
-
-                        <% if (remarks = variation.remarks).any? %>
-                            <h3>Remarks</h3>
-                            <% remarks.each do |commenter, cremarks| %>
-                                <h4>By <%= commenter %>:</h4>
-                                <% cremarks.each do |remark| %>
-                                    <blockquote><p><%=escapeHTML( remark )%></p></blockquote>
-                                <% end %>
+                            <% if issue.active? %>
+                                input
+                                <code><%= issue.affected_input_name %></code>
                             <% end %>
-                        <% end %>
 
-                        <% if variation.vector.seed %>
-                            <strong>Injected</strong>:
-                            <pre><%=escapeHTML( variation.vector.seed.inspect )%></pre>
-                            <br/>
-                        <%end%>
+                            <% if issue.variations.first.request %>
+                                using
+                                <code><%= issue.variations.first.request.method.to_s.upcase %></code>
+                            <% end %>
+                        </a>
 
-                        <% if variation.proof %>
-                            <strong>Proof</strong>:
-                            <pre><%=escapeHTML(variation.proof)%></pre>
-                            <br/>
-                        <%end%>
+                        at
 
-                        <% if variation.signature %>
-                        <strong>Signature</strong>:
-                        <pre><%=escapeHTML(variation.signature)%></pre>
-                        <br/>
-                        <%end%>
+                        <a href="<%= escapeHTML(issue.vector.url) %>">
+                            <%= escapeHTML(issue.vector.url) %>
+                        </a>
 
-                        <br/>
-
-                        <table>
-                            <tr>
-                                <th colspan="4" style="text-align: center">Headers</th>
-                            </tr>
-                            <tr>
-                                <th colspan="2">Request</th>
-                                <th colspan="2">Response</th>
-                            </tr>
-                            <tr>
-                                <%= erb :headers, { headers: variation.request.headers } %>
-                                <%= erb :headers, { headers: variation.response.headers } %>
-                            </tr>
-                        </table>
-
-                        <% if !variation.response.body.empty? %>
-                            <form style="display:inline" action="#">
-                                <input onclick="javascript:renderResponse( 'res_<%=var_idx%>_<%=idx%>', 'data:text/html;base64, <%= base64_encode( variation.response.body ) %>' )"
-                                type="button" value="Render HTML response" />
-                            </form>
-                            <div id="res_<%=var_idx%>_<%=idx%>"></div>
-                        <%end%>
-
-                    </div>
-                    <%end%>
-
+                        pointing to
+                        <a href="<%= escapeHTML(issue.vector.action) %>">
+                            <%= escapeHTML(issue.vector.action) %>
+                        </a>.
+                    </h4>
                 </div>
 
-                <p class="clear separator">&nbsp;</p>
+                <div class="panel-body">
+                    <% if issue.variations.size == 1 %>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <%=
+                                        erb 'issue/info.erb',
+                                            issue: issue.variations.first,
+                                            parent_issue: issue,
+                                            id:    issue_id( issue )
+                                    %>
+                                </div>
+                            </div>
+                    <% else %>
+                        <% issue.variations.each.with_index do |v, i| %>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <strong>
+                                            <a
+                                            id="<%= issue_id(issue) %>-variation-<%= i %>"
+                                            href="<%= issue_location(issue) %>/variation/<%= i %>">
+                                                Variation <%= i %>
+                                            </a>
+                                        </strong>
 
+                                        <%=
+                                            erb 'issue/info.erb',
+                                                issue: v,
+                                                parent_issue: issue,
+                                                id:    issue_id( v )
+                                        %>
+                                    </div>
+                                </div>
+                        <% end %>
+                    <% end %>
+
+                    <%=
+                        erb 'issue/details.erb',
+                            issue:        issue.variations.first,
+                            parent_issue: issue,
+                            id:           issue_id( issue )
+                    %>
+                </div>
             </div>
+        </div>
+    </div>
+
+</div>
+

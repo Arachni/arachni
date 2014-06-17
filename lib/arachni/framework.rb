@@ -204,6 +204,8 @@ class Framework
     #   A block to call after the audit has finished but before running {#reporters}.
     def run( &block )
         prepare
+        handle_signals
+        return if aborted?
 
         # Catch exceptions so that if something breaks down or the user opted to
         # exit the reporters will still run with whatever results Arachni managed
@@ -211,6 +213,7 @@ class Framework
         exception_jail( false ){ audit }
         # print_with_statistics
 
+        return if aborted?
         return if suspended?
 
         clean_up
@@ -571,6 +574,7 @@ class Framework
     #   * `:cleanup` -- The scan has completed and the instance is
     #       {Framework#clean_up cleaning up} after itself (i.e. waiting for
     #       plugins to finish etc.).
+    #   * `:aborted` -- The scan has been {#aborted}, you can grab the report and shutdown.
     #   * `:done` -- The scan has completed, you can grab the report and shutdown.
     def status
         state.status
@@ -590,7 +594,7 @@ class Framework
     end
 
     # @return   [Bool]
-    #   `true` if the framework is paused, `false` otherwise..
+    #   `true` if the framework is paused, `false` otherwise.
     def paused?
         state.paused?
     end
@@ -623,6 +627,33 @@ class Framework
         id = generate_token.hash
         state.pause id, wait
         id
+    end
+
+    # @return   [Bool]
+    #   `true` if the framework {#run} has been aborted, `false` otherwise.
+    def aborted?
+        state.aborted?
+    end
+
+    # @return   [Bool]
+    #   `true` if the framework has been instructed to abort (i.e. is in the
+    #   process of being aborted or has been aborted), `false` otherwise.
+    def abort?
+        state.abort?
+    end
+
+    # @return   [Bool]
+    #   `true` if the framework is in the process of aborting, `false` otherwise.
+    def aborting?
+        state.aborting?
+    end
+
+    # Aborts the framework {#run} on a best effort basis.
+    #
+    # @param    [Bool]  wait
+    #   Wait until the system has been aborted.
+    def abort( wait = true )
+        state.abort wait
     end
 
     # @note Each call from a unique caller is counted as a pause request
@@ -827,6 +858,12 @@ class Framework
         @session = Session.new
     end
 
+    def abort_if_signaled
+        return if !abort?
+        clean_up
+        state.aborted
+    end
+
     def suspend_if_signaled
         return if !suspend?
         suspend_to_disk
@@ -872,12 +909,13 @@ class Framework
 
     def handle_signals
         wait_if_paused
+        abort_if_signaled
         suspend_if_signaled
     end
 
     def wait_if_paused
         state.paused if pause?
-        sleep 0.2 while pause?
+        sleep 0.2 while pause? && !abort?
     end
 
     # @note Must be called before calling any audit methods.
@@ -953,7 +991,8 @@ class Framework
 
     # Performs the audit.
     def audit
-        wait_if_paused
+        handle_signals
+        return if aborted?
 
         state.status = :scanning if !pausing?
 
@@ -966,7 +1005,6 @@ class Framework
         # Keep auditing until there are no more resources in the queues and the
         # browsers have stopped spinning.
         loop do
-
             show_workload_msg = true
             while !has_audit_workload? && wait_for_browser?
                 if show_workload_msg

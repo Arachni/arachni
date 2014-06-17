@@ -44,7 +44,7 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
         response_size_per_path  = {}
 
         Data.issues.each do |issue|
-            next if !issue.tags.includes_tags?( :discovery )
+            next if issue.variations.size < 2 || !issue.tags.includes_tags?( :discovery )
 
             issue.variations.each do |variation|
                 # We'll do this per path since 404 handlers and such operate per
@@ -84,6 +84,7 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
             # Gotcha!
             issue_digests_per_path[path].each do |digest|
                 Data.issues[digest].variations.each do |issue|
+                    ap REMARK
                     issue.add_remark :meta_analysis, REMARK
 
                     # Requires manual verification.

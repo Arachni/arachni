@@ -1,0 +1,114 @@
+<% if page.dom.transitions.any? %>
+    <div class="row">
+        <div class="col-md-12">
+            <strong>
+                <a
+                id="<%= id %>-transitions"
+                href="<%= id_to_location id %>/transitions">
+                    Transitions
+                </a>
+            </strong>
+
+            <p class="text-muted">
+                Transitions describe the steps required to restore the state
+                of the page, to the one it had when it was processes by the
+                scanner,
+                as a series of events.
+
+                In essence, each transition represents a user interaction.
+            </p>
+
+            <%= erb 'issue/page/transitions.erb', id: id, page: page %>
+        </div>
+    </div>
+
+    <hr/>
+<% end %>
+
+<% if page.dom.data_flow_sink.any? %>
+    <div class="row">
+        <div class="col-md-12">
+            <strong>
+                <a
+                id="<%= id %>-data_flow_sinks"
+                href="<%= id_to_location id %>/data_flow_sinks">
+                    Data-flow sinks
+                </a>
+            </strong>
+
+            <p class="text-muted">
+                Data-flow sinks track the flow of the injected taint through
+                key points in the Javascript environment of the page.
+
+                Each sink is a function which was passed tainted arguments.
+            </p>
+
+            <%= erb 'issue/page/sink/data_flow.erb', id: id, page: page %>
+        </div>
+    </div>
+
+    <hr/>
+<% end %>
+
+<% if page.dom.execution_flow_sink.any? %>
+    <div class="row">
+        <div class="col-md-12">
+            <strong>
+                <a
+                id="<%= id %>-execution_flow_sinks"
+                href="<%= id_to_location id %>/execution_flow_sinks">
+                    Execution-flow sinks
+                </a>
+            </strong>
+
+            <p class="text-muted">
+                Execution-flow sinks log the successful execution of an injected
+                Javascript payload within the page's Javascript environment.
+
+                Each sink is a point of payload execution.
+            </p>
+
+            <%= erb 'issue/page/sink/execution_flow.erb', id: id, page: page %>
+        </div>
+    </div>
+
+    <hr/>
+<% end %>
+
+<%= erb 'issue/page/body.erb', id: id, page: page %>
+
+<div class="row">
+    <div class="col-md-6">
+        <strong>
+            <a
+            id="<%= id %>-http_request"
+            href="<%= id_to_location id %>/http_request">
+                HTTP request
+            </a>
+        </strong>
+
+        <p class="text-muted">
+            Raw HTTP request used to retrieve the page.
+        </p>
+
+        <pre class="code-container"><%= escapeHTML(page.request) %></pre>
+    </div>
+
+    <div class="col-md-6">
+        <strong>
+            <a
+            id="<%= id %>-http_response"
+            href="<%= id_to_location id %>/http_response">
+                HTTP response
+            </a>
+        </strong>
+
+        <p class="text-muted">
+            Raw HTTP response used as the page basis.
+
+            (Binary bodies will not be displayed.)
+        </p>
+
+        <pre class="code-container"><%= escapeHTML(page.response) %></pre>
+    </div>
+</div>
