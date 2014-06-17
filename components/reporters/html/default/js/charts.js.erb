@@ -1,0 +1,35 @@
+jQuery(function ($) {
+    c3.generate({
+        bindto: '#chart-trust',
+        data: {
+            type: 'pie',
+            columns: <%= graph_data[:trust].to_a.to_json %>
+        },
+        pie: {
+            onclick: function (d, i) { goToLocation( 'issues/' + d.id.toLowerCase() ) }
+        },
+        color: {
+            pattern: [ '#1f77b4', '#d62728' ]
+        }
+    });
+
+    c3.generate({
+        bindto: '#chart-elements',
+        data: {
+            type: 'pie',
+            columns: <%= graph_data[:elements].select { |_, cnt| cnt > 0 }.to_a.to_json %>
+        }
+    });
+
+    c3.generate({
+        bindto: '#chart-severities',
+        data: {
+            type: 'pie',
+            columns: <%= graph_data[:severities].select { |_, cnt| cnt > 0 }.to_a.to_json %>
+        },
+        color: {
+            pattern: [ '#d62728', '#ff7f0e', '#ffbb78', '#1f77b4' ]
+        }
+    });
+
+});

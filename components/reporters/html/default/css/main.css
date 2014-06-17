@@ -1,44 +1,3 @@
-#graphs div {
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-    color: rgb( 62, 87, 111 );
-    font-family: Verdana, sans-serif;
-}
-
-#chart-issues {
-    width: 100%;
-    height: 400px
-}
-
-.jqplot-xaxis-tick {
-    font-family: Verdana;
-}
-
-.jqplot-yaxis-tick {
-    font-family: Verdana;
-    font-size: 12px;
-}
-
-table.jqplot-table-legend {
-    float: right;
-    width: 50px;
-    font-family: Verdana;
-}
-
-#chart-issues-container {
-    height: 400px;
-    padding: 10px;
-}
-
-.jqplot-title {
-    top: 0;
-    left: 0;
-    padding-bottom: .5em;
-    font-size: 1.2em;
-    font-family: Verdana;
-    color: #3E5786;
-}
-
 .severity-high {
     background-color: #B94A48;
 }
@@ -135,4 +94,8 @@ ul.dropdown-menu ul.dropdown-menu {
 
 .dl-horizontal dt {
     width: auto;
+}
+
+#pies {
+    text-align: center;
 }
