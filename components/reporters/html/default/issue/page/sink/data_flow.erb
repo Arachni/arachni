@@ -81,6 +81,7 @@
                         <div class="tab-pane" id="<%= id %>-data_flow_sinks-<%= i %>-inspect-stacktrace">
                             <%= erb 'issue/page/sink/trace/table.erb',
                                     id:    "#{id}-data_flow_sinks-#{i}-inspect-stacktrace",
+                                    parent_id: id,
                                     trace: sink.trace,
                                     page:  page
                             %>

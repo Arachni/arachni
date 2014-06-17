@@ -36,7 +36,7 @@
             </td>
             <td>
                 <% if frame.line.to_i > 0 && frame.url == page.dom.url %>
-                    <a href="<%= id_to_location id %>/<%= i %>/inspect/source/page/<%= frame.line %>">
+                    <a href="<%= id_to_location parent_id %>/browser_evaluated_body/<%= frame.line %>">
                         <%= frame.line %>
                     </a>
                 <% else %>
