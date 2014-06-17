@@ -287,6 +287,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
                 Severity::INFORMATIONAL.to_sym => 0
             },
             severity_for_issue: {},
+            severity_index_for_issue: {},
             issues:           {},
             issues_shortnames: Set.new,
             trusted_issues:   {},
@@ -347,6 +348,9 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
 
             graph_data[:issues_shortnames] << issue.check[:shortname]
             graph_data[:severity_for_issue][issue.check[:shortname]] = issue.severity.to_s
+
+            graph_data[:severity_index_for_issue][issue.name] =
+                Issue::Severity::ORDER.reverse.index( issue.severity.to_sym ) + 1
 
             if issue.variations.first.trusted?
                 has_trusted_issues = true

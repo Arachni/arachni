@@ -10,16 +10,21 @@ jQuery(function ($) {
     c3.generate({
         bindto: '#chart-issues',
         data: {
-            x : 'x',
             columns: [
-                <%= (['x'] + graph_data[:trusted_issues].keys).to_json %>,
                 <%= (['Trusted'] + graph_data[:trusted_issues].values).to_json %>,
-                <%= (['Untrusted'] + graph_data[:untrusted_issues].values).to_json %>
+                <%= (['Untrusted'] + graph_data[:untrusted_issues].values).to_json %>,
+                <%= (['Severity'] + graph_data[:severity_index_for_issue].values).to_json %>
             ],
+            axes: {
+                Severity: 'y2'
+            },
             type: 'bar',
             groups: [
                 ['Trusted', 'Untrusted']
             ],
+            types: {
+                Severity: 'line'
+            },
             onclick: function (d) {
                 goToLocation(
                     'issues/' + d.name.toLowerCase() +
@@ -30,8 +35,32 @@ jQuery(function ($) {
         },
         axis: {
             x: {
-                type: 'category' // this needed to load string x value
+                type: 'category',
+                categories: <%= graph_data[:trusted_issues].keys.to_json %>
+            },
+            y: {
+                label: {
+                    text: 'Amount of logged issues',
+                    position: 'outer-center'
+                }
+            },
+            y2: {
+                label: {
+                    text: 'Severity',
+                    position: 'outer-center'
+                },
+                show: true,
+                type: 'category',
+                categories: <%= (1..(graph_data[:severities].size+1)).to_a.to_json %>,
+                tick: {
+                    format: function (d) {
+                        return <%= graph_data[:severities].keys.reverse.to_json %>[d-1]
+                    }
+                }
             }
+        },
+        color: {
+            pattern: [ '#1f77b4', '#ff7f0e', '#d62728' ]
         }
     });
 
