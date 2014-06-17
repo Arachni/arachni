@@ -1,8 +1,17 @@
 <div class="row">
     <div id="bars">
         <div class="col-md-12">
-            <h3>Issues</h3>
-            <p class="text-muted">Click on the bars for details on the logged issues.</p>
+            <h3>
+                Issues
+
+                <small>
+                    by type and severity
+                </small>
+            </h3>
+
+            <p class="text-muted">
+                (Click on the bars and line for details on the relevant issues.)
+            </p>
 
             <div id='chart-issues'>
             </div>
@@ -15,20 +24,36 @@
         <div class="col-md-4">
             <h3>Severities</h3>
 
+            <p class="text-muted">
+                (Click to see relevant <a href="/#!/issues/trusted">Trusted</a> issues.)
+            </p>
+
             <div id="chart-severities">
             </div>
         </div>
 
         <div class="col-md-4">
-            <h3>Elements</h3>
+            <h3>
+                Elements
+
+                <small>with issues, by type.</small>
+            </h3>
 
             <div id="chart-elements">
             </div>
         </div>
 
         <div class="col-md-4">
-            <h3>Trust</h3>
-            <p class="text-muted">Click to see relevant issues.</p>
+            <h3>
+                Trust
+                <small>
+                    (<a href="/#!/issues/trusted">Trusted</a> vs.
+                    <a href="/#!/issues/untrusted">Untrusted</a>) evaluation of
+                    issues
+                </small>
+            </h3>
+
+            <p class="text-muted">(Click to see relevant issues.)</p>
 
             <div id="chart-trust">
             </div>
