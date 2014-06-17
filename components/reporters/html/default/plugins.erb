@@ -2,8 +2,8 @@
 
 <div id="plugin-tabs">
     <ul class="nav nav-tabs">
-        <% plugins.keys.each do |name| %>
-            <li>
+        <% plugins.keys.each.with_index do |name, i| %>
+            <li <%= 'class="active"' if i == 0 %> >
                 <a href="#!/plugins/<%= name %>">
                     <%= escapeHTML get_plugin_info( name )[:name] %>
                 </a>
@@ -13,7 +13,7 @@
 
     <div class="tab-content">
     <% plugins.each do |name, html| %>
-        <div class="tab-pane" id="plugins-<%= name %>">
+        <div class="tab-pane <%= 'active' if plugins.keys.first == name %>" id="plugins-<%= name %>">
             <pre><%= prep_description( get_plugin_info(name)[:description] ) %></pre>
 
             <p><%= html.recode %></p>
