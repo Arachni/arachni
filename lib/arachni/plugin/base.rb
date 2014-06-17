@@ -85,6 +85,13 @@ class Base < Component::Base
         @pause_id ||= framework.pause
     end
 
+    # Aborts the {#framework}.
+    def framework_abort
+        Thread.new do
+            framework.abort
+        end
+    end
+
     # Resumes the {#framework}.
     def framework_resume
         return if !@pause_id

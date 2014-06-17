@@ -24,6 +24,10 @@ class Framework
         end
 
         # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        class StateNotAbortable < Error
+        end
+
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
         class InvalidStatusMessage < Error
         end
     end
@@ -70,6 +74,7 @@ class Framework
         @pause_signals    = Set.new
         @paused_signal    = Queue.new
         @suspended_signal = Queue.new
+        @aborted_signal   = Queue.new
 
         @status_messages = []
     end
@@ -94,7 +99,8 @@ class Framework
             snapshot_location:                'Snapshot location: %s',
             browser_cluster_shutdown:         'Shutting down the browser cluster.',
             clearing_queues:                  'Clearing the audit queues.',
-            waiting_for_plugins:              'Waiting for the plugins to finish.'
+            waiting_for_plugins:              'Waiting for the plugins to finish.',
+            aborting:                         'Aborting the scan.'
         }
     end
 
@@ -180,6 +186,57 @@ class Framework
     end
 
     # @param    [Bool]  block
+    #   `true` if the method should block until an abortion has completed,
+    #   `false` otherwise.
+    #
+    # @return   [Bool]
+    #   `true` if the abort request was successful, `false` if the system is
+    #   already {#suspended?} or is {#suspending?}.
+    #
+    # @raise    [StateNotAbortable]
+    #   When not {#running?}.
+    def abort( block = true )
+        return false if aborting? || aborted?
+
+        if !running?
+            fail Error::StateNotAbortable, 'Cannot suspend an idle state.'
+        end
+
+        set_status_message :aborting
+        @status = :aborting
+        @abort = true
+
+        @aborted_signal.pop if block
+        true
+    end
+
+    # @return   [Bool]
+    #   `true` if a {#abort} signal is in place , `false` otherwise.
+    def abort?
+        !!@abort
+    end
+
+    # Signals a completed abort operation.
+    def aborted
+        @abort = false
+        @status = :aborted
+        @aborted_signal << true
+        nil
+    end
+
+    # @return   [Bool]
+    #   `true` if the system has been aborted, `false` otherwise.
+    def aborted?
+        @status == :aborted
+    end
+
+    # @return   [Bool]
+    #   `true` if the system is being aborted, `false` otherwise.
+    def aborting?
+        @status == :aborting
+    end
+
+    # @param    [Bool]  block
     #   `true` if the method should block until a suspend has completed,
     #   `false` otherwise.
     #
@@ -209,7 +266,7 @@ class Framework
     end
 
     # @return   [Bool]
-    #   `true` if a {#suspend} signal is in place , `false` otherwise.
+    #   `true` if an {#abort} signal is in place , `false` otherwise.
     def suspend?
         !!@suspend
     end

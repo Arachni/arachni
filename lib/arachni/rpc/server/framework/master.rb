@@ -154,6 +154,9 @@ module Master
         # need the system to wait for them to finish before moving on.
         sleep( 0.2 ) while paused?
 
+        # handle_signals
+        # return if aborted?
+
         # Grid-related operations.
         return master_scan_run if !options.dispatcher.grid?
 
