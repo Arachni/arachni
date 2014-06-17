@@ -37,7 +37,6 @@
 
                 <div class="panel-body">
                     <% if issue.variations.size == 1 %>
-                        <% if (variation.vector.respond_to?(:seed) && variation.vector.seed) || variation.signature || variation.proof %>
                             <div class="row">
                                 <div class="col-md-12">
                                     <%=
@@ -48,10 +47,8 @@
                                     %>
                                 </div>
                             </div>
-                        <% end %>
                     <% else %>
                         <% issue.variations.each.with_index do |v, i| %>
-                            <% if (variation.vector.respond_to?(:seed) && variation.vector.seed) || variation.signature || variation.proof %>
                                 <div class="row">
                                     <div class="col-md-12">
                                         <strong>
@@ -70,7 +67,6 @@
                                         %>
                                     </div>
                                 </div>
-                            <% end %>
                         <% end %>
                     <% end %>
 

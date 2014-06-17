@@ -2,42 +2,10 @@
    not_available = '<p class="alert alert-info">Not available</p>'
 %>
 
-<% if issue.remarks.any? %>
-    <div class="alert alert-info">
-        <p>
-            <i class="fa fa-info-circle"></i>
-            System components have attached some insights to this issue.
-        </p>
+<%= erb 'issue/remarks.erb', issue: issue %>
+<%= erb 'issue/platform.erb', issue: parent_issue %>
 
-        <hr/>
-
-        <ul>
-            <% issue.remarks.each do |commenter, remarks| %>
-                <li>
-                    <%= escapeHTML commenter.to_s.capitalize %>
-
-                    <ul>
-                        <% remarks.each do |remark| %>
-                            <li>
-                                <%= escapeHTML remark %>
-                            </li>
-                        <% end %>
-                    </ul>
-                </li>
-            <% end %>
-        </ul>
-    </div>
-<% end %>
-
-<% if parent_issue.platform_type %>
-<p class="alert alert-info">
-    Affected platform type belongs to the
-    <strong><%= Arachni::Platform::Manager::TYPES[parent_issue.platform_type] %></strong>
-    category, identified as
-    <strong><%= Arachni::Platform::Manager.new.fullname parent_issue.platform_name %></strong>.
-</p>
-<% end %>
-
+<% if (issue.vector.respond_to?(:seed) && issue.vector.seed) || issue.signature || issue.proof %>
 <table class="table">
     <thead>
     <tr>
@@ -103,3 +71,4 @@
         <% end %>
     </tr>
 </table>
+<% end %>
