@@ -286,7 +286,9 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
                 Severity::LOW.to_sym           => 0,
                 Severity::INFORMATIONAL.to_sym => 0
             },
+            severity_for_issue: {},
             issues:           {},
+            issues_shortnames: Set.new,
             trusted_issues:   {},
             untrusted_issues: {},
             elements:         {
@@ -343,6 +345,9 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
             graph_data[:trusted_issues][issue.name]   ||= 0
             graph_data[:untrusted_issues][issue.name] ||= 0
 
+            graph_data[:issues_shortnames] << issue.check[:shortname]
+            graph_data[:severity_for_issue][issue.check[:shortname]] = issue.severity.to_s
+
             if issue.variations.first.trusted?
                 has_trusted_issues = true
                 graph_data[:trust]['Trusted'] += 1
@@ -355,6 +360,8 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
                 graph_data[:untrusted_issues][issue.name]  += 1
             end
         end
+
+        graph_data[:issues_shortnames] = graph_data[:issues_shortnames].to_a
 
         {
             graph_data:           graph_data,

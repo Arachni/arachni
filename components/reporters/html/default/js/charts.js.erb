@@ -1,3 +1,11 @@
+function index_to_shortname( index ){
+    return <%= graph_data[:issues_shortnames].to_json %>[index];
+}
+
+function index_to_severity( index ){
+    return <%= graph_data[:severity_for_issue].to_json %>[index_to_shortname(index)];
+}
+
 jQuery(function ($) {
     c3.generate({
         bindto: '#chart-issues',
@@ -11,7 +19,14 @@ jQuery(function ($) {
             type: 'bar',
             groups: [
                 ['Trusted', 'Untrusted']
-            ]
+            ],
+            onclick: function (d) {
+                goToLocation(
+                    'issues/' + d.name.toLowerCase() +
+                    '/severity/' + index_to_severity(d.x) + '/' +
+                    index_to_shortname(d.x)
+                )
+            }
         },
         axis: {
             x: {
@@ -27,7 +42,7 @@ jQuery(function ($) {
             columns: <%= graph_data[:trust].to_a.to_json %>
         },
         pie: {
-            onclick: function (d, i) { goToLocation( 'issues/' + d.id.toLowerCase() ) }
+            onclick: function (d) { goToLocation( 'issues/' + d.id.toLowerCase() ) }
         },
         color: {
             pattern: [ '#1f77b4', '#d62728' ]
