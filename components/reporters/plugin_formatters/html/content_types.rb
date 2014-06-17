@@ -17,37 +17,38 @@ class PluginFormatters::ContentTypes < Arachni::Plugin::Formatter
 
     def tpl
         <<-HTML
+        <ul>
             <% results.each do |type, responses| %>
-                <ul>
-                    <li>
-                        <%= type %>
-                        <ul>
-                            <% responses.each do |response| %>
-                            <li>
-                                URL:
-                                    <a href="<%= escapeHTML response['url'] %>">
-                                        <%= escapeHTML response['url'] %>
-                                    </a>
-                                <br/>
+                <li>
+                    <code><%= escapeHTML type %></code>
 
-                                Method: <%= response['method'] %>
+                    <dl class="dl-horizontal">
+                        <% responses.each do |response| %>
+                            <dt>
+                                <%= response['method'] %>
+                            </dt>
+                            <dd>
+                                <a href="<%= escapeHTML response['url'] %>">
+                                    <%= escapeHTML response['url'] %>
+                                </a>
 
-                                <% if response['parameters'] && response['method'] == :post %>
-                                    <ul>
-                                        <li>Parameters:</li>
-                                        <% response['parameters'].each do |name, val| %>
-                                        <li>
-                                            <%= name %> = <%= val %>
-                                        </li>
-                                        <% end %>
-                                    <ul>
+                                <ul>
+                                <% if response['parameters'] && response['method'].to_s.downcase == 'post' %>
+                                    <% response['parameters'].each do |name, val| %>
+                                    <li>
+                                        <code><%= escapeHTML name %></code>
+                                        =
+                                        <code><%= escapeHTML val %></code>
+                                    </li>
+                                    <% end %>
                                 <% end %>
-                            </li>
-                            <% end %>
-                        </ul>
-                    </li>
-                </ul>
+                                <ul>
+                            </dd>
+                        <% end %>
+                    </dl>
+                </li>
             <% end %>
+        </ul>
         HTML
     end
 

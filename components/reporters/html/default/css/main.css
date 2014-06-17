@@ -127,3 +127,12 @@ ul.dropdown-menu ul.dropdown-menu {
     font-weight: bold;
     background-color: #F2DEDE;
 }
+
+.dl-horizontal dd {
+    margin-left: auto;
+    padding-left: 140px;
+}
+
+.dl-horizontal dt {
+    width: auto;
+}

@@ -59,7 +59,6 @@ class Arachni::Plugins::ContentTypes < Arachni::Plugin::Base
     end
 
     def log( response )
-        ap response.headers.content_type
         @logged << log_id( response )
     end
 
