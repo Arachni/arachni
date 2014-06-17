@@ -113,7 +113,7 @@ module Utilities
     end
 
     # Outputs all available reports and their info.
-    def list_reports( reports )
+    def list_reporters( reports )
         print_line
         print_line
         print_info 'Available reports:'
@@ -132,10 +132,10 @@ module Utilities
                 info[:options].each do |option|
                     option = option.is_a?( Hash ) ? option : option.to_h
 
-                    print_info "\t#{option['name']} - #{option['desc']}"
-                    print_info "\tType:        #{option['type']}"
-                    print_info "\tDefault:     #{option['default']}"
-                    print_info "\tRequired?:   #{option['required']}"
+                    print_info "\t#{option[:name]} - #{option[:description]}"
+                    print_info "\tType:        #{option[:type]}"
+                    print_info "\tDefault:     #{option[:default]}"
+                    print_info "\tRequired?:   #{option[:required]}"
 
                     print_line
                 end
@@ -169,10 +169,10 @@ module Utilities
                 info[:options].each do |option|
                     option = option.is_a?( Hash ) ? option : option.to_h
 
-                    print_info "\t#{option['name']} - #{option['desc']}"
-                    print_info "\tType:        #{option['type']}"
-                    print_info "\tDefault:     #{option['default']}"
-                    print_info "\tRequired?:   #{option['required']}"
+                    print_info "\t#{option[:name]} - #{option[:description]}"
+                    print_info "\tType:        #{option[:type]}"
+                    print_info "\tDefault:     #{option[:default]}"
+                    print_info "\tRequired?:   #{option[:required]}"
 
                     print_line
                 end
