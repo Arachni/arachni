@@ -5,12 +5,11 @@
 
 class Arachni::Reporters::HTML
 
-#
 # HTML formatter for the results of the AutoLogin plugin
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class PluginFormatters::AutoLogin < Arachni::Plugin::Formatter
+    include TemplateUtilities
 
     def run
         ERB.new( tpl ).result( binding )
@@ -18,14 +17,28 @@ class PluginFormatters::AutoLogin < Arachni::Plugin::Formatter
 
     def tpl
         <<-HTML
-            <% if results[:cookies].is_a?( Hash )%>
-            <h3>Cookies were set to:</h3>
-            <ul>
-            <% results[:cookies].each do |name, val|%>
-                <li><%=name%> = <%=val%></li>
-            <%end%>
-            <ul>
-            <%end%>
+            <% if results['status'] == 'ok' %>
+                    <p class="alert alert-success">
+                        <%= results['message'] %>
+                    </p>
+
+                    <h3>Cookies set to:</h3>
+
+                    <dl class="dl-horizontal">
+                        <% results['cookies'].each do |k, v| %>
+                            <dt>
+                                <code><%= escapeHTML( k ) %></code>
+                            </dt>
+                            <dd>
+                                <code><%= escapeHTML( v ) %></code>
+                            </dd>
+                        <% end %>
+                    </dl>
+            <% else %>
+                <p class="alert alert-danger">
+                    <%= results['message'] %>
+                </p>
+            <% end %>
         HTML
     end
 
