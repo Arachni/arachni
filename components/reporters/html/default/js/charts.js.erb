@@ -1,5 +1,26 @@
 jQuery(function ($) {
     c3.generate({
+        bindto: '#chart-issues',
+        data: {
+            x : 'x',
+            columns: [
+                <%= (['x'] + graph_data[:trusted_issues].keys).to_json %>,
+                <%= (['Trusted'] + graph_data[:trusted_issues].values).to_json %>,
+                <%= (['Untrusted'] + graph_data[:untrusted_issues].values).to_json %>
+            ],
+            type: 'bar',
+            groups: [
+                ['Trusted', 'Untrusted']
+            ]
+        },
+        axis: {
+            x: {
+                type: 'category' // this needed to load string x value
+            }
+        }
+    });
+
+    c3.generate({
         bindto: '#chart-trust',
         data: {
             type: 'pie',
