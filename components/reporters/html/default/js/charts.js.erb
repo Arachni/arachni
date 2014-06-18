@@ -23,7 +23,7 @@ jQuery(function ($) {
                 ['Trusted', 'Untrusted']
             ],
             types: {
-                Severity: 'line'
+                Severity: 'area'
             },
             onclick: function (d) {
                 var location;
@@ -56,10 +56,10 @@ jQuery(function ($) {
                 },
                 show: true,
                 type: 'category',
-                categories: <%= (1..(graph_data[:severities].size+1)).to_a.to_json %>,
+                categories: <%= (1...(graph_data[:severities].size+1)).to_a.map { |i| i * graph_data[:severity_multiplier] }.to_json %>,
                 tick: {
                     format: function (d) {
-                        return <%= graph_data[:severities].keys.reverse.to_json %>[d-1]
+                        return <%= graph_data[:severities].keys.reverse.to_json %>[(d - <%= graph_data[:severity_multiplier] %>) / <%= graph_data[:severity_multiplier] %>]
                     }
                 }
             }
