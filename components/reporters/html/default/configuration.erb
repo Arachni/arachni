@@ -1,130 +1,78 @@
-<h2>Configuration</h2>
+<h2>
+    Configuration
 
-<div id="configuration-tabs">
-    <ul>
-        <li><a href="#configuration_list">Settings</a></li>
-    </ul>
+    <a id="configuration-download" class="btn btn-sm btn-primary">
+        Download
+    </a>
+</h2>
 
-    <div id='configuration_list'>
+<dl class="dl-horizontal">
+    <dt>Version</dt>
+    <dd><%= report.version %></dd>
+    <dt>Audit started on</dt>
+    <dd><%= report.start_datetime %></dd>
+    <dt>Audit finished on</dt>
+    <dd><%= report.finish_datetime %></dd>
+    <dt>Runtime</dt>
+    <dd><%= report.delta_time %></dd>
+</dl>
 
-        <strong>Version</strong>: <%= report.version %>
-        <br/>
-        <strong>Audit started on</strong>: <%= report.start_datetime %>
-        <br/>
-        <strong>Audit finished on</strong>: <%= report.finish_datetime %>
-        <br/>
-        <strong>Runtime</strong>: <%= report.delta_time %>
-        <br/>
+<h3>
+    <a
+    id="configuration-general"
+    href="/#!/configuration/general"
+    >
+        General
+    </a>
+</h3>
 
-        <p>&nbsp;</p>
+<dl class="dl-horizontal">
+    <dt>URL</dt>
+    <dd>
+        <a href="<%= escapeHTML report.options[:url] %>">
+            <%= escapeHTML report.options[:url] %>
+        </a>
+    </dd>
 
-        <h3>Runtime options</h3>
+    <% if report.options[:checks].any? %>
+        <dt>Checks</dt>
+        <dd>
+            <%= report.options[:checks].sort.map { |c| "<code>#{c}</code>" }.join(', ') %>
+        </dd>
+    <% end %>
 
-        <strong>URL:</strong> <%= escapeHTML(report.url) %>
-        <br/>
-        <strong> User agent:</strong> <%= escapeHTML(report.options[:http][:user_agent]) %>
-        <br/>
+    <% if report.options[:plugins].any? %>
+        <dt>Plugins</dt>
+        <dd>
+            <%= erb 'shared/hash.erb', code: true, object: report.options[:plugins] || {} %>
+        </dd>
+    <% end %>
 
-        <p>&nbsp;</p>
+    <% if report.options[:platforms].any? %>
+        <dt>Platforms</dt>
+        <dd>
+            <%= report.options[:platforms].sort.map { |c| "<code>#{c}</code>" }.join(', ') %>
+        </dd>
+    <% end %>
+</dl>
 
-        <table>
-            <tr>
-                <th>Audited elements</th>
-                <th>Checks</th>
-                <th>Filters</th>
-                <th>Cookies</th>
-            </tr>
-            <tr>
-                <td>
-                    <ul>
+<%
+   normalized_options = Arachni::Options.hash_to_rpc_data( report.options )
+   Arachni::Options.group_classes.keys.each do |group|
+       options = normalized_options[group.to_s]
+       next if options.nil? || options.empty?
+%>
+    <hr/>
 
-                        <% if report.options[:audit][:links] %>
-                            <li>Links</li>
-                        <% end %>
+    <h3>
+        <a
+            id="configuration-<%= group %>"
+            href="/#!/configuration/<%= group %>"
+        >
+            <%= key_to_words group %>
+        </a>
+    </h3>
 
-                        <% if report.options[:audit][:forms] %>
-                            <li>Forms</li>
-                        <% end %>
+    <%= erb 'shared/hash_table.erb', code: true, object: options || {} %>
 
-                        <% if report.options[:audit][:cookies] %>
-                            <li>Cookies</li>
-                        <% end %>
-
-                        <% if report.options[:audit][:headers] %>
-                            <li>Headers</li>
-                        <% end %>
-
-                    </ul>
-                </td>
-
-                <td>
-                    <ul>
-                        <% report.options[:checks].each do |mod| %>
-                            <li><%= mod %></li>
-                        <% end %>
-                    </ul>
-                </td>
-
-                <td>
-                    <ul>
-
-                        <li>Exclude:
-                            <ul>
-                                <% if report.options[:scope][:exclude_path_patterns].any? %>
-                                    <% report.options[:scope][:exclude_path_patterns].each do |rule| %>
-                                        <li><%= escapeHTML(rule) %></li>
-                                    <% end %>
-                                <% else %>
-                                    <li>N/A</li>
-                                <% end %>
-                            </ul>
-                        </li>
-
-                        <li>Include:
-
-                            <ul>
-                                <% if report.options[:scope][:include_path_patterns].any? %>
-                                    <% report.options[:scope][:include_path_patterns].each do |rule| %>
-                                        <li><%= escapeHTML(rule) %></li>
-                                    <% end %>
-                                <% else %>
-                                    <li>N/A</li>
-                                <% end %>
-                            </ul>
-                        </li>
-
-                        <li>Redundant:
-
-                            <ul>
-                                <% if report.options[:scope][:redundant_path_patterns].any? %>
-                                    <% report.options[:scope][:redundant_path_patterns].each do |regexp, counter| %>
-                                        <li><%= escapeHTML(regexp) %> -
-                                            Count: <%= counter %></li>
-                                    <% end %>
-                                <% else %>
-                                    <li>N/A</li>
-                                <% end %>
-                            </ul>
-                        </li>
-
-                    </ul>
-                </td>
-
-                <td>
-                    <ul>
-                        <% if report.options[:http][:cookies].any? %>
-                            <% report.options[:cookies].each_pair do |name, val| %>
-                                <li><%= escapeHTML(name) %>
-                                    = <%= escapeHTML(val) %></li>
-                            <% end %>
-                        <% else %>
-                            <li>N/A</li>
-                        <% end %>
-                    </ul>
-
-                </td>
-            </tr>
-        </table>
-    </div>
-
-</div>
+<% end %>

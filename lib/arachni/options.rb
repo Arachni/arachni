@@ -292,14 +292,17 @@ class Options
     # @param    [String]    file
     #   Saves `self` to `file` using YAML.
     def save( file )
+        File.open( file, 'w' ) do |f|
+            f.write to_save_data
+            f.path
+        end
+    end
+
+    def to_save_data
         as_hash = to_h
         as_hash.delete :paths
         as_hash.delete :snapshot
-
-        File.open( file, 'w' ) do |f|
-            f.write as_hash.to_yaml
-            f.path
-        end
+        as_hash.to_yaml
     end
 
     # Loads a file created by {#save}.
@@ -367,6 +370,10 @@ class Options
     #   `hash` in {#to_rpc_data} format.
     def hash_to_rpc_data( hash )
         self.class.allocate.reset.update( hash ).to_rpc_data
+    end
+
+    def hash_to_save_data( hash )
+        self.class.allocate.reset.update( hash ).to_save_data
     end
 
     private

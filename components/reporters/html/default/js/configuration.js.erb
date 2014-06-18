@@ -1,0 +1,12 @@
+jQuery(function ($) {
+    var download_button = $('#configuration-download');
+
+    // Create a blob object.
+    var bb = new Blob(
+        [<%= Arachni::Options.hash_to_save_data( report.options ).to_json %>],
+        { type : 'application/yaml' }
+    );
+
+    download_button.attr( 'href', window.URL.createObjectURL( bb ) );
+    download_button.attr( 'download', '<%= "#{Arachni::URI( report.url ).host}-profile.afp" %>' );
+});

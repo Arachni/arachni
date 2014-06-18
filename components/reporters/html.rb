@@ -25,6 +25,10 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
             str.to_s.recode
         end
 
+        def key_to_words( k )
+            k.to_s.capitalize.gsub( '_', ' ' )
+        end
+
         def code_highlight( code, language = :html, options = {} )
             return if !code
 
@@ -350,10 +354,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
             graph_data[:issues_shortnames] << issue.check[:shortname]
             graph_data[:severity_for_issue][issue.check[:shortname]] = issue.severity.to_s
 
-            ap i
-            ap issue.severity.to_sym
-            ap issue.name
-            ap new_region = !graph_data[:severity_regions].include?( issue.severity.to_sym )
+            new_region = !graph_data[:severity_regions].include?( issue.severity.to_sym )
 
             graph_data[:severity_regions][issue.severity.to_sym] ||= {}
             graph_data[:severity_regions][issue.severity.to_sym][:class]  =
