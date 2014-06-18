@@ -9,6 +9,10 @@ jQuery(function ($) {
     // Init all tooltips.
     $("[rel=tooltip]").tooltip();
 
+    if( !window.location.hash.split('#!/')[1] ) {
+        goToLocation( 'summary/charts' );
+    }
+
     // Restore the last open tab from the URL fragment.
     openFromWindowLocation();
     scrollToActiveElementFromWindowLocation();

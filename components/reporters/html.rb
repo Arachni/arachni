@@ -3,17 +3,23 @@
     All rights reserved.
 =end
 
+require 'zip'
 require 'coderay'
 require 'json'
 require 'erb'
 require 'base64'
 require 'cgi'
+require 'fileutils'
 
 # Creates an HTML report with scan results.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-# @version 0.3.3
+# @version 0.4
 class Arachni::Reporters::HTML < Arachni::Reporter::Base
+
+    TEMPLATE_FILE = File.dirname( __FILE__ ) + '/html/default.erb'
+    TEMPLATE_DIR  = File.dirname( TEMPLATE_FILE ) + '/' +
+        File.basename( TEMPLATE_FILE, '.erb' ) + '/'
 
     module TemplateUtilities
 
@@ -23,6 +29,10 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
 
         def normalize( str )
             str.to_s.recode
+        end
+
+        def key_to_words( k )
+            k.to_s.capitalize.gsub( '_', ' ' )
         end
 
         def code_highlight( code, language = :html, options = {} )
@@ -123,7 +133,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
 
             tpl = tpl.to_s + '.erb' if tpl.is_a?( Symbol )
 
-            path = File.exist?( tpl ) ? tpl : scope.template_path + tpl
+            path = File.exist?( tpl ) ? tpl : TEMPLATE_DIR + tpl
 
             ERB.new( IO.read( path ).recode ).result( scope.get_binding )
         rescue
@@ -181,10 +191,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
     end
 
     def global_data
-        plugins       = format_plugin_results( report.plugins )
-        template_path = File.dirname( options[:template] ) + '/' +
-            File.basename( options[:template], '.erb' ) + '/'
-
+        plugins = format_plugin_results( report.plugins )
         grouped_issues = {
             trusted:   {},
             untrusted: {}
@@ -233,7 +240,6 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
         prepare_data.merge(
             report:         report,
             grouped_issues: grouped_issues,
-            template_path:  template_path,
             plugins:        plugins
         )
     end
@@ -245,7 +251,31 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
 
         TemplateScope.global_data = global_data
 
-        File.open( outfile, 'w' ) { |f| f.write( erb( options[:template] ) ) }
+        tmpdir = "#{Dir.tmpdir}/#{File.basename( outfile )}/"
+
+        FileUtils.rm_rf tmpdir
+        FileUtils.mkdir_p tmpdir
+
+        FileUtils.mkdir_p "#{tmpdir}/js/lib"
+        FileUtils.mkdir_p "#{tmpdir}/css/lib"
+
+        FileUtils.cp_r "#{TEMPLATE_DIR}/fonts", "#{tmpdir}/"
+        FileUtils.cp_r "#{TEMPLATE_DIR}/js/lib", "#{tmpdir}/js/"
+        FileUtils.cp_r "#{TEMPLATE_DIR}/css/lib", "#{tmpdir}/css/"
+
+        %w(js/helpers.js js/init.js.erb js/charts.js.erb js/configuration.js.erb
+            css/main.css).each do |f|
+            if f.end_with? '.erb'
+                IO.write( "#{tmpdir}/#{f.split('.erb').first}", erb( "#{TEMPLATE_DIR}/#{f}" ) )
+            else
+                FileUtils.cp( "#{TEMPLATE_DIR}/#{f}" , "#{tmpdir}/#{f}" )
+            end
+        end
+
+        IO.write( "#{tmpdir}/index.html", erb( TEMPLATE_FILE ) )
+
+        compress( tmpdir, outfile )
+        FileUtils.rm_rf tmpdir
 
         print_status "Saved in '#{outfile}'."
     end
@@ -253,22 +283,28 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
     def self.info
         {
             name:         'HTML',
-            description:  %q{Exports the audit results as an HTML (.html) file.},
-            content_type: 'text/html',
+            description:  %q{Exports the audit results as a compressed HTML report.},
+            content_type: 'application/zip',
             author:       'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:      '0.3.2',
+            version:      '0.4',
             options:      [
-                Options::Path.new( :template,
-                    description: 'Template to use.',
-                    default:     File.dirname( __FILE__ ) + '/html/default.erb'
-                ),
-                Options.outfile( '.html' ),
+                Options.outfile( '.html.zip' ),
                 Options.skip_responses
             ]
         }
     end
 
     private
+
+    def compress( directory, archive )
+        Zip::File.open( archive, Zip::File::CREATE ) do |zipfile|
+            Dir[File.join(directory, '**', '**')].each do |file|
+                zipfile.add( file.sub( directory, '' ), file )
+            end
+        end
+
+        archive
+    end
 
     def self.prep_description( str )
         placeholder =  '--' + rand( 1000 ).to_s + '--'
@@ -286,7 +322,11 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
                 Severity::LOW.to_sym           => 0,
                 Severity::INFORMATIONAL.to_sym => 0
             },
+            severity_for_issue: {},
+            severity_index_for_issue: {},
+            severity_regions: {},
             issues:           {},
+            issues_shortnames: Set.new,
             trusted_issues:   {},
             untrusted_issues: {},
             elements:         {
@@ -319,6 +359,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
 
         has_trusted_issues   = false
         has_untrusted_issues = false
+        last_severity        = nil
 
         report.issues.each.with_index do |issue, i|
             graph_data[:severities][issue.severity.to_sym] += 1
@@ -326,7 +367,6 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
 
             graph_data[:issues][issue.name] ||= 0
             graph_data[:issues][issue.name] += 1
-
 
             graph_data[:elements][issue.vector.class.type] += 1
             total_elements += 1
@@ -343,6 +383,26 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
             graph_data[:trusted_issues][issue.name]   ||= 0
             graph_data[:untrusted_issues][issue.name] ||= 0
 
+            graph_data[:issues_shortnames] << issue.check[:shortname]
+            graph_data[:severity_for_issue][issue.check[:shortname]] = issue.severity.to_s
+
+            new_region = !graph_data[:severity_regions].include?( issue.severity.to_sym )
+
+            graph_data[:severity_regions][issue.severity.to_sym] ||= {}
+            graph_data[:severity_regions][issue.severity.to_sym][:class]  =
+                "severity-#{issue.severity.to_sym}"
+            graph_data[:severity_regions][issue.severity.to_sym][:start] ||=
+                graph_data[:issues].size - 1
+
+            if new_region && last_severity
+                graph_data[:severity_regions][last_severity][:end] =
+                    graph_data[:issues].size - 2
+            end
+            last_severity = issue.severity.to_sym
+
+            graph_data[:severity_index_for_issue][issue.name] =
+                Issue::Severity::ORDER.reverse.index( issue.severity.to_sym ) + 1
+
             if issue.variations.first.trusted?
                 has_trusted_issues = true
                 graph_data[:trust]['Trusted'] += 1
@@ -355,6 +415,18 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
                 graph_data[:untrusted_issues][issue.name]  += 1
             end
         end
+
+        # We use a multiplier for the severities because we need to adjust their
+        # y2 axis values to cover the max y axis.
+        severity_multiplier = graph_data[:issues].values.max / Issue::Severity::ORDER.size
+        graph_data[:severity_index_for_issue].each do |name, index|
+            graph_data[:severity_index_for_issue][name] = severity_multiplier * index
+        end
+        graph_data[:severity_multiplier] = severity_multiplier
+
+        graph_data[:issues_shortnames] = graph_data[:issues_shortnames].to_a
+
+        graph_data[:severity_regions] = graph_data[:severity_regions].values
 
         {
             graph_data:           graph_data,

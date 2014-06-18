@@ -1,19 +1,67 @@
-<div id='chart-issues-container' class="clear">
-    <div id='chart-issues' class="clear">
-        Issues
+<div class="row">
+    <div id="bars">
+        <div class="col-md-12">
+            <h3>
+                Issues
+
+                <small>
+                    by type, trust, and severity
+                </small>
+            </h3>
+
+            <p class="text-muted">
+                (Click on the bars or line points for details on the relevant issues.)
+            </p>
+
+            <div id='chart-issues'>
+            </div>
+        </div>
     </div>
 </div>
 
-<div id='pies' class="clear">
-    <div id="chart-severities">
-        Severities
-    </div>
+<div class="row">
+    <div id="pies">
+        <div class="col-md-4">
+            <h3>
+                Severities
 
-    <div id="chart-elements">
-        Elements
-    </div>
+                <small>of issues based on possible impact</small>
+            </h3>
 
-    <div id="chart-trust">
-        Trust
+            <p class="text-muted">
+                (Click to see relevant <a href="/#!/summary/issues/trusted">Trusted</a> issues.)
+            </p>
+
+            <div id="chart-severities">
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <h3>
+                Elements
+                <small>with issues, by type</small>
+            </h3>
+
+            <p>&nbsp;</p>
+            <div id="chart-elements">
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <h3>
+                Trust
+                <small>
+                    evaluation
+                    (<a href="/#!/summary/issues/trusted">Trusted</a> vs.
+                    <a href="/#!/summary/issues/untrusted">Untrusted</a>) of
+                    issues
+                </small>
+            </h3>
+
+            <p class="text-muted">(Click to see relevant issues.)</p>
+
+            <div id="chart-trust">
+            </div>
+        </div>
     </div>
 </div>

@@ -39,7 +39,7 @@ and that will be visible by the following message during each page audit:
 <table>
     <tr>
         <th>Version</th>
-        <td>1.0dev</td>
+        <td>0.5dev</td>
     </tr>
     <tr>
         <th>Homepage</th>

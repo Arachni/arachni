@@ -100,6 +100,10 @@ function goTo( location ){
     }
 }
 
+function goToLocation( location ){
+    window.location.hash = '#!/' + location;
+}
+
 function openFromWindowLocation(){
     goTo( window.location.hash.split('#!/')[1] );
 }
