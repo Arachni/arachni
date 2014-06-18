@@ -41,7 +41,10 @@ jQuery(function ($) {
         axis: {
             x: {
                 type: 'category',
-                categories: <%= graph_data[:trusted_issues].keys.to_json %>
+                categories: <%= graph_data[:trusted_issues].keys.to_json %>,
+                tick: {
+                    rotate: 15
+                }
             },
             y: {
                 label: {
@@ -63,6 +66,9 @@ jQuery(function ($) {
                     }
                 }
             }
+        },
+        padding: {
+            bottom: 40
         },
         color: {
             pattern: [ '#1f77b4', '#ff7f0e', '#d62728' ]
