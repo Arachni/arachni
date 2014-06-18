@@ -251,7 +251,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
 
         TemplateScope.global_data = global_data
 
-        tmpdir = "#{Dir.tmpdir}/#{File.basename( outfile )}/"
+        tmpdir = "#{Dir.tmpdir}/#{generate_token}/"
 
         FileUtils.rm_rf tmpdir
         FileUtils.mkdir_p tmpdir
