@@ -288,6 +288,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
             },
             severity_for_issue: {},
             severity_index_for_issue: {},
+            severity_regions: {},
             issues:           {},
             issues_shortnames: Set.new,
             trusted_issues:   {},
@@ -322,6 +323,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
 
         has_trusted_issues   = false
         has_untrusted_issues = false
+        last_severity        = nil
 
         report.issues.each.with_index do |issue, i|
             graph_data[:severities][issue.severity.to_sym] += 1
@@ -329,7 +331,6 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
 
             graph_data[:issues][issue.name] ||= 0
             graph_data[:issues][issue.name] += 1
-
 
             graph_data[:elements][issue.vector.class.type] += 1
             total_elements += 1
@@ -349,8 +350,25 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
             graph_data[:issues_shortnames] << issue.check[:shortname]
             graph_data[:severity_for_issue][issue.check[:shortname]] = issue.severity.to_s
 
+            ap i
+            ap issue.severity.to_sym
+            ap issue.name
+            ap new_region = !graph_data[:severity_regions].include?( issue.severity.to_sym )
+
+            graph_data[:severity_regions][issue.severity.to_sym] ||= {}
+            graph_data[:severity_regions][issue.severity.to_sym][:class]  =
+                "severity-#{issue.severity.to_sym}"
+            graph_data[:severity_regions][issue.severity.to_sym][:start] ||=
+                graph_data[:issues].size - 1
+
+            if new_region && last_severity
+                graph_data[:severity_regions][last_severity][:end] =
+                    graph_data[:issues].size - 2
+            end
+            last_severity = issue.severity.to_sym
+
             graph_data[:severity_index_for_issue][issue.name] =
-                    Issue::Severity::ORDER.reverse.index( issue.severity.to_sym ) + 1
+                Issue::Severity::ORDER.reverse.index( issue.severity.to_sym ) + 1
 
             if issue.variations.first.trusted?
                 has_trusted_issues = true
@@ -374,6 +392,9 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
         graph_data[:severity_multiplier] = severity_multiplier
 
         graph_data[:issues_shortnames] = graph_data[:issues_shortnames].to_a
+
+        ap graph_data[:severity_regions]
+        graph_data[:severity_regions] = graph_data[:severity_regions].values
 
         {
             graph_data:           graph_data,

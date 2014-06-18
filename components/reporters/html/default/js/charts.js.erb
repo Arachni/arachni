@@ -23,7 +23,7 @@ jQuery(function ($) {
                 ['Trusted', 'Untrusted']
             ],
             types: {
-                Severity: 'area'
+                Severity: 'line'
             },
             onclick: function (d) {
                 var location;
@@ -38,6 +38,7 @@ jQuery(function ($) {
                 goToLocation( location );
             }
         },
+        regions: <%= graph_data[:severity_regions].to_json %>,
         axis: {
             x: {
                 type: 'category',

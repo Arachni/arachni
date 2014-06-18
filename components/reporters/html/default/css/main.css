@@ -1,14 +1,29 @@
-.severity-high {
-    background-color: #B94A48;
+.severity-high  {
+    background-color: #d62728;
 }
+.c3-region.severity-high {
+    fill: #d62728;
+}
+
 .severity-medium {
-    background-color: #d45500;
+    background-color: #ff7f0e;
 }
+.c3-region.severity-medium  {
+    fill: #ff7f0e;
+}
+
 .severity-low {
-    background-color: #fc9200;
+    background-color: #ffbb78;
 }
+.c3-region.severity-low {
+    fill: #ffbb78;
+}
+
 .severity-informational {
-    background-color: #3A87AD;
+    background-color: #1f77b4;
+}
+.c3-region.severity-informational {
+    fill: #1f77b4;
 }
 
 .table tr.borderless,
