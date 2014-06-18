@@ -462,10 +462,10 @@ class Framework
                      "Reporter '#{name}' cannot format the audit results as a String."
             end
 
-            outfile = "#{Dir.tmpdir}/arachni_report_as.#{name}"
+            outfile = "#{Dir.tmpdir}/#{generate_token}"
             @reporters.run( name, external_report, outfile: outfile )
 
-            IO.read( outfile )
+            IO.binread( outfile )
         ensure
             File.delete( outfile ) if outfile
             @reporters.clear
