@@ -13,13 +13,14 @@
         Copyright (c) Arachni 2011-2014.
      -->
 
-    <% %w(js/lib/jquery.min.js js/lib/bootstrap.js js/lib/d3.min.js
+    <% %w(js/lib/jquery.min.js js/lib/bootstrap.min.js js/lib/d3.min.js
         js/lib/c3.min.js js/helpers.js js/init.js js/charts.js
         js/configuration.js).each do |f| %>
         <script type="text/javascript" src="<%= f %>"></script>
     <% end%>
 
-    <% %w(css/lib/font-awesome.css css/lib/bootstrap.css css/lib/c3.css css/main.css).each do |f| %>
+    <% %w(css/lib/font-awesome.min.css css/lib/bootstrap.min.css css/lib/c3.css
+        css/main.css).each do |f| %>
         <link href="<%= f %>" type="text/css" rel="stylesheet" />
     <% end%>
 
