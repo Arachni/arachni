@@ -394,7 +394,6 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
 
         graph_data[:issues_shortnames] = graph_data[:issues_shortnames].to_a
 
-        ap graph_data[:severity_regions]
         graph_data[:severity_regions] = graph_data[:severity_regions].values
 
         {
