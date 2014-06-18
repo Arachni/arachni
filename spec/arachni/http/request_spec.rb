@@ -175,7 +175,7 @@ describe Arachni::HTTP::Request do
             host = "#{Arachni::URI(@url).host}:#{Arachni::URI(@url).port}"
             described_class.new( url: @url ).run.request.headers_string.should ==
                 "GET / HTTP/1.1\r\nHost: #{host}\r\nAccept-Encoding: gzip, " +
-                    "deflate\r\nUser-Agent: Arachni/v1.0dev\r\nAccept: text/html," +
+                    "deflate\r\nUser-Agent: Arachni/v#{Arachni::VERSION}\r\nAccept: text/html," +
                     "application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n\r\n"
         end
 
