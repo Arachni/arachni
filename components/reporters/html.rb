@@ -17,6 +17,10 @@ require 'fileutils'
 # @version 0.4
 class Arachni::Reporters::HTML < Arachni::Reporter::Base
 
+    TEMPLATE_FILE = File.dirname( __FILE__ ) + '/html/default.erb'
+    TEMPLATE_DIR  = File.dirname( TEMPLATE_FILE ) + '/' +
+        File.basename( TEMPLATE_FILE, '.erb' ) + '/'
+
     module TemplateUtilities
 
         def base64_encode( string )
@@ -129,7 +133,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
 
             tpl = tpl.to_s + '.erb' if tpl.is_a?( Symbol )
 
-            path = File.exist?( tpl ) ? tpl : scope.template_path + tpl
+            path = File.exist?( tpl ) ? tpl : TEMPLATE_DIR + tpl
 
             ERB.new( IO.read( path ).recode ).result( scope.get_binding )
         rescue
@@ -187,10 +191,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
     end
 
     def global_data
-        plugins       = format_plugin_results( report.plugins )
-        template_path = File.dirname( options[:template] ) + '/' +
-            File.basename( options[:template], '.erb' ) + '/'
-
+        plugins = format_plugin_results( report.plugins )
         grouped_issues = {
             trusted:   {},
             untrusted: {}
@@ -239,7 +240,6 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
         prepare_data.merge(
             report:         report,
             grouped_issues: grouped_issues,
-            template_path:  template_path,
             plugins:        plugins
         )
     end
@@ -251,8 +251,6 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
 
         TemplateScope.global_data = global_data
 
-        template_dir = File.dirname( options[:template] ) + '/' +
-            File.basename( options[:template], '.erb' ) + '/'
         tmpdir = "#{Dir.tmpdir}/#{File.basename( outfile )}/"
 
         FileUtils.rm_rf tmpdir
@@ -261,20 +259,20 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
         FileUtils.mkdir_p "#{tmpdir}/js/lib"
         FileUtils.mkdir_p "#{tmpdir}/css/lib"
 
-        FileUtils.cp_r "#{template_dir}/fonts", "#{tmpdir}/"
-        FileUtils.cp_r "#{template_dir}/js/lib", "#{tmpdir}/js/"
-        FileUtils.cp_r "#{template_dir}/css/lib", "#{tmpdir}/css/"
+        FileUtils.cp_r "#{TEMPLATE_DIR}/fonts", "#{tmpdir}/"
+        FileUtils.cp_r "#{TEMPLATE_DIR}/js/lib", "#{tmpdir}/js/"
+        FileUtils.cp_r "#{TEMPLATE_DIR}/css/lib", "#{tmpdir}/css/"
 
         %w(js/helpers.js js/init.js.erb js/charts.js.erb js/configuration.js.erb
             css/main.css).each do |f|
             if f.end_with? '.erb'
-                IO.write( "#{tmpdir}/#{f.split('.erb').first}", erb( "#{template_dir}/#{f}" ) )
+                IO.write( "#{tmpdir}/#{f.split('.erb').first}", erb( "#{TEMPLATE_DIR}/#{f}" ) )
             else
-                FileUtils.cp( "#{template_dir}/#{f}" , "#{tmpdir}/#{f}" )
+                FileUtils.cp( "#{TEMPLATE_DIR}/#{f}" , "#{tmpdir}/#{f}" )
             end
         end
 
-        IO.write( "#{tmpdir}/index.html", erb( options[:template] ) )
+        IO.write( "#{tmpdir}/index.html", erb( TEMPLATE_FILE ) )
 
         compress( tmpdir, outfile )
         FileUtils.rm_rf tmpdir
@@ -290,10 +288,6 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
             author:       'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:      '0.4',
             options:      [
-                Options::Path.new( :template,
-                    description: 'Template to use.',
-                    default:     File.dirname( __FILE__ ) + '/html/default.erb'
-                ),
                 Options.outfile( '.html.zip' ),
                 Options.skip_responses
             ]
