@@ -13,28 +13,15 @@
         Copyright (c) Arachni 2011-2014.
      -->
 
-    <script type="text/javascript">
-        //<![CDATA[
-        <%= erb 'js/lib/jquery.min.js' %>
-        <%= erb 'js/lib/bootstrap.js' %>
-        <%= erb 'js/lib/d3.min.js' %>
-        <%= erb 'js/lib/c3.min.js' %>
+    <% %w(js/lib/jquery.min.js js/lib/bootstrap.js js/lib/d3.min.js
+        js/lib/c3.min.js js/helpers.js js/init.js js/charts.js
+        js/configuration.js).each do |f| %>
+        <script type="text/javascript" src="<%= f %>"></script>
+    <% end%>
 
-        <%= erb 'js/helpers.js' %>
-        <%= erb 'js/init.js.erb' %>
-        <%= erb 'js/charts.js.erb' %>
-        <%= erb 'js/configuration.js.erb' %>
-        //]]>
-    </script>
-
-    <style type="text/css">
-        /*<![CDATA[*/
-        <%=erb 'css/lib/font-awesome.css' %>
-        <%=erb 'css/lib/bootstrap.css' %>
-        <%=erb 'css/lib/c3.css' %>
-        <%=erb 'css/main.css' %>
-        /*]]>*/
-    </style>
+    <% %w(css/lib/font-awesome.css css/lib/bootstrap.css css/lib/c3.css css/main.css).each do |f| %>
+        <link href="<%= f %>" type="text/css" rel="stylesheet" />
+    <% end%>
 
 </head>
 <body>

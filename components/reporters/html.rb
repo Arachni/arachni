@@ -3,16 +3,18 @@
     All rights reserved.
 =end
 
+require 'zip'
 require 'coderay'
 require 'json'
 require 'erb'
 require 'base64'
 require 'cgi'
+require 'fileutils'
 
 # Creates an HTML report with scan results.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-# @version 0.3.3
+# @version 0.4
 class Arachni::Reporters::HTML < Arachni::Reporter::Base
 
     module TemplateUtilities
@@ -249,7 +251,33 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
 
         TemplateScope.global_data = global_data
 
-        File.open( outfile, 'w' ) { |f| f.write( erb( options[:template] ) ) }
+        template_dir = File.dirname( options[:template] ) + '/' +
+            File.basename( options[:template], '.erb' ) + '/'
+        tmpdir = "#{Dir.tmpdir}/#{File.basename( outfile )}/"
+
+        FileUtils.rm_rf tmpdir
+        FileUtils.mkdir_p tmpdir
+
+        FileUtils.mkdir_p "#{tmpdir}/js/lib"
+        FileUtils.mkdir_p "#{tmpdir}/css/lib"
+
+        FileUtils.cp_r "#{template_dir}/fonts", "#{tmpdir}/"
+        FileUtils.cp_r "#{template_dir}/js/lib", "#{tmpdir}/js/"
+        FileUtils.cp_r "#{template_dir}/css/lib", "#{tmpdir}/css/"
+
+        %w(js/helpers.js js/init.js.erb js/charts.js.erb js/configuration.js.erb
+            css/main.css).each do |f|
+            if f.end_with? '.erb'
+                IO.write( "#{tmpdir}/#{f.split('.erb').first}", erb( "#{template_dir}/#{f}" ) )
+            else
+                FileUtils.cp( "#{template_dir}/#{f}" , "#{tmpdir}/#{f}" )
+            end
+        end
+
+        IO.write( "#{tmpdir}/index.html", erb( options[:template] ) )
+
+        compress( tmpdir, outfile )
+        FileUtils.rm_rf tmpdir
 
         print_status "Saved in '#{outfile}'."
     end
@@ -257,22 +285,32 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
     def self.info
         {
             name:         'HTML',
-            description:  %q{Exports the audit results as an HTML (.html) file.},
-            content_type: 'text/html',
+            description:  %q{Exports the audit results as a compressed HTML report.},
+            content_type: 'application/zip',
             author:       'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:      '0.3.2',
+            version:      '0.4',
             options:      [
                 Options::Path.new( :template,
                     description: 'Template to use.',
                     default:     File.dirname( __FILE__ ) + '/html/default.erb'
                 ),
-                Options.outfile( '.html' ),
+                Options.outfile( '.html.zip' ),
                 Options.skip_responses
             ]
         }
     end
 
     private
+
+    def compress( directory, archive )
+        Zip::File.open( archive, Zip::File::CREATE ) do |zipfile|
+            Dir[File.join(directory, '**', '**')].each do |file|
+                zipfile.add( file.sub( directory, '' ), file )
+            end
+        end
+
+        archive
+    end
 
     def self.prep_description( str )
         placeholder =  '--' + rand( 1000 ).to_s + '--'
