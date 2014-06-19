@@ -110,7 +110,7 @@
     <xs:complexType name="transitions">
         <xs:sequence>
             <xs:element name="transition" type="transition"
-                        minOccurs="0" maxOccurs="1"/>
+                        minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -118,6 +118,35 @@
         <xs:attribute name="element" type="xs:string"/>
         <xs:attribute name="event" type="xs:string"/>
         <xs:attribute name="time" type="xs:decimal"/>
+    </xs:complexType>
+
+    <xs:complexType name="data_flow_sinks">
+        <xs:sequence>
+            <xs:element name="data_flow_sink" type="data_flow_sink"
+                        minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="data_flow_sink">
+        <xs:attribute name="function" type="function"/>
+        <xs:attribute name="object" type="xs:string"/>
+        <xs:attribute name="tainted_argument_index" type="xs:decimal"/>
+        <xs:attribute name="tainted_value" type="xs:string"/>
+        <xs:attribute name="taint" type="xs:string"/>
+        <xs:attribute name="trace" type="xs:trace"/>
+    </xs:complexType>
+
+    <xs:complexType name="function">
+        <xs:attribute name="source" type="xs:string"/>
+        <xs:attribute name="arguments" type="functionarguments"/>
+        <xs:attribute name="name" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="functionarguments">
+        <xs:sequence>
+            <xs:element name="argument" type="xs:string"
+                        minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="inputs">
