@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:element name="report">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="version" type="xs:string"/>
+                <xs:element name="start_datetime" type="xs:dateTime"/>
+                <xs:element name="finish_datetime" type="xs:dateTime"/>
+                <xs:element name="issues" type="issue" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="xwe" type="xs:integer"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="issue">
+        <xs:sequence>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+            <xs:element name="remedy_guidance" type="xs:string"/>
+            <xs:element name="remedy_code" type="xs:string"/>
+            <xs:element name="severity" type="severity"/>
+            <xs:element name="references" type="map"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="severity">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="high" />
+            <xs:enumeration value="medium" />
+            <xs:enumeration value="low" />
+            <xs:enumeration value="informational" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="map">
+        <xs:sequence>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="value" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema>
