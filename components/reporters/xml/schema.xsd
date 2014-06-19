@@ -1,54 +1,90 @@
 <?xml version="1.0"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-    <xs:element name="report">
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element name="version" type="xs:string"/>
-                <xs:element name="start_datetime" type="xs:dateTime"/>
-                <xs:element name="finish_datetime" type="xs:dateTime"/>
-                <xs:element name="issues" type="issue" minOccurs="0"
-                            maxOccurs="unbounded"/>
-            </xs:sequence>
-        </xs:complexType>
-    </xs:element>
+    <xs:attribute name="version" type="xs:string"/>
+    <xs:attribute name="start_datetime" type="xs:dateTime"/>
+    <xs:attribute name="finish_datetime" type="xs:dateTime"/>
+    <xs:attribute name="sitemap" type="sitemap"/>
+    <xs:attribute name="options" type="xs:string"/>
+    <xs:attribute name="issues" type="issues"/>
 
-    <xs:complexType name="issue">
+    <xs:complexType name="sitemap">
         <xs:sequence>
-            <xs:element name="name" type="xs:string"/>
-            <xs:element name="description" type="xs:string"/>
-            <xs:element name="remedy_guidance" type="xs:string"/>
-            <xs:element name="remedy_code" type="xs:string"/>
-            <xs:element name="severity" type="severity"/>
-            <xs:element name="references" type="map"/>
-            <xs:element name="cwe" type="xs:integer"/>
-            <xs:element name="platform_type" type="xs:string"/>
-            <xs:element name="platform_name" type="xs:string"/>
-            <xs:element name="vector" type="vector"/>
-            <xs:element name="page" type="page"/>
-            <xs:element name="signature" type="xs:string"/>
-            <xs:element name="proof" type="xs:string"/>
-            <xs:element name="trusted" type="xs:boolean"/>
-            <xs:element name="remarks" type="remarks"/>
-            <xs:element name="variations" type="issue" minOccurs="1"
-                        maxOccurs="unbounded"/>
+            <xs:element name="sitemapentry" type="sitemapentry"/>
         </xs:sequence>
     </xs:complexType>
+
+    <xs:complexType name="sitemapentry">
+        <xs:attribute name="code" type="xs:integer"/>
+        <xs:attribute name="url" type="xs:anyURI"/>
+    </xs:complexType>
+
+    <xs:complexType name="issues">
+        <xs:sequence>
+            <xs:element name="issue" type="issue"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="issue">
+        <xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="description" type="xs:string"/>
+        <xs:attribute name="remedy_guidance" type="xs:string"/>
+        <xs:attribute name="remedy_code" type="xs:string"/>
+        <xs:attribute name="severity" type="severity"/>
+        <xs:attribute name="references" type="references"/>
+        <xs:attribute name="cwe" type="xs:integer"/>
+        <xs:attribute name="platform_type" type="xs:string"/>
+        <xs:attribute name="platform_name" type="xs:string"/>
+        <xs:attribute name="vector" type="vector"/>
+        <xs:attribute name="page" type="page"/>
+        <xs:attribute name="signature" type="xs:string"/>
+        <xs:attribute name="proof" type="xs:string"/>
+        <xs:attribute name="trusted" type="xs:boolean"/>
+        <xs:attribute name="remarks" type="remarks"/>
+        <xs:attribute name="variations" type="issues"/>
+    </xs:complexType>
+
+    <xs:complexType name="vector">
+        <xs:attribute name="class" type="vectorclass"/>
+        <xs:attribute name="type" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:simpleType name="vectorclass">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Arachni::Element::Body" />
+            <xs:enumeration value="Arachni::Element::Server" />
+            <xs:enumeration value="Arachni::Element::Path" />
+            <xs:enumeration value="Arachni::Element::Form" />
+            <xs:enumeration value="Arachni::Element::Form::DOM" />
+            <xs:enumeration value="Arachni::Element::Link" />
+            <xs:enumeration value="Arachni::Element::Link::DOM"/>
+            <xs:enumeration value="Arachni::Element::Cookie" />
+            <xs:enumeration value="Arachni::Element::Cookie::DOM" />
+            <xs:enumeration value="Arachni::Element::Header" />
+            <xs:enumeration value="Arachni::Element::LinkTemplate" />
+            <xs:enumeration value="Arachni::Element::LinkTemplate::DOM"/>
+            <xs:enumeration value="Arachni::Element::GenericDOM" />
+        </xs:restriction>
+    </xs:simpleType>
 
     <xs:simpleType name="severity">
         <xs:restriction base="xs:string">
             <xs:enumeration value="high" />
             <xs:enumeration value="medium" />
             <xs:enumeration value="low" />
-            <xs:enumeration value="informational" />
+            <xs:enumeration value="informational"/>
         </xs:restriction>
     </xs:simpleType>
 
-    <xs:complexType name="map">
+    <xs:complexType name="references">
         <xs:sequence>
-            <xs:element name="name" type="xs:string"/>
-            <xs:element name="value" type="xs:string"/>
+            <xs:element name="reference" type="reference"/>
         </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="reference">
+        <xs:attribute name="title" type="xs:string"/>
+        <xs:attribute name="url" type="xs:anyURI"/>
     </xs:complexType>
 
 </xs:schema>
