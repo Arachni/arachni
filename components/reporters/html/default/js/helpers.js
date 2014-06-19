@@ -42,16 +42,6 @@ function inspect(id) {
     });
 }
 
-function searchIssues( val ){
-    $(".issue").show();
-
-    if( val != '' ){
-        $(".issue:not(:icontains(" + val +"))").hide();
-    } else {
-        $(".issue").show();
-    }
-}
-
 function goTo( location ){
     // Restore the last open tab from the URL fragment.
     if( !location || location.length <= 0 ) return;
