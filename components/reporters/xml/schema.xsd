@@ -7,8 +7,8 @@
                 <xs:element name="version" type="xs:string"/>
                 <xs:element name="start_datetime" type="xs:dateTime"/>
                 <xs:element name="finish_datetime" type="xs:dateTime"/>
-                <xs:element name="issues" type="issue" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element name="xwe" type="xs:integer"/>
+                <xs:element name="issues" type="issue" minOccurs="0"
+                            maxOccurs="unbounded"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -21,6 +21,17 @@
             <xs:element name="remedy_code" type="xs:string"/>
             <xs:element name="severity" type="severity"/>
             <xs:element name="references" type="map"/>
+            <xs:element name="cwe" type="xs:integer"/>
+            <xs:element name="platform_type" type="xs:string"/>
+            <xs:element name="platform_name" type="xs:string"/>
+            <xs:element name="vector" type="vector"/>
+            <xs:element name="page" type="page"/>
+            <xs:element name="signature" type="xs:string"/>
+            <xs:element name="proof" type="xs:string"/>
+            <xs:element name="trusted" type="xs:boolean"/>
+            <xs:element name="remarks" type="remarks"/>
+            <xs:element name="variations" type="issue" minOccurs="1"
+                        maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
