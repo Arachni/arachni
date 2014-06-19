@@ -133,7 +133,7 @@
         <xs:attribute name="tainted_argument_index" type="xs:decimal"/>
         <xs:attribute name="tainted_value" type="xs:string"/>
         <xs:attribute name="taint" type="xs:string"/>
-        <xs:attribute name="trace" type="xs:trace"/>
+        <xs:attribute name="trace" type="trace"/>
     </xs:complexType>
 
     <xs:complexType name="function">
@@ -147,6 +147,19 @@
             <xs:element name="argument" type="xs:string"
                         minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="trace">
+        <xs:sequence>
+            <xs:element name="item" type="traceitem"
+                        minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="traceitem">
+        <xs:attribute name="function" type="function"/>
+        <xs:attribute name="line" type="xs:integer"/>
+        <xs:attribute name="url" type="xs:string"/>
     </xs:complexType>
 
     <xs:complexType name="inputs">
