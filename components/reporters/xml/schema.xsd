@@ -33,20 +33,72 @@
         <xs:attribute name="severity" type="severity"/>
         <xs:attribute name="references" type="references"/>
         <xs:attribute name="cwe" type="xs:integer"/>
-        <xs:attribute name="platform_type" type="xs:string"/>
-        <xs:attribute name="platform_name" type="xs:string"/>
         <xs:attribute name="vector" type="vector"/>
-        <xs:attribute name="page" type="page"/>
-        <xs:attribute name="signature" type="xs:string"/>
-        <xs:attribute name="proof" type="xs:string"/>
-        <xs:attribute name="trusted" type="xs:boolean"/>
-        <xs:attribute name="remarks" type="remarks"/>
-        <xs:attribute name="variations" type="issues"/>
+
+        <xs:sequence>
+            <xs:element name="variations" type="issuevariation"
+                        minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="vector">
         <xs:attribute name="class" type="vectorclass"/>
         <xs:attribute name="type" type="xs:string"/>
+        <xs:attribute name="url" type="xs:string"/>
+
+        <xs:sequence>
+            <xs:element name="action" type="xs:string" minOccurs="0"
+                        maxOccurs="1"/>
+            <xs:element name="method" type="xs:string" minOccurs="0"
+                        maxOccurs="1"/>
+
+            <xs:element name="affected_input_name" type="xs:string"
+                        minOccurs="0" maxOccurs="1"/>
+
+            <xs:element name="default_inputs" type="inputs" minOccurs="0"
+                        maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="issuevariation">
+        <xs:attribute name="variationvector" type="variationvector"/>
+        <xs:attribute name="page" type="page"/>
+        <xs:attribute name="referring_page" type="page"/>
+        <xs:attribute name="signature" type="xs:string"/>
+        <xs:attribute name="proof" type="xs:string"/>
+        <xs:attribute name="trusted" type="xs:boolean"/>
+        <xs:attribute name="remarks" type="remarks"/>
+        <xs:attribute name="platform_type" type="xs:string"/>
+        <xs:attribute name="platform_name" type="xs:string"/>
+        <xs:attribute name="response" type="xs:string"/>
+        <xs:attribute name="request" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="variationvector">
+        <xs:sequence>
+            <xs:element name="method" type="xs:string" minOccurs="0"
+                        maxOccurs="1"/>
+
+            <xs:element name="affected_input_value" type="xs:string"
+                        minOccurs="0" maxOccurs="1"/>
+
+            <xs:element name="seed" type="xs:string" minOccurs="0"
+                        maxOccurs="1"/>
+
+            <xs:element name="inputs" type="inputs" minOccurs="0"
+                        maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="inputs">
+        <xs:sequence>
+            <xs:element name="input" type="input"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="input">
+        <xs:attribute name="title" type="xs:string"/>
+        <xs:attribute name="url" type="xs:anyURI"/>
     </xs:complexType>
 
     <xs:simpleType name="vectorclass">
