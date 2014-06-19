@@ -16,8 +16,8 @@
 </div>
 
 <div class="tab-content">
-    <% grouped.each do |severity, issues_by_name| %>
-        <div class="tab-pane active" id="issues-<%= trust %>-severity-<%= severity %>">
+    <% grouped.each do |severity, issues_by_name|%>
+        <div class="tab-pane <%= 'active' if severity == grouped.keys.first %>" id="issues-<%= trust %>-severity-<%= severity %>">
 
             <% issues_by_name.each do |name, issues| %>
                 <%
