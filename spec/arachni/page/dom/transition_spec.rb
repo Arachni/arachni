@@ -432,6 +432,21 @@ describe Arachni::Page::DOM::Transition do
                 options: completed_transition.options
             }
         end
+
+        context "when #element is an #{Arachni::Browser::ElementLocator}" do
+            it 'converts it to a hash as well' do
+                element = Arachni::Browser::ElementLocator.from_html(
+                    '<div id="my-div" onclick="addForm();">'
+                )
+
+                described_class.new( element, :load ).to_hash.should == {
+                    element: element.to_h,
+                    event:   :load,
+                    options:  {},
+                    time:     nil
+                }
+            end
+        end
     end
 
     describe '#to_s' do
