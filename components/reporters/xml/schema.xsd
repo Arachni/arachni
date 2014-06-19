@@ -103,8 +103,8 @@
         <xs:attribute name="url" type="xs:anyURI"/>
         <xs:attribute name="transitions" type="transitions"/>
         <xs:attribute name="data_flow_sinks" type="data_flow_sinks"/>
-        <xs:attribute name="executuon_flow_sinks"
-                      type="executuon_flow_sinks"/>
+        <xs:attribute name="execution_flow_sinks"
+                      type="execution_flow_sinks"/>
     </xs:complexType>
 
     <xs:complexType name="transitions">
@@ -133,6 +133,18 @@
         <xs:attribute name="tainted_argument_index" type="xs:decimal"/>
         <xs:attribute name="tainted_value" type="xs:string"/>
         <xs:attribute name="taint" type="xs:string"/>
+        <xs:attribute name="trace" type="trace"/>
+    </xs:complexType>
+
+    <xs:complexType name="execution_flow_sinks">
+        <xs:sequence>
+            <xs:element name="execution_flow_sink"
+                        type="execution_flow_sink"
+                        minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="execution_flow_sink">
         <xs:attribute name="trace" type="trace"/>
     </xs:complexType>
 
