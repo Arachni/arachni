@@ -18,6 +18,14 @@
     color: #ff7f0e;
 }
 
+.tab-trusted, li.active a.tab-trusted {
+    color: #1f77b4;
+}
+
+.tab-untrusted, li.active a.tab-untrusted {
+    color: #d62728;
+}
+
 .severity-low {
     background-color: #ffbb78;
 }

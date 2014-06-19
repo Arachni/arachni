@@ -7,7 +7,7 @@
     <li
         <%= "class='active'" if i == 0 %>
     >
-        <a href="#!/issues/<%= trust %>" >
+        <a class="tab-<%= trust %>" href="#!/issues/<%= trust %>" >
             <%= trust.to_s.capitalize %>
 
             <span class="badge">
