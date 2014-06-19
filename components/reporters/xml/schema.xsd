@@ -94,6 +94,32 @@
         </xs:sequence>
     </xs:complexType>
 
+    <xs:complexType name="page">
+        <xs:attribute name="body" type="xs:string"/>
+        <xs:attribute name="dom" type="pagedom"/>
+    </xs:complexType>
+
+    <xs:complexType name="pagedom">
+        <xs:attribute name="url" type="xs:anyURI"/>
+        <xs:attribute name="transitions" type="transitions"/>
+        <xs:attribute name="data_flow_sinks" type="data_flow_sinks"/>
+        <xs:attribute name="executuon_flow_sinks"
+                      type="executuon_flow_sinks"/>
+    </xs:complexType>
+
+    <xs:complexType name="transitions">
+        <xs:sequence>
+            <xs:element name="transition" type="transition"
+                        minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="transition">
+        <xs:attribute name="element" type="xs:string"/>
+        <xs:attribute name="event" type="xs:string"/>
+        <xs:attribute name="time" type="xs:decimal"/>
+    </xs:complexType>
+
     <xs:complexType name="inputs">
         <xs:sequence>
             <xs:element name="input" type="input"/>
