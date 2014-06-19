@@ -3,7 +3,7 @@
 
         <% grouped.keys.each.with_index do |severity, i| %>
             <li <%= 'class="active"' if i == 0 %> >
-                <a href="#!/issues/<%= trust %>/severity/<%= severity %>">
+                <a class="tab-severity-<%=severity %>" href="#!/issues/<%= trust %>/severity/<%= severity %>">
                     <%= severity.to_s.capitalize %>
 
                     <span class="badge">

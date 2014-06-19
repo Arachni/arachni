@@ -1,8 +1,11 @@
-.severity-high  {
+.severity-high {
     background-color: #d62728;
 }
 .c3-region.severity-high {
     fill: #d62728;
+}
+.tab-severity-high, li.active a.tab-severity-high {
+    color: #d62728;
 }
 
 .severity-medium {
@@ -11,6 +14,9 @@
 .c3-region.severity-medium  {
     fill: #ff7f0e;
 }
+.tab-severity-medium, li.active a.tab-severity-medium {
+    color: #ff7f0e;
+}
 
 .severity-low {
     background-color: #ffbb78;
@@ -18,12 +24,18 @@
 .c3-region.severity-low {
     fill: #ffbb78;
 }
+.tab-severity-low, li.active a.tab-severity-low {
+    color: #ffbb78;
+}
 
 .severity-informational {
     background-color: #1f77b4;
 }
 .c3-region.severity-informational {
     fill: #1f77b4;
+}
+.tab-severity-informational, li.active a.tab-severity-informational {
+    color: #1f77b4;
 }
 
 .table tr.borderless,
