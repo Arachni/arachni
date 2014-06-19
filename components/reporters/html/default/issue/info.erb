@@ -6,7 +6,7 @@
 <%= erb 'issue/platform.erb', issue: parent_issue %>
 
 <% if (issue.vector.respond_to?(:seed) && issue.vector.seed) || issue.signature || issue.proof %>
-<table class="table">
+<table class="table table-condensed table-fixed">
     <thead>
     <tr>
         <% if issue.vector.respond_to?(:seed) && issue.vector.seed %>
