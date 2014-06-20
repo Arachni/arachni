@@ -2,19 +2,21 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
     <xs:complexType name="report">
-        <xs:attribute name="version" type="xs:string"/>
-        <xs:attribute name="start_datetime" type="xs:dateTime"/>
-        <xs:attribute name="finish_datetime" type="xs:dateTime"/>
-        <xs:attribute name="sitemap" type="sitemap"/>
+        <xs:sequence>
+            <xs:element name="version" type="xs:string"/>
+            <xs:element name="start_datetime" type="xs:dateTime"/>
+            <xs:element name="finish_datetime" type="xs:dateTime"/>
+            <xs:element name="sitemap" type="sitemap"/>
 
-        <!--
-            Dumped profile, save it as a YAML file and use it as a
-            scan profile via whatever interface you want or parse it
-            into a Hash and use it to configure Arachni over RPC.
-        -->
-        <xs:attribute name="options" type="xs:string"/>
-        <xs:attribute name="issues" type="issues"/>
-        <!--<xs:attribute name="plugins" type="plugins"/>-->
+            <!--
+                Dumped profile, save it as a YAML file and use it as a
+                scan profile via whatever interface you want or parse it
+                into a Hash and use it to configure Arachni over RPC.
+            -->
+            <xs:element name="options" type="xs:string"/>
+            <xs:element name="issues" type="issues"/>
+            <!--<xs:attribute name="plugins" type="plugins"/>-->
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="sitemap">
@@ -24,8 +26,10 @@
     </xs:complexType>
 
     <xs:complexType name="sitemapentry">
-        <xs:attribute name="code" type="xs:integer"/>
-        <xs:attribute name="url" type="xs:anyURI"/>
+        <xs:sequence>
+            <xs:element name="code" type="xs:integer"/>
+            <xs:element name="url" type="xs:anyURI"/>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="issues">
@@ -39,16 +43,18 @@
         details as "issuevariations" via the "variations" attribute.
     -->
     <xs:complexType name="issue">
-        <xs:attribute name="name" type="xs:string"/>
-        <xs:attribute name="description" type="xs:string"/>
-        <xs:attribute name="remedy_guidance" type="xs:string"/>
-        <xs:attribute name="remedy_code" type="xs:string"/>
-        <xs:attribute name="severity" type="severity"/>
-        <xs:attribute name="references" type="references"/>
-        <xs:attribute name="cwe" type="xs:integer"/>
-        <xs:attribute name="vector" type="vector"/>
-        <xs:attribute name="digest" type="xs:integer"/>
-        <xs:attribute name="variations" type="issuevariations"/>
+        <xs:sequence>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+            <xs:element name="remedy_guidance" type="xs:string"/>
+            <xs:element name="remedy_code" type="xs:string"/>
+            <xs:element name="severity" type="severity"/>
+            <xs:element name="references" type="references"/>
+            <xs:element name="cwe" type="xs:integer"/>
+            <xs:element name="vector" type="vector"/>
+            <xs:element name="digest" type="xs:integer"/>
+            <xs:element name="variations" type="issuevariations"/>
+        </xs:sequence>
     </xs:complexType>
 
     <!--
@@ -70,11 +76,11 @@
         The data therein are the original, non-fuzzed ones.
     -->
     <xs:complexType name="vector">
-        <xs:attribute name="class" type="vectorclass"/>
-        <xs:attribute name="type" type="xs:string"/>
-        <xs:attribute name="url" type="xs:string"/>
-
         <xs:sequence>
+            <xs:element name="class" type="vectorclass"/>
+            <xs:element name="type" type="xs:string"/>
+            <xs:element name="url" type="xs:string"/>
+
             <xs:element name="action" type="xs:string" minOccurs="0"
                         maxOccurs="1"/>
             <xs:element name="method" type="xs:string" minOccurs="0"
@@ -95,38 +101,44 @@
         different ways.
     -->
     <xs:complexType name="issuevariation">
-        <xs:attribute name="variationvector" type="variationvector"/>
-        <xs:attribute name="page" type="page"/>
-        <xs:attribute name="referring_page" type="page"/>
-        <xs:attribute name="signature" type="xs:string"/>
-        <xs:attribute name="proof" type="xs:string"/>
-        <xs:attribute name="trusted" type="xs:boolean"/>
-        <xs:attribute name="remarks" type="remarks"/>
-        <xs:attribute name="platform_type" type="xs:string"/>
-        <xs:attribute name="platform_name" type="xs:string"/>
-        <xs:attribute name="response" type="xs:string"/>
-        <xs:attribute name="request" type="xs:string"/>
+        <xs:sequence>
+            <xs:element name="variationvector" type="variationvector"/>
+            <xs:element name="page" type="page"/>
+            <xs:element name="referring_page" type="page"/>
+            <xs:element name="signature" type="xs:string"/>
+            <xs:element name="proof" type="xs:string"/>
+            <xs:element name="trusted" type="xs:boolean"/>
+            <xs:element name="remarks" type="remarks"/>
+            <xs:element name="platform_type" type="xs:string"/>
+            <xs:element name="platform_name" type="xs:string"/>
+            <xs:element name="response" type="xs:string"/>
+            <xs:element name="request" type="xs:string"/>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="response">
-        <xs:attribute name="url" type="xs:string"/>
-        <xs:attribute name="code" type="xs:integer"/>
-        <xs:attribute name="ip_address" type="xs:string"/>
-        <xs:attribute name="headers" type="inputs"/>
-        <xs:attribute name="body" type="xs:string"/>
-        <xs:attribute name="time" type="xs:decimal"/>
-        <xs:attribute name="curl_code" type="xs:string"/>
-        <xs:attribute name="curl_message" type="xs:string"/>
-        <xs:attribute name="raw" type="xs:string"/>
+        <xs:sequence>
+            <xs:element name="url" type="xs:string"/>
+            <xs:element name="code" type="xs:integer"/>
+            <xs:element name="ip_address" type="xs:string"/>
+            <xs:element name="headers" type="inputs"/>
+            <xs:element name="body" type="xs:string"/>
+            <xs:element name="time" type="xs:decimal"/>
+            <xs:element name="curl_code" type="xs:string"/>
+            <xs:element name="curl_message" type="xs:string"/>
+            <xs:element name="raw" type="xs:string"/>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="request">
-        <xs:attribute name="url" type="xs:string"/>
-        <xs:attribute name="method" type="xs:string"/>
-        <xs:attribute name="parameters" type="inputs"/>
-        <xs:attribute name="body" type="xs:string"/>
-        <xs:attribute name="headers" type="inputs"/>
-        <xs:attribute name="raw" type="xs:string"/>
+        <xs:sequence>
+            <xs:element name="url" type="xs:string"/>
+            <xs:element name="method" type="xs:string"/>
+            <xs:element name="parameters" type="inputs"/>
+            <xs:element name="body" type="xs:string"/>
+            <xs:element name="headers" type="inputs"/>
+            <xs:element name="raw" type="xs:string"/>
+        </xs:sequence>
     </xs:complexType>
 
     <!--
@@ -134,8 +146,8 @@
         why an issue has been flagged as untrusted.
     -->
     <xs:complexType name="remarks">
-        <xs:attribute name="commenter" type="xs:string"/>
         <xs:sequence>
+            <xs:element name="commenter" type="xs:string"/>
             <xs:element name="remarks" type="xs:string"
                         minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
@@ -164,29 +176,33 @@
     </xs:complexType>
 
     <xs:complexType name="page">
-        <xs:attribute name="body" type="xs:string"/>
-        <xs:attribute name="dom" type="pagedom"/>
+        <xs:sequence>
+            <xs:element name="body" type="xs:string"/>
+            <xs:element name="dom" type="pagedom"/>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="pagedom">
-        <xs:attribute name="url" type="xs:anyURI"/>
+        <xs:sequence>
+            <xs:element name="url" type="xs:anyURI"/>
 
-        <!--
-            Interactions, between the browser and the page, required
-            to restore the page to the logged state.
-        -->
-        <xs:attribute name="transitions" type="transitions"/>
+            <!--
+                Interactions, between the browser and the page, required
+                to restore the page to the logged state.
+            -->
+            <xs:element name="transitions" type="transitions"/>
 
-        <!--
-            Flow-points of a tainted value in the JS environment.
-        -->
-        <xs:attribute name="data_flow_sinks" type="data_flow_sinks"/>
+            <!--
+                Flow-points of a tainted value in the JS environment.
+            -->
+            <xs:element name="data_flow_sinks" type="data_flow_sinks"/>
 
-        <!--
-            Points of execution of an injected JS payload.
-        -->
-        <xs:attribute name="execution_flow_sinks"
-                      type="execution_flow_sinks"/>
+            <!--
+                Points of execution of an injected JS payload.
+            -->
+            <xs:element name="execution_flow_sinks"
+                          type="execution_flow_sinks"/>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="transitions">
@@ -201,9 +217,11 @@
         page.
     -->
     <xs:complexType name="transition">
-        <xs:attribute name="element" type="xs:string"/>
-        <xs:attribute name="event" type="xs:string"/>
-        <xs:attribute name="time" type="xs:decimal"/>
+        <xs:sequence>
+            <xs:element name="element" type="xs:string"/>
+            <xs:element name="event" type="xs:string"/>
+            <xs:element name="time" type="xs:decimal"/>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="data_flow_sinks">
@@ -217,36 +235,38 @@
         Flow-points of a tainted value in the JS environment.
     -->
     <xs:complexType name="data_flow_sink">
-        <xs:attribute name="function" type="function"/>
+        <xs:sequence>
+            <xs:element name="function" type="function"/>
 
-        <!--
-            Object where the "function" was defined.
-        -->
-        <xs:attribute name="object" type="xs:string"/>
+            <!--
+                Object where the "function" was defined.
+            -->
+            <xs:element name="object" type="xs:string"/>
 
-        <!--
-            "function:arguments" index of the argument that contains
-            the "tainted_value".
-        -->
-        <xs:attribute name="tainted_argument_index" type="xs:decimal"/>
+            <!--
+                "function:arguments" index of the argument that contains
+                the "tainted_value".
+            -->
+            <xs:element name="tainted_argument_index" type="xs:decimal"/>
 
-        <!--
-            The tainted value, which isn't necessarily the tainted
-            argument object itself.
-            The value will have been located recursively in the tainted
-            argument object's properties if need be.
-        -->
-        <xs:attribute name="tainted_value" type="xs:string"/>
+            <!--
+                The tainted value, which isn't necessarily the tainted
+                argument object itself.
+                The value will have been located recursively in the tainted
+                argument object's properties if need be.
+            -->
+            <xs:element name="tainted_value" type="xs:string"/>
 
-        <!--
-            The injected taint.
-        -->
-        <xs:attribute name="taint" type="xs:string"/>
+            <!--
+                The injected taint.
+            -->
+            <xs:element name="taint" type="xs:string"/>
 
-        <!--
-            Stacktrace of this call.
-        -->
-        <xs:attribute name="trace" type="trace"/>
+            <!--
+                Stacktrace of this call.
+            -->
+            <xs:element name="trace" type="trace"/>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="execution_flow_sinks">
@@ -258,16 +278,20 @@
     </xs:complexType>
 
     <xs:complexType name="execution_flow_sink">
-        <xs:attribute name="trace" type="trace"/>
+        <xs:sequence>
+            <xs:element name="trace" type="trace"/>
+        </xs:sequence>
     </xs:complexType>
 
     <!--
         JS function referenced by "pagedom" sink data.
     -->
     <xs:complexType name="function">
-        <xs:attribute name="source" type="xs:string"/>
-        <xs:attribute name="arguments" type="functionarguments"/>
-        <xs:attribute name="name" type="xs:string"/>
+        <xs:sequence>
+            <xs:element name="source" type="xs:string"/>
+            <xs:element name="arguments" type="functionarguments"/>
+            <xs:element name="name" type="xs:string"/>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="functionarguments">
@@ -285,9 +309,11 @@
     </xs:complexType>
 
     <xs:complexType name="traceitem">
-        <xs:attribute name="function" type="function"/>
-        <xs:attribute name="line" type="xs:integer"/>
-        <xs:attribute name="url" type="xs:string"/>
+        <xs:sequence>
+            <xs:element name="function" type="function"/>
+            <xs:element name="line" type="xs:integer"/>
+            <xs:element name="url" type="xs:string"/>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="inputs">
