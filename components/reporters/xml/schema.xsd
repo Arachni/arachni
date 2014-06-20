@@ -131,7 +131,7 @@
 
     <!--
         System components can attach remarks on issues, usually to explain
-        why an issue have been flagged as untrusted.
+        why an issue has been flagged as untrusted.
     -->
     <xs:complexType name="remarks">
         <xs:attribute name="commenter" type="xs:string"/>
@@ -145,7 +145,7 @@
         This is details on the state of the logged vector when
         an "issuevariation" was identified.
 
-        Merged with "vector" it forms the full vector mutations.
+        Merged with "vector" it forms the full vector mutation.
     -->
     <xs:complexType name="variationvector">
         <xs:sequence>
