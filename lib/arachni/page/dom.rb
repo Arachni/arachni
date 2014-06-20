@@ -184,26 +184,28 @@ class DOM
     def to_h
         {
             url:                 url,
-            transitions:         transitions,
+            transitions:         transitions.map(&:to_hash),
             digest:              digest,
             skip_states:         skip_states,
-            data_flow_sink:      data_flow_sink,
-            execution_flow_sink: execution_flow_sink
+            data_flow_sink:      data_flow_sink.map(&:to_hash),
+            execution_flow_sink: execution_flow_sink.map(&:to_hash)
         }
     end
-    alias :to_hash :to_h
+    def to_hash
+        to_h
+    end
 
     # @return   [Hash]
     #   Data representing this instance that are suitable the RPC transmission.
     def to_rpc_data
-        data = to_hash.stringify_keys(false)
-        data['skip_states'] = data['skip_states'].collection.to_a if data['skip_states']
-
-        %w(transitions data_flow_sink execution_flow_sink).each do |k|
-            data[k] = data[k].map(&:to_rpc_data)
-        end
-
-        data
+        {
+            'url'                 => url,
+            'transitions'         => transitions.map(&:to_rpc_data),
+            'digest'              => digest,
+            'skip_states'         => skip_states ? skip_states.collection.to_a : [],
+            'data_flow_sink'      => data_flow_sink.map(&:to_rpc_data),
+            'execution_flow_sink' => execution_flow_sink.map(&:to_rpc_data)
+        }
     end
 
     # @param    [Hash]  data

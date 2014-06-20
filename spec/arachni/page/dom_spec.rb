@@ -209,8 +209,8 @@ describe Arachni::Page::DOM do
                     { element:  :stuffed },
                     { element2: :stuffed2 }
                 ].map { |t| described_class::Transition.new *t.first },
-                data_flow_sink:      ['stuff'],
-                execution_flow_sink: ['stuff2']
+                data_flow_sink:      [Factory[:data_flow]],
+                execution_flow_sink: [Factory[:execution_flow]]
             }
 
             empty_dom.url = data[:url]
@@ -221,7 +221,14 @@ describe Arachni::Page::DOM do
             empty_dom.data_flow_sink = data[:data_flow_sink]
             empty_dom.execution_flow_sink = data[:execution_flow_sink]
 
-            empty_dom.to_h.should == data.merge( digest: empty_dom.digest )
+            empty_dom.to_h.should ==  {
+                url:                 data[:url],
+                transitions:         data[:transitions].map(&:to_hash),
+                digest:              empty_dom.digest,
+                skip_states:         data[:skip_states],
+                data_flow_sink:      data[:data_flow_sink].map(&:to_hash),
+                execution_flow_sink: data[:execution_flow_sink].map(&:to_hash)
+            }
         end
         it 'is aliased to #to_h' do
             empty_dom.to_h.should == empty_dom.to_h
