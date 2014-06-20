@@ -164,8 +164,21 @@
 
     <xs:complexType name="pagedom">
         <xs:attribute name="url" type="xs:anyURI"/>
+
+        <!--
+            Interactions, between the browser and the page, required
+            to restore the page to the logged state.
+        -->
         <xs:attribute name="transitions" type="transitions"/>
+
+        <!--
+            Flow-points of a tainted value in the JS environment.
+        -->
         <xs:attribute name="data_flow_sinks" type="data_flow_sinks"/>
+
+        <!--
+            Points of execution of an injected JS payload.
+        -->
         <xs:attribute name="execution_flow_sinks"
                       type="execution_flow_sinks"/>
     </xs:complexType>
@@ -177,6 +190,10 @@
         </xs:sequence>
     </xs:complexType>
 
+    <!--
+        Represents an interaction between the browser and the
+        page.
+    -->
     <xs:complexType name="transition">
         <xs:attribute name="element" type="xs:string"/>
         <xs:attribute name="event" type="xs:string"/>
@@ -190,12 +207,39 @@
         </xs:sequence>
     </xs:complexType>
 
+    <!--
+        Flow-points of a tainted value in the JS environment.
+    -->
     <xs:complexType name="data_flow_sink">
         <xs:attribute name="function" type="function"/>
+
+        <!--
+            Object where the "function" was defined.
+        -->
         <xs:attribute name="object" type="xs:string"/>
+
+        <!--
+            "function:arguments" index of the argument that contains
+            the "tainted_value".
+        -->
         <xs:attribute name="tainted_argument_index" type="xs:decimal"/>
+
+        <!--
+            The tainted value, which isn't necessarily the tainted
+            argument object itself.
+            The value will have been located recursively in the tainted
+            argument object's properties if need be.
+        -->
         <xs:attribute name="tainted_value" type="xs:string"/>
+
+        <!--
+            The injected taint.
+        -->
         <xs:attribute name="taint" type="xs:string"/>
+
+        <!--
+            Stacktrace of this call.
+        -->
         <xs:attribute name="trace" type="trace"/>
     </xs:complexType>
 
@@ -211,6 +255,9 @@
         <xs:attribute name="trace" type="trace"/>
     </xs:complexType>
 
+    <!--
+        JS function referenced by "pagedom" sink data.
+    -->
     <xs:complexType name="function">
         <xs:attribute name="source" type="xs:string"/>
         <xs:attribute name="arguments" type="functionarguments"/>
