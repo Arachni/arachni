@@ -6,6 +6,12 @@
         <xs:attribute name="start_datetime" type="xs:dateTime"/>
         <xs:attribute name="finish_datetime" type="xs:dateTime"/>
         <xs:attribute name="sitemap" type="sitemap"/>
+
+        <!--
+            Dumped profile, save it as a YAML file and use it as a
+            scan profile via whatever interface you want or parse it
+            into a Hash and use it to configure Arachni over RPC.
+        -->
         <xs:attribute name="options" type="xs:string"/>
         <xs:attribute name="issues" type="issues"/>
         <xs:attribute name="plugins" type="plugins"/>
