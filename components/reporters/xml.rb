@@ -3,6 +3,7 @@
     All rights reserved.
 =end
 
+require 'nokogiri'
 require 'base64'
 
 # Creates an XML report of the audit.
@@ -15,109 +16,70 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
 
     include Buffer
 
+    SCHEMA = File.dirname( __FILE__ ) + '/xml/schema.xsd'
+
     def run
-        print_info 'Out of service, rewrite pending.'
-        return
-
-        print_line
-        print_status 'Creating XML report...'
-
-        append "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
-        start_tag 'arachni_report'
-
-        simple_tag( 'title', 'Web Application Security Report - Arachni Framework' )
-        simple_tag( 'generated_on', Time.now )
-        simple_tag( 'report_false_positives', REPORT_FP )
-
-        start_tag 'system'
-        simple_tag( 'version', auditstore.version )
-        simple_tag( 'revision', auditstore.revision )
-        simple_tag( 'start_datetime', auditstore.start_datetime )
-        simple_tag( 'finish_datetime', auditstore.finish_datetime )
-        simple_tag( 'delta_time', auditstore.delta_time )
-
-        simple_tag( 'url', auditstore.options['url'] )
-        simple_tag( 'http_user_agent', auditstore.options['http_user_agent'] )
-
-        start_tag 'audited_elements'
-        simple_tag( 'element', 'links' ) if auditstore.options['audit_links']
-        simple_tag( 'element', 'forms' ) if auditstore.options['audit_forms']
-        simple_tag( 'element', 'cookies' ) if auditstore.options['audit_cookies']
-        simple_tag( 'element', 'headers' ) if auditstore.options['audit_headers']
-        end_tag 'audited_elements'
-
-        start_tag 'checks'
-        auditstore.options['mods'].each { |mod| add_mod( mod ) }
-        end_tag 'checks'
-
-        start_tag 'filters'
-
-        %w(scope_exclude_path_patterns scope_include_path_patterns).each do |type|
-            if auditstore.options[type]
-                start_tag type
-                auditstore.options[type].each { |ex| simple_tag( 'regexp', ex ) }
-                end_tag type
-            end
-        end
-
-        if auditstore.options['scope_redundant_path_patterns']
-            start_tag 'scope_redundant_path_patterns'
-            auditstore.options['scope_redundant_path_patterns'].each do |regexp, counter|
-                simple_tag( 'filter', "#{regexp}:#{counter}" )
-            end
-            end_tag 'scope_redundant_path_patterns'
-        end
-        end_tag 'filters'
-
-        start_tag 'cookies'
-        if auditstore.options['cookies']
-            auditstore.options['cookies'].each { |name, value| add_cookie( name, value ) }
-        end
-        end_tag 'cookies'
-
-        end_tag 'system'
-
-        start_tag 'issues'
-        auditstore.issues.each do |issue|
-            start_tag 'issue'
-
-            issue.each_pair do |k, v|
-                next if !v.is_a?( String )
-                simple_tag( k, v )
-            end
-
-            add_tags [issue.tags].flatten.compact
-
-            start_tag 'references'
-            issue.references.each { |name, url| add_reference( name, url ) }
-            end_tag 'references'
-
-            add_variations issue
-
-            end_tag 'issue'
-        end
-
-        end_tag 'issues'
-
-        start_tag 'plugins'
         # get XML formatted plugin data and append them to the XML buffer
         # along with some generic info
-        format_plugin_results.each do |plugin, results|
-            start_tag plugin
-            simple_tag( 'name', auditstore.plugins[plugin][:name] )
-            simple_tag( 'description', auditstore.plugins[plugin][:description] )
+        # format_plugin_results.each do |plugin, results|
+        #     start_tag plugin
+        #     simple_tag( 'name', auditstore.plugins[plugin][:name] )
+        #     simple_tag( 'description', auditstore.plugins[plugin][:description] )
+        #
+        #     start_tag 'results'
+        #     append( results )
+        #     end_tag 'results'
+        #
+        #     end_tag plugin
+        # end
 
-            start_tag 'results'
-            append( results )
-            end_tag 'results'
+        builder = Nokogiri::XML::Builder.new do |xml|
+            xml.report(
+                'xmlns:xsi' => 'http://www.w3.org/2001/XMLSchema-instance',
+                'xsi:noNamespaceSchemaLocation' => SCHEMA
+            ) {
+                xml.version report.version
+                xml.options Arachni::Options.hash_to_save_data( report.options )
+                xml.start_datetime report.start_datetime.xmlschema
+                xml.finish_datetime report.finish_datetime.xmlschema
 
-            end_tag plugin
+                xml.sitemap {
+                    report.sitemap.each do |url, code|
+                        xml.sitemapentry {
+                            xml.url url
+                            xml.code code
+                        }
+                    end
+                }
+
+                xml.issues {
+                    report.issues.each do |issue|
+                        xml.issue {
+                            xml.name issue.name
+                            xml.description issue.description
+                            xml.remedy_guidance issue.remedy_guidance
+                            xml.severity issue.severity
+                            xml.cwe issue.cwe
+                            xml.digest issue.digest
+
+                            issue.references.each do |title, url|
+                                xml.title title
+                                xml.url url
+                            end
+                        }
+                    end
+                }
+            }
         end
-        end_tag 'plugins'
 
-        end_tag 'arachni_report'
+        puts xml = builder.to_xml
 
-        File.open( outfile, 'w' ) { |f| f.write( buffer ) }
+        xsd = Nokogiri::XML::Schema( IO.read( SCHEMA ) )
+        xsd.validate( Nokogiri::XML( xml ) ).each do |error|
+            puts error.message
+        end
+
+        IO.binwrite( outfile, xml )
         print_status "Saved in '#{outfile}'."
     end
 
