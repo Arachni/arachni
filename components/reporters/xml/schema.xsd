@@ -14,7 +14,7 @@
         -->
         <xs:attribute name="options" type="xs:string"/>
         <xs:attribute name="issues" type="issues"/>
-        <xs:attribute name="plugins" type="plugins"/>
+        <!--<xs:attribute name="plugins" type="plugins"/>-->
     </xs:complexType>
 
     <xs:complexType name="sitemap">
