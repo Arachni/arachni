@@ -78,6 +78,27 @@
         <xs:attribute name="request" type="xs:string"/>
     </xs:complexType>
 
+    <xs:complexType name="response">
+        <xs:attribute name="url" type="xs:string"/>
+        <xs:attribute name="code" type="xs:integer"/>
+        <xs:attribute name="ip_address" type="xs:string"/>
+        <xs:attribute name="headers" type="inputs"/>
+        <xs:attribute name="body" type="xs:string"/>
+        <xs:attribute name="time" type="xs:decimal"/>
+        <xs:attribute name="curl_code" type="xs:string"/>
+        <xs:attribute name="curl_message" type="xs:string"/>
+        <xs:attribute name="raw" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="request">
+        <xs:attribute name="url" type="xs:string"/>
+        <xs:attribute name="method" type="xs:string"/>
+        <xs:attribute name="parameters" type="inputs"/>
+        <xs:attribute name="body" type="xs:string"/>
+        <xs:attribute name="headers" type="inputs"/>
+        <xs:attribute name="raw" type="xs:string"/>
+    </xs:complexType>
+
     <xs:complexType name="remarks">
         <xs:attribute name="commenter" type="xs:string"/>
         <xs:sequence>
@@ -189,8 +210,8 @@
     </xs:complexType>
 
     <xs:complexType name="input">
-        <xs:attribute name="title" type="xs:string"/>
-        <xs:attribute name="url" type="xs:anyURI"/>
+        <xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="value" type="xs:string"/>
     </xs:complexType>
 
     <xs:simpleType name="vectorclass">
