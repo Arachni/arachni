@@ -78,6 +78,14 @@
         <xs:attribute name="request" type="xs:string"/>
     </xs:complexType>
 
+    <xs:complexType name="remarks">
+        <xs:attribute name="commenter" type="xs:string"/>
+        <xs:sequence>
+            <xs:element name="remarks" type="xs:string"
+                        minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
     <xs:complexType name="variationvector">
         <xs:sequence>
             <xs:element name="method" type="xs:string" minOccurs="0"
