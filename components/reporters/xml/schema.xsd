@@ -28,6 +28,10 @@
         </xs:sequence>
     </xs:complexType>
 
+    <!--
+        Holds generic information about the logged issue, while providing
+        details as "issuevariations" via the "variations" attribute.
+    -->
     <xs:complexType name="issue">
         <xs:attribute name="name" type="xs:string"/>
         <xs:attribute name="description" type="xs:string"/>
@@ -38,13 +42,27 @@
         <xs:attribute name="cwe" type="xs:integer"/>
         <xs:attribute name="vector" type="vector"/>
         <xs:attribute name="digest" type="xs:integer"/>
+        <xs:attribute name="variations" type="issuevariations"/>
+    </xs:complexType>
 
+    <!--
+        Issues have 1 or more variations.
+        Currently, active checks only have 1 variation while passive ones
+        can have multiple.
+    -->
+    <xs:complexType name="issuevariations">
         <xs:sequence>
-            <xs:element name="variations" type="issuevariation"
-                        minOccurs="0" maxOccurs="1"/>
+            <xs:element name="variation" type="issuevariation"
+                        minOccurs="1" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
+    <!--
+        Input vector information, in essence, the element affected
+        by the logged issue.
+
+        The data therein are the original, non-fuzzed ones.
+    -->
     <xs:complexType name="vector">
         <xs:attribute name="class" type="vectorclass"/>
         <xs:attribute name="type" type="xs:string"/>
@@ -56,14 +74,20 @@
             <xs:element name="method" type="xs:string" minOccurs="0"
                         maxOccurs="1"/>
 
+            <!-- Vulnerable input. -->
             <xs:element name="affected_input_name" type="xs:string"
                         minOccurs="0" maxOccurs="1"/>
 
-            <xs:element name="default_inputs" type="inputs" minOccurs="0"
+            <xs:element name="inputs" type="inputs" minOccurs="0"
                         maxOccurs="1"/>
         </xs:sequence>
     </xs:complexType>
 
+    <!--
+        Details about the logged issue, each variation represents a
+        situation where the same issue has been identified albeit in
+        different ways.
+    -->
     <xs:complexType name="issuevariation">
         <xs:attribute name="variationvector" type="variationvector"/>
         <xs:attribute name="page" type="page"/>
@@ -99,6 +123,10 @@
         <xs:attribute name="raw" type="xs:string"/>
     </xs:complexType>
 
+    <!--
+        System components can attach remarks on issues, usually to explain
+        why an issue have been flagged as untrusted.
+    -->
     <xs:complexType name="remarks">
         <xs:attribute name="commenter" type="xs:string"/>
         <xs:sequence>
@@ -107,6 +135,12 @@
         </xs:sequence>
     </xs:complexType>
 
+    <!--
+        This is details on the state of the logged vector when
+        an "issuevariation" was identified.
+
+        Merged with "vector" it forms the full vector mutations.
+    -->
     <xs:complexType name="variationvector">
         <xs:sequence>
             <xs:element name="method" type="xs:string" minOccurs="0"
