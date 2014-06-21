@@ -203,7 +203,7 @@
     <xs:complexType name="remarks">
         <xs:sequence>
             <xs:element name="commenter" type="xs:string"
-                        minOccurs="0" maxOccurs="unbounded"/>
+                        minOccurs="0" maxOccurs="1"/>
             <xs:element name="remark" type="xs:string"
                         minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
