@@ -192,7 +192,7 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                 xml.ip_address response.ip_address
                 xml.time response.time
                 xml.return_code response.return_code
-                xml.returnl_message response.return_message
+                xml.return_message response.return_message
 
                 add_headers( xml, response.headers )
 
