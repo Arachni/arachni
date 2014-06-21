@@ -87,7 +87,6 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                                     xml.variation {
                                         vector = variation.vector
                                         xml.vector {
-
                                             if issue.active?
                                                 xml.method_ vector.method
                                                 xml.affected_input_value vector.affected_input_value
@@ -98,6 +97,7 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                                         }
 
                                         add_page( xml, variation.page )
+                                        add_page( xml, variation.referring_page, :referring_page )
                                     }
                                 }
                             end
@@ -138,8 +138,8 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
 
     end
 
-    def add_page( xml, page )
-        xml.page {
+    def add_page( xml, page, name = :page )
+        xml.send( name ) {
             xml.body page.body
 
             dom = page.dom
