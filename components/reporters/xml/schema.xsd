@@ -333,7 +333,8 @@
 
     <xs:complexType name="headers">
         <xs:sequence>
-            <xs:element name="header" type="input"/>
+            <xs:element name="header" type="input"
+                        maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -383,7 +384,8 @@
 
     <xs:complexType name="references">
         <xs:sequence>
-            <xs:element name="reference" type="reference"/>
+            <xs:element name="reference" type="reference"
+                        maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
