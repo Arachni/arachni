@@ -80,6 +80,8 @@
             <xs:element name="class" type="vectorclass"/>
             <xs:element name="type" type="xs:string"/>
             <xs:element name="url" type="xs:string"/>
+            <xs:element name="html" type="xs:string" minOccurs="0"
+                        maxOccurs="1"/>
 
             <xs:element name="action" type="xs:string" minOccurs="0"
                         maxOccurs="1"/>

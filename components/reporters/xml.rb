@@ -4,12 +4,10 @@
 =end
 
 require 'nokogiri'
-require 'base64'
 
 # Creates an XML report of the audit.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 # @version 0.3
 class Arachni::Reporters::XML < Arachni::Reporter::Base
     load Arachni::Options.paths.reporters + '/xml/buffer.rb'
@@ -73,6 +71,10 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                                 xml.type vector.type
                                 xml.url vector.url
 
+                                if vector.respond_to? :html
+                                    xml.html vector.html
+                                end
+
                                 if issue.active?
                                     xml.action vector.action
                                     xml.method_ vector.method
@@ -86,15 +88,16 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                                 xml.variations {
                                     xml.variation {
                                         vector = variation.vector
-                                        xml.vector {
-                                            if issue.active?
+
+                                        if issue.active?
+                                            xml.vector {
                                                 xml.method_ vector.method
                                                 xml.affected_input_value vector.affected_input_value
                                                 xml.seed vector.seed
 
                                                 add_inputs( xml, vector.inputs )
-                                            end
-                                        }
+                                            }
+                                        end
 
                                         xml.remarks {
                                             variation.remarks.each do |commenter, remarks|
