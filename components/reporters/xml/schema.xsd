@@ -127,7 +127,7 @@
             <xs:element name="time" type="xs:decimal"/>
             <xs:element name="return_code" type="xs:string"/>
             <xs:element name="return_message" type="xs:string"/>
-            <xs:element name="raw" type="xs:string"/>
+            <xs:element name="raw_headers" type="xs:string"/>
         </xs:all>
     </xs:complexType>
 
