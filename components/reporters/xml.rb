@@ -77,11 +77,8 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                                     xml.action vector.action
                                     xml.method_ vector.method
                                     xml.affected_input_name vector.affected_input_name
-                                    xml.inputs {
-                                        vector.default_inputs.each do |k, v|
-                                            xml.input( name: k, value: v )
-                                        end
-                                    }
+
+                                    add_inputs( xml, vector.default_inputs )
                                 end
                             }
 
@@ -96,55 +93,11 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                                                 xml.affected_input_value vector.affected_input_value
                                                 xml.seed vector.seed
 
-                                                xml.inputs {
-                                                    vector.inputs.each do |k, v|
-                                                        xml.input( name: k, value: v )
-                                                    end
-                                                }
+                                                add_inputs( xml, vector.inputs )
                                             end
                                         }
 
-                                        page = variation.page
-                                        xml.page {
-                                            xml.body page.body
-
-                                            dom = page.dom
-                                            xml.dom {
-                                                xml.url dom.url
-
-                                                xml.transitions {
-                                                    dom.transitions.each do |transition|
-                                                        xml.transition {
-                                                            xml.element transition.element
-                                                            xml.event transition.event
-                                                            xml.time transition.time
-                                                        }
-                                                    end
-                                                }
-
-                                                xml.data_flow_sinks {
-                                                    dom.data_flow_sink.each do |sink|
-                                                        xml.data_flow_sink {
-                                                            xml.object sink.object
-                                                            xml.tainted_argument_index sink.tainted_argument_index
-                                                            xml.tainted_value sink.tainted_value
-                                                            xml.taint_ sink.taint
-
-                                                            add_function( xml, sink.function )
-                                                            add_trace( xml, sink.trace )
-                                                        }
-                                                    end
-                                                }
-
-                                                xml.execution_flow_sinks {
-                                                    dom.execution_flow_sink.each do |sink|
-                                                        xml.execution_flow_sink {
-                                                            add_trace( xml, sink.trace )
-                                                        }
-                                                    end
-                                                }
-                                            }
-                                        }
+                                        add_page( xml, variation.page )
                                     }
                                 }
                             end
@@ -173,6 +126,58 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
             author:       'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:      '0.2.4',
             options:      [ Options.outfile( '.xml' ), Options.skip_responses ]
+        }
+    end
+
+    def add_inputs( xml, inputs )
+        xml.inputs {
+            inputs.each do |k, v|
+                xml.input( name: k, value: v )
+            end
+        }
+
+    end
+
+    def add_page( xml, page )
+        xml.page {
+            xml.body page.body
+
+            dom = page.dom
+            xml.dom {
+                xml.url dom.url
+
+                xml.transitions {
+                    dom.transitions.each do |transition|
+                        xml.transition {
+                            xml.element transition.element
+                            xml.event transition.event
+                            xml.time transition.time
+                        }
+                    end
+                }
+
+                xml.data_flow_sinks {
+                    dom.data_flow_sink.each do |sink|
+                        xml.data_flow_sink {
+                            xml.object sink.object
+                            xml.tainted_argument_index sink.tainted_argument_index
+                            xml.tainted_value sink.tainted_value
+                            xml.taint_ sink.taint
+
+                            add_function( xml, sink.function )
+                            add_trace( xml, sink.trace )
+                        }
+                    end
+                }
+
+                xml.execution_flow_sinks {
+                    dom.execution_flow_sink.each do |sink|
+                        xml.execution_flow_sink {
+                            add_trace( xml, sink.trace )
+                        }
+                    end
+                }
+            }
         }
     end
 
