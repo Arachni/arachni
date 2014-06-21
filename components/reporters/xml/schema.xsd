@@ -148,7 +148,8 @@
     -->
     <xs:complexType name="remarks">
         <xs:sequence>
-            <xs:element name="commenter" type="xs:string"/>
+            <xs:element name="commenter" type="xs:string"
+                        minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="remark" type="xs:string"
                         minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
@@ -343,7 +344,8 @@
 
     <xs:complexType name="parameters">
         <xs:sequence>
-            <xs:element name="parameter" type="input"/>
+            <xs:element name="parameter" type="input"
+                        minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
