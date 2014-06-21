@@ -111,8 +111,6 @@
             <xs:element name="remarks" type="remarks"/>
             <xs:element name="platform_type" type="xs:string"/>
             <xs:element name="platform_name" type="xs:string"/>
-            <xs:element name="response" type="xs:string"/>
-            <xs:element name="request" type="xs:string"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -124,8 +122,8 @@
             <xs:element name="headers" type="inputs"/>
             <xs:element name="body" type="xs:string"/>
             <xs:element name="time" type="xs:decimal"/>
-            <xs:element name="curl_code" type="xs:string"/>
-            <xs:element name="curl_message" type="xs:string"/>
+            <xs:element name="return_code" type="xs:string"/>
+            <xs:element name="return_message" type="xs:string"/>
             <xs:element name="raw" type="xs:string"/>
         </xs:sequence>
     </xs:complexType>
@@ -148,7 +146,7 @@
     <xs:complexType name="remarks">
         <xs:sequence>
             <xs:element name="commenter" type="xs:string"/>
-            <xs:element name="remarks" type="xs:string"
+            <xs:element name="remark" type="xs:string"
                         minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
@@ -178,6 +176,8 @@
     <xs:complexType name="page">
         <xs:sequence>
             <xs:element name="body" type="xs:string"/>
+            <xs:element name="request" type="request"/>
+            <xs:element name="response" type="response"/>
             <xs:element name="dom" type="pagedom"/>
         </xs:sequence>
     </xs:complexType>

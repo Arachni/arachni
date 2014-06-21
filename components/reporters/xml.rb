@@ -96,8 +96,23 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                                             end
                                         }
 
+                                        xml.remarks {
+                                            variation.remarks.each do |commenter, remarks|
+                                                xml.commenter commenter
+                                                remarks.each do |remark|
+                                                    xml.remark remark
+                                                end
+                                            end
+                                        }
+
                                         add_page( xml, variation.page )
                                         add_page( xml, variation.referring_page, :referring_page )
+
+                                        xml.signature variation.signature
+                                        xml.proof variation.proof
+                                        xml.trusted variation.trusted
+                                        xml.platform_type variation.platform_type
+                                        xml.platform_name variation.platform_name
                                     }
                                 }
                             end
@@ -129,8 +144,8 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
         }
     end
 
-    def add_inputs( xml, inputs )
-        xml.inputs {
+    def add_inputs( xml, inputs, name = :inputs )
+        xml.send( name ) {
             inputs.each do |k, v|
                 xml.input( name: k, value: v )
             end
@@ -141,6 +156,33 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
     def add_page( xml, page, name = :page )
         xml.send( name ) {
             xml.body page.body
+
+            request = page.request
+            xml.request {
+                xml.url request.url
+                xml.method_ request.method
+
+                add_inputs( xml, request.parameters, :parameters )
+                add_inputs( xml, request.headers, :headers )
+
+                xml.body request.body
+                xml.raw request.to_s
+            }
+
+            response = page.response
+            xml.response {
+                xml.url response.url
+                xml.code response.code
+                xml.ip_address response.ip_address
+                xml.time response.time
+                xml.curl_code response.return_code
+                xml.curl_message response.return_message
+
+                add_inputs( xml, response.headers, :headers )
+
+                xml.body response.body
+                xml.raw_headers response.headers_string
+            }
 
             dom = page.dom
             xml.dom {
@@ -205,39 +247,6 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                 end
             }
         }
-    end
-
-    def add_variations( issue )
-        start_tag 'variations'
-
-        issue.variations.each_with_index do |var|
-            start_tag 'variation'
-
-            simple_tag( 'url', var['url'] )
-            simple_tag( 'id', URI.encode( var['id'] ) ) if var['id']
-            simple_tag( 'injected', URI.encode( var['injected'] ) ) if var['injected']
-            simple_tag( 'regexp', var['regexp'].to_s ) if var['regexp']
-            simple_tag( 'regexp_match', var['regexp_match'] ) if var['regexp_match']
-
-            start_tag 'remarks'
-            var.remarks.each do |commenter, remarks|
-                remarks.each do |remark|
-                    add_remark( commenter, remark )
-                end
-            end
-            end_tag 'remarks'
-
-            start_tag 'headers'
-            add_headers( 'request', var['headers']['request']  )
-            add_headers( 'response', var['headers']['response'] )
-            end_tag 'headers'
-
-            simple_tag( 'html', skip_responses? ? '' : Base64.encode64( var['response'].to_s ) )
-
-            end_tag 'variation'
-        end
-
-        end_tag 'variations'
     end
 
 end
