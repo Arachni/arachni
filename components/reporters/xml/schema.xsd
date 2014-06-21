@@ -130,13 +130,43 @@
     <xs:complexType name="issuevariation">
         <xs:all>
             <xs:element name="vector" type="variationvector"/>
+
+            <!--
+                Page which displays the logged issue.
+            -->
             <xs:element name="page" type="page"/>
             <xs:element name="referring_page" type="page"/>
-            <xs:element name="signature" type="xs:string"/>
+
+            <!--
+                Signature used to identify the issue. Its match will be the
+                "proof".
+            -->
+            <xs:element name="signature" type="xs:string" minOccurs="0"/>
+
+            <!--
+                String proving the existence of the issue.
+            -->
             <xs:element name="proof" type="xs:string"/>
+
+            <!--
+                Some issues may be logged even though the system doesn't
+                have 100% confidence in them, in that case they will be
+                marked as not trusted.
+            -->
             <xs:element name="trusted" type="xs:boolean"/>
+
             <xs:element name="remarks" type="remarks"/>
+
+            <!--
+                Type of the platform affected by this issue.
+                "db", "os", etc.
+            -->
             <xs:element name="platform_type" type="xs:string"/>
+
+            <!--
+                Name of the platform affected by this issue.
+                "mysql", "linux", etc.
+            -->
             <xs:element name="platform_name" type="xs:string"/>
         </xs:all>
     </xs:complexType>
