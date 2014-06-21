@@ -81,6 +81,13 @@
     <xs:complexType name="vector">
         <xs:all>
             <xs:element name="class" type="vectorclass"/>
+
+            <!--
+                Ths gives out the same sort of information as "vectorclass",
+                although the Arachni::Element::GenericDOM object can have
+                a "type" of any DOM element so enumerating all possible
+                values can be tricky.
+            -->
             <xs:element name="type" type="xs:string"/>
             <xs:element name="url" type="xs:string"/>
             <xs:element name="html" type="xs:string" minOccurs="0"/>
