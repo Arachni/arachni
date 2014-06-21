@@ -43,10 +43,7 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
 
                 xml.sitemap {
                     report.sitemap.each do |url, code|
-                        xml.sitemapentry {
-                            xml.url url
-                            xml.code code
-                        }
+                        xml.entry url: url, code: code
                     end
                 }
 
@@ -60,10 +57,11 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                             xml.cwe issue.cwe
                             xml.digest issue.digest
 
-                            issue.references.each do |title, url|
-                                xml.title title
-                                xml.url url
-                            end
+                            xml.references {
+                                issue.references.each do |title, url|
+                                    xml.reference title: title, url: url
+                                end
+                            }
 
                             vector = issue.vector
                             xml.vector {
