@@ -35,7 +35,8 @@
 
     <xs:complexType name="issues">
         <xs:sequence>
-            <xs:element name="issue" type="issue"/>
+            <xs:element name="issue" type="issue"
+                        minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -46,12 +47,13 @@
     <xs:complexType name="issue">
         <xs:all>
             <xs:element name="name" type="xs:string"/>
-            <xs:element name="description" type="xs:string"/>
-            <xs:element name="remedy_guidance" type="xs:string"/>
-            <xs:element name="remedy_code" type="xs:string"/>
+            <xs:element name="description" type="xs:string" minOccurs="0"/>
+            <xs:element name="remedy_guidance" type="xs:string"
+                        minOccurs="0"/>
+            <xs:element name="remedy_code" type="xs:string" minOccurs="0"/>
             <xs:element name="severity" type="severity"/>
-            <xs:element name="references" type="references"/>
-            <xs:element name="cwe" type="xs:integer"/>
+            <xs:element name="references" type="references" minOccurs="0"/>
+            <xs:element name="cwe" type="xs:integer" minOccurs="0"/>
             <xs:element name="vector" type="vector"/>
             <xs:element name="digest" type="xs:integer"/>
             <xs:element name="variations" type="issuevariations"/>
@@ -81,20 +83,15 @@
             <xs:element name="class" type="vectorclass"/>
             <xs:element name="type" type="xs:string"/>
             <xs:element name="url" type="xs:string"/>
-            <xs:element name="html" type="xs:string" minOccurs="0"
-                        maxOccurs="1"/>
-
-            <xs:element name="action" type="xs:string" minOccurs="0"
-                        maxOccurs="1"/>
-            <xs:element name="method" type="xs:string" minOccurs="0"
-                        maxOccurs="1"/>
+            <xs:element name="html" type="xs:string" minOccurs="0"/>
+            <xs:element name="action" type="xs:string" minOccurs="0"/>
+            <xs:element name="method" type="xs:string" minOccurs="0"/>
 
             <!-- Vulnerable input. -->
             <xs:element name="affected_input_name" type="xs:string"
-                        minOccurs="0" maxOccurs="1"/>
+                        minOccurs="0"/>
 
-            <xs:element name="inputs" type="inputs" minOccurs="0"
-                        maxOccurs="1"/>
+            <xs:element name="inputs" type="inputs" minOccurs="0"/>
         </xs:all>
     </xs:complexType>
 
@@ -322,7 +319,8 @@
 
     <xs:complexType name="inputs">
         <xs:sequence>
-            <xs:element name="input" type="input"/>
+            <xs:element name="input" type="input"
+                        minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -334,7 +332,7 @@
     <xs:complexType name="headers">
         <xs:sequence>
             <xs:element name="header" type="input"
-                        maxOccurs="unbounded"/>
+                        minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -385,7 +383,7 @@
     <xs:complexType name="references">
         <xs:sequence>
             <xs:element name="reference" type="reference"
-                        maxOccurs="unbounded"/>
+                        minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 

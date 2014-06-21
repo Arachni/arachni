@@ -55,7 +55,11 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                             xml.remedy_guidance issue.remedy_guidance
                             xml.remedy_code issue.remedy_code
                             xml.severity issue.severity
-                            xml.cwe issue.cwe
+
+                            if issue.cwe
+                                xml.cwe issue.cwe
+                            end
+
                             xml.digest issue.digest
 
                             xml.references {
@@ -69,34 +73,47 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                                 xml.class_ vector.class
                                 xml.type vector.type
                                 xml.url vector.url
+                                xml.action vector.action
 
                                 if vector.respond_to? :html
                                     xml.html vector.html
                                 end
 
                                 if issue.active?
-                                    xml.action vector.action
                                     xml.method_ vector.method
-                                    xml.affected_input_name vector.affected_input_name
+                                end
 
+                                if vector.respond_to? :affected_input_name
+                                    xml.affected_input_name vector.affected_input_name
+                                end
+
+                                if vector.respond_to? :default_inputs
                                     add_inputs( xml, vector.default_inputs )
                                 end
                             }
 
-                            issue.variations.each do |variation|
-                                xml.variations {
+                            xml.variations {
+                                issue.variations.each do |variation|
                                     xml.variation {
                                         vector = variation.vector
 
-                                        if issue.active?
-                                            xml.vector {
+                                        xml.vector {
+                                            if issue.active?
                                                 xml.method_ vector.method
-                                                xml.affected_input_value vector.affected_input_value
-                                                xml.seed vector.seed
+                                            end
 
+                                            if vector.respond_to? :affected_input_value
+                                                xml.affected_input_value vector.affected_input_value
+                                            end
+
+                                            if vector.respond_to? :seed
+                                                xml.seed vector.seed
+                                            end
+
+                                            if vector.respond_to? :inputs
                                                 add_inputs( xml, vector.inputs )
-                                            }
-                                        end
+                                            end
+                                        }
 
                                         xml.remarks {
                                             variation.remarks.each do |commenter, remarks|
@@ -116,20 +133,21 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                                         xml.platform_type variation.platform_type
                                         xml.platform_name variation.platform_name
                                     }
-                                }
-                            end
+                                end
+                            }
                         }
                     end
                 }
             }
         end
 
-        puts xml = builder.to_xml
+        xml = builder.to_xml
 
         xsd = Nokogiri::XML::Schema( IO.read( SCHEMA ) )
         has_errors = false
         xsd.validate( Nokogiri::XML( xml ) ).each do |error|
             puts error.message
+            ap error
             has_errors = true
         end
         fail 'XML report could not validated against the XSD.' if has_errors
@@ -185,7 +203,7 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                 add_parameters( xml, request.parameters )
                 add_headers( xml, request.headers )
 
-                xml.body request.body
+                xml.body request.effective_body
                 xml.raw request.to_s
             }
 
