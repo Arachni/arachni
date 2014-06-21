@@ -247,7 +247,7 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                 }
 
                 xml.execution_flow_sinks {
-                    dom.execution_flow_sink.each do |sink|
+                    dom.execution_flow_sinks.each do |sink|
                         xml.execution_flow_sink {
                             add_trace( xml, sink.trace )
                         }

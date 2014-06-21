@@ -280,7 +280,7 @@ describe Arachni::Browser do
             it 'calls #on_new_page_with_sink callbacks' do
                 sinks = []
                 subject.on_new_page_with_sink do |page|
-                    sinks << page.dom.execution_flow_sink
+                    sinks << page.dom.execution_flow_sinks
                 end
 
                 subject.capture_snapshot
@@ -292,7 +292,7 @@ describe Arachni::Browser do
                 it 'calls #on_new_page_with_sink callbacks' do
                     sinks = []
                     subject.on_new_page_with_sink do |page|
-                        sinks << page.dom.execution_flow_sink
+                        sinks << page.dom.execution_flow_sinks
                     end
 
                     subject.capture_snapshot
@@ -370,8 +370,8 @@ describe Arachni::Browser do
         it 'returns pages with execution-flow sink data' do
             @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}"
             @browser.explore_and_flush
-            @browser.page_snapshots_with_sinks.map(&:dom).map(&:execution_flow_sink).should ==
-                @browser.flush_page_snapshots_with_sinks.map(&:dom).map(&:execution_flow_sink)
+            @browser.page_snapshots_with_sinks.map(&:dom).map(&:execution_flow_sinks).should ==
+                @browser.flush_page_snapshots_with_sinks.map(&:dom).map(&:execution_flow_sinks)
         end
 
         it 'empties the data-flow sink page buffer' do
@@ -384,7 +384,7 @@ describe Arachni::Browser do
         it 'empties the execution-flow sink page buffer' do
             @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}"
             @browser.explore_and_flush
-            @browser.flush_page_snapshots_with_sinks.map(&:dom).map(&:execution_flow_sink)
+            @browser.flush_page_snapshots_with_sinks.map(&:dom).map(&:execution_flow_sinks)
             @browser.page_snapshots_with_sinks.should be_empty
         end
     end
@@ -395,14 +395,14 @@ describe Arachni::Browser do
 
             sinks = []
             @browser.on_new_page_with_sink do |page|
-                sinks << page.dom.execution_flow_sink
+                sinks << page.dom.execution_flow_sinks
             end
 
             @browser.explore_and_flush
 
             sinks.size.should == 2
             sinks.should == @browser.page_snapshots_with_sinks.map(&:dom).
-                map(&:execution_flow_sink)
+                map(&:execution_flow_sinks)
         end
 
         it 'assigns blocks to handle each page with data-flow sink data' do
@@ -663,9 +663,9 @@ describe Arachni::Browser do
                 }
             ])
 
-            doms[0].execution_flow_sink.size.should == 2
+            doms[0].execution_flow_sinks.size.should == 2
 
-            entry = doms[0].execution_flow_sink[0]
+            entry = doms[0].execution_flow_sinks[0]
             entry.data.should == [1]
             entry.trace.size.should == 3
 
@@ -689,7 +689,7 @@ describe Arachni::Browser do
             event['srcElement'].should == link
             event['type'].should == 'mouseover'
 
-            entry = doms[0].execution_flow_sink[1]
+            entry = doms[0].execution_flow_sinks[1]
             entry.data.should == [1]
             entry.trace.size.should == 4
 
@@ -732,9 +732,9 @@ describe Arachni::Browser do
                 }
             ])
 
-            doms[1].execution_flow_sink.size.should == 2
+            doms[1].execution_flow_sinks.size.should == 2
 
-            entry = doms[1].execution_flow_sink[0]
+            entry = doms[1].execution_flow_sinks[0]
             entry.data.should == [1]
             entry.trace.size.should == 2
 
@@ -754,7 +754,7 @@ describe Arachni::Browser do
             event['srcElement'].should == form
             event['type'].should == 'submit'
 
-            entry = doms[1].execution_flow_sink[1]
+            entry = doms[1].execution_flow_sinks[1]
             entry.data.should == [1]
             entry.trace.size.should == 3
 
@@ -988,7 +988,7 @@ describe Arachni::Browser do
             @browser.watir.form.submit
 
             page = @browser.to_page
-            sink_data = page.dom.execution_flow_sink
+            sink_data = page.dom.execution_flow_sinks
 
             first_entry = sink_data.first
             sink_data.should == [first_entry]

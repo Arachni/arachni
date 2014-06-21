@@ -1,8 +1,8 @@
 def browser_cluster_job_taint_tracer_execution_flow_check_pages( pages )
-    page = pages.find { |page| page.dom.execution_flow_sink.any? }
+    page = pages.find { |page| page.dom.execution_flow_sinks.any? }
     page.dom.data_flow_sinks.should be_empty
 
-    sink = page.dom.execution_flow_sink
+    sink = page.dom.execution_flow_sinks
     sink.size.should == 1
 
     trace = sink.first.trace
@@ -13,7 +13,7 @@ end
 
 def browser_cluster_job_taint_tracer_data_flow_check_pages( pages )
     page = pages.find { |page| page.dom.data_flow_sinks.any? }
-    page.dom.execution_flow_sink.should be_empty
+    page.dom.execution_flow_sinks.should be_empty
 
     sink = page.dom.data_flow_sinks
     sink.size.should == 1
@@ -23,7 +23,7 @@ end
 
 def browser_cluster_job_taint_tracer_data_flow_with_injector_check_pages( pages )
     page = pages.find { |page| page.dom.data_flow_sinks.any? }
-    page.dom.execution_flow_sink.should be_empty
+    page.dom.execution_flow_sinks.should be_empty
 
     sink = page.dom.data_flow_sinks
     sink.size.should == 1

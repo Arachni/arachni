@@ -49,7 +49,7 @@ class Arachni::Checks::XSSDOMScriptContext < Arachni::Check::Base
     end
 
     def check_and_log( page, element )
-        return if page.dom.execution_flow_sink.empty?
+        return if page.dom.execution_flow_sinks.empty?
         log vector: element, proof: element.seed, page: page
     end
 

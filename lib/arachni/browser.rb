@@ -76,13 +76,13 @@ class Browser
 
     # @return   [Array<Page>]
     #   Same as {#page_snapshots} but it doesn't deduplicate and only contains
-    #   pages with sink ({Page::DOM#data_flow_sinks} or {Page::DOM#execution_flow_sink})
-    #   data as populated by {Javascript#data_flow_sinks} and {Javascript#execution_flow_sink}.
+    #   pages with sink ({Page::DOM#data_flow_sinks} or {Page::DOM#execution_flow_sinks})
+    #   data as populated by {Javascript#data_flow_sinks} and {Javascript#execution_flow_sinks}.
     #
     # @see Javascript#data_flow_sinks
-    # @see Javascript#execution_flow_sink
+    # @see Javascript#execution_flow_sinks
     # @see Page::DOM#data_flow_sinks
-    # @see Page::DOM#execution_flow_sink
+    # @see Page::DOM#execution_flow_sinks
     attr_reader :page_snapshots_with_sinks
 
     # @return   [Javascript]
@@ -706,12 +706,12 @@ class Browser
         page         = r.to_page
         page.body    = source
 
-        page.dom.url                 = watir.url
-        page.dom.digest              = @javascript.dom_digest
-        page.dom.execution_flow_sink = @javascript.execution_flow_sink
-        page.dom.data_flow_sinks     = @javascript.data_flow_sinks
-        page.dom.transitions         = @transitions.dup
-        page.dom.skip_states         = skip_states.dup
+        page.dom.url                  = watir.url
+        page.dom.digest               = @javascript.dom_digest
+        page.dom.execution_flow_sinks = @javascript.execution_flow_sinks
+        page.dom.data_flow_sinks      = @javascript.data_flow_sinks
+        page.dom.transitions          = @transitions.dup
+        page.dom.skip_states          = skip_states.dup
 
         page
     end
@@ -995,7 +995,7 @@ class Browser
 
     def capture_snapshot_with_sink( page )
         return if page.dom.data_flow_sinks.empty? &&
-            page.dom.execution_flow_sink.empty?
+            page.dom.execution_flow_sinks.empty?
 
         notify_on_new_page_with_sink( page )
 

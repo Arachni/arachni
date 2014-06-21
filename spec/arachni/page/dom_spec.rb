@@ -48,7 +48,7 @@ describe Arachni::Page::DOM do
             end
         end
 
-        %w(data_flow_sinks execution_flow_sink).each do |attribute|
+        %w(data_flow_sinks execution_flow_sinks).each do |attribute|
             it "includes '#{attribute}'" do
                 data[attribute].should == subject.send(attribute).map(&:to_rpc_data)
             end
@@ -64,7 +64,7 @@ describe Arachni::Page::DOM do
         let(:data) { Arachni::RPC::Serializer.rpc_data( subject ) }
 
         %w(url transitions digest skip_states data_flow_sinks
-            execution_flow_sink).each do |attribute|
+            execution_flow_sinks).each do |attribute|
             it "restores '#{attribute}'" do
                 restored.send( attribute ).should == subject.send( attribute )
             end
@@ -128,14 +128,14 @@ describe Arachni::Page::DOM do
         end
     end
 
-    describe '#execution_flow_sink' do
+    describe '#execution_flow_sinks' do
         it 'defaults to an empty Array' do
-            empty_dom.execution_flow_sink.should == []
+            empty_dom.execution_flow_sinks.should == []
         end
     end
 
-    describe '#execution_flow_sink=' do
-        it 'sets #execution_flow_sink' do
+    describe '#execution_flow_sinks=' do
+        it 'sets #execution_flow_sinks' do
             sink = [
                 data:  ['stuff'],
                 trace: [
@@ -150,8 +150,8 @@ describe Arachni::Page::DOM do
                        ]
             ]
 
-            dom.execution_flow_sink = sink
-            dom.execution_flow_sink.should == sink
+            dom.execution_flow_sinks = sink
+            dom.execution_flow_sinks.should == sink
         end
     end
 
@@ -210,7 +210,7 @@ describe Arachni::Page::DOM do
                     { element2: :stuffed2 }
                 ].map { |t| described_class::Transition.new *t.first },
                 data_flow_sinks:      [Factory[:data_flow]],
-                execution_flow_sink: [Factory[:execution_flow]]
+                execution_flow_sinks: [Factory[:execution_flow]]
             }
 
             empty_dom.url = data[:url]
@@ -219,7 +219,7 @@ describe Arachni::Page::DOM do
             end
             empty_dom.skip_states = data[:skip_states]
             empty_dom.data_flow_sinks = data[:data_flow_sinks]
-            empty_dom.execution_flow_sink = data[:execution_flow_sink]
+            empty_dom.execution_flow_sinks = data[:execution_flow_sinks]
 
             empty_dom.to_h.should ==  {
                 url:                 data[:url],
@@ -227,7 +227,7 @@ describe Arachni::Page::DOM do
                 digest:              empty_dom.digest,
                 skip_states:         data[:skip_states],
                 data_flow_sinks:      data[:data_flow_sinks].map(&:to_hash),
-                execution_flow_sink: data[:execution_flow_sink].map(&:to_hash)
+                execution_flow_sinks: data[:execution_flow_sinks].map(&:to_hash)
             }
         end
         it 'is aliased to #to_h' do

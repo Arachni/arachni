@@ -4,7 +4,7 @@ Factory.define :dom_data do
         transitions:         [ Factory[:transition]],
         digest:              'stuff',
         data_flow_sinks:     [ Factory[:data_flow] ],
-        execution_flow_sink: [ Factory[:execution_flow] ]
+        execution_flow_sinks: [ Factory[:execution_flow] ]
     }
 end
 

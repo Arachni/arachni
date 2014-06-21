@@ -201,10 +201,10 @@ class Javascript
         taint_tracer.debugging_data
     end
 
-    # @return   (see TaintTracer#log_execution_flow_sink)
-    def execution_flow_sink
+    # @return   (see TaintTracer#execution_flow_sinks)
+    def execution_flow_sinks
         return [] if !supported?
-        taint_tracer.execution_flow_sink
+        taint_tracer.execution_flow_sinks
     end
 
     # @return   (see TaintTracer#data_flow_sinks)
@@ -213,10 +213,10 @@ class Javascript
         taint_tracer.data_flow_sinks
     end
 
-    # @return   (see TaintTracer#execution_flow_sink)
-    def flush_execution_flow_sink
+    # @return   (see TaintTracer#flush_execution_flow_sinks)
+    def flush_execution_flow_sinks
         return [] if !supported?
-        taint_tracer.flush_execution_flow_sink
+        taint_tracer.flush_execution_flow_sinks
     end
 
     # @return   (see TaintTracer#flush_data_flow_sinks)

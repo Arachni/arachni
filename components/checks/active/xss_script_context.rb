@@ -85,7 +85,7 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
             print_info 'Checking results of deferred taint analysis for' <<
                            ' execution-flow sink data.'
 
-            next if page.dom.execution_flow_sink.empty?
+            next if page.dom.execution_flow_sinks.empty?
 
             log vector: element, proof: element.seed, page: page
         end

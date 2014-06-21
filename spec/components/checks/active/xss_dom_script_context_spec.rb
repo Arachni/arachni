@@ -19,7 +19,7 @@ describe name_from_filename do
 
     easy_test do
         issues.each do |issue|
-            issue.page.dom.execution_flow_sink.should be_any
+            issue.page.dom.execution_flow_sinks.should be_any
             data_flow_sinks = issue.page.dom.data_flow_sinks
 
             if [Element::Link::DOM, Element::LinkTemplate::DOM].include? issue.vector.class

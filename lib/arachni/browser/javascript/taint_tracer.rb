@@ -18,7 +18,8 @@ class TaintTracer < Proxy
     require_relative 'taint_tracer/sink/data_flow'
     require_relative 'taint_tracer/sink/execution_flow'
 
-    # @param    [Javascript]    javascript  Active {Javascript} interface.
+    # @param    [Javascript]    javascript
+    #   Active {Javascript} interface.
     def initialize( javascript )
         super javascript, 'TaintTracer'
     end
@@ -35,7 +36,7 @@ class TaintTracer < Proxy
 
     %w(data_flow_sinks flush_data_flow_sinks).each do |m|
         define_method m do
-            prepare_data_flow_sinks_data call( m )
+            prepare_data_flow_sink_data call( m )
         end
     end
 
@@ -44,17 +45,17 @@ class TaintTracer < Proxy
     #   @return [Array<Sink::ExecutionFlow>]
     #       JS debugging information.
 
-    # @!method  execution_flow_sink
+    # @!method  execution_flow_sinks
     #
     #   @return [Array<Sink::ExecutionFlow>]
     #       JS execution flow sink data.
 
-    # @!method  flush_execution_flow_sink
+    # @!method  flush_execution_flow_sinks
     #
     #   @return [Array<Sink::ExecutionFlow>]
-    #       Returns and clears {#execution_flow_sink}.
+    #       Returns and clears {#execution_flow_sinks}.
 
-    %w(debugging_data execution_flow_sink flush_execution_flow_sink).each do |m|
+    %w(debugging_data execution_flow_sinks flush_execution_flow_sinks).each do |m|
         define_method m do
             prepare_execution_flow_sink_data call( m )
         end
@@ -66,7 +67,7 @@ class TaintTracer < Proxy
 
     private
 
-    def prepare_data_flow_sinks_data( data )
+    def prepare_data_flow_sink_data( data )
         return [] if !data
 
         data.map do |entry|
