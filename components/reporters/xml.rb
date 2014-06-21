@@ -72,15 +72,17 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                                 xml.class_ vector.class
                                 xml.type vector.type
                                 xml.url vector.url
-                                xml.action vector.action
-                                xml.method_ vector.method
-                                xml.affected_input_name vector.affected_input_name
 
-                                xml.inputs {
-                                    vector.default_inputs.each do |k, v|
-                                        xml.input( name: k, value: v )
-                                    end
-                                }
+                                if issue.active?
+                                    xml.action vector.action
+                                    xml.method_ vector.method
+                                    xml.affected_input_name vector.affected_input_name
+                                    xml.inputs {
+                                        vector.default_inputs.each do |k, v|
+                                            xml.input( name: k, value: v )
+                                        end
+                                    }
+                                end
                             }
 
                             issue.variations.each do |variation|
@@ -88,14 +90,55 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                                     xml.variation {
                                         vector = variation.vector
                                         xml.vector {
-                                            xml.method_ vector.method
-                                            xml.affected_input_value vector.affected_input_value
-                                            xml.seed vector.seed
 
-                                            xml.inputs {
-                                                vector.inputs.each do |k, v|
-                                                    xml.input( name: k, value: v )
-                                                end
+                                            if issue.active?
+                                                xml.method_ vector.method
+                                                xml.affected_input_value vector.affected_input_value
+                                                xml.seed vector.seed
+
+                                                xml.inputs {
+                                                    vector.inputs.each do |k, v|
+                                                        xml.input( name: k, value: v )
+                                                    end
+                                                }
+                                            end
+                                        }
+
+                                        page = variation.page
+                                        xml.page {
+                                            xml.body page.body
+
+                                            dom = page.dom
+                                            xml.dom {
+                                                xml.url dom.url
+
+                                                xml.transitions {
+                                                    dom.transitions.each do |transition|
+                                                        xml.transition {
+                                                            xml.element transition.element
+                                                            xml.event transition.event
+                                                            xml.time transition.time
+                                                        }
+                                                    end
+                                                }
+
+                                                xml.data_flow_sinks {
+                                                    dom.data_flow_sink.each do |sink|
+                                                        xml.data_flow_sink {
+
+                                                            function = sink.function
+                                                            xml.function {
+                                                                xml.name function.name
+                                                                xml.source function.source
+                                                                xml.arguments {
+                                                                    function.arguments.each do |argument|
+                                                                        xml.argument argument.inspect
+                                                                    end
+                                                                }
+                                                            }
+                                                        }
+                                                    end
+                                                }
                                             }
                                         }
                                     }
