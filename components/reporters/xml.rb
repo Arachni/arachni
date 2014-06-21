@@ -150,7 +150,22 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                 xml.input( name: k, value: v )
             end
         }
+    end
 
+    def add_headers( xml, headers )
+        xml.headers {
+            headers.each do |k, v|
+                xml.header( name: k, value: v )
+            end
+        }
+    end
+
+    def add_parameters( xml, parameters )
+        xml.parameters {
+            parameters.each do |k, v|
+                xml.parameter( name: k, value: v )
+            end
+        }
     end
 
     def add_page( xml, page, name = :page )
@@ -162,8 +177,8 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                 xml.url request.url
                 xml.method_ request.method
 
-                add_inputs( xml, request.parameters, :parameters )
-                add_inputs( xml, request.headers, :headers )
+                add_parameters( xml, request.parameters )
+                add_headers( xml, request.headers )
 
                 xml.body request.body
                 xml.raw request.to_s
@@ -178,7 +193,7 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                 xml.curl_code response.return_code
                 xml.curl_message response.return_message
 
-                add_inputs( xml, response.headers, :headers )
+                add_headers( xml, response.headers )
 
                 xml.body response.body
                 xml.raw_headers response.headers_string

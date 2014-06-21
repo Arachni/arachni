@@ -119,7 +119,7 @@
             <xs:element name="url" type="xs:string"/>
             <xs:element name="code" type="xs:integer"/>
             <xs:element name="ip_address" type="xs:string"/>
-            <xs:element name="headers" type="inputs"/>
+            <xs:element name="headers" type="headers"/>
             <xs:element name="body" type="xs:string"/>
             <xs:element name="time" type="xs:decimal"/>
             <xs:element name="return_code" type="xs:string"/>
@@ -132,9 +132,9 @@
         <xs:sequence>
             <xs:element name="url" type="xs:string"/>
             <xs:element name="method" type="xs:string"/>
-            <xs:element name="parameters" type="inputs"/>
+            <xs:element name="parameters" type="parameters"/>
             <xs:element name="body" type="xs:string"/>
-            <xs:element name="headers" type="inputs"/>
+            <xs:element name="headers" type="headers"/>
             <xs:element name="raw" type="xs:string"/>
         </xs:sequence>
     </xs:complexType>
@@ -323,6 +323,28 @@
     </xs:complexType>
 
     <xs:complexType name="input">
+        <xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="value" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="headers">
+        <xs:sequence>
+            <xs:element name="header" type="input"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="header">
+        <xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="value" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="parameters">
+        <xs:sequence>
+            <xs:element name="parameter" type="input"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="parameter">
         <xs:attribute name="name" type="xs:string"/>
         <xs:attribute name="value" type="xs:string"/>
     </xs:complexType>
