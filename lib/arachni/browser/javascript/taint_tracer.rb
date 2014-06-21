@@ -23,19 +23,19 @@ class TaintTracer < Proxy
         super javascript, 'TaintTracer'
     end
 
-    # @!method  data_flow_sink
+    # @!method  data_flow_sinks
     #
     #   @return [Array<Sink::DataFlow>]
     #       JS data flow sink data.
 
-    # @!method  flush_data_flow_sink
+    # @!method  flush_data_flow_sinks
     #
     #   @return [Array<Sink::DataFlow>]
-    #       Returns and clears {#data_flow_sink}.
+    #       Returns and clears {#data_flow_sinks}.
 
-    %w(data_flow_sink flush_data_flow_sink).each do |m|
+    %w(data_flow_sinks flush_data_flow_sinks).each do |m|
         define_method m do
-            prepare_data_flow_sink_data call( m )
+            prepare_data_flow_sinks_data call( m )
         end
     end
 
@@ -66,7 +66,7 @@ class TaintTracer < Proxy
 
     private
 
-    def prepare_data_flow_sink_data( data )
+    def prepare_data_flow_sinks_data( data )
         return [] if !data
 
         data.map do |entry|

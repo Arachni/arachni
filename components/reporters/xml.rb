@@ -217,7 +217,7 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                 }
 
                 xml.data_flow_sinks {
-                    dom.data_flow_sink.each do |sink|
+                    dom.data_flow_sinks.each do |sink|
                         xml.data_flow_sink {
                             xml.object sink.object
                             xml.tainted_argument_index sink.tainted_argument_index

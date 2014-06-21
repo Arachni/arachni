@@ -160,28 +160,28 @@ describe Arachni::Browser::Javascript do
         end
     end
 
-    describe '#data_flow_sink' do
+    describe '#data_flow_sinks' do
         it 'returns sink data' do
             @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_data_flow_sink_stub( function: { name: 'blah' } )}"
             @browser.watir.form.submit
 
-            subject.data_flow_sink.should be_any
-            subject.data_flow_sink.should == subject.taint_tracer.data_flow_sink
+            subject.data_flow_sinks.should be_any
+            subject.data_flow_sinks.should == subject.taint_tracer.data_flow_sinks
         end
     end
 
-    describe '#flush_data_flow_sink' do
+    describe '#flush_data_flow_sinks' do
         it 'returns sink data' do
             @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_data_flow_sink_stub( function: { name: 'blah' } )}"
             @browser.watir.form.submit
 
-            sink = subject.flush_data_flow_sink
+            sink = subject.flush_data_flow_sinks
             sink[0].trace[1].function.arguments[0].delete( 'timeStamp' )
 
             @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_data_flow_sink_stub( function: { name: 'blah' } )}"
             @browser.watir.form.submit
 
-            sink2 = subject.taint_tracer.data_flow_sink
+            sink2 = subject.taint_tracer.data_flow_sinks
             sink2[0].trace[1].function.arguments[0].delete( 'timeStamp' )
 
             sink.should == sink2
@@ -191,8 +191,8 @@ describe Arachni::Browser::Javascript do
             @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_data_flow_sink_stub}"
             @browser.watir.form.submit
 
-            subject.flush_data_flow_sink
-            subject.data_flow_sink.should be_empty
+            subject.flush_data_flow_sinks
+            subject.data_flow_sinks.should be_empty
         end
     end
 

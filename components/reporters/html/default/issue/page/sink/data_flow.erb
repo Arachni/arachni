@@ -1,6 +1,6 @@
 <p class="alert alert-info">
     Taint is:
-    <code><%= escapeHTML page.dom.data_flow_sink.first.taint.inspect %></code>
+    <code><%= escapeHTML page.dom.data_flow_sinks.first.taint.inspect %></code>
 </p>
 
 <table class="table table-condensed table-fixed">
@@ -10,7 +10,7 @@
         <th>Function</th>
         <th></th>
     </tr>
-    <% page.dom.data_flow_sink.each.with_index do |sink, i| %>
+    <% page.dom.data_flow_sinks.each.with_index do |sink, i| %>
         <tr id="<%= id %>-data_flow_sinks-<%= i %>" >
             <th>
                 <strong>

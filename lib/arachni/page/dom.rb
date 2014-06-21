@@ -29,8 +29,8 @@ class DOM
     attr_accessor :transitions
 
     # @return   [Array]
-    #   {Browser::Javascript::TaintTracer#data_flow_sink} data.
-    attr_accessor :data_flow_sink
+    #   {Browser::Javascript::TaintTracer#data_flow_sinks} data.
+    attr_accessor :data_flow_sinks
 
     # @return   [Array]
     #   {Browser::Javascript::TaintTracer#execution_flow_sink} data.
@@ -56,7 +56,7 @@ class DOM
         self.url             = options[:url]                 || @page.url
         self.digest          = options[:digest]
         @transitions         = options[:transitions]         || []
-        @data_flow_sink      = options[:data_flow_sink]      || []
+        @data_flow_sinks     = options[:data_flow_sinks]     || []
         @execution_flow_sink = options[:execution_flow_sink] || []
         @skip_states         = options[:skip_states]         ||
             Support::LookUp::HashSet.new( hasher: :persistent_hash )
@@ -187,7 +187,7 @@ class DOM
             transitions:         transitions.map(&:to_hash),
             digest:              digest,
             skip_states:         skip_states,
-            data_flow_sink:      data_flow_sink.map(&:to_hash),
+            data_flow_sinks:     data_flow_sinks.map(&:to_hash),
             execution_flow_sink: execution_flow_sink.map(&:to_hash)
         }
     end
@@ -203,7 +203,7 @@ class DOM
             'transitions'         => transitions.map(&:to_rpc_data),
             'digest'              => digest,
             'skip_states'         => skip_states ? skip_states.collection.to_a : [],
-            'data_flow_sink'      => data_flow_sink.map(&:to_rpc_data),
+            'data_flow_sinks'     => data_flow_sinks.map(&:to_rpc_data),
             'execution_flow_sink' => execution_flow_sink.map(&:to_rpc_data)
         }
     end
@@ -219,7 +219,7 @@ class DOM
                         when 'transitions'
                             value.map { |t| Transition.from_rpc_data t }
 
-                        when 'data_flow_sink'
+                        when 'data_flow_sinks'
                             value.map do |entry|
                                 Browser::Javascript::TaintTracer::Sink::DataFlow.from_rpc_data( entry )
                             end.to_a
