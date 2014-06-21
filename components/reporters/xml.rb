@@ -66,6 +66,41 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                                 xml.title title
                                 xml.url url
                             end
+
+                            vector = issue.vector
+                            xml.vector {
+                                xml.class_ vector.class
+                                xml.type vector.type
+                                xml.url vector.url
+                                xml.action vector.action
+                                xml.method_ vector.method
+                                xml.affected_input_name vector.affected_input_name
+
+                                xml.inputs {
+                                    vector.default_inputs.each do |k, v|
+                                        xml.input( name: k, value: v )
+                                    end
+                                }
+                            }
+
+                            issue.variations.each do |variation|
+                                xml.variations {
+                                    xml.variation {
+                                        vector = variation.vector
+                                        xml.vector {
+                                            xml.method_ vector.method
+                                            xml.affected_input_value vector.affected_input_value
+                                            xml.seed vector.seed
+
+                                            xml.inputs {
+                                                vector.inputs.each do |k, v|
+                                                    xml.input( name: k, value: v )
+                                                end
+                                            }
+                                        }
+                                    }
+                                }
+                            end
                         }
                     end
                 }

@@ -102,7 +102,7 @@
     -->
     <xs:complexType name="issuevariation">
         <xs:sequence>
-            <xs:element name="variationvector" type="variationvector"/>
+            <xs:element name="vector" type="variationvector"/>
             <xs:element name="page" type="page"/>
             <xs:element name="referring_page" type="page"/>
             <xs:element name="signature" type="xs:string"/>
