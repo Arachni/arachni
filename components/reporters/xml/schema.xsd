@@ -113,7 +113,8 @@
             <xs:element name="method" type="xs:string" minOccurs="0"/>
 
             <!--
-                Vulnerable input name, can be found in "inputs".
+                Vulnerable input name, its value can be found in
+                "variationvector:inputs".
             -->
             <xs:element name="affected_input_name" type="xs:string"
                         minOccurs="0"/>
@@ -217,11 +218,13 @@
     -->
     <xs:complexType name="variationvector">
         <xs:sequence>
+            <!--
+                HTTP method used to submit the vector. Can be different
+                from the "vector" one because the fuzzed version could
+                have been submitted with a different method.
+            -->
             <xs:element name="method" type="xs:string" minOccurs="0"
                         maxOccurs="1"/>
-
-            <xs:element name="affected_input_value" type="xs:string"
-                        minOccurs="0" maxOccurs="1"/>
 
             <xs:element name="seed" type="xs:string" minOccurs="0"
                         maxOccurs="1"/>
@@ -240,6 +243,11 @@
         </xs:all>
     </xs:complexType>
 
+    <!--
+        DOM state of "page" (represented by "transitions") along with
+        issue JS context info (provided by "data_flow_sinks" and
+        "execution_flow_sinks").
+    -->
     <xs:complexType name="pagedom">
         <xs:all>
             <xs:element name="url" type="xs:anyURI"/>

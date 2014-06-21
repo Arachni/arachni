@@ -102,10 +102,6 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                                                 xml.method_ vector.method
                                             end
 
-                                            if vector.respond_to? :affected_input_value
-                                                xml.affected_input_value vector.affected_input_value
-                                            end
-
                                             if vector.respond_to? :seed
                                                 xml.seed vector.seed
                                             end
