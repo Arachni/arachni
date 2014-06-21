@@ -89,12 +89,32 @@
                 values can be tricky.
             -->
             <xs:element name="type" type="xs:string"/>
-            <xs:element name="url" type="xs:string"/>
+
+            <!--
+                URL of the page which presented the element.
+            -->
+            <xs:element name="url" type="xs:anyURI"/>
+
+            <!--
+                HTML representation of the element according to the page
+                at "url".
+            -->
             <xs:element name="html" type="xs:string" minOccurs="0"/>
-            <xs:element name="action" type="xs:string" minOccurs="0"/>
+
+            <!--
+                Unlike "url", this is the location that will be requested
+                upon submission of the element.
+            -->
+            <xs:element name="action" type="xs:anyURI" minOccurs="0"/>
+
+            <!--
+                HTTP method to use for submission of the element.
+            -->
             <xs:element name="method" type="xs:string" minOccurs="0"/>
 
-            <!-- Vulnerable input. -->
+            <!--
+                Vulnerable input name, can be found in "inputs".
+            -->
             <xs:element name="affected_input_name" type="xs:string"
                         minOccurs="0"/>
 
