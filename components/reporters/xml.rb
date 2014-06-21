@@ -53,6 +53,7 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                             xml.name issue.name
                             xml.description issue.description
                             xml.remedy_guidance issue.remedy_guidance
+                            xml.remedy_code issue.remedy_code
                             xml.severity issue.severity
                             xml.cwe issue.cwe
                             xml.digest issue.digest
