@@ -125,17 +125,21 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                                                 xml.data_flow_sinks {
                                                     dom.data_flow_sink.each do |sink|
                                                         xml.data_flow_sink {
+                                                            xml.object sink.object
+                                                            xml.tainted_argument_index sink.tainted_argument_index
+                                                            xml.tainted_value sink.tainted_value
+                                                            xml.taint_ sink.taint
 
-                                                            function = sink.function
-                                                            xml.function {
-                                                                xml.name function.name
-                                                                xml.source function.source
-                                                                xml.arguments {
-                                                                    function.arguments.each do |argument|
-                                                                        xml.argument argument.inspect
-                                                                    end
-                                                                }
-                                                            }
+                                                            add_function( xml, sink.function )
+                                                            add_trace( xml, sink.trace )
+                                                        }
+                                                    end
+                                                }
+
+                                                xml.execution_flow_sinks {
+                                                    dom.execution_flow_sink.each do |sink|
+                                                        xml.execution_flow_sink {
+                                                            add_trace( xml, sink.trace )
                                                         }
                                                     end
                                                 }
@@ -169,6 +173,32 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
             author:       'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:      '0.2.4',
             options:      [ Options.outfile( '.xml' ), Options.skip_responses ]
+        }
+    end
+
+    def add_trace( xml, trace )
+        xml.trace {
+            trace.each do |frame|
+                xml.frame {
+                    add_function( xml, frame.function )
+                    xml.line frame.line
+                    xml.url frame.url
+                }
+            end
+        }
+    end
+
+    def add_function( xml, function )
+        xml.function {
+            xml.name function.name
+            xml.source function.source
+            xml.arguments {
+                if function.arguments
+                    function.arguments.each do |argument|
+                        xml.argument argument.inspect
+                    end
+                end
+            }
         }
     end
 

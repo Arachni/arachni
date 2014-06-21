@@ -303,12 +303,12 @@
 
     <xs:complexType name="trace">
         <xs:sequence>
-            <xs:element name="item" type="traceitem"
+            <xs:element name="frame" type="stackframe"
                         minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="traceitem">
+    <xs:complexType name="stackframe">
         <xs:sequence>
             <xs:element name="function" type="function"/>
             <xs:element name="line" type="xs:integer"/>
