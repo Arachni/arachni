@@ -127,9 +127,12 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
         puts xml = builder.to_xml
 
         xsd = Nokogiri::XML::Schema( IO.read( SCHEMA ) )
+        has_errors = false
         xsd.validate( Nokogiri::XML( xml ) ).each do |error|
             puts error.message
+            has_errors = true
         end
+        fail 'XML report could not validated against the XSD.' if has_errors
 
         IO.binwrite( outfile, xml )
         print_status "Saved in '#{outfile}'."
