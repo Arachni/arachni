@@ -29,12 +29,12 @@ class DOM
     attr_accessor :transitions
 
     # @return   [Array]
-    #   {Browser::Javascript::TaintTracer#data_flow_sink} data.
-    attr_accessor :data_flow_sink
+    #   {Browser::Javascript::TaintTracer#data_flow_sinks} data.
+    attr_accessor :data_flow_sinks
 
     # @return   [Array]
-    #   {Browser::Javascript::TaintTracer#execution_flow_sink} data.
-    attr_accessor :execution_flow_sink
+    #   {Browser::Javascript::TaintTracer#execution_flow_sinks} data.
+    attr_accessor :execution_flow_sinks
 
     # @return   [String]
     #   String digest of the DOM tree.
@@ -52,13 +52,13 @@ class DOM
     # @option   options [Page]  :page
     # @option   options [Array<Hash>]  :transitions
     def initialize( options )
-        @page                = options[:page]
-        self.url             = options[:url]                 || @page.url
-        self.digest          = options[:digest]
-        @transitions         = options[:transitions]         || []
-        @data_flow_sink      = options[:data_flow_sink]      || []
-        @execution_flow_sink = options[:execution_flow_sink] || []
-        @skip_states         = options[:skip_states]         ||
+        @page                 = options[:page]
+        self.url              = options[:url]                   || @page.url
+        self.digest           = options[:digest]
+        @transitions          = options[:transitions]           || []
+        @data_flow_sinks      = options[:data_flow_sinks]       || []
+        @execution_flow_sinks = options[:execution_flow_sinks]  || []
+        @skip_states          = options[:skip_states]           ||
             Support::LookUp::HashSet.new( hasher: :persistent_hash )
     end
 
@@ -183,27 +183,29 @@ class DOM
     # @return   [Hash]
     def to_h
         {
-            url:                 url,
-            transitions:         transitions,
-            digest:              digest,
-            skip_states:         skip_states,
-            data_flow_sink:      data_flow_sink,
-            execution_flow_sink: execution_flow_sink
+            url:                  url,
+            transitions:          transitions.map(&:to_hash),
+            digest:               digest,
+            skip_states:          skip_states,
+            data_flow_sinks:      data_flow_sinks.map(&:to_hash),
+            execution_flow_sinks: execution_flow_sinks.map(&:to_hash)
         }
     end
-    alias :to_hash :to_h
+    def to_hash
+        to_h
+    end
 
     # @return   [Hash]
     #   Data representing this instance that are suitable the RPC transmission.
     def to_rpc_data
-        data = to_hash.stringify_keys(false)
-        data['skip_states'] = data['skip_states'].collection.to_a if data['skip_states']
-
-        %w(transitions data_flow_sink execution_flow_sink).each do |k|
-            data[k] = data[k].map(&:to_rpc_data)
-        end
-
-        data
+        {
+            'url'                  => url,
+            'transitions'          => transitions.map(&:to_rpc_data),
+            'digest'               => digest,
+            'skip_states'          => skip_states ? skip_states.collection.to_a : [],
+            'data_flow_sinks'      => data_flow_sinks.map(&:to_rpc_data),
+            'execution_flow_sinks' => execution_flow_sinks.map(&:to_rpc_data)
+        }
     end
 
     # @param    [Hash]  data
@@ -217,12 +219,12 @@ class DOM
                         when 'transitions'
                             value.map { |t| Transition.from_rpc_data t }
 
-                        when 'data_flow_sink'
+                        when 'data_flow_sinks'
                             value.map do |entry|
                                 Browser::Javascript::TaintTracer::Sink::DataFlow.from_rpc_data( entry )
                             end.to_a
 
-                        when 'execution_flow_sink'
+                        when 'execution_flow_sinks'
                             value.map do |entry|
                                 Browser::Javascript::TaintTracer::Sink::ExecutionFlow.from_rpc_data( entry )
                             end.to_a

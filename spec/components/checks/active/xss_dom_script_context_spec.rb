@@ -19,16 +19,16 @@ describe name_from_filename do
 
     easy_test do
         issues.each do |issue|
-            issue.page.dom.execution_flow_sink.should be_any
-            data_flow_sink = issue.page.dom.data_flow_sink
+            issue.page.dom.execution_flow_sinks.should be_any
+            data_flow_sinks = issue.page.dom.data_flow_sinks
 
             if [Element::Link::DOM, Element::LinkTemplate::DOM].include? issue.vector.class
-                data_flow_sink.size.should == 2
+                data_flow_sinks.size.should == 2
             else
-                data_flow_sink.size.should == 1
+                data_flow_sinks.size.should == 1
             end
 
-            data = data_flow_sink.last[:data]
+            data = data_flow_sinks.last[:data]
             data['source'].should start_with 'function eval()'
             data['function'].should == 'eval'
             data['object'].should == 'DOMWindow'
@@ -36,7 +36,7 @@ describe name_from_filename do
             data['tainted'].should include 'taint_tracer.log_execution_flow_sink()'
             data['arguments'].should == [data['tainted']]
 
-            trace = data_flow_sink.first[:trace]
+            trace = data_flow_sinks.first[:trace]
 
             case issue.vector
 

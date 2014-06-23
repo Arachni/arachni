@@ -238,7 +238,8 @@ class Transition
     # @return   [Hash]
     def to_hash
         {
-            element: element,
+            element: element.is_a?( Browser::ElementLocator ) ?
+                         element.to_h : element,
             event:   event,
             options: options,
             time:    time

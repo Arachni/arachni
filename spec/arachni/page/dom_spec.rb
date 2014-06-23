@@ -48,7 +48,7 @@ describe Arachni::Page::DOM do
             end
         end
 
-        %w(data_flow_sink execution_flow_sink).each do |attribute|
+        %w(data_flow_sinks execution_flow_sinks).each do |attribute|
             it "includes '#{attribute}'" do
                 data[attribute].should == subject.send(attribute).map(&:to_rpc_data)
             end
@@ -63,8 +63,8 @@ describe Arachni::Page::DOM do
         let(:restored) { described_class.from_rpc_data data }
         let(:data) { Arachni::RPC::Serializer.rpc_data( subject ) }
 
-        %w(url transitions digest skip_states data_flow_sink
-            execution_flow_sink).each do |attribute|
+        %w(url transitions digest skip_states data_flow_sinks
+            execution_flow_sinks).each do |attribute|
             it "restores '#{attribute}'" do
                 restored.send( attribute ).should == subject.send( attribute )
             end
@@ -101,14 +101,14 @@ describe Arachni::Page::DOM do
         end
     end
 
-    describe '#data_flow_sink' do
+    describe '#data_flow_sinks' do
         it 'defaults to an empty Array' do
-            empty_dom.data_flow_sink.should == []
+            empty_dom.data_flow_sinks.should == []
         end
     end
 
-    describe '#data_flow_sink=' do
-        it 'sets #data_flow_sink' do
+    describe '#data_flow_sinks=' do
+        it 'sets #data_flow_sinks' do
             sink = [
                 data:  ['stuff'],
                 trace: [
@@ -123,19 +123,19 @@ describe Arachni::Page::DOM do
                 ]
             ]
 
-            dom.data_flow_sink = sink
-            dom.data_flow_sink.should == sink
+            dom.data_flow_sinks = sink
+            dom.data_flow_sinks.should == sink
         end
     end
 
-    describe '#execution_flow_sink' do
+    describe '#execution_flow_sinks' do
         it 'defaults to an empty Array' do
-            empty_dom.execution_flow_sink.should == []
+            empty_dom.execution_flow_sinks.should == []
         end
     end
 
-    describe '#execution_flow_sink=' do
-        it 'sets #execution_flow_sink' do
+    describe '#execution_flow_sinks=' do
+        it 'sets #execution_flow_sinks' do
             sink = [
                 data:  ['stuff'],
                 trace: [
@@ -150,8 +150,8 @@ describe Arachni::Page::DOM do
                        ]
             ]
 
-            dom.execution_flow_sink = sink
-            dom.execution_flow_sink.should == sink
+            dom.execution_flow_sinks = sink
+            dom.execution_flow_sinks.should == sink
         end
     end
 
@@ -209,8 +209,8 @@ describe Arachni::Page::DOM do
                     { element:  :stuffed },
                     { element2: :stuffed2 }
                 ].map { |t| described_class::Transition.new *t.first },
-                data_flow_sink:      ['stuff'],
-                execution_flow_sink: ['stuff2']
+                data_flow_sinks:      [Factory[:data_flow]],
+                execution_flow_sinks: [Factory[:execution_flow]]
             }
 
             empty_dom.url = data[:url]
@@ -218,10 +218,17 @@ describe Arachni::Page::DOM do
                 empty_dom.push_transition t
             end
             empty_dom.skip_states = data[:skip_states]
-            empty_dom.data_flow_sink = data[:data_flow_sink]
-            empty_dom.execution_flow_sink = data[:execution_flow_sink]
+            empty_dom.data_flow_sinks = data[:data_flow_sinks]
+            empty_dom.execution_flow_sinks = data[:execution_flow_sinks]
 
-            empty_dom.to_h.should == data.merge( digest: empty_dom.digest )
+            empty_dom.to_h.should ==  {
+                url:                 data[:url],
+                transitions:         data[:transitions].map(&:to_hash),
+                digest:              empty_dom.digest,
+                skip_states:         data[:skip_states],
+                data_flow_sinks:      data[:data_flow_sinks].map(&:to_hash),
+                execution_flow_sinks: data[:execution_flow_sinks].map(&:to_hash)
+            }
         end
         it 'is aliased to #to_h' do
             empty_dom.to_h.should == empty_dom.to_h

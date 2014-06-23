@@ -135,12 +135,12 @@ class Arachni::Reporters::Stdout < Arachni::Reporter::Base
 
         # Let the plugin formatters do their thing and print the plugin results
         # and let our block handle the boring crap.
-        format_plugin_results do |results|
+        format_plugin_results do |name|
             print_line
-            print_status results[:name]
+            print_status report.plugins[name][:name]
             print_info '~~~~~~~~~~~~~~'
 
-            print_info "Description: #{results[:description]}"
+            print_info "Description: #{report.plugins[name][:description]}"
             print_line
         end
     end

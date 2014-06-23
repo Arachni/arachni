@@ -134,6 +134,7 @@
     - `Enum` renamed to `MultipleChoice`.
 - `Reporters` (Renamed from `Reports`)
     - Removed `metareport`.
+    - All updated to the new format.
 - Plugins
     - `resolver` -- Removed as the report now contains that information in the
         responses associated with each issue.

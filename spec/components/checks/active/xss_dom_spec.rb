@@ -20,7 +20,7 @@ describe name_from_filename do
     easy_test do
         issues.each do |issue|
             transition     = issue.page.dom.transitions.last
-            data_flow_sink = issue.page.dom.data_flow_sink
+            data_flow_sinks = issue.page.dom.data_flow_sinks
 
             case issue.vector
 
@@ -28,14 +28,14 @@ describe name_from_filename do
                     transition.element.tag_name.should == :form
                     transition.event.should == :submit
 
-                    data_flow_sink.should be_empty
+                    data_flow_sinks.should be_empty
 
                 when Element::LinkTemplate::DOM
                     transition.element.should == :page
                     transition.event.should == :load
 
-                    data_flow_sink.size.should == 1
-                    data_flow_sink = data_flow_sink.first
+                    data_flow_sinks.size.should == 1
+                    data_flow_sink = data_flow_sinks.first
 
                     data = data_flow_sink[:data]
                     data['source'].should start_with 'function decodeURI()'
@@ -48,8 +48,8 @@ describe name_from_filename do
                     transition.element.should == :page
                     transition.event.should == :load
 
-                    data_flow_sink.size.should == 1
-                    data_flow_sink = data_flow_sink.first
+                    data_flow_sinks.size.should == 1
+                    data_flow_sink = data_flow_sinks.first
 
                     data = data_flow_sink[:data]
                     data['source'].should start_with 'function decodeURIComponent()'

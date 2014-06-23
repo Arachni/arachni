@@ -191,7 +191,6 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
     end
 
     def global_data
-        plugins = format_plugin_results( report.plugins )
         grouped_issues = {
             trusted:   {},
             untrusted: {}
@@ -240,7 +239,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
         prepare_data.merge(
             report:         report,
             grouped_issues: grouped_issues,
-            plugins:        plugins
+            plugins:        format_plugin_results
         )
     end
 

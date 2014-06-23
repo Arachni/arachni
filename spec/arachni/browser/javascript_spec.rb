@@ -93,8 +93,8 @@ describe Arachni::Browser::Javascript do
             @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_execution_flow_sink_stub}"
 
             @browser.watir.form.submit
-            subject.execution_flow_sink.should be_any
-            subject.execution_flow_sink.first.data.should be_empty
+            subject.execution_flow_sinks.should be_any
+            subject.execution_flow_sinks.first.data.should be_empty
         end
     end
 
@@ -150,38 +150,38 @@ describe Arachni::Browser::Javascript do
         end
     end
 
-    describe '#execution_flow_sink' do
+    describe '#execution_flow_sinks' do
         it 'returns sink data' do
             @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_execution_flow_sink_stub(1)}"
             @browser.watir.form.submit
 
-            subject.execution_flow_sink.should be_any
-            subject.execution_flow_sink.should == subject.taint_tracer.execution_flow_sink
+            subject.execution_flow_sinks.should be_any
+            subject.execution_flow_sinks.should == subject.taint_tracer.execution_flow_sinks
         end
     end
 
-    describe '#data_flow_sink' do
+    describe '#data_flow_sinks' do
         it 'returns sink data' do
             @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_data_flow_sink_stub( function: { name: 'blah' } )}"
             @browser.watir.form.submit
 
-            subject.data_flow_sink.should be_any
-            subject.data_flow_sink.should == subject.taint_tracer.data_flow_sink
+            subject.data_flow_sinks.should be_any
+            subject.data_flow_sinks.should == subject.taint_tracer.data_flow_sinks
         end
     end
 
-    describe '#flush_data_flow_sink' do
+    describe '#flush_data_flow_sinks' do
         it 'returns sink data' do
             @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_data_flow_sink_stub( function: { name: 'blah' } )}"
             @browser.watir.form.submit
 
-            sink = subject.flush_data_flow_sink
+            sink = subject.flush_data_flow_sinks
             sink[0].trace[1].function.arguments[0].delete( 'timeStamp' )
 
             @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_data_flow_sink_stub( function: { name: 'blah' } )}"
             @browser.watir.form.submit
 
-            sink2 = subject.taint_tracer.data_flow_sink
+            sink2 = subject.taint_tracer.data_flow_sinks
             sink2[0].trace[1].function.arguments[0].delete( 'timeStamp' )
 
             sink.should == sink2
@@ -191,23 +191,23 @@ describe Arachni::Browser::Javascript do
             @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_data_flow_sink_stub}"
             @browser.watir.form.submit
 
-            subject.flush_data_flow_sink
-            subject.data_flow_sink.should be_empty
+            subject.flush_data_flow_sinks
+            subject.data_flow_sinks.should be_empty
         end
     end
 
-    describe '#flush_execution_flow_sink' do
+    describe '#flush_execution_flow_sinks' do
         it 'returns sink data' do
             @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_execution_flow_sink_stub(1)}"
             @browser.watir.form.submit
 
-            sink = subject.flush_execution_flow_sink
+            sink = subject.flush_execution_flow_sinks
             sink[0].trace[1].function.arguments[0].delete( 'timeStamp' )
 
             @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_execution_flow_sink_stub(1)}"
             @browser.watir.form.submit
 
-            sink2 = subject.taint_tracer.execution_flow_sink
+            sink2 = subject.taint_tracer.execution_flow_sinks
             sink2[0].trace[1].function.arguments[0].delete( 'timeStamp' )
 
             sink.should == sink2
@@ -217,15 +217,15 @@ describe Arachni::Browser::Javascript do
             @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_execution_flow_sink_stub}"
             @browser.watir.form.submit
 
-            subject.flush_execution_flow_sink
-            subject.execution_flow_sink.should be_empty
+            subject.flush_execution_flow_sinks
+            subject.execution_flow_sinks.should be_empty
         end
     end
 
     describe '#serve' do
         context 'when the request URL is' do
             %W(dom_monitor.js taint_tracer.js).each do |filename|
-                url          = "#{described_class::SCRIPT_BASE_URL}#{filename}"
+                url = "#{described_class::SCRIPT_BASE_URL}#{filename}"
                 let(:url) { url }
                 let(:content_type) { 'text/javascript' }
                 let(:body) do

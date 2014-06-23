@@ -96,9 +96,6 @@ describe 'Arachni::RPC::Server::Framework' do
             report_with_opts = reporters.select{ |r| r[:options].any? }.first
             report_with_opts[:options].first.should be_kind_of( Hash )
         end
-        it 'aliased to #list_reporters' do
-            @framework_clean.list_reporters.should == @framework_clean.list_reporters
-        end
     end
 
     describe '#list_checks' do

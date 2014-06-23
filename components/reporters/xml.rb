@@ -3,121 +3,146 @@
     All rights reserved.
 =end
 
-require 'base64'
+require 'nokogiri'
 
 # Creates an XML report of the audit.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-# @version 0.2.5
+# @version 0.3
 class Arachni::Reporters::XML < Arachni::Reporter::Base
-    load Arachni::Options.paths.reporters + '/xml/buffer.rb'
 
-    include Buffer
+    SCHEMA = File.dirname( __FILE__ ) + '/xml/schema.xsd'
 
     def run
-        print_info 'Out of service, rewrite pending.'
-        return
+        builder = Nokogiri::XML::Builder.new do |xml|
+            xml.report(
+                'xmlns:xsi' => 'http://www.w3.org/2001/XMLSchema-instance',
+                'xsi:noNamespaceSchemaLocation' => SCHEMA
+            ) {
+                xml.version report.version
+                xml.options Arachni::Options.hash_to_save_data( report.options )
+                xml.start_datetime report.start_datetime.xmlschema
+                xml.finish_datetime report.finish_datetime.xmlschema
 
-        print_line
-        print_status 'Creating XML report...'
+                xml.sitemap {
+                    report.sitemap.each do |url, code|
+                        xml.entry url: url, code: code
+                    end
+                }
 
-        append "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
-        start_tag 'arachni_report'
+                xml.issues {
+                    report.issues.each do |issue|
+                        xml.issue {
+                            xml.name issue.name
+                            xml.description issue.description
+                            xml.remedy_guidance issue.remedy_guidance
+                            xml.remedy_code issue.remedy_code
+                            xml.severity issue.severity
 
-        simple_tag( 'title', 'Web Application Security Report - Arachni Framework' )
-        simple_tag( 'generated_on', Time.now )
-        simple_tag( 'report_false_positives', REPORT_FP )
+                            if issue.cwe
+                                xml.cwe issue.cwe
+                            end
 
-        start_tag 'system'
-        simple_tag( 'version', auditstore.version )
-        simple_tag( 'revision', auditstore.revision )
-        simple_tag( 'start_datetime', auditstore.start_datetime )
-        simple_tag( 'finish_datetime', auditstore.finish_datetime )
-        simple_tag( 'delta_time', auditstore.delta_time )
+                            xml.digest issue.digest
 
-        simple_tag( 'url', auditstore.options['url'] )
-        simple_tag( 'http_user_agent', auditstore.options['http_user_agent'] )
+                            xml.references {
+                                issue.references.each do |title, url|
+                                    xml.reference title: title, url: url
+                                end
+                            }
 
-        start_tag 'audited_elements'
-        simple_tag( 'element', 'links' ) if auditstore.options['audit_links']
-        simple_tag( 'element', 'forms' ) if auditstore.options['audit_forms']
-        simple_tag( 'element', 'cookies' ) if auditstore.options['audit_cookies']
-        simple_tag( 'element', 'headers' ) if auditstore.options['audit_headers']
-        end_tag 'audited_elements'
+                            vector = issue.vector
+                            xml.vector {
+                                xml.class_ vector.class
+                                xml.type vector.type
+                                xml.url vector.url
+                                xml.action vector.action
 
-        start_tag 'checks'
-        auditstore.options['mods'].each { |mod| add_mod( mod ) }
-        end_tag 'checks'
+                                if vector.respond_to? :html
+                                    xml.html vector.html
+                                end
 
-        start_tag 'filters'
+                                if issue.active?
+                                    xml.method_ vector.method
+                                end
 
-        %w(scope_exclude_path_patterns scope_include_path_patterns).each do |type|
-            if auditstore.options[type]
-                start_tag type
-                auditstore.options[type].each { |ex| simple_tag( 'regexp', ex ) }
-                end_tag type
-            end
+                                if vector.respond_to? :affected_input_name
+                                    xml.affected_input_name vector.affected_input_name
+                                end
+
+                                if vector.respond_to? :default_inputs
+                                    add_inputs( xml, vector.default_inputs )
+                                end
+                            }
+
+                            xml.variations {
+                                issue.variations.each do |variation|
+                                    xml.variation {
+                                        vector = variation.vector
+
+                                        xml.vector {
+                                            if issue.active?
+                                                xml.method_ vector.method
+                                            end
+
+                                            if vector.respond_to? :seed
+                                                xml.seed vector.seed
+                                            end
+
+                                            if vector.respond_to? :inputs
+                                                add_inputs( xml, vector.inputs )
+                                            end
+                                        }
+
+                                        xml.remarks {
+                                            variation.remarks.each do |commenter, remarks|
+                                                xml.commenter commenter
+                                                remarks.each do |remark|
+                                                    xml.remark remark
+                                                end
+                                            end
+                                        }
+
+                                        add_page( xml, variation.page )
+                                        add_page( xml, variation.referring_page, :referring_page )
+
+                                        xml.signature variation.signature
+                                        xml.proof variation.proof
+                                        xml.trusted variation.trusted
+                                        xml.platform_type variation.platform_type
+                                        xml.platform_name variation.platform_name
+                                    }
+                                end
+                            }
+                        }
+                    end
+                }
+
+                xml.plugins {
+                    format_plugin_results( false ) do |name, formatter|
+                        xml.send( name ) {
+                            xml.name report.plugins[name][:name]
+                            xml.description report.plugins[name][:description]
+
+                            xml.results { formatter.run xml }
+                        }
+                    end
+                }
+            }
         end
 
-        if auditstore.options['scope_redundant_path_patterns']
-            start_tag 'scope_redundant_path_patterns'
-            auditstore.options['scope_redundant_path_patterns'].each do |regexp, counter|
-                simple_tag( 'filter', "#{regexp}:#{counter}" )
-            end
-            end_tag 'scope_redundant_path_patterns'
+        puts xml = builder.to_xml
+
+        xsd = Nokogiri::XML::Schema( IO.read( SCHEMA ) )
+        has_errors = false
+        xsd.validate( Nokogiri::XML( xml ) ).each do |error|
+            puts error.message
+            ap error
+            has_errors = true
         end
-        end_tag 'filters'
+        fail 'XML report could not validated against the XSD.' if has_errors
 
-        start_tag 'cookies'
-        if auditstore.options['cookies']
-            auditstore.options['cookies'].each { |name, value| add_cookie( name, value ) }
-        end
-        end_tag 'cookies'
-
-        end_tag 'system'
-
-        start_tag 'issues'
-        auditstore.issues.each do |issue|
-            start_tag 'issue'
-
-            issue.each_pair do |k, v|
-                next if !v.is_a?( String )
-                simple_tag( k, v )
-            end
-
-            add_tags [issue.tags].flatten.compact
-
-            start_tag 'references'
-            issue.references.each { |name, url| add_reference( name, url ) }
-            end_tag 'references'
-
-            add_variations issue
-
-            end_tag 'issue'
-        end
-
-        end_tag 'issues'
-
-        start_tag 'plugins'
-        # get XML formatted plugin data and append them to the XML buffer
-        # along with some generic info
-        format_plugin_results.each do |plugin, results|
-            start_tag plugin
-            simple_tag( 'name', auditstore.plugins[plugin][:name] )
-            simple_tag( 'description', auditstore.plugins[plugin][:description] )
-
-            start_tag 'results'
-            append( results )
-            end_tag 'results'
-
-            end_tag plugin
-        end
-        end_tag 'plugins'
-
-        end_tag 'arachni_report'
-
-        File.open( outfile, 'w' ) { |f| f.write( buffer ) }
+        IO.binwrite( outfile, xml )
         print_status "Saved in '#{outfile}'."
     end
 
@@ -127,42 +152,129 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
             description:  %q{Exports the audit results as an XML (.xml) file.},
             content_type: 'text/xml',
             author:       'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:      '0.2.4',
+            version:      '0.3',
             options:      [ Options.outfile( '.xml' ), Options.skip_responses ]
         }
     end
 
-    def add_variations( issue )
-        start_tag 'variations'
-
-        issue.variations.each_with_index do |var|
-            start_tag 'variation'
-
-            simple_tag( 'url', var['url'] )
-            simple_tag( 'id', URI.encode( var['id'] ) ) if var['id']
-            simple_tag( 'injected', URI.encode( var['injected'] ) ) if var['injected']
-            simple_tag( 'regexp', var['regexp'].to_s ) if var['regexp']
-            simple_tag( 'regexp_match', var['regexp_match'] ) if var['regexp_match']
-
-            start_tag 'remarks'
-            var.remarks.each do |commenter, remarks|
-                remarks.each do |remark|
-                    add_remark( commenter, remark )
-                end
+    def add_inputs( xml, inputs, name = :inputs )
+        xml.send( name ) {
+            inputs.each do |k, v|
+                xml.input( name: k, value: v )
             end
-            end_tag 'remarks'
+        }
+    end
 
-            start_tag 'headers'
-            add_headers( 'request', var['headers']['request']  )
-            add_headers( 'response', var['headers']['response'] )
-            end_tag 'headers'
+    def add_headers( xml, headers )
+        xml.headers {
+            headers.each do |k, v|
+                xml.header( name: k, value: v )
+            end
+        }
+    end
 
-            simple_tag( 'html', skip_responses? ? '' : Base64.encode64( var['response'].to_s ) )
+    def add_parameters( xml, parameters )
+        xml.parameters {
+            parameters.each do |k, v|
+                xml.parameter( name: k, value: v )
+            end
+        }
+    end
 
-            end_tag 'variation'
-        end
+    def add_page( xml, page, name = :page )
+        xml.send( name ) {
+            xml.body page.body
 
-        end_tag 'variations'
+            request = page.request
+            xml.request {
+                xml.url request.url
+                xml.method_ request.method
+
+                add_parameters( xml, request.parameters )
+                add_headers( xml, request.headers )
+
+                xml.body request.effective_body
+                xml.raw request.to_s
+            }
+
+            response = page.response
+            xml.response {
+                xml.url response.url
+                xml.code response.code
+                xml.ip_address response.ip_address
+                xml.time response.time.round( 4 )
+                xml.return_code response.return_code
+                xml.return_message response.return_message
+
+                add_headers( xml, response.headers )
+
+                xml.body response.body
+                xml.raw_headers response.headers_string
+            }
+
+            dom = page.dom
+            xml.dom {
+                xml.url dom.url
+
+                xml.transitions {
+                    dom.transitions.each do |transition|
+                        xml.transition {
+                            xml.element transition.element
+                            xml.event transition.event
+                            xml.time transition.time.round( 4 )
+                        }
+                    end
+                }
+
+                xml.data_flow_sinks {
+                    dom.data_flow_sinks.each do |sink|
+                        xml.data_flow_sink {
+                            xml.object sink.object
+                            xml.tainted_argument_index sink.tainted_argument_index
+                            xml.tainted_value sink.tainted_value
+                            xml.taint_ sink.taint
+
+                            add_function( xml, sink.function )
+                            add_trace( xml, sink.trace )
+                        }
+                    end
+                }
+
+                xml.execution_flow_sinks {
+                    dom.execution_flow_sinks.each do |sink|
+                        xml.execution_flow_sink {
+                            add_trace( xml, sink.trace )
+                        }
+                    end
+                }
+            }
+        }
+    end
+
+    def add_trace( xml, trace )
+        xml.trace {
+            trace.each do |frame|
+                xml.frame {
+                    add_function( xml, frame.function )
+                    xml.line frame.line
+                    xml.url frame.url
+                }
+            end
+        }
+    end
+
+    def add_function( xml, function )
+        xml.function {
+            xml.name function.name
+            xml.source function.source
+            xml.arguments {
+                if function.arguments
+                    function.arguments.each do |argument|
+                        xml.argument argument.inspect
+                    end
+                end
+            }
+        }
     end
 
 end

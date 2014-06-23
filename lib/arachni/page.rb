@@ -464,7 +464,11 @@ class Page
         h[:response] = response
         h[:do_not_audit_elements] = @do_not_audit_elements
 
-        h[:dom] = dom.to_h.inject({}) { |dh, (k,v)| dh[k] = try_dup( v ); dh }
+        h[:dom] = dom.to_h.keys.inject({}) do |dh, k|
+            dh[k] = try_dup( dom.send( k ) )
+            dh
+        end
+
         h
     end
 

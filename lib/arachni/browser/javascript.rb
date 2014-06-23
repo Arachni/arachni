@@ -162,7 +162,7 @@ class Javascript
     end
 
     # @return   [String]
-    #   JS code which will call the `TaintTracer.data_flow_sink`, browser-side,
+    #   JS code which will call the `TaintTracer.log_data_flow_sink`, browser-side,
     #   JS function.
     def log_data_flow_sink_stub( *args )
         taint_tracer.stub.function( :log_data_flow_sink, *args )
@@ -201,28 +201,28 @@ class Javascript
         taint_tracer.debugging_data
     end
 
-    # @return   (see TaintTracer#log_execution_flow_sink)
-    def execution_flow_sink
+    # @return   (see TaintTracer#execution_flow_sinks)
+    def execution_flow_sinks
         return [] if !supported?
-        taint_tracer.execution_flow_sink
+        taint_tracer.execution_flow_sinks
     end
 
-    # @return   (see TaintTracer#data_flow_sink)
-    def data_flow_sink
+    # @return   (see TaintTracer#data_flow_sinks)
+    def data_flow_sinks
         return [] if !supported?
-        taint_tracer.data_flow_sink
+        taint_tracer.data_flow_sinks
     end
 
-    # @return   (see TaintTracer#execution_flow_sink)
-    def flush_execution_flow_sink
+    # @return   (see TaintTracer#flush_execution_flow_sinks)
+    def flush_execution_flow_sinks
         return [] if !supported?
-        taint_tracer.flush_execution_flow_sink
+        taint_tracer.flush_execution_flow_sinks
     end
 
-    # @return   (see TaintTracer#flush_data_flow_sink)
-    def flush_data_flow_sink
+    # @return   (see TaintTracer#flush_data_flow_sinks)
+    def flush_data_flow_sinks
         return [] if !supported?
-        taint_tracer.flush_data_flow_sink
+        taint_tracer.flush_data_flow_sinks
     end
 
     # @return   [String]

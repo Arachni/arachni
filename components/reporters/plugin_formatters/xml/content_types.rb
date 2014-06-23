@@ -9,39 +9,24 @@ class Arachni::Reporters::XML
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class PluginFormatters::ContentTypes < Arachni::Plugin::Formatter
-    include Buffer
 
-    def run
-        results.each do |type, responses|
-            start_content_type( type )
+    def run( xml )
+        results.each do |type, infos|
+            infos.each do |info|
+                xml.entry {
+                    xml.content_type type
+                    xml.url  info['url']
+                    xml.method_ info['method']
 
-            responses.each do |res|
-                start_tag 'response'
-
-                simple_tag( 'url', res[:url] )
-                simple_tag( 'method', res[:method] )
-
-                if res[:parameters] && res[:method].downcase == 'post'
-                    start_tag 'params'
-                    res[:parameters].each { |name, value| add_param( name, value ) }
-                    end_tag 'params'
-                end
-
-                end_tag 'response'
+                    info['parameters'].each do |name, value|
+                        xml.parameters {
+                            xml.name name
+                            xml.value value
+                        }
+                    end
+                }
             end
-
-            end_content_type
         end
-
-        buffer
-    end
-
-    def start_content_type( type )
-        append "<content_type name=\"#{type}\">"
-    end
-
-    def end_content_type
-        append '</content_type>'
     end
 
 end

@@ -40,47 +40,42 @@ class Base < Component::Base
     def run
     end
 
-    # Runs plugin formatters for the running report and returns a hash
-    # with the prepared/formatted results.
-    #
-    # @param    [Report#plugins]      plugins
-    #   Plugin data/results.
-    def format_plugin_results( plugins = report.plugins, &block )
-        formatted = {}
-        return formatted if !plugins
+    # Runs plugin formatters for the running report and returns a hash with the
+    # prepared/formatted results.
+    def format_plugin_results( run = true, &block )
+        # Add the PluginFormatters module to the report.
+        eval "class #{self.class}; module PluginFormatters end; end"
 
-        # get the object that extends this class (i.e. the running report)
-        ancestor = self.class.ancestors[0]
+        # Get the path to the report file, we're assuming it's the one who
+        # called us.
+        report_path = caller_path(1)
 
-        # add the PluginFormatters module to the report
-        eval "class #{ancestor}; module PluginFormatters end; end"
-
-        # get the path to the report file
-        # this is a very bad way to do it...
-        report_path = ::Kernel.caller.first.split( ':' ).first
-
-        # prepare the directory of the formatters for the running report
+        # Prepare the directory of the formatters for the running report.
         lib = File.dirname( report_path ) + '/plugin_formatters/' +
             File.basename( report_path, '.rb' ) +  '/'
 
         @@formatters ||= {}
 
-        # initialize a new component manager to handle the plugin formatters
-        @@formatters[ancestor] ||= FormatterManager.new(
-            lib, ancestor.const_get( 'PluginFormatters' )
+        # Initialize a new component manager to handle the plugin formatters.
+        @@formatters[shortname] ||= FormatterManager.new(
+            lib, self.class.const_get( :PluginFormatters )
         )
 
-        # load all the formatters
-        @@formatters[ancestor].load_all if @@formatters[ancestor].empty?
+        @@formatters[shortname].load_all if @@formatters[shortname].empty?
 
-        # run the formatters and gather the formatted data they return
-        @@formatters[ancestor].each do |name, formatter|
-            plugin_results = plugins[name.to_sym]
-            next if !plugin_results || plugin_results[:results].empty?
+        formatted = {}
+        @@formatters[shortname].each do |name, formatter_klass|
+            name    = name.to_sym
+            results = report.plugins[name]
 
-            cr = plugin_results.clone
-            block.call( cr ) if block_given?
-            formatted[name] = formatter.new( report, cr ).run
+            next if !results || results[:results].empty?
+
+            formatter = formatter_klass.new( self, report, results )
+
+            block.call( name, formatter ) if block_given?
+
+            next if !run
+            formatted[name] = formatter.run
         end
 
         formatted

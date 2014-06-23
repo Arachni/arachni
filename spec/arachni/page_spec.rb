@@ -32,8 +32,8 @@ describe Arachni::Page do
 
         dom = Factory[:dom]
         page_with_nonces.dom.transitions = dom.transitions
-        page_with_nonces.dom.data_flow_sink = dom.data_flow_sink
-        page_with_nonces.dom.execution_flow_sink = dom.execution_flow_sink
+        page_with_nonces.dom.data_flow_sinks = dom.data_flow_sinks
+        page_with_nonces.dom.execution_flow_sinks = dom.execution_flow_sinks
 
         # Assign external forms.
         page_with_nonces.forms = page_with_nonces.forms
@@ -121,7 +121,7 @@ describe Arachni::Page do
         end
 
         context Arachni::Page::DOM do
-            [:url, :skip_states, :transitions, :data_flow_sink, :execution_flow_sink].each do |m|
+            [:url, :skip_states, :transitions, :data_flow_sinks, :execution_flow_sinks].each do |m|
                 it "restores ##{m}" do
                     # Make sure we're not comparing nils.
                     subject.dom.send( m ).should be_true
@@ -787,7 +787,7 @@ describe Arachni::Page do
             end
 
             context Arachni::Page::DOM do
-                [:url, :skip_states, :transitions, :data_flow_sink, :execution_flow_sink].each do |m|
+                [:url, :skip_states, :transitions, :data_flow_sinks, :execution_flow_sinks].each do |m|
                     it "preserves ##{m}" do
                         dupped = subject.send(method)
 

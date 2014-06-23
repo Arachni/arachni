@@ -5,29 +5,24 @@
 
 class Arachni::Reporters::XML
 
-#
 # XML formatter for the results of the CookieCollector plugin
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class PluginFormatters::CookieCollector < Arachni::Plugin::Formatter
-    include Buffer
 
-    def run
+    def run( xml )
         results.each_with_index do |result, i|
-            start_tag 'response'
+            xml.entry {
+                xml.time Time.parse( result['time'] ).xmlschema
+                xml.url result['response']['url']
 
-            simple_tag( 'time', result[:time].to_s )
-            simple_tag( 'url', result[:res]['url'] )
-
-            start_tag 'cookies'
-            result[:cookies].each { |name, value| add_cookie( name, value ) }
-            end_tag 'cookies'
-
-            end_tag 'response'
+                xml.cookies {
+                    result['cookies'].each do |name, value|
+                        xml.cookie( name: name, value: value )
+                    end
+                }
+            }
         end
-
-        buffer
     end
 
 end

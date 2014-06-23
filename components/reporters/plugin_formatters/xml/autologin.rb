@@ -9,19 +9,16 @@ class Arachni::Reporters::XML
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class PluginFormatters::AutoLogin < Arachni::Plugin::Formatter
-    include Buffer
 
-    def run
-        simple_tag( 'message', results[:message] )
-        simple_tag( 'status', results[:status].to_s )
+    def run( xml )
+        xml.message results['message']
+        xml.status results['status']
 
-        start_tag 'cookies'
-        if results[:cookies]
-            results[:cookies].each { |name, value| add_cookie( name, value ) }
+        if results['cookies']
+            xml.cookies {
+                results['cookies'].each { |name, value| xml.cookie name: name, value: value }
+            }
         end
-        end_tag 'cookies'
-
-        buffer
     end
 
 end
