@@ -140,7 +140,7 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
             ap error
             has_errors = true
         end
-        fail 'XML report could not validated against the XSD.' if has_errors
+        fail 'XML report could not be validated against the XSD.' if has_errors
 
         IO.binwrite( outfile, xml )
         print_status "Saved in '#{outfile}'."
