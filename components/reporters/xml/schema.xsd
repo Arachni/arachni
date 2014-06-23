@@ -30,8 +30,31 @@
             <xs:element name="form_dicattack" type="plugin_form_dicattack"/>
             <xs:element name="http_dicattack" type="plugin_http_dicattack"/>
             <xs:element name="uncommon_headers" type="plugin_uncommon_headers"/>
+            <xs:element name="uniformity" type="plugin_uniformity"/>
         </xs:choice>
     </xs:complexType>
+
+    <xs:complexType name="plugin_uniformity">
+        <xs:all>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+            <xs:element name="results" type="plugin_uniformity_results"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_uniformity_results">
+        <xs:sequence>
+            <!--
+                Groups of "issue:digests".
+            -->
+            <xs:element name="digests" minOccurs="0" maxOccurs="unbounded"
+                        type="plugin_plugin_uniformity_results_digests"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="plugin_plugin_uniformity_results_digests">
+        <xs:list itemType="xs:integer"/>
+    </xs:simpleType>
 
     <xs:complexType name="plugin_uncommon_headers">
         <xs:all>
