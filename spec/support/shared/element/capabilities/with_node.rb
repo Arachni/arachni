@@ -22,6 +22,12 @@ shared_examples_for 'with_node' do |html|
         end
     end
 
+    describe '#to_h' do
+        it "includes 'html'" do
+            subject.to_h[:html].should == subject.html
+        end
+    end
+
     describe '#dup' do
         let(:dupped) { with_node.dup }
 

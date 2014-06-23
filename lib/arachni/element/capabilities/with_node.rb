@@ -28,6 +28,10 @@ module WithNode
         Nokogiri::HTML.fragment( @html.dup ).children.first
     end
 
+    def to_h
+        super.merge( html: html )
+    end
+
     def dup
         copy_with_node( super )
     end

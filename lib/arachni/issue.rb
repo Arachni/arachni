@@ -250,6 +250,7 @@ class Issue
             h.delete( :variation )
         else
             if variation?
+                h[:vector].delete :html
                 h[:vector].delete :type
                 h[:vector].delete :url
                 h[:vector].delete :action
