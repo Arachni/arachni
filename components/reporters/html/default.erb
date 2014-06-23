@@ -46,9 +46,11 @@
             <%= erb :configuration %>
         </div>
 
+        <% if report.issues.any? %>
         <div class="tab-pane" id="issues">
             <%= erb :issues %>
         </div>
+        <% end %>
 
         <div class="tab-pane" id="plugins">
             <%= erb :plugins %>
