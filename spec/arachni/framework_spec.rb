@@ -289,6 +289,15 @@ describe Arachni::Framework do
     end
 
     describe '#run' do
+        it 'follows redirects' do
+            subject.options.url = @f_url + '/redirect'
+            subject.run
+            subject.sitemap.should == {
+                "#{@f_url}/redirect"   => 302,
+                "#{@f_url}/redirected" => 200
+            }
+        end
+
         it 'performs the scan' do
             subject.options.url = @url + '/elem_combo'
             subject.options.audit.elements :links, :forms, :cookies
