@@ -9,7 +9,6 @@ class Arachni::Reporters::XML
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class PluginFormatters::ContentTypes < Arachni::Plugin::Formatter
-    include Buffer
 
     def run
         results.each do |type, responses|

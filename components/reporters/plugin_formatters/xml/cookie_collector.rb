@@ -5,13 +5,10 @@
 
 class Arachni::Reporters::XML
 
-#
 # XML formatter for the results of the CookieCollector plugin
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class PluginFormatters::CookieCollector < Arachni::Plugin::Formatter
-    include Buffer
 
     def run
         results.each_with_index do |result, i|

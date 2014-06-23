@@ -7,7 +7,6 @@ class Arachni::Reporters::XML
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class PluginFormatters::UncommonHeaders < Arachni::Plugin::Formatter
-    include Buffer
 
     def run
         results.each do |url, headers|

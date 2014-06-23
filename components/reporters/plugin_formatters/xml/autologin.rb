@@ -9,7 +9,6 @@ class Arachni::Reporters::XML
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class PluginFormatters::AutoLogin < Arachni::Plugin::Formatter
-    include Buffer
 
     def run
         simple_tag( 'message', results[:message] )

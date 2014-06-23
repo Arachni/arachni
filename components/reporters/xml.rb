@@ -10,27 +10,10 @@ require 'nokogiri'
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 # @version 0.3
 class Arachni::Reporters::XML < Arachni::Reporter::Base
-    load Arachni::Options.paths.reporters + '/xml/buffer.rb'
-
-    include Buffer
 
     SCHEMA = File.dirname( __FILE__ ) + '/xml/schema.xsd'
 
     def run
-        # get XML formatted plugin data and append them to the XML buffer
-        # along with some generic info
-        # format_plugin_results.each do |plugin, results|
-        #     start_tag plugin
-        #     simple_tag( 'name', auditstore.plugins[plugin][:name] )
-        #     simple_tag( 'description', auditstore.plugins[plugin][:description] )
-        #
-        #     start_tag 'results'
-        #     append( results )
-        #     end_tag 'results'
-        #
-        #     end_tag plugin
-        # end
-
         builder = Nokogiri::XML::Builder.new do |xml|
             xml.report(
                 'xmlns:xsi' => 'http://www.w3.org/2001/XMLSchema-instance',
@@ -134,10 +117,21 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                         }
                     end
                 }
+
+                xml.plugins {
+                    format_plugin_results( false ) do |name, formatter|
+                        xml.send( name ) {
+                            xml.name report.plugins[name][:name]
+                            xml.description report.plugins[name][:description]
+
+                            xml.results { formatter.run xml }
+                        }
+                    end
+                }
             }
         end
 
-        xml = builder.to_xml
+        puts xml = builder.to_xml
 
         xsd = Nokogiri::XML::Schema( IO.read( SCHEMA ) )
         has_errors = false

@@ -5,13 +5,10 @@
 
 class Arachni::Reporters::XML
 
-#
 # XML formatter for the results of the FormDicattack plugin
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class PluginFormatters::FormDicattack < Arachni::Plugin::Formatter
-    include Buffer
 
     def run
         add_credentials( results[:username], results[:password] )

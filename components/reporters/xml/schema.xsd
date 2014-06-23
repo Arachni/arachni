@@ -16,10 +16,41 @@
                 -->
                 <xs:element name="options" type="xs:string" />
                 <xs:element name="issues" type="issues"/>
-                <!--<xs:attribute name="plugins" type="plugins"/>-->
+                <xs:element name="plugins" type="plugins"/>
             </xs:all>
         </xs:complexType>
     </xs:element>
+
+    <xs:complexType name="plugins">
+        <xs:choice>
+            <xs:element name="healthmap" type="healthmap"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="healthmap">
+        <xs:all>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+            <xs:element name="results" type="healthmap_results"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="healthmap_results">
+        <xs:all>
+            <xs:element name="map" type="healthmap_map"/>
+            <xs:element name="total" type="xs:integer"/>
+            <xs:element name="with_issues" type="xs:integer"/>
+            <xs:element name="without_issues" type="xs:integer"/>
+            <xs:element name="issue_percentage" type="xs:integer"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="healthmap_map">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="without_issues" type="xs:string"/>
+            <xs:element name="with_issues" type="xs:string"/>
+        </xs:choice>
+    </xs:complexType>
 
     <xs:complexType name="sitemap">
         <xs:sequence>
