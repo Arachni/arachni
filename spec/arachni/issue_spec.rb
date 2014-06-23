@@ -436,7 +436,8 @@ describe Arachni::Issue do
                         url:    'http://test.com/',
                         action: 'http://test.com/',
                         default_inputs: { 'stuff' => '1' },
-                        affected_input_name:  'stuff'
+                        affected_input_name:  'stuff',
+                        html: nil
                     },
                     cwe_url:         'http://cwe.mitre.org/data/definitions/1.html'
                 }
