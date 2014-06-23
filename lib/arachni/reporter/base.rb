@@ -47,7 +47,7 @@ class Base < Component::Base
         eval "class #{self.class}; module PluginFormatters end; end"
 
         # Get the path to the report file, we're assuming it's the one who
-        # called us..
+        # called us.
         report_path = caller_path(1)
 
         # Prepare the directory of the formatters for the running report.
@@ -58,19 +58,21 @@ class Base < Component::Base
 
         # Initialize a new component manager to handle the plugin formatters.
         @@formatters[shortname] ||= FormatterManager.new(
-            lib, self.class.const_get( 'PluginFormatters' )
+            lib, self.class.const_get( :PluginFormatters )
         )
 
         @@formatters[shortname].load_all if @@formatters[shortname].empty?
 
         formatted = {}
         @@formatters[shortname].each do |name, formatter_klass|
-            results = report.plugins[name.to_sym]
+            name    = name.to_sym
+            results = report.plugins[name]
+
             next if !results || results[:results].empty?
 
             formatter = formatter_klass.new( self, report, results )
 
-            block.call( formatter ) if block_given?
+            block.call( name, formatter ) if block_given?
 
             next if !run
             formatted[name] = formatter.run
