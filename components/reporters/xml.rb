@@ -131,7 +131,7 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
             }
         end
 
-        puts xml = builder.to_xml
+        xml = builder.to_xml
 
         xsd = Nokogiri::XML::Schema( IO.read( SCHEMA ) )
         has_errors = false
