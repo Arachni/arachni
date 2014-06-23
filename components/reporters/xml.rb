@@ -202,7 +202,7 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                 xml.url response.url
                 xml.code response.code
                 xml.ip_address response.ip_address
-                xml.time response.time
+                xml.time response.time.round( 4 )
                 xml.return_code response.return_code
                 xml.return_message response.return_message
 
@@ -221,7 +221,7 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                         xml.transition {
                             xml.element transition.element
                             xml.event transition.event
-                            xml.time transition.time
+                            xml.time transition.time.round( 4 )
                         }
                     end
                 }
