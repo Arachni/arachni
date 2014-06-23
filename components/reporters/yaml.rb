@@ -6,15 +6,14 @@
 # Converts the Report to a Hash which it then dumps in YAML format into a file.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-# @version 0.1.2
+# @version 0.2
 class Arachni::Reporters::YAML < Arachni::Reporter::Base
 
     def run
         print_line
         print_status "Dumping audit results in #{outfile}."
 
-        File.open( options['outfile'], 'w' ) do |f|
+        File.open( options[:outfile], 'w' ) do |f|
             f.write( report.to_hash.to_yaml )
         end
 
@@ -27,7 +26,7 @@ class Arachni::Reporters::YAML < Arachni::Reporter::Base
             description:  %q{Exports the audit results as a YAML (.yaml) file.},
             content_type: 'application/x-yaml',
             author:       'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:      '0.1.1',
+            version:      '0.2',
             options:      [ Options.outfile( '.yaml' ) ]
         }
     end
