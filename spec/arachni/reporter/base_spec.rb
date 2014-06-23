@@ -65,10 +65,10 @@ describe Arachni::Reporter::Base do
     describe '#format_plugin_results' do
         it 'runs the formatters of appropriate plugin' do
             store = @framework.report
-            store.plugins[:foobar] = { :results => 'Blah!' }
+            store.plugins[:foobar] = { results: 'Blah!' }
 
             @reporters.run( 'with_formatters', store )
-            IO.read( 'with_formatters' ).should == { 'foobar' => 'Blah!' }.to_s
+            IO.read( 'with_formatters' ).should == { foobar: 'Blah!' }.to_s
             File.delete( 'with_formatters' )
         end
     end
