@@ -10,9 +10,9 @@ class Arachni::Reporters::XML
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class PluginFormatters::HTTPDicattack < Arachni::Plugin::Formatter
 
-    def run
-        add_credentials( results[:username], results[:password] )
-        buffer
+    def run( xml )
+        xml.username results['username']
+        xml.password results['password']
     end
 
 end
