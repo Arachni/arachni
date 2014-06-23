@@ -25,7 +25,32 @@
         <xs:choice>
             <xs:element name="healthmap" type="plugin_healthmap"/>
             <xs:element name="autologin" type="plugin_autologin"/>
+            <xs:element name="content_types" type="plugin_content_types"/>
         </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_content_types">
+        <xs:all>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+            <xs:element name="results" type="plugin_content_types_results"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_content_types_results">
+        <xs:sequence>
+            <xs:element name="entry" maxOccurs="unbounded"
+                        type="plugin_content_types_results_entry"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_content_types_results_entry">
+        <xs:sequence>
+            <xs:element name="content_type" type="xs:string"/>
+            <xs:element name="url" type="xs:anyURI"/>
+            <xs:element name="method" type="xs:string"/>
+            <xs:element name="parameters" type="parameters" minOccurs="0"/>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="plugin_autologin">
