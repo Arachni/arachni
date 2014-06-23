@@ -8,18 +8,18 @@ class Arachni::Reporters::XML
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class PluginFormatters::UncommonHeaders < Arachni::Plugin::Formatter
 
-    def run
+    def run( xml )
         results.each do |url, headers|
-            append "<url value='#{escape( url )}'>"
+            xml.entry {
+                xml.url url
 
-            headers.each do |name, value|
-                add_header name, value
-            end
-
-            end_tag 'url'
+                xml.headers {
+                    headers.each do |name, value|
+                        xml.header name: name, value: value
+                    end
+                }
+            }
         end
-
-        buffer
     end
 
 end

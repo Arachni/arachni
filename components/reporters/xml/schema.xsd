@@ -29,7 +29,30 @@
             <xs:element name="cookie_collector" type="plugin_cookie_collector"/>
             <xs:element name="form_dicattack" type="plugin_form_dicattack"/>
             <xs:element name="http_dicattack" type="plugin_http_dicattack"/>
+            <xs:element name="uncommon_headers" type="plugin_uncommon_headers"/>
         </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_uncommon_headers">
+        <xs:all>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+            <xs:element name="results" type="plugin_uncommon_headers_results"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_uncommon_headers_results">
+        <xs:sequence>
+            <xs:element name="entry" minOccurs="0" maxOccurs="unbounded"
+                        type="plugin_uncommon_headers_results_entry"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_uncommon_headers_results_entry">
+        <xs:all>
+            <xs:element name="headers" type="headers"/>
+            <xs:element name="url" type="xs:anyURI"/>
+        </xs:all>
     </xs:complexType>
 
     <xs:complexType name="plugin_http_dicattack">
@@ -72,7 +95,7 @@
 
     <xs:complexType name="plugin_cookie_collector_results">
         <xs:sequence>
-            <xs:element name="entry" maxOccurs="unbounded"
+            <xs:element name="entry" minOccurs="0" maxOccurs="unbounded"
                         type="plugin_cookie_collector_results_entry"/>
         </xs:sequence>
     </xs:complexType>
