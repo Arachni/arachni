@@ -22,12 +22,28 @@
     </xs:element>
 
     <xs:complexType name="plugins">
-        <xs:choice>
+        <xs:choice minOccurs="0" maxOccurs="1">
             <xs:element name="healthmap" type="plugin_healthmap"/>
             <xs:element name="autologin" type="plugin_autologin"/>
             <xs:element name="content_types" type="plugin_content_types"/>
             <xs:element name="cookie_collector" type="plugin_cookie_collector"/>
+            <xs:element name="form_dicattack" type="plugin_form_dicattack"/>
         </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_form_dicattack">
+        <xs:all>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+            <xs:element name="results" type="plugin_form_dicattack_results"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_form_dicattack_results">
+        <xs:sequence>
+            <xs:element name="username" minOccurs="0" type="xs:string"/>
+            <xs:element name="password" minOccurs="0" type="xs:string"/>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="plugin_cookie_collector">
