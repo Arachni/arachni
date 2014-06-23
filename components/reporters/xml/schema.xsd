@@ -31,7 +31,23 @@
             <xs:element name="http_dicattack" type="plugin_http_dicattack"/>
             <xs:element name="uncommon_headers" type="plugin_uncommon_headers"/>
             <xs:element name="uniformity" type="plugin_uniformity"/>
+            <xs:element name="waf_detector" type="plugin_waf_detector"/>
         </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_waf_detector">
+        <xs:all>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+            <xs:element name="results" type="plugin_waf_detector_results"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_waf_detector_results">
+        <xs:all>
+            <xs:element name="status" minOccurs="0" type="xs:string"/>
+            <xs:element name="message" minOccurs="0" type="xs:string"/>
+        </xs:all>
     </xs:complexType>
 
     <xs:complexType name="plugin_uniformity">
@@ -87,10 +103,10 @@
     </xs:complexType>
 
     <xs:complexType name="plugin_http_dicattack_results">
-        <xs:sequence>
+        <xs:all>
             <xs:element name="username" minOccurs="0" type="xs:string"/>
             <xs:element name="password" minOccurs="0" type="xs:string"/>
-        </xs:sequence>
+        </xs:all>
     </xs:complexType>
 
     <xs:complexType name="plugin_form_dicattack">
@@ -102,10 +118,10 @@
     </xs:complexType>
 
     <xs:complexType name="plugin_form_dicattack_results">
-        <xs:sequence>
+        <xs:all>
             <xs:element name="username" minOccurs="0" type="xs:string"/>
             <xs:element name="password" minOccurs="0" type="xs:string"/>
-        </xs:sequence>
+        </xs:all>
     </xs:complexType>
 
     <xs:complexType name="plugin_cookie_collector">
@@ -147,12 +163,12 @@
     </xs:complexType>
 
     <xs:complexType name="plugin_content_types_results_entry">
-        <xs:sequence>
+        <xs:all>
             <xs:element name="content_type" type="xs:string"/>
             <xs:element name="url" type="xs:anyURI"/>
             <xs:element name="method" type="xs:string"/>
             <xs:element name="parameters" type="parameters" minOccurs="0"/>
-        </xs:sequence>
+        </xs:all>
     </xs:complexType>
 
     <xs:complexType name="plugin_autologin">

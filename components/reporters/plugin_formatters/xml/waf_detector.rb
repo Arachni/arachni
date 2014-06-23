@@ -10,10 +10,9 @@ class Arachni::Reporters::XML
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class PluginFormatters::WAFDetector < Arachni::Plugin::Formatter
 
-    def run
-        simple_tag( 'message', results[:msg] )
-        simple_tag( 'code', results[:code] )
-        buffer
+    def run( xml )
+        xml.message results['message']
+        xml.status results['status']
     end
 
 end
