@@ -417,7 +417,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
 
         # We use a multiplier for the severities because we need to adjust their
         # y2 axis values to cover the max y axis.
-        severity_multiplier = graph_data[:issues].values.max / Issue::Severity::ORDER.size
+        severity_multiplier = (graph_data[:issues].values.max || 1) / Issue::Severity::ORDER.size
         graph_data[:severity_index_for_issue].each do |name, index|
             graph_data[:severity_index_for_issue][name] = severity_multiplier * index
         end

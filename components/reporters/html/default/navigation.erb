@@ -10,9 +10,12 @@
                     <a href="#!/summary">
                         Summary
 
+                        <% if report.issues.any? %>
                         <b class="fa fa-caret-down"></b>
+                        <% end %>
                     </a>
 
+                    <% if report.issues.any? %>
                     <ul class="dropdown-menu">
                         <li>
                             <a href="#!/summary/charts">
@@ -26,8 +29,10 @@
                             </a>
                         </li>
                     </ul>
+                    <% end %>
                 </li>
 
+                <% if report.issues.any? %>
                 <li class="dropdown">
                     <a href="#!/issues" class="dropdown-toggle">
                         Issues
@@ -85,6 +90,7 @@
                         <% end %>
                     </ul>
                 </li>
+                <% end %>
 
                 <li class="dropdown">
                     <a href="#!/plugins">
