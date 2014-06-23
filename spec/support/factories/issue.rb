@@ -4,6 +4,7 @@ Factory.define :issue_data do
         description:     'Issue description',
         vector:          Factory[:passive_vector],
         page:            Factory[:page],
+        referring_page:  Factory[:page],
         platform_name:   :unix,
         platform_type:   :os,
         references:      {
