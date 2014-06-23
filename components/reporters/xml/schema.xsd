@@ -24,7 +24,37 @@
     <xs:complexType name="plugins">
         <xs:choice>
             <xs:element name="healthmap" type="plugin_healthmap"/>
+            <xs:element name="autologin" type="plugin_autologin"/>
         </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_autologin">
+        <xs:all>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+            <xs:element name="results" type="plugin_autologin_results"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_autologin_results">
+        <xs:all>
+            <xs:element name="status" type="xs:string"/>
+            <xs:element name="message" type="xs:string"/>
+            <xs:element name="cookies" type="plugin_autologin_results_cookies"
+                    minOccurs="0"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_autologin_results_cookies">
+        <xs:sequence>
+            <xs:element name="cookie" type="plugin_autologin_results_cookie"
+                        maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_autologin_results_cookie">
+        <xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="value" type="xs:string"/>
     </xs:complexType>
 
     <xs:complexType name="plugin_healthmap">
@@ -55,7 +85,7 @@
     <xs:complexType name="sitemap">
         <xs:sequence>
             <xs:element name="entry" type="sitemapentry"
-                        maxOccurs="unbounded"/>
+                        minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
