@@ -23,21 +23,21 @@
 
     <xs:complexType name="plugins">
         <xs:choice>
-            <xs:element name="healthmap" type="healthmap"/>
+            <xs:element name="healthmap" type="plugin_healthmap"/>
         </xs:choice>
     </xs:complexType>
 
-    <xs:complexType name="healthmap">
+    <xs:complexType name="plugin_healthmap">
         <xs:all>
             <xs:element name="name" type="xs:string"/>
             <xs:element name="description" type="xs:string"/>
-            <xs:element name="results" type="healthmap_results"/>
+            <xs:element name="results" type="plugin_healthmap_results"/>
         </xs:all>
     </xs:complexType>
 
-    <xs:complexType name="healthmap_results">
+    <xs:complexType name="plugin_healthmap_results">
         <xs:all>
-            <xs:element name="map" type="healthmap_map"/>
+            <xs:element name="map" type="plugin_healthmap_map"/>
             <xs:element name="total" type="xs:integer"/>
             <xs:element name="with_issues" type="xs:integer"/>
             <xs:element name="without_issues" type="xs:integer"/>
@@ -45,7 +45,7 @@
         </xs:all>
     </xs:complexType>
 
-    <xs:complexType name="healthmap_map">
+    <xs:complexType name="plugin_healthmap_map">
         <xs:choice minOccurs="0" maxOccurs="unbounded">
             <xs:element name="without_issues" type="xs:string"/>
             <xs:element name="with_issues" type="xs:string"/>
