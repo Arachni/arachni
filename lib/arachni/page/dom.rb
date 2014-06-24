@@ -111,8 +111,8 @@ class DOM
                 if t.options[:cookies] && t.options[:cookies].any?
                     printer.call "#{indent * 2}-- Cookies:"
 
-                    t.options[:cookies].each do |cookie|
-                        printer.call  "#{indent * 3}* #{cookie.name}\t=> #{cookie.value}\n"
+                    t.options[:cookies].each do |name, value|
+                        printer.call  "#{indent * 3}* #{name}\t=> #{value}\n"
                     end
                 end
 
