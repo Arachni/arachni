@@ -70,8 +70,8 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                                     xml.affected_input_name vector.affected_input_name
                                 end
 
-                                if vector.respond_to? :default_inputs
-                                    add_inputs( xml, vector.default_inputs )
+                                if vector.respond_to? :inputs
+                                    add_inputs( xml, vector.inputs )
                                 end
                             }
 
