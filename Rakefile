@@ -37,7 +37,7 @@ begin
 
         desc 'Run reporter tests.'
         RSpec::Core::RakeTask.new( :reporters ) do |t|
-            t.pattern = FileList[ 'spec/components/reporters/**/*_spec.rb' ]
+            t.pattern = FileList[ 'spec/components/reporters/*_spec.rb' ]
         end
 
         desc 'Run plugin tests.'
