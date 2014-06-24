@@ -151,6 +151,7 @@ class Arachni::Reporters::Stdout < Arachni::Reporter::Base
         print_info '----------'
 
         issue.variations.each_with_index do |var, i|
+            print_line
             trusted = var.trusted? ? 'Trusted' : 'Untrusted'
 
             print_info "Variation #{i+1} (#{trusted}):"
