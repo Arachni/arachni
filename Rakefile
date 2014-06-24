@@ -132,8 +132,8 @@ begin
                 begin
                     $spec_issues = []
 
-                    Rake::Task['spec:checks'].execute rescue nil
-                    # RSpec::Core::Runner.run(['spec/components/checks/active/xpath_spec.rb'])
+                    # Rake::Task['spec:checks'].execute rescue nil
+                    RSpec::Core::Runner.run(FileList[ 'spec/components/checks/**/*_spec.rb' ])
 
                     ($spec_issues.size / 3).times do |i|
                         # Add remarks to some issues.
