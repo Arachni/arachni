@@ -257,7 +257,7 @@ class Issue
                 h[:vector].delete :default_inputs
                 h[:vector].delete :affected_input_name
             else
-                h[:vector].delete :inputs
+                h[:vector][:inputs] = h[:vector].delete( :default_inputs )
                 h[:vector][:affected_input_name] = affected_input_name
             end
         end

@@ -435,7 +435,7 @@ describe Arachni::Issue do
                         class:   'Arachni::Element::Form',
                         url:    'http://test.com/',
                         action: 'http://test.com/',
-                        default_inputs: { 'stuff' => '1' },
+                        inputs:  { 'stuff' => '1' },
                         affected_input_name:  'stuff',
                         html: nil
                     },
