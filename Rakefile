@@ -126,38 +126,42 @@ begin
             end
         end
 
-        desc 'Generate an AFR reporter for the reporter tests.'
+        desc 'Generate an AFR report for the reporter tests.'
         namespace :generate do
             task :afr do
                 begin
-                    # Run the check tests and save all the issues to put them in our
-                    # AFR reporter.
-                    FileUtils.touch( "#{Dir.tmpdir}/save_issues" )
+                    $spec_issues = []
+
                     Rake::Task['spec:checks'].execute rescue nil
-                    #RSpec::Core::Runner.run(['spec/components/checks/active/xss_spec.rb'])
+                    # RSpec::Core::Runner.run(['spec/components/checks/active/xpath_spec.rb'])
 
-                    issues = YAML.load_documents( IO.read( "#{Dir.tmpdir}/issues.yaml" ) ).flatten
-
-                    (issues.size / 3).times do |i|
+                    ($spec_issues.size / 3).times do |i|
                         # Add remarks to some issues.
-                        issue = issues[rand( issues.size )]
+                        issue = $spec_issues.sample
                         issue.add_remark( :stuff, 'Blah' )
                         issue.add_remark( :stuff, 'Blah2' )
 
                         # Flag some issues as untrusted.
-                        issues[rand( issues.size )].trusted = false
+                        $spec_issues.sample.trusted = false
                     end
 
+                    Arachni::Data.issues.store
+                    $spec_issues.each { |i| Arachni::Data.issues << i }
+
                     Arachni::Options.url = 'http://test.com'
-                    Arachni::Options.audit :forms, :links, :cookies, :headers
+                    Arachni::Options.audit.elements :forms, :links, :cookies, :headers
+                    Arachni::Options.audit.link_templates = [
+                        /\/input\/(?<input>.+)\//,
+                        /input\|(?<input>.+)/
+                    ]
 
                     Arachni::Report.new(
                         sitemap: { Arachni::Options.url => 200 },
-                        issues:  issues.uniq
-                    ). save( 'spec/support/fixtures/auditstore.afr' )
+                        issues:  Arachni::Data.issues.sort
+                    ).save( 'spec/support/fixtures/report.afr' )
                 ensure
-                    FileUtils.rm( "#{Dir.tmpdir}/save_issues" ) rescue nil
                     Arachni::Options.reset
+                    Arachni::Data.reset
                 end
             end
         end

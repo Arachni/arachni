@@ -31,36 +31,20 @@ shared_examples_for 'check' do
         Arachni::Data.issues.do_not_store
         Arachni::Data.issues.on_new_pre_deduplication do |issue|
             @issues << issue
+
+            # Leave this here, helps us save every kind of issue in order to test
+            # the reporters.
+            if $spec_issues
+                $spec_issues << issue
+            end
         end
 
         Arachni::Element::Capabilities::Analyzable::Timeout.do_not_deduplicate
     end
 
     after( :each ) do
-        # Leave this here, helps us save every kind of issue in order to test
-        # the reporters.
-        if File.exists?( "#{Dir.tmpdir}/save_issues" )
-
-            File.open( "#{Dir.tmpdir}/issues.yaml", 'a' ) do |f|
-                issues = []
-                @issues.each do |issue|
-                    issue.vector.remove_auditor
-                    issue.vector.instance_eval { @page = nil if @page }
-
-                    issue.request.instance_eval { @on_complete.clear } if issue.request
-                    issue.request.performer = nil
-
-                    issues << issue
-                end
-
-                f.write issues.to_yaml
-            end
-        end
-
         @issues.clear
-
         process_kill_reactor
-
         framework.reset
     end
 
