@@ -140,7 +140,7 @@ class Transition
         self.event = event
         @element   = element
 
-        @options = options.symbolize_keys
+        @options = options.symbolize_keys(false)
         @clock   = Time.now
 
         return self if !block_given?

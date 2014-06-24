@@ -53,8 +53,8 @@
                             <td>
                                 <%=
                                     erb 'shared/hash.erb',
-                                        code: true,
-                                        object: cookies.inject({}) { |h, c| c.inputs }
+                                        code:   true,
+                                        object: cookies
                                 %>
                             </td>
                         </tr>

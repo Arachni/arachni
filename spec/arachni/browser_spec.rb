@@ -27,7 +27,7 @@ describe Arachni::Browser do
 
             options = {}
             if element == :page && event == :load
-                options.merge!( url: @browser.watir.url, cookies: [] )
+                options.merge!( url: @browser.watir.url, cookies: {} )
             end
 
             if element.is_a? Hash
@@ -361,28 +361,28 @@ describe Arachni::Browser do
 
     describe '#flush_page_snapshots_with_sinks' do
         it 'returns pages with data-flow sink data' do
-            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub(1)}"
+            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub( function: { name: 'blah' } )}"
             @browser.explore_and_flush
             @browser.page_snapshots_with_sinks.map(&:dom).map(&:data_flow_sinks).should ==
                 @browser.flush_page_snapshots_with_sinks.map(&:dom).map(&:data_flow_sinks)
         end
 
         it 'returns pages with execution-flow sink data' do
-            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}"
+            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_execution_flow_sink_stub( function: { name: 'blah' } )}"
             @browser.explore_and_flush
             @browser.page_snapshots_with_sinks.map(&:dom).map(&:execution_flow_sinks).should ==
                 @browser.flush_page_snapshots_with_sinks.map(&:dom).map(&:execution_flow_sinks)
         end
 
         it 'empties the data-flow sink page buffer' do
-            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub(1)}"
+            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub( function: { name: 'blah' } )}"
             @browser.explore_and_flush
             @browser.flush_page_snapshots_with_sinks.map(&:dom).map(&:data_flow_sinks)
             @browser.page_snapshots_with_sinks.should be_empty
         end
 
         it 'empties the execution-flow sink page buffer' do
-            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}"
+            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_execution_flow_sink_stub( function: { name: 'blah' } )}"
             @browser.explore_and_flush
             @browser.flush_page_snapshots_with_sinks.map(&:dom).map(&:execution_flow_sinks)
             @browser.page_snapshots_with_sinks.should be_empty
@@ -391,7 +391,7 @@ describe Arachni::Browser do
 
     describe '#on_new_page_with_sink' do
         it 'assigns blocks to handle each page with execution-flow sink data' do
-            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}"
+            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_execution_flow_sink_stub( function: { name: 'blah' } )}"
 
             sinks = []
             @browser.on_new_page_with_sink do |page|
@@ -406,7 +406,7 @@ describe Arachni::Browser do
         end
 
         it 'assigns blocks to handle each page with data-flow sink data' do
-            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub( function: 'blah' )}"
+            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub( function: { name: 'blah' } )}"
 
             sinks = []
             @browser.on_new_page_with_sink do |page|
@@ -1785,17 +1785,17 @@ describe Arachni::Browser do
 
         describe :cookies do
             it 'loads the given cookies' do
-                cookie = Arachni::Element::Cookie.new( url: @url, inputs: { 'myname' => 'myvalue' } )
-                @browser.goto @url, cookies: [cookie]
+                cookie = { 'myname' => 'myvalue' }
+                @browser.goto @url, cookies: cookie
 
-                @browser.cookies.should include cookie
+                @browser.cookies.find { |c| c.name == cookie.keys.first }.inputs.should == cookie
             end
 
             it 'includes them in the transition' do
-                cookie = Arachni::Element::Cookie.new( url: @url, inputs: { 'myname' => 'myvalue' } )
-                transition = @browser.goto( @url, cookies: [cookie] )
+                cookie = { 'myname' => 'myvalue' }
+                transition = @browser.goto( @url, cookies: cookie )
 
-                transition.options[:cookies].map(&:to_s).should include cookie.to_s
+                transition.options[:cookies].should == cookie
             end
         end
 
@@ -1866,10 +1866,10 @@ describe Arachni::Browser do
 
         describe :cookies do
             it 'loads the given cookies' do
-                cookie = Arachni::Element::Cookie.new( url: @url, inputs: { 'myname' => 'myvalue' } )
-                @browser.load @url, cookies: [cookie]
+                cookie = { 'myname' => 'myvalue' }
+                @browser.load @url, cookies: cookie
 
-                @browser.cookies.should include cookie
+                @browser.cookies.find { |c| c.name == cookie.keys.first }.inputs.should == cookie
             end
         end
 

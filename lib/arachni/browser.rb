@@ -282,7 +282,7 @@ class Browser
     def goto( url, options = {} )
         take_snapshot      = options.include?(:take_snapshot) ?
             options[:take_snapshot] : true
-        extra_cookies      = options[:cookies] || []
+        extra_cookies      = options[:cookies] || {}
         update_transitions = options.include?(:update_transitions) ?
             options[:update_transitions] : true
 
@@ -1038,8 +1038,8 @@ class Browser
         HTTP::Client.cookie_jar.for_url( url ).each do |cookie|
             set_cookies[cookie.name] = cookie
         end
-        cookies.each do |cookie|
-            set_cookies[cookie.name] = cookie
+        cookies.each do |name, value|
+            set_cookies[name] = Cookie.new( url: url, inputs: { name => value } )
         end
 
         url = "#{url}/set-cookies-#{request_token}"
