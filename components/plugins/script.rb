@@ -11,7 +11,7 @@
 class Arachni::Plugins::Script < Arachni::Plugin::Base
 
     def run
-        if Arachni::RPC.constants.include?( :Server ) &&
+        if defined?( Arachni::RPC::Server::Framework ) &&
             framework.is_a?( Arachni::RPC::Server::Framework )
             print_error 'Cannot be executed while running as an RPC server.'
             return
