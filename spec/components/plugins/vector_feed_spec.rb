@@ -54,6 +54,8 @@ describe name_from_filename do
 
         oks = 0
         pages.each do |page|
+            next if page.code != 200
+
             if page.response.headers.any?
                 page.url.should  == v.first['url']
                 page.code.should == v.first['code']
@@ -121,7 +123,7 @@ describe name_from_filename do
 
     def run_test
         pages = []
-        framework.on_audit_page { |page| pages << page }
+        framework.on_page_audit { |page| pages << page }
         run
 
         pages.pop
