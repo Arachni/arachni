@@ -17,11 +17,11 @@ describe name_from_filename do
 
             checked = 0
             framework.report.issues.each do |issue|
-                next if issue.vector.affected_input_name != 'untrusted_input'
+                next if issue.affected_input_name != 'untrusted_input'
 
                 checked += 1
-                issue.should be_untrusted
-                issue.remarks[:meta_analysis].should be_true
+                issue.variations.first.should be_untrusted
+                issue.variations.first.remarks[:meta_analysis].should be_true
             end
 
             checked.should > 0

@@ -2,6 +2,8 @@ require 'sinatra'
 
 # stupid to way to pretend vulnerability for :os_cmd_injection_timing
 def eval( str )
+    return if !str.to_s.strip.start_with?( 'ping' )
+
     if delay = str.to_s.gsub( /\D/, ' ' ).split( ' ' ).uniq.last
         sleep delay.to_i
     end
