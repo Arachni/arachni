@@ -16,10 +16,10 @@ map:
 - without_issues: __URL__
 - without_issues: __URL__safe
 - with_issues: __URL__vuln
-total: 4
-without_issues: 3
+total: 3
+without_issues: 2
 with_issues: 1
-issue_percentage: 25
+issue_percentage: 33
 YAML
     end
 
