@@ -34,11 +34,11 @@ shared_examples_for 'plugin' do
         framework.run
 
         # Make sure plugin formatters work as well.
-        framework.reporters.load_all
-        framework.reporters.each do |name, _|
-            framework.reporters[name].new( framework.report, outfile: outfile ).run
-            File.delete( outfile ) rescue nil
-        end
+        # framework.reporters.load_all
+        # framework.reporters.each do |name, _|
+        #     framework.reporters[name].new( framework.report, outfile: outfile ).run
+        #     File.delete( outfile ) rescue nil
+        # end
     end
 
     def outfile
