@@ -157,7 +157,10 @@ class Arachni::Reporters::Stdout < Arachni::Reporter::Base
             print_info "Variation #{i+1} (#{trusted}):"
 
             if var.active?
-                print_info "Seed:      #{var.vector.seed.inspect}"
+                if var.vector.respond_to? :seed
+                    print_info "Seed:      #{var.vector.seed.inspect}"
+                end
+
                 print_info "Injected:  #{var.vector.affected_input_value.inspect}"
             end
 
