@@ -27,7 +27,7 @@ shared_examples_for 'reporter' do
     end
 
     def empty_report
-        Arachni::Report.new
+        Arachni::Report.new( options: { url: 'http://test.com' } )
     end
 
     def outfile
