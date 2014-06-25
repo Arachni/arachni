@@ -59,7 +59,7 @@ describe name_from_filename do
                 when Element::Cookie::DOM
                     transition.element.should == :page
                     transition.event.should == :load
-                    transition.options[:cookies].should == [issue.vector]
+                    transition.options[:cookies].should == issue.vector.inputs
             end
 
         end
