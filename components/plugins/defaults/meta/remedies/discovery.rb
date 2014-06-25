@@ -43,10 +43,14 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
         # URL path => size of response bodies.
         response_size_per_path  = {}
 
+        processed_issues = 0
+
         Data.issues.each do |issue|
-            next if issue.variations.size < 2 || !issue.tags.includes_tags?( :discovery )
+            next if !issue.tags.includes_tags?( :discovery )
 
             issue.variations.each do |variation|
+                processed_issues += 1
+
                 # We'll do this per path since 404 handlers and such operate per
                 # directory...usually...probably...hopefully.
                 path = File.dirname( uri_parse( variation.vector.action ).path )
@@ -74,6 +78,9 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
             end
         end
 
+        # Not a lot of sense in comparing a single issue with itself.
+        return if processed_issues < 2
+
         diffs_per_path.each_pair do |path, diff|
             # calculate the similarity ratio of the responses under the current path
             similarity = Float( diff.size * issue_digests_per_path[path].size ) /
@@ -84,7 +91,6 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
             # Gotcha!
             issue_digests_per_path[path].each do |digest|
                 Data.issues[digest].variations.each do |issue|
-                    ap REMARK
                     issue.add_remark :meta_analysis, REMARK
 
                     # Requires manual verification.
