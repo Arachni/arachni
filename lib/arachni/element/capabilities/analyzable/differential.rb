@@ -156,7 +156,10 @@ module Differential
             audit( opts[:false], opts ) do |res, elem|
                 altered_hash = elem.affected_input_name.hash
 
-                next if signatures[:corrupted][altered_hash]
+                if signatures[:corrupted][altered_hash]
+                    increase_received_responses( opts, signatures )
+                    next
+                end
 
                 gathered[altered_hash] ||= 0
                 gathered[altered_hash]  += 1
@@ -212,12 +215,19 @@ module Differential
                     signatures[pair_hash][altered_hash]      ||= {}
                     @data_gathering[pair_hash][altered_hash] ||= {}
 
-                    next if signatures[pair_hash][altered_hash][:corrupted] ||
+                    if signatures[pair_hash][altered_hash][:corrupted] ||
                         signatures[:corrupted][altered_hash]
+
+                        increase_received_responses( opts, signatures )
+                        next
+                    end
 
                     response_check( res, signatures, elem, pair_hash )
 
-                    next if signature_sieve( altered_hash, signatures, pair_hash )
+                    if signature_sieve( altered_hash, signatures, pair_hash )
+                        increase_received_responses( opts, signatures )
+                        next
+                    end
 
                     if gathered[pair_hash][altered_hash] == opts[:precision]
                         elem.print_status "Got 'true'  response for #{elem.type} " <<
@@ -278,12 +288,19 @@ module Differential
                     signatures[pair_hash][altered_hash]      ||= {}
                     @data_gathering[pair_hash][altered_hash] ||= {}
 
-                    next if signatures[pair_hash][altered_hash][:corrupted] ||
+                    if signatures[pair_hash][altered_hash][:corrupted] ||
                         signatures[:corrupted][altered_hash]
+
+                        increase_received_responses( opts, signatures )
+                        next
+                    end
 
                     response_check( res, signatures, elem, pair_hash )
 
-                    next if signature_sieve( altered_hash, signatures, pair_hash )
+                    if signature_sieve( altered_hash, signatures, pair_hash )
+                        increase_received_responses( opts, signatures )
+                        next
+                    end
 
                     if gathered[pair_hash][altered_hash] == opts[:precision]
                         elem.print_status "Got 'false' response for #{elem.type} " <<
@@ -307,6 +324,11 @@ module Differential
                 end
             end
         end
+    end
+
+    def increase_received_responses( opts, signatures )
+        @data_gathering[:received_responses] += 1
+        finalize_if_done( opts, signatures )
     end
 
     # Check if we're done with data gathering and proceed to establishing a
@@ -337,7 +359,10 @@ module Differential
                 gathered[altered_hash] ||= 0
                 gathered[altered_hash]  += 1
 
-                next if signatures[:corrupted][altered_hash]
+                if signatures[:corrupted][altered_hash]
+                    @data_gathering[:received_responses] += 1
+                    next
+                end
 
                 response_check( res, signatures, elem )
 
@@ -409,13 +434,13 @@ module Differential
         corrupted = false
 
         if response.code != 200
-            print_status 'Server returned non 200 status,' <<
+            print_status "Server returned non 200 status (#{response.code})," <<
                 " aborting analysis for #{elem.type} variable " <<
                 "'#{elem.affected_input_name}' with action '#{elem.action}'."
             corrupted = true
         end
 
-        if response.body.to_s.empty?
+        if !corrupted && response.body.empty?
             print_status 'Server returned empty response body,' <<
                 " aborting analysis for #{elem.type} variable " <<
                 "'#{elem.affected_input_name}' with action '#{self.action}'."
@@ -448,6 +473,7 @@ module Differential
         #       don't match.
         if (@data_gathering[:controls][input] && gathered[:false_probes]) &&
             (signatures[:controls][input] != signature[:false])
+
             signatures[pair].delete( input )
             return true
         end
@@ -459,6 +485,7 @@ module Differential
         #       are too similar.
         if (gathered[:false_probes] && gathered[:true_probes]) &&
             signature[:false].similar?( signature[:true], 5 )
+
             signatures[pair].delete( input )
             return true
         end
