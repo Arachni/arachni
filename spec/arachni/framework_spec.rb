@@ -1384,7 +1384,8 @@ describe Arachni::Framework do
                     oracle:     'Oracle',
                     pgsql:      'Postgresql',
                     sqlite:     'SQLite',
-                    sybase:     'Sybase'
+                    sybase:     'Sybase',
+                    mongodb:    'MongoDB'
                 },
                 'Web servers' => {
                     apache: 'Apache',
