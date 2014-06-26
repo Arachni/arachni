@@ -178,6 +178,7 @@
     - Passive
         - New
             - Cookie set for parent domain (`cookie_set_for_parent_domain`)
+            - Blind NoSQL Injection (differential analysis) (`nosqli_blind_differential`)
             - Grep
                 - `emails` - Updated to handle simple (`[at]` and `[dot]`) obfuscation.
 
