@@ -42,7 +42,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.3.2
+# @version 0.3.3
 #
 # @see http://en.wikipedia.org/wiki/Cross-site_request_forgery
 # @see http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)
@@ -165,7 +165,7 @@ class Arachni::Modules::CSRF < Arachni::Module::Base
                 It requires a logged-in user's cookie-jar.},
             elements:    [ Element::FORM ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.3.2',
+            version:     '0.3.3',
             references:  {
                 'Wikipedia'    => 'http://en.wikipedia.org/wiki/Cross-site_request_forgery',
                 'OWASP'        => 'http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)',

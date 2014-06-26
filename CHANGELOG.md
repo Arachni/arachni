@@ -14,6 +14,7 @@
         - `xss_script_tag` - Preliminary taint check should be case insensitive.
         - `xss_tag` - Preliminary taint check should be case insensitive.
         - `unvalidated_redirect` - URL check should be case insensitive.
+        - `csrf` - Removed man length restrictions from token identification.
 
 ## 0.4.7 _(April 12, 2014)_
 
