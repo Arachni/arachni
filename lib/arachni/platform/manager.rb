@@ -73,7 +73,8 @@ class Manager
         :frontbase,
         :ingres,
         :hsqldb,
-        :access
+        :access,
+        :mongodb
     ]
 
     SERVERS = [
@@ -125,6 +126,7 @@ class Manager
         ingres:     'IngresDB',
         hsqldb:     'HSQLDB',
         access:     'MS Access',
+        mongodb:    'MongoDB',
 
         # Web servers
         apache:     'Apache',
