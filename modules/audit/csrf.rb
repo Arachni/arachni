@@ -113,11 +113,9 @@ class Arachni::Modules::CSRF < Arachni::Module::Base
 
         # we could use regexps but i kinda like lcamtuf's (Michal's) way
         base16_len_min    = 8
-        base16_len_max    = 45
         base16_digit_num  = 2
 
         base64_len_min    = 6
-        base64_len_max    = 32
         base64_digit_num  = 1
         base64_case       = 2
         base64_digit_num2 = 3
@@ -126,16 +124,16 @@ class Arachni::Modules::CSRF < Arachni::Module::Base
         len = str.size
         digit_cnt = str.scan( /[0-9]+/ ).join.size
 
-        if len >= base16_len_min && len <= base16_len_max && digit_cnt >= base16_digit_num
+        if len >= base16_len_min && digit_cnt >= base16_digit_num
             return true
         end
 
         upper_cnt = str.scan( /[A-Z]+/ ).join.size
         slash_cnt = str.scan( /\/+/ ).join.size
 
-        if len >= base64_len_min && len <= base64_len_max &&
+        if len >= base64_len_min && slash_cnt <= base64_slash_cnt &&
             ((digit_cnt >= base64_digit_num && upper_cnt >= base64_case ) ||
-              digit_cnt >= base64_digit_num2) && slash_cnt <= base64_slash_cnt
+              digit_cnt >= base64_digit_num2)
             return true
         end
 
