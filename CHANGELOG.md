@@ -178,6 +178,9 @@
     - Passive
         - New
             - Cookie set for parent domain (`cookie_set_for_parent_domain`)
+            - Grep
+                - `emails` - Updated to handle simple (`[at]` and `[dot]`) obfuscation.
+
 
 ## 0.4.6 _(January 1, 2014)_
 

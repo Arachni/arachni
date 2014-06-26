@@ -6,11 +6,11 @@
 # Looks for and logs e-mail addresses.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-# @version 0.1.1
+# @version 0.2
 class Arachni::Checks::EMails < Arachni::Check::Base
 
     def run
-        match_and_log( /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}/i ) do |email|
+        match_and_log( /[A-Z0-9._%+-]+(?:@|\s*\[at\]\s*)[A-Z0-9.-]+(?:\.|\s*\[dot\]\s*)[A-Z]{2,4}/i ) do |email|
             return false if audited?( email )
             audited( email )
         end
@@ -22,7 +22,7 @@ class Arachni::Checks::EMails < Arachni::Check::Base
             description: %q{Greps pages for disclosed e-mail addresses.},
             elements:    [ Element::Body ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.1',
+            version:     '0.2',
 
             issue:       {
                 name:            %q{E-mail address disclosure},
