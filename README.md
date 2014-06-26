@@ -308,11 +308,14 @@ Active checks engage the web application via its inputs.
     - Ingres
     - HSQLDB
     - MS Access
-- Blind SQL injection using rDiff analysis (`sqli_blind_rdiff`).
+- Blind SQL injection using differential analysis (`sqli_blind_differential`).
 - Blind SQL injection using timing attacks (`sqli_blind_timing`).
     - MySQL
     - PostgreSQL
     - MSSQL
+- NoSQL injection (`nosqli`) -- Error based vulnerability detection.
+    - MongoDB
+- Blind NoSQL injection using differential analysis (`nosqli_blind_differential`).
 - CSRF detection (`csrf`).
 - Code injection (`code_injection`).
     - PHP
