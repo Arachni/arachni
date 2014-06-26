@@ -13,10 +13,10 @@ class Arachni::Checks::BlindDifferentialNoSQLInjection < Arachni::Check::Base
         pairs  = []
         [ '\'', '"', '' ].each do |q|
             {
-                ';return true;var foo=' => ';return false;var foo=',
-                '||this||'              => '||!this||'
+                '%q;return true;var foo=%q' => '%q;return false;var foo=%q',
+                '1%q||this%q'               => '1%q||!this%q'
             }.each do |s_true, s_false|
-                pairs << { "#{q}#{s_true}#{q}" => "#{q}#{s_false}#{q}" }
+                pairs << { s_true.gsub( '%q', q ) => s_false.gsub( '%q', q ) }
             end
         end
 
