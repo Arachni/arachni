@@ -58,13 +58,12 @@ class Arachni::Checks::CSRF < Arachni::Check::Base
         end
     end
 
-    #
     # Tries to detect if a form is protected using an anti-CSRF token.
     #
     # @param    [Arachni::Element::Form]  form
     #
-    # @return   [Bool]  +true+ if the form has no anti-CSRF token, +false+ otherwise
-    #
+    # @return   [Bool]
+    #   `true` if the form has no anti-CSRF token, `false` otherwise
     def unsafe?( form )
         # if a form has a nonce then we're cool, bail out early
         return false if form.has_nonce? || !form.html
@@ -74,7 +73,6 @@ class Arachni::Checks::CSRF < Arachni::Check::Base
         # just as well be in +name+ -- so we check them both...
         #
         found_token = (form.inputs || []).map do |k, v|
-            next if form.field_type_for( k ) != :hidden
             csrf_token?( v ) || csrf_token?( k )
         end.include?( true )
 
@@ -90,21 +88,17 @@ class Arachni::Checks::CSRF < Arachni::Check::Base
         !found_token
     end
 
-    #
     # Checks if the str is an anti-CSRF token of base10/16/32/64.
     #
     # @param  [String]  str
-    #
     def csrf_token?( str )
         return false if !str
 
         # we could use regexps but i kinda like lcamtuf's (Michal's) way
         base16_len_min    = 8
-        base16_len_max    = 45
         base16_digit_num  = 2
 
         base64_len_min    = 6
-        base64_len_max    = 32
         base64_digit_num  = 1
         base64_case       = 2
         base64_digit_num2 = 3
@@ -113,16 +107,16 @@ class Arachni::Checks::CSRF < Arachni::Check::Base
         len = str.size
         digit_cnt = str.scan( /[0-9]+/ ).join.size
 
-        if len >= base16_len_min && len <= base16_len_max && digit_cnt >= base16_digit_num
+        if len >= base16_len_min && digit_cnt >= base16_digit_num
             return true
         end
 
         upper_cnt = str.scan( /[A-Z]+/ ).join.size
         slash_cnt = str.scan( /\/+/ ).join.size
 
-        if len >= base64_len_min && len <= base64_len_max &&
+        if len >= base64_len_min && slash_cnt <= base64_slash_cnt &&
             ((digit_cnt >= base64_digit_num && upper_cnt >= base64_case ) ||
-              digit_cnt >= base64_digit_num2) && slash_cnt <= base64_slash_cnt
+                digit_cnt >= base64_digit_num2)
             return true
         end
 
