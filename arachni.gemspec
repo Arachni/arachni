@@ -7,7 +7,7 @@
 Gem::Specification.new do |s|
     require File.expand_path( File.dirname( __FILE__ ) ) + '/lib/arachni/version'
 
-    s.required_ruby_version = '>= 1.9.2'
+    s.required_ruby_version = '>= 1.9.3'
 
     s.name              = 'arachni'
     s.version           = Arachni::VERSION
@@ -46,7 +46,7 @@ Gem::Specification.new do |s|
     s.add_dependency 'rubyzip',           '1.1.3'
 
     # HTML report
-    s.add_dependency 'coderay'
+    s.add_dependency 'coderay',           '1.1.0'
 
     s.add_dependency 'childprocess',      '0.5.3'
 
@@ -79,7 +79,7 @@ Gem::Specification.new do |s|
     s.add_dependency 'rb-readline',       '0.5.1'
 
     # Markup parsing.
-    s.add_dependency 'nokogiri',          '>= 1.6.1'
+    s.add_dependency 'nokogiri',          '1.6.2.1'
 
     # Outputting data in table format (arachni_rpcd_monitor).
     s.add_dependency 'terminal-table',    '1.4.5'
