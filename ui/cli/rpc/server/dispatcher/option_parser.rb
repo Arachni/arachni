@@ -137,7 +137,7 @@ class OptionParser < UI::CLI::OptionParser
         separator 'Snapshot'
 
         on( '--snapshot-save-path DIRECTORY', String,
-            'Directory under which to store scan snapshots.' ) do |path|
+            'Directory under which to store snapshots of suspended scans.' ) do |path|
             options.snapshot.save_path = path
         end
     end
