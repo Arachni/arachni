@@ -146,13 +146,13 @@ class OptionParser < UI::CLI::OptionParser
         on( '--scope-dom-depth-limit LIMIT', Integer,
                'How deep to go into the DOM tree of each page, for pages with JavaScript code.',
                "(Default: #{options.scope.dom_depth_limit})",
-               "(Setting it to '0' will skip DOM/JS/AJAX analysis.)"
+               "(Setting it to '0' will disable browser analysis.)"
         ) do |limit|
             options.scope.dom_depth_limit = limit
         end
 
         on( '--scope-https-only', 'Forces the system to only follow HTTPS URLs.',
-            "(Default: #{options.scope.https_only})"
+            "(Default: #{!!options.scope.https_only})"
         ) do
             options.scope.https_only = true
         end
@@ -187,6 +187,10 @@ class OptionParser < UI::CLI::OptionParser
 
         on( '--audit-link-template TEMPLATE', Regexp,
             'Regular expression with named captures to use to extract input information from generic paths.',
+            "To extract the 'input1' and 'input2' inputs from:",
+            '  http://test.com/input1/value1/input2/value2',
+            'Use:',
+            '  /input1\/(?<input1>\w+)\/input2\/(?<input2>\w+)/',
             '(Can be used multiple times.)'
         ) do |pattern|
             # We merge this way to enforce validation from the options group.
