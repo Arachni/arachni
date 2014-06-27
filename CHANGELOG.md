@@ -140,6 +140,9 @@
         responses associated with each issue.
     - `proxy`
         - Updated to use `HTTP::ProxyServer`.
+        - Added `ignore_responses` option.
+            - Forces the proxy to only extract vector information from observed
+                HTTP requests and not analyze responses.
     - `autologin`
         - `params` option renames to `parameters`.
         - Changed results to include `status` (`String`) and `message` (`String`)

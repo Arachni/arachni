@@ -97,7 +97,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     def request_handler( req, res )
         url = req.url
 
-        if !system_url?( url ) && skip_path?( url )
+        if !system_url?( url ) && req.scope.out?
             print_info "Ignoring, out of scope: #{url}"
             return true
         end
@@ -326,10 +326,18 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
     # Called by the proxy for each response.
     def response_handler( request, response )
-        return response if skip_path?( response.url )
+        return response if response.scope.out?
 
-        page = response.to_page
-        page = update_forms( page, request, response ) if request.body
+        if ignore_responses?
+            page = Page.from_data(
+                url:      response.url,
+                response: response.to_h
+            )
+        else
+            page = response.to_page
+        end
+
+        page = update_forms( page, request, response )
 
         print_info " *  #{page.forms.size} forms"
         print_info " *  #{page.links.size} links"
@@ -338,6 +346,19 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         @pages << page.dup
 
         inject_panel response
+    rescue => e
+        ap e
+        ap e.backtrace
+    end
+
+    def update_forms( page, request, response )
+        page.forms |= [Form.new(
+            url:    response.url,
+            action: response.url,
+            method: request.method,
+            inputs: request_parse_body( request.body.to_s )
+        )]
+        page
     end
 
     def inject_panel( response )
@@ -375,14 +396,8 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         TemplateScope.get.erb( *args )
     end
 
-    def update_forms( page, request, response )
-        page.forms |= [Form.new(
-            url:    response.url,
-            action: response.url,
-            method: request.method,
-            inputs: request_parse_body( request.body )
-        )]
-        page
+    def ignore_responses?
+        @options[:ignore_responses]
     end
 
     def system_url?( url )
@@ -430,7 +445,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                 * Authorization via a configurable session token.
 
                 To skip crawling and only audit elements discovered by using the proxy
-                set the link-count limit option to 0.
+                set the scope page-limit option to 0.
 
                 NOTICE:
                     The 'session_token' will be looked for in a cookie named
@@ -454,6 +469,11 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                 Options::Address.new( :bind_address,
                     description: 'IP address to bind to.',
                     default:     '0.0.0.0'
+                ),
+                Options::Bool.new( :ignore_responses,
+                    description: 'Forces the proxy to only extract vector '+
+                        'information from observed HTTP requests and not analyze responses.',
+                    default: false
                 ),
                 Options::String.new( :session_token,
                     description: 'A session token to demand from users before allowing them to use the proxy.'
