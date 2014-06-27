@@ -239,7 +239,7 @@ class OptionParser < UI::CLI::OptionParser
         end
 
         on( '--http-request-redirect-limit LIMIT', Integer,
-            'Maximum amount of redirect to follow for each HTTP request.',
+            'Maximum amount of redirects to follow for each HTTP request.',
             "(Default: #{options.http.request_redirect_limit})"
         ) do |limit|
             options.http.request_redirect_limit = limit
@@ -247,7 +247,7 @@ class OptionParser < UI::CLI::OptionParser
 
         on( '--http-request-queue-size QUEUE_SIZE', Integer,
                'Maximum amount of requests to keep in the queue.',
-               'Bigger size means better scheduling and better performance',
+               'Bigger size means better scheduling and better performance,',
                'smaller means less RAM consumption.',
                "(Default: #{options.http.request_queue_size})"
         ) do |size|
@@ -262,15 +262,15 @@ class OptionParser < UI::CLI::OptionParser
             options.http.request_headers[header] = val
         end
 
-        on( '--http-response-max-size RESPONSE_SIZE', Integer,
-               'Do not download response bodies larger than the specified limit, in bytes.',
+        on( '--http-response-max-size LIMIT', Integer,
+               'Do not download response bodies larger than the specified LIMIT, in bytes.',
                '(Default: inf)'
         ) do |size|
             options.http.response_max_size = size
         end
 
         on( '--http-cookie-jar COOKIE_JAR_FILE',
-               'Netscape-styled HTTP cookie file.'
+               'Netscape-styled HTTP cookiejar file.'
         ) do |file|
             options.http.cookie_jar_filepath = file
         end
@@ -287,7 +287,7 @@ class OptionParser < UI::CLI::OptionParser
         end
 
         on( '--http-authentication-password PASSWORD',
-               'Username for HTTP authentication.' ) do |username|
+               'Password for HTTP authentication.' ) do |username|
             options.http.authentication_username = username
         end
 
@@ -323,18 +323,18 @@ class OptionParser < UI::CLI::OptionParser
 
         on( '--checks CHECK,CHECK2,...',
                'Comma separated list of checks to load.',
-               "    Checks are referenced by their filename without the '.rb' extension, use '--list-checks' to list all.",
-               "    Use '*' as a check name to deploy all checks or as a wildcard, like so:",
-               '        xss*   to load all xss checks',
-               '        sqli*  to load all sql injection checks',
+               "    Checks are referenced by their filename without the '.rb' extension, use '--checks-list' to list all.",
+               "    Use '*' as a check name to load all checks or as a wildcard, like so:",
+               '        xss*   to load all XSS checks',
+               '        sqli*  to load all SQL injection checks',
                '        etc.',
-               ' ',
+               '',
                '    You can exclude checks by prefixing their name with a minus sign:',
                '        --checks=*,-backup_files,-xss',
                "    The above will load all checks except for the 'backup_files' and 'xss' checks.",
-               ' ',
+               '',
                '    Or mix and match:',
-               '        -xss*   to unload all xss checks.'
+               '        -xss*   to unload all XSS checks.'
         ) do |checks|
             options.checks |= checks.split( ',' )
         end
@@ -353,8 +353,8 @@ class OptionParser < UI::CLI::OptionParser
         end
 
         on( "--plugin 'PLUGIN:OPTION=VALUE,OPTION2=VALUE2'",
-               "PLUGIN is the name of the plugin as displayed by '--list-plugins'.",
-               "(Reports are referenced by their filename without the '.rb' extension, use '--list-plugins' to list all.)",
+               "PLUGIN is the name of the plugin as displayed by '--plugins-list'.",
+               "(Plugins are referenced by their filename without the '.rb' extension, use '--plugins-list' to list all.)",
                '(Can be used multiple times.)'
         ) do |plugin|
             prepare_component_options( options.plugins, plugin )
@@ -381,7 +381,7 @@ class OptionParser < UI::CLI::OptionParser
         on( '--platforms PLATFORM,PLATFORM2,...',
                'Comma separated list of platforms (by shortname) to audit.',
                '(The given platforms will be used *in addition* to fingerprinting. In order to restrict the audit to',
-               "these platforms enable the '--no-fingerprinting' option.)"
+               "these platforms enable the '--platforms-no-fingerprinting' option.)"
         ) do |platforms|
             options.platforms |= platforms.split( ',' )
         end
@@ -392,7 +392,7 @@ class OptionParser < UI::CLI::OptionParser
         separator 'Session'
 
         on( '--login-check-url URL', String,
-               'A URL used to verify that the scanner is still logged in ' <<
+               'URL to use to verify that the scanner is still logged in ' <<
                    'to the web application.',
                "(Requires 'login-check-pattern'.)"
         ) do |url|
@@ -400,7 +400,7 @@ class OptionParser < UI::CLI::OptionParser
         end
 
         on( '--login-check-pattern PATTERN', Regexp,
-               "A pattern used against the body of the 'login-check-url'" <<
+               "Pattern used against the body of the 'login-check-url'" <<
                    ' to verify that the scanner is still logged in to the web application.',
                "(Requires 'login-check-url'.)"
         ) do |pattern|
@@ -452,8 +452,8 @@ class OptionParser < UI::CLI::OptionParser
             options.browser_cluster.job_timeout = job_timeout
         end
 
-        on( '--browser-cluster-worker-time-to-live COUNT', Integer,
-            'Re-spawn the browser of each worker every COUNT jobs.'
+        on( '--browser-cluster-worker-time-to-live LIMIT', Integer,
+            'Re-spawn the browser of each worker every LIMIT jobs.'
         ) do |worker_time_to_live|
             options.browser_cluster.worker_time_to_live = worker_time_to_live
         end
@@ -485,7 +485,7 @@ class OptionParser < UI::CLI::OptionParser
         end
 
         on( '--profile-load-filepath FILEPATH', String,
-               'Loads a configuration profile from FILEPATH.'
+               'Load a configuration profile from FILEPATH.'
         ) do |filepath|
             load_profile( filepath )
         end
@@ -509,9 +509,8 @@ class OptionParser < UI::CLI::OptionParser
         separator 'Snapshot'
 
         on( '--snapshot-save-path PATH', String,
-            'Directory or file path where to store the scan snapshot.',
-            'You can use the generated file to resume a suspended scan at a' +
-                " later time with the 'arachni_restore' executable."
+            'Directory or file path where to store the snapshot of a suspended scan.',
+            'You can use the generated file to resume the scan with the \'arachni_restore\' executable.'
         ) do |path|
             options.snapshot.save_path = path
         end
@@ -531,8 +530,7 @@ class OptionParser < UI::CLI::OptionParser
     def timeout_suspend
         on( '--timeout-suspend',
             'Suspend after the timeout.',
-            'You can use the generated file to resume a suspended scan at a' +
-                " later time with the 'arachni_restore' executable."
+            'You can use the generated file to resume the scan with the \'arachni_restore\' executable.'
         ) do |time|
             @timeout_suspend = true
         end
