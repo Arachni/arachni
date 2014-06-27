@@ -35,8 +35,7 @@ Gem::Specification.new do |s|
                             'arachni_multi', 'arachni_reporter', 'arachni_restore' ]
 
     s.extra_rdoc_files  = %w(README.md ACKNOWLEDGMENTS.md LICENSE.md
-                            AUTHORS.md CHANGELOG.md CONTRIBUTORS.md
-                             )
+                            AUTHORS.md CHANGELOG.md CONTRIBUTORS.md)
 
     s.rdoc_options      = [ '--charset=UTF-8' ]
 
