@@ -10,9 +10,9 @@ module Arachni
 module UI::CLI
 module RPC
 module Server
+class Dispatcher
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-class Dispatcher
 class OptionParser < UI::CLI::OptionParser
 
     attr_reader :cli
