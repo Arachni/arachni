@@ -342,6 +342,24 @@ describe Arachni::Element::LinkTemplate do
                 described_class.from_document( '', '' ).should be_empty
             end
         end
+        context 'when links have actions that are out of scope' do
+            it 'ignores them' do
+                html = '
+                    <html>
+                        <body>
+                            <a href="' + url + '/test2/param/exclude"></a>
+
+                            <a href="' + url + '/test2/param/myvalue"></a>
+                        </body>
+                    </html>'
+
+                Arachni::Options.scope.exclude_path_patterns = [/exclude/]
+
+                links = described_class.from_document( url, html )
+                links.size.should == 1
+                links.first.action.should == url + 'test2/param/myvalue'
+            end
+        end
         context 'when the response contains link templates' do
             it 'returns an array of link templates' do
                 html = '

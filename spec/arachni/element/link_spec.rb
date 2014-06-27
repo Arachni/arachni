@@ -196,6 +196,24 @@ describe Arachni::Element::Link do
                 described_class.from_document( '', '' ).should be_empty
             end
         end
+        context 'when links have actions that are out of scope' do
+            it 'ignores them' do
+                html = '
+                    <html>
+                        <body>
+                            <a href="' + url + '/exclude?param_one=value_one&param_two=value_two"></a>
+
+                            <a href="' + url + '/stuff?param_one=value_one&param_two=value_two"></a>
+                        </body>
+                    </html>'
+
+                Arachni::Options.scope.exclude_path_patterns = [/exclude/]
+
+                links = described_class.from_document( url, html )
+                links.size.should == 1
+                links.first.action.should == url + 'stuff'
+            end
+        end
         context 'when the response contains links' do
             it 'should return an array of links' do
                 html = '

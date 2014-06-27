@@ -630,6 +630,30 @@ describe Arachni::Element::Form do
                 described_class.from_document( '', '' ).should be_empty
             end
         end
+        context 'when forms have actions that are out of scope' do
+            it 'ignores them' do
+                html = '
+                    <html>
+                        <body>
+                            <form method="get" action="form_action/exclude" name="my_form">
+                                <input name="my_first_input" value="my_first_value" />
+                                <input name="my_second_input" value="my_second_value" />
+                            </form>
+
+                            <form method="get" action="form_action" name="my_form">
+                                <input name="my_first_input" value="my_first_value" />
+                                <input name="my_second_input" value="my_second_value" />
+                            </form>
+                        </body>
+                    </html>'
+
+                Arachni::Options.scope.exclude_path_patterns = [/exclude/]
+
+                forms = described_class.from_document( url, html )
+                forms.size.should == 1
+                forms.first.action.should == utilities.normalize_url( url + '/form_action' )
+            end
+        end
         context 'when the response contains forms' do
             context 'with text inputs' do
                 it 'returns an array of forms' do

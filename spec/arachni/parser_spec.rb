@@ -38,11 +38,10 @@ describe Arachni::Parser do
 
     describe '#body=' do
         let(:response) do
-            url = 'http://stuff.com/'
             Arachni::HTTP::Response.new(
-                url: url,
+                url: @opts.url,
                 body: '<a href="/?name=val">Stuff</a>',
-                request: Arachni::HTTP::Request.new( url: url )
+                request: Arachni::HTTP::Request.new( url: @opts.url )
             )
         end
 
