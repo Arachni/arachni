@@ -26,7 +26,7 @@ class OptionParser < UI::CLI::OptionParser
         on( '--authorized-by EMAIL_ADDRESS', Integer,
                'E-mail address of the person who authorized the scan.',
                "(It'll make it easier on the sys-admins during log reviews.)",
-               "(Will be used as a value for the 'From' HTTP REQUEST header.)"
+               "(Will be used as a value for the 'From' HTTP request header.)"
         ) do |email_address|
             options.authorized_by = email_address
         end
@@ -61,7 +61,7 @@ class OptionParser < UI::CLI::OptionParser
         end
 
         on( '--scope-include-subdomains', 'Follow links to subdomains.',
-            "(Default: #{options.scope.include_subdomains})"
+            "(Default: #{!!options.scope.include_subdomains})"
         ) do
             options.scope.include_subdomains = true
         end
@@ -87,9 +87,9 @@ class OptionParser < UI::CLI::OptionParser
             options.scope.exclude_binaries = true
         end
 
-        on( '--scope-redundant-path-pattern PATTERN:COUNTER',
+        on( '--scope-redundant-path-pattern PATTERN:LIMIT',
                'Limit crawl on redundant pages like galleries or catalogs.',
-               '(URLs matching PATTERN will be crawled COUNTER amount of times.)',
+               '(URLs matching PATTERN will be crawled LIMIT amount of times.)',
                '(Can be used multiple times.)'
         ) do |rule|
             pattern, counter = rule.split( ':', 2 )
@@ -97,8 +97,8 @@ class OptionParser < UI::CLI::OptionParser
                 Integer( counter )
         end
 
-        on( '--scope-auto-redundant [COUNTER]', Integer,
-               'Only follow URLs with identical query parameter names COUNTER amount of times.',
+        on( '--scope-auto-redundant [LIMIT]', Integer,
+               'Only follow URLs with identical query parameter names LIMIT amount of times.',
                '(Default: 10)'
         ) do |counter|
             options.scope.auto_redundant_paths = counter || 10
@@ -134,7 +134,9 @@ class OptionParser < UI::CLI::OptionParser
         end
 
         on( '--scope-url-rewrite PATTERN:SUBSTITUTION',
-            'Rewrite URLs based on the given PATTERN and SUBSTITUTION.'
+            'Rewrite URLs based on the given PATTERN and SUBSTITUTION.',
+            'To convert:  http://test.com/articles/some-stuff/23 to http://test.com/articles.php?id=23',
+            'Use:         /articles\/[\w-]+\/(\d+)/:articles.php?id=\1'
         ) do |rule|
             pattern, substitution = rule.split( ':', 2 )
             options.scope.url_rewrites[ Regexp.new( pattern ) ] =
