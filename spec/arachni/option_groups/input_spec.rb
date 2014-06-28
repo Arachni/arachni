@@ -76,6 +76,24 @@ describe Arachni::OptionGroups::Input do
             subject.value_for_name( 'name' ).should == 'John Doe'
         end
 
+        context 'when the value is a Proc' do
+            it 'returns its return value' do
+                subject.without_defaults = true
+
+                value = 'John Doe'
+                subject.values = { /name/ => proc{ value } }
+
+                subject.value_for_name( 'name' ).should == value
+            end
+
+            it 'passes the input name as an argument' do
+                subject.without_defaults = true
+                subject.values = { /name/ => proc{ |name| name } }
+
+                subject.value_for_name( 'name' ).should == 'name'
+            end
+        end
+
         context 'when no match could be found' do
             context "and 'use_default' is set to" do
                 context true do
