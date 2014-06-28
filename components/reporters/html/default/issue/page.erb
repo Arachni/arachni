@@ -12,8 +12,7 @@
             <p class="text-muted">
                 Transitions describe the steps required to restore the state
                 of the page, to the one it had when it was processes by the
-                scanner,
-                as a series of events.
+                scanner, as a series of events.
 
                 In essence, each transition represents a user interaction.
             </p>
@@ -107,7 +106,11 @@
             (Binary bodies will not be displayed.)
         </p>
 
-        <pre class="code-container"><%= escapeHTML(page.response) %></pre>
+        <% if page.dom.transitions.any? %>
+            <pre class="code-container"><%= escapeHTML( page.response.to_s ) %></pre>
+        <% else %>
+            <pre class="code-container"><%= highlight_proof( page.response.to_s, issue.proof ) %></pre>
+        <% end %>
     </div>
 </div>
 

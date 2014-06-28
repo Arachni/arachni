@@ -34,7 +34,10 @@
         </div>
         <div id="<%= id %>-affected_page" class="panel-collapse collapse">
             <div class="panel-body">
-                <%= erb 'issue/page.erb', id: "#{id}-affected_page", page: issue.page %>
+                <%= erb 'issue/page.erb', id: "#{id}-affected_page",
+                        page:  issue.page,
+                        issue: issue
+                %>
             </div>
         </div>
     </div>
@@ -55,7 +58,10 @@
         </div>
         <div id="<%= id %>-referring_page" class="panel-collapse collapse">
             <div class="panel-body">
-                <%= erb 'issue/page.erb', id: "#{id}-referring_page", page: issue.referring_page %>
+                <%= erb 'issue/page.erb', id: "#{id}-referring_page",
+                        page:  issue.referring_page,
+                        issue: issue
+                %>
             </div>
         </div>
     </div>

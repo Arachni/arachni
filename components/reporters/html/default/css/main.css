@@ -134,3 +134,7 @@ ul.dropdown-menu ul.dropdown-menu {
 #bars, #pies {
     text-align: center;
 }
+
+.issue-proof-highlight {
+    background-color: yellow;
+}

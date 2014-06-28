@@ -85,6 +85,22 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
             code + '</pre></td></tr></tbody></table></div>'
         end
 
+        def highlight_proof( string, proof )
+            proof  = proof.to_s.recode
+            string = string.to_s.recode
+
+            return escapeHTML( string ) if proof.to_s.empty?
+            return escapeHTML( string ) if !string.include?( proof )
+
+            escaped_proof         = escapeHTML( proof )
+            escaped_response_body = escapeHTML( string )
+
+            escaped_response_body.gsub(
+                escaped_proof,
+                "<span class=\"issue-proof-highlight\">#{escaped_proof}</span>"
+            )
+        end
+
         def data_dump( data )
             ap = AwesomePrint::Inspector.new( plain: true, html: true )
             "<pre class='data-dump'>#{ap.awesome( data )}</pre>"
