@@ -75,8 +75,6 @@
     <hr/>
 <% end %>
 
-<%= erb 'issue/page/body.erb', id: id, page: page %>
-
 <div class="row">
     <div class="col-md-6">
         <strong>
@@ -112,3 +110,5 @@
         <pre class="code-container"><%= escapeHTML(page.response) %></pre>
     </div>
 </div>
+
+<%= erb 'issue/page/body.erb', id: id, page: page %>
