@@ -318,7 +318,8 @@ class Options
     # @return    [Hash]
     #   `self` converted to a Hash suitable for RPC transmission.
     def to_rpc_data
-        ignore = Set.new([:instance, :rpc, :dispatcher, :paths, :spawns, :snapshot])
+        ignore = Set.new([:instance, :rpc, :dispatcher, :paths, :spawns,
+                          :snapshot, :output])
 
         hash = {}
         instance_variables.each do |var|

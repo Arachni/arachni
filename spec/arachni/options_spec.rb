@@ -256,7 +256,7 @@ describe Arachni::Options do
 
     describe '#to_rpc_data' do
         let(:data) { subject.to_rpc_data }
-        ignore = [:instance, :rpc, :dispatcher, :paths, :spawns, :snapshot]
+        ignore = [:instance, :rpc, :dispatcher, :paths, :spawns, :snapshot, :output]
 
         it 'converts self to a serializable hash' do
             data.should be_kind_of Hash
