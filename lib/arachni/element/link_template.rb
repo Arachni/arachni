@@ -191,7 +191,10 @@ class LinkTemplate < Base
 
                 template, inputs = extract_inputs( href, templates )
                 next if !template && !DOM.data_from_node( link )
-                next if Arachni::URI( href ).scope.out?
+
+                if (parsed_url = Arachni::URI( href ))
+                    next if parsed_url.scope.out?
+                end
 
                 new(
                     url:      url.freeze,

@@ -139,7 +139,10 @@ class Link < Base
             document.search( '//a' ).map do |link|
                 href = to_absolute( link['href'], base_url )
                 next if !href
-                next if Arachni::URI( href ).scope.out?
+
+                if (parsed_url = Arachni::URI( href ))
+                    next if parsed_url.scope.out?
+                end
 
                 new(
                     url:    url.freeze,

@@ -401,7 +401,9 @@ class Form < Base
             options[:inputs] = {}
             options[:html]   = node.to_html.freeze
 
-            return if Arachni::URI( options[:action] ).scope.out?
+            if (parsed_url = Arachni::URI( options[:action] ))
+                return if parsed_url.scope.out?
+            end
 
             %w(textarea input select button).each do |attr|
                 options[attr] ||= []
