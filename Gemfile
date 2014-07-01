@@ -26,7 +26,7 @@ end
 gem 'typhoeus', github: 'typhoeus/typhoeus'
 gem 'ethon',    github: 'typhoeus/ethon'
 
-if __FILE__include? 'encoded-arachni'
+if __FILE__.include? 'encoded-arachni'
     gem 'arachni-reactor', path: '/home/zapotek/workspace/arachni-reactor'
     gem 'arachni-rpc',     path: '/home/zapotek/workspace/arachni-rpc-v0.2'
 else
