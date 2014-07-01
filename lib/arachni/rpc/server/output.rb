@@ -4,6 +4,9 @@
 =end
 
 module Arachni
+
+require "#{Options.paths.root}ui/cli/output"
+
 module UI
 
 # RPC Output interface.
