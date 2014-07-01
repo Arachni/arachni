@@ -56,7 +56,7 @@ class Instance
     end
 
     def run
-        timeout_time = Time.now + @timeout
+        timeout_time = Time.now + @timeout.to_i
         timed_out    = false
 
         begin
@@ -207,7 +207,7 @@ class Instance
         report = @instance.service.native_abort_and_report
         shutdown
 
-        @framework.reports.run :stdout, report
+        @framework.reporters.run :stdout, report
 
         filepath = report.save( @options.datastore.report_path )
         filesize = (File.size( filepath ).to_f / 2**20).round(2)
