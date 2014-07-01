@@ -299,10 +299,7 @@ class Options
     end
 
     def to_save_data
-        as_hash = to_h
-        as_hash.delete :paths
-        as_hash.delete :snapshot
-        as_hash.to_yaml
+        to_rpc_data.to_yaml
     end
 
     # Loads a file created by {#save}.
