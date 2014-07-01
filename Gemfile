@@ -10,7 +10,7 @@ end
 group :spec do
     gem 'simplecov', require: false, group: :test
 
-    gem 'rspec'
+    gem 'rspec', '2.99'
     gem 'faker'
 
     gem 'puma' if !Gem.win_platform? || RUBY_PLATFORM == 'java'
@@ -26,7 +26,7 @@ end
 gem 'typhoeus', github: 'typhoeus/typhoeus'
 gem 'ethon',    github: 'typhoeus/ethon'
 
-gem 'arachni-reactor', path: '/home/zapotek/workspace/arachni-reactor'
-gem 'arachni-rpc',     path: '/home/zapotek/workspace/arachni-rpc-v0.2'
+gem 'arachni-reactor', path: '../arachni-reactor'
+gem 'arachni-rpc',     path: '../arachni-rpc-v0.2'
 
 gemspec
