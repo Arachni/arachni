@@ -34,6 +34,34 @@ shared_examples_for 'submittable' do
         end
     end
 
+    describe '#method' do
+        it 'returns the HTTP method' do
+            submittable.method = :stuff
+            submittable.method.should == :stuff
+        end
+    end
+
+    describe '#http_method' do
+        it 'is aliased to #method' do
+            submittable.method = :stuff
+            submittable.http_method.should == :stuff
+        end
+    end
+
+    describe '#method=' do
+        it 'returns the HTTP method' do
+            submittable.method = :stuff
+            submittable.http_method.should == :stuff
+        end
+    end
+
+    describe '#http_method=' do
+        it 'is aliased to #method=' do
+            submittable.http_method = :stuff
+            submittable.method.should == :stuff
+        end
+    end
+
     describe '#platforms' do
         it 'returns platforms for the given element' do
             submittable.platforms.should be_kind_of Arachni::Platform::Manager

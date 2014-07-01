@@ -33,11 +33,13 @@ module Capabilities::Submittable
         return super( *args ) if args.any?
         @method.freeze
     end
+    alias :http_method :method
 
     # @see #method
     def method=( method )
         @method = method.to_s.downcase.to_sym
     end
+    alias :http_method= :method=
 
     # @note Ex. 'href' for links, 'action' for forms, etc.
     #
