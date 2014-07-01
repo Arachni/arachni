@@ -25,7 +25,7 @@ module Options
     def outfile( extension = '', description = 'Where to save the report.' )
         Options::String.new( :outfile,
                              description: description,
-                             default:     Time.now.to_s.gsub( ':', '.' ) + extension
+                             default:     Time.now.to_s.gsub( ':', '_' ) + extension
         )
     end
 
