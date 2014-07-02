@@ -209,6 +209,12 @@ class OptionParser < UI::CLI::OptionParser
                '(Can be used multiple times.)' ) do |name|
             options.audit.exclude_vectors << name
         end
+
+        on( '--audit-include-vector NAME',
+            'Input vector to audit exclusively, by name.',
+            '(Can be used multiple times.)' ) do |name|
+            options.audit.include_vectors << name
+        end
     end
 
     def http

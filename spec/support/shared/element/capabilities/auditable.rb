@@ -660,9 +660,35 @@ shared_examples_for 'auditable' do |options = {}|
             end
         end
 
-        context 'when the audit_exclude_vectors option is set' do
+        context "when the #{Arachni::OptionGroups::Audit}#exclude_vectors option is set" do
             it 'skips those vectors by name' do
                 Arachni::Options.audit.exclude_vectors |= auditable.inputs.keys
+
+                audited = []
+                auditable.audit( seed, skip_original: true ) do |_, elem|
+                    audited << elem.affected_input_name
+                end.should be_true
+
+                run
+                audited.should be_empty
+            end
+        end
+
+        context "when the #{Arachni::OptionGroups::Audit}#include_vectors option is set" do
+            it 'skips all but the specified vectors' do
+                Arachni::Options.audit.include_vectors |= auditable.inputs.keys
+
+                audited = []
+                auditable.audit( seed, skip_original: true ) do |_, elem|
+                    audited << elem.affected_input_name
+                end.should be_true
+
+                run
+                audited.should_not be_empty
+
+                @framework.reset
+
+                Arachni::Options.audit.include_vectors = ['blah']
 
                 audited = []
                 auditable.audit( seed, skip_original: true ) do |_, elem|

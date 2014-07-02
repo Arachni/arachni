@@ -4,7 +4,7 @@ describe Arachni::OptionGroups::Audit do
     include_examples 'option_group'
     subject { described_class.new }
 
-    %w(with_both_http_methods exclude_vectors links forms cookies
+    %w(with_both_http_methods exclude_vectors include_vectors links forms cookies
         cookies_extensively headers link_templates).each do |method|
         it { should respond_to method }
         it { should respond_to "#{method}=" }
@@ -94,6 +94,13 @@ describe Arachni::OptionGroups::Audit do
         it 'converts the argument to a flat array of strings' do
             subject.exclude_vectors = [ [:test], 'string' ]
             subject.exclude_vectors.should == %w(test string)
+        end
+    end
+
+    describe '#include_vectors=' do
+        it 'converts the argument to a flat array of strings' do
+            subject.include_vectors = [ [:test], 'string' ]
+            subject.include_vectors.should == %w(test string)
         end
     end
 

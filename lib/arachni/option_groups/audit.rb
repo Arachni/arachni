@@ -36,6 +36,12 @@ class Audit < Arachni::OptionGroup
     # @see Element::Capabilities::Auditable#audit
     attr_accessor :exclude_vectors
 
+    # @return    [Array<String>]
+    #   Vectors to include in the audit exclusively, by name.
+    #
+    # @see Element::Capabilities::Auditable#audit
+    attr_accessor :include_vectors
+
     # @note Default is `false`.
     #
     # @return    [Bool]
@@ -95,6 +101,7 @@ class Audit < Arachni::OptionGroup
 
     set_defaults(
         exclude_vectors: [],
+        include_vectors: [],
         link_templates:  []
     )
 
@@ -119,8 +126,10 @@ class Audit < Arachni::OptionGroup
     end
     alias :link_template_doms= :link_templates=
 
-    def exclude_vectors=( vectors )
-        @exclude_vectors = [vectors].flatten.compact.map(&:to_s)
+    %w(include_vectors exclude_vectors).each do |m|
+        define_method "#{m}=" do |names|
+            instance_variable_set "@#{m}".to_sym, [names].flatten.compact.map(&:to_s)
+        end
     end
 
     # Enables auditing of element types.
