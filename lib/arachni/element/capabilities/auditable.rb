@@ -321,14 +321,8 @@ module Auditable
 
         # Iterate over all fuzz variations and audit each one.
         each_mutation( payload, @audit_options ) do |elem|
-            if Options.audit.include_vectors.any? &&
-                !Options.audit.include_vectors.include?( elem.affected_input_name )
+            if !Options.audit.vector?( elem.affected_input_name )
                 print_info "Skipping audit of out of scope '#{elem.affected_input_name}' #{type} input vector."
-                next
-            end
-
-            if Options.audit.exclude_vectors.include?( elem.affected_input_name )
-                print_info "Skipping audit of '#{elem.affected_input_name}' #{type} input vector."
                 next
             end
 

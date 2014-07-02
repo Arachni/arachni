@@ -204,16 +204,16 @@ class OptionParser < UI::CLI::OptionParser
             options.audit.with_both_http_methods = true
         end
 
-        on( '--audit-exclude-vector NAME',
-               'Input vector not to audit, by name.',
+        on( '--audit-exclude-vector PATTERN', Regexp,
+               'Exclude input vectorS whose name matches PATTERN.',
                '(Can be used multiple times.)' ) do |name|
-            options.audit.exclude_vectors << name
+            options.audit.exclude_vector_patterns << name
         end
 
-        on( '--audit-include-vector NAME',
-            'Input vector to audit exclusively, by name.',
+        on( '--audit-include-vector PATTERN', Regexp,
+            'Include only input vectors whose name matches PATTERN.',
             '(Can be used multiple times.)' ) do |name|
-            options.audit.include_vectors << name
+            options.audit.include_vector_patterns << name
         end
     end
 

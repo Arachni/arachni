@@ -4,8 +4,8 @@ describe Arachni::OptionGroups::Audit do
     include_examples 'option_group'
     subject { described_class.new }
 
-    %w(with_both_http_methods exclude_vectors include_vectors links forms cookies
-        cookies_extensively headers link_templates).each do |method|
+    %w(with_both_http_methods exclude_vector_patterns include_vector_patterns
+        links forms cookies cookies_extensively headers link_templates).each do |method|
         it { should respond_to method }
         it { should respond_to "#{method}=" }
     end
@@ -90,17 +90,69 @@ describe Arachni::OptionGroups::Audit do
         end
     end
 
-    describe '#exclude_vectors=' do
-        it 'converts the argument to a flat array of strings' do
-            subject.exclude_vectors = [ [:test], 'string' ]
-            subject.exclude_vectors.should == %w(test string)
+    describe '#exclude_vector_patterns=' do
+        it 'converts the argument to a flat array of Regexp' do
+            subject.exclude_vector_patterns = [ [:test], 'string' ]
+            subject.exclude_vector_patterns.should == [/test/, /string/]
         end
     end
 
-    describe '#include_vectors=' do
-        it 'converts the argument to a flat array of strings' do
-            subject.include_vectors = [ [:test], 'string' ]
-            subject.include_vectors.should == %w(test string)
+    describe '#include_vector_patterns=' do
+        it 'converts the argument to a flat array of Regexp' do
+            subject.include_vector_patterns = [ [:test], 'string' ]
+            subject.include_vector_patterns.should == [/test/, /string/]
+        end
+    end
+
+    describe '#vector?' do
+        context 'when #include_vector_patterns' do
+            context 'is empty' do
+                it 'returns true' do
+                    subject.vector?( 'blah' ).should be_true
+                end
+            end
+
+            context 'match the given input name' do
+                it 'returns true' do
+                    subject.include_vector_patterns = [/stuff/, /blah/]
+
+                    subject.vector?( 'stufferson' ).should be_true
+                    subject.vector?( 'blaherson' ).should be_true
+                end
+            end
+
+            context 'do not match the given input name' do
+                it 'returns false' do
+                    subject.include_vector_patterns = [/stuff/, /blah/]
+
+                    subject.vector?( 'mooh' ).should be_false
+                end
+            end
+        end
+
+        context 'when #exclude_vector_patterns' do
+            context 'is empty' do
+                it 'returns true' do
+                    subject.vector?( 'blah' ).should be_true
+                end
+            end
+
+            context 'match the given input name' do
+                it 'returns true' do
+                    subject.exclude_vector_patterns = [/stuff/, /blah/]
+
+                    subject.vector?( 'stufferson' ).should be_false
+                    subject.vector?( 'blaherson' ).should be_false
+                end
+            end
+
+            context 'do not match the given input name' do
+                it 'returns false' do
+                    subject.exclude_vector_patterns = [/stuff/, /blah/]
+
+                    subject.vector?( 'mooh' ).should be_true
+                end
+            end
         end
     end
 

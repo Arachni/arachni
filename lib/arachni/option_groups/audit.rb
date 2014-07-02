@@ -30,17 +30,17 @@ class Audit < Arachni::OptionGroup
     # @see Element::Capabilities::Mutable#switch_method
     attr_accessor :with_both_http_methods
 
-    # @return    [Array<String>]
-    #   Vectors to exclude from the audit, by name.
+    # @return    [Array<Regexp>]
+    #   Patterns to use to exclude vectors from the audit, by name.
     #
     # @see Element::Capabilities::Auditable#audit
-    attr_accessor :exclude_vectors
+    attr_accessor :exclude_vector_patterns
 
-    # @return    [Array<String>]
-    #   Vectors to include in the audit exclusively, by name.
+    # @return    [Array<Regexp>]
+    #   Patterns to use to include vectors in the audit exclusively, by name.
     #
     # @see Element::Capabilities::Auditable#audit
-    attr_accessor :include_vectors
+    attr_accessor :include_vector_patterns
 
     # @note Default is `false`.
     #
@@ -100,8 +100,8 @@ class Audit < Arachni::OptionGroup
     alias :link_template_doms  :link_templates
 
     set_defaults(
-        exclude_vectors: [],
-        include_vectors: [],
+        exclude_vector_patterns: [],
+        include_vector_patterns: [],
         link_templates:  []
     )
 
@@ -126,9 +126,12 @@ class Audit < Arachni::OptionGroup
     end
     alias :link_template_doms= :link_templates=
 
-    %w(include_vectors exclude_vectors).each do |m|
-        define_method "#{m}=" do |names|
-            instance_variable_set "@#{m}".to_sym, [names].flatten.compact.map(&:to_s)
+    %w(include_vector_patterns exclude_vector_patterns).each do |m|
+        define_method "#{m}=" do |patterns|
+            patterns = [patterns].flatten.compact.
+                map { |s| s.is_a?( Regexp ) ? s : Regexp.new( s.to_s ) }
+
+            instance_variable_set "@#{m}".to_sym, patterns
         end
     end
 
@@ -191,6 +194,14 @@ class Audit < Arachni::OptionGroup
         define_method "#{attribute}?" do
             !!send( attribute )
         end
+    end
+
+    def vector?( name )
+        if include_vector_patterns.any? && !include_vector_patterns.find { |p| p =~ name }
+            return false
+        end
+
+        !exclude_vector_patterns.find { |p| p =~ name }
     end
 
     # @return   [Bool]
