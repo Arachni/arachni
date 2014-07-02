@@ -560,9 +560,9 @@ class Browser
             rescue Selenium::WebDriver::Error::UnknownError,
                 Watir::Exception::UnknownObjectException => e
 
-                print_error "Element '#{locator}' could not be located for triggering '#{event}'."
-                print_error
-                print_exception e
+                print_debug "Element '#{locator}' could not be located for triggering '#{event}'."
+                print_debug
+                print_debug_exception e
                 return
             end
         end
@@ -637,11 +637,10 @@ class Browser
             tries += 1
             retry if tries < 5
 
-            print_error "Error when triggering event for: #{url}"
-            print_error "-- '#{event}' on: #{opening_tag}"
-            print_error
-            print_error
-            print_exception e
+            print_debug "Error when triggering event for: #{url}"
+            print_debug "-- '#{event}' on: #{opening_tag}"
+            print_debug
+            print_debug_exception e
 
             nil
         end
@@ -750,14 +749,14 @@ class Browser
                 end
             end
         rescue => e
-            print_error "Could not capture snapshot for: #{@last_url}"
+            print_debug "Could not capture snapshot for: #{@last_url}"
 
             if transition
-                print_error "-- #{transition}"
+                print_debug "-- #{transition}"
             end
 
-            print_error
-            print_exception e
+            print_debug
+            print_debug_exception e
         end
 
         pages
@@ -832,7 +831,7 @@ class Browser
                 return r
             end
         rescue Timeout::Error
-            print_error "Response for '#{u}' never arrived."
+            print_debug "Response for '#{u}' never arrived."
         end
 
         nil
