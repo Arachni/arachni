@@ -29,7 +29,10 @@ class Arachni::Checks::ResponseSplitting < Arachni::Check::Base
 
         # try to inject the headers into all vectors
         # and pass a block that will check for a positive result
-        audit( header, param_flip: true, follow_location: false ) do |response, element|
+        audit( header,
+               param_flip: true,
+               submit: { follow_location: false }
+        ) do |response, element|
             next if response.headers[header_name].to_s.downcase != 'no'
             log vector: element, response: response
         end

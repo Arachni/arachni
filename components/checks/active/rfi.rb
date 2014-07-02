@@ -60,7 +60,9 @@ class Arachni::Checks::RFI < Arachni::Check::Base # *always* extend Arachni::Che
     def self.options
         @options ||= {
             substring:       '705cd559b16e6946826207c2199bd890',
-            follow_location: false
+            submit: {
+                follow_location: false
+            }
         }
     end
 
