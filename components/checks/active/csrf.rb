@@ -43,7 +43,7 @@ class Arachni::Checks::CSRF < Arachni::Check::Base
         print_status 'Simulating logged-out user.'
 
         # request page without cookies, simulating a logged-out user
-        http.get( page.url, cookies: {}, no_cookiejar: true ) do |res|
+        http.get( page.url, cookies: {}, no_cookie_jar: true ) do |res|
             # extract forms from the body of the response
             logged_out = forms_from_response( res ).reject { |f| f.inputs.empty? }
 

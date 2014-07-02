@@ -185,7 +185,7 @@ describe Arachni::Session do
                     bool.should be_true
 
                     not_bool = true
-                    configured.logged_in?( no_cookiejar: true ) { |b| not_bool = b }
+                    configured.logged_in?( no_cookie_jar: true ) { |b| not_bool = b }
                     configured.http.run
                     not_bool.should be_false
                 end

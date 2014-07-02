@@ -42,7 +42,7 @@ class Arachni::Plugins::FormDicattack < Arachni::Plugin::Base
 
         # we need a clean cookie slate for each request
         opts = {
-            no_cookiejar:    true,
+            no_cookie_jar:   true,
             update_cookies:  true,
             follow_location: false
         }

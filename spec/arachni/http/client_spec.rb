@@ -629,11 +629,11 @@ describe Arachni::HTTP::Client do
             end
         end
 
-        describe :no_cookiejar do
+        describe :no_cookie_jar do
             context true do
                 it 'skips the cookie-jar' do
                     body = nil
-                    subject.request( @url + '/cookies', no_cookiejar: true ) { |res| body = res.body }
+                    subject.request( @url + '/cookies', no_cookie_jar: true ) { |res| body = res.body }
                     subject.run
                     YAML.load( body ).should == {}
                 end
@@ -646,7 +646,7 @@ describe Arachni::HTTP::Client do
 
                     body = nil
 
-                    subject.request( @url + '/cookies', no_cookiejar: false ) { |res| body = res.body }
+                    subject.request( @url + '/cookies', no_cookie_jar: false ) { |res| body = res.body }
                     subject.run
                     YAML.load( body ).should == {
                         'my_cookie_name' => 'val1',
@@ -664,7 +664,7 @@ describe Arachni::HTTP::Client do
 
                         custom_cookies = { 'newcookie' => 'newval', 'blah_name' => 'val3' }
                         subject.request( @url + '/cookies', cookies: custom_cookies,
-                                       no_cookiejar: false ) { |res| body = res.body }
+                                       no_cookie_jar: false ) { |res| body = res.body }
                         subject.run
                         YAML.load( body ).should == {
                             'my_cookie_name' => 'val1',

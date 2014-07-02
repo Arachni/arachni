@@ -327,7 +327,7 @@ class Client
     #   {Request#initialize Request options} with the following extras:
     # @option options [Hash]  :cookies   ({})
     #   Extra cookies to use for this request.
-    # @option options [Hash]  :no_cookiejar   (false)
+    # @option options [Hash]  :no_cookie_jar   (false)
     #   Do not include cookies from the {#cookie_jar}.
     # @param  [Block] block  Callback to be passed the {Response response}.
     #
@@ -340,7 +340,7 @@ class Client
         cookies = options.delete( :cookies ) || {}
 
         exception_jail false do
-            if !options.delete( :no_cookiejar )
+            if !options.delete( :no_cookie_jar )
                 cookies = begin
                     cookie_jar.for_url( url ).inject({}) do |h, c|
                         h[c.name] = c.value
