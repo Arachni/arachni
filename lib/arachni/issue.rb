@@ -452,8 +452,14 @@ class Issue
                         when 'check'
                             if value['elements']
                                 value['elements'] = (value['elements'].map do |class_name|
-                                    klass = class_name.split( '::' ).last.to_sym
-                                    Arachni::Element.const_get(klass)
+                                    parent = Arachni::Element
+
+                                    class_name.gsub( 'Arachni::Element::', '' ).
+                                        split( '::' ).each do |klass|
+                                            parent = parent.const_get( klass )
+                                        end
+
+                                    parent
                                 end)
                             end
 

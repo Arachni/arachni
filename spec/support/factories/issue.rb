@@ -28,7 +28,7 @@ Factory.define :issue_data do
             },
             elements:    [
                 Arachni::Element::Link,
-                Arachni::Element::Form
+                Arachni::Element::Form::DOM
             ],
             shortname:   'test'
         }

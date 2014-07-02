@@ -382,7 +382,7 @@ describe Arachni::Issue do
                     targets:     {
                         'Generic' => 'all'
                     },
-                    elements:    [:link, :form],
+                    elements:    [:link, :form_dom],
                     shortname:   'test'
                 },
                 trusted:         true,
@@ -422,7 +422,7 @@ describe Arachni::Issue do
                         targets:     {
                             'Generic' => 'all'
                         },
-                        elements:    [:link, :form],
+                        elements:    [:link, :form_dom],
                         shortname:   'test'
                     },
                     digest:          58999149,
