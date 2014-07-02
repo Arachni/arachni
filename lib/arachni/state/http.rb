@@ -15,23 +15,23 @@ class HTTP
 
     # @return   [CookieJar]
     #   Cookie-jar for {Arachni::HTTP::Client#cookie_jar}.
-    attr_reader :cookiejar
+    attr_reader :cookie_jar
 
     def initialize
-        @headers   = {}
-        @cookiejar = Arachni::HTTP::CookieJar.new
+        @headers    = {}
+        @cookie_jar = Arachni::HTTP::CookieJar.new
     end
 
     def statistics
         {
-            cookies: @cookiejar.cookies.map(&:to_s).uniq
+            cookies: @cookie_jar.cookies.map(&:to_s).uniq
         }
     end
 
     def dump( directory )
         FileUtils.mkdir_p( directory )
 
-        %w(headers cookiejar).each do |attribute|
+        %w(headers cookie_jar).each do |attribute|
             IO.binwrite( "#{directory}/#{attribute}", Marshal.dump( send(attribute) ) )
         end
     end
@@ -39,7 +39,7 @@ class HTTP
     def self.load( directory )
         http = new
 
-        %w(headers cookiejar).each do |attribute|
+        %w(headers cookie_jar).each do |attribute|
             http.send(attribute).merge! Marshal.load( IO.binread( "#{directory}/#{attribute}" ) )
         end
 
@@ -47,7 +47,7 @@ class HTTP
     end
 
     def clear
-        @cookiejar.clear
+        @cookie_jar.clear
         @headers.clear
     end
 

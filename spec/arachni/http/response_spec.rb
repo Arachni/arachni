@@ -238,7 +238,7 @@ describe Arachni::HTTP::Response do
             page.forms.should == parser.forms
             page.cookies.should == parser.cookies_to_be_audited
             page.headers.should == parser.headers
-            page.cookiejar.should == parser.cookie_jar
+            page.cookie_jar.should == parser.cookie_jar
             page.text?.should == parser.text?
         end
     end

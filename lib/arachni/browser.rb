@@ -204,7 +204,7 @@ class Browser
                 goto preload( resource ), options
 
             when Page
-                HTTP::Client.update_cookies resource.cookiejar
+                HTTP::Client.update_cookies resource.cookie_jar
 
                 @transitions = resource.dom.transitions.dup
                 update_skip_states resource.dom.skip_states

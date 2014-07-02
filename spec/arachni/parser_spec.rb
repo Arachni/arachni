@@ -80,7 +80,7 @@ describe Arachni::Parser do
             page.cookies.should == subject.cookies_to_be_audited
             page.headers.should == subject.headers
 
-            page.cookiejar.should == subject.cookie_jar
+            page.cookie_jar.should == subject.cookie_jar
         end
     end
 

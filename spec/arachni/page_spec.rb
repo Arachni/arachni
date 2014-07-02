@@ -76,8 +76,8 @@ describe Arachni::Page do
             data['element_audit_whitelist'].should == subject.element_audit_whitelist.to_a
         end
 
-        it "does not include 'cookiejar'" do
-            data.should_not include 'cookiejar'
+        it "does not include 'cookie_jar'" do
+            data.should_not include 'cookie_jar'
         end
     end
 
@@ -155,7 +155,7 @@ describe Arachni::Page do
                     page.forms.should == parser.forms
                     page.cookies.should == parser.cookies_to_be_audited
                     page.headers.should == parser.headers
-                    page.cookiejar.should == parser.cookie_jar
+                    page.cookie_jar.should == parser.cookie_jar
                     page.text?.should == parser.text?
                 end
             end
@@ -175,7 +175,7 @@ describe Arachni::Page do
                     page.forms.should == parser.forms
                     page.cookies.should == parser.cookies_to_be_audited
                     page.headers.should == parser.headers
-                    page.cookiejar.should == parser.cookie_jar
+                    page.cookie_jar.should == parser.cookie_jar
                     page.text?.should == parser.text?
                 end
             end
@@ -735,7 +735,7 @@ describe Arachni::Page do
                 dupped.should == subject
             end
 
-            [:response, :metadata, :body, :links, :forms, :cookies, :headers, :cookiejar, :paths].each do |m|
+            [:response, :metadata, :body, :links, :forms, :cookies, :headers, :cookie_jar, :paths].each do |m|
                 it "preserves ##{m}" do
                     dupped = subject.send(method)
 
@@ -834,7 +834,7 @@ describe Arachni::Page do
                 links: [Arachni::Element::Link.new( elem_opts )],
                 forms: [Arachni::Element::Form.new( elem_opts )],
                 cookies: [Arachni::Element::Cookie.new( elem_opts )],
-                cookiejar: [
+                cookie_jar: [
                     Arachni::Element::Cookie.new( elem_opts ),
                     Arachni::Element::Cookie.new( elem_opts )
                 ],
@@ -860,7 +860,7 @@ describe Arachni::Page do
             page.cookies.should == data[:cookies]
             page.headers.should == data[:headers]
 
-            page.cookiejar.should == data[:cookiejar]
+            page.cookie_jar.should == data[:cookie_jar]
 
             page.response.code.should == data[:response][:code]
             page.response.url.should == data[:url]
@@ -888,7 +888,7 @@ describe Arachni::Page do
                 page.cookies.should == []
                 page.headers.should == []
 
-                page.cookiejar.should == []
+                page.cookie_jar.should == []
 
                 page.response.code.should == 200
                 page.response.url.should == data[:url]
@@ -914,7 +914,7 @@ describe Arachni::Page do
             page.forms.should == parser.forms
             page.cookies.should == parser.cookies_to_be_audited
             page.headers.should == parser.headers
-            page.cookiejar.should == parser.cookie_jar
+            page.cookie_jar.should == parser.cookie_jar
             page.text?.should == parser.text?
 
         end

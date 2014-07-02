@@ -341,7 +341,7 @@ describe Arachni::HTTP::CookieJar do
     end
 
     describe '#merge!' do
-        it 'updates the cookiejar with the cookies of another' do
+        it 'updates the cookie_jar with the cookies of another' do
             other = subject.class.from_file( cookiejar_file )
 
             c = Arachni::Element::Cookie.new(

@@ -233,7 +233,7 @@ class Framework
         Data.framework
     end
 
-    # @note Will update the {HTTP::Client#cookie_jar} with {Page#cookiejar}.
+    # @note Will update the {HTTP::Client#cookie_jar} with {Page#cookie_jar}.
     # @note It will audit just the given `page` and not any subsequent pages
     #   discovered by the {Trainer} -- i.e. ignore any new elements that might
     #   appear as a result.
@@ -286,7 +286,7 @@ class Framework
 
         @current_url = page.dom.url.to_s
 
-        http.update_cookies( page.cookiejar )
+        http.update_cookies( page.cookie_jar )
         perform_browser_analysis( page )
 
         # Run checks which **don't** benefit from fingerprinting first, so that

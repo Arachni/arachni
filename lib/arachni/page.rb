@@ -69,7 +69,7 @@ class Page
     #   {Cookie} elements.
     # @option options  [Array<Header>]    :headers
     #   {Header} elements.
-    # @option options  [Array<Cookie>]    :cookiejar
+    # @option options  [Array<Cookie>]    :cookie_jar
     #   {Cookie} elements with which to update the HTTP cookiejar before
     #   auditing.
     # @option options  [Array<String>]    :paths
@@ -92,7 +92,7 @@ class Page
         data[:cookies] ||= []
         data[:headers] ||= []
 
-        data[:cookiejar] ||= []
+        data[:cookie_jar] ||= []
 
         data[:response][:request] = Arachni::HTTP::Request.new( data[:response][:request] )
         data[:response]           = Arachni::HTTP::Response.new( data[:response] )
@@ -292,8 +292,8 @@ class Page
 
     # @return    [Array<Element::Cookie>]
     #   Cookies extracted from the supplied cookie-jar.
-    def cookiejar
-        @cookiejar ||= (parser ? parser.cookie_jar : [])
+    def cookie_jar
+        @cookie_jar ||= (parser ? parser.cookie_jar : [])
     end
 
     # @return    [Array<String>]
@@ -355,7 +355,7 @@ class Page
             self.body     = nil
         end
 
-        @cookiejar.clear if @cookiejar
+        @cookie_jar.clear if @cookie_jar
 
         @dom.digest      = nil
         @dom.skip_states = nil
@@ -444,7 +444,7 @@ class Page
 
     def to_initialization_options
         h = {}
-        [:body, :cookiejar, :element_audit_whitelist, :metadata].each do |m|
+        [:body, :cookie_jar, :element_audit_whitelist, :metadata].each do |m|
             h[m] = try_dup( instance_variable_get( "@#{m}".to_sym ) )
             h.delete( m ) if !h[m]
         end
@@ -485,7 +485,7 @@ class Page
             data[e] = send(e).map(&:to_rpc_data)
         end
 
-        data.delete 'cookiejar'
+        data.delete 'cookie_jar'
 
         data
     end
@@ -552,7 +552,7 @@ class Page
         "#{dom.playable_transitions.hash}:#{body.hash}#{element_hashes.sort}"
     end
 
-    [:url, :response, :cookiejar, :element_audit_whitelist, :metadata].each do |attribute|
+    [:url, :response, :cookie_jar, :element_audit_whitelist, :metadata].each do |attribute|
         attr_writer attribute
     end
 

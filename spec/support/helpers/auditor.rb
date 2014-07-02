@@ -8,7 +8,7 @@ class Auditor < Arachni::Check::Base
 
     def initialize( page = nil, framework = nil)
         super
-        http.update_cookies( page.cookiejar ) if page
+        http.update_cookies( page.cookie_jar ) if page
     end
 
     def self.info

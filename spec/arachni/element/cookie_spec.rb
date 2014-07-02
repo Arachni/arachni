@@ -247,7 +247,7 @@ describe Arachni::Element::Cookie do
     end
 
     describe '.from_file' do
-        it 'parses a Netscape cookiejar file into an array of cookies' do
+        it 'parses a Netscape cookie_jar file into an array of cookies' do
             cookies =  described_class.from_file( url, fixtures_path + 'cookies.txt' )
             cookies.size.should == 4
 

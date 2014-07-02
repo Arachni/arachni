@@ -639,7 +639,7 @@ describe Arachni::HTTP::Client do
                 end
             end
             context false do
-                it 'uses the cookiejar' do
+                it 'uses the cookie_jar' do
                     @opts.http.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
                     subject.cookie_jar.cookies.should be_empty
                     subject.reset
@@ -655,7 +655,7 @@ describe Arachni::HTTP::Client do
                     }
                 end
                 context 'when custom cookies are provided' do
-                    it 'merges them with the cookiejar and override it' do
+                    it 'merges them with the cookie_jar and override it' do
                         @opts.http.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
                         subject.cookie_jar.cookies.should be_empty
                         subject.reset
@@ -1007,7 +1007,7 @@ describe Arachni::HTTP::Client do
 
         describe :update_cookies do
             describe 'nil' do
-                it 'skips the cookiejar' do
+                it 'skips the cookie_jar' do
                     cookies = []
                     cookies << Arachni::Element::Cookie.new(
                         url: @url,
@@ -1021,7 +1021,7 @@ describe Arachni::HTTP::Client do
             end
 
             describe false do
-                it 'skips the cookiejar' do
+                it 'skips the cookie_jar' do
                     cookies = []
                     cookies << Arachni::Element::Cookie.new(
                         url: @url,
@@ -1035,7 +1035,7 @@ describe Arachni::HTTP::Client do
             end
 
             describe true do
-                it 'updates the cookiejar' do
+                it 'updates the cookie_jar' do
                     cookies = []
                     cookies << Arachni::Element::Cookie.new(
                         url:    @url,

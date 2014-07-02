@@ -185,7 +185,7 @@ class Client
 
     # @return    [CookieJar]
     def cookie_jar
-        State.http.cookiejar
+        State.http.cookie_jar
     end
 
     def headers

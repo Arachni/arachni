@@ -17,9 +17,9 @@ describe Arachni::State::HTTP do
         end
     end
 
-    describe '#cookiejar' do
+    describe '#cookie_jar' do
         it "returns a #{Arachni::HTTP::CookieJar}" do
-            subject.cookiejar.should be_kind_of Arachni::HTTP::CookieJar
+            subject.cookie_jar.should be_kind_of Arachni::HTTP::CookieJar
         end
     end
 
@@ -27,7 +27,7 @@ describe Arachni::State::HTTP do
         let(:statistics) { subject.statistics }
 
         it 'includes :cookies' do
-            subject.cookiejar << cookie
+            subject.cookie_jar << cookie
             statistics[:cookies].should == [cookie.to_s]
         end
     end
@@ -42,19 +42,19 @@ describe Arachni::State::HTTP do
     describe '.load' do
         it 'restores from disk' do
             subject.headers['X-Stuff'] = 'my stuff'
-            subject.cookiejar << cookie
+            subject.cookie_jar << cookie
             subject.dump( dump_directory )
 
             http = described_class.load( dump_directory )
             http.headers.should == subject.headers
-            http.cookiejar.should == subject.cookiejar
+            http.cookie_jar.should == subject.cookie_jar
         end
     end
 
     describe '#clear' do
         it 'clears the list' do
             subject.headers.should receive(:clear)
-            subject.cookiejar.should receive(:clear)
+            subject.cookie_jar.should receive(:clear)
 
             subject.clear
         end

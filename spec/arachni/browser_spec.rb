@@ -1944,12 +1944,12 @@ describe Arachni::Browser do
                     hit_count.should == 1
                 end
 
-                it 'uses its #cookiejar' do
+                it 'uses its #cookie_jar' do
                     @browser.cookies.should be_empty
 
                     page = Arachni::Page.from_data(
                         url:        @url,
-                        cookiejar:  [
+                        cookie_jar:  [
                             Arachni::Cookie.new(
                                 url:    @url,
                                 inputs: {
@@ -1960,7 +1960,7 @@ describe Arachni::Browser do
                     )
 
                     @browser.load( page )
-                    @browser.cookies.should == page.cookiejar
+                    @browser.cookies.should == page.cookie_jar
                 end
 
                 it 'replays its DOM#transitions' do

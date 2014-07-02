@@ -10,7 +10,7 @@ class AuditorTest < Arachni::Check::Base
         load_page_from @framework.options.url
         framework.trainer.page = page
 
-        http.update_cookies( page.cookiejar )
+        http.update_cookies( page.cookie_jar )
     end
 
     def load_page_from( url )
