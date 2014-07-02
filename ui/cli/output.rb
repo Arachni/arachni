@@ -163,15 +163,22 @@ module Output
         print_debug( str, 3 )
     end
 
+    def print_debug_exception( e, level = 1 )
+        return if !debug?
+
+        print_debug( "[#{e.class}] #{e}", level )
+        print_debug_backtrace( e, level )
+    end
+
     # Prints the backtrace of an exception as debugging messages.
     #
     # @param    [Exception] e
     #
     # @see #debug?
     # @see #debug
-    def print_debug_backtrace( e )
+    def print_debug_backtrace( e, level = 1 )
         return if !debug?
-        e.backtrace.each{ |line| print_debug( line ) }
+        e.backtrace.each { |line| print_debug( line, level ) }
     end
 
     # Prints a verbose message.

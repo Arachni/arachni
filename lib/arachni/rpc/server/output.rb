@@ -22,15 +22,6 @@ module Output
         push_to_output_buffer( error: str )
     end
 
-    def print_error_backtrace( e )
-        e.backtrace.each { |line| print_error( line ) }
-    end
-
-    def print_exception( e )
-        print_error "[#{e.class}] #{e}"
-        print_error_backtrace( e )
-    end
-
     def print_bad( str = '' )
         push_to_output_buffer( bad: str )
     end
