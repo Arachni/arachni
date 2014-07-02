@@ -446,20 +446,12 @@ class Issue
         data.each do |name, value|
             value = case name
                         when 'vector'
-                            klass = value.delete('class').split( '::' ).last.to_sym
-                            Arachni::Element.const_get(klass).from_rpc_data( value )
+                            element_string_to_class( value.delete('class') ).from_rpc_data( value )
 
                         when 'check'
                             if value['elements']
                                 value['elements'] = (value['elements'].map do |class_name|
-                                    parent = Arachni::Element
-
-                                    class_name.gsub( 'Arachni::Element::', '' ).
-                                        split( '::' ).each do |klass|
-                                            parent = parent.const_get( klass )
-                                        end
-
-                                    parent
+                                    element_string_to_class( class_name )
                                 end)
                             end
 
@@ -492,6 +484,14 @@ class Issue
     end
 
     protected
+
+    def self.element_string_to_class( element )
+        parent = Arachni::Element
+        element.gsub( "#{parent}::", '' ).split( '::' ).each do |klass|
+            parent = parent.const_get( klass )
+        end
+        parent
+    end
 
     def unique_id=( id )
         @unique_id = id
