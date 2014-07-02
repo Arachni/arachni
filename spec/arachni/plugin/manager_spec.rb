@@ -136,9 +136,12 @@ describe Arachni::Plugin::Manager do
 
             it 'orders them based on priority' do
                 subject.load '*'
-                subject.schedule.keys.should == [:p0, :p00, :p1, :p22, :p222, :p2, :p_nil, :p_nil2]
+                scheduled = subject.schedule.keys
+                scheduled[0..1].sort.should == [:p0, :p00].sort
+                scheduled[2].should == :p1
+                scheduled[3..5].sort.should == [:p22, :p222, :p2].sort
+                scheduled[6..7].sort.should == [:p_nil, :p_nil2].sort
             end
-
         end
 
         context 'when gem dependencies are not met' do
