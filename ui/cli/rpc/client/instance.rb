@@ -130,7 +130,7 @@ class Instance
         @progress = progress
         @issues  |= @progress[:issues]
 
-        @issues = @issues.sort_by(&:severity).reverse
+        @issues = @issues.sort_by(&:name).sort_by(&:severity).reverse
 
         # Keep issue digests and error messages in order to ask not to retrieve
         # them on subsequent progress calls in order to save bandwidth.
