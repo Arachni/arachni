@@ -202,6 +202,7 @@ describe Arachni::URI do
 
         it 'ignores javascript: URLs' do
             described_class.parse( 'javascript:stuff()' ).should be_nil
+            described_class.parse( 'jAvaScRipT:stuff()' ).should be_nil
         end
     end
 
@@ -214,6 +215,7 @@ describe Arachni::URI do
 
         it 'ignores javascript: URLs' do
             described_class.ruby_parse( 'javascript:stuff()' ).should be_nil
+            described_class.ruby_parse( 'jAvaScRipT:stuff()' ).should be_nil
         end
 
         context 'when an error occurs' do

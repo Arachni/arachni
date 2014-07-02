@@ -124,7 +124,7 @@ class URI
         # @return   [URI]
         def ruby_parse( url )
             return url if url.to_s.empty? || url.is_a?( ::URI )
-            return if url.start_with? 'javascript:'
+            return if url.downcase.start_with? 'javascript:'
     
             CACHE[__method__][url] ||= begin
                 ::URI::Generic.build( fast_parse( url ) )
@@ -166,7 +166,7 @@ class URI
         #     * `:query`
         def fast_parse( url )
             return if !url || url.empty?
-            return if url.start_with? 'javascript:'
+            return if url.downcase.start_with? 'javascript:'
     
             cache = CACHE[__method__]
     
