@@ -636,7 +636,7 @@ describe Arachni::Framework do
                 f.options.url = @url + '/with_ajax'
                 f.options.audit.elements :links, :forms, :cookies
                 f.options.datastore.my_custom_option = 'my custom value'
-                options_hash = f.options.to_h.deep_clone
+                options_hash = f.options.update( f.options.to_rpc_data ).to_h.deep_clone
 
                 f.checks.load :taint
 
@@ -955,9 +955,9 @@ describe Arachni::Framework do
 
                 f.audit_page page
 
-                responses.should ==
+                responses.sort.should ==
                     %w(http://localhost/test3 http://localhost/test
-                        http://localhost/test2)
+                        http://localhost/test2).sort
             end
         end
 
