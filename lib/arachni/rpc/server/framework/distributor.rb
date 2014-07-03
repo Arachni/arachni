@@ -162,6 +162,11 @@ module Distributor
                 elements.each do |element|
                     workload[i][element.page] ||= element.page.dup
                     workload[i][element.page].update_element_audit_whitelist element
+
+                    if element.respond_to?(:dom) && element.dom
+                        workload[i][element.page].update_element_audit_whitelist element.dom
+                    end
+
                     distributed_pages << element.page
                 end
 
