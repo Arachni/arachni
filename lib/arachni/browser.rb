@@ -806,7 +806,7 @@ class Browser
 
     def load_delay
         #(intervals + timeouts).map { |t| t[1] }.max
-        @javascript.timeouts.map { |t| t[1] }.max
+        @javascript.timeouts.compact.map { |t| t[1].to_i }.max
     end
 
     def wait_for_timers
