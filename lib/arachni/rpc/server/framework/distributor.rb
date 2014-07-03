@@ -448,6 +448,9 @@ module Distributor
                 merged_statistics[:http][k] /= Float( stats.size + 1 )
                 merged_statistics[:http][k] = Float( sprintf( '%.2f', merged_statistics[:http][k] ) )
             end
+
+            merged_statistics[:http][:max_concurrency] =
+                merged_statistics[:http][:max_concurrency].to_i
         rescue => e
             ap e
             ap e.backtrace
