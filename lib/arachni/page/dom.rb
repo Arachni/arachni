@@ -169,9 +169,9 @@ class DOM
         playables.each do |transition|
             next if transition.play( browser )
 
-            browser.print_error "Could not replay transition for: #{url}"
+            browser.print_debug "Could not replay transition for: #{url}"
             playables.each do |t|
-                browser.print_error "-#{t == transition ? '>' : '-'} #{transition}"
+                browser.print_debug "-#{t == transition ? '>' : '-'} #{transition}"
             end
 
             return
