@@ -192,6 +192,7 @@ class Instance
         end
 
         opts = @options.to_rpc_data.deep_clone
+        opts['spawns'] = @options.spawns
 
         @framework.plugins.default.each do |plugin|
             opts['plugins'][plugin.to_s] ||= {}
