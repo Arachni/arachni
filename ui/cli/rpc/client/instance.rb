@@ -268,7 +268,7 @@ class Instance
         print_info "Burst average response time  #{http[:burst_average_response_time]} seconds"
         print_info "Burst average                #{http[:burst_responses_per_second]} requests/second"
         print_info "Timed-out requests           #{http[:time_out_count]}"
-        print_info "Original max concurrency     #{@options.http.request_concurrency}"
+        print_info "Original max concurrency     #{@options.http.request_concurrency * (@options.spawns.to_i + 1)}"
         print_info "Throttled max concurrency    #{http[:max_concurrency]}"
     end
 
