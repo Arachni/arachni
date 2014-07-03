@@ -117,7 +117,7 @@ class Cookie < Base
     #   Expiration `Time` of the cookie or `nil` if it doesn't have one
     #   (i.e. is a session cookie).
     def expires_at
-        expires
+        @data[:expires]
     end
 
     # Indicates whether or not the cookie has expired.
@@ -267,10 +267,10 @@ class Cookie < Base
 
     def to_rpc_data
         h = super
-        if expires
+        if expires_at
             h.merge(
-               'initialization_options' => h['initialization_options'].merge( expires: expires.to_s ),
-               'data'                   => h['data'].merge( expires: expires.to_s )
+               'initialization_options' => h['initialization_options'].merge( expires: expires_at.to_s ),
+               'data'                   => h['data'].merge( expires: expires_at.to_s )
             )
         else
             h
