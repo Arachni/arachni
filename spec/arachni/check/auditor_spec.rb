@@ -364,7 +364,7 @@ describe Arachni::Check::Auditor do
         end
 
         it 'sets the auditor' do
-            auditor.each_candidate_element do |element|
+            auditor.each_candidate_element [ Arachni::Link ] do |element|
                 element.auditor.should == auditor
             end
         end
@@ -390,6 +390,8 @@ describe Arachni::Check::Auditor do
         end
         context 'when types have not been provided' do
             it 'provides the types of elements specified by the check' do
+                auditor.class.info[:elements] = [Arachni::Link, Arachni::Form]
+
                 elements = []
                 auditor.each_candidate_element do |element|
                     elements << element
