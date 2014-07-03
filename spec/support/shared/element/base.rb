@@ -37,6 +37,11 @@ shared_examples_for 'element' do
                     if init[:template]
                         init[:template] = init[:template].source
                     end
+
+                    if init[:expires]
+                        init[:expires] = init[:expires].to_s
+                    end
+
                 end
 
                 data['initialization_options'].should == init
@@ -58,7 +63,14 @@ shared_examples_for 'element' do
 
         rpc_attributes.each do |attribute|
             it "restores '#{attribute}'" do
-                restored.send( attribute ).should == subject.send( attribute )
+                v1 = restored.send( attribute )
+                v2 = subject.send( attribute )
+
+                if attribute == 'initialization_options' && v1.is_a?( Hash ) && v1.include?( :expires )
+                    v1.delete(:expires).to_s.should == v2.delete(:expires).to_s
+                end
+
+                v1.should == v2
             end
         end
     end

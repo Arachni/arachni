@@ -19,7 +19,14 @@ describe Arachni::Element::Cookie do
     let(:inputs) do
         { 'mycookie' => 'myvalue' }
     end
-    subject { described_class.new( url: "#{url}/submit", inputs: inputs ) }
+    subject do
+        described_class.new(
+            url:     "#{url}/submit",
+            name:    inputs.keys.first,
+            value:   inputs.values.first,
+            expires: Time.now + 99999999999
+        )
+    end
 
     it 'should be assigned to Arachni::Cookie for easy access' do
         Arachni::Cookie.should == described_class

@@ -70,6 +70,10 @@ class Cookie < Base
             @data[:path] = path
         end
 
+        if @data[:expires] && !@data[:expires].is_a?( Time )
+            @data[:expires] = Time.parse( @data[:expires] ) rescue nil
+        end
+
         @data[:domain] ||= ".#{parsed_uri.host}"
 
         @default_inputs = self.inputs.dup.freeze
@@ -261,7 +265,30 @@ class Cookie < Base
         self.class.decode( str )
     end
 
+    def to_rpc_data
+        h = super
+        if expires
+            h.merge(
+               'initialization_options' => h['initialization_options'].merge( expires: expires.to_s ),
+               'data'                   => h['data'].merge( expires: expires.to_s )
+            )
+        else
+            h
+        end
+    end
+
     class <<self
+
+        def from_rpc_data( data )
+            if data['initialization_options']['expires'] &&
+                !data['initialization_options']['expires'].is_a?( Time )
+
+                data['initialization_options']['expires'] =
+                    Time.parse( data['initialization_options']['expires'] ) rescue nil
+            end
+
+            super data
+        end
 
         # Parses a Netscape Cookie-jar into an Array of {Cookie}.
         #
