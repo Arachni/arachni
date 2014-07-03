@@ -45,11 +45,13 @@ class Local
         # signals.
         options.datastore.do_not_trap = true
 
+        instance = Processes::Instances.spawn
+
         # Let the Instance UI manage the Instance from now on.
-        Instance.new( options, Processes::Instances.spawn, parser.get_timeout ).run
+        Instance.new( options, instance, parser.get_timeout ).run
 
         # Make sure the Instance processes are killed.
-        Processes::Instances.kill( socket )
+        Processes::Instances.kill( instance.url )
     end
 
 end
