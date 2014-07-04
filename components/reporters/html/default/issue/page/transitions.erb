@@ -45,7 +45,7 @@
                         </tr>
                     <% end %>
 
-                    <% if (cookies = transition.options[:cookies] || []).any? %>
+                    <% if (cookies = transition.options[:cookies] || {}).any? %>
                         <tr>
                             <th>Cookies</th>
                         </tr>
