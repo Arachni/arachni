@@ -394,6 +394,7 @@ Passive checks look for the existence of files, folders and signatures.
 - Form-based upload (`form_upload`)
 - localstart.asp (`localstart_asp`)
 - Cookie set for parent domain (`cookie_set_for_parent_domain`)
+- Missing `Strict-Transport-Security` headers for HTTPS sites (`hsts`).
 
 ### Report Management
 
