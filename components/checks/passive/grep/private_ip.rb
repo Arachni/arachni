@@ -32,7 +32,7 @@ class Arachni::Checks::PrivateIP < Arachni::Check::Base
             name:        'Private IP address finder',
             description: %q{Scans pages for private IP addresses.},
             author:      'Tasos Laskos <tasos.laskos@gmail.com>',
-            version:     '0.2.1',
+            version:     '0.3',
             elements:    [ Element::Body, Element::Header ],
 
             issue:       {
