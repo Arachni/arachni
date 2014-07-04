@@ -61,6 +61,8 @@ class Dispatchers
     #
     # @return   [RPC::Client::Dispatcher]
     def spawn( options = {} )
+        fork = options.delete(:fork)
+
         options = {
             dispatcher: {
                 neighbour:        options[:neighbour],
@@ -75,7 +77,7 @@ class Dispatchers
             }
         }
 
-        Manager.spawn( :dispatcher, options: options )
+        Manager.spawn( :dispatcher, options: options, fork: fork )
 
         url = "#{options[:rpc][:server_address]}:#{options[:rpc][:server_port]}"
         while sleep( 0.1 )

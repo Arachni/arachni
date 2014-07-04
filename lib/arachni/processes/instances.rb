@@ -67,6 +67,7 @@ class Instances
     # @return   [RPC::Client::Instance]
     def spawn( options = {} )
         token = options.delete(:token) || generate_token
+        fork  = options.delete(:fork)
 
         options = {
             spawns: options[:spawns],
@@ -87,7 +88,7 @@ class Instances
             url = "#{options[:rpc][:server_address]}:#{options[:rpc][:server_port]}"
         end
 
-        Manager.spawn( :instance, options: options, token: token )
+        Manager.spawn( :instance, options: options, token: token, fork: fork )
 
         while sleep( 0.1 )
             begin

@@ -98,6 +98,9 @@ class Manager
     # @return   [Integer]
     #   PID of the process.
     def spawn( executable, options = {} )
+        fork = options.delete(:fork)
+        fork = true if fork.nil?
+
         options[:options] ||= {}
         options[:options]   = Options.to_h.merge( options[:options] )
 
@@ -109,7 +112,7 @@ class Manager
         # and child share the same RAM due to copy-on-write support on Ruby 2.0.0.
         # It is, however, not available when running on Windows nor JRuby so
         # have a fallback ready.
-        if Process.respond_to? :fork
+        if fork && Process.respond_to?( :fork )
             pid = Process.fork do
                 if discard_output?
                     $stdout.reopen( Arachni.null_device, 'w' )
