@@ -87,7 +87,7 @@ class Worker < Arachni::Browser
                 end
             end
         rescue TimeoutError => e
-            print_error "Job timed-out after #{@job_timeout} seconds: #{job}"
+            print_debug "Job timed-out after #{@job_timeout} seconds: #{job}"
 
             # Could have left us with a broken browser.
             browser_respawn
