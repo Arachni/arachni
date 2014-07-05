@@ -8,7 +8,7 @@ describe name_from_filename do
     end
 
     def issue_count
-        current_check.extensions.count * 2
+        current_check.formats.size
     end
 
     easy_test

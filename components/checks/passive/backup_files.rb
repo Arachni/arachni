@@ -9,33 +9,31 @@
 # and checks for its existence.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-# @version 0.2.2
+# @version 0.3
 class Arachni::Checks::BackupFiles < Arachni::Check::Base
 
-    def self.extensions
-        @extensions ||= read_file( 'extensions.txt' )
+    def self.formats
+        @formats ||= read_file( 'formats.txt' )
     end
 
     def run
-        path = get_path( page.url )
-        return if audited?( path )
+        resource = page.parsed_url.without_query
+        return if audited?( resource )
 
-        filename = File.basename( uri_parse( page.url ).path )
-
-        if !filename || filename.empty? || filename == '/'
+        if page.parsed_url.path.to_s.empty? || page.parsed_url.path.end_with?( '/' )
             print_info "Backing out, couldn't extract filename from: #{page.url}"
             return
         end
 
-        self.class.extensions.each do |ext|
-            file = ext % filename # Example: index.php.bak
-            log_remote_file_if_exists( path + file )
+        path      = page.parsed_url.up_to_path
+        name      = File.basename( page.parsed_url.path ).split( '.' ).first.to_s
+        extension = page.parsed_url.resource_extension.to_s
 
-            cfile = ext % filename.gsub( /\.(.*)/, '' ) # Example: index.bak
-            log_remote_file_if_exists( path + cfile ) if file != cfile
+        self.class.formats.each do |format|
+            log_remote_file_if_exists( path + format.gsub( '[name]', name ).gsub( '[extension]', extension ) )
         end
 
-        audited( path )
+        audited( resource )
     end
 
     def self.info
@@ -44,7 +42,7 @@ class Arachni::Checks::BackupFiles < Arachni::Check::Base
             description: %q{Tries to find sensitive backup files.},
             elements:    [ Element::Server ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.2.2',
+            version:     '0.3',
 
             issue:       {
                 name:            %q{Backup file},
