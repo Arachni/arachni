@@ -188,6 +188,7 @@
             - Blind NoSQL Injection (differential analysis) (`nosqli_blind_differential`)
             - Grep
                 - `hsts` - Checks HTTPS pages for missing `Strict-Transport-Security` headers.
+        - `backup_files` -- Updated filename formats.
         - Grep
             - `emails` - Updated to handle simple (`[at]` and `[dot]`) obfuscation.
 
