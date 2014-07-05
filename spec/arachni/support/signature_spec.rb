@@ -20,23 +20,23 @@ describe Arachni::Support::Signature do
     describe '#initialize' do
         describe 'option' do
             describe :threshold do
-                it 'sets the maximum difference in tokens when performing comparisons' do
+                it 'sets the maximum difference ratio when performing comparisons' do
                     seed1 = 'test this here 1'
                     seed2 = 'test that here 2'
 
-                    s  = described_class.new( seed1, threshold: 1 )
+                    s  = described_class.new( seed1, threshold: 0.01 )
                     s1 = described_class.new( seed2 )
                     s.should_not be_similar s1
 
-                    s  = described_class.new( seed1, threshold: 2 )
+                    s  = described_class.new( seed1, threshold: 0.1 )
                     s1 = described_class.new( seed2 )
                     s.should_not be_similar s1
 
-                    s  = described_class.new( seed1, threshold: 5 )
+                    s  = described_class.new( seed1, threshold: 0.7 )
                     s1 = described_class.new( seed2 )
                     s.should be_similar s1
 
-                    s  = described_class.new( seed1, threshold: 6 )
+                    s  = described_class.new( seed1, threshold: 1 )
                     s1 = described_class.new( seed2 )
                     s.should be_similar s1
                 end
@@ -108,18 +108,18 @@ describe Arachni::Support::Signature do
     end
 
     describe '#differences' do
-        it 'returns amount of differences between signature tokens' do
+        it 'returns ratio of differences between signatures' do
             signature1 = described_class.new( string_with_noise )
             signature2 = described_class.new( string_with_noise )
             signature3 = described_class.new( different_string_with_noise )
             signature4 = described_class.new( different_string_with_noise )
 
-            signature1.differences( signature2 ).should == 8
+            signature1.differences( signature2 ).round(3).should == 0.348
             signature2.differences( signature2 ).should == 0
 
-            signature3.differences( signature4 ).should == 2
+            signature3.differences( signature4 ).should == 0.2
             signature4.differences( signature4 ).should == 0
-            signature1.differences( signature3 ).should == 14
+            signature1.differences( signature3 ).round(3).should == 0.667
         end
     end
 

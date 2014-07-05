@@ -398,7 +398,7 @@ module Differential
 
         signatures.each do |_, data|
             data.each do |input, result|
-                next if result[:corrupted] || corrupted[input]
+                next if !result[:response] || result[:corrupted] || corrupted[input]
 
                 # If the initial and verification baselines differ, bail out;
                 # server behavior is too unstable.
@@ -484,7 +484,7 @@ module Differential
         #   * Remove the data if boolean-false and boolean-true signatures
         #       are too similar.
         if (gathered[:false_probes] && gathered[:true_probes]) &&
-            signature[:false].similar?( signature[:true], 5 )
+            signature[:false].similar?( signature[:true], 0.1 )
 
             signatures[pair].delete( input )
             return true

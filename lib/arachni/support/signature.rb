@@ -18,9 +18,9 @@ class Signature
     # @param    [String, Signature]    data
     #   Seed data to use to initialize the signature.
     # @param    [Hash]    options
-    # @option   options :threshold  [Integer]
-    #   Sets the maximum allowed difference (in tokens) when performing
-    #   {#== comparisons}.
+    # @option   options :threshold  [Float]
+    #   Sets the maximum allowed {#difference} when performing
+    #   {#similar? similarity} comparisons.
     def initialize( data, options = {} )
         @tokens  = tokenize( data )
         @options = options
@@ -101,13 +101,14 @@ class Signature
 
     # @param    [Signature] other
     #
-    # @return   [Integer]
-    #   Amount of differences between signatures.
+    # @return   [Float]
+    #   Ratio of difference between signatures.
     def differences( other )
-        return nil if other.nil?
-        return 0   if self == other
+        return 1 if other.nil?
+        return 0 if self == other
 
-        ((tokens - other.tokens) | (other.tokens - tokens)).size
+        ((tokens - other.tokens) | (other.tokens - tokens)).size /
+            Float((other.tokens | tokens).size)
     end
 
     # @param    [Signature] other

@@ -84,8 +84,10 @@ class Client
     # Maximum size of the cache that holds 404 signatures.
     CUSTOM_404_CACHE_SIZE = 250
 
-    # Maximum allowed difference (in tokens) when comparing custom 404 signatures.
-    CUSTOM_404_SIGNATURE_THRESHOLD = 25
+    # Maximum allowed difference ratio when comparing custom 404 signatures.
+    # The fact that we refine the signatures allows us to set this threshold
+    # really low and still maintain good accuracy.
+    CUSTOM_404_SIGNATURE_THRESHOLD = 0.1
 
     # @return   [String]
     #   Framework target URL, used as reference.
