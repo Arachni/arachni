@@ -237,7 +237,8 @@ class Dispatcher
             'finished_jobs'  => finished_jobs,
             'init_pool_size' => @options.dispatcher.pool_size,
             'curr_pool_size' => @pool.size,
-            'consumed_pids'  => @consumed_pids
+            'consumed_pids'  => @consumed_pids,
+            'snapshots'      => Dir.glob( "#{@options.snapshot.save_path}*.afs" )
         }
 
         stats_h.merge!( 'node' => @node.info, 'neighbours' => @node.neighbours )

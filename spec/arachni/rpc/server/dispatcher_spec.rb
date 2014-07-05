@@ -221,7 +221,8 @@ describe Arachni::RPC::Server::Dispatcher do
 
             stats = dispatcher.statistics
 
-            %w(running_jobs finished_jobs init_pool_size node consumed_pids neighbours).each do |k|
+            %w(running_jobs finished_jobs init_pool_size node consumed_pids
+                neighbours snapshots).each do |k|
                 stats[k].should be_true
             end
 
@@ -234,7 +235,24 @@ describe Arachni::RPC::Server::Dispatcher do
             stats['node'].keys.should == @node_info_keys
         end
 
-        context 'when Options#dispatcher_external_address has been set' do
+        context 'when there are scan snapshots' do
+            it 'lists them' do
+                dispatcher = dispatcher_light_spawn
+                info = dispatcher.dispatch
+
+                instance = Arachni::RPC::Client::Instance.new(
+                    Arachni::Options.instance, info['url'], info['token']
+                )
+
+                instance.service.scan( url: web_server_url_for( :framework_multi ) )
+                instance.service.suspend
+                sleep 1 while !instance.service.suspended?
+
+                dispatcher.statistics['snapshots'].should include instance.service.snapshot_path
+            end
+        end
+
+        context "when #{Arachni::OptionGroups::Dispatcher}#external_address has been set" do
             it 'advertises that address' do
                 address = '127.0.0.1'
                 dispatcher = dispatcher_light_spawn( external_address: address )
