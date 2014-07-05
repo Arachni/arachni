@@ -700,7 +700,7 @@ class Framework
         return @state_archive if @state_archive
 
         default_filename =
-            "#{URI(options.url).host} #{Time.now.to_s.gsub( ':', '.' )}.afs"
+            "#{URI(options.url).host} #{Time.now.to_s.gsub( ':', '_' )}.afs"
 
         location = options.snapshot.save_path
 
