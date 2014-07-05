@@ -5,9 +5,6 @@
 
 # Backup file discovery check.
 #
-# Appends common backup extentions to the filename of the page under audit<br/>
-# and checks for its existence.
-#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 # @version 0.3
 class Arachni::Checks::BackupFiles < Arachni::Check::Base
@@ -39,7 +36,7 @@ class Arachni::Checks::BackupFiles < Arachni::Check::Base
     def self.info
         {
             name:        'Backup files',
-            description: %q{Tries to find sensitive backup files.},
+            description: %q{Tries to identify backup files.},
             elements:    [ Element::Server ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.3',
@@ -47,7 +44,7 @@ class Arachni::Checks::BackupFiles < Arachni::Check::Base
             issue:       {
                 name:            %q{Backup file},
                 description:     %q{The server response indicates that a file matching
-    the name of a common naming scheme for file backups can be publicly accessible.
+    the name of a common naming scheme for file backups is publicly accessible.
     A developer has probably forgotten to remove this file after testing.
     This can lead to source code disclosure and privileged information leaks.},
                 references: {
