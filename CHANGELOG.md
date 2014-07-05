@@ -178,6 +178,8 @@
         - `xss` -- Added support for Browser-based taint-analysis.
         - `xss_script_context` -- Added support for Browser-based taint-analysis.
             - Renamed from `xss_script_tag`.
+        - `unvalidated_redirect` -- Updated to also use full browser evaluation
+            in order to detect JS redirects.
     - Passive
         - New
             - Cookie set for parent domain (`cookie_set_for_parent_domain`)
