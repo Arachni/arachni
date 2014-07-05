@@ -12,6 +12,10 @@ def get_variations( str )
     redirect( str.split( "\0" ).first.to_s.upcase ) rescue nil
 end
 
+def get_js_variations( str )
+    "<script>window.location.replace(#{str.inspect})</script>"
+end
+
 get '/' do
     <<-EOHTML
         <a href="/link?input=default">Link</a>
@@ -25,24 +29,29 @@ get "/link" do
     <<-EOHTML
         <a href="/link/straight?input=default">Link</a>
         <a href="/link/append?input=default">Link</a>
+        <a href="/link/js?input=default">Link</a>
     EOHTML
 end
 
-get "/link/straight" do
+get '/link/straight' do
     default = 'default'
     return if params['input'].start_with?( default )
 
     get_variations( params['input'].split( default ).last )
 end
 
-get "/link/append" do
+get '/link/append' do
     default = 'default'
     return if !params['input'].start_with?( default )
 
     get_variations( params['input'].split( default ).last )
 end
 
-get "/form" do
+get '/link/js' do
+    get_js_variations( params['input'] )
+end
+
+get '/form' do
     <<-EOHTML
         <form action="/form/straight">
             <input name='input' value='default' />
@@ -51,32 +60,40 @@ get "/form" do
         <form action="/form/append">
             <input name='input' value='default' />
         </form>
+
+        <form action="/form/js">
+            <input name='input' value='default' />
+        </form>
     EOHTML
 end
 
-get "/form/straight" do
+get '/form/straight' do
     default = 'default'
     return if !params['input'] || params['input'].start_with?( default )
 
     get_variations( params['input'].split( default ).last )
 end
 
-get "/form/append" do
+get '/form/append' do
     default = 'default'
     return if !params['input'] || !params['input'].start_with?( default )
 
     get_variations( params['input'].split( default ).last )
 end
 
+get '/form/js' do
+    get_js_variations( params['input'] )
+end
 
-get "/cookie" do
+get '/cookie' do
     <<-EOHTML
         <a href="/cookie/straight">Cookie</a>
         <a href="/cookie/append">Cookie</a>
+        <a href="/cookie/js">Cookie</a>
     EOHTML
 end
 
-get "/cookie/straight" do
+get '/cookie/straight' do
     default = 'cookie value'
     cookies['cookie'] ||= default
 
@@ -85,7 +102,7 @@ get "/cookie/straight" do
     get_variations( cookies['cookie'].split( default ).last )
 end
 
-get "/cookie/append" do
+get '/cookie/append' do
     default = 'cookie value'
     cookies['cookie2'] ||= default
     return if !cookies['cookie2'].start_with?( default )
@@ -93,23 +110,32 @@ get "/cookie/append" do
     get_variations( cookies['cookie2'].split( default ).last )
 end
 
-get "/header" do
+get '/cookie/js' do
+    get_js_variations( cookies['cookie2'] )
+end
+
+get '/header' do
     <<-EOHTML
         <a href="/header/straight">Header</a>
         <a href="/header/append">Header</a>
+        <a href="/header/js">Header</a>
     EOHTML
 end
 
-get "/header/straight" do
+get '/header/straight' do
     default = 'arachni_user'
     return if !env['HTTP_USER_AGENT'] || env['HTTP_USER_AGENT'].start_with?( default )
 
     get_variations( env['HTTP_USER_AGENT'].split( default ).last )
 end
 
-get "/header/append" do
+get '/header/append' do
     default = 'arachni_user'
     return if !env['HTTP_USER_AGENT'] || !env['HTTP_USER_AGENT'].start_with?( default )
 
     get_variations( env['HTTP_USER_AGENT'].split( default ).last )
+end
+
+get '/header/js' do
+    get_js_variations( env['HTTP_USER_AGENT'] )
 end
