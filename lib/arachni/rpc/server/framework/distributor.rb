@@ -435,6 +435,9 @@ module Distributor
             :total_average_response_time
         ]
 
+        integers = [:max_concurrency, :request_count, :response_count, :time_out_count,
+            :burst_response_count]
+
         begin
             stats.each do |instats|
                 (sum | average).each do |k|
@@ -449,8 +452,9 @@ module Distributor
                 merged_statistics[:http][k] = Float( sprintf( '%.2f', merged_statistics[:http][k] ) )
             end
 
-            merged_statistics[:http][:max_concurrency] =
-                merged_statistics[:http][:max_concurrency].to_i
+            integers.each do |k|
+                merged_statistics[:http][k] = merged_statistics[:http][k].to_i
+            end
         rescue => e
             ap e
             ap e.backtrace
