@@ -86,3 +86,13 @@ backup_[name].[extension]
 [name].jspf
 [name].jspx
 [name].jspa
+[name]1
+[name]2
+[name]3
+[name]4
+[name]5
+[name].[extension]1
+[name].[extension]2
+[name].[extension]3
+[name].[extension]4
+[name].[extension]5
