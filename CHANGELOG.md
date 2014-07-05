@@ -182,15 +182,14 @@
             in order to detect JS redirects.
     - Passive
         - New
+            - Backup directories (`backup_directories`)
             - Cookie set for parent domain (`cookie_set_for_parent_domain`)
             - NoSQL Injection (error-based) (`nosqli`)
             - Blind NoSQL Injection (differential analysis) (`nosqli_blind_differential`)
             - Grep
-                - New
-                    - `hsts` - Checks HTTPS pages for missing `Strict-Transport-Security` headers.
-        - Passive
-            - Grep
-                - `emails` - Updated to handle simple (`[at]` and `[dot]`) obfuscation.
+                - `hsts` - Checks HTTPS pages for missing `Strict-Transport-Security` headers.
+        - Grep
+            - `emails` - Updated to handle simple (`[at]` and `[dot]`) obfuscation.
 
 
 ## 0.4.6 _(January 1, 2014)_
