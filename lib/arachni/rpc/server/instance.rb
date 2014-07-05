@@ -406,18 +406,18 @@ class Instance
     # @option options [Array<Symbol, Hash>]  :without
     #   Specify data to exclude:
     #
-    #   * :stats -- Don't include runtime statistics.
+    #   * :statistics -- Don't include runtime statistics.
     #   * :issues -- Don't include issues with the given {Arachni::Issue#digest digests}.
     #     Pass as a hash, like: `{ issues: [...] }`
     #
     # @return [Hash]
-    #   * `stats` -- General runtime statistics (merged when part of Grid)
+    #   * `statistics` -- General runtime statistics (merged when part of Grid)
     #       (enabled by default)
-    #   * `status` -- {#status}
+    #   * `statistics` -- {#status}
     #   * `busy` -- {#busy?}
     #   * `issues` -- Discovered issues as {Arachni::Issue#to_h hashes}.
     #       (disabled by default)
-    #   * `instances` -- Raw `stats` for each running instance (only when part
+    #   * `instances` -- Raw `statistics` for each running instance (only when part
     #       of Grid) (disabled by default)
     #   * `errors` -- {#errors} (disabled by default)
     #   * `sitemap` -- {#sitemap} (disabled by default)

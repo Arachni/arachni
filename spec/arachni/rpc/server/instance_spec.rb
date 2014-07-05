@@ -739,7 +739,7 @@ describe 'Arachni::RPC::Server::Instance' do
             end
 
             describe :without do
-                describe :stats do
+                describe :statistics do
                     it 'includes statistics' do
                         @progress_instance.service.native_progress(
                             without: :statistics

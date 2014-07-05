@@ -211,7 +211,7 @@ describe Arachni::RPC::Server::Dispatcher do
         end
     end
 
-    describe '#stats' do
+    describe '#statistics' do
         it 'returns general statistics' do
             dispatcher = dispatcher_light_spawn
 
@@ -219,7 +219,7 @@ describe Arachni::RPC::Server::Dispatcher do
             jobs = dispatcher.jobs
             Arachni::Processes::Manager.kill( jobs.first['pid'] )
 
-            stats = dispatcher.stats
+            stats = dispatcher.statistics
 
             %w(running_jobs finished_jobs init_pool_size node consumed_pids neighbours).each do |k|
                 stats[k].should be_true
@@ -238,7 +238,7 @@ describe Arachni::RPC::Server::Dispatcher do
             it 'advertises that address' do
                 address = '127.0.0.1'
                 dispatcher = dispatcher_light_spawn( external_address: address )
-                dispatcher.stats['node']['url'].should start_with "#{address}:"
+                dispatcher.statistics['node']['url'].should start_with "#{address}:"
             end
         end
     end

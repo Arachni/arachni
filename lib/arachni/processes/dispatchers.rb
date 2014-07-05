@@ -103,7 +103,7 @@ class Dispatchers
     # @param    [String]    url URL of the Dispatcher to kill.
     def kill( url )
         dispatcher = connect( url )
-        Manager.kill_many dispatcher.stats['consumed_pids']
+        Manager.kill_many dispatcher.statistics['consumed_pids']
         Manager.kill dispatcher.pid
     rescue => e
         #ap e

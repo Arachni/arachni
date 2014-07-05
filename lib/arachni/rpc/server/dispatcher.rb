@@ -231,7 +231,7 @@ class Dispatcher
 
     # @return   [Hash]
     #   Returns server stats regarding the jobs and pool.
-    def stats
+    def statistics
         stats_h = {
             'running_jobs'   => running_jobs,
             'finished_jobs'  => finished_jobs,

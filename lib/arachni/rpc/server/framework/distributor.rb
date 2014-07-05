@@ -318,7 +318,7 @@ module Distributor
         @used_pipe_ids ||= []
 
         foreach = proc do |dispatcher, iter|
-            connect_to_dispatcher( dispatcher['url'] ).stats do |res|
+            connect_to_dispatcher( dispatcher['url'] ).statistics do |res|
                 if !res.rpc_exception?
                     iter.return( res )
                 else
