@@ -116,6 +116,8 @@ class Instance
         @options = options
         @token   = token
 
+        @options.snapshot.save_path ||= @options.paths.snapshots
+
         @framework      = Server::Framework.new( Options.instance )
         @active_options = Server::ActiveOptions.new( @framework )
 
@@ -413,7 +415,7 @@ class Instance
     # @return [Hash]
     #   * `statistics` -- General runtime statistics (merged when part of Grid)
     #       (enabled by default)
-    #   * `statistics` -- {#status}
+    #   * `status` -- {#status}
     #   * `busy` -- {#busy?}
     #   * `issues` -- Discovered issues as {Arachni::Issue#to_h hashes}.
     #       (disabled by default)
