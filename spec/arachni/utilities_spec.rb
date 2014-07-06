@@ -203,6 +203,16 @@ describe Arachni::Utilities do
         end
     end
 
+    describe '#hms_to_seconds' do
+        it 'converts seconds to HOURS:MINUTES:SECONDS' do
+            subject.hms_to_seconds( '00:00:00' ).should == 0
+            subject.hms_to_seconds( '00:00:01' ).should == 1
+            subject.hms_to_seconds( '00:01:00' ).should == 60
+            subject.hms_to_seconds( '01:00:00' ).should == 60*60
+            subject.hms_to_seconds( '01:01:01').should == 60 * 60 + 60 + 1
+        end
+    end
+
     describe '#exception_jail' do
         context 'when no error occurs' do
             it 'returns the return value of the block' do

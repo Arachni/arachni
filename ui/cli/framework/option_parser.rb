@@ -529,7 +529,7 @@ class OptionParser < UI::CLI::OptionParser
         on( '--timeout HOURS:MINUTES:SECONDS',
             'Stop the scan after the given duration is exceeded.'
         ) do |time|
-            @timeout = time_to_seconds( time )
+            @timeout = Arachni::Utilities.hms_to_seconds( time )
         end
     end
 
@@ -610,13 +610,6 @@ class OptionParser < UI::CLI::OptionParser
 
     def banner
         "#{super} URL"
-    end
-
-    def time_to_seconds( time )
-        a = [1, 60, 3600] * 2
-        time.split( /[:\.]/ ).map { |t| t.to_i * a.pop }.inject(&:+)
-    rescue
-        0
     end
 
 end

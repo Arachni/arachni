@@ -376,6 +376,13 @@ module Utilities
             map { |t| t.to_s.rjust( 2, '0' ) }.join( ':' )
     end
 
+    def hms_to_seconds( time )
+        a = [1, 60, 3600] * 2
+        time.split( /[:\.]/ ).map { |t| t.to_i * a.pop }.inject(&:+)
+    rescue
+        0
+    end
+
     # Wraps the `block` in exception handling code and runs it.
     #
     # @param    [Bool]  raise_exception
