@@ -193,13 +193,13 @@ describe Arachni::Utilities do
         end
     end
 
-    describe '#secs_to_hms' do
+    describe '#seconds_to_hms' do
         it 'converts seconds to HOURS:MINUTES:SECONDS' do
-            subject.secs_to_hms( 0 ).should == '00:00:00'
-            subject.secs_to_hms( 1 ).should == '00:00:01'
-            subject.secs_to_hms( 60 ).should == '00:01:00'
-            subject.secs_to_hms( 60*60 ).should == '01:00:00'
-            subject.secs_to_hms( 60*60 + 60 + 1 ).should == '01:01:01'
+            subject.seconds_to_hms( 0 ).should == '00:00:00'
+            subject.seconds_to_hms( 1 ).should == '00:00:01'
+            subject.seconds_to_hms( 60 ).should == '00:01:00'
+            subject.seconds_to_hms( 60*60 ).should == '01:00:00'
+            subject.seconds_to_hms( 60*60 + 60 + 1 ).should == '01:01:01'
         end
     end
 

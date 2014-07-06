@@ -58,7 +58,7 @@ class Report
     #   `{#start_datetime} - {#finish_datetime}` in `00:00:00`
     #   (`hours:minutes:seconds`) format.
     def delta_time
-        secs_to_hms( (@finish_datetime || Time.now) - @start_datetime )
+        seconds_to_hms( (@finish_datetime || Time.now) - @start_datetime )
     end
 
     # @param    [Options, Hash] options
