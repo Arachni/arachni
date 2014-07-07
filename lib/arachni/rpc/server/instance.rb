@@ -515,9 +515,7 @@ class Instance
     #   depending on the `grid_mode` setting:
     #
     #   * `nil` -- All slave Instances will be spawned by this Instance directly,
-    #       and thus reside in the same machine. This has the added benefit of
-    #       using UNIX-domain sockets for inter-process communication and avoiding
-    #       the overhead of TCP/IP.
+    #       and thus reside in the same machine.
     #   * `:balance` -- Slaves will be provided by the least burdened Grid Dispatchers.
     #   * `:aggregate` -- Slaves will be provided by Grid Dispatchers with unique
     #       Pipe-IDs and the value of this option will be treated as a possible
@@ -766,10 +764,6 @@ class Instance
 
     # Provides `num` Instances.
     #
-    # New Instance processes will be spawned and immediately detached.
-    # Spawns will listen on a UNIX socket and the master will expose itself
-    # over a UNIX socket as well so that IPC won't have to go over TCP/IP.
-    #
     # @param    [Integer]   num
     #   Amount of Instances to return.
     # @return   [Array<Hash>]
@@ -782,35 +776,20 @@ class Instance
 
         q = Reactor.global.create_queue
 
-        spawner = proc do
-            num.times do
-                instance_info = { token: generate_token }
-                options       = instance_info.dup
+        num.times do
+            instance_info = { token: generate_token }
+            options       = instance_info.dup
 
-                if Reactor.supports_unix_sockets?
-                    instance_info[:url] = options[:socket] =
-                        "#{Dir.tmpdir}/arachni-slave-#{generate_token}"
-                else
-                    options[:port]      = Utilities.available_port
-                    instance_info[:url] = "#{Options.rpc.server_address}:#{options[:port]}"
-                end
+            options[:port]      = Utilities.available_port
+            instance_info[:url] = "#{Options.rpc.server_address}:#{options[:port]}"
 
-                pid = Processes::Manager.spawn( :instance, options )
-                Process.detach pid
-                @consumed_pids << pid
+            pid = Processes::Manager.spawn( :instance, options )
+            Process.detach pid
+            @consumed_pids << pid
 
-                Client::Instance.when_ready( instance_info[:url], instance_info[:token] ) do
-                    q << instance_info
-                end
+            Client::Instance.when_ready( instance_info[:url], instance_info[:token] ) do
+                q << instance_info
             end
-        end
-
-        if Reactor.supports_unix_sockets?
-            # Before spawning slaves, expose our API over a UNIX socket via
-            # which they should talk to us to avoid the TCP/IP overhead.
-            expose_over_unix_socket(&spawner)
-        else
-            spawner.call
         end
 
         spawns = []
@@ -844,35 +823,6 @@ class Instance
         puts BANNER
         puts
         puts
-    end
-
-    # Exposes self over an UNIX socket.
-    #
-    # @param    [Block] block
-    #   Block to call once the operation has completed.
-    def expose_over_unix_socket( &block )
-        # If it's already exposed over a UNIX socket then there's nothing to
-        # be done.
-        if Options.rpc.server_socket
-            block.call true
-            return
-        end
-
-        Options.rpc.server_socket = "#{Dir.tmpdir}/arachni-master-#{Process.pid}"
-
-        Thread.new do
-            unix = Base.new( @options, @token )
-            set_handlers( unix )
-
-            Thread.new do
-                unix.start
-            end
-
-            sleep 0.1 while !File.exist?( Options.rpc.server_socket )
-            block.call true
-        end
-
-        true
     end
 
     # @param    [Base]  server
