@@ -122,7 +122,7 @@ class Framework
 
         refresh_info( "Sent #{statistics[:http][:request_count]} requests.", unmute )
         refresh_info( "Received and analyzed #{statistics[:http][:response_count]} responses.", unmute )
-        refresh_info( "In #{secs_to_hms( statistics[:runtime] )}", unmute )
+        refresh_info( "In #{seconds_to_hms( statistics[:runtime] )}", unmute )
 
         avg = "Average: #{http[:total_responses_per_second].to_s} requests/second."
         refresh_info( avg, unmute )

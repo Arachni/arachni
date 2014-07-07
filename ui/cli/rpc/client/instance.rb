@@ -241,7 +241,7 @@ class Instance
         http = statistics[:http]
         print_info "Sent #{http[:request_count]} requests."
         print_info "Received and analyzed #{http[:response_count]} responses."
-        print_info( "In #{secs_to_hms( statistics[:runtime] )}" )
+        print_info( "In #{seconds_to_hms( statistics[:runtime] )}" )
         print_info "Average: #{http[:total_responses_per_second]} requests/second."
 
         print_line

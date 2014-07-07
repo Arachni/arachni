@@ -80,7 +80,7 @@ class DispatcherMonitor
         jobs.each do |job|
             rows << [ job['proc']['ppid'], job['pid'], job['port'], job['owner'],
                 job['birthdate'].to_time, job['starttime'].to_time, job['currtime'].to_time,
-                secs_to_hms( job['age'] ), secs_to_hms( job['runtime'] ),
+                seconds_to_hms( job['age'] ), seconds_to_hms( job['runtime'] ),
                 proc_mem( job['proc']['rss'] ), job['proc']['priority'],
                 proc_state( job['proc']['state'] ) ]
         end
@@ -116,7 +116,7 @@ class DispatcherMonitor
         end
     end
 
-    def secs_to_hms( secs )
+    def seconds_to_hms( secs )
         secs = secs.to_i
         [secs/3600, secs/60 % 60, secs % 60].map { |t| t.to_s.rjust( 2, '0' ) }.join(':')
     end
