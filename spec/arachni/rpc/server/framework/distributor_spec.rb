@@ -381,6 +381,16 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 end
             end
         end
+
+        context 'when elements have no #inputs' do
+            context 'nor DOM#inputs' do
+                it 'ignores them'
+            end
+
+            context 'but have DOM#inputs' do
+                it 'includes them'
+            end
+        end
     end
 
     describe '#prepare_slave_options' do

@@ -282,7 +282,7 @@ module Distributor
 
     def filter_elements( elements )
         elements.map do |e|
-            next if e.inputs.empty?
+            next if !(e.inputs.any? || (e.respond_to?( :dom ) && e.dom && e.dom.inputs.any?))
 
             id = e.persistent_hash
             next if distributed_elements.include?( id )
