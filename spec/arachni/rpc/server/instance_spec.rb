@@ -500,56 +500,6 @@ describe 'Arachni::RPC::Server::Instance' do
                 end
 
                 context 'when it does not have a Dispatcher' do
-                    context 'when UNIX sockets are' do
-
-                        context 'supported',
-                                if: Arachni::Reactor.supports_unix_sockets? do
-
-                            it 'uses UNIX sockets to communicate with the slaves' do
-                                @instance = instance = instance_spawn
-                                instance.service.scan(
-                                    url:    web_server_url_for( :framework ),
-                                    audit:  { elements: [:links, :forms] },
-                                    checks: :test,
-                                    spawns: 4
-                                )
-                                sleep 1 while instance.service.busy?
-
-                                self_url = instance.framework.self_url
-
-                                instance.service.progress( with: :instances )[:instances].each do |progress|
-                                    url = progress[:url]
-                                    next if url == self_url
-                                    File.socket?( url ).should be_true
-                                end
-                            end
-                        end
-
-                        context 'not supported',
-                                if: !Arachni::Reactor.supports_unix_sockets? do
-
-                            it 'uses TCP/IP sockets to communicate with the slaves' do
-                                @instance = instance = instance_spawn
-                                instance.service.scan(
-                                    url:    web_server_url_for( :framework ),
-                                    audit:  { elements: [:links, :forms] },
-                                    checks: :test,
-                                    spawns: 4
-                                )
-                                sleep 1 while instance.service.busy?
-
-                                self_url = instance.framework.self_url
-
-                                instance.service.progress( with: :instances )[:instances].each do |progress|
-                                    url = progress[:url]
-                                    next if url == self_url
-
-                                    url.should include ':'
-                                end
-                            end
-                        end
-                    end
-
                     it 'spawns a number of slaves' do
                         @instance = instance = instance_spawn
 
