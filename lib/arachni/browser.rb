@@ -1192,9 +1192,16 @@ class Browser
                 return
         end
 
-        # Don't bother is we or the system in general has already seen the vector.
-        return if skip_state?( form.id ) || ElementFilter.include?( form )
-        skip_state form.id
+        # Don't bother if the system in general has already seen the vector.
+        return if ElementFilter.include?( form )
+
+        begin
+            return if skip_state?( form.id )
+            skip_state form.id
+        # This could be an orphaned HTTP request, without a job, if running in
+        # BrowserCluster::Worker.
+        rescue NoMethodError
+        end
 
         page = Page.from_data( url: request.url, forms: [form] )
         page.response.request = request
