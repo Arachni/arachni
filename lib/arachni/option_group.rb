@@ -67,7 +67,7 @@ class OptionGroup
 
             h[sym] = value
         end
-        h.deep_clone
+        h
     end
     def to_hash
         to_h
