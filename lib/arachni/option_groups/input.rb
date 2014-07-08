@@ -26,10 +26,10 @@ class Input < Arachni::OptionGroup
 
     DEFAULT = '1'
 
-    # @return    [Hash<Regexp => String, Proc>]
+    # @return    [Hash<Regexp => String, #call>]
     #   Patterns used to match input names and value to use to fill it in.
-    #   If the value is a `Proc` its return value will be used instead -- it
-    #   will also be passed the name of the vector as an argument.
+    #   If the value is a callable object (like a `Proc`) its return value will
+    #   be used instead -- it will also be passed the name of the vector as an argument.
     attr_accessor :values
 
     # @return    [Hash<Regexp => String>]
@@ -89,7 +89,7 @@ class Input < Arachni::OptionGroup
     #   Value for the `name` or `nil` if none could be found.
     def value_for_name( name, use_default = true )
         effective_values.each do |k, v|
-            return v.is_a?( Proc ) ? v.call( name ).to_s : v if name =~ k
+            return v.respond_to?( :call ) ? v.call( name ).to_s : v if name =~ k
         end
 
         use_default ? DEFAULT : nil
