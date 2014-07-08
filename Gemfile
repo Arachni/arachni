@@ -25,7 +25,6 @@ end
 
 gem 'typhoeus', github: 'typhoeus/typhoeus'
 gem 'ethon',    github: 'typhoeus/ethon'
-gem 'arachni-reactor',    github: 'arachni/arachni-reactor'
 
 if RbConfig::CONFIG['host_os'].include? 'darwin'
     gem 'arachni-rpc', path: File.dirname( __FILE__ ) + '/../arachni-rpc-v0.2'
