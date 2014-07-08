@@ -140,13 +140,13 @@ class Input < Arachni::OptionGroup
         end
     end
 
-    def to_rpc_data
-        d = super
-        %w(values default_values).each do |k|
+    def to_h
+        h = super
+        [:values, :default_values].each do |k|
             # We can't have blocks in there...
-            d[k] = d[k].select{ |_, v| v.is_a? String }.stringify
+            h[k] = h[k].select{ |_, v| v.is_a? String }.stringify
         end
-        d
+        h
     end
 
 end
