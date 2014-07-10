@@ -332,16 +332,24 @@ class Request < Message
 
         if proxy
             options.merge!(
-                proxy:        proxy,
-                proxyuserpwd: proxy_user_password,
-                proxytype:    proxy_type
+                proxy:     proxy,
+                proxytype: proxy_type
             )
+
+            if proxy_user_password
+                options[:proxyuserpwd] = proxy_user_password
+            end
+
         elsif Arachni::Options.http.proxy_host && Arachni::Options.http.proxy_port
             options.merge!(
-                proxy:        "#{Arachni::Options.http.proxy_host}:#{Arachni::Options.http.proxy_port}",
-                proxyuserpwd: "#{Arachni::Options.http.proxy_username}:#{Arachni::Options.http.proxy_password}",
-                proxytype:    Arachni::Options.http.proxy_type
+                proxy:     "#{Arachni::Options.http.proxy_host}:#{Arachni::Options.http.proxy_port}",
+                proxytype: Arachni::Options.http.proxy_type
             )
+
+            if Arachni::Options.http.proxy_username && Arachni::Options.http.proxy_password
+                options[:proxyuserpwd] =
+                    "#{Arachni::Options.http.proxy_username}:#{Arachni::Options.http.proxy_password}"
+            end
         end
 
         curl = parsed_url.query ? url.gsub( "?#{parsed_url.query}", '' ) : url
