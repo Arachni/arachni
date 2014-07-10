@@ -41,7 +41,9 @@ class Arachni::Modules::OSCmdInjection < Arachni::Module::Base
 
     def self.payloads
         @payloads ||= {
-            unix:    [ '/bin/cat /etc/passwd' ],
+            unix:    [ '/bin/cat /etc/passwd',
+                       '/bin/cat /etc/master.passwd',
+                       '/bin/cat /etc/security/passwd'],
             windows: [ 'type %SystemDrive%\\\\boot.ini',
                        'type %SystemRoot%\\\\win.ini' ]
         }.inject({}) do |h, (platform, payloads)|
