@@ -42,7 +42,7 @@ Gem::Specification.new do |s|
     s.add_dependency 'bundler'
 
     # For compressing/decompressing system state archives.
-    s.add_dependency 'rubyzip',           '1.1.3'
+    s.add_dependency 'rubyzip',           '1.1.6'
 
     # HTML report
     s.add_dependency 'coderay',           '1.1.0'
