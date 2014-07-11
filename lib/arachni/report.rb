@@ -3,7 +3,7 @@
     All rights reserved.
 =end
 
-require 'zip'
+require_relative 'rpc/serializer'
 
 module Arachni
 
@@ -103,9 +103,7 @@ class Report
     # @return    [Report]
     #   Loaded instance.
     def self.load( file )
-        Zip::File.open( file ) do |zip_file|
-            Marshal.load zip_file.get_entry('report').get_input_stream.read
-        end
+        from_rpc_data RPC::Serializer.load( IO.binread( file ) )
     end
 
     # @param    [String]    location
@@ -122,9 +120,7 @@ class Report
             location += "/#{default_filename}"
         end
 
-        Zip::File.open( location, Zip::File::CREATE ) do |zipfile|
-            zipfile.get_output_stream( 'report' ) { |os| os.write Marshal.dump( self ) }
-        end
+        IO.binwrite( location, RPC::Serializer.dump( self ) )
 
         File.expand_path( location )
     end
