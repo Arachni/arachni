@@ -263,19 +263,37 @@ describe Arachni::BrowserCluster::Worker do
                 end
             end
 
-            context "when cookie clearing raises #{Selenium::WebDriver::Error::NoSuchWindowError}" do
-                it 'respawns' do
-                    subject.watir.stub(:cookies) do
-                        raise Selenium::WebDriver::Error::NoSuchWindowError
+            context 'when cookie clearing raises' do
+                context Selenium::WebDriver::Error::NoSuchWindowError do
+                    it 'respawns' do
+                        subject.watir.stub(:cookies) do
+                            raise Selenium::WebDriver::Error::NoSuchWindowError
+                        end
+
+                        watir = subject.watir
+                        pid   = subject.pid
+
+                        subject.run_job( custom_job )
+
+                        watir.should_not == subject.watir
+                        pid.should_not == subject.pid
                     end
+                end
 
-                    watir         = subject.watir
-                    pid = subject.pid
+                context Selenium::WebDriver::Error::WebDriverError do
+                    it 'respawns' do
+                        subject.watir.stub(:cookies) do
+                            raise Selenium::WebDriver::Error::WebDriverError
+                        end
 
-                    subject.run_job( custom_job )
+                        watir = subject.watir
+                        pid   = subject.pid
 
-                    watir.should_not == subject.watir
-                    pid.should_not == subject.pid
+                        subject.run_job( custom_job )
+
+                        watir.should_not == subject.watir
+                        pid.should_not == subject.pid
+                    end
                 end
             end
 

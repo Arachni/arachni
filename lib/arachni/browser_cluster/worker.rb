@@ -108,7 +108,8 @@ class Worker < Arachni::Browser
         begin
             watir.cookies.clear
         # Working window was closed by JS (probably), start from scratch.
-        rescue Selenium::WebDriver::Error::NoSuchWindowError
+        rescue Selenium::WebDriver::Error::NoSuchWindowError,
+            Selenium::WebDriver::Error::WebDriverError
             browser_respawn
         end
 
