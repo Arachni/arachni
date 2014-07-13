@@ -130,7 +130,7 @@ class OptionParser < UI::CLI::OptionParser
                'Use the paths in FILE instead of crawling.',
                '(Can be used multiple times.)'
         ) do |file|
-            options.scope.restrict_paths |= paths_from_file( arg )
+            options.scope.restrict_paths |= paths_from_file( file )
         end
 
         on( '--scope-url-rewrite PATTERN:SUBSTITUTION',
@@ -421,7 +421,7 @@ class OptionParser < UI::CLI::OptionParser
         on( '--input-value PATTERN:VALUE',
             'PATTERN to match against input names and VALUE to use for them.',
             '(Can be used multiple times.)'
-        ) do |url|
+        ) do |rule|
             pattern, value = rule.split( ':', 2 )
             options.input.values[Regexp.new(pattern)] = value
         end
@@ -537,7 +537,7 @@ class OptionParser < UI::CLI::OptionParser
         on( '--timeout-suspend',
             'Suspend after the timeout.',
             'You can use the generated file to resume the scan with the \'arachni_restore\' executable.'
-        ) do |time|
+        ) do
             @timeout_suspend = true
         end
     end
