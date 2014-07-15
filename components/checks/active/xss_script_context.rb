@@ -43,14 +43,24 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
     end
 
     def self.strings
-        @strings ||= [
-            "javascript:#{seed}",
-            "1;#{seed}",
-            "';#{seed}",
-            "\";#{seed}",
-            "1;\n#{seed}",
-            "*/;\n#{seed}/*"
-        ].map { |s| [s, "#{s}//"] }.flatten
+        return @strings if @strings
+
+        @strings ||= [ "javascript:#{seed}" ]
+
+        ['\'', '"', ''].each do |quote|
+            [ "%q;#{seed}%q", "%q;#{seed};%q" ].each do |payload|
+                @strings << payload.gsub( '%q', quote )
+            end
+        end
+
+        [ "1;#{seed}%q", "1;\n#{seed}%q" ].each do |payload|
+            ['', ';'].each do |s|
+                @strings << payload.gsub( '%q', s )
+            end
+        end
+
+        @strings = @strings.map { |s| [ s, "#{s}//" ] }.flatten
+        ap @strings << "*/;\n#{seed}/*"
     end
 
     def self.options
