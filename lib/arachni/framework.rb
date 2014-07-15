@@ -966,7 +966,7 @@ class Framework
     # @param    [Page]  page
     #   Page to analyze.
     def perform_browser_analysis( page )
-        return if !browser_cluster || page_limit_reached? ||
+        return if !browser_cluster || !crawl? || page_limit_reached? ||
             Options.scope.dom_depth_limit.to_i < page.dom.depth + 1 ||
             !page.has_script?
 
@@ -996,7 +996,7 @@ class Framework
 
         state.status = :scanning if !pausing?
 
-        push_to_url_queue( options.url )
+        push_to_url_queue( options.url ) if crawl?
         options.scope.restrict_paths.each { |url| push_to_url_queue( url ) }
 
         # Initialize the BrowserCluster.
