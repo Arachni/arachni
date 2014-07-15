@@ -514,7 +514,8 @@ class Form < Base
                               'could not be found.'
             else
                 print_info "Got new nonce '#{inputs[nonce_name]}'."
-                options[:mode] = :sync
+                options[:mode]       = :sync
+                options[:parameters] = inputs
             end
         end
 
