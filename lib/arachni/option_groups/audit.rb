@@ -211,10 +211,12 @@ class Audit < Arachni::OptionGroup
     end
     alias :link_template_doms? :link_templates?
 
-    def to_rpc_data
-        d = super
-        d['link_templates'] = d['link_templates'].map(&:to_s)
-        d
+    def to_h
+        h = super
+        [:link_templates, :include_vector_patterns, :exclude_vector_patterns].each do |k|
+            h[k] = h[k].map(&:to_s)
+        end
+        h
     end
 
 end
