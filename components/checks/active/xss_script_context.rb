@@ -60,7 +60,7 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
         end
 
         @strings = @strings.map { |s| [ s, "#{s}//" ] }.flatten
-        ap @strings << "*/;\n#{seed}/*"
+        @strings << "*/;\n#{seed}/*"
     end
 
     def self.options
