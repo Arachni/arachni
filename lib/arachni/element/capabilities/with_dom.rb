@@ -3,6 +3,8 @@
     All rights reserved.
 =end
 
+require_relative 'with_node'
+
 module Arachni
 module Element::Capabilities
 
