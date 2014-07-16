@@ -78,7 +78,7 @@ begin
 
                     desc 'Run the WAVSEP XSS tests.'
                     RSpec::Core::RakeTask.new( :xss ) do |t|
-                        t.pattern = FileList[ 'spec/external/wavsep/active/xss_spec.rb' ]
+                        t.pattern = FileList[ 'spec/external/wavsep/active/xss*_spec.rb' ]
                     end
 
                     desc 'Run the WAVSEP SQL injection tests.'
