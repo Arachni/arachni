@@ -88,6 +88,22 @@ describe Arachni::BrowserCluster::Worker do
                 custom_job.stub(:configure_and_run){ raise 'stuff' }
                 subject.run_job( custom_job ).should be_true
             end
+
+            context Selenium::WebDriver::Error::WebDriverError do
+                it 'respawns' do
+                    subject.watir.stub(:cookies) do
+                        raise Selenium::WebDriver::Error::WebDriverError
+                    end
+
+                    watir = subject.watir
+                    pid   = subject.pid
+
+                    subject.run_job( custom_job )
+
+                    watir.should_not == subject.watir
+                    pid.should_not == subject.pid
+                end
+            end
         end
 
         context 'when the job finishes' do
@@ -279,24 +295,7 @@ describe Arachni::BrowserCluster::Worker do
                         pid.should_not == subject.pid
                     end
                 end
-
-                context Selenium::WebDriver::Error::WebDriverError do
-                    it 'respawns' do
-                        subject.watir.stub(:cookies) do
-                            raise Selenium::WebDriver::Error::WebDriverError
-                        end
-
-                        watir = subject.watir
-                        pid   = subject.pid
-
-                        subject.run_job( custom_job )
-
-                        watir.should_not == subject.watir
-                        pid.should_not == subject.pid
-                    end
-                end
             end
-
         end
 
         context 'when the job takes more than #job_timeout' do
