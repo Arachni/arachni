@@ -36,9 +36,10 @@ class Arachni::Checks::SourceCodeDisclosure < Arachni::Check::Base
             # Add one more mutation (on the fly) which will include the extension
             # of the original value (if that value was a filename) after a null byte.
             each_mutation: proc do |mutation|
-                next if mutation.is_a?( Arachni::Form ) &&
-                    (mutation.mutation_with_original_values? ||
-                        mutation.mutation_with_sample_values?)
+                next if !mutation.affected_input_value ||
+                    (mutation.is_a?( Arachni::Form ) &&
+                        (mutation.mutation_with_original_values? ||
+                            mutation.mutation_with_sample_values?))
 
                 # Don't bother if the current element type can't carry nulls.
                 next if !mutation.valid_input_value_data?( "\0" )
