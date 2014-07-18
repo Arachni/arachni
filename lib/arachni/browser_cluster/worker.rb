@@ -240,9 +240,12 @@ class Worker < Arachni::Browser
 
         @window_responses.clear
 
-        # If PhantomJS is already dead this will block for quite some time so
-        # beware.
-        @watir.close if browser_alive?
+        begin
+            # If PhantomJS is already dead this will block for quite some time so
+            # beware.
+            @watir.close if browser_alive?
+        rescue Selenium::WebDriver::Error::WebDriverError
+        end
 
         kill_process
 

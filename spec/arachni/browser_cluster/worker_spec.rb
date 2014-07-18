@@ -95,6 +95,10 @@ describe Arachni::BrowserCluster::Worker do
                         raise Selenium::WebDriver::Error::WebDriverError
                     end
 
+                    subject.watir.stub(:close) do
+                        raise Selenium::WebDriver::Error::WebDriverError
+                    end
+
                     watir = subject.watir
                     pid   = subject.pid
 
