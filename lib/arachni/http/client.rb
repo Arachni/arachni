@@ -82,7 +82,7 @@ class Client
     HTTP_TIMEOUT = 60_000
 
     # Maximum size of the cache that holds 404 signatures.
-    CUSTOM_404_CACHE_SIZE = 250
+    CUSTOM_404_CACHE_SIZE = 20
 
     # Maximum allowed difference ratio when comparing custom 404 signatures.
     # The fact that we refine the signatures allows us to set this threshold
@@ -460,12 +460,29 @@ class Client
         url = response.url
 
         if checked_for_custom_404?( url )
-            return block.call( is_404?( url, response.body ) )
+            result = is_404?( url, response.body )
+            print_debug "#{__method__} [cached]: #{block} #{url} #{result}"
+            return block.call( result )
         end
+
+        # If someone else is already checking that resource don't bother
+        # duplicating the effort, just let them know that we're waiting on the
+        # results too.
+        if _404_data_for_url( url )[:in_progress]
+            print_debug "#{__method__} [waiting]: #{url} #{block}"
+            _404_data_for_url( url )[:waiting] << [url, response.body, block]
+            return
+        end
+
+        # Call dibs on fingerprinting this url.
+        _404_data_for_url( url )[:in_progress] = true
+
+        print_debug "#{__method__} [checking]: #{url} #{block}"
 
         precision  = 2
         generators = custom_404_probe_generators( url, precision )
 
+        real_404s          = 0
         gathered_responses = 0
         expected_responses = generators.size * precision
 
@@ -473,12 +490,14 @@ class Client
             _404_signatures_for_url( url )[i] ||= {}
 
             precision.times do
-                get( generator.call, follow_location: true ) do |c_res|
-                    gathered_responses += 1
+                get( generator.call,
+                     follow_location: true,
+                     # This is important, helps us reduce waiting callers.
+                     high_priority: true
+                ) do |c_res|
 
-                    if c_res.code == 404
-                        @with_regular_404_handler << url
-                    end
+                    gathered_responses += 1
+                    real_404s += 1 if c_res.code == 404
 
                     if _404_signatures_for_url( url )[i][:body]
                         _404_signatures_for_url( url )[i][:rdiff] =
@@ -487,8 +506,27 @@ class Client
 
                         next if gathered_responses != expected_responses
 
+                        # If we get real 404s flag that there's no handler.
+                        if real_404s == expected_responses
+                            @with_regular_404_handler << url_for_custom_404( url )
+                        end
+
                         checked_for_custom_404( url )
-                        block.call is_404?( url, response.body )
+
+                        result = is_404?( url, response.body )
+                        print_debug "#{__method__} [checked]: #{block} #{url} #{result}"
+                        block.call result
+
+                        # Process other's request too.
+                        while (waiting = _404_data_for_url( url )[:waiting].pop)
+                            url, body, callback = waiting
+                            result = is_404?( url, body )
+
+                            print_debug "#{__method__} [notify]: #{callback} #{url} #{result}"
+                            callback.call result
+                        end
+
+                        _404_data_for_url( url )[:in_progress] = false
                     else
                         _404_signatures_for_url( url )[i][:body] =
                             Support::Signature.new(
@@ -519,7 +557,7 @@ class Client
     #   `true` if the `url` has been checked for the existence of a custom-404
     #   handler but none was identified, `false` otherwise.
     def checked_but_not_custom_404?( url )
-        @with_regular_404_handler.include?( url )
+        @with_regular_404_handler.include?( url_for_custom_404( url ) )
     end
 
     # @param    [String]    url
@@ -539,6 +577,21 @@ class Client
     # @private
     def _404_cache
         @_404
+    end
+
+    def url_for_custom_404( url )
+        parsed = Arachni::URI( url )
+
+        if url.end_with?( '/' )
+            trv_back = File.dirname( parsed.path )
+            trv_back += '/' if trv_back[-1] != '/'
+
+            parsed = parsed.dup
+            parsed.path = trv_back
+            parsed.to_s
+        else
+            parsed.up_to_path
+        end
     end
 
     private
@@ -563,9 +616,12 @@ class Client
         uri        = uri_parse( url )
         up_to_path = uri.up_to_path
 
-        trv_back = File.dirname( uri.path )
-        trv_back_url = uri.scheme + '://' + uri.host + ':' + uri.port.to_s + trv_back
-        trv_back_url += '/' if trv_back_url[-1] != '/'
+        trv_back = File.dirname( Arachni::URI(up_to_path).path )
+        trv_back += '/' if trv_back[-1] != '/'
+
+        parsed = uri.dup
+        parsed.path  = trv_back
+        trv_back_url = parsed.to_s
 
         [
             # Get a random path with an extension.
@@ -586,9 +642,11 @@ class Client
     end
 
     def _404_data_for_url( url )
-        @_404[URI.normalize(url)] ||= {
-            analyzed:   false,
-            signatures: []
+        @_404[url_for_custom_404( url )] ||= {
+            analyzed:    false,
+            in_progress: false,
+            waiting:     [],
+            signatures:  []
         }
     end
 
@@ -611,7 +669,6 @@ class Client
         @running = true
 
         reset_burst_info
-
         @hydra.run
 
         @queue_size = 0
@@ -688,7 +745,12 @@ class Client
 
         return if request.blocking?
 
-        @hydra.queue( request.to_typhoeus )
+        if request.high_priority?
+            @hydra.queue_front( request.to_typhoeus )
+        else
+            @hydra.queue( request.to_typhoeus )
+        end
+
         @queue_size += 1
 
         if emergency_run?

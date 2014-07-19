@@ -91,6 +91,9 @@ class Request < Message
     # @return   [String]
     attr_accessor :proxy_type
 
+    # @return   [Bool]
+    attr_accessor :high_priority
+
     # @private
     attr_accessor :root_redirect_id
 
@@ -128,6 +131,10 @@ class Request < Message
         @mode          ||= :async
         @parameters    ||= {}
         @cookies       ||= {}
+    end
+
+    def high_priority?
+        !!@high_priority
     end
 
     # @note All keys and values will be recursively converted to strings.

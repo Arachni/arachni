@@ -1325,7 +1325,7 @@ describe Arachni::HTTP::Client do
                 subject._404_cache.should be_empty
 
                 (2 * described_class::CUSTOM_404_CACHE_SIZE).times do |i|
-                    subject.get( @custom_404 + "static/#{i}/" ) do |response|
+                    subject.get( @custom_404 + "static/#{i}/test" ) do |response|
                         subject.custom_404?( response ) {}
                     end
                 end
