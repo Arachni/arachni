@@ -9,7 +9,6 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 # @version 0.2.2
-#
 # @see http://cwe.mitre.org/data/definitions/538.html
 class Arachni::Checks::CommonDirectories < Arachni::Check::Base
 
@@ -34,7 +33,7 @@ class Arachni::Checks::CommonDirectories < Arachni::Check::Base
             description: %q{Tries to find common directories on the server.},
             elements:    [ Element::Server ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.2.1',
+            version:     '0.2.2',
 
             issue:       {
                 name:            %q{Common directory},
