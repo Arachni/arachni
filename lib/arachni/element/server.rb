@@ -66,17 +66,17 @@ class Server < Base
     #   Block to be passed  `true` if the resource exists or `false` otherwise
     #   and the response for the resource check.
     def remote_file_exist?( url, &block )
-        http.request( url, method: :head, performer: self ) do |response|
-            if response.code != 200
-                block.call( false, response )
-            else
-                if http.needs_custom_404_check?( url )
-                    http.get( url, performer: self ) do |r|
-                        http.custom_404?( r ) { |bool| block.call( !bool, r ) }
-                    end
+        if http.needs_custom_404_check?( url )
+            http.get( url, performer: self ) do |r|
+                if r.code == 200
+                    http.custom_404?( r ) { |bool| block.call( !bool, r ) }
                 else
-                    block.call( true, response )
+                    block.call( false, r )
                 end
+            end
+        else
+            http.request( url, method: :head, performer: self ) do |response|
+                block.call( response.code == 200, response )
             end
         end
 
