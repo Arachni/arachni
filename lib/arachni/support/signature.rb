@@ -53,52 +53,6 @@ class Signature
         dup.refine!( data )
     end
 
-    # @note **Very** expensive, use {#differences} when possible.
-    #
-    # @param    [Signature] other
-    # @param    [Integer]   ins
-    #   Cost of an `insert` operation.
-    # @param    [Integer]   del
-    #   Cost of a `delete` operation.
-    # @param    [Integer]   sub
-    #   Cost of a `substitute` operation.
-    #
-    # @return   [Integer]
-    #   Levenshtein distance
-    #
-    # @see http://www.informit.com/articles/article.aspx?p=683059&seqNum=36
-    def distance( other, ins = 2, del = 2, sub = 1 )
-        return nil if other.nil?
-        return 0   if hash == other.hash
-
-        # Distance matrix.
-        dm = []
-
-        # Initialize first row values.
-        dm[0] = (0..tokens.size).collect { |i| i * ins }
-        fill  = [0] * (tokens.size - 1)
-
-        # Initialize first column values.
-        (1..other.tokens.size).each do |i|
-            dm[i] = [i * del, fill.flatten]
-        end
-
-        # Populate matrix.
-        (1..other.tokens.size).each do |i|
-            (1..tokens.size).each do |j|
-                # Critical comparison.
-                dm[i][j] = [
-                    dm[i-1][j-1] + (tokens[j-1] == other.tokens[i-1] ? 0 : sub),
-                    dm[i][j-1] + ins,
-                    dm[i-1][j] + del
-                ].min
-            end
-        end
-
-        # The last value in matrix is the Levenshtein distance.
-        dm.last.last
-    end
-
     # @param    [Signature] other
     #
     # @return   [Float]
@@ -152,7 +106,17 @@ class Signature
     #   hashes, depending on which is smaller in size.
     def tokenize( data )
         return data.tokens if data.is_a? self.class
-        data.split( /(?![\w])/ ).map(&:freeze)
+        compress data.split( /(?![\w])/ )
+    end
+
+    # Compresses the tokens by using their #hash, if it's smaller than their
+    # string representation.
+    # Seems kinda silly but this can actually save us GB of RAM when comparing
+    # large signatures, not to mention CPU cycles.
+    def compress( tokens )
+        tokens.uniq.map do |token|
+            token.size < token.hash ? token : token.hash
+        end
     end
 
 end

@@ -91,22 +91,6 @@ describe Arachni::Support::Signature do
         end
     end
 
-    describe '#distance' do
-        it 'returns the Levenshtein distance between signature tokens' do
-            signature1 = described_class.new( string_with_noise )
-            signature2 = described_class.new( string_with_noise )
-            signature3 = described_class.new( different_string_with_noise )
-            signature4 = described_class.new( different_string_with_noise )
-
-            signature1.distance( signature2 ).should == 4
-            signature2.distance( signature2 ).should == 0
-
-            signature3.distance( signature4 ).should == 1
-            signature4.distance( signature4 ).should == 0
-            signature1.distance( signature3 ).should == 93
-        end
-    end
-
     describe '#differences' do
         it 'returns ratio of differences between signatures' do
             signature1 = described_class.new( string_with_noise )
