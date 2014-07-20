@@ -109,14 +109,11 @@ class Signature
         compress data.split( /(?![\w])/ )
     end
 
-    # Compresses the tokens by using their #hash, if it's smaller than their
-    # string representation.
+    # Compresses the tokens by only storing unique #hash values.
     # Seems kinda silly but this can actually save us GB of RAM when comparing
     # large signatures, not to mention CPU cycles.
     def compress( tokens )
-        tokens.uniq.map do |token|
-            token.size < token.hash ? token : token.hash
-        end
+        tokens.uniq.map(&:hash)
     end
 
 end
