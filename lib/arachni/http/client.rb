@@ -82,7 +82,7 @@ class Client
     HTTP_TIMEOUT = 60_000
 
     # Maximum size of the cache that holds 404 signatures.
-    CUSTOM_404_CACHE_SIZE = 20
+    CUSTOM_404_CACHE_SIZE = 250
 
     # Maximum allowed difference ratio when comparing custom 404 signatures.
     # The fact that we refine the signatures allows us to set this threshold
@@ -659,9 +659,21 @@ class Client
     end
 
     def is_404?( url, body )
+        # First try matching the signatures for the specific URL...
         _404_data_for_url( url )[:signatures].each do |_404|
             return true if _404[:rdiff].similar? _404[:body].refine( body )
         end
+
+        # ...then try the rest.
+        url = url_for_custom_404( url )
+        @_404.each do |u, data|
+            next if u == url || !data[:analyzed]
+
+            data[:signatures].each do |_404|
+                return true if _404[:rdiff].similar? _404[:body].refine( body )
+            end
+        end
+
         false
     end
 
