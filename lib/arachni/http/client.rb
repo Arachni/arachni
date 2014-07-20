@@ -82,7 +82,7 @@ class Client
     HTTP_TIMEOUT = 60_000
 
     # Maximum size of the cache that holds 404 signatures.
-    CUSTOM_404_CACHE_SIZE = 250
+    CUSTOM_404_CACHE_SIZE = 50
 
     # Maximum allowed difference ratio when comparing custom 404 signatures.
     # The fact that we refine the signatures allows us to set this threshold
@@ -582,16 +582,12 @@ class Client
     def url_for_custom_404( url )
         parsed = Arachni::URI( url )
 
-        if url.end_with?( '/' )
-            trv_back = File.dirname( parsed.path )
-            trv_back += '/' if trv_back[-1] != '/'
+        trv_back = File.dirname( Arachni::URI( parsed.up_to_path ).path )
+        trv_back += '/' if trv_back[-1] != '/'
 
-            parsed = parsed.dup
-            parsed.path = trv_back
-            parsed.to_s
-        else
-            parsed.up_to_path
-        end
+        parsed = parsed.dup
+        parsed.path = trv_back
+        parsed.to_s
     end
 
     private
@@ -659,12 +655,13 @@ class Client
     end
 
     def is_404?( url, body )
+
         # First try matching the signatures for the specific URL...
         _404_data_for_url( url )[:signatures].each do |_404|
             return true if _404[:rdiff].similar? _404[:body].refine( body )
         end
 
-        # ...then try the rest.
+        # ...then try the rest for good measure.
         url = url_for_custom_404( url )
         @_404.each do |u, data|
             next if u == url || !data[:analyzed]
