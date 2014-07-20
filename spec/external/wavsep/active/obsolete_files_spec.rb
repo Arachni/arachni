@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'WAVSEP XSS' do
+describe 'WAVSEP obsolete files' do
     include_examples 'wavsep'
 
     def self.methods
