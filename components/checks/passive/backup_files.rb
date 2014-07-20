@@ -22,12 +22,21 @@ class Arachni::Checks::BackupFiles < Arachni::Check::Base
             return
         end
 
-        path      = page.parsed_url.up_to_path
-        name      = File.basename( page.parsed_url.path ).split( '.' ).first.to_s
-        extension = page.parsed_url.resource_extension.to_s
+        up_to_path = page.parsed_url.up_to_path
+        name       = File.basename( page.parsed_url.path ).split( '.' ).first.to_s
+        extension  = page.parsed_url.resource_extension.to_s
 
         self.class.formats.each do |format|
-            log_remote_file_if_exists( path + format.gsub( '[name]', name ).gsub( '[extension]', extension ) )
+            url = up_to_path + format.gsub( '[name]', name ).
+                gsub( '[extension]', extension )
+
+            # If there's no extension we'll end up with '..' in URLs.
+            url.gsub!('..', '.')
+
+            next if audited?( url )
+
+            log_remote_file_if_exists( url )
+            audited( url )
         end
 
         audited( resource )
