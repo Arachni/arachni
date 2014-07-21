@@ -973,13 +973,20 @@ class Browser
     end
 
     def kill_process
-        if @process
+        if browser_alive?
             @process.stop
             @process.io.close rescue nil
         end
 
-        @pid = nil
+        @process     = nil
+        @pid         = nil
         @browser_url = nil
+    end
+
+    def browser_alive?
+        @process && @process.alive?
+    rescue Errno::ECHILD
+        false
     end
 
     def store_pages?

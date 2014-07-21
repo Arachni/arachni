@@ -83,7 +83,11 @@ class Worker < Arachni::Browser
         begin
             with_timeout @job_timeout do
                 exception_jail false do
-                    @job.configure_and_run( self )
+                    begin
+                        @job.configure_and_run( self )
+                    rescue Selenium::WebDriver::Error::WebDriverError
+                        browser_respawn
+                    end
                 end
             end
         rescue TimeoutError => e
@@ -92,18 +96,6 @@ class Worker < Arachni::Browser
             # Could have left us with a broken browser.
             browser_respawn
         end
-
-        @javascript.taint = nil
-
-        @preloads.clear
-        @cache.clear
-        @captured_pages.clear
-        @page_snapshots.clear
-        @page_snapshots_with_sinks.clear
-
-        # The jobs may have configured callbacks to capture pages etc.,
-        # remove them.
-        clear_observers
 
         begin
             watir.cookies.clear
@@ -120,6 +112,18 @@ class Worker < Arachni::Browser
         browser_respawn
         nil
     ensure
+        @javascript.taint = nil
+
+        @preloads.clear
+        @cache.clear
+        @captured_pages.clear
+        @page_snapshots.clear
+        @page_snapshots_with_sinks.clear
+
+        # The jobs may have configured callbacks to capture pages etc.,
+        # remove them.
+        clear_observers
+
         @job = nil
     end
 
@@ -220,12 +224,6 @@ class Worker < Arachni::Browser
             end
             @done_signal << nil
         end
-    end
-
-    def browser_alive?
-        @process.alive?
-    rescue Errno::ECHILD
-        false
     end
 
     def browser_respawn_if_necessary
