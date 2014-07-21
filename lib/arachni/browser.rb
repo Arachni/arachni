@@ -323,7 +323,7 @@ class Browser
     end
 
     def shutdown
-        watir.close if @process.alive?
+        watir.close if browser_alive?
         kill_process
         @proxy.shutdown
     end
