@@ -592,6 +592,11 @@ describe Arachni::HTTP::Request do
                     "event=manage&amp;section=exam" => "Manage selected exam"
                 }
         end
-    end
 
+        context 'when the body is nil' do
+            it 'returns an empty Hash' do
+                described_class.parse_body(nil).should == {}
+            end
+        end
+    end
 end

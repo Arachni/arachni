@@ -446,7 +446,9 @@ class Request < Message
         # @return   [Hash]
         #   Parameters.
         def parse_body( body )
-            body.split( '&' ).inject( {} ) do |h, pair|
+            return {} if !body
+
+            body.to_s.split( '&' ).inject( {} ) do |h, pair|
                 name, value = pair.split( '=', 2 )
                 h[Form.decode( name.to_s )] = Form.decode( value )
                 h
