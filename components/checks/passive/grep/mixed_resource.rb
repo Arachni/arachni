@@ -37,11 +37,13 @@ class Arachni::Checks::MixedResource < Arachni::Check::Base
 
     def insecure_script?( script )
         url = script.attributes['src'].to_s
+        return if url.empty?
 
+        parsed = uri_parse( to_absolute( url, page.url ) )
         # Ignore resources injected by the browser required to do its job.
-        return if Arachni::URI( url ).domain == 'browser.arachni'
+        return if !parsed || parsed.domain == 'browser.arachni'
 
-        url && !url.empty? && !https?( url )
+        !https?( url )
     end
 
     def https?( url )
