@@ -8,7 +8,7 @@ describe name_from_filename do
     end
 
     def issue_count
-        4
+        2
     end
 
     use_https
