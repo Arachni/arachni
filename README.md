@@ -535,7 +535,7 @@ Still, this can be an invaluable asset to Fuzzer checks.
 You can run `rake spec` to run **all** specs or you can run them selectively using the following:
 
     rake spec:core            # for the core libraries
-    rake spec:checks         # for the checks
+    rake spec:checks          # for the checks
     rake spec:plugins         # for the plugins
     rake spec:reports         # for the reports
     rake spec:path_extractors # for the path extractors
