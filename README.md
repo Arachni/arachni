@@ -390,6 +390,8 @@ Active checks engage the web application via its inputs.
 - Response splitting (`response_splitting`).
 - OS command injection (`os_cmd_injection`).
     - *nix
+    - *BSD
+    - IBM AIX
     - Windows
 - Blind OS command injection using timing attacks (`os_cmd_injection_timing`).
     - Linux
