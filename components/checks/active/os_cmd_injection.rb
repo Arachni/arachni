@@ -31,7 +31,9 @@ class Arachni::Checks::OSCmdInjection < Arachni::Check::Base
     def self.payloads
         @payloads ||= {
             unix:    [
-                '/bin/cat /etc/passwd',
+                '/bin/cat /etc/passwd'
+            ],
+            aix: [
                 '/bin/cat /etc/security/passwd'
             ],
             bsd: [
