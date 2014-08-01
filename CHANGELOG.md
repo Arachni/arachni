@@ -92,6 +92,7 @@
                 to check back later.
             - Removed `#proc_info` method.
             - Removed `proc` from job info data.
+            - `Handler` renamed to `Service`.
         - `Instance`
             - Removed `#output`.
         - `Framework`

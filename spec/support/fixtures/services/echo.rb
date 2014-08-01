@@ -1,5 +1,5 @@
 class Arachni::RPC::Server::Dispatcher
-class Handler::Echo < Handler
+class Service::Echo < Service
 
     private :instances
     public  :instances

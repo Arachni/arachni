@@ -6,7 +6,7 @@
 module Arachni
 module RPC
 
-# Base class and namespace for all RPCD/Dispatcher handlers.
+# Base class and namespace for all Dispatcher services.
 #
 # # RPC accessibility
 #
@@ -31,7 +31,7 @@ module RPC
 # results to that block instead of returning a value.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-class Server::Dispatcher::Handler
+class Server::Dispatcher::Service
 
     attr_reader :options
     attr_reader :dispatcher

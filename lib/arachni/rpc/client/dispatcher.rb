@@ -22,7 +22,7 @@ class Dispatcher
         @node   = Proxy.new( @client, 'node' )
 
         # map Dispatcher handlers
-        Dir.glob( "#{Options.paths.rpcd_handlers}*.rb" ).each do |handler|
+        Dir.glob( "#{Options.paths.services}*.rb" ).each do |handler|
             name = File.basename( handler, '.rb' )
 
             self.class.send( :attr_reader, name.to_sym )

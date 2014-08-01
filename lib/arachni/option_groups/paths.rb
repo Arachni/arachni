@@ -19,7 +19,7 @@ class Paths < Arachni::OptionGroup
     attr_accessor :checks
     attr_accessor :reporters
     attr_accessor :plugins
-    attr_accessor :rpcd_handlers
+    attr_accessor :services
     attr_accessor :path_extractors
     attr_accessor :fingerprinters
     attr_accessor :lib
@@ -39,7 +39,7 @@ class Paths < Arachni::OptionGroup
         @checks          = @components + 'checks/'
         @reporters       = @components + 'reporters/'
         @plugins         = @components + 'plugins/'
-        @rpcd_handlers   = @components + 'rpcd_handlers/'
+        @services   = @components + 'services/'
         @path_extractors = @components + 'path_extractors/'
         @fingerprinters  = @components + 'fingerprinters/'
 

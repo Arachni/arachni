@@ -33,12 +33,12 @@ class Server
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Dispatcher
     require Options.paths.lib + 'rpc/server/dispatcher/node'
-    require Options.paths.lib + 'rpc/server/dispatcher/handler'
+    require Options.paths.lib + 'rpc/server/dispatcher/service'
 
     include Utilities
     include UI::Output
 
-    HANDLER_NAMESPACE = Handler
+    SERVICE_NAMESPACE = Service
 
     def initialize( options = Options.instance )
         @options = options
@@ -82,8 +82,8 @@ class Dispatcher
             next if @options.dispatcher.pool_size != @pool.size
             task.done
 
-            _handlers.each do |name, handler|
-                @server.add_handler( name, handler.new( @options, self ) )
+            _services.each do |name, service|
+                @server.add_handler( name, service.new( @options, self ) )
             end
 
             @node = Node.new( @options, @logfile )
@@ -93,8 +93,8 @@ class Dispatcher
         end
     end
 
-    def handlers
-        _handlers.keys
+    def services
+        _services.keys
     end
 
     # @return   [TrueClass]
@@ -260,17 +260,17 @@ class Dispatcher
 
     private
 
-    def self._handlers
-        @handlers ||= nil
-        return @handlers if @handlers
+    def self._services
+        @services ||= nil
+        return @services if @services
 
-        @handlers = Component::Manager.new( Options.paths.rpcd_handlers, HANDLER_NAMESPACE )
-        @handlers.load_all
-        @handlers
+        @services = Component::Manager.new( Options.paths.services, SERVICE_NAMESPACE )
+        @services.load_all
+        @services
     end
 
-    def _handlers
-        self.class._handlers
+    def _services
+        self.class._services
     end
 
     def trap_interrupts( &block )

@@ -41,8 +41,8 @@ describe Arachni::RPC::Server::Dispatcher do
 
     describe '#handlers' do
         it 'returns an array of loaded handlers' do
-            Arachni::Options.paths.rpcd_handlers = "#{fixtures_path}rpcd_handlers/"
-            dispatcher_light_spawn.handlers.include?( 'echo' ).should be_true
+            Arachni::Options.paths.services = "#{fixtures_path}services/"
+            dispatcher_light_spawn.services.include?( 'echo' ).should be_true
         end
     end
 
