@@ -13,6 +13,18 @@ get '/' do
     end
 end
 
+get '/redirect/1' do
+    redirect '/redirect/2'
+end
+
+get '/redirect/2' do
+    redirect '/redirect/3'
+end
+
+get '/redirect/3' do
+    redirect '/'
+end
+
 get '/login' do
     cookies[:preserve] = 'this'
 
@@ -29,7 +41,7 @@ post '/login' do
     if params['username'] == 'john' && params['password'] == 'doe' &&
         params['token'] == 'secret!' && cookies[:preserve] == 'this'
         cookies[:success] = true
-        redirect '/'
+        redirect '/redirect/1'
     else
         'Boohoo...'
     end

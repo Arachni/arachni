@@ -32,3 +32,19 @@ get '/refreshable_disappear' do
     <a href="/link?param_name=stuff&nonce=#{rand(999)}">Refreshable</a>
 HTML
 end
+
+get '/refreshable_disappear_clear' do
+    @@visited = 0
+end
+
+get '/refreshable_disappear' do
+    @@visited ||= 0
+    @@visited  += 1
+
+    next '' if @@visited > 1
+
+    <<HTML
+    <a href="/refreshable?param_name=stuff">Irrelevant</a>
+    <a href="/link?param_name=stuff&nonce=#{rand(999)}">Refreshable</a>
+HTML
+end
