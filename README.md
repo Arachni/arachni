@@ -177,6 +177,14 @@ Arachni includes an integrated, real browser environment in order to provide
 sufficient coverage to modern web applications which make use of technologies
 such as HTML5, JavaScript, DOM manipulation, AJAX, etc.
 
+In addition to the monitoring of the vanilla DOM and JavaScript environments,
+Arachni's browsers also hook into popular frameworks to make the logged data
+easier to digest.
+
+- [JQuery](http://jquery.com/)
+- [AngularJS](https://angularjs.org/)
+- More to come...
+
 In essence, this turns Arachni into a DOM and JavaScript debugger, allowing it to
 monitor DOM events and JavaScript data and execution flows. As a result, not only
 can the system trigger and identify DOM-based issues, but it will accompany them
