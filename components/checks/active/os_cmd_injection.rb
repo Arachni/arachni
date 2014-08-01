@@ -30,9 +30,17 @@ class Arachni::Checks::OSCmdInjection < Arachni::Check::Base
 
     def self.payloads
         @payloads ||= {
-            unix:    [ '/bin/cat /etc/passwd' ],
-            windows: [ 'type %SystemDrive%\\\\boot.ini',
-                       'type %SystemRoot%\\\\win.ini' ]
+            unix:    [
+                '/bin/cat /etc/passwd',
+                '/bin/cat /etc/security/passwd'
+            ],
+            bsd: [
+                '/bin/cat /etc/master.passwd',
+            ],
+            windows: [
+                'type %SystemDrive%\\\\boot.ini',
+                'type %SystemRoot%\\\\win.ini'
+            ]
         }.inject({}) do |h, (platform, payloads)|
             h[platform] ||= []
             payloads.each do |payload|

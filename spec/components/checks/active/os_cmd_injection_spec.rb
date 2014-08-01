@@ -4,7 +4,7 @@ describe name_from_filename do
     include_examples 'check'
 
     def self.platforms
-        [:unix, :windows]
+        [:unix, :bsd, :windows]
     end
 
     def self.elements

@@ -180,6 +180,7 @@
             - Renamed from `xss_script_tag`.
         - `unvalidated_redirect` -- Updated to also use full browser evaluation
             in order to detect JS redirects.
+        - `os_cmd_injection` -- Added payloads for *BSD and AIX.
     - Passive
         - New
             - Backup directories (`backup_directories`)

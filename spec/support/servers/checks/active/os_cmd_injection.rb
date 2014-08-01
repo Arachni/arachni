@@ -3,11 +3,15 @@ require 'sinatra/contrib'
 
 STRINGS = {
     unix:    '/bin/cat /etc/passwd',
+    bsd:     '/bin/cat /etc/master.passwd',
     windows: 'type %SystemDrive%\\\\boot.ini',
 }
 
 OUT = {
     unix:    'root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/bin/sh
+',
+    bsd:    'root:x:0:0:root:/root:/bin/bash
 daemon:x:1:1:daemon:/usr/sbin:/bin/sh
 ',
     windows: '[boot loader]
