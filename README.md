@@ -90,20 +90,19 @@ Arachni is an Open Source, feature-full, modular, high-performance Ruby framewor
 aimed towards helping penetration testers and administrators evaluate the security
 of web applications.
 
-It is smart, it trains itself by learning from the HTTP responses it receives
-during the audit process and is able to perform meta-analysis using a number of
+It is smart, it trains itself by monitoring and learning from the web application's
+behavior during the scan process and is able to perform meta-analysis using a number of
 factors in order to correctly assess the trustworthiness of results and intelligently
-identify false-positives.
+identify (or avoid) false-positives.
 
 Unlike other scanners, it takes into account the dynamic nature of web applications,
 can detect changes caused while travelling through the paths of a web application’s
-cyclomatic complexity and is able to adjust itself accordingly. This way attack/input
-vectors that would otherwise be undetectable by non-humans are seamlessly handled by Arachni.
+cyclomatic complexity and is able to adjust itself accordingly. This way, attack/input
+vectors that would otherwise be undetectable by non-humans can be handled seamlessly.
 
-Moreover, Arachni yields great performance due to its asynchronous HTTP model
-(courtesy of Typhoeus) — especially when combined with a High Performance Grid
-setup which allows you to combine the resources of multiple nodes for lightning
-fast scans. Thus, you’ll only be limited by the responsiveness of the server under audit.
+Moreover, due to its integrated browser environment, it can also audit and inspect
+client-side code, as well as support highly complicated web applications which make
+heavy use of technologies such as JavaScript, HTML5, DOM manipulation and AJAX.
 
 Finally, it is versatile enough to cover a great deal of use cases, ranging from
 a simple command line scanner utility, to a global high performance grid of
@@ -111,14 +110,14 @@ scanners, to a Ruby library allowing for scripted audits, to a multi-user
 multi-scan web collaboration platform.
 
 **Note**: Despite the fact that Arachni is mostly targeted towards web application
-security, it can easily be used for  general purpose scraping, data-mining, etc
+security, it can easily be used for general purpose scraping, data-mining, etc.
 with the addition of custom components.
 
 ### Arachni offers:
 
 #### A stable, efficient, high-performance framework
 
-Check, report and plugin writers are allowed to easily and quickly create and
+`Check`, `report` and `plugin` developers are allowed to easily and quickly create and
 deploy their components with the minimum amount of restrictions imposed upon them,
 while provided with the necessary infrastructure to accomplish their goals.
 
@@ -158,7 +157,7 @@ you with its findings.
  - Proxy authentication.
  - Site authentication (Automated form-based, Cookie-Jar, Basic-Digest, NTLM and others).
  - Automatic log-out detection and re-login during the audit (when the initial
-    login was performed via the AutoLogin plugin).
+    login was performed via the AutoLogin or Proxy plugins).
  - Custom 404 page detection.
  - UI abstraction:
     - [Command-line Interface](https://github.com/Arachni/arachni/wiki/Executables).
@@ -167,10 +166,91 @@ you with its findings.
  - Hibernation support -- Suspend to and restore from disk.
  - High performance asynchronous HTTP requests.
     - With adjustable concurrency.
+    - With the ability to auto-detect server health and adjust its concurrency
+        automatically.
+ - Support for custom default input values, using pairs of patterns (to be matched
+    against input names) and values to be used to fill in matching inputs.
+
+### Integrated browser environment
+
+Arachni includes an integrated, real browser environment in order to provide
+sufficient coverage to modern web applications which make use of technologies
+such as HTML5, JavaScript, DOM manipulation, AJAX, etc.
+
+In essence, this turns Arachni into a DOM and JavaScript debugger, allowing it to
+monitor DOM events and JavaScript data and execution flows. As a result, not only
+can the system trigger and identify DOM-based issues, but it will accompany them
+with a great deal of information regarding the state of the page at the time.
+
+Relevant information include:
+
+ - Page DOM, as HTML code.
+     - With a list of DOM transitions required to restore the state of the
+         page to the one at the time it was logged.
+ - Original DOM (i.e. prior to the action that caused the page to be logged),
+     as HTML code.
+     - With a list of DOM transitions.
+ - Data-flow sinks -- Each sink is a JS method which received a tainted argument.
+     - Parent object of the method (ex.: `DOMWindow`).
+     - Method signature (ex.: `decodeURIComponent()`).
+     - Arguments list.
+         - With the identified taint located recursively in the included objects.
+     - Method source code.
+     - JS stacktrace.
+ - Execution flow sinks -- Each sink is a successfully executed JS payload,
+     as injected by the security checks.
+     - Includes a JS stacktrace.
+ - JavaScript stack-traces include:
+     - Method names.
+     - Method locations.
+     - Method source codes.
+     - Argument lists.
+
+In essence, you have access to roughly the same information that your favorite
+debugger (for example, FireBug) would provide, as if you had set a breakpoint to
+take place at the right time for identifying an issue.
+
+#### Browser-cluster
+
+The browser-cluster is what coordinates the browser analysis of resources and
+allows the system to perform operations which would normally be quite time
+consuming in a high-performance fashion.
+
+Configuration options include:
+
+ - Adjustable pool-size, i.e. the amount of browser workers to utilize.
+ - Timeout for each job.
+ - Worker TTL counted in jobs -- Workers which exceed the TTL have their browser
+     process respawned.
+ - Ability to disable loading images.
+ - Adjustable screen width and height.
+     - Can be used to analyze responsive and mobile applications.
+
+### Coverage
+
+The system can provide great coverage to modern web applications due to its
+integrated browser environment. This allows it to interact with complex applications
+that make heavy use of client-side code (like JavaScript) just like a human would.
+
+In addition to that, it also knows about which browser state changes the application
+has been programmed to handle and is able to trigger them programatically in
+order to provide coverage for a full set of possible scenarios.
+
+By inspecting all possible pages and their states (when using client-side code)
+Arachni is able to extract and audit the following elements:
+
+ - Forms
+    - Along with ones that require interaction with a real browser due to DOM events.
+ - Links
+    - Along with ones that have client-side parameters in their URL fragments, i.e.:
+        `http://example.com/#/?param=val&param2=val2`
+ - Cookies
+ - Headers
+ - Generic client-side elements like `input`s which have associated DOM events.
 
 ### Open [distributed architecture](https://github.com/Arachni/arachni/wiki/Distributed-components)
 
-- High-performance/low-bandwidth [communication protocol](https://github.com/Arachni/arachni-rpc-em).
+- High-performance/low-bandwidth [communication protocol](https://github.com/Arachni/arachni-rpc).
     - `MessagePack` serialization for performance, efficiency and ease of
         integration with 3rd party systems.
 - Remote monitoring and management of Dispatchers and Instances.
@@ -192,43 +272,48 @@ you with its findings.
         - With optional per-scan opt-out/override.
 - SSL encryption (with optional peer authentication).
 
-### Crawler
+### Scope configuration
 
- - Filters for redundant pages like galleries, catalogs, etc based on regular
+ - Filters for redundant pages like galleries, catalogs, etc. based on regular
     expressions and counters.
     - Can optionally detect and ignore redundant pages automatically.
- - URL exclusion filter using regular expressions.
- - Page exclusion filter based on content, using regular expressions.
- - URL inclusion filter using regular expressions.
+ - URL exclusion filters using regular expressions.
+ - Page exclusion filters based on content, using regular expressions.
+ - URL inclusion filters using regular expressions.
  - Can be forced to only follow HTTPS paths and not downgrade to HTTP.
  - Can optionally follow subdomains.
- - Adjustable link count limit.
+ - Adjustable page count limit.
  - Adjustable redirect limit.
- - Adjustable depth limit.
- - Modular path extraction via "Path Extractor" components.
+ - Adjustable directory depth limit.
+ - Adjustable DOM depth limit.
+ - Adjustment using URL-rewrite rules.
  - Can read paths from multiple user supplied files (to both restrict and extend
-    the scope of the crawl).
+    the scope).
 
-### Auditor
+### Audit
 
  - Can audit:
     - Forms
-        - Can refresh nonce tokens.
+        - Can automatically refresh nonce tokens.
+        - Can submit them via the integrated browser environment.
     - Links
-        - Supporting custom templates to handle cases like ModRewrite.
+        - Supporting custom templates to extract input vectors from any generic path.
+        - Can load them via the integrated browser environment.
     - Cookies
+        - Can load them via the integrated browser environment.
     - Headers
  - Can ignore binary/non-text pages.
- - Can optionally audit forms and links using both `GET` and `POST` HTTP methods.
+ - Can optionally audit elements using both `GET` and `POST` HTTP methods.
  - Can optionally submit all links and forms of the page along with the cookie
     permutations to provide extensive cookie-audit coverage.
  - Can exclude specific input vectors by name.
+ - Can include specific input vectors by name.
 
 ### Platform fingerprinter
 
-In order to make efficient use of the available bandwidth, Arachni performs some
-basic platform fingerprinting and tailors the audit process to the server-side
-deployed platforms by only injecting applicable payloads.
+In order to make efficient use of the available bandwidth, Arachni performs
+rudimentary platform fingerprinting and tailors the audit process to the server-side
+deployed technologies by only using applicable payloads.
 
 Currently, the following platforms can be identified:
 
@@ -261,20 +346,12 @@ can be disabled altogether.
 Finally, Arachni will always err on the side of caution and send all available
 payloads when it fails to identify specific platforms.
 
-### HTML Parser
-
-Can extract and analyze:
-
- - Forms
- - Links
- - Cookies
- - Headers
-
 ### Check Management
 
- - Very simple and easy to use security check API providing access at multiple levels of complexity.
+ - Very simple and easy to use security check API providing access at multiple
+    levels of complexity.
  - Helper audit methods:
-    - For form, link, cookie and header auditing.
+    - For form, link, cookie and header auditing and their DOM counterparts.
     - A wide range of injection strings/input combinations.
     - For taint analysis, timing attacks, differential analysis, server-side
         file/directory detection and more.
@@ -409,8 +486,6 @@ Passive checks look for the existence of files, folders and signatures.
 - JSON (`json`)
 - Marshal (`marshal`)
 - YAML (`yaml`)
-- Metareport  (`metareport`) -- Providing Metasploit integration to allow for
-    [automated and assisted exploitation](http://arachni.github.com/arachni/file.EXPLOITATION.html).
 
 ### Plug-in Management
 
@@ -474,7 +549,8 @@ Checks have the ability to individually force the Framework to learn from the
 HTTP responses they are going to induce.
 
 However, this is usually not required since Arachni is aware of which requests
-are more likely to uncover new elements or attack vectors and will adapt itself accordingly.
+are more likely to uncover new elements or attack vectors and will adapt itself
+accordingly.
 
 Still, this can be an invaluable asset to Fuzzer checks.
 
@@ -521,10 +597,10 @@ need to follow in order to contribute code:
 
 ## License
 
-See the [LICENSE](file.LICENSE.html) file for more information.
+See the [LICENSE](file.LICENSE.html) file for information.
 
 ## Disclaimer
 
 This is free software and you are allowed to use it as you see fit.
-However, neither the development team nor any of our contributors can held
-responsible for your actions or for any damage caused by the use of this software.
+However, neither the development team nor any of our contributors can be held
+responsible for your actions nor for any damage caused by the use of this software.
