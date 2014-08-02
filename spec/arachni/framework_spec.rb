@@ -1364,6 +1364,7 @@ describe Arachni::Framework do
                     unix:    'Generic Unix family',
                     linux:   'Linux',
                     bsd:     'Generic BSD family',
+                    aix:     'IBM AIX',
                     solaris: 'Solaris',
                     windows: 'MS Windows'
                 },
