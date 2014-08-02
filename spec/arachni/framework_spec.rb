@@ -198,7 +198,7 @@ describe Arachni::Framework do
                     f.on_page_audit { |p| audited << p.url }
                     f.run
                 end
-                audited.sort.should == ["#{@url}/", @url + '/binary'].sort
+                audited.sort.should == [@url + '/binary'].sort
 
                 audited = []
                 Arachni::Framework.new do |f|
@@ -210,7 +210,7 @@ describe Arachni::Framework do
                     f.on_page_audit { |p| audited << p.url }
                     f.run
                 end
-                audited.should == ["#{@url}/"]
+                audited.should be_empty
             end
         end
 
@@ -225,8 +225,7 @@ describe Arachni::Framework do
                     f.run
 
                     sitemap = f.report.sitemap.map { |u, _| u.split( '?' ).first }
-                    sitemap.sort.uniq.should ==
-                        [f.options.url] + f.options.scope.restrict_paths.
+                    sitemap.sort.uniq.should == f.options.scope.restrict_paths.
                             map { |p| f.to_absolute( p ) }.sort
                 end
             end
