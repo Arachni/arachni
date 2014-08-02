@@ -75,7 +75,7 @@ describe Arachni::Trainer do
 
                 @framework.pages.should be_empty
 
-                Arachni::HTTP.request( @url + '/fingerprint', train: true )
+                Arachni::HTTP::Client.request( @url + '/fingerprint', train: true )
                 @framework.run
 
                 @framework.pages.size.should == 1
@@ -90,7 +90,7 @@ describe Arachni::Trainer do
 
                 @framework.pages.should be_empty
 
-                Arachni::HTTP.request( @url + '/fingerprint', train: true )
+                Arachni::HTTP::Client.request( @url + '/fingerprint', train: true )
                 @framework.run
 
                 @framework.pages.should be_empty
