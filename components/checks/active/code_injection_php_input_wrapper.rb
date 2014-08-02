@@ -1,6 +1,6 @@
 =begin
     Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
-    All rights reserved.
+    Please see the LICENSE file at the root directory of the project.
 =end
 
 # @see OWASP    https://www.owasp.org/index.php/Top_10_2007-Malicious_File_Execution

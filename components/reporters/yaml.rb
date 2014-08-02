@@ -1,6 +1,6 @@
 =begin
     Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
-    All rights reserved.
+    Please see the LICENSE file at the root directory of the project.
 =end
 
 # Converts the Report to a Hash which it then dumps in YAML format into a file.

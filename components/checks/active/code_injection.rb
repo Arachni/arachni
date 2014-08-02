@@ -1,6 +1,6 @@
 =begin
     Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
-    All rights reserved.
+    Please see the LICENSE file at the root directory of the project.
 =end
 
 # It's designed to work with PHP, Perl, Python, Java, ASP and Ruby

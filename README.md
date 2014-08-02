@@ -42,7 +42,7 @@
     </tr>
     <tr>
         <th>License</th>
-        <td><a href="file.LICENSE.html">All rights reserved.</a></td>
+        <td><a href="file.LICENSE.html">Please see the LICENSE file at the root directory of the project.</a></td>
     </tr>
 </table>
 

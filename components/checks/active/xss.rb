@@ -1,6 +1,6 @@
 =begin
     Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
-    All rights reserved.
+    Please see the LICENSE file at the root directory of the project.
 =end
 
 # Injects an HTML element into page inputs and then parses the HTML markup of
