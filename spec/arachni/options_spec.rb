@@ -6,7 +6,7 @@ describe Arachni::Options do
     end
 
     subject { reset_options; described_class.instance }
-    groups = [:audit, :datastore, :dispatcher, :http, :login, :output, :paths,
+    groups = [:audit, :datastore, :dispatcher, :http, :session, :output, :paths,
               :rpc, :scope, :input]
 
     it 'proxies missing class methods to instance methods' do
@@ -85,9 +85,9 @@ describe Arachni::Options do
 
         context 'when invalid' do
             it 'returns errors by group' do
-                subject.login.check_pattern = /test/
+                subject.session.check_pattern = /test/
                 subject.validate.should == {
-                    login: {
+                    session: {
                         check_url: "Option is missing."
                     }
                 }

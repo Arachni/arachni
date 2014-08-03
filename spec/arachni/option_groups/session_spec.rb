@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::OptionGroups::Login do
+describe Arachni::OptionGroups::Session do
     include_examples 'option_group'
 
     subject { described_class.new }

@@ -397,20 +397,20 @@ class OptionParser < UI::CLI::OptionParser
         separator ''
         separator 'Session'
 
-        on( '--login-check-url URL', String,
+        on( '--session-check-url URL', String,
                'URL to use to verify that the scanner is still logged in ' <<
                    'to the web application.',
-               "(Requires 'login-check-pattern'.)"
+               "(Requires 'session-check-pattern'.)"
         ) do |url|
-            options.login.check_url = url.to_s
+            options.session.check_url = url.to_s
         end
 
-        on( '--login-check-pattern PATTERN', Regexp,
-               "Pattern used against the body of the 'login-check-url'" <<
+        on( '--session-check-pattern PATTERN', Regexp,
+               "Pattern used against the body of the 'session-check-url'" <<
                    ' to verify that the scanner is still logged in to the web application.',
-               "(Requires 'login-check-url'.)"
+               "(Requires 'session-check-url'.)"
         ) do |pattern|
-            options.login.check_pattern = pattern
+            options.session.check_pattern = pattern
         end
     end
 

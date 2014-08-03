@@ -8,7 +8,7 @@ module Arachni::OptionGroups
 # Holds login options for the {Arachni::Framework}'s {Arachni::Session} manager.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-class Login < Arachni::OptionGroup
+class Session < Arachni::OptionGroup
 
     # @return   [String]
     #   URL whose {Arachni::HTTP::Response response} {Arachni::HTTP::Response#body}

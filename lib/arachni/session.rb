@@ -257,8 +257,8 @@ class Session
         )
 
         bool = nil
-        http.get( Options.login.check_url, http_options ) do |response|
-            bool = !!response.body.match( Options.login.check_pattern )
+        http.get( Options.session.check_url, http_options ) do |response|
+            bool = !!response.body.match( Options.session.check_pattern )
             block.call( bool ) if block
         end
         bool
@@ -267,7 +267,7 @@ class Session
     # @return   [Bool]
     #   `true` if a login check exists, `false` otherwise.
     def has_login_check?
-        !!(Options.login.check_url && Options.login.check_pattern)
+        !!(Options.session.check_url && Options.session.check_pattern)
     end
 
     # @return   [HTTP::Client]
@@ -279,6 +279,7 @@ class Session
 
     def shutdown_browser
         return if !@browser
+
         @browser.shutdown
         @browser = nil
     end

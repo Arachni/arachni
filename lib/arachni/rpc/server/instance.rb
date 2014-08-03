@@ -460,7 +460,7 @@ class Instance
     # @option opts [Hash] :http
     #   {OptionGroups::HTTP HTTP} options.
     # @option opts [Hash] :login
-    #   {OptionGroups::Login Login} options.
+    #   {OptionGroups::Session Session} options.
     # @option opts [String,Array<String>] :checks ([])
     #   Checks to load, by name.
     #

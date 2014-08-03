@@ -4,8 +4,8 @@ describe name_from_filename do
     include_examples 'check'
 
     before :all do
-        options.login.check_url     = url
-        options.login.check_pattern = /dear user/
+        options.session.check_url     = url
+        options.session.check_pattern = /dear user/
     end
 
     def self.elements
