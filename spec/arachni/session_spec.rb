@@ -27,13 +27,13 @@ describe Arachni::Session do
             }
         )
 
-        @opts.login.check_url     = @url
-        @opts.login.check_pattern = 'logged-in user'
+        @opts.session.check_url     = @url
+        @opts.session.check_pattern = 'logged-in user'
 
         subject
     end
 
-    describe "#{Arachni::OptionGroups::Login}" do
+    describe "#{Arachni::OptionGroups::Session}" do
         describe '#has_login_check?' do
             context 'when #check_url and #check_pattern have not been configured' do
                 it 'returns false' do
@@ -43,8 +43,8 @@ describe Arachni::Session do
 
             context 'when #check_url and #check_pattern have been configured' do
                 it 'returns true' do
-                    @opts.login.check_url     = @url
-                    @opts.login.check_pattern = 'logged-in user'
+                    @opts.session.check_url     = @url
+                    @opts.session.check_pattern = 'logged-in user'
 
                     subject.has_login_check?.should be_true
                 end
@@ -100,12 +100,12 @@ describe Arachni::Session do
         it 'returns the resulting page' do
             configured.login.should be_kind_of Arachni::Page
 
-            transition = configured.login.dom.transitions.first
+            transition = configured.session.dom.transitions.first
             transition.event.should == :load
             transition.element.should == :page
             transition.options[:url].should == configured.configuration[:url]
 
-            transition = configured.login.dom.transitions.last
+            transition = configured.session.dom.transitions.last
             transition.event.should == :submit
             transition.element.tag_name.should == :form
 
@@ -125,8 +125,8 @@ describe Arachni::Session do
                 }
             )
 
-            @opts.login.check_url     = @url
-            @opts.login.check_pattern = 'logged-in user'
+            @opts.session.check_url     = @url
+            @opts.session.check_pattern = 'logged-in user'
 
             subject.login
 
@@ -168,8 +168,8 @@ describe Arachni::Session do
 
             context 'and a valid session is not available' do
                 it 'returns true' do
-                    @opts.login.check_url     = @url
-                    @opts.login.check_pattern = 'logged-in user'
+                    @opts.session.check_url     = @url
+                    @opts.session.check_pattern = 'logged-in user'
 
                     subject.should_not be_logged_in
                 end
@@ -231,8 +231,8 @@ describe Arachni::Session do
 
             subject.configured?.should be_true
 
-            @opts.login.check_url     = @url + '/with_nonce'
-            @opts.login.check_pattern = 'logged-in user'
+            @opts.session.check_url     = @url + '/with_nonce'
+            @opts.session.check_pattern = 'logged-in user'
 
             subject.login
 
@@ -338,8 +338,8 @@ describe Arachni::Session do
     describe '#ensure_logged_in' do
         context 'when the login is successful' do
             it 'returns true' do
-                @opts.login.check_url     = @url + '/with_nonce'
-                @opts.login.check_pattern = 'logged-in user'
+                @opts.session.check_url     = @url + '/with_nonce'
+                @opts.session.check_pattern = 'logged-in user'
 
                 subject.configure(
                     url:    "#{@url}/nonce_login",
@@ -357,8 +357,8 @@ describe Arachni::Session do
 
         context 'when the login fails' do
             it 'returns false' do
-                @opts.login.check_url     = @url + '/with_nonce'
-                @opts.login.check_pattern = 'logged-in user'
+                @opts.session.check_url     = @url + '/with_nonce'
+                @opts.session.check_pattern = 'logged-in user'
                 subject.configure(
                     url:    "#{@url}/nonce_login",
                     inputs: {
@@ -375,8 +375,8 @@ describe Arachni::Session do
 
         context 'when the login attempt fails' do
             it 'retries 5 times' do
-                @opts.login.check_url     = @url
-                @opts.login.check_pattern = 'logged-in user'
+                @opts.session.check_url     = @url
+                @opts.session.check_pattern = 'logged-in user'
 
                 subject.configure(
                     url:    "#{@url}/disappearing_login",

@@ -395,8 +395,8 @@ describe Arachni::Framework do
                         }
                     )
 
-                    f.options.login.check_url     = url
-                    f.options.login.check_pattern = 'logged-in user'
+                    f.options.session.check_url     = url
+                    f.options.session.check_pattern = 'logged-in user'
 
                     f.run
                     f.report.issues.size.should == 1

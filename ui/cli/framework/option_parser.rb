@@ -36,15 +36,15 @@ class OptionParser < UI::CLI::OptionParser
         separator ''
         separator 'Output'
 
-        on( '--verbose', 'Show verbose output.' ) do
+        on( '--output-verbose', 'Show verbose output.' ) do
             verbose_on
         end
 
-        on( '--debug [LEVEL 1-3]', Integer, 'Show debugging information.' ) do |level|
+        on( '--output-debug [LEVEL 1-3]', Integer, 'Show debugging information.' ) do |level|
             debug_on( level || 1 )
         end
 
-        on( '--only-positives', 'Only output positive results.' ) do
+        on( '--output-only-positives', 'Only output positive results.' ) do
             only_positives
         end
     end
@@ -397,20 +397,20 @@ class OptionParser < UI::CLI::OptionParser
         separator ''
         separator 'Session'
 
-        on( '--login-check-url URL', String,
+        on( '--session-check-url URL', String,
                'URL to use to verify that the scanner is still logged in ' <<
                    'to the web application.',
-               "(Requires 'login-check-pattern'.)"
+               "(Requires 'session-check-pattern'.)"
         ) do |url|
-            options.login.check_url = url.to_s
+            options.session.check_url = url.to_s
         end
 
-        on( '--login-check-pattern PATTERN', Regexp,
-               "Pattern used against the body of the 'login-check-url'" <<
+        on( '--session-check-pattern PATTERN', Regexp,
+               "Pattern used against the body of the 'session-check-url'" <<
                    ' to verify that the scanner is still logged in to the web application.',
-               "(Requires 'login-check-url'.)"
+               "(Requires 'session-check-url'.)"
         ) do |pattern|
-            options.login.check_pattern = pattern
+            options.session.check_pattern = pattern
         end
     end
 
@@ -447,19 +447,22 @@ class OptionParser < UI::CLI::OptionParser
         separator 'Browser cluster'
 
         on( '--browser-cluster-pool-size SIZE', Integer,
-            'Amount of browser workers to keep in the pool and put to work.'
+            'Amount of browser workers to keep in the pool and put to work.',
+            "(Default: #{options.browser_cluster.pool_size})"
         ) do |pool_size|
             options.browser_cluster.pool_size = pool_size
         end
 
         on( '--browser-cluster-job-timeout SECONDS', Integer,
-            'Maximum allowed time for each job.'
+            'Maximum allowed time for each job.',
+            "(Default: #{options.browser_cluster.job_timeout})"
         ) do |job_timeout|
             options.browser_cluster.job_timeout = job_timeout
         end
 
         on( '--browser-cluster-worker-time-to-live LIMIT', Integer,
-            'Re-spawn the browser of each worker every LIMIT jobs.'
+            'Re-spawn the browser of each worker every LIMIT jobs.',
+            "(Default: #{options.browser_cluster.worker_time_to_live})"
         ) do |worker_time_to_live|
             options.browser_cluster.worker_time_to_live = worker_time_to_live
         end
@@ -469,12 +472,16 @@ class OptionParser < UI::CLI::OptionParser
         end
 
         on( '--browser-cluster-screen-width', Integer,
-            'Browser screen width.' ) do |width|
+            'Browser screen width.',
+            "(Default: #{options.browser_cluster.screen_width})"
+        ) do |width|
             options.browser_cluster.screen_width = width
         end
 
         on( '--browser-cluster-screen-height', Integer,
-            'Browser screen height.' ) do |height|
+            'Browser screen height.',
+            "(Default: #{options.browser_cluster.screen_height})"
+        ) do |height|
             options.browser_cluster.screen_height = height
         end
     end
@@ -504,7 +511,7 @@ class OptionParser < UI::CLI::OptionParser
         on( '--report-save-path PATH', String,
             'Directory or file path where to store the scan report.',
             'You can use the generated file to create reports in several ' +
-                "formats with the 'arachni_report' executable."
+                "formats with the 'arachni_reporter' executable."
         ) do |path|
             options.datastore.report_path = path
         end
