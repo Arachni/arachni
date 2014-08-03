@@ -36,15 +36,15 @@ class OptionParser < UI::CLI::OptionParser
         separator ''
         separator 'Output'
 
-        on( '--verbose', 'Show verbose output.' ) do
+        on( '--output-verbose', 'Show verbose output.' ) do
             verbose_on
         end
 
-        on( '--debug [LEVEL 1-3]', Integer, 'Show debugging information.' ) do |level|
+        on( '--output-debug [LEVEL 1-3]', Integer, 'Show debugging information.' ) do |level|
             debug_on( level || 1 )
         end
 
-        on( '--only-positives', 'Only output positive results.' ) do
+        on( '--output-only-positives', 'Only output positive results.' ) do
             only_positives
         end
     end
