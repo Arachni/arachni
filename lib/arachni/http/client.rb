@@ -339,6 +339,7 @@ class Client
     def request( url = @url, options = {}, &block )
         fail ArgumentError, 'URL cannot be empty.' if !url
 
+        options = options.dup
         cookies = options.delete( :cookies ) || {}
 
         exception_jail false do
