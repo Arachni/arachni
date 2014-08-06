@@ -440,7 +440,7 @@ Passive checks look for the existence of files, folders and signatures.
 - Insecure cookies (`insecure_cookies`).
 - HttpOnly cookies (`http_only_cookies`).
 - Auto-complete for password form fields (`password_autocomplete`).
-- X-Forwarded-For Access Restriction Bypass (`x_forwarded_for_access_restriction_bypass`)
+- Origin Spoof Access Restriction Bypass (`origin_spoof_access_restriction_bypass`)
 - Form-based upload (`form_upload`)
 - localstart.asp (`localstart_asp`)
 - Cookie set for parent domain (`cookie_set_for_parent_domain`)

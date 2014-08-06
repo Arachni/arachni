@@ -191,9 +191,10 @@
             - Grep
                 - `hsts` - Checks HTTPS pages for missing `Strict-Transport-Security` headers.
         - `backup_files` -- Updated filename formats.
+        - `x_forwarded_for_access_restriction_bypass` renamed to `origin_spoof_access_restriction_bypass`.
+            - Also updated to use more origin headers.
         - Grep
             - `emails` - Updated to handle simple (`[at]` and `[dot]`) obfuscation.
-
 
 ## 0.4.6 _(January 1, 2014)_
 
