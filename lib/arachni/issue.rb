@@ -22,10 +22,14 @@ class Issue
     #   Name.
     attr_accessor :name
 
+    # @note Should be treated as GitHub-flavored Markdown.
+    #
     # @return    [String]
     #   Brief description.
     attr_accessor :description
 
+    # @note Should be treated as GitHub-flavored Markdown.
+    #
     # @return    [String]
     #   Brief text explaining how to remedy the issue.
     attr_accessor :remedy_guidance
