@@ -3,7 +3,8 @@
 
         <% grouped.keys.each.with_index do |severity, i| %>
             <li <%= 'class="active"' if i == 0 %> >
-                <a class="tab-severity-<%=severity %>" href="#!/issues/<%= trust %>/severity/<%= severity %>">
+                <a class="tab-severity-<%=severity %>"
+                   href="#!/issues/<%= trust %>/severity/<%= severity %>">
                     <%= severity.to_s.capitalize %>
 
                     <span class="badge">
@@ -17,11 +18,13 @@
 
 <div class="tab-content">
     <% grouped.each do |severity, issues_by_name|%>
-        <div class="tab-pane <%= 'active' if severity == grouped.keys.first %>" id="issues-<%= trust %>-severity-<%= severity %>">
+        <div class="tab-pane <%= 'active' if severity == grouped.keys.first %>"
+             id="issues-<%= trust %>-severity-<%= severity %>">
 
             <% issues_by_name.each do |name, issues| %>
                 <%
-                   current_issue_id       = "issues-#{trust}-severity-#{severity}-#{issues.first.check[:shortname]}"
+                   current_issue_id       = "issues-#{trust}-severity-" <<
+                           "#{severity}-#{issues.first.check[:shortname]}"
                    current_issue_location = id_to_location( current_issue_id )
                 %>
 
@@ -47,9 +50,9 @@
 
                         <div class="row">
                             <div class="col-md-12">
-                                <p>
-                                    <%= escapeHTML issues.first.description %>
-                                </p>
+                                <div class="issue-description markdown">
+                                    <%= md issues.first.description %>
+                                </div>
                             </div>
                         </div>
 
@@ -66,9 +69,9 @@
                                     </a>
                                 </h4>
 
-                                <p>
-                                    <%= escapeHTML issues.first.remedy_guidance %>
-                                </p>
+                                <div class="issue-remedy_guidance markdown">
+                                    <%= md issues.first.remedy_guidance %>
+                                </div>
                             </div>
                             <% end %>
 
@@ -82,7 +85,7 @@
                                     </a>
                                 </h4>
 
-                                <pre>
+                                <pre class="issue-remedy_code">
                                     <%= escapeHTML issues.first.remedy_code %>
                                 </pre>
                             </div>
@@ -122,7 +125,8 @@
 
                 <% issues.each do |issue| %>
                     <%= erb :issue, issue: issue,
-                            id: "issues-#{trust}-severity-#{severity}-#{issues.first.check[:shortname]}" %>
+                            id: "issues-#{trust}-severity-#{severity}-" <<
+                                        "#{issues.first.check[:shortname]}" %>
                 <% end %>
             <% end %>
         </div>

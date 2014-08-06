@@ -13,10 +13,16 @@
 
     <div class="tab-content">
     <% plugins.each do |name, html| %>
-        <div class="tab-pane <%= 'active' if plugins.keys.first == name %>" id="plugins-<%= name %>">
-            <pre><%= prep_description( get_plugin_info(name)[:description] ) %></pre>
+        <div class="tab-pane <%= 'active' if plugins.keys.first == name %>"
+             id="plugins-<%= name %>">
 
-            <p><%= html.recode %></p>
+            <div class="plugin-description markdown">
+                <%= md get_plugin_info(name)[:description] %>
+            </div>
+
+            <div class="plugin-results">
+                <%= html.recode %>
+            </div>
         </div>
     <% end %>
     </div>

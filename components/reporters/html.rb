@@ -4,6 +4,7 @@
 =end
 
 require 'zip'
+require 'github/markdown'
 require 'coderay'
 require 'json'
 require 'erb'
@@ -29,6 +30,10 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
 
         def normalize( str )
             str.to_s.recode
+        end
+
+        def md( markdown )
+            GitHub::Markdown.render( markdown )
         end
 
         def key_to_words( k )

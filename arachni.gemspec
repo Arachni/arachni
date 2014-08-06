@@ -86,6 +86,10 @@ Gem::Specification.new do |s|
     # Browser support for DOM/JS/AJAX analysis stuff.
     s.add_dependency 'watir-webdriver',   '0.6.9'
 
+    # Markdown to HTML conversion, used by the HTML report for component
+    # descriptions.
+    s.add_dependency 'github-markdown',   '0.6.5'
+
     s.post_install_message = <<MSG
 
 Thank you for installing Arachni, here are some resources which should
