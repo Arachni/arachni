@@ -296,7 +296,7 @@ class Dispatcher
 
     def shutdown
         print_status 'Shutting down...'
-        @server.shutdown
+        Arachni::Reactor.global.stop
     end
 
     def kill( pid )
