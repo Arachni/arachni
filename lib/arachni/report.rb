@@ -95,6 +95,21 @@ class Report
         @issues[digest]
     end
 
+    # @param    [String]    report
+    #   Location of the report.
+    #
+    # @return   [Hash]
+    #   {#summary} associated with the given report.
+    def self.read_summary( report )
+        File.open( report ) do |f|
+            f.seek -4, IO::SEEK_END
+            summary_size = f.read( 4 ).unpack( 'N' ).first
+
+            f.seek -summary_size-4, IO::SEEK_END
+            RPC::Serializer.load( f.read( summary_size ) )
+        end
+    end
+
     # Loads and a {#save saved} {Report} object from file.
     #
     # @param    [String]    file
@@ -103,7 +118,13 @@ class Report
     # @return    [Report]
     #   Loaded instance.
     def self.load( file )
-        from_rpc_data RPC::Serializer.load( IO.binread( file ) )
+        File.open( file, 'rb' ) do |f|
+            f.seek -4, IO::SEEK_END
+            summary_size = f.read( 4 ).unpack( 'N' ).first
+
+            f.rewind
+            from_rpc_data RPC::Serializer.load( f.read( f.size - summary_size ) )
+        end
     end
 
     # @param    [String]    location
@@ -121,6 +142,12 @@ class Report
         end
 
         IO.binwrite( location, RPC::Serializer.dump( self ) )
+
+        # Append metadata to the end of the file.
+        metadata = RPC::Serializer.dump( summary )
+        File.open( location, 'a' ) do |f|
+            f.write [metadata, metadata.size].pack( 'a*N' )
+        end
 
         File.expand_path( location )
     end
@@ -149,6 +176,36 @@ class Report
         h#.recode
     end
     alias :to_hash :to_h
+
+    # @return   [Hash]
+    #   Summary data of the report.
+    def summary
+        by_severity = Hash.new(0)
+        @issues.each { |_, issue| by_severity[issue.severity.to_sym] += 1 }
+
+        by_type = Hash.new(0)
+        @issues.each { |_, issue| by_type[issue.name] += 1 }
+
+        by_check = Hash.new(0)
+        @issues.each { |_, issue| by_check[issue.check[:shortname]] += 1 }
+
+        {
+            version:         @version,
+            url:             url,
+            checks:          @options[:checks],
+            plugins:         @options[:plugins].keys,
+            issues: {
+                total:       @issues.size,
+                by_severity: by_severity,
+                by_type:     by_type,
+                by_check:    by_check
+            },
+            sitemap_size:    @sitemap.size,
+            start_datetime:  @start_datetime.to_s,
+            finish_datetime: @finish_datetime.to_s,
+            delta_time:      delta_time
+        }
+    end
 
     # @return   [Hash]
     #   Data representing this instance that are suitable the RPC transmission.

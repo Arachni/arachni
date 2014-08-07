@@ -185,6 +185,14 @@ describe Arachni::Report do
         end
     end
 
+    describe '.read_summary' do
+        it 'returns summary' do
+            @report_file = report.save
+            described_class.read_summary( @report_file ).should ==
+                Arachni::RPC::Serializer.load( Arachni::RPC::Serializer.dump( report.summary ) )
+        end
+    end
+
     describe '#save' do
         it 'dumps the object to a file' do
             @report_file = report.save
