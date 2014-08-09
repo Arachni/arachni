@@ -100,12 +100,12 @@ describe Arachni::Session do
         it 'returns the resulting page' do
             configured.login.should be_kind_of Arachni::Page
 
-            transition = configured.session.dom.transitions.first
+            transition = configured.login.dom.transitions.first
             transition.event.should == :load
             transition.element.should == :page
             transition.options[:url].should == configured.configuration[:url]
 
-            transition = configured.session.dom.transitions.last
+            transition = configured.login.dom.transitions.last
             transition.event.should == :submit
             transition.element.tag_name.should == :form
 
