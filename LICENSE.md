@@ -4,13 +4,13 @@ Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 
 The Arachni Framework is dual-licensed.
 
-Cases that include **direct** commercialization of Arachni require a commercial,
+Cases that include **direct commercialization** of Arachni require a commercial,
 non-free license. Otherwise, the system can be used under the terms of the
-Apache License v2, found at the bottom of this document.
+Apache License v2.0 license, found at the bottom of this document.
 
-Cases of **direct** commercialization include (but are not limited to):
+Cases of **direct commercialization** include (but are not limited to):
 
-* Providing commercial, managed/SaaS services using Arachni, either by itself,
+* Using Arachni to provide commercial, managed/SaaS services, either by itself,
     or as part of a larger collection of components.
 * Distributing Arachni as a commercial product or as part of one.
 
@@ -18,7 +18,8 @@ Cases which **don't** require a commercial license include (but are not limited 
 
 * Penetration testers (or penetration testing organizations) using Arachni as
     part of their assessment toolkit.
-* Organizations using Arachni to test their own systems.
+    * So long as it doesn't conflict with the **direct commercialization** clause.
+* Using Arachni to test your own systems.
 * Any non-commercial use of Arachni.
 
 If you need to acquire a commercial license or are unsure about whether you
@@ -29,6 +30,8 @@ You can use the [licensing contact form](http://www.arachni-scanner.com/license)
 to contact us about these matters.
 
 Contributions will be accepted under the Apache License v2.0.
+
+## Apache License v2.0
 
 ```
                                  Apache License
