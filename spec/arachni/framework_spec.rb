@@ -741,7 +741,8 @@ describe Arachni::Framework do
 
                 f.plugins.jobs[:suspendable][:instance].counter.should == 2
 
-                t.kill
+                f.abort
+                t.join
             end
         end
     end
