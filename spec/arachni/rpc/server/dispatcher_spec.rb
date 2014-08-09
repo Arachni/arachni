@@ -247,6 +247,7 @@ describe Arachni::RPC::Server::Dispatcher do
                 instance.service.scan( url: web_server_url_for( :framework_multi ) )
                 instance.service.suspend
                 sleep 1 while !instance.service.suspended?
+                instance.service.shutdown
 
                 dispatcher.statistics['snapshots'].should include instance.service.snapshot_path
             end
