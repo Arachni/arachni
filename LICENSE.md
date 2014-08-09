@@ -8,28 +8,27 @@ Cases that include **direct commercialization** of Arachni require a commercial,
 non-free license. Otherwise, the system can be used under the terms of the
 Apache License v2.0 license, found at the bottom of this document.
 
-Cases of **direct commercialization** include (but are not limited to):
+Cases of **direct commercialization** are:
 
-* Using Arachni to provide commercial, managed/SaaS services, either by itself,
-    or as part of a larger collection of components.
+* Using Arachni to provide commercial managed/SaaS services.
 * Distributing Arachni as a commercial product or as part of one.
 
 Cases which **don't** require a commercial license include (but are not limited to):
 
 * Penetration testers (or penetration testing organizations) using Arachni as
     part of their assessment toolkit.
-    * So long as it doesn't conflict with the **direct commercialization** clause.
+    * So long as that doesn't conflict with the **direct commercialization** clause.
 * Using Arachni to test your own systems.
 * Any non-commercial use of Arachni.
 
 If you need to acquire a commercial license or are unsure about whether you
 need to acquire a commercial license, please get in touch, we'll be happy to
-clarify things for you.
+clarify things for you and work with you to accommodate your requirements.
 
 You can use the [licensing contact form](http://www.arachni-scanner.com/license)
 to contact us about these matters.
 
-Contributions will be accepted under the Apache License v2.0.
+Code contributions will be accepted under the Apache License v2.0.
 
 ## Apache License v2.0
 
