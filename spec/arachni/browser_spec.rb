@@ -231,7 +231,7 @@ describe Arachni::Browser do
 
             context '#store_pages?' do
                 context true do
-                    subject { @browser = described_class.new( store_pages: true )}
+                    subject { @browser.shutdown; @browser = described_class.new( store_pages: true )}
 
                     it 'stores it in #page_snapshots' do
                         captured = subject.capture_snapshot
@@ -246,7 +246,7 @@ describe Arachni::Browser do
                 end
 
                 context false do
-                    subject { @browser = described_class.new( store_pages: false )}
+                    subject { @browser.shutdown; @browser = described_class.new( store_pages: false ) }
 
                     it 'does not store it' do
                         subject.capture_snapshot
@@ -304,7 +304,7 @@ describe Arachni::Browser do
 
             context '#store_pages?' do
                 context true do
-                    subject { @browser = described_class.new( store_pages: true )}
+                    subject { @browser.shutdown; @browser = described_class.new( store_pages: true )}
 
                     it 'stores it in #page_snapshots_with_sinks' do
                         subject.capture_snapshot
@@ -313,7 +313,7 @@ describe Arachni::Browser do
                 end
 
                 context false do
-                    subject { @browser = described_class.new( store_pages: false )}
+                    subject { @browser.shutdown; @browser = described_class.new( store_pages: false )}
 
                     it 'does not store it in #page_snapshots_with_sinks' do
                         subject.capture_snapshot
