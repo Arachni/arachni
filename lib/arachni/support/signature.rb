@@ -19,7 +19,7 @@ class Signature
     #   Seed data to use to initialize the signature.
     # @param    [Hash]    options
     # @option   options :threshold  [Float]
-    #   Sets the maximum allowed {#difference} when performing
+    #   Sets the maximum allowed {#differences} when performing
     #   {#similar? similarity} comparisons.
     def initialize( data, options = {} )
         @tokens  = tokenize( data )
