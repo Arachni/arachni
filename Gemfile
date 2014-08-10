@@ -23,9 +23,6 @@ group :prof do
     gem 'stackprof'
 end
 
-gem 'typhoeus', github: 'typhoeus/typhoeus'
-gem 'ethon',    github: 'typhoeus/ethon'
-
 if RbConfig::CONFIG['host_os'].include? 'darwin'
     gem 'arachni-rpc', path: File.dirname( __FILE__ ) + '/../arachni-rpc-v0.2'
 else
