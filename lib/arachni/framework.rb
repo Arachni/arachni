@@ -574,7 +574,8 @@ class Framework
     #   * `:cleanup` -- The scan has completed and the instance is
     #       {Framework#clean_up cleaning up} after itself (i.e. waiting for
     #       plugins to finish etc.).
-    #   * `:aborted` -- The scan has been {#abort}, you can grab the report and shutdown.
+    #   * `:aborted` -- The scan has been {Framework#abort}, you can grab the
+    #       report and shutdown.
     #   * `:done` -- The scan has completed, you can grab the report and shutdown.
     def status
         state.status
