@@ -22,8 +22,8 @@ class Arachni::Checks::FileInclusion < Arachni::Check::Base
                     /(root|mail):.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im
                 ],
                 windows: [
-                    /\[boot loader\](.*)\[operating systems\]/im,
-                    /\[fonts\](.*)\[extensions\]/im
+                    /\[boot loader\].*\[operating systems\]/im,
+                    /\[fonts\].*\[extensions\]/im
                 ],
                 tomcat: [
                     /<web\-app/im
