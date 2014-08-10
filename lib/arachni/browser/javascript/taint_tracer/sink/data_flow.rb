@@ -9,7 +9,8 @@ class Javascript
 class TaintTracer
 class Sink
 
-# Represents an intercepted JS call due to {#tainted} {#arguments}.
+# Represents an intercepted JS call due to {#tainted_argument_value tainted}
+# {Frame::CalledFunction#arguments}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class DataFlow < Base
@@ -23,7 +24,7 @@ class DataFlow < Base
     attr_accessor :object
 
     # @return   [Integer]
-    #   Index for the tainted argument in {#arguments}.
+    #   Index for the tainted argument in {Frame::CalledFunction#arguments}.
     attr_accessor :tainted_argument_index
 
     # @return   [Object]
