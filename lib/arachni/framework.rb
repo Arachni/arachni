@@ -825,6 +825,11 @@ class Framework
         HTTP::Client.reset
     end
 
+    # @private
+    def reset_trainer
+        @trainer = Trainer.new( self )
+    end
+
     private
 
     def shutdown_browser_cluster
@@ -848,10 +853,6 @@ class Framework
     def browser_job_update_skip_states( states )
         return if states.empty?
         browser_cluster.update_skip_states browser_job.id, states
-    end
-
-    def reset_trainer
-        @trainer = Trainer.new( self )
     end
 
     def reset_session
