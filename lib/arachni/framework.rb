@@ -1114,7 +1114,7 @@ class Framework
 
             if (location = page.response.headers['Location'])
                 print_info "Scheduled #{page.code} redirection: #{page.url} => #{location}"
-                push_to_url_queue location
+                push_to_url_queue to_absolute( location, page.url )
             end
 
             if page.code != 0
