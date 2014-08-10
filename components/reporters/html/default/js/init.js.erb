@@ -18,6 +18,6 @@ jQuery(function ($) {
     scrollToActiveElementFromWindowLocation();
 });
 
-$(window).bind( "popstate", function () {
+$(window).bind( 'hashchange', function () {
     openFromWindowLocation();
 });
