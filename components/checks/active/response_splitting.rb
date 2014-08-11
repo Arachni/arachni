@@ -41,8 +41,9 @@ class Arachni::Checks::ResponseSplitting < Arachni::Check::Base
     def self.info
         {
             name:        'Response Splitting',
-            description: %q{Tries to inject some data into the webapp and figure out
-                if any of them end up in the response header.},
+            description: %q{
+Injects arbitrary and checks if any of them end up in the response header.
+},
             elements:    [ Element::Form, Element::Link, Element::Cookie,
                            Element::Header, Element::LinkTemplate ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
@@ -50,8 +51,21 @@ class Arachni::Checks::ResponseSplitting < Arachni::Check::Base
 
             issue:       {
                 name:            %q{Response Splitting},
-                description:     %q{The web application includes user input
-     in the response HTTP header.},
+                description:     %q{
+HTTP response splitting occurs when untrusted data is inserted into the response
+headers without any sanitisation.
+If successful, this allows a cyber-criminal to essentially split the HTTP response
+in two.
+
+This is abused by cyber-criminals injecting CR (Carriage Return -- `/r`)
+and LF (Line Feed -- `\n`) characters which will then form the split. If the CR
+or LF characters are not processed by the server then it cannot be exploited.
+
+Along with these characters, cyber-criminals can then construct their own
+arbitrary response headers and body which would then form the second response.
+The second response is entirely under their control, and then permits a number of
+other attacks.
+},
                 references:  {
                     'SecuriTeam' => 'http://www.securiteam.com/securityreviews/5WP0E2KFGK.html',
                     'OWASP'      => 'http://www.owasp.org/index.php/HTTP_Response_Splitting'
@@ -59,10 +73,17 @@ class Arachni::Checks::ResponseSplitting < Arachni::Check::Base
                 tags:            %w(response splitting injection header),
                 cwe:             20,
                 severity:        Severity::MEDIUM,
-                remedy_guidance: %q{User inputs must be validated and filtered
-    before being included as part of the HTTP response headers.}
-            }
+                remedy_guidance: %q{
+It is recommended that untrusted data is never used to form the contents of the
+response header.
 
+Where any untrusted source is required to be used in the response headers, it is
+important to ensure that any hazardous characters (`/r`, `/n` and potentially
+others) are sanitised prior to being used.
+
+This is especially important when setting cookie values, redirecting, etc..
+},
+            }
         }
     end
 
