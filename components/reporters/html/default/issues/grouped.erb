@@ -59,8 +59,15 @@
                         <% if issues.first.remedy_guidance || issues.first.remedy_code %>
                         <div class="row">
 
+                            <%
+                               col_md = 12 / [
+                                       issues.first.remedy_guidance,
+                                       issues.first.remedy_code
+                               ].compact.size
+                            %>
+
                             <% if issues.first.remedy_guidance %>
-                            <div class="col-md-6">
+                            <div class="col-md-<%= col_md %>">
                                 <h4>
                                     <a id="<%= current_issue_id %>-remedy_guidance"
                                        href="<%= current_issue_location %>/remedy_guidance"
@@ -76,7 +83,7 @@
                             <% end %>
 
                             <% if issues.first.remedy_code %>
-                            <div class="col-md-6">
+                            <div class="col-md-<%= col_md %>">
                                 <h4>
                                     <a id="<%= current_issue_id %>-remedy_code"
                                        href="<%= current_issue_location %>/remedy_code"
