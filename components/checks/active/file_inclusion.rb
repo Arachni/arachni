@@ -90,9 +90,11 @@ class Arachni::Checks::FileInclusion < Arachni::Check::Base
     def self.info
         {
             name:        'File Inclusion',
-            description: %q{It injects paths of common files (/etc/passwd and boot.ini)
-                and evaluates the existence of a file inclusion vulnerability
-                based on the presence of relevant content or errors in the HTTP responses.},
+            description: %q{
+Injects paths of common files (like `/etc/passwd` and `boot.ini`) and evaluates
+the existence of a file inclusion vulnerability based on the presence of relevant
+content or errors in the HTTP response body.
+},
             elements:    [ Element::Form, Element::Link, Element::Cookie,
                            Element::Header, Element::LinkTemplate ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
@@ -101,18 +103,45 @@ class Arachni::Checks::FileInclusion < Arachni::Check::Base
 
             issue:       {
                 name:            %q{File Inclusion},
-                description:     %q{The web application enforces improper limitation
-                    of a pathname.},
+                description:     %q{
+Web applications occasionally use parameter values to store the location of a file
+which will later be required by the server.
+
+An example of this is often seen in error pages, where the actual file path for
+the error page is stored in a parameter value -- for example `example.com/error.php?page=404.php`.
+
+A file inclusion occurs when the parameter value (ie. path to file) can be
+substituted with the path of another resource on the same server, effectively
+allowing the displaying of arbitrary, and possibly restricted/sensitive, files.
+
+Arachni discovered that it was possible to substitute a parameter value with another
+resource and have the server return the contents of the resource to the client within
+the response.
+},
                 references:  {
                     'OWASP' => 'https://www.owasp.org/index.php/PHP_File_Inclusion'
                 },
                 tags:            %w(file inclusion error injection regexp),
                 cwe:             98,
                 severity:        Severity::HIGH,
-                remedy_guidance: %q{User inputs must be validated and filtered
-                    before being used as a part of a filesystem path.}
-            }
+                remedy_guidance: %q{
+It is recommended that untrusted data is never used to form a literal file include request.
 
+To validate data, the application should ensure that the supplied value for a file
+is permitted. This can be achieved by performing whitelisting on the parameter
+value, by matching it against a list of permitted files. If the supplied value
+does not match any value in the whitelist, then the server should redirect to a
+standard error page.
+
+In some scenarios, where dynamic content is being requested, it may not be possible
+to perform validation against a list of trusted resources, therefore the list must
+also become dynamic (updated as the files change), or perform filtering to remove
+extraneous user input (such as semicolons, periods etc.) and only permit `a-z0-9`.
+
+It is also advised that sensitive files are not stored within the web root and
+that the user permissions enforced by the directory are correct.
+}
+            }
         }
     end
 
