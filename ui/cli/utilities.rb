@@ -73,7 +73,7 @@ module Utilities
             print_line '--------------------'
 
             print_line "Name:\t\t#{info[:name]}"
-            print_line "Description:\t#{info[:description]}"
+            print_line "Description:\t\n#{info[:description].strip}\n\n"
 
             if info[:issue] && (severity = info[:issue][:severity])
                 print_line "Severity:\t#{severity.to_s.capitalize}"
@@ -124,7 +124,7 @@ module Utilities
             print_line '--------------------'
 
             print_line "Name:\t\t#{info[:name]}"
-            print_line "Description:\t#{info[:description]}"
+            print_line "Description:\t\n#{info[:description].strip}\n\n"
 
             if info[:options] && !info[:options].empty?
                 print_line( "Options:\t" )
@@ -161,7 +161,7 @@ module Utilities
             print_line '--------------------'
 
             print_line "Name:\t\t#{info[:name]}"
-            print_line "Description:\t#{info[:description]}"
+            print_line "Description:\t\n#{info[:description].strip}\n\n"
 
             if info[:options] && !info[:options].empty?
                 print_line "Options:\t"
