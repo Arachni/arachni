@@ -55,13 +55,26 @@ class Arachni::Checks::CodeInjectionTiming < Arachni::Check::Base
 
             issue:       {
                 name:            %q{Code injection (timing attack)},
-                description:     %q{Arbitrary code can be injected into the web application
-    which is then executed as part of the system.
-    (This issue was discovered using a timing attack; timing attacks
-    can result in false positives in cases where the server takes
-    an abnormally long time to respond.
-    Either case, these issues will require further investigation
-    even if they are false positives.)},
+                description:     %q{
+A modern web application will be reliant on several different programming languages.
+
+These languages can be broken up in two flavours. These are client side languages
+(such as those that run in the browser -- like JavaScript) and server side
+languages (which are executed by the server -- like ASP, PHP, JSP, etc.) to form the
+dynamic pages (client side code) that are then sent to the client.
+
+Because all server side code should be executed by the server, it should only ever
+come from a trusted source.
+
+Code injection occurs when the server takes untrusted server side code (ie. from
+the client) and executes the code as if it were on the server. Cyber-criminals will
+abuse this weakness to execute their own arbitrary code on the server, and could
+result in complete compromise of the server.
+
+By injecting server side code that is known to take a specific amount of time to
+execute, Arachni was able to detect time based code injection. This indicates that
+proper input sanitisation is not occurring.
+},
                 references:  {
                     'PHP'    => 'http://php.net/manual/en/function.eval.php',
                     'Perl'   => 'http://perldoc.perl.org/functions/eval.html',
@@ -72,12 +85,16 @@ class Arachni::Checks::CodeInjectionTiming < Arachni::Check::Base
                 tags:            %w(code injection timing blind),
                 cwe:             94,
                 severity:        Severity::HIGH,
-                remedy_guidance: %q{User inputs must be validated and filtered
-    before being evaluated as executable code.
-    Better yet, the web application should stop evaluating user
-    inputs as any part of dynamic code altogether.}
-            }
+                remedy_guidance: %q{
+It is recommended that untrusted input is never processed as server side code.
 
+To validate input, the application should ensure that the supplied value contains
+only the data that are required to perform the relevant action.
+
+For example, where a username is required, then no non-alpha characters should not
+be accepted.
+}
+            }
         }
     end
 
