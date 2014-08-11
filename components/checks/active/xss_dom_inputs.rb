@@ -103,8 +103,9 @@ Arachni has discovered that by inserting an HTML element into the pages DOM inpu
 page by the sink.
 },
                 references:  {
-                    'ha.ckers' => 'http://ha.ckers.org/xss.html',
-                    'Secunia'  => 'http://secunia.com/advisories/9716/'
+                    'WASC'  => 'http://projects.webappsec.org/w/page/13246920/Cross%20Site%20Scripting',
+                    'OWASP' => 'https://www.owasp.org/index.php/DOM_Based_XSS',
+                    'OWASP - Prevention'  => 'https://www.owasp.org/index.php/DOM_based_XSS_Prevention_Cheat_Sheet'
                 },
                 tags:            %w(xss dom injection script),
                 cwe:             79,
