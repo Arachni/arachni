@@ -101,6 +101,7 @@
                         <% end %>
                     </div>
 
+                    <% if issues.first.references.any? || issues.first.cwe %>
                     <div class="col-md-2">
                         <h4>
                             <a id="<%= current_issue_id %>-references"
@@ -113,14 +114,18 @@
                         <hr/>
 
                         <ul class="list-unstyled">
-                            <li>
-                                <a href="<%= issues.first.cwe_url %>">
-                                    CWE-<%= issues.first.cwe %>
-                                </a>
-                            </li>
-                            <li>
-                                <hr/>
-                            </li>
+                            <% if issues.first.cwe %>
+                                <li>
+                                    <a href="<%= issues.first.cwe_url %>">
+                                        CWE-<%= issues.first.cwe %>
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <hr/>
+                                </li>
+                            <% end %>
+
                             <% issues.first.references.each do |ref_name, url| %>
                                 <li>
                                     <a href="<%= url %>"> <%= ref_name %></a>
@@ -128,6 +133,7 @@
                             <% end %>
                         </ul>
                     </div>
+                    <% end %>
                 </div>
 
                 <% issues.each do |issue| %>
