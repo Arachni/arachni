@@ -37,7 +37,9 @@ class Arachni::Checks::OSCmdInjectionTiming < Arachni::Check::Base
     def self.info
         {
             name:        'OS command injection (timing)',
-            description: %q{Tries to find operating system command injections using timing attacks.},
+            description: %q{
+Tries to find operating system command injections using timing attacks.
+},
             elements:    [ Element::Form, Element::Link, Element::Cookie,
                            Element::Header, Element::LinkTemplate ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
@@ -46,24 +48,40 @@ class Arachni::Checks::OSCmdInjectionTiming < Arachni::Check::Base
 
             issue:       {
                 name:            %q{Operating system command injection (timing attack)},
-                description:     %q{The web application allows an attacker to
-    execute arbitrary OS commands even though it does not return
-    the command output in the HTML body.
-    (This issue was discovered using a timing attack; timing attacks
-    can result in false positives in cases where the server takes
-    an abnormally long time to respond.
-    Either case, these issues will require further investigation
-    even if they are false positives.)},
+                description:     %q{
+To perform specific actions from within a web application, it is occasionally
+required to run Operating System commands and have the output of these commands
+captured by the web application and returned to the client.
+
+OS command injection occurs when user supplied input is inserted into one of these
+commands without proper sanitisation and executed by the server.
+
+Cyber-criminals will abuse this weakness to perform their own arbitrary commands
+on the server. This can include everything from simple `ping` commands to map the
+internal network, to obtaining full control of the server.
+
+By injecting OS commands that take a specific amount of time to execute, Arachni
+was able to detect time based OS command injection. This indicates that proper
+input sanitisation is not occurring.
+},
                 references:  {
                     'OWASP' => 'http://www.owasp.org/index.php/OS_Command_Injection'
                 },
                 tags:            %w(os command code injection timing blind),
                 cwe:             78,
                 severity:        Severity::HIGH,
-                remedy_guidance: %q{User inputs must be validated and filtered
-    before being evaluated as OS level commands.}
-            }
+                remedy_guidance: %q{
+It is recommended that untrusted data is never used to form a command to be
+executed by the OS.
 
+To validate data, the application should ensure that the supplied value contains
+only the characters that are required to perform the required action.
+
+For example, where the form field expects an IP address, only numbers and periods
+should be accepted. Additionally, all control operators (`&`, `&&`, `|`, `||`, `$`, `\`, `#`)
+should be explicitly denied, and never accepted as valid input by the server.
+}
+            }
         }
     end
 
