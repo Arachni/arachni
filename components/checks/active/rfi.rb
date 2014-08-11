@@ -94,8 +94,10 @@ class Arachni::Checks::RFI < Arachni::Check::Base # *always* extend Arachni::Che
     def self.info
         {
             name:        'Remote File Inclusion',
-            description: %q{It injects a remote URL in all available
-                inputs and checks for relevant content in the HTTP response body.},
+            description: %q{
+Injects a remote URL in all available inputs and checks for relevant content in
+the HTTP response body.
+},
 
             # Arachni needs to know what elements the check plans to audit
             # before invoking it. If a page doesn't have any of those elements
@@ -109,9 +111,28 @@ class Arachni::Checks::RFI < Arachni::Check::Base # *always* extend Arachni::Che
 
             issue:       {
                 name:        %q{Remote File Inclusion},
-                description: %q{The web application can be forced to include
-    3rd party remote content which can often lead to arbitrary code
-    execution, amongst other attacks.},
+                description:     %q{
+Web applications occasionally use parameter values to store the location of a file
+which will later be required by the server.
+
+An example of this is often seen in error pages, where the actual file path for
+the error page is stored in a parameter value -- for example `example.com/error.php?page=404.php`.
+
+A remote file inclusion occurs when the parameter value (ie. path to file being
+called by the server) can be substituted with the address of an external host,
+and the server then performs a request to the external host and fetches the
+resource.
+Taking the simple example above this would become:
+`yoursite.com/error.asp?page=http://anothersite.com/somethingBad.php`
+
+In most circumstances, the server will process the fetched resource; therefore,
+if the resource matches that of the framework being used (ASP, PHP, JSP, etc.),
+it is probable that the resource will be executed on the vulnerable server.
+
+Arachni discovered that it was possible to substitute a parameter value with an
+external resource and have the server fetch the resource and have it returned to
+the client within the response
+},
                 references:  {
                     'WASC'      => 'http://projects.webappsec.org/Remote-File-Inclusion',
                     'Wikipedia' => 'http://en.wikipedia.org/wiki/Remote_File_Inclusion'
@@ -126,10 +147,24 @@ class Arachni::Checks::RFI < Arachni::Check::Base # *always* extend Arachni::Che
                 # Severity::LOW
                 # Severity::INFORMATIONAL
                 severity:        Severity::HIGH,
-                remedy_guidance: %q{Enforce strict validation and filtering
-                    on user inputs.}
-            }
+                remedy_guidance: %q{
+It is recommended that untrusted data is never used to form a literal file include request.
 
+To validate data, the application should ensure that the supplied value for a file
+is permitted. This can be achieved by performing whitelisting on the parameter
+value, by matching it against a list of permitted files. If the supplied value
+does not match any value in the whitelist, then the server should redirect to a
+standard error page.
+
+In some scenarios, where dynamic content is being requested, it may not be possible
+to perform validation against a list of trusted resources, therefore the list must
+also become dynamic (updated as the files change), or perform filtering to remove
+extraneous user input (such as semicolons, periods etc.) and only permit `a-z0-9`.
+
+It is also advised that sensitive files are not stored within the web root and
+that the user permissions enforced by the directory are correct.
+}
+            }
         }
     end
 
