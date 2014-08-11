@@ -39,15 +39,35 @@ class Arachni::Checks::BlindDifferentialNoSQLInjection < Arachni::Check::Base
 
             issue:       {
                 name:            %q{Blind NoSQL Injection (differential analysis)},
-                description:     %q{NoSQL code can be injected into the web application
-    even though it may not be obvious due to suppression of error messages.},
+                description:     %q{
+A NoSQL injection occurs when a value originating from the client's request is
+used within a NoSQL call without prior sanitisation.
+
+This can allow cyber-criminals to execute arbitrary NoSQL code and thus steal data,
+or use the additional functionality of the database server to take control of the
+server.
+
+Arachni discovered that the affected page and parameter are vulnerable. This
+injection was detected as Arachni was able to inject specific NoSQL queries that
+if vulnerable result in the responses for each injection being different. This is
+known as a blind NoSQL injection vulnerability.
+},
                 tags:            %w(nosql blind differential injection database),
+                references:  {
+                    'OWASP' => 'https://www.owasp.org/index.php/Testing_for_NoSQL_injection'
+                },
                 cwe:             89,
                 severity:        Severity::HIGH,
-                remedy_guidance: %q{Suppression of error messages leads to
-    security through obscurity which is not a good practise.
-    The web application needs to enforce stronger validation
-    on user inputs.}
+                remedy_guidance: %q{
+The most effective remediation against NoSQL injection attacks is to ensure that
+NoSQL API calls are not constructed via string concatenation.
+
+Doing this within the server side code will ensure that any escaping is handled
+by the underlying framework. Depending on the NoSQL database being used, this
+may not be possible, in which case all untrusted data sources must be escaped correctly.
+
+This is best achieved by using existing escaping libraries.
+}
             }
 
         }
