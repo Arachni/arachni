@@ -112,8 +112,10 @@ class Arachni::Checks::SourceCodeDisclosure < Arachni::Check::Base
     def self.info
         {
             name:        'Source code disclosure',
-            description: %q{It tries to identify whether or not the web application
-                can be forced to reveal source code.},
+            description: %q{
+It tries to identify whether or not the web application can be forced to reveal
+source code.
+},
             elements:    [ Element::Form, Element::Link, Element::Cookie,
                            Element::Header, Element::LinkTemplate ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
@@ -122,17 +124,47 @@ class Arachni::Checks::SourceCodeDisclosure < Arachni::Check::Base
 
             issue:       {
                 name:            %q{Source code disclosure},
-                description:     %q{The web application can be forced to reveal source code.},
+                description:     %q{
+A modern web application will be reliant on several different programming languages.
+These languages can be broken up into two flavours, side languages such as those
+that run in the browser (eg. JavaScript) and server side languages that are
+executed by the server (ASP, PHP, JSP, etc) to form the dynamic pages (client
+side code) that are then sent to the client.
+
+Because all server side code should be executed by the server, it should never be
+seen by the client. However in some scenarios, it is possible that:
+
+1. The server side code has syntax errors and therefore is not executed by the
+    server but is instead sent to the client.
+2. Using crafted requests it is possible to force the server into displaying the
+    source code of the application without executing it.
+
+As the server side source code often contains sensitive information such as
+database connection strings or details into the application workflow this can be
+extremely risky.
+Cyber-criminals will attempt to discover pages that either accidentally or
+forcefully allow the server side source code to be disclosed, to assist in
+discovering further vulnerabilities or sensitive information. Arachni has
+detected server side source code within the server's response.
+
+_(False positives may occur when requesting binary files such as images
+(.JPG or .PNG) and may require manual verification.)_
+},
                 references:  {
                     'CWE' => 'http://cwe.mitre.org/data/definitions/540.html'
                 },
                 tags:            %w(code source file inclusion disclosure),
                 cwe:             540,
                 severity:        Severity::HIGH,
-                remedy_guidance: %q{User inputs must be validated and filtered
-                    before being included in a file-system path during file reading operations.},
-            }
+                remedy_guidance: %q{
+It is important that input sanitisation be conducted to prevent application files
+(ASP, JSP, PHP or config files) from being called. It is also important that the
+file system permissions are correctly configured and that all unused files are
+removed from the web root.
 
+If these are not an option, then the vulnerable file should be removed from the server.
+}
+            }
         }
     end
 
