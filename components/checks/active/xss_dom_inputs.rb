@@ -50,8 +50,6 @@ class Arachni::Checks::XSSDOMInputs < Arachni::Check::Base
 
     def check_and_log( page )
         return if !(proof = find_proof( page ))
-        # ap page.dom.transitions
-        # puts proof
         log(
             vector: Element::GenericDOM.new(
                 url:        page.url,
@@ -71,17 +69,39 @@ class Arachni::Checks::XSSDOMInputs < Arachni::Check::Base
     def self.info
         {
             name:        'DOM XSS via input field',
-            description: %q{Injects an HTML element into page text fields, triggers
-                their associated events and inspects the DOM for proof of vulnerability.},
+            description: %q{
+Injects an HTML element into page text fields, triggers their associated events
+and inspects the DOM for proof of vulnerability.
+},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1',
             elements:    [Element::GenericDOM],
 
             issue:       {
                 name:            %q{DOM-based Cross-Site Scripting (XSS) via input fields},
-                description:     %q{Client-side code (like JavaScript) can
-                    be injected into the web application by placing it inside an input field
-                    and triggering one of the DM events associated with it.},
+                description:     %q{
+Client-side scripts are used extensively by modern web applications.
+They perform both simple functions (such as the formatting of text) up to full
+manipulation of client side data and operating system interaction.
+
+Unlike traditional Cross Site Scripting (XSS), where the client is able to inject
+scripts into a request and have the server return the script to the client, DOM
+XSS does not require that a request be sent to the server and may be abused entirely
+within the loaded page.
+
+This occurs when elements of the DOM (known as the sources) are able to be
+manipulated to contain untrusted data.
+The client-side scripts (known as the sinks) in the affected page use or execute
+the untrusted data in an unsafe way.
+
+A common attack used by cyber-criminals is to steal a client’s session token by
+injecting JavaScript, however DOM XSS vulnerabilities can also be abused to exploit
+clients.
+
+Arachni has discovered that by inserting an HTML element into the pages DOM inputs
+(sources) it was possible to then have the HTML element rendered as part of the
+page by the sink.
+},
                 references:  {
                     'ha.ckers' => 'http://ha.ckers.org/xss.html',
                     'Secunia'  => 'http://secunia.com/advisories/9716/'
@@ -89,8 +109,23 @@ class Arachni::Checks::XSSDOMInputs < Arachni::Check::Base
                 tags:            %w(xss dom injection script),
                 cwe:             79,
                 severity:        Severity::HIGH,
-                remedy_guidance: 'User inputs must be validated and filtered
-                    before being added to the DOM.'
+                remedy_guidance: %q{
+Client side document rewriting, redirection, or other sensitive actions using
+untrusted data should be avoided wherever possible as these may not be inspected
+by server side filtering.
+
+To remedy DOM XSS vulnerabilities where these sensitive document actions must be
+used it is essential to:
+
+1. Ensure any untrusted data is treated as text, as opposed to being interpreted
+    as code or mark-up within the page.
+2. Escape untrusted data prior to being used within the page. Escaping methods
+    will vary depending on where the untrusted data is being used.
+    (See references for details.)
+3. Use `document.createElement`, `element.setAttribute`, `element.appendChild`,
+    etc. to build dynamic interfaces as opposed to HTML rendering methods such as
+    `document.write`, `document.writeIn`, `element.innerHTML`, or `element.outerHTML `etc.
+}
             }
         }
     end
