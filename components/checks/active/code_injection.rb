@@ -111,7 +111,7 @@ only the data that are required to perform the relevant action.
 
 For example, where a username is required, then no non-alpha characters should not
 be accepted.
-},
+}
             }
         }
     end
