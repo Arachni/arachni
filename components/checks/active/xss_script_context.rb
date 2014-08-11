@@ -127,8 +127,9 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
     def self.info
         {
             name:        'XSS in script context',
-            description: %q{Injects JS taint code and check to see if it gets
-                executed as proof of vulnerability.},
+            description: %q{
+Injects JS taint code and check to see if it gets executed as proof of vulnerability.
+},
             elements:    [ Element::Form, Element::Link, Element::Cookie,
                            Element::Header, Element::LinkTemplate ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
@@ -136,9 +137,28 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
 
             issue:       {
                 name:            %q{Cross-Site Scripting in HTML \'script\' tag},
-                description:     %q{Unvalidated user input is being embedded inside an executable JS context.
-    This makes Cross-Site Scripting attacks much easier to mount since user input lands inside
-    a trusted script.},
+                description:     %q{
+Client-side scripts are used extensively by modern web applications.
+They perform both simple functions (such as the formatting of text) up to full
+manipulation of client side data and operating system interaction.
+
+Cross Site Scripting (XSS) allows clients to inject scripts into a request and
+have the server return the script to the client. This occurs because the
+application is taking untrusted data (in this example from the client) and reusing
+it without performing any validation or sanitisation.
+
+If the injected script is returned immediately this is known as reflected XSS.
+If the injected script is stored by the server and returned to any client visiting
+the affected page then this is known as persistent XSS (also stored XSS).
+
+A common attack used by cyber-criminals is to steal a client's session token by
+injecting JavaScript, however, XSS vulnerabilities can also be abused to exploit
+clients, for example, by visiting the page either directly or through a crafted
+HTTP link delivered via a social engineering email.
+
+Arachni has discovered that it is possible to force the page to execute custom
+JavaScript code.
+},
                 references:  {
                     'ha.ckers' => 'http://ha.ckers.org/xss.html',
                     'Secunia'  => 'http://secunia.com/advisories/9716/'
@@ -146,8 +166,42 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
                 tags:            %w(xss script dom injection),
                 cwe:             79,
                 severity:        Severity::HIGH,
-                remedy_guidance: 'User inputs must be validated and filtered
-    before being included in executable code or not be included at all.'
+                remedy_guidance: %q{
+To remedy XSS vulnerabilities, it is important to never use untrusted or unfiltered
+data within the code of a HTML page.
+
+Untrusted data can originate not only form the client but potentially a third
+party or previously uploaded file etc.
+
+Filtering of untrusted data typically involves converting special characters to
+their HTML entity encoding equivalent (however, other methods do exist, see references).
+These special characters include:
+
+* `&`
+* `<`
+* `>`
+* `"`
+* `'`
+* `/`
+
+An example of HTML entity encoding is converting a `<` to `&lt;`.
+
+Although it is possible to filter untrusted input, there are five locations
+within a HTML page where untrusted input (even if it has been filtered) should
+never be placed:
+
+1. Directly in a script.
+2. Inside an HTML comment.
+3. In an attribute name.
+4. In a tag name.
+5. Directly in CSS.
+
+Each of these locations have their own form of escaping and filtering.
+
+_Because many browsers attempt to implement XSS protection, any manual verification
+of this finding should be conducted utilising multiple different browsers and
+browser versions._
+}
             }
         }
     end
