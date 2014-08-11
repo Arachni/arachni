@@ -66,6 +66,10 @@ used within a NoSQL call without prior sanitisation.
 This can allow cyber-criminals to execute arbitrary NoSQL code and thus steal data,
 or use the additional functionality of the database server to take control of the
 server.
+
+Arachni discovered that the affected page and parameter may be vulnerable. This
+injection was detected as Arachni was able to discover known error messages within
+the server’s response.
 },
                 tags:            %w(nosql injection regexp database error),
                 references:  {
