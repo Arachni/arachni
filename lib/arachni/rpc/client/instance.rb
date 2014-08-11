@@ -27,7 +27,7 @@ class Instance
 
         def when_ready( url, token, &block )
             options     = OpenStruct.new
-            options.rpc = OpenStruct.new( @options.to_h[:rpc] )
+            options.rpc = OpenStruct.new( Arachni::Options.to_h[:rpc] )
             options.rpc.client_max_retries   = 0
             options.rpc.connection_pool_size = 1
 
