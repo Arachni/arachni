@@ -24,8 +24,10 @@ class Arachni::Checks::Trainer < Arachni::Check::Base
     def self.info
         {
             name:        'Trainer',
-            description: %q{Pokes and probes all inputs of a given page in order to uncover new input vectors.
-                It also forces Arachni to train itself by analyzing the server responses.},
+            description: %q{
+Pokes and probes all inputs of a given page in order to uncover new input vectors.
+It also forces Arachni to train itself by analyzing the server responses.
+},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             version:     '0.1.3'
