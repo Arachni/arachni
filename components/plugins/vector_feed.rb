@@ -59,7 +59,7 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
 
             exception_jail false do
                 if page?( vector )
-                    page_buffer << page_from_body_vector( vector )
+                    page_buffer << page_from_vector( vector )
                     next
                 end
 
@@ -89,7 +89,7 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
         vector[:type] == 'page'
     end
 
-    def page_from_body_vector( vector )
+    def page_from_vector( vector )
         Page.from_data(
             url:      vector[:url] || framework.options.url.to_s,
             response: {
