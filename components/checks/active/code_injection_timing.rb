@@ -44,9 +44,10 @@ class Arachni::Checks::CodeInjectionTiming < Arachni::Check::Base
     def self.info
         {
             name:        'Code injection (timing)',
-            description: %q{It tries to inject code snippets into the
-                web application and assess whether or not the injection
-                was successful using a time delay.},
+            description: %q{
+Injects code snippets and assess whether or not the injection was successful using
+a time delay.
+},
             elements:    [ Element::Form, Element::Link, Element::Cookie,
                            Element::Header, Element::LinkTemplate ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',

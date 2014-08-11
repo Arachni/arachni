@@ -42,8 +42,10 @@ class Arachni::Checks::CodeExecutionPHPInputWrapper < Arachni::Check::Base
     def self.info
         {
             name:        'Code injection (php://input wrapper)',
-            description: %q{It injects PHP code into the HTTP request body and
-                uses the php://input wrapper to try and load it.},
+            description: %q{
+Injects PHP code into the HTTP request body and uses the `php://input` wrapper
+to try and load it.
+},
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.1',

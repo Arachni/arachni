@@ -63,9 +63,9 @@ class Arachni::Checks::CodeInjection < Arachni::Check::Base
     def self.info
         {
             name:        'Code injection',
-            description: %q{It tries to inject code snippets into the
-                web application and assess whether or not the injection
-                was successful.},
+            description: %q{
+Injects code snippets and assess whether or not execution was successful.
+},
             elements:    [ Element::Form, Element::Link, Element::Cookie,
                            Element::Header, Element::LinkTemplate ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
