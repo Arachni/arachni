@@ -30,11 +30,15 @@ get '/link/straight' do
                     }
                 }
             }
+
+            function pre_eval( code ) {
+                eval( code );
+            }
         </script>
 
         <body>
             <script>
-                eval(getQueryVariable('input'));
+                pre_eval(getQueryVariable('input'));
             </script>
         </body>
     </html>
@@ -52,8 +56,12 @@ get '/link-template/straight' do
     <html>
         <script>
             function getQueryVariable(variable) {
-                var splits = decodeURI(window.location.hash).split('|');
+                var splits = decodeURIComponent(window.location.hash).split('|');
                 return splits[splits.indexOf( variable ) + 1];
+            }
+
+            function pre_eval( code ) {
+                eval( code );
             }
         </script>
 
@@ -62,7 +70,7 @@ get '/link-template/straight' do
             </div>
 
             <script>
-                eval(getQueryVariable('input'));
+                pre_eval(getQueryVariable('input'));
             </script>
         </body>
     </html>
@@ -79,7 +87,11 @@ get '/form/straight' do
     <<-EOHTML
         <script>
             function handleSubmit() {
-                eval( document.getElementById('my-input').value );
+                pre_eval( document.getElementById('my-input').value );
+            }
+
+            function pre_eval( code ) {
+                eval( code );
             }
         </script>
 
@@ -116,7 +128,11 @@ get '/cookie/straight' do
                     return '';
                 }
 
-                eval( getCookie('input') );
+                function pre_eval( code ) {
+                    eval( code );
+                }
+
+                pre_eval( getCookie('input') );
             </script>
         </body>
     EOHTML

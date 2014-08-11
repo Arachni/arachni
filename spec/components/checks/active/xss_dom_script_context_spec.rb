@@ -29,8 +29,8 @@ describe name_from_filename do
             end
 
             data = data_flow_sinks.last
-            data.function.source.should start_with 'function eval()'
-            data.function.name.should == 'eval'
+            data.function.source.should start_with 'function pre_eval('
+            data.function.name.should == 'pre_eval'
             data.object.should == 'DOMWindow'
             data.taint.should include 'taint_tracer.log_execution_flow_sink()'
             data.tainted_value.should include 'taint_tracer.log_execution_flow_sink()'
