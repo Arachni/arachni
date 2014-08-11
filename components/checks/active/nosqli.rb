@@ -48,8 +48,9 @@ class Arachni::Checks::NoSQLInjection < Arachni::Check::Base
     def self.info
         {
             name:        'NoSQL Injection',
-            description: %q{NoSQL injection check, uses known DB errors to
-                identify vulnerabilities.},
+            description: %q{
+NoSQL injection check, uses known DB errors to identify vulnerabilities.
+},
             elements:    [Element::Link, Element::Form, Element::Cookie,
                           Element::Header, Element::LinkTemplate ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
@@ -58,12 +59,30 @@ class Arachni::Checks::NoSQLInjection < Arachni::Check::Base
 
             issue:       {
                 name:            %q{NoSQL Injection},
-                description:     %q{NoSQL code can be injected into the web application.},
+                description:     %q{
+A NoSQL injection occurs when a value originating from the client's request is
+used within a NoSQL call without prior sanitisation.
+
+This can allow cyber-criminals to execute arbitrary NoSQL code and thus steal data,
+or use the additional functionality of the database server to take control of the
+server.
+},
                 tags:            %w(nosql injection regexp database error),
+                references:  {
+                    'OWASP' => 'https://www.owasp.org/index.php/Testing_for_NoSQL_injection'
+                },
                 cwe:             89,
                 severity:        Severity::HIGH,
-                remedy_guidance: 'User inputs must be validated and filtered
-    before being included in database queries.'
+                remedy_guidance: %q{
+The most effective remediation against NoSQL injection attacks is to ensure that
+NoSQL API calls are not constructed via string concatenation.
+
+Doing this within the server side code will ensure that any escaping is handled
+by the underlying framework. Depending on the NoSQL database being used, this
+may not be possible, in which case all untrusted data sources must be escaped correctly.
+
+This is best achieved by using existing escaping libraries.
+}
             }
         }
     end
