@@ -86,10 +86,10 @@ class Arachni::Checks::XSS < Arachni::Check::Base
     def self.info
         {
             name:        'XSS',
-            description: %q{Cross-Site Scripting check.
-                Injects an HTML element into page inputs and then parses the HTML markup of
-                tainted responses to look for proof of vulnerability.
-            },
+            description: %q{
+Injects an HTML element into page inputs and then parses the HTML markup of
+tainted responses to look for proof of vulnerability.
+},
             elements:    [Element::Form, Element::Link, Element::Cookie,
                           Element::Header, Element::LinkTemplate],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
@@ -97,18 +97,73 @@ class Arachni::Checks::XSS < Arachni::Check::Base
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS)},
-                description:     %q{Client-side code (like JavaScript) can
-    be injected into the web application which is then returned to the user's browser.
-    This can lead to a compromise of the client's system or serve as a pivoting point for other attacks.},
+                description:     %q{
+Client-side scripts are used extensively by modern web applications.
+They perform both simple functions (such as the formatting of text) up to full
+manipulation of client side data and operating system interaction.
+
+Cross Site Scripting (XSS) allows clients to inject scripts into a request and
+have the server return the script to the client. This occurs because the
+application is taking untrusted data (in this example from the client) and reusing
+it without performing any validation or sanitisation.
+
+If the injected script is returned immediately this is known as reflected XSS.
+If the injected script is stored by the server and returned to any client visiting
+the affected page then this is known as persistent XSS (also stored XSS).
+
+A common attack used by cyber-criminals is to steal a client's session token by
+injecting JavaScript, however, XSS vulnerabilities can also be abused to exploit
+clients, for example, by visiting the page either directly or through a crafted
+HTTP link delivered via a social engineering email.
+
+Arachni has discovered that it is possible to insert script content directly into
+HTML element content.
+},
                 references:  {
                     'ha.ckers' => 'http://ha.ckers.org/xss.html',
-                    'Secunia'  => 'http://secunia.com/advisories/9716/'
+                    'Secunia'  => 'http://secunia.com/advisories/9716/',
+                    'WASC' => 'http://projects.webappsec.org/w/page/13246920/Cross%20Site%20Scripting',
+                    'OWASP' => 'www.owasp.org/index.php/XSS_%28Cross_Site_Scripting%29_Prevention_Cheat_Sheet'
                 },
                 tags:            %w(xss regexp injection script),
                 cwe:             79,
                 severity:        Severity::HIGH,
-                remedy_guidance: 'User inputs must be validated and filtered
-    before being returned as part of the HTML code of a page.'
+                remedy_guidance: %q{
+To remedy XSS vulnerabilities, it is important to never use untrusted or unfiltered
+data within the code of a HTML page.
+
+Untrusted data can originate not only form the client but potentially a third
+party or previously uploaded file etc.
+
+Filtering of untrusted data typically involves converting special characters to
+their HTML entity encoding equivalent (however, other methods do exist, see references).
+These special characters include:
+
+* `&`
+* `<`
+* `>`
+* `"`
+* `'`
+* `/`
+
+An example of HTML entity encoding is converting a `<` to `&lt;`.
+
+Although it is possible to filter untrusted input, there are five locations
+within a HTML page where untrusted input (even if it has been filtered) should
+never be placed:
+
+1. Directly in a script.
+2. Inside an HTML comment.
+3. In an attribute name.
+4. In a tag name.
+5. Directly in CSS.
+
+Each of these locations have their own form of escaping and filtering.
+
+_Because many browsers attempt to implement XSS protection, any manual verification
+of this finding should be conducted utilising multiple different browsers and
+browser versions._
+}
             }
         }
     end
