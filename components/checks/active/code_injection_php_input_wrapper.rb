@@ -51,14 +51,41 @@ class Arachni::Checks::CodeExecutionPHPInputWrapper < Arachni::Check::Base
 
             issue:       {
                 name:        %q{Code injection (php://input wrapper)},
-                description: %q{The web application can be forced to execute
-                    arbitrary code via the php://input wrapper.},
+                description:     %q{
+A modern web application will be reliant on several different programming languages.
+
+These languages can be broken up in two flavours. These are client side languages
+(such as those that run in the browser -- like JavaScript) and server side
+languages (which are executed by the server -- like ASP, PHP, JSP, etc.) to form the
+dynamic pages (client side code) that are then sent to the client.
+
+Because all server side code should be executed by the server, it should only ever
+come from a trusted source.
+
+Code injection occurs when the server takes untrusted server side code (ie. from
+the client) and executes the code as if it were on the server. Cyber-criminals will
+abuse this weakness to execute their own arbitrary code on the server, and could
+result in complete compromise of the server.
+
+Arachni was able to inject specific side code via a PHP wrapper (`php://input`)
+and have the executed output from the code contained within the server response.
+This indicates that proper input sanitisation is not occurring.
+},
                 references:  {
                     'OWASP' => 'https://www.owasp.org/index.php/Top_10_2007-Malicious_File_Execution'
                 },
                 tags:        %w(remote injection php code execution),
                 cwe:         94,
-                severity:    Severity::HIGH
+                severity:    Severity::HIGH,
+                remedy_guidance: %q{
+It is recommended that untrusted input is never processed as server side code.
+
+To validate input, the application should ensure that the supplied value contains
+only the data that are required to perform the relevant action.
+
+For example, where a username is required, then no non-alpha characters should not
+be accepted.
+}
             }
         }
     end
