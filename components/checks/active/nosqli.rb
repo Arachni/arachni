@@ -67,7 +67,7 @@ This can allow cyber-criminals to execute arbitrary NoSQL code and thus steal da
 or use the additional functionality of the database server to take control of the
 server.
 
-Arachni discovered that the affected page and parameter may be vulnerable. This
+Arachni discovered that the affected page and parameter are vulnerable. This
 injection was detected as Arachni was able to discover known error messages within
 the server’s response.
 },
