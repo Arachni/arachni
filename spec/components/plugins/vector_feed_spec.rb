@@ -126,8 +126,6 @@ describe name_from_filename do
         framework.on_page_audit { |page| pages << page }
         run
 
-        pages.pop
-
         check( pages )
     end
 
