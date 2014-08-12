@@ -468,7 +468,7 @@ class Instance
     #       '*'
     #
     #       # To load all XSS and SQLi checks:
-    #       [ 'xss*', 'sqli*' ]
+    #       [ 'xss*', 'sql_injection*' ]
     #
     # @option opts [Hash<Hash>] :plugins ({})
     #   Plugins to load, by name, along with their options.

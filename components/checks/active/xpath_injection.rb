@@ -11,7 +11,7 @@
 # @see http://cwe.mitre.org/data/definitions/91.html
 # @see http://www.owasp.org/index.php/XPATH_Injection
 # @see http://www.owasp.org/index.php/Testing_for_XPath_Injection_%28OWASP-DV-010%29
-class Arachni::Checks::XPathInjection < Arachni::Check::Base
+class Arachni::Checks::XpathInjection < Arachni::Check::Base
 
     def self.error_strings
         @error_strings ||= read_file( 'errors.txt' )

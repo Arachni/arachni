@@ -7,7 +7,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 # @version 0.2.1
-class Arachni::Checks::EMails < Arachni::Check::Base
+class Arachni::Checks::Emails < Arachni::Check::Base
 
     def run
         match_and_log( /[A-Z0-9._%+-]+(?:@|\s*\[at\]\s*)[A-Z0-9.-]+(?:\.|\s*\[dot\]\s*)[A-Z]{2,4}/i ) do |email|

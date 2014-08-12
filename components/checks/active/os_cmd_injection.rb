@@ -11,7 +11,7 @@
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
 # @see http://www.owasp.org/index.php/OS_Command_Injection
-class Arachni::Checks::OSCmdInjection < Arachni::Check::Base
+class Arachni::Checks::OsCmdInjection < Arachni::Check::Base
 
     def self.options
         @options ||= {

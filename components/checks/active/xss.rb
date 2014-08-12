@@ -15,7 +15,7 @@
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
 # @see http://secunia.com/advisories/9716/
-class Arachni::Checks::XSS < Arachni::Check::Base
+class Arachni::Checks::Xss < Arachni::Check::Base
 
     def self.tag_name
         "some_dangerous_input_#{random_seed}"

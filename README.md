@@ -337,7 +337,7 @@ _Checks_ are system components which perform security checks and log issues.
 
 Active checks engage the web application via its inputs.
 
-- SQL injection (`sqli`) -- Error based vulnerability detection.
+- SQL injection (`sql_injection`) -- Error based detection.
     - Oracle
     - ColdFusion
     - InterBase
@@ -355,14 +355,14 @@ Active checks engage the web application via its inputs.
     - Ingres
     - HSQLDB
     - MS Access
-- Blind SQL injection using differential analysis (`sqli_blind_differential`).
-- Blind SQL injection using timing attacks (`sqli_blind_timing`).
+- Blind SQL injection using differential analysis (`sql_injection_differential`).
+- Blind SQL injection using timing attacks (`sql_injection_timing`).
     - MySQL
     - PostgreSQL
     - MSSQL
-- NoSQL injection (`nosqli`) -- Error based vulnerability detection.
+- NoSQL injection (`no_sql_injection`) -- Error based vulnerability detection.
     - MongoDB
-- Blind NoSQL injection using differential analysis (`nosqli_blind_differential`).
+- Blind NoSQL injection using differential analysis (`no_sql_injection_differential`).
 - CSRF detection (`csrf`).
 - Code injection (`code_injection`).
     - PHP
@@ -376,7 +376,7 @@ Active checks engage the web application via its inputs.
     - Python
     - JSP
     - ASP.NET
-- LDAP injection (`ldapi`).
+- LDAP injection (`ldap_injection`).
 - Path traversal (`path_traversal`).
     - *nix
     - Windows
@@ -400,7 +400,7 @@ Active checks engage the web application via its inputs.
     - Windows
 - Remote file inclusion (`rfi`).
 - Unvalidated redirects (`unvalidated_redirect`).
-- XPath injection (`xpath`).
+- XPath injection (`xpath_injection`).
     - Generic
     - PHP
     - Java

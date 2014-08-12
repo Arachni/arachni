@@ -8,7 +8,7 @@
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 # @version 0.2.1
-class Arachni::Checks::FileUpload < Arachni::Check::Base
+class Arachni::Checks::FormUpload < Arachni::Check::Base
 
     def run
         page.forms.each do |form|

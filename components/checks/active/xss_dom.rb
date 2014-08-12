@@ -5,7 +5,7 @@
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 # @version 0.1
-class Arachni::Checks::XSSDOM < Arachni::Check::Base
+class Arachni::Checks::XssDom < Arachni::Check::Base
     prefer :xss
 
     def self.tag_name

@@ -5,13 +5,13 @@
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 # @version 0.1
-class Arachni::Checks::NoSQLInjection < Arachni::Check::Base
+class Arachni::Checks::NoSqlInjection < Arachni::Check::Base
 
     def self.error_patterns
         return @error_patterns if @error_patterns
 
         @error_patterns = {}
-        Dir[File.dirname( __FILE__ ) + '/nosqli/patterns/*'].each do |file|
+        Dir[File.dirname( __FILE__ ) + '/no_sql_injection/patterns/*'].each do |file|
             @error_patterns[File.basename( file ).to_sym] =
                 IO.read( file ).split( "\n" ).map do |pattern|
                     Regexp.new( pattern, Regexp::IGNORECASE )

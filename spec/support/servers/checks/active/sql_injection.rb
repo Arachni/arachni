@@ -3,15 +3,15 @@ require 'sinatra/contrib'
 
 @@errors ||= {}
 if @@errors.empty?
-    Dir.glob( File.dirname( __FILE__ ) + '/nosqli/*' ).each do |path|
+    Dir.glob( File.dirname( __FILE__ ) + '/sql_injection/*' ).each do |path|
         @@errors[File.basename( path )] = IO.read( path )
     end
 end
 
-@@ignore ||= IO.read( File.dirname( __FILE__ ) + '/../../../../../components/checks/active/nosqli/regexp_ignore.txt' )
+@@ignore ||= IO.read( File.dirname( __FILE__ ) + '/../../../../../components/checks/active/sql_injection/regexp_ignore.txt' )
 
 def variations
-    @@variations ||= [ '\';.")' ]
+    @@variations ||= [ '\'`--', ')' ]
 end
 
 def get_variations( platform, str )
@@ -61,12 +61,11 @@ end
     end
 
     get "/#{platform_str}/link-template/append/input/*/stuff" do
-        p params
         val = params[:splat].first
         default = 'default'
         return if !val.start_with?( default )
 
-        get_variations( platform, URI.decode( val.split( default ).last.to_s ) )
+        get_variations( platform, val.split( default ).last )
     end
 
     get "/#{platform_str}/form" do

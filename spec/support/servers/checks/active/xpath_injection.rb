@@ -1,14 +1,24 @@
 require 'sinatra'
 require 'sinatra/contrib'
 
-def get_variations( str )
-    root = File.dirname( __FILE__ ) + '/../../../../../'
-    IO.read( root + 'components/checks/active/ldapi/errors.txt' ) if str == "#^($!@$)(()))******"
+@@errors ||= {}
+if @@errors.empty?
+    Dir.glob( File.dirname( __FILE__ ) + '/xpath_injection/*' ).each do |path|
+        @@errors[File.basename( path )] = IO.read( path )
+    end
 end
 
-get '/' do
+def variations
+    @@variations ||= %w('" ]]]]]]]]] <!--)
+end
+
+def get_variations( str )
+    @@errors.to_s if variations.include?( str )
+end
+
+get '/'do
     <<-EOHTML
-        <a href="/link?input=default">Link</a>
+        <a href="/link">Link</a>
         <a href="/form">Form</a>
         <a href="/cookie">Cookie</a>
         <a href="/header">Header</a>
@@ -18,8 +28,13 @@ end
 
 get '/link' do
     <<-EOHTML
+        <a href="/link/flip?input=default">Link</a>
         <a href="/link/append?input=default">Link</a>
     EOHTML
+end
+
+get '/link/flip' do
+    params.keys.map { |k| get_variations( k ) }.to_s
 end
 
 get '/link/append' do
@@ -45,10 +60,18 @@ end
 
 get '/form' do
     <<-EOHTML
+        <form action="/form/flip">
+            <input name='input' value='default' />
+        </form>
+
         <form action="/form/append">
             <input name='input' value='default' />
         </form>
     EOHTML
+end
+
+get '/form/flip' do
+    params.keys.map { |k| get_variations( k ) }.to_s
 end
 
 get '/form/append' do
@@ -58,11 +81,15 @@ get '/form/append' do
     get_variations( params['input'].split( default ).last )
 end
 
-
 get '/cookie' do
     <<-EOHTML
+        <a href="/cookie/flip">Cookie</a>
         <a href="/cookie/append">Cookie</a>
     EOHTML
+end
+
+get '/cookie/flip' do
+    cookies.keys.map { |k| get_variations( k ) }.to_s
 end
 
 get '/cookie/append' do
@@ -75,14 +102,20 @@ end
 
 get '/header' do
     <<-EOHTML
-        <a href="/header/append">Cookie</a>
+        <a href="/header/flip">Header</a>
+        <a href="/header/append">Header</a>
     EOHTML
+end
+
+get '/header/flip' do
+    env.keys.map do |k|
+        get_variations( k.gsub( 'HTTP_', '' ).gsub( '_', '-' ) )
+    end.to_s
 end
 
 get '/header/append' do
     default = 'arachni_user'
-    return if !env['HTTP_USER_AGENT'].start_with?( default )
+    return if !env['HTTP_USER_AGENT'] || !env['HTTP_USER_AGENT'].start_with?( default )
 
     get_variations( env['HTTP_USER_AGENT'].split( default ).last )
 end
-

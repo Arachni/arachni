@@ -12,7 +12,7 @@
 # @see http://cwe.mitre.org/data/definitions/693.html
 # @see http://capec.mitre.org/data/definitions/107.html
 # @see http://www.owasp.org/index.php/Cross_Site_Tracing
-class Arachni::Checks::XST < Arachni::Check::Base
+class Arachni::Checks::Xst < Arachni::Check::Base
 
     def self.ran?
         @ran ||= false

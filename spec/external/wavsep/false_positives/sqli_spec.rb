@@ -11,7 +11,7 @@ describe 'WAVSEP false-positive SQL injection' do
         {
             'SQL Injection' => {
                 url:        "SInjection-FalsePositives-#{http_method}/",
-                checks:     'sqli*',
+                checks:     'sql_injection*',
                 vulnerable: []
             }
         }

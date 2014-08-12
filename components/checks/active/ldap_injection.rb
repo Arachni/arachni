@@ -12,7 +12,7 @@
 # @see http://cwe.mitre.org/data/definitions/90.html
 # @see http://projects.webappsec.org/w/page/13246947/LDAP-Injection
 # @see http://www.owasp.org/index.php/LDAP_injection
-class Arachni::Checks::LDAPInjection < Arachni::Check::Base
+class Arachni::Checks::LdapInjection < Arachni::Check::Base
 
     def self.error_strings
         @errors ||= read_file( 'errors.txt' )

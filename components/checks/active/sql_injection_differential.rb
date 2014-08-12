@@ -16,9 +16,9 @@
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://capec.mitre.org/data/definitions/7.html
 # @see http://www.owasp.org/index.php/Blind_SQL_Injection
-class Arachni::Checks::BlindDifferentialSQLInjection < Arachni::Check::Base
+class Arachni::Checks::SqlInjectionDifferential < Arachni::Check::Base
 
-    prefer :sqli
+    prefer :sql_injection
 
     def self.queries_for_expression( expression )
         (@templates ||= read_file( 'payloads.txt' )).map do |template|

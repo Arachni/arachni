@@ -21,7 +21,7 @@ describe Arachni::State::Options do
         end
 
         it 'includes :checks' do
-            Arachni::Options.checks = %w(xss* sqli)
+            Arachni::Options.checks = %w(xss* sql_injection)
             statistics[:checks].should == Arachni::Options.checks
         end
 

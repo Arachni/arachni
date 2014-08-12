@@ -12,7 +12,7 @@
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
 # @see http://secunia.com/advisories/9716/
-class Arachni::Checks::XSSPath < Arachni::Check::Base
+class Arachni::Checks::XssPath < Arachni::Check::Base
 
     def self.tag
         @tag ||= 'my_tag_' + random_seed

@@ -4,7 +4,7 @@
 =end
 
 # @author   Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>, haliphax
-class Arachni::Checks::SSN < Arachni::Check::Base
+class Arachni::Checks::Ssn < Arachni::Check::Base
 
     def self.regexp
         @regexp ||= /\b(((?!000)(?!666)(?:[0-6]\d{2}|7[0-2][0-9]|73[0-3]|7[5-6][0-9]|77[0-2]))-((?!00)\d{2})-((?!0000)\d{4}))\b/

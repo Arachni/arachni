@@ -12,7 +12,7 @@
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
 # @see http://secunia.com/advisories/9716/
-class Arachni::Checks::XSSEvent < Arachni::Check::Base
+class Arachni::Checks::XssEvent < Arachni::Check::Base
 
     EVENT_ATTRS = [
         'onload',

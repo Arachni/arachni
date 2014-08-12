@@ -171,6 +171,12 @@
     - _Recon_ checks renamed to _Passive_ checks.
 - Checks
     - Descriptions and `remedy_guidance` have been converted to GitHub-flavored Markdown.
+    - Renamed
+        - `xpath` => `xpath_injection`
+        - `ldapi` => `ldap_injection`
+        - `sqli` => `sql_injection`
+        - `sqli_blind_rdiff` => `sql_injection_differential`
+        - `sqli_blind_timing` => `sql_injection_timing`
     - Active
         - New
             - `xss_dom` -- Injects HTML code via DOM-based links, forms and cookies.
@@ -178,7 +184,8 @@
                 associated DOM events.
             - `xss_dom_script_context` -- Injects JavaScript code via DOM-based
                 links, forms and cookies.
-        - Renamed
+            - `no_sql_injection` -- NoSQL Injection (error-based) .
+            - `no_sql_injection_differential` -- Blind NoSQL Injection (differential analysis).
         - `xss` -- Added support for Browser-based taint-analysis.
         - `xss_script_context` -- Added support for Browser-based taint-analysis.
             - Renamed from `xss_script_tag`.
@@ -187,10 +194,8 @@
         - `os_cmd_injection` -- Added payloads for *BSD and AIX.
     - Passive
         - New
-            - Backup directories (`backup_directories`)
-            - Cookie set for parent domain (`cookie_set_for_parent_domain`)
-            - NoSQL Injection (error-based) (`nosqli`)
-            - Blind NoSQL Injection (differential analysis) (`nosqli_blind_differential`)
+            - `backup_directories` -- Backup directories.
+            - `cookie_set_for_parent_domain` -- Cookie set for parent domain.
             - Grep
                 - `hsts` - Checks HTTPS pages for missing `Strict-Transport-Security` headers.
         - `backup_files` -- Updated filename formats.

@@ -5,7 +5,7 @@
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 # @version 0.1
-class Arachni::Checks::XSSDOMInputs < Arachni::Check::Base
+class Arachni::Checks::XssDomInputs < Arachni::Check::Base
 
     INPUTS = Set.new([:input, :textarea])
 

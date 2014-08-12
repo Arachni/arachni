@@ -5,7 +5,7 @@
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 # @version 0.1
-class Arachni::Checks::BlindDifferentialNoSQLInjection < Arachni::Check::Base
+class Arachni::Checks::NoSqlInjectionDifferential < Arachni::Check::Base
 
     def self.options
         return @options if @options

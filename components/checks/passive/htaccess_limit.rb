@@ -4,7 +4,7 @@
 =end
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-class Arachni::Checks::Htaccess < Arachni::Check::Base
+class Arachni::Checks::HtaccessLimit < Arachni::Check::Base
 
     def run
         return if page.code != 401

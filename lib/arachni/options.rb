@@ -238,7 +238,7 @@ class Options
     #             elements: [ :links, :forms, :cookies ]
     #         },
     #         # Direct Options#checks attribute.
-    #         checks: [ :xss, 'sqli*' ],
+    #         checks: [ :xss, 'sql_injection*' ],
     #         # Options#scope attribute pointing to an OptionGroups::Scope instance.
     #         scope:  {
     #             # OptionGroups::Scope#page_limit

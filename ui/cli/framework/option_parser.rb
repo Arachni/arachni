@@ -332,7 +332,7 @@ class OptionParser < UI::CLI::OptionParser
                "    Checks are referenced by their filename without the '.rb' extension, use '--checks-list' to list all.",
                "    Use '*' as a check name to load all checks or as a wildcard, like so:",
                '        xss*   to load all XSS checks',
-               '        sqli*  to load all SQL injection checks',
+               '        sql_injection*  to load all SQL injection checks',
                '        etc.',
                '',
                '    You can exclude checks by prefixing their name with a minus sign:',

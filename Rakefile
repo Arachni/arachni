@@ -82,8 +82,8 @@ begin
                     end
 
                     desc 'Run the WAVSEP SQL injection tests.'
-                    RSpec::Core::RakeTask.new( :sqli ) do |t|
-                        t.pattern = FileList[ 'spec/external/wavsep/active/sqli_spec.rb' ]
+                    RSpec::Core::RakeTask.new( :sql_injection ) do |t|
+                        t.pattern = FileList[ 'spec/external/wavsep/active/sql_injection_spec.rb' ]
                     end
 
                     desc 'Run the WAVSEP LFI tests.'
@@ -109,8 +109,8 @@ begin
                     end
 
                     desc 'Run the WAVSEP SQL injection false positive tests.'
-                    RSpec::Core::RakeTask.new( :sqli ) do |t|
-                        t.pattern = FileList[ 'spec/external/wavsep/false_positives/sqli_spec.rb' ]
+                    RSpec::Core::RakeTask.new( :sql_injection ) do |t|
+                        t.pattern = FileList[ 'spec/external/wavsep/false_positives/sql_injection_spec.rb' ]
                     end
 
                     desc 'Run the WAVSEP LFI false positive tests.'

@@ -6,7 +6,7 @@ describe 'WAVSEP SQL Injection' do
     def self.test_cases( http_method )
         {
             'Erroneous 500 Responses' => {
-                checks:    'sqli',
+                checks:    'sql_injection',
                 url:        "SQL-Injection/SInjection-Detection-Evaluation-#{http_method}-500Error/",
                 vulnerable: [
                     'Case01-InjectionInLogin-String-LoginBypass-WithErrors.jsp',
@@ -31,7 +31,7 @@ describe 'WAVSEP SQL Injection' do
                 ]
             },
             'Erroneous 200 Responses'=> {
-                checks: 'sqli',
+                checks: 'sql_injection',
                 url:     "SQL-Injection/SInjection-Detection-Evaluation-#{http_method}-200Error/",
                 vulnerable: [
                      'Case01-InjectionInLogin-String-LoginBypass-With200Errors.jsp',
@@ -56,7 +56,7 @@ describe 'WAVSEP SQL Injection' do
                  ]
             },
             '200 Responses With Differentiation' => {
-                checks:    'sqli_blind_*',
+                checks:    'sql_injection_*',
                 url:        "SQL-Injection/SInjection-Detection-Evaluation-#{http_method}-200Valid/",
                 vulnerable: [
                     'Case01-InjectionInLogin-String-LoginBypass-WithDifferent200Responses.jsp',
@@ -81,7 +81,7 @@ describe 'WAVSEP SQL Injection' do
                 ]
             },
             'Identical 200 Responses' => {
-                checks: 'sqli_blind_timing',
+                checks: 'sql_injection_timing',
                 url:     "SQL-Injection/SInjection-Detection-Evaluation-#{http_method}-200Identical/",
                 vulnerable: [
                      'Case01-InjectionInView-Numeric-Blind-200ValidResponseWithDefaultOnException.jsp',

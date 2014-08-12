@@ -5,7 +5,7 @@
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 # @version 0.2
-class Arachni::Checks::CAPTCHA < Arachni::Check::Base
+class Arachni::Checks::Captcha < Arachni::Check::Base
 
     CAPTCHA_RX = /captcha/i
 

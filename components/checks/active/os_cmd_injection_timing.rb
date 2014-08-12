@@ -11,7 +11,7 @@
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
 # @see http://www.owasp.org/index.php/OS_Command_Injection
-class Arachni::Checks::OSCmdInjectionTiming < Arachni::Check::Base
+class Arachni::Checks::OsCmdInjectionTiming < Arachni::Check::Base
 
     prefer :os_cmd_injection
 

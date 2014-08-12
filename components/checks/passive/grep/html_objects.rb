@@ -7,7 +7,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 # @version 0.1.2
-class Arachni::Checks::HTMLObjects < Arachni::Check::Base
+class Arachni::Checks::HtmlObjects < Arachni::Check::Base
 
     def self.regexp
         @regexp ||= /<object(.*)>(.*)<\/object>/im

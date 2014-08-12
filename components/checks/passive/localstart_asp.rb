@@ -4,7 +4,7 @@
 =end
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-class Arachni::Checks::LocalstartASP < Arachni::Check::Base
+class Arachni::Checks::LocalstartAsp < Arachni::Check::Base
 
     def run
         return if page.platforms.languages.any? && !page.platforms.languages.include?( :asp )

@@ -14,7 +14,7 @@
 # @see http://en.wikipedia.org/wiki/Bank_card_number
 # @see http://en.wikipedia.org/wiki/Luhn_algorithm
 #
-class Arachni::Checks::CreditCards < Arachni::Check::Base
+class Arachni::Checks::CreditCard < Arachni::Check::Base
 
     def self.cc_regexp
         @cc_regexp ||= /\b(((4\d{3})|(5[1-5]\d{2})|(6011))[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}|3[4,7][\d\s-]{15})\b/

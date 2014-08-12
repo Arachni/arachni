@@ -13,7 +13,7 @@
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
 # @see http://secunia.com/advisories/9716/
-class Arachni::Checks::XSSHTMLTag < Arachni::Check::Base
+class Arachni::Checks::XssTag < Arachni::Check::Base
 
     TAG_NAME = 'arachni_xss_in_tag'
 

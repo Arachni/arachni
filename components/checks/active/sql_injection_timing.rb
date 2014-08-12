@@ -12,9 +12,9 @@
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://capec.mitre.org/data/definitions/7.html
 # @see http://www.owasp.org/index.php/Blind_SQL_Injection
-class Arachni::Checks::BlindTimingSQLInjection < Arachni::Check::Base
+class Arachni::Checks::SqlInjectionTiming < Arachni::Check::Base
 
-    prefer :sqli, :sqli_blind_differential
+    prefer :sql_injection, :sql_injection_differential
 
     def self.payloads
         @payloads ||= {

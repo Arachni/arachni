@@ -5,7 +5,7 @@
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 # @version 0.1
-class Arachni::Checks::XSSDOMScriptContext < Arachni::Check::Base
+class Arachni::Checks::XssDomScriptContext < Arachni::Check::Base
 
     prefer :xss_script_context
 

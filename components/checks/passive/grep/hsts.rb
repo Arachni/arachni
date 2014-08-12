@@ -5,7 +5,7 @@
 
 # @author  Tasos Laskos <tasos.laskos@gmail.com>
 # @version 0.1
-class Arachni::Checks::HTTPSStrictTransportSecurity < Arachni::Check::Base
+class Arachni::Checks::Hsts < Arachni::Check::Base
 
     def run
         return if audited?( page.parsed_url.host ) ||

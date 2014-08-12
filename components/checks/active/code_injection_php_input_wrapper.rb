@@ -6,7 +6,7 @@
 # @see OWASP    https://www.owasp.org/index.php/Top_10_2007-Malicious_File_Execution
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 # @version 0.1
-class Arachni::Checks::CodeExecutionPHPInputWrapper < Arachni::Check::Base
+class Arachni::Checks::CodeInjectionPhpInputWrapper < Arachni::Check::Base
 
     def self.options
         @options ||= {

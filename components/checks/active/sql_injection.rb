@@ -14,13 +14,13 @@
 # @see http://en.wikipedia.org/wiki/SQL_injection
 # @see http://www.securiteam.com/securityreviews/5DP0N1P76E.html
 # @see http://www.owasp.org/index.php/SQL_Injection
-class Arachni::Checks::SQLInjection < Arachni::Check::Base
+class Arachni::Checks::SqlInjection < Arachni::Check::Base
 
     def self.error_patterns
         return @error_patterns if @error_patterns
 
         @error_patterns = {}
-        Dir[File.dirname( __FILE__ ) + '/sqli/patterns/*'].each do |file|
+        Dir[File.dirname( __FILE__ ) + '/sql_injection/patterns/*'].each do |file|
             @error_patterns[File.basename( file ).to_sym] =
                 IO.read( file ).split( "\n" ).map do |pattern|
                     Regexp.new( pattern, Regexp::IGNORECASE )

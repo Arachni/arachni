@@ -15,7 +15,7 @@
 # @see http://cwe.mitre.org/data/definitions/94.html
 # @see http://projects.webappsec.org/Remote-File-Inclusion
 # @see http://en.wikipedia.org/wiki/Remote_File_Inclusion
-class Arachni::Checks::RFI < Arachni::Check::Base # *always* extend Arachni::Check::Base
+class Arachni::Checks::Rfi < Arachni::Check::Base # *always* extend Arachni::Check::Base
 
     #
     # OPTIONAL

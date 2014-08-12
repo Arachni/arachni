@@ -6,7 +6,7 @@
 # HTTP PUT recon check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-class Arachni::Checks::HTTP_PUT < Arachni::Check::Base
+class Arachni::Checks::HttpPut < Arachni::Check::Base
 
     def self.substring
         @substring ||= 'PUT' + random_seed

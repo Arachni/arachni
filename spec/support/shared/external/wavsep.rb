@@ -75,7 +75,8 @@ shared_examples_for 'wavsep' do
                                     resources = urls.map { |url| url.split('?').first }.uniq.sort
                                     expected  = info[:vulnerable].map { |resource| @framework.options.url + resource }
 
-                                    # pp resources.map { |u| u.gsub( @framework.options.url, '' ) }
+                                    pp resources.map { |u| u.gsub( @framework.options.url, '' ) }
+                                    puts format_error( urls, resources, expected )
 
                                     resources.should eq(expected), format_error( urls, resources, expected )
 

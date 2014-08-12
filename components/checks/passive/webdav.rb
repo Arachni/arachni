@@ -12,7 +12,7 @@
 #
 # @see http://en.wikipedia.org/wiki/WebDAV
 # @see http://www.webdav.org/specs/rfc4918.html
-class Arachni::Checks::WebDav < Arachni::Check::Base
+class Arachni::Checks::Webdav < Arachni::Check::Base
 
     def self.dav_method
         @check ||= 'PROPFIND'
