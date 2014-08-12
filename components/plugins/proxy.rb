@@ -437,28 +437,28 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         {
             name:        'Proxy',
             description: %q{
-                * Gathers data based on user actions and exchanged HTTP
-                    traffic and pushes that data to the framework's page-queue to be audited.
-                * Updates the framework cookies with the cookies of the HTTP requests and
-                    responses, thus it can also be used to login to a web application.
-                * Supports SSL interception.
-                * Authorization via a configurable session token.
+* Gathers data based on user actions and exchanged HTTP
+    traffic and pushes that data to the framework's page-queue to be audited.
+* Updates the framework cookies with the cookies of the HTTP requests and
+    responses, thus it can also be used to login to a web application.
+* Supports SSL interception.
+* Authorization via a configurable session token.
 
-                To skip crawling and only audit elements discovered by using the proxy
-                set the scope page-limit option to 0.
+To skip crawling and only audit elements discovered by using the proxy
+set the scope page-limit option to '0'.
 
-                NOTICE:
-                    The 'session_token' will be looked for in a cookie named
-                    'arachni.proxy.session_token', so if you choose to use a token to
-                    restrict access to the proxy and need to pass traffic through the
-                    proxy programmatically please configure your HTTP client with
-                    a cookie named 'arachni.proxy.session_token' with the value of
-                    the 'session_token' option.
+**NOTICE**:
+The `session_token` will be looked for in a cookie named
+`arachni.proxy.session_token`, so if you choose to use a token to restrict
+access to the proxy and need to pass traffic through the proxy programmatically
+please configure your HTTP client with a cookie named `arachni.proxy.session_token`
+with the value of the 'session_token' option.
 
-                WARNING:
-                    The 'session_token' option is not a way to secure usage of
-                    this proxy but rather a way to restrict usage enough to avoid
-                    users unwittingly interfering with each others' sessions.},
+**WARNING**:
+The `session_token` option is not a way to secure usage of this proxy but rather
+a way to restrict usage enough to avoid users unwittingly interfering with each
+others' sessions.
+},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.3',
             options:     [
