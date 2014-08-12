@@ -177,6 +177,7 @@
         - `sqli` => `sql_injection`
         - `sqli_blind_rdiff` => `sql_injection_differential`
         - `sqli_blind_timing` => `sql_injection_timing`
+        - `htaccess` => `htaccess_limit`
     - Active
         - New
             - `xss_dom` -- Injects HTML code via DOM-based links, forms and cookies.
