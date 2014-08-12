@@ -70,11 +70,13 @@ class Arachni::Plugins::CookieCollector < Arachni::Plugin::Base
     def self.info
         {
             name:        'Cookie collector',
-            description: %q{Monitors and collects cookies while establishing a timeline of changes.
+            description: %q{
+Monitors and collects cookies while establishing a timeline of changes.
 
-                WARNING: Highly discouraged when the audit includes cookies.
-                    It will log thousands of results leading to a huge report,
-                    highly increased memory consumption and CPU usage.},
+**WARNING**: Highly discouraged when the audit includes cookies. It will log
+thousands of results leading to a huge report, highly increased memory
+consumption and CPU usage.
+},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.2',
             options:     [
