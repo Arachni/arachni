@@ -57,9 +57,10 @@ class Arachni::Plugins::AutoThrottle < Arachni::Plugin::Base
     def self.info
         {
             name:        'AutoThrottle',
-            description: %q{Monitors HTTP response times and automatically
-                throttles the request concurrency in order to maintain stability
-                and avoid from killing the server.},
+            description: %q{
+Monitors HTTP response times and automatically throttles the request concurrency
+in order to maintain stability and avoid from killing the server.
+},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             tags:        %w(meta http throttle),
             version:     '0.1.5'
