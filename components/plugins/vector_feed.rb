@@ -146,60 +146,63 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
     def self.info
         {
             name:        'Vector feed',
-            description: %q{Reads in vector data from which it creates elements to be audited.
-    Can be used to perform extremely specialized/narrow audits on a per vector/element basis.
+            description: %q{
+Reads in vector data from which it creates elements to be audited.
+Can be used to perform extremely specialized/narrow audits on a per vector/element basis.
 
-    Notes:
-        * To only audit the vectors in the feed you must set the 'link-count' limit to 0 to prevent crawling.
-        * Can handle multiple YAML documents.
+**Notes**:
 
-    Example YAML file:
--
-  # you can pass pages to be audited by grep checks (and JS in the future)
-  type: page
-  url: http://localhost/
-  # response code
-  code: 200
-  # response headers
-  headers:
-    Content-Type: "text/html; charset=utf-8"
-  body: "HTML code goes here"
+* To only audit the vectors in the feed you must set the 'link-count' limit to 0 to prevent crawling.
+* Can handle multiple YAML documents.
 
--
-  # default type is link which has method get
-  #type: link
-  action: http://localhost/link
-  inputs:
-    my_param: "my val"
+Example YAML file:
 
--
-  # if a method is post it'll default to a form type
-  type: form
-  method: post
-  action: http://localhost/form
-  inputs:
-    post_this: "HUA!"
-    csrf: "my_csrf_token"
-  # do not fuzz/mutate/audit the following inputs (by name obviously)
-  skip:
-    - csrf
+    -
+      # you can pass pages to be audited by grep checks (and JS in the future)
+      type: page
+      url: http://localhost/
+      # response code
+      code: 200
+      # response headers
+      headers:
+        Content-Type: "text/html; charset=utf-8"
+      body: "HTML code goes here"
 
-# GET only
--
-  type: cookie
-  action: http://localhost/cookie
-  inputs:
-    session_id: "43434234343sddsdsds"
+    -
+      # default type is link which has method get
+      #type: link
+      action: http://localhost/link
+      inputs:
+        my_param: "my val"
 
-# GET only
--
-  type: header
-  action: http://localhost/header
-  # only 1 input allowed, each header field=>value must be defined separately
-  inputs:
-    User-Agent: "Blah/2"
+    -
+      # if a method is post it'll default to a form type
+      type: form
+      method: post
+      action: http://localhost/form
+      inputs:
+        post_this: "HUA!"
+        csrf: "my_csrf_token"
+      # do not fuzz/mutate/audit the following inputs (by name obviously)
+      skip:
+        - csrf
 
-            },
+    # GET only
+    -
+      type: cookie
+      action: http://localhost/cookie
+      inputs:
+        session_id: "43434234343sddsdsds"
+
+    # GET only
+    -
+      type: header
+      action: http://localhost/header
+      # only 1 input allowed, each header field=>value must be defined separately
+      inputs:
+        User-Agent: "Blah/2"
+
+},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.7',
             options:     [
