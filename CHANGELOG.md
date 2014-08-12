@@ -137,6 +137,7 @@
     - Removed `metareport`.
     - All updated to the new format.
 - Plugins
+    - Descriptions have been converted to GitHub-flavored Markdown.
     - `resolver` -- Removed as the report now contains that information in the
         responses associated with each issue.
     - `proxy`
@@ -169,6 +170,7 @@
     - _Audit_ checks renamed to _Active_ checks.
     - _Recon_ checks renamed to _Passive_ checks.
 - Checks
+    - Descriptions and `remedy_guidance` have been converted to GitHub-flavored Markdown.
     - Active
         - New
             - `xss_dom` -- Injects HTML code via DOM-based links, forms and cookies.
@@ -176,6 +178,7 @@
                 associated DOM events.
             - `xss_dom_script_context` -- Injects JavaScript code via DOM-based
                 links, forms and cookies.
+        - Renamed
         - `xss` -- Added support for Browser-based taint-analysis.
         - `xss_script_context` -- Added support for Browser-based taint-analysis.
             - Renamed from `xss_script_tag`.
