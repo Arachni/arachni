@@ -136,16 +136,22 @@ class Arachni::Plugins::WAFDetector < Arachni::Plugin::Base
     def self.info
         {
             name:        'WAF Detector',
-            description: %q{Performs basic profiling on the web application
-                in order to assess the existence of a Web Application Firewall.
+            description: %q{
+Performs basic profiling on the web application in order to assess the existence
+of a Web Application Firewall.
 
-                This is a 4 stage process:
-                   1. Grab the original page as is
-                   2. Send a lot of innocent (vanilla) strings in non-existent inputs so as to profile normal behavior
-                   3. Send a lot of suspicious (spicy) strings in non-existent inputs and check if behavior changes
-                   4. Make heads or tails of the gathered responses
+This is a 4 stage process:
 
-                 Steps 1 to 3 will be repeated _precision_ times (default: 5) and the responses will be averaged using rDiff analysis.},
+1. Grab the original page as is.
+2. Send a lot of innocent (vanilla) strings in non-existent inputs so as to
+    profile normal behavior.
+3. Send a lot of suspicious (spicy) strings in non-existent inputs and check if
+    behavior changes.
+4. Make heads or tails of the gathered responses.
+
+Steps 1 to 3 will be repeated _precision_ times (default: 5) and the responses
+will be averaged using rDiff analysis.
+},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.3',
             options:     [
