@@ -37,9 +37,12 @@ class Arachni::Plugins::Uniformity < Arachni::Plugin::Base
     def self.info
         {
             name:        'Uniformity (Lack of central sanitization)',
-            description: %q{Analyzes the scan results and logs issues which persist across different pages.
-                This is usually a sign for a lack of a central/single point of input sanitization,
-                a bad coding practise.},
+            description: %q{
+Analyzes the scan results and logs issues which persist across different pages.
+
+This is usually a sign for a lack of a central/single point of input sanitization,
+a bad coding practise.
+},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             tags:        %w(meta uniformity),
             version:     '0.2'
