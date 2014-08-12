@@ -34,9 +34,7 @@ class Arachni::Checks::BlindTimingSQLInjection < Arachni::Check::Base
     def self.info
         {
             name:        'Blind SQL injection (timing attack)',
-            description: %q{Blind SQL Injection check using timing attacks
-                (if the remote server suddenly becomes unresponsive or your network
-                connection suddenly chokes up this check will probably produce false positives).},
+            description: %q{Blind SQL Injection check using timing attacks.},
             elements:    [ Element::Form, Element::Link, Element::Cookie,
                            Element::Header, Element::LinkTemplate ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
