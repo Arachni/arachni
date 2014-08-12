@@ -78,12 +78,14 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
     def self.info
         {
             name:        'Timing attack anomalies',
-            description: %q{Analyzes the scan results and logs issues that used timing attacks
-                while the affected web pages demonstrated an unusually high response time;
-                a situation which renders the logged issues inconclusive or (possibly) false positives.
+            description: %q{
+Analyzes the scan results and logs issues that used timing attacks while the
+affected web pages demonstrated an unusually high response time; a situation
+which renders the logged issues inconclusive or (possibly) false positives.
 
-                Pages with high response times usually include heavy-duty processing
-                which makes them prime targets for Denial-of-Service attacks.},
+Pages with high response times usually include heavy-duty processing which makes
+them prime targets for Denial-of-Service attacks.
+},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.3',
             tags:        %w(anomaly timing attacks meta)
