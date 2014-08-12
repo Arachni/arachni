@@ -3,8 +3,6 @@
     Please see the LICENSE file at the root directory of the project.
 =end
 
-require 'digest/md5'
-
 # Logs all non 200 (OK) and non 404 server responses.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
@@ -35,13 +33,12 @@ class Arachni::Checks::InterestingResponses < Arachni::Check::Base
         return if IGNORE_CODES.include?( response.code ) ||
             response.body.to_s.empty? || issue_limit_reached?
 
-        digest = Digest::MD5.hexdigest( response.body )
-        path   = uri_parse( response.url ).path
+        path = uri_parse( response.url ).path
 
-        return if audited?( path ) || audited?( digest )
+        return if audited?( path ) || audited?( response.body )
 
         audited( path )
-        audited( digest )
+        audited( response.body )
 
         log(
              proof:    response.status_line,
@@ -57,11 +54,15 @@ class Arachni::Checks::InterestingResponses < Arachni::Check::Base
             description: %q{Logs all non 200 (OK) server responses.},
             elements:    [ Element::Server ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.4',
+            version:     '0.2',
 
             issue:       {
                 name:        %q{Interesting response},
-                description: %q{The server responded with a non 200 (OK) code. },
+                description: %q{
+The server responded with a non 200 (OK) nor 404 (Not Found) status code.
+This is a non-issue, however exotic HTTP response status codes can provide useful
+insights into the behavior of the web application and assist with the penetration test.
+},
                 references:  {
                     'w3.org' => 'http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html'
                 },
