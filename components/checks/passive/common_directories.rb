@@ -8,7 +8,6 @@
 # Looks for common, possibly sensitive, directories on the server.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-# @version 0.2.2
 # @see http://cwe.mitre.org/data/definitions/538.html
 class Arachni::Checks::CommonDirectories < Arachni::Check::Base
 
@@ -33,10 +32,27 @@ class Arachni::Checks::CommonDirectories < Arachni::Check::Base
             description: %q{Tries to find common directories on the server.},
             elements:    [ Element::Server ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.2.2',
+            version:     '0.2.3',
 
             issue:       {
                 name:            %q{Common directory},
+                description:     %q{
+Web applications are often made up of multiple files and directories.
+
+It is possible that over time some directories may become unreferenced (unused)
+by the web application and forgotten about by the administrator/developer.
+Because web applications are built using common frameworks, they contain common
+directories that can be discovered (independent of server).
+
+During the initial recon stages of an attack, cyber-criminals will attempt to
+locate unreferenced directories in the hope that the file will assist in further
+compromise of the web application.
+To achieve this they will make thousands of requests using word lists containing
+common filenames.
+The response headers from the server will then indicate if the file exists.
+
+Arachni also contains a list of common file names which it will attempt to access.
+},
                 references: {
                     'CWE'   => 'http://cwe.mitre.org/data/definitions/538.html',
                     'OWASP' => 'https://www.owasp.org/index.php/Forced_browsing'
@@ -44,9 +60,18 @@ class Arachni::Checks::CommonDirectories < Arachni::Check::Base
                 tags:            %w(path directory common discovery),
                 cwe:             538,
                 severity:        Severity::MEDIUM,
-                remedy_guidance: %q{Do not expose file and directory information to the user.}
-            }
+                remedy_guidance: %q{
+If directories are unreferenced then they should be removed from the web root
+and/or the application directory.
 
+Preventing access without authentication may also be an option and can stop a
+client from being able to view the contents of a file, however it is still likely
+that the directory structure will be able to be discovered.
+
+Using obscure directory names is implementing security through obscurity and is
+not a recommended option.
+}
+            }
         }
     end
 
