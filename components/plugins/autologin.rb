@@ -86,10 +86,11 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
     def self.info
         {
             name:        'AutoLogin',
-            description: %q{It looks for the login form in the user provided URL,
-                merges its input fields with the user supplied parameters and sets
-                the cookies of the response and request as framework-wide cookies.
-            },
+            description: %q{
+It looks for the login form in the user provided URL, merges its input fields
+with the user supplied parameters and sets the cookies of the response and
+request as framework-wide cookies.
+},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.2',
             options:     [
