@@ -45,13 +45,13 @@ Because web applications are built using common frameworks, they contain common
 directories that can be discovered (independent of server).
 
 During the initial recon stages of an attack, cyber-criminals will attempt to
-locate unreferenced directories in the hope that the file will assist in further
+locate unreferenced directories in the hope that the directory will assist in further
 compromise of the web application.
 To achieve this they will make thousands of requests using word lists containing
-common filenames.
-The response headers from the server will then indicate if the file exists.
+common names.
+The response headers from the server will then indicate if the directory exists.
 
-Arachni also contains a list of common file names which it will attempt to access.
+Arachni also contains a list of common directory names which it will attempt to access.
 },
                 references: {
                     'CWE'   => 'http://cwe.mitre.org/data/definitions/538.html',
