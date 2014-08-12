@@ -103,11 +103,13 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
     def self.info
         {
             name:        'Discovery-check response anomalies',
-            description: %q{Analyzes the scan results and identifies issues logged by discovery checks
-                (i.e. checks that look for certain files and folders on the server),
-                while the server responses were exhibiting an anomalous factor of similarity.
+            description: %q{
+Analyzes the scan results and identifies issues logged by discovery checks
+(i.e. checks that look for certain files and folders on the server),
+while the server responses were exhibiting an anomalous factor of similarity.
 
-                There's a good chance that these issues are false positives.},
+There's a good chance that these issues are false positives.
+},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.3',
             tags:        %w(anomaly discovery file directories meta)
