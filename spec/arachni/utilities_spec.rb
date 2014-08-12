@@ -18,7 +18,7 @@ describe Arachni::Utilities do
 
     describe '#caller_name' do
         it 'returns the filename of the caller' do
-            subject.caller_name.should == 'example'
+            subject.caller_name.should == 'instance_eval_with_args'
         end
     end
 
