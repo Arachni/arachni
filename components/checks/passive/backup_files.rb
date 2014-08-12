@@ -52,19 +52,42 @@ class Arachni::Checks::BackupFiles < Arachni::Check::Base
 
             issue:       {
                 name:            %q{Backup file},
-                description:     %q{The server response indicates that a file matching
-    the name of a common naming scheme for file backups is publicly accessible.
-    A developer has probably forgotten to remove this file after testing.
-    This can lead to source code disclosure and privileged information leaks.},
+                description:     %q{
+A common practice when administering web applications is to create a copy/backup
+of a particular file or directory prior to making any modification to the file.
+Another common practice is to add an extension or change the name of the original
+file to signify that it is a backup (examples include `.bak`, `.orig`, `.backup`,
+etc.).
+
+During the initial recon stages of an attack, cyber-criminals will attempt to
+locate backup files by adding common extensions onto files already discovered on
+the webserver. By analysing the response headers from the server they are able to
+determine if the backup file exists.
+These backup files can then assist in further compromise of the web application.
+
+By utilising the same method, Arachni was able to discover a possible backup file.
+},
                 references: {
                     'WebAppSec' => 'http://www.webappsec.org/projects/threat/classes/information_leakage.shtml'
                 },
                 tags:            %w(path backup file discovery),
                 cwe:             530,
                 severity:        Severity::MEDIUM,
-                remedy_guidance: %q{Do not keep alternative versions of files underneath the virtual web server root.
-                    When updating the site, delete or move the files to a directory outside the virtual root, edit them there,
-                    and move (or copy) the files back to the virtual root. Make sure that only the files that are actually in use reside under the virtual root.}
+                remedy_guidance: %q{
+Do not keep obsolete versions of files under the virtual web server root.
+
+When updating the site, delete or move the files to a directory outside the
+virtual root, edit them there, and move (or copy) the files back to the virtual
+root.
+Make sure that only the files that are actually in use reside under the virtual root.
+
+Preventing access without authentication may also be an option and stop a client
+being able to view the contents of a file, however it is still likely that the
+filenames will be able to be discovered.
+
+Using obscure filenames is only implementing security through obscurity and is
+not a recommended option.
+}
             }
 
         }
