@@ -73,10 +73,14 @@ class Arachni::Plugins::HTTPDicattack < Arachni::Plugin::Base
     def self.info
         {
             name:        'HTTP dictionary attacker',
-            description: %q{Uses wordlists to crack password protected directories.
-                If the cracking process is successful the found credentials will be set
-                framework-wide and used for the duration of the audit.
-                If that's not what you want set the crawler's link-count limit to "0".},
+            description: %q{
+Uses wordlists to crack password protected directories.
+
+If the cracking process is successful the found credentials will be set
+framework-wide and used for the duration of the audit.
+
+If that's not what you want, set the scope page-limit option to "0".
+},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.4',
             options:     [
