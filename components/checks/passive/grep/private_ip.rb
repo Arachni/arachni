@@ -8,7 +8,6 @@
 # Scans for private IP addresses.
 #
 # @author   Tasos Laskos <tasos.laskos@gmail.com>
-# @version  0.3
 class Arachni::Checks::PrivateIP < Arachni::Check::Base
 
     def self.regexp
@@ -37,13 +36,30 @@ class Arachni::Checks::PrivateIP < Arachni::Check::Base
 
             issue:       {
                 name:            %q{Private IP address disclosure},
-                description:     %q{A private IP address is disclosed in the body of the HTML page},
+                description:     %q{
+Private, or non-routable, IP addresses are generally used within a home or
+company network, and are typically unknown to anyone outside of that network.
+
+Cyber-criminals will attempt to identify the private IP address range being used
+by their victim to aid in any further information collection that could then lead
+to possible compromise.
+
+Arachni discovered that the affected page returned a RFC 1918 compliant private
+IP address, and therefore could be revealing sensitive information. This finding
+typically requires manual verification to ensure the context of this finding is
+correct, as any private IP address within the HTML body will trigger it.
+},
                 references: {
                     'WebAppSec' => 'http://projects.webappsec.org/w/page/13246936/Information%20Leakage'
                 },
                 cwe:             200,
                 severity:        Severity::LOW,
-                remedy_guidance: %q{Remove private IP addresses from the body of the HTML pages.},
+                remedy_guidance: %q{
+Identifying the context in which the identified page displays a Private IP
+address is required. If the page is publicly accessible, and displaying the
+Private IP of the affected server (or supporting infrastructure), then measures
+should be put in place to ensure that the IP is removed from any response.
+},
             }
         }
     end
