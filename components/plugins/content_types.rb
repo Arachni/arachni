@@ -87,9 +87,12 @@ class Arachni::Plugins::ContentTypes < Arachni::Plugin::Base
     def self.info
         {
             name:        'Content-types',
-            description: %q{Logs content-types of server responses.
-                It can help you categorize and identify publicly available file-types
-                which in turn can help you identify accidentally leaked files.},
+            description: %q{
+Logs content-types of server responses.
+
+It can help you categorize and identify publicly available file-types which in
+turn can help you identify accidentally leaked files.
+},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.6',
             options:     [
