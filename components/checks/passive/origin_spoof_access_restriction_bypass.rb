@@ -47,11 +47,32 @@ class Arachni::Checks::OriginSpoofAccessRestrictionBypass < Arachni::Check::Base
 
             issue:       {
                 name:        %q{Access restriction bypass via origin spoof},
-                description: %q{Access restrictions can be bypassed by tricking
-                    the web application into thinking that the request originated
-                    from localhost.},
+                description: %q{
+Origin headers are utilised by proxies and/or load balancers to track the
+originating IP address of the client.
+
+As the request progresses through a proxy, the origin header is added to the
+existing headers, and the value of the client's IP is then set within this header.
+Occasionally, poorly implemented access restrictions are based off of the
+originating IP address alone.
+
+For example, any public IP address may be forced to authenticate, while an
+internal IP address may not.
+
+Because this header can also be set by the client, it allows cyber-criminals to
+spoof their IP address and potentially gain access to restricted pages.
+
+Arachni discovered a resource that it did not have permission to access, but been
+granted access after spoofing the address of localhost (127.0.0.1), thus bypassing
+any requirement to authenticate.
+},
                 tags:        %w(access restriction server bypass),
-                severity:    Severity::HIGH
+                severity:    Severity::HIGH,
+                remedy_guidance: %q{
+Remediation actions may be vastly different depending on the framework being used,
+and how the application has been coded. However, the origin header should never
+be used to validate a client's access as it is trivial to change.
+}
             }
         }
     end
