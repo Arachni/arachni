@@ -25,10 +25,12 @@ class Arachni::Plugins::Script < Arachni::Plugin::Base
     def self.info
         {
             name:        'Script',
-            description: %q{Loads and runs an external Ruby script under the scope of a plugin,
-                used for debugging and general hackery.
+            description: %q{
+Loads and runs an external Ruby script under the scope of a plugin, used for
+debugging and general hackery.
 
-                Will not work over RPC.},
+_Will not work over RPC._
+},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.2',
             options:     [
