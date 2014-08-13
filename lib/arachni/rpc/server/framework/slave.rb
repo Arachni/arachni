@@ -73,7 +73,7 @@ module Slave
     #   {#push_to_page_queue pushed to the page queue}, if not the audit
     #   will start right away.
     def process_pages( pages )
-        pages.each { |page| push_to_page_queue Page.from_rpc_data page }
+        pages.each { |page| push_to_page_queue Page.from_rpc_data( page ), true }
 
         return if @audit_page_running
         @audit_page_running = true

@@ -337,6 +337,17 @@ class Framework
         options.scope.page_limit_reached?( sitemap.size )
     end
 
+    def crawl?
+        options.scope.crawl? && options.scope.restrict_paths.empty?
+    end
+
+    # @return   [Bool]
+    #   `true` if the framework can process more pages, `false` is scope limits
+    #   have been reached.
+    def accepts_more_pages?
+        crawl? && !page_limit_reached?
+    end
+
     # @return   [Hash]
     #
     #   Framework statistics:
@@ -371,9 +382,9 @@ class Framework
     # @return   [Bool]
     #   `true` if push was successful, `false` if the `page` matched any
     #   exclusion criteria or has already been seen.
-    def push_to_page_queue( page )
-        return false if !accepts_more_pages? || state.page_seen?( page ) ||
-            page.scope.out? || page.scope.redundant?
+    def push_to_page_queue( page, force = false )
+        return false if !force && (!accepts_more_pages? || state.page_seen?( page ) ||
+            page.scope.out? || page.scope.redundant?)
 
         # We want to update from the already loaded page cache (if there is one)
         # as we have to store the page anyways (needs to go through Browser analysis)
@@ -392,21 +403,14 @@ class Framework
         true
     end
 
-    # @return   [Bool]
-    #   `true` if the framework can process more pages, `false` is scope limits
-    #   have been reached.
-    def accepts_more_pages?
-        crawl? && !page_limit_reached?
-    end
-
     # @param    [String]  url
     #   URL to push to the audit queue -- increases {#url_queue_total_size}
     #
     # @return   [Bool]
     #   `true` if push was successful, `false` if the `url` matched any
     #   exclusion criteria or has already been seen.
-    def push_to_url_queue( url )
-        return if page_limit_reached?
+    def push_to_url_queue( url, force = false )
+        return if !force && !accepts_more_pages?
 
         url = to_absolute( url ) || url
         if state.url_seen?( url ) || skip_path?( url ) || redundant_path?( url )
@@ -965,10 +969,6 @@ class Framework
         end
     end
 
-    def crawl?
-        options.scope.crawl? && options.scope.restrict_paths.empty?
-    end
-
     # Passes the `page` to {BrowserCluster#queue} and then pushes
     # the resulting pages to {#push_to_page_queue}.
     #
@@ -1005,8 +1005,8 @@ class Framework
 
         state.status = :scanning if !pausing?
 
-        push_to_url_queue( options.url ) if crawl?
-        options.scope.restrict_paths.each { |url| push_to_url_queue( url ) }
+        push_to_url_queue( options.url )
+        options.scope.restrict_paths.each { |url| push_to_url_queue( url, true ) }
 
         # Initialize the BrowserCluster.
         browser_cluster

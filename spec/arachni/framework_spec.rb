@@ -124,9 +124,8 @@ describe Arachni::Framework do
         context 'due to a network error' do
             it 'returns an empty sitemap and have failures' do
                 @options.url = 'http://blahaha'
-                @options.scope.do_not_crawl
+                @options.scope.restrict_paths = [@options.url]
 
-                subject.push_to_url_queue @options.url
                 subject.checks.load :taint
                 subject.run
                 subject.failures.should be_any
@@ -136,9 +135,8 @@ describe Arachni::Framework do
         context 'due to a server error' do
             it 'returns an empty sitemap and have failures' do
                 @options.url = @f_url + '/fail'
-                @options.scope.do_not_crawl
+                @options.scope.restrict_paths = [@options.url]
 
-                subject.push_to_url_queue @options.url
                 subject.checks.load :taint
                 subject.run
                 subject.failures.should be_any
@@ -147,9 +145,8 @@ describe Arachni::Framework do
 
         it "retries #{Arachni::Framework::AUDIT_PAGE_MAX_TRIES} times" do
             @options.url = @f_url + '/fail_4_times'
-            @options.scope.do_not_crawl
+            @options.scope.restrict_paths = [@options.url]
 
-            subject.push_to_url_queue @options.url
             subject.checks.load :taint
             subject.run
             subject.failures.should be_empty
@@ -160,9 +157,8 @@ describe Arachni::Framework do
         context 'when there are no failed requests' do
             it 'returns an empty array' do
                 @options.url = @f_url
-                @options.scope.do_not_crawl
+                @options.scope.restrict_paths = [@options.url]
 
-                subject.push_to_url_queue @options.url
                 subject.checks.load :taint
                 subject.run
                 subject.failures.should be_empty
@@ -171,9 +167,8 @@ describe Arachni::Framework do
         context 'when there are failed requests' do
             it 'returns an array containing the failed URLs' do
                 @options.url = @f_url + '/fail'
-                @options.scope.do_not_crawl
+                @options.scope.restrict_paths = [@options.url]
 
-                subject.push_to_url_queue @options.url
                 subject.checks.load :taint
                 subject.run
                 subject.failures.should be_any
@@ -1163,6 +1158,35 @@ describe Arachni::Framework do
         end
     end
 
+    describe '#accepts_more_pages?' do
+        context 'when #page_limit_reached? and #crawl?' do
+            it 'return true' do
+                subject.stub(:page_limit_reached?) { false }
+                subject.stub(:crawl?) { true }
+
+                subject.accepts_more_pages?.should be_true
+            end
+        end
+
+        context 'when #page_limit_reached?' do
+            context true do
+                it 'returns false' do
+                    subject.stub(:page_limit_reached?) { true }
+                    subject.accepts_more_pages?.should be_false
+                end
+            end
+        end
+
+        context 'when #crawl?' do
+            context false do
+                it 'returns false' do
+                    subject.stub(:crawl?) { false }
+                    subject.accepts_more_pages?.should be_false
+                end
+            end
+        end
+    end
+
     describe '#push_to_page_queue' do
         let(:page) { Arachni::Page.from_url( @url + '/train/true' ) }
 
@@ -1223,17 +1247,17 @@ describe Arachni::Framework do
             end
         end
 
-        context 'when #page_limit_reached?' do
-            context true do
+        context 'when #accepts_more_pages?' do
+            context false do
                 it 'returns false' do
-                    subject.stub(:page_limit_reached?) { true }
+                    subject.stub(:accepts_more_pages?) { false }
                     subject.push_to_page_queue( page ).should be_false
                 end
             end
 
-            context false do
+            context true do
                 it 'returns true' do
-                    subject.stub(:page_limit_reached?) { false }
+                    subject.stub(:accepts_more_pages?) { true }
                     subject.push_to_page_queue( page ).should be_true
                 end
             end
@@ -1259,7 +1283,6 @@ describe Arachni::Framework do
                 subject.push_to_page_queue( page ).should be_false
             end
         end
-
     end
 
     describe '#push_to_url_queue' do
@@ -1290,17 +1313,17 @@ describe Arachni::Framework do
             end
         end
 
-        context 'when #page_limit_reached?' do
-            context true do
+        context 'when #accepts_more_pages?' do
+            context false do
                 it 'returns false' do
-                    subject.stub(:page_limit_reached?) { true }
+                    subject.stub(:accepts_more_pages?) { false }
                     subject.push_to_url_queue( @url ).should be_false
                 end
             end
 
-            context false do
+            context true do
                 it 'returns true' do
-                    subject.stub(:page_limit_reached?) { false }
+                    subject.stub(:accepts_more_pages?) { true }
                     subject.push_to_url_queue( @url ).should be_true
                 end
             end

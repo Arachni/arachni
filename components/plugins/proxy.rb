@@ -69,7 +69,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     end
 
     def clean_up
-        @pages.each { |p| framework.push_to_page_queue( p ) }
+        @pages.each { |p| framework.push_to_page_queue( p, true ) }
         framework_resume
     end
 
