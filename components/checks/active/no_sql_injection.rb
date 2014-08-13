@@ -69,7 +69,7 @@ server.
 
 Arachni discovered that the affected page and parameter are vulnerable. This
 injection was detected as Arachni was able to discover known error messages within
-the server’s response.
+the server's response.
 },
                 tags:            %w(nosql injection regexp database error),
                 references:  {

@@ -58,7 +58,7 @@ however it is advised that the `Strict-Transport-Security` header be configured
 on the server.
 
 One of the options for this header is the `max-age` which is a representation in
-milliseconds determining the time in which the client’s browser will adhere to
+milliseconds determining the time in which the client's browser will adhere to
 the header policy.
 
 Depending on the environment and the application this time period could be from

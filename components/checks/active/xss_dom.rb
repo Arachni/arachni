@@ -81,7 +81,7 @@ manipulated to contain untrusted data.
 The client-side scripts (known as the sinks) in the affected page use or execute
 the untrusted data in an unsafe way.
 
-A common attack used by cyber-criminals is to steal a client’s session token by
+A common attack used by cyber-criminals is to steal a client's session token by
 injecting JavaScript, however DOM XSS vulnerabilities can also be abused to exploit
 clients.
 
