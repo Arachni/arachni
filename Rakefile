@@ -95,6 +95,16 @@ begin
                     RSpec::Core::RakeTask.new( :rfi ) do |t|
                         t.pattern = FileList[ 'spec/external/wavsep/active/rfi_spec.rb' ]
                     end
+
+                    desc 'Run the WAVSEP Unvalidated Redirect tests.'
+                    RSpec::Core::RakeTask.new( :unvalidated_redirect ) do |t|
+                        t.pattern = FileList[ 'spec/external/wavsep/active/unvalidated_redirect_spec.rb' ]
+                    end
+
+                    desc 'Run the WAVSEP Obsolete Files tests.'
+                    RSpec::Core::RakeTask.new( :obsolete_files ) do |t|
+                        t.pattern = FileList[ 'spec/external/wavsep/active/obsolete_files_spec.rb' ]
+                    end
                 end
 
                 desc 'Run the WAVSEP false positive tests.'
