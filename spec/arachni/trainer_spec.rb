@@ -183,34 +183,6 @@ describe Arachni::Trainer do
         end
     end
 
-    context 'when the link-count-limit is exceeded, following pages' do
-        it 'is ignored' do
-            Arachni::Options.url = 'http://stuff.com'
-
-            framework = TrainerMockFramework.new
-            trainer = framework.trainer
-
-            get_response = proc do
-                Arachni::HTTP::Response.new(
-                    url: "http://stuff.com/#{rand( 9999 )}",
-                    body:          "<a href='?#{rand( 9999 )}=1'>Test</a>",
-                    headers: { 'Content-type' => 'text/html' },
-                    request:      Arachni::HTTP::Request.new( url: 'http://stuff.com/match_this' )
-                )
-            end
-
-            trainer.page = Arachni::Page.from_response( get_response.call )
-
-            pages = []
-            trainer.on_new_page { |p| pages << p }
-
-            Arachni::Options.scope.page_limit = 10
-            100.times { trainer.push( get_response.call ) }
-
-            pages.size.should == 10
-        end
-    end
-
     describe '#push' do
         context 'when an error occurs' do
             it 'returns nil' do
@@ -298,6 +270,50 @@ describe Arachni::Trainer do
                 @trainer.push( request( url ) ).should be_true
                 page = @framework.pages.first
                 page.links.last.inputs['redirected'].should == 'true'
+            end
+        end
+
+        context "when #{Arachni::Framework}#accepts_more_pages?" do
+            get_response = proc do
+                Arachni::HTTP::Response.new(
+                    url:     "http://stuff.com/#{rand( 9999 )}",
+                    body:    "<a href='?#{rand( 9999 )}=1'>Test</a>",
+                    headers: { 'Content-type' => 'text/html' },
+                    request: Arachni::HTTP::Request.new( url: 'http://stuff.com/match_this' )
+                )
+            end
+
+            before do
+                Arachni::Options.url = 'http://stuff.com'
+                subject.page = Arachni::Page.from_response( get_response.call )
+            end
+
+            let(:subject) { TrainerMockFramework.new.trainer }
+
+            context true do
+                before { TrainerMockFramework.any_instance.stub(:accepts_more_pages?){ true } }
+
+                it 'processes pages' do
+                    pages = []
+                    subject.on_new_page { |p| pages << p }
+
+                    subject.push( get_response.call ).should be_true
+
+                    pages.size.should == 1
+                end
+            end
+
+            context false do
+                before { TrainerMockFramework.any_instance.stub(:accepts_more_pages?){ false } }
+
+                it 'does not process the page' do
+                    pages = []
+                    subject.on_new_page { |p| pages << p }
+
+                    subject.push( get_response.call ).should be_false
+
+                    pages.should be_empty
+                end
             end
         end
     end
