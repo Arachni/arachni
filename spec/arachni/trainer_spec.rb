@@ -21,8 +21,8 @@ class TrainerMockFramework
         @sitemap = []
     end
 
-    def page_limit_reached?
-        @opts.scope.page_limit_reached? @sitemap.size
+    def accepts_more_pages?
+        @opts.scope.crawl? && !@opts.scope.page_limit_reached?( @sitemap.size )
     end
 
     def run
