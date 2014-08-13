@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'WAVSEP XSS' do
+describe 'WAVSEP Unvalidated Redirect' do
     include_examples 'wavsep'
 
     def self.test_cases( http_method )
