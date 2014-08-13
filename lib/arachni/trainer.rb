@@ -65,8 +65,8 @@ class Trainer
             return
         end
 
-        if @framework.page_limit_reached?
-            print_info 'Link count limit reached, skipping analysis.'
+        if !@framework.accepts_more_pages?
+            print_info 'No more pages accepted, skipping analysis.'
             return
         end
 
