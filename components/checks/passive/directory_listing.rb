@@ -114,7 +114,7 @@ ensure that the risk of such a configuration is reduced.
 These can include:
 
 1. Requiring authentication to access affected pages.
-2. Adding the affected path to the robots.txt file to prevent the directory
+2. Adding the affected path to the `robots.txt` file to prevent the directory
    contents being searchable via search engines.
 3. Ensuring that sensitive files are not stored within the web or document root.
 4. Removing any files that are not required for the application to function.

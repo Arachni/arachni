@@ -63,7 +63,7 @@ During the initial recon stages of an attack, cyber-criminals will attempt to
 locate backup files by adding common extensions onto files already discovered on
 the webserver. By analysing the response headers from the server they are able to
 determine if the backup file exists.
-These backup files can then assist in further compromise of the web application.
+These backup files can then assist in the compromise of the web application.
 
 By utilising the same method, Arachni was able to discover a possible backup file.
 },
