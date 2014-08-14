@@ -68,26 +68,20 @@ Injects JS taint code and checks to see if it gets executed as proof of vulnerab
                 name:            %q{DOM-based Cross-Site Scripting (XSS)},
                 description:     %q{
 Client-side scripts are used extensively by modern web applications.
-They perform both simple functions (such as the formatting of text) up to full
-manipulation of client side data and operating system interaction.
+They perform from simple functions (such as the formatting of text) up to full
+manipulation of client-side data and Operating System interaction.
 
-Unlike traditional Cross Site Scripting (XSS), where the client is able to inject
+Unlike traditional Cross-Site Scripting (XSS), where the client is able to inject
 scripts into a request and have the server return the script to the client, DOM
 XSS does not require that a request be sent to the server and may be abused entirely
 within the loaded page.
 
 This occurs when elements of the DOM (known as the sources) are able to be
-manipulated to contain untrusted data.
-The client-side scripts (known as the sinks) in the affected page use or execute
-the untrusted data in an unsafe way.
+manipulated to contain untrusted data, which the client-side scripts (known as the
+sinks) use or execute an unsafe way.
 
-A common attack used by cyber-criminals is to steal a client's session token by
-injecting JavaScript, however DOM XSS vulnerabilities can also be abused to exploit
-clients.
-
-Arachni has discovered that by modifying the affected DOM sources, it is possible
-to insert JavaScript taint code. Arachni has then been able to follow the taint
-code execution flow and have it executed by the sink.
+Arachni has discovered that by modifying the affected DOM source, it is possible
+to insert and execute JavaScript code.
 },
                 references:  {
                     'WASC'  => 'http://projects.webappsec.org/w/page/13246920/Cross%20Site%20Scripting',
@@ -98,12 +92,12 @@ code execution flow and have it executed by the sink.
                 cwe:             79,
                 severity:        Severity::HIGH,
                 remedy_guidance: %q{
-Client side document rewriting, redirection, or other sensitive actions using
-untrusted data should be avoided wherever possible as these may not be inspected
+Client-side document rewriting, redirection, or other sensitive action, using
+untrusted data, should be avoided wherever possible, as these may not be inspected
 by server side filtering.
 
 To remedy DOM XSS vulnerabilities where these sensitive document actions must be
-used it is essential to:
+used, it is essential to:
 
 1. Ensure any untrusted data is treated as text, as opposed to being interpreted
     as code or mark-up within the page.

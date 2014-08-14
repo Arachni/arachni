@@ -51,7 +51,7 @@ part of the authentication process, the application will perform an XPath query
 to confirm the login credentials and retrieve that user's information to use in
 the following request.
 
-XPath injection occurs where untrusted data is used to build the XPath query.
+XPath injection occurs where untrusted data is used to build XPath queries.
 
 Cyber-criminals may abuse this injection vulnerability to bypass authentication,
 query other user's information, or, if the XML document contains privileged user

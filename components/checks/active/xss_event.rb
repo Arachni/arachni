@@ -94,26 +94,21 @@ class Arachni::Checks::XssEvent < Arachni::Check::Base
                 name:            %q{Cross-Site Scripting in event tag of HTML element},
                 description:     %q{
 Client-side scripts are used extensively by modern web applications.
-They perform both simple functions (such as the formatting of text) up to full
-manipulation of client side data and operating system interaction.
+They perform from simple functions (such as the formatting of text) up to full
+manipulation of client-side data and Operating System interaction.
 
-Unlike traditional Cross Site Scripting (XSS), where the client is able to inject
-scripts into a request and have the server return the script to the client, DOM
-XSS does not require that a request be sent to the server and may be abused entirely
-within the loaded page.
+Cross Site Scripting (XSS) allows clients to inject scripts into a request and
+have the server return the script to the client in the response. This occurs
+because the application is taking untrusted data (in this example, from the client)
+and reusing it without performing any validation or sanitisation.
 
-This occurs when elements of the DOM (known as the sources) are able to be
-manipulated to contain untrusted data.
-The client-side scripts (known as the sinks) in the affected page use or execute
-the untrusted data in an unsafe way.
-
-A common attack used by cyber-criminals is to steal a client's session token by
-injecting JavaScript, however DOM XSS vulnerabilities can also be abused to exploit
-clients.
+If the injected script is returned immediately this is known as reflected XSS.
+If the injected script is stored by the server and returned to any client visiting
+the affected page, then this is known as persistent XSS (also stored XSS).
 
 Arachni has discovered that it is possible to insert script content directly into
-HTML event. For example `<div onmouseover="x=INJECTION_HERE"</div>` where
-`INJECTION_HERE` represents the location where the Arachni payload was detected.
+an HTML event attribute. For example `<div onmouseover="x=INJECTION_HERE"</div>`,
+where `INJECTION_HERE` represents the location where the Arachni payload was detected.
 },
                 references:  {
                     'ha.ckers' => 'http://ha.ckers.org/xss.html',
@@ -132,7 +127,7 @@ Untrusted data can originate not only form the client but potentially a third
 party or previously uploaded file etc.
 
 Filtering of untrusted data typically involves converting special characters to
-their HTML entity encoding equivalent (however, other methods do exist, see references).
+their HTML entity encoded counterparts (however, other methods do exist, see references).
 These special characters include:
 
 * `&`
@@ -142,10 +137,10 @@ These special characters include:
 * `'`
 * `/`
 
-An example of HTML entity encoding is converting a `<` to `&lt;`.
+An example of HTML entity encoding is converting `<` to `&lt;`.
 
 Although it is possible to filter untrusted input, there are five locations
-within a HTML page where untrusted input (even if it has been filtered) should
+within an HTML page where untrusted input (even if it has been filtered) should
 never be placed:
 
 1. Directly in a script.
@@ -157,8 +152,8 @@ never be placed:
 Each of these locations have their own form of escaping and filtering.
 
 _Because many browsers attempt to implement XSS protection, any manual verification
-of this finding should be conducted utilising multiple different browsers and
-browser versions._
+of this finding should be conducted using multiple different browsers and browser
+versions._
 }
             }
         }

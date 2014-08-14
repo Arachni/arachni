@@ -123,19 +123,21 @@ the error page is stored in a parameter value -- for example `example.com/error.
 A path traversal occurs when the parameter value (ie. path to file being called
 by the server) can be substituted with the relative path of another resource which
 is located outside of the applications working directory. The server then loads
-the resource and sends it in the response to the client. Cyber-criminals will
-abuse this vulnerability to view files that should otherwise not be accessible.
+the resource and includes its contents in the response to the client.
 
-A very common example of this on *nix servers is gaining access to the `/etc/passwd`
-file in order to retrieve a list of users on the server. This attack would look like:
+Cyber-criminals will abuse this vulnerability to view files that should otherwise
+not be accessible.
+
+A very common example of this, on *nix servers, is gaining access to the `/etc/passwd`
+file in order to retrieve a list of server users. This attack would look like:
 `yoursite.com/error.php?page=../../../../etc/passwd`
 
 As path traversal is based on the relative path, the payload must first traverse
-the file system to the root directory, and hence the string of `../../../../`.
+to the file system's root directory, hence the string of `../../../../`.
 
-Arachni discovered that it was possible to substitute a parameter value with
+Arachni discovered that it was possible to substitute a parameter value with a
 relative path to a common operating system file and have the contents of the file
-sent back in the response.
+included in the response.
 },
                 references:  {
                     'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
@@ -145,7 +147,8 @@ sent back in the response.
                 cwe:             22,
                 severity:        Severity::HIGH,
                 remedy_guidance: %q{
-It is recommended that untrusted data is never used to form a literal file include request.
+It is recommended that untrusted data is never used to form a file location to
+be included.
 
 To validate data, the application should ensure that the supplied value for a file
 is permitted. This can be achieved by performing whitelisting on the parameter

@@ -157,8 +157,8 @@ checks them for lack of anti-CSRF tokens.
 In the majority of today's web applications, clients are required to submit forms
 which can perform sensitive operations.
 
-An example of such a form being used would be when an administrator wishes to create
-a new user for the application.
+An example of such a form being used would be when an administrator wishes to
+create a new user for the application.
 
 In the simplest version of the form, the administrator would fill-in:
 
@@ -185,7 +185,7 @@ and therefore the form could be vulnerable to CSRF.
 
 _Manual verification may be required to check whether the submission will then
 perform a sensitive action, such as reset a password, modify user profiles, post
-content for a forum, etc._
+content on a forum, etc._
 },
                 references:  {
                     'Wikipedia'    => 'http://en.wikipedia.org/wiki/Cross-site_request_forgery',
@@ -197,16 +197,16 @@ content for a forum, etc._
                 severity:        Severity::HIGH,
                 remedy_guidance: %q{
 Based on the risk (determined by manual verification) of whether the form submission
-performs a sensitive action, the addition of anti-CSRF tokens is highly advised.
+performs a sensitive action, the addition of anti-CSRF tokens may be required.
 
 These tokens can be configured in such a way that each session generates a new
 anti-CSRF token or such that each individual request requires a new token.
 
-It is equally important that the server track and maintain the status of each
-token (in order to reject requests accompanied by invalid ones) and therefore
-prevent cyber-criminals from knowing, guessing or reusing them.
+It is important that the server track and maintain the status of each token (in
+order to reject requests accompanied by invalid ones) and therefore prevent
+cyber-criminals from knowing, guessing or reusing them.
 
-_For examples of framework specific remediation, please refer to the references._
+_For examples of framework specific remediation options, please refer to the references._
 }
             }
         }

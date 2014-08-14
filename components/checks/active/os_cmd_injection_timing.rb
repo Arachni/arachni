@@ -54,7 +54,7 @@ required to run Operating System commands and have the output of these commands
 captured by the web application and returned to the client.
 
 OS command injection occurs when user supplied input is inserted into one of these
-commands without proper sanitisation and executed by the server.
+commands without proper sanitisation and is then executed by the server.
 
 Cyber-criminals will abuse this weakness to perform their own arbitrary commands
 on the server. This can include everything from simple `ping` commands to map the
@@ -78,8 +78,9 @@ To validate data, the application should ensure that the supplied value contains
 only the characters that are required to perform the required action.
 
 For example, where the form field expects an IP address, only numbers and periods
-should be accepted. Additionally, all control operators (`&`, `&&`, `|`, `||`, `$`, `\`, `#`)
-should be explicitly denied, and never accepted as valid input by the server.
+should be accepted. Additionally, all control operators (`&`, `&&`, `|`, `||`,
+`$`, `\`, `#`) should be explicitly denied and never accepted as valid input by
+the server.
 }
             }
         }

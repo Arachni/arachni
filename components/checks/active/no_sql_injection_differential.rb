@@ -46,8 +46,8 @@ A NoSQL injection occurs when a value originating from the client's request is
 used within a NoSQL call without prior sanitisation.
 
 This can allow cyber-criminals to execute arbitrary NoSQL code and thus steal data,
-or use the additional functionality of the database server to take control of the
-server.
+or use the additional functionality of the database server to take control of
+further server components.
 
 Arachni discovered that the affected page and parameter are vulnerable. This
 injection was detected as Arachni was able to inject specific NoSQL queries that
@@ -62,13 +62,10 @@ known as a blind NoSQL injection vulnerability.
                 severity:        Severity::HIGH,
                 remedy_guidance: %q{
 The most effective remediation against NoSQL injection attacks is to ensure that
-NoSQL API calls are not constructed via string concatenation.
+NoSQL API calls are not constructed via string concatenation that includes
+unsanitized data.
 
-Doing this within the server side code will ensure that any escaping is handled
-by the underlying framework. Depending on the NoSQL database being used, this
-may not be possible, in which case all untrusted data sources must be escaped correctly.
-
-This is best achieved by using existing escaping libraries.
+Sanitization is best achieved using existing escaping libraries.
 }
             }
 

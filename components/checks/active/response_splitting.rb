@@ -54,7 +54,8 @@ Injects arbitrary and checks if any of them end up in the response header.
                 description:     %q{
 HTTP response splitting occurs when untrusted data is inserted into the response
 headers without any sanitisation.
-If successful, this allows a cyber-criminal to essentially split the HTTP response
+
+If successful, this allows cyber-criminals to essentially split the HTTP response
 in two.
 
 This is abused by cyber-criminals injecting CR (Carriage Return -- `/r`)
@@ -63,7 +64,7 @@ or LF characters are not processed by the server then it cannot be exploited.
 
 Along with these characters, cyber-criminals can then construct their own
 arbitrary response headers and body which would then form the second response.
-The second response is entirely under their control, and then permits a number of
+The second response is entirely under their control, allowing for a number of
 other attacks.
 },
                 references:  {

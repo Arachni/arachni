@@ -119,19 +119,16 @@ An example of this is often seen in error pages, where the actual file path for
 the error page is stored in a parameter value -- for example `example.com/error.php?page=404.php`.
 
 A remote file inclusion occurs when the parameter value (ie. path to file being
-called by the server) can be substituted with the address of an external host,
-and the server then performs a request to the external host and fetches the
-resource.
-Taking the simple example above this would become:
-`yoursite.com/error.asp?page=http://anothersite.com/somethingBad.php`
+called by the server) can be substituted with the address of remote resource --
+for example: `yoursite.com/error.asp?page=http://anothersite.com/somethingBad.php`
 
-In most circumstances, the server will process the fetched resource; therefore,
-if the resource matches that of the framework being used (ASP, PHP, JSP, etc.),
-it is probable that the resource will be executed on the vulnerable server.
+In some cases, the server will process the fetched resource; therefore,
+if the resource contains server-side code matching that of the framework being
+used (ASP, PHP, JSP, etc.), it is probable that the resource will be executed
+as if it were part of the web application.
 
 Arachni discovered that it was possible to substitute a parameter value with an
-external resource and have the server fetch the resource and have it returned to
-the client within the response
+external resource and have the server fetch it and include its contents in the response.
 },
                 references:  {
                     'WASC'      => 'http://projects.webappsec.org/Remote-File-Inclusion',
@@ -148,7 +145,8 @@ the client within the response
                 # Severity::INFORMATIONAL
                 severity:        Severity::HIGH,
                 remedy_guidance: %q{
-It is recommended that untrusted data is never used to form a literal file include request.
+It is recommended that untrusted data is never used to form a file location to
+be included.
 
 To validate data, the application should ensure that the supplied value for a file
 is permitted. This can be achieved by performing whitelisting on the parameter

@@ -80,7 +80,7 @@ session is established with the server.
 Session fixation occurs when the client is able to specify their own session
 token value and the value of the session cookie is not changed by the server
 after successful authentication.
-Occasionally the session token will also remain unchanged for the user independently
+Occasionally, the session token will also remain unchanged for the user independently
 of how many times they have authenticated.
 
 Cyber-criminals will abuse this functionality by sending crafted URL links with a
@@ -89,8 +89,7 @@ for the victim to login and become authenticated.
 If successful, the cyber-criminal will know a valid session ID and therefore have
 access to the victim's session.
 
-Arachni has discovered that it is able to set its own session token and during
-the login process remains unchanged.
+Arachni has discovered that it is able to set its own session token.
 },
                 references:  {
                     'OWASP - Session fixation' => 'https://www.owasp.org/index.php/Session_fixation',
@@ -100,8 +99,8 @@ the login process remains unchanged.
                 cwe:         384,
                 severity:    Severity::HIGH,
                 remedy_guidance: %q{
-The most important remediation action is to prevent the server accepting client
-supplied tokens through either a GET or POST request.
+The most important remediation action is to prevent the server from accepting
+client supplied data as session tokens.
 
 Additionally, the client's session token should be changed at specific key stages
 of the application flow, such as during authentication. This will ensure that even

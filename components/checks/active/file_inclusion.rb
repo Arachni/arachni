@@ -125,7 +125,8 @@ the response.
                 cwe:             98,
                 severity:        Severity::HIGH,
                 remedy_guidance: %q{
-It is recommended that untrusted data is never used to form a literal file include request.
+It is recommended that untrusted data is never used to form a file location to
+be included.
 
 To validate data, the application should ensure that the supplied value for a file
 is permitted. This can be achieved by performing whitelisting on the parameter

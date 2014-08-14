@@ -64,24 +64,19 @@ class Arachni::Checks::XssTag < Arachni::Check::Base
                 name:            %q{Cross-Site Scripting (XSS) in HTML tag},
                 description:     %q{
 Client-side scripts are used extensively by modern web applications.
-They perform both simple functions (such as the formatting of text) up to full
-manipulation of client side data and operating system interaction.
+They perform from simple functions (such as the formatting of text) up to full
+manipulation of client-side data and Operating System interaction.
 
 Cross Site Scripting (XSS) allows clients to inject scripts into a request and
-have the server return the script to the client. This occurs because the
-application is taking untrusted data (in this example from the client) and reusing
-it without performing any validation or sanitisation.
+have the server return the script to the client in the response. This occurs
+because the application is taking untrusted data (in this example, from the client)
+and reusing it without performing any validation or sanitisation.
 
 If the injected script is returned immediately this is known as reflected XSS.
 If the injected script is stored by the server and returned to any client visiting
-the affected page then this is known as persistent XSS (also stored XSS).
+the affected page, then this is known as persistent XSS (also stored XSS).
 
-A common attack used by cyber-criminals is to steal a client's session token by
-injecting JavaScript, however, XSS vulnerabilities can also be abused to exploit
-clients, for example, by visiting the page either directly or through a crafted
-HTTP link delivered via a social engineering email.
-
-Arachni has discovered that it is possible to insert content directly into a HTML
+Arachni has discovered that it is possible to insert content directly into an HTML
 tag. For example `<INJECTION_HERE href=.......etc>` where `INJECTION_HERE`
 represents the location where the Arachni payload was detected.
 },
@@ -102,7 +97,7 @@ Untrusted data can originate not only form the client but potentially a third
 party or previously uploaded file etc.
 
 Filtering of untrusted data typically involves converting special characters to
-their HTML entity encoding equivalent (however, other methods do exist, see references).
+their HTML entity encoded counterparts (however, other methods do exist, see references).
 These special characters include:
 
 * `&`
@@ -112,10 +107,10 @@ These special characters include:
 * `'`
 * `/`
 
-An example of HTML entity encoding is converting a `<` to `&lt;`.
+An example of HTML entity encoding is converting `<` to `&lt;`.
 
 Although it is possible to filter untrusted input, there are five locations
-within a HTML page where untrusted input (even if it has been filtered) should
+within an HTML page where untrusted input (even if it has been filtered) should
 never be placed:
 
 1. Directly in a script.
@@ -127,8 +122,8 @@ never be placed:
 Each of these locations have their own form of escaping and filtering.
 
 _Because many browsers attempt to implement XSS protection, any manual verification
-of this finding should be conducted utilising multiple different browsers and
-browser versions._
+of this finding should be conducted using multiple different browsers and browser
+versions._
 }
             }
         }
