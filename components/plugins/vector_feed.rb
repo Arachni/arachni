@@ -78,7 +78,7 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
         pages.flatten!
         if !pages.empty?
             print_status 'Pushing the vectors to the audit queue...'
-            pages.each { |page| framework.push_to_page_queue( page ) }
+            pages.each { |page| framework.push_to_page_queue( page, true ) }
             print_status 'Done!'
         else
             print_bad 'Could not find any usable vectors.'
