@@ -34,7 +34,7 @@ issued to its citizens.
 A stolen or leaked SSN can lead to a compromise, and/or the theft of the affected
 individual's identity.
 
-Through the use of regular expressions, Arachni has discovered a SSN located
+Through the use of regular expressions, Arachni has discovered an SSN located
 within the response of the affected page.
 },
                 references: {
@@ -49,8 +49,8 @@ no relation to a real SSN.
 
 If the response does contain a valid SSN, then all efforts should be taken to
 remove or further protect this information. This can be achieved by removing the
-SSN all together or by masking the number so that only the last few digits are
-present within the response (eg. **********123).
+SSN altogether or by masking the number so that only the last few digits are
+present within the response (eg. _**********123_).
 }
             }
         }

@@ -38,15 +38,16 @@ class Arachni::Checks::PrivateIP < Arachni::Check::Base
                 name:            %q{Private IP address disclosure},
                 description:     %q{
 Private, or non-routable, IP addresses are generally used within a home or
-company network, and are typically unknown to anyone outside of that network.
+company network and are typically unknown to anyone outside of that network.
 
 Cyber-criminals will attempt to identify the private IP address range being used
-by their victim to aid in any further information collection that could then lead
-to possible compromise.
+by their victim, to aid in collecting further information that could then lead
+to a possible compromise.
 
 Arachni discovered that the affected page returned a RFC 1918 compliant private
-IP address, and therefore could be revealing sensitive information. This finding
-typically requires manual verification to ensure the context of this finding is
+IP address and therefore could be revealing sensitive information.
+
+_This finding typically requires manual verification to ensure the context is
 correct, as any private IP address within the HTML body will trigger it.
 },
                 references: {
@@ -55,10 +56,12 @@ correct, as any private IP address within the HTML body will trigger it.
                 cwe:             200,
                 severity:        Severity::LOW,
                 remedy_guidance: %q{
-Identifying the context in which the identified page displays a Private IP
-address is required. If the page is publicly accessible, and displaying the
-Private IP of the affected server (or supporting infrastructure), then measures
-should be put in place to ensure that the IP is removed from any response.
+Identifying the context in which the affected page displays a Private IP
+address is necessary.
+
+If the page is publicly accessible and displays the Private IP of the affected
+server (or supporting infrastructure), then measures should be put in place to
+ensure that the IP address is removed from any response.
 },
             }
         }

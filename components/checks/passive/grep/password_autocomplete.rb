@@ -40,34 +40,34 @@ class Arachni::Checks::PasswordAutocomplete < Arachni::Check::Base
                 description: %q{
 In typical form-based web applications, it is common practice for developers to
 allow `autocomplete` within the HTML form to improve the usability of the page.
-With `autocomplete` enabled (default) it allows the browser to cache previously
-entered form values entered by the user.
+With `autocomplete` enabled (default), the browser is allowed to cache previously
+entered form values.
 
-For legitimate purposes, this allows the user to quickly re-enter the same data,
+For legitimate purposes, this allows the user to quickly re-enter the same data
 when completing the form multiple times.
 
-When `autocomplete` is enabled on either/both the username password fields, this
-could allow a cyber-criminal with access to the victim's computer the ability to
-have the victims credentials `autocomplete` (automatically entered) as the
-cyber-criminal visits the affected page.
+When `autocomplete` is enabled on either/both the username and password fields,
+this could allow a cyber-criminal with access to the victim's computer the ability
+to have the victim's credentials automatically entered as the cyber-criminal
+visits the affected page.
 
-Arachni has discovered that the response of the affected location contains a form
-containing a password field that has not disabled `autocomplete`.
+Arachni has discovered that the affected page contains a form containing a
+password field that has not disabled `autocomplete`.
 },
                 severity:    Severity::LOW,
                 remedy_guidance: %q{
 The `autocomplete` value can be configured in two different locations.
 
-The first, and most secure, location is to disable `autocomplete` attribute on
-the `<form>` HTML tag.
-This will therefor disable `autocomplete` for all inputs within that form.
+The first and most secure location is to disable the `autocomplete` attribute on
+the `<form>` HTML tag. This will disable `autocomplete` for all inputs within that form.
 An example of disabling `autocomplete` within the form tag is `<form autocomplete=off>`.
 
-The second slightly less desirable option is to disable `autocomplete` attribute
-for a specific `<input>` HTML tag. While this may be the less desired solution
-from a security perspective, it may be preferred method for usability reasons
-depending on size of the form. An example of disabling the `autocomplete`
-attribute within a password input tag is `<input type=password autocomplete=off>`.
+The second slightly less desirable option is to disable the `autocomplete` attribute
+for a specific `<input>` HTML tag.
+While this may be the less desired solution from a security perspective, it may
+be preferred method for usability reasons, depending on size of the form.
+An example of disabling the `autocomplete` attribute within a password input tag
+is `<input type=password autocomplete=off>`.
 }
             },
             max_issues: 25

@@ -39,7 +39,7 @@ penetration tester to conduct further manual testing on the file upload function
 An insecure form-based file upload could allow a cyber-criminal a means to abuse
 and successfully exploit the server directly, and/or any third party that may
 later access the file. This can occur through uploading a file containing server
-side code (such as PHP) that is then executed when requested by the client.
+side-code (such as PHP) that is then executed when requested by the client.
 },
                 references:  {
                     'owasp.org' => 'https://www.owasp.org/index.php/Unrestricted_File_Upload'
@@ -54,13 +54,14 @@ The identified page should at a minimum:
     on the MIME type of the file rather than its extension.
 2. As the file is uploaded, and prior to being handled (written to the disk) by
     the server, the filename should be stripped of all control, special, or
-    Unicode characters. 3. Ensure that the upload is conducted via the HTTP POST
-    method rather than GET or PUT.
+    Unicode characters.
+3. Ensure that the upload is conducted via the HTTP `POST` method rather than
+    `GET` or `PUT`.
 4. Ensure that the file is written to a directory that does not hold any execute
-permission, and that all files within that directory inherit the same permissions.
+    permission and that all files within that directory inherit the same permissions.
 5. Scan (if possible) with an up-to-date virus scanner before being stored.
 6. Ensure that the application handles files as per the host operating system.
-    For example the length of the file name is appropriate, there is adequate
+    For example, the length of the file name is appropriate, there is adequate
     space to store the file, protection against overwriting other files etc.
 }
             },

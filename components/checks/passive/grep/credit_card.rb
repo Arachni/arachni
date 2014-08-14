@@ -107,8 +107,8 @@ similar number with no relation to a real credit card.
 
 If the response does contain a valid credit card number, then all efforts should
 be taken to remove or further protect this information. This can be achieved by
-removing the credit card number all together, or by masking the number so that
-only the last few digits are present within the response. (eg. **********123).
+removing the credit card number altogether, or by masking the number so that
+only the last few digits are present within the response. (eg. _**********123_).
 
 Additionally, credit card numbers should not be stored by the application, unless
 the organisation also complies with other security controls as outlined in the

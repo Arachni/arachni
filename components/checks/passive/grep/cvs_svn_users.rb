@@ -61,8 +61,8 @@ stored within the affected page.
 CVS and/or SVN information should not be displayed to the end user.
 
 This can be achieved by removing this information all together prior to
-deployment, or by putting this information into a server side (PHP, ASP, JSP, etc)
-code comment block as opposed to a HTML code comment.
+deployment, or by putting this information into a server-side (PHP, ASP, JSP, etc)
+code comment block, as opposed to an HTML comment.
 },
             },
             max_issues: 25
