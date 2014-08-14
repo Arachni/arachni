@@ -5,6 +5,10 @@
 
 class Hash
 
+    if !method_defined?( :to_h )
+        alias :to_h :to_hash
+    end
+
     # Converts the hash keys to strings.
     #
     # @param    [Boolean]    recursively
