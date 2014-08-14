@@ -5,8 +5,8 @@ Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
 The Arachni Framework is dual-licensed.
 
 Cases that include **direct commercialization** of Arachni require a commercial,
-non-free license. Otherwise, the system can be used under the terms of the
-Apache License v2.0 license, found at the bottom of this document.
+non-free license. Otherwise, the system can be used under the terms of
+Apache License v2.0, found at the bottom of this document.
 
 Cases of **direct commercialization** are:
 
