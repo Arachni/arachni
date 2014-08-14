@@ -42,7 +42,7 @@
     </tr>
     <tr>
         <th>License</th>
-        <td><a href="file.LICENSE.html">Please see the LICENSE file at the root directory of the project.</a></td>
+        <td><a href="https://github.com/Arachni/arachni/blob/master/LICENSE.md">Dual-licensed (Apache v2.0/Commercial)</a></td>
     </tr>
 </table>
 
@@ -571,7 +571,7 @@ need to follow in order to contribute code:
 
 ## License
 
-See the [LICENSE](file.LICENSE.html) file for information.
+<a href="https://github.com/Arachni/arachni/blob/master/LICENSE.md">Dual-licensed (Apache v2.0/Commercial)</a>
 
 ## Disclaimer
 
