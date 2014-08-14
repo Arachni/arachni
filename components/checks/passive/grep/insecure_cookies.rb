@@ -7,6 +7,8 @@
 class Arachni::Checks::InsecureCookies < Arachni::Check::Base
 
     def run
+        return if page.parsed_url.scheme != 'https'
+
         page.cookies.each do |cookie|
             next if cookie.secure? || audited?( cookie.name )
 
@@ -18,7 +20,10 @@ class Arachni::Checks::InsecureCookies < Arachni::Check::Base
     def self.info
         {
             name:        'Insecure cookies',
-            description: %q{Logs cookies that are served over an unencrypted channel.},
+            description: %q{
+Logs cookies that are served over an encrypted channel but without having the
+`secure` flag set.
+},
             elements:    [ Element::Cookie ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.2',

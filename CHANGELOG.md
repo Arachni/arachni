@@ -204,6 +204,7 @@
             - Also updated to use more origin headers.
         - Grep
             - `emails` - Updated to handle simple (`[at]` and `[dot]`) obfuscation.
+            - `insecure_cookies` - Only check HTTPS pages.
 
 ## 0.4.6 _(January 1, 2014)_
 
