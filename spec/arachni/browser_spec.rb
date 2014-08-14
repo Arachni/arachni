@@ -165,7 +165,7 @@ describe Arachni::Browser do
         it 'prefixes each source code line with a number' do
             subject.load @url
 
-            lines = subject.source.lines
+            lines = subject.source.lines.to_a
 
             lines.should be_any
             subject.source_with_line_numbers.lines.each.with_index do |l, i|
