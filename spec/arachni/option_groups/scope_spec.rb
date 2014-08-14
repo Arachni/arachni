@@ -19,9 +19,9 @@ describe Arachni::OptionGroups::Scope do
                 '/article/(\d+)' => 'articles?id=\1'
             }
 
-            subject.url_rewrites.should == {
+            subject.url_rewrites.to_s.should == {
                 /\/article\/(\d+)/ => 'articles?id=\1'
-            }
+            }.to_s
         end
     end
 
