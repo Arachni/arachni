@@ -42,7 +42,7 @@
     </tr>
     <tr>
         <th>License</th>
-        <td><a href="https://github.com/Arachni/arachni/blob/master/LICENSE.md">Dual-licensed (Apache v2.0/Commercial)</a></td>
+        <td><a href="https://github.com/Arachni/arachni/blob/master/LICENSE.md">Dual-licensed (Apache License v2.0/Commercial)</a></td>
     </tr>
 </table>
 
@@ -571,7 +571,7 @@ need to follow in order to contribute code:
 
 ## License
 
-<a href="https://github.com/Arachni/arachni/blob/master/LICENSE.md">Dual-licensed (Apache v2.0/Commercial)</a>
+<a href="https://github.com/Arachni/arachni/blob/master/LICENSE.md">Dual-licensed (Apache License v2.0/Commercial)</a>
 
 ## Disclaimer
 
