@@ -235,13 +235,16 @@ Arachni is able to extract and audit the following elements:
     Instances to:
     - Take advantage of multi-core/SMP architectures.
     - Greatly diminish scan-times.
-- Dispatcher Grids supporting:
-    - _(Optional)_ High-Performance mode -- Combines the resources of
-        multiple nodes to perform multi-Instance scans.
-        - Enabled on a per-scan basis.
+- Dispatcher Grid:
+    - Self-healing.
+    - Scale up/down by hot-plugging/hot-unplugging nodes.
+        - Can scale up infinitely by adding nodes to increase scan capacity.
     - _(Always-on)_ Load-balancing -- All Instances are automatically provided
         by the least burdened Grid member.
         - With optional per-scan opt-out/override.
+    - _(Optional)_ High-Performance mode -- Combines the resources of
+        multiple nodes to perform multi-Instance scans.
+        - Enabled on a per-scan basis.
 - SSL encryption (with optional peer authentication).
 
 ### Scope configuration
