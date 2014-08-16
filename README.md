@@ -209,16 +209,22 @@ has been programmed to handle and is able to trigger them programatically in
 order to provide coverage for a full set of possible scenarios.
 
 By inspecting all possible pages and their states (when using client-side code)
-Arachni is able to extract and audit the following elements:
+Arachni is able to extract and audit the following elements and their inputs:
 
  - Forms
     - Along with ones that require interaction with a real browser due to DOM events.
  - Links
-    - Along with ones that have client-side parameters in their URL fragments, i.e.:
+    - Along with ones that have client-side parameters in their fragment, i.e.:
         `http://example.com/#/?param=val&param2=val2`
+    - With support for rewrite rules.
+ - LinkTemplates -- Allowing for extraction of arbitrary inputs from generic paths,
+    based on user-supplied templates -- useful when rewrite rules are not available.
+    - Along with ones that have client-side parameters in their URL fragments, i.e.:
+            `http://example.com/#/param/val/param2/val2`
  - Cookies
  - Headers
  - Generic client-side elements like `input`s which have associated DOM events.
+ - AJAX-request parameters.
 
 ### Open [distributed architecture](https://github.com/Arachni/arachni/wiki/Distributed-components)
 
@@ -272,11 +278,13 @@ Arachni is able to extract and audit the following elements:
         - Can automatically refresh nonce tokens.
         - Can submit them via the integrated browser environment.
     - Links
-        - Supporting custom templates to extract input vectors from any generic path.
+        - Can load them via the integrated browser environment.
+    - LinkTemplates
         - Can load them via the integrated browser environment.
     - Cookies
         - Can load them via the integrated browser environment.
     - Headers
+    - Generic client-side DOM elements like `input`s.
  - Can ignore binary/non-text pages.
  - Can optionally audit elements using both `GET` and `POST` HTTP methods.
  - Can optionally submit all links and forms of the page along with the cookie
