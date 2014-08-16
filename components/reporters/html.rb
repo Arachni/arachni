@@ -5,6 +5,7 @@
 
 require 'zip'
 require 'github/markdown'
+require 'loofah'
 require 'coderay'
 require 'json'
 require 'erb'
@@ -33,7 +34,8 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
         end
 
         def md( markdown )
-            GitHub::Markdown.render( markdown )
+            Loofah.fragment( GitHub::Markdown.render( markdown.to_s ).to_s ).
+                scrub!(:prune).to_s
         end
 
         def key_to_words( k )

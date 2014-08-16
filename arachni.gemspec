@@ -90,6 +90,9 @@ Gem::Specification.new do |s|
     # descriptions.
     s.add_dependency 'github-markdown',   '0.6.5'
 
+    # Used to scrub Markdown for XSS etc.
+    s.add_dependency 'loofah',             '2.0.0'
+
     s.post_install_message = <<MSG
 
 Thank you for installing Arachni, here are some resources which should
