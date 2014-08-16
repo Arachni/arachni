@@ -269,6 +269,8 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
 
     # Runs the HTML report.
     def run
+        FileUtils.rm_rf options[:outfile]
+
         print_line
         print_status 'Creating HTML report...'
 
