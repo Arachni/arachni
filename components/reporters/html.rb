@@ -45,7 +45,8 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
         def code_highlight( code, language = :html, options = {} )
             return if !code
 
-            lines = CodeRay.scan( code.recode, language ).html( css: :style ).lines
+            lines = CodeRay.scan( code.recode, language ).
+                html( css: :style ).lines.to_a
 
             if options[:from]
                 from = [0, options[:from]].max
