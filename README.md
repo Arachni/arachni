@@ -120,8 +120,8 @@ you with its findings.
  - Proxy support for SOCKS4, SOCKS4A, SOCKS5, HTTP/1.1 and HTTP/1.0.
  - Proxy authentication.
  - Site authentication (Automated form-based, Cookie-Jar, Basic-Digest, NTLM and others).
- - Automatic log-out detection and re-login during the audit (when the initial
-    login was performed via the AutoLogin or Proxy plugins).
+ - Automatic log-out detection and re-login during the scan (when the initial
+    login was performed via the `autologin` or `proxy` plugins).
  - Custom 404 page detection.
  - UI abstraction:
     - [Command-line Interface](https://github.com/Arachni/arachni/wiki/Executables).
@@ -143,7 +143,7 @@ such as HTML5, JavaScript, DOM manipulation, AJAX, etc.
 
 In addition to the monitoring of the vanilla DOM and JavaScript environments,
 Arachni's browsers also hook into popular frameworks to make the logged data
-easier to digest.
+easier to digest:
 
 - [JQuery](http://jquery.com/)
 - [AngularJS](https://angularjs.org/)
