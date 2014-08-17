@@ -55,7 +55,7 @@
                             <div class="panel-body">
                                 <% if !issues.first.description.to_s.empty? %>
                                     <p class="well">
-                                        <%= escapeHTML(issues.first.description) %>
+                                        <%= md issues.first.description %>
                                     </p>
                                 <% end %>
 
