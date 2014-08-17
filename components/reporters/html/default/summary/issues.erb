@@ -54,9 +54,9 @@
 
                             <div class="panel-body">
                                 <% if !issues.first.description.to_s.empty? %>
-                                    <p class="well">
+                                    <div class="markdown">
                                         <%= md issues.first.description %>
-                                    </p>
+                                    </div>
                                 <% end %>
 
                                 <table class="table table-condensed">
