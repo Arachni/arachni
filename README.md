@@ -464,13 +464,14 @@ Passive checks look for the existence of files, folders and signatures.
 #### Available reports
 
 - Standard output
-- HTML (`html`).
-- XML (`xml`).
-- TXT (`text`).
-- AFR (`afr`) -- The default Arachni Framework Report format.
-- JSON (`json`)
-- Marshal (`marshal`)
-- YAML (`yaml`)
+- [HTML](http://downloads.arachni-scanner.com/dev/reports/report.html/) (`html`).
+- [XML](http://downloads.arachni-scanner.com/dev/reports/report.xml) (`xml`).
+- [Text](http://downloads.arachni-scanner.com/dev/reports/report.txt) (`text`).
+- [AFR](http://downloads.arachni-scanner.com/dev/reports/report.afr) (`afr`)
+    - The default Arachni Framework Report format.
+- [JSON](http://downloads.arachni-scanner.com/dev/reports/report.json) (`json`)
+- [Marshal](http://downloads.arachni-scanner.com/dev/reports/report.marshal) (`marshal`)
+- [YAML](http://downloads.arachni-scanner.com/dev/reports/report.yml) (`yaml`)
 
 ### Plug-in Management
 
