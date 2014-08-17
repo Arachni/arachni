@@ -22,16 +22,16 @@
     </xs:element>
 
     <xs:complexType name="plugins">
-        <xs:choice minOccurs="0" maxOccurs="1">
-            <xs:element name="healthmap" type="plugin_healthmap"/>
-            <xs:element name="autologin" type="plugin_autologin"/>
-            <xs:element name="content_types" type="plugin_content_types"/>
-            <xs:element name="cookie_collector" type="plugin_cookie_collector"/>
-            <xs:element name="form_dicattack" type="plugin_form_dicattack"/>
-            <xs:element name="http_dicattack" type="plugin_http_dicattack"/>
-            <xs:element name="uncommon_headers" type="plugin_uncommon_headers"/>
-            <xs:element name="uniformity" type="plugin_uniformity"/>
-            <xs:element name="waf_detector" type="plugin_waf_detector"/>
+        <xs:choice minOccurs="0" maxOccurs="9">
+            <xs:element name="healthmap" type="plugin_healthmap" maxOccurs="1"/>
+            <xs:element name="autologin" type="plugin_autologin" maxOccurs="1"/>
+            <xs:element name="content_types" type="plugin_content_types" maxOccurs="1"/>
+            <xs:element name="cookie_collector" type="plugin_cookie_collector" maxOccurs="1"/>
+            <xs:element name="form_dicattack" type="plugin_form_dicattack" maxOccurs="1"/>
+            <xs:element name="http_dicattack" type="plugin_http_dicattack" maxOccurs="1"/>
+            <xs:element name="uncommon_headers" type="plugin_uncommon_headers" maxOccurs="1"/>
+            <xs:element name="uniformity" type="plugin_uniformity" maxOccurs="1"/>
+            <xs:element name="waf_detector" type="plugin_waf_detector" maxOccurs="1"/>
         </xs:choice>
     </xs:complexType>
 
@@ -427,7 +427,7 @@
 
     <xs:complexType name="page">
         <xs:all>
-        <xs:element name="body" type="xs:string"/>
+            <xs:element name="body" type="xs:string"/>
             <xs:element name="request" type="request"/>
             <xs:element name="response" type="response"/>
             <xs:element name="dom" type="pagedom"/>
