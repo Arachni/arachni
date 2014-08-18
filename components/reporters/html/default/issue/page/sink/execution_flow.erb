@@ -22,7 +22,9 @@
             </td>
             <td>
                 <% if sink.data.any? %>
-                <%= data_dump sink.data %>
+                    <%= data_dump sink.data %>
+                <% else %>
+                    <p class="alert alert-info">No helper data logged.</p>
                 <% end %>
             </td>
             <td>

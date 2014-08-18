@@ -46,6 +46,8 @@
             <td>
                 <% if frame.function.signature %>
                     <code><%= frame.function.signature %></code>
+                <% else %>
+                    <p class="alert alert-info">No function signature available.</p>
                 <% end %>
             </td>
 
