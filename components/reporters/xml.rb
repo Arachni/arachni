@@ -11,13 +11,15 @@ require 'nokogiri'
 # @version 0.3
 class Arachni::Reporters::XML < Arachni::Reporter::Base
 
-    SCHEMA = File.dirname( __FILE__ ) + '/xml/schema.xsd'
+    LOCAL_SCHEMA  = File.dirname( __FILE__ ) + '/xml/schema.xsd'
+    REMOTE_SCHEMA = 'https://raw.githubusercontent.com/Arachni/arachni/' <<
+        "v#{Arachni::VERSION}/components/reporters/xml/schema.xsd"
 
     def run
         builder = Nokogiri::XML::Builder.new do |xml|
             xml.report(
                 'xmlns:xsi' => 'http://www.w3.org/2001/XMLSchema-instance',
-                'xsi:noNamespaceSchemaLocation' => SCHEMA
+                'xsi:noNamespaceSchemaLocation' => REMOTE_SCHEMA
             ) {
                 xml.version report.version
                 xml.options Arachni::Options.hash_to_save_data( report.options )
@@ -133,7 +135,7 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
 
         xml = builder.to_xml
 
-        xsd = Nokogiri::XML::Schema( IO.read( SCHEMA ) )
+        xsd = Nokogiri::XML::Schema( IO.read( LOCAL_SCHEMA ) )
         has_errors = false
         xsd.validate( Nokogiri::XML( xml ) ).each do |error|
             puts error.message
