@@ -292,7 +292,16 @@ Arachni is able to extract and audit the following elements and their inputs:
  - Can exclude specific input vectors by name.
  - Can include specific input vectors by name.
 
-### Platform fingerprinter
+### Components
+
+Arachni is a highly modular system, employing several components of distinct
+types to perform its duties.
+
+In addition to enabling or disabling the bundled components so as to adjust the
+system's behavior and features as needed, functionality can be extended via the
+addition of user-created components to suit almost every need.
+
+#### Platform fingerprinters
 
 In order to make efficient use of the available bandwidth, Arachni performs
 rudimentary platform fingerprinting and tailors the audit process to the server-side
@@ -329,18 +338,7 @@ can be disabled altogether.
 Finally, Arachni will always err on the side of caution and send all available
 payloads when it fails to identify specific platforms.
 
-### Check Management
-
- - Very simple and easy to use security check API providing access at multiple
-    levels of complexity.
- - Helper audit methods:
-    - For form, link, cookie and header auditing and their DOM counterparts.
-    - A wide range of injection strings/input combinations.
-    - For taint analysis, timing attacks, differential analysis, server-side
-        file/directory detection and more.
-    - Writing RFI, SQL injection, XSS etc checks is a matter of minutes, if not seconds.
-
-#### Available security checks
+#### Checks
 
 _Checks_ are system components which perform security checks and log issues.
 
@@ -457,29 +455,20 @@ Passive checks look for the existence of files, folders and signatures.
 - Cookie set for parent domain (`cookie_set_for_parent_domain`)
 - Missing `Strict-Transport-Security` headers for HTTPS sites (`hsts`).
 
-### Report Management
-
- - Modular design.
-
-#### Available reports
+#### Reporters
 
 - Standard output
-- [HTML](http://downloads.arachni-scanner.com/dev/reports/report.html/) (`html`).
+- [HTML](http://downloads.arachni-scanner.com/dev/reports/report.html/)
+    ([zip](http://downloads.arachni-scanner.com/dev/reports/report.html.zip)) (`html`).
 - [XML](http://downloads.arachni-scanner.com/dev/reports/report.xml) (`xml`).
 - [Text](http://downloads.arachni-scanner.com/dev/reports/report.txt) (`text`).
-- [AFR](http://downloads.arachni-scanner.com/dev/reports/report.afr) (`afr`)
-    - The default Arachni Framework Report format.
 - [JSON](http://downloads.arachni-scanner.com/dev/reports/report.json) (`json`)
 - [Marshal](http://downloads.arachni-scanner.com/dev/reports/report.marshal) (`marshal`)
 - [YAML](http://downloads.arachni-scanner.com/dev/reports/report.yml) (`yaml`)
+- [AFR](http://downloads.arachni-scanner.com/dev/reports/report.afr) (`afr`)
+    - The default Arachni Framework Report format.
 
-### Plug-in Management
-
- - Modular design.
- - Plug-ins are framework demi-gods, they have direct access to the framework instance.
- - Can be used to add abstract functionality to Arachni.
-
-#### Available plugins
+#### Plugins
 
 Plugins add extra functionality to the system in a modular fashion, this way the
 core remains lean and makes it easy for anyone to add arbitrary functionality.
@@ -504,7 +493,7 @@ core remains lean and makes it easy for anyone to add arbitrary functionality.
 - Content-types (`content_types`) -- Logs content-types of server responses aiding in the
     identification of interesting (possibly leaked) files.
 
-#### Defaults
+##### Defaults
 
 Default plugins will run for every scan and are placed under `/plugins/defaults/`.
 
@@ -513,7 +502,7 @@ Default plugins will run for every scan and are placed under `/plugins/defaults/
 - Healthmap (`healthmap`) -- Generates sitemap showing the health of each crawled/audited URL
 - Resolver (`resolver`) -- Resolves vulnerable hostnames to IP addresses.
 
-##### Meta
+###### Meta
 
 Plugins under `/plugins/defaults/meta/` perform analysis on the scan results
 to determine trustworthiness or just add context information or general insights.
