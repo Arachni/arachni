@@ -1,3 +1,9 @@
+**NOTICE**:
+Arachni's <a href="https://github.com/Arachni/arachni/blob/master/LICENSE.md">license</a>
+has changed, please review it before working with the project.
+
+<hr/>
+
 # Arachni - Web Application Security Scanner Framework
 
 <table>
