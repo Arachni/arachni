@@ -23,11 +23,7 @@ group :prof do
     gem 'stackprof'
 end
 
-if RbConfig::CONFIG['host_os'].include? 'darwin'
-    gem 'arachni-rpc', path: File.dirname( __FILE__ ) + '/../arachni-rpc-v0.2'
-else
-    gem 'arachni-rpc', path: '/home/zapotek/workspace/arachni-rpc-v0.2'
-end
+gem 'arachni-rpc', path: '/home/zapotek/workspace/arachni-rpc'
 
 gemspec
 
