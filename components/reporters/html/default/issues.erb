@@ -1,0 +1,46 @@
+<h2>Issues</h2>
+
+<ul class="nav nav-tabs">
+    <% grouped_issues.keys.each.with_index do |trust, i| %>
+    <li
+        <%= "class='active'" if i == 0 %>
+    >
+        <a class="tab-<%= trust %>" href="#!/issues/<%= trust %>" >
+            <%= trust.to_s.capitalize %>
+
+            <span class="badge">
+                <%= graph_data[:trust][trust.to_s.capitalize] %>
+            </span>
+        </a>
+    </li>
+    <% end %>
+</ul>
+
+<div class="tab-content">
+    <% if grouped_issues[:trusted] %>
+    <div class="tab-pane active" id="issues-trusted">
+        <p class="well">
+            At the time these issues were logged there were no abnormal
+            interferences or anomalous server behavior.<br/>
+            These issues are considered trusted and accurate.
+        </p>
+
+        <%= erb 'issues/grouped.erb', trust: :trusted, grouped: grouped_issues[:trusted] %>
+    </div>
+    <% end %>
+
+    <% if grouped_issues[:untrusted] %>
+    <div class="tab-pane" id="issues-untrusted">
+        <p class="well">
+            These issues are considered untrusted (and may in fact be false
+            positives) because at the time they were identified the server was
+            exhibiting some kind of anomalous behavior or there was third party
+            interference (like network latency for example).
+            <br/>
+            The listed issues need verification by a human.
+        </p>
+
+        <%= erb 'issues/grouped.erb', trust: :untrusted, grouped: grouped_issues[:untrusted] %>
+    </div>
+    <% end %>
+</div>

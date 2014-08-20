@@ -3,8 +3,8 @@ require 'fileutils'
 
 describe Arachni::RPC::Client::Dispatcher do
     before( :all ) do
-        @handler_lib = Arachni::Options.dir['rpcd_handlers']
-        FileUtils.cp( "#{fixtures_path}/rpcd_handlers/echo.rb", @handler_lib )
+        @handler_lib = Arachni::Options.paths.services
+        FileUtils.cp( "#{fixtures_path}/services/echo.rb", @handler_lib )
 
         @dispatcher = dispatcher_light_spawn
     end
@@ -12,7 +12,7 @@ describe Arachni::RPC::Client::Dispatcher do
     after( :all ) { FileUtils.rm( "#{@handler_lib}/echo.rb" ) }
 
     it 'maps the remote handlers to local objects' do
-        args = [ 'stuff', 'here', { blah: true } ]
+        args = [ 'stuff', 'here', { 'blah' => true } ]
         @dispatcher.echo.echo( *args ).should == args
     end
 

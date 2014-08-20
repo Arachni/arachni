@@ -1,50 +1,34 @@
 =begin
     Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Please see the LICENSE file at the root directory of the project.
 =end
 
 require_relative 'list'
 require_relative 'fingerprinter'
 
 module Arachni
-
 module Platform
 
-#
 # {Platform} error namespace.
 #
 # All {Platform} errors inherit from and live under it.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Error < Arachni::Error
 
-    # Raised on {Platform#invalid?} platform names.
+    # Raised on {Manager#invalid?} platform names.
     #
     # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
     class Invalid < Error
     end
 end
 
-#
 # Represents a collection of platform {List lists}.
 #
 # It also holds a DB of all fingerprints per URI as a class variable and
 # provides helper method for accessing and manipulating it.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Manager
     include Enumerable
     include Utilities
@@ -67,6 +51,7 @@ class Manager
 
             # Generic BSD, flavor couldn't be identified.
             bsd:     {},
+            aix:     {},
             solaris: {}
         },
         windows: {}
@@ -89,7 +74,8 @@ class Manager
         :frontbase,
         :ingres,
         :hsqldb,
-        :access
+        :access,
+        :mongodb
     ]
 
     SERVERS = [
@@ -120,6 +106,7 @@ class Manager
         unix:       'Generic Unix family',
         linux:      'Linux',
         bsd:        'Generic BSD family',
+        aix:        'IBM AIX',
         solaris:    'Solaris',
         windows:    'MS Windows',
 
@@ -141,6 +128,7 @@ class Manager
         ingres:     'IngresDB',
         hsqldb:     'HSQLDB',
         access:     'MS Access',
+        mongodb:    'MongoDB',
 
         # Web servers
         apache:     'Apache',
@@ -161,6 +149,13 @@ class Manager
         # Web frameworks
         rack:   'Rack'
     }
+
+    # Amount of
+    PLATFORM_CACHE_SIZE = 1000
+
+    def self.synchronize( &block )
+        @mutex.synchronize( &block )
+    end
 
     def self.find_type( platform )
         @find_type ||= {}
@@ -184,10 +179,17 @@ class Manager
         @valid ||= Set.new( PLATFORM_NAMES.keys )
     end
 
+    def self.valid?( platforms )
+        platforms = [platforms].flatten.compact
+        (valid & platforms).to_a == platforms
+    end
+
     # Sets global platforms fingerprints
     # @private
     def self.set( platforms )
-        @platforms = platforms
+        @platforms = Support::Cache::RandomReplacement.new( PLATFORM_CACHE_SIZE )
+        platforms.each { |k, v| @platforms[k] = v }
+        @platforms
     end
 
     # Clears global platforms DB.
@@ -200,22 +202,39 @@ class Manager
         set Hash.new
         @manager.clear if @manager
         @manager = nil
+
+        @mutex  = Monitor.new
+
         self
     end
     reset
 
     def self.fingerprinters
         @manager ||=
-            Component::Manager.new( Options.dir['fingerprinters'],
+            Component::Manager.new( Options.paths.fingerprinters,
                                     Platform::Fingerprinters )
     end
     fingerprinters.load_all
 
+    # @param    [HTTP::Response, Page]  resource
+    #
+    # @return   [Bool]
+    #   `true` if the resource should be fingerprinted, `false` otherwise.
+    def self.fingerprint?( resource )
+        !(!Options.fingerprint? || !resource.text? ||
+        include?( resource.url ) || resource.scope.out?)
+    end
+
     # Runs all fingerprinters against the given `page`.
     #
-    # @param    [Page]  page    Page to fingerprint.
-    # @return   [Manager]   Updated `self`.
+    # @param    [Page]  page
+    #   Page to fingerprint.
+    #
+    # @return   [Manager]
+    #   Updated `self`.
     def self.fingerprint( page )
+        return page if !fingerprint? page
+
         fingerprinters.available.each do |name|
             exception_jail( false ) do
                 fingerprinters[name].new( page ).run
@@ -224,37 +243,56 @@ class Manager
         page
     end
 
-    #
     # Sets platform manager for the given `uri`.
     #
     # @param    [String, URI]   uri
     # @param    [Enumerable] platforms
     #
     # @return   [Manager]
-    # @raise    [Error::Invalid]  On {#invalid?} platforms.
+    #
+    # @raise    [Error::Invalid]
+    #   On {#invalid?} platforms.
     def self.[]=( uri, platforms )
         return new( platforms ) if !(key = make_key( uri ))
-        @platforms[key] =
-            platforms.is_a?( self ) ? platforms : new( platforms )
+
+        synchronize do
+            @platforms[key] =
+                platforms.is_a?( self ) ? platforms : new( platforms )
+        end
     end
 
-    #
+    def self.size
+        @platforms.size
+    end
+
+    # @param    [String, URI]   uri
+    def self.include?( uri )
+        @platforms.include?( make_key( uri ) )
+    end
+
     # Updates the `platforms` for the given `uri`.
     #
     # @param    [String, URI]   uri
     # @param    [Manager] platforms
     #
-    # @return   [Manager] Updated manager.
-    # @raise    [Error::Invalid]  On {#invalid?} platforms.
+    # @return   [Manager]
+    #   Updated manager.
+    #
+    # @raise    [Error::Invalid]
+    #   On {#invalid?} platforms.
     def self.update( uri, platforms )
-        self[uri].update platforms
+        synchronize do
+            self[uri].update platforms
+        end
     end
 
     # @param    [String, URI]   uri
-    # @return   [Manager] Platform for the given `uri`
+    #
+    # @return   [Manager]
+    #   Platform for the given `uri`
     def self.[]( uri )
         return new if !(key = make_key( uri ))
-        @platforms[key] ||= new
+        synchronize { @platforms[key] ||= new }
     end
 
     # @return   [Boolean]
@@ -269,27 +307,9 @@ class Manager
         !empty?
     end
 
-    # @return   [Hash<Integer, Platform>]
-    #   Platform per {URI#persistent_hash hashed URL}.
-    def self.all
-        @platforms
-    end
-
-    # @return   [Hash{Integer=>Array<Symbol>}]
-    #   Light representation of the fingerprint DB with URL hashes as keys
-    #   and arrays of symbols for platforms as values.
-    def self.light
-        all.inject({}) { |h, (k, v)| h[k] = v.to_a; h }
-    end
-
-    # @param    [Hash{Integer=>Array<Symbol>}]   light_platforms
-    #   Return value of {.light}.
-    # @return   [Manager]
-    def self.update_light( light_platforms )
-        light_platforms.each do |url, platforms|
-            @platforms[url] ||= new( platforms )
-        end
-        self
+    def self.make_key( uri )
+        return if !(parsed = Arachni::URI( uri ))
+        parsed.without_query
     end
 
     # @param    [Array<String, Symbol>] platforms
@@ -305,23 +325,33 @@ class Manager
     end
 
     # @!method os
-    #   @return [List] Platform list for operating systems.
+    #   @return [List]
+    #       Platform list for operating systems.
+    #
     #   @see OS
 
     # @!method db
-    #   @return [List] Platform list for databases.
+    #   @return [List]
+    #       Platform list for databases.
+    #
     #   @see DB
 
     # @!method servers
-    #   @return [List] Platform list for web servers.
+    #   @return [List]
+    #       Platform list for web servers.
+    #
     #   @see SERVERS
 
     # @!method languages
-    #   @return [List] Platform list for languages.
+    #   @return [List]
+    #       Platform list for languages.
+    #
     #   @see LANGUAGES
 
     # @!method frameworks
-    #   @return [List] Platform list for frameworks.
+    #   @return [List]
+    #       Platform list for frameworks.
+    #
     #   @see FRAMEWORKS
 
     [:os, :db, :servers, :languages, :frameworks].each do |type|
@@ -335,8 +365,11 @@ class Manager
     # @param    [String, Symbol]   platform
     #   Platform shortname.
     #
-    # @return   [String]    Full name.
-    # @raise    [Error::Invalid]  On {#invalid?} platforms.
+    # @return   [String]
+    #   Full name.
+    #
+    # @raise    [Error::Invalid]
+    #   On {#invalid?} platforms.
     def fullname( platform )
         PLATFORM_NAMES[normalize( platform )]
     end
@@ -350,7 +383,9 @@ class Manager
     # @return   [Hash]
     #   `data_per_platform` with non-applicable entries (for non-empty platform
     #   lists) removed. Data for platforms whose list is empty will not be removed.
-    # @raise    [Error::Invalid]  On {#invalid?} platforms.
+    #
+    # @raise    [Error::Invalid]
+    #   On {#invalid?} platforms.
     def pick( data_per_platform )
         data_per_list = {}
         data_per_platform.each do |platform, value|
@@ -374,28 +409,37 @@ class Manager
         picked
     end
 
-    # @return   [Set<Symbol>]   List of valid platforms.
+    # @return   [Set<Symbol>]
+    #   List of valid platforms.
     def valid
         self.class.valid
     end
 
-    # @param    [Symbol, String]  platform Platform to check.
+    # @param    [Symbol, String]  platform
+    #   Platform to check.
+    #
     # @return   [Boolean]
     #   `true` if platform is valid (i.e. in {#valid}), `false` otherwise.
+    #
     # @see #invalid?
     def valid?( platform )
         valid.include? platform
     end
 
-    # @param    [Symbol, String]  platform Platform to check.
+    # @param    [Symbol, String]  platform
+    #   Platform to check.
+    #
     # @return   [Boolean]
     #   `true` if platform is invalid (i.e. not in {#valid}), `false` otherwise.
+    #
     # @see #invalid?
     def invalid?( platform )
         !valid?( platform )
     end
 
-    # @param    [Block] block   Block to be passed each platform.
+    # @param    [Block] block
+    #   Block to be passed each platform.
+    #
     # @return   [Enumerator, Manager]
     #   `Enumerator` if no `block` is given, `self` otherwise.
     def each( &block )
@@ -404,10 +448,14 @@ class Manager
         self
     end
 
-    # @param    [Symbol, String]    platform    Platform to check.
+    # @param    [Symbol, String]    platform
+    #   Platform to check.
+    #
     # @return   [Boolean]
     #   `true` if one of the lists contains the `platform`, `false` otherwise.
-    # @raise    [Error::Invalid]  On {#invalid?} `platforms`.
+    #
+    # @raise    [Error::Invalid]
+    #   On {#invalid?} `platforms`.
     def include?( platform )
         find_list( platform ).include?( platform )
     end
@@ -424,9 +472,18 @@ class Manager
         !empty?
     end
 
-    # @param    [Enumerable] enum Enumerable object containing platforms.
-    # @return   [Manager] Updated `self`.
-    # @raise    [Error::Invalid]  On {#invalid?} platforms.
+    def clear
+        @platforms.clear
+    end
+
+    # @param    [Enumerable] enum
+    #   Enumerable object containing platforms.
+    #
+    # @return   [Manager]
+    #   Updated `self`.
+    #
+    # @raise    [Error::Invalid]
+    #   On {#invalid?} platforms.
     def update( enum )
         enum.each { |p| self << p }
         self
@@ -434,8 +491,12 @@ class Manager
 
     # @param    [Symbol, String]    platform
     #   Platform to add to the appropriate list.
-    # @return   [Manager] `self`
-    # @raise    [Error::Invalid]  On {#invalid?} platforms.
+    #
+    # @return   [Manager]
+    #   `self`
+    #
+    # @raise    [Error::Invalid]
+    #   On {#invalid?} platforms.
     def <<( platform )
         find_list( platform ) << platform
         self
@@ -443,13 +504,17 @@ class Manager
 
     # @param    [String, Symbol]    platform
     #   Platform whose type to find
+    #
     # @return   [Symbol]    Platform type.
     def find_type( platform )
         self.class.find_type( platform )
     end
 
-    # @param    [String, Symbol]    platform Platform whose list to find.
-    # @return   [List]    Platform list.
+    # @param    [String, Symbol]    platform
+    #   Platform whose list to find.
+    #
+    # @return   [List]
+    #   Platform list.
     def find_list( platform )
         @platforms[find_type( normalize( platform ) )]
     end
@@ -460,11 +525,6 @@ class Manager
         platform = List.normalize( platform )
         fail Error::Invalid, "Invalid platform: #{platform}" if invalid?( platform )
         platform
-    end
-
-    def self.make_key( uri )
-        return if !(parsed = Arachni::URI( uri ))
-        parsed.without_query.persistent_hash
     end
 
 end

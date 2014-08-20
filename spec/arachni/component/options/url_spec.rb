@@ -1,35 +1,37 @@
 require 'spec_helper'
 
 describe Arachni::Component::Options::URL do
-    before( :all ) do
-        @opt = Arachni::Component::Options::URL.new( ' ')
+    include_examples 'component_option'
+    subject { described_class.new( ' ') }
+
+    describe '#normalize' do
+        it "returns #{Arachni::URI}" do
+            subject.value = 'http://localhost'
+            subject.normalize.should == Arachni::URI('http://localhost')
+        end
     end
 
     describe '#valid?' do
         context 'when the value is valid' do
             it 'returns true' do
-                @opt.valid?( 'http://localhost' ).should be_true
+                subject.value = 'http://localhost'
+                subject.valid?.should be_true
             end
         end
+
         context 'when the value is not valid' do
             it 'returns false' do
-                @opt.valid?( 'http://localhost22' ).should be_false
-                @opt.valid?( 'localhost' ).should be_false
-                @opt.valid?( 11 ).should be_false
-                @opt.valid?( '#$#$c3c43' ).should be_false
-                @opt.valid?( true ).should be_false
-            end
-        end
-        context 'when required but empty' do
-            it 'returns false' do
-                @opt.class.new( '', [true] ).valid?( nil ).should be_false
+                ['http://localhost22', 'localhost', 11, '#$#$c3c43', true].each do |value|
+                    subject.value = value
+                    subject.valid?.should be_false
+                end
             end
         end
     end
 
     describe '#type' do
         it 'returns the option type as a string' do
-            @opt.type.should == 'url'
+            subject.type.should == :url
         end
     end
 

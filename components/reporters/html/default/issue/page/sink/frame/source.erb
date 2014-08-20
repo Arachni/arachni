@@ -1,0 +1,32 @@
+<% if frame.line.to_i > 0 && frame.url == page.dom.url %>
+    <strong>
+        <a
+        id="<%= id %>-source-page"
+        href="<%= id_to_location id %>/source/page">
+            Page
+        </a>
+    </strong>
+
+    <%=
+        code_highlight(
+                page.body, :html,
+                from:      frame.line - 5,
+                to:        frame.line + 5,
+                anchor_id: "#{id}-source-page",
+                breakpoint: frame.line
+        )
+    %>
+<% end %>
+
+<% if !frame.function.source.to_s.empty? %>
+    <strong>
+        <a
+        id="<%= id %>-source-function"
+        href="<%= id_to_location id %>/source/function">
+            Function
+        </a>
+    </strong>
+
+    <%= code_highlight( frame.function.source, :javascript,
+                        anchor_id: "#{id}-source-function" ) %>
+<% end %>

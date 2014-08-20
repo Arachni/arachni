@@ -1,33 +1,26 @@
 =begin
     Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Please see the LICENSE file at the root directory of the project.
 =end
-
-require 'net/http'
 
 class WebServerManager
     include Singleton
     include Arachni::Utilities
-    attr_reader :lib
+
+    attr_reader   :lib
+    attr_accessor :address
 
     def initialize
         @lib     = "#{support_path}/servers/"
         @servers = {}
+        @consumed_ports = Set.new
 
         Dir.glob( File.join( @lib + '**', '*.rb' ) ) do |path|
+            {} while @consumed_ports.include?( (port = available_port) )
+            @consumed_ports << port
+
             @servers[normalize_name( File.basename( path, '.rb' ) )] = {
-                port: available_port,
+                port: port,
                 path: path
             }
         end
@@ -36,12 +29,14 @@ class WebServerManager
     def spawn( name, port = nil )
         server_info        = data_for( name )
         server_info[:port] = port if port
-        server_info[:pid] = process_quiet_fork {
-            exec 'ruby', server_info[:path], "-p #{server_info[:port]}"
-        }
+        server_info[:pid]  = Process.spawn(
+            RbConfig.ruby, server_info[:path], '-p', server_info[:port].to_s,
+            '-o', address_for( name )
+        )
+        Process.detach server_info[:pid]
 
         begin
-            Timeout::timeout( 10 ) { sleep 0.1 while !up?( name ) }
+            Timeout::timeout( 30 ) { sleep 0.1 while !up?( name ) }
         rescue Timeout::Error
             abort "Server '#{name}' never started!"
         end
@@ -56,7 +51,7 @@ class WebServerManager
     end
 
     def address_for( name )
-        '127.0.0.2'
+        @address || '127.0.0.2'
     end
 
     def port_for( name )
@@ -64,7 +59,7 @@ class WebServerManager
     end
 
     def protocol_for( name )
-        'http'
+        name.to_s.include?( 'https' ) ? 'https' : 'http'
     end
 
     def kill( name )
@@ -78,24 +73,23 @@ class WebServerManager
 
     def killall
         @servers.keys.each { |name| kill name }
+        nil
     end
 
     def up?( name )
-        begin
-            Net::HTTP.get_response( URI.parse( url_for( name, false ) ) )
-            true
-        rescue Errno::ECONNRESET
-            true
-        rescue
-            false
-        end
+        Typhoeus.get(
+            url_for( name, false ),
+            ssl_verifypeer: false,
+            ssl_verifyhost: 0,
+            forbid_reuse:   true
+        ).code != 0
     end
 
     def self.method_missing( sym, *args, &block )
         if instance.respond_to?( sym )
             instance.send( sym, *args, &block )
-        elsif
-        super( sym, *args, &block )
+        else
+            super( sym, *args, &block )
         end
     end
 

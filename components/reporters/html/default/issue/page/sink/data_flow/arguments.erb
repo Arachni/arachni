@@ -1,0 +1,70 @@
+<strong>
+    <a
+    id="<%= id %>-arguments-all"
+    href="<%= id_to_location id %>/arguments/all">
+        All
+    </a>
+</strong>
+
+<%= data_dump sink.function.arguments %>
+
+<strong>
+    <a
+    id="<%= id %>-arguments-tainted"
+    href="<%= id_to_location id %>/arguments/tainted">
+        Tainted
+    </a>
+</strong>
+
+<table class="table table condensed table-fixed">
+    <% if sink.tainted_argument_value != sink.tainted_value %>
+        <col width="10%"/>
+        <col width="45%"/>
+        <col width="45%"/>
+    <% else %>
+        <col width="10%"/>
+        <col width="90%"/>
+    <% end %>
+
+    <tr>
+        <th>
+            Name
+        </th>
+        <th>
+            Value
+        </th>
+
+        <% if sink.tainted_argument_value != sink.tainted_value %>
+        <th>
+            Tainted value (located recursively in the argument value)
+        </th>
+        <% end %>
+    </tr>
+    <tr>
+        <td>
+            <% if sink.tainted_argument_name %>
+                <code><%= sink.tainted_argument_name %></code>
+            <% else %>
+                <% if sink.function.signature_arguments.empty? %>
+                <p class="alert alert-info">
+                    The function signature does not declare any arguments.
+                </p>
+                <% else %>
+                    <p class="alert alert-info">
+                        The tainted argument was provided in addition to the
+                        ones declared in the function signature.
+                    </p>
+                <% end %>
+            <% end %>
+        </td>
+        <td>
+            <%= data_dump sink.tainted_argument_value %>
+        </td>
+
+        <% if sink.tainted_argument_value != sink.tainted_value %>
+        <td>
+            <%= data_dump sink.tainted_value %>
+        </td>
+        <% end %>
+    </tr>
+</table>

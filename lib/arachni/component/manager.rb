@@ -1,45 +1,29 @@
 =begin
     Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Please see the LICENSE file at the root directory of the project.
 =end
 
 module Arachni
 
 module Component
 
-#
 # {Component} error namespace.
 #
 # All {Component} errors inherit from and live under it.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Error < Arachni::Error
 
-    #
     # Raised when a specified component could not be found/does not exist.
     #
     # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-    #
     class NotFound < Error
     end
 end
 
-require Options.dir['lib'] + 'component/options'
+require Options.paths.lib + 'component/options'
 
-#
-# Handles modules, reports, path extractor modules, plug-ins, pretty much
+# Handles checks, reports, path extractor checks, plug-ins, pretty much
 # every modular aspect of the framework.
 #
 # It is usually extended to fill-in for system specific functionality.
@@ -94,59 +78,58 @@ require Options.dir['lib'] + 'component/options'
 #
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Manager < Hash
     include UI::Output
+    include Utilities
+    extend  Utilities
 
     WILDCARD = '*'
     EXCLUDE  = '-'
 
-    # @return   [String]    The path to the component library/directory.
+    # @return   [String]
+    #   The path to the component library/directory.
     attr_reader :lib
 
     # @return [Module]
     #   Namespace under which all components are directly defined.
     attr_reader :namespace
 
-    #
-    # @param    [String]    lib    The path to the component library/directory.
+    # @param    [String]    lib
+    #   The path to the component library/directory.
     # @param    [Module,Class]    namespace
     #   Namespace under which all components are directly defined.
-    #
     def initialize( lib, namespace )
-        @lib = lib
+        @lib       = lib
         @namespace = namespace
     end
 
-    #
     # Loads components.
     #
     # @param    [Array<String,Symbol>]    components
     #   Components to load.
     #
-    # @return   [Array] Names of loaded components.
-    #
+    # @return   [Array]
+    #   Names of loaded components.
     def load( *components )
         parse( [components].flatten ).each { |component| self.[]( component ) }
     end
 
-    #
     # Loads all components, equivalent of `load '*'`.
     #
-    # @return   [Array] Names of loaded components.
-    #
+    # @return   [Array]
+    #   Names of loaded components.
     def load_all
         load '*'
     end
 
+    # Loads components by the tags found in the `Hash` returned by their `.info`
+    # method (tags should be in either: `:tags` or `:issue[:tags]`).
     #
-    # Loads components by the tags found in the `Hash` returned by their `.info` method
-    # (tags should be in either: `:tags` or `:issue[:tags]`).
+    # @param    [Array] tags
+    #   Tags to look for in components.
     #
-    # @param    [Array] tags    Tags to look for in components.
-    #
-    # @return   [Array] Components loaded.
-    #
+    # @return   [Array]
+    #   Components loaded.
     def load_by_tags( tags )
         return [] if !tags
 
@@ -167,44 +150,55 @@ class Manager < Hash
         end.compact
     end
 
-    #
     # Validates and prepares options for a given component.
     #
-    # @param    [String]    component_name    Name of the component.
-    # @param    [Class]     component         Component.
-    # @param    [Hash]      user_opts         User options.
+    # @param    [String]    component_name
+    #   Name of the component.
+    # @param    [Component::Base]     component
+    #   Component.
+    # @param    [Hash]      user_opts
+    #   User options.
     #
-    # @return   [Hash]   Prepared options to be passed to the component.
+    # @return   [Hash]
+    #   Prepared options to be passed to the component.
     #
     # @raise    [Component::Options::Error::Invalid]
     #   If given options are invalid.
-    #
-    def prep_opts( component_name, component, user_opts = {} )
+    def prepare_options( component_name, component, user_opts = {} )
         info = component.info
         return {} if !info.include?( :options ) || info[:options].empty?
 
         user_opts ||= {}
-        options = {}
-        errors  = {}
-        info[:options].each do |opt|
-            name = opt.name
-            val  = user_opts[name] || opt.default
+        user_opts   = user_opts.symbolize_keys(false)
 
-            if opt.empty_required_value?( val )
-                errors[name] = {
-                    opt:   opt,
-                    value: val,
-                    type:  :empty_required_value
+        options     = {}
+        errors      = {}
+        info[:options].each do |option|
+            option.value = user_opts[option.name]
+
+            if option.missing_value?
+                errors[option.name] = {
+                    option: option,
+                    value:  option.value,
+                    type:   :missing_value
                 }
-            elsif !opt.valid?( val )
-                errors[name] = {
-                    opt:   opt,
-                    value: val,
-                    type:  :invalid
-                }
+
+                break
             end
 
-            options[name] = opt.normalize( val )
+            next if option.effective_value.nil?
+
+            if !option.valid?
+                errors[option.name] = {
+                    option: option,
+                    value:  option.value,
+                    type:   :invalid
+                }
+
+                break
+            end
+
+            options.merge! option.for_component
         end
 
         if !errors.empty?
@@ -212,18 +206,18 @@ class Manager < Hash
                  format_error_string( component_name, errors )
         end
 
-        options
+        options.symbolize_keys( false )
     end
 
-    #
     # It parses the component array making sure that its structure is valid
     # and takes into consideration {WILDCARD wildcard} and {EXCLUDE exclusion}
     # modifiers.
     #
-    # @param    [Array<String,Symbol>]    components   Component names.
+    # @param    [Array<String,Symbol>]    components
+    #   Component names.
     #
-    # @return   [Array]    Components to load.
-    #
+    # @return   [Array]
+    #   Components to load.
     def parse( components )
         unload = []
         load   = []
@@ -253,7 +247,7 @@ class Manager < Hash
 
             components.each do |component|
 
-                if component.substring?( WILDCARD )
+                if component.include?( WILDCARD )
                     load |= wilcard_to_names( component )
                 else
 
@@ -274,13 +268,13 @@ class Manager < Hash
         load - unload
     end
 
-    #
     # Fetches a component's class by name, loading it on the fly if need be.
     #
-    # @param    [String, Symbol]    name    Component name.
+    # @param    [String, Symbol]    name
+    #   Component name.
     #
-    # @return   [Class] Component.
-    #
+    # @return   [Component::Base]
+    #   Component.
     def []( name )
         name = name.to_s
         return fetch( name ) if include?( name )
@@ -298,11 +292,10 @@ class Manager < Hash
     end
     alias :unload_all :clear
 
-    #
     # Unloads a component by name.
     #
-    # @param    [String, Symbol]    name   Component name.
-    #
+    # @param    [String, Symbol]    name
+    #   Component name.
     def delete( name )
         name = name.to_s
         begin
@@ -313,35 +306,37 @@ class Manager < Hash
     end
     alias :unload :delete
 
-    # @return    [Array]    Names of available components.
+    # @return    [Array]
+    #   Names of available components.
     def available
         paths.map{ |path| path_to_name( path ) }
     end
 
-    # @return    [Array]    Names of loaded components.
+    # @return    [Array]
+    #   Names of loaded components.
     def loaded
         keys
     end
 
-    #
     # Converts the name of a component to a its file's path.
     #
-    # @param    [String]    name    Name of the component.
+    # @param    [String]    name
+    #   Name of the component.
     #
-    # @return   [String]    Path to component file.
-    #
+    # @return   [String]
+    #   Path to component file.
     def name_to_path( name )
         paths.each { |path| return path if name.to_s == path_to_name( path ) }
         nil
     end
 
-    #
     # Converts the path of a component to a component name.
     #
-    # @param    [String]    path    File-path of the component.
+    # @param    [String]    path
+    #   File-path of the component.
     #
-    # @return   [String]    Component name.
-    #
+    # @return   [String]
+    #   Component name.
     def path_to_name( path )
         File.basename( path, '.rb' )
     end
@@ -366,10 +361,10 @@ class Manager < Hash
         "Invalid options for component: #{name}\n" +
         errors.map do |optname, error|
             val = error[:value].nil? ? '<empty>' : error[:value]
-            msg = (error[:type] == :invalid) ? "Invalid type" : "Empty required value"
+            msg = (error[:type] == :invalid) ? 'Invalid type' : 'Missing value'
 
             " *  #{msg}: #{optname} => '#{val}'\n" +
-            " *  Expected type: #{error[:opt].type}"
+            " *  Expected type: #{error[:option].type}"
         end.join( "\n\n" )
     end
 
@@ -379,7 +374,11 @@ class Manager < Hash
         post = classes
 
         return if pre == post
-        get_obj( (post - pre).first )
+
+        get_obj( (post - pre).first ).tap do |component|
+            next if !component.respond_to?( :shortname= )
+            component.shortname = path_to_name( path )
+        end
     end
 
     def classes

@@ -1,11 +1,11 @@
 require 'spec_helper'
 require 'fileutils'
 
-require "#{Arachni::Options.dir['lib']}/rpc/server/dispatcher"
+require "#{Arachni::Options.paths.lib}/rpc/server/dispatcher"
 
 describe Arachni::RPC::Server::Dispatcher do
     before( :all ) do
-        @job_info_keys  = %w(token pid port url owner birthdate starttime helpers currtime age runtime proc)
+        @job_info_keys  = %w(token pid port url owner birthdate starttime helpers currtime age runtime)
         @node_info_keys = %w(url pipe_id weight nickname cost)
     end
 
@@ -41,16 +41,27 @@ describe Arachni::RPC::Server::Dispatcher do
 
     describe '#handlers' do
         it 'returns an array of loaded handlers' do
-            Arachni::Options.dir['rpcd_handlers'] = "#{fixtures_path}rpcd_handlers/"
-            dispatcher_light_spawn.handlers.include?( 'echo' ).should be_true
+            Arachni::Options.paths.services = "#{fixtures_path}services/"
+            dispatcher_light_spawn.services.include?( 'echo' ).should be_true
         end
     end
 
     describe '#dispatch' do
-        context 'when Options#rpc_external_address has been set' do
+        it 'does not leak Instances' do
+            dispatcher = dispatcher_spawn
+
+            times = 20
+            times.times do
+                sleep 0.1 while !dispatcher.dispatch
+            end
+
+            dispatcher.jobs.size.should == times
+        end
+
+        context 'when Options#dispatcher_external_address has been set' do
             it 'advertises that address' do
-                address = '9.9.9.9'
-                dispatcher = dispatcher_light_spawn( rpc_external_address: address )
+                address = '127.0.0.1'
+                dispatcher = dispatcher_light_spawn( external_address: address )
                 dispatcher.dispatch['url'].should start_with "#{address}:"
             end
         end
@@ -69,27 +80,44 @@ describe Arachni::RPC::Server::Dispatcher do
                 owner = 'blah'
                 dispatcher_light_spawn.dispatch( owner )['owner'].should == owner
             end
-            it 'replenishes the pool' do
-                dispatcher = dispatcher_light_spawn( pool_size: 1 )
-                10.times do
-                    dispatcher.dispatch['pid'].should be_true
+            context 'when the pool is empty' do
+                it 'returns false' do
+                    dispatcher = dispatcher_light_spawn
+                    dispatcher.dispatch.should be_kind_of Hash
+                    dispatcher.dispatch.should be_false
+                end
+
+                it 'replenishes the pool' do
+                    dispatcher = dispatcher_light_spawn
+                    dispatcher.dispatch.should be_kind_of Hash
+                    dispatcher.dispatch.should be_false
+
+                    hash = nil
+                    Timeout.timeout 10 do
+                        loop do
+                            break if (hash = dispatcher.dispatch).is_a? Hash
+                        end
+                    end
+
+                    hash.should be_kind_of Hash
                 end
             end
         end
+
         context 'when a Grid member' do
             it 'returns Instance info from the least burdened Dispatcher' do
-                d1 = dispatcher_light_spawn(
+                d1 = dispatcher_spawn(
                     address: '127.0.0.1',
                     weight:  3
                 )
 
-                d2 = dispatcher_light_spawn(
+                d2 = dispatcher_spawn(
                     address:   '127.0.0.2',
                     weight:    2,
                     neighbour: d1.url
                 )
 
-                d3 = dispatcher_light_spawn(
+                d3 = dispatcher_spawn(
                     address:   '127.0.0.3',
                     weight:    1,
                     neighbour: d1.url
@@ -127,7 +155,6 @@ describe Arachni::RPC::Server::Dispatcher do
                         split( ':' ).first.should == '127.0.0.3'
                 end
             end
-
         end
     end
 
@@ -157,19 +184,21 @@ describe Arachni::RPC::Server::Dispatcher do
 
     describe '#running_jobs' do
         it 'returns proc info for running jobs' do
-            dispatcher = dispatcher_light_spawn
+            dispatcher = dispatcher_spawn
 
-            dispatcher.running_jobs.size.should ==
-                dispatcher.jobs.reject { |job| job['proc'].empty? }.size
+            3.times { dispatcher.dispatch }
+
+            dispatcher.running_jobs.size.should == 3
         end
     end
 
     describe '#finished_jobs' do
         it 'returns proc info for finished jobs' do
-            dispatcher = dispatcher_light_spawn
+            dispatcher = dispatcher_spawn
 
-            dispatcher.finished_jobs.size.should ==
-                dispatcher.jobs.select { |job| job['proc'].empty? }.size
+            3.times { Arachni::Processes::Manager.kill dispatcher.dispatch['pid'] }
+
+            dispatcher.finished_jobs.size.should == 3
         end
     end
 
@@ -182,17 +211,18 @@ describe Arachni::RPC::Server::Dispatcher do
         end
     end
 
-    describe '#stats' do
+    describe '#statistics' do
         it 'returns general statistics' do
             dispatcher = dispatcher_light_spawn
 
             dispatcher.dispatch
             jobs = dispatcher.jobs
-            Process.kill( 'KILL', jobs.first['pid'] )
+            Arachni::Processes::Manager.kill( jobs.first['pid'] )
 
-            stats = dispatcher.stats
+            stats = dispatcher.statistics
 
-            %w(running_jobs finished_jobs init_pool_size node consumed_pids neighbours).each do |k|
+            %w(running_jobs finished_jobs init_pool_size node consumed_pids
+                neighbours snapshots).each do |k|
                 stats[k].should be_true
             end
 
@@ -205,11 +235,29 @@ describe Arachni::RPC::Server::Dispatcher do
             stats['node'].keys.should == @node_info_keys
         end
 
-        context 'when Options#rpc_external_address has been set' do
+        context 'when there are scan snapshots' do
+            it 'lists them' do
+                dispatcher = dispatcher_light_spawn
+                info = dispatcher.dispatch
+
+                instance = Arachni::RPC::Client::Instance.new(
+                    Arachni::Options.instance, info['url'], info['token']
+                )
+
+                instance.service.scan( url: web_server_url_for( :framework_multi ) )
+                instance.service.suspend
+                sleep 1 while !instance.service.suspended?
+                instance.service.shutdown
+
+                dispatcher.statistics['snapshots'].should include instance.service.snapshot_path
+            end
+        end
+
+        context "when #{Arachni::OptionGroups::Dispatcher}#external_address has been set" do
             it 'advertises that address' do
-                address = '9.9.9.9'
-                dispatcher = dispatcher_light_spawn( rpc_external_address: address )
-                dispatcher.stats['node']['url'].should start_with "#{address}:"
+                address = '127.0.0.1'
+                dispatcher = dispatcher_light_spawn( external_address: address )
+                dispatcher.statistics['node']['url'].should start_with "#{address}:"
             end
         end
     end
@@ -217,15 +265,6 @@ describe Arachni::RPC::Server::Dispatcher do
     describe '#log' do
         it 'returns the contents of the log file' do
             dispatcher_light_spawn.log.should be_true
-        end
-    end
-
-    describe '#proc_info' do
-        it 'returns the proc info of the dispatcher' do
-            info = dispatcher_light_spawn.proc_info
-
-            info.should be_true
-            info['node'].keys.should == @node_info_keys
         end
     end
 

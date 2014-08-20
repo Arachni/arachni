@@ -1,0 +1,117 @@
+function index_to_shortname( index ){
+    return <%= graph_data[:issues_shortnames].to_json %>[index];
+}
+
+function index_to_severity( index ){
+    return <%= graph_data[:severity_for_issue].to_json %>[index_to_shortname(index)];
+}
+
+jQuery(function ($) {
+    c3.generate({
+        bindto: '#chart-issues',
+        data: {
+            columns: [
+                <%= (['Trusted'] + graph_data[:trusted_issues].values).to_json %>,
+                <%= (['Untrusted'] + graph_data[:untrusted_issues].values).to_json %>,
+                <%= (['Severity'] + graph_data[:severity_index_for_issue].values).to_json %>
+            ],
+            axes: {
+                Severity: 'y2'
+            },
+            type: 'bar',
+            groups: [
+                ['Trusted', 'Untrusted']
+            ],
+            types: {
+                Severity: 'line'
+            },
+            onclick: function (d) {
+                var location;
+
+                if( d.name.toLowerCase() == 'severity' ) {
+                    location = 'summary/issues/trusted/severity/' + index_to_severity(d.x);
+                } else {
+                    location = 'summary/issues/' + d.name.toLowerCase() + '/severity/' +
+                        index_to_severity(d.x) + '/' + index_to_shortname(d.x);
+                }
+
+                goToLocation( location );
+            }
+        },
+        regions: <%= graph_data[:severity_regions].to_json %>,
+        axis: {
+            x: {
+                type: 'category',
+                categories: <%= graph_data[:trusted_issues].keys.to_json %>,
+                tick: {
+                    rotate: 15
+                }
+            },
+            y: {
+                label: {
+                    text: 'Amount of logged issues',
+                    position: 'outer-center'
+                }
+            },
+            y2: {
+                label: {
+                    text: 'Severity',
+                    position: 'outer-center'
+                },
+                show: true,
+                type: 'category',
+                categories: <%= (1...(graph_data[:severities].size+1)).to_a.map { |i| i * graph_data[:severity_multiplier] }.to_json %>,
+                tick: {
+                    format: function (d) {
+                        return <%= graph_data[:severities].keys.reverse.to_json %>[(d - <%= graph_data[:severity_multiplier] %>) / <%= graph_data[:severity_multiplier] %>]
+                    }
+                }
+            }
+        },
+        padding: {
+            bottom: 40
+        },
+        color: {
+            pattern: [ '#1f77b4', '#d62728', '#ff7f0e' ]
+        }
+    });
+
+    c3.generate({
+        bindto: '#chart-trust',
+        data: {
+            type: 'pie',
+            columns: <%= graph_data[:trust].to_a.to_json %>
+        },
+        pie: {
+            onclick: function (d) { goToLocation( 'summary/issues/' + d.id.toLowerCase() ) }
+        },
+        color: {
+            pattern: [ '#1f77b4', '#d62728' ]
+        }
+    });
+
+    c3.generate({
+        bindto: '#chart-elements',
+        data: {
+            type: 'pie',
+            columns: <%= graph_data[:elements].select { |_, cnt| cnt > 0 }.to_a.to_json %>
+        }
+    });
+
+    c3.generate({
+        bindto: '#chart-severities',
+        data: {
+            type: 'pie',
+            columns: <%= graph_data[:severities].select { |_, cnt| cnt > 0 }.to_a.to_json %>
+        },
+        color: {
+            pattern: [ '#d62728', '#ff7f0e', '#ffbb78', '#1f77b4' ]
+        },
+        pie: {
+            onclick: function (d) {
+                goToLocation( 'summary/issues/trusted/severity/' + d.id );
+            }
+        }
+    });
+
+});

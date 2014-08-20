@@ -1,0 +1,78 @@
+<h2>
+    Configuration
+
+    <a id="configuration-download" class="btn btn-sm btn-primary">
+        Download
+    </a>
+</h2>
+
+<dl class="dl-horizontal">
+    <dt>Version</dt>
+    <dd><%= report.version %></dd>
+    <dt>Audit started on</dt>
+    <dd><%= report.start_datetime %></dd>
+    <dt>Audit finished on</dt>
+    <dd><%= report.finish_datetime %></dd>
+    <dt>Runtime</dt>
+    <dd><%= report.delta_time %></dd>
+</dl>
+
+<h3>
+    <a
+    id="configuration-general"
+    href="/#!/configuration/general"
+    >
+        General
+    </a>
+</h3>
+
+<dl class="dl-horizontal">
+    <dt>URL</dt>
+    <dd>
+        <a href="<%= escapeHTML report.options[:url] %>">
+            <%= escapeHTML report.options[:url] %>
+        </a>
+    </dd>
+
+    <% if report.options[:checks].any? %>
+        <dt>Checks</dt>
+        <dd>
+            <%= report.options[:checks].sort.map { |c| "<code>#{c}</code>" }.join(', ') %>
+        </dd>
+    <% end %>
+
+    <% if report.options[:plugins].any? %>
+        <dt>Plugins</dt>
+        <dd>
+            <%= erb 'shared/hash.erb', code: true, object: report.options[:plugins] || {} %>
+        </dd>
+    <% end %>
+
+    <% if report.options[:platforms].any? %>
+        <dt>Platforms</dt>
+        <dd>
+            <%= report.options[:platforms].sort.map { |c| "<code>#{c}</code>" }.join(', ') %>
+        </dd>
+    <% end %>
+</dl>
+
+<%
+   normalized_options = Arachni::Options.hash_to_rpc_data( report.options )
+   Arachni::Options.group_classes.keys.each do |group|
+       options = normalized_options[group.to_s]
+       next if options.nil? || options.empty?
+%>
+    <hr/>
+
+    <h3>
+        <a
+            id="configuration-<%= group %>"
+            href="/#!/configuration/<%= group %>"
+        >
+            <%= key_to_words group %>
+        </a>
+    </h3>
+
+    <%= erb 'shared/hash_table.erb', code: true, object: options || {} %>
+
+<% end %>

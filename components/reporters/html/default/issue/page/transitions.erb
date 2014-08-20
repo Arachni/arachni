@@ -1,0 +1,86 @@
+<table class="table table-condensed">
+    <tr>
+        <th>#</th>
+        <th>Time</th>
+        <th>Event</th>
+        <th>Element</th>
+        <th>Options</th>
+    </tr>
+
+    <% page.dom.transitions.each.with_index do |transition, i|
+           request = (transition.event == :request)
+    %>
+        <tr
+            id="<%= id %>-transitions-<%= i %>"
+            <%= 'class="text-muted request-transition"' if request %>
+        >
+            <th>
+                <strong>
+                    <a href="<%= id_to_location id %>/transitions/<%= i %>">
+                        <%= i %>
+                    </a>
+                </strong>
+            </th>
+            <td><%= transition.time %></td>
+            <td><code><%= transition.event %></code></td>
+            <td>
+                <% if request %>
+                    <a href="<%= escapeHTML transition.element %>">
+                        <%= escapeHTML transition.element %>
+                    </a>
+                <% else %>
+                    <code><%= escapeHTML transition.element %></code>
+                <% end %>
+            </td>
+            <td>
+                <table class="table table-condensed table-borderless well">
+                    <% if (url = transition.options[:url]) %>
+                        <tr>
+                            <th>URL</th>
+                            <td>
+                                <a href="<%= escapeHTML url %>">
+                                    <%= escapeHTML url %>
+                                </a>
+                            </td>
+                        </tr>
+                    <% end %>
+
+                    <% if (cookies = transition.options[:cookies] || {}).any? %>
+                        <tr>
+                            <th>Cookies</th>
+                        </tr>
+                        <tr>
+                            <td>
+                                <%=
+                                    erb 'shared/hash.erb',
+                                        code:   true,
+                                        object: cookies
+                                %>
+                            </td>
+                        </tr>
+                    <% end %>
+
+                    <% if (inputs = transition.options[:inputs] || {}).any? %>
+                        <tr>
+                            <th>Inputs</th>
+                        </tr>
+                        <tr>
+                            <td>
+                                <%= erb 'shared/hash.erb', code: true, object: inputs %>
+                            </td>
+                        </tr>
+                    <% end %>
+
+                    <% if (value = transition.options[:value])  %>
+                        <tr>
+                            <th>Value</th>
+                            <td>
+                                <code><%= escapeHTML value %></code>
+                            </td>
+                        </tr>
+                    <% end %>
+                </table>
+            </td>
+        </tr>
+    <% end %>
+</table>

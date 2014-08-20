@@ -1,0 +1,147 @@
+<div id="issues-<%= trust %>-severities-tabs">
+    <ul class="nav nav-tabs">
+
+        <% grouped.keys.each.with_index do |severity, i| %>
+            <li <%= 'class="active"' if i == 0 %> >
+                <a class="tab-severity-<%=severity %>"
+                   href="#!/issues/<%= trust %>/severity/<%= severity %>">
+                    <%= severity.to_s.capitalize %>
+
+                    <span class="badge">
+                        <%= graph_data["#{trust}_severities".to_sym][severity.to_sym] %>
+                    </span>
+                </a>
+            </li>
+        <% end %>
+    </ul>
+</div>
+
+<div class="tab-content">
+    <% grouped.each do |severity, issues_by_name|%>
+        <div class="tab-pane <%= 'active' if severity == grouped.keys.first %>"
+             id="issues-<%= trust %>-severity-<%= severity %>">
+
+            <% issues_by_name.each do |name, issues| %>
+                <%
+                   current_issue_id       = "issues-#{trust}-severity-" <<
+                           "#{severity}-#{issues.first.check[:shortname]}"
+                   current_issue_location = id_to_location( current_issue_id )
+                %>
+
+                <div class="row">
+                    <div class="col-md-10">
+                        <h3>
+                            <a id="<%= current_issue_id %>"
+                               href="<%= current_issue_location %>"
+                            >
+                                <%= name %>
+                            </a>
+
+                            <span class="badge">
+                                <%= issues.size %>
+                            </span>
+
+                            <small>
+                                <span class="label label-default">
+                                    <%= issues.first.check[:shortname] %>
+                                </span>
+                            </small>
+                        </h3>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="issue-description markdown">
+                                    <%= md issues.first.description %>
+                                </div>
+                            </div>
+                        </div>
+
+                        <% if issues.first.remedy_guidance || issues.first.remedy_code %>
+                        <div class="row">
+
+                            <%
+                               col_md = 12 / [
+                                       issues.first.remedy_guidance,
+                                       issues.first.remedy_code
+                               ].compact.size
+                            %>
+
+                            <% if issues.first.remedy_guidance %>
+                            <div class="col-md-<%= col_md %>">
+                                <h4>
+                                    <a id="<%= current_issue_id %>-remedy_guidance"
+                                       href="<%= current_issue_location %>/remedy_guidance"
+                                    >
+                                        Remediation guidance
+                                    </a>
+                                </h4>
+
+                                <div class="issue-remedy_guidance markdown">
+                                    <%= md issues.first.remedy_guidance %>
+                                </div>
+                            </div>
+                            <% end %>
+
+                            <% if issues.first.remedy_code %>
+                            <div class="col-md-<%= col_md %>">
+                                <h4>
+                                    <a id="<%= current_issue_id %>-remedy_code"
+                                       href="<%= current_issue_location %>/remedy_code"
+                                    >
+                                        Remediation code
+                                    </a>
+                                </h4>
+
+                                <pre class="issue-remedy_code">
+                                    <%= escapeHTML issues.first.remedy_code %>
+                                </pre>
+                            </div>
+                            <% end %>
+                        </div>
+                        <% end %>
+                    </div>
+
+                    <% if issues.first.references.any? || issues.first.cwe %>
+                    <div class="col-md-2">
+                        <h4>
+                            <a id="<%= current_issue_id %>-references"
+                               href="<%= current_issue_location %>/references"
+                            >
+                                References
+                            </a>
+                        </h4>
+
+                        <hr/>
+
+                        <ul class="list-unstyled">
+                            <% if issues.first.cwe %>
+                                <li>
+                                    <a href="<%= issues.first.cwe_url %>">
+                                        CWE-<%= issues.first.cwe %>
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <hr/>
+                                </li>
+                            <% end %>
+
+                            <% issues.first.references.each do |ref_name, url| %>
+                                <li>
+                                    <a href="<%= url %>"> <%= ref_name %></a>
+                                </li>
+                            <% end %>
+                        </ul>
+                    </div>
+                    <% end %>
+                </div>
+
+                <% issues.each do |issue| %>
+                    <%= erb :issue, issue: issue,
+                            id: "issues-#{trust}-severity-#{severity}-" <<
+                                        "#{issues.first.check[:shortname]}" %>
+                <% end %>
+            <% end %>
+        </div>
+    <% end %>
+</div>

@@ -1,17 +1,6 @@
 =begin
     Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Please see the LICENSE file at the root directory of the project.
 =end
 
 module Arachni
@@ -20,31 +9,83 @@ module Support::Database
 # Flat-file Queue implementation
 #
 # Behaves pretty much like a Ruby Queue however it transparently serializes and
-# saves its values to the file-system under the OS's temp directory.
+# saves its entries to the file-system under the OS's temp directory **after**
+# a specified {#max_buffer_size} (for in-memory entries) has been exceeded.
 #
 # It's pretty useful when you want to reduce memory footprint without
-# having to refactor any code since it behaves just like Ruby's implementation.
+# having to refactor any code since it behaves just like a Ruby Queue
+# implementation.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 class Queue < Base
 
+    # Default {#max_buffer_size}.
+    DEFAULT_MAX_BUFFER_SIZE = 100
+
+    # @return   [Integer]
+    #   How many entries to keep in memory before starting to off-load to disk.
+    attr_accessor :max_buffer_size
+
+    # @return   [Array<Object>]
+    #   Objects stored in the memory buffer.
+    attr_reader :buffer
+
+    # @return   [Array<String>]
+    #   Paths to files stored to disk.
+    attr_reader :disk
+
     # @see Arachni::Database::Base#initialize
     def initialize( *args )
         super( *args )
-        @q     = ::Queue.new
-        @mutex = Mutex.new
+        @disk    = []
+        @buffer  = []
+        @waiting = []
+        @mutex   = Mutex.new
     end
 
-    # @param    [Object]    obj Object to add to the queue.
+    # @note Defaults to {DEFAULT_MAX_BUFFER_SIZE}.
+    #
+    # @return   [Integer]
+    #   How many entries to keep in memory before starting to off-load to disk.
+    def max_buffer_size
+        @max_buffer_size || DEFAULT_MAX_BUFFER_SIZE
+    end
+
+    # @param    [Object]    obj
+    #   Object to add to the queue.
     def <<( obj )
-        synchronize { @q << dump( obj ) }
+        synchronize do
+            if @buffer.size < max_buffer_size
+                @buffer << obj
+            else
+                @disk << dump( obj )
+            end
+
+            begin
+                t = @waiting.shift
+                t.wakeup if t
+            rescue ThreadError
+                retry
+            end
+        end
     end
     alias :push :<<
     alias :enq :<<
 
-    # @return   [Object] Removes an object from the queue and returns it.
-    def pop
-        synchronize { load_and_delete_file @q.pop }
+    # @return   [Object]
+    #   Removes an object from the queue and returns it.
+    def pop( non_block = false )
+        synchronize do
+            loop do
+                if empty?
+                    raise ThreadError, 'queue empty' if non_block
+                    @waiting.push Thread.current
+                    @mutex.sleep
+                else
+                    return @buffer.shift || load_and_delete_file( @disk.shift )
+                end
+            end
+        end
     end
     alias :deq :pop
     alias :shift :pop
@@ -52,22 +93,37 @@ class Queue < Base
     # @return   [Integer]
     #   Size of the queue, the number of objects it currently holds.
     def size
-        @q.size
+        buffer_size + disk_size
     end
     alias :length :size
 
-    # @return   [Bool] `true` if the queue if empty, `false` otherwise.
+    def buffer_size
+        @buffer.size
+    end
+
+    def disk_size
+        @disk.size
+    end
+
+    # @return   [Bool]
+    #   `true` if the queue if empty, `false` otherwise.
     def empty?
-        @q.empty?
+        @buffer.empty? && @disk.empty?
     end
 
     # Removes all objects from the queue.
     def clear
-        while !@q.empty?
-            path = @q.pop
+        @buffer.clear
+
+        while !@disk.empty?
+            path = @disk.pop
             next if !path
             delete_file path
         end
+    end
+
+    def num_waiting
+        @waiting.size
     end
 
     private

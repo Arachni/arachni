@@ -3,11 +3,11 @@ require 'spec_helper'
 describe Arachni::Component::Manager do
     before( :all ) do
         @opts = Arachni::Options.instance
-        @lib = @opts.dir['plugins']
+        @lib = @opts.paths.plugins
         @namespace = Arachni::Plugins
         @components = Arachni::Component::Manager.new( @lib, @namespace )
     end
-
+    let(:available) { %w(wait bad distributable loop default with_options suspendable).sort }
     after( :each ) { @components.clear }
 
     describe '#lib' do
@@ -24,8 +24,7 @@ describe Arachni::Component::Manager do
 
     describe '#available' do
         it 'returns all available components' do
-            @components.available.sort.should ==
-                %w(wait bad distributable loop default with_options spider_hook).sort
+            @components.available.sort.should == available
         end
     end
 
@@ -285,42 +284,60 @@ describe Arachni::Component::Manager do
         end
     end
 
-    describe '#prep_opts' do
+    describe '#prepare_options' do
         it 'prepares options for passing to the component' do
             c = 'with_options'
 
             @components.load( c )
-            @components.prep_opts( c, @components[c],
-                { 'req_opt' => 'my value'}
+            @components.prepare_options( c, @components[c],
+                { 'req_opt' => 'my value' }
             ).should == {
-                    "req_opt" => "my value",
-                    "opt_opt" => nil,
-                "default_opt" => "value"
+                req_opt:     'my value',
+                default_opt: 'value'
             }
 
             opts = {
-                'req_opt' => 'req_opt value',
-                'opt_opt' => 'opt_opt value',
-                "default_opt" => "default_opt value"
+                'req_opt'     => 'req_opt value',
+                'opt_opt'     => 'opt_opt value',
+                'default_opt' => 'value2'
             }
-            @components.prep_opts( c, @components[c], opts ).should == opts
+            @components.prepare_options( c, @components[c], opts ).should == opts.symbolize_keys
         end
 
-        context 'with invalid options' do
-            it 'raises Arachni::Component::Options::Error::Invalid' do
+        context 'with missing options' do
+            it "raises #{Arachni::Component::Options::Error::Invalid}" do
                 trigger = proc do
                     begin
                         c = 'with_options'
                         @components.load( c )
-                        @components.prep_opts( c, @components[c], {} )
+                        @components.prepare_options( c, @components[c], {} )
                     ensure
                         @components.clear
                     end
                 end
 
-                expect { trigger.call }.to raise_error Arachni::Error
-                expect { trigger.call }.to raise_error Arachni::Component::Error
-                expect { trigger.call }.to raise_error Arachni::Component::Options::Error
+                expect { trigger.call }.to raise_error Arachni::Component::Options::Error::Invalid
+            end
+        end
+
+        context 'with invalid options' do
+            it "raises #{Arachni::Component::Options::Error::Invalid}" do
+                opts = {
+                    'req_opt'     => 'req_opt value',
+                    'opt_opt'     => 'opt_opt value',
+                    'default_opt' => 'default_opt value'
+                }
+
+                trigger = proc do
+                    begin
+                        c = 'with_options'
+                        @components.load( c )
+                        @components.prepare_options( c, @components[c], opts )
+                    ensure
+                        @components.clear
+                    end
+                end
+
                 expect { trigger.call }.to raise_error Arachni::Component::Options::Error::Invalid
             end
         end
@@ -421,16 +438,10 @@ describe Arachni::Component::Manager do
         end
     end
 
-    describe '#available' do
-        it 'returns all available components' do
-            @components.available.sort.should == %w(wait bad with_options distributable loop default spider_hook).sort
-        end
-    end
-
     describe '#loaded' do
         it 'returns all loaded components' do
             @components.load( '*' )
-            @components.loaded.sort.should == %w(wait bad with_options distributable loop default spider_hook).sort
+            @components.loaded.sort.should == available
         end
     end
 

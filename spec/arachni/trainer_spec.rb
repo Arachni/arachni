@@ -10,9 +10,9 @@ class TrainerMockFramework
     def initialize( page = nil )
         @page        = page
         @pages       = []
-        @on_audit_page = []
+        @on_page_audit = []
 
-        Arachni::HTTP.reset
+        http.reset
         @trainer = Arachni::Trainer.new( self )
 
         @opts = Arachni::Options.instance
@@ -21,20 +21,24 @@ class TrainerMockFramework
         @sitemap = []
     end
 
-    def link_count_limit_reached?
-        @opts.link_count_limit_reached? @sitemap.size
+    def accepts_more_pages?
+        @opts.scope.crawl? && !@opts.scope.page_limit_reached?( @sitemap.size )
     end
 
     def run
-        @on_audit_page.each do |b|
+        @on_page_audit.each do |b|
             b.call @page
         end
 
-        Arachni::HTTP.run
+        http.run
     end
 
-    def on_audit_page( &block )
-        @on_audit_page << block
+    def http
+        Arachni::HTTP::Client
+    end
+
+    def on_page_audit( &block )
+        @on_page_audit << block
     end
 
     def push_to_page_queue( page )
@@ -44,55 +48,23 @@ class TrainerMockFramework
 end
 
 def request( url )
-    Arachni::HTTP.instance.get( url.to_s, async: false ).response
+    Arachni::HTTP::Client.get( url.to_s, mode: :sync )
 end
 
 describe Arachni::Trainer do
 
     before( :all ) do
         @url = web_server_url_for( :trainer )
-        Arachni::Options.audit :links, :forms, :cookies, :headers
+        Arachni::Options.audit.elements :links, :forms, :cookies, :headers
     end
 
     before( :each ) do
         Arachni::Options.reset
 
-        res  = Arachni::HTTP.get( @url, async: false ).response
-        @page = Arachni::Page.from_response( res, Arachni::Options.instance )
+        @page = Arachni::Page.from_url( @url )
 
         @framework = TrainerMockFramework.new( @page )
         @trainer   = @framework.trainer
-    end
-
-    context 'when Options.fingerprint? is' do
-        context true do
-            it 'fingerprints the page' do
-                Arachni::Options.no_fingerprinting = false
-                Arachni::Options.fingerprint?.should be_true
-
-                @framework.pages.should be_empty
-
-                Arachni::HTTP.request( @url + '/fingerprint', train: true )
-                @framework.run
-
-                @framework.pages.size.should == 1
-                @framework.pages.first.platforms.to_a.should == [:php]
-            end
-        end
-
-        context false do
-            it 'does not fingerprint the page' do
-                Arachni::Options.no_fingerprinting = true
-                Arachni::Options.fingerprint?.should be_false
-
-                @framework.pages.should be_empty
-
-                Arachni::HTTP.request( @url + '/fingerprint', train: true )
-                @framework.run
-
-                @framework.pages.should be_empty
-            end
-        end
     end
 
     describe 'HTTP requests with "train" set to' do
@@ -100,7 +72,7 @@ describe Arachni::Trainer do
             it 'skips the Trainer' do
                 @framework.pages.size.should == 0
 
-                Arachni::HTTP.request( @url + '/elems' )
+                Arachni::HTTP::Client.request( @url + '/elems' )
                 @framework.run
 
                 @framework.pages.size.should == 0
@@ -110,7 +82,7 @@ describe Arachni::Trainer do
             it 'skips the Trainer' do
                 @framework.pages.size.should == 0
 
-                Arachni::HTTP.request( @url + '/elems', train: false )
+                Arachni::HTTP::Client.request( @url + '/elems', train: false )
                 @framework.run
 
                 @framework.pages.size.should == 0
@@ -120,7 +92,7 @@ describe Arachni::Trainer do
             it 'passes the response to the Trainer' do
                 @framework.pages.size.should == 0
 
-                Arachni::HTTP.request( @url + '/elems', train: true )
+                Arachni::HTTP::Client.request( @url + '/elems', train: true )
                 @framework.run
 
                 @framework.pages.size.should == 1
@@ -130,11 +102,11 @@ describe Arachni::Trainer do
                 it 'passes the response to the Trainer' do
                     @framework.pages.size.should == 0
 
-                    Arachni::HTTP.request( @url + '/train/redirect', train: true )
+                    Arachni::HTTP::Client.request( @url + '/train/redirect', train: true )
                     @framework.run
 
                     page = @framework.pages.first
-                    page.links.first.auditable.include?( 'msg' ).should be_true
+                    page.links.first.inputs.include?( 'msg' ).should be_true
                 end
             end
         end
@@ -145,7 +117,7 @@ describe Arachni::Trainer do
             it 'is skipped' do
                 @framework.pages.size.should == 0
 
-                Arachni::HTTP.request( @url, train: true )
+                Arachni::HTTP::Client.request( @url, train: true )
                 @framework.run
 
                 @framework.pages.should be_empty
@@ -155,11 +127,11 @@ describe Arachni::Trainer do
         context 'gets updated more than Trainer::MAX_TRAININGS_PER_URL times' do
             it 'is ignored' do
                 get_response = proc do
-                    Typhoeus::Response.new(
-                        effective_url: @url,
-                        body:          "<a href='?#{rand( 9999 )}=1'>Test</a>",
-                        headers_hash: { 'Content-type' => 'text/html' },
-                        request:      Typhoeus::Request.new( @url )
+                    Arachni::HTTP::Response.new(
+                        url: @url,
+                        body:    "<a href='?#{rand( 9999 )}=1'>Test</a>",
+                        headers: { 'Content-type' => 'text/html' },
+                        request: Arachni::HTTP::Request.new( url: @url )
                     )
                 end
 
@@ -176,8 +148,8 @@ describe Arachni::Trainer do
 
         context 'matches excluding criteria' do
             it 'is ignored' do
-                res = Typhoeus::Response.new(
-                    effective_url: @url + '/exclude_me'
+                res = Arachni::HTTP::Response.new(
+                    url: @url + '/exclude_me'
                 )
                 @trainer.push( res ).should be_false
             end
@@ -189,11 +161,11 @@ describe Arachni::Trainer do
                 trainer = TrainerMockFramework.new.trainer
 
                 get_response = proc do
-                    Typhoeus::Response.new(
-                        effective_url: 'http://stuff.com/match_this',
+                    Arachni::HTTP::Response.new(
+                        url: 'http://stuff.com/match_this',
                         body:          "<a href='?#{rand( 9999 )}=1'>Test</a>",
-                        headers_hash: { 'Content-type' => 'text/html' },
-                        request:      Typhoeus::Request.new( 'http://stuff.com/match_this' )
+                        headers: { 'Content-type' => 'text/html' },
+                        request:      Arachni::HTTP::Request.new( url: 'http://stuff.com/match_this' )
                     )
                 end
 
@@ -202,7 +174,7 @@ describe Arachni::Trainer do
                 pages = []
                 trainer.on_new_page { |p| pages << p }
 
-                Arachni::Options.redundant = { /match_this/ => 10 }
+                Arachni::Options.scope.redundant_path_patterns = { /match_this/ => 10 }
 
                 100.times { trainer.push( get_response.call ) }
 
@@ -211,93 +183,138 @@ describe Arachni::Trainer do
         end
     end
 
-    context 'when the link-count-limit is exceeded, following pages' do
-        it 'is ignored' do
-            Arachni::Options.url = 'http://stuff.com'
+    describe '#push' do
+        context 'when an error occurs' do
+            it 'returns nil' do
+                @trainer.page = @page
 
-            framework = TrainerMockFramework.new
-            trainer = framework.trainer
+                @trainer.stub(:analyze) { raise }
 
+                @trainer.push( request( @url ) ).should be_nil
+            end
+        end
+
+        context 'when the resource is out-of-scope' do
+            it 'returns false' do
+                @trainer.page = @page
+
+                Arachni::Options.scope.exclude_path_patterns = @url
+                @trainer.push( request( @url ) ).should be_false
+            end
+        end
+
+        context 'when the content-type is' do
+            context 'text-based' do
+                it 'returns true' do
+                    @trainer.page = @page
+                    @trainer.push( request( @url ) ).should be_true
+                end
+            end
+
+            context 'not text-based' do
+                it 'returns false' do
+                    ct = @url + '/non_text_content_type'
+                    @trainer.push( request( ct ) ).should be_false
+                end
+            end
+        end
+
+        context 'when the response contains a new' do
+            context 'form' do
+                it 'returns a page with the new form' do
+                    url = @url + '/new_form'
+                    @trainer.page = @page
+                    @trainer.push( request( url ) ).should be_true
+
+                    pages = @framework.pages
+                    pages.size.should == 1
+
+                    page = pages.pop
+                    new_forms = (page.forms - @page.forms)
+                    new_forms.size.should == 1
+                    new_forms.first.inputs.include?( 'input2' ).should be_true
+                end
+            end
+
+            context 'link' do
+                it 'returns a page with the new link' do
+                    url = @url + '/new_link'
+                    @trainer.page = @page
+                    @trainer.push( request( url ) ).should be_true
+
+                    page = @framework.pages.first
+
+                    new_links = (page.links - @page.links)
+                    new_links.size.should == 1
+                    new_links.select { |l| l.inputs.include?( 'link_param' ) }.should be_any
+                end
+            end
+
+            context 'cookie' do
+                it 'returns a page with the new cookie appended' do
+                    url = @url + '/new_cookie'
+                    @trainer.page = @page
+                    @trainer.push( request( url ) ).should be_true
+
+                    page = @framework.pages.first
+                    page.cookies.size.should == 2
+                    page.cookies.select { |l| l.inputs.include?( 'new_cookie' ) }.should be_any
+                end
+            end
+        end
+
+        context 'when the response is the result of a redirection' do
+            it 'extracts query vars from the effective url' do
+                url = @url + '/redirect?redirected=true'
+                @trainer.page = @page
+                @trainer.push( request( url ) ).should be_true
+                page = @framework.pages.first
+                page.links.last.inputs['redirected'].should == 'true'
+            end
+        end
+
+        context "when #{Arachni::Framework}#accepts_more_pages?" do
             get_response = proc do
-                Typhoeus::Response.new(
-                    effective_url: "http://stuff.com/#{rand( 9999 )}",
-                    body:          "<a href='?#{rand( 9999 )}=1'>Test</a>",
-                    headers_hash: { 'Content-type' => 'text/html' },
-                    request:      Typhoeus::Request.new( 'http://stuff.com/match_this' )
+                Arachni::HTTP::Response.new(
+                    url:     "http://stuff.com/#{rand( 9999 )}",
+                    body:    "<a href='?#{rand( 9999 )}=1'>Test</a>",
+                    headers: { 'Content-type' => 'text/html' },
+                    request: Arachni::HTTP::Request.new( url: 'http://stuff.com/match_this' )
                 )
             end
 
-            trainer.page = Arachni::Page.from_response( get_response.call )
-
-            pages = []
-            trainer.on_new_page { |p| pages << p }
-
-            Arachni::Options.link_count_limit = 10
-            100.times { trainer.push( get_response.call ) }
-
-            pages.size.should == 10
-        end
-    end
-
-    context 'when the content-type is' do
-        context 'text-based' do
-            it 'returns true' do
-                @trainer.page = @page
-                @trainer.push( request( @url ) ).should be_true
+            before do
+                Arachni::Options.url = 'http://stuff.com'
+                subject.page = Arachni::Page.from_response( get_response.call )
             end
-        end
 
-        context 'not text-based' do
-            it 'returns false' do
-                ct = @url + '/non_text_content_type'
-                @trainer.push( request( ct ) ).should be_false
+            let(:subject) { TrainerMockFramework.new.trainer }
+
+            context true do
+                before { TrainerMockFramework.any_instance.stub(:accepts_more_pages?){ true } }
+
+                it 'processes pages' do
+                    pages = []
+                    subject.on_new_page { |p| pages << p }
+
+                    subject.push( get_response.call ).should be_true
+
+                    pages.size.should == 1
+                end
             end
-        end
-    end
 
-    context 'when the response contains a new' do
-        context 'form' do
-            it 'returns a page with the new form' do
-                url = @url + '/new_form'
-                @trainer.page = @page
-                @trainer.push( request( url ) ).should be_true
-                page = @framework.pages.first
-                page.should be_true
-                page.forms.size.should == 1
-                page.forms.first.auditable.include?( 'input2' ).should be_true
+            context false do
+                before { TrainerMockFramework.any_instance.stub(:accepts_more_pages?){ false } }
+
+                it 'does not process the page' do
+                    pages = []
+                    subject.on_new_page { |p| pages << p }
+
+                    subject.push( get_response.call ).should be_false
+
+                    pages.should be_empty
+                end
             end
-        end
-
-        context 'link' do
-            it 'returns a page with the new link' do
-                url = @url + '/new_link'
-                @trainer.page = @page
-                @trainer.push( request( url ) ).should be_true
-                page = @framework.pages.first
-                page.should be_true
-                page.links.select { |l| l.auditable.include?( 'link_param' ) }.should be_any
-            end
-        end
-
-        context 'cookie' do
-            it 'returns a page with the new cookie appended' do
-                url = @url + '/new_cookie'
-                @trainer.page = @page
-                @trainer.push( request( url ) ).should be_true
-                page = @framework.pages.first
-                page.should be_true
-                page.cookies.last.auditable.include?( 'new_cookie' ).should be_true
-            end
-        end
-    end
-
-    context 'when the response is the result of a redirection' do
-        it 'extracts query vars from the effective url' do
-            url = @url + '/redirect?redirected=true'
-            @trainer.page = @page
-            @trainer.push( request( url ) ).should be_true
-            page = @framework.pages.first
-            page.links.last.auditable['redirected'].should == 'true'
         end
     end
 

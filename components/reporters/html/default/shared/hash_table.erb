@@ -1,0 +1,22 @@
+<table class="table table-condensed">
+    <col width="15%"/>
+
+    <% object.each do |k, v| %>
+        <tr>
+            <th>
+                <%= code ? "<code>#{escapeHTML k.inspect}</code>" : escapeHTML( k.inspect ) %>
+            </th>
+            <td>
+                <% if v.is_a? Hash %>
+                    <% if v.empty? %>
+                        <code><%= escapeHTML v.inspect %></code>
+                    <% else %>
+                        <%= erb 'shared/hash_table.erb', code: code, object: v %>
+                    <% end %>
+                <% else %>
+                    <%= code ? "<code>#{escapeHTML v.inspect }</code>" : escapeHTML( v.inspect ) %>
+                <% end %>
+            </td>
+        </tr>
+    <% end %>
+</table>

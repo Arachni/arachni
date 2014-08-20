@@ -6,23 +6,48 @@ describe Arachni::Platform::Manager do
     after(:each) { described_class.reset }
 
     let(:platforms) { described_class.new }
+    let(:http) { Arachni::HTTP::Client }
+
+    def page
+        Arachni::Options.do_not_fingerprint
+        page = Arachni::Page.from_url( "#{web_server_url_for( :auditor )}/s.php" )
+        Arachni::Options.fingerprint
+        page
+    end
+
+    def binary_page
+        Arachni::Options.do_not_fingerprint
+        page = Arachni::Page.from_url( "#{web_server_url_for( :auditor )}/binary" )
+        Arachni::Options.fingerprint
+        page
+    end
 
     it 'is Enumerable' do
         platforms.is_a? Enumerable
     end
 
+    it "caches up to #{described_class::PLATFORM_CACHE_SIZE} entries" do
+        url = 'http://test/'
+
+        (2 * described_class::PLATFORM_CACHE_SIZE).times do |i|
+            described_class["#{url}/#{i}"] << :unix
+        end
+
+        described_class.size.should == described_class::PLATFORM_CACHE_SIZE
+    end
+
     describe '.set' do
         it 'set the global platform fingerprints' do
-            described_class.set 'stuff'
-            described_class.all.should == 'stuff'
+            described_class.set( 'http://test/' => [:unix] )
+            described_class['http://test/'].should include :unix
         end
     end
 
     describe '.reset' do
         it 'clears the global platform fingerprints' do
-            described_class.set 'stuff'
+            described_class.set( 'http://test/' => [:unix] )
             described_class.reset
-            described_class.all.should be_empty
+            described_class.should be_empty
         end
 
         it 'returns self' do
@@ -30,11 +55,86 @@ describe Arachni::Platform::Manager do
         end
     end
 
+    describe '.include?' do
+        context 'when the list includes the given key' do
+            it 'returns true' do
+                url = 'http://stuff/'
+                described_class[url] << :unix
+                described_class.should include url
+            end
+        end
+
+        context 'when the list does not include the given key' do
+            it 'returns true' do
+                url = 'http://stuff/'
+                described_class.should_not include url
+            end
+        end
+    end
+
+    describe '.clear' do
+        it 'clear all platforms' do
+            described_class.update( 'http://test/', [:unix, :jsp] )
+            described_class.should be_any
+            described_class.clear
+            described_class.should be_empty
+        end
+    end
+
+    describe '.fingerprint?' do
+        Arachni::Options.do_not_fingerprint
+        page = Arachni::Page.from_url( "#{web_server_url_for( :auditor )}/s.php" )
+        Arachni::Options.fingerprint
+        page
+
+        [page, page.response].each do |resource|
+            context "when given a #{resource.class}" do
+                context 'when Options.fingerprint is set to' do
+                    context true do
+                        context 'and it is text based' do
+                            context 'and has not yet been fingerprinted' do
+                                context 'and is within scope' do
+                                    it 'returns true' do
+                                        described_class.fingerprint?( page ).should be_true
+                                    end
+                                end
+
+                                context 'and is out of scope' do
+                                    it 'returns false' do
+                                        Arachni::Options.scope.exclude_path_patterns << /s/
+                                        described_class.fingerprint?( page ).should be_false
+                                    end
+                                end
+                            end
+
+                            context 'and the resource has already been fingerprinted' do
+                                it 'returns false' do
+                                    described_class[page.url] << :unix
+                                    described_class.fingerprint?( page ).should be_false
+                                end
+                            end
+                        end
+                        context 'and it is not text based' do
+                            it 'returns false' do
+                                described_class.fingerprint?( binary_page ).should be_false
+                            end
+                        end
+                    end
+
+                    context false do
+                        it 'returns false' do
+                            p = page
+                            Arachni::Options.do_not_fingerprint
+                            described_class.fingerprint?( p ).should be_false
+                        end
+                    end
+                end
+            end
+        end
+    end
+
     describe '.fingerprint' do
         it 'runs all fingerprinters against the given page' do
-            page = Arachni::Page.new( url: 'http://stuff.com/blah.php' )
-
-            page.platforms.should be_empty
             described_class.fingerprint page
             page.platforms.sort.should == [:php].sort
 
@@ -42,7 +142,6 @@ describe Arachni::Platform::Manager do
         end
 
         it 'returns the given page' do
-            page = Arachni::Page.new( url: 'http://stuff.com/' )
             described_class.fingerprint( page ).should == page
         end
     end
@@ -86,13 +185,18 @@ describe Arachni::Platform::Manager do
         it 'set the platforms for the given URI' do
             platforms = [:unix, :jsp]
             described_class['http://stuff.com'] = platforms
-            described_class.all.values.first.sort.should == platforms.sort
+
+            platforms.each do |platform|
+                described_class['http://stuff.com'].should include platform
+            end
         end
 
         it "converts the value to a #{described_class}" do
             platforms = [:unix, :jsp]
             described_class['http://stuff.com'] = platforms
-            described_class.all.values.first.should be_kind_of described_class
+            platforms.each do |platform|
+                described_class['http://stuff.com'].should be_kind_of described_class
+            end
         end
 
         context 'when invalid platforms are given' do
@@ -108,45 +212,43 @@ describe Arachni::Platform::Manager do
         context 'with valid platforms' do
             it 'updates self with the given platforms' do
                 described_class['http://test.com/'] << :unix
-                described_class['http://test.com/'].update( [:jsp] )
+                described_class.update( 'http://test.com/', [:jsp] )
                 described_class['http://test.com/'].sort.should == [:unix, :jsp].sort
             end
         end
         context 'with invalid platforms' do
             it 'raises Arachni::Platform::Error::Invalid' do
                 expect {
-                    described_class['http://test.com/'].update( [:blah] )
+                    described_class.update( 'http://test.com/', [:blah] )
                 }.to raise_error Arachni::Platform::Error::Invalid
             end
         end
     end
 
-    describe '.all' do
-        it 'returns the raw internal DB of fingerprints' do
-            described_class.all.size.should == 0
-            described_class['http://test.com/'] << :unix
-            described_class.all.size.should == 1
-            described_class.all.first.last.should be_kind_of described_class
+    describe '.valid' do
+        it 'returns all platforms' do
+            described_class.valid.to_a.should == described_class::PLATFORM_NAMES.keys
         end
     end
 
-    describe '.light' do
-        it 'returns a light representation of the internal DB of fingerprints' do
-            described_class['http://test.com/'] << :unix
-            described_class.light.first.last.should == [:unix]
-        end
-    end
+    describe '.valid?' do
+        context 'when the given platforms are' do
+            context 'valid' do
+                it 'returns true' do
+                    described_class.valid.each do |platform|
+                        described_class.valid?( platform ).should be_true
+                    end
 
-    describe '.update_light' do
-        it 'loads a DB from a light representation' do
-            described_class['http://test.com/'] << :unix
-            light = described_class.light
-            described_class.reset
-            described_class.all.should be_empty
+                    described_class.valid?( described_class.valid.to_a ).should be_true
+                end
+            end
 
-            described_class.update_light light
-            described_class.all.should be_any
-            described_class['http://test.com/'].should include :unix
+            context 'invalid' do
+                it 'returns false' do
+                    described_class.valid?( :stuff ).should be_false
+                    described_class.valid?( described_class.valid.to_a + [:stuff] ).should be_false
+                end
+            end
         end
     end
 
@@ -286,7 +388,8 @@ describe Arachni::Platform::Manager do
                  :coldfusion, :db2, :emc, :informix, :interbase, :mssql, :mysql,
                  :oracle, :firebird, :maxdb, :pgsql, :sqlite, :apache, :iis, :nginx,
                  :tomcat, :asp, :aspx, :jsp, :perl, :php, :python, :ruby, :rack,
-                 :sybase, :frontbase, :ingres, :hsqldb, :access, :jetty].sort
+                 :sybase, :frontbase, :ingres, :hsqldb, :access, :jetty, :mongodb,
+                 :aix].sort
         end
     end
 
@@ -301,6 +404,15 @@ describe Arachni::Platform::Manager do
             end
 
             iterated.sort.should == included_platforms
+        end
+    end
+
+    describe '#clear' do
+        it 'clear the platforms' do
+            platforms.update( [:unix, :jsp] )
+            platforms.should be_any
+            platforms.clear
+            platforms.should be_empty
         end
     end
 

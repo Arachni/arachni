@@ -11,7 +11,7 @@ describe 'WAVSEP false-positive XSS' do
         {
             'Reflected Cross Site Scripting' => {
                 url:        "RXSS-FalsePositives-#{http_method}/",
-                modules:    'xss*',
+                checks:     'xss*',
                 vulnerable: []
             }
         }

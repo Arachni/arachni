@@ -19,20 +19,4 @@ describe Object do
         end
     end
 
-    describe '#realsize' do
-        context 'when the class has instance variables' do
-            it 'returns an integer > 0' do
-                s = MyClass.new
-                s.stuff = 'my stuff'
-                s.realsize.should > 0
-            end
-        end
-        context 'when the class has instance variables' do
-            it 'returns nil' do
-                s = Empty.new
-                s.realsize.should == 0
-            end
-        end
-    end
-
 end

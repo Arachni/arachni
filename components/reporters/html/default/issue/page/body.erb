@@ -1,0 +1,42 @@
+<% if page.dom.transitions.any? && (!page.body.empty? || !page.response.body.empty?) &&
+        (page.body != page.response.body) %>
+    <div class="row">
+        <div class="col-md-6">
+            <strong>
+                <a
+                id="<%= id %>-browser_evaluated_body"
+                href="<%= id_to_location id %>/browser_evaluated_body">
+                    Browser-evaluated body
+                </a>
+            </strong>
+
+            <p class="text-muted">
+                This is the browser-evaluated body, as a result of the listed
+                <a href="<%= id_to_location id %>/transitions">transitions</a>.
+            </p>
+
+            <%= code_highlight(page.body, :html, anchor_id: "#{id}-browser_evaluated_body") %>
+        </div>
+
+        <div class="col-md-6">
+            <strong>
+                <a
+                id="<%= id %>-http_response_body"
+                href="<%= id_to_location id %>/http_response_body">
+                    HTTP response body
+                </a>
+            </strong>
+
+            <p class="text-muted">
+                This is the original
+                <a href="<%= id_to_location id %>/http_response">HTTP
+                    response</a>
+                body.
+            </p>
+
+            <%= code_highlight(page.response.body, :html, anchor_id: "#{id}-http_response_body") %>
+        </div>
+    </div>
+
+    <hr/>
+<% end %>

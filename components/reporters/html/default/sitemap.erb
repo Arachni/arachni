@@ -1,0 +1,29 @@
+<h2>
+    <a href="#!/sitemap">
+        Sitemap
+
+        <span class="badge"><%= report.sitemap.size %></span>
+    </a>
+</h2>
+
+<div id="sitemap">
+
+    <table class="table table-condensed">
+        <tr>
+            <th>HTTP status code</th>
+            <th>URL</th>
+        </tr>
+
+        <% report.sitemap.sort_by { |k, v| k }.each do |url, code| %>
+            <tr>
+                <th><%= code %></th>
+                <td>
+                    <a href="<%= escapeHTML url %>">
+                        <%= escapeHTML url %>
+                    </a>
+                </td>
+            </tr>
+        <% end %>
+    </table>
+
+</div>

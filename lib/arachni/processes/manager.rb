@@ -1,32 +1,21 @@
 =begin
     Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Please see the LICENSE file at the root directory of the project.
 =end
 
 require 'singleton'
-require 'eventmachine'
+require 'arachni/reactor'
 
 module Arachni
 module Processes
 
-#
 # Helper for managing processes.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
 class Manager
     include Singleton
+
+    RUNNER = "#{File.dirname( __FILE__ )}/executables/base.rb"
 
     # @return   [Array<Integer>] PIDs of all running processes.
     attr_reader :pids
@@ -36,12 +25,10 @@ class Manager
         @discard_output = true
     end
 
-    #
     # @param    [Integer]   pid
     #   Adds a PID to the {#pids} and detaches the process.
     #
     # @return   [Integer]   `pid`
-    #
     def <<( pid )
         @pids << pid
         Process.detach pid
@@ -50,17 +37,24 @@ class Manager
 
     # @param    [Integer]   pid PID of the process to kill.
     def kill( pid )
-        loop do
-            begin
-                Process.kill( 'KILL', pid )
-            rescue Errno::ESRCH
-                @pids.delete pid
-                return
+        Timeout.timeout 10 do
+            while sleep 0.1 do
+                begin
+                    # I'd rather this be an INT but WEBrick's INT traps write to
+                    # the Logger and multiple INT signals force it to write to a
+                    # closed logger and crash.
+                    Process.kill( 'KILL', pid )
+                rescue Errno::ESRCH
+                    @pids.delete pid
+                    return
+                end
             end
         end
+    rescue Timeout::Error
     end
 
-    # @param    [Array<Integer>]   pids PIDs of the process to {#kill}.
+    # @param    [Array<Integer>]   pids
+    #   PIDs of the process to {Arachni::Processes::Manager#kill}.
     def kill_many( pids )
         pids.each { |pid| kill pid }
     end
@@ -71,23 +65,11 @@ class Manager
         @pids.clear
     end
 
-    # Stops the EventMachine reactor.
-    def kill_em
-        ::EM.stop while ::EM.reactor_running? && sleep( 0.1 )
+    # Stops the Reactor.
+    def kill_reactor
+        Reactor.stop
     rescue
         nil
-    end
-
-    # @param    [Block] block   Block to fork and discard its output.
-    def quiet_fork( &block )
-        self << fork( &discard_output( &block ) )
-    end
-
-    # @param    [Block] block
-    #   Block to fork and run inside EventMachine's reactor thread -- its output
-    #   will be discarded..
-    def fork_em( *args, &block )
-        self << ::EM.fork_reactor( *args, &discard_output( &block ) )
     end
 
     # Overrides the default setting of discarding process outputs.
@@ -95,27 +77,79 @@ class Manager
         @discard_output = false
     end
 
-    # @param    [Block] block   Block to run silently.
-    def discard_output( &block )
-        if !block_given?
-            @discard_output = true
-            return
+    def preserve_output?
+        !discard_output?
+    end
+
+    def discard_output
+        @discard_output = true
+    end
+
+    def discard_output?
+        @discard_output
+    end
+
+    # @param    [String]    executable
+    #   Name of the executable Ruby script found in {OptionGroups::Paths#executables}
+    #   without the '.rb' extension.
+    # @param    [Hash]  options
+    #   Options to pass to the script -- can be retrieved from `$options`.
+    #
+    # @return   [Integer]
+    #   PID of the process.
+    def spawn( executable, options = {} )
+        fork = options.delete(:fork)
+        fork = true if fork.nil?
+
+        options[:options] ||= {}
+        options[:options]   = Options.to_h.merge( options[:options] )
+
+        executable      = "#{Options.paths.executables}/#{executable}.rb"
+        encoded_options = Base64.strict_encode64( Marshal.dump( options ) )
+        argv            = [executable, encoded_options]
+
+        # Process.fork is faster, less stressful to the CPU and lets the parent
+        # and child share the same RAM due to copy-on-write support on Ruby 2.0.0.
+        # It is, however, not available when running on Windows nor JRuby so
+        # have a fallback ready.
+        if fork && Process.respond_to?( :fork )
+            pid = Process.fork do
+                if discard_output?
+                    $stdout.reopen( Arachni.null_device, 'w' )
+                    $stderr.reopen( Arachni.null_device, 'w' )
+                end
+
+                # Careful, Framework.reset will remove objects from Data
+                # structures which off-load to disk, those files however belong
+                # to our parent and should not be touched, thus, we remove
+                # any references to them.
+                Data.framework.page_queue.disk.clear
+                Data.framework.url_queue.disk.clear
+                Data.framework.rpc.distributed_page_queue.disk.clear
+
+                # Provide a clean slate.
+                Framework.reset
+                Reactor.stop
+
+                ARGV.replace( argv )
+                load RUNNER
+            end
+        else
+            # It's very, **VERY** important that we use this argument format as
+            # it bypasses the OS shell and we can thus count on a 1-to-1 process
+            # creation and that the PID we get will be for the actual process.
+            pid = Process.spawn( RbConfig.ruby, RUNNER, *argv )
         end
 
-        proc do
-            if @discard_output
-                $stdout.reopen( '/dev/null', 'w' )
-                $stderr.reopen( '/dev/null', 'w' )
-            end
-            block.call
-        end
+        self << pid
+        pid
     end
 
     def self.method_missing( sym, *args, &block )
         if instance.respond_to?( sym )
             instance.send( sym, *args, &block )
-        elsif
-        super( sym, *args, &block )
+        else
+            super( sym, *args, &block )
         end
     end
 

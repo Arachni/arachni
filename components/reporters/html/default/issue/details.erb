@@ -1,0 +1,68 @@
+<div class="panel-group">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <a href="<%= issue_location( issue ) %>/vector">
+                    <i class="fa fa-link"></i>
+                </a>
+
+                <a data-toggle="collapse" href="#<%= id %>-vector">
+                    Vector information
+                </a>
+            </h4>
+        </div>
+        <div id="<%= id %>-vector" class="panel-collapse collapse">
+            <div class="panel-body">
+                <%= erb 'issue/vector.erb', id: id, vector: issue.vector %>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <a href="<%= issue_location( issue ) %>/affected_page">
+                    <i class="fa fa-link"></i>
+                </a>
+
+                <a data-toggle="collapse" href="#<%= id %>-affected_page">
+                    Affected page:
+
+                    <code><%= escapeHTML(issue.page.dom.url) %></code>
+                </a>
+            </h4>
+        </div>
+        <div id="<%= id %>-affected_page" class="panel-collapse collapse">
+            <div class="panel-body">
+                <%= erb 'issue/page.erb', id: "#{id}-affected_page",
+                        page:  issue.page,
+                        issue: issue
+                %>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <a href="<%= issue_location( issue ) %>/referring_page">
+                    <i class="fa fa-link"></i>
+                </a>
+
+                <a data-toggle="collapse" href="#<%= id %>-referring_page">
+                    Referring page:
+
+                    <code><%= escapeHTML(issue.referring_page.dom.url) %></code>
+                </a>
+            </h4>
+        </div>
+        <div id="<%= id %>-referring_page" class="panel-collapse collapse">
+            <div class="panel-body">
+                <%= erb 'issue/page.erb', id: "#{id}-referring_page",
+                        page:  issue.referring_page,
+                        issue: issue
+                %>
+            </div>
+        </div>
+    </div>
+</div>

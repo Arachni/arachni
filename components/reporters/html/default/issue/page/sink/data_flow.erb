@@ -1,0 +1,95 @@
+<p class="alert alert-info">
+    Taint is:
+    <code><%= escapeHTML page.dom.data_flow_sinks.first.taint.inspect %></code>
+</p>
+
+<table class="table table-condensed table-fixed">
+    <tr>
+        <th>#</th>
+        <th>Object</th>
+        <th>Function</th>
+        <th></th>
+    </tr>
+    <% page.dom.data_flow_sinks.each.with_index do |sink, i| %>
+        <tr id="<%= id %>-data_flow_sinks-<%= i %>" >
+            <th>
+                <strong>
+                    <a href="<%= id_to_location id %>/data_flow_sinks/<%= i %>">
+                        <%= i %>
+                    </a>
+                </strong>
+            </th>
+            <td>
+                <code><%= sink.object %></code>
+            </td>
+            <td>
+                <code><%= sink.function.signature || sink.function.name %></code>
+            </td>
+            <td>
+                <a href="javascript:void(0);"
+                   onclick="$('#<%= id %>-data_flow_sinks-<%= i %>-inspect').toggle()"
+                   class="btn btn-info btn-xs">
+                    Inspect
+                </a>
+            </td>
+        </tr>
+        <tr id="<%= id %>-data_flow_sinks-<%= i %>-inspect" class="well" style="display: none">
+            <td colspan="4">
+                <ul class="nav nav-tabs">
+                    <li class="active">
+                        <a href="<%= id_to_location id %>/data_flow_sinks/<%= i %>/inspect/arguments">
+                            Arguments
+                        </a>
+                    </li>
+
+                    <% if !sink.function.source.to_s.empty? %>
+                        <li>
+                            <a href="<%= id_to_location id %>/data_flow_sinks/<%= i %>/inspect/source">
+                                Source
+                            </a>
+                        </li>
+                    <% end %>
+
+                    <% if sink.trace.any? %>
+                        <li>
+                            <a href="<%= id_to_location id %>/data_flow_sinks/<%= i %>/inspect/stacktrace">
+                                Stacktrace
+                            </a>
+                        </li>
+                    <% end %>
+
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane active" id="<%= id %>-data_flow_sinks-<%= i %>-inspect-arguments">
+                        <%= erb 'issue/page/sink/data_flow/arguments.erb',
+                                id:   "#{id}-data_flow_sinks-#{i}-inspect",
+                                sink: sink
+                        %>
+                    </div>
+
+                    <% if !sink.function.source.to_s.empty? %>
+                        <div class="tab-pane" id="<%= id %>-data_flow_sinks-<%= i %>-inspect-source">
+                            <%= erb 'issue/page/sink/data_flow/source.erb',
+                                    id:     "#{id}-data_flow_sinks-#{i}-inspect",
+                                    source: sink.function.source
+                            %>
+                        </div>
+                    <% end %>
+
+                    <% if sink.trace.any? %>
+                        <div class="tab-pane" id="<%= id %>-data_flow_sinks-<%= i %>-inspect-stacktrace">
+                            <%= erb 'issue/page/sink/trace/table.erb',
+                                    id:    "#{id}-data_flow_sinks-#{i}-inspect-stacktrace",
+                                    parent_id: id,
+                                    trace: sink.trace,
+                                    page:  page
+                            %>
+                        </div>
+                    <% end %>
+                </div>
+
+            </td>
+        </tr>
+    <% end %>
+</table>

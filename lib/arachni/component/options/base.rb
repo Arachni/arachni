@@ -1,126 +1,138 @@
 =begin
     Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Please see the LICENSE file at the root directory of the project.
 =end
 
-###
-#
 # The base class for all options.
 #
-###
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @abstract
 class Arachni::Component::Options::Base
 
-    #
-    # The name of the option.
-    #
-    attr_accessor :name
+    # @return   [Symbol]    Name.
+    attr_reader   :name
 
-    #
-    # The description of the option.
-    #
-    attr_reader :desc
+    # @return   [String]    Description.
+    attr_reader   :description
 
-    #
-    # The default value of the option.
-    #
-    attr_reader :default
+    # @return   [Object]    Default value.
+    attr_reader   :default
 
-    #
-    # The list of potential valid values
-    #
-    attr_accessor :enums
+    # @return   [Object]    Assigned value.
+    attr_accessor :value
 
-
-    #
     # Initializes a named option with the supplied attribute array.
     # The array is composed of three values.
     #
-    # attrs[0] = required (boolean type)
-    # attrs[1] = description (string)
-    # attrs[2] = default value
-    # attrs[3] = possible enum values
-    #
-    # @param    [String]    name    the name of the options
-    # @param    [Array]     attrs   option attributes
-    #
-    def initialize( name, attrs = [] )
-        @name     = name
-        @required = attrs[0] || false
-        @desc     = attrs[1]
-        @default  = attrs[2]
-        @enums    = [ *(attrs[3]) ].map { |x| x.to_s }
+    # @param    [Symbol]    name
+    #   Name of the option.
+    # @param    [Hash]     options
+    #   Option attributes.
+    # @option   options [String, Symbol]    :name
+    #   {#name Name} for this option.
+    # @option   options [String]    :description
+    #   {#name Description} for this option.
+    # @option   options [Bool]    :required (false)
+    #   Is this option {#required?}.
+    # @option   options [Object]    :default
+    #   {#name Default value} for this option.
+    # @option   options [Object]    :value
+    #   {#value Value} for this option.
+    def initialize( name, options = {} )
+        options = options.dup
+
+        @name        = name.to_sym
+        @required    = !!options.delete(:required)
+        @description = options.delete(:description)
+        @default     = options.delete(:default)
+        @value       = options.delete(:value)
+
+        return if options.empty?
+        fail ArgumentError, "Unknown options: #{options.keys.join( ', ' )}"
     end
 
-    #
     # Returns true if this is a required option.
     #
+    # @return   [Bool]
+    #   `true` if the option is required, `false` otherwise.
     def required?
         @required
     end
 
-    #
-    # Returns true if the supplied type is equivalent to this option's type.
-    #
-    def type?( in_type )
-        type == in_type
+    # @return   [Bool]
+    #   `true` if the option value is valid, `false` otherwise.
+    def valid?
+        !missing_value?
     end
 
-    #
-    # If it's required and the value is nil or empty, then it's not valid.
-    #
-    def valid?( value )
-        ( required? && ( value.nil? || value.to_s.empty? ) ) ? false : true
+    # @return   [Bool]
+    #   `true` if the option is {#required?} but has no {#value},
+    #   `false` otherwise.
+    def missing_value?
+        required? && effective_value.nil?
     end
 
+    # @return   [Object]
+    #   Convert the user-provided {#value} (which will usually be a
+    #   user-supplied String) to the desired Ruby type.
     #
-    # Returns true if the value supplied is nil and it's required to be
-    # a valid value
-    #
-    def empty_required_value?( value )
-        required? && value.nil?
+    # @abstract
+    def normalize
+        effective_value
     end
 
-    #
-    # Normalizes the supplied value to conform with the type that the option is
-    # conveying.
-    #
-    def normalize( value )
-        value
+    # @return   [Object]
+    #   {#value} or {#default}.
+    def effective_value
+        @value || @default
     end
 
+    # @return   [Symbol]
+    #   Type identifying the option.
+    #
+    # @abstract
     def type
-        'abstract'
+        :abstract
     end
 
-    #
-    # Converts the Options object to hash
-    #
     # @return    [Hash]
-    #
+    #   {#name} => {#normalize}
+    def for_component
+        { name => normalize }
+    end
+
+    # @return    [Hash]
     def to_h
         hash = {}
-        self.instance_variables.each do |var|
-            hash[var.to_s.gsub( /@/, '' )] = self.instance_variable_get( var )
+        instance_variables.each do |var|
+            hash[var.to_s.gsub( /@/, '' ).to_sym] = instance_variable_get( var )
         end
-        hash.merge( 'type' => type )
+        hash.merge( type: type )
+    end
+    alias :to_hash :to_h
+
+    # @return   [Hash]
+    #   Data representing this instance that are suitable the RPC transmission.
+    def to_rpc_data
+        to_h.merge( class: self.class.to_s ).stringify_keys
     end
 
-    def ==( opt )
-        to_h == opt.to_h
+    # @param    [Hash]  data    {#to_rpc_data}
+    # @return   [Base]
+    def self.from_rpc_data( data )
+        data.delete('type')
+        data.delete('class')
+        name = data.delete('name')
+
+        new name, data.symbolize_keys(false)
     end
 
-    protected
-    attr_writer :required, :desc, :default # :nodoc:
+    def ==( option )
+        hash == option.hash
+    end
+
+    def hash
+        to_h.hash
+    end
 
 end

@@ -1,24 +1,18 @@
 =begin
     Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    Please see the LICENSE file at the root directory of the project.
 =end
 
 class Hash
 
+    if !method_defined?( :to_h )
+        alias :to_h :to_hash
+    end
+
     # Converts the hash keys to strings.
     #
-    # @param    [Boolean]    recursively    Go through the Hash recursively?
+    # @param    [Boolean]    recursively
+    #   Go through the Hash recursively?
     #
     # @return [Hash]
     #   Hash with +self+'s keys recursively converted to strings.
@@ -32,16 +26,51 @@ class Hash
 
     # Converts the hash keys to symbols.
     #
-    # @param    [Boolean]    recursively    Go through the Hash recursively?
+    # @param    [Boolean]    recursively
+    #   Go through the Hash recursively?
     #
     # @return [Hash]
     #   Hash with +self+'s keys recursively converted to symbols.
     def symbolize_keys( recursively = true )
         symbolize = {}
         each do |k, v|
-            symbolize[k.to_s.to_sym] = (recursively && v.is_a?( Hash ) ? v.symbolize_keys : v)
+            k = k.respond_to?(:to_sym) ? k.to_sym : k
+
+            symbolize[k] = (recursively && v.is_a?( Hash ) ?
+                v.symbolize_keys : v)
         end
         symbolize
+    end
+
+    # @return [Hash]
+    #   Hash with +self+'s keys and values recursively converted to strings.
+    def stringify
+        apply_recursively(:to_s)
+    end
+
+    def stringify_recursively_and_freeze
+        modified = {}
+
+        each do |k, v|
+            if v.is_a?( Hash )
+                modified[k.to_s.freeze] = v.stringify_recursively_and_freeze
+            else
+                modified[k.to_s.freeze] = v.to_s.freeze
+            end
+        end
+
+        modified.freeze
+    end
+
+    def apply_recursively( method, *args )
+        modified = {}
+
+        each do |k, v|
+            modified[k.send(method, *args)] = v.is_a?( Hash ) ?
+                v.apply_recursively(method, *args) : v.send(method, *args)
+        end
+
+        modified
     end
 
     # @return   [Hash]

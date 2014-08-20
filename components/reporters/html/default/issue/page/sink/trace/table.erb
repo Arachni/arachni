@@ -1,0 +1,127 @@
+<table class="table table-condensed table-fixed">
+    <col width="5%" />
+    <col width="70%" />
+    <col width="5%" />
+    <col width="15%" />
+    <col width="5%" />
+
+    <tr>
+        <th>
+            #
+        </th>
+        <th>
+            URL
+        </th>
+        <th>
+            Line
+        </th>
+        <th>
+            Function
+        </th>
+        <th></th>
+    </tr>
+    <% trace.each.with_index do |frame, i| %>
+        <tr id="<%= id %>-<%= i %>">
+            <th>
+                <strong>
+                    <a href="<%= id_to_location id %>/<%= i %>">
+                        <%= i %>
+                    </a>
+                </strong>
+            </th>
+            <td>
+                <a href="<%= escapeHTML frame.url %>">
+                    <%= escapeHTML frame.url %>
+                </a>
+            </td>
+            <td>
+                <% if frame.line.to_i > 0 && frame.url == page.dom.url %>
+                    <a href="<%= id_to_location parent_id %>/browser_evaluated_body/<%= frame.line %>">
+                        <%= frame.line %>
+                    </a>
+                <% else %>
+                    <%= frame.line %>
+                <% end %>
+            </td>
+            <td>
+                <% if frame.function.signature %>
+                    <code><%= frame.function.signature %></code>
+                <% else %>
+                    <p class="alert alert-info">No function signature available.</p>
+                <% end %>
+            </td>
+
+            <td>
+                <% if (frame.line.to_i > 0 && frame.url == page.dom.url) ||
+                        !frame.function.source.to_s.empty? || frame.function.arguments %>
+                    <a href="javascript:void(0);"
+                       onclick="$('#<%= id %>-<%= i %>-inspect').toggle()"
+                       class="btn btn-info btn-xs">
+                        Inspect
+                    </a>
+                <% else %>
+                    <span rel="tooltip" title="This call lacks context.
+                        It was probably eval()'ed or performed under a strict-mode JS context.">
+
+                        <a href="javascript:void(0);"
+                           class="btn btn-info btn-xs disabled">
+                            Inspect
+                        </a>
+                    </span>
+                <% end %>
+            </td>
+        </tr>
+
+        <% if (frame.line.to_i > 0 && frame.url == page.dom.url) ||
+                !frame.function.source.to_s.empty? || frame.function.arguments %>
+        <tr id="<%= id %>-<%= i %>-inspect" style="display: none">
+            <td colspan="5" class="borderless">
+                <ul class="nav nav-tabs">
+
+                    <% has_active = false %>
+                    <% if frame.function.arguments %>
+                    <% has_active = true %>
+
+                    <li class="active">
+                        <a href="<%= id_to_location id %>/<%= i %>/inspect/arguments">
+                            Arguments
+                        </a>
+                    </li>
+                    <% end %>
+
+                    <% if (frame.line.to_i > 0 && frame.url == page.dom.url) || !frame.function.source.to_s.empty? %>
+                        <li <%= 'class="active"' if !has_active %>>
+                            <a href="<%= id_to_location id %>/<%= i %>/inspect/source">
+                                Source
+                            </a>
+                        </li>
+                    <% end %>
+                </ul>
+
+                <div class="tab-content">
+
+                    <% has_active = false %>
+                    <% if frame.function.arguments %>
+                        <% has_active = true %>
+                    <div class="tab-pane active" id="<%= id %>-<%= i %>-inspect-arguments">
+                        <%= data_dump frame.function.arguments %>
+                    </div>
+                    <% end %>
+
+                    <% if (frame.line.to_i > 0 && frame.url == page.dom.url) || !frame.function.source.to_s.empty? %>
+                        <div class="tab-pane <%= 'active' if !has_active %>" id="<%= id %>-<%= i %>-inspect-source">
+                            <%= erb 'issue/page/sink/frame/source.erb',
+                                    id:    "#{id}-#{i}-inspect",
+                                    frame: frame,
+                                    page:  page
+                            %>
+                        </div>
+                    <% end %>
+                </div>
+
+            </td>
+        </tr>
+        <% end %>
+
+    <% end %>
+</table>

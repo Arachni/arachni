@@ -1,24 +1,26 @@
-shared_examples_for "plugin" do
+shared_examples_for 'plugin' do
     include_examples 'component'
 
     before( :all ) do
-        FileUtils.cp "#{fixtures_path}modules/test2.rb", options.dir['modules']
-        framework.modules.load :test2
-
-        framework.plugins.load name
+        FileUtils.cp "#{fixtures_path}checks/test2.rb", options.paths.checks
     end
+    after( :all ) do
+        FileUtils.rm "#{options.paths.checks}test2.rb"
+    end
+
     before( :each ) do
-        framework.reset_spider
-        framework.plugins.reset
+        framework.checks.load :test2
+        framework.plugins.load @name
     end
-
-    after( :all ) { FileUtils.rm "#{options.dir['modules']}test2.rb" }
+    after( :each ) do
+        framework.reset
+    end
 
     def results
     end
 
     def self.easy_test( &block )
-        it "logs the expected results" do
+        it 'logs the expected results' do
             raise 'No results provided via #results, use \':nil\' for \'nil\' results.' if !results
 
             run
@@ -28,12 +30,31 @@ shared_examples_for "plugin" do
         end
     end
 
+    def run
+        framework.run
+
+        # Make sure plugin formatters work as well.
+        # framework.reporters.load_all
+        # framework.reporters.each do |name, _|
+        #     framework.reporters[name].new( framework.report, outfile: outfile ).run
+        #     File.delete( outfile ) rescue nil
+        # end
+    end
+
+    def outfile
+        @outfile ||= "#{Dir.tmpdir}/#{(0..10).map{ rand( 9 ).to_s }.join}"
+    end
+
+    def plugin
+        framework.plugins[component_name]
+    end
+
     def actual_results
-        results_for( name )
+        results_for( component_name )
     end
 
     def results_for( name )
-        (framework.plugins.results[name] || {})[:results]
+        (framework.plugins.results[component_name.to_sym] || {})[:results]
     end
 
     def expected_results
@@ -41,10 +62,6 @@ shared_examples_for "plugin" do
 
         (results.is_a?( String ) && results.include?( '__URL__' )) ?
             yaml_load( results ) : results
-    end
-
-    def current_plugin
-        framework.plugins[name]
     end
 
 end

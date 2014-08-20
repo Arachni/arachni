@@ -1,33 +1,47 @@
 require 'spec_helper'
-require Arachni::Options.dir['lib'] + 'rpc/server/base'
-require Arachni::Options.dir['lib'] + 'rpc/server/framework'
+require Arachni::Options.paths.lib + 'rpc/server/base'
+require Arachni::Options.paths.lib + 'rpc/server/framework'
 
 class Distributor
     include Arachni::RPC::Server::Framework::Distributor
 
-    attr_reader   :instances
+    attr_reader   :slaves
+    attr_reader   :options
+    attr_reader   :done_slaves
     attr_accessor :master_url
 
     [ :map_slaves, :each_slave, :slave_iterator, :iterator_for,
-        :split_urls, :build_elem_list, :distribute_elements, :preferred_dispatchers,
-        :pick_dispatchers, :distribute_and_run ].each do |sym|
+      :preferred_dispatchers, :pick_dispatchers, :prepare_slave_options,
+      :split_page_workload, :calculate_workload_size ].each do |sym|
         private sym
         public sym
     end
 
     def initialize( token )
-        @opts           = Arachni::Options.instance
-        @local_token    = token
-        @instances      = []
-        @running_slaves = Set.new
+        @options     = Arachni::Options.instance
+        @local_token = token
+        @slaves      = []
+        @done_slaves = Set.new
+    end
+
+    def state
+        Arachni::State.framework
+    end
+
+    def data
+        Arachni::Data.framework
+    end
+
+    def slave_done?( url )
+        @done_slaves.include? url
     end
 
     def dispatcher_url=( url )
-        @opts.datastore[:dispatcher_url] = url
+        options.datastore.dispatcher_url = url
     end
 
     def <<( instance_h )
-        @instances << instance_h
+        @slaves << instance_h
     end
 end
 
@@ -50,8 +64,8 @@ class FakeMaster
 
     def enslave( instance_hash )
         instance = Arachni::RPC::Client::Instance.new( @opts,
-                                                       instance_hash['url'],
-                                                       instance_hash['token'])
+                                                       instance_hash[:url],
+                                                       instance_hash[:token])
 
         instance.framework.
             set_master( "#{@server.opts[:host]}:#{@server.opts[:port]}", @token )
@@ -72,49 +86,320 @@ class FakeMaster
 end
 
 describe Arachni::RPC::Server::Framework::Distributor do
-    before( :all ) do
-        @opts             = Arachni::Options.instance
-        @opts.audit_links = true
-        @token            = 'secret'
 
-        @distributor = Distributor.new( @token )
+    def get_distributor
+        distributor = Distributor.new( @token )
         2.times {
             instance = instance_spawn
-            @distributor <<  {
-                'url' => instance.url,
-                'token' => instance_token_for( instance.url )
+            distributor <<  {
+                url:   instance.url,
+                token: instance_token_for( instance.url )
             }
         }
+        distributor
+    end
 
-        @url  = 'http://test.com/'
-        @url2 = 'http://test.com/test/'
-        @urls = []
+    before( :all ) do
+        @opts             = Arachni::Options.instance
+        @opts.audit.links = true
+        @opts.audit.forms = true
+        @token            = 'secret'
 
-        url_gen = proc { |u, i| "#{u}?input_#{i}=val_#{i}" }
+        @distributor = get_distributor
 
-        10.times do |i|
-            @urls << url_gen.call( @url, i )
+        @url = 'http://test.com/'
+    end
+
+    describe '#calculate_workload_size' do
+        it 'returns the amount of workload to gather for distribution' do
+            @distributor.calculate_workload_size( 99999 ).should == 30
         end
 
-        4.times do |i|
-            @urls << url_gen.call( @url2, i )
+        it 'bases it on the amount of idle instances' do
+            distributor = get_distributor
+            distributor.done_slaves << distributor.slaves.first[:url]
+            distributor.calculate_workload_size( 99999 ).should == 20
         end
 
-        5.times do |i|
-            @urls << url_gen.call( @url, i )
+        context 'when the calculated size exceeds the maximum' do
+            it 'returns the maximum' do
+                @distributor.calculate_workload_size( 20 ).should == 20
+            end
+        end
+    end
+
+    describe '#split_page_workload' do
+        let(:pages) do
+            pages = []
+
+            url = "#{@url}/1"
+            pages << Arachni::Page.from_data(
+                url: url,
+                forms: [
+                         Arachni::Form.new( url: url, inputs: { test: 1 } ),
+                         Arachni::Form.new(
+                             url: url,
+                             action: "#{url}/my-action",
+                             inputs: { test: 1 }
+                         )
+                     ]
+            )
+
+            url = "#{@url}/2"
+            pages << Arachni::Page.from_data(
+                url: url,
+                forms: [
+                         Arachni::Form.new( url: "#{@url}/1", inputs: { test: 1 } ),
+                         Arachni::Form.new(
+                             url: url,
+                             action: "#{url}/my-action2",
+                             inputs: { test: 1 }
+                         )
+                     ]
+            )
+
+            url = "#{@url}/3"
+            pages << Arachni::Page.from_data(
+                url: url,
+                forms: [
+                         Arachni::Form.new( url: "#{@url}/2", inputs: { test: 1 } ),
+                         Arachni::Form.new(
+                             url: url,
+                             action: "#{url}/my-action2",
+                             inputs: { test: 1 }
+                         )
+                     ]
+            )
+
+            url = "#{@url}/4"
+            pages << Arachni::Page.from_data(
+                url: url,
+                forms: [
+                         Arachni::Form.new( url: url, inputs: { test: 1 } ),
+                         Arachni::Form.new(
+                             url: url,
+                             action: "#{url}/my-action",
+                             inputs: { test: 1 }
+                         )
+                     ]
+            )
+
+            url = "#{@url}/5"
+            pages << Arachni::Page.from_data(
+                url: url,
+                forms: [
+                         Arachni::Form.new(
+                             url: url,
+                             action: "#{url}/my-action",
+                             inputs: { test: 1 }
+                         )
+                     ]
+            )
+            pages
         end
 
-        14.times do |i|
-            @urls << url_gen.call( @url2, i )
+        context 'when there are new pages' do
+            context 'with new elements' do
+                it 'splits the workload for the available instances' do
+                    distributor = get_distributor
+
+                    workload = []
+                    distributor.split_page_workload( pages ).map do |page_chunks|
+                        workload << Hash[page_chunks.map { |p| [p.url, p.element_audit_whitelist.to_a] }]
+                    end
+                    workload.should == [
+                        {
+                            "#{@url}1" => [2720541242, 3706493238],
+                            "#{@url}2" => [2299786370]
+                        },
+                        {
+                            "#{@url}3" => [3008708675, 1846432277],
+                            "#{@url}4" => [2444203185] },
+                        {
+                            "#{@url}4" => [2195342275],
+                            "#{@url}5" => [659674061]
+                        }
+                    ]
+
+                    Arachni::State.clear
+                    Arachni::Data.clear
+
+                    distributor = get_distributor
+                    # Mark one of the instances as done.
+                    distributor.done_slaves << distributor.slaves.first[:url]
+
+                    workload = []
+                    distributor.split_page_workload( pages ).map do |page_chunks|
+                        workload << Hash[page_chunks.map { |p| [p.url, p.element_audit_whitelist.to_a] }]
+                    end
+                    workload.should == [
+                        {
+                            'http://test.com/1' => [2720541242, 3706493238],
+                            'http://test.com/2' => [2299786370],
+                            'http://test.com/3' => [3008708675]
+                        },
+                        {
+                            'http://test.com/3' => [1846432277],
+                            'http://test.com/4' => [2444203185, 2195342275],
+                            'http://test.com/5' => [659674061]
+                        }
+                    ]
+                end
+            end
+
+            context 'with seen elements' do
+                it 'distributes them as is' do
+                    distributor = get_distributor
+                    distributor.split_page_workload( pages )
+
+                    pages.each do |page|
+                        page.body << 'stuff'
+                    end
+
+                    workload = []
+                    distributor.split_page_workload( pages ).map do |page_chunks|
+                        workload << page_chunks.map(&:url)
+                    end
+                    workload.should == [
+                        ['http://test.com/1', 'http://test.com/2'],
+                        ['http://test.com/3', 'http://test.com/4'],
+                        ['http://test.com/5']
+                    ]
+                end
+
+                it 'does not audit them' do
+                    distributor = get_distributor
+                    distributor.split_page_workload( pages )
+
+                    pages.each do |page|
+                        page.body << 'stuff'
+                    end
+
+                    workload = []
+                    distributor.split_page_workload( pages ).map do |page_chunks|
+                        workload << page_chunks
+                    end
+                    workload.flatten!
+                    workload.size.should == 5
+
+                    workload.each do |page|
+                        page.elements.should be_any
+                        page.elements.each { |e| page.audit_element?(e).should be_false }
+                    end
+                end
+            end
+
+            context 'without any elements' do
+                it 'distributes them as is' do
+                    pages = []
+
+                    20.times do |i|
+                        pages << Arachni::Page.from_data( url: "#{@url}/#{i}", body: i.to_s )
+                    end
+
+                    workload = []
+                    get_distributor.split_page_workload( pages ).map do |page_chunks|
+                        workload << page_chunks.map(&:url)
+                    end
+                    workload.should == [
+                        [
+                            'http://test.com/0',
+                            'http://test.com/1',
+                            'http://test.com/2',
+                            'http://test.com/3',
+                            'http://test.com/4',
+                            'http://test.com/5',
+                            'http://test.com/6'
+                        ],
+                        [
+                            'http://test.com/7',
+                            'http://test.com/8',
+                            'http://test.com/9',
+                            'http://test.com/10',
+                            'http://test.com/11',
+                            'http://test.com/12',
+                            'http://test.com/13'
+                        ],
+                        [
+                            'http://test.com/14',
+                            'http://test.com/15',
+                            'http://test.com/16',
+                            'http://test.com/17',
+                            'http://test.com/18',
+                            'http://test.com/19'
+                        ]
+                    ]
+                end
+            end
         end
 
-        20.times do |i|
-            @urls << url_gen.call( @url, i )
+        context 'when there are seen pages' do
+            context 'with new elements' do
+                it 'only distributes new elements' do
+                    distributor = get_distributor
+                    distributor.split_page_workload( pages )
+
+                    pages.first.forms |= [
+                        Arachni::Form.new(
+                            url:    pages.first.url,
+                            action: "#{pages.first.url}/my-action",
+                            inputs: { tes2: 1 }
+                        )
+                    ]
+
+                    pages.last.forms |= [
+                        Arachni::Form.new(
+                            url:    pages.last.url,
+                            action: "#{pages.last.url}/my-action",
+                            inputs: { tes2: 1 }
+                        )
+                    ]
+
+                    workload = []
+                    distributor.split_page_workload( pages ).map do |page_chunks|
+                        workload << Hash[page_chunks.map { |p| [p.url, p.element_audit_whitelist.to_a] }]
+                    end
+
+                    workload.should == [
+                        { 'http://test.com/1' => [2835048516] },
+                        { 'http://test.com/5' => [1397105343] }
+                    ]
+                end
+            end
+
+            context 'with seen elements' do
+                it 'return an empty array' do
+                    distributor = get_distributor
+
+                    distributor.split_page_workload( pages )
+
+                    workload = []
+                    distributor.split_page_workload( pages ).map do |page_chunks|
+                        workload << Hash[page_chunks.map { |p| [p.url, p.audit_whitelist.to_a] }]
+                    end
+                    workload.should == []
+                end
+            end
         end
 
-        5.times do |i|
-            @urls << url_gen.call( @url2, i )
+        context 'when elements have no #inputs' do
+            context 'nor DOM#inputs' do
+                it 'ignores them'
+            end
+
+            context 'but have DOM#inputs' do
+                it 'includes them'
+            end
         end
+    end
+
+    describe '#prepare_slave_options' do
+        it 'returns a hash with options suitable for passing to slaves' do
+            h = @distributor.prepare_slave_options
+            h['datastore'].should == { 'master_priv_token' => 'secret' }
+        end
+
+        it 'removes plugins which are not distributable'
     end
 
     describe '#map_slaves' do
@@ -193,7 +478,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
             end
             @distributor.slave_iterator.each( &foreach )
 
-            urls = @distributor.instances.map { |i| i['url'] }.sort
+            urls = @distributor.slaves.map { |i| i['url'] }.sort
 
             raised = false
             begin
@@ -213,9 +498,9 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 q << instance['url']
                 iter.next
             end
-            @distributor.iterator_for( @distributor.instances ).each( &foreach )
+            @distributor.iterator_for( @distributor.slaves ).each( &foreach )
 
-            urls = @distributor.instances.map { |i| i['url'] }.sort
+            urls = @distributor.slaves.map { |i| i['url'] }.sort
 
             raised = false
             begin
@@ -224,195 +509,6 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 raised = true
             end
             raised.should be_false
-        end
-    end
-
-    describe '#split_urls' do
-        it 'evenly splits urls into chunks for each instance' do
-            @opts.min_pages_per_instance = 10
-            splits = @distributor.split_urls( @urls, 4 )
-
-            splits.size.should == 4
-            splits.flatten.uniq.size.should == @urls.uniq.size
-
-            @opts.min_pages_per_instance = 30
-            splits = @distributor.split_urls( @urls, 4 )
-            splits.size.should == 2
-
-            @opts.min_pages_per_instance = 15
-            splits = @distributor.split_urls( @urls, 2 )
-            splits.size.should == 2
-            splits.first.size.should == splits.flatten.size/2
-
-            @opts.min_pages_per_instance = @urls.size
-            splits = @distributor.split_urls( @urls, 2 )
-            splits.size.should == 1
-            splits.first.size.should == splits.flatten.size
-        end
-    end
-
-    describe '#build_elem_list' do
-        it 'evenly distributes elements across instances' do
-            @opts.url = web_server_url_for( :parser )
-            @opts.audit_links   = true
-            @opts.audit_forms   = true
-            @opts.audit_cookies = true
-            @opts.audit_headers = true
-
-            @url = @opts.url.to_s + '/?query_var_input=query_var_val'
-            @response = Arachni::HTTP.instance.get(
-                @url,
-                async: false,
-                remove_id: true
-            ).response
-
-            @distributor.build_elem_list( Arachni::Parser.new( @response, @opts ).page ).
-                size.should == 7
-        end
-    end
-
-    describe '#distribute_elements' do
-        it 'evenly distributes elements across instances' do
-            chunks = [[@url], [@url2]]
-            elem_ids_per_page = {
-                @url => %w(
-                    elem
-                    elem_1
-                    elem_2
-                ),
-
-                @url2 => %w(
-                    elem_3
-                    elem_4
-                    elem_4
-                    elem_4
-                    elem_1
-                    elem_2
-                )
-            }
-            r = @distributor.distribute_elements( chunks, elem_ids_per_page )
-            r.should == [ %w(elem elem_1), %w(elem_3 elem_4 elem_2) ]
-
-            elem_ids_per_page = {
-                @url => %w(
-                    elem
-                    elem_1
-                    elem_2
-                ),
-
-                @url2 => %w(
-                    elem
-                    elem_1
-                    elem_2
-                )
-            }
-            r = @distributor.distribute_elements( chunks, elem_ids_per_page )
-            r.should == [ %w(elem elem_2), %w(elem_1) ]
-
-            elem_ids_per_page = {
-                @url => %w(
-                    elem
-                ),
-
-                @url2 => %w(
-                    elem
-                )
-            }
-            r = @distributor.distribute_elements( chunks, elem_ids_per_page )
-            r.should == [ %w(elem), [] ]
-
-            url3 = @url + '/blah/'
-            chunks = [[@url], [@url2], [url3]]
-            elem_ids_per_page = {
-                @url => %w(
-                    elem
-                ),
-
-                @url2 => %w(
-                    elem
-                ),
-
-                url3 => %w(
-                    elem
-                )
-            }
-            r = @distributor.distribute_elements( chunks, elem_ids_per_page )
-            r.should == [ %w(elem), [], [] ]
-
-            elem_ids_per_page = {
-                @url => %w(
-                    elem
-                    elem_1
-                    elem_2
-                    elem_3
-                    elem_4
-                    elem_5
-                ),
-
-                @url2 => %w(
-                    elem
-                    elem_1
-                    elem_6
-                    elem_11
-                    elem_12
-                    elem_13
-                ),
-
-                url3 => %w(
-                    elem
-                    elem_1
-                    elem_4
-                    elem_2
-                )
-            }
-            r = @distributor.distribute_elements( chunks, elem_ids_per_page )
-            r.should == [ %w(elem_3 elem_5), %w(elem_6 elem_11 elem_12 elem_13),
-                          %w(elem elem_1 elem_4 elem_2)]
-
-            elem_ids_per_page = {
-                @url => %w(
-                    elem
-                    elem_1
-                    elem_2
-                    elem_3
-                    elem_4
-                    elem_5
-                ),
-
-                @url2 => %w(
-                    elem
-                    elem_1
-                    elem_2
-                    elem_3
-                    elem_4
-                    elem_5
-                ),
-
-                url3 => %w(
-                    elem
-                    elem_1
-                    elem_2
-                    elem_3
-                    elem_4
-                    elem_5
-                )
-            }
-            r = @distributor.distribute_elements( chunks, elem_ids_per_page )
-            r.should == [ %w(elem elem_4), %w(elem_2), %w(elem_1 elem_3 elem_5)]
-        end
-
-        it 'handles large data sets' do
-            elements = {}
-
-            30.times do
-                list = (elements[rand( 9999 )] ||= [])
-
-                1_000_000.times do
-                    list << rand( 9999 )
-                end
-            end
-
-            @distributor.distribute_elements( elements.keys.map { |i| [i] }, elements )
         end
     end
 
@@ -489,178 +585,42 @@ describe Arachni::RPC::Server::Framework::Distributor do
             @distributor.pick_dispatchers( dispatchers ).
                 map { |d| d['node']['score'] }.should == [0, 1, 2, 3]
 
-
-            @opts.max_slaves = 2
+            @opts.spawns = 2
             @distributor.pick_dispatchers( dispatchers ).
                 map { |d| d['node']['score'] }.should == [0, 1]
         end
     end
 
-    describe '#distribute_and_run' do
-        before( :all ) do
-            @opts.dir['modules'] = fixtures_path + 'taint_module/'
-
-            @dispatcher_url = dispatcher_light_spawn.url
-
-            @opts.rpc_port          = available_port
-            @master                 = FakeMaster.new( @opts, @token )
-            @distributor.master_url = "#{@opts.rpc_address}:#{@opts.rpc_port}"
-
-            # master's token
-            @opts.datastore[:token] = @token
-            @opts.url               = web_server_url_for( :framework_hpg )
-            @url                    = @opts.url
-            @opts.modules           = %w(taint)
-
-            @get_instance_info = proc do
-                instance = instance_spawn( token: @token, port: nil )
-                info = {
-                    'url'   => instance.url,
-                    'token' => instance_token_for( instance )
-                }
-                @master.enslave( info )
-                info
-            end
-        end
-
-        after do
-            @master.issues.clear
-        end
-
-        context 'when called without auditable restrictions' do
-            it 'lets the slave run loose, like a simple instance' do
-                q = Queue.new
-
-                @distributor.distribute_and_run( @get_instance_info.call ){ |i| q << i }
-                slave_info = q.pop
-                slave_info.should be_true
-
-                slave = @distributor.connect_to_instance( slave_info )
-                sleep 0.1 while slave.framework.busy?
-
-                @master.issues.size.should == 500
-            end
-        end
-        context 'when called with auditable URL restrictions' do
-            it 'restricts the audit to these URLs' do
-                urls = %w(/vulnerable?vulnerable_5=stuff5 /vulnerable?vulnerable_10=stuff10)
-
-                absolute_urls = urls.map { |u| Arachni::Module::Utilities.normalize_url( @url + u ) }
-
-                q = Queue.new
-                @distributor.distribute_and_run( @get_instance_info.call, urls: urls ){ |i| q << i }
-                slave_info = q.pop
-                slave_info.should be_true
-                slave = @distributor.connect_to_instance( slave_info )
-
-                slave.opts.restrict_paths.should == absolute_urls
-                sleep 0.1 while slave.framework.busy?
-
-                @master.issues.size.should == 2
-
-                vuln_urls = @master.issues.map { |i| i.url }.sort.uniq
-                vuln_urls.should == absolute_urls.sort.uniq
-            end
-        end
-        context 'when called with auditable element restrictions' do
-            it 'restricts the audit to these elements' do
-
-                ids = []
-                ids << Arachni::Element::Link.new( @url + '/vulnerable',
-                    inputs: { '0_vulnerable_20' => 'stuff20' }
-                ).scope_audit_id
-                ids << Arachni::Element::Link.new( @url + '/vulnerable',
-                    inputs: { '9_vulnerable_30' => 'stuff30' }
-                ).scope_audit_id
-
-                q = Queue.new
-                @distributor.distribute_and_run( @get_instance_info.call, elements: ids ){ |i| q << i }
-                slave_info = q.pop
-                slave_info.should be_true
-
-                slave = @distributor.connect_to_instance( slave_info )
-                sleep 0.1 while slave.framework.busy?
-
-                @master.issues.size.should == 2
-
-                vuln_urls = @master.issues.map { |i| i.url }.sort.uniq
-                exp_urls = %w(/vulnerable?0_vulnerable_20=stuff20 /vulnerable?9_vulnerable_30=stuff30)
-                vuln_urls.should == exp_urls.map { |u| Arachni::Module::Utilities.normalize_url( @url + u ) }.
-                    sort.uniq
-            end
-            context 'and new elements appear via the trainer' do
-                it 'overrides the restrictions' do
-                    @opts.audit_forms = true
-                    @opts.url = web_server_url_for( :auditor ) + '/train/default'
-                    url = @opts.url.to_s
-
-                    id = Arachni::Element::Form.new( url + '?',
-                        inputs: { 'step_1' => 'form_blah_step_1' }
-                    ).scope_audit_id
-
-                    q = Queue.new
-                    @distributor.distribute_and_run( @get_instance_info.call, elements: [id] ){ |i| q << i }
-                    slave_info = q.pop
-                    slave_info.should be_true
-
-                    slave = @distributor.connect_to_instance( slave_info )
-                    sleep 0.1 while slave.framework.busy?
-
-                    @master.issues.size.should == 8
-                end
-            end
-        end
-
-        context 'when called with extra pages' do
-            it 'includes them in the audit' do
-
-                exp_urls = []
-                links = []
-                links << Arachni::Element::Link.new( @url + '/vulnerable?2_vulnerable_20=stuff20',
-                    inputs: { '2_vulnerable_20' => 'stuff20' }
-                )
-                links << Arachni::Element::Link.new( @url + '/vulnerable?5_vulnerable_30=stuff30',
-                    inputs: { '5_vulnerable_30' => 'stuff30' }
-                )
-                exp_urls |= links.map { |l| l.url }
-
-                pages = []
-                pages << Arachni::Page.new(
-                    url: @url,
-                    links: links
-                )
-
-                links = []
-                links << Arachni::Element::Link.new( @url + '/vulnerable?6_vulnerable_12=stuff12',
-                    inputs: { '6_vulnerable_12' => 'stuff12' }
-                )
-                links << Arachni::Element::Link.new( @url + '/vulnerable?0_vulnerable_23=stuff23',
-                    inputs: { '0_vulnerable_23' => 'stuff23' }
-                )
-
-                exp_urls |= links.map { |l| l.url }
-
-                pages << Arachni::Page.new(
-                    url: @url,
-                    links: links
-                )
-
-                # send it somewhere that doesn't exist
-                @opts.url = @url + '/foo'
-                q = Queue.new
-                @distributor.distribute_and_run( @get_instance_info.call, pages: pages ){ |i| q << i }
-                slave_info = q.pop
-                slave_info.should be_true
-
-                slave = @distributor.connect_to_instance( slave_info )
-                sleep 0.1 while slave.framework.busy?
-
-                @master.issues.size.should == 4
-
-                vuln_urls = @master.issues.map { |i| i.url }.sort.uniq
-                vuln_urls.should == exp_urls.sort
-            end
-        end
+    describe '#initialize_slaves' do
+        #before( :all ) do
+        #    @opts.paths.checks = fixtures_path + 'taint_check/'
+        #
+        #    @dispatcher_url = dispatcher_light_spawn.url
+        #
+        #    @opts.rpc.server_port   = available_port
+        #    @master                 = FakeMaster.new( @opts, @token )
+        #    @distributor.master_url = "#{@opts.rpc.server_address}:#{@opts.rpc.server_port}"
+        #
+        #    # master's token
+        #    @opts.datastore.token = @token
+        #    @opts.url             = web_server_url_for( :framework_hpg )
+        #    @url                  = @opts.url
+        #    @opts.checks          = %w(taint)
+        #
+        #    @get_instance_info = proc do
+        #        instance = instance_spawn( token: @token, port: nil )
+        #        info = {
+        #            'url'   => instance.url,
+        #            'token' => instance_token_for( instance )
+        #        }
+        #        @master.enslave( info )
+        #        info
+        #    end
+        #end
+        #
+        #after do
+        #    @master.issues.clear
+        #end
     end
 
 end
