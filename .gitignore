@@ -12,3 +12,4 @@ error.log
 TODO
 .rvmrc
 coverage/
+.env
