@@ -18,7 +18,7 @@ the terms of Apache License v2.0, include (but are not limited to):
 
 * Penetration testers (or penetration testing organizations) using Arachni as
     part of their assessment toolkit.
-    * So long as that doesn't conflict with the **direct commercialization** clause.
+    * So long as that doesn't conflict with the **commercialization** clause.
 * Using Arachni to test your own systems.
 * Any non-commercial use of Arachni.
 
