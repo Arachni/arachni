@@ -922,15 +922,21 @@ class Browser
     def spawn_phantomjs
         return @browser_url if @browser_url
 
+        print_debug 'Spawning PhantomJS...'
+
         ChildProcess.posix_spawn = true
 
         port = nil
-        10.times do
+        10.times do |i|
             done = false
             port = available_port
 
+            print_debug "Attempt ##{i}, chose port number #{port}"
+
             begin
                 with_timeout 10 do
+                    print_debug 'Spawning process.'
+
                     @process = ChildProcess.build(
                         self.class.executable,
                         "--webdriver=#{port}",
@@ -943,6 +949,7 @@ class Browser
                     @process.io.stdout.sync = true
 
                     @process.start
+                    print_debug 'Process spawned, waiting for it to boot-up...'
 
                     File.open( @process.io.stdout.path, 'r' ) do |out|
                         buff = ''
@@ -952,14 +959,23 @@ class Browser
                              # across MRI, Rubinius and JRuby.
                              buff << (out.getc rescue '').to_s
                          end
+
+                        print_debug 'Boot-up complete.'
                         done = true
                     end
                 end
             rescue Timeout::Error
+                print_debug 'Spawn timed-out.'
             end
 
-            break if done
+            print_debug IO.read( @process.io.stdout )
 
+            if done
+                print_debug 'PhantomJS is ready.'
+                break
+            end
+
+            print_debug 'Killing process.'
             kill_process
         end
 
