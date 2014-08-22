@@ -946,7 +946,8 @@ class Browser
                     @process.detach = true
 
                     @process.io.stdout = Tempfile.new( 'phantomjs-out' )
-                    @process.io.stdout.sync = true
+                    @process.io.stderr = @process.io.stdout
+                    @process.io.stderr.sync = @process.io.stdout.sync = true
 
                     @process.start
                     print_debug 'Process spawned, waiting for it to boot-up...'
