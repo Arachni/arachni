@@ -935,7 +935,7 @@ class Browser
 
             begin
                 with_timeout 10 do
-                    print_debug 'Spawning process.'
+                    print_debug "Spawning process: #{self.class.executable}"
 
                     @process = ChildProcess.build(
                         self.class.executable,
