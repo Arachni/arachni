@@ -583,7 +583,17 @@ class Client
     def url_for_custom_404( url )
         parsed = Arachni::URI( url )
 
-        trv_back = File.dirname( Arachni::URI( parsed.up_to_path ).path )
+        # If we're dealing with a file resource, then its parent directory will
+        # be the applicable custom-404 handler...
+        if parsed.resource_extension
+            trv_back = Arachni::URI( parsed.up_to_path ).path
+
+        # ...however, if we're dealing with a directory, the applicable handler
+        # will be its parent directory.
+        else
+            trv_back = File.dirname( Arachni::URI( parsed.up_to_path ).path )
+        end
+
         trv_back += '/' if trv_back[-1] != '/'
 
         parsed = parsed.dup
