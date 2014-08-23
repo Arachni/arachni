@@ -12,6 +12,7 @@ Copy of Copy of [name]/
 [name] - Copy Copy/
 [name].7z
 [name].ar
+[name].ear
 [name].bz2
 [name].cbz
 [name].exe
@@ -26,6 +27,7 @@ Copy of Copy of [name]/
 [name].tar.xz
 [name].xz
 [name].zip
+[name].war
 [name].wim
 [name].rar
 [name].old/

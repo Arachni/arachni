@@ -30,6 +30,7 @@ Copy of Copy of [name].[extension]
 [name].[extension].wim
 [name].7z
 [name].ar
+[name].ear
 [name].bz2
 [name].cbz
 [name].exe
@@ -45,6 +46,7 @@ Copy of Copy of [name].[extension]
 [name].xz
 [name].zip
 [name].wim
+[name].war
 [name].rar
 [name].[extension].old
 [name].[extension].bak
