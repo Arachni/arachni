@@ -105,6 +105,7 @@ describe 'WAVSEP obsolete files' do
                     'private/inner_backup.jsp',
                     'private/inner_bak.jsp',
                     'private/old_inner.jsp',
+                    'private/inner_old.jsp',
                     'ContactUs.7z',
                     'ContactUs.rar',
                     'ContactUs.tar',
@@ -205,6 +206,7 @@ describe 'WAVSEP obsolete files' do
                     'private/inner.jspinc',
                     'private/inner.jspold',
                     'private/inner.old',
+                    'private/inner_old.jsp',
                     'private/inner_backup.jsp',
                     'private/inner_bak.jsp',
                     'private/old_inner.jsp'

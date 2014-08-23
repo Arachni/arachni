@@ -64,6 +64,7 @@ Copy of Copy of [name].[extension]
 [name].[extension]backup
 [name].[extension]_inc
 [name].[extension]inc
+[name]_old.[extension]
 [name].old
 [name].bak
 [name].bac
