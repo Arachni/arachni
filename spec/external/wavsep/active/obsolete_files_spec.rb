@@ -15,15 +15,15 @@ describe 'WAVSEP obsolete files' do
                 checks:     [:common_files],
 
                 vulnerable: [
-                                'Copy%20of%20WEB-INF/web.xml',
-                                'WEB-INF%20(copy)/web.xml',
-                                'WEB-INF%20-%20Copy/web.xml'
-                            ]
+                    'Copy%20of%20WEB-INF/web.xml',
+                    'WEB-INF%20(copy)/web.xml',
+                    'WEB-INF%20-%20Copy/web.xml'
+                ]
             },
 
             '404Error'       => {
                 url:        "Obsolete-Files/ObsoleteFile-Detection-Evaluation-#{http_method}-404Error/",
-                checks:     [:backup_files, :backup_directories, :common_files],
+                checks:     [:backup_files, :backup_directories],
 
                 vulnerable: [
                     'Copy%20(2)%20of%20Login.jsp',
