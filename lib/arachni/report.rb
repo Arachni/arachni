@@ -133,7 +133,7 @@ class Report
     # @return   [String]
     #   Absolute location of the report.
     def save( location = nil )
-        default_filename = "#{URI(url).host} #{@finish_datetime.to_s.gsub( ':', '.' )}.afr"
+        default_filename = "#{URI(url).host} #{@finish_datetime.to_s.gsub( ':', '_' )}.afr"
 
         if !location
             location = default_filename
