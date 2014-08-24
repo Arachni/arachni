@@ -19,6 +19,7 @@ Gem::Specification.new do |s|
     s.homepage          = 'https://www.arachni-scanner.com'
     s.email             = 'tasos.laskos@gmail.com'
     s.authors           = [ 'Tasos Laskos' ]
+    s.licenses          = ['Apache-2.0', 'Proprietary']
 
     s.files            += Dir.glob( 'gfx/**/**' )
     s.files            += Dir.glob( 'lib/**/**' )
@@ -104,7 +105,8 @@ Documentation      - http://arachni-scanner.com/wiki
 Support            - http://support.arachni-scanner.com
 GitHub page        - http://github.com/Arachni/arachni
 Code Documentation - http://rubydoc.info/github/Arachni/arachni
-License            - https://github.com/Arachni/arachni/blob/master/LICENSE.md
+License            - Apache License v2.0/Proprietary
+                        (https://github.com/Arachni/arachni/blob/master/LICENSE.md)
 Author             - Tasos "Zapotek" Laskos (http://twitter.com/Zap0tek)
 Twitter            - http://twitter.com/ArachniScanner
 Copyright          - 2010-2014 Tasos Laskos
