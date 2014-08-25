@@ -10,7 +10,7 @@ describe 'WAVSEP false-positive SQL injection' do
     def self.test_cases( http_method )
         {
             'SQL Injection' => {
-                url:        "SInjection-FalsePositives-#{http_method}/",
+                url:        "SQL-Injection/SInjection-FalsePositives-#{http_method}/",
                 checks:     'sql_injection*',
                 vulnerable: []
             }

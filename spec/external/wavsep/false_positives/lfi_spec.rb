@@ -10,7 +10,7 @@ describe 'WAVSEP false-positive Local File Inclusion' do
     def self.test_cases( http_method )
         {
             'Local File Inclusion' => {
-                url:        "LFI-FalsePositives-#{http_method}/",
+                url:        "LFI/LFI-FalsePositives-#{http_method}/",
                 checks:     [:file_inclusion, :path_traversal, :source_code_disclosure],
                 vulnerable: []
             }

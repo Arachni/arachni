@@ -10,8 +10,8 @@ describe 'WAVSEP false-positive XSS' do
     def self.test_cases( http_method )
         {
             'Reflected Cross Site Scripting' => {
-                url:        "RXSS-FalsePositives-#{http_method}/",
-                checks:     'xss*',
+                url:     "Reflected-XSS/RXSS-FalsePositives-#{http_method}/",
+                checks:  'xss*',
                 vulnerable: []
             }
         }
