@@ -11,7 +11,7 @@ describe 'WAVSEP false-positive obsolete-files' do
         {
             'Obsolete files' => {
                 url:        "Obsolete-Files/ObsoleteFile-FalsePositives-#{http_method}/",
-                checks:     [:backup_files, :backup_directories],
+                checks:     [:backup_files, :backup_directories, :common_files, :common_directories],
                 vulnerable: []
             }
         }
