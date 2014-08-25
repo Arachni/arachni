@@ -10,7 +10,7 @@ Apache License v2.0, found at the bottom of this document.
 
 Cases of **commercialization** are:
 
-* Using Arachni to provide commercial managed/SaaS services.
+* Using Arachni to provide commercial managed/Software-as-a-Service services.
 * Distributing Arachni as a commercial product or as part of one.
 
 Cases which **don't** require a commercial license, and thus fall under
