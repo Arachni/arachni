@@ -125,7 +125,7 @@ you with its findings.
  - User Agent spoofing.
  - Proxy support for SOCKS4, SOCKS4A, SOCKS5, HTTP/1.1 and HTTP/1.0.
  - Proxy authentication.
- - Site authentication (Automated form-based, Cookie-Jar, Basic-Digest, NTLM and others).
+ - Site authentication (Automated form-based, Cookie-Jar, Basic-Digest, NTLMv1 and others).
  - Automatic log-out detection and re-login during the scan (when the initial
     login was performed via the `autologin` or `proxy` plugins).
  - Custom 404 page detection.
