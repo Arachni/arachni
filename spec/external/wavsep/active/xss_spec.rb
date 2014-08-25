@@ -35,8 +35,10 @@ describe 'WAVSEP XSS' do
                     'Case22-Js2ScriptTagDoubleQuoteDelimiter.jsp',
                     'Case23-Js2ScriptTagSingleQuoteDelimiter.jsp',
                     'Case24-Js2ScriptTag.jsp',
+                    # 25, 26
                     'Case27-Js2ScriptTagOLCommentScope.jsp',
                     'Case28-Js2ScriptTagMLCommentScope.jsp',
+                    # 29
                     'Case30-Tag2HtmlPageScopeMultipleVulnerabilities.jsp',
                     'Case31-Tag2HtmlPageScopeDuringException.jsp',
                     'Case32-Tag2HtmlPageScopeValidViewstateRequired.jsp'
