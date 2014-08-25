@@ -10,7 +10,7 @@
 class Arachni::Checks::HtmlObjects < Arachni::Check::Base
 
     def self.regexp
-        @regexp ||= /<object(.*)>(.*)<\/object>/im
+        @regexp ||= /<object(.*?)>(.*?)<\/object>/im
     end
 
     def run
