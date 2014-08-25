@@ -137,10 +137,10 @@ module Differential
 
         http.after_run do
             # Populate the 'true' signatures.
-            populate_true_signatures( opts, signatures )
+            populate_signatures( :true, opts, signatures )
 
             # Populate the 'false' signatures.
-            populate_false_signatures( opts, signatures )
+            populate_signatures( :false, opts, signatures )
         end
 
         true
@@ -188,9 +188,7 @@ module Differential
         end
     end
 
-    # Performs requests using the 'true' seeds and generates/stores signatures
-    # based on the response bodies.
-    def populate_true_signatures( opts, signatures )
+    def populate_signatures( bool, opts, signatures )
         gathered = {}
 
         opts[:pairs].each do |pair|
@@ -200,13 +198,13 @@ module Differential
             @data_gathering[pair_hash] ||= {}
             gathered[pair_hash]        ||= {}
 
-            true_expr = pair.to_a.first[0]
+            expr = pair.to_a.first[bool == :true ? 0 : 1]
 
-            print_status "Gathering 'true'  data for #{self.type} with " <<
-                "action '#{self.action}' using seed: #{true_expr}"
+            print_status "Gathering '#{bool}' data for #{self.type} with " <<
+                             "action '#{self.action}' using seed: #{expr}"
 
             opts[:precision].times do
-                audit( true_expr, opts ) do |res, elem|
+                audit( expr, opts ) do |res, elem|
                     altered_hash = elem.affected_input_name.hash
 
                     gathered[pair_hash][altered_hash] ||= 0
@@ -215,6 +213,8 @@ module Differential
                     signatures[pair_hash][altered_hash]      ||= {}
                     @data_gathering[pair_hash][altered_hash] ||= {}
 
+                    response_check( res, signatures, elem )
+
                     if signatures[pair_hash][altered_hash][:corrupted] ||
                         signatures[:corrupted][altered_hash]
 
@@ -222,99 +222,33 @@ module Differential
                         next
                     end
 
-                    response_check( res, signatures, elem, pair_hash )
-
                     if signature_sieve( altered_hash, signatures, pair_hash )
                         increase_received_responses( opts, signatures )
                         next
                     end
 
                     if gathered[pair_hash][altered_hash] == opts[:precision]
-                        elem.print_status "Got 'true'  response for #{elem.type} " <<
-                            "variable '#{elem.affected_input_name}' with action" <<
-                            " '#{elem.action}' using seed: #{true_expr}"
-                        @data_gathering[pair_hash][altered_hash][:true_probes] = true
+                        elem.print_status "Got '#{bool}' response for #{elem.type}" <<
+                            " variable '#{elem.affected_input_name}' with action" <<
+                            " '#{elem.action}' using seed: #{expr}"
+
+                        @data_gathering[pair_hash][altered_hash]["#{bool}_probes".to_sym] = true
                     end
 
                     # Store the mutation for the {Arachni::Issue}.
-                    signatures[pair_hash][altered_hash][:mutation] = elem
+                    signatures[pair_hash][altered_hash][:mutation] ||= elem
 
                     # Keep the latest response for the {Arachni::Issue}.
-                    signatures[pair_hash][altered_hash][:response] = res
+                    signatures[pair_hash][altered_hash][:response] ||= res
 
-                    signatures[pair_hash][altered_hash][:injected_string] = true_expr
-
-                    # Create a signature from the response body and refine it with
-                    # subsequent ones to remove noise (like context-irrelevant dynamic
-                    # content such as banners etc.).
-                    signatures[pair_hash][altered_hash][:true] =
-                        signatures[pair_hash][altered_hash][:true] ?
-                            signatures[pair_hash][altered_hash][:true].refine!(res.body) :
-                            Support::Signature.new(res.body)
-
-                    signature_sieve( altered_hash, signatures, pair_hash )
-
-                    @data_gathering[:received_responses] += 1
-                    finalize_if_done( opts, signatures )
-                end
-            end
-        end
-    end
-
-    # Performs requests using the 'false' seeds and generates/stores signatures
-    # based on the response bodies.
-    def populate_false_signatures( opts, signatures )
-        gathered = {}
-
-        opts[:pairs].each do |pair|
-            pair_hash = pair.hash
-
-            signatures[pair_hash]      ||= {}
-            @data_gathering[pair_hash] ||= {}
-            gathered[pair_hash]        ||= {}
-
-            false_expr = pair.to_a.first[1]
-
-            print_status "Gathering 'false' data for #{self.type} with " <<
-                "action '#{self.action}' using seed: #{false_expr}"
-
-            opts[:precision].times do
-                audit( false_expr, opts ) do |res, elem|
-                    altered_hash = elem.affected_input_name.hash
-
-                    gathered[pair_hash][altered_hash] ||= 0
-                    gathered[pair_hash][altered_hash] += 1
-
-                    signatures[pair_hash][altered_hash]      ||= {}
-                    @data_gathering[pair_hash][altered_hash] ||= {}
-
-                    if signatures[pair_hash][altered_hash][:corrupted] ||
-                        signatures[:corrupted][altered_hash]
-
-                        increase_received_responses( opts, signatures )
-                        next
-                    end
-
-                    response_check( res, signatures, elem, pair_hash )
-
-                    if signature_sieve( altered_hash, signatures, pair_hash )
-                        increase_received_responses( opts, signatures )
-                        next
-                    end
-
-                    if gathered[pair_hash][altered_hash] == opts[:precision]
-                        elem.print_status "Got 'false' response for #{elem.type} " <<
-                            "variable '#{elem.affected_input_name}' with action" <<
-                            " '#{elem.action}' using seed: #{false_expr}"
-                        @data_gathering[pair_hash][altered_hash][:false_probes] = true
-                    end
+                    signatures[pair_hash][altered_hash][:injected_string] ||= expr
 
                     # Create a signature from the response body and refine it with
                     # subsequent ones to remove noise (like context-irrelevant dynamic
                     # content such as banners etc.).
-                    signatures[pair_hash][altered_hash][:false] =
-                        signatures[pair_hash][altered_hash][:false] ?
-                            signatures[pair_hash][altered_hash][:false].refine!(res.body) :
+                    signatures[pair_hash][altered_hash][bool] =
+                        signatures[pair_hash][altered_hash][bool] ?
+                            signatures[pair_hash][altered_hash][bool].refine!(res.body) :
                             Support::Signature.new(res.body)
 
                     signature_sieve( altered_hash, signatures, pair_hash )
@@ -359,12 +293,12 @@ module Differential
                 gathered[altered_hash] ||= 0
                 gathered[altered_hash]  += 1
 
+                response_check( res, signatures, elem )
+
                 if signatures[:corrupted][altered_hash]
                     @data_gathering[:received_responses] += 1
                     next
                 end
-
-                response_check( res, signatures, elem )
 
                 if gathered[altered_hash] == opts[:precision]
                     print_status 'Got control verification response ' <<
