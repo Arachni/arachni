@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -8,13 +8,13 @@ module Arachni::OptionGroups
 # Options for audit scope/coverage, mostly decides what types of elements
 # should be considered.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Audit < Arachni::OptionGroup
 
-    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
     class Error < Error
 
-        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
         class InvalidLinkTemplate < Error
         end
     end

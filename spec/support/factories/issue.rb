@@ -21,7 +21,7 @@ Factory.define :issue_data do
         check:           {
             name:        'Test check',
             description: 'Test description',
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
             version:     '0.1',
             targets:     {
                 'Generic' => 'all'

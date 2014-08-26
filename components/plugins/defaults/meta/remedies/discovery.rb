@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -12,7 +12,7 @@
 #
 # This is a sort of baseline implementation/anomaly detection.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
 # @version 0.3
 class Arachni::Plugins::Discovery < Arachni::Plugin::Base
@@ -110,7 +110,7 @@ while the server responses were exhibiting an anomalous factor of similarity.
 
 There's a good chance that these issues are false positives.
 },
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.3',
             tags:        %w(anomaly discovery file directories meta)
         }

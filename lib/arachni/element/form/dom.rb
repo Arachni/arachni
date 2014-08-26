@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -8,7 +8,7 @@ class Form
 
 # Provides access to DOM operations for {Form forms}.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class DOM < Base
     include Capabilities::Auditable::DOM
 

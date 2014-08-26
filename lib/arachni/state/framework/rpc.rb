@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -9,7 +9,7 @@ class Framework
 
 # State information for {Arachni::RPC::Server::Framework}.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class RPC
 
     # @return   [Support::LookUp::HashSet]

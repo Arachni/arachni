@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -16,7 +16,7 @@ module Plugin
 # We need to extend the original Manager and redeclare its inherited methods
 # which are required over RPC.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Manager < ::Arachni::Plugin::Manager
 
     # make these inherited methods visible again

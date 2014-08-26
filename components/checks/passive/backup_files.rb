@@ -1,11 +1,11 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
 # Backup file discovery check.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.3
 class Arachni::Checks::BackupFiles < Arachni::Check::Base
 
@@ -47,7 +47,7 @@ class Arachni::Checks::BackupFiles < Arachni::Check::Base
             name:        'Backup files',
             description: %q{Tries to identify backup files.},
             elements:    [ Element::Server ],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
             version:     '0.3',
 
             issue:       {

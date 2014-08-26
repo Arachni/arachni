@@ -1,9 +1,9 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.1
 class Arachni::Checks::XssDomInputs < Arachni::Check::Base
 
@@ -73,7 +73,7 @@ class Arachni::Checks::XssDomInputs < Arachni::Check::Base
 Injects an HTML element into page text fields, triggers their associated events
 and inspects the DOM for proof of vulnerability.
 },
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1',
             elements:    [Element::GenericDOM],
 

@@ -1,9 +1,9 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.2
 class Arachni::Checks::Captcha < Arachni::Check::Base
 
@@ -30,7 +30,7 @@ class Arachni::Checks::Captcha < Arachni::Check::Base
             name:        'CAPTCHA',
             description: %q{Greps pages for forms with CAPTCHAs.},
             elements:    [ Element::Form ],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.2',
 
             issue:       {

@@ -1,11 +1,11 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
 # Converts the Report to a Hash which it then dumps in YAML format into a file.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.2
 class Arachni::Reporters::YAML < Arachni::Reporter::Base
 
@@ -25,7 +25,7 @@ class Arachni::Reporters::YAML < Arachni::Reporter::Base
             name:         'YAML',
             description:  %q{Exports the audit results as a YAML (.yaml) file.},
             content_type: 'application/x-yaml',
-            author:       'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:       'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:      '0.2',
             options:      [ Options.outfile( '.yaml' ) ]
         }

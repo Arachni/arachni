@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -7,7 +7,7 @@
 #
 # Looks for common, possibly sensitive, directories on the server.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @see http://cwe.mitre.org/data/definitions/538.html
 class Arachni::Checks::CommonDirectories < Arachni::Check::Base
 
@@ -31,7 +31,7 @@ class Arachni::Checks::CommonDirectories < Arachni::Check::Base
             name:        'Common directories',
             description: %q{Tries to find common directories on the server.},
             elements:    [ Element::Server ],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
             version:     '0.2.3',
 
             issue:       {

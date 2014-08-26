@@ -1,11 +1,11 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
 # XPath Injection check.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.1.4
 #
 # @see http://cwe.mitre.org/data/definitions/91.html
@@ -36,7 +36,7 @@ class Arachni::Checks::XpathInjection < Arachni::Check::Base
             description: %q{XPath injection check},
             elements:    [ Element::Form, Element::Link, Element::Cookie,
                            Element::Header, Element::LinkTemplate ],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1.4',
 
             issue:       {

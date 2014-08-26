@@ -1,11 +1,11 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
 # Looks for and logs e-mail addresses.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.2.1
 class Arachni::Checks::Emails < Arachni::Check::Base
 
@@ -21,7 +21,7 @@ class Arachni::Checks::Emails < Arachni::Check::Base
             name:        'E-mail address',
             description: %q{Greps pages for disclosed e-mail addresses.},
             elements:    [ Element::Body ],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.2.1',
 
             issue:       {

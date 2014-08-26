@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -7,7 +7,7 @@
 #
 # Looks for password inputs that don't submit data over an encrypted channel (HTTPS).
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
 # @see http://www.owasp.org/index.php/Top_10_2010-A9-Insufficient_Transport_Layer_Protection
 class Arachni::Checks::UnencryptedPasswordForms < Arachni::Check::Base
@@ -41,7 +41,7 @@ class Arachni::Checks::UnencryptedPasswordForms < Arachni::Check::Base
             description: %q{Looks for password inputs that don't submit data
                 over an encrypted channel (HTTPS).},
             elements:    [ Element::Form ],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
             version:     '0.2',
 
             issue:       {

@@ -377,7 +377,7 @@ describe Arachni::Issue do
                 check:           {
                     name:        'Test check',
                     description: 'Test description',
-                    author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+                    author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
                     version:     '0.1',
                     targets:     {
                         'Generic' => 'all'
@@ -417,7 +417,7 @@ describe Arachni::Issue do
                     check:           {
                         name:        'Test check',
                         description: 'Test description',
-                        author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+                        author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
                         version:     '0.1',
                         targets:     {
                             'Generic' => 'all'

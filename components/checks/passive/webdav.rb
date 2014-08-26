@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -8,7 +8,7 @@
 # It doesn't check for a functional DAV implementation but uses the
 # OPTIONS HTTP method to see if 'PROPFIND' is allowed.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
 # @see http://en.wikipedia.org/wiki/WebDAV
 # @see http://www.webdav.org/specs/rfc4918.html
@@ -57,7 +57,7 @@ class Arachni::Checks::Webdav < Arachni::Check::Base
             name:        'WebDAV',
             description: %q{Checks for WebDAV enabled directories.},
             elements:    [ Element::Server ],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1.5',
 
             issue:       {

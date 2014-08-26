@@ -1,9 +1,9 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.1
 class Arachni::Checks::XssDomScriptContext < Arachni::Check::Base
 
@@ -61,7 +61,7 @@ Injects JS taint code and checks to see if it gets executed as proof of vulnerab
 },
             elements:    [Element::Form::DOM, Element::Link::DOM,
                           Element::Cookie::DOM, Element::LinkTemplate::DOM ],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1',
 
             issue:       {

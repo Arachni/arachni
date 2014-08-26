@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -7,7 +7,7 @@
 #
 # But not really...it only checks if the TRACE HTTP method is enabled.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
 # @see http://cwe.mitre.org/data/definitions/693.html
 # @see http://capec.mitre.org/data/definitions/107.html
@@ -44,7 +44,7 @@ class Arachni::Checks::Xst < Arachni::Check::Base
             name:        'XST',
             description: %q{Sends an HTTP TRACE request and checks if it succeeded.},
             elements:    [ Element::Server ],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1.6',
 
             issue:       {

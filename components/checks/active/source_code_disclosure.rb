@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -7,7 +7,7 @@
 # into all input vectors and then inspects the responses for the existence of
 # source code.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
 # @version 0.2
 #
@@ -118,7 +118,7 @@ source code.
 },
             elements:    [ Element::Form, Element::Link, Element::Cookie,
                            Element::Header, Element::LinkTemplate ],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.2',
             platforms:   options[:regexp].keys,
 

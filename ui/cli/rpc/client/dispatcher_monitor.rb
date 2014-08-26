@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -17,7 +17,7 @@ module RPC::Client
 
 # Provides an simplistic Dispatcher monitoring user interface.
 #
-# @author Tasos "Zapotek" Laskos<tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos<tasos.laskos@arachni-scanner.com>
 class DispatcherMonitor
     include UI::Output
     include Utilities

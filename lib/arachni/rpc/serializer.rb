@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -13,7 +13,7 @@ module RPC
 # It's simply a delegator for `MessagePack` with `Zlib` compression for messages
 # that are larger than {COMPRESS_LARGER_THAN}.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module Serializer
 
     # Compress object dumps larger than 1KB.

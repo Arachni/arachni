@@ -1,9 +1,9 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
-# @author   Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>, haliphax
+# @author   Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>, haliphax
 class Arachni::Checks::Ssn < Arachni::Check::Base
 
     def self.regexp
@@ -20,7 +20,7 @@ class Arachni::Checks::Ssn < Arachni::Check::Base
             description: %q{Greps pages for disclosed US Social Security Numbers.},
             elements:    [ Element::Body ],
             author:      [
-                'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>', # original
+                'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>', # original
                 'haliphax' # tweaked regexp
             ],
             version:     '0.1.3',

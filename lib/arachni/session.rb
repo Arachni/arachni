@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -10,7 +10,7 @@ module Arachni
 # Handles logins, provided log-out detection, stores and executes login sequences
 # and provided general webapp session related helpers.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Session
     include UI::Output
     include Utilities
@@ -21,23 +21,23 @@ class Session
     #
     # All {Session} errors inherit from and live under it.
     #
-    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
     class Error < Arachni::Error
 
         # Raised when trying to {#login} without proper {#configure configuration}.
         #
-        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
         class NotConfigured < Error
         end
 
         # Raised when a login check is required to perform an action but none
         # has been configured.
         #
-        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
         class NoLoginCheck < Error
         end
 
-        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
         class FormNotFound < Error
         end
     end

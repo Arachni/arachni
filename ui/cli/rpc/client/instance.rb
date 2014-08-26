@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -28,7 +28,7 @@ module Client
 # are asynchronous), this interface operates in blocking mode as its simplicity
 # does not warrant the extra complexity of asynchronous calls.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Instance
     include Arachni::UI::Output
     include UI::CLI::Utilities

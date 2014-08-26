@@ -1,12 +1,12 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
 # XSS in HTML tag.
 # It injects a string and checks if it appears inside any HTML tags.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
 # @version 0.1.7
 #
@@ -57,7 +57,7 @@ class Arachni::Checks::XssTag < Arachni::Check::Base
             name:        'XSS in HTML tag',
             description: %q{Cross-Site Scripting in HTML tag.},
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
             version:     '0.1.7',
 
             issue:       {

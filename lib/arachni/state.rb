@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -7,14 +7,14 @@ module Arachni
 
 # Stores and provides access to the state of the system.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class State
 
     # {State} error namespace.
     #
     # All {State} errors inherit from and live under it.
     #
-    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
     class Error < Arachni::Error
     end
 

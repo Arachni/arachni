@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -28,7 +28,7 @@
 # cookies just like a user would, so if there are forms that only appear
 # after a guest has performed a previous event it will check these too.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
 # @version 0.3.3
 #
@@ -148,7 +148,7 @@ checks them for lack of anti-CSRF tokens.
 (Works best with a valid session.)
 },
             elements:    [ Element::Form ],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
             version:     '0.3.3',
 
             issue:       {

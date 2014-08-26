@@ -1,12 +1,12 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
 # Outputs the issues to stdout, used with the CLI UI.
 # All UIs must have a default report.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.3
 class Arachni::Reporters::Stdout < Arachni::Reporter::Base
 
@@ -215,7 +215,7 @@ class Arachni::Reporters::Stdout < Arachni::Reporter::Base
         {
             name:        'Stdout',
             description: %q{Prints the results to standard output.},
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.3'
         }
     end

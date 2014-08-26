@@ -1,12 +1,12 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
 # Greps pages for forms which have password fields without explicitly
 # disabling auto-complete.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Arachni::Checks::PasswordAutocomplete < Arachni::Check::Base
 
     def run
@@ -32,7 +32,7 @@ class Arachni::Checks::PasswordAutocomplete < Arachni::Check::Base
             description: %q{Greps pages for forms which have password fields
                 without explicitly disabling auto-complete.},
             elements:    [ Element::Form ],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.3',
 
             issue:       {

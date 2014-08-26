@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -15,7 +15,7 @@ module UI::CLI
 module RPC
 module Server
 
-# @author Tasos "Zapotek" Laskos<tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos<tasos.laskos@arachni-scanner.com>
 class Dispatcher
 
     def initialize

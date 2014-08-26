@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -8,7 +8,7 @@
 # It audits links, forms and cookies and will give you a good idea
 # of how to write checks for Arachni.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
 # @version 0.3
 #
@@ -106,7 +106,7 @@ the HTTP response body.
             # If you want the check to run no-matter what, leave the array
             # empty or don't define it at all.
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
             version:     '0.3',
 
             issue:       {

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -13,7 +13,7 @@ require 'arachni/rpc'
 # for hosts that lack support for fast servers (like Windows, which can't run
 # Thin, Puma etc.).
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class WebServerClient < Arachni::RPC::Proxy
     include Singleton
 

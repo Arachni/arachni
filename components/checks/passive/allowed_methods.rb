@@ -1,11 +1,11 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
 # Allowed HTTP methods recon check.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
 # @see http://en.wikipedia.org/wiki/WebDAV
 # @see http://www.webdav.org/specs/rfc4918.html
@@ -46,7 +46,7 @@ class Arachni::Checks::AllowedMethods < Arachni::Check::Base
             name:        'Allowed methods',
             description: %q{Checks for supported HTTP methods.},
             elements:    [Element::Server],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.2',
 
             issue:       {

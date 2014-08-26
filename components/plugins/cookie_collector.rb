@@ -1,11 +1,11 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
 # Simple cookie collector
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.2
 class Arachni::Plugins::CookieCollector < Arachni::Plugin::Base
 
@@ -77,7 +77,7 @@ Monitors and collects cookies while establishing a timeline of changes.
 thousands of results leading to a huge report, highly increased memory
 consumption and CPU usage.
 },
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.2',
             options:     [
                 Options::String.new( :filter,

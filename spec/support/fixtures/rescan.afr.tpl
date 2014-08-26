@@ -81,7 +81,7 @@ plugins:
       Logs content-types of server responses.
                       It can help you categorize and identify publicly available file-types
                       which in turn can help you identify accidentally leaked files.
-    :author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    :author: Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
     :version: 0.1.4
     :options:
     - !ruby/object:Arachni::Component::Options::String
@@ -100,14 +100,14 @@ plugins:
                       and performs taint analysis to determine which inputs affect the output.
 
                       It does not perform any vulnerability assessment nor does it send attack payloads.
-    :author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    :author: Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
     :version: 0.1.5
   resolver:
     :results: {}
 
     :name: Resolver
     :description: Resolves vulnerable hostnames to IP addresses.
-    :author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    :author: Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
     :tags:
     - ip address
     - hostname
@@ -129,7 +129,7 @@ plugins:
       :issue_percentage: 0
     :name: Health map
     :description: Generates a simple list of safe/unsafe URLs.
-    :author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    :author: Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
     :version: 0.1.3
 sitemap:
 - __URL__

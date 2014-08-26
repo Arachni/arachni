@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -8,7 +8,7 @@ module Arachni::OptionGroups
 # Scan scope options, maintains rules used to decide which resources should be
 # considered for crawling/auditing/etc. during the scan.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Scope < Arachni::OptionGroup
 
     # @note `nil` is infinite -- default is `nil`.

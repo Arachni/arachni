@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -13,7 +13,7 @@ module Check
 
 # Manages and runs {Checks} against {Page}s.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Manager < Arachni::Component::Manager
 
     # Namespace under which all checks reside.
@@ -23,11 +23,11 @@ class Manager < Arachni::Component::Manager
     #
     # All {Manager} errors inherit from and live under it.
     #
-    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
     class Error < Error
 
         # Raised when a loaded check targets invalid platforms.
-        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
         class InvalidPlatforms < Error
         end
     end

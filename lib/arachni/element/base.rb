@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -10,14 +10,14 @@ require Options.paths.lib + 'nokogiri/xml/node'
 
 module Element
 
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Error < Arachni::Error
 end
 
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module Capabilities
 
-    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
     class Error < Element::Error
     end
 end
@@ -28,7 +28,7 @@ Dir.glob( lib ).each { |f| require f }
 
 # Base class for all element types.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @abstract
 class Base
     include Utilities

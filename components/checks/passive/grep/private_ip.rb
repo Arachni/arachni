@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -7,7 +7,7 @@
 #
 # Scans for private IP addresses.
 #
-# @author   Tasos Laskos <tasos.laskos@gmail.com>
+# @author   Tasos Laskos <tasos.laskos@arachni-scanner.com>
 class Arachni::Checks::PrivateIP < Arachni::Check::Base
 
     def self.regexp
@@ -30,7 +30,7 @@ class Arachni::Checks::PrivateIP < Arachni::Check::Base
         {
             name:        'Private IP address finder',
             description: %q{Scans pages for private IP addresses.},
-            author:      'Tasos Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.3',
             elements:    [ Element::Body, Element::Header ],
 

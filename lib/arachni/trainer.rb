@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -11,7 +11,7 @@ require Options.paths.lib + 'element_filter'
 #
 # Analyzes key HTTP responses looking for new auditable elements.
 #
-# @author Tasos Laskos <tasos.laskos@gmail.com>
+# @author Tasos Laskos <tasos.laskos@arachni-scanner.com>
 class Trainer
     include UI::Output
     include Utilities

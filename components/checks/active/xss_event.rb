@@ -1,11 +1,11 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
 # It injects a string and checks if it appears inside an event attribute of any HTML tag.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
 # @version 0.1.5
 #
@@ -87,7 +87,7 @@ class Arachni::Checks::XssEvent < Arachni::Check::Base
             name:        'XSS in HTML element event attribute',
             description: %q{Cross-Site Scripting in event tag of HTML element.},
             elements:    [Element::Form, Element::Link, Element::Cookie, Element::Header],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
             version:     '0.1.5',
 
             issue:       {

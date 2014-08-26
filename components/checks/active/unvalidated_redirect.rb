@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -8,7 +8,7 @@
 # It audits links, forms and cookies, injects URLs and checks the `Location`
 # header field to determine whether the attack was successful.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.2
 # @see http://www.owasp.org/index.php/Top_10_2010-A10-Unvalidated_Redirects_and_Forwards
 class Arachni::Checks::UnvalidatedRedirect < Arachni::Check::Base
@@ -63,7 +63,7 @@ Injects URLs and checks the `Location` HTTP response header field and/or browser
 URL to determine whether the attack was successful.
 },
             elements:    [Element::Form, Element::Link, Element::Cookie, Element::Header],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.2',
 
             issue:       {

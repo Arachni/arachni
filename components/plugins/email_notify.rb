@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -8,7 +8,7 @@ require 'pony'
 # Uses the Pony gem send a notification (and optionally report) at the end
 # of the scan over SMTP.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.1.3
 class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
 
@@ -55,7 +55,7 @@ class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
         {
             name:        'E-mail notify',
             description: %q{Sends a notification (and optionally a report) over SMTP at the end of the scan.},
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1.3',
             options:     [
                 Options::String.new( :to,

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -22,7 +22,7 @@ module Arachni
 #
 #     Arachni::Options.scope.page_limit = 10
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @see OptionGroups
 class Options
     include Singleton
@@ -31,18 +31,18 @@ class Options
     #
     # All {Options} errors inherit from and live under it.
     #
-    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
     class Error < Arachni::Error
 
         # Raised when a provided {Options#url= URL} is invalid.
         #
-        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
         class InvalidURL < Error
         end
 
         # Raised when a provided 'localhost' or '127.0.0.1' {Options#url= URL}.
         #
-        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
         class ReservedHostname < Error
         end
     end

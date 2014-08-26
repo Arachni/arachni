@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -8,14 +8,14 @@ module Arachni
 class Page
 class DOM
 
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Transition
 
     # {Transition} error namespace.
     #
     # All {Transition} errors inherit from and live under it.
     #
-    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
     class Error < DOM::Error
 
         # Raised when an not-applicable action is performed on a completed
@@ -24,7 +24,7 @@ class Transition
         # @see #start
         # @see #complete
         #
-        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
         class Completed < Error
         end
 
@@ -33,7 +33,7 @@ class Transition
         #
         # @see #start
         #
-        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
         class Running < Error
         end
 
@@ -42,7 +42,7 @@ class Transition
         #
         # @see #complete
         #
-        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
         class NotRunning < Error
         end
 
@@ -50,7 +50,7 @@ class Transition
         #
         # @see #play
         #
-        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
         class NotPlayable < Error
         end
 
@@ -59,7 +59,7 @@ class Transition
         # @see #initialize
         # @see #start
         #
-        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
         class InvalidElement < Error
         end
     end

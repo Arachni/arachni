@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -15,7 +15,7 @@
 #
 # The check requires a login-check and a valid, logged-in session.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
 # @version 0.1.1
 class Arachni::Checks::SessionFixation < Arachni::Check::Base
@@ -58,7 +58,7 @@ class Arachni::Checks::SessionFixation < Arachni::Check::Base
 Checks whether or not the session cookie can be set to an arbitrary value.
 },
             elements:    [ Element::Form, Element::Link, Element::LinkTemplate ],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1.1',
 
             issue:       {

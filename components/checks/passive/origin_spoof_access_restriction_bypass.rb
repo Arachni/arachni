@@ -1,9 +1,9 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.1
 class Arachni::Checks::OriginSpoofAccessRestrictionBypass < Arachni::Check::Base
 
@@ -42,7 +42,7 @@ class Arachni::Checks::OriginSpoofAccessRestrictionBypass < Arachni::Check::Base
                 to trick the web application into thinking that the request originated
                 from localhost and checks whether the restrictions was bypassed.},
             elements:    [ Element::Server ],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1',
 
             issue:       {

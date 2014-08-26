@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -8,7 +8,7 @@
 #
 # It redirects stdout to an outfile and runs the default (stdout.rb) report.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
 # @version 0.2.1
 #
@@ -38,7 +38,7 @@ class Arachni::Reporters::Text < Arachni::Reporter::Base
         {
             name:        'Text',
             description: %q{Exports the audit results as a text (.txt) file.},
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.2.1',
             options:     [ Options.outfile( '.txt' ) ]
         }

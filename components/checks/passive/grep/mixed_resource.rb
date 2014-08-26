@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -7,7 +7,7 @@
 #
 # Looks for resources served over HTTP when the HTML code is server over HTTPS.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
 # @see http://googleonlinesecurity.blogspot.com/2011/06/trying-to-end-mixed-scripting.html
 class Arachni::Checks::MixedResource < Arachni::Check::Base
@@ -61,7 +61,7 @@ class Arachni::Checks::MixedResource < Arachni::Check::Base
             name:        'Mixed Resource',
             description: %q{Looks for resources served over HTTP when the HTML code is server over HTTPS.},
             elements:    [ Element::Body ],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
             version:     '0.1.4',
 
             issue:       {

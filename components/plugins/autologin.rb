@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -9,7 +9,7 @@
 # with the user supplied parameters and sets the cookies of the response as
 # framework-wide cookies.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
 # @version 0.2
 class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
@@ -91,7 +91,7 @@ It looks for the login form in the user provided URL, merges its input fields
 with the user supplied parameters and sets the cookies of the response and
 request as framework-wide cookies.
 },
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.2',
             options:     [
                 Options::String.new( :url,

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -10,7 +10,7 @@ class Javascript
 # Provides access to the `TaintTracer` JS interface, with extra Ruby-side
 # functionality to format results of functions that return sink data.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class TaintTracer < Proxy
 
     require_relative 'taint_tracer/frame'

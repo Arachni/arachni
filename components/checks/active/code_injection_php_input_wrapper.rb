@@ -1,10 +1,10 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
 # @see OWASP    https://www.owasp.org/index.php/Top_10_2007-Malicious_File_Execution
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.1
 class Arachni::Checks::CodeInjectionPhpInputWrapper < Arachni::Check::Base
 
@@ -47,7 +47,7 @@ Injects PHP code into the HTTP request body and uses the `php://input` wrapper
 to try and load it.
 },
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
             version:     '0.1',
             platforms:   [:php],
 

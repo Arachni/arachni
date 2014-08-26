@@ -76,7 +76,7 @@ describe 'Arachni::RPC::Server::Framework' do
             plugin[:name].should == 'Default'
             plugin[:description].should == 'Some description'
             plugin[:author].size.should == 1
-            plugin[:author].first.should == 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>'
+            plugin[:author].first.should == 'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>'
             plugin[:version].should == '0.1'
             plugin[:shortname].should == 'default'
             plugin[:options].size.should== 1

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -23,7 +23,7 @@ class Arachni::Checks::FLCH < Arachni::Check::Base
         {
             name:        'Test check',
             description: %q{Test description},
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
             version:     '0.1',
             references:  {
                 'Wikipedia' => 'http://en.wikipedia.org/'

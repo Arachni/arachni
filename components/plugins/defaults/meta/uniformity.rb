@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -12,7 +12,7 @@
 #
 # If the above are all the same for more than 1 page we have a hit.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.2
 class Arachni::Plugins::Uniformity < Arachni::Plugin::Base
 
@@ -43,7 +43,7 @@ Analyzes the scan results and logs issues which persist across different pages.
 This is usually a sign for a lack of a central/single point of input sanitization,
 a bad coding practise.
 },
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             tags:        %w(meta uniformity),
             version:     '0.2'
         }

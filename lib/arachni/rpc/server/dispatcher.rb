@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -30,7 +30,7 @@ class Server
 # Once the client finishes using the RPC Instance he *must* shut it down
 # otherwise the system will be eaten away by zombie RPC Instance processes.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Dispatcher
     require Options.paths.lib + 'rpc/server/dispatcher/node'
     require Options.paths.lib + 'rpc/server/dispatcher/service'

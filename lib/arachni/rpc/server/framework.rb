@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -26,7 +26,7 @@ class Server
 #       perform asynchronous operations.
 #
 # @private
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Framework < ::Arachni::Framework
     require Options.paths.lib + 'rpc/server/framework/multi_instance'
 
@@ -43,7 +43,7 @@ class Framework < ::Arachni::Framework
     #
     # All {RPC::Server::Framework} errors inherit from and live under it.
     #
-    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
     class Error < Arachni::Framework::Error
 
         # Raised when an option is nor supported for whatever reason.
@@ -51,7 +51,7 @@ class Framework < ::Arachni::Framework
         # For example, {OptionGroups::Scope#restrict_paths} isn't supported
         # when in HPG mode.
         #
-        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
         class UnsupportedOption < Error
         end
     end

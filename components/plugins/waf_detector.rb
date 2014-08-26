@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -13,7 +13,7 @@
 #
 # Steps 1 to 3 will be repeated _precision_ times and the responses will be averaged using rDiff analysis.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.1.3
 class Arachni::Plugins::WAFDetector < Arachni::Plugin::Base
 
@@ -152,7 +152,7 @@ This is a 4 stage process:
 Steps 1 to 3 will be repeated _precision_ times (default: 5) and the responses
 will be averaged using rDiff analysis.
 },
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1.3',
             options:     [
                 Options::Int.new( :precision,

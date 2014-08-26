@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -44,7 +44,7 @@ require lib + 'browser_cluster'
 # It runs the audit, loads checks and reports and runs them according to
 # user options.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Framework
     include UI::Output
 
@@ -64,7 +64,7 @@ class Framework
     # When I say Framework I mean the {Framework} class, not the
     # entire Arachni Framework.
     #
-    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
     class Error < Arachni::Error
     end
 

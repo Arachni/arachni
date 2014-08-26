@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -7,7 +7,7 @@ require 'nokogiri'
 
 # Creates an XML report of the audit.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.3
 class Arachni::Reporters::XML < Arachni::Reporter::Base
 
@@ -153,7 +153,7 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
             name:         'XML',
             description:  %q{Exports the audit results as an XML (.xml) file.},
             content_type: 'text/xml',
-            author:       'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:       'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:      '0.3',
             options:      [ Options.outfile( '.xml' ), Options.skip_responses ]
         }

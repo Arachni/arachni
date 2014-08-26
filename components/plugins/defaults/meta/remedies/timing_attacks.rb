@@ -1,12 +1,12 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
 # Provides a notice for issues uncovered by timing attacks when the affected audited
 # pages returned unusually high response times to begin with.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
 # @version 0.3
 class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
@@ -86,7 +86,7 @@ which renders the logged issues inconclusive or (possibly) false positives.
 Pages with high response times usually include heavy-duty processing which makes
 them prime targets for Denial-of-Service attacks.
 },
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.3',
             tags:        %w(anomaly timing attacks meta)
         }

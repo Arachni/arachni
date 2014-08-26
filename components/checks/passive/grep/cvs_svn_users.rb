@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -7,7 +7,7 @@
 #
 # Scans every page for CVS/SVN users.
 #
-# @author   Tasos Laskos <tasos.laskos@gmail.com>
+# @author   Tasos Laskos <tasos.laskos@arachni-scanner.com>
 class Arachni::Checks::CvsSvnUsers < Arachni::Check::Base
 
     def self.regexps
@@ -30,7 +30,7 @@ class Arachni::Checks::CvsSvnUsers < Arachni::Check::Base
             name:        'CVS/SVN users',
             description: %q{Scans every page for CVS/SVN users.},
             elements:    [ Element::Body ],
-            author:      'Tasos Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.3.1',
 
             issue:       {

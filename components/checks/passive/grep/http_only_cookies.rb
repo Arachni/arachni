@@ -1,11 +1,11 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
 # Logs cookies that are accessible via JavaScript.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.1.2
 class Arachni::Checks::HttpOnlyCookies < Arachni::Check::Base
 
@@ -23,7 +23,7 @@ class Arachni::Checks::HttpOnlyCookies < Arachni::Check::Base
             name:        'HttpOnly cookies',
             description: %q{Logs cookies that are accessible via JavaScript.},
             elements:    [ Element::Cookie ],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1.2',
 
             issue:       {

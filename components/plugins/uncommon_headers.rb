@@ -1,9 +1,9 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Arachni::Plugins::UncommonHeaders < Arachni::Plugin::Base
 
     is_distributable
@@ -81,7 +81,7 @@ class Arachni::Plugins::UncommonHeaders < Arachni::Plugin::Base
         {
             name:        'Uncommon headers',
             description: %q{Intercepts HTTP responses and logs uncommon headers.},
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1.2'
         }
     end

@@ -1,11 +1,11 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
 # Logs all non 200 (OK) and non 404 server responses.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Arachni::Checks::InterestingResponses < Arachni::Check::Base
 
     IGNORE_CODES = [ 200, 404 ].to_set
@@ -53,7 +53,7 @@ class Arachni::Checks::InterestingResponses < Arachni::Check::Base
             name:        'Interesting responses',
             description: %q{Logs all non 200 (OK) server responses.},
             elements:    [ Element::Server ],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.2',
 
             issue:       {

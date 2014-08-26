@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -11,7 +11,7 @@ require 'ostruct'
 # Will gather data based on user actions and exchanged HTTP traffic and push that
 # data to {Arachni::Framework#push_to_page_queue} to be audited.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
 # @version 0.3
 class Arachni::Plugins::Proxy < Arachni::Plugin::Base
@@ -459,7 +459,7 @@ The `session_token` option is not a way to secure usage of this proxy but rather
 a way to restrict usage enough to avoid users unwittingly interfering with each
 others' sessions.
 },
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.3',
             options:     [
                 Options::Port.new( :port,

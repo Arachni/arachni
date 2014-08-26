@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -15,7 +15,7 @@ require 'fileutils'
 
 # Creates an HTML report with scan results.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.4
 class Arachni::Reporters::HTML < Arachni::Reporter::Base
 
@@ -310,7 +310,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
             name:         'HTML',
             description:  %q{Exports the audit results as a compressed HTML report.},
             content_type: 'application/zip',
-            author:       'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:       'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:      '0.4',
             options:      [
                 Options.outfile( '.html.zip' ),

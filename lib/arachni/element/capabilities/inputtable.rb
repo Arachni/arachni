@@ -1,33 +1,33 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
 module Arachni
 module Element
 
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module Capabilities::Inputtable
 
-    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
     class Error < Capabilities::Error
 
         # On invalid input data.
         #
-        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
         class InvalidData < Error
 
             # @see Inputtable#valid_input_data?
             # @see Inputtable#valid_input_name?
             #
-            # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+            # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
             class Name < InvalidData
             end
 
             # @see Inputtable#valid_input_data?
             # @see Inputtable#valid_input_value?
             #
-            # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+            # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
             class Value < InvalidData
             end
 

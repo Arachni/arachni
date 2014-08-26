@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -9,7 +9,7 @@
 # If this rudimentary check fails, tainted responses are forwarded to the
 # {BrowserCluster} for evaluation and {#trace_taint taint-tracing}.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.4
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
@@ -92,7 +92,7 @@ tainted responses to look for proof of vulnerability.
 },
             elements:    [Element::Form, Element::Link, Element::Cookie,
                           Element::Header, Element::LinkTemplate],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
             version:     '0.4',
 
             issue:       {

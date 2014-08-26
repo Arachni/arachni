@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -8,7 +8,7 @@
 #
 # It also forces Arachni to train itself by analyzing the server responses.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.1.3
 class Arachni::Checks::Trainer < Arachni::Check::Base
 
@@ -28,7 +28,7 @@ class Arachni::Checks::Trainer < Arachni::Check::Base
 Pokes and probes all inputs of a given page in order to uncover new input vectors.
 It also forces Arachni to train itself by analyzing the server responses.
 },
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             version:     '0.1.3'
         }

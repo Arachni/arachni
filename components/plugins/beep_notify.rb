@@ -1,11 +1,11 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
 # Beeps when the scan finishes.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.1.2
 class Arachni::Plugins::BeepNotify < Arachni::Plugin::Base
 
@@ -22,7 +22,7 @@ class Arachni::Plugins::BeepNotify < Arachni::Plugin::Base
         {
             name: 'Beep notify',
             description: %q{It beeps when the scan finishes.},
-            author: 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author: 'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version: '0.1.2',
             options: [
                 Options::Int.new( 'repeat',

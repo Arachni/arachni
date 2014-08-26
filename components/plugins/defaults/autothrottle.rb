@@ -1,11 +1,11 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
 # Auto adjusts HTTP throughput for maximum network utilization.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.1.5
 class Arachni::Plugins::AutoThrottle < Arachni::Plugin::Base
 
@@ -61,7 +61,7 @@ class Arachni::Plugins::AutoThrottle < Arachni::Plugin::Base
 Monitors HTTP response times and automatically throttles the request concurrency
 in order to maintain stability and avoid from killing the server.
 },
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             tags:        %w(meta http throttle),
             version:     '0.1.5'
         }

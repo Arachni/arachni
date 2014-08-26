@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -7,7 +7,7 @@
 #
 # Can't take credit for this one, it's Michal's (lcamtuf's) method from Skipfish.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Arachni::Checks::DirectoryListing < Arachni::Check::Base
 
     # The compared pages must be at least 75% different
@@ -76,7 +76,7 @@ class Arachni::Checks::DirectoryListing < Arachni::Check::Base
             name:        'Directory listing',
             description: %q{Tries to force directory listings.},
             elements:    [ Element::Server ],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1.5',
 
             issue:       {

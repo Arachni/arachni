@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -10,7 +10,7 @@ module Plugin
 
 # An abstract class which all plugins must extend.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @abstract
 class Base < Component::Base
     include Component
@@ -147,7 +147,7 @@ class Base < Component::Base
         {
             name:        'Abstract plugin class',
             description: %q{Abstract plugin class.},
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1',
             options:     [
                 #                       option name        required?       description                        default

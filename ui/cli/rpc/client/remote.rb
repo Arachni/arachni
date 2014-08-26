@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
@@ -19,7 +19,7 @@ module RPC::Client
 # Provides a command-line RPC client and uses a {RPC::Server::Dispatcher} to
 # provide an {RPC::Server::Instance} in order to perform a scan.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Remote
     include Arachni::UI::Output
 

@@ -36,7 +36,7 @@ has changed, please review it before working with the project.
     </tr>
     <tr>
        <th>Author</th>
-       <td><a href="mailto:tasos.laskos@gmail.com">Tasos Laskos</a> (<a href="http://twitter.com/Zap0tek">@Zap0tek</a>)</td>
+       <td><a href="mailto:tasos.laskos@arachni-scanner.com">Tasos Laskos</a> (<a href="http://twitter.com/Zap0tek">@Zap0tek</a>)</td>
     </tr>
     <tr>
         <th>Twitter</th>

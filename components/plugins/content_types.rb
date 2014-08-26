@@ -1,11 +1,11 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
     Please see the LICENSE file at the root directory of the project.
 =end
 
 # Logs content-types of all server responses.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.1.6
 class Arachni::Plugins::ContentTypes < Arachni::Plugin::Base
 
@@ -93,7 +93,7 @@ Logs content-types of server responses.
 It can help you categorize and identify publicly available file-types which in
 turn can help you identify accidentally leaked files.
 },
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1.6',
             options:     [
                 Options::String.new( :exclude,
