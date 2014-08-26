@@ -1,7 +1,10 @@
 # coding: utf-8
 =begin
     Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
-    Please see the LICENSE file at the root directory of the project.
+
+    This file is part of the Arachni Framework project and is subject to
+    redistribution and commercial restrictions. Please see the Arachni Framework
+    web site for more information on licensing and terms of use.
 =end
 
 Gem::Specification.new do |s|
