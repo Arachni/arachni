@@ -37,7 +37,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
         end
 
         def md( markdown )
-            html = Kramdown::Document.new( markdown ).to_html
+            html = Kramdown::Document.new( markdown ).to_html.recode
             Loofah.fragment( html ).scrub!(:prune).to_s
         end
 
