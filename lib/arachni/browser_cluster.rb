@@ -285,7 +285,7 @@ class BrowserCluster
     end
 
     # @return    [Job]
-    # #Pops a job from the queue.
+    #   Pops a job from the queue.
     #
     # @see #queue
     # @private
