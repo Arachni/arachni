@@ -25,20 +25,16 @@ class Issue
     #   Name.
     attr_accessor :name
 
-    # @note Should be treated as GitHub-flavored Markdown.
+    # @note Should be treated as Markdown.
     #
     # @return    [String]
     #   Brief description.
-    #
-    # @see https://help.github.com/articles/github-flavored-markdown
     attr_accessor :description
 
-    # @note Should be treated as GitHub-flavored Markdown.
+    # @note Should be treated as Markdown.
     #
     # @return    [String]
     #   Brief text explaining how to remedy the issue.
-    #
-    # @see https://help.github.com/articles/github-flavored-markdown
     attr_accessor :remedy_guidance
 
     # @return    [String]

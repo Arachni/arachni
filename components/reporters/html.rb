@@ -7,7 +7,7 @@
 =end
 
 require 'zip'
-require 'github/markdown'
+require 'kramdown'
 require 'loofah'
 require 'coderay'
 require 'json'
@@ -37,8 +37,8 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
         end
 
         def md( markdown )
-            Loofah.fragment( GitHub::Markdown.render( markdown.to_s ).to_s ).
-                scrub!(:prune).to_s
+            html = Kramdown::Document.new( markdown ).to_html
+            Loofah.fragment( html ).scrub!(:prune).to_s
         end
 
         def key_to_words( k )

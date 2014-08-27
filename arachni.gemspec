@@ -92,10 +92,10 @@ Gem::Specification.new do |s|
 
     # Markdown to HTML conversion, used by the HTML report for component
     # descriptions.
-    s.add_dependency 'github-markdown',   '0.6.5'
+    s.add_dependency 'kramdown',          '1.4.1'
 
     # Used to scrub Markdown for XSS etc.
-    s.add_dependency 'loofah',             '2.0.0'
+    s.add_dependency 'loofah',            '2.0.0'
 
     s.post_install_message = <<MSG
 
