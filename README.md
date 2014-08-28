@@ -1,6 +1,8 @@
 **NOTICE**:
-Arachni's <a href="https://github.com/Arachni/arachni/blob/master/LICENSE.md">license</a>
-has changed, please review it before working with the project.
+
+* Arachni's <a href="https://github.com/Arachni/arachni/blob/master/LICENSE.md">license</a>
+    has changed, please review it before working with the project.
+* v1.0 is not backwards compatible.
 
 <hr/>
 
