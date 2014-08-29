@@ -50,7 +50,7 @@
     </tr>
     <tr>
         <th>License</th>
-        <td>Dual-licensed (Apache License v2.0/Commercial) - (see _LICENSE_ file)</td>
+        <td>Dual-licensed (Apache License v2.0/Commercial) - (see LICENSE file)</td>
     </tr>
 </table>
 
