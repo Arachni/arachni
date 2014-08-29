@@ -1,7 +1,7 @@
 **NOTICE**:
 
-* Arachni's <a href="https://github.com/Arachni/arachni/blob/master/LICENSE.md">license</a>
-    has changed, please review it before working with the project.
+* Arachni's license has changed, please see the _LICENSE_ file before working
+    with the project.
 * v1.0 is not backwards compatible.
 
 <hr/>
@@ -50,7 +50,7 @@
     </tr>
     <tr>
         <th>License</th>
-        <td><a href="https://github.com/Arachni/arachni/blob/master/LICENSE.md">Dual-licensed (Apache License v2.0/Commercial)</a></td>
+        <td>Dual-licensed (Apache License v2.0/Commercial) - (see _LICENSE_ file)</td>
     </tr>
 </table>
 
@@ -580,7 +580,8 @@ need to follow in order to contribute code:
 
 ## License
 
-<a href="https://github.com/Arachni/arachni/blob/master/LICENSE.md">Dual-licensed (Apache License v2.0/Commercial)</a>
+Dual-licensed (Apache License v2.0/Commercial) -- please see the _LICENSE_ file
+for more information.
 
 ## Disclaimer
 
